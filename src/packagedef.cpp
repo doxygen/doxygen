@@ -30,22 +30,22 @@
 PackageDef::PackageDef(const char *df,int dl,const char *na,const char *ref) : 
    Definition(df,dl,na)
 {
-  classList       = new ClassList;
+  classSDict       = new ClassSDict(17);
   packageFileName = (QCString)"package_"+na;
   setReference(ref);
 }
 
 PackageDef::~PackageDef()
 {
-  delete classList;
+  delete classSDict;
 }
 
-void PackageDef::addClass(const ClassDef *def)
+void PackageDef::addClass(const ClassDef *cd)
 {
   if (Config_getBool("SORT_MEMBER_DOCS"))
-    classList->inSort(def);
+    classSDict->inSort(cd->name(),cd);
   else
-    classList->append(def);
+    classSDict->append(cd->name(),cd);
 }
 
 void PackageDef::writeDocumentation(OutputList &ol)
@@ -61,7 +61,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol);
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -81,9 +81,9 @@ void PackageDef::writeDocumentation(OutputList &ol)
   ol.startMemberSections();
   ClassDef::CompoundType ct;
   ct=ClassDef::Interface;
-  classList->writeDeclaration(ol,&ct,theTranslator->trInterfaces());
+  classSDict->writeDeclaration(ol,&ct,theTranslator->trInterfaces());
   ct=ClassDef::Class;
-  classList->writeDeclaration(ol,&ct,theTranslator->trClasses());
+  classSDict->writeDeclaration(ol,&ct,theTranslator->trClasses());
   ol.endMemberSections();
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
@@ -114,7 +114,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
     }
   }
 

@@ -79,6 +79,14 @@ class SDict
       m_list->append(d);
       m_dict->insert(key,d);
     }
+    /*! Sorts the members of the dictionary. First appending a number
+     *  of members and then sorting them is faster (O(NlogN) than using 
+     *  inSort() for each member (O(N^2)).
+     */
+    void sort()
+    {
+      m_list->sort();
+    }
     /*! Inserts a compound into the dictionary in a sorted way.
      *  \param key The unique key to use to quicky find the item later on.
      *  \param d The compound to add.
@@ -102,6 +110,12 @@ class SDict
     T *find(const char *key)
     {
       return m_dict->find(key);
+    }
+
+    /*! Returns the item at position \a i in the sorted dictionary */
+    T *at(uint i)
+    {
+      return m_list->at(i);
     }
     /*! Function that is used to compare two items when sorting.
      *  Overload this to properly sort items.
@@ -152,6 +166,13 @@ class SDict
         {
           return m_li->toFirst();
         }
+        /*! Set the iterator to the last element in the list. 
+         *  \return The first compound, or zero if the list was empty. 
+         */
+        T *toLast() const
+        {
+          return m_li->toLast();
+        }
         /*! Returns the current compound */
         T *current() const
         {
@@ -164,6 +185,14 @@ class SDict
         T *operator++()
         {
           return m_li->operator++();
+        }
+        /*! Moves the iterator to the previous element.
+         *  \return the new "current" element, or zero if the iterator was
+         *          already pointing at the first element.
+         */
+        T *operator--()
+        {
+          return m_li->operator--();
         }
 
       private:

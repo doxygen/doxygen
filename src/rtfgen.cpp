@@ -991,16 +991,16 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isClassDocumentation:
       {
         //Compound Documentation
-        ClassDef *cd=Doxygen::classList.first();
+        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassDef *cd=0;
         bool found=FALSE;
-        while (cd && !found)
+        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
           if (cd->isLinkableInProject())
           {
             beginRTFChapter();
             found=TRUE;
           }
-          cd=Doxygen::classList.next();
         }
       }
       break;
@@ -1220,11 +1220,12 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=Doxygen::classList.first();
+        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassDef *cd=0;
         bool found=FALSE;
 
         t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
-        while (cd && !found)
+        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
           if (cd->isLinkableInProject())
           {
@@ -1234,9 +1235,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             found=TRUE;
           }
-          cd=Doxygen::classList.next();
         }
-        while (cd)
+        for (;(cd=cli.current());++cli)
         {
           if (cd->isLinkableInProject())
           {
@@ -1246,7 +1246,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << cd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           } 
-          cd=Doxygen::classList.next();
         }
       }
       break;

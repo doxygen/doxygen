@@ -1557,11 +1557,10 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    current->endBodyLine = yyLineNr;
 					    QCString &cn = current->name;
-					    //QCString rn = stripAnnonymousScope(current_root->name);
 					    QCString rn = current_root->name.copy();
 					    //printf("cn=`%s' rn=`%s'\n",cn.data(),rn.data());
 					    if (!cn.isEmpty() && !rn.isEmpty() && 
-					      (current_root->section & Entry::SCOPE_MASK))
+					       (current_root->section & Entry::SCOPE_MASK))
 					    {
 					      cn.prepend(rn+"::");
 					    }
@@ -2294,7 +2293,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->argList->clear();
 					  BEGIN( FindMembers ) ;
 					}
-<CompoundName>{SCOPENAME}{BN}*/"<"		{
+<CompoundName>{SCOPENAME}{BN}*/"<"	{
   					  sharpCount = 0;
   					  current->name = yytext ;
 					  lineCount();
@@ -2317,7 +2316,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <ClassTemplSpec>.			{
   					  current->name += yytext;
 					}
-<CompoundName>{SCOPENAME}			{ 
+<CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
 					  BEGIN( ClassVar );
@@ -3855,14 +3854,14 @@ static void parseCompounds(Entry *rt)
       memberGroupId = NOGROUP;
       
       // rebuild compound's group context 
-      QCString *s = ce->groups->first();
-      if (s)
-      {
-	lastDefGroup=*s;
-	startGroup();
-      }
+      //QCString *s = ce->groups->first();
+      //if (s)
+      //{
+      // lastDefGroup=*s;
+      //	startGroup();
+      //}
 
-      current->mGrpId = memberGroupId = ce->mGrpId;
+      //current->mGrpId = memberGroupId = ce->mGrpId;
 
       scanYYlex() ;
       delete current; current=0;

@@ -27,7 +27,7 @@
 #include "htmlhelp.h"
 
 class FileList;
-class ClassList;
+class ClassSDict;
 class FileDef;
 class ClassDef;
 class NamespaceDef;
@@ -55,7 +55,7 @@ class GroupDef : public Definition
     void addParentGroup(const GroupDef *def);
     void addPage(PageInfo *def);                // pages in this group
     void addExample(const PageInfo *def);       // examples in this group
-    void insertMember(MemberDef *def);
+    void insertMember(MemberDef *def,bool docOnly=FALSE);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
     bool isLinkableInProject()
@@ -84,7 +84,7 @@ class GroupDef : public Definition
     QCString title;                     // title of the group
     QCString fileName;                  // base name of the generated file
     FileList *fileList;                 // list of files in the group
-    ClassList *classList;               // list of classes in the group
+    ClassSDict *classSDict;             // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
     GroupList *groupList;               // list of sub groups.
     GroupList *parentGroupList;         // list of parent groups.

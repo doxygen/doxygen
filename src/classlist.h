@@ -22,6 +22,7 @@
 #include <qdict.h>
 
 #include "classdef.h"
+#include "sortdict.h"
 
 class ClassList : public QList<ClassDef>
 { 
@@ -30,8 +31,6 @@ class ClassList : public QList<ClassDef>
    ~ClassList();
    
    int compareItems(GCI item1,GCI item2);
-   void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
-                         const char *header=0);
 };
 
 class ClassListIterator : public QListIterator<ClassDef>
@@ -45,6 +44,16 @@ class ClassDict : public QDict<ClassDef>
   public:
     ClassDict(int size) : QDict<ClassDef>(size) {}
    ~ClassDict() {}
+};
+
+class ClassSDict : public SDict<ClassDef>
+{
+  public:
+    ClassSDict(int size) : SDict<ClassDef>(size) {}
+   ~ClassSDict() {}
+   int compareItems(GCI item1,GCI item2);
+   void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
+                         const char *header=0);
 };
 
 #endif

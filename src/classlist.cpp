@@ -35,9 +35,15 @@ int ClassList::compareItems(GCI item1, GCI item2)
 {
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
-  //int prefixLength = Config::instance()->get("").length();
-  //int i1 = c1->name().left(prefixLength)==Config::instance()->get("") ? prefixLength : 0;
-  //int i2 = c2->name().left(prefixLength)==Config::instance()->get("") ? prefixLength : 0;
+  return stricmp(c1->name().data()+getPrefixIndex(c1->name()),
+                 c2->name().data()+getPrefixIndex(c2->name())
+                );
+}
+
+int ClassSDict::compareItems(GCI item1, GCI item2)
+{
+  ClassDef *c1=(ClassDef *)item1;
+  ClassDef *c2=(ClassDef *)item2;
   return stricmp(c1->name().data()+getPrefixIndex(c1->name()),
                  c2->name().data()+getPrefixIndex(c2->name())
                 );
@@ -48,13 +54,14 @@ ClassListIterator::ClassListIterator(const ClassList &cllist) :
 {
 }
 
-void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header)
+void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header)
 {
   if (count()>0)
   {
-    ClassDef *cd=first();
+    ClassSDict::Iterator sdi(*this);
+    ClassDef *cd=0;
     bool found=FALSE;
-    while (cd)
+    for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
       if (cd->name().find('@')==-1 && 
           (filter==0 || *filter==cd->compoundType())
@@ -124,7 +131,6 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
           }
         }
       }
-      cd=next();
     }
     if (found) ol.endMemberList();
   }

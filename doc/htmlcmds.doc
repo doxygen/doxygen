@@ -83,6 +83,8 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </TR>   Does not generate any output. 
 <li>\c <TT>    Starts a piece of text displayed in a typewriter font.
 <li>\c </TT>   Ends a \c <TT> section.
+<li>\c <KBD>   Starts a piece of text displayed in a typewriter font.
+<li>\c </KBD>  Ends a \c <KBD> section.
 <li>\c <UL>    Starts an unnumbered item list.
 <li>\c </UL>   Ends an unnumbered item list.
 <li>\c <VAR>   Starts a piece of text displayed in an italic font.

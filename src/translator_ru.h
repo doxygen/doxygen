@@ -48,9 +48,9 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-#include "translator_adapter.h"
+#include "translator.h"
 
-class TranslatorRussian : public TranslatorAdapter_1_2_5
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -1217,6 +1217,21 @@ class TranslatorRussian : public TranslatorAdapter_1_2_5
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \\bug item */
+    virtual QCString trBug()
+    {
+      return decode("Ошибка");
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return decode("Ошибки");
+    }
+
+//////////////////////////////////////////////////////////////////////////
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
     /*! Used as ansicpg for RTF file */
@@ -1234,6 +1249,95 @@ class TranslatorRussian : public TranslatorAdapter_1_2_5
     {
       return decode("Алфавитный указатель");
     }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Класс" : "класс"));
+      if(!singular) result+="ы";
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Файл" : "файл"));
+      if (!singular)  result+="ы";
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Пространств" : "пространств"));
+      result+=(singular?"о имен":"а имен");
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Групп" : "групп"));
+      result+=(singular ? "а" : "ы");
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Страниц" : "страниц"));
+      result+=(singular ? "а" : "ы");
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Член" : "член"));
+      if (!singular)  result+="ы";
+      return decode(result); 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Пол" : "пол"));
+      result+=(singular ? "е" : "я");
+      return decode(result); 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Глобальны" : "глобальны"));
+      result+=(singular ? "й" : "е");
+      return decode(result); 
+    }
+
 };
 
 #endif

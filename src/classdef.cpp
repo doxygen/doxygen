@@ -49,76 +49,73 @@ ClassDef::ClassDef(
     const char *lref,const char *fName) 
  : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm)) 
 {
-  //name=n;
-
-  compType=ct;
+  m_compType=ct;
   QCString compoundName=compoundTypeString();
   if (fName)
   {
-    fileName=stripExtension(fName);
+    m_fileName=stripExtension(fName);
   }
   else
   {
-    fileName=compoundName+nm;
+    m_fileName=compoundName+m_name;
   }
   if (lref) 
   {
-    //url=(QCString)"doxygen=\""+lref+":\" href=\""+fileName;
-    exampleList = 0;
-    exampleDict = 0;
+    m_exampleSDict = 0;
   }
   else
   {
-    //url="href=\""+fileName;
-    exampleList = new ExampleList;
-    exampleDict = new ExampleDict(17);
+    m_exampleSDict = new ExampleSDict(17);
   }
-  memListFileName=convertNameToFile(compoundName+nm+"-members");
-  inherits      = new BaseClassList;
-  inherits->setAutoDelete(TRUE);
-  inheritedBy   = new BaseClassList;
-  inheritedBy->setAutoDelete(TRUE);
-  allMemberNameInfoList = new MemberNameInfoList; 
-  allMemberNameInfoList->setAutoDelete(TRUE);
-  allMemberNameInfoDict = new MemberNameInfoDict(257);
+  m_memListFileName=convertNameToFile(compoundName+m_name+"-members");
+  m_inherits      = new BaseClassList;
+  m_inherits->setAutoDelete(TRUE);
+  m_inheritedBy   = new BaseClassList;
+  m_inheritedBy->setAutoDelete(TRUE);
+  m_allMemberNameInfoSDict = new MemberNameInfoSDict(257);
+  m_allMemberNameInfoSDict->setAutoDelete(TRUE);
   visited=FALSE;
   setReference(lref);
-  incInfo=0;
-  tempArgs=0;
-  prot=Public;
-  nspace=0;
-  fileDef=0;
-  usesImplClassDict=0;
-  usesIntfClassDict=0;
-  memberGroupList = new MemberGroupList;
-  memberGroupList->setAutoDelete(TRUE);
-  memberGroupDict = new MemberGroupDict(17);
+  m_incInfo=0;
+  m_tempArgs=0;
+  m_prot=Public;
+  m_nspace=0;
+  m_fileDef=0;
+  m_usesImplClassDict=0;
+  m_usesIntfClassDict=0;
+  m_memberGroupList = new MemberGroupList;
+  m_memberGroupList->setAutoDelete(TRUE);
+  m_memberGroupDict = new MemberGroupDict(17);
+  m_innerClasses = new ClassSDict(17);
   int i=name().findRev("::");
   if (i==-1)
   {
-    scopelessName=name();
+    m_scopelessName=name();
   }
   else
   {
-    scopelessName=name().right(name().length()-i-2);
+    m_scopelessName=name().right(name().length()-i-2);
   }
-  subGrouping=TRUE;
+  m_subGrouping=TRUE;
+  m_isTemplBaseClass=-1;
+  m_templateMapping = new StringDict;
+  m_templateMapping->setAutoDelete(TRUE);
 }
 
 // destroy the class definition
 ClassDef::~ClassDef()
 {
-  delete inherits;
-  delete inheritedBy;
-  delete allMemberNameInfoList;
-  delete allMemberNameInfoDict;
-  delete exampleList;
-  delete exampleDict;
-  delete usesImplClassDict;
-  delete usesIntfClassDict;
-  delete incInfo;
-  delete memberGroupList;
-  delete memberGroupDict;
+  delete m_inherits;
+  delete m_inheritedBy;
+  delete m_allMemberNameInfoSDict;
+  delete m_exampleSDict;
+  delete m_usesImplClassDict;
+  delete m_usesIntfClassDict;
+  delete m_incInfo;
+  delete m_memberGroupList;
+  delete m_memberGroupDict;
+  delete m_innerClasses;
+  delete m_templateMapping;
 }
 
 QCString ClassDef::displayName() const
@@ -139,7 +136,7 @@ void ClassDef::insertBaseClass(ClassDef *cd,const char *n,Protection p,
 {
   //printf("*** insert base class %s into %s\n",cd->name().data(),name().data());
   //inherits->inSort(new BaseClassDef(cd,p,s,t));
-  inherits->append(new BaseClassDef(cd,n,p,s,t));
+  m_inherits->append(new BaseClassDef(cd,n,p,s,t));
 }
 
 // inserts a sub class in the inherited list
@@ -147,34 +144,34 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
                                 Specifier s,const char *t)
 {
   //printf("*** insert sub class %s into %s\n",cd->name().data(),name().data());
-  inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
+  m_inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
 }
 
 void ClassDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&pubTypes,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&pubMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&pubAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&pubSlots,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&signals,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&dcopMethods,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proTypes,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proSlots,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proStaticMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&proStaticAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priTypes,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priSlots,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priStaticMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&priStaticAttribs,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&friends,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&related,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&properties,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubTypes,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubSlots,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&signals,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&dcopMethods,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubStaticMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&pubStaticAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proTypes,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proSlots,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proStaticMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&proStaticAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priTypes,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priSlots,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priStaticMembers,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&priStaticAttribs,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&friends,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&related,m_memberGroupDict,m_memberGroupList);
+  ::addMembersToMemberGroup(&properties,m_memberGroupDict,m_memberGroupList);
 }
 
 // adds new member definition to the class
@@ -410,7 +407,7 @@ void ClassDef::insertMember(MemberDef *md)
                   enumValMembers.append(md);
                 break;
               case MemberDef::Function:
-                if (md->name()==scopelessName ||         // constructor
+                if (md->name()==m_scopelessName ||         // constructor
                     (md->name().find('~')!=-1 &&  // hack to detect destructor
                      md->name().find("operator")==-1
                     )
@@ -452,7 +449,7 @@ void ClassDef::insertMember(MemberDef *md)
   MemberInfo *mi = new MemberInfo((MemberDef *)md,
                        md->protection(),md->virtualness(),FALSE);
   MemberNameInfo *mni=0;
-  if ((mni=(*allMemberNameInfoDict)[md->name()]))
+  if ((mni=m_allMemberNameInfoSDict->find(md->name())))
   {
     mni->append(mi);
   }
@@ -460,15 +457,14 @@ void ClassDef::insertMember(MemberDef *md)
   {
     mni = new MemberNameInfo(md->name());
     mni->append(mi);
-    allMemberNameInfoList->inSort(mni);
-    allMemberNameInfoDict->insert(mni->memberName(),mni);
+    m_allMemberNameInfoSDict->inSort(mni->memberName(),mni);
   }
 }
 
 
 //void ClassDef::computeMemberGroups()
 //{
-//  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+//  MemberNameInfoListIterator mnili(*m_allMemberNameInfoList);
 //  MemberNameInfo *mni;
 //  for (;(mni=mnili.current());++mnili)
 //  {
@@ -478,10 +474,10 @@ void ClassDef::insertMember(MemberDef *md)
 //    {
 //      MemberDef *md=mi->memberDef;
 //      MemberGroup *mg = md->getMemberGroup();
-//      if (mg && memberGroupDict->find(mg->groupId())==0)
+//      if (mg && m_memberGroupDict->find(mg->groupId())==0)
 //      {
-//        memberGroupDict->insert(mg->groupId(),mg);
-//        memberGroupList->append(mg);
+//        m_memberGroupDict->insert(mg->groupId(),mg);
+//        m_memberGroupList->append(mg);
 //      }
 //    }
 //  }
@@ -517,7 +513,7 @@ void ClassDef::computeAnchors()
 
 void ClassDef::distributeMemberGroupDocumentation()
 {
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupListIterator mgli(*m_memberGroupList);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -529,7 +525,7 @@ void ClassDef::distributeMemberGroupDocumentation()
 // add a file name to the used files set
 void ClassDef::insertUsedFile(const char *f)
 {
-  if (files.find(f)==-1) files.append(f);
+  if (m_files.find(f)==-1) m_files.append(f);
 }
 
 static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
@@ -557,15 +553,15 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
 void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
 {
   //printf("ClassDef::setInclude(%p,%s,%d)\n",fd,includeName,local);
-  if (!incInfo) incInfo=new IncludeInfo;
-  if ((includeName && incInfo->includeName.isEmpty()) ||
-      (fd!=0 && incInfo->fileDef==0)
+  if (!m_incInfo) m_incInfo=new IncludeInfo;
+  if ((includeName && m_incInfo->includeName.isEmpty()) ||
+      (fd!=0 && m_incInfo->fileDef==0)
      )
   {
     //printf("Setting file info\n");
-    incInfo->fileDef     = fd;
-    incInfo->includeName = includeName;
-    incInfo->local       = local;
+    m_incInfo->fileDef     = fd;
+    m_incInfo->includeName = includeName;
+    m_incInfo->local       = local;
   }
 }
 
@@ -574,7 +570,7 @@ ArgumentList *ClassDef::outerTemplateArguments() const
   int ti;
   ClassDef *pcd=0;
   int pi=0;
-  if (tempArgs) return tempArgs;
+  if (m_tempArgs) return m_tempArgs;
   // find the outer most class scope
   while ((ti=name().find("::",pi))!=-1 && 
       (pcd=getClass(name().left(ti)))==0
@@ -632,7 +628,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (outerTempArgList) pageTitle.prepend(" Template");
   startFile(ol,getOutputFileBase(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trCompoundReference(name(),compType,outerTempArgList!=0));
+  parseText(ol,theTranslator->trCompoundReference(name(),m_compType,outerTempArgList!=0));
   endTitle(ol,getOutputFileBase(),name());
 
   ol.startTextBlock();
@@ -643,7 +639,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -658,18 +654,18 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
   ol.writeSynopsis();
   
-  if (incInfo)
+  if (m_incInfo)
   {
-    QCString nm=incInfo->includeName.isEmpty() ? 
-      (incInfo->fileDef ?
-       incInfo->fileDef->docName().data() : "" 
+    QCString nm=m_incInfo->includeName.isEmpty() ? 
+      (m_incInfo->fileDef ?
+       m_incInfo->fileDef->docName().data() : "" 
       ) :
-      incInfo->includeName.data();
+      m_incInfo->includeName.data();
     if (!nm.isEmpty())
     {
       ol.startTypewriter();
       ol.docify("#include ");
-      if (incInfo->local)
+      if (m_incInfo->local)
         ol.docify("\"");
       else
         ol.docify("<");
@@ -678,16 +674,16 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.docify(nm);
       ol.disableAllBut(OutputGenerator::Html);
       ol.enable(OutputGenerator::Html);
-      if (incInfo->fileDef)
+      if (m_incInfo->fileDef)
       {
-        ol.writeObjectLink(0,incInfo->fileDef->includeName(),0,nm);
+        ol.writeObjectLink(0,m_incInfo->fileDef->includeName(),0,nm);
       }
       else
       {
         ol.docify(nm);
       }
       ol.popGeneratorState();
-      if (incInfo->local)
+      if (m_incInfo->local)
         ol.docify("\"");
       else
         ol.docify(">");
@@ -711,11 +707,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   
   // write subclasses
   int count;
-  if ((count=inherits->count())>0)
+  if ((count=m_inherits->count())>0)
   {
     //parseText(ol,theTranslator->trInherits()+" ");
 
-    QCString inheritLine = theTranslator->trInheritsList(inherits->count());
+    QCString inheritLine = theTranslator->trInheritsList(m_inherits->count());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -724,7 +720,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       parseText(ol,inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=inherits->at(entryIndex);
+      BaseClassDef *bcd=m_inherits->at(entryIndex);
       if (ok && bcd)
       {
         ClassDef *cd=bcd->classDef;
@@ -765,9 +761,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // write subclasses
-  if ((count=inheritedBy->count())>0)
+  if ((count=m_inheritedBy->count())>0)
   {
-    QCString inheritLine = theTranslator->trInheritedByList(inheritedBy->count());
+    QCString inheritLine = theTranslator->trInheritedByList(m_inheritedBy->count());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -776,7 +772,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       parseText(ol,inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=inheritedBy->at(entryIndex);
+      BaseClassDef *bcd=m_inheritedBy->at(entryIndex);
       if (ok && bcd)
       {
         ClassDef *cd=bcd->classDef;
@@ -801,19 +797,19 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   count=0;
   BaseClassDef *ibcd;
-  ibcd=inheritedBy->first();
+  ibcd=m_inheritedBy->first();
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
     if ( icd->isVisibleInHierarchy()) count++;
-    ibcd=inheritedBy->next();
+    ibcd=m_inheritedBy->next();
   }
-  ibcd=inherits->first();
+  ibcd=m_inherits->first();
   while (ibcd)
   {
     ClassDef *icd=ibcd->classDef;
     if ( icd->isVisibleInHierarchy()) count++;
-    ibcd=inherits->next();
+    ibcd=m_inherits->next();
   }
 
   
@@ -879,10 +875,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // write link to list of all members (HTML only)
-  if (allMemberNameInfoList->count()>0 && !Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+  if (m_allMemberNameInfoSDict->count()>0 && 
+      !Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
   {
     ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(memListFileName,0);
+    ol.startTextLink(m_memListFileName,0);
     parseText(ol,theTranslator->trListOfAllMembers());
     ol.endTextLink();
     ol.enableAll();
@@ -894,11 +891,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.startMemberSections();
 
   // write user defined member groups
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupListIterator mgli(*m_memberGroupList);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    if (!mg->allMembersInSameSection() || !subGrouping) // group is in its own section
+    if (!mg->allMembersInSameSection() || !m_subGrouping) // group is in its own section
     {
       mg->writeDeclarations(ol,this,0,0,0);
     }
@@ -908,40 +905,52 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  // non static public members
+  // public types
   pubTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicTypes(),0); 
-  pubMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
-  pubAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
+
+  // public methods
   pubSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
   signals.writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
   dcopMethods.writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
   properties.writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
-
-  // static public members
+  pubMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
   pubStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
+
+  // public attribs
+  pubAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
   pubStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicAttribs(),0); 
   
-  // protected non-static members
+  // protected types
   proTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedTypes(),0); 
-  proMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
-  proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
+
+  // protected methods
   proSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedSlots(),0); 
-  // protected static members
+  proMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
   proStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
+
+  // protected attribs
+  proAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
   proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
-    // private non-static members
+    // private types
     priTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
-    priMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
-    priAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
+
+    // private members
     priSlots.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateSlots(),0); 
-    // private static members
+    priMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
     priStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
+
+    // private attribs
+    priAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
     priStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateAttribs(),0); 
   }
+
+  // friends
   friends.writeDeclarations(ol,this,0,0,0,theTranslator->trFriends(),0);
+
+  // related functions
   related.writeDeclarations(ol,this,0,0,0,
                   theTranslator->trRelatedFunctions(),
                   theTranslator->trRelatedSubscript()
@@ -985,7 +994,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
       ol.popGeneratorState();
-      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
     }
     // write examples
     if (exampleFlag)
@@ -997,7 +1006,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.endDescTitle();
       ol.writeDescItem();
       ol.newParagraph();
-      writeExample(ol,exampleList);
+      writeExample(ol,m_exampleSDict);
       //ol.endDescItem();
       ol.endDescList();
     }
@@ -1040,10 +1049,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.disable(OutputGenerator::Man);
     ol.writeRuler();
-    parseText(ol,theTranslator->trGeneratedFromFiles(compType,files.count()==1));
+    parseText(ol,theTranslator->trGeneratedFromFiles(m_compType,m_files.count()==1));
 
     bool first=TRUE;
-    const char *file = files.first();
+    const char *file = m_files.first();
     while (file)
     {
       bool ambig;
@@ -1077,7 +1086,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
           ol.docify(fd->name());
         }
       }
-      file=files.next();
+      file=m_files.next();
     }
     if (!first) ol.endItemList();
   }
@@ -1106,12 +1115,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
 // write the list of all (inherited) members for this class
 void ClassDef::writeMemberList(OutputList &ol)
 {
-  if (allMemberNameInfoList->count()==0 || Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
+  if (m_allMemberNameInfoSDict->count()==0 || 
+      Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  startFile(ol,memListFileName,theTranslator->trMemberList());
+  startFile(ol,m_memListFileName,theTranslator->trMemberList());
   startTitle(ol,0);
   parseText(ol,name()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
@@ -1121,8 +1131,10 @@ void ClassDef::writeMemberList(OutputList &ol)
   
   ol.startItemList();
   
-  MemberNameInfo *mni=allMemberNameInfoList->first();
-  while (mni)
+  //MemberNameInfo *mni=m_allMemberNameInfoList->first();
+  MemberNameInfoSDict::Iterator mnii(*m_allMemberNameInfoSDict); 
+  MemberNameInfo *mni;
+  for (mnii.toFirst();(mni=mnii.current());++mnii)
   {
     MemberInfo *mi=mni->first();
     while (mi)
@@ -1253,7 +1265,6 @@ void ClassDef::writeMemberList(OutputList &ol)
       }
       mi=mni->next();
     }
-    mni=allMemberNameInfoList->next();
   }
   ol.endItemList();
   endFile(ol);
@@ -1265,14 +1276,13 @@ void ClassDef::writeMemberList(OutputList &ol)
 bool ClassDef::addExample(const char *anchor,const char *nameStr,
     const char *file)
 {
-  if (exampleDict && !exampleDict->find(nameStr))
+  if (m_exampleSDict && !m_exampleSDict->find(nameStr))
   {
     Example *e=new Example;
     e->anchor=anchor;
     e->name=nameStr;
     e->file=file;
-    exampleDict->insert(nameStr,e);
-    exampleList->inSort(e);
+    m_exampleSDict->inSort(nameStr,e);
     return TRUE;
   }
   return FALSE;
@@ -1281,24 +1291,24 @@ bool ClassDef::addExample(const char *anchor,const char *nameStr,
 // returns TRUE if this class is used in an example
 bool ClassDef::hasExamples()
 {
-  if (exampleList==0) 
+  if (m_exampleSDict==0) 
     return FALSE;
   else
-    return exampleList->count()>0;
+    return m_exampleSDict->count()>0;
 }
 
 
 void ClassDef::setTemplateArguments(ArgumentList *al)
 {
   if (al==0) return;
-  if (!tempArgs) delete tempArgs; // delete old list if needed
-  tempArgs=new ArgumentList; 
-  tempArgs->setAutoDelete(TRUE);
+  if (!m_tempArgs) delete m_tempArgs; // delete old list if needed
+  m_tempArgs=new ArgumentList; 
+  m_tempArgs->setAutoDelete(TRUE);
   ArgumentListIterator ali(*al);
   Argument *a;
   for (;(a=ali.current());++ali)
   {
-    tempArgs->append(new Argument(*a));
+    m_tempArgs->append(new Argument(*a));
   }
 }
 
@@ -1306,7 +1316,7 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
 bool ClassDef::hasNonReferenceSuperClass()
 {
   bool found=!isReference();
-  BaseClassListIterator bcli(*inheritedBy);
+  BaseClassListIterator bcli(*m_inheritedBy);
   for ( ; bcli.current() && !found ; ++bcli )
     found=found || bcli.current()->classDef->hasNonReferenceSuperClass();
   return found;
@@ -1329,13 +1339,22 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   if (!cn.isEmpty() && cn.at(0)!='@' && md)
   { 
     ol.docify(" ");
-    ol.writeObjectLink(0,0,md->anchor(),cn);
+    if (isLinkable())
+    {
+      ol.writeObjectLink(0,0,md->anchor(),cn);
+    }
+    else
+    {
+      ol.startBold();
+      ol.docify(cn);
+      ol.endBold();
+    }
   }
   ol.docify(" {");
   ol.endMemberItem(FALSE); 
 
   // write user defined member groups
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupListIterator mgli(*m_memberGroupList);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -1397,19 +1416,24 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 /*! a link to this class is possible within this project */
 bool ClassDef::isLinkableInProject() 
 { 
-  return !name().isEmpty() && name().find('@')==-1 && 
-    (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
-    hasDocumentation() && !isReference();
+  return !name().isEmpty() &&    /* no name */
+         m_isTemplBaseClass==-1 &&  /* template base class */
+         name().find('@')==-1 && /* anonymous compound */
+         (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
+         hasDocumentation() &&   /* documented */ 
+         !isReference();         /* not an external reference */
 }
 
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
 { return // show all classes or a subclass is visible
-  (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
+    (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
     // and not an annonymous compound
     name().find('@')==-1 &&
+    // and not an inherited template argument
+    m_isTemplBaseClass==-1 && 
     // and not privately inherited
-    (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
+    (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
     // documented or show anyway or documentation is external 
     (hasDocumentation() || !Config_getBool("HIDE_UNDOC_CLASSES") || isReference());
 }
@@ -1459,11 +1483,11 @@ void ClassDef::mergeMembers()
     // merge the members in the base class of this inheritance branch first
     bClass->mergeMembers();
 
-    MemberNameInfoList *srcMnl  = bClass->memberNameInfoList();
-    MemberNameInfoDict *dstMnd  =         memberNameInfoDict();
-    MemberNameInfoList *dstMnl  =         memberNameInfoList();
+    MemberNameInfoSDict *srcMnd  = bClass->memberNameInfoSDict();
+    MemberNameInfoSDict *dstMnd  =         memberNameInfoSDict();
+    //MemberNameInfoList *dstMnl  =         memberNameInfoList();
     
-    MemberNameInfoListIterator srcMnili(*srcMnl);
+    MemberNameInfoSDict::Iterator srcMnili(*srcMnd);
     MemberNameInfo *srcMni;
     for ( ; (srcMni=srcMnili.current()) ; ++srcMnili)
     {
@@ -1624,15 +1648,16 @@ void ClassDef::mergeMembers()
           }
         }
         
-        // add it to the list and dictionary
-        dstMnl->append(newMni);
-        dstMnd->insert(newMni->memberName(),newMni);
+        // add it to the dictionary
+        //dstMnl->append(newMni);
+        dstMnd->append(newMni->memberName(),newMni);
       }
     }
   }
 }
 
 //----------------------------------------------------------------------------
+
 /*! Builds up a dictionary of all classes that are used by the state of this 
  *  class (the "implementation"). 
  *  Must be called before mergeMembers() is called!
@@ -1640,7 +1665,7 @@ void ClassDef::mergeMembers()
 
 void ClassDef::determineImplUsageRelation()
 {
-  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+  MemberNameInfoSDict::Iterator mnili(*m_allMemberNameInfoSDict);
   MemberNameInfo *mni;
   for (;(mni=mnili.current());++mnili)
   {
@@ -1652,42 +1677,47 @@ void ClassDef::determineImplUsageRelation()
       if (md->isVariable()) // for each member variable in this class
       {
         QCString type=removeRedundantWhiteSpace(md->typeString());
-        int typeLen=type.length();
-        static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
         //printf("in class %s found var type=`%s' name=`%s'\n",
         //            name().data(),type.data(),md->name().data());
-        int p=0,i,l;
+        int pos=0;
+        QCString usedClassName;
+        QCString templSpec;
         bool found=FALSE;
-        if (typeLen>0)
+        while (extractClassNameFromType(type,pos,usedClassName,templSpec) && !found)
         {
-          while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
+          //printf("usedClassName=`%s' templSpec=%s\n",usedClassName.data(),templSpec.data());
+          // check if usedClassName is a template argument of its class
+          ClassDef *cd=md->getClassDef();
+          if (cd && cd->templateArguments())
           {
-            int ts=i+l;
-            int te=ts;
-            while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
-            if (type.at(ts)=='<') // assume template instance
+            ArgumentListIterator ali(*cd->templateArguments());
+            Argument *arg;
+            int count=0;
+            for (ali.toFirst();(arg=ali.current());++ali,++count)
             {
-              // locate end of template
-              te=ts+1;
-              int brCount=1;
-              while (te<typeLen && brCount!=0)
+              if (arg->name==usedClassName) // type is a template argument
               {
-                if (type.at(te)=='<') 
-                {
-                  if (te<typeLen-1 && type.at(te+1)=='<') te++; else brCount++;
-                }
-                if (type.at(te)=='>') 
-                {
-                  if (te<typeLen-1 && type.at(te+1)=='>') te++; else brCount--;
-                }
-                te++;
+                found=TRUE;
+                if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(257); 
+                cd = new ClassDef(cd->getDefFileName(),cd->getDefLine(),
+                    usedClassName,ClassDef::Class);
+                cd->setIsTemplateBaseClass(count);
+                UsesClassDef *ucd = new UsesClassDef(cd);
+                m_usesImplClassDict->insert(cd->name(),ucd);
+                ucd->templSpecifiers = templSpec;
+                ucd->addAccessor(md->name());
+                Doxygen::hiddenClasses.append(cd);
+                //printf("Adding used template argument %s to class %s\n",
+                //    cd->name().data(),name().data());
+                //printf("Adding accessor %s to class %s\n",
+                //    md->name().data(),ucd->classDef->name().data());
               }
             }
-            QCString templSpec;
-            if (te>ts) templSpec = type.mid(ts,te-ts);
-            // TODO: also check using Nx::Cx cases here!
-            QCString usedClassName = type.mid(i,l);
-            ClassDef *cd=0;
+          }
+
+          if (!found)
+          {
+            cd=0;
             if (getNamespaceDef()!=0)
             {
               cd=getResolvedClass(getNamespaceDef()->name()+"::"+usedClassName,0,&templSpec);
@@ -1698,12 +1728,12 @@ void ClassDef::determineImplUsageRelation()
             if (cd) // class exists 
             {
               found=TRUE;
-              if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 
-              UsesClassDef *ucd=usesImplClassDict->find(cd->name());
+              if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(257); 
+              UsesClassDef *ucd=m_usesImplClassDict->find(cd->name());
               if (ucd==0 || ucd->templSpecifiers!=templSpec)
               {
                 ucd = new UsesClassDef(cd);
-                usesImplClassDict->insert(cd->name(),ucd);
+                m_usesImplClassDict->insert(cd->name(),ucd);
                 ucd->templSpecifiers = templSpec;
                 //printf("Adding used class %s to class %s\n",
                 //    cd->name().data(),name().data());
@@ -1712,17 +1742,16 @@ void ClassDef::determineImplUsageRelation()
               //printf("Adding accessor %s to class %s\n",
               //    md->name().data(),ucd->classDef->name().data());
             }
-            p=i+l;
           }
         }
       }
     }
   }
 #ifdef DUMP
-  if (usesClassDict)
+  if (m_usesClassDict)
   {
     msg("Class %s uses the following classes:\n",name().data());
-    UsesClassDictIterator ucdi(*usesClassDict);
+    UsesClassDictIterator ucdi(*m_usesClassDict);
     UsesClassDef *ucd;
     for (;(ucd=ucdi.current());++ucdi)
     {
@@ -1756,15 +1785,15 @@ void ClassDef::addUsedInterfaceClasses(MemberDef *md,const char *typeStr)
     if (cd==0) cd=getClass(type.mid(i,l)); // TODO: also try inbetween scopes!
     if (cd && cd!=this && !isBaseClass(cd))
     {
-      if (usesIntfClassDict==0) 
+      if (m_usesIntfClassDict==0) 
       {
-        usesIntfClassDict = new UsesClassDict(257); 
+        m_usesIntfClassDict = new UsesClassDict(257); 
       }
-      UsesClassDef *ucd=usesIntfClassDict->find(cd->name());
+      UsesClassDef *ucd=m_usesIntfClassDict->find(cd->name());
       if (ucd==0)
       {
         ucd = new UsesClassDef(cd);
-        usesIntfClassDict->insert(cd->name(),ucd);
+        m_usesIntfClassDict->insert(cd->name(),ucd);
         //printf("in class `%s' adding used intf class `%s'\n",
         //  name().data(),cd->name().data());
       }
@@ -1778,7 +1807,7 @@ void ClassDef::addUsedInterfaceClasses(MemberDef *md,const char *typeStr)
 
 void ClassDef::determineIntfUsageRelation()
 {
-  MemberNameInfoListIterator mnili(*allMemberNameInfoList);
+  MemberNameInfoSDict::Iterator mnili(*m_allMemberNameInfoList);
   MemberNameInfo *mni;
   for (;(mni=mnili.current());++mnili)
   {
@@ -1824,12 +1853,12 @@ void ClassDef::determineIntfUsageRelation()
 
 PackageDef *ClassDef::packageDef() const
 {
-  return fileDef ? fileDef->packageDef() : 0;
+  return m_fileDef ? m_fileDef->packageDef() : 0;
 }
 
 QCString ClassDef::compoundTypeString() const
 {
-  switch (compType)
+  switch (m_compType)
   {
     case Class:     return "class";
     case Struct:    return "struct";
@@ -1844,21 +1873,94 @@ QCString ClassDef::getOutputFileBase() const
 { 
   if (isReference())
   {
-    return fileName;
+    return m_fileName;
   }
   else
   {
-    return convertNameToFile(fileName); 
+    return convertNameToFile(m_fileName); 
   }
 }
 
 QCString ClassDef::getFileBase() const 
 { 
-  return fileName; 
+  return m_fileName; 
 }
 
 QCString ClassDef::getSourceFileBase() const 
 { 
-  return convertNameToFile(fileName+"-source"); 
+  return convertNameToFile(m_fileName+"-source"); 
+}
+
+void ClassDef::setGroupDefForAllMembers(GroupDef *gd)
+{
+  gd->addClass(this);
+  //printf("ClassDef::setGroupDefForAllMembers(%s)\n",gd->name().data());
+  MemberNameInfoSDict::Iterator mnili(*m_allMemberNameInfoSDict);
+  MemberNameInfo *mni;
+  for (;(mni=mnili.current());++mnili)
+  {
+    MemberNameInfoIterator mnii(*mni);
+    MemberInfo *mi;
+    for (mnii.toFirst();(mi=mnii.current());++mnii)
+    {
+      MemberDef *md=mi->memberDef;
+      md->setGroupDef(gd);
+      gd->insertMember(md,TRUE);
+      ClassDef *innerClass = md->getClassDefOfAnonymousType();
+      if (innerClass) innerClass->setGroupDefForAllMembers(gd);
+    }
+  }
+}
+
+void ClassDef::addInnerCompound(Definition *d)
+{
+  m_innerClasses->inSort(d->localName(),(ClassDef *)d);
+}
+
+Definition *ClassDef::findInnerCompound(const char *name)
+{
+  if (name==0) return 0;
+  return m_innerClasses->find(name);
+}
+
+void ClassDef::initTemplateMapping()
+{
+  m_templateMapping->clear();
+  ArgumentList *al = templateArguments();
+  if (al)
+  {
+    ArgumentListIterator ali(*al);
+    Argument *arg;
+    for (ali.toFirst();(arg=ali.current());++ali)
+    {
+      setTemplateArgumentMapping(arg->name,arg->defval);
+    }
+  }
+}
+
+void ClassDef::setTemplateArgumentMapping(const char *formal,const char *actual)
+{
+  //printf("ClassDef::setTemplateArgumentMapping(%s,%s)\n",formal,actual);
+  if (m_templateMapping && formal)
+  {
+    if (m_templateMapping->find(formal))
+    {
+      m_templateMapping->remove(formal);
+    }
+    m_templateMapping->insert(formal,new QCString(actual));
+  }
+}
+
+QCString ClassDef::getTemplateArgumentMapping(const char *formal) const
+{
+  if (m_templateMapping && formal)
+  {
+    QCString *s = m_templateMapping->find(formal);
+    if (s)
+    {
+      return *s;
+    }
+  }
+  return "";
 }
 

@@ -33,8 +33,8 @@ class ArgumentList;
 class OutputList;
 class OutputDocInterface;
 class MemberDef;
-class ExampleList;
-class ClassList;
+class ExampleSDict;
+class ClassSDict;
 class BaseClassList;
 class GroupDef;
 class NamespaceList;
@@ -122,7 +122,7 @@ extern QCString removeRedundantWhiteSpace(const QCString &s);
 QCString argListToString(ArgumentList *al);
 QCString tempArgListToString(ArgumentList *al);
 QCString generateMarker(int id);
-void writeExample(OutputList &ol,ExampleList *el);
+void writeExample(OutputList &ol,ExampleSDict *el);
 //void setFileNameForSections(QList<QCString> *anchorList,const char *fileName,
 //                            PageInfo *pi=0);
 QCString stripAnonymousNamespaceScope(const QCString &s);
@@ -133,7 +133,7 @@ QCString substituteKeywords(const QCString &s,const char *title);
 int getPrefixIndex(const QCString &name);
 QCString removeAnonymousScopes(const QCString &s);
 QCString replaceAnonymousScopes(const QCString &s);
-void initClassHierarchy(ClassList *cl);
+void initClassHierarchy(ClassSDict *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 QCString convertNameToFile(const char *name,bool allowDots=FALSE);
@@ -147,6 +147,8 @@ QCString convertToXML(const char *s);
 const char * getOverloadDocs();
 void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
                              MemberGroupList *memberGroupList);
+bool extractClassNameFromType(const QCString &type,int &pos,
+                              QCString &name,QCString &templSpec);
 
 #endif
 

@@ -86,6 +86,7 @@ documentation:
 <li> \refitem cmdingroup \ingroup
 <li> \refitem cmdinternal \internal
 <li> \refitem cmdinvariant \invariant
+<li> \refitem cmdinterface \interface
 <li> \refitem cmdlatexonly \latexonly
 <li> \refitem cmdli \li
 <li> \refitem cmdline \line
@@ -348,6 +349,16 @@ Doxygen. Unrecognized commands are treated as normal text.
   groups identified by \<groupname\>.
 
   \sa section \ref cmddefgroup "\\defgroup".
+
+<hr>
+\subsection cmdinterface \interface 
+
+  \addindex \interface
+  Indicates that a comment block contains documentation for an
+  interface with name \<name\>. The arguments are equal to the \\class
+  command.
+
+  \sa section \ref cmdclass "\\class".
 
 <hr>
 \subsection cmdinternal \internal

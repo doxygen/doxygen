@@ -36,7 +36,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
    Definition(df,dl,na)
 {
   fileList = new FileList;
-  classList = new ClassList;
+  classSDict = new ClassSDict(257);
   groupList = new GroupList;
   parentGroupList = new GroupList;
   namespaceList = new NamespaceList;
@@ -78,7 +78,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
 GroupDef::~GroupDef()
 {
   delete fileList;
-  delete classList;
+  delete classSDict;
   delete groupList;
   delete parentGroupList;
   delete namespaceList;
@@ -108,12 +108,12 @@ void GroupDef::addFile(const FileDef *def)
     fileList->append(def);
 }
 
-void GroupDef::addClass(const ClassDef *def)
+void GroupDef::addClass(const ClassDef *cd)
 {
   if (Config_getBool("SORT_MEMBER_DOCS"))
-    classList->inSort(def);
+    classSDict->inSort(cd->name(),cd);
   else
-    classList->append(def);
+    classSDict->append(cd->name(),cd);
 }
 
 void GroupDef::addNamespace(const NamespaceDef *def)
@@ -135,51 +135,9 @@ void GroupDef::addExample(const PageInfo *def)
   exampleDict->append(def->name,def);
 }
 
-#if 0
-void GroupDef::addMemberListToGroup(MemberList *ml,
-                                bool (MemberDef::*func)() const)
-{
-  if (ml==0) return;
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
-  {
-    int groupId=md->getMemberGroupId();
-    if ((md->*func)() && groupId!=-1)
-    {
-      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      if (pGrpHeader)
-      {
-        MemberGroup *mg = memberGroupDict->find(groupId);
-        if (mg==0)
-        {
-          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-          memberGroupDict->insert(groupId,mg);
-          memberGroupList->append(mg);
-        }
-        mg->insertMember(md);
-        md->setMemberGroup(mg);
-      }
-    }
-  }
-}
-#endif
-
 
 void GroupDef::addMembersToMemberGroup()
 {
-#if 0
-  addMemberListToGroup(allMemberList,&MemberDef::isDefine);
-  addMemberListToGroup(allMemberList,&MemberDef::isTypedef);
-  addMemberListToGroup(allMemberList,&MemberDef::isEnumerate);
-  addMemberListToGroup(allMemberList,&MemberDef::isEnumValue);
-  addMemberListToGroup(allMemberList,&MemberDef::isFunction);
-  addMemberListToGroup(allMemberList,&MemberDef::isSlot);
-  addMemberListToGroup(allMemberList,&MemberDef::isSignal);
-  addMemberListToGroup(allMemberList,&MemberDef::isVariable);
-#endif
-
   ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
   ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
   ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
@@ -198,7 +156,7 @@ void GroupDef::addMembersToMemberGroup()
 }
 
 
-void GroupDef::insertMember(MemberDef *md)
+void GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
   //printf("GroupDef::insertMember(%s)\n",md->name().data());
   MemberNameInfo *mni=0;
@@ -226,28 +184,28 @@ void GroupDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      decVarMembers.append(md); 
+      if (!docOnly) decVarMembers.append(md); 
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docVarMembers.inSort(md); 
       else
         docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      decFuncMembers.append(md);
+      if (!docOnly) decFuncMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))    
         docFuncMembers.inSort(md); 
       else
         docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      decTypedefMembers.append(md);
+      if (!docOnly) decTypedefMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docTypedefMembers.inSort(md); 
       else
         docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      decEnumMembers.append(md);
+      if (!docOnly) decEnumMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docEnumMembers.inSort(md); 
       else
@@ -256,14 +214,14 @@ void GroupDef::insertMember(MemberDef *md)
     case MemberDef::EnumValue:    
       break;
     case MemberDef::Prototype:    
-      decProtoMembers.append(md);
+      if (!docOnly) decProtoMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docProtoMembers.inSort(md); 
       else
         docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      decDefineMembers.append(md);
+      if (!docOnly) decDefineMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
         docDefineMembers.inSort(md); 
       else
@@ -304,7 +262,7 @@ bool GroupDef::isASubGroup() const
 int GroupDef::countMembers() const
 {
   return fileList->count()+
-         classList->count()+
+         classSDict->count()+
          namespaceList->count()+
          groupList->count()+
          allMemberList->count()+
@@ -332,7 +290,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol);
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -375,7 +333,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,defFileName,defLine,0,0,fd->briefDescription());
+        parseDoc(ol,m_defFileName,m_defLine,0,0,fd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -404,7 +362,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,defFileName,defLine,0,0,nd->briefDescription());
+        parseDoc(ol,m_defFileName,m_defLine,0,0,nd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -432,7 +390,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        parseDoc(ol,defFileName,defLine,0,0,gd->briefDescription());
+        parseDoc(ol,m_defFileName,m_defLine,0,0,gd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -441,7 +399,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.endMemberList();
   }
 
-  classList->writeDeclaration(ol);
+  classSDict->writeDeclaration(ol);
 
   if (allMemberList->count()>0)
   {
@@ -490,7 +448,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
     }
   }
   PageInfo *pi=0;
@@ -604,6 +562,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   QCString *s;
   for (;(s=sli.current());++sli)
   {
+    //printf("addMemberToGroups(group=%s,member=%s)\n",s->data(),md->name().data());
     GroupDef *gd=0;
     if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
@@ -612,6 +571,8 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       {
         gd->insertMember(md);
         md->setGroupDef(gd);
+        ClassDef *cd = md->getClassDefOfAnonymousType();
+        if (cd) cd->setGroupDefForAllMembers(gd);
       }
       else if (mgd!=gd)
       {

@@ -40,8 +40,14 @@ class PageInfo;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
-typedef QDict<QCString>    StringDict;
 typedef QDict<GroupDef>    GroupDict;
+
+class StringDict : public QDict<QCString>
+{
+  public: 
+    StringDict(uint size=17) : QDict<QCString>(size) {}
+    virtual ~StringDict() {}
+};
 
 extern QCString spaces;
 
@@ -52,8 +58,8 @@ extern QCString spaces;
 class Doxygen
 {
   public:
-    static ClassList classList;
-    static ClassDict classDict;
+    static ClassSDict classSDict;
+    static ClassList  hiddenClasses;
     static PageSDict *exampleSDict;
     static PageSDict *pageSDict;
     static PageInfo  *mainPage;
@@ -87,6 +93,7 @@ class Doxygen
     static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
     static QDict<void> expandAsDefinedDict;
     static PackageSDict packageDict;
+    static NamespaceDef *globalScope;
 };
 
 void initDoxygen();

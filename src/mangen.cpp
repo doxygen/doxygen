@@ -28,14 +28,31 @@
 #include "util.h"
 #include "doxygen.h"
 
+static QCString getExtension()
+{
+  QCString ext = Config_getString("MAN_EXTENSION");
+  if( ext.length() >= 2 &&
+      ext.data()[0] == '.' &&
+      isdigit( ext.data()[1] ) )
+  {
+    ext = ext.mid(1, 1);
+  }
+  else
+  {
+    ext = "3"; 
+  }
+  return ext;
+}
+
 ManGenerator::ManGenerator() : OutputGenerator()
 {
-  dir=Config_getString("MAN_OUTPUT")+"/man3";
+  dir=Config_getString("MAN_OUTPUT")+"/man" + getExtension();
   firstCol=TRUE;
   paragraph=FALSE;
   col=0;
   upperCase=FALSE;
   insideTabbing=FALSE;
+  inHeader=FALSE;
 }
 
 ManGenerator::~ManGenerator()
@@ -54,21 +71,25 @@ void ManGenerator::append(const OutputGenerator *g)
   else
     firstCol = ((ManGenerator *)g)->firstCol;
   col+=((ManGenerator *)g)->col;
+  inHeader=((ManGenerator *)g)->inHeader;
   paragraph=FALSE;
 }
 
 void ManGenerator::init()
 {
-  QDir d(Config_getString("MAN_OUTPUT"));
-  if (!d.exists() && !d.mkdir(Config_getString("MAN_OUTPUT")))
+  QCString ext = getExtension();
+  QCString &manOutput = Config_getString("MAN_OUTPUT");
+  
+  QDir d(manOutput);
+  if (!d.exists() && !d.mkdir(manOutput))
   {
-    err("Could not create output directory %s\n",Config_getString("MAN_OUTPUT").data());
+    err("Could not create output directory %s\n",manOutput.data());
     exit(1);
   }
-  d.setPath(Config_getString("MAN_OUTPUT")+"/man3");
-  if (!d.exists() && !d.mkdir(Config_getString("MAN_OUTPUT")+"/man3"))
+  d.setPath(manOutput+"/man"+ext);
+  if (!d.exists() && !d.mkdir(manOutput+"/man"+ext))
   {
-    err("Could not create output directory %s/man3\n",Config_getString("MAN_OUTPUT").data());
+    err("Could not create output directory %s/man%s\n",manOutput.data(),ext.data());
     exit(1);
   }
 }
@@ -123,7 +144,8 @@ void ManGenerator::endFile()
 
 void ManGenerator::endTitleHead(const char *,const char *name)
 {
-  t << ".TH \"" << name << "\" 3 \"" << dateToString(FALSE) << "\" \"";
+  t << ".TH \"" << name << "\" " << getExtension() << " \"" 
+    << dateToString(FALSE) << "\" \"";
   if (Config_getString("PROJECT_NAME").isEmpty()) 
     t << "Doxygen";
   else
@@ -134,6 +156,7 @@ void ManGenerator::endTitleHead(const char *,const char *name)
   t << ".SH NAME" << endl;
   t << name << " \\- ";
   firstCol=FALSE;
+  inHeader=TRUE;
 }
 
 void ManGenerator::newParagraph()
@@ -470,3 +493,42 @@ void ManGenerator::endMemberGroup(bool)
   t << "\n.in -1c";
   firstCol=FALSE;
 }
+
+void ManGenerator::startSection(const char *,const char *,bool sub)
+{
+  if( !inHeader ) 
+  {
+    if( sub )
+    {
+      startMemberHeader();
+    }
+    else
+    {
+      startGroupHeader();
+    }
+  }
+}
+
+void ManGenerator::endSection(const char *,bool sub)
+{
+  if( !inHeader )
+  {
+    if( sub )
+    {
+      endMemberHeader();
+    }
+    else
+    {
+      endGroupHeader();
+    }
+  }
+  else
+  {
+    t << "\n";
+    firstCol=TRUE;
+    paragraph=FALSE;
+    inHeader=FALSE;
+  }
+}
+
+

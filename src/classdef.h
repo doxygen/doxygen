@@ -29,21 +29,21 @@
 
 class MemberDict;
 class ClassList;
+class ClassSDict;
 class OutputList;
 class FileDef;
 class BaseClassList;
-class MemberInfoList;
-class MemberInfoDict;
 class NamespaceDef;
 class MemberDef;
-class ExampleList;
-class MemberNameInfoList;
-class MemberNameInfoDict;
+class ExampleSDict;
+class MemberNameInfoSDict;
 class UsesClassDict;
 class MemberGroupList;
 class MemberGroupDict;
 class QTextStream;
 class PackageDef;
+class GroupDef;
+class StringDict;
 struct IncludeInfo;
 
 /*! \brief This class contains all information about a compound.
@@ -76,7 +76,7 @@ class ClassDef : public Definition
     QCString displayName() const;
 
     /*! Returns the type of compound this is */
-    CompoundType compoundType() const { return compType; } 
+    CompoundType compoundType() const { return m_compType; } 
 
     /*! Returns the type of compound as a string */
     QCString compoundTypeString() const;
@@ -84,21 +84,16 @@ class ClassDef : public Definition
     /*! Returns the list of base classes from which this class directly
      *  inherits.
      */
-    BaseClassList *baseClasses() { return inherits; }
+    BaseClassList *baseClasses() { return m_inherits; }
     
     /*! Returns the list of sub classes that directly inherit from this class
      */
-    BaseClassList *subClasses() { return inheritedBy; }
-
-    /*! Returns a list of all members. This includes any inherited members.
-     *  Members are sorted alphabetically.
-     */ 
-    MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
+    BaseClassList *subClasses() { return m_inheritedBy; }
 
     /*! Returns a dictionary of all members. This includes any inherited 
      *  members. Members are sorted alphabetically.
      */ 
-    MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
+    MemberNameInfoSDict *memberNameInfoSDict() { return m_allMemberNameInfoSDict; }
 
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
@@ -107,7 +102,7 @@ class ClassDef : public Definition
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.
      */
-    Protection protection() const { return prot; }
+    Protection protection() const { return m_prot; }
 
     /*! returns TRUE iff a link is possible to an item within this project.
      */
@@ -127,7 +122,7 @@ class ClassDef : public Definition
     /*! Returns the template arguments of this class 
      *  Will return 0 if not applicable.
      */
-    ArgumentList *templateArguments() const { return tempArgs; }
+    ArgumentList *templateArguments() const { return m_tempArgs; }
 
     /*! Returns the template arguments that this nested class "inherits" 
      *  from its outer class (doxygen assumes there is only one!). 
@@ -138,12 +133,12 @@ class ClassDef : public Definition
     /*! Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */
-    NamespaceDef *getNamespaceDef() { return nspace; }
+    NamespaceDef *getNamespaceDef() { return m_nspace; }
 
     /*! Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).
      */
-    FileDef      *getFileDef() const { return fileDef; }
+    FileDef      *getFileDef() const { return m_fileDef; }
 
     /*! Returns the Java package this class is in or 0 if not applicable. 
      */ 
@@ -155,16 +150,24 @@ class ClassDef : public Definition
      */
     bool isBaseClass(ClassDef *bcd);
 
+    /*! Is this an artificial class that is the template argument of
+     *  a class. If so the argument number is returned, otherwise -1 
+     *  is returned.
+     */
+    int isTemplateBaseClass() const { return m_isTemplBaseClass; }
+
     UsesClassDict *usedImplementationClasses() const 
     { 
-      return usesImplClassDict; 
+      return m_usesImplClassDict; 
     }
 
     UsesClassDict *usedInterfaceClasses() const
     {
-      return usesIntfClassDict;
+      return m_usesIntfClassDict;
     }
-   
+
+    virtual Definition *findInnerCompound(const char *name);
+
     /* member lists by protection */
     MemberList pubMembers;
     MemberList proMembers;
@@ -200,7 +203,7 @@ class ClassDef : public Definition
     MemberList variableMembers;
     MemberList propertyMembers;
 
-    /*! \} */
+    /*! \} Public API */
 
     /*! \name Doxygen internal API
      *  \{
@@ -217,16 +220,24 @@ class ClassDef : public Definition
     bool addExample(const char *anchor,const char *name, const char *file);
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
-    void setNamespace(NamespaceDef *nd) { nspace = nd; }
+    void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
     void setTemplateArguments(ArgumentList *al);
     void mergeMembers();
-    void setFileDef(FileDef *fd) { fileDef=fd; }
+    void setFileDef(FileDef *fd) { m_fileDef=fd; }
     void determineImplUsageRelation();
     void determineIntfUsageRelation();
-    void setSubGrouping(bool enabled) { subGrouping = enabled; }
-    void setProtection(Protection p) { prot=p; }
+    void setSubGrouping(bool enabled) { m_subGrouping = enabled; }
+    void setProtection(Protection p) { m_prot=p; }
+    void setGroupDefForAllMembers(GroupDef *g);
+    void addInnerCompound(Definition *d);
+    void setIsTemplateBaseClass(int num) { m_isTemplBaseClass = num; }
+    void initTemplateMapping();
+    void setTemplateArgumentMapping(const char *formal,const char *actual);
+    QCString getTemplateArgumentMapping(const char *formal) const;
 
     /*! Creates a new compound definition.
+     *  \param outerScope class, file or namespace in which this class is
+     *                   defined.
      *  \param fileName  full path and file name in which this compound was
      *                   found.
      *  \param startLine line number where the definition of this compound
@@ -252,37 +263,99 @@ class ClassDef : public Definition
     bool hasExamples();
     bool hasNonReferenceSuperClass();
 
-    /*! \} */
+    /*! \} Interal API */
 
   private: 
-    QCString fileName;                   // HTML containing the class docs
-    IncludeInfo *incInfo;                // header file to refer to
-    QCString incName;                    // alternative include file name
-    QCString memListFileName;            
-    QCString scopelessName;              // name without any scopes
-    BaseClassList *inherits;
-    BaseClassList *inheritedBy;
-    NamespaceDef  *nspace;              // the namespace this class is in
+    /*! file name that forms the base for the output file containing the
+     *  class documentation. For compatibility with Qt (e.g. links via tag 
+     *  files) this name cannot be derived from the class name directly.
+     */
+    QCString m_fileName;                   
+
+    /*! Include information about the header file should be included
+     *  in the documentation. 0 by default, set by setIncludeFile().
+     */
+    IncludeInfo *m_incInfo;                
+
+    /*! file name that forms the base for the "list of members" for this
+     *  class.
+     */
+    QCString m_memListFileName;            
+
+    /*! Bare name of the class without any scoping prefixes 
+     *  (like for nested classes and classes inside namespaces)
+     */ 
+    QCString m_scopelessName;              
+
+    /*! List of base class (or super-classes) from which this class derives
+     *  directly. 
+     */
+    BaseClassList *m_inherits;
+
+    /*! List of sub-classes that directly derive from this class 
+     */
+    BaseClassList *m_inheritedBy;
+
+    /*! Namespace this class is part of 
+     *  (this is the inner most namespace in case of nested namespaces)
+     */
+    NamespaceDef  *m_nspace;              
+
+    /*! File this class is defined in */
+    FileDef *m_fileDef;
+
+    /*! List of all members (including inherited members) */
+    MemberNameInfoSDict *m_allMemberNameInfoSDict;
+
+    /*! Template arguments of this class */
+    ArgumentList *m_tempArgs;
+
+    /*! Files that were used for generating the class documentation. */
+    QStrList m_files;
+
+    /*! Examples that use this class */
+    ExampleSDict *m_exampleSDict;
+
+    /*! Holds the kind of "class" this is. */
+    CompoundType m_compType;
+
+    /*! The protection level in which this class was found. 
+     *  Typically Public, but for nested classes this can also be Protected
+     *  or Private.
+     */ 
+    Protection m_prot;
+
+    /*! Does this class group its user-grouped members
+     *  as a sub-section of the normal (public/protected/..) 
+     *  groups?
+     */
+    bool m_subGrouping; 
+
+    /*! The inner classes contained in this class. Will be 0 if there are
+     *  no inner classes.
+     */
+    ClassSDict *m_innerClasses;
 
     /* user defined member groups */
-    MemberGroupList    *memberGroupList;
-    MemberGroupDict    *memberGroupDict;
+    MemberGroupList *m_memberGroupList;
+    MemberGroupDict *m_memberGroupDict;
 
-    MemberNameInfoList *allMemberNameInfoList;
-    MemberNameInfoDict *allMemberNameInfoDict;
-    ArgumentList       *tempArgs;
-    QStrList            files;
-    ExampleList        *exampleList;
-    ExampleDict        *exampleDict;
-    CompoundType        compType;
-    Protection          prot;
-    FileDef            *fileDef;
-    UsesClassDict      *usesImplClassDict;
-    UsesClassDict      *usesIntfClassDict;
+    /* classes for the collaboration diagram */
+    UsesClassDict *m_usesImplClassDict;
+    UsesClassDict *m_usesIntfClassDict;
 
-    bool subGrouping; // does this class group its user-grouped members
-                      // as a sub-section of the normal (public/protected/..) 
-                      // groups?
+    /*! Is this a class that exists because of template class that 
+     *  inherited one of it's template arguments. If so that this
+     *  variable indicate the template argument number, otherwise
+     *  this is -1
+     */
+    int m_isTemplBaseClass;
+
+    /*! A mapping used by template classes, which maps formal
+     *  template arguments to their actual instantiations. 
+     *  This is used while generating inheritance graphs.
+     */
+    StringDict *m_templateMapping;
 };
 
 /*! \brief Class that contains information about a usage relation. 

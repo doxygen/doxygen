@@ -44,7 +44,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
   filename=nm;
   diskname=nm;
   setReference(lref);
-  classList     = new ClassList;
+  classSDict     = new ClassSDict(17);
   includeList   = new QList<IncludeInfo>;
   includeList->setAutoDelete(TRUE);
   includeDict   = new QDict<IncludeInfo>(61);
@@ -72,7 +72,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
 /*! destroy the file definition */
 FileDef::~FileDef()
 {
-  delete classList;
+  delete classSDict;
   delete includeDict;
   delete includeList;
   delete namespaceList;
@@ -298,7 +298,7 @@ void FileDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
 
-  classList->writeDeclaration(ol);
+  classSDict->writeDeclaration(ol);
   
   /* write user defined member groups */
   MemberGroupListIterator mgli(*memberGroupList);
@@ -545,9 +545,9 @@ void FileDef::insertMember(MemberDef *md)
 void FileDef::insertClass(ClassDef *cd)
 {
   if (Config_getBool("SORT_MEMBER_DOCS"))
-    classList->inSort(cd);
+    classSDict->inSort(cd->name(),cd);
   else
-    classList->append(cd);
+    classSDict->append(cd->name(),cd);
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */

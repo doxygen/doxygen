@@ -31,8 +31,7 @@ class GroupDef;
 class FileDef;
 class MemberList;
 class MemberGroup;
-class ExampleList;
-class ExampleDict;
+class ExampleSDict;
 class OutputList;
 class GroupDef;
 class QTextStream;
@@ -138,7 +137,7 @@ class MemberDef : public Definition
     void setMaxInitLines(int lines)       { userInitLines=lines; }
     void setMemberClass(ClassDef *cd)     { classDef=cd; }
     void setSectionList(MemberList *sl)   { section=sl; }
-    void setGroupDef(GroupDef *gd)        { group=gd; }
+    void setGroupDef(GroupDef *gd);
     void setExplicitExternal(bool b)      { explExt=b; }
     
     void makeRelated()                    { related=TRUE; } 
@@ -177,8 +176,7 @@ class MemberDef : public Definition
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
     bool hasExamples();
-    ExampleList *getExampleList() const { return exampleList; }
-
+    ExampleSDict *getExamples() const { return exampleSDict; }
     
     // prototype related members
     void setPrototype(bool p) { proto=p; }
@@ -217,7 +215,7 @@ class MemberDef : public Definition
 
     QCString getScopeString() const;
     
-    ClassDef *getClassDefOfAnonymousType(const char *scopeName) const;
+    ClassDef *getClassDefOfAnonymousType();
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -228,8 +226,9 @@ class MemberDef : public Definition
     MemberList *redefinedBy;  // the list of members that redefine this one
     MemberDef  *memDef;       // member definition for this declaration
     MemberDef  *memDec;       // member declaration for this definition
-    ExampleList *exampleList; // a list of all examples using this member
-    ExampleDict *exampleDict; // a dictionary of all examples for quick access
+
+    ExampleSDict *exampleSDict; // a dictionary of all examples for quick access
+
     MemberList *enumFields;   // enumeration fields
     OutputList *enumDeclList; // stored piece of documentation for enumeration.
     NamespaceDef *nspace;     // the namespace this member is in.
@@ -270,6 +269,11 @@ class MemberDef : public Definition
 
     GroupDef *group;          // group in which this member is in
     bool explExt;             // member was explicitly declared external
+
+    ClassDef *cachedAnonymousType; // if the member has an anonymous compound
+                                   // as its type then this is computed by
+                                   // getClassDefOfAnonymousType() and 
+                                   // cached here. 
 
 
     // disable copying of member defs

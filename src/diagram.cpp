@@ -916,7 +916,7 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
 
 void clearVisitFlags()
 {
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {

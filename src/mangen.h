@@ -175,8 +175,8 @@ class ManGenerator : public OutputGenerator
     void endParamList()       { endDescList(); }
     void endDescTitle();
     void writeDescItem();
-    void startSection(const char *,const char *,bool) {}
-    void endSection(const char *,bool) {}
+    void startSection(const char *,const char *,bool);
+    void endSection(const char *,bool);
     void writeSectionRef(const char *,const char *,const char *,const char *) {}
     void writeSectionRefItem(const char *,const char *,const char *) {}
     //void writeSectionRefAnchor(const char *,const char *,const char *) {}
@@ -231,6 +231,7 @@ class ManGenerator : public OutputGenerator
     int col;
     bool upperCase;
     bool insideTabbing;
+    bool inHeader;
 
     ManGenerator(const ManGenerator &g);
     ManGenerator &operator=(const ManGenerator &g);

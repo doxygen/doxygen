@@ -25,6 +25,7 @@
 #include "config.h"
 #include "language.h"
 #include "scanner.h"
+#include "defargs.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -173,6 +174,141 @@ static bool isLeaf(ClassDef *cd)
     }
   }
   return TRUE;
+}
+
+/*! Builds a mapping from formal arguments of class \a tcd to the
+ *  actual arguments stored in templSpec. To properly initialize
+ *  the mapping with the default template values 
+ *  ClassDef::initTemplateMapping() is called once for each class graph
+ *  (the ClassDef::visited flag is used for this).
+ */
+static void setTemplateInstance(QCString templSpec,ClassDef *tcd)
+{
+  //printf("====== setTemplateInstance(templ=%s,class=%s)\n",templSpec.data(),tcd->name().data());
+  if (!templSpec.isEmpty())
+  {
+    //if (!tcd->visited)
+    //{
+    //  tcd->visited=TRUE;
+    //}
+    ArgumentList *tempArgList = new ArgumentList;
+    stringToArgumentList(templSpec,tempArgList);
+    ArgumentListIterator ali(*tempArgList);
+    Argument *arg;
+    uint count=0;
+    for (ali.toFirst();(arg=ali.current());++ali,++count)
+    {
+      ArgumentList *formalArgList = tcd->templateArguments();
+      Argument *formalArg=0;
+      //printf("arg->type=%s count=%d formalArgList=%p\n",
+      //    arg->type.data(),count,formalArgList);
+      if (formalArgList && formalArgList->count()>count &&
+          (formalArg=formalArgList->at(count)))
+      {
+        if (formalArg->name!=arg->type)
+        {
+          tcd->setTemplateArgumentMapping(formalArg->name,arg->type);
+          //printf("%s->setTemplateInstantation(%s,%s)\n",tcd->name().data(),
+          //    formalArg->name.data(),arg->type.data());
+        }
+      }
+    }
+    delete tempArgList;
+  }
+}
+
+/*! Substitutes the formal template argument list \a templSpec 
+ *  of class \a cd with the actual template arguments.
+ *  The mapping from formal to actual template is assumed to be stored
+ *  in \a cd using setTemplateInstance().
+ */
+static QCString substituteTemplateSpec(ClassDef *cd,const QCString &templSpec)
+{
+  QCString result;
+  if (!templSpec.isEmpty())
+  {
+    ArgumentList *tempArgList = new ArgumentList;
+    stringToArgumentList(templSpec,tempArgList);
+    ArgumentListIterator ali(*tempArgList);
+    Argument *arg;
+    bool first=TRUE;
+    for (ali.toFirst();(arg=ali.current());)
+    {
+      if (first) result="<",first=FALSE;
+      QCString actual = cd->getTemplateArgumentMapping(arg->type);
+      if (!actual.isEmpty())
+      {
+        result+=actual;
+      }
+      else
+      {
+        result+=arg->type;
+      }
+      ++ali;
+      if (ali.current()) result+=","; else result+=">";
+    }
+    delete tempArgList;
+  }
+  //printf("substituteTemplateSpec(%s,%s)=`%s'\n",cd->name().data(),templSpec.data(),result.data());
+  return removeRedundantWhiteSpace(result);
+}
+
+/*! Determines the actual template instance of template class \a tcd that
+ *  relates to class \a cd. The result is stored in \a tcd.
+ *  \param cd A class
+ *  \param tcd A template base class
+ *  \param templSpec Actual template parameter list to be used for tcd
+ *  \param result resulting instance class
+ *  \param actualArg actual template instance name of the resulting class
+ */
+static void computeTemplateInstance(
+                ClassDef *cd,ClassDef *tcd,const QCString templSpec,
+                ClassDef *&result,QCString &actualArg
+                                 
+                               )
+{
+  //printf("====== computeTemplateInstance(%s,base=%s,templ=%s)\n",
+  //           cd->name().data(),tcd->name().data(),templSpec.data());
+  // store the specific instance inside the class
+  setTemplateInstance(templSpec,tcd);
+  int tArgNum = tcd->isTemplateBaseClass();
+  if (tArgNum!=-1)
+  {
+    //printf("tArgNum=%d\n",tArgNum);
+    ArgumentList *formalArgList = cd->templateArguments();
+    if (formalArgList)
+    {
+      //printf("formalArgList=%p\n",formalArgList);
+      Argument *formalArg=formalArgList->at(tArgNum);
+      if (formalArg)
+      {
+        //printf("formalArg=%s\n",formalArg->name.data());
+        actualArg = cd->getTemplateArgumentMapping(formalArg->name);
+        //printf("ActualArg=%s\n",actualArg.data());
+        int pos=0;
+        QCString name;
+        QCString templSpec;
+        while (extractClassNameFromType(actualArg,pos,name,templSpec))
+        {
+          //printf("name=%s templSpec=%s\n",name.data(),templSpec.data());
+          ClassDef *acd=getResolvedClass(name);
+          if (acd && !templSpec.isEmpty()) 
+          {
+            // store specific template instance in the class
+            setTemplateInstance(templSpec,acd);
+          }
+          if (acd)
+          {
+            result = acd;
+            actualArg = acd->name()+templSpec;
+            return;
+          }
+        }
+      }
+    }
+  }
+  actualArg.resize(0);
+  result = 0;
 }
 
 //--------------------------------------------------------------------
@@ -693,8 +829,8 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   
   // build a graph with each class as a node and the inheritance relations
   // as edges
-  initClassHierarchy(&Doxygen::classList);
-  ClassListIterator cli(Doxygen::classList);
+  initClassHierarchy(&Doxygen::classSDict);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (cli.toLast();(cd=cli.current());--cli)
   {
@@ -784,8 +920,8 @@ int DotClassGraph::m_curNodeNumber;
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     const char *label,int distance,const char *usedName,const char *templSpec,bool base)
 {
-  //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
-  //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
+  //printf("DoxClassGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d,usedName=%s,templSpec=%s,base=%d)\n",
+  //                                 cd->name().data(),n->m_label.data(),prot,label,distance,usedName,templSpec,base);
   int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   if (usedName) // name is a typedef
@@ -850,11 +986,25 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   BaseClassDef *bcd;
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
-    //printf("addClass: base=%s this=%s templ=%s\n",bcd->classDef->name().data(),
-    //                                     cd->name().data(),bcd->templSpecifiers.data());
-    QCString templSpec;
-    if (base) templSpec = bcd->templSpecifiers;
-    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,templSpec,base); 
+    //printf("-------- inheritance relation %s->%s templ=`%s'\n",
+    //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
+    QCString templSpec; 
+    if (base) templSpec = substituteTemplateSpec(
+                             cd,bcd->templSpecifiers);
+    ClassDef *acd=0;
+    QCString actualArg;
+    computeTemplateInstance(cd,bcd->classDef,templSpec,acd,actualArg);
+    //printf("acd=%p actualArg=%s\n",acd,actualArg.data());
+    if (acd)
+    {
+      addClass(acd,n,bcd->prot,0,distance,actualArg, 
+               templSpec,base); 
+    }
+    else
+    {
+      addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+               templSpec,base); 
+    }
   }
   if (m_graphType != Inheritance)
   {
@@ -883,8 +1033,25 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
             label+=QCString("\\n")+s;
           }
         }
-        //printf("Found label=`%s'\n",label.data());
-        addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,ucd->templSpecifiers,base);
+        QCString actualArg;
+        ClassDef *acd=0;
+        //printf("-------- usage relation %s->%s templ=`%s'\n",
+        //    cd->name().data(),ucd->classDef->name().data(),
+        //    ucd->templSpecifiers.data());
+        QCString templSpec = substituteTemplateSpec(
+                                     cd,ucd->templSpecifiers);
+        computeTemplateInstance(cd,ucd->classDef, templSpec, acd,actualArg);
+        if (acd)
+        {
+          addClass(acd,n,EdgeInfo::Black,label,distance,actualArg,
+                   templSpec,base); 
+        }
+        else
+        {
+          //printf("Found label=`%s'\n",label.data());
+          addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,
+                   templSpec,base);
+        }
       }
     }
   }
@@ -906,6 +1073,11 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
                            );
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(cd->name(),m_startNode);
+
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *icd;
+  for (cli.toFirst();(icd=cli.current());++cli) icd->initTemplateMapping();
+
   //printf("Root node %s\n",cd->name().data());
   if (m_recDepth>0) 
   {
