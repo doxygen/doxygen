@@ -23,6 +23,8 @@ CFG=Doxygen - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 RSC=rc.exe
 
@@ -148,6 +150,10 @@ SOURCE=..\src\definition.cpp
 # Begin Source File
 
 SOURCE=..\src\diagram.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dirdef.cpp
 # End Source File
 # Begin Source File
 
@@ -412,6 +418,10 @@ SOURCE=..\src\definition.h
 # Begin Source File
 
 SOURCE=..\src\diagram.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\dirdef.h
 # End Source File
 # Begin Source File
 

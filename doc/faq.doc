@@ -211,11 +211,11 @@ If you don't mind spending some time on it, there are several options:
  "input buffer overflow, can't enlarge buffer because scanner uses REJECT"</b>
 
 This error happens when doxygen lexical scanner has a rule that matches
-more than 16K of input characters in one go. I've seen this happening 
-on a very large generated file (\>16K lines), where the built-in preprocessor 
-converted it into an empty file (with \>16K of newlines). Another case
+more than 256K of input characters in one go. I've seen this happening 
+on a very large generated file (\>256K lines), where the built-in preprocessor 
+converted it into an empty file (with \>256K of newlines). Another case
 where this might happen is if you have lines in your code with more than
-16K characters. 
+256K characters. 
 
 If you have run into such a case and want me to fix it, you
 should send me a code fragment that triggers the message. To work around
@@ -262,6 +262,19 @@ namespace std {
 
 I'm still looking for someone who can provide me with definitions
 for all (relevant) STL classes.
+
+<li><b>Can I configure doxygen from the command line?</b>
+
+Not via command line options, but doxygen can read from <code>stdin</code>,
+so you can pipe things through it. Here's an example how to override an option
+in a configuration file from the command line (assuming a unix environment):
+
+\verbatim
+( cat Doxyfile ; echo "PROJECT_NUMBER=1.0" ) | doxygen -
+\endverbatim
+
+If multiple options with the same name are specified then doxygen will use 
+the last one. To append to an existing option you can use the += operator.
 
 <li><b>How did doxygen get its name?</b>
 

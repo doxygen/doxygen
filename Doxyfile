@@ -83,7 +83,6 @@ EXCLUDE                = src/code.cpp \
                          src/tag.cpp \
                          src/doctokenizer.cpp \
                          src/logos.cpp \
-                         src/doxysearch.cpp \
                          src/suffixtree.cpp \
                          src/suffixtree.h \
                          src/searchindex.cpp \

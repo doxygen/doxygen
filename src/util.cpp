@@ -128,22 +128,30 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 {
   QTime time;
   time.start();
+
+  if (command==0) return 1;
+
+  QCString fullCmd=command;
+  fullCmd=fullCmd.stripWhiteSpace();
+  if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=-1)
+  {
+    // add quotes around command as it contains spaces and is not quoted already
+    fullCmd="\""+fullCmd+"\"";
+  }
+  fullCmd += " ";
+  fullCmd += args;
+  //printf("iSystem: Executing %s\n",fullCmd.data());
+
 #if !defined(_WIN32) || defined(__CYGWIN__)
   isBatchFile=isBatchFile;
   /*! taken from the system() manpage on my Linux box */
   int pid,status=0;
 
-  if (command==0) return 1;
 
 #ifdef _OS_SOLARIS // for Solaris we use vfork since it is more memory efficient
 
   // on Solaris fork() duplicates the memory usage
   // so we use vfork instead
-  
-  char buf[4096];
-  strcpy(buf,command);
-  strcat(buf," ");
-  strcat(buf,args);
   
   // spawn shell
   if ((pid=vfork())<0)
@@ -152,7 +160,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   }
   else if (pid==0)
   {
-     execl("/bin/sh","sh","-c",buf,(char*)0);
+     execl("/bin/sh","sh","-c",fullCmd.data(),(char*)0);
      _exit(127);
   }
   else
@@ -175,14 +183,10 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   if (pid==-1) return -1;
   if (pid==0)
   {
-    char buf[4096];
-    strcpy(buf,command);
-    strcat(buf," ");
-    strcat(buf,args);
     const char * argv[4];
     argv[0] = "sh";
     argv[1] = "-c";
-    argv[2] = buf;
+    argv[2] = fullCmd.data();
     argv[3] = 0;
     execve("/bin/sh",(char * const *)argv,environ);
     exit(127);
@@ -204,9 +208,6 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 #else // Win32 specific
   if (isBatchFile)
   {
-    QCString fullCmd = command;
-    fullCmd += " ";
-    fullCmd += args;
     return system(fullCmd);
   }
   else
@@ -1107,7 +1108,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
             bestTemplSpec.resize(0);
           }
           else if (distance==minDistance &&
-                   fileScope && 
+                   fileScope && bestMatch &&
                    fileScope->getUsedNamespaces() && 
                    d->getOuterScope()->definitionType()==Definition::TypeNamespace && 
                    bestMatch->getOuterScope()==Doxygen::globalScope
@@ -1143,10 +1144,14 @@ ClassDef *getResolvedClassRec(Definition *scope,
             {
               QCString spec;
               minDistance=distance;
-              bestMatch = newResolveTypedef(fileScope,md,&spec);
-              //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
-              bestTypedef = md;
-              bestTemplSpec = spec;
+              ClassDef *cd = newResolveTypedef(fileScope,md,&spec);
+              if (cd) // shouldn't be 0, but could in some weird cases
+              {
+                //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
+                bestMatch = cd;
+                bestTypedef = md;
+                bestTemplSpec = spec;
+              }
             }
           }
         }

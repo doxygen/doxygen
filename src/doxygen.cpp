@@ -1021,11 +1021,13 @@ static void buildNamespaceList(Entry *root)
       else // fresh namespace
       {
         QCString tagName;
+        QCString tagFileName;
         if (root->tagInfo)
         {
           tagName=root->tagInfo->tagName;
+          tagFileName=root->tagInfo->fileName;
         }
-        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName,tagFileName);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1143,8 +1145,7 @@ static void findUsingDirectives(Entry *root)
       }
       else // unknown namespace, but add it anyway.
       {
-        NamespaceDef *nd=new NamespaceDef(
-            root->fileName,root->startLine,name);
+        NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -4241,6 +4242,49 @@ static bool findGlobalMember(Entry *root,
   return TRUE;
 }
 
+static QCString substituteTemplatesInString(
+    const QList<ArgumentList> &srcTempArgLists,
+    const QList<ArgumentList> &dstTempArgLists,
+    const QCString &src
+    )
+{
+  QCString dst;
+  QRegExp re(idMask);
+  //printf("type=%s\n",sa->type.data());
+
+  int i,p=0,l; 
+  while ((i=re.match(src,p,&l))!=-1) // for each word in srcType
+  {
+    bool found=FALSE;
+    dst+=src.mid(p,i-p);
+    QCString name=src.mid(i,l);
+
+    QListIterator<ArgumentList> srclali(srcTempArgLists);
+    QListIterator<ArgumentList> dstlali(dstTempArgLists);
+    for (;srclali.current() && !found;++srclali,++dstlali)
+    {
+      ArgumentListIterator tsali(*srclali.current());
+      ArgumentListIterator tdali(*dstlali.current());
+      Argument *tsa =0,*tda=0;
+
+      for (tsali.toFirst();(tsa=tsali.current()) && !found;++tsali)
+      {
+        tda = tdali.current();
+        if (tda && name==tsa->name)
+        {
+          name=tda->name; // substitute
+          found=TRUE;
+        }
+        if (tda) ++tdali;
+      }
+    }
+    dst+=name; 
+    p=i+l;
+  }
+  dst+=src.right(src.length()-p);
+  return dst;
+}
+
 static void substituteTemplatesInArgList(
                   const QList<ArgumentList> &srcTempArgLists,
                   const QList<ArgumentList> &dstTempArgLists,
@@ -4253,51 +4297,22 @@ static void substituteTemplatesInArgList(
 
   for (sali.toFirst();(sa=sali.current());++sali) // for each member argument
   {
-    QCString srcType = sa->type;
-    QRegExp re(idMask);
-    //printf("type=%s\n",sa->type.data());
-
-    int i,p=0,l; 
-    QCString dstType;
-    while ((i=re.match(srcType,p,&l))!=-1) // for each word in srcType
-    {
-      bool found=FALSE;
-      dstType+=srcType.mid(p,i-p);
-      QCString name=srcType.mid(i,l);
-
-      QListIterator<ArgumentList> srclali(srcTempArgLists);
-      QListIterator<ArgumentList> dstlali(dstTempArgLists);
-      for (;srclali.current() && !found;++srclali,++dstlali)
-      {
-        ArgumentListIterator tsali(*srclali.current());
-        ArgumentListIterator tdali(*dstlali.current());
-        Argument *tsa =0,*tda=0;
-
-        for (tsali.toFirst();(tsa=tsali.current()) && !found;++tsali)
-        {
-          tda = tdali.current();
-          if (tda && name==tsa->name)
-          {
-            name=tda->name; // substitute
-            found=TRUE;
-          }
-          if (tda) ++tdali;
-        }
-      }
-      dstType+=name; 
-      p=i+l;
-    }
-    dstType+=srcType.right(srcType.length()-p);
+    QCString dstType = substituteTemplatesInString(
+                                  srcTempArgLists,dstTempArgLists,sa->type);
+    QCString dstArray = substituteTemplatesInString(
+                                  srcTempArgLists,dstTempArgLists,sa->array);
     if (da==0)
     {
       da=new Argument(*sa);
       dst->append(da);
       da->type=dstType;
+      da->array=dstArray;
       da=0;
     }
     else
     {
       da->type=dstType;
+      da->type=dstArray;
       da=dst->next();
     }
   }

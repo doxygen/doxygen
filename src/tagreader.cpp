@@ -35,6 +35,22 @@
 #include "defargs.h"
 //#include "reflist.h"
 
+/*! Information about an linkable anchor */
+class TagAnchorInfo
+{
+  public:
+    TagAnchorInfo(const QString &f,const QString &l) : label(l), fileName(f) {}
+    QString label;
+    QString fileName;
+};
+
+class TagAnchorInfoList : public QList<TagAnchorInfo>
+{
+  public: 
+    TagAnchorInfoList() : QList<TagAnchorInfo>() { setAutoDelete(TRUE); }
+    virtual ~TagAnchorInfoList() {}
+};
+
 /*! Container for member specific info that can be read from a tagfile */
 class TagMemberInfo
 {
@@ -45,7 +61,7 @@ class TagMemberInfo
     QString anchor;
     QString arglist;
     QString kind;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     Protection prot;
     Specifier virt;
     bool isStatic; 
@@ -60,7 +76,7 @@ class TagClassInfo
    ~TagClassInfo() { delete bases; delete templateArguments; }
     QString name;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     QList<BaseInfo> *bases;
     QList<TagMemberInfo> members;
     QList<QString> *templateArguments;
@@ -75,7 +91,7 @@ class TagNamespaceInfo
     TagNamespaceInfo() { members.setAutoDelete(TRUE); }
     QString name;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
     QStringList classList;
 };
@@ -87,7 +103,7 @@ class TagPackageInfo
     TagPackageInfo() { members.setAutoDelete(TRUE); }
     QString name;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
     QStringList classList;
 };
@@ -110,7 +126,7 @@ class TagFileInfo
     QString name;
     QString path;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
     QStringList classList;
     QStringList namespaceList;
@@ -125,7 +141,7 @@ class TagGroupInfo
     QString name;
     QString title;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
     QList<TagMemberInfo> members;
     QStringList subgroupList;
     QStringList classList;
@@ -142,7 +158,7 @@ class TagPageInfo
     QString name;
     QString title;
     QString filename;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
 };
 
 /*! Container for directory specific info that can be read from a tagfile */
@@ -154,7 +170,7 @@ class TagDirInfo
     QString path;
     QStringList subdirList;
     QStringList fileList;
-    QStrList docAnchors;
+    TagAnchorInfoList docAnchors;
 };
 
 /*! Tag file parser. 
@@ -317,8 +333,8 @@ class TagFileParser : public QXmlDefaultHandler
     {
       m_curMember = new TagMemberInfo;
       m_curMember->kind = attrib.value("kind");
-      QString protStr = attrib.value("protection");
-      QString virtStr = attrib.value("virtualness");
+      QString protStr   = attrib.value("protection");
+      QString virtStr   = attrib.value("virtualness");
       QString staticStr = attrib.value("static");
       if (protStr=="protected")
       {
@@ -364,14 +380,14 @@ class TagFileParser : public QXmlDefaultHandler
     {
       switch(m_state)
       {
-        case InClass:     m_curClass->docAnchors.append(m_curString); break;
-        case InFile:      m_curFile->docAnchors.append(m_curString); break;
-        case InNamespace: m_curNamespace->docAnchors.append(m_curString); break;
-        case InGroup:     m_curGroup->docAnchors.append(m_curString); break;
-        case InPage:      m_curPage->docAnchors.append(m_curString); break;
-        case InMember:    m_curMember->docAnchors.append(m_curString); break;
-        case InPackage:   m_curPackage->docAnchors.append(m_curString); break;
-        case InDir:       m_curDir->docAnchors.append(m_curString); break;
+        case InClass:     m_curClass->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InFile:      m_curFile->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InNamespace: m_curNamespace->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InGroup:     m_curGroup->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InPage:      m_curPage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InMember:    m_curMember->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InPackage:   m_curPackage->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
+        case InDir:       m_curDir->docAnchors.append(new TagAnchorInfo(m_fileName,m_curString)); break;
         default:   err("Error: Unexpected tag `member' found\n"); break; 
       }
     }
@@ -422,6 +438,11 @@ class TagFileParser : public QXmlDefaultHandler
     }
     void startStringValue(const QXmlAttributes& )
     {
+      m_curString = "";
+    }
+    void startDocAnchor(const QXmlAttributes& attrib )
+    {
+      m_fileName = attrib.value("file");
       m_curString = "";
     }
     void endType()
@@ -640,7 +661,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("file",        new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("dir",         new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("page",        new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("docanchor",   new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("docanchor",   new StartElementHandler(this,&TagFileParser::startDocAnchor));
       m_startElementHandlers.insert("tagfile",     new StartElementHandler(this,&TagFileParser::startIgnoreElement));
       m_startElementHandlers.insert("templarg",    new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("type",        new StartElementHandler(this,&TagFileParser::startStringValue));
@@ -708,7 +729,7 @@ class TagFileParser : public QXmlDefaultHandler
     
   private:
     void buildMemberList(Entry *ce,QList<TagMemberInfo> &members);
-    void addDocAnchors(Entry *e,QStrList &l);
+    void addDocAnchors(Entry *e,const TagAnchorInfoList &l);
     QList<TagClassInfo>        m_tagFileClasses;
     QList<TagFileInfo>         m_tagFileFiles;
     QList<TagNamespaceInfo>    m_tagFileNamespaces;
@@ -729,6 +750,7 @@ class TagFileParser : public QXmlDefaultHandler
     TagIncludeInfo            *m_curIncludes;
     QCString                   m_curString;
     QString                    m_tagName;
+    QString                    m_fileName;
     State                      m_state;
     QStack<State>              m_stateStack;
 };
@@ -932,24 +954,25 @@ void TagFileParser::dump()
   }
 }
 
-void TagFileParser::addDocAnchors(Entry *e,QStrList &l)
+void TagFileParser::addDocAnchors(Entry *e,const TagAnchorInfoList &l)
 {
-  char *s=l.first();
-  while (s)
+  QListIterator<TagAnchorInfo> tli(l);
+  TagAnchorInfo *ta;
+  for (tli.toFirst();(ta=tli.current());++tli)
   {
-    QCString *anchorName = new QCString(s);
-    if (Doxygen::sectionDict.find(*anchorName)==0)
+    if (Doxygen::sectionDict.find(ta->label)==0)
     {
-      SectionInfo *si=new SectionInfo(e->fileName,*anchorName,*anchorName,
+      //printf("New sectionInfo file=%s anchor=%s\n",
+      //    ta->fileName.data(),ta->label.data());
+      SectionInfo *si=new SectionInfo(ta->fileName,ta->label,ta->label,
           SectionInfo::Anchor,m_tagName);
-      Doxygen::sectionDict.insert(*anchorName,si);
+      Doxygen::sectionDict.insert(ta->label,si);
       e->anchors->append(si);
     }
     else
     {
-      err("Duplicate anchor %s found\n",anchorName->data());
+      err("Duplicate anchor %s found\n",ta->label.data());
     }
-    s=l.next();
   }
 }
 

@@ -1145,7 +1145,7 @@ void HtmlGenerator::startParameterType(bool first,const char *key)
     t << "          <td class=\"md\" nowrap align=\"right\">";
     if (key) t << key;
     t << "</td>" << endl;
-    t << "          <td></td>" << endl;
+    t << "          <td class=\"md\"></td>" << endl;
     t << "          <td class=\"md\" nowrap>";
   }
 }
@@ -1185,7 +1185,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
       t << "</td>" << endl;
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
-      t << "          <td></td>" << endl;
+      t << "          <td class=\"md\"></td>" << endl;
       t << "          <td class=\"md\">";
       if (closeBracket) t << ")";
       t << "&nbsp;</td>" << endl;
