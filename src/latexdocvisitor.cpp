@@ -841,24 +841,24 @@ void LatexDocVisitor::visitPost(DocSecRefList *)
   m_t << "\\normalsize" << endl;
 }
 
-void LatexDocVisitor::visitPre(DocLanguage *l)
-{
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    pushEnabled();
-    m_hide = TRUE;
-  }
-}
-
-void LatexDocVisitor::visitPost(DocLanguage *l) 
-{
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    popEnabled();
-  }
-}
+//void LatexDocVisitor::visitPre(DocLanguage *l)
+//{
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    pushEnabled();
+//    m_hide = TRUE;
+//  }
+//}
+//
+//void LatexDocVisitor::visitPost(DocLanguage *l) 
+//{
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    popEnabled();
+//  }
+//}
 
 void LatexDocVisitor::visitPre(DocParamSect *s)
 {

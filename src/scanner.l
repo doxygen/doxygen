@@ -84,6 +84,7 @@ static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
 static int              lastFileDocContext;
+static int              lastSectionContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -672,6 +673,7 @@ DL	  [dD][lL]
 TITLE     [tT][iI][tT][lL][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
+IDLATTR   ("["[^\]]*"]"){BN}*
 
 %option noyywrap
 
@@ -828,6 +830,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      ObjCProtocolList
 %x	QtPropType
 %x	QtPropName
+%x	QtPropAttr
 %x	QtPropRead
 %x	QtPropWrite
 
@@ -1189,7 +1192,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <PackageName>";"			{
   					  BEGIN(FindMembers);
   					}
-<FindMembers>{B}*"static"{BN}+     	{ //current->type += " static ";
+<FindMembers>{B}*"static"{BN}+     	{ current->type += " static ";
   					  current->stat = TRUE;
 					  lineCount();
 					}
@@ -1410,8 +1413,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?)"enum{" | 
-<FindMembers>{B}*(("typedef"{BN}+)?)"enum"{BN}+	{ 
+<FindMembers>{B}*(("typedef"{BN}+)?){IDLATTR}?"enum{" |
+<FindMembers>{B}*(("typedef"{BN}+)?){IDLATTR}?"enum"{BN}+ { // for IDL: typedef [something] enum
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::ENUM_SEC ;
 					  addType( current ) ;
@@ -1649,28 +1652,41 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->mtype = mtype = Property;
   					  BEGIN(QtPropType);
   					}
+<QtPropType>"("				{ // start of property arguments
+  					}
+<QtPropAttr>")"				{ // end of property arguments
+  					  unput(';');
+					  BEGIN(FindMembers);
+  					}
 <QtPropType>{ID}			{
   					  current->type=yytext;
                                           BEGIN(QtPropName);
   					}
 <QtPropName>{ID}			{
   					  current->name=yytext;
-  					  BEGIN(QtPropRead);
+  					  BEGIN(QtPropAttr);
   					}
-<QtPropRead>"READ"			{
+<QtPropAttr>"READ"			{
   					  current->memSpec |= Entry::Readable;
+					  BEGIN(QtPropRead);
+  					}
+<QtPropAttr>"WRITE"			{
+  					  current->memSpec |= Entry::Writable;
+					  BEGIN(QtPropWrite);
+  					}
+<QtPropAttr>"RESET"{B}+{ID}		{ // reset method => not supported yet
+  					}
+<QtPropAttr>"SCRIPTABLE"{B}+{ID}	{ // scriptable property => not supported yet
+  					}
+<QtPropAttr>"DESIGNABLE"{B}+{ID}	{ // designable property => not supported yet
   					}
 <QtPropRead>{ID}			{
   					  current->read = yytext;
-  					  BEGIN(QtPropWrite);
-  					}
-<QtPropWrite>"WRITE"			{
-  					  current->memSpec |= Entry::Writable;
+  					  BEGIN(QtPropAttr);
   					}
 <QtPropWrite>{ID}			{
   					  current->write = yytext;
-  					  unput(';');
-					  BEGIN(FindMembers);
+					  BEGIN(QtPropAttr);
   					}
 <FindMembers>"friend"{BN}+("class"|"union"|"struct"){BN}+ {
   					  current->name=yytext;
@@ -4745,21 +4761,25 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"section"{B}+		{
   					  //sectionType=SectionInfo::Section;
 					  current->doc+=yytext;
+					  lastSectionContext=YY_START;
   					  BEGIN(SectionLabel);
   					}
 <ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsection"{B}+		{
   					  //sectionType=SectionInfo::Subsection;
 					  current->doc+=yytext;
+					  lastSectionContext=YY_START;
   					  BEGIN(SectionLabel);
   					}
 <ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsubsection"{B}+	{
   					  //sectionType=SectionInfo::Subsubsection;
 					  current->doc+=yytext;
+					  lastSectionContext=YY_START;
   					  BEGIN(SectionLabel);
   					}
 <ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"paragraph"{B}+		{
   					  //sectionType=SectionInfo::Paragraph;
 					  current->doc+=yytext;
+					  lastSectionContext=YY_START;
   					  BEGIN(SectionLabel);
   					}
 <GroupHeader>.				{ memberGroupHeader+=*yytext; }
@@ -5011,7 +5031,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->anchors->append(si);
                                           Doxygen::sectionDict.insert(yytext,si);
                                           current->doc+=yytext;
-					  BEGIN(PageDoc);
+					  BEGIN(lastSectionContext);
   					}
 <SectionTitle>[^\n*]*			{
   					  sectionTitle+=yytext;
@@ -5356,7 +5376,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  );
 					}
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
-<ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
+<ClassDocBrief>{BS}({BL}|"\\n\\n")      |
+<ClassDocBrief>("\\_linebr \\_linebr")  { 
 					  //if (!current->doc.isEmpty()) current->doc+=" <p>";
 					  if (lastBriefContext==TodoParam || 
 					      lastBriefContext==TestParam || 
@@ -5444,6 +5465,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <ClassDocBrief>{BS}{CMD}("brief"|"short"){BN}+ {
   					  //lastBriefContext=YY_START;
 					}
+<ClassDocBrief>{ID}			{ current->brief += yytext; }
 <ClassDocBrief>.			{ current->brief += *yytext; }
 <ClassDocDefine>{ID}/"("		{
   					  current->name = yytext;
@@ -5577,6 +5599,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++;
   					  BEGIN(AfterDoc);
   					}
+<AfterDocLine>{ID}			{ current->brief+=yytext; }
 <AfterDocLine>.				{ current->brief+=yytext; }
 <AfterDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
@@ -5707,7 +5730,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <Doc,JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine,ClassDoc,PageDoc,AfterDoc,CopyArgComment,DocInternal,DocInternalLine>"\\_linebr " { 
                                           // used to compensate for misalignments due to \n's inside ALIASES
-  					  current->doc += '\n';
+					  current->doc += '\n';
   					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				          current->doc += yytext; 

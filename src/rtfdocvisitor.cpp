@@ -1088,26 +1088,26 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocLanguage *l)
-{
-  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocLanguage)}\n");
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    pushEnabled();
-    m_hide = TRUE;
-  }
-}
-
-void RTFDocVisitor::visitPost(DocLanguage *l) 
-{
-  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocLanguage)}\n");
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    popEnabled();
-  }
-}
+//void RTFDocVisitor::visitPre(DocLanguage *l)
+//{
+//  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocLanguage)}\n");
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    pushEnabled();
+//    m_hide = TRUE;
+//  }
+//}
+//
+//void RTFDocVisitor::visitPost(DocLanguage *l) 
+//{
+//  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocLanguage)}\n");
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    popEnabled();
+//  }
+//}
 
 void RTFDocVisitor::visitPre(DocParamSect *s)
 {

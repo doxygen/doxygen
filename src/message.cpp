@@ -24,65 +24,67 @@
 #include "doxygen.h"
 
 static QCString outputFormat;
-static int warnFormatOrder; // 1 = $file,$line,$text
-                            // 2 = $text,$line,$file
-                            // 3 = $line,$text,$file
-                            // 4 = $file,$text,$line
-                            // 5 = $text,$file,$line
-                            // 6 = $line,$file,$text
+//static int warnFormatOrder; // 1 = $file,$line,$text
+//                            // 2 = $text,$line,$file
+//                            // 3 = $line,$text,$file
+//                            // 4 = $file,$text,$line
+//                            // 5 = $text,$file,$line
+//                            // 6 = $line,$file,$text
 
 static FILE *warnFile = stderr;
 
 void initWarningFormat()
 {
-  int filePos = Config_getString("WARN_FORMAT").find("$file");
-  int linePos = Config_getString("WARN_FORMAT").find("$line");
-  int textPos = Config_getString("WARN_FORMAT").find("$text");
-
-  // sort items on position (there are 6 cases)
-  warnFormatOrder = 1;
-  if (filePos>linePos && filePos>textPos)
-  {
-    if (linePos>textPos) // $text,$line,$file
-    {
-      warnFormatOrder = 2;
-    }
-    else                 // $line,$text,$file
-    {
-      warnFormatOrder = 3;
-    }
-  }
-  else if (filePos<linePos && filePos<textPos)
-  {
-    if (linePos>textPos) // $file,$text,$line
-    {
-      warnFormatOrder = 4;
-    }
-  }
-  else if (filePos<linePos && filePos>textPos) // $text,$file,$line
-  {
-    warnFormatOrder = 5;
-  }
-  else // $line,$file,$text
-  {
-    warnFormatOrder = 6;
-  }
-  outputFormat = 
-      substitute(
-        substitute(
-          substitute( 
-            Config_getString("WARN_FORMAT"),
-           "$file","%s"
-          ),
-          "$text","%s"
-        ),
-        "$line","%d"
-      )+'\n';
+//  int filePos = Config_getString("WARN_FORMAT").find("$file");
+//  int linePos = Config_getString("WARN_FORMAT").find("$line");
+//  int textPos = Config_getString("WARN_FORMAT").find("$text");
+//
+//  // sort items on position (there are 6 cases)
+//  warnFormatOrder = 1;
+//  if (filePos>linePos && filePos>textPos)
+//  {
+//    if (linePos>textPos) // $text,$line,$file
+//    {
+//      warnFormatOrder = 2;
+//    }
+//    else                 // $line,$text,$file
+//    {
+//      warnFormatOrder = 3;
+//    }
+//  }
+//  else if (filePos<linePos && filePos<textPos)
+//  {
+//    if (linePos>textPos) // $file,$text,$line
+//    {
+//      warnFormatOrder = 4;
+//    }
+//  }
+//  else if (filePos<linePos && filePos>textPos) // $text,$file,$line
+//  {
+//    warnFormatOrder = 5;
+//  }
+//  else // $line,$file,$text
+//  {
+//    warnFormatOrder = 6;
+//  }
+//  outputFormat = 
+//      substitute(
+//        substitute(
+//          substitute( 
+//            Config_getString("WARN_FORMAT"),
+//           "$file","%s"
+//          ),
+//          "$text","%s"
+//        ),
+//        "$line","%d"
+//      )+'\n';
 
   //    replace(QRegExp("\\$file"),"%s").
   //    replace(QRegExp("\\$text"),"%s").
   //    replace(QRegExp("\\$line"),"%d")+
   //    '\n';
+
+  outputFormat = Config_getString("WARN_FORMAT");
 
   if (!Config_getString("WARN_LOGFILE").isEmpty())
   {
@@ -115,18 +117,48 @@ static void do_warn(const char *tag, const char *file, int line, const char *fmt
   if (!Config_getBool(tag)) return; // warning type disabled
   char text[40960];
   vsprintf(text, fmt, args);
-  if (file==0) file="<unknown>";
-  switch(warnFormatOrder)
+  QCString fileSubst = file==0 ? "<unknown>" : file;
+  QCString lineSubst; lineSubst.setNum(line);
+  QCString textSubst = text;
+  QCString versionSubst;
+  if (file) // get version from file name
   {
-    case 1: fprintf(warnFile,outputFormat,file,line,text); break;
-    case 2: fprintf(warnFile,outputFormat,text,line,file); break;
-    case 3: fprintf(warnFile,outputFormat,line,text,file); break;
-    case 4: fprintf(warnFile,outputFormat,file,text,line); break;
-    case 5: fprintf(warnFile,outputFormat,text,file,line); break;
-    case 6: fprintf(warnFile,outputFormat,line,file,text); break;
-    default:
-      printf("Error: warning format has not been initialized!\n");
+    bool ambig;
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
+    if (fd)
+    {
+      versionSubst = fd->getVersion();
+    }
   }
+  // substitute markers by actual values
+  QCString msgText = 
+    substitute(
+      substitute(
+        substitute(
+          substitute( 
+            outputFormat,
+            "$file",fileSubst
+          ),
+          "$text",textSubst
+        ),
+        "$line",lineSubst
+      ),
+      "$version",versionSubst
+    )+'\n';
+
+  // print resulting message
+  fprintf(warnFile,msgText);
+//  switch(warnFormatOrder)
+//  {
+//    case 1: fprintf(warnFile,outputFormat,file,line,text); break;
+//    case 2: fprintf(warnFile,outputFormat,text,line,file); break;
+//    case 3: fprintf(warnFile,outputFormat,line,text,file); break;
+//    case 4: fprintf(warnFile,outputFormat,file,text,line); break;
+//    case 5: fprintf(warnFile,outputFormat,text,file,line); break;
+//    case 6: fprintf(warnFile,outputFormat,line,file,text); break;
+//     default:
+//       printf("Error: warning format has not been initialized!\n");
+//  }
 }
 
 void warn(const char *file,int line,const char *fmt, ...)

@@ -124,7 +124,7 @@ class DocNode
                 Kind_Formula        = 38,
                 Kind_SecRefItem     = 39,
                 Kind_SecRefList     = 40,
-                Kind_Language       = 41,
+                //Kind_Language       = 41,
                 Kind_LinkedWord     = 42,
                 Kind_ParamSect      = 43,
                 Kind_ParamList      = 44,
@@ -695,21 +695,21 @@ class DocInternalRef : public CompAccept<DocInternalRef>, public DocNode
 };
 
 /*! @brief Node representing a Language specific section */
-class DocLanguage : public CompAccept<DocLanguage>, public DocNode
-{
-  public:
-    DocLanguage(DocNode *parent,const QString &id) : 
-      m_parent(parent), m_id(id) {}
-    QString id() const         { return m_id; }
-    Kind kind() const          { return Kind_Language; }
-    DocNode *parent() const    { return m_parent; }
-    void accept(DocVisitor *v) { CompAccept<DocLanguage>::accept(this,v); }
-    int parse();
-    
-  private:
-    DocNode * m_parent;
-    QString   m_id;
-};
+//class DocLanguage : public CompAccept<DocLanguage>, public DocNode
+//{
+//  public:
+//    DocLanguage(DocNode *parent,const QString &id) : 
+//      m_parent(parent), m_id(id) {}
+//    QString id() const         { return m_id; }
+//    Kind kind() const          { return Kind_Language; }
+//    DocNode *parent() const    { return m_parent; }
+//    void accept(DocVisitor *v) { CompAccept<DocLanguage>::accept(this,v); }
+//    int parse();
+//    
+//  private:
+//    DocNode * m_parent;
+//    QString   m_id;
+//};
 
 /*! @brief Node representing a Hypertext reference */
 class DocHRef : public CompAccept<DocHRef>, public DocNode
@@ -973,7 +973,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleRef(const QString &cmdName);
     void handleSection(const QString &cmdName);
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
-    int handleLanguageSwitch();
+    //int handleLanguageSwitch();
 
   private:
     DocNode *m_parent;

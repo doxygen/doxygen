@@ -711,17 +711,17 @@ void XmlDocVisitor::visitPost(DocSecRefList *)
   m_t << "</toclist>" << endl;
 }
 
-void XmlDocVisitor::visitPre(DocLanguage *l)
-{
-  if (m_hide) return;
-  m_t << "<language langid=\"" << l->id() << "\">";
-}
-
-void XmlDocVisitor::visitPost(DocLanguage *) 
-{
-  if (m_hide) return;
-  m_t << "</language>" << endl;
-}
+//void XmlDocVisitor::visitPre(DocLanguage *l)
+//{
+//  if (m_hide) return;
+//  m_t << "<language langid=\"" << l->id() << "\">";
+//}
+//
+//void XmlDocVisitor::visitPost(DocLanguage *) 
+//{
+//  if (m_hide) return;
+//  m_t << "</language>" << endl;
+//}
 
 void XmlDocVisitor::visitPre(DocParamSect *s)
 {

@@ -245,6 +245,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 %x Verbatim
 %x ReadLine
 %x CondLine
+%x SkipLang
 
 %%
 
@@ -290,18 +291,18 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<Scan>"\\verbatim"		   { /* start of a verbatim block */
+<Scan>[\\@]"verbatim"		   { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
                                      BEGIN(Verbatim);
                                    }
 <Scan>.                            { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>"\\endverbatim"          { /* end of verbatim block */
+<Verbatim>[\\@]"endverbatim"       { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
 				     BEGIN(Scan);
                                    }
-<Verbatim>[^\\\n]*		   { /* any character not a backslash or new line */
+<Verbatim>[^@\\\n]*		   { /* any character not a backslash or new line */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <Verbatim>\n			   { /* new line in verbatim block */
@@ -309,6 +310,25 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                    }
 <Verbatim>.			   { /* any other character */
                                      copyToOutput(yytext,yyleng); 
+                                   }
+<SkipLang>[\\@]"~"[a-zA-Z]*        { /* end of verbatim block */
+                                     QCString langId = &yytext[2];
+				     if (langId.isEmpty() ||
+					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
+				     { // enable language specific section
+				       BEGIN(CComment);
+				     }
+                                   }
+<SkipLang>[^*@\\\n]*		   { /* any character not a *, @, backslash or new line */
+                                   }
+<SkipLang>\n			   { /* new line in verbatim block */
+                                     copyToOutput(yytext,yyleng); 
+                                   }
+<SkipLang>"*/"			   { /* end of comment block */
+                                     copyToOutput(yytext,yyleng); 
+				     BEGIN(Scan); 
+  				   }
+<SkipLang>.			   { /* any other character */
                                    }
 <SkipString>\\.                    { /* escaped character in string */
                                      copyToOutput(yytext,yyleng); 
@@ -323,7 +343,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <SkipString>\n                     { /* new line inside string (illegal for some compilers) */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<CComment>[^\\@*\n]*	           { /* anything that is not a '*' */ 
+<CComment>[^\\@*\n]*	           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */
@@ -388,9 +408,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   				     copyToOutput(yytext,yyleng);
                                      BEGIN(g_readLineCtx);
   				   }
-<CComment,ReadLine>("\\\\"|"@@")[a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
+<CComment,ReadLine>("\\\\"|"@@")[~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,yyleng);
   				   }
+<CComment>[@\\]"~"[a-zA-Z]*	   { // language switch
+                                     QCString langId = &yytext[2];
+				     if (!langId.isEmpty() && 
+					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
+				     {
+				       BEGIN(SkipLang);
+				     }
+  			           }
 <CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
   				     g_condCtx = YY_START; 
   				     BEGIN(CondLine);

@@ -505,16 +505,16 @@ static bool insideOL(DocNode *n)
 
 //---------------------------------------------------------------------------
 
-/*! Returns TRUE iff node n is a child of a language node */
-static bool insideLang(DocNode *n)
-{
-  while (n)
-  {
-    if (n->kind()==DocNode::Kind_Language) return TRUE;
-    n=n->parent();
-  }
-  return FALSE;
-}
+///*! Returns TRUE iff node n is a child of a language node */
+//static bool insideLang(DocNode *n)
+//{
+//  while (n)
+//  {
+//    if (n->kind()==DocNode::Kind_Language) return TRUE;
+//    n=n->parent();
+//  }
+//  return FALSE;
+//}
 
 
 //---------------------------------------------------------------------------
@@ -673,6 +673,10 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                g_token->name.data(),cmdName.data());
           break;
         case TK_HTMLTAG:
+          if (insideLI(parent) && HtmlTagMapper::map(g_token->name) && g_token->endTag)
+          { // ignore </li> as the end of a style command
+            continue; 
+          }
           return tok;
           break;
         default:
@@ -844,7 +848,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   if (!g_insideHtmlLink && 
       resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
-    //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member->isLinkable());
+    //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member ? member->isLinkable() : FALSE);
     if (member) // member link
     {
       children.append(new 
@@ -860,6 +864,10 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
       if (compound->definitionType()==Definition::TypeFile)
       {
         name=g_token->name;
+      }
+      else if (compound->definitionType()==Definition::TypeGroup)
+      {
+        name=((GroupDef*)compound)->groupTitle();
       }
       children.append(new 
           DocLinkedWord(parent,name,
@@ -1662,30 +1670,30 @@ DocFormula::DocFormula(DocNode *parent,int id) :
 
 //---------------------------------------------------------------------------
 
-int DocLanguage::parse()
-{
-  int retval;
-  DBG(("DocLanguage::parse() start\n"));
-  g_nodeStack.push(this);
-
-  // parse one or more paragraphs
-  bool isFirst=TRUE;
-  DocPara *par=0;
-  do
-  {
-    par = new DocPara(this);
-    if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
-    retval=par->parse();
-  }
-  while (retval==TK_NEWPARA);
-  if (par) par->markLast();
-
-  DBG(("DocLanguage::parse() end\n"));
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
-  return retval;
-}
+//int DocLanguage::parse()
+//{
+//  int retval;
+//  DBG(("DocLanguage::parse() start\n"));
+//  g_nodeStack.push(this);
+//
+//  // parse one or more paragraphs
+//  bool isFirst=TRUE;
+//  DocPara *par=0;
+//  do
+//  {
+//    par = new DocPara(this);
+//    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+//    m_children.append(par);
+//    retval=par->parse();
+//  }
+//  while (retval==TK_NEWPARA);
+//  if (par) par->markLast();
+//
+//  DBG(("DocLanguage::parse() end\n"));
+//  DocNode *n = g_nodeStack.pop();
+//  ASSERT(n==this);
+//  return retval;
+//}
 
 //---------------------------------------------------------------------------
 
@@ -3627,50 +3635,49 @@ endref:
   doctokenizerYYsetStatePara();
 }
 
-
-int DocPara::handleLanguageSwitch()
-{
-  int retval=RetVal_OK;
-
-  if (!insideLang(this)) // start a language section at this level
-  {
-    do
-    {
-      int tok = doctokenizerYYlex();
-      if (tok==TK_WHITESPACE)
-      {
-        // end of language specific sections
-        retval=RetVal_OK;
-        goto endlang;
-      }
-      else if (tok==TK_NEWPARA)
-      {
-        // end of language specific sections
-        retval = tok;
-        goto endlang;
-      }
-      else if (tok==TK_WORD || tok==TK_LNKWORD)
-      {
-        DocLanguage *dl = new DocLanguage(this,g_token->name);
-        m_children.append(dl);
-        retval = dl->parse();
-      }
-      else
-      {
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s as parameter of \\~",
-            tokToString(tok));
-        goto endlang;
-      }
-    }
-    while (retval==RetVal_SwitchLang);        
-  }
-  else // return from this section
-  {
-    retval = RetVal_SwitchLang;
-  }
-endlang:
-  return retval;
-}
+//int DocPara::handleLanguageSwitch()
+//{
+//  int retval=RetVal_OK;
+//
+//  if (!insideLang(this)) // start a language section at this level
+//  {
+//    do
+//    {
+//      int tok = doctokenizerYYlex();
+//      if (tok==TK_WHITESPACE)
+//      {
+//        // end of language specific sections
+//        retval=RetVal_OK;
+//        goto endlang;
+//      }
+//      else if (tok==TK_NEWPARA)
+//      {
+//        // end of language specific sections
+//        retval = tok;
+//        goto endlang;
+//      }
+//      else if (tok==TK_WORD || tok==TK_LNKWORD)
+//      {
+//        DocLanguage *dl = new DocLanguage(this,g_token->name);
+//        m_children.append(dl);
+//        retval = dl->parse();
+//      }
+//      else
+//      {
+//        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s as parameter of \\~",
+//            tokToString(tok));
+//        goto endlang;
+//      }
+//    }
+//    while (retval==RetVal_SwitchLang);        
+//  }
+//  else // return from this section
+//  {
+//    retval = RetVal_SwitchLang;
+//  }
+//endlang:
+//  return retval;
+//}
 
 void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
 {
@@ -4091,9 +4098,9 @@ int DocPara::handleCommand(const QString &cmdName)
         m_children.append(form);
       }
       break;
-    case CMD_LANGSWITCH:
-      retval = handleLanguageSwitch();
-      break;
+    //case CMD_LANGSWITCH:
+    //  retval = handleLanguageSwitch();
+    //  break;
     case CMD_INTERNALREF:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
       break;

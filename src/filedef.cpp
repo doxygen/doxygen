@@ -34,6 +34,11 @@
 #include "searchindex.h"
 //#include "xml.h"
 
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#define popen _popen
+#define pclose _pclose
+#endif
+
 class DevNullCodeDocInterface : public BaseCodeDocInterface
 {
   public:
@@ -91,6 +96,7 @@ FileDef::FileDef(const char *p,const char *nm,
   }
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
+  acquireFileVersion();
 }
 
 /*! destroy the file definition */
@@ -212,6 +218,12 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   //printf("WriteDocumentation diskname=%s\n",diskname.data());
   
+  QCString versionTitle;
+  if (!fileVersion.isEmpty())
+  {
+    versionTitle=("("+fileVersion+")");
+  }
+  QCString title = docname+versionTitle;
   QCString pageTitle=theTranslator->trFileReference(docname);
   startFile(ol,getOutputFileBase(),name(),pageTitle);
 
@@ -228,14 +240,22 @@ void FileDef::writeDocumentation(OutputList &ol)
       ol.parseText(pageTitle); // other output formats
     ol.popGeneratorState();
     addGroupListToTitle(ol,this);
-    endTitle(ol,getOutputFileBase(),docname);
+    endTitle(ol,getOutputFileBase(),title);
   }
   else
   {
     startTitle(ol,getOutputFileBase());
     ol.parseText(pageTitle);
     addGroupListToTitle(ol,this);
-    endTitle(ol,getOutputFileBase(),docname);
+    endTitle(ol,getOutputFileBase(),title);
+  }
+  if (!fileVersion.isEmpty())
+  {
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.startProjectNumber();
+    ol.docify(versionTitle);
+    ol.endProjectNumber();
+    ol.enableAll();
   }
   
   if (Config_getBool("SEARCHENGINE"))
@@ -519,7 +539,12 @@ void FileDef::writeDocumentation(OutputList &ol)
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
-  QCString pageTitle = theTranslator->trSourceFile(docname);
+  QCString title = docname;
+  if (!fileVersion.isEmpty())
+  {
+    title+=(" ("+fileVersion+")");
+  }
+  QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,getSourceFileBase(),0,pageTitle);
 
@@ -528,12 +553,12 @@ void FileDef::writeSource(OutputList &ol)
     getDirDef()->writeNavigationPath(ol);
     startTitle(ol,getOutputFileBase());
     ol.parseText(name());
-    endTitle(ol,getOutputFileBase(),docname);
+    endTitle(ol,getOutputFileBase(),title);
   }
   else
   {
     startTitle(ol,0);
-    ol.parseText(docname);
+    ol.parseText(title);
     endTitle(ol,0,0);
   }
 
@@ -1116,3 +1141,33 @@ bool FileDef::isDocumentationFile() const
          name().right(4)==".txt" ||
          name().right(4)==".dox";
 }
+
+void FileDef::acquireFileVersion()
+{
+  QCString vercmd = Config_getString("FILE_VERSION_FILTER");
+  if (!vercmd.isEmpty()) 
+  {
+    msg("Version of %s : ",filepath.data());
+    FILE *f=popen(vercmd+" "+filepath,"r");
+    if (!f)
+    {
+      err("Error: could not execute %s\n",vercmd.data());
+      return;
+    }
+    const int bufSize=1024;
+    char buf[bufSize];
+    int numRead = fread(buf,1,bufSize,f);
+    pclose(f);
+    if (numRead > 0) 
+    {
+      fileVersion = QCString(buf,numRead).stripWhiteSpace();
+      msg("%s\n",fileVersion.data());
+    }
+    else 
+    {
+      msg("no version available\n");
+    }
+  }
+}
+
+

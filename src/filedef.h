@@ -109,6 +109,9 @@ class FileDef : public Definition
     
     /*! Returns the absolute path of this file. */ 
     QCString getPath() const { return path; }
+
+    /*! Returns version of this file. */
+    QCString getVersion() const { return fileVersion; }
     
     bool isLinkableInProject() const
     {
@@ -187,6 +190,13 @@ class FileDef : public Definition
     
     bool visited;
 
+  protected:
+    /**
+     * Retrieves the file version from version control system.
+     */
+    void acquireFileVersion();
+
+
   private: 
     
     QDict<IncludeInfo> *includeDict;
@@ -195,16 +205,15 @@ class FileDef : public Definition
     QList<IncludeInfo> *includedByList;
     NamespaceSDict *usingDirList;
     SDict<Definition> *usingDeclList;
-    //DefineList *defineList;
     QCString path;
     QCString filepath;
     QCString diskname;
     QCString filename;
     QCString docname;
-    //QCString incName;
     QIntDict<Definition> *srcDefDict;
     QIntDict<MemberDef> *srcMemberDict;
     bool isSource;
+    QCString fileVersion;
 
     PackageDef *package;
     DirDef     *dir;

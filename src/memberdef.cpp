@@ -605,12 +605,12 @@ bool MemberDef::isLinkableInProject() const
     //printf("in a class but class not linkable!\n");
     return FALSE; // in class but class not linkable
   }
-  if (!group && nspace && !nspace->isLinkableInProject()) 
+  if (!group && nspace && !related && !nspace->isLinkableInProject()) 
   {
     //printf("in a namespace but namespace not linkable!\n");
     return FALSE; // in namespace but namespace not linkable
   }
-  if (!group && !nspace && fileDef && !fileDef->isLinkableInProject()) 
+  if (!group && !nspace && !related && fileDef && !fileDef->isLinkableInProject()) 
   {
     //printf("in a file but file not linkable!\n");
     return FALSE; // in file (and not in namespace) but file not linkable
@@ -679,7 +679,7 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
   }
   QCString ltype(type);
   // strip `static' keyword from ltype
-  if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
+  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip `friend' keyword from ltype
   if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");
@@ -927,7 +927,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   QCString ltype(type);
   if (mtype==Typedef) ltype.prepend("typedef ");
   // strip `static' keyword from ltype
-  if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
+  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip `friend' keyword from ltype
   if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");

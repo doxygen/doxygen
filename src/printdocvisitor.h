@@ -534,16 +534,16 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</secreflist>\n");
     }
-    void visitPre(DocLanguage *l)
-    {
-      indent_pre();
-      printf("<language id=%s>\n",l->id().data());
-    }
-    void visitPost(DocLanguage *) 
-    {
-      indent_post();
-      printf("</language>\n");
-    }
+    //void visitPre(DocLanguage *l)
+    //{
+    //  indent_pre();
+    //  printf("<language id=%s>\n",l->id().data());
+    //}
+    //void visitPost(DocLanguage *) 
+    //{
+    //  indent_post();
+    //  printf("</language>\n");
+    //}
     void visitPre(DocParamList *pl)
     {
       indent_pre();

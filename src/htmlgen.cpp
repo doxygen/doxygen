@@ -46,7 +46,7 @@ static const char *defaultStyleSheet =
 "BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {\n"
 "	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "}\n"
-"BODY {\n"
+"BODY,TD {\n"
 "       font-size: 90%;\n"
 "}\n"
 "H1 {\n"
@@ -136,6 +136,11 @@ static const char *defaultStyleSheet =
 //"}\n"
 "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
 "TD.md { background-color: #F4F4FB; font-weight: bold; }\n"
+"TD.mdPrefix {\n"
+"       background-color: #F4F4FB;\n"
+"       color: #606060;\n"
+"	font-size: 80%;\n"
+"}\n"
 "TD.mdname1 { background-color: #F4F4FB; font-weight: bold; color: #602020; }\n"
 "TD.mdname { background-color: #F4F4FB; font-weight: bold; color: #602020; width: 600px; }\n"
 "DIV.groupHeader {\n"
@@ -1118,7 +1123,7 @@ void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td class=\"md\" colspan=\"4\">" << endl; 
+  t << "          <td class=\"mdPrefix\" colspan=\"4\">" << endl; 
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()

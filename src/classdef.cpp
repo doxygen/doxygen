@@ -936,6 +936,84 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
   }
 }
     
+void ClassDef::showUsedFiles(OutputList &ol)
+{
+  if (Config_getBool("SHOW_USED_FILES"))
+  {
+    ol.writeRuler();
+    ol.parseText(theTranslator->trGeneratedFromFiles(
+          m_isObjC && m_compType==Interface ? Class : m_compType,
+          m_files.count()==1));
+
+    bool first=TRUE;
+    const char *file = m_files.first();
+    while (file)
+    {
+      bool ambig;
+      FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
+      if (fd)
+      {
+        if (first)
+        {
+          first=FALSE;   
+          ol.startItemList();
+        }
+
+        ol.writeListItem();
+        QCString path=fd->getPath().copy();
+        if (Config_getBool("FULL_PATH_NAMES"))
+        {
+          ol.docify(stripFromPath(path));
+        }
+
+        QCString fname = fd->name();
+        if (!fd->getVersion().isEmpty()) // append version if available
+        {
+          fname += " (" + fd->getVersion() + ")";
+        }
+
+        // for HTML 
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        if (fd->generateSourceFile())
+        {
+          ol.writeObjectLink(0,fd->getSourceFileBase(),0,fname);
+        }
+        else if (fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+              fname);
+        }
+        else
+        {
+          ol.docify(fname);
+        }
+        ol.popGeneratorState();
+
+        // for other output formats
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::Html);
+        if (fd->isLinkable())
+        {
+          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+              fname);
+        }
+        else
+        {
+          ol.docify(fname);
+        }
+
+        ol.popGeneratorState();
+
+        
+      }
+      file=m_files.next();
+    }
+    if (!first) ol.endItemList();
+  }
+}
+
+
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
@@ -1389,73 +1467,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
 
-  if (Config_getBool("SHOW_USED_FILES"))
-  {
-    ol.writeRuler();
-    ol.parseText(theTranslator->trGeneratedFromFiles(
-          m_isObjC && m_compType==Interface ? Class : m_compType,
-          m_files.count()==1));
-
-    bool first=TRUE;
-    const char *file = m_files.first();
-    while (file)
-    {
-      bool ambig;
-      FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
-      if (fd)
-      {
-        if (first)
-        {
-          first=FALSE;   
-          ol.startItemList();
-        }
-
-        ol.writeListItem();
-        QCString path=fd->getPath().copy();
-        if (Config_getBool("FULL_PATH_NAMES"))
-        {
-          ol.docify(stripFromPath(path));
-        }
-
-        // for HTML 
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        if (fd->generateSourceFile())
-        {
-          ol.writeObjectLink(0,fd->getSourceFileBase(),0,fd->name());
-        }
-        else if (fd->isLinkable())
-        {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-              fd->name());
-        }
-        else
-        {
-          ol.docify(fd->name());
-        }
-        ol.popGeneratorState();
-
-        // for other output formats
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Html);
-        if (fd->isLinkable())
-        {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-              fd->name());
-        }
-        else
-        {
-          ol.docify(fd->name());
-        }
-
-        ol.popGeneratorState();
-
-        
-      }
-      file=m_files.next();
-    }
-    if (!first) ol.endItemList();
-  }
+  showUsedFiles(ol);
 
   // write Author section (Man only)
   ol.enable(OutputGenerator::Man);

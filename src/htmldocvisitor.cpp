@@ -835,24 +835,24 @@ void HtmlDocVisitor::visitPost(DocSecRefList *)
   m_t << "</multicol>" << endl;
 }
 
-void HtmlDocVisitor::visitPre(DocLanguage *l)
-{
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    pushEnabled();
-    m_hide = TRUE;
-  }
-}
-
-void HtmlDocVisitor::visitPost(DocLanguage *l) 
-{
-  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
-  if (l->id().lower()!=langId.lower())
-  {
-    popEnabled();
-  }
-}
+//void HtmlDocVisitor::visitPre(DocLanguage *l)
+//{
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    pushEnabled();
+//    m_hide = TRUE;
+//  }
+//}
+//
+//void HtmlDocVisitor::visitPost(DocLanguage *l) 
+//{
+//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  if (l->id().lower()!=langId.lower())
+//  {
+//    popEnabled();
+//  }
+//}
 
 void HtmlDocVisitor::visitPre(DocParamSect *s)
 {

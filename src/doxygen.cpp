@@ -1408,12 +1408,11 @@ static MemberDef *addVariableToClass(
     Entry *root,
     ClassDef *cd,
     MemberDef::MemberType mtype,
-    /*const QCString &scope,*/
     const QCString &name,
     bool fromAnnScope,
-    /*int indentDepth,*/
     MemberDef *fromAnnMemb,
-    Protection prot)
+    Protection prot,
+    bool related)
 {
   QCString qualScope = cd->qualifiedNameWithTemplateParameters();
   QCString scopeSeparator="::";
@@ -1437,7 +1436,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if (mtype==MemberDef::Friend || Config_getBool("HIDE_SCOPE_NAMES"))
+    if (related || mtype==MemberDef::Friend || Config_getBool("HIDE_SCOPE_NAMES"))
     {
       def=root->type+" "+name+root->args;
     }
@@ -1481,7 +1480,7 @@ static MemberDef *addVariableToClass(
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
       root->type,name,root->args,0,
-      prot,Normal,root->stat,FALSE,
+      prot,Normal,root->stat,related,
       mtype,0,0);
   if (root->tagInfo) 
   {
@@ -1636,24 +1635,6 @@ static MemberDef *addVariableToFile(
         md->setRefItems(root->sli);
         return md;
       }
-      
-      // TODO: rethink why we would need this!
-      //if (nd==0 && md->isExplicit()!=root->explicitExternal)
-      //{
-      //  // merge ingroup specifiers
-      //  if (md->getGroupDef()==0 && root->groups->first())
-      //  {
-      //    //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-      //    //md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
-      //    addMemberToGroups(root,md);
-      //  }
-      //  else if (md->getGroupDef()!=0 && root->groups->count()==0)
-      //  {
-      //    // enabling has the result that an ungrouped, undocumented external variable is put
-      //    // in a group if the definition is documented and grouped!
-      //    //root->groups->append(new Grouping(md->getGroupDef()->name(), md->getGroupPri()));
-      //  }
-      //}
     } 
   }
   // new global variable, enum value or typedef
@@ -1667,8 +1648,6 @@ static MemberDef *addVariableToFile(
     md->setAnchor(root->tagInfo->anchor);
     md->setReference(root->tagInfo->tagName);
   }
-  //md->setDefFile(root->fileName);
-  //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -1937,8 +1916,15 @@ static void buildVarList(Entry *root)
          cd=getClass(scope);
          if (cd)
          {
-           addVariableToClass(root,cd,MemberDef::Friend,/*scope,*/
-                               root->name,FALSE,/*0,*/0,Public);
+           addVariableToClass(root,  // entry
+                              cd,    // class to add member to
+                              MemberDef::Friend, // type of member
+                              root->name, // name of the member
+                              FALSE,  // from Anonymous scope
+                              0,      // anonymous member
+                              Public, // protection
+                              FALSE   // related to a class
+                             );
          }
       }
       goto nextMember;
@@ -1968,6 +1954,17 @@ static void buildVarList(Entry *root)
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
     scope=classScope;
+
+    bool isRelated=FALSE;
+    if (!root->relates.isEmpty()) // related variable
+    {
+      isRelated=TRUE;
+      if (getClass(root->relates)==0 && !scope.isEmpty())
+        scope=mergeScopes(scope,root->relates);
+      else 
+        scope=root->relates.copy();
+    }
+    
     if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
     {
       // TODO: clean up this mess!
@@ -1991,9 +1988,15 @@ static void buildVarList(Entry *root)
         {
           if (!pScope.isEmpty() && (pcd=getClass(pScope)))
           {
-            //Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
-            md=addVariableToClass(root,pcd,mtype,name,
-                     TRUE,0,root->protection);
+            md=addVariableToClass(root,  // entry
+                                  pcd,   // class to add member to
+                                  mtype, // member type
+                                  name,  // member name
+                                  TRUE,  // from anonymous scope
+                                  0,     // from anonymous member
+                                  root->protection,
+                                  isRelated
+                                 );
             added=TRUE;
           }
           else // annonymous scope inside namespace or file => put variable in the global scope
@@ -2008,8 +2011,14 @@ static void buildVarList(Entry *root)
       //                   scope.right(scope.length()-si).data(),
       //                   indentDepth,
       //                   anonyScopes);
-      addVariableToClass(root,cd,mtype,name,
-          FALSE,md,root->protection);
+      addVariableToClass(root,   // entry
+                         cd,     // class to add member to
+                         mtype,  // member type
+                         name,   // name of the member
+                         FALSE,  // from anonymous scope
+                         md,     // from anonymous member
+                         root->protection, 
+                         isRelated);
     }
     else if (!name.isEmpty()) // global variable
     {
@@ -5452,17 +5461,18 @@ static void findEnums(Entry *root)
     ClassDef       *cd=0;
     FileDef        *fd=0;
     NamespaceDef   *nd=0;
-    //MemberNameDict *mnd=0;
-    //MemberNameList *mnl=0;
     MemberNameSDict *mnsd=0;
     bool isGlobal;
-    //printf("Found enum with name `%s'\n",root->name.data());
+    bool isRelated=FALSE;
+    //printf("Found enum with name `%s' relates=%s\n",root->name.data(),root->relates.data());
     int i;
 
     QCString name;
+    QCString scope;
+
     if ((i=root->name.findRev("::"))!=-1) // scope is specified
     {
-      QCString scope=root->name.left(i); // extract scope
+      scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
       if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
     }
@@ -5472,24 +5482,31 @@ static void findEnums(Entry *root)
           && !root->parent->name.isEmpty()
          ) // found enum docs inside a compound
       {
-        QCString scope=root->parent->name;
+        scope=root->parent->name;
         if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
       }
       name=root->name.copy();
     }
+
+    if (!root->relates.isEmpty()) 
+    {   // related member, prefix user specified scope
+      isRelated=TRUE;
+      if (getClass(root->relates)==0 && !scope.isEmpty())
+        scope=mergeScopes(scope,root->relates);
+      else 
+        scope=root->relates.copy();
+      if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
+    }
+
     if (cd && !name.isEmpty()) // found a enum inside a compound
     {
       //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
       fd=0;
-      //mnd=&Doxygen::memberNameDict;
-      //mnl=&Doxygen::memberNameList;
       mnsd=&Doxygen::memberNameSDict;
       isGlobal=FALSE;
     }
     else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
     {
-      //mnd=&Doxygen::functionNameDict;
-      //mnl=&Doxygen::functionNameList;
       mnsd=&Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
@@ -5497,26 +5514,24 @@ static void findEnums(Entry *root)
     {
       bool ambig;
       fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-      //mnd=&Doxygen::functionNameDict;
-      //mnl=&Doxygen::functionNameList;
       mnsd=&Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
+
     if (!name.isEmpty())
     {
       // new enum type
       md = new MemberDef(
           root->fileName,root->startLine,
-          0,name,0,0,root->protection,Normal,FALSE,FALSE,
-          MemberDef::Enumeration,0,0);
+          0,name,0,0,
+          root->protection,Normal,FALSE,isRelated,MemberDef::Enumeration,
+          0,0);
       if (root->tagInfo) 
       {
         md->setAnchor(root->tagInfo->anchor);
         md->setReference(root->tagInfo->tagName);
       }
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
-      //md->setDefFile(root->fileName);
-      //md->setDefLine(root->startLine);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
       md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
@@ -5525,14 +5540,10 @@ static void findEnums(Entry *root)
       md->addSectionsToDefinition(root->anchors);
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
-      //if (root->mGrpId!=-1) 
-      //{
-      //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-      //}
       md->setRefItems(root->sli);
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
-        if (Config_getBool("HIDE_SCOPE_NAMES"))
+        if (isRelated || Config_getBool("HIDE_SCOPE_NAMES"))
         {
           md->setDefinition(name);  
         }
@@ -5564,7 +5575,7 @@ static void findEnums(Entry *root)
       }
       else if (cd)
       {
-        if (Config_getBool("HIDE_SCOPE_NAMES"))
+        if (isRelated || Config_getBool("HIDE_SCOPE_NAMES"))
         {
           md->setDefinition(name);  
         }
@@ -5591,8 +5602,6 @@ static void findEnums(Entry *root)
       {
         mn = new MemberName(name);
         mn->append(md);
-        //mnd->insert(name,mn);
-        //mnl->append(mn);
         mnsd->append(name,mn);
         //printf("add %s to new memberName. Now %d members\n",
         //       name.data(),mn->count());
@@ -5603,8 +5612,10 @@ static void findEnums(Entry *root)
       Entry *e;
       for (;(e=eli.current());++eli)
       {
+        //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
         MemberName *fmn=0;
-        if (!e->name.isEmpty() && (fmn=(*mnsd)[e->name])) 
+        MemberNameSDict *emnsd = isRelated ? &Doxygen::functionNameSDict : mnsd;
+        if (!e->name.isEmpty() && (fmn=(*emnsd)[e->name])) 
            // get list of members with the same name as the field
         {
           MemberNameIterator fmni(*fmn);
@@ -5613,6 +5624,7 @@ static void findEnums(Entry *root)
           {
             if (fmd->isEnumValue())
             {
+              //printf("found enum value with same name\n");
               if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
               {
                 NamespaceDef *fnd=fmd->getNamespaceDef();
@@ -5630,6 +5642,16 @@ static void findEnums(Entry *root)
                   md->insertEnumField(fmd);
                   fmd->setEnumScope(md);
                 }
+              }
+              else if (isRelated && cd) // reparent enum value to
+                                        // match the enum's scope
+              {
+                md->insertEnumField(fmd);   // add field def to list
+                fmd->setEnumScope(md);      // cross ref with enum name
+                fmd->setEnumClassScope(cd); // cross ref with enum name
+                fmd->setOuterScope(cd);
+                fmd->makeRelated();
+                cd->insertMember(fmd);
               }
               else
               {
@@ -8199,7 +8221,7 @@ void parseInput()
   compoundKeywordDict.insert("exception",(void *)8);
 
   bool alwaysRecursive = Config_getBool("RECURSIVE");
-    
+
   /**************************************************************************
    *             Read and preprocess input                                  *
    **************************************************************************/

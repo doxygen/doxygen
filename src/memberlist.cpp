@@ -228,7 +228,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.startMemberItem(0);
               ol.writeString("enum ");
               ol.insertMemberAlign();
-              //ol+=typeDecl; // append the enum values.
               md->writeEnumDeclaration(ol,cd,nd,fd,gd);
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
