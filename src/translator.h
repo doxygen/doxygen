@@ -230,7 +230,7 @@ class Translator
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
-     *  compounds or files (see the \group command).
+     *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Modules"; }
@@ -591,47 +591,47 @@ class Translator
       return (QCString)"Inheritance diagram for "+clName+":";
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "For internal use only."; }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
     { return "Reimplemented for internal reasons; the API is not affected."; }
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Warning"; }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
     { return "Bugs and limitations"; }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
     { return "Version"; }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return "Date"; }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     virtual QCString trAuthors()
     { return "Author(s)"; }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
     { return "Returns"; }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
     { return "See also"; }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
     { return "Parameters"; }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Exceptions"; }
     
@@ -1239,7 +1239,7 @@ class Translator
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
     
-    /*! Used as a marker that is put before a \bug item */
+    /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
       return "Bug";

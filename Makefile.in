@@ -55,16 +55,16 @@ install: doxywizard_install
 	$(INSTTOOL) -m 755 bin/doxysearch $(INSTALL)/bin
 	cp -r doc $(DOCDIR)
 	cp -r examples $(DOCDIR)
-	echo "DOXYGEN  = $(INSTALL)" > $(DOCDIR)/doc/Makefile
-	echo "DOXYDOCS = .." >> $(DOCDIR)/doc/Makefile
+	echo "DOXYGEN  = $(INSTALL)" >  $(DOCDIR)/doc/Makefile
+	echo "DOXYDOCS = .."         >> $(DOCDIR)/doc/Makefile
 	echo "VERSION  = $(VERSION)" >> $(DOCDIR)/doc/Makefile
-	cat doc/Makefile.in >> $(DOCDIR)/doc/Makefile
+	cat doc/Makefile.in          >> $(DOCDIR)/doc/Makefile
 	cd $(DOCDIR)/examples ; $(MAKE)
 	cd $(DOCDIR)/doc ; $(MAKE)
 	rm -rf $(DOCDIR)/doc
 	cd $(DOCDIR)/latex ; $(MAKE)
-	cp $(DOCDIR)/latex/doxygen_manual.pdf $(INSTALL)/doc/doxygen
-	cp $(DOCDIR)/latex/doxygen_manual.ps $(INSTALL)/doc/doxygen
+	cp $(DOCDIR)/latex/doxygen_manual.pdf $(DOCDIR)
+	cp $(DOCDIR)/latex/doxygen_manual.ps  $(DOCDIR)
 	rm -rf $(DOCDIR)/latex
 
 docs: FORCE

@@ -81,7 +81,8 @@ class HtmlGenerator : public OutputGenerator
                        const char *anchor,const char *name);
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
-    void writeHtmlLink(const char *url,const char *text);
+    void startHtmlLink(const char *url);
+    void endHtmlLink();
     void writeMailLink(const char *url);
     void startTypewriter() { t << "<code>"; }
     void endTypewriter()   { t << "</code>"; }
@@ -172,6 +173,7 @@ class HtmlGenerator : public OutputGenerator
     void writeTilde(char c)   { t << "&" << c << "tilde;"; } 
     void writeRing(char c)    { t << "&" << c << "ring;"; }
     void writeSharpS()        { t << "&szlig;"; }
+    void writeCCedil(char c)  { t << "&" << c << "cedil;"; }
     void startDescList()      { t << "<dl compact><dt>" << endl; }
     void endDescList()        { t << "</dl>"; }
     void startParamList()     { startDescList(); }

@@ -103,14 +103,17 @@ class BaseOutputDocInterface
     virtual void writeCodeLink(const char *ref,const char *file,
                                const char *anchor,const char *text) = 0;
 
-    /*! Writes a (link to an) URL found in the documentation.
-     *  \param url    To URL to link to.
-     *  \param text   The text to display as a placeholder for the link.
+    /*! Starts a (link to an) URL found in the documentation.
+     *  \param url    The URL to link to.
      */
-    virtual void writeHtmlLink(const char *url,const char *text) = 0;
+    virtual void startHtmlLink(const char *url) = 0;
+
+    /*! Ends a link started by startHtmlLink().
+     */
+    virtual void endHtmlLink() = 0;
 
     /*! Writes a (link to an) email address found in the documentation.
-     *  \param url    To email address, this is also used for the link text.
+     *  \param url    The email address, this is also used for the link text.
      */
     virtual void writeMailLink(const char *url) = 0;
     
@@ -202,6 +205,7 @@ class BaseOutputDocInterface
     virtual void writeTilde(char) = 0;
     virtual void writeRing(char) = 0;
     virtual void writeSharpS() = 0;
+    virtual void writeCCedil(char) = 0;
     virtual void startDescList() = 0;
     virtual void endDescList() = 0;
     virtual void startParamList() = 0;

@@ -1317,27 +1317,30 @@ void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
 //  t << "}{\\pageref{" << text << "}}" << endl;
 //}
 
-void RTFGenerator::writeHtmlLink(const char *url,const char *text)
+void RTFGenerator::startHtmlLink(const char *url)
 {
 
-  if (url && Config::rtfHyperFlag)
+  if (Config::rtfHyperFlag)
   {
     t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
     t << url;
     t << "\" }{}";
     t << "}{\\fldrslt {\\cs37\\ul\\cf2 "; 
-
-    if (text)
-      docify(text);
-    else
-      docify(url);
-
-    t << "}}}" << endl;
   }
   else
   {
     startTypewriter();
-    docify(text);
+  }
+}
+
+void RTFGenerator::endHtmlLink()
+{
+  if (Config::rtfHyperFlag)
+  {
+    t << "}}}" << endl;
+  }
+  else
+  {
     endTypewriter();
   }
 }
@@ -2260,6 +2263,16 @@ void RTFGenerator::writeRing(char c)
   {
     case 'A' : t << '\305'; break;
     case 'a' : t << '\345'; break;
+    default: t << '?'; break;
+  }
+}
+
+void RTFGenerator::writeCCedil(char c)
+{
+  switch(c)
+  {
+    case 'C' : t << '\307'; break;
+    case 'c' : t << '\347'; break;
     default: t << '?'; break;
   }
 }

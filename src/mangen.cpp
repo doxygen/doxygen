@@ -171,9 +171,12 @@ void ManGenerator::writeCodeLink(const char *,const char *,
   docify(name);
 }
 
-void ManGenerator::writeHtmlLink(const char *,const char *text)
+void ManGenerator::startHtmlLink(const char *)
 {
-  docify(text);
+}
+
+void ManGenerator::endHtmlLink()
+{
 }
 
 void ManGenerator::writeMailLink(const char *url)

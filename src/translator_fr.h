@@ -31,6 +31,12 @@ class TranslatorFrench : public Translator
     QCString latexBabelPackage()
     { return "french"; }
 
+    /*! return the language charset. This will be used for the HTML output */
+    virtual QCString idLanguageCharset()
+    {
+        return "iso-8859-1";
+    }
+
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions()
     { return "Fonctions associées"; }

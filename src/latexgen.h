@@ -78,7 +78,8 @@ class LatexGenerator : public OutputGenerator
                        const char *anchor,const char *text);
     void startTextLink(const char *,const char *);
     void endTextLink();
-    void writeHtmlLink(const char *,const char *);
+    void startHtmlLink(const char *);
+    void endHtmlLink();
     void writeMailLink(const char *);
     void startTypewriter() { t << "{\\tt "; }
     void endTypewriter()   { t << "}";      }
@@ -110,8 +111,12 @@ class LatexGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment() { t << "\\footnotesize\\begin{verbatim}"; }
     void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
-    void startPreFragment()  { t << "\\small\\begin{alltt}"; }
-    void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; }
+    void startPreFragment()  { t << "\\small\\begin{alltt}"; 
+                               insidePre=TRUE; 
+                             }
+    void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; 
+                               insidePre=FALSE; 
+                             }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }
     //void writeBoldString(const char *text) 
@@ -174,6 +179,7 @@ class LatexGenerator : public OutputGenerator
     void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
     void writeRing(char c)   { t << "\\" << c << c; }
     void writeSharpS()       { t << "\"s"; }
+    void writeCCedil(char c) { t << "\\c{" << c << "}"; }
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList()     { t << "\\begin{Desc}\n\\item["; }
@@ -244,6 +250,7 @@ class LatexGenerator : public OutputGenerator
     int col;
     bool insideTabbing;
     bool firstDescItem;
+    bool insidePre;
 };
 
 #endif

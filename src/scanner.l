@@ -146,6 +146,7 @@ static QStack<QCString> autoGroupNameStack;
 static QCString         lastDefGroup;
 
 static bool             insideFormula;
+static bool  	        insideTryBlock=FALSE;
 
 //-----------------------------------------------------------------------------
 
@@ -168,6 +169,7 @@ static void initParser()
   baseVirt = Normal;
   isTypedef = FALSE;
   autoGroupNameStack.clear();
+  insideTryBlock = FALSE;
 }
 
 static void initEntry()
@@ -426,6 +428,7 @@ TITLE     [tT][iI][tT][lL][eE]
 %x	SkipRound
 %x	SkipSquare
 %x	TypedefName
+%x	TryFunctionBlock
 %x	Comment
 %x      Doc
 %x	JavaDoc
@@ -1028,7 +1031,12 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    BEGIN(IDLUnionCase);
 					  }
-					  else 
+					  else if (insideTryBlock && strcmp(yytext,"catch")==0)
+					  {
+					    insideTryBlock=FALSE;
+					    BEGIN(TryFunctionBlock);
+					  }
+					  else
 					  {
 					    if (YY_START==FindMembers)
 					    {
@@ -1071,6 +1079,13 @@ TITLE     [tT][iI][tT][lL][eE]
 <IDLUnionCase>":"			{ BEGIN(FindMembers); }
 <IDLUnionCase>\n			{ yyLineNr++; }
 <IDLUnionCase>.
+<TryFunctionBlock>\n
+<TryFunctionBlock>"{"			{ 
+					  curlyCount=0;
+					  lastCurlyContext = FindMembers ;
+  					  BEGIN( SkipCurly );
+					}
+<TryFunctionBlock>.
 <EndCppQuote>")"			{
   					  insideCppQuote=FALSE;
 					  BEGIN(FindMembers);
@@ -1551,7 +1566,9 @@ TITLE     [tT][iI][tT][lL][eE]
 						BEGIN( FindMembers ) ;
 					      }
 					      else
+					      {
 						BEGIN( MemberSpec ) ;
+					      }
 					    }
 					  }
 					}
@@ -1985,6 +2002,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->args += ' ' ; 
 					}
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
+<FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
+					  insideTryBlock=TRUE;
+					}
 <FuncQual>{BN}*"throw"{BN}*"("		{ 
   					  current->exception = " throw (" ;
 					  roundCount=0;
@@ -2045,7 +2065,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  //}
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-					  if (*yytext!=';' || (current_root->section&Entry::SCOPE_MASK) )
+					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
 					    QCString tempName;

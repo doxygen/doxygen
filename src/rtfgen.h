@@ -78,7 +78,8 @@ class RTFGenerator : public OutputGenerator
                        const char *anchor,const char *text);
     void startTextLink(const char *f,const char *anchor);
     void endTextLink();
-    void writeHtmlLink(const char *,const char *);
+    void startHtmlLink(const char *);
+    void endHtmlLink();
     void writeMailLink(const char *url);
     void startTypewriter() { t << "{\\f2 "; }
     void endTypewriter()   { t << "}";      }
@@ -159,6 +160,7 @@ class RTFGenerator : public OutputGenerator
     void writeTilde(char c);
     void writeRing(char c);
     void writeSharpS()       { t << "\337"; }
+    void writeCCedil(char c);
 
     void startMemberDescription();
     void endMemberDescription();

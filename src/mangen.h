@@ -76,7 +76,8 @@ class ManGenerator : public OutputGenerator
                        const char *anchor,const char *name);
     void startTextLink(const char *,const char *) {}
     void endTextLink() {}
-    void writeHtmlLink(const char *url,const char *text);
+    void startHtmlLink(const char *url);
+    void endHtmlLink();
     void writeMailLink(const char *url);
     void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
     void endTypewriter()   { t << "\\fR"; firstCol=FALSE; }
@@ -164,6 +165,8 @@ class ManGenerator : public OutputGenerator
     void writeSharpS()        { t << "s\\*:";     /* just a wild guess,
                                                      need to check! */
                                                   firstCol=FALSE; }
+    void writeCCedil(char c)  { t << c;           /* TODO: fix this */
+                                firstCol=FALSE; }
     void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fR\""; firstCol=FALSE; }
     void startDescList();

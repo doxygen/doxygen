@@ -359,7 +359,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         started=TRUE;
       }
       //printf("Passed...\n");
-      bool hasChildren = !cd->visited && !hideSuper && cd->superClasses()->count()>0;
+      bool hasChildren = !cd->visited && !hideSuper && cd->subClasses()->count()>0;
       if (cd->isLinkable())
       {
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -395,7 +395,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
         bool wasVisited=cd->visited;
         cd->visited=TRUE;
-        writeClassTree(ol,cd->superClasses(),wasVisited);
+        writeClassTree(ol,cd->subClasses(),wasVisited);
       }
     }
   }
@@ -438,7 +438,7 @@ void writeClassTree(BaseClassList *cl)
         if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
       }
-      bool hasChildren = cd->superClasses()->count()>0;
+      bool hasChildren = cd->subClasses()->count()>0;
       if (cd->isLinkable())
       {
         if (hasHtmlHelp)
@@ -452,7 +452,7 @@ void writeClassTree(BaseClassList *cl)
       }
       if (hasChildren)
       {
-        writeClassTree(cd->superClasses());
+        writeClassTree(cd->subClasses());
       }
       cd->visited=TRUE;
     }
@@ -492,7 +492,7 @@ void writeClassTree(ClassList *cl)
       {
         started=TRUE;
       }
-      bool hasChildren = cd->superClasses()->count()>0;
+      bool hasChildren = cd->subClasses()->count()>0;
       if (cd->isLinkable())
       {
         if (hasHtmlHelp)
@@ -506,7 +506,7 @@ void writeClassTree(ClassList *cl)
       }
       if (hasChildren)
       {
-        writeClassTree(cd->superClasses());
+        writeClassTree(cd->subClasses());
       }
       cd->visited=TRUE;
     }
@@ -553,7 +553,7 @@ void writeClassHierarchy(OutputList &ol)
           if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
         }
-        bool hasChildren = !cd->visited && cd->superClasses()->count()>0; 
+        bool hasChildren = !cd->visited && cd->subClasses()->count()>0; 
         if (cd->isLinkable())
         {
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -586,7 +586,7 @@ void writeClassHierarchy(OutputList &ol)
         }
         if (hasChildren) 
         {
-          writeClassTree(ol,cd->superClasses(),cd->visited);
+          writeClassTree(ol,cd->subClasses(),cd->visited);
           cd->visited=TRUE;
         }
       }
@@ -610,7 +610,7 @@ int countClassHierarchy()
   ClassListIterator cli(Doxygen::classList);
   for ( ; cli.current(); ++cli)
   {
-    if (cli.current()->superClasses()->count()>0) count++;
+    if (cli.current()->subClasses()->count()>0) count++;
   }
   return count;
 }

@@ -732,6 +732,7 @@ static void buildClassList(Entry *root)
         cd->setTemplateArguments(root->tArgList);
         cd->setProtection(root->protection);
         cd->addSectionsToDefinition(root->anchors);
+
         // file definition containing the class cd
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
         cd->setBodyDef(fd);
@@ -1541,8 +1542,8 @@ void buildVarList(Entry *root)
         {
           if (!pScope.isEmpty() && (pcd=getClass(pScope)))
           {
-            Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
-            md=addVariableToClass(root,pcd,mtype,pScope,name,TRUE,indentDepth,0,p);
+            //Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
+            md=addVariableToClass(root,pcd,mtype,pScope,name,TRUE,indentDepth,0,root->protection);
           }
           else // annonymous scope inside namespace or file => put variable in the global scope
           {
@@ -2379,7 +2380,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           if (baseClassIsTypeDef) usedName=bi->name;
           cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
-          baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
+          baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           return TRUE;
         }
         else if (scopeOffset==0 && insertUndocumented)
@@ -2393,7 +2394,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->name,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
-          baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
+          baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileName);
           // add class to the list
@@ -2586,8 +2587,8 @@ static void addTodoTestBugReferences()
       Definition *d=md->getClassDef();
       QCString scopeName;
       if (d) scopeName=d->name();
-      if (d==0) d=md->getFileDef();
       if (d==0) d=md->getGroupDef();
+      if (d==0) d=md->getFileDef();
       // TODO: i18n this
       QCString memLabel="member";
       if (Config::optimizeForCFlag) memLabel="field";
@@ -2607,8 +2608,8 @@ static void addTodoTestBugReferences()
       Definition *d=md->getNamespaceDef();
       QCString scopeName;
       if (d) scopeName=d->name();
-      if (d==0) d=md->getBodyDef();
       if (d==0) d=md->getGroupDef();
+      if (d==0) d=md->getFileDef();
       // TODO: i18n this
       QCString memLabel="member";
       if (Config::optimizeForCFlag) memLabel="global";
@@ -3348,7 +3349,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
            "  related=`%s'\n" 
            "  exceptions=`%s'\n"
            "  isRelated=%d\n"
-           "  isFiend=%d\n"
+           "  isFriend=%d\n"
            "  isFunc=%d\n\n",
            namespaceName.data(),className.data(),classTempList.data(),
            funcType.data(),funcName.data(),funcArgs.data(),funcTempList.data(),
@@ -4298,7 +4299,7 @@ static void buildCompleteMemberLists()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (!cd->isReference() && // not an external class
-         cd->superClasses()->count()==0 && // is a root of the hierarchy
+         cd->subClasses()->count()==0 && // is a root of the hierarchy
          cd->baseClasses()->count()>0) // and has at least one base class
     {
       cd->mergeMembers();
@@ -4792,7 +4793,12 @@ static void buildPackageList(Entry *root)
     PackageDef *pd=0;
     if (!root->name.isEmpty() && (pd=Doxygen::packageDict.find(root->name))==0)
     {
-      pd = new PackageDef(root->fileName,root->startLine,root->name);
+      QCString tagName;
+      if (root->tagInfo)
+      {
+        tagName=root->tagInfo->tagName;
+      }
+      pd = new PackageDef(root->fileName,root->startLine,root->name,tagName);
       Doxygen::packageDict.inSort(root->name,pd);
     } 
     if (pd)
@@ -6207,7 +6213,9 @@ void generateOutput()
    *            Check/create output directorties                            *
    **************************************************************************/
   if (Config::outputDir.isEmpty()) 
+  {
     Config::outputDir=QDir::currentDirPath();
+  }
   else
   {
     QDir dir(Config::outputDir);

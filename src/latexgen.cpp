@@ -30,24 +30,24 @@
 #include "dot.h"
 #include "page.h"
 
-static QCString filterTitle(const char *s)
-{
-  QCString tmp=s,result;
-  uint i;for (i=0;i<tmp.length();i++)
-  {
-    char c=tmp.at(i);
-    switch(c)
-    {
-      case '#': result+="\\#";  break;
-      case '"': result+="\\\""; break;
-      case '%': result+="\\%";  break;
-      case '[': result+="{";    break;
-      case ']': result+="}";    break;
-      default:  result+=c;      break;
-    }
-  }
-  return result;  
-}
+//static QCString filterTitle(const char *s)
+//{
+//  QCString tmp=s,result;
+//  uint i;for (i=0;i<tmp.length();i++)
+//  {
+//    char c=tmp.at(i);
+//    switch(c)
+//    {
+//      case '#': result+="\\#";  break;
+//      case '"': result+="\\\""; break;
+//      case '%': result+="\\%";  break;
+//      case '[': result+="{";    break;
+//      case ']': result+="}";    break;
+//      default:  result+=c;      break;
+//    }
+//  }
+//  return result;  
+//}
 
 static QCString escapeLabelName(const char *s)
 {
@@ -98,6 +98,7 @@ LatexGenerator::LatexGenerator() : OutputGenerator()
   //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
   insideTabbing=FALSE;
   firstDescItem=TRUE;
+  insidePre=FALSE;
 }
 
 LatexGenerator::~LatexGenerator()
@@ -116,6 +117,7 @@ void LatexGenerator::append(const OutputGenerator *g)
   col+=((LatexGenerator *)g)->col;
   insideTabbing=insideTabbing || ((LatexGenerator *)g)->insideTabbing;
   firstDescItem = ((LatexGenerator *)g)->firstDescItem;
+  insidePre = insidePre || ((LatexGenerator *)g)->insidePre;
   //printf("LatexGenerator::append(%s) insideTabbing=%s\n", g->getContents().data(),
   //    insideTabbing ? "TRUE" : "FALSE" );
 }
@@ -124,6 +126,7 @@ OutputGenerator *LatexGenerator::copy()
 {
   LatexGenerator *result = new LatexGenerator;
   result->insideTabbing=insideTabbing;
+  result->insidePre=insidePre;
   return result;
 }
 
@@ -864,7 +867,7 @@ void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
 //}
 
 
-void LatexGenerator::writeHtmlLink(const char *url,const char *text)
+void LatexGenerator::startHtmlLink(const char *url)
 {
   if (Config::pdfHyperFlag)
   {
@@ -873,7 +876,10 @@ void LatexGenerator::writeHtmlLink(const char *url,const char *text)
     t << "}";
   }
   t << "{\\tt ";
-  docify(text);
+}
+
+void LatexGenerator::endHtmlLink()
+{
   t << "}";
 }
 
@@ -1026,7 +1032,7 @@ void LatexGenerator::endMemberHeader()
 void LatexGenerator::startMemberDoc(const char *clname,
                                     const char *memname,
                                     const char *,
-                                    const char *title)
+                                    const char *)
 { 
   if (memname && memname[0]!='@')
   {
@@ -1053,7 +1059,13 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "}" << endl;
   }
   if (Config::compactLatexFlag) t << "\\paragraph"; else t << "\\subsubsection";
-  if (Config::pdfHyperFlag && title) t << "[" << filterTitle(title) << "]";
+  if (Config::pdfHyperFlag && memname) 
+  {
+    t << "["; 
+    escapeMakeIndexChars(this,t,memname);
+    //filterTitle(title) 
+    t << "]";
+  }
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
 }
 
@@ -1127,7 +1139,14 @@ void LatexGenerator::startSection(const char *lab,const char *,bool sub)
     t << "\\hypertarget{" << lab << "}{}";
   }
   t << "\\";
-  if (sub) t << "subsection{"; else t << "section{";
+  if (Config::compactLatexFlag)
+  {
+    if (sub) t << "subsubsection{"; else t << "subsection{";
+  }
+  else
+  {
+    if (sub) t << "subsection{"; else t << "section{";
+  }
 }
 
 void LatexGenerator::endSection(const char *lab,bool)
@@ -1200,7 +1219,6 @@ void LatexGenerator::docify(const char *str)
   static bool isJapanese = theTranslator->idLanguage()=="japanese";
   static bool isKorean   = theTranslator->idLanguage()=="korean";
   static bool isRussian  = theTranslator->idLanguage()=="russian";
-  static bool isGerman   = theTranslator->idLanguage()=="german";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1209,159 +1227,169 @@ void LatexGenerator::docify(const char *str)
     while (*p)
     {
       c=*p++;
-      switch(c)
+      if (insidePre)
       {
-        case '#':  t << "\\#";           break;
-        case '$':  t << "\\$";           break;
-        case '%':  t << "\\%";           break;
-        case '^':  t << "$^\\wedge$";    break;
-        case '&':  t << "\\&";           break;
-        case '*':  t << "$\\ast$";       break;
-        case '_':  t << "\\_"; 
-                   if (!insideTabbing) t << "\\-";  
-                   break;
-        case '{':  t << "\\{";           break;
-        case '}':  t << "\\}";           break;
-        case '<':  t << "$<$";           break;
-        case '>':  t << "$>$";           break;
-        case '|':  t << "$|$";           break;
-        case '~':  t << "$\\sim$";       break;
-        case '[':  if (Config::pdfHyperFlag) 
-                     t << "\\mbox{[}"; 
-                   else 
-                     t << "[";
-                   break;
-        case ']':  if (pc=='[') t << "$\\,$";
-                   if (Config::pdfHyperFlag)
-                     t << "\\mbox{]}";
-                   else
-                     t << "]";             
-                   break;
-        case '-':  if (*p=='>') 
-                     { t << " $\\rightarrow$ "; p++; }
-                   else
+        switch(c)
+        {
+          case '\\': t << "\\(\\backslash\\)"; break;
+          case '{':  t << "\\{"; break;
+          case '}':  t << "\\}"; break;
+          default: t << (char)c; break;
+        }
+      }
+      else
+      {
+        switch(c)
+        {
+          case '#':  t << "\\#";           break;
+          case '$':  t << "\\$";           break;
+          case '%':  t << "\\%";           break;
+          case '^':  t << "$^\\wedge$";    break;
+          case '&':  t << "\\&";           break;
+          case '*':  t << "$\\ast$";       break;
+          case '_':  t << "\\_"; 
+                     if (!insideTabbing) t << "\\-";  
+                     break;
+          case '{':  t << "\\{";           break;
+          case '}':  t << "\\}";           break;
+          case '<':  t << "$<$";           break;
+          case '>':  t << "$>$";           break;
+          case '|':  t << "$|$";           break;
+          case '~':  t << "$\\sim$";       break;
+          case '[':  if (Config::pdfHyperFlag) 
+                       t << "\\mbox{[}"; 
+                     else 
+                       t << "[";
+                     break;
+          case ']':  if (pc=='[') t << "$\\,$";
+                       if (Config::pdfHyperFlag)
+                         t << "\\mbox{]}";
+                       else
+                         t << "]";             
+                     break;
+          case '-':  if (*p=='>') 
+                       { t << " $\\rightarrow$ "; p++; }
+                     else
                      { t << (char)c; }
-                   break;
-        case '\\': if (*p=='<') 
-                     { t << "$<$"; p++; }
-                   else if (*p=='>')
+                     break;
+          case '\\': if (*p=='<') 
+                       { t << "$<$"; p++; }
+                     else if (*p=='>')
                      { t << "$>$"; p++; } 
-                   else  
+                     else  
                      { t << "$\\backslash$"; }
-                   break;           
-        case '"':  if (isGerman) // " has a special meaning if German
-                                 // - Thomas Vesper
-                     { t << "\\char`\\\"{}"; }
-                   else
-                     { t << (char)c; }
-                   break;
-        
-        default:   
-          if (isJapanese || isKorean)
-          { // Japanese language uses wide characters
-            if (c>=128) 
-            {
-              t << (char)c;
-              if (*p)  
-              {
-                c = *p++;
-                t << (char)c;
-              }
-            }
-            else // ascii char => see if we can insert a hypenation hint
-            {
-              if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-              t << (char)c;    
-            } 
-          }
-          else if (isCzech || isRussian)
-          {
-            if (c>=128)
-            {
-              t << (char)c;
-            }
-            else // ascii char => see if we can insert a hypenation hint
-            {
-              if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-              t << (char)c;
-            }
-          }
-          else // language is other than Czech, Russian or Japanese
-          {
-            switch(c)
-            {
-              // the Latin-1 characters
-              case 161: t << "!`";            break;
-              case 181: t << "$\\mu$";        break;
-              case 191: t << "?`";            break;
-              case 192: t << "\\`{A}";        break;
-              case 193: t << "\\'{A}";        break;
-              case 194: t << "\\^{A}";        break;
-              case 195: t << "\\~{A}";        break;
-              case 196: t << "\\\"{A}";       break;
-              case 197: t << "\\AA{}";         break;
-              case 198: t << "\\AE{}";         break;
-              case 199: t << "\\c{C}";        break;
-              case 200: t << "\\`{E}";        break;
-              case 201: t << "\\'{E}";        break;
-              case 202: t << "\\^{E}";        break;
-              case 203: t << "\\\"{E}";       break;
-              case 204: t << "\\`{I}";        break;
-              case 205: t << "\\'{I}";        break;
-              case 206: t << "\\^{I}";        break;
-              case 207: t << "\\\"{I}";       break;
-              case 208: t << "D ";            break; // anyone know the real code?
-              case 209: t << "\\~{N}";        break;
-              case 210: t << "\\`{O}";        break;
-              case 211: t << "\\'{O}";        break;
-              case 212: t << "\\^{O}";        break;
-              case 213: t << "\\~{O}";        break;
-              case 214: t << "\\\"{O}";       break;
-              case 215: t << "$\\times$";     break;
-              case 216: t << "\\O";           break;
-              case 217: t << "\\`{U}";        break;
-              case 218: t << "\\'{U}";        break;
-              case 219: t << "\\^{U}";        break;
-              case 220: t << "\\\"{U}";       break;
-              case 221: t << "\\'{Y}";        break;
-              case 223: t << "\\ss{}";         break; 
-              case 224: t << "\\`{a}";        break;
-              case 225: t << "\\'{a}";        break;
-              case 226: t << "\\^{a}";        break;
-              case 227: t << "\\~{a}";        break;
-              case 228: t << "\\\"{a}";       break;
-              case 229: t << "\\aa{}";         break;
-              case 230: t << "\\ae{}";         break;
-              case 231: t << "\\c{c}";        break;
-              case 232: t << "\\`{e}";        break;
-              case 233: t << "\\'{e}";        break;
-              case 234: t << "\\^{e}";        break;
-              case 235: t << "\\\"{e}";       break;
-              case 236: t << "\\`{\\i}";      break;
-              case 237: t << "\\'{\\i}";      break;
-              case 238: t << "\\^{\\i}";      break;
-              case 239: t << "\\\"{\\i}";     break;
-              case 241: t << "\\~{n}";        break;
-              case 242: t << "\\`{o}";        break;
-              case 243: t << "\\'{o}";        break;
-              case 244: t << "\\^{o}";        break;
-              case 245: t << "\\~{o}";        break;
-              case 246: t << "\\\"{o}";       break;
-              case 248: t << "\\o{}";          break;
-              case 249: t << "\\`{u}";        break;
-              case 250: t << "\\'{u}";        break;
-              case 251: t << "\\^{u}";        break;
-              case 252: t << "\\\"{u}";       break;
-              case 253: t << "\\'{y}";        break;
-              case 255: t << "\\\"{y}";       break;           
-              default: // normal ascii char 
-              { 
-                // see if we can insert an hyphenation hint
-                if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                t << (char)c;    
-              }
-            }
-          }
+                     break;           
+          case '"':  { t << "\\char`\\\"{}"; }
+                     break;
+
+          default:   
+
+             if (isJapanese || isKorean)
+             { // Japanese language uses wide characters
+               if (c>=128) 
+               {
+                 t << (char)c;
+                 if (*p)  
+                 {
+                   c = *p++;
+                   t << (char)c;
+                 }
+               }
+               else // ascii char => see if we can insert a hypenation hint
+               {
+                 if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+                 t << (char)c;    
+               } 
+             }
+             else if (isCzech || isRussian)
+             {
+               if (c>=128)
+               {
+                 t << (char)c;
+               }
+               else // ascii char => see if we can insert a hypenation hint
+               {
+                 if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+                 t << (char)c;
+               }
+             }
+             else // language is other than Czech, Russian or Japanese
+             {
+               switch(c)
+               {
+                 // the Latin-1 characters
+                 case 161: t << "!`";            break;
+                 case 181: t << "$\\mu$";        break;
+                 case 191: t << "?`";            break;
+                 case 192: t << "\\`{A}";        break;
+                 case 193: t << "\\'{A}";        break;
+                 case 194: t << "\\^{A}";        break;
+                 case 195: t << "\\~{A}";        break;
+                 case 196: t << "\\\"{A}";       break;
+                 case 197: t << "\\AA{}";         break;
+                 case 198: t << "\\AE{}";         break;
+                 case 199: t << "\\c{C}";        break;
+                 case 200: t << "\\`{E}";        break;
+                 case 201: t << "\\'{E}";        break;
+                 case 202: t << "\\^{E}";        break;
+                 case 203: t << "\\\"{E}";       break;
+                 case 204: t << "\\`{I}";        break;
+                 case 205: t << "\\'{I}";        break;
+                 case 206: t << "\\^{I}";        break;
+                 case 207: t << "\\\"{I}";       break;
+                 case 208: t << "D ";            break; // anyone know the real code?
+                 case 209: t << "\\~{N}";        break;
+                 case 210: t << "\\`{O}";        break;
+                 case 211: t << "\\'{O}";        break;
+                 case 212: t << "\\^{O}";        break;
+                 case 213: t << "\\~{O}";        break;
+                 case 214: t << "\\\"{O}";       break;
+                 case 215: t << "$\\times$";     break;
+                 case 216: t << "\\O";           break;
+                 case 217: t << "\\`{U}";        break;
+                 case 218: t << "\\'{U}";        break;
+                 case 219: t << "\\^{U}";        break;
+                 case 220: t << "\\\"{U}";       break;
+                 case 221: t << "\\'{Y}";        break;
+                 case 223: t << "\\ss{}";         break; 
+                 case 224: t << "\\`{a}";        break;
+                 case 225: t << "\\'{a}";        break;
+                 case 226: t << "\\^{a}";        break;
+                 case 227: t << "\\~{a}";        break;
+                 case 228: t << "\\\"{a}";       break;
+                 case 229: t << "\\aa{}";         break;
+                 case 230: t << "\\ae{}";         break;
+                 case 231: t << "\\c{c}";        break;
+                 case 232: t << "\\`{e}";        break;
+                 case 233: t << "\\'{e}";        break;
+                 case 234: t << "\\^{e}";        break;
+                 case 235: t << "\\\"{e}";       break;
+                 case 236: t << "\\`{\\i}";      break;
+                 case 237: t << "\\'{\\i}";      break;
+                 case 238: t << "\\^{\\i}";      break;
+                 case 239: t << "\\\"{\\i}";     break;
+                 case 241: t << "\\~{n}";        break;
+                 case 242: t << "\\`{o}";        break;
+                 case 243: t << "\\'{o}";        break;
+                 case 244: t << "\\^{o}";        break;
+                 case 245: t << "\\~{o}";        break;
+                 case 246: t << "\\\"{o}";       break;
+                 case 248: t << "\\o{}";          break;
+                 case 249: t << "\\`{u}";        break;
+                 case 250: t << "\\'{u}";        break;
+                 case 251: t << "\\^{u}";        break;
+                 case 252: t << "\\\"{u}";       break;
+                 case 253: t << "\\'{y}";        break;
+                 case 255: t << "\\\"{y}";       break;           
+                 default: // normal ascii char 
+                           { 
+                             // see if we can insert an hyphenation hint
+                             if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+                             t << (char)c;    
+                           }
+               }
+             }
+        }
       }
       pc = c;
     }
