@@ -1544,6 +1544,17 @@ class TranslatorEnglish : public Translator
       return "Matches:";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return filename + " Source File";
+    }
+
 };
 
 #endif

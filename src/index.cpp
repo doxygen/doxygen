@@ -731,7 +731,7 @@ void writeHierarchicalIndex(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"hierarchy",0,"Hierarchical Index",HLI_Hierarchy);
+  startFile(ol,"hierarchy",0, theTranslator->trHierarchicalIndex().data(), HLI_Hierarchy);
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
@@ -782,9 +782,9 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 {
   if (hierarchyClasses==0) return;
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"inherits",0,"Graphical Class Hierarchy");
-  startTitle(ol,0);
   QCString title = theTranslator->trGraphicalHierarchy();
+  startFile(ol,"inherits",0,title.data());
+  startTitle(ol,0);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -861,7 +861,7 @@ void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"files",0,"File Index",HLI_Files);
+  startFile(ol,"files",0,theTranslator->trFileIndex().data(),HLI_Files);
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
   QCString htmlHelpTitle = title;
@@ -1068,12 +1068,12 @@ void writeNamespaceIndex(OutputList &ol)
   QCString title;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
-    startFile(ol,"namespaces",0,"Package Index",HLI_Namespaces);
+    startFile(ol,"namespaces",0,theTranslator->trPackageList().data(),HLI_Namespaces);
     title = theTranslator->trPackageList();
   }
   else
   {
-    startFile(ol,"namespaces",0,"Namespace Index",HLI_Namespaces);
+    startFile(ol,"namespaces",0,theTranslator->trNamespaceIndex().data(),HLI_Namespaces);
     title = theTranslator->trNamespaceList();
   }
   startTitle(ol,0);
@@ -1515,7 +1515,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   if (annotatedClasses==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"classes"+Doxygen::htmlFileExtension,0,"Alphabetical index",HLI_Classes);
+  startFile(ol,"classes"+Doxygen::htmlFileExtension,0,theTranslator->trAlphabeticalList().data(),HLI_Classes); 
   startTitle(ol,0);
   ol.parseText(Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
@@ -1536,9 +1536,9 @@ void writeAnnotatedIndex(OutputList &ol)
   
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"annotated",0,"Annotated Index",HLI_Annotated);
-  startTitle(ol,0);
   QCString title = theTranslator->trCompoundList();
+  startFile(ol,"annotated",0,title.data(),HLI_Annotated);
+  startTitle(ol,0);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -1652,14 +1652,14 @@ void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter
            (cd=md->getClassDef()) &&
            cd->isLinkableInProject() && cd->templateMaster()==0 &&
            ( filter==CMHL_All        && !(md->isFriend() && isFriendToHide) ||
-            (filter==CMHL_Functions  && (md->isFunction() || md->isSlot() || md->isSignal()))  ||
+            (filter==CMHL_Functions  && (md->isFunction()  || md->isSlot() || md->isSignal()))  ||
             (filter==CMHL_Variables  && md->isVariable())  ||
             (filter==CMHL_Typedefs   && md->isTypedef())   ||
             (filter==CMHL_Enums      && md->isEnumerate()) ||
             (filter==CMHL_EnumValues && md->isEnumValue()) ||
             (filter==CMHL_Properties && md->isProperty())  ||
             (filter==CMHL_Events     && md->isEvent())     ||
-            (filter==CMHL_Related    && (md->isRelated() || (md->isFriend() && !isFriendToHide)))
+            (filter==CMHL_Related    && (md->isRelated()   || (md->isFriend() && !isFriendToHide)))
            )
          ) 
       { 
@@ -1801,13 +1801,13 @@ void writeQuickMemberIndex(OutputList &ol,bool *charUsed)
 //----------------------------------------------------------------------------
 
 static void writeMemberIndexFiltered(OutputList &ol,
-                       const char *fileName,ClassMemberHighlight hl)
+                       const char *fileName,ClassMemberHighlight hl, 
+                       const QCString& title)
 {
   if (documentedClassMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,fileName,0,"Compound Member Index",HLI_Functions);
-  QCString title = theTranslator->trCompoundMembers();
+  startFile(ol,fileName,0,title.data(),HLI_Functions);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
   
@@ -1908,15 +1908,18 @@ static void writeMemberIndexFiltered(OutputList &ol,
 void writeMemberIndex(OutputList &ol)
 {
   QCString ext=Doxygen::htmlFileExtension;
-  writeMemberIndexFiltered(ol,"functions"+ext,CMHL_All);
-  writeMemberIndexFiltered(ol,"functions_func"+ext,CMHL_Functions);
-  writeMemberIndexFiltered(ol,"functions_vars"+ext,CMHL_Variables);
-  writeMemberIndexFiltered(ol,"functions_type"+ext,CMHL_Typedefs);
-  writeMemberIndexFiltered(ol,"functions_enum"+ext,CMHL_Enums);
-  writeMemberIndexFiltered(ol,"functions_eval"+ext,CMHL_EnumValues);
-  writeMemberIndexFiltered(ol,"functions_prop"+ext,CMHL_Properties);
-  writeMemberIndexFiltered(ol,"functions_evnt"+ext,CMHL_Events);
-  writeMemberIndexFiltered(ol,"functions_rela"+ext,CMHL_Related);
+  QCString title = theTranslator->trCompoundMembers();
+  writeMemberIndexFiltered(ol,"functions"+ext,CMHL_All,title);
+  title += " - ";
+  writeMemberIndexFiltered(ol,"functions_func"+ext,CMHL_Functions, title + theTranslator->trFunctions());
+  writeMemberIndexFiltered(ol,"functions_vars"+ext,CMHL_Variables, title + theTranslator->trVariables());
+  writeMemberIndexFiltered(ol,"functions_type"+ext,CMHL_Typedefs, title + theTranslator->trTypedefs());
+  writeMemberIndexFiltered(ol,"functions_enum"+ext,CMHL_Enums, title + theTranslator->trEnumerations());
+  writeMemberIndexFiltered(ol,"functions_eval"+ext,CMHL_EnumValues, title  + theTranslator->trEnumerationValues());
+  writeMemberIndexFiltered(ol,"functions_prop"+ext,CMHL_Properties, title + theTranslator->trProperties());
+  writeMemberIndexFiltered(ol,"functions_evnt"+ext,CMHL_Events, title + theTranslator->trEvents());
+  writeMemberIndexFiltered(ol,"functions_rela"+ext,CMHL_Related, title + theTranslator->trRelatedFunctions());
+
 }
 
 //----------------------------------------------------------------------------
@@ -2185,13 +2188,13 @@ int countFileMembers(int filter)
 //----------------------------------------------------------------------------
 
 static void writeFileMemberIndexFiltered(OutputList &ol,
-    const char *fileName,FileMemberHighlight hl)
+    const char *fileName,FileMemberHighlight hl, 
+    const QCString& title)
 {
   if (documentedFileMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,fileName,0,"File Member Index",HLI_Globals);
-  QCString title = theTranslator->trFileMembers();
+  startFile(ol,fileName,0,title.data(),HLI_Globals);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
 
@@ -2279,13 +2282,15 @@ static void writeFileMemberIndexFiltered(OutputList &ol,
 void writeFileMemberIndex(OutputList &ol)
 {
   QCString ext=Doxygen::htmlFileExtension;
-  writeFileMemberIndexFiltered(ol,"globals"+ext,FMHL_All);
-  writeFileMemberIndexFiltered(ol,"globals_func"+ext,FMHL_Functions);
-  writeFileMemberIndexFiltered(ol,"globals_vars"+ext,FMHL_Variables);
-  writeFileMemberIndexFiltered(ol,"globals_type"+ext,FMHL_Typedefs);
-  writeFileMemberIndexFiltered(ol,"globals_enum"+ext,FMHL_Enums);
-  writeFileMemberIndexFiltered(ol,"globals_eval"+ext,FMHL_EnumValues);
-  writeFileMemberIndexFiltered(ol,"globals_defs"+ext,FMHL_Defines);
+  QCString title = theTranslator->trFileMembers();
+  writeFileMemberIndexFiltered(ol,"globals"+ext,FMHL_All, title);
+  title += " - ";
+  writeFileMemberIndexFiltered(ol,"globals_func"+ext,FMHL_Functions, title + theTranslator->trFunctions());
+  writeFileMemberIndexFiltered(ol,"globals_vars"+ext,FMHL_Variables, title + theTranslator->trVariables());
+  writeFileMemberIndexFiltered(ol,"globals_type"+ext,FMHL_Typedefs, title + theTranslator->trTypedefs());
+  writeFileMemberIndexFiltered(ol,"globals_enum"+ext,FMHL_Enums, title + theTranslator->trEnumerations());
+  writeFileMemberIndexFiltered(ol,"globals_eval"+ext,FMHL_EnumValues, title + theTranslator->trEnumerationValues());
+  writeFileMemberIndexFiltered(ol,"globals_defs"+ext,FMHL_Defines, title + theTranslator->trDefines());
 }
 
 
@@ -2293,13 +2298,13 @@ void writeFileMemberIndex(OutputList &ol)
 
 static void writeNamespaceMemberIndexFiltered(OutputList &ol,
                                         const char *fileName,
-                                        NamespaceMemberHighlight hl)
+                                        NamespaceMemberHighlight hl,
+					const QCString& title)
 {
   if (documentedNamespaceMembers[hl]==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,fileName,0,"Namespace Member Index",HLI_NamespaceMembers);
-  QCString title = theTranslator->trNamespaceMembers();
+  startFile(ol,fileName,0,title.data(),HLI_NamespaceMembers);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
   //if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -2383,12 +2388,14 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
 void writeNamespaceMemberIndex(OutputList &ol)
 {
   QCString ext=Doxygen::htmlFileExtension;
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers"+ext,NMHL_All);
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_func"+ext,NMHL_Functions);
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_vars"+ext,NMHL_Variables);
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_type"+ext,NMHL_Typedefs);
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_enum"+ext,NMHL_Enums);
-  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_eval"+ext,NMHL_EnumValues);
+  QCString title = theTranslator->trNamespaceMembers();
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers"+ext,NMHL_All, title);
+  title += " - ";
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_func"+ext,NMHL_Functions, title + theTranslator->trFunctions());
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_vars"+ext,NMHL_Variables, title + theTranslator->trVariables());
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_type"+ext,NMHL_Typedefs, title + theTranslator->trTypedefs());
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_enum"+ext,NMHL_Enums, title + theTranslator->trEnumerations());
+  writeNamespaceMemberIndexFiltered(ol,"namespacemembers_eval"+ext,NMHL_EnumValues, title + theTranslator->trEnumerationValues()); 
 }
 
 //----------------------------------------------------------------------------
@@ -2398,9 +2405,9 @@ void writeExampleIndex(OutputList &ol)
   if (Doxygen::exampleSDict->count()==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"examples",0,"Example Index",HLI_Examples);
-  startTitle(ol,0);
   QCString title = theTranslator->trExamples();
+  startFile(ol,"examples",0,title.data(),HLI_Examples);
+  startTitle(ol,0);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -2486,7 +2493,7 @@ void writePageIndex(OutputList &ol)
   if (indexedPages==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"pages",0,"Page Index",HLI_Pages);
+  startFile(ol,"pages",0,theTranslator->trPageIndex().data(),HLI_Pages);
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
   QCString htmlHelpTitle = title;
@@ -2580,7 +2587,7 @@ void writeGraphInfo(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   generateGraphLegend(Config_getString("HTML_OUTPUT"));
-  startFile(ol,"graph_legend",0,"Graph Legend");
+  startFile(ol,"graph_legend",0,theTranslator->trLegendTitle().data());
   startTitle(ol,0);
   ol.parseText(theTranslator->trLegendTitle());
   endTitle(ol,0,0);
@@ -2986,7 +2993,7 @@ void writeGroupIndex(OutputList &ol)
   if (documentedGroups==0) return; 
   ol.pushGeneratorState(); 
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"modules",0,"Module Index",HLI_Modules);
+  startFile(ol,"modules",0,theTranslator->trModuleIndex().data(),HLI_Modules);
   startTitle(ol,0);
   QCString title = theTranslator->trModules();
   QCString htmlHelpTitle = title;

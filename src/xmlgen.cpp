@@ -810,7 +810,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 }
 
 static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
-                      MemberList *ml,const char *kind,const char *header=0)
+                      MemberList *ml,const char *kind,const char *header=0,
+                      const char *documentation=0)
 {
   if (ml->count()==0) return; // empty list
 
@@ -818,6 +819,12 @@ static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
   if (header)
   {
     t << "      <header>" << convertToXML(header) << "</header>" << endl;
+  }
+  if (documentation)
+  {
+    t << "      <description>";
+    writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
+    t << "</description>" << endl;
   }
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -928,9 +935,12 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      t << "    <basecompoundref refid=\"" 
-        << bcd->classDef->getOutputFileBase()
-        << "\" prot=\"";
+      t << "    <basecompoundref ";
+      if (bcd->classDef->isLinkable())
+      {
+        t << "refid=\"" << bcd->classDef->getOutputFileBase() << "\" ";
+      }
+      t << "prot=\"";
       switch (bcd->prot)
       {
         case Public:    t << "public";    break;
@@ -1013,7 +1023,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header(),
+                       mg->documentation());
   }
 
   generateXMLSection(cd,ti,t,&cd->pubTypes,"public-type");
@@ -1145,7 +1156,8 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header(),
+                       mg->documentation());
   }
 
   generateXMLSection(nd,ti,t,&nd->decDefineMembers,"define");
@@ -1280,7 +1292,8 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header(),
+                       mg->documentation());
   }
 
   generateXMLSection(fd,ti,t,&fd->decDefineMembers,"define");
@@ -1411,7 +1424,8 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header());
+    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header(),
+                       mg->documentation());
   }
 
   generateXMLSection(gd,ti,t,&gd->decDefineMembers,"define");
@@ -1580,12 +1594,23 @@ void generateXML()
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
 
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    msg("Generating XML output for class %s\n",cd->name().data());
-    generateXMLForClass(cd,t);
+    ClassSDict::Iterator cli(Doxygen::classSDict);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      msg("Generating XML output for class %s\n",cd->name().data());
+      generateXMLForClass(cd,t);
+    }
+  }
+  {
+    ClassSDict::Iterator cli(Doxygen::hiddenClasses);
+    ClassDef *cd;
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      msg("Generating XML output for class %s\n",cd->name().data());
+      generateXMLForClass(cd,t);
+    }
   }
   NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;

@@ -227,8 +227,30 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
   }
   else if ((i=ltype.find('<'))!=-1)
   {
-    // probably a template class, try without template arguments as well
-    addVariable(ltype.left(i),name);
+    // probably a template class
+    QCString typeName(ltype.left(i));
+    ClassDef* newDef = 0;
+    QCString templateArgs(ltype.right(ltype.length() - i));
+    if (  
+         ( // look for class definitions inside the code block
+	   (varType=g_codeClassSDict[typeName]) ||
+           // otherwise look for global class definitions
+           (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,typeName))
+	 ) && // and it must be a template
+         varType->templateArguments())
+    {
+      newDef = varType->getVariableInstance( templateArgs );
+    }
+    if (newDef)
+    {
+      DBG_CTX((stderr,"** addVariable type=%s templ=%s name=%s\n",typeName.data(),templateArgs.data(),lname.data()));
+      scope->append(lname, newDef);
+    }
+    else
+    {
+      // Doesn't seem to be a template. Try just the base name.
+      addVariable(typeName,name);
+    }
   }
   else // add a dummy entry so the name is hidden to avoid false links
   {
@@ -913,6 +935,8 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
       {
 
 	//printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
+
+	if (xmd->templateMaster()) xmd = xmd->templateMaster();
 
 	// add usage reference
 	if (g_currentDefinition && g_currentMemberDef &&

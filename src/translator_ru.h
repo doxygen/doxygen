@@ -18,7 +18,7 @@
  *
  * Nickolay Semyonov
  * Andrey V. Stolyarov released Feb 14, 2001
- * Alexandr V. Chelpanov <cav@cryptopro.ru> released Sep 16, 2003
+ * Alexandr V. Chelpanov <cav@cryptopro.ru> released Jun 16, 2004
  *
  * При переводе заголовков слова list и documentation убраны.
  *
@@ -42,7 +42,8 @@
  *
  * Определения помеченные ?? являются спорными.
  *
- * Благодарности: Vitaly A. Repin <vitaly@radio.hop.stu.neva.ru>
+ * Благодарности: Vitaly A. Repin <vitaly@radio.hop.stu.neva.ru>,
+ *    Михаил Глушенков <bbman@mail.ru>
  */
 
 #ifndef TRANSLATOR_RU_H
@@ -236,7 +237,7 @@ class TranslatorRussian : public Translator
     /*??*/
     virtual QCString trFileMembers()
     {
-      return decode( "Члены файла" );
+      return decode( "Список членов всех файлов" );
     }
 
     /*! This is put above each page as a link to all related pages. */
@@ -638,7 +639,7 @@ class TranslatorRussian : public Translator
      * related classes 
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return decode("Документация по друзьям класса и функциям отноносящимся"
+    { return decode("Документация по друзьям класса и функциям, отноносящимся"
         " к классу"); }
     
 //////////////////////////////////////////////////////////////////////////
@@ -779,14 +780,14 @@ class TranslatorRussian : public Translator
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return decode("Члены пространства имен"); }
+    { return decode("Члены пространств имен"); }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
       QCString result="Полный список ";
       if (!extractAll) result+="документированных ";
-      result+="членов простанства имен.";
+      result+="членов простанств имен.";
       return decode(result);
     }
 
@@ -794,7 +795,7 @@ class TranslatorRussian : public Translator
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return decode("Алфавитный указатель пространства имен"); }
+    { return decode("Алфавитный указатель пространств имен"); }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
@@ -1061,7 +1062,7 @@ class TranslatorRussian : public Translator
     }
     virtual QCString trInclByDepGraph()
     {
-      return decode("Граф файлов, в которые включеется этот файл:");
+      return decode("Граф файлов, в которые включается этот файл:");
     }
     virtual QCString trSince()
     /*??*/
@@ -1128,16 +1129,16 @@ class TranslatorRussian : public Translator
         "</ul>\n"
         "Стрелки имеют следующее значение:\n"
         "<ul>\n"
-        "<li>Темносиняя стрелка используется для изображения отношения открытого наследования "
+        "<li>Темно-синяя стрелка используется для изображения отношения открытого наследования "
         "между двумя классами.\n"
-        "<li>Темнозеленая стрелка используется при защищенном наследовании.\n"
-        "<li>Темнокрасная стрелка используется при закрытом наследовании.\n"
+        "<li>Темно-зеленая стрелка используется при защищенном наследовании.\n"
+        "<li>Темно-красная стрелка используется при закрытом наследовании.\n"
         "<li>Фиолетовая стрелка используется, если класс содержится в"
         "другом класе или используется другим классом."
         "Со стрелкой указывается переменная, "
         "через которую доступен указываемый класс или структура. \n"
         "<li>Желтая стрелка используется для связи подстановки шаблона и "
-        "шаблона, на основе которого эта подстановка выплднена. С шаблоном"
+        "шаблона, на основе которого эта подстановка выполнена. С шаблоном"
         "указывается параметр подстановки.\n"
         "</ul>\n");
     }
@@ -1545,13 +1546,12 @@ class TranslatorRussian : public Translator
       }
       else if( numDocuments == 1 )
       {
-        return decode( "Найдено <b>$num</b> документ" ) + as_documents( numDocuments )
-          + ".";
+        return decode( "Найден 1 документ." );
       }
       else 
       {
-        return decode( "Найдено <b>$num</b> документ" ) + as_documents( numDocuments )
-          + decode( ". Документы отсортированы по релевантности." );
+        return decode( "Найден(о) <b>$num</b> документ(ов). "
+          "Документы отсортированы по релевантности." );
       }
     }
     /*! This string is put before the list of matched words, for each search 
@@ -1562,12 +1562,15 @@ class TranslatorRussian : public Translator
       return decode( "Найдено:" );
     }
 
-private:
-    QCString as_documents( int num )
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
     {
-      if( num % 10 == 1 ) return "";
-      if( (num % 10) >= 2 && (num % 10) <= 4 ) return decode( "а" );
-      return decode( "ов" );
+      return "Исходный файл " + filename;
     }
 };
 

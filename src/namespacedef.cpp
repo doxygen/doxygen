@@ -264,18 +264,19 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
   
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
-  QCString pageTitle=displayName()+" Namespace Reference";
-  startFile(ol,getOutputFileBase(),name(),pageTitle);
-  startTitle(ol,getOutputFileBase());
-  //ol.docify(pageTitle);
+  QCString pageTitle;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
-    ol.parseText(theTranslator->trPackage(displayName()));
+    pageTitle = theTranslator->trPackage(displayName());
   }
   else
   {
-    ol.parseText(theTranslator->trNamespaceReference(displayName()));
+    pageTitle = theTranslator->trNamespaceReference(displayName());
   }
+  startFile(ol,getOutputFileBase(),name(),pageTitle);
+  startTitle(ol,getOutputFileBase());
+  //ol.docify(pageTitle);
+  //ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   

@@ -359,14 +359,6 @@ followed by the descriptions of the tags grouped by category.
  (but less readable) file names. This can be useful is your file systems
  doesn't support long names like on DOS, Mac, or CD-ROM.
 
-\anchor cfg_verbatim_headers
-<dt>\c VERBATIM_HEADERS <dd>
- \addindex VERBATIM_HEADERS
-  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
-  will generate a verbatim copy of the header file for each class for
-  which an include is specified. Set to NO to disable this.
-  \sa Section \ref cmdclass "\\class".
-
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
  \addindex JAVADOC_AUTOBRIEF
@@ -829,6 +821,14 @@ function's detailed documentation block.
  If the \c REFERENCES_RELATION tag is set to \c YES (the default)
  then for each documented function all documented entities
  called/used by that function will be listed. 
+
+\anchor cfg_verbatim_headers
+<dt>\c VERBATIM_HEADERS <dd>
+ \addindex VERBATIM_HEADERS
+  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
+  will generate a verbatim copy of the header file for each class for
+  which an include is specified. Set to NO to disable this.
+  \sa Section \ref cmdclass "\\class".
 
 </dl>
 

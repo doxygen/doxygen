@@ -32,7 +32,7 @@
 #include "translator.h"
 #include "../qtools/qdatetime.h"
 
-class TranslatorHungarian : public Translator
+class TranslatorHungarian : public TranslatorAdapter_1_3_8
 {
   private:
     const char * zed(char c)

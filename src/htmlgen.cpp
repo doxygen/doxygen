@@ -125,7 +125,7 @@ static const char *defaultStyleSheet =
 "       font-weight: bold;\n"
 "	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "}\n"
-"DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
+"DIV.groupText { margin-left: 16px; font-style: italic; font-size: 14px }\n"
 "BODY {\n"
 "	background: white;\n"
 "	color: black;\n"
@@ -179,10 +179,10 @@ static const char *defaultStyleSheet =
 "	padding: 8px 10px;\n"
 "}\n"
 ".mdescLeft {\n"
-"	font-size: smaller;\n"
+"       padding: 0px 8px 4px 8px;\n"
+"	font-size: 14px;\n"
 "	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
-"	padding-left: 8px;\n"
 "	border-top: 1px none #E0E0E0;\n"
 "	border-right: 1px none #E0E0E0;\n"
 "	border-bottom: 1px none #E0E0E0;\n"
@@ -190,17 +190,15 @@ static const char *defaultStyleSheet =
 "	margin: 0px;\n"
 "}\n"
 ".mdescRight {\n"
-"	font-size: smaller;\n"
+"       padding: 0px 8px 4px 8px;\n"
+"	font-size: 14px;\n"
 "	font-style: italic;\n"
 "	background-color: #FAFAFA;\n"
-"	padding-left: 4px;\n"
 "	border-top: 1px none #E0E0E0;\n"
 "	border-right: 1px none #E0E0E0;\n"
 "	border-bottom: 1px none #E0E0E0;\n"
 "	border-left: 1px none #E0E0E0;\n"
 "	margin: 0px;\n"
-"	padding-bottom: 0px;\n"
-"	padding-right: 8px;\n"
 "}\n"
 ".memItemLeft {\n"
 "	padding: 1px 0px 0px 8px;\n"
@@ -222,7 +220,7 @@ static const char *defaultStyleSheet =
 "	font-size: 12px;\n"
 "}\n"
 ".memItemRight {\n"
-"	padding: 1px 0px 0px 8px;\n"
+"	padding: 1px 8px 0px 8px;\n"
 "	margin: 4px;\n"
 "	border-top-width: 1px;\n"
 "	border-right-width: 1px;\n"
@@ -399,7 +397,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   }
   else
   {
-    t << substituteKeywords(g_header,convertToHtml(lastTitle),relPath);
+    t << substituteKeywords(g_header,convertToHtml(dispTitle),relPath);
   }
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
@@ -906,11 +904,11 @@ void HtmlGenerator::endMemberDescription()
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<br><br></td></tr>" << endl; 
+    t << "<br></td></tr>" << endl; 
   }
   else
   {
-    t << "<br><br></dl>";
+    t << "<br></dl>";
   }
 }
 
@@ -1498,7 +1496,7 @@ void HtmlGenerator::writeSearchPage()
 #endif
       if (g_header.isEmpty()) 
       {
-        writeDefaultHeaderFile(t,"Search",0,FALSE);
+        writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE);
       }
       else
       {

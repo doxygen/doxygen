@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_KR_H
 #define TRANSLATOR_KR_H
 
-class TranslatorKorean : public Translator
+class TranslatorKorean : public TranslatorAdapter_1_3_8
 {
   public:
 

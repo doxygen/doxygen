@@ -86,6 +86,7 @@ ClassDef::ClassDef(
   m_innerClasses = new ClassSDict(17);
   m_subGrouping=Config_getBool("SUBGROUPING");
   m_templateInstances = 0;
+  m_variableInstances = 0;
   m_templateMaster =0;
   m_templBaseClassNames = 0;
   m_artificial = FALSE;
@@ -123,6 +124,7 @@ ClassDef::~ClassDef()
   delete memberGroupSDict;
   delete m_innerClasses;
   delete m_templateInstances;
+  delete m_variableInstances;
   delete m_templBaseClassNames;
   delete m_tempArgs;
 }
@@ -937,21 +939,16 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
-  // write title
-  QCString pageTitle=displayName().copy();
-  QCString pageType;
-  QCString cType=compoundTypeString();
-  //printf("ClassDef::writeDocumentation() cType=%s\n",cType.data());
-  toupper(cType.at(0));
-  pageType+=" ";
-  pageType+=cType;
-  pageTitle+=pageType+" Reference";
-  if (m_tempArgs) pageTitle.prepend(" Template");
-  startFile(ol,getOutputFileBase(),name(),pageTitle);
+  QCString pageType = " ";
+  pageType += compoundTypeString();
+  toupper(pageType.at(1));
+  QCString pageTitle = theTranslator->trCompoundReference(displayName(),
+              m_compType == Interface && m_isObjC ? Class : m_compType,
+              m_tempArgs != 0);
+  
+  startFile(ol,getOutputFileBase(),name(),pageTitle);  
   startTitle(ol,getOutputFileBase());
-  ol.parseText(theTranslator->trCompoundReference(displayName(),
-               m_isObjC && m_compType==Interface ? Class : m_compType,
-               m_tempArgs!=0));
+  ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
@@ -2638,6 +2635,26 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
     templateClass->setOuterScope(getOuterScope());
     m_templateInstances->insert(templSpec,templateClass);
     freshInstance=TRUE;
+  }
+  return templateClass;
+}
+
+ClassDef *ClassDef::getVariableInstance(const char *templSpec)
+{
+  if (m_variableInstances==0) 
+  {
+    m_variableInstances = new QDict<ClassDef>(17);
+    m_variableInstances->setAutoDelete(TRUE);
+  }
+  ClassDef *templateClass=m_variableInstances->find(templSpec);
+  if (templateClass==0)
+  {
+    Debug::print(Debug::Classes,0,"      New template variable instance class `%s'`%s'\n",name().data(),templSpec);
+    templateClass = new ClassDef("<code>",1,name()+templSpec,
+                        ClassDef::Class,0,0,FALSE);
+    templateClass->addMembersToTemplateInstance( this, templSpec );
+    templateClass->setTemplateMaster(this);
+    m_variableInstances->insert(templSpec,templateClass);
   }
   return templateClass;
 }

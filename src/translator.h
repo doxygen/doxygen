@@ -416,6 +416,12 @@ class Translator
     virtual QCString trSearchResults(int numDocuments) = 0;
     virtual QCString trSearchMatches() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSourceFile(QCString& filename) = 0;
+
 };
 
 #endif

@@ -18,7 +18,6 @@ int strcmp(const String &s1,const String &s2)
 /*! \relates String
  * A string debug function.
  */
-
 void stringDebug()
 {
 }

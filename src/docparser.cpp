@@ -704,6 +704,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   Definition *compound=0;
   MemberDef  *member=0;
   QString name = linkToText(g_token->name,TRUE);
+  int len = g_token->name.length();
   if (!g_insideHtmlLink && 
       resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
@@ -733,7 +734,15 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
                      );
     }
   }
-  else // normal word
+  else if (!g_insideHtmlLink && g_token->name.at(len-1)==':')
+  {
+    // special case, where matching Foo: fails to be an Obj-C reference, 
+    // but Foo itself might be linkable.
+    g_token->name=g_token->name.left(len-1);
+    handleLinkedWord(parent,children);
+    children.append(new DocWord(parent,":"));
+  }
+  else // normal non-linkable word
   {
     children.append(new DocWord(parent,g_token->name));
   }

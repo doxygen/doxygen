@@ -6586,7 +6586,7 @@ static void generateExampleDocs()
   {
     msg("Generating docs for example %s...\n",pd->name().data());
     QCString n=pd->getOutputFileBase();
-    startFile(*outputList,n,n,"Example Documentation");
+    startFile(*outputList,n,n,pd->name());
     startTitle(*outputList,n);
     outputList->docify(pd->name());
     endTitle(*outputList,n,0);
@@ -6849,7 +6849,8 @@ static void generateConfigFile(const char *configFile,bool shortList,
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    Config::instance()->writeTemplate(&f,shortList,updateOnly);
+    QTextStream t(&f);
+    Config::instance()->writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
       if (!updateOnly)
