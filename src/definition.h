@@ -77,15 +77,22 @@ class Definition
      */
     void addSectionsToDefinition(QList<QCString> *anchorList);
 
-    void setBodyLine(int bl)             { bodyLine=bl; }
+    void setBodySegment(int bls,int ble) 
+    {
+      startBodyLine=bls; 
+      endBodyLine=ble; 
+    }
     void setBodyDef(FileDef *fd)         { bodyDef=fd; }
-    int getBodyLine() const              { return bodyLine; }
+    int getStartBodyLine() const         { return startBodyLine; }
+    int getEndBodyLine() const           { return endBodyLine; }
     FileDef *getBodyDef()                { return bodyDef; }
-    void writeSourceRef(OutputList &ol);
+    void writeSourceRef(OutputList &ol,const char *scopeName);
 
   protected:
-    int      bodyLine;        // line number of the definition
+    int      startBodyLine;   // line number of the start of the definition
+    int      endBodyLine;     // line number of the end of the definition
     FileDef *bodyDef;         // file definition containing the function body
+
   private: 
     QCString n;     // name of the definition
     QCString brief; // brief description

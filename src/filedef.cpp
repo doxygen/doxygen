@@ -202,7 +202,8 @@ void FileDef::writeDocumentation(OutputList &ol)
   //doc=doc.stripWhiteSpace();
   //int bl=brief.length();
   //int dl=doc.length();
-  if (!briefDescription().isEmpty() || !documentation().isEmpty() || bodyLine!=-1)
+  if (!briefDescription().isEmpty() || !documentation().isEmpty() || 
+      startBodyLine!=-1)
   {
     ol.writeRuler();
     bool latexOn = ol.isEnabled(OutputGenerator::Latex);
@@ -329,7 +330,7 @@ void FileDef::writeSource(OutputList &ol)
   //parseText(ol,theTranslator->trVerbatimText(incFile->name()));
   //ol.writeRuler();
   ol.startCodeFragment();
-  parseCode(ol,name(),fileToString(absFilePath()),FALSE,0,this);
+  parseCode(ol,0,fileToString(absFilePath()),FALSE,0,this);
   ol.endCodeFragment();
   endFile(ol);
   ol.enableAll();

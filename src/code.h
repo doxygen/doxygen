@@ -24,6 +24,7 @@ class OutputList;
 class FileDef;
 
 extern void parseCode(OutputList &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd=0);
+            bool ,const char *,FileDef *fd=0,
+            int startLine=-1,int endLine=-1,bool inlineFragment=FALSE);
 extern void initParseCodeContext();
 #endif

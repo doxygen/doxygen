@@ -102,6 +102,7 @@ struct Config
   static bool     alwaysDetailsFlag;   // show details description even if there is only a brief description?
   static int      tabSize;             // number of spaces in a tab
   static int      colsInAlphaIndex;    // number of columns in the alphabetical index
+  static bool     inlineSourceFlag;    // inline the definition bodies in the docs?
 };
 
 #endif

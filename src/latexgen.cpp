@@ -965,11 +965,11 @@ void LatexGenerator::docify(const char *str)
                 c = *p++;
                 t << (char)c;
               }
-              else // ascii char => see if we can insert hypenation hint
-              {
-                if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                t << (char)c;    
-              }
+            }
+            else // ascii char => see if we can insert hypenation hint
+            {
+              if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
+              t << (char)c;    
             } 
           }
           else // language is other than japanese

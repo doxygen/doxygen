@@ -160,6 +160,8 @@ class LatexGenerator : public OutputGenerator
                                            t << "\\^{"  << c << "}"; 
                              }
     void writeTilde(char c)  { t << "\\~{"  << c << "}"; }
+    void writeRing(char c)   { t << "\\" << c << c; }
+    void writeSharpS()       { t << "\"s"; }
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
     void startDescList()     { t << "\\begin{Desc}\n\\item["; }

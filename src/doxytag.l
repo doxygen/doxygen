@@ -422,7 +422,7 @@ void parse(QCString &s)
 void parseFile(QFileInfo &fi)
 {
   fprintf(stderr,"Parsing file %s...\n",fi.fileName().data());
-  QFile f(fi.absFilePath());
+  QFile f(fi.absFilePath().data());
   if (f.open(IO_ReadOnly))
   {
     yyFileName = fi.fileName();

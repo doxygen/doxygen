@@ -75,6 +75,33 @@ To make doxygen put <br><br>
 in the documentation of the class MyClassName regardless of the name of the actual 
 header file in which the definition of MyClassName is contained.
 
+<li><b>How can I use tag files in combination with compressed HTML</b>
+
+If you want to refer from one compressed HTML file 
+\c a.chm to another compressed HTML file 
+called \c b.chm, the
+link in \c a.chm must have the following format:
+\verbatim
+<a href="b.chm::/file.html">
+\endverbatim
+Unfortunately this only works if both compressed HTML files are in the same 
+directory.
+
+As a result you must rename the generated \c index.chm files for all projects
+into something unique and put all \c .chm files in one directory.
+
+Suppose you have a project \e a referring to a project \e b using tag file
+\c b.tag, then you could rename the \c index.chm for project \e a into
+\c a.chm and the \c index.chm for project \e b into \c b.chm. In the 
+configuration file for project \e a you write:
+\verbatim
+TAGFILES = b.tag=b.chm::
+\endverbatim
+or you can use \c installdox to set the links as follows:
+\verbatim
+installdox -lb.tag@b.chm::
+\endverbatim
+
 </ol>
 */
 

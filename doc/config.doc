@@ -91,6 +91,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_include_path INCLUDE_PATH
 <li> \refitem cfg_inherit_docs INHERIT_DOCS
 <li> \refitem cfg_inline_info INLINE_INFO
+<li> \refitem cfg_inline_sources INLINE_SOURCES
 <li> \refitem cfg_input INPUT
 <li> \refitem cfg_input_filter INPUT_FILTER
 <li> \refitem cfg_internal_docs INTERNAL_DOCS
@@ -273,9 +274,14 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_source_browser
 <dt>\c SOURCE_BROWSER <dd>
  \addindex SOURCE_BROWSER
- If the \c SOURCE_BROWSER tag is set to \c YES than the body of a member or
- function will be appended as a block of code to the documentation of.
- that member or function.
+ If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will
+ be generated. Documented entities will be cross-referenced with these sources.
+
+\anchor cfg_inline_sources
+<dt>\c INLINE_SOURCES <dd>
+ \addindex INLINE_SOURCES
+ Setting the \c INLINE_SOURCES tag to \c YES will include the body
+ of functions, classes and enums directly into the documentation.
 
 \anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
@@ -698,9 +704,23 @@ EXTRA_PACKAGES = times
 <dt>\c TAGFILES <dd> 
  \addindex TAGFILES
  The \c TAGFILES tag can be used to specify one or more tagfiles. 
+ 
  See section \ref doxytag_usage for more information about the usage of 
  tag files.
  
+ Optionally an initial location of the external documentation 
+ can be added for each tagfile.
+ The format of a tag file without this location is as follows:
+ <pre>
+TAGFILES = file1 file2 ... </pre>
+ Adding location for the tag files is done as follows:
+ <pre>
+TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
+ where \c loc1 and \c loc2 can be relative or absolute paths or URLs, 
+ If a location is present for each tag, the installdox tool (see 
+ section \ref installdox_usage for more information) does not
+ have to be run to correct the links.
+
  \par Note:
   Each tag file most have a unique name and if a tag file is not located
   in the directory in which doxygen is run, you must also specify the

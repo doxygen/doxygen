@@ -106,11 +106,11 @@ class TranslatorGerman : public Translator
 
     QCString trThisIsTheListOfAllMembers()
       // this is the first part of a sentence that is followed by a class name
-    { return "Vollst&auml;ndige Aufstellung aller Elemente f&uuml;r"; }
+    { return "Vollst&auml;ndige Aufstellung aller Elemente f&uuml;r "; }
 
     QCString trIncludingInheritedMembers()
       // this is the remainder of the sentence after the class name
-    { return "einschlie&suml;lich aller geerbten Elemente."; }
+    { return " einschlie&szlig;lich aller geerbten Elemente."; }
 
     QCString trGeneratedAutomatically(const char *s)
       // this is put at the author sections at the bottom of man pages.

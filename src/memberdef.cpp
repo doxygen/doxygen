@@ -445,6 +445,7 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
 {
   int i,l;
   bool hasDocs=hasDocumentation();
+  //printf("%s MemberDef::writeDeclaration(): hasDocs %d\n",name().data(),hasDocs);
   //if (cd) printf("MemberDef: %s in class %s annScope=%d annMemb=%p\n",
   //    name().data(),cd->name().data(),annScope,annMemb);
   if (annScope) return;
@@ -630,7 +631,7 @@ void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,Fi
     if (annMemb) 
     {
       bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-      bool manOn   = ol.isEnabled(OutputGenerator::Latex);
+      bool manOn   = ol.isEnabled(OutputGenerator::Man);
       if (latexOn) ol.disable(OutputGenerator::Latex);
       if (manOn)   ol.disable(OutputGenerator::Man);
       ol.writeNonBreakableSpace();
@@ -738,6 +739,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
                 MemberType m)
 {
   bool hasDocs = detailsAreVisible();
+  //printf("%s MemberDef::writeDocumentation(): hasDocs %d\n",name().data(),hasDocs);
   if (
        (memberType()==m &&                          // filter member type
         (Config::extractAllFlag || hasDocs) &&
@@ -1168,7 +1170,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       ol.endDescList();
     }
     // write reference to the source
-    writeSourceRef(ol);
+    writeSourceRef(ol,cname);
     ol.endIndent();
     // enable LaTeX again
     //if (Config::extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
@@ -1214,7 +1216,7 @@ bool MemberDef::isLinkable()
 bool MemberDef::detailsAreVisible() const          
 { 
   return !documentation().isEmpty() || // has detailed docs
-         (Config::sourceBrowseFlag && bodyLine!=-1 && bodyDef) ||  // has reference to sources
+         (Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
          (!briefDescription().isEmpty() && 

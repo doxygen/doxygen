@@ -40,9 +40,9 @@ extern void linkifyText(OutputList &ol,const char *clName,const char *name,
 extern bool getDefs(const QCString &scopeName,const QCString &memberName, 
                     const char *, MemberDef *&md, ClassDef *&cd,FileDef *&fd,
                     NamespaceDef *&nd);
-extern void generateRef(OutputList &ol,const char *,
+extern bool generateRef(OutputList &ol,const char *,
                         const char *,bool inSeeBlock,const char * =0);
-extern void generateLink(OutputList &ol,const char *,
+extern bool generateLink(OutputList &ol,const char *,
                          const char *,bool inSeeBlock,const char *);
 extern void generateFileRef(OutputList &ol,const char *,
                              const char *linkTxt=0);

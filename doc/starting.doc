@@ -46,8 +46,9 @@ where \<config-file\> is the name of the configuration file. If you omit
 the file name, a file named \c Doxyfile will be created. If a file with the
 name \<config-file\> already exists, doxygen will rename it to 
 \<config-file\>.bak before generating the configuration template.
-If you use <code>-</code> as the file name then doxygen will try to read
-the configuration file from standard input (<code>stdin</code>).
+If you use <code>-</code> (i.e. the minus sign) as the file name then 
+doxygen will try to read the configuration file from standard 
+input (<code>stdin</code>).
 
 The configuration file has a format that is similar to that of a (simple) 
 Makefile. It contains of a number of assignments (tags) of the form:
@@ -82,7 +83,9 @@ to \c YES.
 
 To analyse an existing piece of software it is useful to cross-reference 
 a (documented) entity with its definition in the source files. Doxygen will
-generate such cross-references if you set the SOURCE_BROWSER tag to YES.  
+generate such cross-references if you set the \c SOURCE_BROWSER tag to \c YES.  
+It can also include the sources directly into the documentation by setting
+\c INLINE_SOURCES to \c YES (this can be handly for code reviews for instance).
 
 \subsection step2 Step 2: Running doxygen
 
@@ -120,10 +123,11 @@ By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
 <code>make</code> ofcourse). This file can then be viewed using \c xdvi or 
 converted into a postscript file \c refman.ps by typing <code>make ps</code> 
-(this requires \c dvips ). Conversion to PDF is also possible; just type
-<code>make pdf</code>. The Postscript file can be send to a postscript
+(this requires \c dvips ).  The Postscript file can be send to a postscript
 printer. If you do not have a postscript printer, you can try to use 
 ghostscript to convert postscript into something your printer understands.
+Conversion to PDF is also possible; just type
+<code>make pdf</code>. 
 To get the best results for PDF output you should set the 
 \c PDF_HYPERLINKS tag to \c YES.
 
@@ -436,7 +440,7 @@ Then by default doxygen will feed the following to its parser:
 #define VERSION
 #define CONST_STRING
 
-  static CONST_STRING version = "1.xx";
+  static CONST_STRING version = "2.xx";
 \endverbatim
 
 You can disable all preprocessing by setting \c ENABLE_PREPROCESSING to \c 
@@ -541,8 +545,8 @@ PREDEFINED = QListT:=QList
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want
-even more flexibility you can always write an input filter and specify it on 
-the \c INPUT_FILTER flag.
+even more flexibility you can always write an input filter and specify it 
+after the \c INPUT_FILTER tag.
 
 \subsection moreinfo More information
 

@@ -52,6 +52,7 @@
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
+#define pclose _pclose
 #endif
 
 
@@ -88,6 +89,7 @@ StringDict     typedefDict(1009);       // dictionary of all typedefs
 GroupDict      groupDict(257);          // dictionary of all groups
 FormulaDict    formulaDict(1009);       // dictionary of all formulas
 FormulaDict    formulaNameDict(1009);   // dictionary of the label name of all formulas
+StringDict     tagDestinationDict(257); // dictionary of all tag locations
                                         // a member group
 
 OutputList     *outputList;           // list of output generating objects
@@ -274,7 +276,7 @@ void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     FileDef *fd=0;
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",root->includeFile.data());
-    if (!root->includeFile.isNull() && 
+    if (!root->includeFile.isEmpty() && 
         (fd=findFileDef(&inputNameDict,root->includeFile,ambig))==0
        )
     { // explicit request
@@ -444,9 +446,9 @@ void buildClassList(Entry *root)
           {
             cd->setBriefDescription(root->brief);
           }
-          if (root->bodyLine!=-1 && cd->getBodyLine()==-1)
+          if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
           {
-            cd->setBodyLine(root->bodyLine);
+            cd->setBodySegment(root->bodyLine,root->endBodyLine);
             cd->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
           }
           cd->addSectionsToDefinition(root->anchors);
@@ -484,7 +486,7 @@ void buildClassList(Entry *root)
         cd->addSectionsToDefinition(root->anchors);
         // file definition containing the class cd
         FileDef *ifd=findFileDef(&inputNameDict,root->fileName,ambig);
-        cd->setBodyLine(root->bodyLine);
+        cd->setBodySegment(root->bodyLine,root->endBodyLine);
         cd->setBodyDef(ifd);
 
         QListIterator<QCString> sli(*root->groups);
@@ -766,7 +768,7 @@ static MemberDef *addVariableToClass(Entry *root,ClassDef *cd,
   md->setFromAnnonymousScope(fromAnnScope);
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
-  md->setBodyLine(root->bodyLine);
+  md->setBodySegment(root->bodyLine,root->endBodyLine);
   bool ambig;
   md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
 
@@ -819,7 +821,7 @@ static MemberDef *addVariableToFile(Entry *root,MemberDef::MemberType mtype,
   md->setFromAnnonymousScope(fromAnnScope);
   md->setFromAnnonymousMember(fromAnnMemb);
   md->setIndentDepth(indentDepth);
-  md->setBodyLine(root->bodyLine);
+  md->setBodySegment(root->bodyLine,root->endBodyLine);
   bool ambig;
   FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
@@ -906,7 +908,7 @@ void buildVarList(Entry *root)
        (root->section==Entry::VARIABLE_SEC 
        ) ||
        (root->section==Entry::FUNCTION_SEC && // function variable 
-        !root->type.isNull() && root->type.find(re,0)!=-1 && 
+        !root->type.isEmpty() && root->type.find(re,0)!=-1 && 
          root->type.find("operator")==-1 && root->type.find(")(")==-1 
        )
       ) 
@@ -922,7 +924,7 @@ void buildVarList(Entry *root)
                 );
     //printf("root->parent->name=%s\n",root->parent->name.data());
 
-    if (root->type.isNull() && root->name.find("operator")==-1 &&
+    if (root->type.isEmpty() && root->name.find("operator")==-1 &&
         (root->name.find('*')!=-1 || root->name.find('&')!=-1))
     {
       // recover from parse error caused by redundant braces
@@ -1115,7 +1117,7 @@ void buildMemberList(Entry *root)
           (root->parent->section & Entry::COMPOUND_MASK) && 
           (cd=getClass(scope)) &&
           // do some fuzzy things to exclude function pointers 
-          (root->type.isNull() || root->type.find(re,0)==-1 || 
+          (root->type.isEmpty() || root->type.find(re,0)==-1 || 
            root->type.find(")(")!=-1 || root->type.find("operator")!=-1
           )
          )
@@ -1161,7 +1163,7 @@ void buildMemberList(Entry *root)
         md->setDocumentation(root->doc);
         md->setBriefDescription(root->brief);
         //md->setBody(root->body);
-        md->setBodyLine(root->bodyLine);
+        md->setBodySegment(root->bodyLine,root->endBodyLine);
         md->setGroupId(root->mGrpId);
         md->setInline(root->inLine);
         bool ambig;
@@ -1291,9 +1293,9 @@ void buildMemberList(Entry *root)
               {
                 md->setBriefDescription(root->brief);
               }
-              if (md->getBodyLine()==-1 && root->bodyLine!=-1)
+              if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
               {
-                md->setBodyLine(root->bodyLine);
+                md->setBodySegment(root->bodyLine,root->endBodyLine);
                 bool ambig;
                 md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
               }
@@ -1318,7 +1320,7 @@ void buildMemberList(Entry *root)
           md->setBriefDescription(root->brief);
           md->setPrototype(root->proto);
           //md->setBody(root->body);
-          md->setBodyLine(root->bodyLine);
+          md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
           FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
@@ -1470,10 +1472,10 @@ void findFriends()
               mmd->setBriefDescription(fmd->briefDescription());
             else if (!mmd->briefDescription().isEmpty() && !fmd->briefDescription().isEmpty())
               fmd->setBriefDescription(mmd->briefDescription());
-            if (mmd->getBodyLine()==-1 && fmd->getBodyLine()!=-1)
-              mmd->setBodyLine(fmd->getBodyLine());
-            else if (mmd->getBodyLine()!=-1 && fmd->getBodyLine()==-1)
-              fmd->setBodyLine(mmd->getBodyLine());
+            if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
+              mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
+            else if (mmd->getStartBodyLine()!=-1 && fmd->getStartBodyLine()==-1)
+              fmd->setBodySegment(mmd->getStartBodyLine(),mmd->getEndBodyLine());
           }
         }
       }
@@ -1522,14 +1524,14 @@ void transferFunctionDocumentation()
       {
         mdef->setDocumentation(mdec->documentation());
       }
-      if (mdec->getBodyLine()!=-1 && mdef->getBodyLine()==-1)
+      if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
       {
-        mdef->setBodyLine(mdec->getBodyLine());
+        mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
         mdef->setBodyDef(mdec->getFileDef());
       }
-      else if (mdef->getBodyLine()!=-1 && mdec->getBodyLine()==-1)
+      else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
       {
-        mdec->setBodyLine(mdef->getBodyLine());
+        mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
         mdec->setBodyDef(mdef->getFileDef());
       }
     }
@@ -1764,7 +1766,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
   if (over_load)  // the \overload keyword was used
   {
     QCString doc=getOverloadDocs();
-    if (!root->doc.isNull())
+    if (!root->doc.isEmpty())
     {
       doc+="<p>";
       doc+=root->doc;
@@ -1777,7 +1779,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
     if ( /* !md->isStatic() && !root->stat &&   do not replace doc of a static */
         (
          md->documentation().isEmpty() ||    /* no docs yet */
-         (root->parent->name.isNull() &&     /* or overwrite prototype docs */
+         (root->parent->name.isEmpty() &&     /* or overwrite prototype docs */
           !root->proto && md->isPrototype()  /* with member definition docs */
          )
         ) && root->doc.length()>0 
@@ -1791,7 +1793,7 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
     if ( /* !md->isStatic() && !root->stat &&  do not replace doc of static */
         ( 
          md->briefDescription().isEmpty() ||  /* no docs yet */
-         !root->parent->name.isNull()         /* member of a class */
+         !root->parent->name.isEmpty()         /* member of a class */
         ) && root->brief.length()>0
        )
     {
@@ -1802,9 +1804,9 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
     //{
     //  md->setBody(root->body);
     //}
-    if (md->getBodyLine()==-1 && root->bodyLine!=-1)
+    if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
     {
-      md->setBodyLine(root->bodyLine);
+      md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
       FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
       md->setBodyDef(fd);
@@ -2162,13 +2164,14 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
       scopeName=related.copy();
   }
   else if (/*scopeName.isEmpty() &&*/ related.isEmpty() && root->parent && 
-           !root->parent->name.isNull())
+           !root->parent->name.isEmpty())
   {
     Entry *p=root->parent;
     while (p) // get full scope as class name
     {
+      QCString sc = stripAnnonymousNamespaceScope(p->name);
       if ((p->section & Entry::SCOPE_MASK) 
-          && !p->name.isEmpty() && p->name[0]!='@'
+          && !sc.isEmpty() && sc[0]!='@'
          )
       {
         //printf("p->name=`%s' scopeName=`%s' classTempList=%s\n",
@@ -2183,11 +2186,11 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
         
         //printf("tryScope=%s\n",tryScope.data()); 
         
-        if (leftScopeMatch(tryScope,p->name))
+        if (leftScopeMatch(tryScope,sc))
           break; // scope already present, so stop now
         // prepend name to scope
         if (!scopeName.isEmpty()) scopeName.prepend("::");
-        scopeName.prepend(p->name);
+        scopeName.prepend(sc);
       }
       p=p->parent;
     } 
@@ -2572,7 +2575,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           md->setPrototype(root->proto);
           md->addSectionsToDefinition(root->anchors);
           //md->setBody(root->body);
-          md->setBodyLine(root->bodyLine);
+          md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
           FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
@@ -2662,7 +2665,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
               }
               if (rmd) // member found -> copy line number info
               {
-                md->setBodyLine(rmd->getBodyLine());
+                md->setBodySegment(rmd->getStartBodyLine(),rmd->getEndBodyLine());
                 md->setBodyDef(rmd->getBodyDef());
               }
             }
@@ -2670,7 +2673,7 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
           if (!found) // line number could not be found or is available in this
                       // entry
           {
-            md->setBodyLine(root->bodyLine);
+            md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
             FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
             md->setBodyDef(fd);
@@ -2897,7 +2900,7 @@ void findEnums(Entry *root)
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       md->setDefFile(root->fileName);
       md->setDefLine(root->startLine);
-      md->setBodyLine(root->bodyLine);
+      md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
       md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
       //printf("Enum definition at line %d of %s\n",root->bodyLine,root->fileName.data());
@@ -3440,9 +3443,9 @@ void addSourceReferences()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     FileDef *fd=cd->getBodyDef();
-    if (fd && cd->isLinkableInProject() && cd->getBodyLine()!=-1)
+    if (fd && cd->isLinkableInProject() && cd->getStartBodyLine()!=-1)
     {
-      fd->addSourceRef(cd->getBodyLine(),cd,0);
+      fd->addSourceRef(cd->getStartBodyLine(),cd,0);
     }
   }
   MemberNameListIterator mnli(memberNameList);
@@ -3455,15 +3458,15 @@ void addSourceReferences()
     {
       ClassDef *cd=md->memberClass();
       FileDef *fd=md->getBodyDef();
-      if (fd && cd && cd->isLinkableInProject() && md->getBodyLine()!=-1 &&
+      if (fd && cd && cd->isLinkableInProject() && md->getStartBodyLine()!=-1 &&
           md->isLinkableInProject())
       {
         //printf("Found member `%s' in file `%s' at line `%d'\n",
-        //    md->name().data(),fd->name().data(),md->getBodyLine()); 
+        //    md->name().data(),fd->name().data(),md->getStartBodyLine()); 
         Definition *d=cd;
         if (d==0) d=md->getNamespace();
         if (d==0) d=md->getFileDef();
-        fd->addSourceRef(md->getBodyLine(),d,md->anchor());
+        fd->addSourceRef(md->getStartBodyLine(),d,md->anchor());
       }
     }
   }
@@ -3476,16 +3479,16 @@ void addSourceReferences()
     {
       NamespaceDef *nd=md->getNamespace();
       FileDef *fd=md->getBodyDef();
-      if (md->getBodyLine()!=-1 && md->isLinkableInProject() && 
+      if (md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
           (nd && nd->isLinkableInProject()) ||
           (fd && fd->isLinkableInProject()) 
          )
       {
         //printf("Found member `%s' in file `%s' at line `%d'\n",
-        //    md->name().data(),fd->name().data(),md->getBodyLine()); 
+        //    md->name().data(),fd->name().data(),md->getStartBodyLine()); 
         Definition *d=md->getFileDef();
         if (d==0) d=md->getNamespace();
-        fd->addSourceRef(md->getBodyLine(),d,md->anchor());
+        fd->addSourceRef(md->getStartBodyLine(),d,md->anchor());
       }  
     }
   }
@@ -3610,7 +3613,7 @@ void findDefineDocumentation(Entry *root)
               md->setDocumentation(root->doc);
             if (md->briefDescription().isEmpty())
               md->setBriefDescription(root->brief);
-            md->setBodyLine(root->bodyLine);
+            md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
             md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
@@ -3636,7 +3639,7 @@ void findDefineDocumentation(Entry *root)
                 md->setDocumentation(root->doc);
               if (md->briefDescription().isEmpty())
                 md->setBriefDescription(root->brief);
-              md->setBodyLine(root->bodyLine);
+              md->setBodySegment(root->bodyLine,root->endBodyLine);
               bool ambig;
               md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
@@ -4132,16 +4135,37 @@ bool readLineFromFile(QFile &f,QCString &s)
   return f.atEnd();
 }
 
-void readTagFile(const char *file)
+void readTagFile(const char *tl)
 {
-  QFileInfo fi(file);
+  QCString tagLine = tl;
+  QCString fileName;
+  QCString destName;
+  int eqPos = tagLine.find('=');
+  if (eqPos!=-1) // tag command contains a destination
+  {
+    fileName = tagLine.left(eqPos).stripWhiteSpace();
+    destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
+    tagDestinationDict.insert(fileName,new QCString(destName));
+  }
+  else
+  {
+    fileName = tagLine;
+  }
+    
+  QFileInfo fi(fileName);
   if (!fi.exists() || !fi.isFile())
   {
-    err("Error: Tag file `%s' does not exist or is not a file\n",file);
+    err("Error: Tag file `%s' does not exist or is not a file\n",
+        fileName.data());
     exit(1);
   }
-  msg("Reading tag file %s...\n",file);
-  parseTagFile(file);
+
+  if (!destName.isEmpty())
+    msg("Reading tag file `%s', location `%s'...\n",fileName.data(),destName.data());
+  else
+    msg("Reading tag file `%s'...\n",fileName.data());
+
+  parseTagFile(fileName);
 }
 
 //----------------------------------------------------------------------------
@@ -4199,8 +4223,6 @@ void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    int c;
-//    char *p=dest;
     QCString cmd=Config::inputFilter+" "+fileName;
     FILE *f=popen(cmd,"r");
     if (!f)
@@ -4208,7 +4230,12 @@ void copyAndFilterFile(const char *fileName,BufStr &dest)
       err("Error: could not execute filter %s\n",Config::inputFilter.data());
       return;
     }
-    while ((c=fgetc(f))!=EOF) dest.addChar(c),size++;
+    const int bufSize=1024;
+    char buf[bufSize];
+    int numRead;
+    while ((numRead=fread(buf,1,bufSize,f))!=bufSize) 
+      dest.addArray(buf,numRead),size+=numRead;
+    pclose(f);
   }
   // filter unwanted bytes from the resulting data
   uchar *p=(uchar *)dest.data()+oldPos;
@@ -4950,7 +4977,7 @@ int main(int argc,char **argv)
   {
     HtmlHelp::getInstance()->finalize();
   }
-  
+
   delete tag;
   return 0;
 }

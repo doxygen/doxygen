@@ -153,6 +153,8 @@ class OutputGenerator
     virtual void writeGrave(char) = 0;
     virtual void writeCirc(char) = 0;
     virtual void writeTilde(char) = 0;
+    virtual void writeRing(char) = 0;
+    virtual void writeSharpS() = 0;
     virtual void startMemberDescription() = 0;
     virtual void endMemberDescription() = 0;
     virtual void startDescList() = 0;

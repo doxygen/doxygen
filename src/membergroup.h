@@ -64,6 +64,7 @@ class MemberGroupDict : public QIntDict<MemberGroup>
 {
   public:
     MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
+   ~MemberGroupDict() {}
 };
 
 #endif
