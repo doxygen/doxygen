@@ -984,6 +984,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"par"{B}*			{
+ 					  QCString t=yytext;
+  					  if (t.contains('\n')>1 && insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   					  BEGIN(DocPar);
   					}
 <DocPar>[^\n]*{BN}			{

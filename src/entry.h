@@ -162,8 +162,6 @@ class Entry
 
     int        section;       // entry type (see Sections);
     Protection protection;    // class protection
-    //bool sig;                 // a Qt signal ?
-    //bool slot;                // a Qt slot ?
     MethodTypes mtype;        // signal, slot or dcop method?
     bool stat;                // static ?
     bool explicitExternal;    // explicitly defined as external?
@@ -176,6 +174,7 @@ class Entry
     QCString	 type;        // member type 
     QCString	 name;        // member name
     QCString     args;        // member argument string
+    QCString     bitfields;   // member's bit fields
     ArgumentList *argList;    // member arguments as a list
     ArgumentList *tArgList;   // template argument list
     ArgumentList *mtArgList;  // member template argument list
@@ -183,8 +182,6 @@ class Entry
     QCString     memberSpec;  // template specialization of the member
     QCString	 program;     // the program text
     QCString     initializer; // initial value (for variables)
-    int          bodyLine;    // line number of the definition in the source
-    int          endBodyLine; // line number where the definition ends
     QCString     includeFile; // include file (2 arg of \class, must be unique)
     QCString     includeName; // include name (3 arg of \class)
     QCString     doc;         // documentation block (partly parsed)
@@ -192,6 +189,8 @@ class Entry
     QCString     brief;       // brief description (doc block)
     QCString     inside;      // name of the class in which documents are found
     QCString     exception;   // throw specification
+    int          bodyLine;    // line number of the definition in the source
+    int          endBodyLine; // line number where the definition ends
     int          mGrpId;      // member group id
     QList<Entry>    *sublist; // entries that are children of this one
     QList<BaseInfo> *extends; // list of base classes

@@ -39,6 +39,7 @@ class NamespaceDef : public Definition
     NamespaceDef(const char *defFileName,int defLine,
                  const char *name,const char *ref=0);
    ~NamespaceDef();
+    DefType definitionType() { return TypeNamespace; }
     QCString getOutputFileBase() const { return fileName; }
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);

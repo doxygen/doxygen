@@ -1922,7 +1922,8 @@ bool getScopeDefs(const char *docScope,const char *scope,
  *                         with name memberName.
  *    3) "memberName(...)" a specific (overloaded) function or define 
  *                         with name memberName
- *    4) "::memberName     a non-function member or define
+ *    4) "::name           a global variable or define
+ *    4) "#memberName      member variable, global variable or define
  *    5) ("ScopeName::")+"memberName()" 
  *    6) ("ScopeName::")+"memberName(...)" 
  *    7) ("ScopeName::")+"memberName" 
@@ -1934,7 +1935,9 @@ bool generateRef(OutputList &ol,const char *scName,
 {
   //printf("generateRef(scName=%s,name=%s,rt=%s)\n",scName,name,rt);
   
-  QCString tmpName = substitute(name,"#","::");
+  QCString tsName = name;
+  bool memberScopeFirst = tsName.find('#')!=-1;
+  QCString tmpName = substitute(tsName,"#","::");
   QCString linkText = rt;
   int scopePos=tmpName.findRev("::");
   int bracePos=tmpName.findRev('('); // reverse is needed for operator()(...)
@@ -2021,7 +2024,8 @@ bool generateRef(OutputList &ol,const char *scName,
   //        scopeStr.data(),nameStr.data(),argsStr.data());
 
   // check if nameStr is a member or global.
-  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd,scopePos==0))
+  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd,
+              scopePos==0 && !memberScopeFirst))
   {
     //printf("after getDefs nd=%p\n",nd);
     QCString anchor;
@@ -2118,6 +2122,7 @@ bool generateRef(OutputList &ol,const char *scName,
 bool generateLink(OutputList &ol,const char *clName,
                      const char *lr,bool inSeeBlock,const char *lt)
 {
+  //printf("generateLink clName=`%s' lr=`%s' lt=`%s'\n",clName,lr,lt);
   QCString linkRef=lr;
   FileDef *fd;
   GroupDef *gd;

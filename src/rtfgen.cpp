@@ -488,14 +488,14 @@ bool StyleData::setStyle(const char* s, const char* styleName)
   if (start < 0)
   {
     err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName, s);
-    return false;
+    return FALSE;
   }
   s += start;
   index = (int)atol(s + 2); ASSERT(index > 0);
 
   // search for the end of pure formatting codes
   const char* end = s + len;
-  bool haveNewDefinition = true;
+  bool haveNewDefinition = TRUE;
   for(;;)
   {
     if (*end == '{')
@@ -518,7 +518,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     }
     else if (*end == 0)
     { // no style-definition part, keep default value
-      haveNewDefinition = false;
+      haveNewDefinition = FALSE;
       break;
     }
     else // plain name without leading \\snext
@@ -534,7 +534,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     definition = new char[size];
     memcpy(definition, end, size);
   }
-  return true;
+  return TRUE;
 }
 
 static void loadStylesheet(const char *name, QDict<StyleData>& dict)
@@ -591,7 +591,7 @@ void RTFGenerator::init()
     err("Could not create output directory %s\n",dir.data());
     exit(1);
   }
-  Rtf_Style.setAutoDelete(true);
+  Rtf_Style.setAutoDelete(TRUE);
   
   // first duplicate strings of Rtf_Style_Default
   const struct Rtf_Style_Default* def = Rtf_Style_Default;

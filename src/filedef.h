@@ -66,6 +66,7 @@ class FileDef : public Definition
 
     FileDef(const char *p,const char *n,const char *ref=0);
    ~FileDef();
+    DefType definitionType() { return TypeFile; }
 
     /*! Returns the unique file name (this may include part of the path). */
     QCString name() const 

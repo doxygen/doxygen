@@ -58,6 +58,7 @@ class ClassDef : public Definition
              const char *name,CompoundType ct,
              const char *ref=0,const char *fName=0);
    ~ClassDef();
+    DefType definitionType() { return TypeClass; }
     QCString getOutputFileBase() const { return fileName; }
     QCString displayName() const;
     CompoundType compoundType() const { return compType; } 

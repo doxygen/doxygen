@@ -110,7 +110,7 @@ void MemberList::countDecMembers(bool inGroup,bool countSubGroups,bool sectionPe
   //printf("MemberList::countDecMembers(%d)=%d\n",inGroup,m_count);
 }
 
-void MemberList::countDocMembers()
+void MemberList::countDocMembers(bool listOfGroup)
 {
   /*varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;*/
   m_count=0;
@@ -122,7 +122,9 @@ void MemberList::countDocMembers()
     bool visibleIfStatic = 
       !(md->getClassDef()==0 && md->isStatic() && !Config::extractStaticFlag);
 
-    if (visibleIfStatic && 
+    bool inOwnGroup = (md->getGroupDef()!=0 && !listOfGroup);
+    
+    if (visibleIfStatic && !inOwnGroup &&
         (Config::extractAllFlag || md->detailsAreVisible()) 
        )
     {
@@ -298,6 +300,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             typeDecl.writeChar(' ');
           }
 
+          const uint MAX_ENUM_VALUES_FOR_ONE_LINE = 4;
+          int enumMemCount=0;
+          
           typeDecl.docify("{ ");
           QList<MemberDef> *fmdl=md->enumFieldList();
           if (fmdl)
@@ -305,12 +310,17 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             MemberDef *fmd=fmdl->first();
             while (fmd)
             {
-              /* in html we start each enum item on a new line */
-              typeDecl.pushGeneratorState();
-              typeDecl.disableAllBut(OutputGenerator::Html);
-              typeDecl.lineBreak(); 
-              typeDecl.writeString("&nbsp;&nbsp;");
-              typeDecl.popGeneratorState();
+              /* in html we start a new line after a number of items */
+              if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE
+                  && (enumMemCount%MAX_ENUM_VALUES_FOR_ONE_LINE)==0
+                 )
+              {
+                typeDecl.pushGeneratorState();
+                typeDecl.disableAllBut(OutputGenerator::Html);
+                typeDecl.lineBreak(); 
+                typeDecl.writeString("&nbsp;&nbsp;");
+                typeDecl.popGeneratorState();
+              }
 
               if (fmd->hasDocumentation()) // enum value has docs
               {
@@ -334,12 +344,16 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               typeDecl.disable(OutputGenerator::Man);
               typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
               typeDecl.enable(OutputGenerator::Man);
+              enumMemCount++;
             }
           }
-          typeDecl.pushGeneratorState();
-          typeDecl.disableAllBut(OutputGenerator::Html);
-          typeDecl.lineBreak(); 
-          typeDecl.popGeneratorState();
+          if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE)
+          {
+            typeDecl.pushGeneratorState();
+            typeDecl.disableAllBut(OutputGenerator::Html);
+            typeDecl.lineBreak(); 
+            typeDecl.popGeneratorState();
+          }
           typeDecl.docify(" }");
           md->setEnumDecl(typeDecl);
           int enumVars=0;

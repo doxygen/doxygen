@@ -366,7 +366,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  defineMembers.countDocMembers();
+  defineMembers.countDocMembers(TRUE);
   if (defineMembers.totalCount()>0 )
   {
     ol.writeRuler();
@@ -376,7 +376,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     defineMembers.writeDocumentation(ol,name(),this);
   }
   
-  protoMembers.countDocMembers(); 
+  protoMembers.countDocMembers(TRUE); 
   if (protoMembers.totalCount()>0 )
   {
     ol.writeRuler();
@@ -386,7 +386,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     protoMembers.writeDocumentation(ol,name(),this);
   }
 
-  typedefMembers.countDocMembers();
+  typedefMembers.countDocMembers(TRUE);
   if (typedefMembers.totalCount()>0 )
   {
     ol.writeRuler();
@@ -396,7 +396,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     typedefMembers.writeDocumentation(ol,name(),this);
   }
   
-  enumMembers.countDocMembers();
+  enumMembers.countDocMembers(TRUE);
   if (enumMembers.totalCount()>0 )
   {
     ol.writeRuler();
@@ -406,17 +406,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name(),this);
   }
 
-  //enumValMembers.countDocMembers();
-  //if (enumValMembers.totalCount()>0 )
-  //{
-  //  ol.writeRuler();
-  //  ol.startGroupHeader();
-  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
-  //  ol.endGroupHeader();
-  //  enumValMembers.writeDocumentation(ol,name());
-  //}
-
-  funcMembers.countDocMembers();
+  funcMembers.countDocMembers(TRUE);
   if (funcMembers.totalCount()>0 )
   {
     ol.writeRuler();
@@ -426,7 +416,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     funcMembers.writeDocumentation(ol,name(),this);
   }
   
-  varMembers.countDocMembers();
+  varMembers.countDocMembers(TRUE);
   if (varMembers.totalCount()>0 )
   {
     ol.writeRuler();
