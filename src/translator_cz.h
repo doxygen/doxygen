@@ -769,7 +769,7 @@ class TranslatorCzech : public Translator
       return decode(result);
     }
     
-    /*! 
+    /* 
      *  these are for the member sections of a class, struct or union 
      */
     virtual QCString trPublicMembers()
@@ -1006,17 +1006,17 @@ class TranslatorCzech : public Translator
     {
       return decode("Zobrazit dokumentaci tohoto souboru.");
     }
-    /*! Text for the \pre command */
+    /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
       return decode("Precondition");
     }
-    /*! Text for the \post command */
+    /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
       return decode("Postcondition");
     }
-    /*! Text for the \invariant command */
+    /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
       return decode("Invariant");

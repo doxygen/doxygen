@@ -3388,6 +3388,10 @@ TITLE     [tT][iI][tT][lL][eE]
   					  yyLineNr++; 
 					  BEGIN( lastGroupContext );
   					}
+<GroupName>"*/"				{
+  					  unput('/');unput('*');
+					  BEGIN( lastGroupContext );
+  					}
 <ClassDoc,Doc>{B}*{CMD}("brief"|"short")	{ 
   					  lastBriefContext=YY_START;
   					  BEGIN( ClassDocBrief ); 
@@ -3628,7 +3632,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
   					}
-<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
+<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs>"*/" {
                                           // defer "*/" to a later time
   					  unput('/');
   					  unput('*');

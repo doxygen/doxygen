@@ -1204,6 +1204,7 @@ static void findUsingDeclarations(Entry *root)
         }
         else if (fd)
         {
+          //printf("Inside file %s\n",nd->name().data());
           fd->addUsingDeclaration(usingCd);
         }
       }
@@ -3231,6 +3232,35 @@ static void substituteTemplateArgNames(ArgumentList *src,
 
 }
 
+static QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
+{
+  // case leftScope=="A" rightScope=="A::B" => result = "A::B"
+  if (leftScopeMatch(rightScope,leftScope)) return rightScope;
+  QCString result;
+  int i=0,p=leftScope.length();
+
+  // case leftScope=="A::B" rightScope=="B::C" => result = "A::B::C"
+  // case leftScope=="A::B" rightScope=="B" => result = "A::B"
+  bool found=FALSE;
+  while ((i=leftScope.findRev("::",p))!=-1)
+  {
+    if (leftScopeMatch(rightScope,leftScope.right(leftScope.length()-i-2)))
+    {
+      result = leftScope.left(i+2)+rightScope;
+      found=TRUE;
+    }
+    p=i-1;
+  }
+  if (found) return result;
+
+  // case leftScope=="A" rightScope=="B" => result = "A::B"
+  result=leftScope.copy();
+  if (!result.isEmpty() && !rightScope.isEmpty()) result+="::";
+  result+=rightScope;
+  return result;
+}
+
+
 /*! This function tries to find a member (in a documented class/file/namespace) 
  * that corresponds to the function/variable declaration given in \a funcDecl.
  *
@@ -3366,11 +3396,17 @@ static void findMember(Entry *root,
       scopeName=related.copy();
   }
 
+  if (related.isEmpty() && root->parent && !root->parent->name.isEmpty())
+  {
+    scopeName = mergeScopes(root->parent->name,scopeName);
+  }
+  
   // split scope into a namespace and a class part
   extractNamespaceName(scopeName,className,namespaceName);
   //printf("scopeName=`%s' className=`%s' namespaceName=`%s'\n",
   //       scopeName.data(),className.data(),namespaceName.data());
   
+#if 0
   if (related.isEmpty() && 
       root->parent && 
       !root->parent->name.isEmpty()
@@ -3423,6 +3459,7 @@ static void findMember(Entry *root,
     //printf("3. scopeName=`%s'\n",scopeName.data());
     //printf("result: scope=%s\n",scopeName.data());
   }
+#endif
 
   namespaceName=removeAnonymousScopes(namespaceName);
   //printf("namespaceName=`%s' className=`%s'\n",namespaceName.data(),className.data());
@@ -3691,13 +3728,18 @@ static void findMember(Entry *root,
             bool ambig;
             FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
             // list of namespaces using in the file that this member definition is part of
-            NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
-            ClassList *cl = fd ? fd->getUsedClasses() : 0;
+            NamespaceList *nl = 0;
+            if (nd) nl = nd->getUsedNamespaces();
+            else if (fd) nl = fd->getUsedNamespaces();
+            ClassList *cl = 0;
+            if (nd) cl = nd->getUsedClasses();
+            else if (fd) cl = fd->getUsedClasses();
             
             bool matching=
               md->isVariable() || md->isTypedef() || // needed for function pointers
               (md->argumentList()==0 && root->argList->count()==0) || 
-              matchArguments(argList, root->argList,className,namespaceName,TRUE,nl,cl);
+              matchArguments(argList, root->argList,className,namespaceName,
+              TRUE,nl,cl);
 
 
             Debug::print(Debug::FindMembers,0,

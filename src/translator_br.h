@@ -18,9 +18,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-#include "translator_adapter.h"
-
-class TranslatorBrazilian: public TranslatorAdapter_1_2_6
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1168,6 +1166,161 @@ class TranslatorBrazilian: public TranslatorAdapter_1_2_6
     virtual QCString trBugList()
     {
       return "Lista de Bug";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value
+and
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     *
+     */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+
+
+    /*! Used as ansicpg for RTF fcharset
+     *  \see trRTFansicp() for a table of possible values.
+     */
+    virtual QCString trRTFCharSet()
+    {
+      return "0";
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Índice";
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Classe" : "classe"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Arquivo": "arquivo"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Namespace" : "namespace"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Grupo" : "grupo"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Página" : "página"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Membro" : "membro"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Campo" : "campo"));
+      if (!singular)  result+="s";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Globa" : "globa"));
+      if (!singular){
+        result+="is";
+      }else{
+        result+="l";
+      }
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Autor" : "autor"));
+      if (!singular)  result+="es";
+      return result;
     }
 
 };

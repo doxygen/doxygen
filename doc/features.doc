@@ -16,8 +16,6 @@
  */
 /*! \page features Features
 
-\section features Features
-
 \addindex features
 <UL>
 <li>Requires very little overhead from the writer of the documentation. 

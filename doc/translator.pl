@@ -33,6 +33,11 @@
 # 2001/05/18
 #  - Character entity &oslash; recognized in maintainers.txt.
 #
+# 2001/06/06
+#  - Implementation of the methods recognized even when the
+#    argument list does not contain argument identifiers 
+#    (i.e., when it contains type information only).
+#
 ################################################################
 
 require 5.005;
@@ -59,9 +64,9 @@ my $fmaintainers = "maintainers.txt";  # database of local lang. maintainers
 
 
 ################################################################
-# GetPureVirtual returns a hash of pure virtual method prototypes
-# in a hash where the key is the method prototype, and the value
-# is 1.  The input argument is the full name of the source file.
+# GetPureVirtual returns the list of pure virtual method prototypes
+# as separate strings (one prototype, one line, one list item).
+# The input argument is the full name of the source file.
 #
 sub GetPureVirtualFrom  ##{{{
 {
@@ -120,15 +125,59 @@ sub GetPureVirtualFrom  ##{{{
     #
     $cont =~ s{^virtual\s+}{}mg;
     
-    # Split the string into array of lines and fill the output hash.
+    # Split the string into array of lines and return it as
+    # the output list.
     #
-    my %result = ();
+    return split(/\n/, $cont);
+}
+##}}}
+
+
+################################################################
+# StripArgIdentifiers takes a method prototype (one line string),
+# removes the argument identifiers, and returns only the necessary
+# form of the prototype.
+#
+sub StripArgIdentifiers  ##{{{
+{
+    my $prototype = shift;  # Get the prototype string.
     
-    foreach (split(/\n/, $cont)) {
-        $result{$_} = 1;
+    # Extract the list of arguments from the prototype.
+    #
+    $prototype =~ s{^(.+\()(.*)(\).*)$}{$1#ARGS#$3};
+    my $a = (defined $2) ? $2 : '';
+    
+    # Split the list of arguments.
+    #
+    my @a = split(/,/, $a);
+    
+    # Strip each of the arguments.
+    #
+    my @stripped = ();
+    
+    foreach my $arg (@a) {
+        
+        $arg =~ s{^(\s*             # there can be spaces behind comma,
+                    (const\s+)?     # possibly const at the beginning
+                    [A-Za-z0-9_:]+  # type identifier can be qualified
+                    (\s*[*&])?      # could be reference or pointer
+                   )                # ... the above is important,
+                  .*$               # the rest contains the identifier 
+                 }
+                 {$1}x;             # remember only the important things
+        
+        push(@stripped, $arg); 
     }
     
-    return %result;
+    # Join the stripped arguments into one line again, and 
+    # insert it back.
+    #
+    $a = join(',', @stripped);
+    $prototype =~ s{#ARGS#}{$a};
+    
+    # Finally, return the stripped prototype.
+    # 
+    return $prototype;
 }
 ##}}}
 
@@ -599,9 +648,22 @@ xxxTABLE_FOOTxxx
     # Get only the pure virtual methods from the Translator class
     # into a hash structure for later testing present/not present.
     #
-    my %required = GetPureVirtualFrom("$srcdir/translator.h");
+    my @expected = GetPureVirtualFrom("$srcdir/translator.h");
 
-    # Collect base classes of translators the hash.
+    # Remove the argument identifiers from the method prototypes
+    # to get only the required form of the prototype. Fill the
+    # hash with them. #{{{
+    #
+    my %required = ();
+    
+    foreach (@expected) {
+        my $prototype = StripArgIdentifiers($_);
+        $required{$prototype} = 1;
+    }
+    ##}}}
+    
+    # Collect base classes of translators in the hash. CB stands
+    # for Class and Base.
     #
     my %cb = ();
     
@@ -638,21 +700,46 @@ xxxTABLE_FOOTxxx
         #
         my @old_methods = ();
 
-        foreach my $method (@info) {
-            if (defined $required{$method}) { $required{$method} = 0; }
-            else                        {push(@old_methods, $method); }
+        foreach my $implemented (@info) {
+            
+            # Get only the necessary form of the prototype.
+            #
+            my $prototype = StripArgIdentifiers($implemented);
+            
+            # Mark as recognized when the prototype is required.
+            # Otherwise, remember it as old method which is
+            # implemented, but not required.
+            #
+            if (defined $required{$prototype}) { 
+                $required{$prototype} = 0; 
+            }
+            else {
+                push(@old_methods, $implemented); 
+            }
         }
         ##}}}
 
-        # Loop through the required hash and collect the missing
-        # (new) methods.  Do this only when it derives from
-        # Translator or TranslatorAdapter classes. #{{{
+        # Loop through the list of expected methods and collect 
+        # the missing (new) methods.  Do this only when it derives
+        # from Translator or TranslatorAdapter classes (i.e. ignore
+        # any unusual kind of TranslatorXxxx implementation). #{{{
         #
         my @missing_methods = ();
         
         if ($base =~ m/^Translator(Adapter.*)?$/) {
-            foreach (keys %required) { 
-                if ($required{$_}) { push(@missing_methods, $_); }
+            foreach my $method (@expected) {
+                
+                # Get the stripped version of the prototype.
+                #
+                my $prototype = StripArgIdentifiers($method); 
+                
+                # If the prototype is stored in the %required
+                # table, and if it was not marked as implemented,
+                # then it should be.  It is a missing method.
+                #
+                if (defined $required{$prototype} && $required{$prototype}) { 
+                    push(@missing_methods, $method); 
+                }
             }
         }
         ##}}}
@@ -775,12 +862,13 @@ xxxTABLE_FOOTxxx
     ##}}}
 
     # List the methods that are expected to be implemented.  #{{{
+    #
     print FOUT "\n\n" .'-' x 70 . "\n";
     print FOUT "Localized translators are expected to implement "
              . "the following methods\n"
              . "(prototypes sorted aplhabetically):\n\n";
 
-    foreach (sort keys(%required)) {
+    foreach (sort @expected) {
         print FOUT "$_\n";
     }
     ##}}}
@@ -788,10 +876,8 @@ xxxTABLE_FOOTxxx
     # If there are some details for the translators, show them.  #{{{
     #
     if ($output !~ m/^\s*$/) {
-        print FOUT "\n\n" .'-' x 70 . "\n";
-        print FOUT "Details related to specific translator classes follows.\n"
-                 . "Notice that the prototypes are recognized only when they\n"
-                 . "are the same as in the Translator class.";
+        print FOUT "\n\n" .'=' x 70 . "\n";
+        print FOUT "Details related to specific translator classes follow.\n";
 
         print FOUT $output . "\n";
     }

@@ -18,15 +18,35 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-#include "translator_adapter.h"
-
-class TranslatorDutch : public TranslatorAdapter_1_2_6
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
     { return "dutch"; }
-    QCString latexBabelPackage()
-    { return "dutch"; }
+    /*! Used to get the LaTeX command(s) for the language support. 
+     *  This method should return string with commands that switch
+     *  LaTeX to the desired language.  For example 
+     *  <pre>"\\usepackage[german]{babel}\n"
+     *  </pre>
+     *  or
+     *  <pre>"\\usepackage{polski}\n"
+     *  "\\usepackage[latin2]{inputenc}\n"
+     *  "\\usepackage[T1]{fontenc}\n"
+     *  </pre>
+     * 
+     * The Dutch LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
+     */
+    QCString latexLanguageSupportCommand()
+    {
+      return "\\usepackage[dutch]{babel}\n";
+    }
+    /*! return the language charset. This will be used for the HTML output */
+    QCString idLanguageCharset()
+    {
+      return "iso-8859-1";
+    }
+
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
@@ -63,8 +83,6 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     { return "enum waarde"; }
     QCString trDefinedIn()
     { return "gedefinieerd in"; }
-    QCString trVerbatimText(const char *f)
-    { return (QCString)"Dit is de letterlijke tekst van de include file "+f+"."; }
     QCString trModules()
     { return "Modules"; }
     QCString trClassHierarchy()
@@ -166,8 +184,6 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     { return "Variabelen"; }
     QCString trEnumerationValues()
     { return "Enumeratie waarden"; }
-    QCString trAuthor()
-    { return "auteur"; }
     QCString trDefineDocumentation()
     { return "Documentatie van defines"; }
     QCString trFunctionPrototypeDocumentation()
@@ -184,8 +200,6 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     { return "Documentatie van variabelen"; }
     QCString trCompounds()
     { return "Compounds"; }
-    QCString trFiles()
-    { return "Files"; }
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result=(QCString)"Gegenereerd op "+date;
@@ -215,8 +229,6 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     { return "Versie"; }
     QCString trDate()
     { return "Datum"; }
-    QCString trAuthors()
-    { return "Auteur(s)"; }
     QCString trReturns()
     { return "Retourneert"; }
     QCString trSeeAlso()
@@ -800,6 +812,156 @@ class TranslatorDutch : public TranslatorAdapter_1_2_6
     QCString trBugList()
     {
       return "Bug Lijst";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file 
+     * 
+     * The following table shows the correlation of Charset name, Charset Value and 
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     * 
+     */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+    
+
+    /*! Used as ansicpg for RTF fcharset 
+     *  \see trRTFansicp() for a table of possible values.
+     */
+    virtual QCString trRTFCharSet()
+    {
+      return "0";
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Index";
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Klasse" : "klass"));
+      if (!singular)  result+="n";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "File" : "file"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Namespace" : "namespace"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Groep" : "groep"));
+      if (!singular)  result+="en";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Pagina" : "pagina"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Member" : "member"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Veld" : "veld"));
+      if (!singular)  result+="en";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Globale member" : "globale member"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Auteur" : "auteur"));
+      if (!singular)  result+="s";
+      return result; 
     }
 
 };

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -98,7 +98,7 @@ static bool saveConfig( QString saveFile )
     return FALSE; // failure
   }
 
-  Config::instance()->writeTemplate(&f,TRUE); // write brief config file
+  Config::instance()->writeTemplate(&f,TRUE,TRUE); // write brief config file
 
   return TRUE; // success
 }
@@ -358,7 +358,7 @@ ConfigFile::ConfigFile( QWidget *parent ) : QWidget( parent )
       case ConfigOption::O_String:
         {
           ASSERT(page!=0);
-          InputString::StringMode sm;
+          InputString::StringMode sm=InputString::StringFree;
           switch(((ConfigString *)option)->widgetType())
           {
             case ConfigString::String: sm=InputString::StringFree; break;
@@ -400,7 +400,7 @@ ConfigFile::ConfigFile( QWidget *parent ) : QWidget( parent )
       case ConfigOption::O_List:
         {
           ASSERT(page!=0);
-          InputStrList::ListMode lm;
+          InputStrList::ListMode lm=InputStrList::ListString;
           switch(((ConfigList *)option)->widgetType())
           {
             case ConfigList::String:     lm=InputStrList::ListString;  break;

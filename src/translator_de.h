@@ -51,7 +51,7 @@
 //
 // Todo: 
 //   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
-//     strings (see translator.h)
+//     strings (see translator_en.h)
 //   - translation of "compound"
 //   - see FIXME
 //   - was ist richtig: "Liste aller dokumentierter Elemente" oder
@@ -1287,9 +1287,9 @@ class TranslatorGerman : public Translator
       return result;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.2.7-20010524
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7-20010524
+//////////////////////////////////////////////////////////////////////////
   
     /*  This text is generated when the \author command is used and
      *  for the author section in man pages. 

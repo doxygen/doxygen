@@ -685,7 +685,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
@@ -1263,7 +1263,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
@@ -1474,7 +1474,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
@@ -1615,7 +1615,7 @@ void generateGraphLegend(const char *path)
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // goto the html output directory (i.e. path)
+  // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
 
   // run dot to generate the a .gif image from the graph

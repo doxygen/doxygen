@@ -47,10 +47,12 @@ distclean: clean
 
 install: doxywizard_install
 	$(INSTTOOL) -d $(INSTALL)/bin
-	$(INSTTOOL) -d $(DOCDIR)
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxysearch $(INSTALL)/bin
+
+install_docs:
+	$(INSTTOOL) -d $(DOCDIR)
 	cp -r doc $(DOCDIR)
 	cp -r examples $(DOCDIR)
 	echo "DOXYGEN  = $(INSTALL)" >  $(DOCDIR)/doc/Makefile
