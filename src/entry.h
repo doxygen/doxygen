@@ -108,6 +108,7 @@ class Entry
       INTERFACE_SEC    = 0x04000000,
       INTERFACEDOC_SEC = 0x08000000,
       MAINPAGEDOC_SEC  = 0x10000000,
+      USINGDIR_SEC     = 0x20000000,
       COMPOUND_MASK    = CLASS_SEC | STRUCT_SEC | UNION_SEC | INTERFACE_SEC,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC | INTERFACEDOC_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
@@ -140,7 +141,8 @@ class Entry
     QCString     scopeSpec;   // template specialization of the scope
     QCString     memberSpec;  // template specialization of the member
     QCString	 program;     // the program text
-    QCString     body;        // the function body
+    //QCString     body;        // the function body
+    int          bodyLine;    // line number of the definition in the source
     QCString     includeFile; // include file (2 arg of \class, must be unique)
     QCString     includeName; // include name (3 arg of \class)
     QCString     doc;         // documentation block (partly parsed)

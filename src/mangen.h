@@ -98,6 +98,8 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *) {}
     void startCodeFragment();
     void endCodeFragment();
+    void startCodeLine() {}
+    void endCodeLine() { t << endl; }
     void writeBoldString(const char *text) 
                          { t << "\\fB"; docify(text); t << "\\fR"; firstCol=FALSE; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
@@ -115,6 +117,8 @@ class ManGenerator : public OutputGenerator
     void startDoxyAnchor(const char *,const char *,
                          const char *,const char *) {}
     void endDoxyAnchor() {}
+    void startCodeAnchor(const char *) {}
+    void endCodeAnchor() {}
     void writeLatexSpacing() {}
     //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
@@ -172,6 +176,13 @@ class ManGenerator : public OutputGenerator
     void writeNonBreakableSpace() { t << "  "; }
     void writeImage(const char *,const char *,const char *) {}
     
+    void startDescTable() {}
+    void endDescTable() {}
+    void startDescTableTitle() { writeListItem(); startBold(); }
+    void endDescTableTitle() { endBold(); }
+    void startDescTableData() { }
+    void endDescTableData() {}
+
   private:
     bool firstCol;
     bool paragraph;

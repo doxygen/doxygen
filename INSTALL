@@ -1,4 +1,4 @@
-DOXYGEN Version 0.49-991003
+DOXYGEN Version 0.49-991106
 
 CONTENTS
 --------
@@ -15,8 +15,8 @@ INSTALLATION INSTRUCTIONS FOR UNIX:
 
 1.  Unpack the archive, unless you already have:
    
-     gunzip doxygen-0.49-991003.src.tar.gz    # uncompress the archive
-     tar xf doxygen-0.49-991003.src.tar       # unpack it
+     gunzip doxygen-0.49-991106.src.tar.gz    # uncompress the archive
+     tar xf doxygen-0.49-991106.src.tar       # unpack it
 
 2.  Run the configure script:
  
@@ -86,7 +86,7 @@ You will need to install the windows/dos versions of following tools:
   location where bison.simple and bison.hairy are located.
 - Qt-1.xx (Qt-2.xx should also work, but I didn't test it for Windows) 
   (Hint: only the tools section is required, so you can use the free 
-   X-windows version as well!)
+   X-windows version (use Qt-1.44) as well!)
   You can get it at http://www.troll.no
 - Microsoft Visual C++ (I only tested with version 5.0).
   Use the vcvars32.bat to set the environment variables 
@@ -137,6 +137,26 @@ KNOWN CONFIGURATION PROBLEMS
 QT RELATED PROBLEMS:
 - Qt-2.01 contains a bug that makes some special characters appear as 
   question marks (?) in the HTML output.
+
+  Bernhard Ristow provided a fix for this:
+
+  % in QT-2.0.1 is a bug in the member function
+  % QTextStream &QTextStream::operator<<( char c ).
+  % 
+  % If the character is negative the cast to int in
+  % ts_putc( c ) produces an invalid char as unsigned
+  % short (e.g. char c = -4 -> unsigned short: 65532).
+  % This produces a strange output.
+  % If we modify the function into:
+  %
+  % QTextStream &QTextStream::operator<<( char c )
+  % {
+  %     CHECK_STREAM_PRECOND
+  %     unsigned char uc = (unsigned char) c;
+  %     ts_putc( uc );
+  %     return *this;
+  % }
+  % it works correctly.
 
 HTML RELATED PROBLEMS:
 - the indent continuously increases.
@@ -214,4 +234,4 @@ The latest version of doxygen can be obtained at
 
 Enjoy,
 
-Dimitri van Heesch (03 October 1999)
+Dimitri van Heesch (06 November 1999)

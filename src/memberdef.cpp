@@ -23,6 +23,10 @@
 #include "message.h"
 #include "htmlhelp.h"
 #include "language.h"
+#include "outputlist.h"
+#include "example.h"
+#include "membergroup.h"
+#include "scanner.h"
 
 //-----------------------------------------------------------------------------
 
@@ -435,6 +439,7 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
                        anchor(),name());
 }
 
+
 void MemberDef::writeDeclaration(OutputList &ol,ClassDef *cd,NamespaceDef *nd,FileDef *fd,
                int prevGroupId,bool inGroup)
 {
@@ -735,12 +740,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
   bool hasDocs = detailsAreVisible();
   if (
        (memberType()==m &&                          // filter member type
-       (Config::extractAllFlag || hasDocs) &&
-       groupId()==-1 
-      ) || /* member is part of an annonymous scope that is the type of
-            * another member in the list.
-            */ 
-      (!hasDocs && !briefDescription().isEmpty() && annUsed)
+        (Config::extractAllFlag || hasDocs) &&
+        groupId()==-1                                // not in a group
+       ) || /* member is part of an annonymous scope that is the type of
+             * another member in the list.
+             */ 
+       (!hasDocs && !briefDescription().isEmpty() && annUsed)
      )
   {
     //printf("************* Writing docs for member %s\n",name().data());
@@ -927,9 +932,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
     ol.newParagraph();
 
     if (!briefDescription().isEmpty() && 
-        (Config::repeatBriefFlag || 
-         (!Config::briefMemDescFlag && documentation().isEmpty())
-        ) || !annMemb
+        (Config::repeatBriefFlag  
+         /* || (!Config::briefMemDescFlag && documentation().isEmpty())*/
+        ) /* || !annMemb */
        )  
     { 
       parseDoc(ol,scopeName,name(),briefDescription());
@@ -939,12 +944,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
     { 
       parseDoc(ol,scopeName,name(),documentation()+"\n");
     }
-    if (!bodyCode().isEmpty())
-    {
-      ol.startCodeFragment();
-      parseCode(ol,scopeName,bodyCode(),FALSE,0);
-      ol.endCodeFragment();
-    }
+    //if (!bodyCode().isEmpty())
+    //{
+    //  ol.startCodeFragment();
+    //  parseCode(ol,scopeName,bodyCode(),FALSE,0);
+    //  ol.endCodeFragment();
+    //}
 
     if (isEnumerate())
     {
@@ -959,13 +964,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           {
             if (first)
             {
-              ol.newParagraph();
+              //ol.newParagraph();
+              ol.startDescList();
               ol.startBold();
               parseText(ol,theTranslator->trEnumerationValues());
-              //ol.writeBoldString("Enumeration values:");
               ol.docify(":");
               ol.endBold();
-              ol.startItemList();
+              ol.endDescTitle();
+              ol.writeDescItem();
+              //ol.startItemList();
+              ol.startDescTable();
             }
             ol.addToIndex(fmd->name(),cname);
             ol.addToIndex(cname,fmd->name());
@@ -973,32 +981,47 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
             {
               HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());
             }
-            ol.writeListItem();
+            //ol.writeListItem();
+            ol.startDescTableTitle();
             ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
             first=FALSE;
-            ol.startBold();
+            ol.startEmphasis();
             ol.docify(fmd->name());
-            ol.endBold();
+            ol.endEmphasis();
+            ol.disableAllBut(OutputGenerator::Man);
+            ol.writeString(" ");
+            ol.enableAll();
+            ol.endDescTableTitle();
             ol.endDoxyAnchor();
-            ol.newParagraph();
+            //ol.newParagraph();
+            ol.startDescTableData();
 
             if (!fmd->briefDescription().isEmpty())
             { 
               parseDoc(ol,scopeName,fmd->name(),fmd->briefDescription());
+              //ol.newParagraph();
+            }
+            if (!fmd->briefDescription().isEmpty() && 
+                !fmd->documentation().isEmpty())
+            {
               ol.newParagraph();
             }
             if (!fmd->documentation().isEmpty())
             { 
               parseDoc(ol,scopeName,fmd->name(),fmd->documentation()+"\n");
             }
-            ol.disable(OutputGenerator::Man);
-            ol.newParagraph();
-            ol.enable(OutputGenerator::Man);
+            ol.endDescTableData();
           }
           fmd=fmdl->next();
         }
       }
-      if (!first) { ol.endItemList(); ol.writeChar('\n'); }
+      if (!first) 
+      { 
+        //ol.endItemList(); 
+        ol.endDescTable();
+        ol.endDescList();
+        ol.writeChar('\n'); 
+      }
     }
 
     MemberDef *bmd=reimplements();
@@ -1128,7 +1151,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
           index=newIndex+matchLen;
         } 
         parseText(ol,reimplInLine.right(reimplInLine.length()-index));
-
       }
     }
     // write the list of examples that use this member
@@ -1145,6 +1167,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,const char *sco
       //ol.endDescItem();
       ol.endDescList();
     }
+    // write reference to the source
+    writeSourceRef(ol);
     ol.endIndent();
     // enable LaTeX again
     //if (Config::extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
@@ -1185,4 +1209,21 @@ bool MemberDef::isLinkableInProject()
 bool MemberDef::isLinkable()
 {
   return isLinkableInProject() || isReference();
+}
+
+bool MemberDef::detailsAreVisible() const          
+{ 
+  return !documentation().isEmpty() || // has detailed docs
+         (Config::sourceBrowseFlag && bodyLine!=-1 && bodyDef) ||  // has reference to sources
+         (mtype==Enumeration && docEnumValues) ||  // has enum values
+         (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
+         (!briefDescription().isEmpty() && 
+           (!Config::briefMemDescFlag || Config::alwaysDetailsFlag) && 
+           Config::repeatBriefFlag // has brief description inside detailed area
+         );
+}
+
+void MemberDef::setEnumDecl(OutputList &ed) 
+{ 
+  enumDeclList=new OutputList(&ed); 
 }

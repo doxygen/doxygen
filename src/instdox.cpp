@@ -19,8 +19,8 @@
 
 #include "qtbc.h"
 #include <qfile.h>
-#include <qfileinf.h>
-#include <qtstream.h>
+#include <qfileinfo.h>
+#include <qtextstream.h>
 
 #include "instdox.h"
 #include "doxygen.h"

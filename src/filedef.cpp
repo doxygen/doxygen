@@ -26,6 +26,7 @@
 #include "namespacedef.h"
 #include "util.h"
 #include "language.h"
+#include "outputlist.h"
 
 /*! create a new file definition, where \a p is the file path, 
     \a the file name, and \a ref is an HTML anchor name if the
@@ -45,6 +46,9 @@ FileDef::FileDef(const char *p,const char *nm,const char *ref)
   defineList    = new DefineList;
   namespaceList = new NamespaceList;
   namespaceDict = new NamespaceDict(7);
+  srcDefDict = 0;
+  srcAnchorDict = 0;
+  usingList = 0;
 }
 
 /*! destroy the file definition */
@@ -56,6 +60,9 @@ FileDef::~FileDef()
   delete defineList;
   delete namespaceList;
   delete namespaceDict;
+  delete srcDefDict;
+  delete srcAnchorDict;
+  delete usingList;
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -195,7 +202,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   //doc=doc.stripWhiteSpace();
   //int bl=brief.length();
   //int dl=doc.length();
-  if (!briefDescription().isEmpty() || !documentation().isEmpty())
+  if (!briefDescription().isEmpty() || !documentation().isEmpty() || bodyLine!=-1)
   {
     ol.writeRuler();
     bool latexOn = ol.isEnabled(OutputGenerator::Latex);
@@ -208,6 +215,9 @@ void FileDef::writeDocumentation(OutputList &ol)
     if (!briefDescription().isEmpty())
     {
       ol+=briefOutput;
+    }
+    if (!briefDescription().isEmpty() && !documentation().isEmpty())
+    {
       ol.newParagraph();
     }
     if (!documentation().isEmpty())
@@ -215,7 +225,21 @@ void FileDef::writeDocumentation(OutputList &ol)
       //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
       //  doc+='.';
       parseDoc(ol,0,0,documentation()+"\n");
+    }
+    //printf("Writing source ref for file %s\n",name().data());
+    if (Config::sourceBrowseFlag) 
+    {
       ol.newParagraph();
+      QCString refText = theTranslator->trDefinedInSourceFile();
+      int fileMarkerPos = refText.find("@0");
+      if (fileMarkerPos!=-1) // should always pass this.
+      {
+        parseText(ol,refText.left(fileMarkerPos)); //text left from marker 1
+        ol.writeObjectLink(0,sourceName(),
+            0,name());
+        parseText(ol,refText.right(
+              refText.length()-fileMarkerPos-2)); // text right from marker 2
+      }
     }
   }
 
@@ -294,6 +318,23 @@ void FileDef::writeDocumentation(OutputList &ol)
   endFile(ol);
 }
 
+/*! Write a source listing of this file to the output */
+void FileDef::writeSource(OutputList &ol)
+{
+  ol.disableAllBut(OutputGenerator::Html);
+  startFile(ol,sourceName(),name()+" Source File");
+  startTitle(ol,0);
+  parseText(ol,name());
+  endTitle(ol,0,0);
+  //parseText(ol,theTranslator->trVerbatimText(incFile->name()));
+  //ol.writeRuler();
+  ol.startCodeFragment();
+  parseCode(ol,name(),fileToString(absFilePath()),FALSE,0,this);
+  ol.endCodeFragment();
+  endFile(ol);
+  ol.enableAll();
+}
+
 /*! Adds member definition \a md to the list of all members of this file */
 void FileDef::insertMember(MemberDef *md)
 {
@@ -316,6 +357,53 @@ void FileDef::insertNamespace(NamespaceDef *nd)
   }
 }
 
+void FileDef::addSourceRef(int line,Definition *d,const char *anchor)
+{
+  if (d)
+  {
+    if (srcDefDict==0) srcDefDict = new QIntDict<Definition>(257);
+    if (srcAnchorDict==0) 
+    {
+      srcAnchorDict = new QIntDict<QCString>(257);
+      srcAnchorDict->setAutoDelete(TRUE);
+    }
+    srcDefDict->insert(line,d);
+    srcAnchorDict->insert(line,new QCString(anchor));
+    //printf("Adding member %s with anchor %s at line %d to file %s\n",
+    //    d->name().data(),anchor,line,name().data());
+  }
+}
+
+Definition *FileDef::getSourceDefinition(int lineNr)
+{
+  Definition *result=0;
+  if (srcDefDict)
+  {
+    result = srcDefDict->find(lineNr);
+  }
+  return result;
+}
+
+QCString FileDef::getSourceAnchor(int lineNr)
+{
+  QCString result;
+  if (srcAnchorDict)
+  {
+    QCString *pstr = srcAnchorDict->find(lineNr);
+    if (pstr) result=*pstr;
+  }
+  return result;
+}
+
+void FileDef::addUsingDirective(NamespaceDef *nd)
+{
+  if (usingList==0)
+  {
+    usingList = new NamespaceList;
+  }
+  usingList->append(nd);
+}
+
 //-----------------------------------------------------------------------------
 
 /*! Creates a file list. */
@@ -333,7 +421,9 @@ int FileList::compareItems(GCI item1, GCI item2)
 {
   FileDef *c1=(FileDef *)item1;
   FileDef *c2=(FileDef *)item2;
-  return strcmp(c1->name(),c2->name());
+  return Config::fullPathNameFlag ? 
+         strcmp(c1->absFilePath(),c2->absFilePath()) : 
+         strcmp(c1->name(),c2->name());
 }
 
 /*! Create a file list iterator. */
@@ -341,3 +431,4 @@ FileListIterator::FileListIterator(const FileList &cllist) :
   QListIterator<FileDef>(cllist)
 {
 }
+

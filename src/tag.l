@@ -22,7 +22,7 @@
 #include <stdio.h>
   
 #include "qtbc.h"
-#include <qfileinf.h>
+#include <qfileinfo.h>
   
 #include "classdef.h"
 #include "filedef.h"
@@ -72,7 +72,7 @@ static void addFile(const char *name)
   }
   else
   {
-    mn = new FileName(name);
+    mn = new FileName(name,name);
     mn->append(fd);
     inputNameList.inSort(mn);
     inputNameDict.insert(name,mn);

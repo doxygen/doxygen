@@ -32,14 +32,16 @@
 #include <qstrlist.h>
 #include <qdict.h>
 #include <qregexp.h>
+#include <qfileinfo.h>
   
 #include "constexp.h"
 #include "define.h"
 #include "doxygen.h"
 #include "message.h"
 #include "util.h"
+#include "defargs.h"
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
 #define pclose _pclose
 #endif
@@ -743,10 +745,13 @@ void addDefine()
   FileDef   *fd=findFileDef(&inputNameDict,yyFileName,ambig);
   MemberDef *md=new MemberDef("#define",defName,defArgsStr,0,
       Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
+  ArgumentList *argList = new ArgumentList;
+  stringToArgumentList(defArgsStr,argList);
+  md->setArgumentList(argList);
   md->setDefFile(yyFileName);
   md->setDefLine(yyLineNr);
   md->setFileDef(fd);
-  md->setDefinition("#define "+defName+defArgsStr);
+  md->setDefinition("#define "+defName);
 
   MemberName *mn=functionNameDict[defName];
   if (mn==0)
@@ -1301,7 +1306,7 @@ BN	[ \t\r\n]
 					        //printf("Error: define %s is defined more than once!\n",defName.data());
 					      }
 					    }
-  					    outputChar('\n');
+  					    //outputChar('\n');
 					    lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
@@ -1464,6 +1469,8 @@ BN	[ \t\r\n]
 <DefineText>\'				{ defText += *yytext;
   					  BEGIN(SkipSingleQuote);
 					}
+<SkipDoubleQuote>"//"			{ defText += yytext; }
+<SkipDoubleQuote>"/*"			{ defText += yytext; }
 <SkipDoubleQuote>\"			{
   					  defText += *yytext;
 					  BEGIN(DefineText);

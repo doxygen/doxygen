@@ -19,8 +19,8 @@
 
 #include "qtbc.h"
 #include <qfile.h>
-#include <qtstream.h>
-#include <qfileinf.h>
+#include <qtextstream.h>
+#include <qfileinfo.h>
 #include <qdir.h>
 
 #include "formula.h"
@@ -131,9 +131,9 @@ void FormulaList::generateBitmaps(const char *path)
         t << "1 1 1 setrgbcolor" << endl;  // anti-alias to white background
         t << "newpath" << endl;
         t << "-1 -1 moveto" << endl;
-        t << x2-x1+2 << " -1 lineto" << endl;
-        t << x2-x1+2 << " " << y2-y1+2 << " lineto" << endl;
-        t << "-1 " << y2-y1+2 << " lineto" <<endl;
+        t << (x2-x1+2) << " -1 lineto" << endl;
+        t << (x2-x1+2) << " " << (y2-y1+2) << " lineto" << endl;
+        t << "-1 " << (y2-y1+2) << " lineto" <<endl;
         t << "closepath" << endl;
         t << "fill" << endl;
         t << -x1 << " " << -y1 << " translate" << endl;

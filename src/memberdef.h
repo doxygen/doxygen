@@ -22,15 +22,16 @@
 #include <qdict.h>
 
 #include "entry.h"
-#include "example.h"
-#include "config.h"
-#include "outputlist.h"
 #include "definition.h"
-#include "scanner.h"
 
 class FileDef;
-class MemberList;
+class ClassDef;
 class NamespaceDef;
+class MemberList;
+class MemberGroup;
+class ExampleList;
+class ExampleDict;
+class OutputList;
 
 
 class MemberDef : public Definition
@@ -71,7 +72,7 @@ class MemberDef : public Definition
     const char *argsString() const       { return args; }
     const char *excpString() const       { return exception; }     
     const char *anchor() const           { return anc; }
-    QCString bodyCode() const            { return body; }
+    //QCString bodyCode() const            { return body; }
     ClassDef *memberClass()              { return classDef; }
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
@@ -84,7 +85,7 @@ class MemberDef : public Definition
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
-    void setBody(const QCString &b)      { body=b; }
+    //void setBody(const QCString &b)      { body=b; }
     void setInline(bool in)              { inLine=in; }
     FileDef *getFileDef()                { return fileDef; }
     FileDef *getFileDec()                { return fileDec; }
@@ -93,19 +94,12 @@ class MemberDef : public Definition
     bool isStatic() const                { return stat; }
     bool isInline() const                { return inLine; }
     bool hasDocumentation()  // overrides hasDocumentation in definition.h
-      { return Definition::hasDocumentation() || !body.isEmpty(); }
+      { return Definition::hasDocumentation(); }
 
     bool isLinkableInProject();
     bool isLinkable();
     
-    bool detailsAreVisible() const          
-      { return !documentation().isEmpty() || !body.isEmpty() ||
-               (mtype==Enumeration && docEnumValues) || 
-               (mtype==EnumValue && !briefDescription().isEmpty()) ||
-               (!briefDescription().isEmpty() && 
-                !Config::briefMemDescFlag && Config::repeatBriefFlag);
-      }
-    
+    bool detailsAreVisible() const;
     // relation to other members
     void setReimplements(MemberDef *md) { redefines=md; }
     void insertReimplementedBy(MemberDef *md);
@@ -116,7 +110,7 @@ class MemberDef : public Definition
     void insertEnumField(MemberDef *md);
     void setEnumScope(MemberDef *md) { enumScope=md; }
     MemberDef *getEnumScope() const { return enumScope; }
-    void setEnumDecl(OutputList &ed) { enumDeclList=new OutputList(&ed); }
+    void setEnumDecl(OutputList &ed);
     void setEnumUsed() { eUsed=TRUE; }
     bool enumUsed() const        { return eUsed; }
     OutputList *enumDecl() const { return enumDeclList; }
@@ -202,13 +196,13 @@ class MemberDef : public Definition
     QCString type;            // return type
     QCString args;            // function arguments/variable array specifiers
     QCString exception;       // exceptions that can be thrown
-    QCString body;            // function body code
+    //QCString body;            // function body code
     QCString decl;            // member declaration in class
     QCString declFile;        // file where the declaration was found
-    int     declLine;         // line where the declaration was found
+    int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
     QCString defFile;         // file where the definition was found
-    int     defLine;          // line where the definition was found
+    int      defLine;         // line where the definition was found
     QCString anc;             // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]

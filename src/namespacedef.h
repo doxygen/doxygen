@@ -27,6 +27,7 @@ class OutputList;
 class ClassList;
 class MemberList;
 class MemberDef;
+class NamespaceList;
 
 class NamespaceDef : public Definition
 {
@@ -41,6 +42,8 @@ class NamespaceDef : public Definition
     void insertMember(MemberDef *md);
     void computeAnchors();
     int countMembers();
+    void addUsingDirective(NamespaceDef *nd);
+    NamespaceList *getUsedNamespaces() const { return usingList; }
     //const char *getReference() { return reference; }
     //bool isVisible() 
     //{
@@ -71,6 +74,7 @@ class NamespaceDef : public Definition
     QStrList files;
     ClassList *classList;
     MemberList *memList;
+    NamespaceList *usingList;
 };
 
 class NamespaceList : public QList<NamespaceDef>

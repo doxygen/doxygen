@@ -18,6 +18,7 @@
 #define EXAMPLE_H
 
 #include "qtbc.h"
+#include <qdict.h>
 
 class ClassDef;
 class MemberName;
@@ -40,6 +41,10 @@ class ExampleList : public QList<Example>
     }
 };
 
-typedef QDict<Example> ExampleDict;
+class ExampleDict : public QDict<Example>
+{
+  public:
+    ExampleDict(int size=17) : QDict<Example>(size) {}
+};
 
 #endif

@@ -70,11 +70,11 @@ class TranslatorFrench : public Translator
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers()
-    { return "Ceci est la liste complète des membres de"; }
+    { return "Ceci est la liste complète des membres de "; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers()
-    { return "y compris des membres des classes héritées."; }
+    { return " y compris des membres des classes héritées."; }
     
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.

@@ -58,12 +58,14 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_cgi_name CGI_NAME 
 <li> \refitem cfg_cgi_url CGI_URL 
 <li> \refitem cfg_class_diagrams CLASS_DIAGRAMS 
+<li> \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 <li> \refitem cfg_compact_latex COMPACT_LATEX 
 <li> \refitem cfg_disable_index DISABLE_INDEX 
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
 <li> \refitem cfg_doc_url DOC_URL
 <li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 <li> \refitem cfg_example_path EXAMPLE_PATH
+<li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
 <li> \refitem cfg_exclude EXCLUDE
 <li> \refitem cfg_exclude_patterns EXCLUDE_PATTERNS
 <li> \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
@@ -84,6 +86,9 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_html_footer HTML_FOOTER
 <li> \refitem cfg_html_header HTML_HEADER
 <li> \refitem cfg_html_output HTML_OUTPUT
+<li> \refitem cfg_html_stylesheet HTML_STYLESHEET
+<li> \refitem cfg_image_path IMAGE_PATH
+<li> \refitem cfg_image_patterns IMAGE_PATTERNS
 <li> \refitem cfg_include_path INCLUDE_PATH
 <li> \refitem cfg_inherit_docs INHERIT_DOCS
 <li> \refitem cfg_inline_info INLINE_INFO
@@ -190,7 +195,8 @@ followed by the descriptions of the tags grouped by category.
  If the \c EXTRACT_ALL tag is set to \c YES all classes and functions will be
  included in the documentation, even if no documentation was available.
 
- \b Notice: This will also disable the warnings about undocumented members 
+ \par Note: 
+ This will also disable the warnings about undocumented members 
  that are normally produced when \c WARNINGS is set to \c YES
 
 \anchor cfg_extract_private
@@ -238,7 +244,7 @@ followed by the descriptions of the tags grouped by category.
  prepend the brief description of a member or function before the detailed 
  description 
 
- \par Notice: 
+ \par Note: 
  If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
  brief descriptions will be completely suppressed.
 
@@ -290,7 +296,7 @@ followed by the descriptions of the tags grouped by category.
 
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
- \addinex JAVADOC_AUTOBRIEF
+ \addindex JAVADOC_AUTOBRIEF
   If the \c JAVADOC_NO_AUTOBRIEF is set to \c YES (the default) then Doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO, the Javadoc-style will
@@ -304,7 +310,7 @@ followed by the descriptions of the tags grouped by category.
  reimplements.
 
 \anchor cfg_inline_info
-<dt> INLINE_INFO <dd>
+<dt>\c INLINE_INFO <dd>
  If the \c INLINE_INFO tag is set to \c YES (the default) then a tag [inline]
  is inserted in the documentation for inline members.
 
@@ -321,7 +327,8 @@ followed by the descriptions of the tags grouped by category.
  \c myfile.cpp or directories like \c /usr/src/myproject. 
  Separate the files or directories with spaces.<br>
 
- \b Notice: This tag (and only this tag) is \e required.
+ \b Note: 
+ This tag (and only this tag) is \e required.
 
 \anchor cfg_file_patterns
 <dt>\c FILE_PATTERNS <dd>
@@ -359,6 +366,29 @@ followed by the descriptions of the tags grouped by category.
  The \c EXAMPLE_PATH tag can be used to specify one or more files or
  directories that contain example code fragments that are included (see
  the \\include command in section \ref cmdinclude "\\include").
+
+\anchor cfg_example_patterns
+<dt>\c EXAMPLE_PATTERNS <dd>
+ \addindex EXAMPLE_PATTERNS
+ If the value of the \c EXAMPLE_PATH tag contains directories, you can use the
+ \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
+ and *.h) to filter out the source-files in the directories. If left
+ blank all files are included.
+
+\anchor cfg_image_path
+<dt>\c IMAGE_PATH <dd>
+ \addindex IMAGE_PATH
+ The \c IMAGE_PATH tag can be used to specify one or more files or
+ directories that contain images that are to be included in the 
+ documentation (see the \ref cmdimage "\image" command).
+
+\anchor cfg_image_patterns
+<dt>\c IMAGE_PATTERNS <dd>
+ \addindex IMAGE_PATTERNS
+ If the value of the \c IMAGE_PATH tag contains directories, you can use the
+ \c IMAGE_PATTERNS tag to specify one or more wildcard pattern (like *.gif
+ and *.eps) to filter out the image files in the directories. If left
+ blank all files are included.
 
 \anchor cfg_input_filter
 <dt>\c INPUT_FILTER <dd>
@@ -410,9 +440,11 @@ followed by the descriptions of the tags grouped by category.
  standard header. 
 
  The following commands have a special meaning inside the header:
- <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>. 
+ <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
+ <code>\$doxygenversion</code>. 
  Doxygen will replace them by respectively 
- the title of the page, the current date and time, or only the current date. 
+ the title of the page, the current date and time, only the current date,
+ or the version number of doxygen.
    
 \anchor cfg_html_footer
 <dt>\c HTML_FOOTER <dd>
@@ -431,6 +463,28 @@ followed by the descriptions of the tags grouped by category.
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, or only the current date. 
 
+\anchor cfg_html_stylesheet
+<dt>\c HTML_STYLESHEET <dd>
+ \addindex HTML_STYLESHEET
+ The \c HTML_STYLESHEET tag can be used to specify a user defined cascading
+ style sheet that is used by each HTML page. It can be used to
+ fine-tune the look of the HTML output. If the tag is left blank doxygen
+ will generate a default style sheet. Here is the default style sheet
+ that doxygen normally generates:
+
+\verbatim
+H1 { text-align: center }
+A.el { text-decoration: none; font-weight: bold }
+DL.el { margin-left: -1cm }
+DIV.fragment { width: 100%; border: none; background-color: #eeeeee }
+DIV.in { margin-left: 16 }
+DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }
+A.gl:link { color: #ffffff }
+A.gl:visited { color: #ffffff }
+A.gl { text-decoration: none; font-weight: bold; background-color: #ff8080 }
+TD.md { background-color: #f2f2ff }
+\endverbatim
+
 \anchor cfg_html_align_members
 <dt>\c HTML_ALIGN_MEMBERS <dd>
 
@@ -438,14 +492,14 @@ If the \c HTML_ALIGN_MEMBERS tag is set to \c YES, the members of classes,
 files or namespaces will be aligned in HTML using tables. If set to
 NO a bullet list will be used. 
 
-\par Notice 
+<b>Note:</b>
 Setting this tag to NO will become obsolete in the future, since I only
 intent to support and test the aligned representation.
 
 \anchor cfg_generate_htmlhelp
 <dt>\c GENERATE_HTMLHELP <dd>
 
-If the \c GENERATE_HTMLHELP tag is set to \c YES, 
+If the \c GENERATE_HTMLHELP tag is set to \c YES then
 doxygen generates three additional HTML index files: 
 \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
 project file that can be read by 
@@ -471,6 +525,13 @@ The HTML workshop also contains a viewer for compressed HTML files.
 If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
 of all compounds will be generated. Enable this if the project contains 
 a lot of classes, structs, unions or interfaces.
+
+\anchor cfg_cols_in_alpha_index
+<dt>\c COLS_IN_ALPHA_INDEX <dd>
+
+If the alphabetical index is enabled 
+(see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
+used to specify the number of columns in which this list will be split (can be a number in the range [1..20])
 
 </dl>
 
@@ -515,7 +576,7 @@ a lot of classes, structs, unions or interfaces.
 \anchor cfg_extra_packages
 <dt>\c EXTRA_PACKAGES <dd>
  \addindex EXTRA_PACKAGES
- The EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
+ The \c EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
  package names that should be included in the \f$\mbox{\LaTeX}\f$ output.
  To get the times font for instance you can specify 
 \verbatim
@@ -555,7 +616,7 @@ EXTRA_PACKAGES = times
 \pagenumbering{arabic}
 \endverbatim
  
- \par Notice: 
+ \par Note: 
    Only use a user defined header if you know what you are doing!
 
 </dl>
@@ -581,7 +642,7 @@ EXTRA_PACKAGES = times
 \anchor cfg_man_extension
 <dt>\c MAN_EXTENSION <dd>
  \addindex MAX_EXTENSION
- The MAN_EXTENSION tag determines the extension that is added to
+ The \c MAN_EXTENSION tag determines the extension that is added to
  the generated man pages (default is the subroutine's section .3)
 </dl>
 
@@ -643,7 +704,7 @@ EXTRA_PACKAGES = times
  See section \ref doxytag_usage for more information about the usage of 
  tag files.
  
- \par Notice:
+ \par Note:
   Each tag file most have a unique name and if a tag file is not located
   in the directory in which doxygen is run, you must also specify the
   path to the tagfile here.

@@ -25,10 +25,10 @@
 
 #include "qtbc.h"
 #include <qstrlist.h>
-#include <qfileinf.h>
+#include <qfileinfo.h>
 #include <qfile.h>
 #include <qdict.h>
-#include <qtstream.h>
+#include <qtextstream.h>
 #include <qdir.h>
   
 #include "version.h"

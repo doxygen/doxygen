@@ -35,7 +35,8 @@ Here is a list of the languages and their current maintainers:
   <TR BGCOLOR="#4040c0">
   <TD ><b><font size=+1 color="#ffffff"> Language </font></b></TD>
   <TD ><b><font size=+1 color="#ffffff"> Maintainer </font></b></TD>
-  <TD ><b><font size=+1 color="#ffffff"> Contact address </font></b></TD>
+  <TD ><b><font size=+1 color="#ffffff"> Contact address </font>
+          <font size=-2 color="#ffffff">(remove the NOSPAM.)</font></b></TD>
   <TR BGCOLOR="#ffffff">
       <TD>
 	German
@@ -44,8 +45,8 @@ Here is a list of the languages and their current maintainers:
         Jens Breitenstein
       </TD>
       <TD>
-        <a href="mailto:Jens.Breitenstein@tlc.de">
-			Jens.Breitenstein@tlc.de</a>
+        <a href="mailto:Jens.Breitenstein@NOSPAM.tlc.de">
+			Jens.Breitenstein@NOSPAM.tlc.de</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -56,8 +57,8 @@ Here is a list of the languages and their current maintainers:
         Christophe Bordeux
       </TD>
       <TD>
-        <a href="mailto:bordeux@lig.di.epfl.ch">
-                          bordeux@lig.di.epfl.ch</a>
+        <a href="mailto:bordeux@NOSPAM.lig.di.epfl.ch">
+                          bordeux@NOSPAM.lig.di.epfl.ch</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -69,10 +70,10 @@ Here is a list of the languages and their current maintainers:
         XeT Erixon
       </TD>
       <TD>
-        <a href="mailto:sahag96@nts.mh.se">
-	          sahag96@nts.mh.se</a><br>
-        <a href="mailto:xet@hem.passagen.se">
-		  xet@hem.passagen.se</a>
+        <a href="mailto:sahag96@NOSPAM.nts.mh.se">
+	          sahag96@NOSPAM.nts.mh.se</a><br>
+        <a href="mailto:xet@NOSPAM.hem.passagen.se">
+		  xet@NOSPAM.hem.passagen.se</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -83,8 +84,8 @@ Here is a list of the languages and their current maintainers:
         Vlastimil Havran
       </TD>
       <TD>
-        <a href="mailto:havran@fel.cvut.cz">
-                        havran@fel.cvut.cz</a>
+        <a href="mailto:havran@NOSPAM.fel.cvut.cz">
+                        havran@NOSPAM.fel.cvut.cz</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -95,8 +96,8 @@ Here is a list of the languages and their current maintainers:
         Ionutz Borcoman
       </TD>
       <TD>
-        <a href="mailto:borco@borco-ei.eng.hokudai.ac.jp">
-	                borco@borco-ei.eng.hokudai.ac.jp</a>
+        <a href="mailto:borco@NOSPAM.borco-ei.eng.hokudai.ac.jp">
+	                borco@NOSPAM.borco-ei.eng.hokudai.ac.jp</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -107,8 +108,8 @@ Here is a list of the languages and their current maintainers:
         Piotr Piatkowski
       </TD>
       <TD>
-        <a href="mailto:kompas@ceti.com.pl">
-                        kompas@ceti.com.pl</a>
+        <a href="mailto:kompas@NOSPAM.ceti.com.pl">
+                        kompas@NOSPAM.ceti.com.pl</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -120,10 +121,10 @@ Here is a list of the languages and their current maintainers:
         Alessandro Falappa    
       </TD>
       <TD>
-        <a href="mailto:aaf23@cam.ac.uk">
-                        aaf23@cam.ac.uk</a><br>
-        <a href="mailto:a.falappa@flashnet.it">
-                        a.falappa@flashnet.it</a>
+        <a href="mailto:aaf23@NOSPAM.cam.ac.uk">
+                        aaf23@NOSPAM.cam.ac.uk</a><br>
+        <a href="mailto:a.falappa@NOSPAM.flashnet.it">
+                        a.falappa@NOSPAM.flashnet.it</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -134,8 +135,8 @@ Here is a list of the languages and their current maintainers:
         Kenji Nagamatsu
       </TD>
       <TD>
-        <a href="mailto:naga@joyful.club.ne.jp">
-                        naga@joyful.club.ne.jp</a>
+        <a href="mailto:naga@NOSPAM.joyful.club.ne.jp">
+                        naga@NOSPAM.joyful.club.ne.jp</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -146,8 +147,8 @@ Here is a list of the languages and their current maintainers:
         Francisco Oltra Thennet 
       </TD>
       <TD>
-        <a href="mailto:foltra@puc.cl">
-                        foltra@puc.cl</a>
+        <a href="mailto:foltra@NOSPAM.puc.cl">
+                        foltra@NOSPAM.puc.cl</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -158,8 +159,8 @@ Here is a list of the languages and their current maintainers:
         Olli Korhonen
       </TD>
       <TD>
-        <a href="mailto:Olli.Korhonen@ccc.fi">
-                        Olli.Korhonen@ccc.fi</a>
+        <a href="mailto:Olli.Korhonen@NOSPAM.ccc.fi">
+                        Olli.Korhonen@NOSPAM.ccc.fi</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -170,8 +171,8 @@ Here is a list of the languages and their current maintainers:
         Vladimir Vodolazkiy
       </TD>
       <TD>
-        <a href="mailto:voldemarus@geocities.com">
-                        voldemarus@geocities.com</a>
+        <a href="mailto:voldemarus@NOSPAM.geocities.com">
+                        voldemarus@NOSPAM.geocities.com</a>
       </TD>
   </TR>
 
@@ -183,8 +184,8 @@ Here is a list of the languages and their current maintainers:
         Dimitri van Heesch
       </TD>
       <TD>
-        <a href="mailto:dimitri@stack.nl">
-	                dimitri@stack.nl</a>
+        <a href="mailto:dimitri@NOSPAM.stack.nl">
+	                dimitri@NOSPAM.stack.nl</a>
       </TD>
   </TR>
   </TABLE>
@@ -201,7 +202,7 @@ Here is a list of the languages and their current maintainers:
   \hline
   French  & Christophe Bordeux & {\tt bordeux@lig.di.epfl.ch} \\
   \hline
-  Swedish & Samuel Hägglund & {\tt sahag96@nts.mh.se} \\
+  Swedish & Samuel H\"agglund & {\tt sahag96@nts.mh.se} \\
           & XeT Erixon      & {\tt xet@hem.passagen.se} \\
   \hline
   Czech   & Vlastimil Havran & {\tt havran@fel.cvut.cz} \\

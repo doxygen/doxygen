@@ -19,14 +19,15 @@
 
 #include "index.h"
 #include <qlist.h>
+#include <qintdict.h>
 #include "config.h"
 #include "definition.h"
 
 class MemberList;
 class FileList;
 class ClassList;
-class MemberDef;
 class ClassDef;
+class MemberDef;
 class OutputList;
 class DefineList;
 class NamespaceDef;
@@ -62,8 +63,6 @@ class FileDef : public Definition
         return Definition::name(); 
     } 
     
-    /*! Returns nameString with all slashes replaced by underscores. */
-    //const char *diskName() const { return diskname; }
     QCString getOutputFileBase() const { return diskname; }
     
     /*! Returns the absolute path including the file name. */
@@ -72,38 +71,15 @@ class FileDef : public Definition
     /*! Returns the name of the verbatim copy of this file (if any). */
     const char *includeName() const { return incName; }
     
-    /*! Returns the documentation that was available for this file. */
-    //const char *documentation() const { return doc; }
-    
-    /*! Returns the brief description that was given for this file. */
-    //const char *briefDescription() const { return brief; }
-    
+    void addSourceRef(int line,Definition *d,const char *anchor);
+    Definition *getSourceDefinition(int lineNr);
+    QCString getSourceAnchor(int lineNr);
+
     /*! Sets the name of the include file to \a n. */
     void setIncludeName(const char *n_) { incName=n_; }
     
-    /*! Sets the name of the include file to \a n. */
-    //void setBriefDescription(const char *b) { brief=b; }
-    
-    /*! Sets the documentaton of this file to \a d. */
-    //void setDocumentation(const char *d) { doc=d; }
-    
     /*! Returns the absolute path of this file. */ 
     QCString getPath() const { return path; }
-    
-    /*! Returns true iff any documentation for this file is found. */
-    //bool hasDocumentation() 
-    //  { return extractAllFlag || !doc.isNull() || !brief.isNull(); }
-    
-    /*! Returns true iff this file was externally defined 
-        (i.e. read from a tag file) */ 
-    //bool isReference() { return !reference.isNull(); }
-    
-    /*! Returns the reference name of the external file, if any or 0
-        if the file is not defined. */ 
-    //const char *getReference() { return reference; }
-    
-    //void setFileType(FileType ft) { ftype = ft; }
-    //FileType fileType() const { return ftype; } 
     
     bool isLinkableInProject()
     {
@@ -115,13 +91,16 @@ class FileDef : public Definition
       return isLinkableInProject() || isReference();
     }
 
-    
     void writeDocumentation(OutputList &ol);
+    void writeSource(OutputList &ol);
     friend void generatedFileNames();
     void insertMember(MemberDef *fd);
     void insertClass(ClassDef *cd);
     void insertNamespace(NamespaceDef *nd);
     void computeAnchors();
+
+    void addUsingDirective(NamespaceDef *nd);
+    NamespaceList *getUsedNamespaces() const { return usingList; }
 
   private: 
     MemberList *memList;
@@ -129,17 +108,15 @@ class FileDef : public Definition
     FileList   *includeList;
     NamespaceDict *namespaceDict;
     NamespaceList *namespaceList;
+    NamespaceList *usingList;
     DefineList *defineList;
-    //QCString n;
-    //QCString doc;
-    //QCString brief;
-    //QCString reference;
     QCString path;
     QCString filepath;
     QCString diskname;
     QCString filename;
     QCString incName;
-    //FileType ftype;
+    QIntDict<Definition> *srcDefDict;
+    QIntDict<QCString> *srcAnchorDict;
 };
 
 /*! \class FileList filedef.h

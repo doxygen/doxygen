@@ -21,6 +21,8 @@
 #include "util.h"
 #include "language.h"
 #include "doxygen.h"
+#include "outputlist.h"
+#include "scanner.h"
 
 MemberList::MemberList() : QList<MemberDef>()
 {

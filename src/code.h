@@ -21,8 +21,9 @@
 #include <stdio.h>
 
 class OutputList;
+class FileDef;
 
 extern void parseCode(OutputList &,const char *,const QCString &, 
-            bool ,const char *);
+            bool ,const char *,FileDef *fd=0);
 extern void initParseCodeContext();
 #endif
