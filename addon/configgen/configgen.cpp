@@ -788,29 +788,33 @@ void init()
                     "EXTRACT_ALL",
                     "FALSE",
                     "gererate docs for all classes flag",
-                    "If the EXTRACT_ALL tag is set to YES all classes and functions will be \n"
-                    "included in the documentation, even if no documentation was available. \n"
+                    "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
+                    "documentation are documented, even if no documentation was available. \n"
+                    "Private class members and static file members will be hidden unless \n"
+                    "the EXTRACT_PRIVATE tag is set to YES \n"
                  );
   ConfigBool::add(  "extractPrivateFlag",
                     "EXTRACT_PRIVATE",
                     "FALSE",
                     "generate docs for private members flag",
                     "If the EXTRACT_PRIVATE tag is set to YES all private members of a class \n"
-                    "will be included in the documentation. \n"
+                    "and the static members of a file will be included in the documentation. \n"
                  );
   ConfigBool::add(  "hideMemberFlag",
                     "HIDE_UNDOC_MEMBERS",
                     "FALSE",
                     "hide undocumented members.",
                     "If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all \n"
-                    "undocumented members inside documented classes or files. \n"
+                    "undocumented members of documented classes, files or namespaces. \n"
+                    "This option has no effect if EXTRACT_ALL is enabled. \n"
                  );
   ConfigBool::add(  "hideClassFlag",
                     "HIDE_UNDOC_CLASSES",
                     "FALSE",
                     "hide undocumented members.",
                     "If the HIDE_UNDOC_CLASSESS tag is set to YES, Doxygen will hide all \n"
-                    "undocumented classes. \n"
+                    "undocumented classes that are normally visible in the class hierarchy. \n"
+                    "This option has no effect if EXTRACT_ALL is enabled. \n"
                  );
   ConfigBool::add(  "briefMemDescFlag",
                     "BRIEF_MEMBER_DESC",

@@ -67,7 +67,7 @@ static void addFile(const char *name)
   //printf("adding file %s tagName=`%s'\n",name,tagName.data());
   fd = new FileDef(0,name,tagName);
   FileName *mn;
-  if ((mn=inputNameDict[name]))
+  if ((mn=inputNameDict->find(name)))
   {
     mn->append(fd); 
   }
@@ -76,7 +76,7 @@ static void addFile(const char *name)
     mn = new FileName(name,name);
     mn->append(fd);
     inputNameList.inSort(mn);
-    inputNameDict.insert(name,mn);
+    inputNameDict->insert(name,mn);
   }
   cd = 0;
   nd = 0;

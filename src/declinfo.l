@@ -136,9 +136,10 @@ ID	([a-z_A-Z][a-z_A-Z0-9]*)|(@[0-9]+)
 <Start>{B}+			{
   				  addType();
   				}
-<Start>{B}*"("{B}*"*"		{
+<Start>{B}*"("({ID}"::")*{B}*"*"	{
   				  addType();
-				  type+="(*";
+				  QCString text=yytext;
+				  type+=text.stripWhiteSpace();
   				}
 <Start>{B}*")"			{
   				  type+=")";

@@ -1875,6 +1875,7 @@ void configStrToVal()
 static void substEnvVarsInString(QCString &s)
 {
   static QRegExp re("\\$\\([a-z_A-Z0-9]+\\)");
+  if (s.isEmpty()) return;
   int p=0;
   int i,l;
   //printf("substEnvVarInString(%s) start\n",s.data());

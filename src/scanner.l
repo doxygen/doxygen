@@ -137,6 +137,8 @@ static bool             inPreBlock;
 static bool             inPostBlock;
 static bool             inInvarBlock;
 static bool             inWarningBlock;
+static bool             inRemarkBlock;
+static bool             inAttentionBlock;
 static bool             inParBlock;
 static bool             firstSeeArg;
 static char             afterDocTerminator;
@@ -223,6 +225,8 @@ static void initParser()
   inPostBlock = FALSE;
   inInvarBlock = FALSE;
   inWarningBlock = FALSE;
+  inRemarkBlock = FALSE;
+  inAttentionBlock = FALSE;
   inParBlock = FALSE;
   firstSeeArg = FALSE;
 }
@@ -400,7 +404,7 @@ static void includeFile(OutputList &ol,const char *fileName,bool quiet)
   //FileInfo *f;
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(&exampleNameDict,fileName,ambig)))
+  if ((fd=findFileDef(exampleNameDict,fileName,ambig)))
   {
     currentIncludeFile=fileToString(fd->absFilePath());
     includeFileOffset=0;
@@ -419,7 +423,7 @@ static void includeFile(OutputList &ol,const char *fileName,bool quiet)
     QCString text;
     text.sprintf("Include file name %s is ambigious.\n",fileName);
     text+="Possible candidates:\n";
-    text+=showFileDefMatches(&exampleNameDict,fileName);
+    text+=showFileDefMatches(exampleNameDict,fileName);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -436,7 +440,7 @@ static void verbIncludeFile(OutputList &ol,const char *name)
   //FileInfo *f;
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(&exampleNameDict,name,ambig)))
+  if ((fd=findFileDef(exampleNameDict,name,ambig)))
   {
     ol.startCodeFragment();
     ol.codify(fileToString(fd->absFilePath()));
@@ -447,7 +451,7 @@ static void verbIncludeFile(OutputList &ol,const char *name)
     QCString text;
     text.sprintf("Include file name %s is ambigious.\n",name);
     text+=("Possible candidates:\n");
-    text+=showFileDefMatches(&exampleNameDict,name);
+    text+=showFileDefMatches(exampleNameDict,name);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -665,7 +669,8 @@ static void tryEndItemList()
 static bool inBlock()
 {
   return inParamBlock || inRetValBlock || inSeeBlock || inReturnBlock || inAuthorBlock ||
-         inVersionBlock || inDateBlock || inWarningBlock || inBugBlock || inNoteBlock ||
+         inVersionBlock || inDateBlock || inWarningBlock || inRemarkBlock || 
+	 inAttentionBlock || inBugBlock || inNoteBlock ||
 	 inParBlock || inExceptionBlock || inDeprecatedBlock || inPreBlock ||
 	 inPostBlock || inInvarBlock;
 }
@@ -681,7 +686,7 @@ static void endBlock()
     inParamBlock=inRetValBlock=inSeeBlock=inReturnBlock=inAuthorBlock=
     inVersionBlock=inDateBlock=inBugBlock=inNoteBlock=inWarningBlock=
     inParBlock=inExceptionBlock=inDeprecatedBlock=inPreBlock=inPostBlock=
-    inInvarBlock=FALSE;
+    inInvarBlock=inRemarkBlock=inAttentionBlock=FALSE;
 }
 
 static void addSection()
@@ -786,7 +791,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   QCString result;
   bool ambig;
   FileDef *fd;
-  if ((fd=findFileDef(&imageNameDict,fileName,ambig)))
+  if ((fd=findFileDef(imageNameDict,fileName,ambig)))
   {
     QFile inImage(fd->absFilePath().data());
     if (inImage.open(IO_ReadOnly))
@@ -834,7 +839,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
     QCString text;
     text.sprintf("Warning: image file name %s is ambigious.\n",fileName);
     text+="Possible candidates:\n";
-    text+=showFileDefMatches(&imageNameDict,fileName);
+    text+=showFileDefMatches(imageNameDict,fileName);
     warn(yyFileName,yyLineNr,text);
   }
   else
@@ -1317,9 +1322,44 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    if (inBlock()) endBlock();
 					    inWarningBlock=TRUE;
   					    outDoc->startDescList();
-					    //outDoc->writeBoldString("Warning: ");
 					    outDoc->startBold();
 					    scanString(theTranslator->trWarning()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+				        }
+<DocScan>{CMD}"remark"[s]?/{BN}		{ 
+  				          endArgumentList();
+  					  if (!inRemarkBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inRemarkBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trRemarks()+": ");
+					    outDoc->endBold();
+					    outDoc->endDescTitle();
+					    outDoc->writeDescItem();
+					  }
+					  else
+					  {
+  					    outDoc->writeDescItem();
+					  }
+				        }
+<DocScan>{CMD}"attention"[s]?/{BN}	{ 
+  				          endArgumentList();
+  					  if (!inAttentionBlock)
+					  {
+					    if (inBlock()) endBlock();
+					    inAttentionBlock=TRUE;
+  					    outDoc->startDescList();
+					    outDoc->startBold();
+					    scanString(theTranslator->trAttention()+": ");
 					    outDoc->endBold();
 					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();
@@ -1472,6 +1512,22 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    outDoc->writeDescItem();
 					  }
+  					}
+<DocScan>"$"[a-zA-Z_0-9]+":"[^\n\$]+"$"	{ // RCS tag
+  					  QCString tagName(&yytext[1]);
+					  int i=tagName.find(':');
+					  tagName=tagName.left(i);
+					  QCString tagText=&yytext[i+2];
+					  tagText=tagText.left(tagText.length()-1);
+  				          endArgumentList();
+					  if (inBlock()) endBlock();
+  					  outDoc->startDescList();
+					  outDoc->startBold();
+					  scanString(tagName+": ");
+					  outDoc->endBold();
+					  outDoc->endDescTitle();
+					  scanString(tagText);
+					  outDoc->endDescList();
   					}
 <DocScan>{CMD}"author"/{BN}		{
   				          endArgumentList();
@@ -2417,6 +2473,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  BEGIN( FindMembers ) ;
   					}
 <Operator>[^(]				{ 
+    					  lineCount();
     					  current->name += *yytext ;
 					}
 <Operator>"<>"				{ /* skip guided templ specifiers */ }

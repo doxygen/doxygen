@@ -47,6 +47,7 @@ documentation:
 <li> \refitem cmdaddindex \addindex
 <li> \refitem cmdanchor \anchor
 <li> \refitem cmdarg \arg
+<li> \refitem cmdattention \attention
 <li> \refitem cmdauthor \author
 <li> \refitem cmdb \b
 <li> \refitem cmdbrief \brief
@@ -97,6 +98,7 @@ documentation:
 <li> \refitem cmdpre \pre
 <li> \refitem cmdref \ref
 <li> \refitem cmdrelates \relates
+<li> \refitem cmdremarks \remarks
 <li> \refitem cmdreturn \return
 <li> \refitem cmdretval \retval
 <li> \refitem cmdsa \sa
@@ -523,6 +525,18 @@ Public/Protected/Private/... section.
     Section indicators
     \htmlonly --- </center>\endhtmlonly</h2>
 
+<hr>
+\subsection cmdattention \attention { attention text }
+
+  \addindex \attention
+  Starts a paragraph where a message that needs attention may be entered. 
+  The paragraph will be indented. 
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \\attention commands will be joined into a single paragraph.
+  The \\attention command ends when a blank line or some other 
+  sectioning command is encountered. 
+
 \subsection cmdauthor \author { list of authors }
 
   \addindex \author
@@ -664,7 +678,7 @@ Public/Protected/Private/... section.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\invariant commands will be joined into a single paragraph.
-  Each warning description will start on a new line.
+  Each invariant description will start on a new line.
   Alternatively, one \\invariant command may mention 
   several invariants. The \\invariant command ends when a blank line or some other 
   sectioning command is encountered.
@@ -712,7 +726,7 @@ Public/Protected/Private/... section.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\post commands will be joined into a single paragraph.
-  Each warning description will start on a new line.
+  Each postcondition will start on a new line.
   Alternatively, one \\post command may mention 
   several postconditions. The \\post command ends when a blank line or some other 
   sectioning command is encountered.
@@ -726,11 +740,25 @@ Public/Protected/Private/... section.
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
   Multiple adjacent \\pre commands will be joined into a single paragraph.
-  Each warning description will start on a new line.
+  Each precondition will start on a new line.
   Alternatively, one \\pre command may mention 
   several preconditions. The \\pre command ends when a blank line or some other 
   sectioning command is encountered.
   
+<hr>
+\subsection cmdremarks \remarks { remark text }
+
+  \addindex \remarks
+  Starts a paragraph where one or more marks may be entered. 
+  The paragraph will be indented. 
+  The text of the paragraph has no special internal structure. All visual
+  enhancement commands may be used inside the paragraph.
+  Multiple adjacent \\remark commands will be joined into a single paragraph.
+  Each remark will start on a new line.
+  Alternatively, one \\remark command may mention 
+  several remarks. The \\remark command ends when a blank line or some other 
+  sectioning command is encountered. 
+
 <hr>
 \subsection cmdreturn \return { description of the return value }
 
@@ -800,7 +828,8 @@ Public/Protected/Private/... section.
   Multiple adjacent \\version commands will be joined into a single paragraph.
   Each version description will start on a new line.
   Alternatively, one \\version command may mention 
-  several dates. The \\version command ends when a blank line or some other 
+  several version strings. 
+  The \\version command ends when a blank line or some other 
   sectioning command is encountered. See section \ref cmdauthor "\\author" 
   for an example.
  

@@ -885,7 +885,14 @@ class Translator
     {
       return "Referenced by";
     }
-
+    virtual QCString trRemarks()
+    {
+      return "Remarks";
+    }
+    virtual QCString trAttention()
+    {
+      return "Attention";
+    }
 };
 
 #endif

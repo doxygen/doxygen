@@ -1,5 +1,7 @@
 REM make script for Microsoft Visual C++
 
+if "%QTDIR%"=="" goto ERROR
+
 REM use perl to create the config file
 perl wintools\make.pl
 
@@ -12,3 +14,10 @@ type src\doxytag.pro.in | sed "s/\$extraopts/release/g" >src\doxytag.pro
 type src\doxysearch.pro.in | sed "s/\$extraopts/release/g" >src\doxysearch.pro
 
 nmake
+goto END
+
+:ERROR
+echo The QTDIR environment variable is not set! See the INSTALL file for more info. 
+goto END
+
+:END

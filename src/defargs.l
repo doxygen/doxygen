@@ -256,12 +256,9 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					  if (l>0)
 					  {
 					    int i=l-1;
-					    while (i>=0 && 
-						   (
-						    isspace(g_curArgTypeName.at(i)) || 
-						    isId(g_curArgTypeName.at(i))
-						   )
-						  ) i--;
+					    while (i>=0 && isspace(g_curArgTypeName.at(i))) i--;
+					    while (i>=0 && isId(g_curArgTypeName.at(i))) i--;
+					    //printf("g_curArgTypeName=`%s' i=%d\n",g_curArgTypeName.data(),i);
 					    Argument *a = new Argument; 
 					    a->attrib = g_curArgAttrib.copy();
 					    if (i>=0 && g_curArgTypeName.at(i)!=':')
@@ -276,7 +273,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    a->array  = g_curArgArray.copy();
 					    a->defval = g_curArgDefValue.copy();
 					    a->docs   = g_curArgDocs.stripWhiteSpace();
-					    //printf("Argument %s %s adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
+					    //printf("Argument `%s' `%s' adding docs=`%s'\n",a->type.data(),a->name.data(),a->docs.data());
 					    g_argList->append(a);
 					  }
 					  g_curArgAttrib.resize(0);

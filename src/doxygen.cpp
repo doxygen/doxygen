@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
@@ -80,11 +80,15 @@ MemberNameDict memberNameDict(10007);   // all class member names
 MemberNameDict functionNameDict(10007); // all functions
 StringDict     substituteDict(1009);    // class name substitutes
 SectionDict    sectionDict(257);        // all page sections
-FileNameDict   inputNameDict(1009);     // sections
 StringDict     excludeNameDict(1009);   // sections
-FileNameDict   includeNameDict(1009);   // include names
-FileNameDict   exampleNameDict(1009);   // examples
-FileNameDict   imageNameDict(257);      // images
+//FileNameDict   inputNameDict(1009);     // sections
+//FileNameDict   includeNameDict(1009);   // include names
+//FileNameDict   exampleNameDict(1009);   // examples
+//FileNameDict   imageNameDict(257);      // images
+FileNameDict   *inputNameDict;          // sections
+FileNameDict   *includeNameDict;        // include names
+FileNameDict   *exampleNameDict;        // examples
+FileNameDict   *imageNameDict;          // images
 StringDict     typedefDict(1009);       // all typedefs
 GroupDict      groupDict(257);          // all groups
 FormulaDict    formulaDict(1009);       // all formulas
@@ -119,11 +123,11 @@ void clearAll()
   functionNameDict.clear();
   substituteDict.clear();   
   sectionDict.clear();       
-  inputNameDict.clear();    
+  inputNameDict->clear();    
   excludeNameDict.clear();  
-  includeNameDict.clear();  
-  exampleNameDict.clear();  
-  imageNameDict.clear();     
+  includeNameDict->clear();  
+  exampleNameDict->clear();  
+  imageNameDict->clear();     
   typedefDict.clear();      
   groupDict.clear();         
   formulaDict.clear();      
@@ -246,7 +250,7 @@ static void buildFileList(Entry *root)
      )
   {
     bool ambig;
-    FileDef *fd=findFileDef(&inputNameDict,root->name,ambig);
+    FileDef *fd=findFileDef(inputNameDict,root->name,ambig);
     if (fd && !ambig)
     {
       if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
@@ -291,7 +295,7 @@ static void buildFileList(Entry *root)
       if (ambig) // name is ambigious
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(&inputNameDict,root->name);
+        text+=showFileDefMatches(inputNameDict,root->name);
         text+="Please use a more specific name by "
               "including a (larger) part of the path!";
       }
@@ -326,7 +330,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",root->includeFile.data());
     if (!root->includeFile.isEmpty() && 
-        (fd=findFileDef(&inputNameDict,root->includeFile,ambig))==0
+        (fd=findFileDef(inputNameDict,root->includeFile,ambig))==0
        )
     { // explicit request
       QCString text;
@@ -337,7 +341,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       if (ambig) // name is ambigious
       {
         text+="matches the following input files:\n";
-        text+=showFileDefMatches(&inputNameDict,root->includeFile);
+        text+=showFileDefMatches(inputNameDict,root->includeFile);
         text+="Please use a more specific name by "
             "including a (larger) part of the path!";
       }
@@ -442,7 +446,7 @@ static void buildClassList(Entry *root)
       bool ambig;
       ClassDef *cd;
       //printf("findFileDef(%s)\n",root->fileName.data());
-      FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
 
       if ((cd=getClass(fullName))) 
       {
@@ -486,7 +490,7 @@ static void buildClassList(Entry *root)
           if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
           {
             cd->setBodySegment(root->bodyLine,root->endBodyLine);
-            cd->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+            cd->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
           }
           cd->addSectionsToDefinition(root->anchors);
           cd->setName(fullName); // change name to match docs
@@ -652,7 +656,7 @@ static void buildNamespaceList(Entry *root)
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
       }
@@ -672,7 +676,7 @@ static void buildNamespaceList(Entry *root)
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
 
@@ -707,7 +711,7 @@ static void findUsingDirectives(Entry *root)
     {
       NamespaceDef *usingNd = 0;
       NamespaceDef *nd = 0;
-      FileDef      *fd = findFileDef(&inputNameDict,root->fileName,ambig);
+      FileDef      *fd = findFileDef(inputNameDict,root->fileName,ambig);
       QCString nsName;
 
       // see if the using statement was found inside a namespace or inside
@@ -777,7 +781,7 @@ static void findUsingDirectives(Entry *root)
 
         bool ambig;
         // file definition containing the namespace nd
-        FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+        FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) 
         {
@@ -815,7 +819,7 @@ void findUsingDeclarations(Entry *root)
     {
       ClassDef *usingCd = 0;
       NamespaceDef *nd = 0;
-      FileDef      *fd = findFileDef(&inputNameDict,root->fileName,ambig);
+      FileDef      *fd = findFileDef(inputNameDict,root->fileName,ambig);
       QCString scName;
 
       // see if the using statement was found inside a namespace or inside
@@ -977,7 +981,7 @@ static MemberDef *addVariableToClass(
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
   //
   bool ambig;
-  md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+  md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
 
   // add the member to the global list
   if (mn)
@@ -1040,7 +1044,7 @@ static MemberDef *addVariableToFile(
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   bool ambig;
-  FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
   md->setBodyDef(fd);
   //if (root->mGrpId!=-1) 
   //{
@@ -1391,7 +1395,7 @@ static void buildMemberList(Entry *root)
         md->setMemberSpecifiers(root->memSpec);
         md->setMemberGroupId(root->mGrpId);
         bool ambig;
-        md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+        md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
         //md->setScopeTemplateArguments(root->tArgList);
         md->addSectionsToDefinition(root->anchors);
         QCString def;
@@ -1528,7 +1532,7 @@ static void buildMemberList(Entry *root)
               {
                 md->setBodySegment(root->bodyLine,root->endBodyLine);
                 bool ambig;
-                md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+                md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
               } 
               md->addSectionsToDefinition(root->anchors);
             }
@@ -1555,7 +1559,7 @@ static void buildMemberList(Entry *root)
           //md->setBody(root->body);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
-          FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->memSpec);
@@ -1622,7 +1626,7 @@ static void buildMemberList(Entry *root)
             //FileDef *fd=0;
             //bool ambig;
             //if (!root->fileName.isEmpty() && 
-            //    (fd=findFileDef(&inputNameDict,root->fileName,ambig))
+            //    (fd=findFileDef(inputNameDict,root->fileName,ambig))
             //   )
             if (fd)
             {
@@ -2178,7 +2182,7 @@ static void addMemberDocs(Entry *root,
     {
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
-      FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
       md->setBodyDef(fd);
     }
   }
@@ -2214,7 +2218,7 @@ static void addMemberDocs(Entry *root,
     // else
     // {
     //    bool ambig;
-    //    FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+    //    FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
     //    if (fd)
     //    {
     //      //fd->addMemberToGroup(md,root->mGrpId);
@@ -2343,8 +2347,9 @@ static bool findUnrelatedFunction(Entry *root,
     {
       bool ambig;
       NamespaceDef *nd=md->getNamespace();
-      //printf("Namespace %s\n",nd ? nd->name().data() : "<none>");
-      FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+      //printf("Namespace namespaceName=%s nd=%s\n",
+      //    namespaceName.data(),nd ? nd->name().data() : "<none>");
+      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
       //printf("NamespaceList %p\n",nl);
@@ -2360,11 +2365,10 @@ static bool findUnrelatedFunction(Entry *root,
       {
         Debug::print(Debug::FindMembers,0,"4. Try to add member `%s' to scope `%s'\n",
             md->name().data(),namespaceName.data());
-        //ArgumentList *al = new ArgumentList;
-        //stringToArgumentList(funcArgs,al);
         QCString nsName = nd ? nd->name().data() : "";
         bool matching=
           (md->argumentList()==0 && root->argList->count()==0) ||
+          md->isVariable() || md->isTypedef() || /* in case of function pointers */
           matchArguments(md->argumentList(),root->argList,0,nsName);
         if (matching) // add docs to the member
         {
@@ -2372,7 +2376,6 @@ static bool findUnrelatedFunction(Entry *root,
           addMemberDocs(root,md,decl,root->argList,FALSE);
           found=TRUE;
         }
-        //delete al;
       }
       md=mn->next();
     } 
@@ -2851,7 +2854,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           ClassDef *tcd=0;
           
           bool ambig;
-          FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
           NamespaceDef *nd=0;
           if (!namespaceName.isEmpty()) nd=namespaceDict[namespaceName];
           tcd = findClassDefinition(fd,nd,scopeName,classTempList);
@@ -2935,7 +2938,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
             // TODO: match loop for all possible scopes
 
             bool ambig;
-            FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+            FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
             // list of namespaces using in the file that this member definition is part of
             NamespaceList *nl = fd ? fd->getUsedNamespaces() : 0;
             
@@ -3034,7 +3037,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           md->addSectionsToDefinition(root->anchors);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           bool ambig;
-          FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+          FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->memSpec);
           md->setMemberGroupId(root->mGrpId);
@@ -3136,7 +3139,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           {
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
-            FileDef *fd=findFileDef(&inputNameDict,root->fileName,ambig);
+            FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
             md->setBodyDef(fd);
           }
 
@@ -3355,7 +3358,7 @@ static void findEnums(Entry *root)
     else // found a global enum
     {
       bool ambig;
-      fd=findFileDef(&inputNameDict,root->fileName,ambig);
+      fd=findFileDef(inputNameDict,root->fileName,ambig);
       mnd=&functionNameDict;
       mnl=&functionNameList;
       isGlobal=TRUE;
@@ -3372,7 +3375,7 @@ static void findEnums(Entry *root)
       //md->setDefLine(root->startLine);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
-      md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+      md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
       //printf("Enum %s definition at line %d of %s: protection=%d\n",
       //    root->name.data(),root->bodyLine,root->fileName.data(),root->protection);
       md->addSectionsToDefinition(root->anchors);
@@ -4046,7 +4049,7 @@ static void findDefineDocumentation(Entry *root)
               md->setBriefDescription(root->brief);
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
-            md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+            md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
             md->setMaxInitLines(root->initLines);
             if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
@@ -4084,7 +4087,7 @@ static void findDefineDocumentation(Entry *root)
                 md->setBriefDescription(root->brief);
               md->setBodySegment(root->bodyLine,root->endBodyLine);
               bool ambig;
-              md->setBodyDef(findFileDef(&inputNameDict,root->fileName,ambig));
+              md->setBodyDef(findFileDef(inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
               //if (root->mGrpId!=-1 && md->getMemberGroup()==0) 
               //{
@@ -5163,6 +5166,11 @@ int main(int argc,char **argv)
   substituteEnvironmentVars();
   checkConfig();
 
+  inputNameDict = new FileNameDict(1009);
+  includeNameDict = new FileNameDict(1009);
+  exampleNameDict = new FileNameDict(1009);
+  imageNameDict = new FileNameDict(257);
+
   /**************************************************************************
    *            Initialize some global constants
    **************************************************************************/
@@ -5214,7 +5222,7 @@ int main(int argc,char **argv)
   s=Config::includePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,&includeNameDict,0,&Config::filePatternList,
+    readFileOrDirectory(s,0,includeNameDict,0,&Config::filePatternList,
                         &Config::excludePatternList,0,0);
     s=Config::includePath.next(); 
   }
@@ -5223,7 +5231,7 @@ int main(int argc,char **argv)
   s=Config::examplePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,&exampleNameDict,0,&Config::examplePatternList,
+    readFileOrDirectory(s,0,exampleNameDict,0,&Config::examplePatternList,
                         0,0,0);
     s=Config::examplePath.next(); 
   }
@@ -5232,7 +5240,7 @@ int main(int argc,char **argv)
   s=Config::imagePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,&imageNameDict,0,0,
+    readFileOrDirectory(s,0,imageNameDict,0,0,
                         0,0,0);
     s=Config::imagePath.next(); 
   }
@@ -5252,7 +5260,7 @@ int main(int argc,char **argv)
   while (s)
   {
     inputSize+=readFileOrDirectory(s,&inputNameList,
-                                   &inputNameDict,&excludeNameDict,
+                                   inputNameDict,&excludeNameDict,
                                    &Config::filePatternList,
                                    &Config::excludePatternList,
                                    &inputFiles,0);

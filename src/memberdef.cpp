@@ -1302,6 +1302,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // write reference to the source
     writeSourceDef(ol,cname);
     writeSourceRefs(ol,cname);
+    writeInlineCode(ol,cname);
 
     ol.endIndent();
     // enable LaTeX again
