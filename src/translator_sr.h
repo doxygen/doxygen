@@ -20,8 +20,8 @@
 
 // translation by Dejan D. M. Milosavljevic <dmilos@email.com>;<dmilosx@ptt.yu>  
 
-class TranslatorSerbian : public TranslatorAdapter_1_2_17
-{
+class TranslatorSerbian : public TranslatorAdapter_1_3_1
+{                                
 private:
    QCString decode(const QCString& sInput)
    { 
@@ -83,7 +83,7 @@ private:
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return decode( "(To nisu funkcije èlanice.)" ); }
+    { return decode( "(To nisu funkcije èlanice.)" ); } // tj. metode
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
@@ -183,7 +183,7 @@ private:
     
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return "Spisak fajlova"; }
+    { return "Spisak datoteka"; }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
@@ -207,11 +207,11 @@ private:
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-       return decode("Èlanovi fajla"); 
+       return decode("Èlanovi datoteke"); 
       }
       else
       {
-       return decode("Èlanovi fajla"); 
+       return decode("Èlanovi datoteke"); 
       }
     }
 
@@ -229,14 +229,15 @@ private:
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return decode( "Stablo nasleðivanja je slo¾eno ""pribli¾no po abecedi:" ); }
+    { return decode( "Stablo nasleðivanja je slo¾eno "
+                     "pribli¾no po abecedi:" ); }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
       QCString result="Spisak svih ";
       if (!extractAll) result+="dokumetovanih ";
-      result+="fajlova, sa kratkim opisom:";
+      result+="datoteka, sa kratkim opisom:";
       return decode( result );
     }
 
@@ -287,7 +288,7 @@ private:
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="strukture/uniije koje pripadaju:";
+          result+="strukture/unije koje pripadaju:";
         }
         else
         {
@@ -315,7 +316,7 @@ private:
       result+=" sa linkovima na ";
       
       if (extractAll) 
-        result+="fajlove u kojima se nalaze:";
+        result+="datoteke u kojima se nalaze:";
       else 
         result+=" dokumentaciju:";
       return decode( result );
@@ -381,7 +382,7 @@ private:
      * list of all files.
      */
     virtual QCString trFileIndex() 
-    { return "Indeks fajlova"; }
+    { return "Indeks datoteka"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
@@ -408,7 +409,7 @@ private:
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return "Dokumentacija fajla"; }
+    { return "Dokumentacija datoteke"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
@@ -653,7 +654,7 @@ private:
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result = "Opis fajla ";
+      QCString result = "Opis datoteke ";
       result += fileName; 
       return result;
     }
@@ -838,15 +839,15 @@ private:
 
     virtual QCString trSources()
     {
-      return "Izvorni fajlovi";
+      return "Izvorne datoteke";
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "Definisano u redu @0 fajla @1.";
+      return "Definisano u redu @0 datoteke @1.";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return "Definisano u fajlu @0.";
+      return "Definisano u datoteci @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -855,7 +856,7 @@ private:
 
     virtual QCString trDeprecated()
     {
-      return "Matoro";
+      return "Zastarelo";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -870,7 +871,7 @@ private:
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return decode( (QCString)"Graf zavisnosti fajlova za "+fName+":" );
+      return decode( (QCString)"Graf zavisnosti datoteka za "+fName+":" );
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -935,7 +936,7 @@ private:
     
     virtual QCString trNote()
     {
-      return "Primedba";
+      return "Primedba"; // ili Beleska ili Zapazanje. Primedba zvuci negativno
     }
     virtual QCString trPublicTypes()
     {
@@ -1014,8 +1015,8 @@ private:
     }
     virtual QCString trInclByDepGraph()
     {
-      return decode("Ovaj graf pokazuje koji fajl direktno "
-      "ili indirektno ukljuèuju ovaj fajl: ");
+      return decode("Ovaj graf pokazuje koja datoteka direktno "
+      "ili indirektno ukljuèuju ovu datoteku: ");
     }
     virtual QCString trSince()
     {
@@ -1068,7 +1069,7 @@ private:
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Ako je \\c MAX_DOT_GRAPH_HEIGHT tag u konfiguracionom fajlu "
+        "Ako je \\c MAX_DOT_GRAPH_HEIGHT tag u konfiguracionoj datoteci "
         "postavljen na  200 gornje veze æe izgledati:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
@@ -1275,8 +1276,8 @@ private:
      */
     virtual QCString trFile(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Fajl" : "fajl"));
-      result+= (singular ? "" : "ovi");
+      QCString result((first_capital ? "Datotek" : "Datotek"));
+      result+= (singular ? "a" : "e");
       return result; 
     }
 
@@ -1430,12 +1431,69 @@ private:
     {
       return "Dokumentacija dogaðaja";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Tipovi u Paketu";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Funkcije u paketu";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Statièke funkcije u paketu";  // Zajednicke funkcije u paketu
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Atributi u paketu"; // Clanovi u paketu
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return "Statièki atributi u paketu";  // Zajednicki clanovi u paketu
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Sve";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Graf pozivanja finkcija:";
+    }
+
  
 };
 
-#endif
 // sh - ¹ - shashavo
 // dj - ð - djordje
 // ch - è - chasha
 // cc - æ - cciccifu
 // zz - ¾ - zzaba
+
+#endif

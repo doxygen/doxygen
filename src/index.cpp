@@ -214,7 +214,7 @@ QCString abbreviate(const char *s,const char *name)
 static void startQuickIndexItem(OutputList &ol,const char *s,const char *l,
                                 bool hl,bool compact,bool &first)
 {
-  if (!first) ol.writeString(" | ");
+  if (!first && compact) ol.writeString(" | ");
   first=FALSE;
   if (!compact) ol.writeString("<li>");
   QCString *dest;
@@ -281,7 +281,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
     ol.startItemList();
   }
 
-  if (!compact) ol.writeListItem();
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
     startQuickIndexItem(ol,extLink,"main"+Doxygen::htmlFileExtension,
@@ -297,7 +296,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
 
   if (documentedGroups>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"modules"+Doxygen::htmlFileExtension,
                         hli==HLI_Modules,compact,first);
     ol.parseText(fixSpaces(theTranslator->trModules()));
@@ -305,7 +303,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (documentedNamespaces>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"namespaces"+Doxygen::htmlFileExtension,
                         hli==HLI_Namespaces,compact,first);
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
@@ -320,7 +317,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   }
   if (hierarchyClasses>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"hierarchy"+Doxygen::htmlFileExtension,
                            hli==HLI_Hierarchy,compact,first);
     ol.parseText(fixSpaces(theTranslator->trClassHierarchy()));
@@ -330,7 +326,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   {
     if (Config_getBool("ALPHABETICAL_INDEX"))
     {
-      if (!compact) ol.writeListItem();
       startQuickIndexItem(ol,extLink,"classes"+Doxygen::htmlFileExtension,
                           hli==HLI_Classes,compact,first);
       ol.parseText(fixSpaces(theTranslator->trAlphabeticalList()));
@@ -344,7 +339,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (documentedHtmlFiles>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"files"+Doxygen::htmlFileExtension,
                         hli==HLI_Files,compact,first);
     ol.parseText(fixSpaces(theTranslator->trFileList()));
@@ -352,7 +346,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (documentedNamespaceMembers[NMHL_All]>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"namespacemembers"+Doxygen::htmlFileExtension,
                         hli==HLI_NamespaceMembers,compact,first);
     ol.parseText(fixSpaces(theTranslator->trNamespaceMembers()));
@@ -360,7 +353,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   }
   if (documentedClassMembers[CMHL_All]>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"functions"+Doxygen::htmlFileExtension,
                         hli==HLI_Functions,compact,first);
     ol.parseText(fixSpaces(theTranslator->trCompoundMembers()));
@@ -368,7 +360,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (documentedFileMembers[FMHL_All]>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"globals"+Doxygen::htmlFileExtension,
                         hli==HLI_Globals,compact,first);
     ol.parseText(fixSpaces(theTranslator->trFileMembers()));
@@ -376,7 +367,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (indexedPages>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"pages"+Doxygen::htmlFileExtension,
                         hli==HLI_Pages,compact,first);
     ol.parseText(fixSpaces(theTranslator->trRelatedPages()));
@@ -384,7 +374,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (Doxygen::exampleSDict->count()>0)
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,extLink,"examples"+Doxygen::htmlFileExtension,
                         hli==HLI_Examples,compact,first);
     ol.parseText(fixSpaces(theTranslator->trExamples()));
@@ -392,7 +381,6 @@ void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FA
   } 
   if (Config_getBool("SEARCHENGINE"))
   {
-    if (!compact) ol.writeListItem();
     startQuickIndexItem(ol,"_cgi","",hli==HLI_Search,compact,first);
     ol.parseText(fixSpaces(theTranslator->trSearch()));
     endQuickIndexItem(ol);

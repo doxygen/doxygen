@@ -150,7 +150,7 @@ static bool  	        insideTryBlock=FALSE;
 static bool             needsSemi;
 
 static int              depthIf;
-static int  	        initializerSharpCount;
+//static int  	        initializerSharpCount;
 static QCString         memberGroupRelates;
 static QCString         memberGroupInside;
 static QCString         xrefItemKey;
@@ -1609,7 +1609,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
 					  lastInitializerContext = YY_START;
-					  initializerSharpCount=0;
+					  //initializerSharpCount=0;
 					  BEGIN(ReadInitializer);
   					}
   /* Read initializer rules */
@@ -1629,15 +1629,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ReadInitializer>[;,]			{
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
-  					  if (initializerSharpCount==0)
+  					  //if (initializerSharpCount==0)
+					  //{
+  					  if (*yytext==';' || lastInitializerContext!=FindFields)
 					  {
   					    unput(*yytext);
   					    BEGIN(lastInitializerContext);
 					  }
-					  else
-					  {
-  					    current->initializer+=*yytext; 
-					  }
+					  //}
+					  //else
+					  //{
+  					  //  current->initializer+=*yytext; 
+					  //}
   					}
 <ReadInitializer>\"			{
 					  if (insideIDL && insideCppQuote)
@@ -1651,6 +1654,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    pCopyQuotedString=&current->initializer;
 					    BEGIN(CopyString);
 					  }
+					}
+  /*
+<ReadInitializer>"->"			{
+  					  current->initializer+=yytext; 
 					}
 <ReadInitializer>"<<"			{
   					  current->initializer+=yytext; 
@@ -1666,6 +1673,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  initializerSharpCount--;
   					  current->initializer+=*yytext; 
   					}
+  */
 <ReadInitializer>{CHARLIT}              { current->initializer+=yytext; } 
 <ReadInitializer>\n			{
   					  current->initializer+=*yytext;
@@ -1857,7 +1865,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <FindFields>"="				{
   					  lastInitializerContext = YY_START;
-					  initializerSharpCount=0;
+					  //initializerSharpCount=0;
   					  BEGIN(ReadInitializer);
   					}
 <FindFields>","				{
@@ -2117,7 +2125,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <MemberSpec>"="				{ 
   					  lastInitializerContext=YY_START;
-					  initializerSharpCount=0;
+					  //initializerSharpCount=0;
   					  BEGIN(ReadInitializer);
   					  /* BEGIN(MemberSpecSkip); */
 					}

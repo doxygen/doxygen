@@ -791,6 +791,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 			 g_secLabel = g_secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
                        }
+<St_SecTitle>[^\n]+    |
 <St_SecTitle>[^\n]*\n  {
                          g_secTitle = yytext;
 			 g_secTitle = g_secTitle.stripWhiteSpace();

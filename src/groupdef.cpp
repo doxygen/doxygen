@@ -748,6 +748,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 
       if (moveit)
       {
+        //printf("removeMember\n");
         mgd->removeMember(md);
         insertit = TRUE;
       }
@@ -755,11 +756,12 @@ void addMemberToGroups(Entry *root,MemberDef *md)
 
     if (insertit)
     {
-      //printf("insertMember\n");
+      //printf("insertMember found at %s line %d\n",md->getDefFileName().data(),md->getDefLine());
       bool success = fgd->insertMember(md);
       if (success)
       {
-        md->setGroupDef(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+        //printf("insertMember successful\n");
+        md->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
         ClassDef *cd = md->getClassDefOfAnonymousType();
         if (cd) cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
       }

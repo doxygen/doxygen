@@ -762,7 +762,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
   QCString txtStr=text;
   QCString scopeName;
   int strLen = txtStr.length();
-  //printf("linkifyText strtxt=%s strlen=%d\n",txtStr.data(),strLen);
+  //printf("linkifyText scope=%s strtxt=%s strlen=%d\n",scope?scope->name().data():"<none>",txtStr.data(),strLen);
   int matchLen;
   int index=0;
   int newIndex;
@@ -822,10 +822,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
       //      );
       Definition *curScope = scope;
       // check if `word' is a documented class name
-      //printf("Searching...\n");
       //int scopeOffset=scopeName.length();
       do // for each scope (starting with full scope and going to empty scope)
       {
+        //printf("Searching in %s...\n",curScope?curScope->name().data():"<global>");
         QCString fullName = word;
         QCString prefix;
         replaceNamespaceAliases(fullName,fullName.length());
@@ -874,9 +874,9 @@ endloop:
           (external ? md->isLinkable() : md->isLinkableInProject()) 
          )
       {
-        //printf("Found ref\n");
         Definition *d=0;
         if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+        //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
         if (d && (external ? d->isLinkable() : d->isLinkableInProject()))
         {
           //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
@@ -2202,6 +2202,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       {
         namespaceName=mScope.copy();
       }
+      //printf("Trying namespace %s\n",namespaceName.data());
       if (!namespaceName.isEmpty() && 
           (fnd=Doxygen::namespaceSDict[namespaceName]) &&
           fnd->isLinkable()
@@ -2259,11 +2260,20 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           return TRUE;
         }
       }
-      else // no scope => global function
+      if (scopeOffset==0)
+      {
+        scopeOffset=-1;
+      }
+      else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
+      {
+        scopeOffset=0;
+      }
+    } while (scopeOffset>=0);
+      //else // no scope => global function
       {
         QList<MemberDef> members;
         
-        //printf("  Function with global scope `%s' name `%s' args=`%s'\n",namespaceName.data(),memberName.data(),args);
+        //printf("  Function with global scope name `%s' args=`%s'\n",memberName.data(),args);
         MemberListIterator mli(*mn);
         for (mli.toFirst();(md=mli.current());++mli)
         {
@@ -2329,7 +2339,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           if (currentFile==0)
           {
             bool ambig;
-            currentFile = findFileDef(Doxygen::inputNameDict,namespaceName,ambig);
+            currentFile = findFileDef(Doxygen::inputNameDict,0/*namespaceName*/,ambig);
           }
           MemberDef *bmd = 0;
           for (md=members.first(); md; md=members.next())
@@ -2352,15 +2362,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           return TRUE;
         }
       }
-      if (scopeOffset==0)
-      {
-        scopeOffset=-1;
-      }
-      else if ((scopeOffset=scopeName.findRev("::",scopeOffset-1))==-1)
-      {
-        scopeOffset=0;
-      }
-    } while (scopeOffset>=0);
   }
   
   // no nothing found
@@ -3085,7 +3086,8 @@ QCString convertNameToFile(const char *name,bool allowDots)
  *  namespace part (as large as possible) and a classname part.
  */
 void extractNamespaceName(const QCString &scopeName,
-                          QCString &className,QCString &namespaceName)
+                          QCString &className,QCString &namespaceName,
+                          bool allowEmptyClass)
 {
   int i,p;
   QCString clName=scopeName;
@@ -3117,7 +3119,7 @@ void extractNamespaceName(const QCString &scopeName,
   namespaceName.resize(0);
 
 done:
-  if (className.isEmpty() && !namespaceName.isEmpty())
+  if (className.isEmpty() && !namespaceName.isEmpty() && !allowEmptyClass)
   {
     // class and namespace with the same name, correct to return the class.
     className=namespaceName.copy();

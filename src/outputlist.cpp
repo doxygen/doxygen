@@ -197,6 +197,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
                   const char *exampleName,SectionDict *sections)
 {
   int count=0;
+  if (docStr.isEmpty()) return;
   
   OutputGenerator *og=outputs->first();
   while (og)
@@ -207,7 +208,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   if (count==0) return; // no output formats enabled.
 
   DocNode *root=0;
-  if (docStr.length()==0 || docStr.at(docStr.length()-1)=='\n')
+  if (docStr.at(docStr.length()-1)=='\n')
   {
     root = validatingParseDoc(fileName,startLine,
                               clName,md,docStr,isExample,exampleName,
