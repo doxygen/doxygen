@@ -225,7 +225,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
   return result;
 }
 
-/*! Collects the parameters found with @param or @retval commands
+/*! Collects the parameters found with \@param or \@retval commands
  *  in a global list g_paramsFound. If \a isParam is set to TRUE
  *  and the parameter is not an actual parameter of the current
  *  member g_memberDef, than a warning is raised (unless warnings

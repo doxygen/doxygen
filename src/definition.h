@@ -132,6 +132,7 @@ class Definition
 
     void makePartOfGroup(GroupDef *gd);
     GroupList *partOfGroups() const { return m_partOfGroups; }
+    QCString convertNameToFile(const char *name,bool allowDots=FALSE) const;
 
   protected:
     int      m_startBodyLine;   // line number of the start of the definition

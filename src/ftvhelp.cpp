@@ -1,7 +1,8 @@
 /******************************************************************************
  * ftvhelp.cpp,v 1.0 2000/09/06 16:09:00
  *
- * Kenney Wong <kwong@ea.com>
+ * Contributed by Kenney Wong <kwong@ea.com>
+ * Modified by Dimitri van Heesch (c) 2003
  *
  * Folder Tree View for offline help on browsers that do not support HTML Help.
  * Uses the FTV structure from: 
@@ -20,10 +21,13 @@
 #include "doxygen.h"
 #include "language.h"
 
+#define MAX_INDENT 1024
 
+#if 0
 const char treeview_data[]=
 #include "treeview.h"
 ;
+#endif
 
 unsigned char ftv2blank_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -329,6 +333,22 @@ struct ImageInfo
   { 0,0,0 }
 };
 
+struct FTVNode
+{
+  FTVNode(bool dir,const char *r,const char *f,const char *a,const char *n)
+    : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), 
+      parent(0) { children.setAutoDelete(TRUE); }
+  bool isLast;
+  bool isDir;
+  QCString ref;
+  QCString file;
+  QCString anchor;
+  QCString name;
+  QList<FTVNode> children;
+  FTVNode *parent;
+};
+
+#if 0
 static void generateFolderTreeViewData()
 {
   // Generate tree view script
@@ -437,6 +457,7 @@ static void generateFolderTreeViewData()
     p++;
   }
 }
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -446,11 +467,19 @@ FTVHelp *FTVHelp::m_theInstance = 0;
  *  The object has to be \link initialize() initialized\endlink before it can 
  *  be used.
  */
-FTVHelp::FTVHelp()
+FTVHelp::FTVHelp() 
 {
   /* initial depth */
-  m_dc = 0;
+  //m_dc = 0;
   m_cf = 0;
+  m_indentNodes = new QList<FTVNode>[MAX_INDENT];
+  m_indentNodes[0].setAutoDelete(TRUE);
+  m_indent=0;
+}
+
+FTVHelp::~FTVHelp()
+{
+  delete[] m_indentNodes;
 }
 
 /*! return a reference to the one and only instance of this class. 
@@ -501,7 +530,8 @@ void FTVHelp::finalize()
   m_cts.unsetDevice();
   m_cf->close();
   delete m_cf;
-  generateFolderTreeViewData();
+  generateTreeView();
+  //generateFolderTreeViewData();
 }
 
 /*! Increase the level of the contents hierarchy. 
@@ -511,7 +541,9 @@ void FTVHelp::finalize()
 int FTVHelp::incContentsDepth()
 {
   //int i; for (i=0;i<m_dc+1;i++) m_cts << "  ";
-  return ++m_dc;
+  m_indent++;
+  ASSERT(m_indent<MAX_INDENT);
+  return m_indent;
 }
 
 /*! Decrease the level of the contents hierarchy.
@@ -521,7 +553,16 @@ int FTVHelp::incContentsDepth()
 int FTVHelp::decContentsDepth()
 {
   //int i; for (i=0;i<m_dc;i++) m_cts << "  ";
-  return --m_dc;
+
+  m_indent--;
+  QList<FTVNode> *nl = &m_indentNodes[m_indent];
+  FTVNode *parent = nl->getLast();
+  QList<FTVNode> *children = &m_indentNodes[m_indent+1];
+  while (!children->isEmpty())
+  {
+    parent->children.append(children->take(0));
+  }
+  return m_indent;
 }
 
 /*! Add a list item to the contents file.
@@ -538,6 +579,20 @@ void FTVHelp::addContentsItem(bool isDir,
                               const char *name
                              )
 {
+  QList<FTVNode> *nl = &m_indentNodes[m_indent];
+  FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name);
+  if (!nl->isEmpty())
+  {
+    nl->getLast()->isLast=FALSE;
+  }
+  nl->append(newNode);
+  if (m_indent>0)
+  {
+    QList<FTVNode> *pnl = &m_indentNodes[m_indent-1];
+    newNode->parent = pnl->getLast();
+  }
+  
+#if 0
   int i; for (i=0;i<m_dc;i++) m_cts << "  ";
   QCString parent;
   QCString tagName = ref;
@@ -582,5 +637,314 @@ void FTVHelp::addContentsItem(bool isDir,
     }
   }
   m_cts << "\n";
+#endif
+}
+
+static int folderId=1;
+
+void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
+{
+  if (n->parent)
+  {
+    generateIndent(t,n->parent,level+1);
+  }
+  // from the root up to node n do...
+  if (level==0) // item before a dir or document
+  {
+    if (n->isLast)
+    {
+      if (n->isDir)
+      {
+        t << "<img src=\"ftv2plastnode.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      }
+      else
+      {
+        t << "<img src=\"ftv2lastnode.png\"/>";
+      }
+    }
+    else
+    {
+      if (n->isDir)
+      {
+        t << "<img src=\"ftv2pnode.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      }
+      else
+      {
+        t << "<img src=\"ftv2node.png\"/>";
+      }
+    }
+  }
+  else // item at another level
+  {
+    if (n->isLast)
+    {
+      t << "<img src=\"ftv2blank.png\"/>";
+    }
+    else
+    {
+      t << "<img src=\"ftv2vertline.png\"/>";
+    }
+  }
+}
+
+void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
+{
+  QCString *dest;
+  if (!n->ref.isEmpty()) // link to entity imported via tag file
+  {
+    t << "<a class=\"elRef\" ";
+    t << "doxygen=\"" << n->ref << ":";
+    if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
+    t << "\" ";
+  }
+  else // local link
+  {
+    t << "<a class=\"el\" ";
+  }
+  t << "href=\"";
+  if (!n->ref.isEmpty())
+  {
+    if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
+  }
+  if (!n->file.isEmpty()) t << n->file << Doxygen::htmlFileExtension;
+  if (!n->anchor.isEmpty()) t << "#" << n->anchor;
+  t << "\" target=\"basefrm\">";
+  t << n->name;
+  t << "</a>";
+  if (!n->ref.isEmpty())
+  {
+    t << "&nbsp;[external]";
+  }
+}
+
+void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
+{
+  QCString spaces;
+  spaces.fill(' ',level*2+8);
+  QListIterator<FTVNode> nli(nl);
+  FTVNode *n;
+  for (nli.toFirst();(n=nli.current());++nli)
+  {
+    t << spaces << "<p>";
+    generateIndent(t,n,0);
+    if (n->isDir)
+    {
+      t << "<img src=\"ftv2folderclosed.png\" onclick=\"toggleFolder('folder" << folderId << "', this)\"/>";
+      generateLink(t,n);
+      t << "</p>\n";
+      t << spaces << "<div id=\"folder" << folderId << "\">\n";
+      folderId++;
+      generateTree(t,n->children,level+1);
+      t << spaces << "</div>\n";
+    }
+    else
+    {
+      t << "<img src=\"ftv2doc.png\"/>";
+      generateLink(t,n);
+      t << "</p>\n";
+    }
+  }
+}
+
+void FTVHelp::generateTreeView()
+{
+  // Generate alternative index.html as a frame
+  QCString fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
+  QFile f;
+  f.setName(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  else
+  {
+    QTextStream t(&f);
+#if QT_VERSION >= 200
+    t.setEncoding(QTextStream::Latin1);
+#endif
+    t << "<html><head>";
+    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
+      << theTranslator->idLanguageCharset() << "\">\n";
+    t << "<title>"; 
+    if (Config_getString("PROJECT_NAME").isEmpty())
+    {
+      t << "Doxygen Documentation";
+    }
+    else
+    {
+      t << Config_getString("PROJECT_NAME");
+    }
+    t << "</title></head>" << endl;
+    t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
+    t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
+    t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
+    t << "</frameset>" << endl;
+    t << "</html>" << endl;
+    f.close();
+  }
+
+  // Generate tree view frame
+  fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
+  f.setName(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  else
+  {
+    QTextStream t(&f);
+    t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    t << "  <head>\n";
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=ISO-8859-1\" />\n";
+    t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
+    t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
+    t << "    <link rel=\"stylesheet\" href=\"";
+    QCString cssname=Config_getString("HTML_STYLESHEET");
+    if (cssname.isEmpty())
+    {
+      t << "doxygen.css";
+    }
+    else
+    {
+      QFileInfo cssfi(cssname);
+      if (!cssfi.exists())
+      {
+        err("Error: user specified HTML style sheet file does not exist!\n");
+      }
+      t << cssfi.fileName();
+    }
+    t << "\">" << endl;
+    t << "    <title>Test</title>\n";
+    t << "    <style type=\"text/css\">\n";
+    t << "    <!--\n";
+    t << "    .directory { font-size: 10pt; font-weight: bold; }\n";
+    t << "    .directory h3 { margin: 0px; margin-top: 1em; font-size: 11pt; }\n";
+    t << "    .directory p { margin: 0px; white-space: nowrap; }\n";
+    t << "    .directory div { display: none; margin: 0px; }\n";
+    t << "    .directory img { vertical-align: middle; }\n";
+    t << "    -->\n";
+    t << "    </style>\n";
+    t << "    <script type=\"text/javascript\">\n";
+    t << "    <!-- // Hide script from old browsers\n";
+    t << "    \n";
+    t << "    function findChildNode(node, name) \n";
+    t << "    {\n";
+    t << "      var temp;\n";
+    t << "      if (node == null) \n";
+    t << "      {\n";
+    t << "        return null;\n";
+    t << "      } \n";
+    t << "      node = node.firstChild;\n";
+    t << "      while (node != null) \n";
+    t << "      {\n";
+    t << "        if (node.nodeName == name) \n";
+    t << "        {\n";
+    t << "          return node;\n";
+    t << "        }\n";
+    t << "        temp = findChildNode(node, name);\n";
+    t << "        if (temp != null) \n";
+    t << "        {\n";
+    t << "          return temp;\n";
+    t << "        }\n";
+    t << "        node = node.nextSibling;\n";
+    t << "      }\n";
+    t << "      return null;\n";
+    t << "    }\n";
+    t << "\n";
+    t << "    function toggleFolder(id, imageNode) \n";
+    t << "    {\n";
+    t << "      var folder = document.getElementById(id);\n";
+    t << "      var l = 0;\n";
+    t << "      var vl = \"ftv2vertline.png\";\n";
+    t << "      if (imageNode != null && imageNode.nodeName != \"IMG\") \n";
+    t << "      {\n";
+    t << "        imageNode = findChildNode(imageNode, \"IMG\");\n";
+    t << "        if (imageNode!=null) l = imageNode.src.length;\n";
+    t << "      }\n";
+    t << "      if (folder == null) \n";
+    t << "      {\n";
+    t << "      } \n";
+    t << "      else if (folder.style.display == \"block\") \n";
+    t << "      {\n";
+    t << "        while (imageNode != null && \n";
+    t << "               imageNode.src.substring(l-vl.length,l) == vl)\n";
+    t << "        {\n";
+    t << "          imageNode = imageNode.nextSibling;\n";
+    t << "          l = imageNode.src.length;\n";
+    t << "        }\n";
+    t << "        if (imageNode != null) \n";
+    t << "        {\n";
+    t << "          l = imageNode.src.length;\n";
+    t << "          imageNode.nextSibling.src = \"ftv2folderclosed.png\";\n";
+    t << "          if (imageNode.src.substring(l-13,l) == \"ftv2mnode.png\")\n";
+    t << "          {\n";
+    t << "            imageNode.src = \"ftv2pnode.png\";\n";
+    t << "          }\n";
+    t << "          else if (imageNode.src.substring(l-17,l) == \"ftv2mlastnode.png\")\n";
+    t << "          {\n";
+    t << "            imageNode.src = \"ftv2plastnode.png\";\n";
+    t << "          }\n";
+    t << "        }\n";
+    t << "        folder.style.display = \"none\";\n";
+    t << "      } \n";
+    t << "      else \n";
+    t << "      {\n";
+    t << "        while (imageNode != null && \n";
+    t << "               imageNode.src.substring(l-vl.length,l) == vl)\n";
+    t << "        {\n";
+    t << "          imageNode = imageNode.nextSibling;\n";
+    t << "          l = imageNode.src.length;\n";
+    t << "        }\n";
+    t << "        if (imageNode != null) \n";
+    t << "        {\n";
+    t << "          l = imageNode.src.length;\n";
+    t << "          imageNode.nextSibling.src = \"ftv2folderopen.png\";\n";
+    t << "          if (imageNode.src.substring(l-13,l) == \"ftv2pnode.png\")\n";
+    t << "          {\n";
+    t << "            imageNode.src = \"ftv2mnode.png\";\n";
+    t << "          }\n";
+    t << "          else if (imageNode.src.substring(l-17,l) == \"ftv2plastnode.png\")\n";
+    t << "          {\n";
+    t << "            imageNode.src = \"ftv2mlastnode.png\";\n";
+    t << "          }\n";
+    t << "        }\n";
+    t << "        folder.style.display = \"block\";\n";
+    t << "      }\n";
+    t << "    }\n";
+    t << "\n";
+    t << "    // End script hiding -->        \n";
+    t << "    </script>\n";
+    t << "  </head>\n";
+    t << "\n";
+    t << "  <body bgcolor=\"#ffffff\">\n";
+    t << "    <div class=\"directory\">\n";
+    t << "      <h3>Root</h3>\n";
+    t << "      <div style=\"display: block;\">\n";
+
+    generateTree(t,m_indentNodes[0],0);
+
+    t << "      </div>\n";
+    t << "    </div>\n";
+    t << "  </body>\n";
+    t << "</html>\n";
+  }
+
+  // Generate tree view images
+  ImageInfo *p = image_info;
+  while (p->name)
+  {
+    QCString fileName=Config_getString("HTML_OUTPUT")+"/"+p->name;
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly)) 
+      f.writeBlock((char *)p->data,p->len);
+    else
+    {
+      fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    }
+    f.close();
+    p++;
+  }
 }
 

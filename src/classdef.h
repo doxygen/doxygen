@@ -138,7 +138,7 @@ class ClassDef : public Definition
 
     /*! Returns the Java package this class is in or 0 if not applicable. 
      */ 
-    PackageDef   *packageDef() const;
+    //PackageDef   *packageDef() const;
 
     MemberDef    *getMemberByName(const QCString &);
     

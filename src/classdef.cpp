@@ -2195,10 +2195,10 @@ void ClassDef::determineIntfUsageRelation()
 }
 #endif
 
-PackageDef *ClassDef::packageDef() const
-{
-  return m_fileDef ? m_fileDef->packageDef() : 0;
-}
+//PackageDef *ClassDef::packageDef() const
+//{
+//  return m_fileDef ? m_fileDef->packageDef() : 0;
+//}
 
 QCString ClassDef::compoundTypeString() const
 {

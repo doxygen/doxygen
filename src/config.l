@@ -1966,10 +1966,9 @@ void Config::create()
                     "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
                     "generated containing a tree-like index structure (just like the one that \n"
                     "is generated for HTML Help). For this to work a browser that supports \n"
-                    "JavaScript and frames is required (for instance Mozilla, Netscape 4.0+, \n"
-                    "or Internet explorer 4.0+). Note that for large projects the tree generation \n"
-		    "can take a very long time. In such cases it is better to disable this feature. \n"
-		    "Windows users are probably better off using the HTML help feature. \n",
+                    "JavaScript, DHTML, CSS and frames is required (for instance Mozilla, \n"
+		    "Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are \n"
+		    "probably better off using the HTML help feature. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");

@@ -1853,6 +1853,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 				     	    current->reset();
 					  }
   					}
+<FindFields>"["				{ // attribute list in IDL
+					  squareCount=1;
+					  lastSquareContext = YY_START;
+					  BEGIN(SkipSquare);
+  					}
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */

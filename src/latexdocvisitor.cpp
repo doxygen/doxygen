@@ -597,14 +597,14 @@ void LatexDocVisitor::visitPost(DocHtmlTable *t)
   }
   else
   {
-    m_t << "\\\\\\hline\n\\end{TabularC}\n";
+    m_t << "\\end{TabularC}\n";
   }
 }
 
 void LatexDocVisitor::visitPre(DocHtmlCaption *)
 {
   if (m_hide) return;
-  m_t << "\\\\\\hline\n\\end{TabularC}\n\\centering\n\\caption{";
+  m_t << "\\end{TabularC}\n\\centering\n\\caption{";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlCaption *) 

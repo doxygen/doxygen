@@ -664,3 +664,16 @@ const QList<ListItemInfo> *Definition::specialListItems() const
   return m_specialListItems;
 }
 
+
+QCString Definition::convertNameToFile(const char *name,bool allowDots) const
+{
+  if (!m_ref.isEmpty())
+  {
+    return name;
+  }
+  else
+  {
+    return ::convertNameToFile(name,allowDots);
+  }
+}
+

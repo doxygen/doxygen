@@ -35,13 +35,18 @@ void FileName::generateDiskNames()
   //QCString commonPrefix;
   FileDef *fd=first();
   int count=0;
-  while (fd) { if (!fd->isReference()) count++; fd=next(); }
+  while (fd) 
+  { 
+    if (!fd->isReference()) count++; 
+    fd=next(); 
+  }
   if (count==1)
   {
     fd=first();
     // skip references
     while (fd && fd->isReference()) fd=next();
     // name if unique, so diskname is simply the name
+    //printf("!!!!!!!! Unique disk name=%s for fd=%s\n",name.data(),fd->diskname.data());
     fd->diskname=name.copy();
   }
   else if (count>1) // multiple occurrences of the same file name
@@ -84,6 +89,7 @@ void FileName::generateDiskNames()
       {
         QCString prefix = fd->path.right(fd->path.length()-j-1);
         fd->setName(prefix+name);
+        //printf("!!!!!!!! non unique disk name=%s for fd=%s\n",(prefix+name).data(),fd->diskname.data());
         fd->diskname=prefix+name;
       }
       fd=next();
