@@ -713,7 +713,7 @@ int main(int argc,char * argv[])
   while (!ctfile.atEnd()) 
   {
     int l=ctfile.readLine(buf,maxLineLen-1);
-    if (buf[l-2]--'\r') // remove the \r for the folks using Windows
+    if (buf[l-2]=='\r') // remove the \r for the folks using Windows
     {
       buf[l-2]='\n';
       buf[l-1]='\r';
