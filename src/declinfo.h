@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 extern void parseFuncDecl(const QCString &decl,
+                          bool objC,
                           QCString &clName,
                           QCString &type,
                           QCString &name,

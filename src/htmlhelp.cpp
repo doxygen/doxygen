@@ -37,6 +37,7 @@ struct IndexField
   QCString url;
   QCString anchor;
   bool     link;
+  bool     reversed;
 };
 
 class IndexFieldList : public QList<IndexField>
@@ -72,7 +73,8 @@ class HtmlHelpIndex
     HtmlHelpIndex();
    ~HtmlHelpIndex();
     void addItem(const char *first,const char *second, 
-                 const char *url, const char *anchor,bool hasLink);
+                 const char *url, const char *anchor,
+                 bool hasLink,bool reversed);
     void writeFields(QTextStream &t);
   private:
     IndexFieldList *list;
@@ -104,9 +106,12 @@ HtmlHelpIndex::~HtmlHelpIndex()
  *  \param anchor the anchor of the documentation within the page.
  *  \param hasLink if true, the url (without anchor) can be used in the 
  *         level1 item, when writing the header of a list of level2 items.
+ *  \param reversed TRUE if level1 is the member name and level2 the compound
+ *         name.
  */
 void HtmlHelpIndex::addItem(const char *level1,const char *level2,
-                       const char *url,const char *anchor,bool hasLink)
+                       const char *url,const char *anchor,bool hasLink,
+                       bool reversed)
 {
   QCString key = level1; 
   if (level2) key+= (QCString)"?" + level2;
@@ -115,10 +120,11 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
     //printf(">>>>>>>>> HtmlHelpIndex::addItem(%s,%s,%s,%s)\n",
     //      level1,level2,url,anchor);
     IndexField *f = new IndexField;
-    f->name   = key;
-    f->url    = url;
-    f->anchor = anchor;
-    f->link   = hasLink;
+    f->name     = key;
+    f->url      = url;
+    f->anchor   = anchor;
+    f->link     = hasLink;
+    f->reversed = reversed;
     list->inSort(f);
     dict->insert(key,f);
   }
@@ -199,7 +205,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
       {
         t << "  <LI><OBJECT type=\"text/sitemap\">";
         t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
-        if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
+        if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
         t << "\">";
         t << "<param name=\"Name\" value=\"" << level1 << "\">"
            "</OBJECT>\n";
@@ -210,7 +216,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
           t << "<param name=\"Local\" value=\"" << f->url << Doxygen::htmlFileExtension;
-          if (!f->anchor.isEmpty()) t << "#" << f->anchor;  
+          if (!f->anchor.isEmpty() && f->reversed) t << "#" << f->anchor;  
           t << "\">";
           t << "<param name=\"Name\" value=\"" << level1 << "\">"
                "</OBJECT>\n";
@@ -245,6 +251,7 @@ void HtmlHelpIndex::writeFields(QTextStream &t)
     }
     lastLevel1 = level1.copy();
   } 
+  if (level2Started) t << "  </UL>" << endl;
 }
 
 //----------------------------------------------------------------------------
@@ -551,7 +558,7 @@ void HtmlHelp::addContentsItem(bool isDir,
 void HtmlHelp::addIndexItem(const char *level1, const char *level2,
                             const char *ref, const char *anchor)
 {
-  index->addItem(level1,level2,ref,anchor,TRUE);
-  index->addItem(level2,level1,ref,anchor,TRUE);
+  index->addItem(level1,level2,ref,anchor,TRUE,FALSE);
+  index->addItem(level2,level1,ref,anchor,TRUE,TRUE);
 }
 

@@ -12,9 +12,11 @@
  *
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
- *   Version: 1.3.8 (2004/06/30)
+ *   Version: 1.4.1 (2005/03/20)
  *
  * History:
+ *   1.4.1
+ *		- Method trOverloadText() added.
  * 	 1.3.9
  *		- Updated to Doxygen 1.3.9
  * 	 1.3.8
@@ -34,7 +36,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_4_1
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -1597,5 +1599,19 @@ class TranslatorBrazilian : public TranslatorAdapter_1_4_1
       if (!singular) result+="s";
       return result; 
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Este é um método provido por conveniência. "
+       		"Ele difere do método acima apenas na lista de "
+       		"argumentos que devem ser utilizados.";
+    }    
+    
 };
 #endif

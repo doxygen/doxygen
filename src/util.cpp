@@ -1388,7 +1388,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
                  bool keepSpaces)
 {
   //printf("`%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9.:]*");
+  static QRegExp regExp("[a-z_A-Z][~a-z_A-Z0-9.:]*");
   QCString txtStr=text;
   int strLen = txtStr.length();
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
@@ -1718,7 +1718,7 @@ QCString getFileFilter(const char* name)
   // compare the file name to the filter pattern list
   QStrListIterator sli(filterList);
   char* filterStr;
-  for(sli.toFirst(); (filterStr = sli.current()); ++sli)
+  for (sli.toFirst(); (filterStr = sli.current()); ++sli)
   {
     QCString fs = filterStr;
     int i_equals=fs.find('=');
@@ -4256,7 +4256,7 @@ QCString convertToHtml(const char *s)
 /*! Returns the standard string that is generated when the \\overload
  * command is used.
  */
-const char *getOverloadDocs()
+QCString getOverloadDocs()
 {
   return theTranslator->trOverloadText();
   //"This is an overloaded member function, "

@@ -51,24 +51,43 @@
 //
 //	Update:
 //
-// 2004.12.22 (SooYoung Jung: jung5000@gmail.com)
-//	- LaTex and RTF were not generated correctly.
-// 	  Corrected trRTFansicp and trRTFCharSet.
-// 	  It was wrong.
-// 	- Adapting 1.3.9 and added "new since 1.3.9"
-//	- 해석이 잘못된 부분이 꾀나 있어 보임.. 
+// 2004.12.22 (SooYoung Jung: jung5000 at gmail.com)
+//  - LaTex and RTF were not generated correctly.
+//    Corrected trRTFansicp and trRTFCharSet.
+//    It was wrong.
+//  - Adapting 1.3.9 and added "new since 1.3.9"
+//  - 해석이 잘못된 부분이 꾀나 있어 보임.. 
+//
+// 2005.02.11 (SooYoung Jung: jung5000 at gmail.com)
+//  - 실수로 추가되었던 decode 함수 수정
+//
+// 2005.03.11 (SooYoung Jung: jung5000 at gmail.com)
+//  - Adapting 1.4.1
+//  - 일부 번역안된 부분 수정 (Translated little bit of untranslated part)
+//  - Removed following
+//    Obsolete methods (should be removed, never used):
+//    virtual QCString trHeaderFilesDescription()
+//    virtual QCString trField(bool first_capital, bool singular)
+//    virtual QCString trPackageDocumentation()
+//    virtual QCString trSources()
+//    virtual QCString trReimplementedForInternalReasons()
+//    virtual QCString trInterfaces()
+//    virtual QCString trHeaderFiles()
+//    virtual QCString trBugsAndLimitations()
+//    virtual QCString trEnumerationValueDocumentation()
+//    virtual QCString trNoDescriptionAvailable()
 //
  
 
 class TranslatorKorean : public TranslatorAdapter_1_4_1
 {
  private:
-  /*! The decode() can change euc into sjis */
+  // guess, unnecessary for Korean language
   inline QCString decode(const QCString & sInput)
   {
     if (Config_getBool("USE_WINDOWS_ENCODING"))
     {
-      return JapaneseEucToSjis(sInput);
+      return sInput;
     }
     else
     {
@@ -182,7 +201,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="";
       if (s) result+=(QCString)s+"에 ";
-      result += "source 코드로 부터 Doxygen에 의해 자동으로 생성";
+      result += "소스 코드로 부터 Doxygen에 의해 자동으로 생성";
       return result;
     }
 
@@ -229,8 +248,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     { return "파일 목록"; } //"파일 목록", "파일 리스트"
 
     /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "헤더 파일"; }
+    // virtual QCString trHeaderFiles()
+    // { return "헤더 파일"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
@@ -337,8 +356,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     }
 
     /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "다음은 API를 구성하는 헤더 파일입니다."; }
+    // virtual QCString trHeaderFilesDescription()
+    // { return "다음은 API를 구성하는 헤더 파일입니다."; }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
@@ -355,8 +374,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given.
      */
-    virtual QCString trNoDescriptionAvailable()
-    { return "유용한 설명이 없습니다."; }
+    // virtual QCString trNoDescriptionAvailable()
+    // { return "유용한 설명이 없습니다."; }
 
     // index titles (the project name is prepended for these)
 
@@ -492,8 +511,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "열거형 값 문서화"; }
+    // virtual QCString trEnumerationValueDocumentation()
+    // { return "열거형 값 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
@@ -514,11 +533,11 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Data Structures"; 
+        return "데이터 구조"; 
       }
       else
       {
-        return "Classes"; 
+        return "클래스"; 
       }
     }
 
@@ -550,16 +569,16 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     { return "내부 사용만을 위해"; }
 
     /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "내부적 이유로 인해 재구현된: API가 영향을 받지않았다."; }
+    // virtual QCString trReimplementedForInternalReasons()
+    // { return "내부적 이유로 인해 재구현된: API가 영향을 받지않았다."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "경고"; }
 
     /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "버그와 한계"; }
+    // virtual QCString trBugsAndLimitations()
+    // { return "버그와 한계"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -639,8 +658,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
         case ClassDef::Struct:     result+=" 구조체"; break;
         case ClassDef::Union:      result+=" 공용체"; break;
         case ClassDef::Interface:  result+=" 인터페이스"; break;
-        case ClassDef::Protocol:   result+=" protocol"; break; // translate me!
-        case ClassDef::Category:   result+=" category"; break; // translate me!
+        case ClassDef::Protocol:   result+=" 프로토콜"; break;
+        case ClassDef::Category:   result+=" 카테고리"; break;
         case ClassDef::Exception:  result+=" 예외"; break;
       }
       if (isTemplate) result+=" 템플릿";
@@ -838,10 +857,10 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "출처";
-    }
+    // virtual QCString trSources()
+    // {
+    //   return "출처";
+    // }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "@1 파일의 @0 번째 라인에서 정의";
@@ -1016,13 +1035,12 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     }
     virtual QCString trInclByDepGraph()
     {
-        // TODO: Need to be translated. -ryk11/22/01.
-        return "This graph shows which files directly or "
-             "indirectly include this file:";
+	return " 이 그래프는 이 파일을 직접 또는 간접적으로"
+	  "포함(include)함을 나타낸다:";
     }
     virtual QCString trSince()
     {
-        return "Since"; // TODO: Need to be translated. -ryk11/22/01.
+        return "언제부터: "; // TODO: Need to be translated. -ryk11/22/01.
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1155,12 +1173,12 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-        return "properties"; // TODO: Need to be translated. -ryk11/22/01.
+        return "속성";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-        return "property 문서화"; // TODO: Need to be translated. -ryk11/22/01.
+        return "속성 문서화";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1168,52 +1186,51 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-        return "인터페이스"; // TODO: Need to be translated. -ryk11/22/01.
-    }
+    // virtual QCString trInterfaces()
+    // {
+    //     return "인터페이스";
+    // }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-          return "데이터 구조"; // TODO: Need to be translated. -ryk11/22/01.
+          return "데이터 구조";
       }
       else
       {
-          return "클래스"; // TODO: Need to be translated. -ryk11/22/01.
+          return "클래스";
       }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-        return (QCString)"패키지 "+name; // TODO: Need to be translated. -ryk11/22/01.
+        return (QCString)"패키지 "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-        return "패키지 목록"; // TODO: Need to be translated. -ryk11/22/01.
+        return "패키지 목록";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-		//Here are the packages with brief descriptions (if available):"; // TODO: Need to be translated. -ryk11/22/01.
         return "다음은 간략한 설명을 가진 패키지이다.";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-        return "패키지"; // TODO: Need to be translated. -ryk11/22/01.
+        return "패키지";
     }
     /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-        return "패키지 문서화"; // TODO: Need to be translated. -ryk11/22/01.
-    }
+    // virtual QCString trPackageDocumentation()
+    // {
+    //     return "패키지 문서화";
+    // }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-        return "값:"; // TODO: Need to be translated. -ryk11/22/01.
+        return "값:";
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1223,12 +1240,12 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-        return "버그"; // TODO: Need to be translated. -ryk11/22/01.
+        return "버그";
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-        return "버그 목록"; // TODO: Need to be translated. -ryk11/22/01.
+        return "버그 목록";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1350,12 +1367,12 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "필드" : "필드"));
-      if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
-    }
+    // virtual QCString trField(bool first_capital, bool singular)
+    // {
+    //   QCString result((first_capital ? "필드" : "필드"));
+    //   if (!singular)  result+="들";
+    //   return result;  // TODO: Need to be translated. -ryk11/22/01.
+    // }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 

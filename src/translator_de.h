@@ -96,13 +96,16 @@
 //    - added a dash after (file, ...) names and in front of description
 //    - changed "Eigenschaften" to "Propertys" (yeah, not ..."ies")
 //    
+//   2005/03/20 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.4.1" version
+//    
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_4_1
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -1645,7 +1648,7 @@ class TranslatorGerman : public TranslatorAdapter_1_4_1
     { return "Verzeichnisdokumentation"; }
 
     /*! This is used as the title of the directory index and also in the
-     *  Quick links of a HTML page, to link to the directory hierarchy.
+     *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
     { return "Verzeichnisse"; }
@@ -1672,6 +1675,20 @@ class TranslatorGerman : public TranslatorAdapter_1_4_1
       QCString result("Verzeichnis");
       if (!singular) result+="se";
       return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Dies ist eine überladene Methode, die der Bequemlichkeit "
+              "wegen bereitgestellt wird. Sie unterscheidet sich von der "
+              "obigen Funktion nur in den Argumenten die sie unterstützt.";
     }
 
 };

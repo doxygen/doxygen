@@ -1573,7 +1573,7 @@ class TranslatorEnglish : public Translator
     { return "Directory Documentation"; }
 
     /*! This is used as the title of the directory index and also in the
-     *  Quick links of a HTML page, to link to the directory hierarchy.
+     *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
     { return "Directories"; }

@@ -767,9 +767,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
   if (m_hide) return;
   m_t << "<parameteritem>" << endl;
   m_t << "<parameternamelist>" << endl;
-  QStrListIterator li(pl->parameters());
-  const char *s;
-  for (li.toFirst();(s=li.current());++li)
+  //QStrListIterator li(pl->parameters());
+  //const char *s;
+  QListIterator<DocNode> li(pl->parameters());
+  DocNode *param;
+  for (li.toFirst();(param=li.current());++li)
   {
     m_t << "<parametername";
     if (pl->direction()!=DocParamSect::Unspecified)
@@ -790,7 +792,14 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
       m_t << "\"";
     }
     m_t << ">";
-    filter(s);
+    if (param->kind()==DocNode::Kind_Word)
+    {
+      visit((DocWord*)param); 
+    }
+    else if (param->kind()==DocNode::Kind_LinkedWord)
+    {
+      visit((DocLinkedWord*)param); 
+    }
     m_t << "</parametername>" << endl;
   }
   m_t << "</parameternamelist>" << endl;

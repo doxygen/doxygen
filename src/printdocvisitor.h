@@ -547,12 +547,23 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocParamList *pl)
     {
       indent_pre();
-      QStrListIterator sli(pl->parameters());
-      const char *s;
+      //QStrListIterator sli(pl->parameters());
+      QListIterator<DocNode> sli(pl->parameters());
+      //const char *s;
+      DocNode *param;
       printf("<parameters>");
-      for (sli.toFirst();(s=sli.current());++sli)
+      for (sli.toFirst();(param=sli.current());++sli)
       {
-        printf("<param>%s</param>",s);
+        printf("<param>");
+        if (param->kind()==DocNode::Kind_Word)
+        {
+          visit((DocWord*)param); 
+        }
+        else if (param->kind()==DocNode::Kind_LinkedWord)
+        {
+          visit((DocLinkedWord*)param); 
+        }
+        printf("</param>");
       }
       printf("\n");
     }
