@@ -11,6 +11,7 @@ irix-dcc
 irix-g++       
 irix-n32      
 linux-g++      
+macosx-c++
 netbsd-g++    
 openbsd-g++    
 osf1-cxx      

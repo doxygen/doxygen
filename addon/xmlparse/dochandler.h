@@ -232,7 +232,9 @@ class SimpleSectHandler : public DocNode,
     enum Types { See, Return, Author, Version, 
                  Since, Date, Bug, Note,
                  Warning, Par, Deprecated, Pre, 
-                 Post, Invar, Remark, Attention 
+                 Post, Invar, Remark, Attention,
+                 Todo, Test, RCS, EnumValues, 
+                 Examples
     };
     SimpleSectHandler(IBaseHandler *parent);
     virtual ~SimpleSectHandler();

@@ -22,6 +22,8 @@
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (since June 1999)
  * Updates:
+ *        2001/08: corrected the translation fixing the issues reported by the translator.pl script
+ *                 translated new items used since version 1.2.7
  *        2001/05: adopted new translation mechanism (trough adapters),
  *                 translated new items used since version 1.2.5 and 1.2.6,
  *                 revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
@@ -57,7 +59,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_7
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -167,12 +169,6 @@ class TranslatorItalian : public TranslatorAdapter_1_2_7
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn()
     { return "definito in"; }
-
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    QCString trVerbatimText(const char *f)
-    { return (QCString)"Questo è il contenuto integrale del file include "+f+"."; }
 
     // quick reference sections
 
@@ -462,10 +458,6 @@ class TranslatorItalian : public TranslatorAdapter_1_2_7
     QCString trEnumerationValues()
     { return "Valori dei tipi enumerati"; }
 
-    /*! This is used in man pages as the author section. */
-    QCString trAuthor()
-    { return "Autore"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -523,12 +515,6 @@ class TranslatorItalian : public TranslatorAdapter_1_2_7
       }
     }
 
-    /*! This is used in the documentation of a group before the list of
-     *  links to documented files
-     */
-    QCString trFiles()
-    { return "File"; }
-
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
@@ -575,10 +561,6 @@ class TranslatorItalian : public TranslatorAdapter_1_2_7
     /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Data"; }
-
-    /*! this text is generated when the \\author command is used. */
-    QCString trAuthors()
-    { return "Autore(i)"; }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns()
@@ -1310,6 +1292,19 @@ class TranslatorItalian : public TranslatorAdapter_1_2_7
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Global" : "global"));
+      result+=(singular ? "e" : "i");
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Autor" : "autor"));
       result+=(singular ? "e" : "i");
       return result;
     }

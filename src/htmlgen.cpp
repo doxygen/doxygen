@@ -858,6 +858,39 @@ void HtmlGenerator::endImage(bool hasCaption)
   t << "</div>" << endl;
 }
 
+void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
+{
+  QCString baseName=name;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1); 
+  }
+  QCString outName = Config_getString("HTML_OUTPUT")+
+#ifdef _WIN32
+    "\\"
+#else
+    "/"
+#endif
+    +baseName;
+  writeDotGraphFromFile(name,outName,GIF);
+  t << "<div align=\"center\">" << endl;
+  t << "<img src=\"" << baseName << ".gif\" alt=\"" << baseName << "\">" << endl;
+  if (hasCaption)
+  {
+    t << "<p><strong>";
+  } 
+}
+
+void HtmlGenerator::endDotFile(bool hasCaption)
+{
+  if (hasCaption)
+  {
+    t << "</strong></p>" << endl;
+  }
+  t << "</div>" << endl;
+}
+
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)

@@ -176,11 +176,10 @@ class HtmlGenerator : public OutputGenerator
     void writeRing(char c)    { t << "&" << c << "ring;"; }
     void writeSharpS()        { t << "&szlig;"; }
     void writeCCedil(char c)  { t << "&" << c << "cedil;"; }
-    void startDescList()      { t << "<dl compact><dt><b>" << endl; }
+    void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
     void endDescList()        { t << "</dl>"; }
-    void startParamList(ParamListTypes)     
-                              { startDescList(); }
-    void endParamList()       { endDescList(); }
+    void startParamList(ParamListTypes) { t << "<dl compact><dt><b>" << endl; }    
+    void endParamList()       { t << "</dl>"; }
     void endDescTitle()       { t << "</b>"; }
     void writeDescItem()      { t << "<dd>" << endl; }
     void startSection(const char *,const char *,bool);
@@ -204,6 +203,8 @@ class HtmlGenerator : public OutputGenerator
     void writeNonBreakableSpace(int);
     void startImage(const char *,const char *,bool);
     void endImage(bool);
+    void startDotFile(const char *,bool);
+    void endDotFile(bool);
     
     void startDescTable()
     { t << "<table border=0 cellspacing=2 cellpadding=0>" << endl; }

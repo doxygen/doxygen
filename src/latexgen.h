@@ -183,11 +183,10 @@ class LatexGenerator : public OutputGenerator
     void writeCCedil(char c) { t << "\\c{" << c << "}"; }
     void startMemberDescription() { t << "\\begin{CompactList}\\small\\item\\em "; }
     void endMemberDescription() { t << "\\item\\end{CompactList}"; }
-    void startDescList()     { t << "\\begin{Desc}\n\\item["; }
+    void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
     void endDescList()       { t << "\\end{Desc}" << endl; }
-    void startParamList(ParamListTypes)    
-                             { startDescList(); }
-    void endParamList()      { endDescList(); }
+    void startParamList(ParamListTypes) { t << "\\begin{Desc}\n\\item["; }   
+    void endParamList()      { t << "\\end{Desc}" << endl; }
     void endDescTitle()      { t << "]"; }
     void writeDescItem()     { t << "\\par" << endl; }
     void startSection(const char *,const char *,bool);
@@ -212,6 +211,8 @@ class LatexGenerator : public OutputGenerator
     void writeNonBreakableSpace(int);
     void startImage(const char *,const char *,bool);
     void endImage(bool);
+    void startDotFile(const char *,bool);
+    void endDotFile(bool);
     
     void startDescTable()
     { t << "\\begin{description}" << endl; }

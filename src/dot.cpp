@@ -1506,3 +1506,23 @@ void generateGraphLegend(const char *path)
   QDir::setCurrent(oldDir);
 }
   
+
+void writeDotGraphFromFile(const char *inFile,const char *outFile,
+                      GraphOutputFormat format)
+{
+  QCString dotArgs(4096);
+  if (format==GIF)
+  {
+    dotArgs.sprintf("-Tgif \"%s\" -o \"%s.gif\"",inFile,outFile);
+  }
+  else // format==EPS
+  {
+    dotArgs.sprintf("-Tps \"%s\" -o \"%s.eps\"",inFile,outFile);
+  }
+  QCString dotExe = Config_getString("DOT_PATH")+"dot";
+  //printf("Running: %s %s\n",dotExe.data(),dotArgs.data());
+  if (iSystem(dotExe,dotArgs)!=0)
+  {
+    err("Problems running dot. Check your installation!\n");
+  }
+}

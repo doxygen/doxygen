@@ -202,7 +202,16 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
                        "ASSERT_VALID(x)=assert(x)" \
                        "TRACE0(x)=printf(x)" \
                        "OS_ERR(A,B)={ #A, B }" \
-                       __cplusplus
+                       __cplusplus \
+                       "DECLARE_OLECREATE(class)= " \
+                       "BEGIN_DISPATCH_MAP(class1, class2)= " \
+                       "BEGIN_INTERFACE_MAP(class1, class2)= " \
+                       "INTERFACE_PART(class, id, name)= " \
+                       "END_INTERFACE_MAP()=" \
+                       "DISP_FUNCTION(class, name, function, result, id)=" \
+                       "END_DISPATCH_MAP()=" \
+                       "IMPLEMENT_OLECREATE2(class, name, id1, id2, id3, id4,\
+                        id5, id6, id7, id8, id9, id10, id11)="
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want

@@ -228,67 +228,92 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
         int enumMemCount=0;
 
-        uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
-        typeDecl.docify("{ ");
         QList<MemberDef> *fmdl=md->enumFieldList();
+        uint numVisibleEnumValues=0;
         if (fmdl)
         {
           MemberDef *fmd=fmdl->first();
           while (fmd)
           {
-            /* in html we start a new line after a number of items */
-            if (fmdl->count()>enumValuesPerLine
-                && (enumMemCount%enumValuesPerLine)==0
-               )
+            if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
+            fmd=fmdl->next();
+          }
+        }
+        if (numVisibleEnumValues==0 && !md->isBriefSectionVisible()) break;
+        if (numVisibleEnumValues>0)
+        {
+          uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
+          typeDecl.docify("{ ");
+          if (fmdl)
+          {
+            MemberDef *fmd=fmdl->first();
+            bool fmdVisible = fmd->isBriefSectionVisible();
+            while (fmd)
+            {
+              /* in html we start a new line after a number of items */
+              if (numVisibleEnumValues>enumValuesPerLine
+                  && (enumMemCount%enumValuesPerLine)==0
+                 )
+              {
+                typeDecl.pushGeneratorState();
+                typeDecl.disableAllBut(OutputGenerator::Html);
+                typeDecl.lineBreak(); 
+                typeDecl.writeString("&nbsp;&nbsp;");
+                typeDecl.popGeneratorState();
+              }
+
+              if (fmdVisible)
+              {
+                if (fmd->hasDocumentation()) // enum value has docs
+                {
+                  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+                  {
+                    Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
+                    Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+                    Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
+                    Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
+                    Doxygen::tagFile << "    </member>" << endl;
+                  }
+                  fmd->writeLink(typeDecl,cd,nd,fd,gd);
+                }
+                else // no docs for this enum value
+                {
+                  typeDecl.startBold();
+                  typeDecl.docify(fmd->name());
+                  typeDecl.endBold();
+                }
+                if (fmd->hasOneLineInitializer()) // enum value has initializer
+                {
+                  typeDecl.writeString(" = ");
+                  parseText(typeDecl,fmd->initializer());
+                }
+              }
+
+              bool prevVisible = fmdVisible;
+              fmd=fmdl->next();
+              if (fmd && (fmdVisible=fmd->isBriefSectionVisible())) 
+              {
+                typeDecl.writeString(", ");
+              }
+              if (prevVisible)
+              {
+                typeDecl.disable(OutputGenerator::Man);
+                typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
+                typeDecl.enable(OutputGenerator::Man);
+                enumMemCount++;
+              }
+            }
+            if (numVisibleEnumValues>enumValuesPerLine)
             {
               typeDecl.pushGeneratorState();
               typeDecl.disableAllBut(OutputGenerator::Html);
               typeDecl.lineBreak(); 
-              typeDecl.writeString("&nbsp;&nbsp;");
               typeDecl.popGeneratorState();
             }
-
-            if (fmd->hasDocumentation()) // enum value has docs
-            {
-              if (!Config_getString("GENERATE_TAGFILE").isEmpty())
-              {
-                Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
-                Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
-                Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
-                Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
-                Doxygen::tagFile << "    </member>" << endl;
-              }
-              fmd->writeLink(typeDecl,cd,nd,fd,gd);
-            }
-            else // no docs for this enum value
-            {
-              typeDecl.startBold();
-              typeDecl.docify(fmd->name());
-              typeDecl.endBold();
-            }
-            if (!fmd->initializer().isEmpty()) // enum value has initializer
-            {
-              typeDecl.writeString(" = ");
-              parseText(typeDecl,fmd->initializer());
-            }
-
-            fmd=fmdl->next();
-            if (fmd) typeDecl.writeString(", ");
-            typeDecl.disable(OutputGenerator::Man);
-            typeDecl.writeString("\n"); // to prevent too long lines in LaTeX
-            typeDecl.enable(OutputGenerator::Man);
-            enumMemCount++;
           }
-          if (fmdl->count()>enumValuesPerLine)
-          {
-            typeDecl.pushGeneratorState();
-            typeDecl.disableAllBut(OutputGenerator::Html);
-            typeDecl.lineBreak(); 
-            typeDecl.popGeneratorState();
-          }
+          typeDecl.docify(" }");
+          md->setEnumDecl(typeDecl);
         }
-        typeDecl.docify(" }");
-        md->setEnumDecl(typeDecl);
         int enumVars=0;
         MemberListIterator vmli(*this);
         MemberDef *vmd;

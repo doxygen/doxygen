@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.8-20010726), 24 languages 
+Currently (version 1.2.9-20010812), 24 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -70,8 +70,8 @@ when the translator was updated.
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Czech</TD>  
-      <TD>Petr P&#x0159;ikryl<br>Vlastimil Havran</TD>
-      <TD>prikrylp@NOSPAM.skil.cz<br>havran@NOSPAM.fel.cvut.cz</TD>
+      <TD>Petr P&#x0159;ikryl</TD>
+      <TD>prikrylp@NOSPAM.skil.cz</TD>
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -120,7 +120,7 @@ when the translator was updated.
       <TD>Italian</TD>  
       <TD>Ahmed Aldo Faisal<br>Alessandro Falappa</TD>
       <TD>aaf23@NOSPAM.cam.ac.uk<br>a.falappa@NOSPAM.flashnet.it</TD>
-      <TD>1.2.7</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
@@ -212,7 +212,6 @@ when the translator was updated.
   Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & up-to-date \\
   \hline
   Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
-   & Vlastimil Havran & {\tt havran@fel.cvut.cz} &  \\
   \hline
   Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
   \hline
@@ -229,7 +228,7 @@ when the translator was updated.
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} & 1.2.7 \\
+  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} & up-to-date \\
    & Alessandro Falappa & {\tt a.falappa@flashnet.it} &  \\
   \hline
   Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} & 1.2.5 \\

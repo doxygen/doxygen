@@ -95,6 +95,8 @@ static bool             insidePre = FALSE;
 static int              depthIf;
 static QCString         curImageName;
 static QCString         curImageCaption;
+static QCString         curDotFileName;
+static QCString         curDotFileCaption;
 static QCString         internalRefFile;
 static QCString         internalRefAnchor;
 static QStack<char>	  currentListIndent; // indent stack of all list items 
@@ -674,9 +676,10 @@ enum ImageTypes
   IT_RTF
 };
 
-// search for an image in the imageNameDict and if found
-// copies the image to the output directory (which is the
-// html directory if type==0 or the latex directory if type==1)
+/*! search for an image in the imageNameDict and if found
+ * copies the image to the output directory (which is the
+ * html directory if type==0 or the latex directory if type==1)
+ */
 static QCString findAndCopyImage(const char *fileName,ImageTypes type)
 {
   QCString result;
@@ -792,6 +795,39 @@ void writeImage(ImageTypes it,const char *size)
       }
   }
   outDoc->popGeneratorState();
+}
+
+// search for a dot file in the dotFileNameDict, and if found
+// generates the graph in the output directories.
+static void writeDotFile(const char *fileName, const char *captionText)
+{
+  bool ambig;
+  FileDef *fd;
+  bool hasCaption = captionText!=0;
+
+  if ((fd=findFileDef(Doxygen::dotFileNameDict,fileName,ambig)))
+  {
+    outDoc->startDotFile(fd->absFilePath(),hasCaption);
+    if (hasCaption)
+    {
+       scanString(captionText);
+    }
+    outDoc->endDotFile(hasCaption);
+  }
+  else if (ambig)
+  {
+    QCString text;
+    text.sprintf("Warning: dot file name %s is ambigious.\n",fileName);
+    text+="Possible candidates:\n";
+    text+=showFileDefMatches(Doxygen::dotFileNameDict,fileName);
+    warn(yyFileName,yyLineNr,text);
+  }
+  else
+  {
+    warn(yyFileName,yyLineNr,
+         "Warning: dot file %s is not found in DOTFILE_DIRS! ",fileName
+        );
+  }
 }
 
 
@@ -928,6 +964,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocLatexImageOpt
 %x	DocRtfImageName
 %x	DocRtfImageOpt
+%x	DocDotFile
+%x	DocDotFileOpt
 
 %%
 
@@ -1131,7 +1169,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (b) endBlock();  
 					    inParBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Par);
 					    outDoc->startBold();
 					    outDoc->docify(title);
 					    outDoc->endBold();
@@ -1151,7 +1189,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inWarningBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Warning);
 					    outDoc->startBold();
 					    scanString(theTranslator->trWarning()+": ");
 					    outDoc->endBold();
@@ -1170,7 +1208,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inRemarkBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Remark);
 					    outDoc->startBold();
 					    scanString(theTranslator->trRemarks()+": ");
 					    outDoc->endBold();
@@ -1189,7 +1227,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inAttentionBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Attention);
 					    outDoc->startBold();
 					    scanString(theTranslator->trAttention()+": ");
 					    outDoc->endBold();
@@ -1208,7 +1246,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inNoteBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Note);
 					    outDoc->startBold();
 					    scanString(theTranslator->trNote()+": ");
 					    outDoc->endBold();
@@ -1227,7 +1265,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inPreBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Pre);
 					    outDoc->startBold();
 					    scanString(theTranslator->trPrecondition()+": ");
 					    outDoc->endBold();
@@ -1246,7 +1284,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inPostBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Post);
 					    outDoc->startBold();
 					    scanString(theTranslator->trPostcondition()+": ");
 					    outDoc->endBold();
@@ -1265,7 +1303,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inInvarBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Invar);
 					    outDoc->startBold();
 					    scanString(theTranslator->trInvariant()+": ");
 					    outDoc->endBold();
@@ -1284,7 +1322,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inVersionBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Version);
 					    outDoc->startBold();
 					    scanString(theTranslator->trVersion()+": ");
 					    outDoc->endBold();
@@ -1303,7 +1341,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inSinceBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Since);
 					    outDoc->startBold();
 					    scanString(theTranslator->trSince()+": ");
 					    outDoc->endBold();
@@ -1322,7 +1360,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inDateBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Date);
 					    outDoc->startBold();
 					    scanString(theTranslator->trDate()+": ");
 					    outDoc->endBold();
@@ -1345,7 +1383,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("D");
-					    outDoc->startDescList();
+					    outDoc->startDescList(BaseOutputDocInterface::Todo);
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"todo",item->listAnchor,theTranslator->trTodo()+": ");
 					    outDoc->endBold();
@@ -1367,7 +1405,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Test);
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"test",item->listAnchor,theTranslator->trTest()+": ");
 					    outDoc->endBold();
@@ -1389,7 +1427,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    endArgumentList();
 					    if (inBlock()) endBlock();
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Bug);
 					    outDoc->startBold();
 					    outDoc->writeObjectLink(0,"bug",item->listAnchor,theTranslator->trBug()+": ");
 					    outDoc->endBold();
@@ -1407,7 +1445,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inDeprecatedBlock=TRUE;
 					    currentListIndent.push("D");
-					    outDoc->startDescList();
+					    outDoc->startDescList(BaseOutputDocInterface::Deprecated);
 					    outDoc->startBold();
 					    scanString(theTranslator->trDeprecated()+": ");
 					    outDoc->endBold();
@@ -1428,7 +1466,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   				          endArgumentList();
 					  if (inBlock()) endBlock();
 					  currentListIndent.push("D");
-  					  outDoc->startDescList();
+  					  outDoc->startDescList(BaseOutputDocInterface::RCS);
 					  outDoc->startBold();
 					  scanString(tagName+": ");
 					  outDoc->endBold();
@@ -1445,7 +1483,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inAuthorBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Author);
 					    outDoc->startBold();
 					    bool singular = ((QString)yytext).find('s')==-1;
 					    scanString(theTranslator->trAuthor(TRUE,singular)+": ");
@@ -1465,7 +1503,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inReturnBlock=TRUE;
 					    currentListIndent.push("D");
-  					    outDoc->startDescList();
+  					    outDoc->startDescList(BaseOutputDocInterface::Return);
 					    outDoc->startBold();
 					    scanString(theTranslator->trReturns()+": ");
 					    outDoc->endBold();
@@ -1480,7 +1518,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    if (inBlock()) endBlock();
 					    inSeeBlock=TRUE;
 					    currentListIndent.push("D");
-					    outDoc->startDescList();
+					    outDoc->startDescList(BaseOutputDocInterface::See);
 					    outDoc->startBold();
 					    scanString(theTranslator->trSeeAlso()+": ");
 					    outDoc->endBold();
@@ -1832,6 +1870,30 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
+<DocScan>{CMD}"dotfile"{B}*		{
+  					  BEGIN(DocDotFile);
+  					}
+<DocDotFile>{FILE}			{
+  					  curDotFileName = stripQuotes(yytext);
+					  curDotFileCaption.resize(0);
+					  if (curDotFileName.isEmpty())
+					  {
+					    BEGIN(DocScan);
+					  }
+					  else
+					  {
+					    BEGIN(DocDotFileOpt);
+					  }
+  					}
+<DocDotFileOpt>\n			{
+  					  writeDotFile(curDotFileName,curDotFileCaption);
+					  BEGIN(DocScan);
+  					}
+<DocDotFileOpt>\"[^\n"]*\"		{
+					  curDotFileCaption = stripQuotes(yytext);
+  					  writeDotFile(curDotFileName,curDotFileCaption);
+					  BEGIN(DocScan);
+					}
 <DocScan>{CMD}"code"({BN}*"\n"|{B}*) 	{ 
 					  outDoc->startCodeFragment();
   					  codeBlock.resize(0);

@@ -41,6 +41,13 @@ class BaseOutputDocInterface
 {
   public:
     enum ParamListTypes { Param, RetVal, Exception };
+    enum SectionTypes { See, Return, Author, Version, 
+                        Since, Date, Bug, Note,
+                        Warning, Par, Deprecated, Pre, 
+                        Post, Invar, Remark, Attention, 
+                        Todo, Test, RCS, EnumValues, 
+                        Examples 
+                      };
 
     /*! Start of a bullet list: e.g. \c <ul> in html. writeListItem() is
      *  Used for the bullet items.
@@ -207,7 +214,7 @@ class BaseOutputDocInterface
     virtual void writeRing(char) = 0;
     virtual void writeSharpS() = 0;
     virtual void writeCCedil(char) = 0;
-    virtual void startDescList() = 0;
+    virtual void startDescList(SectionTypes t) = 0;
     virtual void endDescList() = 0;
     virtual void startParamList(ParamListTypes t) = 0;
     virtual void endParamList() = 0;
@@ -227,6 +234,8 @@ class BaseOutputDocInterface
     virtual void writeNonBreakableSpace(int) = 0;
     virtual void startImage(const char *,const char *,bool) = 0;
     virtual void endImage(bool) = 0;
+    virtual void startDotFile(const char *,bool) = 0;
+    virtual void endDotFile(bool) = 0;
     virtual void startDescTable() = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableTitle() = 0;

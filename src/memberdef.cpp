@@ -813,8 +813,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
   {
     linkifyText(TextGeneratorOLImpl(ol),cname,name(),bitfields.simplifyWhiteSpace());
   }
-  else if (!init.isEmpty() && initLines==0 && // one line initializer
-      ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
+  else if (hasOneLineInitializer()
+      //!init.isEmpty() && initLines==0 && // one line initializer
+      //((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
           ) // add initializer
   {
     if (!isDefine()) 
@@ -889,7 +890,8 @@ bool MemberDef::isDetailedSectionLinkable() const
            ) 
          ) ||
          // has a multi-line initialization block
-         (initLines>0 && initLines<maxInitLines) || 
+         //(initLines>0 && initLines<maxInitLines) || 
+         hasMultiLineInitializer() ||
          // has one or more documented arguments
          (argList!=0 && argList->hasDocumentation()); 
          
@@ -1081,8 +1083,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startMemberDocName();
       linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef);
       writeDefArgumentList(ol,cd,scopeName,this);
-      if (!init.isEmpty() && initLines==0 && // one line initializer
-             ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
+      if (hasOneLineInitializer()
+          //!init.isEmpty() && initLines==0 && // one line initializer
+          //   ((maxInitLines>0 && userInitLines==-1) || userInitLines>0) // enabled by default or explicitly
          ) // add initializer
       {
         if (!isDefine()) 
@@ -1160,9 +1163,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.popGeneratorState();
 
     /* write multi-line initializer (if any) */
-    if (initLines>0 && ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
-                        || initLines<userInitLines // explicitly enabled
-                       )
+    if (hasMultiLineInitializer()
+        //initLines>0 && ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
+        //                || initLines<userInitLines // explicitly enabled
+        //               )
        )
     {
       //printf("md=%s initLines=%d init=`%s'\n",name().data(),initLines,init.data());
@@ -1205,10 +1209,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (argList && argList->hasDocumentation())
     {
       //printf("***** argumentList is documented\n");
-      ol.startDescList();
-      ol.startBold();
+      ol.startParamList(BaseOutputDocInterface::Param);
       parseText(ol,theTranslator->trParameters()+": ");
-      ol.endBold();
       ol.endDescTitle();
       ol.writeDescItem();
       ol.startDescTable();
@@ -1244,7 +1246,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             if (first)
             {
               //ol.newParagraph();
-              ol.startDescList();
+              ol.startDescList(BaseOutputDocInterface::EnumValues);
               ol.startBold();
               parseText(ol,theTranslator->trEnumerationValues());
               ol.docify(":");
@@ -1441,7 +1443,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // write the list of examples that use this member
     if (hasExamples())
     {
-      ol.startDescList();
+      ol.startDescList(BaseOutputDocInterface::Examples);
       ol.startBold();
       parseText(ol,theTranslator->trExamples()+": ");
       //ol.writeBoldString("Examples: ");
@@ -1637,3 +1639,16 @@ MemberDef *MemberDef::createTemplateInstanceMember(
   return imd; 
 }
 
+bool MemberDef::hasOneLineInitializer() const
+{
+  return !init.isEmpty() && initLines==0 && // one line initializer
+         ((maxInitLines>0 && userInitLines==-1) || userInitLines>0); // enabled by default or explicitly
+}
+
+bool MemberDef::hasMultiLineInitializer() const
+{
+  return initLines>0 && 
+         ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
+          || initLines<userInitLines // explicitly enabled
+         );
+}

@@ -166,10 +166,10 @@ class RTFGenerator : public OutputGenerator
 
     void startMemberDescription();
     void endMemberDescription();
-    void startDescList();
+    void startDescList(SectionTypes);
     void endDescList();
-    void startParamList(ParamListTypes) { startDescList(); }
-    void endParamList() { endDescList(); }
+    void startParamList(ParamListTypes);
+    void endParamList();
     void endDescTitle();
     void writeDescItem();
     void startSection(const char *,const char *,bool);
@@ -194,6 +194,8 @@ class RTFGenerator : public OutputGenerator
     void writeNonBreakableSpace(int);
     void startImage(const char *,const char *,bool);
     void endImage(bool);
+    void startDotFile(const char *,bool);
+    void endDotFile(bool);
 	
     void startDescTable();
     void endDescTable();

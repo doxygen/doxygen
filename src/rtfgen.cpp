@@ -1926,7 +1926,7 @@ void RTFGenerator::endMemberDescription()
   t << "\\par}" << endl;
 }
 
-void RTFGenerator::startDescList()     
+void RTFGenerator::startDescList(SectionTypes)     
 { 
   DBG_RTF(t << "{\\comment (startDescList)}"    << endl)
   t << "{";
@@ -1941,6 +1941,24 @@ void RTFGenerator::endDescTitle()
   incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_DList_DepthStyle();
 }
+
+void RTFGenerator::startParamList(ParamListTypes)     
+{ 
+  DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
+  t << "{";
+  newParagraph();
+}
+
+void RTFGenerator::endParamList()       
+{
+  DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
+  newParagraph();
+  t << "}";
+  decrementIndentLevel();
+  m_omitParagraph = TRUE;
+  //t << Rtf_Style_Reset << styleStack.top() << endl;
+}
+
 
 void RTFGenerator::writeDescItem()
 {
@@ -2205,6 +2223,36 @@ void RTFGenerator::startImage(const char *name,const char *,bool)
 }
 
 void RTFGenerator::endImage(bool)
+{
+  // not yet implemented
+}
+
+void RTFGenerator::startDotFile(const char *name,bool)
+{
+  QCString baseName=name;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1); 
+  }
+  QCString outName = Config_getString("RTF_OUTPUT")+
+#ifdef _WIN32
+    "\\"
+#else
+    "/"
+#endif
+    +baseName;
+  writeDotGraphFromFile(name,outName,GIF);
+  newParagraph();
+  t << "{" << endl;
+  t << Rtf_Style_Reset << endl;
+  t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  t << outName;
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << "}" << endl;
+}
+
+void RTFGenerator::endDotFile(bool)
 {
   // not yet implemented
 }

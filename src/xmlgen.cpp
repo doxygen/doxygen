@@ -33,6 +33,35 @@
 #include <qfile.h>
 #include <qtextstream.h>
 
+static QCString sectionTypeToString(BaseOutputDocInterface::SectionTypes t)
+{
+  switch (t)
+  {
+    case BaseOutputDocInterface::See:         return "see";
+    case BaseOutputDocInterface::Return:      return "return";
+    case BaseOutputDocInterface::Author:      return "author";
+    case BaseOutputDocInterface::Version:     return "version";
+    case BaseOutputDocInterface::Since:       return "since";
+    case BaseOutputDocInterface::Date:        return "date";
+    case BaseOutputDocInterface::Bug:         return "bug";
+    case BaseOutputDocInterface::Note:        return "note";
+    case BaseOutputDocInterface::Warning:     return "warning";
+    case BaseOutputDocInterface::Par:         return "par";
+    case BaseOutputDocInterface::Deprecated:  return "deprecated";
+    case BaseOutputDocInterface::Pre:         return "pre";
+    case BaseOutputDocInterface::Post:        return "post";
+    case BaseOutputDocInterface::Invar:       return "invariant";
+    case BaseOutputDocInterface::Remark:      return "remark";
+    case BaseOutputDocInterface::Attention:   return "attention";
+    case BaseOutputDocInterface::Todo:        return "todo";
+    case BaseOutputDocInterface::Test:        return "test";
+    case BaseOutputDocInterface::RCS:         return "rcs";
+    case BaseOutputDocInterface::EnumValues:  return "enumvalues";
+    case BaseOutputDocInterface::Examples:    return "examples";
+  }
+  return "illegal";
+}
+
 static inline void writeXMLString(QTextStream &t,const char *s)
 {
   t << convertToXML(s);
@@ -320,9 +349,10 @@ class XMLGenerator : public OutputDocInterface
       m_t << "</term></varlistentry><listitem>"; 
       startNestedPar();
     }
-    void startDescList()       
+    void startDescList(SectionTypes st)       
     { 
-      m_t << "<simplesect><title>"; 
+      m_t << "<simplesect kind=\"" << sectionTypeToString(st);
+      m_t << "\"><title>"; 
     }
     void endDescList()         
     { 
@@ -350,6 +380,7 @@ class XMLGenerator : public OutputDocInterface
     { 
       m_t << "</title>"; 
       if (!m_inParamList) startNestedPar();
+      printf("endDescTitle %d\n",m_inParamList);
     }
     void writeDescItem()       { }
     void startDescTable()      { }
@@ -559,6 +590,15 @@ class XMLGenerator : public OutputDocInterface
     {
       m_t << "</image>";
     }
+    void startDotFile(const char *name,bool caption) 
+    {
+      m_t << "<dotfile name=\"" << name << "\" " 
+          << "caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
+    }
+    void endDotFile(bool) 
+    {
+      m_t << "</dotfile>";
+    }
     void startTextLink(const char *name,const char *anchor) 
     {
       m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
@@ -636,6 +676,7 @@ class XMLGenerator : public OutputDocInterface
       m_b.open( IO_WriteOnly );
       m_t.setDevice(&m_b);
       m_t.setEncoding(QTextStream::Latin1);
+      m_inParamList = FALSE;
     }
     /*! copy constructor */
     XMLGenerator(const XMLGenerator *xg)
@@ -908,7 +949,8 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
   // detailed documentation
   // detailed member documentation
   
-  if (cd->name().find('@')!=-1) return; // skip anonymous compounds
+  if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
+  if (cd->templateMaster()!=0) return; // skip generated template instances.
   t << "  <compounddef id=\"" 
     << cd->getOutputFileBase() << "\" kind=\"" 
     << cd->compoundTypeString() << "\">" << endl;

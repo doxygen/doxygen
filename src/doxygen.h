@@ -68,6 +68,7 @@ class Doxygen
     static FileNameDict *exampleNameDict;
     static FileNameDict *inputNameDict;
     static FileNameDict *imageNameDict;
+    static FileNameDict *dotFileNameDict;
     static QStrList tagfileList;
     static MemberNameList memberNameList;
     static MemberNameList functionNameList;
@@ -79,7 +80,6 @@ class Doxygen
     static QTextStream tagFile;
     static SectionDict sectionDict;
     static FileNameList inputNameList;
-    //static TypedefDict typedefDict;
     static StringDict namespaceAliasDict;
     static GroupList groupList;
     static GroupDict groupDict;
