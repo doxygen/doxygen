@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
@@ -2284,7 +2284,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    QCString tempName;
 					    static QRegExp re("operator[^a-z_A-Z0-9]");
 					    if (tempArg==-1) tempName=current->name; else tempName=current->name.left(tempArg);
-					    if ((current->type.isEmpty() && tempName.find(re)==-1) || 
+					    if (/*(current->type.isEmpty() && tempName.find(re)==-1) || */
 						 current->type.left(8)=="typedef "
 					       )
 					    {
