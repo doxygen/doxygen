@@ -5,6 +5,7 @@
 #include "outputlist.h"
 #include "language.h"
 #include "message.h"
+#include "dot.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -27,7 +28,6 @@ DirDef::DirDef(const char *path) : Definition(path,1,path)
     m_shortName = m_shortName.mid(pi+1);
   }
   
-  m_subdirs.setAutoDelete(TRUE);
   m_fileList   = new FileList;
   m_classSDict = new ClassSDict(17);
   m_usedDirs   = new QDict<UsedDir>(257);
@@ -141,6 +141,21 @@ void DirDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
   
+  // write graph dependency graph
+  if (Config_getBool("DIRECTORY_GRAPH") && Config_getBool("HAVE_DOT"))
+  {
+    DotDirDeps dirDep(this);
+    if (!dirDep.isTrivial())
+    {
+      msg("Generating dependency graph for directory %s\n",displayName().data());
+      ol.disable(OutputGenerator::Man);
+      ol.newParagraph();
+      ol.startDirDepGraph();
+      //TODO: ol.parseText(theTranslator->trDirDepGraph());
+      ol.endDirDepGraph(dirDep);
+      ol.enableAll();
+    }
+  }
 
   ol.startMemberSections();
   // write subdir list
@@ -154,7 +169,7 @@ void DirDef::writeDocumentation(OutputList &ol)
     while (dd)
     {
       ol.startMemberItem(0);
-      ol.parseText(theTranslator->trDir(FALSE,TRUE));
+      ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),0,dd->shortName());
       ol.endMemberItem();
@@ -232,13 +247,11 @@ void DirDef::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void DirDef::writePathFragment(OutputList &ol)
+void DirDef::writePathFragment(OutputList &ol) const
 {
-  if (getOuterScope()!=Doxygen::globalScope && 
-      getOuterScope()->definitionType()==Definition::TypeDir)
+  if (m_parent)
   {
-    //printf("getOuterScope %s\n",getOuterScope()->name().data());
-    ((DirDef*)getOuterScope())->writePathFragment(ol);
+    m_parent->writePathFragment(ol);
     ol.writeString("&nbsp;/&nbsp;");
   }
   ol.writeObjectLink(getReference(),getOutputFileBase(),0,shortName());
@@ -276,7 +289,8 @@ void DirDef::setLevel()
 /** Add as "uses" dependency between \a this dir and \a dir,
  *  that was caused by a dependency on file \a fd.
  */ 
-void DirDef::addUsesDependency(DirDef *dir,FileDef *fd,bool inherited)
+void DirDef::addUsesDependency(DirDef *dir,FileDef *srcFd,
+                               FileDef *dstFd,bool inherited)
 {
   if (this==dir) return; // do not add self-dependencies
   //printf("  > add dependency %s->%s due to %s\n",shortName().data(),
@@ -287,11 +301,12 @@ void DirDef::addUsesDependency(DirDef *dir,FileDef *fd,bool inherited)
   UsedDir *usedDir = m_usedDirs->find(dir->getOutputFileBase());
   if (usedDir) // dir dependency already present
   {
-     FileDef *usedFd = usedDir->findFile(fd->getOutputFileBase());
-     if (usedFd==0) // new file dependency
+     FilePair *usedPair = usedDir->findFilePair(
+         srcFd->getOutputFileBase()+dstFd->getOutputFileBase());
+     if (usedPair==0) // new file dependency
      {
        //printf("  => new file\n");
-       usedDir->addFile(fd); 
+       usedDir->addFileDep(srcFd,dstFd); 
        added=TRUE;
      }
      else
@@ -303,19 +318,19 @@ void DirDef::addUsesDependency(DirDef *dir,FileDef *fd,bool inherited)
   {
     //printf("  => new file\n");
     usedDir = new UsedDir(dir,inherited);
-    usedDir->addFile(fd); 
+    usedDir->addFileDep(srcFd,dstFd); 
     m_usedDirs->insert(dir->getOutputFileBase(),usedDir);
     added=TRUE;
   }
   if (added && dir->parent())
   {
     // add relation to parent of used dir
-    addUsesDependency(dir->parent(),fd,inherited);
+    addUsesDependency(dir->parent(),srcFd,dstFd,inherited);
   }
   if (parent())
   {
     // add relation for the parent of this dir as well
-    parent()->addUsesDependency(dir,fd,TRUE);
+    parent()->addUsesDependency(dir,srcFd,dstFd,TRUE);
   }
 }
 
@@ -345,7 +360,7 @@ void DirDef::computeDependencies()
             if (usedDir)
             {
               // add dependency: thisDir->usedDir
-              addUsesDependency(usedDir,ii->fileDef,FALSE);
+              addUsesDependency(usedDir,fd,ii->fileDef,FALSE);
             }
           } 
         }
@@ -364,30 +379,45 @@ bool DirDef::isParentOf(DirDef *dir) const
     return FALSE;
 }
 
+bool DirDef::depGraphIsTrivial() const
+{
+  return FALSE;
+}
+
+//----------------------------------------------------------------------
+
+int FilePairDict::compareItems(GCI item1,GCI item2)
+{
+  FilePair *left  = (FilePair*)item1;
+  FilePair *right = (FilePair*)item2;
+  int orderHi = stricmp(left->source()->name(),right->source()->name());
+  int orderLo = stricmp(left->destination()->name(),right->destination()->name());
+  return orderHi==0 ? orderLo : orderHi;
+}
+
 //----------------------------------------------------------------------
 
 UsedDir::UsedDir(DirDef *dir,bool inherited) :
-   m_dir(dir), m_inherited(inherited)
+   m_dir(dir), m_filePairs(7), m_inherited(inherited)
 {
+  m_filePairs.setAutoDelete(TRUE);
 }
 
 UsedDir::~UsedDir()
 {
 }
 
-void UsedDir::addFile(FileDef *fd)
+void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
 {
-  m_files.insert(fd->getOutputFileBase(),fd);
+  m_filePairs.inSort(srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
+                     new FilePair(srcFd,dstFd));
 }
 
-FileDef *UsedDir::findFile(const char *name)
+FilePair *UsedDir::findFilePair(const char *name)
 {
   QCString n=name;
-  return n.isEmpty() ? 0 : m_files.find(n);
+  return n.isEmpty() ? 0 : m_filePairs.find(n);
 }
-
-//----------------------------------------------------------------------
-// helper functions
 
 DirDef *DirDef::createNewDir(const char *path)
 {
@@ -442,13 +472,27 @@ void DirDef::writeDepGraph(QTextStream &t)
 {
     t << "digraph G {\n";
     t << "  compound=true\n";
+    t << "  node [ fontsize=10, fontname=\"Helvetica\"];\n";
+    t << "  edge [ labelfontsize=9, labelfontname=\"Helvetica\"];\n";
 
     QDict<DirDef> dirsInGraph(257);
     
     dirsInGraph.insert(getOutputFileBase(),this);
+    if (parent())
+    {
+      t << "  subgraph cluster" << parent()->getOutputFileBase() << " {\n";
+      t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
+        << parent()->shortName() 
+        << "\" fontname=\"Helvetica\", fontsize=10, URL=\"";
+      t << parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
+      t << "\"]\n";
+    }
     if (isCluster())
     {
       t << "  subgraph cluster" << getOutputFileBase() << " {\n";
+      t << "    graph [ bgcolor=\"#eeeeff\", pencolor=\"black\", label=\"\""
+        << " URL=\"" << getOutputFileBase() << Doxygen::htmlFileExtension 
+        << "\"];\n";
       t << "    " << getOutputFileBase() << " [shape=plaintext label=\"" 
         << shortName() << "\"];\n";
 
@@ -461,8 +505,15 @@ void DirDef::writeDepGraph(QTextStream &t)
           << sdir->shortName() << "\"";
         if (sdir->isCluster())
         {
-          t << " color=\"red\" fillcolor=\"white\" style=\"filled\"";
+          t << " color=\"red\"";
         }
+        else
+        {
+          t << " color=\"black\"";
+        }
+        t << " fillcolor=\"white\" style=\"filled\"";
+        t << " URL=\"" << sdir->getOutputFileBase() 
+          << Doxygen::htmlFileExtension << "\"";
         t << "];\n";
         dirsInGraph.insert(sdir->getOutputFileBase(),sdir);
       }
@@ -470,7 +521,14 @@ void DirDef::writeDepGraph(QTextStream &t)
     }
     else
     {
-      t << getOutputFileBase() << " [shape=box label=\"" << shortName() << "\"];\n";
+      t << "  " << getOutputFileBase() << " [shape=box, label=\"" 
+        << shortName() << "\", style=\"filled\", fillcolor=\"#eeeeff\","
+        << " pencolor=\"black\", URL=\"" << getOutputFileBase() 
+        << Doxygen::htmlFileExtension << "\"];\n";
+    }
+    if (parent())
+    {
+      t << "  }\n";
     }
 
     // add nodes for other used directories
@@ -500,7 +558,8 @@ void DirDef::writeDepGraph(QTextStream &t)
           {
             t << " color=\"red\" fillcolor=\"white\" style=\"filled\"";
           }
-          t << "];\n";
+          t << " URL=\"" << usedDir->getOutputFileBase() 
+            << Doxygen::htmlFileExtension << "\"];\n";
           dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
           break;
         }
@@ -523,16 +582,104 @@ void DirDef::writeDepGraph(QTextStream &t)
             !usedDir->isParentOf(dir) &&             // don't point to own parent
             dirsInGraph.find(usedDir->getOutputFileBase())) // only point to nodes that are in the graph
         {
-          int nrefs = udir->files().count();
+          QCString relationName;
+          relationName.sprintf("dir_%06d_%06d",dir->m_dirCount,usedDir->m_dirCount);
+          if (Doxygen::dirRelations.find(relationName)==0)
+          {
+            // new relation
+            Doxygen::dirRelations.append(relationName,
+                new DirRelation(relationName,dir,udir));
+          }
+          int nrefs = udir->filePairs().count();
           t << "  " << dir->getOutputFileBase() << "->" 
-            << usedDir->getOutputFileBase();
-          t << " [headlabel=\"" << nrefs << "\" headhref=\"http://www.doxygen.org\"]";
-          t << ";\n";
+                    << usedDir->getOutputFileBase();
+          t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
+          t << " headhref=\"" << relationName << Doxygen::htmlFileExtension 
+            << "\"];\n";
         }
       }
     }
 
     t << "}\n";
+}
+
+//----------------------------------------------------------------------
+
+static void writePartialDirPath(OutputList &ol,const DirDef *root,const DirDef *target)
+{
+  if (target->parent()!=root) 
+  {
+    writePartialDirPath(ol,root,target->parent());
+    ol.writeString("&nbsp;/&nbsp;");
+  }
+  ol.writeObjectLink(target->getReference(),target->getOutputFileBase(),0,target->shortName());
+}
+
+static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef *fd)
+{
+  if (fd->getDirDef() && fd->getDirDef()!=root)
+  {
+    writePartialDirPath(ol,root,fd->getDirDef());
+    ol.writeString("&nbsp;/&nbsp;");
+  }
+  if (fd->isLinkable())
+  {
+    ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
+  }
+  else
+  {
+    ol.startBold();
+    ol.docify(fd->name());
+    ol.endBold();
+  }
+}
+
+void DirRelation::writeDocumentation(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+
+  QCString shortTitle=m_src->shortName()+" &rarr; "+
+                      m_dst->dir()->shortName()+" Relation";//theTranslator->trDirRelation(m_shortName);
+  QCString title=m_src->displayName()+" -> "+
+                 m_dst->dir()->shortName()+" Relation";//theTranslator->trDirRelation(m_dispName);
+  startFile(ol,getOutputFileBase(),getOutputFileBase(),title);
+
+  // write navigation path
+  m_src->writeNavigationPath(ol);
+
+  //startTitle(ol,getOutputFileBase());
+  //  ol.parseText(shortTitle);
+  //endTitle(ol,getOutputFileBase(),title);
+  ol.writeString("<h3>"+shortTitle+"</h3>");
+  
+  ol.writeString("<table class=\"dirtab\">");
+  ol.writeString("<tr class=\"dirtab\">");
+  ol.writeString("<th class=\"dirtab\">File in ");
+  m_src->writePathFragment(ol);
+  ol.writeString("</th>");
+  ol.writeString("<th class=\"dirtab\">Includes file in ");
+  m_dst->dir()->writePathFragment(ol);
+  ol.writeString("</th>");
+  ol.writeString("</tr>");
+
+  SDict<FilePair>::Iterator fpi(m_dst->filePairs());
+  FilePair *fp;
+  for (fpi.toFirst();(fp=fpi.current());++fpi)
+  {
+    ol.writeString("<tr class=\"dirtab\">");
+    ol.writeString("<td class=\"dirtab\">");
+    writePartialFilePath(ol,m_src,fp->source());
+    ol.writeString("</td>");
+    ol.writeString("<td class=\"dirtab\">");
+    writePartialFilePath(ol,m_dst->dir(),fp->destination());
+    ol.writeString("</td>");
+    ol.writeString("</tr>");
+  }
+  ol.writeString("</table>");
+  
+  endFile(ol); 
+  ol.popGeneratorState();
 }
 
 //----------------------------------------------------------------------
@@ -677,6 +824,15 @@ void generateDirDocs(OutputList &ol)
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
     dir->writeDocumentation(ol);
+  }
+  if (Config_getBool("DIRECTORY_GRAPH"))
+  {
+    SDict<DirRelation>::Iterator rdi(Doxygen::dirRelations);
+    DirRelation *dr;
+    for (rdi.toFirst();(dr=rdi.current());++rdi)
+    {
+      dr->writeDocumentation(ol);
+    }
   }
 }
 

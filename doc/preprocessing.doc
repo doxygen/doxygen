@@ -74,8 +74,30 @@ and specify the macro definitions after
 the \ref cfg_predefined "PREDEFINED" or 
 \ref cfg_expand_as_defined "EXPAND_AS_DEFINED" tag.  
 
-As an example, suppose you have the following obfuscated code fragment
-of an abstract base class called \c IUnknown:
+A typically example where some help from the preprocessor is needed is
+when dealing with Microsoft's __declspec language extension. Here is an
+example function.
+
+\verbatim
+extern "C" void __declspec(dllexport) ErrorMsg( String aMessage,...);
+\endverbatim
+
+When nothing is done, doxygen will be confused and see __declspec as
+some sort of function. To help doxygen one typically uses the following
+preprocessor settings:
+
+\verbatim  
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __declspec(x)=
+\endverbatim
+
+This will make sure the __declspec(dllexport) is removed before doxygen
+parses the source code.
+
+For a more complex example, suppose you have the following obfuscated 
+code fragment of an abstract base class called \c IUnknown:
 
 \verbatim
 /*! A reference to an IID */

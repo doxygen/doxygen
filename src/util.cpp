@@ -45,6 +45,7 @@
 #include "groupdef.h"
 #include "reflist.h"
 #include "pagedef.h"
+#include "debug.h"
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
@@ -140,7 +141,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   }
   fullCmd += " ";
   fullCmd += args;
-  //printf("iSystem: Executing %s\n",fullCmd.data());
+  Debug::print(Debug::ExtCmd,0,"Executing external command \"%s\"\n",fullCmd.data());
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
   isBatchFile=isBatchFile;
@@ -2597,6 +2598,172 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   return TRUE; // all arguments match 
 }
 
+static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *arg)
+{
+  QCString type = arg->type;
+  QCString name = arg->name;
+  if ((type=="const" || type=="volatile") && !name.isEmpty()) 
+  { // name is part of type => correct
+    type+=" ";
+    type+=name;
+  } 
+  if (name=="const" || name=="volatile")
+  { // name is part of type => correct
+    if (!type.isEmpty()) type+=" ";
+    type+=name;
+  }
+
+  // strip const and volatile keywords that are not relatevant for the type
+  stripIrrelevantConstVolatile(type);
+  
+  // strip leading keywords
+  if (type.left(6)=="class ")         type=type.right(type.length()-6);
+  else if (type.left(7)=="struct ")   type=type.right(type.length()-7);
+  else if (type.left(6)=="union ")    type=type.right(type.length()-6);
+  else if (type.left(5)=="enum ")     type=type.right(type.length()-5);
+  else if (type.left(9)=="typename ") type=type.right(type.length()-9);
+
+  static QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
+
+  
+  QCString canType;
+  int i,p=0,l;
+  while ((i=id.match(type,p,&l))) // foreach identifier in the type
+  {
+    canType += type.mid(p,i-p);
+    QCString word = type.mid(i,l);
+    ClassDef *cd = getResolvedClass(d,fs,word);
+    if (cd)
+    {
+      canType+=cd->qualifiedName();
+    }
+    else
+    {
+      canType+=word;
+    }
+    p=i+l;
+  }
+  canType += type.right(type.length()-p);
+ 
+  return removeRedundantWhiteSpace(canType);
+}
+
+static bool matchArgument2(
+                   Definition *srcScope,FileDef *srcFileScope,const Argument *srcA,
+                   Definition *dstScope,FileDef *dstFileScope,const Argument *dstA
+                  )
+{
+  //printf("match argument start `%s|%s' <-> `%s|%s' using nsp=%p class=%p\n",
+  //    srcA->type.data(),srcA->name.data(),
+  //    dstA->type.data(),dstA->name.data(),
+  //    usingNamespaces,
+  //    usingClasses);
+
+  if (srcA->array!=dstA->array) // nomatch for char[] against char
+  {
+    NOMATCH
+    return FALSE;
+  }
+
+  QCString canonicalSrcType = extractCanonicalType(srcScope,srcFileScope,srcA);
+  QCString canonicalDstType = extractCanonicalType(dstScope,dstFileScope,dstA);
+  
+  if (canonicalSrcType==canonicalDstType)
+  {
+    MATCH
+    return TRUE;
+  }
+  else
+  {
+    NOMATCH
+    return FALSE;
+  }
+}
+
+
+// new algorithm for argument matching
+bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *srcAl,
+                     Definition *dstScope,FileDef *dstFileScope,ArgumentList *dstAl,
+                     bool checkCV
+                    )
+{
+  ASSERT(srcScope!=0 && dstScope!=0);
+
+  if (srcAl==0 || dstAl==0)
+  {
+    bool match = srcAl==dstAl; // at least one of the members is not a function
+    if (match)
+    {
+      MATCH
+      return TRUE;
+    }
+    else
+    {
+      NOMATCH
+      return FALSE;
+    }
+  }
+  
+  // handle special case with void argument
+  if ( srcAl->count()==0 && dstAl->count()==1 && 
+       dstAl->getFirst()->type=="void" )
+  { // special case for finding match between func() and func(void)
+    Argument *a=new Argument;
+    a->type = "void";
+    srcAl->append(a);
+    MATCH
+    return TRUE;
+  }
+  if ( dstAl->count()==0 && srcAl->count()==1 &&
+       srcAl->getFirst()->type=="void" )
+  { // special case for finding match between func(void) and func()
+    Argument *a=new Argument;
+    a->type = "void";
+    dstAl->append(a);
+    MATCH
+    return TRUE;
+  }
+  
+  if (srcAl->count() != dstAl->count())
+  {
+    NOMATCH
+    return FALSE; // different number of arguments -> no match
+  }
+
+  if (checkCV)
+  {
+    if (srcAl->constSpecifier != dstAl->constSpecifier) 
+    {
+      NOMATCH
+      return FALSE; // one member is const, the other not -> no match
+    }
+    if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
+    {
+      NOMATCH
+      return FALSE; // one member is volatile, the other not -> no match
+    }
+  }
+
+  // so far the argument list could match, so we need to compare the types of
+  // all arguments.
+  ArgumentListIterator srcAli(*srcAl),dstAli(*dstAl);
+  Argument *srcA,*dstA;
+  for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
+  { 
+    if (!matchArgument2(srcScope,srcFileScope,srcA,
+                        dstScope,dstFileScope,dstA)
+       )
+    {
+      NOMATCH
+      return FALSE;
+    }
+  }
+  MATCH
+  return TRUE; // all arguments match 
+}
+
+
+
 // merges the initializer of two argument lists
 // pre:  the types of the arguments in the list should match.
 void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwrite)
@@ -2934,7 +3101,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           { // namespace is found
             bool match=TRUE;
             ArgumentList *argList=0;
-            if (args)
+            if (args && strcmp(args,"()")!=0)
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
@@ -3001,10 +3168,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
                )
             {
-              //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
+              //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
               bool match=TRUE;
               ArgumentList *argList=0;
-              if (args && !md->isDefine())
+              if (args && !md->isDefine() && strcmp(args,"()")!=0)
               {
                 argList=new ArgumentList;
                 stringToArgumentList(args,argList);

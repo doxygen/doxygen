@@ -22,19 +22,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <qstack.h>
+#include <qregexp.h>
+
 #include "bufstr.h"
 #include "debug.h"
 #include "message.h"
 #include "config.h"
 #include "doxygen.h"
 
-static BufStr *g_inBuf;
-static BufStr *g_outBuf;
-static int     g_inBufPos;
-static int     g_col;
-static int     g_blockHeadCol;
-static bool    g_mlBrief;
-static int     g_readLineCtx;
+struct CondCtx
+{
+  CondCtx(int line,QCString id,bool b) 
+    : lineNr(line),sectionId(id), skip(b) {}
+  int lineNr;
+  QCString sectionId;
+  bool skip;
+};
+  
+static BufStr * g_inBuf;
+static BufStr * g_outBuf;
+static int      g_inBufPos;
+static int      g_col;
+static int      g_blockHeadCol;
+static bool     g_mlBrief;
+static int      g_readLineCtx;
+static bool     g_skip;
+static QCString g_fileName;
+static int      g_lineNr;
+static int      g_condCtx;
+static QStack<CondCtx> g_condStack;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -44,6 +61,7 @@ static void replaceCommentMarker(const char *s,int len)
   while ((c=*p) && (c==' ' || c=='\t' || c=='\n')) 
   {
     g_outBuf->addChar(c);
+    g_lineNr += c=='\n';
     p++;
   }
   // replace start of comment marker by spaces
@@ -82,19 +100,114 @@ static inline int computeIndent(const char *s)
 
 static inline void copyToOutput(const char *s,int len)
 {
-  g_outBuf->addArray(s,len);
   int i;
-  static int tabSize=Config_getInt("TAB_SIZE");
-  for (i=0;i<len;i++) 
+  if (g_skip) // only add newlines.
   {
-    switch (s[i])
+    for (i=0;i<len;i++) 
     {
-      case '\n': g_col=0; break;
-      case '\t': g_col+=tabSize-(g_col%tabSize); break;
-      default:   g_col++; break;
+      if (s[i]=='\n') 
+      {
+	g_outBuf->addChar('\n');
+	g_lineNr++;
+      }
+    }
+  }
+  else
+  {
+    g_outBuf->addArray(s,len);
+    static int tabSize=Config_getInt("TAB_SIZE");
+    for (i=0;i<len;i++) 
+    {
+      switch (s[i])
+      {
+	case '\n': g_col=0; g_lineNr++; break;
+	case '\t': g_col+=tabSize-(g_col%tabSize); break;
+	default:   g_col++; break;
+      }
     }
   }
 }
+
+static void startCondSection(const char *sectId)
+{
+  g_condStack.push(new CondCtx(g_lineNr,sectId,g_skip));
+  if (Config_getList("ENABLED_SECTIONS").find(sectId)!=-1)
+  {
+    //printf("*** Section is enabled!\n");
+  }
+  else
+  {
+    //printf("*** Section is disabled!\n");
+    g_skip=TRUE;
+  }
+}
+
+static void endCondSection()
+{
+  if (g_condStack.isEmpty())
+  {
+    warn(g_fileName,g_lineNr,"Found \\endcond command without matching \\cond");
+    g_skip=FALSE;
+  }
+  else
+  {
+    CondCtx *ctx = g_condStack.pop();
+    g_skip=ctx->skip;
+  }
+}
+
+/** remove and executes \\cond and \\endcond commands in \a s */
+static QCString handleCondCmdInAliases(const QCString &s)
+{
+  QCString result;
+  //printf("handleCondCmdInAliases(%s)\n",s.data());
+  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
+  int p=0,i,l;
+  while ((i=cmdPat.match(s,p,&l))!=-1)
+  {
+    result+=s.mid(p,i-p);
+    QCString cmd = s.mid(i+1,l-1);
+    //printf("Found command %s\n",cmd.data());
+    if (cmd=="cond")
+    {
+      int sp=i+l,ep;
+      const char *arg=s.data()+sp;
+      char c;
+      // skip spaces
+      while ((c=*arg) && (c==' ' || c=='\t')) arg++,sp++;
+      // read argument
+      if (*arg=='\n') // no arg
+      {
+	startCondSection(" ");
+	ep=sp;
+      }
+      else // get argument
+      {
+	while ((c=*arg) && isId(c)) arg++,ep++;
+	if (ep>sp)
+	{
+	  QCString id = s.mid(sp,ep-sp);
+	  //printf("Found conditional section id %s\n",id.data());
+	  startCondSection(id);
+	}
+      }
+      p=ep;
+    }
+    else if (cmd=="endcond")
+    {
+      endCondSection();
+      p=i+l;
+    }
+    else
+    {
+      result+=s.mid(i,l);
+      p=i+l;
+    }
+  }
+  result+=s.right(s.length()-p);
+  return result;
+}
+
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -122,6 +235,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 %x CComment
 %x Verbatim
 %x ReadLine
+%x CondLine
 
 %%
 
@@ -213,17 +327,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
-<CComment>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
-  				      QCString *pValue=Doxygen::aliasDict[yytext+1];
-				      if (pValue)
-				      {    
-					copyToOutput(pValue->data(),pValue->length());
-				      }
-				      else
-				      {
-					copyToOutput(yytext,yyleng);
-				      }
-  				   }
 <CComment>.			   {
                                      copyToOutput(yytext,yyleng); 
   				   }
@@ -276,11 +379,47 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   				     copyToOutput(yytext,yyleng);
                                      BEGIN(g_readLineCtx);
   				   }
-<ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
+<CComment,ReadLine>("\\\\"|"@@")[a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
+				     copyToOutput(yytext,yyleng);
+  				   }
+<CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
+  				     g_condCtx = YY_START; 
+  				     BEGIN(CondLine);
+  				   }
+<CComment,ReadLine>[\\@]"endcond"/[^a-z_A-Z0-9] { // end of conditional section
+  				     bool oldSkip=g_skip;
+  				     endCondSection();
+				     if (YY_START==CComment && oldSkip && !g_skip) 
+    			             {
+				       //printf("** Adding start of comment!\n");
+ 				       g_outBuf->addChar('/');
+     				       g_outBuf->addChar('*');
+    				     }
+				    }
+<CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]* {
+  				     bool oldSkip=g_skip;
+                                     startCondSection(yytext);
+				     if (g_condCtx==CComment && !oldSkip && g_skip) 
+    			             {
+				       //printf("** Adding terminator for comment!\n");
+ 				       g_outBuf->addChar('*');
+     				       g_outBuf->addChar('/');
+    				     }
+  				     BEGIN(g_condCtx);
+  				   }
+<CondLine>[ \t]*
+<CComment,ReadLine>[\\@]"cond"[ \t]*\n |
+<CondLine>.			   { // forgot section id?
+  				     startCondSection(" "); // fake section id causing the section to be hidden unconditionally
+				     if (*yytext=='\n') g_lineNr++;
+				     if (YY_START==CondLine) BEGIN(g_condCtx);
+  				   }
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
   				      QCString *pValue=Doxygen::aliasDict[yytext+1];
 				      if (pValue)
 				      {    
-					copyToOutput(pValue->data(),pValue->length());
+					QCString val = handleCondCmdInAliases(*pValue);
+					copyToOutput(val.data(),val.length());
 				      }
 				      else
 				      {
@@ -320,16 +459,28 @@ void replaceComment(int offset)
  *  -# It converts multi-line C++ style comment blocks (that are aligned)
  *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
  *  -# It replaces aliases with their definition (see ALIASES)
+ *  -# It handles conditional sections (\cond...\endcond blocks)
  */
-void convertCppComments(BufStr *inBuf,BufStr *outBuf)
+void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 {
   g_inBuf    = inBuf;
   g_outBuf   = outBuf;
   g_inBufPos = 0;
   g_col      = 0;
   g_mlBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
+  g_skip     = FALSE;
+  g_fileName = fileName;
+  g_lineNr   = 0;
+  g_condStack.clear();
+  g_condStack.setAutoDelete(TRUE);
   BEGIN(Scan);
   yylex();
+  while (!g_condStack.isEmpty())
+  {
+    CondCtx *ctx = g_condStack.pop();
+    warn(g_fileName,ctx->lineNr,"Conditional section with %s does not have "
+	"a corresponding \\endcond command within this file.",ctx->sectionId.data());
+  }
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     msg("-------------\n%s\n-------------\n",g_outBuf->data());

@@ -5612,18 +5612,22 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  unput('/');unput('*');
 					  BEGIN( tmpDocType );
 					}
+<Doc,JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine,ClassDoc,PageDoc,AfterDoc,CopyArgComment>"\\_linebr " { 
+                                          // used to compensate for misalignments due to \n's inside ALIASES
+  					  current->doc += '\n';
+  					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
-  				         current->doc += yytext; 
+  				          current->doc += yytext; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
-  				         current->doc += yytext; 
-					 yyLineNr++;
+  				          current->doc += yytext; 
+					  yyLineNr++;
 					}
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
-  				         current->brief += "-"; 
+  				          current->brief += "-"; 
 					}
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
-  				         current->brief += "."; yyLineNr++; 
+  				          current->brief += "."; yyLineNr++; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
 <Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 

@@ -34,12 +34,14 @@ class QTextStream;
 
 class DirDef;
 
+/** A list of directories */
 class DirList : public QList<DirDef>
 {
   public:
    int compareItems(GCI item1,GCI item2);
 };
 
+/** A directory */
 class DirDef : public Definition
 {
   public:
@@ -63,23 +65,25 @@ class DirDef : public Definition
     DirDef *parent() const { return m_parent; }
     const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
     bool isParentOf(DirDef *dir) const;
+    bool depGraphIsTrivial() const;
 
     // generate output
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeNavigationPath(OutputList &ol);
     void writeDepGraph(QTextStream &t);
+    void writePathFragment(OutputList &ol) const;
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;
 
   private:
     friend void computeDirDependencies();
-    void writePathFragment(OutputList &ol);
     void setLevel();
     static DirDef *createNewDir(const char *path);
     static bool matchPath(const QCString &path,QStrList &l);
-    void addUsesDependency(DirDef *usedDir,FileDef *fd,bool inherited);
+    void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
+                           FileDef *dstFd,bool inherited);
     void computeDependencies();
 
     DirList m_subdirs;
@@ -93,21 +97,57 @@ class DirDef : public Definition
     QDict<UsedDir> *m_usedDirs;
 };
 
+class FilePair 
+{
+  public:
+    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
+    const FileDef *source() const { return m_src; }
+    const FileDef *destination() const { return m_dst; }
+  private:
+    FileDef *m_src;
+    FileDef *m_dst;
+};
+
+class FilePairDict : public SDict<FilePair>
+{
+  public:
+    FilePairDict(int size) : SDict<FilePair>(size) {}
+    int compareItems(GCI item1,GCI item2);
+};
+
+/** Usage information of a directory . */
 class UsedDir
 {
   public:
     UsedDir(DirDef *dir,bool inherited);
     virtual ~UsedDir();
-    void addFile(FileDef *fd);
-    FileDef *findFile(const char *name);
-    const QDict<FileDef> &files() const { return m_files; }
+    void addFileDep(FileDef *srcFd,FileDef *dstFd);
+    FilePair *findFilePair(const char *name);
+    const FilePairDict &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
 
   private:
     DirDef *m_dir;
-    QDict<FileDef> m_files;
+    FilePairDict m_filePairs;
     bool m_inherited;
+};
+
+/** A usage relation between two direction. */
+class DirRelation
+{
+  public:
+    DirRelation(const QCString &name,DirDef *src,UsedDir *dst) 
+      : m_name(name), m_src(src), m_dst(dst) {}
+    DirDef  *source() const      { return m_src; }
+    UsedDir *destination() const { return m_dst; }
+    void writeDocumentation(OutputList &ol);
+    QCString getOutputFileBase() const { return m_name; }
+
+  private:
+    QCString m_name;
+    DirDef  *m_src;
+    UsedDir *m_dst;
 };
 
 inline int DirList::compareItems(GCI item1,GCI item2)

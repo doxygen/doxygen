@@ -207,6 +207,14 @@ class DotDirDeps
   public:
     DotDirDeps(DirDef *dir);
    ~DotDirDeps();
+    bool isTrivial() const;
+    QCString writeGraph(QTextStream &out,
+                        GraphOutputFormat format,
+                        const char *path,
+                        const char *relPath,
+                        bool writeImageMap=TRUE);
+  private:
+    DirDef *m_dir;
 };
 
 void generateGraphLegend(const char *path);

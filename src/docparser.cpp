@@ -4367,7 +4367,7 @@ reparsetoken:
                k!=DocNode::Kind_SimpleSect &&
                k!=DocNode::Kind_AutoList &&
                k!=DocNode::Kind_SimpleList &&
-               k!=DocNode::Kind_Verbatim &&
+               /*k!=DocNode::Kind_Verbatim &&*/
                k!=DocNode::Kind_HtmlHeader &&
                k!=DocNode::Kind_ParamSect &&
                k!=DocNode::Kind_XRefItem
@@ -4518,7 +4518,7 @@ reparsetoken:
 	  }
 	  else if (retval==RetVal_OK) 
 	  {
-	    // the command ended normally, keep scanner for new tokens.
+	    // the command ended normally, keep scanning for new tokens.
 	    retval = 0;
 	  }
           else if (retval==TK_LISTITEM || retval==TK_ENDLIST || retval==TK_WORD)

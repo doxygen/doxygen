@@ -1457,6 +1457,15 @@ void LatexGenerator::endCallGraph(DotCallGraph &g)
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
 
+void LatexGenerator::startDirDepGraph() 
+{
+}
+
+void LatexGenerator::endDirDepGraph(DotDirDeps &g) 
+{
+  g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
+}
+
 void LatexGenerator::startDescription() 
 { 
   t << "\\begin{description}" << endl; 

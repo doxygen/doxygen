@@ -122,6 +122,7 @@ bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
 DirSDict       Doxygen::directories(17);
+SDict<DirRelation> Doxygen::dirRelations(257);
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -4738,6 +4739,7 @@ static void findMember(Entry *root,
                   NamespaceSDict::Iterator nsdi(*nnl);
                   for (nsdi.toFirst();(nnd=nsdi.current());++nsdi)
                   {
+                    Debug::print(Debug::FindMembers,0,"   adding used namespace %s\n",nnd->qualifiedName().data());
                     nl->append(nnd->qualifiedName(),nnd);
                   }
                 }
@@ -4751,6 +4753,7 @@ static void findMember(Entry *root,
                   NamespaceSDict::Iterator nsdi(*fnl);
                   for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
                   {
+                    Debug::print(Debug::FindMembers,0,"   adding used namespace %s\n",fnd->qualifiedName().data());
                     nl->append(fnd->qualifiedName(),fnd);
                   }
                 }
@@ -4766,6 +4769,7 @@ static void findMember(Entry *root,
                   Definition *ncd;
                   for (csdi.toFirst();(ncd=csdi.current());++csdi)
                   {
+                    Debug::print(Debug::FindMembers,0,"   adding used class %s\n",ncd->qualifiedName().data());
                     cl->append(ncd->qualifiedName(),ncd);
                   }
                 }
@@ -4779,6 +4783,7 @@ static void findMember(Entry *root,
                   Definition *fcd;
                   for (csdi.toFirst();(fcd=csdi.current());++csdi)
                   {
+                    Debug::print(Debug::FindMembers,0,"   adding used class %s\n",fcd->qualifiedName().data());
                     cl->append(fcd->qualifiedName(),fcd);
                   }
                 }
@@ -7330,10 +7335,7 @@ static void readFiles(BufStr &output)
 
     bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
 
-    //if (!multiLineIsBrief)
-    //{
-      convertCppComments(&tempBuf,&output);
-    //}
+    convertCppComments(&tempBuf,&output,fileName);
 
     s=inputFiles.next();
     //printf("-------> adding new line\n");
@@ -7553,6 +7555,126 @@ static void readFormulaRepository()
 }
 
 //----------------------------------------------------------------------------
+
+static QDict<void> aliasesProcessed;
+
+static QCString expandAliasesRec(const QCString s)
+{
+  QCString result;
+  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
+  QCString value=s;
+  int i,p=0,l;
+  while ((i=cmdPat.match(value,p,&l))!=-1)
+  {
+    result+=value.mid(p,i-p);
+    QCString cmd=value.mid(i+1,l-1);
+    //printf("Found command '%s'\n",cmd.data());
+    QCString *aliasText=Doxygen::aliasDict.find(cmd);
+    if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
+    {
+      aliasesProcessed.insert(cmd,(void *)0x8);
+      result+=expandAliasesRec(*aliasText);
+      aliasesProcessed.remove(cmd);
+    }
+    else // command is not an alias
+    {
+      result+=value.mid(i,l);
+    }
+    p=i+l;
+  }
+  result+=value.right(value.length()-p);
+
+  //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
+  return result;
+}
+
+static void expandAliases()
+{
+  QDictIterator<QCString> adi(Doxygen::aliasDict);
+  QCString *s;
+  for (adi.toFirst();(s=adi.current());++adi)
+  {
+    aliasesProcessed.clear();
+    *s = expandAliasesRec(*s);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+static void escapeAliases()
+{
+  QDictIterator<QCString> adi(Doxygen::aliasDict);
+  QCString *s;
+  for (adi.toFirst();(s=adi.current());++adi)
+  {
+    QCString value=*s,newValue;
+    int in,p=0;
+    // for each \n in the alias command value
+    while ((in=value.find("\\n",p))!=-1)
+    {
+      newValue+=value.mid(p,in-p);
+      // expand \n's except if \n is part of a built-in command.
+      if (value.mid(in,5)!="\\note" && 
+          value.mid(in,5)!="\\name" && 
+          value.mid(in,10)!="\\namespace" && 
+          value.mid(in,14)!="\\nosubgrouping"
+         ) 
+      {
+        newValue+="\\_linebr ";
+      }
+      else 
+      {
+        newValue+="\\n";
+      }
+      p=in+2;
+    }
+    newValue+=value.mid(p,value.length()-p);
+    *s=newValue;
+    //printf("Alias %s has value %s\n",adi.currentKey().data(),s->data());
+  }
+}
+
+//----------------------------------------------------------------------------
+
+static void readAliases()
+{ 
+  // add aliases to a dictionary
+  Doxygen::aliasDict.setAutoDelete(TRUE);
+  QStrList &aliasList = Config_getList("ALIASES");
+  const char *s=aliasList.first();
+  while (s)
+  {
+    if (Doxygen::aliasDict[s]==0)
+    {
+      QCString alias=s;
+      int i=alias.find('=');
+      if (i>0)
+      {
+        QCString name=alias.left(i).stripWhiteSpace();
+        QCString value=alias.right(alias.length()-i-1);
+        //printf("Alias: found name=`%s' value=`%s'\n",name.data(),value.data()); 
+        if (!name.isEmpty())
+        {
+          QCString *dn=Doxygen::aliasDict[name];
+          if (dn==0) // insert new alias
+          {
+            Doxygen::aliasDict.insert(name,new QCString(value));
+          }
+          else // overwrite previous alias
+          {
+            *dn=value;
+          }
+        }
+      }
+    }
+    s=aliasList.next();
+  }
+  expandAliases();
+  escapeAliases();
+  aliasesProcessed.clear();
+}
+
+//----------------------------------------------------------------------------
 // print the usage of doxygen
 
 static void usage(const char *name)
@@ -7620,6 +7742,8 @@ void initDoxygen()
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::lookupCache.setAutoDelete(TRUE);
+  Doxygen::directories.setAutoDelete(TRUE);
+  Doxygen::dirRelations.setAutoDelete(TRUE);
 }
 
 void cleanUpDoxygen()
@@ -8088,60 +8212,8 @@ void parseInput()
     s=expandAsDefinedList.next();
   }
 
-  // add aliases to a dictionary
-  Doxygen::aliasDict.setAutoDelete(TRUE);
-  QStrList &aliasList = Config_getList("ALIASES");
-  s=aliasList.first();
-  while (s)
-  {
-    if (Doxygen::aliasDict[s]==0)
-    {
-      QCString alias=s;
-      int i=alias.find('=');
-      if (i>0)
-      {
-        QCString name=alias.left(i).stripWhiteSpace();
-        QCString value=alias.right(alias.length()-i-1);
-        QCString newValue;
-        int in,p=0;
-        // for each \n in the alias command value
-        while ((in=value.find("\\n",p))!=-1)
-        {
-          newValue+=value.mid(p,in-p);
-          // expand \n's except if \n is part of a built-in command.
-          if (value.mid(in,5)!="\\note" && 
-              value.mid(in,5)!="\\name" && 
-              value.mid(in,10)!="\\namespace" && 
-              value.mid(in,14)!="\\nosubgrouping"
-             ) 
-          {
-            newValue+="\n";
-          }
-          else 
-          {
-            newValue+="\\n";
-          }
-          p=in+2;
-        }
-        newValue+=value.mid(p,value.length()-p);
-        value=newValue;
-        //printf("Alias: found name=`%s' value=`%s'\n",name.data(),value.data()); 
-        if (!name.isEmpty())
-        {
-          QCString *dn=Doxygen::aliasDict[name];
-          if (dn==0) // insert new alias
-          {
-            Doxygen::aliasDict.insert(name,new QCString(value));
-          }
-          else // overwrite previous alias
-          {
-            *dn=value;
-          }
-        }
-      }
-    }
-    s=aliasList.next();
-  }
+  // read aliases and store them in a dictionary
+  readAliases();
 
   /**************************************************************************
    *             Handle Tag Files                                           *
@@ -8448,8 +8520,11 @@ void parseInput()
   msg("Adding todo/test/bug list items...\n");
   addListReferences();
 
-  msg("Computing dependencies between directories...\n");
-  computeDirDependencies();
+  if (Config_getBool("SHOW_DIRECTORIES"))
+  {
+    msg("Computing dependencies between directories...\n");
+    computeDirDependencies();
+  }
 }
 
 void generateOutput()

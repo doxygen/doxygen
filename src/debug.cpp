@@ -57,6 +57,8 @@ static int labelToEnumValue(const char *l)
     return Debug::PrintTree;
   else if (label=="time")
     return Debug::Time;
+  else if (label=="extcmd")
+    return Debug::ExtCmd;
   else
     return 0;
 }
