@@ -26,7 +26,7 @@
 #include "translator_nl.h"
 #endif
 #ifdef LANG_SE
-//#include "translator_se.h"
+#include "translator_se.h"
 #endif
 #ifdef LANG_CZ
 #include "translator_cz.h"
@@ -138,9 +138,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SE
   else if (L_EQUAL("swedish"))
   {
-    //theTranslator=new TranslatorSwedish;
-    theTranslator=new TranslatorEnglish;
-    err(obsoleteMsg);
+    theTranslator=new TranslatorSwedish;
   }
 #endif
 #ifdef LANG_CZ

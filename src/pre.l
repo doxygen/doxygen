@@ -1979,10 +1979,11 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_expandedDict->clear();
   
   // add predefined macros
-  char *defStr = Config_getList("PREDEFINED").first();
-  while (defStr)
+  char *defStr;
+  QStrList &predefList = Config_getList("PREDEFINED");
+  QStrListIterator sli(predefList);
+  for (sli.toFirst();(defStr=sli.current());++sli)
   {
-    //printf("Predefined: `%s'\n",defStr);
     QCString ds = defStr;
     int i_equals=ds.find('=');
     int i_obrace=ds.find('(');
@@ -2068,7 +2069,6 @@ void preprocessFile(const char *fileName,BufStr &output)
       //  def->name.data(),def->definition.data(),def->nargs);
     }
     
-    defStr=Config_getList("PREDEFINED").next();
   }
  
   QCString &inputFilter = Config_getString("INPUT_FILTER");

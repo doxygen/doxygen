@@ -3210,7 +3210,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           }
 					  BEGIN( LineDoc );
 					}
-<FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}*("{")?  {
+<FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
 					  lineCount();
 					}
 <FindMembers>"{"			{
@@ -3852,10 +3852,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  BEGIN(AnchorLabel);
   					}
 <Doc,PageDoc,ClassDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
-					  current->doc+="\\\\verbatim";
+					  current->doc+=yytext;
 					}
 <JavaDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
-					  current->brief+="\\\\verbatim";
+					  current->brief+=yytext;
 					}
 <Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;

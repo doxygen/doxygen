@@ -192,9 +192,9 @@ void OutputList::popGeneratorState()
 }
 
 void OutputList::parseDoc(const char *fileName,int startLine,
-                  const char * clName,MemberDef * md,
-                  const QCString &docStr,bool isExample,
-                  const char *exampleName)
+                  Definition *ctx,MemberDef * md,
+                  const QCString &docStr,bool indexWords,
+                  bool isExample,const char *exampleName)
 {
   int count=0;
   if (docStr.isEmpty()) return;
@@ -211,12 +211,12 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   if (docStr.at(docStr.length()-1)=='\n')
   {
     root = validatingParseDoc(fileName,startLine,
-                              clName,md,docStr,isExample,exampleName);
+                              ctx,md,docStr,indexWords,isExample,exampleName);
   }
   else
   {
     root = validatingParseDoc(fileName,startLine,
-                              clName,md,docStr+"\n",isExample,exampleName);
+                              ctx,md,docStr+"\n",indexWords,isExample,exampleName);
   }
 
   og=outputs->first();
@@ -334,6 +334,7 @@ FORALL2(bool a1,bool a2,a1,a2)
 FORALL4(const char *a1,const char *a2,const char *a3,bool a4,a1,a2,a3,a4)
 #endif
 FORALL2(int a1,bool a2,a1,a2)
+FORALL2(bool a1,HighlightedItem a2,a1,a2)
 FORALL2(ParamListTypes a1,const char *a2,a1,a2)
 FORALL1(IndexSections a1,a1)
 FORALL2(const char *a1,const char *a2,a1,a2)

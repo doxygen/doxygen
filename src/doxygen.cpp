@@ -42,6 +42,7 @@
 #include "pre.h"
 #include "tagreader.h"
 #include "dot.h"
+#include "docparser.h"
 
 #include "outputlist.h"
 #include "declinfo.h"
@@ -62,6 +63,7 @@
 #include "bufstr.h"
 #include "commentcnv.h"
 #include "cmdmapper.h"
+#include "searchindex.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -113,6 +115,7 @@ QDict<RefList> *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-
 bool           Doxygen::parseSourcesNeeded = FALSE;
 double         Doxygen::sysElapsedTime = 0.0;
 QTime          Doxygen::runningTime;
+SearchIndex *  Doxygen::searchIndex=0;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -893,6 +896,9 @@ static void resolveClassNestingRelations()
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,cd->name());
         if (d==0)
         {
+          //Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
+          //d->addInnerCompound(nd);
+          //nd->setOuterScope(d);
           warn(cd->getDefFileName(),cd->getDefLine(),
               "Warning: Internal inconsistency: scope for class %s not "
               "found!\n",cd->name().data()
@@ -1497,12 +1503,13 @@ static MemberDef *addVariableToFile(
 {
   Debug::print(Debug::Variables,0,
       "  global variable:\n"
-      "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d\n",
+      "    type=`%s' scope=`%s' name=`%s' args=`%s' prot=`%d mtype=%d\n",
       root->type.data(),
       scope.data(), 
       name.data(),
       root->args.data(),
-      root->protection
+      root->protection,
+      mtype
               );
 
   bool ambig;
@@ -2200,7 +2207,8 @@ static void buildFunctionList(Entry *root)
           )
          )
       {
-        addMethodToClass(root,cd,rname,/*scope,*/isFriend);
+        Debug::print(Debug::Functions,0,"--> member of class %s!\n",rname.data(),cd->name().data());
+        addMethodToClass(root,cd,rname,isFriend);
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
@@ -2220,7 +2228,7 @@ static void buildFunctionList(Entry *root)
         //MemberDef *fmd;
         if ((mn=Doxygen::functionNameSDict[rname]))
         {
-          //printf("--> function %s already found!\n",rname.data());
+          Debug::print(Debug::Functions,0,"--> function %s already found!\n",rname.data());
           MemberNameIterator mni(*mn);
           MemberDef *md;
           for (mni.toFirst();((md=mni.current()) && !found);++mni)
@@ -2294,7 +2302,7 @@ static void buildFunctionList(Entry *root)
               }
               else if (!md->documentation().isEmpty() && !root->doc.isEmpty())
               {
-                warn(root->docFile,root->docLine,"Warning: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->docLine(),md->docFile().data());
+                warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
               }
 
               if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
@@ -2303,7 +2311,7 @@ static void buildFunctionList(Entry *root)
               }
               else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty())
               {
-                warn(root->briefFile,root->briefLine,"Warning: ignoring the brief description found here, since another one was found at line %d of file %s!",md->briefLine(),md->briefFile().data());
+                warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
               }
               
               md->addSectionsToDefinition(root->anchors);
@@ -2635,26 +2643,26 @@ static void transferFunctionDocumentation()
                 //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
                 mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
                 mdec->setDocsForDefinition(mdef->isDocsForDefinition());
-                ArgumentList *mdefAl = new ArgumentList;
-                stringToArgumentList(mdef->argsString(),mdefAl);
                 if (mdef->argumentList())
                 {
+                  ArgumentList *mdefAl = new ArgumentList;
+                  stringToArgumentList(mdef->argsString(),mdefAl);
                   transferArgumentDocumentation(mdef->argumentList(),mdefAl);
+                  mdec->setArgumentList(mdefAl);
                 }
-                mdec->setArgumentList(mdefAl);
               }
               else if (!mdec->documentation().isEmpty())
               {
                 //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
                 mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
                 mdef->setDocsForDefinition(mdec->isDocsForDefinition());
-                ArgumentList *mdecAl = new ArgumentList;
-                stringToArgumentList(mdec->argsString(),mdecAl);
                 if (mdec->argumentList())
                 {
+                  ArgumentList *mdecAl = new ArgumentList;
+                  stringToArgumentList(mdec->argsString(),mdecAl);
                   transferArgumentDocumentation(mdec->argumentList(),mdecAl);
+                  mdef->setDeclArgumentList(mdecAl);
                 }
-                mdef->setDeclArgumentList(mdecAl);
               }
               if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
               {
@@ -6250,20 +6258,12 @@ static void generatePageDocs()
         outputList->endSection(si->label,si->type);
       }
       outputList->startTextBlock();
-      QCString scName;
-      if (pd->getOuterScope() && 
-          (pd->getOuterScope()->definitionType()==Definition::TypeClass ||
-           pd->getOuterScope()->definitionType()==Definition::TypeNamespace
-          )
-         )
-      {
-        scName=pd->getOuterScope()->name();
-      }
       outputList->parseDoc(pd->docFile(),
                            pd->docLine(),
-                           scName,0,
+                           pd->getOuterScope(),0,
                            pd->documentation(),
-                           FALSE
+                           TRUE,    // index words
+                           FALSE    // not an example
                            /*,pd->sectionDict*/);
       outputList->endTextBlock();
       endFile(*outputList);
@@ -6352,10 +6352,11 @@ static void generateExampleDocs()
     endTitle(*outputList,n,0);
     outputList->parseDoc(pd->docFile(),                            // file
                          pd->docLine(),                            // startLine
-                         pd->getOuterScope()?pd->getOuterScope()->name().data():0, // context
+                         pd->getOuterScope(),                      // context
                          0,                                        // memberDef
                          pd->documentation()+"\n\\include "+pd->name(),          // docs
-                         TRUE,                                      // is example
+                         TRUE,                                     // index words
+                         TRUE,                                     // is example
                          pd->name()
                         );
     endFile(*outputList);
@@ -6458,116 +6459,116 @@ static QCString fixSlashes(QCString &s)
 //----------------------------------------------------------------------------
 // generate files for the search engine
 
-static void generateSearchIndex()
-{
-  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTML"))
-  {
-    // create search index
-    QCString fileName;
-    writeSearchButton(Config_getString("HTML_OUTPUT"));
-
-#if !defined(_WIN32)
-    // create cgi script
-    fileName = Config_getString("HTML_OUTPUT")+"/"+Config_getString("CGI_NAME");
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly))
-    {
-      QTextStream t(&f);
-      t << "#!/bin/sh"   << endl
-        << "DOXYSEARCH=" << Config_getString("BIN_ABSPATH") << "/doxysearch" << endl
-        << "DOXYPATH=\"" << Config_getString("DOC_ABSPATH") << " ";
-
-      QStrList &extDocPaths=Config_getList("EXT_DOC_PATHS");
-      char *s= extDocPaths.first();
-      while (s)
-      {
-        t << s << " ";
-        s=extDocPaths.next();
-      }
-
-      t << "\"" << endl 
-        << "if [ -f $DOXYSEARCH ]" << endl
-        << "then" << endl
-        << "  $DOXYSEARCH $DOXYPATH" << endl 
-        << "else" << endl
-        << "  echo \"Content-Type: text/html\"" << endl
-        << "  echo \"\"" << endl
-        << "  echo \"<h2>Error: $DOXYSEARCH not found. Check cgi script!</h2>\"" << endl
-        << "fi" << endl;
-
-      f.close();
-      struct stat stat_struct;
-      stat(fileName,&stat_struct);
-      chmod(fileName,stat_struct.st_mode|S_IXUSR|S_IXGRP|S_IXOTH);
-    }
-    else
-    {
-      err("Error: Cannot open file %s for writing\n",fileName.data());
-    }
-#else /* Windows platform */
-    // create cgi program
-    fileName = Config_getString("CGI_NAME").copy();
-    if (fileName.right(4)==".cgi") 
-      fileName=fileName.left(fileName.length()-4);
-    fileName+=".c";
-    fileName.prepend(Config_getString("HTML_OUTPUT")+"/");
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly))
-    {
-      QTextStream t(&f);
-      t << "#include <stdio.h>" << endl;
-      t << "#include <stdlib.h>" << endl;
-      t << "#include <process.h>" << endl;
-      t << endl;
-      t << "const char *DOXYSEARCH = \"" << 
-           fixSlashes(Config_getString("BIN_ABSPATH")) << "\\\\doxysearch.exe\";" << endl;
-      t << "const char *DOXYPATH = \"" << 
-           fixSlashes(Config_getString("DOC_ABSPATH")) << "\";" << endl;
-      t << endl;
-      t << "int main(void)" << endl;
-      t << "{" << endl;
-      t << "  char buf[1024];" << endl;
-      t << "  sprintf(buf,\"%s %s\",DOXYSEARCH,DOXYPATH);" << endl; 
-      t << "  if (system(buf))" << endl;
-      t << "  {" << endl;
-      t << "    printf(\"Content-Type: text/html\\n\\n\");" << endl;
-      t << "    printf(\"<h2>Error: failed to execute %s</h2>\\n\",DOXYSEARCH);" << endl;
-      t << "    exit(1);" << endl;
-      t << "  }" << endl;
-      t << "  return 0;" << endl;
-      t << "}" << endl;
-      f.close();
-    }
-    else
-    {
-      err("Error: Cannot open file %s for writing\n",fileName.data());
-    }
-#endif /* !defined(_WIN32) */
-    
-    // create config file
-    fileName = Config_getString("HTML_OUTPUT")+"/search.cfg";
-    f.setName(fileName);
-    if (f.open(IO_WriteOnly))
-    {
-      QTextStream t(&f);
-      t << Config_getString("DOC_URL") << "/" << endl 
-        << Config_getString("CGI_URL") << "/" << Config_getString("CGI_NAME") << endl;
-      f.close();
-    }
-    else
-    {
-      err("Error: Cannot open file %s for writing\n",fileName.data());
-    }
-    //outputList->generateExternalIndex();
-    outputList->pushGeneratorState();
-    outputList->disableAllBut(OutputGenerator::Html);
-    startFile(*outputList,"header"+Doxygen::htmlFileExtension,0,"Search Engine",TRUE);
-    outputList->endPlainFile();
-    outputList->startPlainFile("footer"+Doxygen::htmlFileExtension);
-    endFile(*outputList,TRUE);
-    outputList->popGeneratorState();
-  }
-}
+//static void generateSearchIndex()
+//{
+//  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTML"))
+//  {
+//    // create search index
+//    QCString fileName;
+//    writeSearchButton(Config_getString("HTML_OUTPUT"));
+//
+//#if !defined(_WIN32)
+//    // create cgi script
+//    fileName = Config_getString("HTML_OUTPUT")+"/"+Config_getString("CGI_NAME");
+//    QFile f(fileName);
+//    if (f.open(IO_WriteOnly))
+//    {
+//      QTextStream t(&f);
+//      t << "#!/bin/sh"   << endl
+//        << "DOXYSEARCH=" << Config_getString("BIN_ABSPATH") << "/doxysearch" << endl
+//        << "DOXYPATH=\"" << Config_getString("DOC_ABSPATH") << " ";
+//
+//      QStrList &extDocPaths=Config_getList("EXT_DOC_PATHS");
+//      char *s= extDocPaths.first();
+//      while (s)
+//      {
+//        t << s << " ";
+//        s=extDocPaths.next();
+//      }
+//
+//      t << "\"" << endl 
+//        << "if [ -f $DOXYSEARCH ]" << endl
+//        << "then" << endl
+//        << "  $DOXYSEARCH $DOXYPATH" << endl 
+//        << "else" << endl
+//        << "  echo \"Content-Type: text/html\"" << endl
+//        << "  echo \"\"" << endl
+//        << "  echo \"<h2>Error: $DOXYSEARCH not found. Check cgi script!</h2>\"" << endl
+//        << "fi" << endl;
+//
+//      f.close();
+//      struct stat stat_struct;
+//      stat(fileName,&stat_struct);
+//      chmod(fileName,stat_struct.st_mode|S_IXUSR|S_IXGRP|S_IXOTH);
+//    }
+//    else
+//    {
+//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//    }
+//#else /* Windows platform */
+//    // create cgi program
+//    fileName = Config_getString("CGI_NAME").copy();
+//    if (fileName.right(4)==".cgi") 
+//      fileName=fileName.left(fileName.length()-4);
+//    fileName+=".c";
+//    fileName.prepend(Config_getString("HTML_OUTPUT")+"/");
+//    QFile f(fileName);
+//    if (f.open(IO_WriteOnly))
+//    {
+//      QTextStream t(&f);
+//      t << "#include <stdio.h>" << endl;
+//      t << "#include <stdlib.h>" << endl;
+//      t << "#include <process.h>" << endl;
+//      t << endl;
+//      t << "const char *DOXYSEARCH = \"" << 
+//           fixSlashes(Config_getString("BIN_ABSPATH")) << "\\\\doxysearch.exe\";" << endl;
+//      t << "const char *DOXYPATH = \"" << 
+//           fixSlashes(Config_getString("DOC_ABSPATH")) << "\";" << endl;
+//      t << endl;
+//      t << "int main(void)" << endl;
+//      t << "{" << endl;
+//      t << "  char buf[1024];" << endl;
+//      t << "  sprintf(buf,\"%s %s\",DOXYSEARCH,DOXYPATH);" << endl; 
+//      t << "  if (system(buf))" << endl;
+//      t << "  {" << endl;
+//      t << "    printf(\"Content-Type: text/html\\n\\n\");" << endl;
+//      t << "    printf(\"<h2>Error: failed to execute %s</h2>\\n\",DOXYSEARCH);" << endl;
+//      t << "    exit(1);" << endl;
+//      t << "  }" << endl;
+//      t << "  return 0;" << endl;
+//      t << "}" << endl;
+//      f.close();
+//    }
+//    else
+//    {
+//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//    }
+//#endif /* !defined(_WIN32) */
+//    
+//    // create config file
+//    fileName = Config_getString("HTML_OUTPUT")+"/search.cfg";
+//    f.setName(fileName);
+//    if (f.open(IO_WriteOnly))
+//    {
+//      QTextStream t(&f);
+//      t << Config_getString("DOC_URL") << "/" << endl 
+//        << Config_getString("CGI_URL") << "/" << Config_getString("CGI_NAME") << endl;
+//      f.close();
+//    }
+//    else
+//    {
+//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//    }
+//    //outputList->generateExternalIndex();
+//    outputList->pushGeneratorState();
+//    outputList->disableAllBut(OutputGenerator::Html);
+//    startFile(*outputList,"header"+Doxygen::htmlFileExtension,0,"Search Engine",TRUE);
+//    outputList->endPlainFile();
+//    outputList->startPlainFile("footer"+Doxygen::htmlFileExtension);
+//    endFile(*outputList,TRUE);
+//    outputList->popGeneratorState();
+//  }
+//}
 
 //----------------------------------------------------------------------------
 
@@ -7534,14 +7535,14 @@ void parseInput()
   Doxygen::imageNameDict     = new FileNameDict(257);
   Doxygen::dotFileNameDict   = new FileNameDict(257);
 
-  if (!Config_getString("DOC_URL").isEmpty())
-  {
-    Doxygen::tagDestinationDict.insert("_doc",new QCString(Config_getString("DOC_URL")));
-  }
-  if (!Config_getString("CGI_URL").isEmpty())
-  {
-    Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config_getString("CGI_URL")+"/"+Config_getString("CGI_NAME")));
-  }
+  //if (!Config_getString("DOC_URL").isEmpty())
+  //{
+  //  Doxygen::tagDestinationDict.insert("_doc",new QCString(Config_getString("DOC_URL")));
+  //}
+  //if (!Config_getString("CGI_URL").isEmpty())
+  //{
+  //  Doxygen::tagDestinationDict.insert("_cgi",new QCString(Config_getString("CGI_URL")+"/"+Config_getString("CGI_NAME")));
+  //}
 
   /**************************************************************************
    *            Initialize some global constants
@@ -8025,6 +8026,32 @@ void generateOutput()
    *            Initialize output generators                                *
    **************************************************************************/
 
+  initDocParser();
+
+  //{
+  //  QCString fileName = Config_getString("HTML_OUTPUT")+"/filetree.html";
+  //  QFile f(fileName);
+  //  if (f.open(IO_WriteOnly))
+  //  {
+  //    QTextStream t(&f);
+  //    t << "<html>\n";
+  //    t << "  <head>\n";
+  //    t << "    <style type=\"text/css\">\n";
+  //    t << "    <!--\n";
+  //    t << "    .directory { font-size: 10pt; font-weight: bold; }\n";
+  //    t << "    .directory h3 { margin: 0px; margin-top: 1em; font-size: 11pt; }\n";
+  //    t << "    .directory p { margin: 0px; white-space: nowrap; }\n";
+  //    t << "    .directory div { display: visible; margin: 0px; }\n";
+  //    t << "    .directory img { vertical-align: middle; }\n";
+  //    t << "    -->\n";
+  //    t << "    </style>\n";
+  //    t << "  </head>\n";
+  //    t << "  <body>\n";
+  //    generateFileTree(t);
+  //    t << "  </body>\n";
+  //    t << "</html>\n";
+  //  }
+  //}
   
   outputList = new OutputList(TRUE);
   if (Config_getBool("GENERATE_HTML"))  
@@ -8144,8 +8171,8 @@ void generateOutput()
     writeGraphInfo(*outputList);
   }
 
-  msg("Generating search index...\n");
-  generateSearchIndex();
+  //msg("Generating search index...\n");
+  //generateSearchIndex();
   
   msg("Generating style sheet...\n");
   //printf("writing style info\n");
@@ -8237,7 +8264,12 @@ void generateOutput()
     }
     QDir::setCurrent(oldDir);
   }
-  cleanUpDoxygen();
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    msg("Generating search index\n");
+    HtmlGenerator::writeSearchPage();
+    Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search.idx");
+  }
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
@@ -8245,5 +8277,6 @@ void generateOutput()
          Doxygen::sysElapsedTime
         );
   }
+  cleanUpDoxygen();
 }
 

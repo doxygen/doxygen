@@ -198,7 +198,7 @@ void filterLatexString(QTextStream &t,const char *str,
                        bool insideTabbing=FALSE,bool insidePre=FALSE,
                        bool insideItem=FALSE);
 QCString rtfFormatBmkStr(const char *name);
-QCString linkToText(const char *link);
+QCString linkToText(const char *link,bool isFileName);
 QCString stripExtension(const char *fName);
 void replaceNamespaceAliases(QCString &scope,int i);
 

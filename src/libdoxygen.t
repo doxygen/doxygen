@@ -82,3 +82,6 @@ index_xsd.h: index.xsd
 compound_xsd.h: compound.xsd
 	cat compound.xsd | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >compound_xsd.h 
 
+search_php.h: search.php
+	cat search.php | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >search_php.h 
+

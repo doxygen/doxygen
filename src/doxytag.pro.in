@@ -16,9 +16,8 @@
 
 TEMPLATE     =  doxytag.t
 CONFIG       =	console warn_on $extraopts
-HEADERS      =  suffixtree.h searchindex.h logos.h version.h
-SOURCES      =	doxytag.cpp suffixtree.cpp searchindex.cpp \
-		logos.cpp version.cpp 
+HEADERS      =  logos.h version.h
+SOURCES      =	doxytag.cpp logos.cpp version.cpp 
 unix:LIBS                  += -L../lib -lqtools
 win32:INCLUDEPATH          += .
 win32-mingw:LIBS           += -L../lib -lqtools

@@ -241,4 +241,51 @@ class OutputNameDict : public QDict<FileList>
    ~OutputNameDict() {}
 };
 
+class Directory;
+
+class DirEntry
+{
+  public:
+    enum EntryKind { Dir, File };
+    DirEntry::DirEntry(DirEntry *parent,FileDef *fd)  
+       : m_parent(parent), m_kind(File), m_fd(fd), m_isLast(FALSE) { }
+    DirEntry::DirEntry(DirEntry *parent)              
+       : m_parent(parent), m_kind(Dir), m_fd(0), m_isLast(FALSE) { }
+    virtual ~DirEntry() { }
+    EntryKind kind() const { return m_kind; }
+    FileDef *file()  const { return m_fd; }
+    bool isLast() const    { return m_isLast; }
+    void setLast(bool b)   { m_isLast=b; }
+    DirEntry *parent() const { return m_parent; }
+
+  protected:
+    DirEntry *m_parent;
+  private:
+    EntryKind m_kind;
+    FileDef   *m_fd;
+    int num;
+    bool m_isLast;
+};
+
+class Directory : public DirEntry
+{
+  public:
+    Directory(Directory *parent,const QCString &name) 
+       : DirEntry(parent), m_name(name)
+    { m_children.setAutoDelete(TRUE); }
+    virtual ~Directory()              {}
+    void addChild(DirEntry *d)        { m_children.append(d); d->setLast(TRUE); }
+    QList<DirEntry> &children()       { return m_children; }
+    void rename(const QCString &name) { m_name=name; }
+    void reParent(Directory *parent)  { m_parent=parent; }
+    QCString name() const             { return m_name; }
+
+  private:
+    QCString m_name;
+    QList<DirEntry> m_children;
+};
+
+void generateFileTree(QTextStream &t);
+
 #endif
+

@@ -61,8 +61,8 @@ class OutputList : public OutputDocInterface
     //////////////////////////////////////////////////
 
     void parseDoc(const char *fileName,int startLine,
-                  const char *clName,MemberDef *md,const QCString &docStr,
-                  bool isExample,const char *exampleName=0);
+                  Definition *ctx,MemberDef *md,const QCString &docStr,
+                  bool indexWords,bool isExample,const char *exampleName=0);
     void parseText(const QCString &textStr);
     
 
@@ -76,11 +76,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endProjectNumber); }
     void writeStyleInfo(int part) 
     { forall(&OutputGenerator::writeStyleInfo,part); }
-    void startFile(const char *name,const char *manName,
-                   const char *title,bool external)
-    { forall(&OutputGenerator::startFile,name,manName,title,external); }
-    void writeFooter(int fase,bool external)
-    { forall(&OutputGenerator::writeFooter,fase,external); }
+    void startFile(const char *name,const char *manName,const char *title)
+    { forall(&OutputGenerator::startFile,name,manName,title); }
+    void writeFooter()
+    { forall(&OutputGenerator::writeFooter); }
     void endFile() 
     { forall(&OutputGenerator::endFile); }
     void startTitleHead(const char *fileName) 
@@ -286,10 +285,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startPageRef); }
     void endPageRef(const char *c,const char *a)
     { forall(&OutputGenerator::endPageRef,c,a); }
-    void startQuickIndexItem(const char *s,const char *l)
-    { forall(&OutputGenerator::startQuickIndexItem,s,l); }
-    void endQuickIndexItem()
-    { forall(&OutputGenerator::endQuickIndexItem); }
+    //void startQuickIndexItem(const char *s,const char *l)
+    //{ forall(&OutputGenerator::startQuickIndexItem,s,l); }
+    //void endQuickIndexItem()
+    //{ forall(&OutputGenerator::endQuickIndexItem); }
+    void writeQuickLinks(bool compact,HighlightedItem hli)
+    { forall(&OutputGenerator::writeQuickLinks,compact,hli); }
     void writeNonBreakableSpace(int num)
     { forall(&OutputGenerator::writeNonBreakableSpace,num); }
     void startDescTable()
@@ -390,6 +391,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);
+    FORALLPROTO2(bool,HighlightedItem);
     FORALLPROTO2(ParamListTypes,const char *);
     FORALLPROTO2(const char *,const char *);
     FORALLPROTO2(const char *,bool);

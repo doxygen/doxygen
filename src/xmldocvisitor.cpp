@@ -89,6 +89,7 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Szlig:   m_t << "<szlig/>"; break;
     case DocSymbol::Cedil:   m_t << "<cedil char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Ring:    m_t << "<ring char=\"" << s->letter() << "\"/>"; break;
+    case DocSymbol::Slash:   m_t << "<slash char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Nbsp:    m_t << "<nonbreakablespace/>"; break;
     default:
                              err("Error: unknown symbol found\n");
@@ -653,14 +654,14 @@ void XmlDocVisitor::visitPost(DocLink *)
 void XmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  startLink(ref->ref(),ref->file(),ref->anchor());
+   if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
-void XmlDocVisitor::visitPost(DocRef *) 
+void XmlDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  endLink();
+  if (!ref->file().isEmpty()) endLink();
   m_t << " ";
 }
 

@@ -542,7 +542,9 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-ClassDef *getResolvedClass(
+static QDict<Definition> g_resolvedScopes;
+
+ClassDef *getResolvedClassRecursive(
                            Definition *scope,
                            const char *n,
                            bool *pIsTypeDef,
@@ -678,8 +680,13 @@ ClassDef *getResolvedClass(
             NamespaceDef *und;
             for (nli.toFirst();(und=nli.current());++nli)
             {
-              cd = getResolvedClass(und,name,pIsTypeDef,pTemplSpec);
-              if (cd) break;
+              if (g_resolvedScopes.find(und->name())==0)
+              {
+                g_resolvedScopes.insert(und->name(),und);
+                cd = getResolvedClassRecursive(und,name,pIsTypeDef,pTemplSpec);
+                g_resolvedScopes.remove(und->name());
+                if (cd) break;
+              }
             }
           }
         }
@@ -695,6 +702,18 @@ ClassDef *getResolvedClass(
 found:
   //printf("getResolvedClass()=%s\n",cd?cd->name().data():"<none>");
   return cd;
+}
+
+
+ClassDef *getResolvedClass(
+                           Definition *scope,
+                           const char *n,
+                           bool *pIsTypeDef,
+                           QCString *pTemplSpec
+                          )
+{
+  g_resolvedScopes.clear();
+  return getResolvedClassRecursive(scope,n,pIsTypeDef,pTemplSpec);
 }
 
 static bool findOperator(const QCString &s,int i)
@@ -1526,45 +1545,51 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
  */
 void stripIrrelevantConstVolatile(QCString &s)
 {
+  //printf("stripIrrelevantConstVolatile(%s)=",s.data());
   int i;
   if (s=="const")    { s.resize(0); return; }
   if (s=="volatile") { s.resize(0); return; }
 
   // strip occurrences of const
+  int constLen=6;
   i = s.find("const ");
+  if (i==-1 && s.right(5)=="const") { i=s.length()-5;constLen=5; }
   if (i!=-1) 
   {
     // no & or * after the const
-    int i1=s.find('*',i+6);
-    int i2=s.find('&',i+6);
+    int i1=s.find('*',i+constLen);
+    int i2=s.find('&',i+constLen);
     if (i1==-1 && i2==-1)
     {
-      s=s.left(i)+s.right(s.length()-i-6); 
+      s=s.left(i)+s.right(s.length()-i-constLen); 
     }
     else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // const before * or &
     {
       // move const to front
-      s=(QCString)"const "+s.left(i)+s.right(s.length()-i-6);
+      s=(QCString)"const "+s.left(i)+s.right(s.length()-i-constLen);
     }
   }
 
   // strip occurrences of volatile
+  int volatileLen=6;
   i = s.find("volatile ");
+  if (i==-1 && s.right(8)=="volatile") { i=s.length()-8;constLen=8; }
   if (i!=-1) 
   {
     // no & or * after the volatile
-    int i1=s.find('*',i+9);
-    int i2=s.find('&',i+9);
+    int i1=s.find('*',i+volatileLen);
+    int i2=s.find('&',i+volatileLen);
     if (i1==-1 && i2==-1)
     {
-      s=s.left(i)+s.right(s.length()-i-9); 
+      s=s.left(i)+s.right(s.length()-i-volatileLen); 
     }
     else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // volatile before * or &
     {
       // move volatile to front
-      s=(QCString)"volatile "+s.left(i)+s.right(s.length()-i-9);
+      s=(QCString)"volatile "+s.left(i)+s.right(s.length()-i-volatileLen);
     }
   }
+  //printf("%s\n",s.data());
 }
 
 
@@ -2608,7 +2633,7 @@ bool resolveRef(/* in */  const char *scName,
   return FALSE;
 }
 
-QCString linkToText(const char *link)
+QCString linkToText(const char *link,bool isFileName)
 {
   QCString result=link;
   if (!result.isEmpty())
@@ -2616,8 +2641,8 @@ QCString linkToText(const char *link)
     // replace # by ::
     result=substitute(result,"#","::");
     // replace . by ::
-    result=substitute(result,".","::");
-    // strip :: prefix if present
+    if (!isFileName) result=substitute(result,".","::");
+    // strip leading :: prefix if present
     if (result.at(0)==':' && result.at(1)==':')
     {
       result=result.right(result.length()-2);
@@ -2658,7 +2683,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   MemberDef *md;
 
   // create default link text
-  QCString linkText = linkToText(rt);
+  QCString linkText = linkToText(rt,FALSE);
 
   if (resolveRef(scName,name,inSeeBlock,&compound,&md))
   {
@@ -2679,6 +2704,10 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       if (rt==0 && compound->definitionType()==Definition::TypeGroup)
       {
         linkText=((GroupDef *)compound)->groupTitle();
+      }
+      if (compound && compound->definitionType()==Definition::TypeFile)
+      {
+        linkText=linkToText(rt,TRUE);
       }
       od.writeObjectLink(compound->getReference(),
                          compound->getOutputFileBase(),
@@ -2784,7 +2813,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   //printf("generateLink(clName=%s,lr=%s,lr=%s)\n",clName,lr,lt);
   Definition *compound;
   //PageDef *pageDef=0;
-  QCString anchor,linkText=linkToText(lt);
+  QCString anchor,linkText=linkToText(lt,FALSE);
   //printf("generateLink linkText=%s\n",linkText.data());
   if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
   {
@@ -2808,7 +2837,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
       }
       else if (compound->definitionType()==Definition::TypeFile)
       {
-        linkText=lt; // use text "as is"
+        linkText=linkToText(lt,TRUE); 
       }
       od.writeObjectLink(compound->getReference(),
                          compound->getOutputFileBase(),anchor,linkText);
@@ -4031,6 +4060,7 @@ void filterLatexString(QTextStream &t,const char *str,
                                 theTranslator->idLanguage()=="chinese-traditional";
   static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
   static bool isGreek         = theTranslator->idLanguage()=="greek";
+  //printf("filterLatexString(%s)\n",str);
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;

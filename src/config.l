@@ -469,6 +469,12 @@ static void readIncludeFile(const char *incName)
 					         s->resize(0);
 					         BEGIN(GetString);
 						 break;
+					       case ConfigOption::O_Obsolete:
+					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+						            "To avoid this warning please update your configuration "
+							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+					         BEGIN(SkipInvalid);
+						 break;
 					     }
 					   }
 					}
@@ -502,6 +508,12 @@ static void readIncludeFile(const char *incName)
 						    yytext,yyLineNr,yyFileName.data()); 
 					        BEGIN(SkipInvalid);
 						break;
+					       case ConfigOption::O_Obsolete:
+					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+						            "To avoid this warning please update your configuration "
+							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
+					         BEGIN(SkipInvalid);
+						 break;
 					     }
 					   }
 					}
@@ -1077,6 +1089,9 @@ void Config::check()
     filePatternList.append("*.idl");
     filePatternList.append("*.odl");
     filePatternList.append("*.cs");
+    filePatternList.append("*.php");
+    filePatternList.append("*.php3");
+    filePatternList.append("*.inc");
   }
 
   // add default pattern if needed
@@ -1094,102 +1109,102 @@ void Config::check()
   //}
   
   // more checks needed if and only if the search engine is enabled.
-  if (Config_getBool("SEARCHENGINE"))
+//  if (Config_getBool("SEARCHENGINE"))
+//  {
+//    // check cgi name
+//    QCString &cgiName = Config_getString("CGI_NAME");
+//    if (cgiName.isEmpty())
+//    {
+//      config_err("Error: tag CGI_NAME: no cgi script name after the CGI_NAME tag.\n");
+//      exit(1);
+//    }
+//    // check cgi URL
+//    QCString &cgiURL = Config_getString("CGI_URL");
+//    if (cgiURL.isEmpty())
+//    {
+//      config_err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
+//      exit(1);
+//    }
+//    else if (cgiURL.left(7)!="http://" && 
+//	     cgiURL.left(8)!="https://" &&
+//	     cgiURL.left(4)!="cgi:"
+//	    )
+//    {
+//      config_err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
+//	  "start with http:// or https://).\n");
+//      exit(1);
+//    }
+//    // check documentation URL
+//    QCString &docURL = Config_getString("DOC_URL");
+//    if (docURL.isEmpty())
+//    {
+//      docURL = Config_getString("OUTPUT_DIRECTORY").copy().prepend("file://").append("html");
+//    }
+//    else if (docURL.left(7)!="http://" && 
+//	     docURL.left(8)!="https://" &&
+//	     docURL.left(7)!="file://"
+//	    )
+//    {
+//      config_err("Error: tag DOC_URL: URL to documentation is invalid or "
+//	  "not absolute.\n"); 
+//      exit(1);
+//    }
+//    // check absolute documentation path
+//    QCString &docAbsPath = Config_getString("DOC_ABSPATH");
+//    if (docAbsPath.isEmpty())
+//    {
+//      docAbsPath = Config_getString("OUTPUT_DIRECTORY")+"/html"; 
+//    }
+//    else if (docAbsPath[0]!='/' && docAbsPath[1]!=':')
+//    {
+//      config_err("Error: tag DOC_ABSPATH: path is not absolute!\n");
+//      exit(1);
+//    }
+//    // check path to doxysearch
+//    QCString &binAbsPath = Config_getString("BIN_ABSPATH");
+//    if (binAbsPath.isEmpty())
+//    {
+//      config_err("Error: tag BIN_ABSPATH: no absolute path to doxysearch "
+//	  "specified.\n");
+//      exit(1);
+//    }
+//    else if (binAbsPath[0]!='/' && binAbsPath[1]!=':')
+//    {
+//      config_err("Error: tag BIN_ABSPATH: path is not absolute!\n");
+//      exit(1);
+//    }
+//
+//  }
+  // check perl path
+  bool found=FALSE;
+  QCString &perlPath = Config_getString("PERL_PATH");
+  if (perlPath.isEmpty())
   {
-    // check cgi name
-    QCString &cgiName = Config_getString("CGI_NAME");
-    if (cgiName.isEmpty())
+    QFileInfo fi;
+    fi.setFile("/usr/bin/perl");
+    if (fi.exists()) 
     {
-      config_err("Error: tag CGI_NAME: no cgi script name after the CGI_NAME tag.\n");
-      exit(1);
+      perlPath="/usr/bin/perl";
+      found=TRUE;
     }
-    // check cgi URL
-    QCString &cgiURL = Config_getString("CGI_URL");
-    if (cgiURL.isEmpty())
+    else
     {
-      config_err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
-      exit(1);
-    }
-    else if (cgiURL.left(7)!="http://" && 
-	     cgiURL.left(8)!="https://" &&
-	     cgiURL.left(4)!="cgi:"
-	    )
-    {
-      config_err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
-	  "start with http:// or https://).\n");
-      exit(1);
-    }
-    // check documentation URL
-    QCString &docURL = Config_getString("DOC_URL");
-    if (docURL.isEmpty())
-    {
-      docURL = Config_getString("OUTPUT_DIRECTORY").copy().prepend("file://").append("html");
-    }
-    else if (docURL.left(7)!="http://" && 
-	     docURL.left(8)!="https://" &&
-	     docURL.left(7)!="file://"
-	    )
-    {
-      config_err("Error: tag DOC_URL: URL to documentation is invalid or "
-	  "not absolute.\n"); 
-      exit(1);
-    }
-    // check absolute documentation path
-    QCString &docAbsPath = Config_getString("DOC_ABSPATH");
-    if (docAbsPath.isEmpty())
-    {
-      docAbsPath = Config_getString("OUTPUT_DIRECTORY")+"/html"; 
-    }
-    else if (docAbsPath[0]!='/' && docAbsPath[1]!=':')
-    {
-      config_err("Error: tag DOC_ABSPATH: path is not absolute!\n");
-      exit(1);
-    }
-    // check path to doxysearch
-    QCString &binAbsPath = Config_getString("BIN_ABSPATH");
-    if (binAbsPath.isEmpty())
-    {
-      config_err("Error: tag BIN_ABSPATH: no absolute path to doxysearch "
-	  "specified.\n");
-      exit(1);
-    }
-    else if (binAbsPath[0]!='/' && binAbsPath[1]!=':')
-    {
-      config_err("Error: tag BIN_ABSPATH: path is not absolute!\n");
-      exit(1);
-    }
-
-    // check perl path
-    bool found=FALSE;
-    QCString &perlPath = Config_getString("PERL_PATH");
-    if (perlPath.isEmpty())
-    {
-      QFileInfo fi;
-      fi.setFile("/usr/bin/perl");
-      if (fi.exists()) 
+      fi.setFile("/usr/local/bin/perl");
+      if (fi.exists())
       {
-	perlPath="/usr/bin/perl";
-        found=TRUE;
-      }
-      else
-      {
-	fi.setFile("/usr/local/bin/perl");
-	if (fi.exists())
-        {
-  	  perlPath="/usr/local/bin/perl";
-          found=TRUE;
-        }
+	perlPath="/usr/local/bin/perl";
+	found=TRUE;
       }
     }
-    if (!found)
+  }
+  if (!found)
+  {
+    QFileInfo fi(perlPath);
+    if (!fi.exists())
     {
-      QFileInfo fi(perlPath);
-      if (!fi.exists())
-      {
-        config_warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
-            "user specified (%s) location\n",
-        perlPath.data());
-      }
+      config_warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
+	  "user specified (%s) location\n",
+	  perlPath.data());
     }
   }
 
@@ -1742,7 +1757,7 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
-		    "*.h++ *.idl *.odl *.cs\n"
+		    "*.h++ *.idl *.odl *.cs *.php *.php3 *.inc\n"
                  );
   cb = addBool(
                     "RECURSIVE",
@@ -2611,52 +2626,12 @@ void Config::create()
                     "used. If set to NO the values of all tags below this one will be ignored. \n",
                     FALSE
                  );
-  cs = addString(
-                    "CGI_NAME",
-                    "The CGI_NAME tag should be the name of the CGI script that \n"
-                    "starts the search engine (doxysearch) with the correct parameters. \n"
-                    "A script with this name will be generated by doxygen. \n"
-                   );
-  cs->setDefaultValue("search.cgi");
-  cs->addDependency("SEARCHENGINE");
-  cs = addString(
-                    "CGI_URL",
-                    "The CGI_URL tag should be the absolute URL to the directory where the \n"
-                    "cgi binaries are located. See the documentation of your http daemon for \n"
-                    "details. \n"
-                   );
-  cs->addDependency("SEARCHENGINE");
-  cs = addString(
-                    "DOC_URL",
-                    "The DOC_URL tag should be the absolute URL to the directory where the \n"
-                    "documentation is located. If left blank the absolute path to the \n"
-                    "documentation, with file:// prepended to it, will be used. \n"
-                   );
-  cs->addDependency("SEARCHENGINE");
-  cs = addString(
-                    "DOC_ABSPATH",
-                    "The DOC_ABSPATH tag should be the absolute path to the directory where the \n"
-                    "documentation is located. If left blank the directory on the local machine \n"
-                    "will be used. \n"
-                   );
-  cs->setWidgetType(ConfigString::Dir);
-  cs->addDependency("SEARCHENGINE");
-  cs = addString(
-                    "BIN_ABSPATH",
-                    "The BIN_ABSPATH tag must point to the directory where the doxysearch binary \n"
-                    "is installed. \n"
-                   );
-  cs->setDefaultValue("/usr/local/bin/");
-  cs->setWidgetType(ConfigString::Dir);
-  cs->addDependency("SEARCHENGINE");
-  cl = addList(
-                    "EXT_DOC_PATHS",
-                    "The EXT_DOC_PATHS tag can be used to specify one or more paths to \n"
-                    "documentation generated for other projects. This allows doxysearch to search \n"
-                    "the documentation for these projects as well. \n"
-                 );
-  cl->setWidgetType(ConfigList::Dir);
-  cl->addDependency("SEARCHENGINE");
+  addObsolete("CGI_NAME");
+  addObsolete("CGI_URL");
+  addObsolete("DOC_URL");
+  addObsolete("DOC_ABSPATH");
+  addObsolete("BIN_ABSPATH");
+  addObsolete("EXT_DOC_PATHS");
 
   // The IMAGE_PATTERNS tag is now officially obsolete.
 }

@@ -235,8 +235,9 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.startMemberDescription();
                 ol.parseDoc(
                     md->briefFile(),md->briefLine(),
-                    cd?cd->name().data():0,md,
+                    cd,md,
                     md->briefDescription(),
+                    TRUE,
                     FALSE
                     );
                 if (md->isDetailedSectionLinkable())
@@ -322,7 +323,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    ol.parseDoc("<generated>",1,0,0,subtitle,FALSE);
+    ol.parseDoc("<generated>",1,0,0,subtitle,FALSE,FALSE);
     ol.endMemberSubtitle();
   }
 
@@ -346,7 +347,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        ol.parseDoc("<generated>",1,0,0,mg->documentation()+"\n",FALSE);
+        ol.parseDoc("<generated>",1,0,0,mg->documentation()+"\n",FALSE,FALSE);
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();

@@ -182,6 +182,13 @@ void RTFDocVisitor::visit(DocSymbol *s)
                                default: m_t << '?'; break;
                              }
                              break;
+    case DocSymbol::Slash:   switch(s->letter())
+                             {
+                               case 'O' : m_t << '\330'; break;
+                               case 'o' : m_t << '\370'; break;
+                               default: m_t << '?'; break;
+                             }
+                             break;
     case DocSymbol::Ring:    switch(s->letter())
                              {
                                case 'A' : m_t << '\305'; break;
@@ -899,14 +906,14 @@ void RTFDocVisitor::visitPost(DocLink *lnk)
 void RTFDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  startLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void RTFDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  endLink(ref->ref());
+  if (!ref->file().isEmpty()) endLink(ref->ref());
   m_t << " ";
 }
 

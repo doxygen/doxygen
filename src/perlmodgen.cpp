@@ -537,6 +537,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   case DocSymbol::Acute:   accent = "acute"; break;
   case DocSymbol::Grave:   accent = "grave"; break;
   case DocSymbol::Circ:    accent = "circ"; break;
+  case DocSymbol::Slash:   accent = "slash"; break;
   case DocSymbol::Tilde:   accent = "tilde"; break;
   case DocSymbol::Cedil:   accent = "cedilla"; break;
   case DocSymbol::Ring:    accent = "ring"; break;
@@ -1265,7 +1266,7 @@ static void addPerlModDocBlock(PerlModOutput &output,
 			    const char *name,
 			    const QCString &fileName,
 			    int lineNr,
-			    const QCString &scope,
+			    Definition *scope,
 			    MemberDef *md,
 			    const QCString &text)
 {
@@ -1395,12 +1396,6 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   case MemberDef::Event:       memType="event";     break;
   }
 
-  QCString scopeName;
-  if (md->getClassDef())
-    scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef())
-    scopeName=md->getNamespaceDef()->name();
-
   m_output.openHash()
     .addFieldQuotedString("kind", memType)
     .addFieldQuotedString("name", md->name())
@@ -1408,8 +1403,8 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
   
-  addPerlModDocBlock(m_output,"brief",md->getDefFileName(),md->getDefLine(),scopeName,md,md->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",md->getDefFileName(),md->getDefLine(),scopeName,md,md->documentation());
+  addPerlModDocBlock(m_output,"brief",md->getDefFileName(),md->getDefLine(),md->getOuterScope(),md,md->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",md->getDefFileName(),md->getDefLine(),md->getOuterScope(),md,md->documentation());
   if (md->memberType()!=MemberDef::Define &&
       md->memberType()!=MemberDef::Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
@@ -1492,9 +1487,9 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
 	if (!emd->initializer().isEmpty())
 	  m_output.addFieldQuotedString("initializer", emd->initializer());
 
-	addPerlModDocBlock(m_output,"brief",emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->briefDescription());
+	addPerlModDocBlock(m_output,"brief",emd->getDefFileName(),emd->getDefLine(),emd->getOuterScope(),emd,emd->briefDescription());
 
-	addPerlModDocBlock(m_output,"detailed",emd->getDefFileName(),emd->getDefLine(),scopeName,emd,emd->documentation());
+	addPerlModDocBlock(m_output,"detailed",emd->getDefFileName(),emd->getDefLine(),emd->getOuterScope(),emd,emd->documentation());
 
 	m_output.closeHash();
       }
@@ -1690,8 +1685,8 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
   generatePerlModSection(cd,&cd->friends,"friend_methods");
   generatePerlModSection(cd,&cd->related,"related_methods");
 
-  addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
-  addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->documentation());
+  addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),cd,0,cd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),cd,0,cd->documentation());
 
 #if 0
   DotClassGraph inheritanceGraph(cd,DotClassGraph::Inheritance);

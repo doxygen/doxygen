@@ -100,6 +100,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Acute:   m_t << "&" << s->letter() << "acute;"; break;
     case DocSymbol::Grave:   m_t << "&" << s->letter() << "grave;"; break;
     case DocSymbol::Circ:    m_t << "&" << s->letter() << "circ;"; break;
+    case DocSymbol::Slash:   m_t << "&" << s->letter() << "slash;"; break;
     case DocSymbol::Tilde:   m_t << "&" << s->letter() << "tilde;"; break;
     case DocSymbol::Szlig:   m_t << "&szlig;"; break;
     case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedil;"; break;
@@ -207,7 +208,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 void HtmlDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
-  m_t << "<a name=\"" /*<< anc->file() << "#"*/ << anc->anchor() << "\"/></a>";
+  m_t << "<a class=\"anchor\" name=\"" << anc->anchor() << "\"></a>";
 }
 
 void HtmlDocVisitor::visit(DocInclude *inc)
@@ -328,6 +329,20 @@ void HtmlDocVisitor::visitPost(DocAutoListItem *)
 
 void HtmlDocVisitor::visitPre(DocPara *) 
 {
+  if (m_hide) return;
+
+  // TODO:
+  // Paragraph should be surrounded by <p>..</p>, but
+  // 
+  // A list item (li), description data (dd), or table data (td) should
+  // only have paragraph markers if there are multiple paragraphs (otherwise
+  // the output looks ugly).
+  //
+  // A list or table should be placed outside the paragraph context,
+  // so the current paragraph should be ended and restarted. To avoid
+  // empty paragraphs, it has to be checked if the list or table is the
+  // first or last child within the paragraph.
+  
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -345,12 +360,10 @@ void HtmlDocVisitor::visitPost(DocPara *p)
 
 void HtmlDocVisitor::visitPre(DocRoot *)
 {
-  //m_t << "<hr><h4><font color=\"red\">New parser:</font></h4>\n";
 }
 
 void HtmlDocVisitor::visitPost(DocRoot *)
 {
-  //m_t << "<hr><h4><font color=\"red\">Old parser:</font></h4>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSimpleSect *s)
@@ -446,10 +459,10 @@ void HtmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
   m_t << "<h" << s->level()+1 << ">";
-  m_t << "<a name=\"" << s->anchor();
-  m_t << "\"></a>" << endl;
+  m_t << "<a class=\"anchor\" name=\"" << s->anchor();
+  m_t << "\">" << endl;
   filter(s->title());
-  m_t << "</h" << s->level()+1 << ">\n";
+  m_t << "</a></h" << s->level()+1 << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocSection *) 
@@ -487,18 +500,6 @@ void HtmlDocVisitor::visitPost(DocHtmlListItem *)
   if (m_hide) return;
   m_t << "</li>\n";
 }
-
-//void HtmlDocVisitor::visitPre(DocHtmlPre *p)
-//{
-//  m_t << "<pre" << htmlAttribsToString(p->attribs()) << ">\n";
-//  m_insidePre=TRUE;
-//}
-
-//void HtmlDocVisitor::visitPost(DocHtmlPre *) 
-//{
-//  m_insidePre=FALSE;
-//  m_t << "</pre>\n";
-//}
 
 void HtmlDocVisitor::visitPre(DocHtmlDescList *dl)
 {
@@ -747,14 +748,14 @@ void HtmlDocVisitor::visitPost(DocLink *)
 void HtmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  startLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
-void HtmlDocVisitor::visitPost(DocRef *) 
+void HtmlDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  endLink();
+  if (!ref->file().isEmpty()) endLink();
   //m_t << " ";
 }
 

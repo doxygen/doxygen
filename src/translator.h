@@ -407,6 +407,15 @@ class Translator
     virtual QCString trAll() = 0;
     virtual QCString trCallGraph() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trSearchForIndex() = 0;
+    virtual QCString trSearchResultsTitle() = 0;
+    virtual QCString trSearchResults(int numDocuments) = 0;
+    virtual QCString trSearchMatches() = 0;
+
 };
 
 #endif

@@ -39,6 +39,7 @@
 class PageSList;
 class PageSDict;
 class PageDef;
+class SearchIndex;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -97,6 +98,7 @@ class Doxygen
     static bool                      parseSourcesNeeded;
     static double                    sysElapsedTime;
     static QTime                     runningTime;
+    static SearchIndex              *searchIndex;
 };
 
 void initDoxygen();

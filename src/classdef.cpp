@@ -791,7 +791,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
+      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
@@ -811,7 +811,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
         ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
       ol.popGeneratorState();
-      ol.parseDoc(docFile(),docLine(),name(),0,documentation()+"\n",FALSE);
+      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
     // write examples
     if (exampleFlag)
@@ -860,7 +860,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     if (!Config_getBool("DETAILS_AT_TOP")) 
     {
-      ol.parseDoc(briefFile(),briefLine(),name(),0,briefDescription(),FALSE);
+      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
       ol.writeString(" \n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);

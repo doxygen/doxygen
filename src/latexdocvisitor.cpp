@@ -157,6 +157,11 @@ void LatexDocVisitor::visit(DocSymbol *s)
                              else                  
                                m_t << "\\^{" << s->letter() << "}"; 
                              break;
+    case DocSymbol::Slash:   if (tolower(s->letter())=='o')
+                               m_t << "\\" << s->letter();
+                             else
+                               m_t << s->letter();
+                             break;
     case DocSymbol::Tilde:   m_t << "\\~{"  << s->letter() << "}"; break;
     case DocSymbol::Szlig:   m_t << "\"s"; break;
     case DocSymbol::Cedil:   m_t << "\\c{" << s->letter() << "}"; break;
@@ -405,33 +410,33 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   switch(s->type())
   {
     case DocSimpleSect::See: 
-      m_t << theTranslator->trSeeAlso(); break;
+      filter(theTranslator->trSeeAlso()); break;
     case DocSimpleSect::Return: 
-      m_t << theTranslator->trReturns(); break;
+      filter(theTranslator->trReturns()); break;
     case DocSimpleSect::Author: 
-      m_t << theTranslator->trAuthor(TRUE,TRUE); break;
+      filter(theTranslator->trAuthor(TRUE,TRUE)); break;
     case DocSimpleSect::Authors: 
-      m_t << theTranslator->trAuthor(TRUE,FALSE); break;
+      filter(theTranslator->trAuthor(TRUE,FALSE)); break;
     case DocSimpleSect::Version: 
-      m_t << theTranslator->trVersion(); break;
+      filter(theTranslator->trVersion()); break;
     case DocSimpleSect::Since: 
-      m_t << theTranslator->trSince(); break;
+      filter(theTranslator->trSince()); break;
     case DocSimpleSect::Date: 
-      m_t << theTranslator->trDate(); break;
+      filter(theTranslator->trDate()); break;
     case DocSimpleSect::Note: 
-      m_t << theTranslator->trNote(); break;
+      filter(theTranslator->trNote()); break;
     case DocSimpleSect::Warning:
-      m_t << theTranslator->trWarning(); break;
+      filter(theTranslator->trWarning()); break;
     case DocSimpleSect::Pre:
-      m_t << theTranslator->trPrecondition(); break;
+      filter(theTranslator->trPrecondition()); break;
     case DocSimpleSect::Post:
-      m_t << theTranslator->trPostcondition(); break;
+      filter(theTranslator->trPostcondition()); break;
     case DocSimpleSect::Invar:
-      m_t << theTranslator->trInvariant(); break;
+      filter(theTranslator->trInvariant()); break;
     case DocSimpleSect::Remark:
-      m_t << theTranslator->trRemarks(); break;
+      filter(theTranslator->trRemarks()); break;
     case DocSimpleSect::Attention:
-      m_t << theTranslator->trAttention(); break;
+      filter(theTranslator->trAttention()); break;
     case DocSimpleSect::User: break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
@@ -636,7 +641,7 @@ void LatexDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
   m_t << "\\begin{Desc}" << endl 
-    << "\\item[" << theTranslator->trForInternalUseOnly() << "]" << endl;
+    << "\\item["; filter(theTranslator->trForInternalUseOnly()); m_t << "]" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocInternal *) 
@@ -806,14 +811,14 @@ void LatexDocVisitor::visitPost(DocLink *lnk)
 void LatexDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  startLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor());
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
 void LatexDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  endLink(ref->ref(),ref->file(),ref->anchor());
+  if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPre(DocSecRefItem *)
@@ -871,11 +876,11 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
   switch(s->type())
   {
     case DocParamSect::Param: 
-      m_t << theTranslator->trParameters(); break;
+      filter(theTranslator->trParameters()); break;
     case DocParamSect::RetVal: 
-      m_t << theTranslator->trReturnValues(); break;
+      filter(theTranslator->trReturnValues()); break;
     case DocParamSect::Exception: 
-      m_t << theTranslator->trExceptions(); break;
+      filter(theTranslator->trExceptions()); break;
     default:
       ASSERT(0);
   }
@@ -991,7 +996,7 @@ void LatexDocVisitor::endLink(const QString &ref,const QString &file,const QStri
   m_t << "}";
   if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "{\\rm (" << theTranslator->trPageAbbreviation();
+    m_t << "{\\rm ("; filter(theTranslator->trPageAbbreviation());
     m_t << "\\,\\pageref{" << file;
     if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "})}";

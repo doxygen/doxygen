@@ -30,6 +30,7 @@
 #include "message.h"
 #include "code.h"
 #include "docparser.h"
+#include "ftvhelp.h"
 //#include "xml.h"
 
 class DevNullCodeDocInterface : public BaseCodeDocInterface
@@ -159,7 +160,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     ol.endGroupHeader();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
-      ol.parseDoc(briefFile(),briefLine(),0,0,briefDescription(),FALSE);
+      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
     }
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
         !documentation().isEmpty())
@@ -176,7 +177,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     {
       //if (doc.at(dl-1)!='.' && doc.at(dl-1)!='!' && doc.at(dl-1)!='?') 
       //  doc+='.';
-      ol.parseDoc(docFile(),docLine(),0,0,documentation()+"\n",FALSE);
+      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
@@ -237,7 +238,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   else if (briefDescription()) 
   {
-    ol.parseDoc(briefFile(),briefLine(),0,0,briefDescription(),FALSE);
+    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
     ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
@@ -777,5 +778,219 @@ void FileDef::addListReferences()
   docEnumMembers.addListReferences(this);
   docFuncMembers.addListReferences(this);
   docVarMembers.addListReferences(this);
+}
+
+//-------------------------------------------------------------------
+
+static int findMatchingPart(const QCString &path,const QCString dir)
+{
+  int si1;
+  int pos1=0,pos2=0;
+  while ((si1=path.find('/',pos1))!=-1)
+  {
+    int si2=dir.find('/',pos2);
+    //printf("  found slash at pos %d in path %d: %s<->%s\n",si1,si2,
+    //    path.mid(pos1,si1-pos2).data(),dir.mid(pos2).data());
+    if (si2==-1 && path.mid(pos1,si1-pos2)==dir.mid(pos2)) // match at end
+    {
+      return dir.length();
+    }
+    if (si1!=si2 || path.mid(pos1,si1-pos2)!=dir.mid(pos2,si2-pos2)) // no match in middle
+    {
+      return QMAX(pos1-1,0);
+    }
+    pos1=si1+1;
+    pos2=si2+1;
+  }
+  return 0;
+}
+
+static Directory *findDirNode(Directory *root,const QCString &name)
+{
+  QListIterator<DirEntry> dli(root->children());
+  DirEntry *de;
+  for (dli.toFirst();(de=dli.current());++dli)
+  {
+    if (de->kind()==DirEntry::Dir)
+    {
+      Directory *dir = (Directory *)de;
+      QCString dirName=dir->name();
+      int sp=findMatchingPart(name,dirName);
+      //printf("findMatchingPart(%s,%s)=%d\n",name.data(),dirName.data(),sp);
+      if (sp>0) // match found
+      {
+        if ((uint)sp==dirName.length()) // whole directory matches
+        {
+          // recurse into the directory
+          return findDirNode(dir,name.mid(dirName.length()+1));
+        } 
+        else // partial match => we need to split the path into three parts
+        {
+          QCString baseName     =dirName.left(sp);
+          QCString oldBranchName=dirName.mid(sp+1);
+          QCString newBranchName=name.mid(sp+1);
+          // strip file name from path
+          int newIndex=newBranchName.findRev('/');
+          if (newIndex>0) newBranchName=newBranchName.left(newIndex);
+
+          //printf("Splitting off part in new branch \n"
+          //    "base=%s old=%s new=%s\n",
+          //    baseName.data(),
+          //    oldBranchName.data(),
+          //    newBranchName.data()
+          //      );
+          Directory *base = new Directory(root,baseName);
+          Directory *newBranch = new Directory(base,newBranchName);
+          dir->reParent(base);
+          dir->rename(oldBranchName);
+          base->addChild(dir);
+          base->addChild(newBranch);
+          dir->setLast(FALSE);
+          // remove DirEntry container from list (without deleting it)
+          root->children().setAutoDelete(FALSE);
+          root->children().removeRef(dir);
+          root->children().setAutoDelete(TRUE);
+          // add new branch to the root
+          if (!root->children().isEmpty())
+          {
+            root->children().last()->setLast(FALSE); 
+          }
+          root->addChild(base);
+          return newBranch;
+        }
+      }
+    }
+  }
+  int si=name.findRev('/');
+  if (si==-1) // no subdir
+  {
+    return root; // put the file under the root node.
+  }
+  else // need to create a subdir 
+  {
+    QCString baseName = name.left(si);
+    //printf("new subdir %s\n",baseName.data());
+    Directory *newBranch = new Directory(root,baseName);
+    if (!root->children().isEmpty())
+    {
+      root->children().last()->setLast(FALSE); 
+    }
+    root->addChild(newBranch);
+    return newBranch;
+  }
+}
+
+static void mergeFileDef(Directory *root,FileDef *fd)
+{
+  QCString rootPath = root->name();
+  QCString filePath = fd->absFilePath();
+  //printf("merging %s\n",filePath.data());
+  Directory *dirNode = findDirNode(root,filePath);
+  if (!dirNode->children().isEmpty())
+  {
+    dirNode->children().last()->setLast(FALSE); 
+  }
+  DirEntry *e=new DirEntry(dirNode,fd);
+  dirNode->addChild(e);
+}
+
+static void generateIndent(QTextStream &t,DirEntry *de,int level)
+{
+  if (de->parent())
+  {
+    generateIndent(t,de->parent(),level+1);
+  }
+  // from the root up to node n do...
+  if (level==0) // item before a dir or document
+  {
+    if (de->isLast())
+    {
+      if (de->kind()==DirEntry::Dir)
+      {
+        t << "<img " << FTV_IMGATTRIBS(plastnode) << "/>";
+      }
+      else
+      {
+        t << "<img " << FTV_IMGATTRIBS(lastnode) << "/>";
+      }
+    }
+    else
+    {
+      if (de->kind()==DirEntry::Dir)
+      {
+        t << "<img " << FTV_IMGATTRIBS(pnode) << "/>";
+      }
+      else
+      {
+        t << "<img " << FTV_IMGATTRIBS(node) << "/>";
+      }
+    }
+  }
+  else // item at another level
+  {
+    if (de->isLast())
+    {
+      t << "<img " << FTV_IMGATTRIBS(blank) << "/>";
+    }
+    else
+    {
+      t << "<img " << FTV_IMGATTRIBS(vertline) << "/>";
+    }
+  }
+}
+
+
+static void writeDirTreeNode(QTextStream &t,Directory *root,int level)
+{
+  QCString indent;
+  indent.fill(' ',level*2);
+  QListIterator<DirEntry> dli(root->children());
+  DirEntry *de;
+  for (dli.toFirst();(de=dli.current());++dli)
+  {
+    t << indent << "<p>";
+    generateIndent(t,de,0);
+    if (de->kind()==DirEntry::Dir)
+    {
+      Directory *dir=(Directory *)de;
+      //printf("%s [dir]: %s (last=%d,dir=%d)\n",indent.data(),dir->name().data(),dir->isLast(),dir->kind()==DirEntry::Dir);
+      t << "<img " << FTV_IMGATTRIBS(folderclosed) << "/>";
+      t << dir->name();
+      t << "</p>\n";
+      t << indent << "<div>\n";
+      writeDirTreeNode(t,dir,level+1);
+      t << indent << "</div>\n";
+    }
+    else
+    {
+      //printf("%s [file]: %s (last=%d,dir=%d)\n",indent.data(),de->file()->name().data(),de->isLast(),de->kind()==DirEntry::Dir);
+      t << "<img " << FTV_IMGATTRIBS(doc) << "/>";
+      t << de->file()->name();
+      t << "</p>\n";
+    }
+  }
+}
+
+void generateFileTree(QTextStream &t)
+{
+  FTVHelp::generateTreeViewImages();
+  
+  Directory *root=new Directory(0,"");
+  root->setLast(TRUE);
+  FileNameListIterator fnli(Doxygen::inputNameList); 
+  FileName *fn;
+  for (fnli.toFirst();(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      mergeFileDef(root,fd);
+    }
+  }
+  t << "<div class=\"directory\">\n";
+  writeDirTreeNode(t,root,0);
+  t << "</div>\n";
+  delete root;
 }
 

@@ -22,9 +22,12 @@
 #include <qintdict.h>
 #include <qlist.h>
 #include <qdict.h>
+#include <qintdict.h>
+#include <qvector.h>
 
+
+#if 0 // old version
 #include "suffixtree.h"
-
 //class IndexTree;
 class SuffixTree;
 
@@ -68,5 +71,50 @@ class SearchIndex
     QIntDict<DocRef> nameIndex;
     int indexCount;
 };
+
+#endif
+
+struct URL
+{
+  URL(const char *n,const char *u) : name(n), url(u) {} 
+  QCString name;
+  QCString url;
+};
+
+
+struct URLInfo
+{
+  URLInfo(int idx,int f) : urlIdx(idx), freq(f) {}
+  int urlIdx;
+  int freq;
+};
+
+class IndexWord
+{
+  public:
+    IndexWord(const char *word);
+    void addUrlIndex(int);
+    const QIntDict<URLInfo> &urls() const { return m_urls; }
+    QCString word() const { return m_word; }
+
+  private:
+    QCString    m_word;
+    QIntDict<URLInfo> m_urls;
+};
+
+class SearchIndex
+{
+  public:
+    SearchIndex();
+    void setCurrentDoc(const char *name,const char *url);
+    void addWord(const char *word);
+    void write(const char *file);
+  private:
+    QDict<IndexWord> m_words;
+    QVector< QList<IndexWord> > m_index;
+    QIntDict<URL>  m_urls;
+    int m_urlIndex;
+};
+
 
 #endif
