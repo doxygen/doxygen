@@ -342,7 +342,7 @@ class OutputGenerator : public BaseOutputDocInterface
     //virtual void endQuickIndexItem() = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
     virtual void startTextBlock(bool) = 0;
-    virtual void endTextBlock() = 0;
+    virtual void endTextBlock(bool) = 0;
     virtual void lastIndexPage() = 0;
     virtual void startMemberDocPrefixItem() = 0;
     virtual void endMemberDocPrefixItem() = 0;

@@ -1356,7 +1356,6 @@ void Config::create()
 		 "cause performance problems for the file system. \n",
 		 FALSE
                 );
-  cb->addDependency("GENERATE_HTML");
   ce = addEnum(
                  "OUTPUT_LANGUAGE",
                  "The OUTPUT_LANGUAGE tag is used to specify the language in which all \n"

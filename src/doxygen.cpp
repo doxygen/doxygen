@@ -1608,8 +1608,8 @@ static MemberDef *addVariableToFile(
       if (
           ((nd==0 && md->getFileDef() && 
             root->fileName==md->getFileDef()->absFilePath()
-           )
-           || (nd!=0 && md->getNamespaceDef()==nd)
+           ) // both variable names in the same file
+           || (nd!=0 && md->getNamespaceDef()==nd) // both in same namespace
           )
           && !md->isDefine() // function style #define's can be "overloaded" by typedefs or variables
          )
@@ -1658,15 +1658,17 @@ static MemberDef *addVariableToFile(
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
-  //md->setIndentDepth(indentDepth);
-  md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
-  md->setBodyDef(fd);
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->setExplicitExternal(root->explicitExternal);
+  if (!root->explicitExternal)
+  {
+    md->setBodySegment(root->bodyLine,root->endBodyLine);
+    md->setBodyDef(fd);
+  }
   addMemberToGroups(root,md);
 
   md->setRefItems(root->sli);
@@ -1956,7 +1958,7 @@ static void buildVarList(Entry *root)
       int si=scope.find('@');
       //int anonyScopes = 0;
       bool added=FALSE;
-      if (si!=-1)
+      if (si!=-1) // anonymous scope
       {
         QCString pScope;
         ClassDef *pcd=0;
@@ -1994,19 +1996,6 @@ static void buildVarList(Entry *root)
       //printf("Inserting member in global scope %s!\n",scope.data());
       addVariableToFile(root,mtype,scope,name,FALSE,/*0,*/0);
     }
-    //if (mtype==MemberDef::Typedef)
-    //{
-    //  static QRegExp r("[a-z_A-Z][a-z_A-Z0-9]*");
-    //  int i,l;
-    //  if ((i=r.match(type,8,&l))!=-1)
-    //  {
-    //    //printf(">>> inserting typedef `%s'->`%s'\n",type.mid(i,l).data(),name.data());
-    //    if (getClass(type.mid(i,l))!=0)
-    //    {
-    //      typedefDict.insert(name,new QCString(type.mid(i,l))); 
-    //    }
-    //  }
-    //}
   }
 nextMember:
   EntryListIterator eli(*root->sublist);
@@ -3091,11 +3080,18 @@ static void findUsedClassesForClass(Entry *root,
         {
           //printf("Found used class %s\n",usedClassName.data());
           // the name could be a type definition, resolve it
-          // TODO: recursive typedef resolution
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
-          //printf("Found resolved class %s\n",typeName.data());
+          //printf("*** Found resolved class %s for %s\n",typeName.data(),usedClassName.data());
+
+          if (!typeName.isEmpty()) // if we could resolve the typedef, use
+                                   // the result as the class name.
+          {
+            usedClassName=typeName;
+          }
           
-          int si=usedClassName.findRev("::");
+          int sp=usedClassName.find('<');
+          if (sp==-1) sp=0;
+          int si=usedClassName.findRev("::",sp);
           if (si!=-1)
           {
             // replace any namespace aliases
@@ -8381,8 +8377,9 @@ void generateOutput()
     Doxygen::tagFile << "<tagfile>" << endl;
   }
 
-  if (Config_getBool("GENERATE_HTML")) writeDoxFont(Config_getString("HTML_OUTPUT"));
-  if (Config_getBool("GENERATE_RTF"))  writeDoxFont(Config_getString("RTF_OUTPUT"));
+  if (Config_getBool("GENERATE_HTML"))  writeDoxFont(Config_getString("HTML_OUTPUT"));
+  if (Config_getBool("GENERATE_LATEX")) writeDoxFont(Config_getString("LATEX_OUTPUT"));
+  if (Config_getBool("GENERATE_RTF"))   writeDoxFont(Config_getString("RTF_OUTPUT"));
 
   //statistics();
   

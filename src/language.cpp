@@ -112,6 +112,9 @@
 //#ifdef LANG_JS
 //#include "translator_js.h"
 //#endif
+#ifdef LANG_LT
+#include "translator_lt.h"
+#endif
 #endif
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -305,6 +308,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("catalan"))
   {
     theTranslator=new TranslatorCatalan;
+  }
+#endif
+#ifdef LANG_LT
+  else if (L_EQUAL("lithuanian"))
+  {
+    theTranslator=new TranslatorLithuanian;
   }
 #endif
 #endif // ENGLISH_ONLY

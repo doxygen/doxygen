@@ -62,7 +62,8 @@ class OutputList : public OutputDocInterface
 
     void parseDoc(const char *fileName,int startLine,
                   Definition *ctx,MemberDef *md,const QCString &docStr,
-                  bool indexWords,bool isExample,const char *exampleName=0);
+                  bool indexWords,bool isExample,const char *exampleName=0,
+                  bool singleLine=FALSE);
     void parseText(const QCString &textStr);
     
 
@@ -321,8 +322,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
     void startTextBlock(bool dense=FALSE)
     { forall(&OutputGenerator::startTextBlock,dense); }
-    void endTextBlock()
-    { forall(&OutputGenerator::endTextBlock); }
+    void endTextBlock(bool paraBreak=FALSE)
+    { forall(&OutputGenerator::endTextBlock,paraBreak); }
     void lastIndexPage()
     { forall(&OutputGenerator::lastIndexPage); }
     void startMemberDocPrefixItem()

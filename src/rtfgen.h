@@ -235,7 +235,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberGroup(bool);
     
     void startTextBlock(bool dense);
-    void endTextBlock();
+    void endTextBlock(bool);
     void lastIndexPage();
 
     void startMemberDocPrefixItem() {}
@@ -287,10 +287,10 @@ class RTFGenerator : public OutputGenerator
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
-    void rtfwriteRuler_doubleline() { t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void rtfwriteRuler_emboss() { t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; };
-    void rtfwriteRuler_thick() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; };
-    void rtfwriteRuler_thin() { t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; };
+    void rtfwriteRuler_doubleline();
+    void rtfwriteRuler_emboss();
+    void rtfwriteRuler_thick();
+    void rtfwriteRuler_thin();
     void writeRTFReference(const char *label);
     char *getMultiByte(int c);
 };

@@ -190,7 +190,7 @@ class HtmlGenerator : public OutputGenerator
     void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
 
     void startTextBlock(bool) {}
-    void endTextBlock() {}
+    void endTextBlock(bool) {}
     void lastIndexPage() {}
 
     void startMemberDocPrefixItem();

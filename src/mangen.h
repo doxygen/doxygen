@@ -232,7 +232,7 @@ class ManGenerator : public OutputGenerator
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
-    void endTextBlock() {}
+    void endTextBlock(bool) {}
     void lastIndexPage() {}
 
     void startMemberDocPrefixItem() {}

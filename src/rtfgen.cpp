@@ -37,8 +37,8 @@
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 
-//#define DBG_RTF(x) x;
-#define DBG_RTF(x)
+#define DBG_RTF(x) x;
+//#define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {
@@ -1328,7 +1328,7 @@ void RTFGenerator::startTitle()
 void RTFGenerator::startGroupHeader()
 {
   DBG_RTF(t <<"{\\comment startGroupHeader}" << endl)
-  newParagraph();
+  //newParagraph();
   t << rtf_Style_Reset;
   t << rtf_Style["Heading3"]->reference;
   t << endl;
@@ -1426,12 +1426,10 @@ void RTFGenerator::startIndent()
   DBG_RTF(t << "{\\comment (startIndent) }" << endl)
   t << "{" << endl;
   t << rtf_Style_Reset << rtf_CList_DepthStyle() << endl;
-  //styleStack.push(style);
 }
 
 void RTFGenerator::endIndent()
 {
-  //const char *style = /* rtf_CList_DepthStyle(); */
   t << "}" << endl;
   decrementIndentLevel();
 }
@@ -1762,14 +1760,14 @@ void RTFGenerator::startCodeFragment()
 {
   DBG_RTF(t << "{\\comment (startCodeFragment) }"    << endl)
   t << "{" << endl;
-  newParagraph();
+  //newParagraph();
   t << rtf_Style_Reset << rtf_Code_DepthStyle();
   //styleStack.push(rtf_Style_CodeExample);
 }
 
 void RTFGenerator::endCodeFragment()
 {
-  newParagraph();
+  //newParagraph();
   //styleStack.pop();
   //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
   //t << rtf_Style_Reset << styleStack.top() << endl;
@@ -1967,9 +1965,9 @@ void RTFGenerator::startTextBlock(bool dense)
   }
 }
 
-void RTFGenerator::endTextBlock()
+void RTFGenerator::endTextBlock(bool paraBreak)
 {
-  newParagraph();
+  if (paraBreak) newParagraph();
   DBG_RTF(t << "{\\comment endTextBlock}" << endl)
   t << "}" << endl;
   //m_omitParagraph = TRUE;
@@ -2446,5 +2444,29 @@ void RTFGenerator::printDoc(DocNode *n)
   RTFDocVisitor *visitor = new RTFDocVisitor(t,*this);
   n->accept(visitor);
   delete visitor; 
+}
+
+void RTFGenerator::rtfwriteRuler_doubleline() 
+{ 
+  DBG_RTF(t << "{\\comment (rtfwriteRuler_doubleline)}"    << endl)
+  t << "{\\pard\\widctlpar\\brdrb\\brdrdb\\brdrw15\\brsp20 \\adjustright \\par}" << endl; 
+}
+
+void RTFGenerator::rtfwriteRuler_emboss() 
+{ 
+  DBG_RTF(t << "{\\comment (rtfwriteRuler_emboss)}"    << endl)
+  t << "{\\pard\\widctlpar\\brdrb\\brdremboss\\brdrw15\\brsp20 \\adjustright \\par}" << endl; 
+}
+
+void RTFGenerator::rtfwriteRuler_thick() 
+{ 
+  DBG_RTF(t << "{\\comment (rtfwriteRuler_thick)}"    << endl)
+  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw75\\brsp20 \\adjustright \\par}" << endl; 
+}
+
+void RTFGenerator::rtfwriteRuler_thin() 
+{ 
+  DBG_RTF(t << "{\\comment (rtfwriteRuler_thin)}"    << endl)
+  t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; 
 }
 

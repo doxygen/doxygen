@@ -266,7 +266,7 @@ class LatexGenerator : public OutputGenerator
     void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
-    void endTextBlock() {}
+    void endTextBlock(bool) {}
 
     void startMemberDocPrefixItem() {}
     void endMemberDocPrefixItem() {}
