@@ -353,6 +353,7 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
     doc += "</dt>\n<dd>";
     doc += item->text;
     doc += "</dd></dl>\n";
+    //printf("Test page: %s\n",doc.data());
     addRelatedPage("test",theTranslator->trTestList(),doc,0,"generated",1,0,0,0);
 
     item->written=TRUE;
@@ -675,34 +676,29 @@ static Definition *findScope(Entry *root,int level=0)
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n)
 {
   //printf("findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
-  QCString name(n);
-  if (startScope==0) startScope=Doxygen::globalScope;
-  int i = name.find("::");
-  if (i==-1) 
+  Definition *resultScope=startScope;
+  if (resultScope==0) resultScope=Doxygen::globalScope;
+  QCString scope=stripTemplateSpecifiersFromScope(n,FALSE);
+  int l1=0,i1;
+  i1=getScopeFragment(scope,0,&l1);
+  if (i1==-1) return resultScope;
+  int p=i1+l1,l2=0,i2;
+  while ((i2=getScopeFragment(scope,p,&l2))!=-1)
   {
-    return startScope;
-  }
-
-  QCString scope=stripTemplateSpecifiersFromScope(name,FALSE);
-  //printf("name=%s -> scope=%s\n",name.data(),scope.data());
-  while ((i = scope.find("::"))!=-1)
-  {
-    //int ti = name.find('<');
-    //if (ti!=-1 && ti<i) i=ti; // strip template specifiers
-    QCString nestedNameSpecifier = scope.left(i);
-    //Definition *oldScope = startScope;
-    startScope = startScope->findInnerCompound(nestedNameSpecifier);
-    //printf("Trying %s result=%p\n",nestedNameSpecifier.data(),startScope);
-    if (startScope==0) 
+    QCString nestedNameSpecifier = scope.mid(i1,l1);
+    //Definition *oldScope = resultScope;
+    resultScope = resultScope->findInnerCompound(nestedNameSpecifier);
+    if (resultScope==0) 
     {
       //printf("name %s not found in scope %s\n",nestedNameSpecifier.data(),oldScope->name().data());
       return 0;
     }
-    scope = scope.right(scope.length()-i-2);
-    //printf("scope=%s\n",scope.data());
+    i1=i2;
+    l1=l2;
+    p=i2+l2;
   }
-  //printf("findScopeFromQualifiedName() result=%s\n",startScope ? startScope->name().data() : 0);
-  return startScope;
+  //printf("scope %s\n",resultScope->name().data());
+  return resultScope;
 }
 
 ArgumentList *getTemplateArgumentsFromName(
@@ -834,6 +830,15 @@ static void buildClassList(Entry *root)
         addClassToGroups(root,cd);
         cd->setRefItems(root->todoId,root->testId,root->bugId);
         if (!root->subGrouping) cd->setSubGrouping(FALSE);
+
+        if (cd->templateArguments()==0) 
+        {
+          // this happens if a template class declared with @class is found
+          // before the actual definition.
+          ArgumentList *tArgList = 
+            getTemplateArgumentsFromName(fullName,root->tArgLists);
+          cd->setTemplateArguments(tArgList);
+        }
       }
       else // new class
       {
@@ -1981,6 +1986,7 @@ static void buildMemberList(Entry *root)
 
         addMemberToGroups(root,md);
         root->section = Entry::EMPTY_SEC;
+        md->setRefItems(root->todoId,root->testId,root->bugId);
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
@@ -2015,10 +2021,12 @@ static void buildMemberList(Entry *root)
             QCString nsName,rnsName;
             if (nd)  nsName  = nd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
+            //printf("matching arguments for %s\n",md->name().data());
             if ( 
                 matchArguments(md->argumentList(),root->argList,0,nsName)
                )
             {
+              //printf("match!\n");
               // see if we need to create a new member
               found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
                     ((fd!=0 &&                          // no external reference and
@@ -3206,54 +3214,8 @@ static void computeMemberReferences()
 
 //----------------------------------------------------------------------
 
-static void addTodoTestBugReferences()
+static void addClassMemberTodoTestBufReferences(Definition *compound)
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
-  {
-    addRefItem(cd->todoId(),cd->testId(),cd->bugId(),
-               theTranslator->trClass(TRUE,TRUE),
-               cd->getOutputFileBase(),cd->name()
-              );
-  } 
-  FileName *fn=Doxygen::inputNameList.first();
-  while (fn)
-  {
-    FileDef *fd=fn->first();
-    while (fd)
-    {
-      addRefItem(fd->todoId(),fd->testId(),fd->bugId(),
-                 theTranslator->trFile(TRUE,TRUE),
-                 fd->getOutputFileBase(),fd->name());
-      fd=fn->next();
-    }
-    fn=Doxygen::inputNameList.next();
-  }
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
-  {
-    addRefItem(nd->todoId(),nd->testId(),nd->bugId(),
-               theTranslator->trNamespace(TRUE,TRUE),
-               nd->getOutputFileBase(),nd->name());
-    nd=Doxygen::namespaceList.next();
-  }
-  GroupDef *gd=Doxygen::groupList.first();
-  while (gd)
-  {
-    addRefItem(gd->todoId(),gd->testId(),gd->bugId(),
-               theTranslator->trGroup(TRUE,TRUE),
-               gd->getOutputFileBase(),gd->groupTitle());
-    gd=Doxygen::groupList.next();
-  }
-  PageSDictIterator pdi(*Doxygen::pageSDict);
-  PageInfo *pi=0;
-  for (pdi.toFirst();(pi=pdi.current());++pdi)
-  {
-    addRefItem(pi->todoId,pi->testId,pi->bugId,
-               theTranslator->trPage(TRUE,TRUE),
-               pi->name,pi->title);
-  }
   MemberNameListIterator mnli(Doxygen::memberNameList);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
@@ -3267,23 +3229,28 @@ static void addTodoTestBugReferences()
       if (d) scopeName=d->name();
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
-      // TODO: i18n this
-      QCString memLabel;
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+      if (compound==d || (compound==0 && d!=0 && !md->visited))
       {
-        memLabel=theTranslator->trField(TRUE,TRUE);
-      }
-      else
-      {
-        memLabel=theTranslator->trMember(TRUE,TRUE);
-      }
-      if (d)
-      {
+        QCString memLabel;
+        md->visited=TRUE;
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+        {
+          memLabel=theTranslator->trField(TRUE,TRUE);
+        }
+        else
+        {
+          memLabel=theTranslator->trMember(TRUE,TRUE);
+        }
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
       }
     }
   }
+}
+
+static void addFileMemberTodoTestBufReferences(Definition *compound)
+{
   MemberNameListIterator fnli(Doxygen::functionNameList);
+  MemberName *mn=0;
   for (fnli.toFirst();(mn=fnli.current());++fnli)
   {
     MemberNameIterator mni(*mn);
@@ -3295,21 +3262,100 @@ static void addTodoTestBugReferences()
       if (d) scopeName=d->name();
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
-      QCString memLabel;
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+      if (compound==d || (compound==0 && d!=0 && !md->visited))
       {
-        memLabel=theTranslator->trGlobal(TRUE,TRUE);
-      }
-      else
-      {
-        memLabel=theTranslator->trMember(TRUE,TRUE);
-      }
-      if (d)
-      {
+        QCString memLabel;
+        md->visited=TRUE;
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+        {
+          memLabel=theTranslator->trGlobal(TRUE,TRUE);
+        }
+        else
+        {
+          memLabel=theTranslator->trMember(TRUE,TRUE);
+        }
         addRefItem(md->todoId(),md->testId(),md->bugId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),md->name(),md->argsString());
-      }  
+      }
     }
   }
+}
+
+static void addTodoTestBugReferences()
+{
+  MemberNameListIterator mnli(Doxygen::memberNameList);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberNameIterator mni(*mn);
+    MemberDef *md=0;
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      md->visited=FALSE;
+    }
+  }
+  MemberNameListIterator fnli(Doxygen::functionNameList);
+  for (fnli.toFirst();(mn=fnli.current());++fnli)
+  {
+    MemberNameIterator mni(*mn);
+    MemberDef *md=0;
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      md->visited=FALSE;
+    }
+  }
+
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    addRefItem(cd->todoId(),cd->testId(),cd->bugId(),
+               theTranslator->trClass(TRUE,TRUE),
+               cd->getOutputFileBase(),cd->name()
+              );
+    addClassMemberTodoTestBufReferences(cd);
+  } 
+  FileName *fn=Doxygen::inputNameList.first();
+  while (fn)
+  {
+    FileDef *fd=fn->first();
+    while (fd)
+    {
+      addRefItem(fd->todoId(),fd->testId(),fd->bugId(),
+                 theTranslator->trFile(TRUE,TRUE),
+                 fd->getOutputFileBase(),fd->name());
+      addFileMemberTodoTestBufReferences(fd);
+      fd=fn->next();
+    }
+    fn=Doxygen::inputNameList.next();
+  }
+  NamespaceDef *nd=Doxygen::namespaceList.first();
+  while (nd)
+  {
+    addRefItem(nd->todoId(),nd->testId(),nd->bugId(),
+               theTranslator->trNamespace(TRUE,TRUE),
+               nd->getOutputFileBase(),nd->name());
+    addFileMemberTodoTestBufReferences(nd);
+    nd=Doxygen::namespaceList.next();
+  }
+  GroupDef *gd=Doxygen::groupList.first();
+  while (gd)
+  {
+    addRefItem(gd->todoId(),gd->testId(),gd->bugId(),
+               theTranslator->trGroup(TRUE,TRUE),
+               gd->getOutputFileBase(),gd->groupTitle());
+    addFileMemberTodoTestBufReferences(gd);
+    gd=Doxygen::groupList.next();
+  }
+  PageSDictIterator pdi(*Doxygen::pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  {
+    addRefItem(pi->todoId,pi->testId,pi->bugId,
+               theTranslator->trPage(TRUE,TRUE),
+               pi->name,pi->title);
+  }
+  addClassMemberTodoTestBufReferences(0);
+  addFileMemberTodoTestBufReferences(0);
 }
 
 
@@ -3458,29 +3504,10 @@ static void addMemberDocs(Entry *root,
 // find a class definition given the scope name and (optionally) a 
 // template list specifier
 
-static ClassDef *findSimpleClassDefinition(const char *scopeName,const char *classTempList)
-{
-  ClassDef *tcd=0;
-  if (classTempList) // try to find the correct specialization
-  {
-    tcd=getClass(
-          insertTemplateSpecifierInScope(
-            scopeName,
-            classTempList
-          )
-        ); // try specialization
-  }
-  if (tcd==0)
-  {
-    tcd=getClass(scopeName); // try general class
-  }
-  return tcd;
-}
-
 static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
-                         const char *scopeName,const char *classTempList)
+                         const char *scopeName)
 {
-  ClassDef *tcd = findSimpleClassDefinition(scopeName,classTempList);
+  ClassDef *tcd = getClass(scopeName);
   if (tcd==0) // try using declaration
   {
     ClassList *cl = 0;
@@ -3507,7 +3534,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
           if (rightScopeMatch(cd->name(),scope))
           {
             //printf("Trying to find `%s'\n",(cd->name()+scName.right(scName.length()-scopeOffset)).data());
-            tcd = findSimpleClassDefinition(cd->name()+scName.right(scName.length()-scopeOffset),classTempList); 
+            tcd = getClass(cd->name()+scName.right(scName.length()-scopeOffset)); 
           }
           scopeOffset=scName.findRev("::",scopeOffset-1);
         } while (scopeOffset>=0 && tcd==0);
@@ -3532,7 +3559,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
       for (;(nd=nli.current()) && tcd==0;++nli)
       {
         //printf("Trying with scope=%s\n",nd->name().data());
-        tcd = findSimpleClassDefinition(nd->name()+"::"+scopeName,classTempList); 
+        tcd = getClass(nd->name()+"::"+scopeName); 
       }
     }
   }
@@ -3708,34 +3735,6 @@ static void substituteTemplatesInArgList(
 }
 
 
-static QCString mergeScopes(const QCString &leftScope,const QCString &rightScope)
-{
-  // case leftScope=="A" rightScope=="A::B" => result = "A::B"
-  if (leftScopeMatch(rightScope,leftScope)) return rightScope;
-  QCString result;
-  int i=0,p=leftScope.length();
-
-  // case leftScope=="A::B" rightScope=="B::C" => result = "A::B::C"
-  // case leftScope=="A::B" rightScope=="B" => result = "A::B"
-  bool found=FALSE;
-  while ((i=leftScope.findRev("::",p))!=-1)
-  {
-    if (leftScopeMatch(rightScope,leftScope.right(leftScope.length()-i-2)))
-    {
-      result = leftScope.left(i+2)+rightScope;
-      found=TRUE;
-    }
-    p=i-1;
-  }
-  if (found) return result;
-
-  // case leftScope=="A" rightScope=="B" => result = "A::B"
-  result=leftScope.copy();
-  if (!result.isEmpty() && !rightScope.isEmpty()) result+="::";
-  result+=rightScope;
-  return result;
-}
-
 
 /*! This function tries to find a member (in a documented class/file/namespace) 
  * that corresponds to the function/variable declaration given in \a funcDecl.
@@ -3774,7 +3773,7 @@ static void findMember(Entry *root,
   QCString scopeName;
   QCString className;
   QCString namespaceName;
-  QCString classTempList;
+  //QCString classTempList;
   QCString funcType;
   QCString funcName;
   QCString funcArgs;
@@ -3816,7 +3815,19 @@ static void findMember(Entry *root,
       done=FALSE;
     }
   } while (!done);
-  
+
+  if (isFriend)
+  {
+    if (funcDecl.left(6)=="class ")
+    {
+      funcDecl=funcDecl.right(funcDecl.length()-6);
+    }
+    else if (funcDecl.left(7)=="struct ")
+    {
+      funcDecl=funcDecl.right(funcDecl.length()-7);
+    }
+  }
+
   // delete any ; from the function declaration
   int sep;
   while ((sep=funcDecl.find(';'))!=-1)
@@ -3837,12 +3848,12 @@ static void findMember(Entry *root,
             );
   
   // extract information from the declarations
-  parseFuncDecl(funcDecl,scopeName,classTempList,funcType,funcName,
+  parseFuncDecl(funcDecl,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
   //printf("scopeName=`%s' funcType=`%s' funcName=`%s'\n",
   //    scopeName.data(),funcType.data(),funcName.data());
-  
+
   // the class name can also be a namespace name, we decide this later.
   // if a related class name is specified and the class name could
   // not be derived from the function declaration, then use the
@@ -3852,11 +3863,10 @@ static void findMember(Entry *root,
   if (!related.isEmpty() && !isRelated) 
   {                             // related member, prefix user specified scope
     isRelated=TRUE;
-    //scopeName=resolveDefines(related);
-    if (!scopeName.isEmpty() && scopeName!=related)
-      scopeName+="::"+related;
+    if (getClass(related)==0 && !scopeName.isEmpty())
+      scopeName= mergeScopes(scopeName,related);
     else 
-      scopeName=related.copy();
+      scopeName = related.copy();
   }
 
   if (related.isEmpty() && root->parent && 
@@ -3864,8 +3874,9 @@ static void findMember(Entry *root,
       !root->parent->name.isEmpty())
   {
     scopeName = mergeScopes(root->parent->name,scopeName);
-    scopeName = stripTemplateSpecifiersFromScope(scopeName);
   }
+  scopeName=stripTemplateSpecifiersFromScope(
+      removeRedundantWhiteSpace(scopeName),FALSE); 
   
   // split scope into a namespace and a class part
   extractNamespaceName(scopeName,className,namespaceName);
@@ -3966,7 +3977,6 @@ static void findMember(Entry *root,
            "findMember() Parse results:\n"
            "  namespaceName=`%s'\n"
            "  className=`%s`\n"
-           "  classTempList=`%s'\n"
            "  funcType=`%s'\n"
            "  funcName=`%s'\n"
            "  funcArgs=`%s'\n"
@@ -3977,7 +3987,7 @@ static void findMember(Entry *root,
            "  isRelated=%d\n"
            "  isFriend=%d\n"
            "  isFunc=%d\n\n",
-           namespaceName.data(),className.data(),classTempList.data(),
+           namespaceName.data(),className.data(),
            funcType.data(),funcName.data(),funcArgs.data(),funcTempList.data(),
            funcDecl.data(),related.data(),exceptions.data(),isRelated,isFriend,
            isFunc
@@ -4019,7 +4029,7 @@ static void findMember(Entry *root,
           NamespaceDef *nd=0;
           if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
-          ClassDef *tcd=findClassDefinition(fd,nd,scopeName,classTempList);
+          ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
 
           if (cd && tcd==cd) // member's classes match
           {
@@ -4241,6 +4251,7 @@ static void findMember(Entry *root,
     {
       if (className.isEmpty()) className=related.copy();
       ClassDef *cd;
+      //printf("scopeName=`%s'\n",scopeName.data());
       if ((cd=getClass(scopeName)))
       {
         bool newMember=TRUE; // assume we have a new member

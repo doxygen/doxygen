@@ -34,12 +34,7 @@ Definition::Definition(const char *df,int dl,
   m_defFileName = df;
   m_defLine = dl;
   m_name=name; 
-  m_localName=name;
-  int i=m_localName.findRev("::");
-  if (i!=-1)
-  {
-    m_localName=m_localName.right(m_localName.length()-i-2);
-  }
+  m_localName=stripScope(name);
   m_brief=b; 
   m_doc=d; 
   m_sectionDict=0, 
@@ -451,7 +446,7 @@ void Definition::addInnerCompound(Definition *)
 
 QCString Definition::qualifiedName() const
 {
-  //printf("start Definition::qualifiedName()\n");
+  //printf("start Definition::qualifiedName() localName=%s\n",m_localName.data());
   if (m_outerScope==0) 
   {
     if (m_localName=="<globalScope>") return "";

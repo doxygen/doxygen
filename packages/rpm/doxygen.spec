@@ -1,5 +1,5 @@
 Name: doxygen
-Version: 1.2.9
+Version: 1.2.9.1
 Summary: documentation system for C, C++ and IDL
 Release: 4
 Source: doxygen-%{version}.src.tar.gz
@@ -41,7 +41,7 @@ Autor:
 %setup -n doxygen-%{version}
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard --with-xmlgen
+CFLAGS="$RPM_OPT_FLAGS" ./configure --with-doxywizard 
 # the next path is Suse specific
 QTDIR=/usr/lib/qt2
 PATH=${QTDIR}/bin:$PATH

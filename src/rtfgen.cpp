@@ -1005,7 +1005,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             beginRTFChapter();
             found=TRUE;
@@ -1238,7 +1238,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             t << "\\par " << Rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -1249,7 +1249,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         for (;(cd=cli.current());++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             t << "\\par " << Rtf_Style_Reset << endl;
             beginRTFSection();
@@ -2230,11 +2230,13 @@ void RTFGenerator::startDescTableTitle()
   //t << Rtf_BList_DepthStyle() << endl;
   DBG_RTF(t << "{\\comment (startDescTableTitle) }"    << endl)
   startBold();
+  startEmphasis();
 }
 
 void RTFGenerator::endDescTableTitle()
 {
   DBG_RTF(t << "{\\comment (endDescTableTitle) }"    << endl)
+  endEmphasis();
   endBold();
   t << "  ";
 }

@@ -540,7 +540,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             if (compactLatex) t << "\\section"; else t << "\\chapter";
             t << "{"; //Compound Documentation}\n";
@@ -711,7 +711,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
             found=TRUE;
@@ -719,7 +719,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         for (;(cd=cli.current());++cli)
         {
-          if (cd->isLinkableInProject())
+          if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
             if (compactLatex) t << "\\input"; else t << "\\include";
             t << "{" << cd->getOutputFileBase() << "}\n";

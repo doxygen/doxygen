@@ -1194,7 +1194,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      int index = getPrefixIndex(cd->name());
+      int index = getPrefixIndex(cd->localName());
       if (toupper(cd->name().at(index))!=startLetter) // new begin letter => new header
       {
         startLetter=toupper(cd->name().at(index));
@@ -1227,7 +1227,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      int index = getPrefixIndex(cd->name());
+      int index = getPrefixIndex(cd->localName());
       if (toupper(cd->name().at(index))!=startLetter)
       {
         // insert a new header using a dummy class pointer.
@@ -1275,7 +1275,7 @@ void writeAlphabeticalClassList(OutputList &ol)
         if (cd)
         {
           //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
-          int index = getPrefixIndex(cd->name());
+          int index = getPrefixIndex(cd->localName());
           startLetter=toupper(cd->name().at(index));
           char s[2]; s[0]=startLetter; s[1]=0;
           ol.writeIndexHeading(s);

@@ -160,6 +160,8 @@ QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE);
 QCString resolveTypeDef(Definition *d,const QCString &name);
+QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
+int getScopeFragment(const QCString &s,int p,int *l);
 
 #endif
 

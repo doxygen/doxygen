@@ -231,6 +231,7 @@ class MemberDef : public Definition
                ArgumentList *actualArgs);
     void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
         
+    bool visited;
     
   private:
     ClassDef   *classDef;     // member of or related to 

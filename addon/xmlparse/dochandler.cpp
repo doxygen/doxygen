@@ -1,3 +1,18 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ *
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "dochandler.h"
 
 //----------------------------------------------------------------------
@@ -218,6 +233,37 @@ void ListHandler::startListItem(const QXmlAttributes& attrib)
 }
 
 //----------------------------------------------------------------------
+// ParameterHandler
+//----------------------------------------------------------------------
+
+
+//----------------------------------------------------------------------
+// ParameterListHandler
+//----------------------------------------------------------------------
+
+ParameterListHandler::ParameterListHandler(IBaseHandler *parent) 
+  : DocNode(ParameterList), m_parent(parent)
+{
+  addEndHandler("parameterlist",this,&ParameterListHandler::endParameterList);
+  m_parameters.setAutoDelete(TRUE);
+  m_curParam=0;
+}
+
+ParameterListHandler::~ParameterListHandler()
+{
+}
+
+void ParameterListHandler::startParameterList(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+}
+
+void ParameterListHandler::endParameterList()
+{
+  m_parent->setDelegate(0);
+}
+
+//----------------------------------------------------------------------
 // ParagraphHandler
 //----------------------------------------------------------------------
 
@@ -266,6 +312,14 @@ void ParagraphHandler::startOrderedList(const QXmlAttributes& attrib)
   ListHandler *listHandler = new ListHandler(OrderedList,this);
   listHandler->startList(attrib);
   m_children.append(listHandler);
+}
+
+void ParagraphHandler::startParameterList(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  ParameterListHandler *parListHandler = new ParameterListHandler(this);
+  parListHandler->startParameterList(attrib);
+  m_children.append(parListHandler);
 }
 
 void ParagraphHandler::addTextNode()

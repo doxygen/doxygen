@@ -201,8 +201,8 @@ class ManGenerator : public OutputGenerator
     
     void startDescTable() {}
     void endDescTable() {}
-    void startDescTableTitle() { writeListItem(); startBold(); }
-    void endDescTableTitle() { endBold(); }
+    void startDescTableTitle() { writeListItem(); startBold(); startEmphasis(); }
+    void endDescTableTitle() { endEmphasis(); endBold(); }
     void startDescTableData() { t << endl; firstCol=TRUE; }
     void endDescTableData() {}
 

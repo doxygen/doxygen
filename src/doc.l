@@ -892,7 +892,6 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x      DocEmphasis
 %x      DocBold
 %x      DocCode
-%x	DocIf
 %x      DocCodeBlock
 %x      DocInternal
 %x      DocLink
@@ -1506,9 +1505,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    inParamBlock=TRUE;
 					    currentListIndent.push("D");
 					    outDoc->startParamList();
-					    outDoc->startBold();
 					    scanString(theTranslator->trParameters()+": ");
-					    outDoc->endBold();
   					    outDoc->endDescTitle();
   					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
@@ -1532,9 +1529,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    inRetValBlock=TRUE;
 					    currentListIndent.push("D");
 					    outDoc->startParamList();
-					    outDoc->startBold();
 					    scanString(theTranslator->trReturnValues()+": ");
-					    outDoc->endBold();
   					    outDoc->endDescTitle();
   					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
@@ -1558,9 +1553,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    inExceptionBlock=TRUE;
 					    currentListIndent.push("D");
 					    outDoc->startParamList();
-					    outDoc->startBold();
 					    scanString(theTranslator->trExceptions()+": ");
-					    outDoc->endBold();
   					    outDoc->endDescTitle();
 					    outDoc->writeDescItem();
 					    outDoc->startDescTable();
@@ -1574,18 +1567,14 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"\\capt".*
 <DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM}{BSEP}* {
 					  outDoc->startDescTableTitle();
-					  outDoc->startEmphasis();
   					  outDoc->docify(substitute(yytext,"\"","").stripWhiteSpace()); 
-					  outDoc->endEmphasis();
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
   					}
 <DocException>{SCOPENAME}		{
 					  outDoc->startDescTableTitle();
-					  outDoc->startEmphasis();
   					  outDoc->docify(yytext); 
-					  outDoc->endEmphasis();
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
 					  BEGIN(DocScan);
@@ -1646,6 +1635,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>{CMD}"refitem"/{BN}		{
   					  BEGIN(DocRefItem);
   					}
+  /*
 <DocScan>{CMD}"if"/{BN}			{
   					  outDoc->pushGeneratorState();
 					  depthIf++;
@@ -1671,6 +1661,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  }
 					  BEGIN(DocScan);
   					}
+  */
 <DocRefName>{SCOPENAME}|{FILE}		{
   					  QCString ref=yytext;
 					  SectionInfo *sec;

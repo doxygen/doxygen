@@ -76,6 +76,7 @@ static int              lastAnchorContext;
 static int              lastInitializerContext;
 static int              lastClassTemplSpecContext;
 static int              lastSkipHtmlCommentContext;
+static int              lastIfContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -84,7 +85,6 @@ static int		sharpCount   = 0 ;
 static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
-static int              ifCount      = 0 ;
 static int              padCount     = 0 ;
 static int              todoStartContext = 0;
 static QCString         todoString;
@@ -148,6 +148,8 @@ static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
 static bool             insideFormula;
 static bool  	        insideTryBlock=FALSE;
 
+static int              depthIf;
+
 //-----------------------------------------------------------------------------
 
 static void initParser()
@@ -161,7 +163,6 @@ static void initParser()
   sharpCount = 0;
   roundCount = 0;
   curlyCount = 0;
-  ifCount = 0;
   memberGroupId = NOGROUP;
   mtype = Method;
   gstat = FALSE;
@@ -171,6 +172,8 @@ static void initParser()
   autoGroupStack.clear();
   insideTryBlock = FALSE;
   insideIDL = FALSE;
+  autoGroupStack.setAutoDelete(TRUE);
+  lastDefGroup.groupname.resize(0);
 }
 
 static void initEntry()
@@ -481,6 +484,9 @@ TITLE     [tT][iI][tT][lL][eE]
 %x      SkipSharp
 %x	SkipRound
 %x	SkipSquare
+%x	SkipSection
+%x	IfGuard
+%x	IfNotGuard
 %x	TypedefName
 %x	TryFunctionBlock
 %x	TryFunctionBlockEnd
@@ -1297,7 +1303,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<FindMembers,FindFields>"//"([!/]?){B}*{CMD}"{"|"/*"([!*]?){B}*{CMD}"{"	{
+<FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
   					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -2624,7 +2630,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->inside = current_root->name+"::";
 					  BEGIN( LineDoc );
 					}
-<FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}*("{")?
+<FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}*("{")?  {
+					  lineCount();
+					}
 <FindMembers>"{"			{
   					  current->type.resize(0);
   					  current->name.resize(0);
@@ -3411,6 +3419,102 @@ TITLE     [tT][iI][tT][lL][eE]
 <PageDocTitle>\n			{ yyLineNr++; current->args+=" "; }
 <PageDocTitle>[^\n\<]			{ current->args+=yytext; }
 <PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
+
+  /* escaped versions of the conditional commands (for putting them in the docs) */
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=&yytext[1]; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=&yytext[1]; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=&yytext[1]; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=&yytext[1]; }
+<ClassDoc,Doc,AfterDoc,PageDoc,ExampleDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=&yytext[1]; }
+<LineDoc,JavaDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->brief+=&yytext[1]; }
+<LineDoc,JavaDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->brief+=&yytext[1]; }
+<LineDoc,JavaDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->brief+=&yytext[1]; }
+<LineDoc,JavaDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->brief+=&yytext[1]; }
+<LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=&yytext[1]; }
+
+  /* conditional commands */
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"{B}+ {
+                                          lastIfContext = YY_START;
+					  BEGIN(IfGuard);
+  					}
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"ifnot"{B}+ {
+                                          lastIfContext = YY_START;
+					  BEGIN(IfNotGuard);
+  					}
+<ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"if"(\r?)\n |
+<IfGuard>\n				{
+  					  warn(yyFileName,yyLineNr,"Missing guard for if statement!");
+					  yyLineNr++;
+					}  
+<IfGuard>[^\n\t ]+			{
+  					  if (Config_getList("ENABLED_SECTIONS").find(yytext)==-1) // not enabled
+					  {
+					    BEGIN(SkipSection);
+  					    depthIf=1;
+					  }
+					  else // section enabled
+					  {
+					    BEGIN(lastIfContext);
+					  }
+  					}
+<IfNotGuard>\n				{
+  					  warn(yyFileName,yyLineNr,"Missing guard for ifnot statement!");
+					  yyLineNr++;
+					}  
+<IfNotGuard>[^\n\t ]+			{
+  					  if (Config_getList("ENABLED_SECTIONS").find(yytext)==-1) // not enabled
+					  {
+					    BEGIN(lastIfContext);
+					  }
+					  else // section enabled
+					  {
+  					    depthIf=1;
+					    BEGIN(SkipSection);
+					  }
+  					}
+<SkipSection>{CMD}"if"/[^a-z_A-Z0-9]	{
+  					  depthIf++;
+  					}
+<SkipSection>{CMD}"endif"/[^a-z_A-Z0-9]	{
+  					  if (--depthIf<=0)
+					  {
+					    BEGIN(lastIfContext);
+					  }
+  					}
+<SkipSection>{CMD}"else"/[^a-z_A-Z0-9]	{
+  					  if (depthIf==1)
+					  {
+					    depthIf=0;
+					    BEGIN(lastIfContext);
+					  }
+  					}
+<SkipSection>{CMD}"elseif"/[^a-z_A-Z0-9] {
+  					  if (depthIf==1)
+					  {
+					    BEGIN(IfGuard);
+					  }
+  					}
+<SkipSection>"*/"			{
+  					  unput('/');unput('*');
+					  BEGIN( lastIfContext );
+  					}
+<SkipSection>\n				{
+  					  yyLineNr++;
+  					}
+<SkipSection>"//"|"*/"			  					
+<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
+                                          // previous section enabled => absorb else
+  					}
+<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"else"/[^a-z_A-Z0-9] {
+                                          // section was enable => skip now
+  					  depthIf=1;
+  					  BEGIN(SkipSection);
+  					}
+<ClassDoc,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
+                                          // section enabled => absorb endif
+  					}
+
+
 <ClassDoc,LineDoc,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
   					  lastGroupContext = YY_START;
   					  lineCount();
@@ -3868,7 +3972,9 @@ static void parseCompounds(Entry *rt)
       //  ce->name.data(),ce->program.data());
       // init scanner state
       padCount=0;
+      depthIf = 0;
       inputString = ce->program;
+      lastDefGroup.groupname.resize(0);
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;
       if (ce->section==Entry::ENUM_SEC)
@@ -3900,6 +4006,11 @@ static void parseCompounds(Entry *rt)
       scanYYlex() ;
       delete current; current=0;
       ce->program.resize(0);
+
+      if (depthIf>0)
+      {
+	warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+      }
     }
     parseCompounds(ce);
   }
@@ -3911,6 +4022,7 @@ void parseMain(Entry *rt)
 {
   initParser();
   anonCount     = 0;
+  depthIf       = 0;
   protection    = Public;
   mtype         = Method;
   gstat         = FALSE;
@@ -3920,10 +4032,13 @@ void parseMain(Entry *rt)
   current       = new Entry;
   inputString   = rt->program;
   inputPosition = 0;
-  ifCount=0;
   scanYYrestart( scanYYin );
   BEGIN( FindMembers );
   scanYYlex();
+  if (depthIf>0)
+  {
+    warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+  }
   rt->program.resize(0);
   delete current; current=0;
   parseCompounds(rt);
