@@ -670,7 +670,10 @@ void RTFGenerator::beginRTFDocument()
       ASSERT(index < array.size());
     }    
     if (array.at(index) != 0)
-      msg("Style '%s' redefines \\s%d.\n", iter.currentKey().data(), index);
+    {
+      QCString key(iter.currentKey());
+      msg("Style '%s' redefines \\s%d.\n", key.data(), index);
+    }
     array.at(index) = style;      
   }
 
