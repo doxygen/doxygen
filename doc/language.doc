@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.11-20011021), 24 languages 
+Currently (version 1.2.11-20011111), 24 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -72,7 +72,7 @@ when the translator was updated.
       <TD>Czech</TD>  
       <TD>Petr P&#x0159;ikryl</TD>
       <TD>prikrylp@NOSPAM.skil.cz</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Danish</TD>  
@@ -162,7 +162,7 @@ when the translator was updated.
       <TD>Russian</TD>  
       <TD>Alexandr Chelpanov</TD>
       <TD>cav@NOSPAM.cryptopro.ru</TD>
-      <TD>1.2.11</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Slovak</TD>  
@@ -212,7 +212,7 @@ when the translator was updated.
   \hline
   Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & 1.2.11 \\
   \hline
-  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & 1.2.11 \\
+  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
   \hline
   Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
   \hline
@@ -244,7 +244,7 @@ when the translator was updated.
   \hline
   Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.1 \\
   \hline
-  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & 1.2.11 \\
+  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
   \hline
   Slovak & Stanislav Kudl\'{a}\v{c} & {\tt qwerty1@pobox.sk} & 1.2.11 \\
   \hline
@@ -331,21 +331,23 @@ Just follow these steps:
 
 <h3>Maintaining a language</h3>
 
-As new versions of doxygen appear, new sentences (\c trXxxx()
-methods) will be added to the \c Translator interface class.  Of
-course, these need to be translated as well (otherwise doxygen
-wouldn't even compile!).  Waiting until all language maintainers
-have translated the new sentences and sent the results would not
-be very practical. The following text describes the usage of
-translator adapters to solve the problem.
+New versions of doxygen may use new translated sentences.  In such
+situation, the \c Translator class requires implementation of new
+methods -- its interface changes.  Of course, the English
+sentences need to be translated to the other languages.  At least,
+new methods have to be implemented by the language-related
+translator class; otherwise, doxygen wouldn't even compile.  Waiting
+until all language maintainers have translated the new sentences and
+sent the results would not be very practical. The following text
+describes the usage of translator adapters to solve the problem.
 
 <b>The role of Translator Adapters.</b> 
 Whenever the \c Translator class interface changes in the new
 release, the new class \c TranslatorAdapter_x_y_z is added to the \c
 translator_adapter.h file (here x, y, and z are numbers that
-correspond to the current version of doxygen). All translators that
-previously derived from the \c Translator class now derive from this
-adapter class.
+correspond to the current official version of doxygen). All
+translators that previously derived from the \c Translator class now
+derive from this adapter class.
 
 The \c TranslatorAdapter_x_y_z class implements the new, required
 methods.  If the new method replaces some similar but obsolete
@@ -355,7 +357,7 @@ TranslatorAdapter_x_y_z class may use the obsolete method to get the
 result which is as close as possible to the older result in the
 target language.  If it is not possible, the result (the default
 translation) is obtained using the English translator, which is (by
-definition) always up to date.  
+definition) always up-to-date.  
 
 <b>For example,</b> when the new \c trFile() method with
 parameters (to determine the capitalization of the first letter and
@@ -429,29 +431,25 @@ The translator adapter classes are chained so that the older
 translator adapter class uses the one-step-newer translator adapter
 as the base class.  The newer adapter does less \e adapting work
 than the older one.  The oldest adapter class derives (indirectly)
-from all of the adapter classes.  The newest adapter class derives
-directly from the abstract class \c Translator.  
+from all of the adapter classes.  The name of the adapter class is
+chosen so that its suffix is derived from the previous official
+version of doxygen that did not need the adapter.  This way, one can
+say approximately, when the language translator class was last
+updated -- see details below.
 
-The name of the adapter class was chosen so that its suffix is
-derived from the previous version of doxygen.  This way, one can say
-approximately, when the language translator class was last updated
--- see details below.  The newest adapter translator for CVS release
-(i.e. non official) is named \c TranslatorAdapterCVS.  As it derives
-only from the \c Translator class, it can be used only for language
-translator classes that were up-to-date in the time of the last
-release.
-
-Status of the translators that derive from the \c
-TranslatorAdapterCVS is named as <em>almost up-to-date</em>.
-Its code is moved into the new \c Translator_x_y_z when new version
-of doxygen is officially released.
+The newest translator adapter derives from the abstract \c
+TranslatorAdapterBase class that derives directly from the abstract
+\c Translator class.  It adds only the private English-translator
+member for easy implementation of the default translation inside the
+adapter classes, and it also enforces implementation of one method
+for noticing the user that the language translation is not up-to-date
+(because of that some sentences in the generated files may appear in
+English).
 
 Once the oldest adapter class is not used by any of the language
-translators, it can be removed from the doxygen project.  This also
-means, that there probably still is some language which uses the
-oldest adapter.  The maintainers should try to reach the state with
-the minimal number of translator adapter classes.
-
+translators, it can be removed from the doxygen project.  The
+maintainers should try to reach the state with the minimal number of
+translator adapter classes.
 
 <b>To simplify the maintenance of the language translator classes</b>
 for the supported languages, the \c translator.pl perl
@@ -472,7 +470,6 @@ also run the script manualy whenever you feel that it can help you.
 Of course, you are not forced to use the results of the script.  You
 can find the same information by looking at the adapter class and
 its base classes.
-
 
 <b>How should I update my language translator?</b> Firstly, you
 should be the language maintainer, or you should let him/her know
@@ -525,7 +522,7 @@ can change the translator adapter base to the newer one.
 Do not blindly implement all methods that are implemented by your
 translator adapter base class.  The reason is that the adapter
 classes implement also obsolete methods.  Another reason is that
-some of the methods could become obsolete later.
+some of the methods could become obsolete from some newer adapter on.
 
 */
 
