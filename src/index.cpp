@@ -1707,33 +1707,23 @@ static void writeMemberIndexFiltered(OutputList &ol, ClassMemberHighlight hl)
     numPages=127;
   }
 
-  struct 
+  struct CmhlInfo
   {
+    CmhlInfo(const char *fn,const char *t) : fname(fn), title(t) {}
     const char *fname;
     QCString title;
   } cmhlInfo[] = 
   {
-    { "functions",     0 },
-    { "functions_func",0 },
-    { "functions_vars",0 },
-    { "functions_type",0 },
-    { "functions_enum",0 },
-    { "functions_eval",0 },
-    { "functions_rela",0 },
-    { "functions_prop",0 },
-    { "functions_evnt",0 },
-    { "functions_rela",0 },
+    CmhlInfo("functions",     theTranslator->trAll()),
+    CmhlInfo("functions_func",theTranslator->trFunctions()),
+    CmhlInfo("functions_vars",theTranslator->trVariables()),
+    CmhlInfo("functions_type",theTranslator->trTypedefs()),
+    CmhlInfo("functions_enum",theTranslator->trEnumerations()),
+    CmhlInfo("functions_eval",theTranslator->trEnumerationValues()),
+    CmhlInfo("functions_prop",theTranslator->trProperties()),
+    CmhlInfo("functions_evnt",theTranslator->trEvents()),
+    CmhlInfo("functions_rela",theTranslator->trRelatedFunctions())
   };
-
-  cmhlInfo[0].title=theTranslator->trAll();
-  cmhlInfo[1].title=theTranslator->trFunctions();
-  cmhlInfo[2].title=theTranslator->trVariables();
-  cmhlInfo[3].title=theTranslator->trTypedefs();
-  cmhlInfo[4].title=theTranslator->trEnumerations();
-  cmhlInfo[5].title=theTranslator->trEnumerationValues();
-  cmhlInfo[6].title=theTranslator->trProperties();
-  cmhlInfo[7].title=theTranslator->trEvents();
-  cmhlInfo[8].title=theTranslator->trRelatedFunctions();
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -2114,27 +2104,21 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
     numPages=127;
   }
 
-  struct 
+  struct FmhlInfo 
   {
+    FmhlInfo(const char *fn,const char *t) : fname(fn), title(t) {}
     const char *fname;
     QCString title;
   } fmhlInfo[] = 
   {
-    { "globals",     0 },
-    { "globals_func",0 },
-    { "globals_vars",0 },
-    { "globals_type",0 },
-    { "globals_enum",0 },
-    { "globals_eval",0 },
-    { "globals_defs",0 } 
+    FmhlInfo("globals",     theTranslator->trAll()),
+    FmhlInfo("globals_func",theTranslator->trFunctions()),
+    FmhlInfo("globals_vars",theTranslator->trVariables()),
+    FmhlInfo("globals_type",theTranslator->trTypedefs()),
+    FmhlInfo("globals_enum",theTranslator->trEnumerations()),
+    FmhlInfo("globals_eval",theTranslator->trEnumerationValues()),
+    FmhlInfo("globals_defs",theTranslator->trDefines())
   };
-  fmhlInfo[0].title=theTranslator->trAll();
-  fmhlInfo[1].title=theTranslator->trFunctions();
-  fmhlInfo[2].title=theTranslator->trVariables();
-  fmhlInfo[3].title=theTranslator->trTypedefs();
-  fmhlInfo[4].title=theTranslator->trEnumerations();
-  fmhlInfo[5].title=theTranslator->trEnumerationValues();
-  fmhlInfo[6].title=theTranslator->trDefines();
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -2241,25 +2225,20 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     numPages=127;
   }
 
-  struct 
+  struct NmhlInfo
   {
+    NmhlInfo(const char *fn,const char *t) : fname(fn), title(t) {}
     const char *fname;
     QCString title;
   } nmhlInfo[] = 
   {
-    { "namespacemembers",     0 },
-    { "namespacemembers_func",0 },
-    { "namespacemembers_vars",0 },
-    { "namespacemembers_type",0 },
-    { "namespacemembers_enum",0 },
-    { "namespacemembers_eval",0 }
+    NmhlInfo("namespacemembers",     theTranslator->trAll()),
+    NmhlInfo("namespacemembers_func",theTranslator->trFunctions()),
+    NmhlInfo("namespacemembers_vars",theTranslator->trVariables()),
+    NmhlInfo("namespacemembers_type",theTranslator->trTypedefs()),
+    NmhlInfo("namespacemembers_enum",theTranslator->trEnumerations()),
+    NmhlInfo("namespacemembers_eval",theTranslator->trEnumerationValues())
   };
-  nmhlInfo[0].title=theTranslator->trAll();
-  nmhlInfo[1].title=theTranslator->trFunctions();
-  nmhlInfo[2].title=theTranslator->trVariables();
-  nmhlInfo[3].title=theTranslator->trTypedefs();
-  nmhlInfo[4].title=theTranslator->trEnumerations();
-  nmhlInfo[5].title=theTranslator->trEnumerationValues();
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);

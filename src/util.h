@@ -228,6 +228,8 @@ QCString relativePathToRoot(const char *name);
 #define REL_PATH_TO_ROOT "../../"
 void createSubDirs(QDir &d);
 QCString stripPath(const char *s);
+bool containsWord(const QCString &s,const QCString &word);
+bool findAndRemoveWord(QCString &s,const QCString &word);
 
 #endif
 

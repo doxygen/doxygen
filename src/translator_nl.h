@@ -1200,6 +1200,19 @@ class TranslatorDutch : public Translator
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a function.
+     */
+    virtual QCString trOverloadText()
+    {
+      return "Deze functie is overloaded en is beschikbaar gemaakt om het "
+             "gebruik te vergemakkelijken. Ze verschilt alleen van de "
+             "bovenstaande functie wat betreft de parameterlijst.";
+    }
     
 };
 

@@ -182,6 +182,7 @@ class MemberDef : public Definition
     void setHasDocumentedParams(bool b)     { m_hasDocumentedParams = b; }
     void setHasDocumentedReturnType(bool b) { m_hasDocumentedReturnType = b; }
     void setInheritsDocsFrom(MemberDef *md) { m_docProvider = md; }
+    void setTagInfo(TagInfo *i);
 
     // output generation
     void writeLink(OutputList &ol,
@@ -400,6 +401,9 @@ class MemberDef : public Definition
 
     // documentation inheritance
     MemberDef  *m_docProvider;
+
+    // to store the output file base from tag files
+    QCString explicitOutputFileBase;
 };
 
 #endif

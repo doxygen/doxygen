@@ -752,6 +752,8 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
     if (current==0) break; // failed to follow the path
     ps=is+l;
   }
+  //printf("followPath(start=%s,path=%s) result=%s\n",
+  //    start->name().data(),path.data(),current?current->name().data():"<null>");
   return current; // path could be followed
 }
 
@@ -1101,7 +1103,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
       g_visitedNamespaces.clear();
       // test accessibility of definition within scope.
       int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
-      //printf("distance %s is %d\n",d->name().data(),distance);
+      //printf("  distance %s is %d\n",d->name().data(),distance);
       if (distance!=-1) // definition is accessible
       {
         // see if we are dealing with a class or a typedef
@@ -1398,7 +1400,9 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
   int floatingIndex=0;
   if (strLen==0) return;
   // read a word from the text string
-  while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
+  while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1 && 
+         (newIndex==0 || !(txtStr.at(newIndex-1)>='0' && txtStr.at(newIndex-1)<='9')) // avoid matching part of hex numbers
+        )
   {
     // add non-word part to the result
     floatingIndex+=newIndex-skipIndex;
@@ -2979,7 +2983,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
-  if (mName.isEmpty()) printf("memberName=%s\n",memberName.data());
   MemberName *mn = Doxygen::memberNameSDict[mName];
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
@@ -3016,8 +3019,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
         for (mmli.toFirst();(mmd=mmli.current());++mmli)
         {
-          if (mmd->isLinkable())
-          {
+          //if (mmd->isLinkable())
+          //{
             bool match=args==0 || 
               matchArguments(mmd->argumentList(),argList,className,0,checkCV); 
             //printf("match=%d\n",match);
@@ -3032,7 +3035,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
                 md=mmd;
               }
             }
-          }
+          //}
         }
         if (argList)
         {
@@ -3044,27 +3047,36 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //printf("  >Searching for arbitrary member\n");
           for (mmli.toFirst();(mmd=mmli.current());++mmli)
           {
-            if (mmd->isLinkable())
-            {
+            //if (mmd->isLinkable())
+            //{
               ClassDef *mcd=mmd->getClassDef();
               //printf("  >Class %s found\n",mcd->name().data());
               int m=minClassDistance(fcd,mcd);
-              if (m<mdist && mcd->isLinkable())
+              if (m<mdist /* && mcd->isLinkable()*/ )
               {
                 //printf("Class distance %d\n",m);
                 mdist=m;
                 cd=mcd;
                 md=mmd;
               }
-            }
+            //}
           }
         }
         //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
         if (mdist<maxInheritanceDepth) 
         {
-          gd=md->getGroupDef();
-          if (gd) cd=0;
-          return TRUE; /* found match */
+          if (!md->isLinkable()) 
+          {
+            md=0; // avoid returning things we cannot link to
+            cd=0;
+            return FALSE; // match found, but was not linkable
+          }
+          else
+          {
+            gd=md->getGroupDef();
+            if (gd) cd=0;
+            return TRUE; /* found match */
+          }
         }
       } 
       /* go to the parent scope */
@@ -3115,7 +3127,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           //printf("mmd->getNamespaceDef()=%p fnd=%p\n",
           //    mmd->getNamespaceDef(),fnd);
-          if (mmd->getNamespaceDef()==fnd && mmd->isLinkable())
+          if (mmd->getNamespaceDef()==fnd /* && mmd->isLinkable() */ )
           { // namespace is found
             bool match=TRUE;
             ArgumentList *argList=0;
@@ -3144,7 +3156,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           for (mmli.toFirst();((mmd=mmli.current()) && !found);++mmli)
           {
-            if (mmd->getNamespaceDef()==fnd && mmd->isLinkable())
+            if (mmd->getNamespaceDef()==fnd /*&& mmd->isLinkable() */ )
             {
               nd=fnd;
               md=mmd;
@@ -3154,9 +3166,18 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
         if (found) 
         {
-          gd=md->getGroupDef();
-          if (gd && gd->isLinkable()) nd=0; else gd=0;
-          return TRUE;
+          if (!md->isLinkable()) 
+          {
+            md=0; // avoid returning things we cannot link to
+            nd=0;
+            return FALSE; // match found but not linkable
+          }
+          else
+          {
+            gd=md->getGroupDef();
+            if (gd && gd->isLinkable()) nd=0; else gd=0;
+            return TRUE;
+          }
         }
       }
       if (scopeOffset==0)
@@ -3168,100 +3189,101 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         scopeOffset=0;
       }
     } while (scopeOffset>=0);
-      //else // no scope => global function
+
+    //else // no scope => global function
+    {
+      QList<MemberDef> members;
+
+      //printf("  Function with global scope name `%s' args=`%s'\n",memberName.data(),args);
+      MemberListIterator mli(*mn);
+      for (mli.toFirst();(md=mli.current());++mli)
       {
-        QList<MemberDef> members;
-        
-        //printf("  Function with global scope name `%s' args=`%s'\n",memberName.data(),args);
-        MemberListIterator mli(*mn);
-        for (mli.toFirst();(md=mli.current());++mli)
-        {
-          if (md->isLinkable())
-          {
-            fd=md->getFileDef();
-            gd=md->getGroupDef();
-            //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
-            //    md->name().data(),args,fd,gd);
-            if (
-                (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
-               )
-            {
-              //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
-              bool match=TRUE;
-              ArgumentList *argList=0;
-              if (args && !md->isDefine() && strcmp(args,"()")!=0)
-              {
-                argList=new ArgumentList;
-                stringToArgumentList(args,argList);
-                match=matchArguments(md->argumentList(),argList,0,0,checkCV); 
-                delete argList; argList=0;
-              }
-              if (match) 
-              {
-                //printf("Found match!\n");
-                members.append(md);
-              }
-            }
-          }
-        }
-        if (members.count()!=1 && args && !strcmp(args,"()"))
-        {
-          // no exact match found, but if args="()" an arbitrary 
-          // member will do
-          md=mn->last();
-          while (md && md->isLinkable())
-          {
-            //printf("Found member `%s'\n",md->name().data());
-            //printf("member is linkable md->name()=`%s'\n",md->name().data());
-            fd=md->getFileDef();
-            gd=md->getGroupDef();
-            if (
-                (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
-               )
-            {
-              members.append(md);
-            }
-            md=mn->prev();
-          }
-        }
-        //printf("found %d candidate members\n",members.count());
-        if (members.count()==1 || currentFile!=0)
-        {
-          md=members.first();
-        }
-        else if (members.count()>1)
-        {
-          //printf("Found more than one matching member!\n");
-          // use some C scoping rules to determine the correct link
-          // 1. member in current file
-          // 2. non-static member in different file
-          if (currentFile==0)
-          {
-            bool ambig;
-            currentFile = findFileDef(Doxygen::inputNameDict,0/*namespaceName*/,ambig);
-          }
-          MemberDef *bmd = 0;
-          for (md=members.first(); md; md=members.next())
-          {
-            if (md->getFileDef() == currentFile)
-            {
-              bmd = 0;
-              break;
-            }
-            if (!(md->isStatic()) || Config_getBool("EXTRACT_STATIC")) bmd = md;     
-          }
-          if (bmd) md=bmd;
-        }
-        if (md && !md->isLinkable()) md=0; // ignore things we cannot link to
-        if (md) // found a matching global member
-        {
+        //if (md->isLinkable())
+        //{
           fd=md->getFileDef();
           gd=md->getGroupDef();
-          //printf("fd=%p gd=%p gd->isLinkable()=%d\n",fd,gd,gd->isLinkable());
-          if (gd && gd->isLinkable()) fd=0; else gd=0;
-          return TRUE;
+          //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
+          //    md->name().data(),args,fd,gd);
+          if (
+              (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
+             )
+          {
+            //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
+            bool match=TRUE;
+            ArgumentList *argList=0;
+            if (args && !md->isDefine() && strcmp(args,"()")!=0)
+            {
+              argList=new ArgumentList;
+              stringToArgumentList(args,argList);
+              match=matchArguments(md->argumentList(),argList,0,0,checkCV); 
+              delete argList; argList=0;
+            }
+            if (match) 
+            {
+              //printf("Found match!\n");
+              members.append(md);
+            }
+          }
+        //}
+      }
+      if (members.count()!=1 && args && !strcmp(args,"()"))
+      {
+        // no exact match found, but if args="()" an arbitrary 
+        // member will do
+        md=mn->last();
+        while (md /* && md->isLinkable()*/)
+        {
+          //printf("Found member `%s'\n",md->name().data());
+          //printf("member is linkable md->name()=`%s'\n",md->name().data());
+          fd=md->getFileDef();
+          gd=md->getGroupDef();
+          if (
+              (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
+             )
+          {
+            members.append(md);
+          }
+          md=mn->prev();
         }
       }
+      //printf("found %d candidate members\n",members.count());
+      if (members.count()==1 || currentFile!=0)
+      {
+        md=members.first();
+      }
+      else if (members.count()>1)
+      {
+        //printf("Found more than one matching member!\n");
+        // use some C scoping rules to determine the correct link
+        // 1. member in current file
+        // 2. non-static member in different file
+        if (currentFile==0)
+        {
+          bool ambig;
+          currentFile = findFileDef(Doxygen::inputNameDict,0/*namespaceName*/,ambig);
+        }
+        MemberDef *bmd = 0;
+        for (md=members.first(); md; md=members.next())
+        {
+          if (md->getFileDef() == currentFile)
+          {
+            bmd = 0;
+            break;
+          }
+          if (!(md->isStatic()) || Config_getBool("EXTRACT_STATIC")) bmd = md;     
+        }
+        if (bmd) md=bmd;
+      }
+      if (md && !md->isLinkable()) md=0; // ignore things we cannot link to
+      if (md) // found a matching global member
+      {
+        fd=md->getFileDef();
+        gd=md->getGroupDef();
+        //printf("fd=%p gd=%p gd->isLinkable()=%d\n",fd,gd,gd->isLinkable());
+        if (gd && gd->isLinkable()) fd=0; else gd=0;
+        return TRUE;
+      }
+    }
   }
   
   // no nothing found
@@ -4234,9 +4256,10 @@ QCString convertToHtml(const char *s)
  */
 const char *getOverloadDocs()
 {
-  return "This is an overloaded member function, "
-         "provided for convenience. It differs from the above "
-         "function only in what argument(s) it accepts.";
+  return theTranslator->trOverloadText();
+  //"This is an overloaded member function, "
+  //       "provided for convenience. It differs from the above "
+  //       "function only in what argument(s) it accepts.";
 }
       
 void addMembersToMemberGroup(MemberList *ml,
@@ -5216,3 +5239,37 @@ QCString stripPath(const char *s)
   }
   return result;
 }
+
+/** returns \c TRUE iff string \a s contains word \a w */
+bool containsWord(const QCString &s,const QCString &word)
+{
+  static QRegExp wordExp("[a-z_A-Z]+");
+  int p=0,i,l;
+  while ((i=wordExp.match(s,p,&l))!=-1)
+  {
+    if (s.mid(i,l)==word) return TRUE;
+    p=i+l;
+  }
+  return FALSE;
+}
+
+bool findAndRemoveWord(QCString &s,const QCString &word)
+{
+  static QRegExp wordExp("[a-z_A-Z]+");
+  int p=0,i,l;
+  while ((i=wordExp.match(s,p,&l))!=-1)
+  {
+    if (s.mid(i,l)==word) 
+    {
+      if (i>0 && isspace(s.at(i-1))) 
+        i--,l++;
+      else if (i+l<(int)s.length() && isspace(s.at(i+l))) 
+        l++;
+      s = s.left(i)+s.mid(i+l); // remove word + spacing
+      return TRUE;
+    }
+    p=i+l;
+  }
+  return FALSE;
+}
+

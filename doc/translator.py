@@ -45,6 +45,7 @@
   2004/07/26 - Better reporting of not-needed adapters.
   2004/10/04 - Reporting of not called translator methods added.
   2004/10/05 - Modified to check only doxygen/src sources for the previous report.
+  2005/02/28 - Slight modification to generate "mailto.txt" auxiliary file.
   """                               
 
 from __future__ import generators
@@ -1435,6 +1436,13 @@ class TrManager:
         return trdic
         
         
+    
+        
+    def __email(self, classId):
+        """Returns the first maintainer for the translator class"""
+        return self.__maintainersDic[classId][0][1]
+                    
+    
     def generateTranslatorReport(self):
         """Generates the translator report."""
 
@@ -1466,7 +1474,12 @@ class TrManager:
             s += 'and %d are English based.' % len(self.EnBasedIdLst)
             f.write(fill(s) + '\n\n')
         
-        # Write the list of up-to-date translator classes.
+        # The e-mail addresses of the maintainers will be collected to 
+        # the auxiliary file in the order of translator classes listed
+        # in the translator report.
+        fmail = file('mailto.txt', 'w')
+        
+        # Write the list of up-to-date translator classes. 
         if self.upToDateIdLst:
             s = '''The following translator classes are up-to-date (sorted
                 alphabetically). This means that they derive from the
@@ -1476,12 +1489,18 @@ class TrManager:
             s = s % len(self.requiredMethodsDic)    
             f.write('-' * 70 + '\n')
             f.write(fill(s) + '\n\n')
+            
+            mailtoLst = []
             for x in self.upToDateIdLst:
                 obj = self.__translDic[x]
                 f.write('  ' + obj.classId)
                 if obj.note:
                     f.write(' -- ' + obj.note)
                 f.write('\n')
+                mailtoLst.append(self.__email(obj.classId))
+                
+            fmail.write('up-to-date\n')
+            fmail.write('; '.join(mailtoLst))
 
         # Write the list of the adapter based classes. The very obsolete
         # translators that derive from TranslatorEnglish are included.
@@ -1497,6 +1516,7 @@ class TrManager:
             # Find also whether some adapter classes may be removed.
             adaptMinVersion = '9.9.99'
             
+            mailtoLst = []
             for x in self.adaptIdLst:
                 obj = self.__translDic[x]
                 f.write('  %-30s' % obj.classId)
@@ -1508,10 +1528,14 @@ class TrManager:
                 if obj.note:
                     f.write('\n\tNote: ' + obj.note + '\n')
                 f.write('\n')
+                mailtoLst.append(self.__email(obj.classId)) # to maintainer
                 
                 # Check the level of required adapter classes.
                 if obj.status != '0.0.00' and obj.status < adaptMinVersion:
                     adaptMinVersion = obj.status
+
+            fmail.write('\n\ntranslator based\n')
+            fmail.write('; '.join(mailtoLst))
                 
             # Set the note if some old translator adapters are not needed 
             # any more. Do it only when the script is called without arguments,
@@ -1588,8 +1612,9 @@ class TrManager:
             assert(obj.classId != 'Translator') 
             obj.report(f)
                 
-        # Close the report file.        
+        # Close the report file and the auxiliary file with e-mails.     
         f.close()
+        fmail.close()
         
             
     def __loadMaintainers(self):
@@ -1599,7 +1624,7 @@ class TrManager:
         
         fname = os.path.join(self.script_path, self.maintainersFileName)
 
-        # Include the maintainers file to the checked group of files with
+        # Include the maintainers file to the group of files checked with
         # respect to the modification time.
         tim = os.path.getmtime(fname)
         if tim > self.lastModificationTime:
@@ -1625,7 +1650,7 @@ class TrManager:
                     classId = line
                     maintainersLst = []
                     inside = True
-                # Otherwise skip empty line that do not act as separators.
+                # Otherwise skip empty line that do not act as separator.
                 
             else:                          # if inside the record                       
                 if line == '':             # separator found
@@ -1642,8 +1667,8 @@ class TrManager:
                     t = (lst[0].strip(), lst[1].strip())
                     self.__maintainersDic[classId].append(t)
         f.close()
+
         
-                    
     def generateLanguageDoc(self):
         """Checks the modtime of files and generates language.doc."""
         self.__loadMaintainers()

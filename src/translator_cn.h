@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_4_1
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -82,9 +82,6 @@ class TranslatorChinese : public Translator
 		/*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
     { return "³ÉÔ±Ã¶¾ÙÀàĞÍÎÄµµ"; }
-
-    virtual QCString trEnumerationValueDocumentation()
-    { return "³ÉÔ±Ã¶¾ÙÖµÎÄµµ"; }
 
 		/*! header that is put before the list of member function. */
     virtual QCString trMemberFunctionDocumentation()
@@ -172,11 +169,6 @@ class TranslatorChinese : public Translator
 		/*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "ÎÄ¼şÁĞ±í"; }
-
-
-		/*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Í·ÎÄ¼ş"; }
 
 		/*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
@@ -286,9 +278,6 @@ class TranslatorChinese : public Translator
       return result;
     }
 
-    virtual QCString trHeaderFilesDescription()
-    { return "ÕâÀïÁĞ³ö×é³ÉAPIµÄÍ·ÎÄ¼ş£º"; }
-
     virtual QCString trExamplesDescription()
     { return "ÕâÀïÁĞ³öËùÓĞÊ¾Àı£º"; }
 
@@ -297,9 +286,6 @@ class TranslatorChinese : public Translator
 
     virtual QCString trModulesDescription()
     { return "ÕâÀïÁĞ³öËùÓĞÄ£¿é"; }
-
-    virtual QCString trNoDescriptionAvailable()
-    { return "ÎŞ¿ÉÓÃÎÄµµ"; }
 
     virtual QCString trDocumentation()
     { return "ÎÄµµ"; }
@@ -422,15 +408,8 @@ class TranslatorChinese : public Translator
  		virtual QCString trForInternalUseOnly()
     { return "½öÏŞÄÚ²¿Ê¹ÓÃ¡£"; }
 
- 		virtual QCString trReimplementedForInternalReasons()
-    { return "ÓÉÓÚÄÚ²¿Ô­Òò±»ÖØÔØ£»µ«²»Ó°ÏìAPI"; 
-    }
-
  		virtual QCString trWarning()
     { return "¾¯¸æ"; }
-
- 		virtual QCString trBugsAndLimitations()
-    { return "BUG"CN_SPC"Óë¾ÖÏŞ"; }
 
  		virtual QCString trVersion()
     { return "°æ±¾"; }
@@ -698,12 +677,7 @@ class TranslatorChinese : public Translator
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
- 		virtual QCString trSources()
-    {
-      return "Ô´´úÂë";
-    }
-
- 		virtual QCString trDefinedAtLineInSourceFile()
+                virtual QCString trDefinedAtLineInSourceFile()
     {
       return "ÔÚÎÄ¼ş"CN_SPC"@1"CN_SPC"µÚ"CN_SPC"@0"CN_SPC"ĞĞ¶¨Òå¡£";
     }
@@ -1025,12 +999,6 @@ class TranslatorChinese : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "½Ó¿Ú";
-    }
-
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1066,12 +1034,6 @@ class TranslatorChinese : public Translator
     virtual QCString trPackages()
     {
       return "°ü";
-    }
-
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "°üµÄÎÄµµ";
     }
 
     /*! Text shown before a multi-line define */
@@ -1228,20 +1190,6 @@ class TranslatorChinese : public Translator
 			return "³ÉÔ±";
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool /*first_capital*/, bool /*singular*/)
-    { 
-			/*
-   		QCString result((first_capital ? "Field" : "field"));
-      if (!singular)  result+="s";
-      return result; 
-			*/
-			return "×Ö¶Î";
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1492,7 +1440,7 @@ class TranslatorChinese : public Translator
     virtual QCString trDirIndex()
     /*     { return "Directory Hierarchy"; } */
     {
-      return "$(BL\\Â¼½á$(DC((B";
+      return "Ä¿Â¼½á¹¹";
     }
 
     /*! This is used as the name of the chapter containing the documentation
@@ -1501,7 +1449,7 @@ class TranslatorChinese : public Translator
     virtual QCString trDirDocumentation()
     /*     { return "Directory Documentation"; } */
     {
-      return "$(BL\\Â¼J8[c(B";
+      return "Ä¿Â¼ÎÄµµ";
     }
 
     /*! This is used as the title of the directory index and also in the
@@ -1510,7 +1458,7 @@ class TranslatorChinese : public Translator
     virtual QCString trDirectories()
     /*     { return "Directories"; } */
     {
-      return "$(BL\\Â¼(B";
+      return "Ä¿Â¼";
     }
 
     /*! This returns a sentences that introduces the directory hierarchy. 
@@ -1521,7 +1469,7 @@ class TranslatorChinese : public Translator
 /*              "but not completely, alphabetically:"; */
 /*     } */
     {
-      return "$(BL\\Â¼½á$(DC(½ö¾­¹ı$(BBgCWE*GSNs!$VuL$40A40D;zJlË³=x(B";
+      return "Ä¿Â¼½á¹¹½ö¾­¹ı´ÖÂÔµÄÅÅĞò";
     }
 
     /*! This returns the title of a directory page. The name of the
@@ -1531,7 +1479,7 @@ class TranslatorChinese : public Translator
     /*     { QCString result=dirName; result+=" Directory Reference"; return result; } */
     {
       QCString result=dirName;
-      result+=CN_SPC"$(BL\\Â¼;29M(B"; 
+      result+=CN_SPC"Ä¿Â¼²Î¿¼"; 
       return result;
     }
 
@@ -1543,9 +1491,10 @@ class TranslatorChinese : public Translator
       /*       QCString result((first_capital ? "Director" : "director")); */
       /*       if (singular) result+="y"; else result+="ies"; */
       /*       return result;  */
-      return "$(BL\\Â¼(B";
+      return "Ä¿Â¼";
     }
     
 };
 
 #endif
+

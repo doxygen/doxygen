@@ -1602,6 +1602,19 @@ class TranslatorEnglish : public Translator
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "This is an overloaded member function, "
+              "provided for convenience. It differs from the above "
+              "function only in what argument(s) it accepts.";
+    }
 };
 
 #endif

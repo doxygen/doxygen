@@ -125,7 +125,8 @@ static const char *defaultStyleSheet =
 "A:hover { text-decoration: none; background-color: #f2f2ff }\n"
 "DL.el { margin-left: -1cm }\n"
 ".fragment {\n"
-"       font-family: monospace\n"
+"       font-family: Fixed, monospace;\n"
+"       font-size: 90%;\n"
 "}\n"
 "PRE.fragment {\n"
 "	border: 1px solid #CCCCCC;\n"
@@ -843,8 +844,10 @@ void HtmlGenerator::codify(const char *str)
                    t << spaces.left(spacesToNextTabStop); 
                    col+=spacesToNextTabStop; 
                    break; 
-        case '\n': t << '\n'; col=0; 
+        case '\n': t << "\n"; col=0; 
                    break;
+        //case '\n': t << "<br>"; col=0; 
+        //           break;
         case '\r': break;
         case '<':  t << "&lt;"; col++; 
                    break;
@@ -852,6 +855,8 @@ void HtmlGenerator::codify(const char *str)
                    break;
         case '&':  t << "&amp;"; col++; 
                    break;
+        //case ' ':  t << "&nbsp;"; col++;
+        //           break;
         case '\\':
                    if (*p=='<')
                      { t << "&lt;"; p++; }

@@ -823,12 +823,12 @@ MainWidget::MainWidget(QWidget *parent)
   // load default settings
   m_settings.setPath("www.doxygen.org","Doxygen GUI");
   bool ok;
-  QString config = m_settings.readEntry("/config/default",QString::null,&ok);
+  QString config = m_settings.readEntry("/doxywizard/config/default",QString::null,&ok);
   if (ok && !config.isEmpty())
   {
     Config::instance()->parseString("default settings",config);
   }
-  QString workingDir = m_settings.readEntry("/config/workingdir",QString::null,&ok);
+  QString workingDir = m_settings.readEntry("/doxywizard/config/workingdir",QString::null,&ok);
   if (ok && !workingDir.isEmpty())
   {
     m_workingDir->setText(workingDir);
@@ -836,7 +836,7 @@ MainWidget::MainWidget(QWidget *parent)
   setConfigSaved(FALSE);
   for (int i=0;i<10;i++)
   {
-    QString entry = m_settings.readEntry(QString().sprintf("/recent/config%d",i));
+    QString entry = m_settings.readEntry(QString().sprintf("/doxywizard/recent/config%d",i));
     if (!entry.isEmpty())
     {
       addRecentFile(entry);
@@ -1178,8 +1178,8 @@ void MainWidget::saveDefaults()
     QString newConfig;
     QTextStream t(&newConfig,IO_WriteOnly);
     Config::instance()->writeTemplate(t,TRUE,FALSE);
-    m_settings.writeEntry("/config/default",newConfig);
-    m_settings.writeEntry("/config/workingdir",m_workingDir->text());
+    m_settings.writeEntry("/doxywizard/config/default",newConfig);
+    m_settings.writeEntry("/doxywizard/config/workingdir",m_workingDir->text());
     statusBar()->message("Current configuration saved as default",messageTimeout);
   }
 }
@@ -1361,7 +1361,7 @@ void MainWidget::addRecentFile(const QString &file)
   for ( it = m_recentFiles.begin(); it != m_recentFiles.end(); ++it, ++i )
   {
     m_recentMenu->insertItem(*it);
-    m_settings.writeEntry(QString().sprintf("/recent/config%d",i),*it);
+    m_settings.writeEntry(QString().sprintf("/doxywizard/recent/config%d",i),*it);
   }
 }
 

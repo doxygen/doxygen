@@ -2121,7 +2121,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
    
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
 #ifdef COMMENTSCAN
-  					  REJECT;
+  					  Entry *tmp = current;
+					  current = previous;
+  					  handleGroupStartCommand(current->name);
+					  current = tmp;
+					  initEntry();
+
 #else
   					  startGroup();
 					  tmpDocType=-1;
@@ -2154,7 +2159,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
 #ifdef COMMENTSCAN
-  					  REJECT;
+					  handleGroupEndCommand();
 #else
                                           if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
                                           {
@@ -3266,7 +3271,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <FuncQual>[{:;,]                        {
                                           if ( strcmp(yytext,";")==0 && 
 					       insidePHP && 
-					       current->type.left(8) != "function" )
+					       !containsWord(current->type,"function") )
                                           {
                                             current->reset();
                                             initEntry();
@@ -3497,26 +3502,24 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  //printf("Adding entry `%s'\n",current->name.data());
 					  if ( insidePHP)
 					  {
-					    if (current->type.left(6) == "final " )
+					    if (findAndRemoveWord(current->type,"final"))
 					    {
-					      current->type = current->type.mid(6);
 					      current->memSpec |= Entry::Final;
 					    }
-					    if (current->type.left(9) == "abstract " )
+					    if (findAndRemoveWord(current->type,"abstract"))
 					    {
-					      current->type = current->type.mid(9);
 					      current->memSpec |= Entry::Abstract;
 					    }
 					  }
-					  if ( insidePHP && current->type.left(8) != "function" )
+					  if ( insidePHP && !containsWord(current->type,"function"))
 					  {
 					    initEntry();
 					  }
 					  else
 					  {
-					    if ( insidePHP && current->type.left(8) == "function" )
+					    if ( insidePHP)
 					    {
-					      current->type = current->type.mid(8);
+					      findAndRemoveWord(current->type,"function");
 					    }
 					    previous = current;
 					    current_root->addSubEntry(current);
@@ -4303,7 +4306,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <FindMembers>"{"			{
                                           if (insideCS && !current->name.isEmpty() && !current->type.isEmpty())
 					  {
-					    if (current->type.left(6)=="event " || current->type.find("event")!=-1) // event
+					    if (containsWord(current->type,"event")) // event
 					    {
   					      current->mtype = mtype = Event;
 					    }
