@@ -1,4 +1,3 @@
-<?
 function readInt($file)
 {
   $b1 = ord(fgetc($file)); $b2 = ord(fgetc($file));
