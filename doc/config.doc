@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -447,7 +447,7 @@ followed by the descriptions of the tags grouped by category.
  You can put \\n's in the value part of an alias to insert newlines.
 
 \anchor cfg_optimize_output_for_c
-<dt>\c OPTIMIZE_OUTPUT_FOR_C
+<dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
  \addindex OPTIMIZE_OUTPUT_FOR_C
  Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
  of C sources only. Doxygen will then generate output that is more tailored 
