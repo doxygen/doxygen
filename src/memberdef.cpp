@@ -1703,7 +1703,7 @@ void MemberDef::addListReference(Definition *d)
     }
   }
   //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
-  addRefItem(todoId(),testId(),bugId(),memLabel,
+  addRefItem(specialListItems(),memLabel,
       d->getOutputFileBase()+":"+anchor(),memName,argsString());
 }
 

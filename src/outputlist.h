@@ -327,10 +327,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDescription); }
     void endMemberDescription() 
     { forall(&OutputGenerator::endMemberDescription); }
-    void startDescList(SectionTypes t) 
-    { forall(&OutputGenerator::startDescList,t); }
-    void endDescList() 
-    { forall(&OutputGenerator::endDescList); }
     void startSimpleSect(SectionTypes t,const char *file,const char *anchor,
                          const char *title) 
     { forall(&OutputGenerator::startSimpleSect,t,file,anchor,title); }

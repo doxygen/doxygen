@@ -364,7 +364,7 @@ Definition *NamespaceDef::findInnerCompound(const char *n)
 
 void NamespaceDef::addListReferences()
 {
-  addRefItem(todoId(),testId(),bugId(),
+  addRefItem(specialListItems(),
              theTranslator->trNamespace(TRUE,TRUE),
              getOutputFileBase(),name()
             );

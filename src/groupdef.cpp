@@ -754,7 +754,7 @@ QCString GroupDef::getOutputFileBase() const
 
 void GroupDef::addListReferences()
 {
-  addRefItem(todoId(),testId(),bugId(),
+  addRefItem(specialListItems(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name()
             );

@@ -1020,6 +1020,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %x      SkipSharp
 %x      ReadInclude
 %x      TemplDecl
+%x	CallEnd
 
 %%
 
@@ -1565,19 +1566,17 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
   					  if (--g_bracketCount<=0) 
 					  {
-                                            if (!g_insideBody) 
-					    {
-					      g_theVarContext.popScope();
-					    }
-					    g_name.resize(0);g_args.resize(0);
-					    g_parmType.resize(0);g_parmName.resize(0);
-					    BEGIN( Body ); 
+					    BEGIN( CallEnd ); 
 					  }
 					}
+<CallEnd>[ \t\n]*			{ codifyLines(yytext); }
+  /*
 <MemberCall2,FuncCall>")"[ \t\n]*[;:]	{
+  */
+<CallEnd>[;:]				{
   					  codifyLines(yytext);
   					  g_bracketCount=0;
-					  if (yytext[yyleng-1]==';') g_searchingForBody=FALSE; 
+					  if (*yytext==';') g_searchingForBody=FALSE; 
 					  if (!g_inClass && !g_type.isEmpty())
 					  {
 					    g_theVarContext.addVariable(g_type,g_name);
@@ -1585,7 +1584,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_parmType.resize(0);g_parmName.resize(0);
 					  g_theCallContext.popScope();
 					  g_theCallContext.setClass(0);
-  					  if (yytext[yyleng-1]==';' || g_insideBody)
+  					  if (*yytext==';' || g_insideBody)
 					  {
 					    if (!g_insideBody)
 					    {
@@ -1600,7 +1599,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    BEGIN( SkipInits );
 					  }
   					}
+ /*
 <MemberCall2,FuncCall>")"({BN}"const"|"volatile")*{BN}*"{" 	{
+  */
+<CallEnd>({BN}"const"|"volatile")*{BN}*"{" {
                                           if (g_insideBody)
 					  {
 					    g_theVarContext.pushScope();
@@ -1617,18 +1619,17 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  {
   					    g_scopeStack.push(INNERBLOCK);
 					  }
-					  g_code->codify(")");
 					  yytext[yyleng-1]='\0';
-					  QCString cv(yytext+1);
+					  QCString cv(yytext);
 					  if (!cv.stripWhiteSpace().isEmpty())
 					  {
 					    startFontClass("keyword");
-  					    codifyLines(yytext+1);
+  					    codifyLines(yytext);
 					    endFontClass();
 					  }
 					  else // just whitespace
 					  {
-  					    codifyLines(yytext+1);
+  					    codifyLines(yytext);
 					  }
 					  g_code->codify("{");
   					  if (g_searchingForBody)
@@ -1640,6 +1641,16 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_curlyCount++;
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
+  					}
+<CallEnd>.				{
+  					  unput(*yytext);
+                                          if (!g_insideBody) 
+					  {
+					    g_theVarContext.popScope();
+					  }
+					  g_name.resize(0);g_args.resize(0);
+					  g_parmType.resize(0);g_parmName.resize(0);
+					  BEGIN( Body ); 
   					}
 <SkipInits>";"				{
   					  g_code->codify(yytext);

@@ -41,6 +41,7 @@ Entry::Entry()
   //mtArgList = 0;
   mGrpId = -1;
   tagInfo = 0;
+  sli = 0;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
@@ -80,9 +81,9 @@ Entry::Entry(const Entry &e)
   memSpec     = e.memSpec;
   initializer = e.initializer;
   initLines   = e.initLines;
-  todoId      = e.todoId;
-  testId      = e.testId;
-  bugId       = e.bugId;
+  //todoId      = e.todoId;
+  //testId      = e.testId;
+  //bugId       = e.bugId;
   tagInfo     = e.tagInfo;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
@@ -158,7 +159,21 @@ Entry::Entry(const Entry &e)
   //    //printf("appending argument %s %s\n",a->type.data(),a->name.data());
   //  }
   //}
-
+  if (e.sli)
+  {
+    sli = new QList<ListItemInfo>;
+    sli->setAutoDelete(TRUE);
+    QListIterator<ListItemInfo> slii(*e.sli);
+    ListItemInfo *ili;
+    for (slii.toFirst();(ili=slii.current());++slii)
+    {
+      sli->append(new ListItemInfo(*ili));
+    }
+  }
+  else
+  {
+    sli=0;
+  }
 }
 
 Entry::~Entry()
@@ -173,6 +188,7 @@ Entry::~Entry()
   delete tArgLists;
   //delete mtArgList;
   delete tagInfo;
+  delete sli;
   num--;
 }
 
@@ -224,9 +240,9 @@ void Entry::reset()
   bodyLine = -1;
   endBodyLine = -1;
   mGrpId = -1;
-  todoId = 0;
-  testId = 0;
-  bugId = 0;
+  //todoId = 0;
+  //testId = 0;
+  //bugId = 0;
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;
@@ -244,6 +260,7 @@ void Entry::reset()
   argList->clear();
   if (tagInfo) { delete tagInfo; tagInfo=0; }
   if (tArgLists) { delete tArgLists; tArgLists=0; }
+  if (sli) { delete sli; sli=0; }
   //if (mtArgList) { delete mtArgList; mtArgList=0; }
 }
 
@@ -351,3 +368,17 @@ bool ArgumentList::hasDocumentation() const
   }
   return hasDocs;
 }
+
+void Entry::addSpecialListItem(const char *listName,int itemId)
+{
+  if (sli==0)
+  {
+    sli = new QList<ListItemInfo>;
+    sli->setAutoDelete(TRUE);
+  }
+  ListItemInfo *ili=new ListItemInfo;
+  ili->type = listName;
+  ili->itemId = itemId;
+  sli->append(ili);
+}
+

@@ -25,7 +25,7 @@ class PageInfo
   public:
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
-      doc(d), title(t), todoId(0), testId(0),sectionDict(0), m_inGroup(0) {}
+      doc(d), title(t), sectionDict(0),specialListItems(0),m_inGroup(0) {}
 
     // where the page definition was found
     QCString defFileName;
@@ -87,16 +87,13 @@ class PageInfo
       }
     }
 
-    // ids
-    int todoId;
-    int testId;
-    int bugId;
 
     void makePartOfGroup(GroupDef *gd) { m_inGroup = gd; }
     GroupDef *getGroupDef() const { return m_inGroup; }
 
     // is this page part of a group
     SectionDict *sectionDict;
+    QList<ListItemInfo> *specialListItems;
 
   private:
     GroupDef *m_inGroup;

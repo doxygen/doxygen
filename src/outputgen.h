@@ -224,8 +224,6 @@ class BaseOutputDocInterface
     virtual void writeRing(char) = 0;
     virtual void writeSharpS() = 0;
     virtual void writeCCedil(char) = 0;
-    virtual void startDescList(SectionTypes t) = 0;
-    virtual void endDescList() = 0;
     virtual void startSimpleSect(SectionTypes t,const char *file,
                                  const char *anchor,const char *title) = 0;
     virtual void endSimpleSect() = 0;

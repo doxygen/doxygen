@@ -43,6 +43,7 @@ class MemberGroupSDict;
 class Definition;
 struct TagInfo;
 class MemberNameInfoSDict;
+class ListItemInfo;
 
 //--------------------------------------------------------------------
 
@@ -169,12 +170,13 @@ QCString resolveTypeDef(Definition *d,const QCString &name,
 QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 int getScopeFragment(const QCString &s,int p,int *l);
 int filterCRLF(char *buf,int len);
-void addRefItem(int todoId,int testId,int bugId,const char *prefix,
+void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
                         const char *name,const char *title,const char *args=0);
 void addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
-                           int todoId,int testId,int bugId,GroupDef *gd=0,
+                           const QList<ListItemInfo> *sli,
+                           GroupDef *gd=0,
                            TagInfo *tagInfo=0
                           );
 QCString escapeCharsInString(const char *name,bool allowDots);

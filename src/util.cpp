@@ -3375,7 +3375,8 @@ found:
 void addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
-                           int todoId,int testId,int bugId,GroupDef *gd,
+                           const QList<ListItemInfo> *sli,
+                           GroupDef *gd,
                            TagInfo *tagInfo
                           )
 {
@@ -3395,9 +3396,22 @@ void addRelatedPage(const char *name,const QCString &ptitle,
     
     QCString title=ptitle.stripWhiteSpace();
     pi=new PageInfo(fileName,startLine,baseName,doc,title);
-    pi->todoId=todoId;
-    pi->testId=testId;
-    pi->bugId=bugId;
+
+    if (sli)
+    {
+      if (pi->specialListItems==0)
+      {
+        pi->specialListItems=new QList<ListItemInfo>;
+        pi->specialListItems->setAutoDelete(TRUE);
+      }
+      QListIterator<ListItemInfo> slii(*sli);
+      ListItemInfo *lii;
+      for (slii.toFirst();(lii=slii.current());++slii)
+      {
+        pi->specialListItems->append(new ListItemInfo(*lii));
+      } 
+    }
+
     if (tagInfo)
     {
       pi->reference = tagInfo->tagName;
@@ -3447,100 +3461,45 @@ void addRelatedPage(const char *name,const QCString &ptitle,
 
 //----------------------------------------------------------------------------
 
-void addRefItem(int todoId,int testId,int bugId,const char *prefix,
-                        const char *name,const char *title,const char *args)
+void addRefItem(const QList<ListItemInfo> *sli,
+                const char *prefix,
+                const char *name,const char *title,const char *args)
 {
-
-  //printf("addRefItem(%s) todoId=%d testId=%d bugId=%d\n",name,todoId,testId,bugId);
-
-  ////////////////////////////////////////////////////////////
-  // add item to the todo list
-  ////////////////////////////////////////////////////////////
-
-  if (todoId>0 && Config_getBool("GENERATE_TODOLIST"))
+  if (sli)
   {
-    RefItem *item = todoList.getRefItem(todoId);
-    ASSERT(item!=0);
-    if (item->written) return;
+    QListIterator<ListItemInfo> slii(*sli);
+    ListItemInfo *lii;
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      RefList *refList = Doxygen::specialLists->find(lii->type);
+      ASSERT(refList!=0);
+      //printf("addRefItem(%s) todoId=%d testId=%d bugId=%d\n",name,todoId,testId,bugId);
 
-    QCString doc;
-    doc += "<dl><dt>\\anchor ";
-    doc += item->listAnchor;
-    doc += "\n";
-    doc += prefix;
-    doc += " \\_internalref ";
-    doc += name;
-    doc += " \"";
-    doc += title;
-    doc += "\"";
-    if (args) doc += args;
-    doc += "</dt>\n<dd>";
-    doc += item->text;
-    doc += "</dd></dl>\n";
-    //printf("Todo page: %s\n",doc.data());
-    addRelatedPage("todo",theTranslator->trTodoList(),doc,0,"generated",1,0,0,0);
+      if (Config_getBool(refList->optionName()))
+      {
+        RefItem *item = refList->getRefItem(lii->itemId);
+        ASSERT(item!=0);
+        if (item->written) return;
 
-    item->written=TRUE;
-  }
-
-  ////////////////////////////////////////////////////////////
-  // add item to the test list
-  ////////////////////////////////////////////////////////////
-
-  if (testId>0 && Config_getBool("GENERATE_TESTLIST"))
-  {
-    RefItem *item = testList.getRefItem(testId);
-    ASSERT(item!=0);
-    if (item->written) return;
-
-    QCString doc;
-    doc += "<dl><dt>\\anchor ";
-    doc += item->listAnchor;
-    doc += "\n";
-    doc += prefix;
-    doc += " \\_internalref ";
-    doc += name;
-    doc += " \"";
-    doc += title;
-    doc += "\"";
-    if (args) doc += args;
-    doc += "</dt>\n<dd>";
-    doc += item->text;
-    doc += "</dd></dl>\n";
-    //printf("Test page: %s\n",doc.data());
-    addRelatedPage("test",theTranslator->trTestList(),doc,0,"generated",1,0,0,0);
-
-    item->written=TRUE;
-  }
-  
-  ////////////////////////////////////////////////////////////
-  // add item to the bug list
-  ////////////////////////////////////////////////////////////
-
-  if (bugId>0 && Config_getBool("GENERATE_BUGLIST"))
-  {
-    RefItem *item = bugList.getRefItem(bugId);
-    ASSERT(item!=0);
-    if (item->written) return;
-
-    QCString doc;
-    doc += "<dl><dt>\\anchor ";
-    doc += item->listAnchor;
-    doc += "\n";
-    doc += prefix;
-    doc += " \\_internalref ";
-    doc += name;
-    doc += " \"";
-    doc += title;
-    doc += "\"";
-    if (args) doc += args;
-    doc += "</dt>\n<dd>";
-    doc += item->text;
-    doc += "</dd></dl>\n";
-    //printf("Bug page: %s\n",doc.data());
-    addRelatedPage("bug",theTranslator->trBugList(),doc,0,"generated",1,0,0,0);
-
-    item->written=TRUE;
+        QCString doc(1000);
+        doc += "<dl><dt>\\anchor ";
+        doc += item->listAnchor;
+        doc += "\n";
+        doc += prefix;
+        doc += " \\_internalref ";
+        doc += name;
+        doc += " \"";
+        doc += title;
+        doc += "\"";
+        if (args) doc += args;
+        doc += "</dt>\n<dd>";
+        doc += item->text;
+        doc += "</dd></dl>\n";
+        //printf("Todo page: %s\n",doc.data());
+        addRelatedPage(refList->listName(),refList->pageTitle(),doc,0,"generated",1,0,0,0);
+        item->written=TRUE;
+      }
+    }
   }
 }
 

@@ -110,6 +110,9 @@ PageInfo      *Doxygen::mainPage = 0;
 QTextStream    Doxygen::tagFile;
 NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
+QDict<RefList> *Doxygen::specialLists = new QDict<RefList>; // dictionary of cross-referenced item lists
+
+
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
 static QDict<void>    compoundKeywordDict(7);  // keywords recognised as compounds
@@ -198,8 +201,9 @@ static void addRelatedPage(Entry *root)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
   addRelatedPage(root->name,root->args,root->doc,root->anchors,
-      root->fileName,root->startLine,root->todoId,
-      root->testId,root->bugId,gd,root->tagInfo
+      root->fileName,root->startLine,
+      root->sli,
+      gd,root->tagInfo
      );
 }
 
@@ -236,7 +240,7 @@ static void buildGroupList(Entry *root)
 				gd->documentation() + "\n\n" + root->doc,
                                 root->docFile, root->docLine );
         gd->addSectionsToDefinition(root->anchors);
-        gd->setRefItems(root->todoId,root->testId,root->bugId);
+        gd->setRefItems(root->sli);
         addGroupToGroups(root,gd);
       }
     }
@@ -251,7 +255,7 @@ static void buildGroupList(Entry *root)
       gd->setDocumentation(root->doc,root->docFile,root->docLine);
       gd->addSectionsToDefinition(root->anchors);
       Doxygen::groupSDict.append(root->name,gd);
-      gd->setRefItems(root->todoId,root->testId,root->bugId);
+      gd->setRefItems(root->sli);
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -312,7 +316,7 @@ static void buildFileList(Entry *root)
         fd->setDocumentation(root->doc,root->docFile,root->docLine,FALSE);
         fd->setBriefDescription(root->brief,root->briefFile,root->briefLine); 
         fd->addSectionsToDefinition(root->anchors);
-        fd->setRefItems(root->todoId,root->testId,root->bugId);
+        fd->setRefItems(root->sli);
         QListIterator<Grouping> gli(*root->groups);
         Grouping *g;
         for (;(g=gli.current());++gli)
@@ -628,7 +632,7 @@ static void addClassToContext(Entry *root)
       fd->insertClass(cd);
     }
     addClassToGroups(root,cd);
-    cd->setRefItems(root->todoId,root->testId,root->bugId);
+    cd->setRefItems(root->sli);
     if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
     if (cd->templateArguments()==0) 
@@ -696,7 +700,7 @@ static void addClassToContext(Entry *root)
     if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
     addClassToGroups(root,cd);
-    cd->setRefItems(root->todoId,root->testId,root->bugId);
+    cd->setRefItems(root->sli);
 
     // see if the class is found inside a namespace 
     bool found=addNamespace(root,cd);
@@ -855,7 +859,7 @@ static void buildNamespaceList(Entry *root)
         // insert the namespace in the file definition
         if (fd) fd->insertNamespace(nd);
         addNamespaceToGroups(root,nd);
-        nd->setRefItems(root->todoId,root->testId,root->bugId);
+        nd->setRefItems(root->sli);
       }
       else // fresh namespace
       {
@@ -871,7 +875,7 @@ static void buildNamespaceList(Entry *root)
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
-        nd->setRefItems(root->todoId,root->testId,root->bugId);
+        nd->setRefItems(root->sli);
 
         bool ambig;
         // file definition containing the namespace nd
@@ -1013,7 +1017,7 @@ static void findUsingDirectives(Entry *root)
         nd->insertUsedFile(root->fileName);
         // add class to the list
         Doxygen::namespaceSDict.inSort(root->name,nd);
-        nd->setRefItems(root->todoId,root->testId,root->bugId);
+        nd->setRefItems(root->sli);
       }
     }
   }
@@ -1234,7 +1238,7 @@ static MemberDef *addVariableToClass(
     // add the member to the class
   }
   cd->insertMember(md);
-  md->setRefItems(root->todoId,root->testId,root->bugId);
+  md->setRefItems(root->sli);
 
   //TODO: insert FileDef instead of filename strings.
   cd->insertUsedFile(root->fileName);
@@ -1332,7 +1336,7 @@ static MemberDef *addVariableToFile(
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
-        md->setRefItems(root->todoId,root->testId,root->bugId);
+        md->setRefItems(root->sli);
         return md;
       }
       
@@ -1383,7 +1387,7 @@ static MemberDef *addVariableToFile(
   //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
   //}
 
-  md->setRefItems(root->todoId,root->testId,root->bugId);
+  md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
     nd->insertMember(md); 
@@ -1777,7 +1781,7 @@ void addMethodToClass(Entry *root,ClassDef *cd,
 
   addMemberToGroups(root,md);
   root->section = Entry::EMPTY_SEC;
-  md->setRefItems(root->todoId,root->testId,root->bugId);
+  md->setRefItems(root->sli);
 }
 
 
@@ -2048,7 +2052,7 @@ static void buildFunctionList(Entry *root)
             }
           }
 
-          md->setRefItems(root->todoId,root->testId,root->bugId);
+          md->setRefItems(root->sli);
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
           {
             // add member to namespace
@@ -2304,11 +2308,8 @@ static void transferFunctionDocumentation()
         //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
         //}
 
-
-        int todoId = QMAX(mdec->todoId(),mdef->todoId());
-        int testId = QMAX(mdec->testId(),mdef->testId());
-        int bugId  = QMAX(mdec->bugId() ,mdef->bugId() );
-        mdec->setRefItems(todoId,testId,bugId);
+        mdec->setRefItems(mdef->specialListItems());
+        mdef->setRefItems(mdec->specialListItems());
     }
   }
 }
@@ -3381,7 +3382,7 @@ static void addListReferences()
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    addRefItem(pi->todoId,pi->testId,pi->bugId,
+    addRefItem(pi->specialListItems,
                theTranslator->trPage(TRUE,TRUE),
                pi->name,pi->title);
   }
@@ -3497,7 +3498,7 @@ static void addMemberDocs(Entry *root,
       md->setBodyDef(fd);
     }
 
-    md->setRefItems(root->todoId,root->testId,root->bugId);
+    md->setRefItems(root->sli);
   }
 
   //md->setDefFile(root->fileName);
@@ -4355,7 +4356,7 @@ static void findMember(Entry *root,
           mn->append(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
-          md->setRefItems(root->todoId,root->testId,root->bugId);
+          md->setRefItems(root->sli);
         }
       }
       else // unrelated function with the same name as a member
@@ -4502,7 +4503,7 @@ static void findMember(Entry *root,
           mn->append(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
-          md->setRefItems(root->todoId,root->testId,root->bugId);
+          md->setRefItems(root->sli);
           addMemberToGroups(root,md);
           //printf("Adding member=%s\n",md->name().data());
           if (newMemberName)
@@ -4744,7 +4745,7 @@ static void findEnums(Entry *root)
       //{
       //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
       //}
-      md->setRefItems(root->todoId,root->testId,root->bugId);
+      md->setRefItems(root->sli);
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
         if (Config_getBool("HIDE_SCOPE_NAMES"))
@@ -5517,7 +5518,7 @@ static void findDefineDocumentation(Entry *root)
             md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
             md->setMaxInitLines(root->initLines);
-            md->setRefItems(root->todoId,root->testId,root->bugId);
+            md->setRefItems(root->sli);
             if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
             addMemberToGroups(root,md);
           }
@@ -5553,7 +5554,7 @@ static void findDefineDocumentation(Entry *root)
               bool ambig;
               md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
-              md->setRefItems(root->todoId,root->testId,root->bugId);
+              md->setRefItems(root->sli);
               if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
               addMemberToGroups(root,md);
             }
@@ -5599,7 +5600,7 @@ static void buildPageList(Entry *root)
   {
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    addRefItem(root->todoId,root->testId,root->bugId,"page",
+    addRefItem(root->sli,"page",
                Config_getBool("GENERATE_TREEVIEW")?"main":"index",
                title
               );
@@ -5759,15 +5760,16 @@ static void resolveUserReferences()
     // name (not from the todo/test/bug list, but from the file in which they 
     // are defined). We correct this here by looking at the generated section 
     // labels!
-    if (si->label.left(5)=="_todo" || si->label.left(5)=="_test") 
+    QDictIterator<RefList> rli(*Doxygen::specialLists);
+    RefList *rl;
+    for (rli.toFirst();(rl=rli.current());++rli)
     {
-      si->fileName=si->label.mid(1,4); // extract "todo" or "test"
-      si->generated=TRUE;
-    }
-    else if (si->label.left(4)=="_bug")
-    {
-      si->fileName="bug";
-      si->generated=TRUE;
+      QCString label="_"+rl->listName(); // "_todo", "_test", ...
+      if (si->label==label)
+      {
+        si->generated=TRUE;
+        break;
+      }
     }
   }
 }
@@ -6677,6 +6679,7 @@ void initDoxygen()
 #endif
   
   initPreprocessor();
+
 }
 
 void readConfiguration(int argc, char **argv)
@@ -6955,6 +6958,33 @@ void readConfiguration(int argc, char **argv)
   /* Set the global html file extension. */ 
   htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
   htmlFileExtensionLength = htmlFileExtension.length();
+
+  /* init the special lists */
+  Doxygen::specialLists->setAutoDelete(TRUE);
+  Doxygen::specialLists->insert("todo",
+      new RefList("todo",
+                  "GENERATE_TODOLIST",
+                  theTranslator->trTodoList(),
+                  theTranslator->trTodo(),
+                  BaseOutputDocInterface::Todo
+                 )
+  );
+  Doxygen::specialLists->insert("test",
+      new RefList("test",
+                  "GENERATE_TESTLIST",
+                  theTranslator->trTestList(),
+                  theTranslator->trTest(),
+                  BaseOutputDocInterface::Test
+                 )
+  );
+  Doxygen::specialLists->insert("bug", 
+      new RefList("bug", 
+                  "GENERATE_BUGLIST", 
+                  theTranslator->trBugList(),
+                  theTranslator->trBug(),
+                  BaseOutputDocInterface::Bug
+                 )
+  );
 }
 
 void parseInput()

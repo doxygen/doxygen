@@ -1106,7 +1106,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(CopyLine);
 					  }
   					}
-<CopyLine>"extern"{BN}*"\"C\""*{BN}*"{"	{
+<CopyLine>"extern"{BN}{0,80}"\"C\""*{BN}{0,80}"{"	{
                                           QCString text=yytext;
   					  g_yyLineNr+=text.contains('\n');
 					  outputArray(yytext,yyleng);
@@ -1148,7 +1148,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  outputChar(*yytext);
 					  BEGIN( CopyLine );
 					}
-<CopyLine>{ID}/{BN}*"("			{
+<CopyLine>{ID}/{BN}{0,80}"("			{
   					  Define *def=0;
 					  //def=g_fileDefineDict->find(yytext);
 					  //printf("Search for define %s found=%d g_includeStack.isEmpty()=%d "

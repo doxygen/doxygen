@@ -30,6 +30,7 @@ class MemberSDict;
 class MemberDef;
 class GroupDef;
 class GroupList;
+class ListItemInfo;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
@@ -103,15 +104,17 @@ class Definition
     void addSourceReferencedBy(MemberDef *d);
     void addSourceReferences(MemberDef *d);
 
-    void setRefItems(int todoId,int testId,int bugId) 
-    { 
-      if (todoId!=0) m_todoId=todoId; 
-      if (testId!=0) m_testId=testId; 
-      if (bugId!=0)  m_bugId=bugId; 
-    }
-    int todoId() const { return m_todoId; }
-    int testId() const { return m_testId; }
-    int bugId() const { return m_bugId; }
+    //{ 
+    //  if (todoId!=0) m_todoId=todoId; 
+    //  if (testId!=0) m_testId=testId; 
+    //  if (bugId!=0)  m_bugId=bugId; 
+    //}
+    //int todoId() const { return m_todoId; }
+    //int testId() const { return m_testId; }
+    //int bugId() const { return m_bugId; }
+    void setRefItems(const QList<ListItemInfo> *sli);
+    int getSpecialListId(const char *listName) const;
+    const QList<ListItemInfo> *specialListItems() const;
 
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return m_defFileName; }
@@ -165,7 +168,7 @@ class Definition
     QCString m_docFile;
     int m_briefLine;
     QCString m_briefFile;
-
+    QList<ListItemInfo> *m_specialListItems;
 };
 
 class DefinitionList : public QList<Definition>
