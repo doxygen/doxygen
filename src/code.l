@@ -335,6 +335,7 @@ static void startCodeLine()
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
+    //printf("startCodeLine %d d=%p\n",g_yyLineNr,d);
     //g_code->startLineNumber();
     if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
@@ -590,6 +591,23 @@ static MemberDef *setCallContextForVar(const QCString &name)
   return 0;
 }
 
+static void addDocCrossReference(MemberDef *src,MemberDef *dst)
+{
+  //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
+  if (Config_getBool("REFERENCED_BY_RELATION") && 
+      (src->isFunction() || src->isSlot()) 
+     )
+  {
+    dst->addSourceReferencedBy(src);
+  }
+  if (Config_getBool("REFERENCES_RELATION") && 
+      (src->isFunction() || src->isSlot())
+     )
+  {
+    src->addSourceReferences(dst);
+  }
+}
+
 static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
@@ -646,18 +664,7 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
 	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->getBodyAnchor(),clName);
 	  if (g_currentMemberDef)
 	  {
-	    if (Config_getBool("REFERENCED_BY_RELATION") && 
-		(g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
-	       )
-	    {
-              md->addSourceReferencedBy(g_currentMemberDef);
-	    }
-	    if (Config_getBool("REFERENCES_RELATION") && 
-	        (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
-	       )
-	    {
-              g_currentMemberDef->addSourceReferences(md);
-	    }
+	    addDocCrossReference(g_currentMemberDef,md);
 	  }
 	  return;
 	}
@@ -711,21 +718,13 @@ static bool getLink(const char *className,
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));
+      //printf("g_currentDefinition=%p g_currentMemberDef=%p g_insideBody=%d\n",
+      //        g_currentDefinition,g_currentMemberDef,g_insideBody);
+
       if (g_currentDefinition && g_currentMemberDef &&
 	  md!=g_currentMemberDef && g_insideBody)
       {
-        if (Config_getBool("REFERENCED_BY_RELATION") && 
-	    (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot()) 
-	   )
-	{
-          md->addSourceReferencedBy(g_currentMemberDef);
-	}
-	if (Config_getBool("REFERENCES_RELATION") && 
-	    (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
-	   )
-	{
-          g_currentMemberDef->addSourceReferences(md);
-	}
+	addDocCrossReference(g_currentMemberDef,md);
       }
       //printf("d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
@@ -763,14 +762,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
 	if (g_currentDefinition && g_currentMemberDef &&
 	    xmd!=g_currentMemberDef && g_insideBody)
 	{
-	  if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
-	  {
-	    xmd->addSourceReferencedBy(g_currentMemberDef);
-	  }
-	  if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
-	  {
-	    g_currentMemberDef->addSourceReferences(xmd);
-	  }
+	  addDocCrossReference(g_currentMemberDef,xmd);
 	}
 
 	// write the actual link

@@ -163,7 +163,7 @@ void GroupDef::addMembersToMemberGroup()
 
 void GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
-  //fprintf(stderr, "GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
+  //printf("GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoSDict)[md->name()]))
   { // member with this name already found
@@ -630,7 +630,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
 /*! Add a member to the group with the highest priority */
 void addMemberToGroups(Entry *root,MemberDef *md)
 {
-  //printf("  Root 0x%p = %s, md 0x%p %s\n", root, root->name.data(), md, md->name().data() );
+  //printf("  Root %p = %s, md %p=%s groups=%d\n", root, root->name.data(), md, md->name().data(), root->groups->count() );
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;
 
@@ -644,7 +644,8 @@ void addMemberToGroups(Entry *root,MemberDef *md)
         (gd=Doxygen::groupSDict[g->groupname]) &&
 	g->pri >= pri)
     {
-      if( fgd && g->pri == pri ) {
+      if (fgd && g->pri==pri) 
+      {
          warn(root->fileName.data(), root->startLine,
            "Warning: Member %s found in multiple %s groups! "
            "The member will be put in group %s, and not in group %s",
@@ -657,14 +658,18 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       pri = g->pri;
     }
   }
+  //printf("fgd=%p\n",fgd);
 
   // put member into group defined by this entry?
-  if( fgd )
+  if (fgd)
   {
     GroupDef *mgd = md->getGroupDef();
+    //printf("mgd=%p\n",mgd);
     bool insertit = FALSE;
     if (mgd==0)
+    {
       insertit = TRUE;
+    }
     else if (mgd!=fgd)
     {
       bool moveit = FALSE;
@@ -672,40 +677,42 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       // move member from one group to another if 
       // - the new one has a higher priority
       // - the new entry has the same priority, but with docs where the old one had no docs
-      if( md->getGroupPri() < pri )
+      if (md->getGroupPri()<pri)
       {
-	  moveit = TRUE;
+        moveit = TRUE;
       }
       else
       {
-	  if( md->getGroupPri() == pri )
-	  {
-
-	      if( root->doc.length() != 0 && !md->getGroupHasDocs() )
-		  moveit = TRUE;
-	      else if( root->doc.length() != 0 && md->getGroupHasDocs() )
-	      {
-		  warn(md->getGroupFileName(),md->getGroupStartLine(),
-		       "Warning: Member documentation for %s found several times in %s groups!\n"
-		       "%s:%d: The member will remain in group %s, and won't be put into group %s",
-		       md->name().data(), Grouping::getGroupPriName( pri ),
-		       root->fileName.data(), root->startLine,
-		       mgd->name().data(),
-		       fgd->name().data()
-		       );
-	      }
-	  }
+        if (md->getGroupPri()==pri)
+        {
+          if (!root->doc.isEmpty() && !md->getGroupHasDocs())
+          {
+            moveit = TRUE;
+          }
+          else if (!root->doc.isEmpty() && md->getGroupHasDocs())
+          {
+            warn(md->getGroupFileName(),md->getGroupStartLine(),
+                "Warning: Member documentation for %s found several times in %s groups!\n"
+                "%s:%d: The member will remain in group %s, and won't be put into group %s",
+                md->name().data(), Grouping::getGroupPriName( pri ),
+                root->fileName.data(), root->startLine,
+                mgd->name().data(),
+                fgd->name().data()
+                );
+          }
+        }
       }
 
-      if( moveit )
+      if (moveit)
       {
         mgd->removeMember(md);
         insertit = TRUE;
       }
     }
 
-    if( insertit )
+    if (insertit)
     {
+      //printf("insertMember\n");
       fgd->insertMember(md);
       md->setGroupDef(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
       ClassDef *cd = md->getClassDefOfAnonymousType();

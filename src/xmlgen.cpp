@@ -119,13 +119,13 @@ template<class T> class ValStack
   public:
     ValStack() : m_values(10), m_sp(0), m_size(10) {}
     virtual ~ValStack() {}
-    ValStack(const ValStack &s)
+    ValStack(const ValStack<T> &s)
     {
       m_values=s.m_values.copy();
       m_sp=s.m_sp;
       m_size=s.m_size;
     }
-    ValStack &operator=(const ValStack &s)
+    ValStack &operator=(const ValStack<T> &s)
     {
       m_values=s.m_values.copy();
       m_sp=s.m_sp;
@@ -981,9 +981,8 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
     t << rmd->getBodyDef()->getOutputFileBase()
       << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
       << rmd->anchor()
-      << "\">";
-    writeXMLString(t,name);
-    t << "</" << tagName << ">" << endl;
+      << "\">" << convertToXML(name) << "</" 
+      << tagName << ">" << endl;
   }
   else if (rmd->isLinkable() && d && d->isLinkable()) 
     // link to declaration in documentation (in absense of a definition)
@@ -992,9 +991,8 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
     t << d->getOutputFileBase()
       << "_1"      // encoded `:' character (see util.cpp:convertNameToFile)
       << rmd->anchor()
-      << "\">";
-    writeXMLString(t,name);
-    t << "</" << tagName << ">" << endl;
+      << "\">" << convertToXML(name) 
+      << "</" << tagName << ">" << endl;
   } 
 }
 
@@ -1017,7 +1015,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   if (md->memberType()==MemberDef::EnumValue) return;
 
   ti << "    <member id=\"" << md->getOutputFileBase() 
-     << "_1" << md->anchor() << "\">" << md->name() << "</member>" << endl;
+     << "_1" << md->anchor() << "\">" << convertToXML(md->name()) << "</member>" << endl;
   
   QCString scopeName;
   if (md->getClassDef()) 
@@ -1087,16 +1085,13 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << "</type>" << endl;
   }
 
-  t << "        <name>";
-  writeXMLString(t,md->name());
-
-  t << "</name>" << endl;
+  t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
   MemberDef *rmd = md->reimplements();
   if (rmd)
   {
     t << "        <reimplements id=\"" 
       << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
-      << rmd->name() << "</reimplements>";
+      << convertToXML(rmd->name()) << "</reimplements>";
   }
   MemberList *rbml = md->reimplementedBy();
   if (rbml)
@@ -1106,7 +1101,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     {
       t << "        <reimplementedby id=\"" 
         << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
-        << rmd->name() << "</reimplementedby>";
+        << convertToXML(rmd->name()) << "</reimplementedby>";
     }
   }
   
@@ -1346,8 +1341,8 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
       {
         t << " ambiguityscope=\"" << mi->ambiguityResolutionScope << "\"";
       }
-      t << "><scope>" << cd->name() << "</scope><name>" << 
-           md->name() << "</name></member>" << endl;
+      t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" << 
+           convertToXML(md->name()) << "</name></member>" << endl;
     }
   }
   t << "    </listofallmembers>" << endl;
@@ -1376,7 +1371,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
   ti << "  <compound id=\"" << cd->getOutputFileBase() 
-     << "\"><name>" << cd->name() << "</name>" << endl;
+     << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+cd->getOutputFileBase()+".xml";
@@ -1540,7 +1535,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   if (nd->isReference()) return; // skip external references
 
   ti << "  <compound id=\"" << nd->getOutputFileBase() 
-     << "\"><name>" << nd->name() << "</name>" << endl;
+     << "\"><name>" << convertToXML(nd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+nd->getOutputFileBase()+".xml";
@@ -1630,7 +1625,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   if (fd->isReference()) return; // skip external references
   
   ti << "  <compound id=\"" << fd->getOutputFileBase() 
-     << "\"><name>" << fd->name() << "</name>" << endl;
+     << "\"><name>" << convertToXML(fd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+fd->getOutputFileBase()+".xml";
@@ -1763,7 +1758,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   if (gd->isReference()) return; // skip external references
 
   ti << "  <compound id=\"" << gd->getOutputFileBase() 
-     << "\"><name>" << gd->name() << "</name>" << endl;
+     << "\"><name>" << convertToXML(gd->name()) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+gd->getOutputFileBase()+".xml";
@@ -1862,7 +1857,7 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
   if (pi->isReference()) return;
   
   ti << "  <compound id=\"" << pi->getOutputFileBase() 
-     << "\"><name>" << pi->name << "</name>" << endl;
+     << "\"><name>" << convertToXML(pi->name) << "</name>" << endl;
   
   QCString outputDirectory = Config_getString("OUTPUT_DIRECTORY");
   QCString fileName=outputDirectory+"/xml/"+pi->getOutputFileBase()+".xml";
@@ -1879,7 +1874,7 @@ static void generateXMLForPage(PageInfo *pi,QTextStream &ti)
   t << "  <compounddef id=\"";
   if (Config_getBool("CASE_SENSE_NAMES")) t << pi->name; else t << pi->name.lower();
   t << "\" kind=\"page\">" << endl;
-  t << "    <compoundname>" << pi->name << "</compoundname>" << endl;
+  t << "    <compoundname>" << convertToXML(pi->name) << "</compoundname>" << endl;
   SectionInfo *si = Doxygen::sectionDict.find(pi->name);
   if (si)
   {

@@ -910,7 +910,7 @@ static void findUsingDirectives(Entry *root)
       // the global file scope.
       if (root->parent->section == Entry::NAMESPACE_SEC)
       {
-        nsName=root->parent->name.copy();
+        nsName=stripAnonymousNamespaceScope(root->parent->name);
         if (!nsName.isEmpty())
         {
           nd = getResolvedNamespace(nsName);
@@ -926,8 +926,8 @@ static void findUsingDirectives(Entry *root)
       {
         QCString scope=scopeOffset>0 ? 
                       nsName.left(scopeOffset)+"::" : QCString();
-        //printf("Trying with scope=`%s'\n",scope.data());
         usingNd = getResolvedNamespace(scope+root->name);
+        //printf("Trying with scope=`%s' usingNd=%p\n",(scope+root->name).data(),usingNd);
         if (scopeOffset==0)
         {
           scopeOffset=-1;
@@ -943,6 +943,7 @@ static void findUsingDirectives(Entry *root)
       // add the namespace the correct scope
       if (usingNd)
       {
+        //printf("using fd=%p nd=%p\n",fd,nd);
         if (nd)
         {
           //printf("Inside namespace %s\n",nd->name().data());
@@ -1315,7 +1316,7 @@ static MemberDef *addVariableToFile(
         if (md->getGroupDef()==0 && root->groups->first())
         {
           GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-          md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, root->doc.length() != 0);
+          md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
         }
         else if (md->getGroupDef()!=0 && root->groups->count()==0)
         {
@@ -1900,8 +1901,9 @@ static void buildFunctionList(Entry *root)
               // merge ingroup specifiers
               if (md->getGroupDef()==0 && root->groups->first())
               {
+                addMemberToGroups(root,md);
                 GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-                md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, root->doc.length() != 0);
+                md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
               {
@@ -2211,6 +2213,17 @@ static void transferFunctionDocumentation()
         }
         mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
         mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
+
+        // copy group info.
+        //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
+        //{
+        //  mdef->setGroupDef(mdec->getGroupDef(),mdec->getGroupPri(),mdec->docFile(),mdec->docLine(),mdec->hasDocumentation());
+        //}
+        //else if (mdef->getGroupDef()==0 && mdec->getGroupDef()!=0)
+        //{
+        //  mdec->setGroupDef(mdef->getGroupDef(),mdef->getGroupPri(),mdef->docFile(),mdef->docLine(),mdef->hasDocumentation());
+        //}
+
 
         int todoId = QMAX(mdec->todoId(),mdef->todoId());
         int testId = QMAX(mdec->testId(),mdef->testId());
@@ -3064,7 +3077,7 @@ static void computeClassRelations()
     {
       findBaseClassesForClass(root,cd,cd,DocumentedOnly,FALSE);
     }
-    else if (bName.right(2)!="::")
+    if ((cd==0 || !cd->hasDocumentation()) && bName.right(2)!="::")
     {
       if (!root->name.isEmpty() && root->name[0]!='@')
         warn_undoc(
@@ -4930,6 +4943,9 @@ static void computeMemberRelations()
                 //printf("setting (new) reimplements member\n");
                 md->setReimplements(bmd);
               }
+              //printf("%s: add reimplements member %s\n",mcd->name().data(),bmcd->name().data());
+              //md->setImplements(bmd);
+              //printf("%s: add reimplementedBy member %s\n",bmcd->name().data(),mcd->name().data());
               bmd->insertReimplementedBy(md);
             }
           }  
@@ -5090,6 +5106,7 @@ static void addSourceReferences()
     MemberDef *md=0;
     for (mni.toFirst();(md=mni.current());++mni)
     {
+      //printf("class member %s\n",md->name().data());
       ClassDef *cd=md->getClassDef();
       FileDef *fd=md->getBodyDef();
       if (fd && cd && cd->isLinkableInProject() && md->getStartBodyLine()!=-1 &&
@@ -5110,8 +5127,9 @@ static void addSourceReferences()
     for (mni.toFirst();(md=mni.current());++mni)
     {
       NamespaceDef *nd=md->getNamespaceDef();
-      FileDef *fd=md->getFileDef();
+      FileDef *fd=md->getBodyDef();
       GroupDef *gd=md->getGroupDef();
+      //printf("member %s fd=%p nd=%p gd=%p\n",md->name().data(),fd,nd,gd);
       if (fd && md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
           ((nd && nd->isLinkableInProject()) ||
            (fd->isLinkableInProject()) ||

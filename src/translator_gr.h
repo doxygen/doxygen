@@ -1043,7 +1043,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         "\\endcode\n"
         "Αν η ετικέτα \\c MAX_DOT_GRAPH_HEIGHT στο αρχείο ρυθμίσεων "
         "τεθεί στο 200 θα έχουμε σαν αποτέλεσμα το ακόλουθο διάγραμμα:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Τα κουτιά στο παραπάνω διάγραμμα έχουν την ακόλουθη σημασία:\n"
         "<ul>\n"

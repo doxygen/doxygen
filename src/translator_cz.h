@@ -1211,7 +1211,7 @@ class TranslatorCzech : public Translator
         "\\endcode\n"
         "Pokud je položka \\c MAX_DOT_GRAPH_HEIGHT konfiguraèního souboru "
         "nastavena na hodnotu 200, bude vygenerován následující graf:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
         "<ul>\n"

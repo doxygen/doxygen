@@ -1001,6 +1001,7 @@ static int yyread(char *buf,int max_size)
 ID	[a-z_A-Z][a-z_A-Z0-9]*
 B       [ \t]
 BN	[ \t\r\n]
+CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 %option noyywrap
 
@@ -1213,6 +1214,9 @@ BN	[ \t\r\n]
   					  g_defArgsStr+=yytext;
   					}
   */
+<FindDefineArgs>{CHARLIT}		{
+  					  g_defArgsStr+=yytext;
+  					}
 <FindDefineArgs>\"			{
   					  g_defArgsStr+=*yytext;
   					  BEGIN(ReadString);

@@ -938,7 +938,7 @@ class TranslatorPolish : public TranslatorAdapter_1_2_1
         "\\endcode\n"
         "Je¶li znacznik \\c MAX_DOT_GRAPH_HEIGHT w pliku konfiguracji "
         "jest ustawiony na 200, odniesie to rezultat w nastêpuj±cym wykresie:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Pude³ka w powy¿szym wykresie maj± nastêpuj±ce znaczenie:\n"
         "<ul>\n"

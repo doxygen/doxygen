@@ -1051,7 +1051,7 @@ class TranslatorPortuguese : public Translator
         "\\endcode\n"
         "Se no ficheiro de configuração estiver a tag \\c MAX_DOT_GRAPH_HEIGHT "
         "com o valor de 200 então o seguinte grafo será gerado:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "As caixas no grafo anterior têm as seguintes interpretações:\n"
         "<ul>\n"

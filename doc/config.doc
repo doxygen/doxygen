@@ -143,9 +143,11 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_internal_docs INTERNAL_DOCS
 <li> \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
 <li> \refitem cfg_latex_batchmode LATEX_BATCHMODE
+<li> \refitem cfg_latex_cmd_name LATEX_CMD_NAME
 <li> \refitem cfg_latex_header LATEX_HEADER
 <li> \refitem cfg_latex_output LATEX_OUTPUT
 <li> \refitem cfg_macro_expansion MACRO_EXPANSION
+<li> \refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
 <li> \refitem cfg_man_extension MAN_EXTENSION
 <li> \refitem cfg_man_links MAN_LINKS
 <li> \refitem cfg_man_output MAN_OUTPUT
@@ -903,6 +905,19 @@ followed by the descriptions of the tags grouped by category.
  docs will be put.
  If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
  put in front of it. If left blank `latex' will be used as the default path.
+
+\anchor cfg_latex_cmd_name
+<dt>\c LATEX_CMD_NAME <dd>
+ \addindex LATEX_CMD_NAME
+ The \c LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be invoked. 
+ If left blank `latex' will be used as the default command name.
+
+\anchor cfg_makeindex_cmd_name
+<dt>\c MAKEINDEX_CMD_NAME <dd>
+ \addindex MAKEINDEX_CMD_NAME
+ The MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
+ generate index for LaTeX. If left blank `makeindex' will be used as the 
+ default command name.
 
 \anchor cfg_compact_latex
 <dt>\c COMPACT_LATEX <dd>
