@@ -1632,7 +1632,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
   					  //if (initializerSharpCount==0)
 					  //{
-  					  if (*yytext==';' || lastInitializerContext!=FindFields)
+  					  if (*yytext==';' || lastInitializerContext==FindFields)
 					  {
   					    unput(*yytext);
   					    BEGIN(lastInitializerContext);
