@@ -40,6 +40,9 @@ CompoundHandler::CompoundHandler(IBaseHandler *parent)
   addStartHandler("detaileddescription",this,&CompoundHandler::startDetailedDesc);
   
   addStartHandler("sectiondef",this,&CompoundHandler::startSection);
+  
+  addStartHandler("location",this,&CompoundHandler::startLocation);
+  addEndHandler("location");
 }
 
 CompoundHandler::~CompoundHandler()
@@ -71,10 +74,16 @@ void CompoundHandler::startDetailedDesc(const QXmlAttributes& attrib)
 
 void CompoundHandler::startCompound(const QXmlAttributes& attrib)
 {
-   m_parent->setDelegate(this);
-   m_id = attrib.value("id");
-   m_kind = attrib.value("kind");
-   printf("startCompound(id=`%s' type=`%s')\n",m_id.data(),m_kind.data());
+  m_parent->setDelegate(this);
+  m_id = attrib.value("id");
+  m_kind = attrib.value("kind");
+  printf("startCompound(id=`%s' type=`%s')\n",m_id.data(),m_kind.data());
+}
+
+void CompoundHandler::startLocation(const QXmlAttributes& attrib)
+{
+  m_defFile = attrib.value("file");
+  m_defLine = attrib.value("line").toInt();
 }
 
 void CompoundHandler::endCompound()

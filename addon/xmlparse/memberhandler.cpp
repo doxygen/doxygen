@@ -34,6 +34,9 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
 
   addStartHandler("detaileddescription",this,&MemberHandler::startDetailedDesc);
 
+  addStartHandler("location",this,&MemberHandler::startLocation);
+  addEndHandler("location");
+
   m_params.setAutoDelete(TRUE);
   
 }
@@ -67,6 +70,12 @@ void MemberHandler::startDetailedDesc(const QXmlAttributes& attrib)
   DocHandler *docHandler = new DocHandler(this);
   docHandler->startDoc(attrib);
   m_detailed = docHandler;
+}
+
+void MemberHandler::startLocation(const QXmlAttributes& attrib)
+{
+  m_defFile = attrib.value("file");
+  m_defLine = attrib.value("line").toInt();
 }
 
 void MemberHandler::endMember()

@@ -66,8 +66,8 @@ class RTFGenerator : public OutputGenerator
     void endIndexList();
     void startIndexKey();
     void endIndexKey();
-    void startIndexValue();
-    void endIndexValue(const char *);
+    void startIndexValue(bool);
+    void endIndexValue(const char *,bool);
     void startItemList();
     void endItemList();
     void startEnumList();

@@ -942,6 +942,9 @@ void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   t << "        <detaileddescription>" << endl;
   writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->documentation());
   t << "        </detaileddescription>" << endl;
+  t << "        <location file=\"" 
+    << md->getDefFileName() << "\" line=\"" 
+    << md->getDefLine() << "\"/>" << endl;
   t << "      </memberdef>" << endl;
 }
 
@@ -1094,24 +1097,57 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
     collaborationGraph.writeXML(t);
     t << "    </collaborationgraph>" << endl;
   }
+  t << "      <location file=\"" 
+    << cd->getDefFileName() << "\" line=\"" 
+    << cd->getDefLine() << "\"/>" << endl;
   t << "  </compounddef>" << endl;
 }
 
-void generateXMLFileSection(FileDef *fd,QTextStream &t,MemberList *ml,const char *kind)
+void generateXMLSection(Definition *d,QTextStream &t,MemberList *ml,const char *kind)
 {
   if (ml->count()>0)
   {
     t << "      <sectiondef kind=\"" << kind << "\">" << endl;
-    //t << "          <memberlist>" << endl;
     MemberListIterator mli(*ml);
     MemberDef *md;
     for (mli.toFirst();(md=mli.current());++mli)
     {
-      generateXMLForMember(md,t,fd);
+      generateXMLForMember(md,t,d);
     }
-    //t << "          </memberlist>" << endl;
     t << "      </sectiondef>" << endl;
   }
+}
+
+void generateXMLForNamespace(NamespaceDef *nd,QTextStream &t)
+{
+  if (nd->isReference()) return; // skip external references
+  t << "  <compounddef id=\"" 
+    << nd->getOutputFileBase() << "\" kind=\"namespace\">" << endl;
+  t << "    <compoundname>";
+  writeXMLString(t,nd->name());
+  t << "</compoundname>" << endl;
+  int numMembers = nd->decDefineMembers.count()+nd->decProtoMembers.count()+
+                   nd->decTypedefMembers.count()+nd->decEnumMembers.count()+
+                   nd->decFuncMembers.count()+nd->decVarMembers.count();
+  if (numMembers>0)
+  {
+    generateXMLSection(nd,t,&nd->decDefineMembers,"define");
+    generateXMLSection(nd,t,&nd->decProtoMembers,"prototype");
+    generateXMLSection(nd,t,&nd->decTypedefMembers,"typedef");
+    generateXMLSection(nd,t,&nd->decEnumMembers,"enum");
+    generateXMLSection(nd,t,&nd->decFuncMembers,"func");
+    generateXMLSection(nd,t,&nd->decVarMembers,"var");
+  }
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,nd->getDefFileName(),nd->getDefLine(),0,0,nd->briefDescription());
+  t << "    </briefdescription>" << endl;
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,nd->getDefFileName(),nd->getDefLine(),0,0,nd->documentation());
+  t << "    </detaileddescription>" << endl;
+  t << "    <location file=\"" 
+    << nd->getDefFileName() << "\" line=\"" 
+    << nd->getDefLine() << "\"/>" << endl;
+  t << "  </compounddef>" << endl;
 }
 
 void generateXMLForFile(FileDef *fd,QTextStream &t)
@@ -1127,14 +1163,12 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
                    fd->decFuncMembers.count()+fd->decVarMembers.count();
   if (numMembers>0)
   {
-    //t << "      <sectionlist>" << endl;
-    generateXMLFileSection(fd,t,&fd->decDefineMembers,"define");
-    generateXMLFileSection(fd,t,&fd->decProtoMembers,"prototype");
-    generateXMLFileSection(fd,t,&fd->decTypedefMembers,"typedef");
-    generateXMLFileSection(fd,t,&fd->decEnumMembers,"enum");
-    generateXMLFileSection(fd,t,&fd->decFuncMembers,"func");
-    generateXMLFileSection(fd,t,&fd->decVarMembers,"var");
-    //t << "      </sectionlist>" << endl;
+    generateXMLSection(fd,t,&fd->decDefineMembers,"define");
+    generateXMLSection(fd,t,&fd->decProtoMembers,"prototype");
+    generateXMLSection(fd,t,&fd->decTypedefMembers,"typedef");
+    generateXMLSection(fd,t,&fd->decEnumMembers,"enum");
+    generateXMLSection(fd,t,&fd->decFuncMembers,"func");
+    generateXMLSection(fd,t,&fd->decVarMembers,"var");
   }
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->briefDescription());
@@ -1145,6 +1179,9 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "    <sourcecode>" << endl;
   writeXMLCodeBlock(t,fd);
   t << "    </sourcecode>" << endl;
+  t << "    <location file=\"" 
+    << fd->getDefFileName() << "\" line=\"" 
+    << fd->getDefLine() << "\"/>" << endl;
   t << "  </compounddef>" << endl;
 }
 

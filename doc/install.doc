@@ -408,11 +408,8 @@ Here is what is required:
     commerical version of Qt. 
 
     For doxywizard, a complete Qt library is 
-    still a requirement however. You may be interested in the professional 
-    license of <A HREF="http://www.trolltech.com/products/qt.html">Qt for 
-    Windows</A> \latexonly\par (see 
-    {\tt http://www.trolltech.com/products/qt.html})\endlatexonly. If you
-    donate me a professional license I'll port doxywizard for you :-)
+    still a requirement however. You can download the non-commercial version
+    from Troll-Tech web-site. See doxygen download page for a link.
    
 <li>To generate LaTeX documentation or formulas in HTML you need the tools:
     <code>latex</code>, <code>dvips</code> and <code>gswin32</code>. 

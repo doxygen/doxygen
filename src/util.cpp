@@ -266,7 +266,7 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
   while ((i=getScopeFragment(s,p,&l))!=-1)
   {
     //printf("Scope fragment %s\n",s.mid(i,l).data());
-    if (Doxygen::namespaceDict[s.left(i+l)]!=0)
+    if (Doxygen::namespaceSDict[s.left(i+l)]!=0)
     {
       if (s.at(i)!='@')
       {
@@ -438,11 +438,11 @@ NamespaceDef *getResolvedNamespace(const char *name)
     {
       warn_cont("Warning: possible recursive namespace alias detected for %s!\n",name);
     }
-    return Doxygen::namespaceDict[subst->data()];
+    return Doxygen::namespaceSDict[subst->data()];
   }
   else
   {
-    return Doxygen::namespaceDict[name];
+    return Doxygen::namespaceSDict[name];
   }
 }
 
@@ -1208,7 +1208,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
         QCString fullScope=nsName.left(so);
         if (!fullScope.isEmpty() && !scope.isEmpty()) fullScope+="::";
         fullScope+=scope;
-        if (!fullScope.isEmpty() && Doxygen::namespaceDict[fullScope]!=0) // scope is a namespace
+        if (!fullScope.isEmpty() && Doxygen::namespaceSDict[fullScope]!=0) // scope is a namespace
         {
           t1 = t1.right(t1.length()-i1-2);
           return;
@@ -1234,7 +1234,7 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
         QCString fullScope=nsName.left(so);
         if (!fullScope.isEmpty() && !scope.isEmpty()) fullScope+="::";
         fullScope+=scope;
-        if (!fullScope.isEmpty() && Doxygen::namespaceDict[fullScope]!=0) // scope is a namespace
+        if (!fullScope.isEmpty() && Doxygen::namespaceSDict[fullScope]!=0) // scope is a namespace
         {
           t2 = t2.right(t2.length()-i2-2);
           return;
@@ -2174,7 +2174,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         namespaceName=mScope.copy();
       }
       if (!namespaceName.isEmpty() && 
-          (fnd=Doxygen::namespaceDict[namespaceName]) &&
+          (fnd=Doxygen::namespaceSDict[namespaceName]) &&
           fnd->isLinkable()
          )
       {
@@ -2363,7 +2363,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
     {
       return TRUE; // class link written => quit 
     }
-    else if ((nd=Doxygen::namespaceDict[fullName]) && nd->isLinkable())
+    else if ((nd=Doxygen::namespaceSDict[fullName]) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit 
     }

@@ -36,6 +36,7 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     virtual void endCompoundName();
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
+    virtual void startLocation(const QXmlAttributes& attrib);
 
     CompoundHandler(IBaseHandler *parent);
     virtual ~CompoundHandler();
@@ -74,6 +75,8 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     QString m_id;
     QString m_kind;
     QString m_name;
+    QString m_defFile;
+    int m_defLine;
 };
 
 #endif

@@ -944,8 +944,9 @@ void writeFileIndex(OutputList &ol)
           ol.popGeneratorState();
         }
         ol.endIndexKey();
-        ol.startIndexValue();
-        if (!fd->briefDescription().isEmpty())
+        bool hasBrief = !fd->briefDescription().isEmpty();
+        ol.startIndexValue(hasBrief);
+        if (hasBrief)
         {
           //ol.docify(" (");
           parseDoc(ol,
@@ -954,7 +955,7 @@ void writeFileIndex(OutputList &ol)
               abbreviate(fd->briefDescription(),fd->name()));
           //ol.docify(")");
         }
-        ol.endIndexValue(fd->getOutputFileBase());
+        ol.endIndexValue(fd->getOutputFileBase(),hasBrief);
         //ol.popGeneratorState();
         // --------------------------------------------------------
       }
@@ -986,7 +987,7 @@ void writeFileIndex(OutputList &ol)
 int countNamespaces()
 {
   int count=0;
-  NamespaceListIterator nli(Doxygen::namespaceList);
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
@@ -1034,8 +1035,10 @@ void writeNamespaceIndex(OutputList &ol)
   ol.endTextBlock();
 
   bool first=TRUE;
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
+
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for (nli.toFirst();(nd=nli.current());++nli)
   {
     if (nd->isLinkableInProject())
     {
@@ -1048,8 +1051,9 @@ void writeNamespaceIndex(OutputList &ol)
       ol.startIndexKey();
       ol.writeObjectLink(0,nd->getOutputFileBase(),0,nd->name());
       ol.endIndexKey();
-      ol.startIndexValue();
-      if (!nd->briefDescription().isEmpty())
+      bool hasBrief = !nd->briefDescription().isEmpty();
+      ol.startIndexValue(hasBrief);
+      if (hasBrief)
       {
         //ol.docify(" (");
         parseDoc(ol,
@@ -1058,7 +1062,7 @@ void writeNamespaceIndex(OutputList &ol)
                  abbreviate(nd->briefDescription(),nd->name()));
         //ol.docify(")");
       }
-      ol.endIndexValue(nd->getOutputFileBase());
+      ol.endIndexValue(nd->getOutputFileBase(),hasBrief);
       //ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
@@ -1069,7 +1073,6 @@ void writeNamespaceIndex(OutputList &ol)
         ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->name());
       }
     }
-    nd=Doxygen::namespaceList.next();
   }
   if (!first) ol.endIndexList();
   if (hasHtmlHelp)
@@ -1124,8 +1127,9 @@ void writeAnnotatedClassList(OutputList &ol)
       ol.startIndexKey();
       ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
       ol.endIndexKey();
-      ol.startIndexValue();
-      if (!cd->briefDescription().isEmpty())
+      bool hasBrief = !cd->briefDescription().isEmpty();
+      ol.startIndexValue(hasBrief);
+      if (hasBrief)
       {
         //ol.docify(" (");
         parseDoc(ol,
@@ -1134,7 +1138,7 @@ void writeAnnotatedClassList(OutputList &ol)
                  abbreviate(cd->briefDescription(),cd->name()));
         //ol.docify(")");
       }
-      ol.endIndexValue(cd->getOutputFileBase());
+      ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
       //ol.writeEndAnnoItem(cd->getOutputFileBase());
       if (hasHtmlHelp)
       {
@@ -1167,8 +1171,9 @@ void writePackageList(OutputList &ol)
       ol.startIndexKey();
       ol.writeObjectLink(0,pd->getOutputFileBase(),0,pd->name());
       ol.endIndexKey();
-      ol.startIndexValue();
-      if (!pd->briefDescription().isEmpty())
+      bool hasBrief = !pd->briefDescription().isEmpty();
+      ol.startIndexValue(hasBrief);
+      if (hasBrief)
       {
         //ol.docify(" (");
         parseDoc(ol,
@@ -1177,7 +1182,7 @@ void writePackageList(OutputList &ol)
             abbreviate(pd->briefDescription(),pd->name()));
         //ol.docify(")");
       }
-      ol.endIndexValue(pd->getOutputFileBase());
+      ol.endIndexValue(pd->getOutputFileBase(),hasBrief);
       
       //ol.writeEndAnnoItem(pd->getOutputFileBase());
       if (hasHtmlHelp)

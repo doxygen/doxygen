@@ -68,8 +68,8 @@ class HtmlGenerator : public OutputGenerator
     void endIndexList();
     void startIndexKey();
     void endIndexKey();
-    void startIndexValue();
-    void endIndexValue(const char *);
+    void startIndexValue(bool);
+    void endIndexValue(const char *,bool);
     void startItemList()  { t << "<ul>"  << endl; }
     void endItemList()    { t << "</ul>" << endl; }
     void startEnumList()  { t << "<ol>"  << endl; }

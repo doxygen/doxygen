@@ -316,8 +316,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endIndexList()   = 0;
     virtual void startIndexKey() = 0;
     virtual void endIndexKey()   = 0;
-    virtual void startIndexValue() = 0;
-    virtual void endIndexValue(const char *)   = 0;
+    virtual void startIndexValue(bool) = 0;
+    virtual void endIndexValue(const char *,bool) = 0;
     virtual void startAlphabeticalIndexList() = 0;
     virtual void endAlphabeticalIndexList() = 0;
     virtual void writeIndexHeading(const char *s) = 0;

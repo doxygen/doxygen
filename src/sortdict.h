@@ -169,6 +169,12 @@ class SDict
       return m_dict->find(key);
     }
 
+    /*! Equavalent to find(). */
+    T *operator[](const char *key)
+    {
+      return m_dict->find(key);
+    }
+
     /*! Returns the item at position \a i in the sorted dictionary */
     T *at(uint i)
     {

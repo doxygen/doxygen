@@ -819,12 +819,12 @@ void HtmlGenerator::endIndexKey()
   t << "</td>";
 }
 
-void HtmlGenerator::startIndexValue() 
+void HtmlGenerator::startIndexValue(bool) 
 { 
   t << "<td>"; 
 }
 
-void HtmlGenerator::endIndexValue(const char *)
+void HtmlGenerator::endIndexValue(const char *,bool)
 {
   t << "</td></tr>" << endl;
 }

@@ -985,16 +985,16 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isNamespaceDocumentation:
       {
         // Namespace Documentation
-        NamespaceDef *nd=Doxygen::namespaceList.first();
+        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceDef *nd;
         bool found=FALSE;
-        while (nd && !found)
+        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
           if (nd->isLinkableInProject())
           {
             beginRTFChapter();
             found=TRUE;
           }
-          nd=Doxygen::namespaceList.next();
         } 
       }
       break;
@@ -1202,9 +1202,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=Doxygen::namespaceList.first();
+        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceDef *nd;
         bool found=FALSE;
-        while (nd && !found)
+        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
           if (nd->isLinkableInProject())
           {
@@ -1214,9 +1215,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             found=TRUE;
           }
-          nd=Doxygen::namespaceList.next();
         }
-        while (nd)
+        while ((nd=nli.current()))
         {
           if (nd->isLinkableInProject())
           {
@@ -1226,7 +1226,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << nd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
-          nd=Doxygen::namespaceList.next();
+          ++nli;
         }
       }
       break;
@@ -1578,15 +1578,16 @@ void RTFGenerator::endIndexKey()
 {
 }
 
-void RTFGenerator::startIndexValue() 
+void RTFGenerator::startIndexValue(bool hasBrief) 
 { 
-  t << " (";
+  t << " ";
+  if (hasBrief) t << "(";
 }
 
-void RTFGenerator::endIndexValue(const char *name)
+void RTFGenerator::endIndexValue(const char *name,bool hasBrief)
 {
   DBG_RTF(t << "{\\comment (endIndexKey)}" << endl)
-  t << ")";
+  if (hasBrief) t << ")";
   t << "} ";
   if (name)
   {
@@ -1967,18 +1968,35 @@ void RTFGenerator::startDescList(SectionTypes)
 void RTFGenerator::endDescTitle()      
 { 
   DBG_RTF(t << "{\\comment (endDescTitle) }"    << endl)
-  //endBold();
+  endBold();
+  t << "}";
   newParagraph();
-  //t << Rtf_Style_Reset << styleStack.top();
   incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_DList_DepthStyle();
+}
+
+void RTFGenerator::writeDescItem()
+{
+  DBG_RTF(t << "{\\comment (writeDescItem) }"    << endl)
+  //	incrementIndentLevel();
+  //t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+}
+
+void RTFGenerator::endDescList()       
+{
+  DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
+  newParagraph();
+  //t << "}";
+  decrementIndentLevel();
+  m_omitParagraph = TRUE;
+  //t << Rtf_Style_Reset << styleStack.top() << endl;
+  t << Rtf_Style_Reset << endl;
 }
 
 void RTFGenerator::startParamList(ParamListTypes)     
 { 
   DBG_RTF(t << "{\\comment (startParamList)}"    << endl)
   t << "{";
-  incrementIndentLevel();
   newParagraph();
 }
 
@@ -1992,23 +2010,6 @@ void RTFGenerator::endParamList()
   //t << Rtf_Style_Reset << styleStack.top() << endl;
 }
 
-
-void RTFGenerator::writeDescItem()
-{
-  DBG_RTF(t << "{\\comment (writeDescItem) }"    << endl)
-  //	incrementIndentLevel();
-  //t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
-}
-
-void RTFGenerator::endDescList()       
-{
-  DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
-  newParagraph();
-  t << "}";
-  decrementIndentLevel();
-  m_omitParagraph = TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
-}
 
 void RTFGenerator::startSection(const char *,const char *title,bool sub)
 {

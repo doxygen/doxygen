@@ -77,22 +77,8 @@ class NamespaceDef : public Definition
   //protected:
   //  void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
-  private:
-    //QCString reference;
-    QCString fileName;
-    QStrList files;
-
-    /*! Classes inside this namespace */
-    ClassSDict *classSDict;
-    /*! Namespaces inside this namespace */
-    NamespaceSDict *namespaceSDict;
-
-    NamespaceList *usingDirList;
-    ClassList *usingDeclList;
-    SDict<Definition> *m_innerCompounds;
-
-    MemberList allMemberList;
-
+  public:
+    
     // members in the declaration part of the documentation
     MemberList decDefineMembers;
     MemberList decProtoMembers;
@@ -109,6 +95,23 @@ class NamespaceDef : public Definition
     MemberList docEnumMembers;
     MemberList docFuncMembers;
     MemberList docVarMembers;
+
+    /*! Classes inside this namespace */
+    ClassSDict *classSDict;
+    /*! Namespaces inside this namespace */
+    NamespaceSDict *namespaceSDict;
+
+  private:
+    //QCString reference;
+    QCString fileName;
+    QStrList files;
+
+
+    NamespaceList *usingDirList;
+    ClassList *usingDeclList;
+    SDict<Definition> *m_innerCompounds;
+
+    MemberList allMemberList;
 
     /* user defined member groups */
     MemberGroupList    *memberGroupList;
