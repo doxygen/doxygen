@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -57,6 +57,7 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
   srcMemberDict = 0;
   usingDirList = 0;
   usingDeclList = 0;
+  package = 0;
   isSource = FALSE; 
   docname = nm;
   if (Config::fullPathNameFlag)

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -51,15 +51,8 @@ ClassDef::ClassDef(
 {
   //name=n;
 
-  QCString compoundName;
-  switch(ct)
-  {
-    case Class: compoundName="class"; break; 
-    case Struct: compoundName="struct"; break; 
-    case Union: compoundName="union"; break; 
-    case Interface: compoundName="interface"; break; 
-    case Exception: compoundName="exception"; break; 
-  }
+  compType=ct;
+  QCString compoundName=compoundTypeString();
   if (fName)
     fileName=stripExtension(fName);
   else
@@ -86,7 +79,6 @@ ClassDef::ClassDef(
   allMemberNameInfoDict = new MemberNameInfoDict(1009);
   visited=FALSE;
   setReference(lref);
-  compType=ct;
   incInfo=0;
   tempArgs=0;
   prot=Public;
@@ -654,13 +646,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
   QCString pageTitle=name().copy();
   QCString pageType;
   ArgumentList *outerTempArgList = outerTemplateArguments();
-  switch(compType)
-  {
-    case Class:  pageType+=" Class"; break;
-    case Struct: pageType+=" Struct";    break;
-    case Union:  pageType+=" Union";     break;
-    default:     pageType+=" Interface"; break;
-  } 
+  QCString cType=compoundTypeString();
+  toupper(cType.at(0));
+  pageType+=" ";
+  pageType+=cType;
   pageTitle+=pageType+" Reference";
   if (outerTempArgList) pageTitle.prepend(" Template");
   startFile(ol,fileName,pageTitle);
@@ -732,15 +721,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  <compound kind=\"";
-    switch(compType)
-    {
-      case Class:     tagFile << "class";     break; 
-      case Struct:    tagFile << "struct";    break; 
-      case Union:     tagFile << "union";     break; 
-      case Interface: tagFile << "interface"; break; 
-      case Exception: tagFile << "exception"; break; 
-    }
+    tagFile << "  <compound kind=\"" << compoundTypeString();
     tagFile << "\">" << endl;
     tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
@@ -1891,15 +1872,8 @@ void ClassDef::generateXML(QTextStream &t)
 {
   if (name().find('@')!=-1) return; // skip anonymous compounds
   t << "    <compounddef id=\"" 
-    << getOutputFileBase() << "\" type=\"";
-  switch(compType)
-  {
-    case Class:  t << "class";     break;
-    case Struct: t << "struct";    break;
-    case Union:  t << "union";     break;
-    default:     t << "interface"; break;
-  } 
-  t << "\">" << endl;
+    << getOutputFileBase() << "\" type=\"" 
+    << compoundTypeString() << "\">" << endl;
   t << "      <compoundname>"; 
   writeXMLString(t,name()); 
   t << "</compoundname>" << endl;
@@ -1996,3 +1970,22 @@ void ClassDef::generateXML(QTextStream &t)
   }
   t << "    </compounddef>" << endl;
 }
+
+PackageDef *ClassDef::packageDef() const
+{
+  return fileDef ? fileDef->packageDef() : 0;
+}
+
+QCString ClassDef::compoundTypeString() const
+{
+  switch (compType)
+  {
+    case Class:     return "class";
+    case Struct:    return "struct";
+    case Union:     return "union";
+    case Interface: return "interface";
+    case Exception: return "exception";
+  }
+  return "unknown";
+}
+

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -454,6 +454,10 @@ Compilation is now done by performing the following steps:
     <code>doxygen.exe</code>, <code>doxytag.exe</code>, and 
     <code>doxysearch.exe</code> using Microsoft's Visual C++ compiler
     (The compiler should not produce any serious warnings or errors).
+
+    You can use also the <code>bcc</code> argument to build
+    executables using the Borland C++ compiler, or
+    <code>mingw</code> argument to compile using GNU gcc.
 
 <li>To build the examples, go to the <code>examples</code> subdirectory
     and type:

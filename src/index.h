@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -26,12 +26,14 @@ enum IndexSections
   isTitlePageStart,
   isTitlePageAuthor,
   isMainPage,
+  isPackageIndex,
   isModuleIndex,
   isNamespaceIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
   isPageIndex,
+  isPackageDocumentation,
   isModuleDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
@@ -63,6 +65,7 @@ void writeNamespaceIndex(OutputList &ol);
 void writeNamespaceMemberIndex(OutputList &ol);
 void writeGraphicalClassHierarchy(OutputList &ol);
 void writeGraphInfo(OutputList &ol);
+void writePackageIndex(OutputList &ol);
 
 int countClassHierarchy();
 int countClassMembers();
@@ -74,5 +77,6 @@ int countAnnotatedClasses();
 int countNamespaceMembers();
 int countIncludeFiles();
 int countRelatedPages();
+int countPackages();
 
 #endif

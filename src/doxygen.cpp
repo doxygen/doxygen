@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -57,6 +57,8 @@
 #include "xml.h"
 #include "reflist.h"
 #include "page.h"
+#include "packagedef.h"
+#include "bufstr.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -102,6 +104,8 @@ OutputList     *outputList = 0;         // list of output generating objects
 PageInfo       *mainPage = 0;
 QIntDict<QCString> memberHeaderDict(1009); // dictionary of the member groups heading
 QIntDict<QCString> memberDocDict(1009);    // dictionary of the member groups heading
+
+PackageSDict   packageDict(257);         // java packages
   
 
 void clearAll()
@@ -192,6 +196,7 @@ int documentedNamespaces;
 int documentedNamespaceMembers;
 int documentedIncludeFiles;
 int documentedPages;
+int documentedPackages;
 
 QTextStream tagFile;
 
@@ -2101,7 +2106,8 @@ static void transferFunctionDocumentation()
       // check if not in different but documented files
       if (Config::extractAllFlag || 
           fdef==fdec || 
-          !fdef->hasDocumentation() || !mdec->hasDocumentation())
+          (fdef!=0 && (!fdef->hasDocumentation() || !mdec->hasDocumentation()))
+         )
       {
         //printf("Found member %s: def in %s and dec in %s\n",
         //    mn->memberName(),mdef->getFileDef()->name().data(),
@@ -3021,10 +3027,11 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
 {
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
-               "isFunc=%d mGrpId=%d tArgList=%p=\"%s\" scopeSpec=%s "
-               "memberSpec=%s memSpec=%d\n",
+               "isFunc=%d mGrpId=%d tArgList=%p=\"%s\" mtArgList=%p=\"%s\" "
+               "scopeSpec=%s memberSpec=%s memSpec=%d\n",
                root,funcDecl.data(),related.data(),overloaded,isFunc,root->mGrpId,
                root->tArgList,tempArgListToString(root->tArgList).data(),
+               root->mtArgList,tempArgListToString(root->mtArgList).data(),
                root->scopeSpec.data(),root->memberSpec.data(),root->memSpec
               );
   //if (Config::includeSourceFlag && !root->body.isEmpty())
@@ -3248,7 +3255,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
     // no template specifiers found during parsing (because \fn was used), 
     // but there are template names in the scope, so we build the template 
     // specifiers from that.
-    printf("Building template list from `%s'\n",classTempList.data());
+    //printf("Building template list from `%s'\n",classTempList.data());
     root->tArgList = new ArgumentList;
     QRegExp re(idMask);
     int i,p=0,l;
@@ -3619,6 +3626,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           if (!newMember && rmd) // member already exists as rmd -> add docs
           {
             //printf("addMemberDocs for related member %s\n",root->name.data());
+            rmd->setMemberDefTemplateArguments(root->mtArgList);
             addMemberDocs(root,rmd,funcDecl,0,overloaded);
           }
         }
@@ -3694,13 +3702,12 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           md->setMemberClass(cd);
           md->setMemberSpecifiers(root->memSpec);
           md->setDefinition(funcDecl);
-          //md->setDefFile(root->fileName);
-          //md->setDefLine(root->startLine);
           md->setPrototype(root->proto);
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
+          md->setMemberDefTemplateArguments(root->mtArgList);
           mn->append(md);
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
@@ -4764,6 +4771,52 @@ static void findMainPage(Entry *root)
 
 //----------------------------------------------------------------------------
 
+/*! Search for all Java package statements 
+ */
+static void buildPackageList(Entry *root)
+{
+  if (root->section == Entry::PACKAGE_SEC)
+  {
+    PackageDef *pd=0;
+    if (!root->name.isEmpty() && (pd=packageDict.find(root->name))==0)
+    {
+      pd = new PackageDef(root->fileName,root->startLine,root->name);
+      packageDict.inSort(root->name,pd);
+    } 
+    if (pd)
+    {
+      bool ambig;
+      FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+      if (fd)
+      {
+        fd->setPackageDef(pd);
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    buildPackageList(e);
+  }
+}
+
+//----------------------------------------------------------------------------
+
+/*! Add Java classes to their respective packages */
+static void addClassesToPackages()
+{
+  ClassDef *cd;
+  ClassListIterator cli(classList);
+  for (;(cd=cli.current());++cli)
+  {
+    PackageDef *pd = cd->packageDef();
+    if (pd) pd->addClass(cd);
+  }
+}
+
+//----------------------------------------------------------------------------
+
 static void resolveUserReferences()
 {
   QDictIterator<SectionInfo> sdi(sectionDict);
@@ -4931,20 +4984,26 @@ static void generateGroupDocs()
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
-    //printf("group %s #members=%d\n",gd->name().data(),gd->countMembers());
-    //if (gd->countMembers()>0) 
-    //{
-    // gd->writeDocumentation(*outputList);
-    //}
-    //else
-    //{
-    //  warn(gd->getDefFileName(),gd->getDefLine(),
-    //       "Warning: group %s does not have any (documented) members.",
-    //        gd->name().data());
-    //}
     if (!gd->isReference())
     {
       gd->writeDocumentation(*outputList);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
+static void generatePackageDocs()
+{
+  writePackageIndex(*outputList);
+  
+  if (packageDict.count()>0)
+  {
+    PackageSDict::Iterator pdi(packageDict);
+    PackageDef *pd;
+    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    {
+      pd->writeDocumentation(*outputList);
     }
   }
 }
@@ -5581,7 +5640,7 @@ static void readFormulaRepository()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2000\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2001\n\n",versionString);
   msg("You can use doxygen in four ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -6126,6 +6185,9 @@ int main(int argc,char **argv)
   msg("Building page list...\n");
   buildPageList(root);
 
+  msg("Buidling package list...\n");
+  buildPackageList(root);
+
   msg("Search for main page...\n");
   findMainPage(root);
 
@@ -6144,6 +6206,9 @@ int main(int argc,char **argv)
 
   msg("Computing member relations...\n");
   computeMemberRelations();
+
+  msg("Adding classes to their packages...\n");
+  addClassesToPackages();
 
   if (Config::haveDotFlag && Config::collGraphFlag)
   {
@@ -6208,7 +6273,7 @@ int main(int argc,char **argv)
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();
   documentedPages            = countRelatedPages();
-  //documentedIncludeFiles     = countIncludeFiles();
+  documentedPackages         = countPackages();
  
   // compute the shortest possible names of all files
   // without loosing the uniqueness of the file names.
@@ -6248,6 +6313,9 @@ int main(int argc,char **argv)
   msg("Generating group index...\n");
   writeGroupIndex(*outputList);
   
+  msg("Generating package index...\n");
+  generatePackageDocs();
+
   msg("Generating example index...\n");
   writeExampleIndex(*outputList);
   

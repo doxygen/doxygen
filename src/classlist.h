@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -30,7 +30,8 @@ class ClassList : public QList<ClassDef>
    ~ClassList();
    
    int compareItems(GCI item1,GCI item2);
-   void writeDeclaration(OutputList &ol);
+   void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
+                         const char *header=0);
 };
 
 class ClassListIterator : public QListIterator<ClassDef>

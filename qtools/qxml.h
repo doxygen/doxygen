@@ -322,7 +322,7 @@ private:
     // used by parseReference() and parsePEReference()
     enum EntityRecognitionContext { InContent, InAttributeValue, InEntityValue, InDTD };
 
-    // private methods
+    // private functions
     void eat_ws();
     void next_eat_ws();
 
@@ -330,6 +330,8 @@ private:
     bool atEnd();
 
     void init( const QXmlInputSource& i );
+
+    bool entityExist( const QString& ) const;
 
     bool parseProlog();
     bool parseElement();
@@ -347,6 +349,7 @@ private:
     bool parseNmtoken();
     bool parseAttribute();
     bool parseReference( bool &charDataRead, EntityRecognitionContext context );
+    bool processReference( bool &charDataRead, EntityRecognitionContext context );
 
     bool parseExternalID( bool allowPublicID = FALSE );
     bool parsePEReference( EntityRecognitionContext context );
@@ -504,7 +507,15 @@ private:
     QXmlDefaultHandlerPrivate *d;
 };
 
+#ifdef _WS_QWS_
+#ifdef QT_XML_CPP
+#define inline
+#else
+#define QT_NO_XML_INLINE
+#endif
+#endif
 
+#ifndef QT_NO_XML_INLINE
 //
 // inlines
 //
@@ -640,6 +651,14 @@ inline void QXmlSimpleReader::refAddC(const QChar& ch)
     }
     refArray[refPos++] = ch;
 }
+#endif
+
+#ifdef _WS_QWS_
+#ifdef QT_XML_CPP
+#undef inline
+#endif
+#endif
+
 #endif //QT_NO_XML
 
 #endif

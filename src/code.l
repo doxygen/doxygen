@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1009,7 +1009,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
   					  g_name+=yytext; 
   					}
-<Body>{SCOPENAME}{B}*"<"[^\n\"\>]*">"/{B}* { // A<T> *pt;
+<Body>{SCOPENAME}{B}*"<"[^\n\/\{\"\>]*">"/{B}* { // A<T> *pt;
 					  generateClassLink(*g_code,yytext);
 					  addType();
   					  g_name+=yytext; 
@@ -1129,6 +1129,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_name.resize(0);
 					  }
 					  if (*yytext!=',') g_type.resize(0);
+					  if (*yytext==';') g_name.resize(0);
 					  g_args.resize(0);
   					}
 <Body>"]"				{

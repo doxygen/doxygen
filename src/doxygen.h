@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -32,32 +32,7 @@
 #include "formula.h"
 #include "section.h"
 #include "membergroup.h"
-
-class BufStr : public QCString
-{
-  public:
-    BufStr(int size) : QCString(size), offset(0), spareRoom(10240) {}
-    void addChar(char c)
-    {
-      if (offset>=size()) resize(size()+spareRoom);
-      data()[offset++]=c;
-    }
-    void addArray(const char *a,int len)
-    {
-      if (offset+len>=size()) resize(size()+len+spareRoom);
-      memcpy(data()+offset,a,len);
-      offset+=len;
-    }
-    uint curPos() { return offset; }
-    void skip(uint s)
-    {
-      if (offset+s>=size()) resize(size()+s+spareRoom);
-      offset+=s;
-    }
-  private:
-    uint offset;
-    const int spareRoom; // 10Kb extra room to avoid frequent resizing
-};
+#include "packagedef.h"
 
 class PageSList;
 class PageSDict;
@@ -83,7 +58,6 @@ extern MemberNameList memberNameList;
 extern MemberNameList functionNameList;
 extern MemberNameDict memberNameDict;
 extern MemberNameDict functionNameDict;
-//extern StringDict substituteDict;
 extern FileList fileList;
 extern FileDict fileDict;
 extern ClassDef unrelatedClass; 
@@ -104,6 +78,7 @@ extern StringDict aliasDict;
 extern QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
 extern QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
 extern QDict<void> expandAsDefinedDict;
+extern PackageSDict packageDict;
 
 extern int annotatedClasses;
 extern int hierarchyClasses;
@@ -117,6 +92,7 @@ extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
 extern int documentedPages;
+extern int documentedPackages;
 extern QCString spaces;
 
 extern const char * getOverloadDocs();

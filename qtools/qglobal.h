@@ -39,8 +39,8 @@
 #define QGLOBAL_H
 
 
-#define QT_VERSION	222
-#define QT_VERSION_STR	"2.2.2"
+#define QT_VERSION	223
+#define QT_VERSION_STR	"2.2.3"
 
 
 //
@@ -198,10 +198,6 @@
 #if __GNUC__ == 2 && __GNUC_MINOR__ >= 95
 #define Q_DELETING_VOID_UNDEFINED
 #endif
-#if __GNUC__ == 2 && __GNUC_MINOR__ >= 96
-#define Q_DELETING_VOID_UNDEFINED
-#define Q_FP_CCAST_BROKEN
-#endif
 #if (defined(__arm__) || defined(__ARMEL__)) && !defined(QT_MOC_CPP)
 #define Q_PACKED __attribute__ ((packed))
 #endif
@@ -224,6 +220,11 @@
 #ifdef __EDG__ // UnixWare7
 #define Q_HAS_BOOL_TYPE
 #endif
+#elif defined(__DECCXX)
+#define _CC_DEC_
+#if __DECCXX_VER >= 60060005
+#define Q_HAS_BOOL_TYPE
+#endif
 #elif defined(__EDG) || defined(__EDG__)
 // one observed on SGI DCC, the other documented
 #define _CC_EDG_
@@ -236,13 +237,7 @@
 #define _CC_SUN_
 #if __SUNPRO_CC >= 0x500
 #define Q_HAS_BOOL_TYPE
-#define Q_FP_CCAST_BROKEN
 #define Q_C_CALLBACKS
-#endif
-#elif defined(__DECCXX)
-#define _CC_DEC_
-#if __DECCXX_VER >= 60060005
-#define Q_HAS_BOOL_TYPE
 #endif
 #elif defined(__CDS__)
 #define _CC_CDS_

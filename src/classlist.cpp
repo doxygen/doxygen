@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -48,7 +48,7 @@ ClassListIterator::ClassListIterator(const ClassList &cllist) :
 {
 }
 
-void ClassList::writeDeclaration(OutputList &ol)
+void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,const char *header)
 {
   if (count()>0)
   {
@@ -56,7 +56,9 @@ void ClassList::writeDeclaration(OutputList &ol)
     bool found=FALSE;
     while (cd)
     {
-      if (cd->name().find('@')==-1)
+      if (cd->name().find('@')==-1 && 
+          (filter==0 || *filter==cd->compoundType())
+         )
       {
         bool isLink = cd->isLinkable();
         if (isLink || !Config::hideClassFlag)
@@ -64,24 +66,25 @@ void ClassList::writeDeclaration(OutputList &ol)
           if (!found)
           {
             ol.startMemberHeader();
-            parseText(ol,theTranslator->trCompounds());
+            if (header)
+            {
+              parseText(ol,header);
+            }
+            else
+            {
+              parseText(ol,theTranslator->trCompounds());
+            }
             ol.endMemberHeader();
             ol.startMemberList();
             found=TRUE;
           }
           if (!Config::genTagFile.isEmpty()) 
           {
-            tagFile << "    <class>" << convertToXML(cd->name()) << "</class>" << endl;
+            tagFile << "    <class kind=\"" << cd->compoundTypeString() 
+                    << "\">" << convertToXML(cd->name()) << "</class>" << endl;
           }
           ol.startMemberItem(FALSE);
-          switch (cd->compoundType())
-          {
-            case ClassDef::Class:      ol.writeString("class");  break;
-            case ClassDef::Struct:     ol.writeString("struct"); break;
-            case ClassDef::Union:      ol.writeString("union");  break;
-            case ClassDef::Interface:  ol.writeString("interface");  break;
-            case ClassDef::Exception:  ol.writeString("exception");  break;
-          }
+          ol.writeString(cd->compoundTypeString());
           ol.writeString(" ");
           ol.insertMemberAlign();
           if (isLink) 

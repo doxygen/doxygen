@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -407,11 +407,11 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   writeDefaultStyleSheetPart1(t);
   t << "Generated at " << dateToString(TRUE);
   if (Config::projectName.isEmpty()) t << " for " << Config::projectName << " ";
-  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2000";
+  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2001";
   writeDefaultStyleSheetPart2(t);
   t << "Generated at " << dateToString(TRUE);
   if (Config::projectName.isEmpty()) t << " for " << Config::projectName << " ";
-  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2000";
+  t << "by doxygen written by Dimitri van Heesch \\copyright~1997-2001";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -464,6 +464,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Introduction}\n"
       break;
+    case isPackageIndex:
+      if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+      t << "{"; //Package Index}\n"
+      break;
     case isModuleIndex:
       if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Module Index}\n"
@@ -487,6 +491,21 @@ void LatexGenerator::startIndexSection(IndexSections is)
     case isPageIndex:
       if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
       t << "{"; //Annotated Page Index}\n"
+      break;
+    case isPackageDocumentation:
+      {
+        PackageSDict::Iterator pdi(packageDict);
+        PackageDef *pd=pdi.toFirst();
+        bool found=FALSE;
+        while (pd && !found)
+        {
+          if (Config::compactLatexFlag) t << "\\section"; else t << "\\chapter";
+          t << "{"; 
+          found=TRUE;
+          ++pdi;
+          pd=pdi.current();
+        }
+      }
       break;
     case isModuleDocumentation:
       {
@@ -595,6 +614,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
       if (Config::pdfHyperFlag) t << "\\hypertarget{index}{}";
       t << "\\input{index}\n";
       break;
+    case isPackageIndex:
+      t << "}\n\\input{packages}\n";
+      break;
     case isModuleIndex:
       t << "}\n\\input{modules}\n";
       break;
@@ -612,6 +634,27 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isPageIndex:
       t << "}\n\\input{pages}\n";
+      break;
+    case isPackageDocumentation:
+      {
+        PackageSDict::Iterator pdi(packageDict);
+        PackageDef *pd=pdi.toFirst();
+        bool found=FALSE;
+        while (pd && !found)
+        {
+          t << "}\n\\input{" << pd->getOutputFileBase() << "}\n";
+          found=TRUE;
+          ++pdi;
+          pd=pdi.current();
+        }
+        while (pd)
+        {
+          if (Config::compactLatexFlag) t << "\\input"; else t << "\\include";
+          t << "{" << pd->getOutputFileBase() << "}\n";
+          ++pdi;
+          pd=pdi.current();
+        }
+      }
       break;
     case isModuleDocumentation:
       {
@@ -774,14 +817,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch \\copyright~1997-2000";
+        t << " Dimitri van Heesch \\copyright~1997-2001";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch \\copyright~1997-2000";
+        t << " Dimitri van Heesch \\copyright~1997-2001";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }

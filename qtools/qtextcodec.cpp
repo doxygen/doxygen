@@ -802,7 +802,10 @@ QCString QTextCodec::fromUnicode(const QString& uc) const
 */
 QString QTextCodec::toUnicode(const QByteArray& a, int len) const
 {
-    return toUnicode(a.data(),len);
+    int l = a.size();
+    if( l > 0 && a.data()[l - 1] == '\0' ) l--;
+    l = QMIN( l, len );
+    return toUnicode( a.data(), l );
 }
 
 /*!
@@ -810,7 +813,9 @@ QString QTextCodec::toUnicode(const QByteArray& a, int len) const
 */
 QString QTextCodec::toUnicode(const QByteArray& a) const
 {
-    return toUnicode(a.data(),a.size());
+    int l = a.size();
+    if( l > 0 && a.data()[l - 1] == '\0' ) l--;
+    return toUnicode( a.data(), l );
 }
 
 /*!
@@ -976,13 +981,16 @@ public:
         const int maxlen=100;
         char line[maxlen];
         char esc='\\';
+        char comm='%';
         bool incmap = FALSE;
         while (iod->readLine(line,maxlen) > 0) {
             if (0==qstrnicmp(line,"<code_set_name>",15))
                 n = line+15;
-            else if (0==qstrnicmp(line,"<escape_char>",13))
+            else if (0==qstrnicmp(line,"<escape_char> ",14))
                 esc = line[14];
-            else if (0==qstrnicmp(line,"% alias ",8)) {
+            else if (0==qstrnicmp(line,"<comment_char> ",15))
+                comm = line[15];
+            else if (line[0]==comm && 0==qstrnicmp(line+1," alias ",7)) {
                 aliases.append(line+8);
             } else if (0==qstrnicmp(line,"CHARMAP",7)) {
                 if (!from_unicode_page) {
@@ -1004,45 +1012,54 @@ public:
                 char mb[maxmb+1];
                 int nmb=0;
 
-                while (*cursor && *cursor!=' ')
-                    cursor++;
-                while (*cursor && *cursor!=esc)
-                    cursor++;
-                byte = getByte(cursor);
+                while (*cursor) {
+                    if (cursor[0]=='<' && cursor[1]=='U' &&
+                        cursor[2]>='0' && cursor[2]<='9' &&
+                        cursor[3]>='0' && cursor[3]<='9') {
 
-                if ( *cursor == esc ) {
-                    if ( !to_unicode_multibyte ) {
-                        to_unicode_multibyte = new QMultiByteUnicodeTable[256];
-                        for (int i=0; i<256; i++) {
-                            to_unicode_multibyte[i].unicode = to_unicode[i];
-                            to_unicode_multibyte[i].multibyte = 0;
-                        }
-                        delete [] to_unicode;
-                        to_unicode = 0;
-                    }
-                    QMultiByteUnicodeTable* mbut = to_unicode_multibyte+byte;
-                    mb[nmb++] = byte;
-                    while ( nmb < maxmb && *cursor == esc ) {
-                        // Always at least once
+                        unicode = strtol(cursor+2,&cursor,16);
 
-                        mbut->unicode = CHAINED;
+                    } else if (*cursor==esc) {
+
                         byte = getByte(cursor);
-                        mb[nmb++] = byte;
-                        if (!mbut->multibyte) {
-                            mbut->multibyte =
-                                new QMultiByteUnicodeTable[256];
-                        }
-                        mbut = mbut->multibyte+byte;
-                        mb_unicode = & mbut->unicode;
-                    }
 
-                    if ( nmb > max_bytes_per_char )
-                        max_bytes_per_char = nmb;
+                        if ( *cursor == esc ) {
+                            if ( !to_unicode_multibyte ) {
+                                to_unicode_multibyte =
+                                    new QMultiByteUnicodeTable[256];
+                                for (int i=0; i<256; i++) {
+                                    to_unicode_multibyte[i].unicode =
+                                        to_unicode[i];
+                                    to_unicode_multibyte[i].multibyte = 0;
+                                }
+                                delete [] to_unicode;
+                                to_unicode = 0;
+                            }
+                            QMultiByteUnicodeTable* mbut =
+                                to_unicode_multibyte+byte;
+                            mb[nmb++] = byte;
+                            while ( nmb < maxmb && *cursor == esc ) {
+                                // Always at least once
+
+                                mbut->unicode = CHAINED;
+                                byte = getByte(cursor);
+                                mb[nmb++] = byte;
+                                if (!mbut->multibyte) {
+                                    mbut->multibyte =
+                                        new QMultiByteUnicodeTable[256];
+                                }
+                                mbut = mbut->multibyte+byte;
+                                mb_unicode = & mbut->unicode;
+                            }
+
+                            if ( nmb > max_bytes_per_char )
+                                max_bytes_per_char = nmb;
+                        }
+                    } else {
+                        cursor++;
+                    }
                 }
-                while (*cursor && (*cursor!='<' || cursor[1]!='U'))
-                    cursor++;
-                if ( *cursor )
-                    unicode = strtol(cursor+2,&cursor,16);
+
                 if (unicode >= 0 && unicode <= 0xffff)
                 {
                     QChar ch((ushort)unicode);

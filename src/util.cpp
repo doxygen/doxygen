@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -484,11 +484,19 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=" >"; // insert extra space for layouting (nested) templates
     }
-    else if (c!=' ' ||
-	(i!=0 && i!=l-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
-       )
+    else if (i>0 && isId(s.at(i)) && s.at(i-1)==')')
     {
-      if ((c=='*' || c=='&' || c=='@'))
+      result+=' ';
+      result+=s.at(i);
+    }
+    else if (c!=' ' ||
+	      ( i!=0 && i!=l-1 && 
+                (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',') && 
+                isId(s.at(i+1))
+              ) 
+            )
+    {
+      if (c=='*' || c=='&' || c=='@')
       {  
         uint rl=result.length();
 	if (rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) result+=' ';
@@ -797,6 +805,13 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
 
+  if (documentedPackages>0)
+  {
+    if (!compact) ol.writeListItem();
+    ol.startQuickIndexItem(extLink,"packages.html");
+    parseText(ol,theTranslator->trPackages());
+    ol.endQuickIndexItem();
+  }
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
@@ -1974,7 +1989,12 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           }
         }
         //printf("  >Succes=%d\n",mdist<maxInheritanceDepth);
-        if (mdist<maxInheritanceDepth) return TRUE; /* found match */
+        if (mdist<maxInheritanceDepth) 
+        {
+          gd=md->getGroupDef();
+          if (gd) cd=0;
+          return TRUE; /* found match */
+        }
       } 
       /* goto the parent scope */
       
@@ -1996,7 +2016,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //              scopeName.data(),mScope.data(),mName.data());
   if ((mn=functionNameDict[mName])) // name is known
   {
-    //printf("  >member name found\n");
+    //printf("  >function name found\n");
     NamespaceDef *fnd=0;
     int scopeOffset=scopeName.length();
     do

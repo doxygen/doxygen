@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2000 by Dimitri van Heesch.
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -113,7 +113,7 @@ class LatexGenerator : public OutputGenerator
     void startPreFragment()  { t << "\\small\\begin{alltt}"; }
     void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; }
     void startCodeLine() { col=0; }
-    void endCodeLine() { t << endl; }
+    void endCodeLine() { codify("\n"); }
     void writeBoldString(const char *text) 
                          { t << "{\\bf "; docify(text); t << "}"; }
     void startEmphasis() { t << "{\\em ";  }
