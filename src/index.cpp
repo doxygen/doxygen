@@ -147,7 +147,7 @@ QCString abbreviate(const char *s,const char *name)
     result=result.left(result.length()-1);
 
   // strip any predefined prefix
-  QStrList &briefDescAbbrev = Config_getList("ANNOTATION_FROM_BRIEF");
+  QStrList &briefDescAbbrev = Config_getList("ABBREVIATE_BRIEF");
   const char *p = briefDescAbbrev.first();
   while (p)
   {
