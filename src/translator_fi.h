@@ -90,9 +90,6 @@ class TranslatorFinnish : public TranslatorEnglish
 
     QCString idLanguage()
     { return "finnish"; }
-    QCString latexBabelPackage()
-      // returns the name of the package that is included by LaTeX
-    { return "finnish"; }
 
     QCString trRelatedFunctions()
       // used in the compound documentation before a list of related functions.
@@ -123,18 +120,6 @@ class TranslatorFinnish : public TranslatorEnglish
     QCString trMemberDataDocumentation()
       // header that is put before the list of member attributes.
     { return "J‰sen Datan Dokumentaatio"; } // "Member Data Documentation"
-
-    QCString trGeneratedFrom(const char *s,bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
-      QCString result=(QCString)"T‰m‰n "+s+ // "The documentation for this"+s+
-                        " dokumentaatio on generoitu ";// " was generated from the following file";
-      if (single) 
-        result+="seuraavasta tiedostosta:";   
-      else 
-        result+="seuraavista tiedostoista:";
-      return result;
-    }
 
     QCString trMore()
       // this is the text of a link put after brief descriptions.
@@ -179,11 +164,6 @@ class TranslatorFinnish : public TranslatorEnglish
     QCString trDefinedIn()
       // put after an undocumented member in the list of all members
     { return "m‰‰ritelty"; } // "defined in"
-
-    QCString trVerbatimText(const char *f)
-      // put as in introduction in the verbatim header file of a class.
-      // parameter f is the name of the include file.
-    { return (QCString)"T‰m‰ on lyhennetty esitys "+f+" include tiedostosta."; } // "This is the verbatim text of the "+f+" include file."
 
     // quick reference sections
     QCString trModules()
@@ -348,10 +328,6 @@ class TranslatorFinnish : public TranslatorEnglish
       // This is used in the documentation of a file as a header before the 
       // list of (global) variables
     { return "Enumeraation arvot"; } // "Enumeration values"
-
-    QCString trAuthor()
-      // This is used in man pages as the author section.
-    { return "Tekij‰"; } // "Author"
 
     QCString trDefineDocumentation()
       // This is used in the documentation of a file before the list of

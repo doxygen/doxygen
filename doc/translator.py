@@ -43,6 +43,7 @@
                when the report is not restricted to selected languages
                explicitly via script arguments.
   2004/07/26 - Better reporting of not-needed adapters.
+  2004/10/04 - Reporting of not called translator methods added.
   """                               
 
 from __future__ import generators
@@ -1160,7 +1161,7 @@ class Transl:
 class TrManager:
     """Collects basic info and builds subordinate Transl objects."""
     
-    def __init__(self):                                
+    def __init__(self):
         """Determines paths, creates and initializes structures.
         
         The arguments of the script may explicitly say what languages should 
@@ -1355,7 +1356,84 @@ class TrManager:
             tim = tr.getmtime()
             if tim > self.lastModificationTime:
                 self.lastModificationTime = tim
-                
+        
+        
+    def __getNoTrSourceFilesLst(self):
+        """Returns the list of sources to be checked.
+        
+        All .cpp files and also .h files that do not declare and define
+        the translator methods are included in the list. The file names 
+        are searched in doxygen directory recursively.""" 
+        lst = []
+        for path, dirs, files in os.walk(self.doxy_path):
+            
+            # Files in doxygen/src should be processed first.
+            if path == self.doxy_path:
+                dirs.remove('src')
+                dirs.insert(0, 'src')
+            
+            # Search for names with .cpp extension (case independent)
+            # and append them to the output list.
+            for fname in files:
+                name, ext = os.path.splitext(fname)
+                ext = ext.lower()
+                if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
+                    lst.append(os.path.join(path, fname))
+                    
+        return lst
+        
+    
+    def __removeUsedInFiles(self, fname, dic):
+        """Removes items for method identifiers that are found in fname.
+        
+        The method reads the content of the file as one string and searches
+        for all identifiers from dic. The identifiers that were found in
+        the file are removed from the dictionary.
+        
+        Note: If more files is to be checked, the files where most items are
+        probably used should be checked first and the resulting reduced 
+        dictionary should be used for checking the next files (speed up).
+        """
+        lst_in = dic.keys()   # identifiers to be searched for
+        
+        # Read content of the file as one string.
+        assert os.path.isfile(fname)
+        f = file(fname)
+        cont = f.read()
+        f.close()
+        
+        # Remove the items for identifiers that were found in the file.
+        while lst_in:
+            item = lst_in.pop(0)
+            if cont.find(item) != -1:
+                del dic[item]
+
+    
+    def __checkForNotUsedTrMethods(self):
+        """Returns the dictionary of not used translator methods.
+        
+        The method can be called only after self.requiredMethodsDic has been
+        built. The stripped prototypes are the values, the method identifiers
+        are the keys.
+        """
+        # Build the dictionary of the required method prototypes with
+        # method identifiers used as keys.
+        trdic = {}
+        for prototype in self.requiredMethodsDic.keys():
+            ri = prototype.split('(')[0]
+            identifier = ri.split()[1].strip()
+            trdic[identifier] = prototype
+        
+        # Build the list of source files where translator method identifiers
+        # can be used.
+        files = self.__getNoTrSourceFilesLst()
+        
+        # Loop through the files and reduce the dictionary of id -> proto.
+        for fname in files:
+            self.__removeUsedInFiles(fname, trdic)
+        
+        # Return the dictionary of not used translator methods.
+        return trdic
         
         
     def generateTranslatorReport(self):
@@ -1478,6 +1556,27 @@ class TrManager:
                     f.write(' -- ' + obj.note)
                 f.write('\n')
             
+        # Check for not used translator methods and generate warning if found.
+        # The check is rather time consuming, so it is not done when report
+        # is restricted to explicitly given language identifiers.
+        if not self.script_argLst:
+            dic = self.__checkForNotUsedTrMethods()
+            if dic:
+                s = '''WARNING FOR DEVELOPERS: The following translator 
+                    methods are declared in the Translator class but their 
+                    identifiers do not appear in source files. The situation
+                    should be checked. The .cpp files and .h files excluding
+                    the 'translator*.h' files were simply searched for 
+                    occurence of the method identifiers:'''
+                f.write('\n' + '=' * 70 + '\n')
+                f.write(fill(s) + '\n\n')
+                
+                keys = dic.keys()
+                keys.sort()
+                for key in keys:
+                    f.write('  ' + dic[key] + '\n')
+                f.write('\n')
+        
         # Write the details for the translators.
         f.write('\n' + '=' * 70)
         f.write('\nDetails for translators (classes sorted alphabetically):\n')
@@ -1494,8 +1593,6 @@ class TrManager:
         f.close()
         
             
-
-
     def __loadMaintainers(self):
         """Load and process the file with the maintainers.
         
@@ -1545,7 +1642,8 @@ class TrManager:
                     assert(len(lst) == 2)
                     t = (lst[0].strip(), lst[1].strip())
                     self.__maintainersDic[classId].append(t)
-        f.close()            
+        f.close()
+        
                     
     def generateLanguageDoc(self):
         """Checks the modtime of files and generates language.doc."""

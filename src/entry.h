@@ -235,13 +235,15 @@ class Entry
     };
     enum MemberSpecifier
     {
-      Inline    = 0x01,
-      Explicit  = 0x02,
-      Mutable   = 0x04,
-      Settable  = 0x08,
-      Gettable  = 0x10,
-      Readable  = 0x20,
-      Writable  = 0x40
+      Inline    = 0x0001,
+      Explicit  = 0x0002,
+      Mutable   = 0x0004,
+      Settable  = 0x0008,
+      Gettable  = 0x0010,
+      Readable  = 0x0020,
+      Writable  = 0x0040,
+      Final     = 0x0080,
+      Abstract  = 0x0100,
     };
 
     Entry();

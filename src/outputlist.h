@@ -170,6 +170,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberItem,i1); }
     void endMemberItem() 
     { forall(&OutputGenerator::endMemberItem); }
+    void startMemberTemplateParams() 
+    { forall(&OutputGenerator::startMemberTemplateParams); }
+    void endMemberTemplateParams() 
+    { forall(&OutputGenerator::endMemberTemplateParams); }
     void startMemberGroupHeader(bool b) 
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()
@@ -182,8 +186,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberGroup); }
     void endMemberGroup(bool last)
     { forall(&OutputGenerator::endMemberGroup,last); }
-    void insertMemberAlign() 
-    { forall(&OutputGenerator::insertMemberAlign); }
+    void insertMemberAlign(bool templ=FALSE) 
+    { forall(&OutputGenerator::insertMemberAlign,templ); }
     void writeRuler() 
     { forall(&OutputGenerator::writeRuler); }
     void writeAnchor(const char *fileName,const char *name)
