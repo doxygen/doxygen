@@ -13,8 +13,10 @@
 
 #include "qtbc.h"
 #include <qtextstream.h>
+#include <qlist.h>
 
 class QFile;
+struct FTVNode;
 
 /*! A class that generated the FTV Help specific file.
  *  This file is used in conjunction with additional FTV web browser code
@@ -30,7 +32,7 @@ class FTVHelp
     int  incContentsDepth();
     int  decContentsDepth();
     /*! return the current depth of the contents tree */ 
-    int  contentsDepth() { return m_dc; }
+    int  contentsDepth() const { return m_indent; }
     void addContentsItem(bool isDir,
                          const char *ref,
                          const char *file,
@@ -38,11 +40,18 @@ class FTVHelp
                          const char *name);
 
   private:
+    void generateTreeView();
+    void generateTree(QTextStream &t,const QList<FTVNode> &nl,int level);
+    void generateIndent(QTextStream &t,FTVNode *n,int level);
+    void generateLink(QTextStream &t,FTVNode *n);
     FTVHelp();
+   ~FTVHelp();
     QFile *m_cf; 
     QTextStream m_cts;
-    int m_dc;
+    //int m_dc;
     static FTVHelp *m_theInstance;
+    QList<FTVNode> *m_indentNodes;
+    int m_indent;
 };
 
 #endif /* FTVHELP_H */

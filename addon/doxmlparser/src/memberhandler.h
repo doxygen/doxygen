@@ -33,16 +33,17 @@ class LinkedTextImpl;
 class LinkedTextHandler;
 class DocHandler;
 
-struct MemberReference : public IMemberReference
+class MemberReference : public IMemberReference
 {
-  virtual ~MemberReference() {}
-  virtual IMember *member() const;
-  virtual const IString *memberName() const { return &m_name; }
-  void initialize(MainHandler *m);
+  public:
+    virtual ~MemberReference() {}
+    virtual IMember *member() const;
+    virtual const IString *memberName() const { return &m_name; }
+    void initialize(MainHandler *m);
 
-  QString      m_memId;
-  StringImpl   m_name;
-  MainHandler *m_mainHandler;
+    QString      m_memId;
+    StringImpl   m_name;
+    MainHandler *m_mainHandler;
 };
 
 class MemberReferenceIterator : public BaseIterator<IMemberReferenceIterator,IMemberReference,MemberReference>

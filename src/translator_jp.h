@@ -41,7 +41,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-#ifdef _WIN32
+#ifdef __CYGWIN__
       return "Shift_JIS";
 #else
       return "euc-jp";
@@ -61,13 +61,13 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     }
 };
 
-class TranslatorJapanese : public TranslatorAdapter_1_2_18
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
   inline QCString decode(const QCString & sInput)
     {
-#ifdef _WIN32
+#ifdef __CYGWIN__
       return JapaneseEucToSjis(sInput);
 #else
       return sInput;
@@ -83,7 +83,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_18
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-#ifdef _WIN32
+#ifdef __CYGWIN__
       return "Shift_JIS";
 #else
       return "euc-jp";
@@ -1387,5 +1387,23 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_18
     {
       return "非推奨一覧";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "イベント";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "イベントの解説";
+    }
+
 };
 #endif
