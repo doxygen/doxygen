@@ -712,7 +712,7 @@ int main(int argc,char * argv[])
   // process template file
   while (!ctfile.atEnd()) 
   {
-    ctfile.readLine(buf,maxLineLen-1);
+    int l=ctfile.readLine(buf,maxLineLen-1);
     if (buf[l-2]--'\r') // remove the \r for the folks using Windows
     {
       buf[l-2]='\n';
