@@ -60,7 +60,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 void generateDTD()
 {
-  QCString fileName=Config::instance()->getString("OUTPUT_DIRECTORY")+"/xml/doxygen.dtd";
+  QCString fileName=Config_getString("OUTPUT_DIRECTORY")+"/xml/doxygen.dtd";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -440,49 +440,49 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
 
 void generateXML()
 {
-  if (Config::instance()->getString("OUTPUT_DIRECTORY").isEmpty())
-    Config::instance()->getString("OUTPUT_DIRECTORY")=QDir::currentDirPath();
+  if (Config_getString("OUTPUT_DIRECTORY").isEmpty())
+    Config_getString("OUTPUT_DIRECTORY")=QDir::currentDirPath();
   else
   {
-    QDir dir(Config::instance()->getString("OUTPUT_DIRECTORY"));
+    QDir dir(Config_getString("OUTPUT_DIRECTORY"));
     if (!dir.exists())
     {
       dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(Config::instance()->getString("OUTPUT_DIRECTORY")))
+      if (!dir.mkdir(Config_getString("OUTPUT_DIRECTORY")))
       {
         err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
-            "exist and cannot be created\n",Config::instance()->getString("OUTPUT_DIRECTORY").data());
+            "exist and cannot be created\n",Config_getString("OUTPUT_DIRECTORY").data());
         exit(1);
       }
-      else if (!Config::instance()->getBool("QUIET"))
+      else if (!Config_getBool("QUIET"))
       {
         err("Notice: Output directory `%s' does not exist. "
-            "I have created it for you.\n", Config::instance()->getString("OUTPUT_DIRECTORY").data());
+            "I have created it for you.\n", Config_getString("OUTPUT_DIRECTORY").data());
       }
-      dir.cd(Config::instance()->getString("OUTPUT_DIRECTORY"));
+      dir.cd(Config_getString("OUTPUT_DIRECTORY"));
     }
-    Config::instance()->getString("OUTPUT_DIRECTORY")=dir.absPath();
+    Config_getString("OUTPUT_DIRECTORY")=dir.absPath();
   }
 
-  QDir dir(Config::instance()->getString("OUTPUT_DIRECTORY"));
+  QDir dir(Config_getString("OUTPUT_DIRECTORY"));
   if (!dir.exists())
   {
     dir.setPath(QDir::currentDirPath());
-    if (!dir.mkdir(Config::instance()->getString("OUTPUT_DIRECTORY")))
+    if (!dir.mkdir(Config_getString("OUTPUT_DIRECTORY")))
     {
-      err("Cannot create directory %s\n",Config::instance()->getString("OUTPUT_DIRECTORY").data());
+      err("Cannot create directory %s\n",Config_getString("OUTPUT_DIRECTORY").data());
       return;
     }
   }
-  QDir xmlDir(Config::instance()->getString("OUTPUT_DIRECTORY")+"/xml");
-  if (!xmlDir.exists() && !xmlDir.mkdir(Config::instance()->getString("OUTPUT_DIRECTORY")+"/xml"))
+  QDir xmlDir(Config_getString("OUTPUT_DIRECTORY")+"/xml");
+  if (!xmlDir.exists() && !xmlDir.mkdir(Config_getString("OUTPUT_DIRECTORY")+"/xml"))
   {
-    err("Could not create xml directory in %s\n",Config::instance()->getString("OUTPUT_DIRECTORY").data());
+    err("Could not create xml directory in %s\n",Config_getString("OUTPUT_DIRECTORY").data());
     return;
   }
   generateDTD();
   
-  QCString fileName=Config::instance()->getString("OUTPUT_DIRECTORY")+"/xml/doxygen.xml";
+  QCString fileName=Config_getString("OUTPUT_DIRECTORY")+"/xml/doxygen.xml";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {

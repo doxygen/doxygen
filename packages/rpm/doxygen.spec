@@ -1,5 +1,5 @@
 Name: doxygen
-Version: 1.2.6-20010408
+Version: 1.2.6_20010409
 Summary: documentation system for C, C++ and IDL
 Release: 1
 Source0: doxygen_%{version}.src.tar.gz
@@ -8,7 +8,7 @@ Copyright: GPL
 Group: unsorted
 URL: http://www.stack.nl/~dimitri/doxygen
 Packager: Matthias Andree <ma@dt.e-technik.uni-dortmund.de>
-BuildRoot: /var/tmp/doxygen-%{version}.root
+BuildRoot: /var/tmp/doxygen_%{version}.root
 
 # requires Perl for tmake (Troll's make)
 BuildPrereq: perl tetex

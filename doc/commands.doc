@@ -1241,7 +1241,7 @@ Public/Protected/Private/... section.
 \subsection cmdem \em <word>
 
   \addindex \e 
-  Displayis the argument \<word\> in italics.
+  Displays the argument \<word\> in italics.
   Use this command to emphasize words.
 
   \par Example:
