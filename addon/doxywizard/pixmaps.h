@@ -22,5 +22,6 @@ extern const char** del_xpm;
 extern const char** update_xpm;
 extern const char** fileopen_xpm;
 extern const char** filesave_xpm;
+extern const char** rundoxygen_xpm;
 
 #endif

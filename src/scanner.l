@@ -1615,7 +1615,14 @@ TITLE     [tT][iI][tT][lL][eE]
   					}
 <FuncPtr>{SCOPENAME}			{
   					  current->name = yytext;
-					  BEGIN( EndFuncPtr );
+					  if (current->name=="const" || current->name=="volatile")
+					  {
+					    funcPtrType += current->name;
+					  }
+					  else
+					  {
+					    BEGIN( EndFuncPtr );
+					  }
   					}
 <FuncPtr>.				{
   					  //printf("Error: FuncPtr `%c' unexpected at line %d of %s\n",*yytext,yyLineNr,yyFileName);
@@ -2337,7 +2344,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
@@ -2350,7 +2357,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->inside = current_root->name+"::";
 					  BEGIN( Doc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -2382,7 +2389,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    }
 					  }
   					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar>"//!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"//!" { 
   					  current->brief.resize(0);
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
@@ -2390,7 +2397,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					    current->inside = current_root->name+"::";
 					  BEGIN( LineDoc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar>"///"/[^/] { 
+<FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
   					  current->brief.resize(0);
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
@@ -3181,9 +3188,8 @@ TITLE     [tT][iI][tT][lL][eE]
   					  current->brief=current->brief.stripWhiteSpace();
                                           BEGIN( lastBriefContext ); 
                                         }
-<ClassDocBrief>{BS}/{CMD}("brief"|"short"){BN}+ {
+<ClassDocBrief>{BS}{CMD}("brief"|"short"){BN}+ {
   					  lastBriefContext=YY_START;
-  					  BEGIN( ClassDocBrief ); 
 					}
 <ClassDocBrief>.			{ current->brief += *yytext; }
 <ClassDocDefine>{ID}/"("		{

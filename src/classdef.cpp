@@ -727,7 +727,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          if (!Config::genTagFile.isEmpty()) tagFile << cd->getOutputFileBase() << "?";
+          if (!Config::genTagFile.isEmpty()) tagFile << cd->name() << "?";
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
         }
         else

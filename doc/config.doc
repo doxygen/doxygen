@@ -87,6 +87,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_doc_url DOC_URL
 <li> \refitem cfg_dot_path DOT_PATH
 <li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
+<li> \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 <li> \refitem cfg_enabled_sections ENABLED_SECTIONS
 <li> \refitem cfg_example_path EXAMPLE_PATH
 <li> \refitem cfg_example_patterns EXAMPLE_PATTERNS
@@ -211,15 +212,6 @@ followed by the descriptions of the tags grouped by category.
  The default language is English, other supported languages are:
  Dutch, French, Italian, Czech, Swedish, German, Finnish, Hungarian, Japanese,
  Korean, Spanish, Russian, Croatian, Polish and Portuguese.
-
-\anchor cfg_disable_index
-<dt>\c DISABLE_INDEX <dd>
- \addindex DISABLE_INDEX
- If you want full control over the layout of the generated HTML pages it
- might be necessary to disable the index and replace it with your own.
- The \c DISABLE_INDEX tag can be used to turn on/off the condensed index at
- top of each page. A value of NO (the default) enables the index and the
- value YES disables it.
 
 \anchor cfg_extract_all
 <dt>\c EXTRACT_ALL <dd>
@@ -578,6 +570,13 @@ followed by the descriptions of the tags grouped by category.
  input file. Doxygen will then use the output that the filter program writes
  to standard output.
 
+\anchor cfg_filter_source_files
+<dt>\c FILTER_SOURCE_FILES <dd>
+ \addindex FILTER_SOURCE_FILES
+ If the \c FILTER_SOURCE_FILES tag is set to \c YES, the input filter (if set using
+ \c INPUT_FILTER ) will be used to filter the input files when producing source 
+ files to browse.
+
 </dl>
 
 \subsection alphabetical_index Alphabetical index options
@@ -722,6 +721,21 @@ followed by the descriptions of the tags grouped by category.
  and you can search for words in the documentation 
  (which basically renders \c doxysearch obsolete on Windows). 
  The HTML workshop also contains a viewer for compressed HTML files.
+
+\anchor cfg_disable_index
+<dt>\c DISABLE_INDEX <dd>
+ \addindex DISABLE_INDEX
+ If you want full control over the layout of the generated HTML pages it
+ might be necessary to disable the index and replace it with your own.
+ The \c DISABLE_INDEX tag can be used to turn on/off the condensed index at
+ top of each page. A value of NO (the default) enables the index and the
+ value YES disables it.
+
+\anchor cfg_enum_values_per_line
+<dt>\c ENUM_VALUES_PER_LINE <dd>
+ \addindex ENUM_VALUES_PER_LINE
+ This tag can be used to set the number of enum values (range [1..20])
+ that doxygen will group on one line in the generated HTML documentation.
 
 </dl>
 \subsection latex_output LaTeX related options

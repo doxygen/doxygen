@@ -1307,6 +1307,7 @@ void buildVarList(Entry *root)
        ) ||
        (root->section==Entry::FUNCTION_SEC && // function variable 
         !root->type.isEmpty() && root->type.find(re,0)!=-1 && 
+         // special case to catch function pointers
          root->type.find("operator")==-1 && root->type.find(")(")==-1 
        )
       ) 

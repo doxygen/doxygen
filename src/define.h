@@ -20,7 +20,7 @@
 
 #include "qtbc.h"
 #include <qdict.h>
-#include "util.h"
+#include <qlist.h>
 
 class FileDef;
 

@@ -422,11 +422,6 @@ void FileDef::writeDocumentation(OutputList &ol)
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
-  //QCString fn=name();
-  //if (Config::fullPathNameFlag)
-  //{
-  //  fn.prepend(stripFromPath(getPath().copy()));
-  //}
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,sourceName(),docname+" Source File");
   startTitle(ol,0);
@@ -440,11 +435,9 @@ void FileDef::writeSource(OutputList &ol)
     ol.endTextLink();
   }
 
-  //parseText(ol,theTranslator->trVerbatimText(incFile->name()));
-  //ol.writeRuler();
   initParseCodeContext();
   ol.startCodeFragment();
-  parseCode(ol,0,fileToString(absFilePath()),FALSE,0,this);
+  parseCode(ol,0,fileToString(absFilePath(),TRUE),FALSE,0,this);
   ol.endCodeFragment();
   endFile(ol);
   ol.enableAll();

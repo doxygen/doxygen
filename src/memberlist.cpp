@@ -302,7 +302,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             typeDecl.writeChar(' ');
           }
 
-          const uint MAX_ENUM_VALUES_FOR_ONE_LINE = 4;
           int enumMemCount=0;
           
           typeDecl.docify("{ ");
@@ -313,8 +312,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             while (fmd)
             {
               /* in html we start a new line after a number of items */
-              if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE
-                  && (enumMemCount%MAX_ENUM_VALUES_FOR_ONE_LINE)==0
+              if (fmdl->count()>(uint)Config::enumValuesPerLine
+                  && (enumMemCount%(uint)Config::enumValuesPerLine)==0
                  )
               {
                 typeDecl.pushGeneratorState();
@@ -348,7 +347,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               typeDecl.enable(OutputGenerator::Man);
               enumMemCount++;
             }
-            if (fmdl->count()>MAX_ENUM_VALUES_FOR_ONE_LINE)
+            if (fmdl->count()>(uint)Config::enumValuesPerLine)
             {
               typeDecl.pushGeneratorState();
               typeDecl.disableAllBut(OutputGenerator::Html);

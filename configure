@@ -351,26 +351,26 @@ touch .tmakeconfig
 if test "$f_shared" = NO; then
   if test "$f_platform" = "osf1-cxx" -o "$f_platform" = "irix-n32"; then
   cat >> .tmakeconfig <<EOF
-    TMAKE_LFLAGS = -non_shared
+    TMAKE_LFLAGS += -non_shared
 EOF
   elif test "$f_platform" = "solaris-cc"; then
   cat >> .tmakeconfig <<EOF
-    TMAKE_LFLAGS = -Bstatic
+    TMAKE_LFLAGS += -Bstatic
 EOF
   elif test "$f_platform" = "hpux-cc"; then
   cat >> .tmakeconfig <<EOF
-    TMAKE_LFLAGS = -noshared
+    TMAKE_LFLAGS += -noshared
 EOF
   else
   cat >> .tmakeconfig <<EOF
-    TMAKE_LFLAGS = -static
+    TMAKE_LFLAGS += -static
 EOF
   fi
 fi
 
 if test "$f_english" = YES; then
   cat >> .tmakeconfig <<EOF
-TMAKE_CXXFLAGS = -DENGLISH_ONLY
+TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 

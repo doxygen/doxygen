@@ -140,8 +140,12 @@ static FILE *tryPath(const char *path,const char *fileName)
   return 0;
 }
 
+static void substEnvVarsInStrList(QStrList &sl);
+static void substEnvVarsInString(QCString &s);
+
 static FILE *findFile(const char *fileName)
 {
+  substEnvVarsInStrList(includePathList);
   char *s=includePathList.first();
   while (s) // try each of the include paths
   {
@@ -162,6 +166,7 @@ static void readIncludeFile(const char *incName)
   } 
 
   QCString inc = incName;
+  substEnvVarsInString(inc);
   inc = inc.stripWhiteSpace();
   uint incLen = inc.length();
   if (inc.at(0)=='"' && inc.at(incLen-1)=='"') // strip quotes
@@ -430,6 +435,23 @@ void configStrToVal()
     }
     Config::colsInAlphaIndex=cols;
   }
+
+  if (enumValuesPerLineString.isEmpty())
+  {
+    Config::enumValuesPerLine=4;
+  }
+  else
+  {
+    bool ok;
+    int cols = enumValuesPerLineString.toInt(&ok);
+    if (!ok || cols<1 || cols>20)
+    {
+      warn_cont("Warning: argument of ENUM_VALUES_PER_LINE is not a valid number in the range [1..20]!\n"
+	   "Using the default of 4!\n");
+      cols = 4;
+    }
+    Config::enumValuesPerLine=cols;
+  }
   
   if (maxDotGraphWidthString.isEmpty())
   {
@@ -441,7 +463,7 @@ void configStrToVal()
     int width =maxDotGraphWidthString.toInt(&ok);
     if (!ok)
     {
-      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [100..30000]!\n"
 	   "Using the default of 1024 pixels!\n");
       width=1024;
     }
@@ -466,7 +488,7 @@ void configStrToVal()
     int height =maxDotGraphHeightString.toInt(&ok);
     if (!ok)
     {
-      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [1..20]!\n"
+      warn_cont("Warning: argument of MAX_DOT_GRAPH_WIDTH is not a valid number in the range [100..30000]!\n"
 	   "Using the default of 1024 pixels!\n");
       height=1024;
     }

@@ -70,6 +70,9 @@
 //  - Update for "new since 1.2.1" version. The text of trDCOPMethods()
 //    was translated rather blindly (not knowing what exactly
 //    the DCOP means).
+//    
+// 2000/10/17 (Petr Prikryl)
+//  - Update for "new since 1.2.2" version. 
 //         
 // Notices:
 // -------- 
@@ -1107,6 +1110,21 @@ class TranslatorCzech : public Translator
     virtual QCString trDCOPMethods()
     {
       return Decode("Metody DCOP");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return Decode("Vlastnosti");
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return Decode("Dokumentace k vlastnosti");
     }
 };
 

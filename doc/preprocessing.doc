@@ -168,7 +168,9 @@ PREDEFINED = DECLARE_REGISTRY_RESOURCEID=// \
    "ATL_NO_VTABLE= "\                                                      
    "__declspec(a)= "\                                                  
    BEGIN_CONNECTION_POINT_MAP=/* \
-   END_CONNECTION_POINT_MAP=*/// 
+   END_CONNECTION_POINT_MAP=*/// \
+   "DECLARE_AGGREGATABLE(Class)= " \
+   "DECLARE_REGISTRY_RESOURCEID(id)= " 
 \endverbatim
 
 As you can see doxygen's preprocessor is quite powerful, but if you want

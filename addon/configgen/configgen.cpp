@@ -775,8 +775,8 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Korean, Hungarian, Spanish, Romanian, Russian, Croatian, Polish, \n"
-                    "Portuguese and Slovene.\n"
+                    "Korean, Hungarian, Norwegian, Spanish, Romanian, Russian, Croatian, \n"
+                    "Polish, Portuguese and Slovene.\n"
                    );
   ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Czech");
@@ -789,6 +789,7 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Italian");
   ConfigString::addFixedValue("outputLanguage","Japanese");
   ConfigString::addFixedValue("outputLanguage","Korean");
+  ConfigString::addFixedValue("outputLanguage","Norwegian");
   ConfigString::addFixedValue("outputLanguage","Romanian");
   ConfigString::addFixedValue("outputLanguage","Russian");
   ConfigString::addFixedValue("outputLanguage","Polish");
@@ -1169,6 +1170,14 @@ void init()
                     "to standard output. \n",
                     ConfigString::File
                    );
+  ConfigBool::add(  "filterForSourceFlag",
+                    "FILTER_SOURCE_FILES",
+                    "FALSE",
+                    "do we filter source files?",
+                    "If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using \n"
+                    "INPUT_FILTER) will be used to filter the input files when producing source \n"
+                    "files to browse. \n"
+                );    
   
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Index","configuration options related to the alphabetical class index");
@@ -1279,6 +1288,15 @@ void init()
                     "the value YES disables it. \n"
                  );
   addDependency("noIndexFlag","generateHtml");
+  ConfigInt::add(   "enumValuesPerLine",
+                    "ENUM_VALUES_PER_LINE",
+                    "4",
+                    "number of enum values that are put on one line",
+                    "This tag can be used to set the number of enum values (range [1..20]) \n"
+                    "that doxygen will group on one line in the generated HTML documentation. \n",
+                    1,20
+                );
+  addDependency("enumValuesPerLine","generateHtml");
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "LaTeX","configuration options related to the LaTeX output");
   //-----------------------------------------------------------------------------------------------

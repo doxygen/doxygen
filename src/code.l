@@ -127,12 +127,9 @@ static QCString      g_saveType;
  * is TRUE. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
  */
-static void startCodeLine(OutputList &ol)
+static void startCodeLine()
 {
-  if (g_currentFontClass)
-  {
-    g_code->endFontClass();
-  }
+  //if (g_currentFontClass) { g_code->endFontClass(); }
   if (g_sourceFileDef)
   {
     QCString lineNumber,lineAnchor;
@@ -149,23 +146,30 @@ static void startCodeLine(OutputList &ol)
       g_searchingForBody = TRUE;
       g_bodyCurlyCount = 0;
       if (g_currentMemberDef) anchor=g_currentMemberDef->anchor();
-      ol.startCodeAnchor(lineAnchor);
-      ol.writeCodeLink(d->getReference(),d->getOutputFileBase(),
+      g_code->startCodeAnchor(lineAnchor);
+      g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
 	               anchor,lineNumber);
-      ol.endCodeAnchor();
-      ol.codify(" ");
+      g_code->endCodeAnchor();
+      g_code->codify(" ");
     }
     else
     {
-      ol.codify(lineNumber);
-      ol.codify(" ");
+      g_code->codify(lineNumber);
+      g_code->codify(" ");
     }
   }
-  ol.startCodeLine(); 
+  g_code->startCodeLine(); 
   if (g_currentFontClass)
   {
     g_code->startFontClass(g_currentFontClass);
   }
+}
+
+
+static void endCodeLine()
+{
+  if (g_currentFontClass) { g_code->endFontClass(); }
+  g_code->endCodeLine();
 }
 
 /*! write a code fragment `text' that may span multiple lines, inserting
@@ -185,10 +189,10 @@ static void codifyLines(char *text)
       g_yyLineNr++;
       *(p-1)='\0';
       g_code->codify(sp);
-      g_code->endCodeLine();
+      endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
-	startCodeLine(*g_code);
+	startCodeLine();
       }
     }
     else
@@ -219,10 +223,10 @@ static void writeMultiLineCodeLink(OutputList &ol,
       g_yyLineNr++;
       *(p-1)='\0';
       ol.writeCodeLink(ref,file,anchor,sp);
-      ol.endCodeLine();
+      endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
-	startCodeLine(ol);
+	startCodeLine();
       }
     }
     else
@@ -1241,10 +1245,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)? {
   					  g_yyLineNr+=QCString(yytext).contains('\n');
-                                          g_code->endCodeLine();
+                                          endCodeLine();
                                           if (g_yyLineNr<g_inputLines) 
                                           {
-                                            startCodeLine(*g_code);
+                                            startCodeLine();
                                           }
 					  if (g_lastSpecialCContext==SkipCxxComment)
 					  { // force end of C++ comment here
@@ -1267,10 +1271,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
-					    g_code->endCodeLine();
+					    endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {
-					      startCodeLine(*g_code);
+					      startCodeLine();
 					    }
 					  }
 					  else
@@ -1284,10 +1288,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr+=2;
-					    g_code->endCodeLine();
+					    endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {
-					      startCodeLine(*g_code);
+					      startCodeLine();
 					    }
 					  }
 					  else
@@ -1320,10 +1324,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr++;
-					    g_code->endCodeLine();
+					    endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {
-					      startCodeLine(*g_code);
+					      startCodeLine();
 					    }
 					  }
 					  else
@@ -1355,10 +1359,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr++;
-					    g_code->endCodeLine();
+					    endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {
-					      startCodeLine(*g_code);
+					      startCodeLine();
 					    }
 					  }
 					  else
@@ -1527,7 +1531,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   g_bracketCount = 0;
   g_exampleFile   = convertFileName(g_exampleName)+"-example";
   g_includeCodeFragment = inlineFragment;
-  startCodeLine(*g_code);
+  startCodeLine();
   g_type.resize(0);
   g_name.resize(0);
   g_args.resize(0);
@@ -1537,7 +1541,6 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   BEGIN( Body );
   codeYYlex();
   endFontClass();
-  //if (g_yyLineNr<=g_inputLines) code->endCodeLine();
   ol+=*g_code;
   delete g_code;
   return;
