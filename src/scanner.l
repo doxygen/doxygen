@@ -45,7 +45,9 @@
 #include "membergroup.h"
 #include "reflist.h"
 #include "code.h"
+#include "commentscan.h"
 
+#define COMMENTSCAN
   
 #define YY_NEVER_INTERACTIVE 1
 
@@ -176,6 +178,12 @@ static QCString         docBackup;
 static QCString         briefBackup;
 static bool             g_inputFromFile;
 
+static int              docBlockContext;
+static QCString         docBlock;
+static QCString         docBlockName;
+static bool             docBlockInBody;
+static bool             docBlockJavaStyle;
+
 
 //-----------------------------------------------------------------------------
 
@@ -257,7 +265,9 @@ static int newMemberGroupId()
 }
 
 // forward declarations
+#ifndef COMMENTSCAN
 static void startGroup();
+#endif
 static void startGroupInDoc();
 static void endGroup();
 
@@ -302,6 +312,74 @@ static QCString stripQuotes(const char *s)
 }
 
 static void newDocState();
+
+//-----------------------------------------------------------------
+
+static void addMemberGroupDocs()
+{
+  memberGroupDocs=current->brief.stripWhiteSpace();
+  current->doc = current->doc.stripWhiteSpace();
+  if (!memberGroupDocs.isEmpty() && !current->doc.isEmpty())
+  {
+    memberGroupDocs+="\n\n";
+  }
+  memberGroupDocs+=current->doc;
+  MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
+  if (info) 
+  {
+    info->doc = memberGroupDocs;
+    info->docFile = yyFileName;
+  }
+  current->doc.resize(0);
+  current->brief.resize(0);
+}
+
+//-----------------------------------------------------------------
+
+static void handleCommentBlock(const QCString &doc,bool brief)
+{
+  if (brief)
+  {
+    current->briefFile = yyFileName;
+    current->briefLine = yyLineNr;
+  }
+  else
+  {
+    current->docFile = yyFileName;
+    current->docLine = yyLineNr;
+  }
+  if (docBlockInBody)
+  {
+    if (previous==0) 
+    {
+      ASSERT(previous!=0); // shouldn't happen
+      return;
+    }
+    if (!previous->doc.isEmpty()) 
+    { // start a new paragraph for the next piece of text found in the body
+      previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
+    }
+  }
+  if (parseCommentBlock(
+	docBlockInBody ? previous : current,
+	doc,     // text
+	yyFileName, // file
+	yyLineNr,   // line
+	docBlockInBody ? FALSE : brief, 
+	docBlockInBody ? FALSE : docBlockJavaStyle,
+	protection)
+     ) // need to start a new entry
+  {
+    if (current->section==Entry::MEMBERGRP_SEC)
+    {
+      addMemberGroupDocs();
+    }
+    current_root->addSubEntry(current);
+    previous = current;
+    current = new Entry ;
+    initEntry();
+  }
+}
 
 //-----------------------------------------------------------------
 
@@ -617,6 +695,7 @@ static void addKnRArgInfo(const QCString &type,const QCString &name,
   }
 }
 
+//-----------------------------------------------------------------------------
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -848,6 +927,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x      ReadFormulaShort
 %x	ReadFormulaLong
 %x	AnchorLabel
+
+ /** new comment parsing states */
+
+%x	DocLine
+%x	DocBlock
+%x      DocCopyBlock
 
 %%
 
@@ -2036,7 +2121,11 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    BEGIN(AfterDoc);
 					  }
   					}
+   
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
+#ifdef COMMENTSCAN
+  					  REJECT;
+#else
   					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -2064,8 +2153,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    removeSlashes=FALSE;
 					    BEGIN( Doc );
 					  }
+#endif
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
+#ifdef COMMENTSCAN
+  					  REJECT;
+#else
                                           if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
                                           {
                                             warn(yyFileName,yyLineNr,
@@ -2074,6 +2167,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                           //printf("end of member group marker ends group %d\n",memberGroupId);
   					  endGroup();
                                           memberGroupHeader.resize(0);
+#endif
   					}
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
@@ -4043,7 +4137,15 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
+#ifdef COMMENTSCAN
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = YY_START==SkipCurly;
+					  docBlockJavaStyle = FALSE;
+					  docBlock.resize(0);
+					  BEGIN( DocBlock );
+#else
 					  BEGIN( Doc );
+#endif
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
@@ -4057,6 +4159,28 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
+#ifdef COMMENTSCAN
+					  current->docLine = yyLineNr;
+					  current->docFile = yyFileName;
+					  docBlockContext = YY_START;
+					  docBlockInBody  = YY_START==SkipCurly;
+					  docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlock.resize(0);
+					  if (docBlockJavaStyle)
+					  {
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
+					  }
+					  if (!docBlockInBody)
+					  {
+					    current->doc.resize(0);
+					    if (docBlockJavaStyle)
+					    {
+					      current->brief.resize(0);
+					    }
+					  }
+					  BEGIN( DocBlock );
+#else
 					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
 					    current->docLine = yyLineNr;
@@ -4095,6 +4219,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					      BEGIN( JavaDoc );
 					    }
 					  }
+#endif
   					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" { 
                                           if (YY_START!=SkipCurly)
@@ -4113,7 +4238,15 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
+#ifdef COMMENTSCAN
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = YY_START==SkipCurly;
+					  docBlockJavaStyle = FALSE;
+					  docBlock.resize(0);
+					  BEGIN( DocLine );
+#else
 					  BEGIN( LineDoc );
+#endif
 					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] { 
                                           if (YY_START!=SkipCurly)
@@ -4132,7 +4265,15 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
+#ifdef COMMENTSCAN
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = YY_START==SkipCurly;
+					  docBlockJavaStyle = FALSE;
+					  docBlock.resize(0);
+					  BEGIN( DocLine );
+#else
 					  BEGIN( LineDoc );
+#endif
 					}
 <FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
 					  lineCount();
@@ -4200,6 +4341,91 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <CSAccessorDecl>"get"			{ if (curlyCount==0) current->memSpec |= Entry::Gettable; }
 <CSAccessorDecl>.			{}
 <CSAccessorDecl>\n			{ yyLineNr++; }
+
+
+
+
+ /**********************************************************************************/
+ /******************** Documentation block related rules ***************************/
+ /**********************************************************************************/
+
+ /* ---- Single line comments ------ */
+
+<DocLine>[^\n]*"\n"			{ // whole line
+  					  yyLineNr++;
+					  handleCommentBlock(yytext,TRUE);
+					  BEGIN( docBlockContext );
+  					}
+
+ /* ---- Comments blocks ------ */
+
+<DocBlock>"*/"				{ // end of comment block
+  				          handleCommentBlock(docBlock,FALSE);
+					  BEGIN(docBlockContext);
+  					}
+<DocBlock>^{B}*"*"+/{BN}+		{ // start of a comment line
+  					}
+<DocBlock>("@@"|"\\\\"){ID}		{ // escaped command
+  					  docBlock+=yytext;
+  					}
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
+                                          docBlock+=yytext;
+					  docBlockName=&yytext[1];
+  					  BEGIN(DocCopyBlock);
+  					}
+<DocBlock>[^@*\\\n]+			{ // any character that isn't special
+  					  docBlock+=yytext;
+  					}
+<DocBlock>\n				{ // newline
+  					  yyLineNr++;
+					  docBlock+=*yytext;
+  					}
+<DocBlock>.				{ // command block
+					  docBlock+=*yytext;
+  					}
+
+ /* ---- Copy verbatim sections ------ */
+
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+  					  docBlock+=yytext;
+					  if (&yytext[4]==docBlockName)
+					  {
+  					    BEGIN(DocBlock);
+					  }
+  					}
+<DocCopyBlock>^{B}*"*"+/{BN}+		{ // start of a comment line
+  					  if (docBlockName=="verbatim")
+					  {
+					    REJECT;
+					  }
+  					}
+<DocCopyBlock>[^@\*\\\n]+		{ // any character that is not special
+  					  docBlock+=yytext;
+  					}
+<DocCopyBlock>\n			{ // newline
+  					  docBlock+=*yytext;
+					  yyLineNr++;
+  					}
+<DocCopyBlock>.				{ // any other character
+  					  docBlock+=*yytext;
+  					}
+<DocCopyBlock><<EOF>>			{
+  					  warn(yyFileName,yyLineNr,
+					      "Warning: reached end of file while inside a %s block!\n",
+					      docBlockName.data());
+  					  yyterminate();
+  					}
+
+
+
+
+
+   /*************************************************************************/
+   /*** The next part is obsolete and will be removed */
+
+
+
+
 <JavaDoc>{CMD}("brief"|"short"){B}+	{
   					  lastBriefContext=tmpDocType;
   					  BEGIN( ClassDocBrief ); 
@@ -4211,6 +4437,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    BEGIN( tmpDocType );
 					  }
  					} 
+
+
   /*
 <JavaDoc>"@"				{
   					  unput(*yytext);
@@ -5863,6 +6091,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					      current->brief+=yytext;
   					}
 <DefLineDoc,LineDoc,ClassDoc,PageDoc,Doc>"/*"|"//"   { current->doc += yytext; }
+
+
+  /**** End of obsolete part                                             */
+  /***********************************************************************/
+
+
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}
@@ -5908,6 +6142,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
 //----------------------------------------------------------------------------
 
+#ifndef COMMENTSCAN
 static void startGroup()
 {
   if (!lastDefGroup.groupname.isEmpty())
@@ -5944,6 +6179,7 @@ static void startGroup()
     lastMemberGroupLine = yyLineNr;
   }
 }
+#endif
 
 static void startGroupInDoc()
 {
@@ -6220,6 +6456,72 @@ void parseMain(Entry *rt)
 }
 
 #endif
+
+void parsePrototype(const QCString &text)
+{
+  //printf("**** parsePrototype(%s) begin\n",text.data());
+
+  const char *orgInputString;
+  int orgInputPosition;
+  YY_BUFFER_STATE orgState;
+  bool orgInputFromFile;
+  
+  // save scanner state
+  orgState = YY_CURRENT_BUFFER;
+  yy_switch_to_buffer(yy_create_buffer(scanYYin, YY_BUF_SIZE));
+  orgInputString = inputString; 
+  orgInputPosition = inputPosition;
+  orgInputFromFile = g_inputFromFile;
+
+  // set new string
+  inputString = text;
+  inputPosition = 0;
+  g_inputFromFile = FALSE;
+  scanYYrestart( scanYYin );
+  BEGIN(ClassDocFunc);
+  scanYYlex();
+
+  // restore original scanner state
+  yy_switch_to_buffer(orgState);
+  inputString = orgInputString; 
+  inputPosition = orgInputPosition;
+  g_inputFromFile = orgInputFromFile;
+
+  //printf("**** parsePrototype end\n");
+}
+
+Entry *startNewEntry()
+{
+    // make copy of documentation up till now
+    QCString doc = current->doc;
+    QCString brief = current->brief;
+    current->doc.resize(0);
+    current->brief.resize(0);
+
+    // create new entry
+    current_root->addSubEntry(current);
+    previous = current;
+    current = new Entry ;
+    initEntry();
+
+    // move documentation to this entry
+    current->doc = doc;
+    current->brief = brief;
+    
+    return current;
+}
+
+void handleGroupStartCommand(const char *header)
+{
+  memberGroupHeader=header;
+  startGroupInDoc();
+}
+
+void handleGroupEndCommand()
+{
+  endGroup();
+}
+
 
 //----------------------------------------------------------------------------
 

@@ -22,6 +22,7 @@ HEADERS      =	bufstr.h \
                 cmdmapper.h \
                 code.h \
 		commentcnv.h \
+		commentscan.h \
                 compound_xsd.h \
                 config.h \
 		constexp.h \
@@ -183,8 +184,8 @@ SOURCES      =	ce_lex.cpp \
 		util.cpp \
 		version.cpp \
 		xmldocvisitor.cpp \
-                xmlgen.cpp 
-#		commentscan.cpp
+                xmlgen.cpp \
+		commentscan.cpp
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200

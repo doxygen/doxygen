@@ -566,10 +566,11 @@ static QCString convertLabel(const QCString &l)
     switch(c)
     {
       case '\\': result+="\\\\"; break;
-      case '<': result+="\\<"; break;
-      case '>': result+="\\>"; break;
-      case '|': result+="\\|"; break;
-      default: result+=c; break;
+      case '<':  result+="\\<"; break;
+      case '>':  result+="\\>"; break;
+      case '|':  result+="\\|"; break;
+      case '"':  result+="\\\""; break;
+      default:   result+=c; break;
     }
   }
   return result;

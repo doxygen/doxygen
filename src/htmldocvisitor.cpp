@@ -722,7 +722,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     }
     m_t << "<div align=\"center\">" << endl;
     m_t << "<img src=\"" << img->relPath() << img->name() << "\" alt=\"" 
-      << baseName << "\"" << htmlAttribsToString(img->attribs()) << ">" << endl;
+      << baseName << "\"" << ">" << endl;
     if (img->hasCaption())
     {
       m_t << "<p><strong>";

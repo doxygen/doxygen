@@ -402,12 +402,12 @@ static void returnCharToStream(char c)
 static inline void addTillEndOfString(const QCString &expr,QCString *rest,
                                        uint &pos,char term,QCString &arg)
 {
-  char cc;
+  int cc;
   while ((cc=getNextChar(expr,rest,pos))!=EOF)
   {
-    if (cc=='\\') arg+=cc,cc=getNextChar(expr,rest,pos);
+    if (cc=='\\') arg+=(char)cc,cc=getNextChar(expr,rest,pos);
     else if (cc==term) return;
-    arg+=cc;
+    arg+=(char)cc;
   }
 }
 

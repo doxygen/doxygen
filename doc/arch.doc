@@ -216,10 +216,10 @@ if (open(F,"<Makefile.libdoxygen.old")) {
   }
   print "Processing Makefile.libdoxygen...\n";
   while (<F>) {
-    if ( s/\(LEX\) -P([a-z]+)YY -t $file/(LEX) -d -P\1YY -t $file/g ) {
+    if ( s/\(LEX\) -P([a-zA-Z]+)YY -t $file/(LEX) -d -P\1YY -t $file/g ) {
       print "Enabling debug info for $file\n";
     }
-    elsif ( s/\(LEX\) -d -P([a-z]+)YY -t $file/(LEX) -P\1YY -t $file/g ) {
+    elsif ( s/\(LEX\) -d -P([a-zA-Z]+)YY -t $file/(LEX) -P\1YY -t $file/g ) {
       print "Disabling debug info for $file\n";
     }
     print G "$_";

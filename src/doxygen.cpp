@@ -7839,7 +7839,7 @@ static const char *getArg(int argc,char **argv,int &optind)
 
 //----------------------------------------------------------------------------
 
-//extern void commentScanTest();
+extern void commentScanTest();
 
 void initDoxygen()
 {
@@ -7868,8 +7868,6 @@ void initDoxygen()
   Doxygen::lookupCache.setAutoDelete(TRUE);
   Doxygen::directories.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
-
- // commentScanTest();
 }
 
 void cleanUpDoxygen()

@@ -63,7 +63,7 @@ PREDEFINED             = MY_MACRO()=
   </ol> 
 
 <li><b>When I set EXTRACT_ALL to NO none of my functions are shown in the 
-    documentation.</b></li>
+    documentation.</b>
 
 In order for global functions, variables, enums, typedefs, and defines 
 to be documented you should document the file in which these commands are
@@ -78,7 +78,6 @@ For member functions or functions that are part of a namespace you should
 document either the class or namespace.
  
 <li><b>How can I make doxygen ignore some code fragment?</b>
-<p>
 
 The new and easiest way is to add one comment block 
 with a \ref cmdcond "\\cond" command at the start and one comment block 
