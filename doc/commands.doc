@@ -1737,7 +1737,7 @@ class C {};
 \endverbatim
 
   \warning The image format for HTML is limited to what your
-           browser supports. For \f$\mbox{\LaTeX}\f$ the image format
+           browser supports. For \f$\mbox{\LaTeX}\f$, the image format
            must be Encapsulated PostScript (eps).
            <br><br>
            Doxygen does not check if the image is in the correct format. 

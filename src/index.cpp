@@ -156,6 +156,7 @@ QCString abbreviate(const char *s,const char *name)
     found = found || stripWord(result,"specifies ");
     found = found || stripWord(result,"contains ");
     found = found || stripWord(result,"represents ");
+    found = found || stripWord(result,"implements ");
     if (found)
     {
       stripWord(result,"a ");

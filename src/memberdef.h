@@ -259,6 +259,7 @@ class MemberDef : public Definition
     //void setBodyMember(MemberDef *md) { bodyMemb = md; }
     void setDocsForDefinition(bool b) { docsForDefinition = b; }
     void setGroupAlias(MemberDef *md) { groupAlias = md; }
+    MemberDef *getGroupAlias() const { return groupAlias; }
 
     // cached typedef functions
     bool isTypedefValCached() const { return m_isTypedefValCached; }
