@@ -160,10 +160,26 @@ class LatexGenerator : public OutputGenerator
     void endSubscript()     { t << "}}$"; }
     void startSuperscript() { t << "$^{\\mbox{"; }
     void endSuperscript()   { t << "}}$"; }
-    void startTable(int c)  { t << "\\begin{TabularC}{" << c 
-                                  << "}\n\\hline\n"; 
+    void startTable(bool hasCaption,int c)  
+                            { 
+                              if (hasCaption) t << "\\begin{table}[h]";
+                              t << "\\begin{TabularC}{" << c << "}\n\\hline\n"; 
                             }
-    void endTable()         { t << "\\\\\\hline\n\\end{TabularC}\n"; }
+    void endTable(bool hasCaption)         
+                            { 
+                              if (hasCaption)
+                              {
+                                t << "\\end{table}\n";
+                              }
+                              else
+                              {
+                                t << "\\\\\\hline\n\\end{TabularC}\n"; 
+                              }
+                            }
+    void startCaption()     { t << "\\\\\\hline\n\\end{TabularC}\n"
+                                   "\\centering\n\\caption{"; 
+                            }
+    void endCaption()       { t << "}\n"; }
     void nextTableRow()     {}
     void endTableRow()      { t << "\\\\\\hline\n"; }
     void nextTableColumn()  { t << "&"; }

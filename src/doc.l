@@ -99,6 +99,7 @@ static QCString         curDotFileName;
 static QCString         curDotFileCaption;
 static QCString         internalRefFile;
 static QCString         internalRefAnchor;
+static QCString         caption;
 static QStack<char>	  currentListIndent; // indent stack of all list items 
 static bool insideItemList = FALSE;
 
@@ -185,72 +186,85 @@ class Table
    ~Table();
     void newRow();
     void newElem();
+    void setCaption(const char *s);
     
   private:
-    OutputDocInterface *parentDoc;
-    QList<TableElem> *elemList;
-    int curRow;
-    int curCol;
-    int rows;
-    int cols;
+    OutputDocInterface *m_parentDoc;
+    QList<TableElem> *m_elemList;
+    QCString m_caption;
+    int m_curRow;
+    int m_curCol;
+    int m_rows;
+    int m_cols;
 };  
 
 Table::Table() 
 {
-  parentDoc=outDoc;
-  elemList=new QList<TableElem>;
-  elemList->setAutoDelete(TRUE);
-  curRow=curCol=rows=cols=0;
+  m_parentDoc=outDoc;
+  m_elemList=new QList<TableElem>;
+  m_elemList->setAutoDelete(TRUE);
+  m_curRow=m_curCol=m_rows=m_cols=0;
 }
 
 Table::~Table()
 {
   //printf("Table::~Table()\n");
   // use elemList & cols & rows
-  if (cols>0 && rows>0)
+  if (m_cols>0 && m_rows>0)
   {
-    parentDoc->startTable(cols);
-    TableElem *e=elemList->first();
+    m_parentDoc->startTable(!m_caption.isEmpty(),m_cols);
+    TableElem *e=m_elemList->first();
     while (e)
     {
       if (e->getRow()>0)
       {
 	if (e->getCol()==0) 
 	{
-	  if (e->getRow()>1) parentDoc->endTableRow();
-	  parentDoc->nextTableRow();
+	  if (e->getRow()>1) m_parentDoc->endTableRow();
+	  m_parentDoc->nextTableRow();
 	}
 	else
 	{
-	  parentDoc->nextTableColumn();
+	  m_parentDoc->nextTableColumn();
 	}
-	parentDoc->append(e->outputDocInterface());
-	parentDoc->endTableColumn();
+	m_parentDoc->append(e->outputDocInterface());
+	m_parentDoc->endTableColumn();
       }
-      e=elemList->next();
+      e=m_elemList->next();
     }
-    parentDoc->endTable();
+    if (!m_caption.isEmpty())
+    {
+      m_parentDoc->startCaption();
+      m_parentDoc->docify(m_caption);
+      m_parentDoc->endCaption();
+    }
+    m_parentDoc->endTable(!m_caption.isEmpty());
   }
-  delete elemList; elemList=0;
-  outDoc=parentDoc;
+  delete m_elemList; m_elemList=0;
+  outDoc=m_parentDoc;
+}
+
+void Table::setCaption(const char *s)
+{
+  m_caption=s;
 }
 
 void Table::newRow()
 {
   //printf("Table::newRow()\n");
-  curRow++;
-  if (curRow>rows) rows=curRow;
-  curCol=0;
+  m_curRow++;
+  if (m_curRow>m_rows) m_rows=m_curRow;
+  m_curCol=0;
 }
 
 void Table::newElem()
 {
   //printf("Table::newElem(%d,%d)\n",curRow,curCol);
-  TableElem *te = new TableElem(curRow,curCol);
-  elemList->append(te);
+  TableElem *te = new TableElem(m_curRow,m_curCol);
+  m_elemList->append(te);
 
-  curCol++;
-  if (curCol>cols) cols=curCol;
+  m_curCol++;
+  if (m_curCol>m_cols) m_cols=m_curCol;
 }
 
 static QStack<Table> tableStack;
@@ -531,19 +545,19 @@ struct IndentInfo
 
 static QStack<IndentInfo> listIndentStack;   // indent stack of - items
 
-static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
+static int computeIndent(const char *str,int length)
 {
-  // find the actual position at which the bullet was found
   int i;
   int indent=0;
-  for (i=0;i<dashPos;i++)
+  int tabSize=Config_getInt("TAB_SIZE");
+  for (i=0;i<length;i++)
   {
     //printf("Parsed[%d]=%d\n",i,marker[i]);
-    if (marker[i]=='\t')
+    if (str[i]=='\t')
     {
-      indent+=Config_getInt("TAB_SIZE") - (indent%Config_getInt("TAB_SIZE"));
+      indent+=tabSize - (indent%tabSize);
     }
-    else if (marker[i]=='\n')
+    else if (str[i]=='\n')
     {
       indent=0;
     }
@@ -552,9 +566,17 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
       indent++;
     }
   }
+  return indent;
+}
+
+static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
+{
+  // find the actual position at which the bullet was found
+  int indent=computeIndent(marker,dashPos);
   //printf("list marker found at column %d enumerated %d\n",indent,enumerated);
   if (!insideItemList)
   {
+    //printf("startListMarker indent=%d\n",indent);
     currentListIndent.push(enumerated ? "O" : "U");
     listIndentStack.push(new IndentInfo(indent,enumerated));
     listIndentStack.top()->startList();
@@ -580,6 +602,7 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
     }
     else if (pPrevInfo->indent<indent) // start sub item list
     {
+      //printf("startListMarker indent=%d\n",indent);
       currentListIndent.push(enumerated ? "O" : "U");
       listIndentStack.push(new IndentInfo(indent,enumerated));
       listIndentStack.top()->startList();
@@ -610,6 +633,32 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
   }
 }
 
+static void endListMarker(const char *marker,int dotPos)
+{
+  int indent=computeIndent(marker,dotPos);
+  //printf("endListMarker indent=%d "
+  //       "insideItemList=%d listIndentStack.count()=%d\n",
+  //	 indent,insideItemList,listIndentStack.count());
+  if (insideItemList && !listIndentStack.isEmpty())
+  {
+    IndentInfo *ii = listIndentStack.top(); 
+    while (ii && indent<=ii->indent)
+    {
+      ii->endList();
+      listIndentStack.pop();
+      currentListIndent.pop();
+      delete ii;
+      ii = listIndentStack.top();
+      //printf("ending list new indent=%d\n",ii ? ii->indent : -1);
+    }
+    if (listIndentStack.isEmpty())
+    {
+      insideItemList=FALSE;
+      //printf("ending last list\n");
+    }
+  }
+}
+
 // end the current (nested) list regardless of the nesting level.
 static void forceEndItemList()
 {
@@ -626,7 +675,7 @@ static void forceEndItemList()
        case 'O': outDoc->endEnumList(); break;
        case 'U': outDoc->endItemList(); break;
        case 'D': outDoc->endDescription(); break;
-       case 'P': break; // do not end paragraphs
+       case 'P': if (inBlock()) endBlock(); break; 
        default:
 	  err("Unexpected list indent token `%c'\n",c);
     }
@@ -899,6 +948,7 @@ SUB	  [sS][uU][bB]
 SUP	  [sS][uU][pP]
 SRC       [sS][rR][cC]
 TABLE	  [tT][aA][bB][lL][eE]
+CAPTION   [cC][aA][pP][tT][iI][oO][nN]
 TITLE     [tT][iI][tT][lL][eE]
 TD	  [tT][dD]
 TR	  [tT][rR]
@@ -955,6 +1005,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 %x	DocInternalRef
 %x	DocInternalRefText
 %x	DocImage
+%x	DocCaption
 %x	DocHtmlImageName
 %x	DocHtmlImageOpt
 %x	DocLatexImageName
@@ -974,6 +1025,11 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  bool isEnumerated = text.at(dashPos+1)=='#';
   					  addListItemMarker(yytext,dashPos+1,isEnumerated);
   					}
+<DocScan>^{B}*(("//"{B}*)?)"*"*{B}*"."{B}*/\n { /* found end list marker */
+  					  QCString text=yytext;
+                                          int dotPos = text.findRev('.');
+                                          endListMarker(yytext,dotPos+1);
+                                        }
 <DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"-"("#")?{B}+ { /* found list item marker */
   					  QCString text=yytext;
 					  int dashPos = text.findRev('-');
@@ -981,6 +1037,11 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  bool isEnumerated = text.at(dashPos+1)=='#';
   					  addListItemMarker(yytext+1,dashPos,isEnumerated);
   					}
+<DocScan>\n{B}*(("//"{B}*)?)"*"*{B}*"."{B}*/\n { /* found end list marker */
+  					  QCString text=yytext;
+                                          int dotPos = text.findRev('.');
+                                          endListMarker(yytext+1,dotPos);
+                                        }
 <DocScan,Text>"&copy;"			{ outDoc->writeCopyright(); }
 <DocScan,Text>"&lt;"			{ outDoc->docify("<"); }
 <DocScan,Text>"&gt;"			{ outDoc->docify(">"); }
@@ -2024,6 +2085,20 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"</"{CENTER}{ATTR}">"		{ outDoc->endCenter(); }
 <DocScan>"<"{TABLE}{ATTR}">"		{ startTable(); }
 <DocScan>"</"{TABLE}{ATTR}">"		{ endTable(); }
+<DocScan>"<"{CAPTION}{ATTR}">"		{ caption.resize(0); 
+                                          BEGIN( DocCaption ); 
+                                        }
+<DocCaption>[^\n\<\>\/]+		{
+  					  caption+=yytext;
+  					}
+<DocCaption>\n				{ caption+=" "; }
+<DocCaption>.				{ caption+=*yytext; }
+<DocCaption>"</"{CAPTION}{ATTR}">"	{ if (curTable) 
+                                          { 
+					    curTable->setCaption(caption); 
+					  }
+                                          BEGIN( DocScan ); 
+                                        }
 <DocScan>"<"{INPUT}{ATTR}">"
 <DocScan>"<"{SMALL}{ATTR}">"		{ outDoc->startSmall(); }
 <DocScan>"</"{SMALL}{ATTR}">"		{ outDoc->endSmall(); }

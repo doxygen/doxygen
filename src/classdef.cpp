@@ -156,29 +156,29 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
 
 void ClassDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&pubTypes,memberGroupSDict);
-  ::addMembersToMemberGroup(&pubMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&pubAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&pubSlots,memberGroupSDict);
-  ::addMembersToMemberGroup(&signals,memberGroupSDict);
-  ::addMembersToMemberGroup(&dcopMethods,memberGroupSDict);
-  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&proTypes,memberGroupSDict);
-  ::addMembersToMemberGroup(&proMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&proAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&proSlots,memberGroupSDict);
-  ::addMembersToMemberGroup(&proStaticMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&proStaticAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&priTypes,memberGroupSDict);
-  ::addMembersToMemberGroup(&priMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&priAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&priSlots,memberGroupSDict);
-  ::addMembersToMemberGroup(&priStaticMembers,memberGroupSDict);
-  ::addMembersToMemberGroup(&priStaticAttribs,memberGroupSDict);
-  ::addMembersToMemberGroup(&friends,memberGroupSDict);
-  ::addMembersToMemberGroup(&related,memberGroupSDict);
-  ::addMembersToMemberGroup(&properties,memberGroupSDict);
+  ::addMembersToMemberGroup(&pubTypes,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubSlots,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&signals,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&dcopMethods,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proTypes,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proSlots,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&proStaticAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priTypes,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priSlots,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priStaticMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&priStaticAttribs,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&friends,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&related,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&properties,memberGroupSDict,this);
 }
 
 // adds new member definition to the class
@@ -197,12 +197,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
         (Config_getBool("EXTRACT_PRIVATE") || prot!=Private))
     {
       related.append(md);
-      md->setSectionList(&related);
+      md->setSectionList(this,&related);
     }
     else if (md->isFriend())
     {
       friends.append(md);
-      md->setSectionList(&friends);
+      md->setSectionList(this,&friends);
     }
     else
     {
@@ -210,30 +210,30 @@ void ClassDef::internalInsertMember(MemberDef *md,
       {
         case MemberDef::Signal: // Qt specific
           signals.append(md);
-          md->setSectionList(&signals);
+          md->setSectionList(this,&signals);
           break;
         case MemberDef::DCOP:   // KDE2 specific
           dcopMethods.append(md);
-          md->setSectionList(&dcopMethods);
+          md->setSectionList(this,&dcopMethods);
           break;
         case MemberDef::Property:
           properties.append(md);
-          md->setSectionList(&properties);
+          md->setSectionList(this,&properties);
           break;
         case MemberDef::Slot:   // Qt specific
           switch (prot)
           {
             case Protected: 
               proSlots.append(md); 
-              md->setSectionList(&proSlots);
+              md->setSectionList(this,&proSlots);
               break;
             case Public:    
               pubSlots.append(md); 
-              md->setSectionList(&pubSlots);
+              md->setSectionList(this,&pubSlots);
               break;
             case Private:   
               priSlots.append(md);
-              md->setSectionList(&priSlots);
+              md->setSectionList(this,&priSlots);
               break;
           }
           break;
@@ -246,15 +246,15 @@ void ClassDef::internalInsertMember(MemberDef *md,
               {
                 case Protected: 
                   proStaticAttribs.append(md); 
-                  md->setSectionList(&proStaticAttribs);
+                  md->setSectionList(this,&proStaticAttribs);
                   break;
                 case Public:    
                   pubStaticAttribs.append(md); 
-                  md->setSectionList(&pubStaticAttribs);
+                  md->setSectionList(this,&pubStaticAttribs);
                   break;
                 case Private:   
                   priStaticAttribs.append(md); 
-                  md->setSectionList(&priStaticAttribs);
+                  md->setSectionList(this,&priStaticAttribs);
                   break;
               }
             }
@@ -264,15 +264,15 @@ void ClassDef::internalInsertMember(MemberDef *md,
               {
                 case Protected: 
                   proStaticMembers.append(md); 
-                  md->setSectionList(&proStaticMembers);
+                  md->setSectionList(this,&proStaticMembers);
                   break;
                 case Public:    
                   pubStaticMembers.append(md); 
-                  md->setSectionList(&pubStaticMembers);
+                  md->setSectionList(this,&pubStaticMembers);
                   break;
                 case Private:   
                   priStaticMembers.append(md); 
-                  md->setSectionList(&priStaticMembers);
+                  md->setSectionList(this,&priStaticMembers);
                   break;
               }
             }
@@ -285,15 +285,15 @@ void ClassDef::internalInsertMember(MemberDef *md,
               {
                 case Protected: 
                   proAttribs.append(md); 
-                  md->setSectionList(&proAttribs);
+                  md->setSectionList(this,&proAttribs);
                   break;
                 case Public:    
                   pubAttribs.append(md); 
-                  md->setSectionList(&pubAttribs);
+                  md->setSectionList(this,&pubAttribs);
                   break;
                 case Private:   
                   priAttribs.append(md); 
-                  md->setSectionList(&priAttribs);
+                  md->setSectionList(this,&priAttribs);
                   break;
               }
             }
@@ -303,15 +303,15 @@ void ClassDef::internalInsertMember(MemberDef *md,
               {
                 case Protected: 
                   proTypes.append(md); 
-                  md->setSectionList(&proTypes); 
+                  md->setSectionList(this,&proTypes); 
                   break;
                 case Public:    
                   pubTypes.append(md); 
-                  md->setSectionList(&pubTypes); 
+                  md->setSectionList(this,&pubTypes); 
                   break;
                 case Private:   
                   priTypes.append(md); 
-                  md->setSectionList(&priTypes); 
+                  md->setSectionList(this,&priTypes); 
                   break;
               }
             }
@@ -321,15 +321,15 @@ void ClassDef::internalInsertMember(MemberDef *md,
               {
                 case Protected: 
                   proMembers.append(md); 
-                  md->setSectionList(&proMembers); 
+                  md->setSectionList(this,&proMembers); 
                   break;
                 case Public:    
                   pubMembers.append(md); 
-                  md->setSectionList(&pubMembers); 
+                  md->setSectionList(this,&pubMembers); 
                   break;
                 case Private:   
                   priMembers.append(md); 
-                  md->setSectionList(&priMembers); 
+                  md->setSectionList(this,&priMembers); 
                   break;
               }
             }
@@ -485,27 +485,6 @@ void ClassDef::insertMember(MemberDef *md)
   internalInsertMember(md,md->protection(),TRUE);
 }
 
-//void ClassDef::computeMemberGroups()
-//{
-//  MemberNameInfoListIterator mnili(*m_allMemberNameInfoList);
-//  MemberNameInfo *mni;
-//  for (;(mni=mnili.current());++mnili)
-//  {
-//   MemberNameInfoIterator mnii(*mni);
-//    MemberInfo *mi;
-//    for (mnii.toFirst();(mi=mnii.current());++mnii)
-//    {
-//      MemberDef *md=mi->memberDef;
-//      MemberGroup *mg = md->getMemberGroup();
-//      if (mg && m_memberGroupDict->find(mg->groupId())==0)
-//      {
-//        m_memberGroupDict->insert(mg->groupId(),mg);
-//        m_memberGroupList->append(mg);
-//      }
-//    }
-//  }
-//}
-
 // compute the anchors for all members
 void ClassDef::computeAnchors()
 {
@@ -533,6 +512,12 @@ void ClassDef::computeAnchors()
   setAnchors(context,'u',&priTypes);
   setAnchors(context,'v',&dcopMethods);
   setAnchors(context,'w',&properties);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->setAnchors(context);
+  }
 }
 
 void ClassDef::distributeMemberGroupDocumentation()
@@ -1006,6 +991,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
     else // add this group to the corresponding member section
     {
+      //printf("addToDeclarationSection(%s)\n",mg->header().data());
       mg->addToDeclarationSection();
     }
   }

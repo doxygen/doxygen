@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.13), 25 languages 
+Currently (version 1.2.13.1), 25 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
@@ -130,9 +130,9 @@ when the translator was updated.
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
-      <TD>Kenji Nagamatsu</TD>
-      <TD>naga@NOSPAM.joyful.club.ne.jp</TD>
-      <TD>1.2.5</TD>
+      <TD>Ryunosuke Sato<br>Kenji Nagamatsu</TD>
+      <TD>puyo@NOSPAM.mint.freemail.ne.jp<br>naga@NOSPAM.joyful.club.ne.jp</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Korean</TD>  
@@ -173,8 +173,8 @@ when the translator was updated.
   <TR BGCOLOR="#ffffff">
       <TD>Slovak</TD>  
       <TD>Stanislav Kudl&aacute;&#x010d;</TD>
-      <TD>qwerty1@NOSPAM.pobox.sk</TD>
-      <TD>1.2.11</TD>
+      <TD>skudlac@NOSPAM.pobox.sk</TD>
+      <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Slovene</TD>  
@@ -240,7 +240,8 @@ when the translator was updated.
   Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & up-to-date \\
    & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} &  \\
   \hline
-  Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} & 1.2.5 \\
+  Japanese & Ryunosuke Sato & {\tt puyo@mint.freemail.ne.jp} & up-to-date \\
+   & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} &  \\
   \hline
   Korean & Richard Kim & {\tt ryk@dspwiz.com} & up-to-date \\
   \hline
@@ -254,7 +255,7 @@ when the translator was updated.
   \hline
   Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
   \hline
-  Slovak & Stanislav Kudl\'{a}\v{c} & {\tt qwerty1@pobox.sk} & 1.2.11 \\
+  Slovak & Stanislav Kudl\'{a}\v{c} & {\tt skudlac@pobox.sk} & up-to-date \\
   \hline
   Slovene & Matjaz Ostroversnik & {\tt matjaz.ostroversnik@zrs-tk.si} & up-to-date \\
   \hline

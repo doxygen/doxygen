@@ -60,6 +60,90 @@ void DumpDoc(IDoc *doc)
         printf("     --- text `%s' markup=%d --- \n",txt->text().data(),txt->markup());
       }
       break;
+    case IDoc::MarkupModifier:
+      {
+        IDocMarkupModifier *md = dynamic_cast<IDocMarkupModifier*>(doc);
+        ASSERT(md!=0);
+        printf("     --- markup modifier enabled=%d markup=%d\n",md->enabled(),md->markup());
+      }
+      break;
+    case IDoc::ItemizedList:
+      {
+        printf("     --- itemized list --- \n");
+        IDocItemizedList *list = dynamic_cast<IDocItemizedList*>(doc);
+        ASSERT(list!=0);
+        IDocIterator *di = list->elements();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc);
+        }
+        di->release();
+        printf("     --- end itemized list --- \n");
+      }
+      break;
+    case IDoc::OrderedList:
+      {
+        printf("     --- ordered list --- \n");
+        IDocOrderedList *list = dynamic_cast<IDocOrderedList*>(doc);
+        ASSERT(list!=0);
+        IDocIterator *di = list->elements();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc);
+        }
+        di->release();
+        printf("     --- end ordered list --- \n");
+      }
+      break;
+    case IDoc::ListItem:
+      {
+        printf("     --- list item --- \n");
+        IDocListItem *li = dynamic_cast<IDocListItem*>(doc);
+        ASSERT(li!=0);
+        IDocIterator *di = li->contents();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc);
+        }
+        di->release();
+        printf("     --- end list item --- \n");
+      }
+      break;
+    case IDoc::ParameterList:
+      {
+        IDocParameterList *list = dynamic_cast<IDocParameterList*>(doc);
+        printf("     --- parameter list type=%d --- \n",list->listType());
+        IDocListItem *li = dynamic_cast<IDocListItem*>(doc);
+        ASSERT(li!=0);
+        IDocIterator *di = li->contents();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc);
+        }
+        di->release();
+        printf("     --- parameter list item --- \n");
+        ASSERT(list!=0);
+      }
+      break;
+    case IDoc::Parameter:
+      {
+        IDocParameter *par = dynamic_cast<IDocParameter*>(doc);
+        ASSERT(par!=0);
+        printf("     --- parameter name=%s --- \n",par->name().data());
+        DumpDoc(par->description());
+        printf("     --- end parameter --- \n");
+      }
+      break;
+    case IDoc::SimpleSect:
+      {
+        IDocSimpleSect *ss = dynamic_cast<IDocSimpleSect*>(ss);
+        ASSERT(ss!=0);
+      }
+      break;
     case IDoc::Title:
       {
         printf("     --- title --- \n");
@@ -72,6 +156,120 @@ void DumpDoc(IDoc *doc)
           DumpDoc(pdoc);
         }
         printf("     --- end title --- \n");
+      }
+      break;
+    case IDoc::Ref:
+      {
+        IDocRef *ref = dynamic_cast<IDocRef*>(ref);
+        ASSERT(ref!=0);
+      }
+      break;
+    case IDoc::VariableList:
+      {
+        IDocVariableList *vl = dynamic_cast<IDocVariableList*>(vl);
+        ASSERT(vl!=0);
+      }
+      break;
+    case IDoc::VariableListEntry:
+      {
+        IDocVariableListEntry *vle = dynamic_cast<IDocVariableListEntry*>(vle);
+        ASSERT(vle!=0);
+      }
+      break;
+    case IDoc::HRuler:
+      {
+        IDocHRuler *hr = dynamic_cast<IDocHRuler*>(hr);
+        ASSERT(hr!=0);
+      }
+      break;
+    case IDoc::LineBreak:
+      {
+        IDocLineBreak *lb = dynamic_cast<IDocLineBreak*>(lb);
+        ASSERT(lb!=0);
+      }
+      break;
+    case IDoc::ULink:
+      {
+        IDocULink *ul = dynamic_cast<IDocULink*>(ul);
+        ASSERT(ul!=0);
+      }
+      break;
+    case IDoc::EMail:
+      {
+        IDocEMail *em = dynamic_cast<IDocEMail*>(em);
+        ASSERT(em!=0);
+      }
+      break;
+    case IDoc::Link:
+      {
+        IDocLink *lk = dynamic_cast<IDocLink*>(lk);
+        ASSERT(lk!=0);
+      }
+      break;
+    case IDoc::ProgramListing:
+      {
+        IDocProgramListing *pl = dynamic_cast<IDocProgramListing*>(pl);
+        ASSERT(pl!=0);
+      }
+      break;
+    case IDoc::CodeLine:
+      {
+        IDocCodeLine *cl = dynamic_cast<IDocCodeLine*>(cl);
+        ASSERT(cl!=0);
+      }
+      break;
+    case IDoc::Highlight:
+      {
+        IDocHighlight *hl = dynamic_cast<IDocHighlight*>(hl);
+        ASSERT(hl!=0);
+      }
+      break;
+    case IDoc::Anchor:
+      {
+        IDocAnchor *anc = dynamic_cast<IDocAnchor*>(anc);
+        ASSERT(anc!=0);
+      }
+      break;
+    case IDoc::Formula:
+      {
+        IDocFormula *fm = dynamic_cast<IDocFormula*>(fm);
+        ASSERT(fm!=0);
+      }
+      break;
+    case IDoc::Image:
+      {
+        IDocImage *img = dynamic_cast<IDocImage*>(img);
+        ASSERT(img!=0);
+      }
+      break;
+    case IDoc::DotFile:
+      {
+        IDocDotFile *df = dynamic_cast<IDocDotFile*>(df);
+        ASSERT(df!=0);
+      }
+      break;
+    case IDoc::IndexEntry:
+      {
+        IDocIndexEntry *ie = dynamic_cast<IDocIndexEntry*>(ie);
+        ASSERT(ie!=0);
+      }
+      break;
+    case IDoc::Table:
+      {
+        IDocTable *tbl = dynamic_cast<IDocTable*>(tbl);
+        ASSERT(tbl!=0);
+      }
+      break;
+    case IDoc::Row:
+      {
+        IDocRow *row = dynamic_cast<IDocRow*>(row);
+        ASSERT(row!=0);
+      }
+      break;
+    case IDoc::Entry:
+      {
+        IDocEntry *ent = dynamic_cast<IDocEntry*>(ent);
+        ASSERT(ent!=0);
       }
       break;
     case IDoc::Section:

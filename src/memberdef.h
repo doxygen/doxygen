@@ -24,6 +24,7 @@
 
 #include "entry.h"
 #include "definition.h"
+#include "sortdict.h"
 
 class ClassDef;
 class NamespaceDef;
@@ -81,7 +82,7 @@ class MemberDef : public Definition
     const QCString &initializer() const   { return init; }
     int initializerLines() const          { return initLines; }
     int  getMemberSpecifiers() const      { return memSpec; }
-    MemberList *getSectionList() const    { return section; }
+    MemberList *getSectionList(Definition *d) const;
 
     // scope query members
     ClassDef *getClassDef() const         { return classDef; }
@@ -143,7 +144,7 @@ class MemberDef : public Definition
     void setBitfields(const char *s)      { bitfields = s; }
     void setMaxInitLines(int lines)       { userInitLines=lines; }
     void setMemberClass(ClassDef *cd);
-    void setSectionList(MemberList *sl)   { section=sl; }
+    void setSectionList(Definition *d,MemberList *sl);
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void setExplicitExternal(bool b)      { explExt=b; }
     
@@ -300,6 +301,7 @@ class MemberDef : public Definition
     int groupStartLine;       // line  "      "      "     "     "
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
     MemberDef *m_templateMaster;
+    SIntDict<MemberList> *classSectionSDict;
 
 
     // disable copying of member defs

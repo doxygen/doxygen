@@ -3102,7 +3102,8 @@ const char *getOverloadDocs()
          "function only in what argument(s) it accepts.";
 }
       
-void addMembersToMemberGroup(MemberList *ml,MemberGroupSDict *memberGroupSDict)
+void addMembersToMemberGroup(MemberList *ml,
+    MemberGroupSDict *memberGroupSDict,Definition *context)
 {
   MemberListIterator mli(*ml);
   MemberDef *md;
@@ -3122,19 +3123,30 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupSDict *memberGroupSDict)
           mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
           memberGroupSDict->append(groupId,mg);
         }
-        md = ml->take(index);
-        mg->insertMember(md);
+        md = ml->take(index); // remove from member list
+        //if (allMembers) // remove from all member list as well
+        //{
+        //  MemberNameInfo *mni = allMembers->find(md->name());
+        //  if (mni)
+        //  {
+        //    QListIterator<MemberInfo> mii(*mni);
+        //    MemberInfo *mi;
+        //    for (;(mi=mii.current());++mii)
+        //    {
+        //      if (mi->memberDef==md)
+        //      {
+        //        mni->remove(mi);
+        //        break;
+        //      }
+        //    }
+        //  }
+        //}
+        mg->insertMember(context,md); // insert in member group
         md->setMemberGroup(mg);
-      }
-      else
-      {
-        ++mli;++index;
+        continue;
       }
     }
-    else
-    {
-      ++mli;++index;
-    }
+    ++mli;++index;
   }
 }
 

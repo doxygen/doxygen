@@ -349,6 +349,7 @@ MemberDef::MemberDef(const char *df,int dl,
     argList=0;
   }
   m_templateMaster=0;
+  classSectionSDict=0;
 }
 
 /*! Destroys the member definition. */
@@ -360,6 +361,7 @@ MemberDef::~MemberDef()
   delete argList;
   delete tArgList;
   delete m_defTmpArgLists;
+  delete classSectionSDict;
 }
 
 void MemberDef::setReimplements(MemberDef *md)   
@@ -1668,5 +1670,16 @@ void MemberDef::addListReference(Definition *d)
   //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
   addRefItem(todoId(),testId(),bugId(),memLabel,
       d->getOutputFileBase()+":"+anchor(),memName,argsString());
+}
+
+MemberList *MemberDef::getSectionList(Definition *d) const 
+{ 
+  return (d!=0 && classSectionSDict) ? classSectionSDict->find((int)d) : 0;
+}
+
+void MemberDef::setSectionList(Definition *d, MemberList *sl)   
+{ 
+  if (classSectionSDict==0) classSectionSDict = new SIntDict<MemberList>(7);
+  classSectionSDict->append((int)d,sl);
 }
 

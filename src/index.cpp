@@ -78,6 +78,34 @@ void countDataStructures()
   documentedPackages         = countPackages();
 }
 
+static void startIndexHierarchy(OutputList &ol,int level)
+{
+  // UGLY HACK!
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::Html);
+  if (level<6) ol.startIndexList();
+  ol.enableAll();
+  ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::RTF);
+  ol.startItemList();
+  ol.popGeneratorState();
+}
+
+static void endIndexHierarchy(OutputList &ol,int level)
+{
+  // UGLY HACK!
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::Html);
+  if (level<6) ol.endIndexList();
+  ol.enableAll();
+  ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::RTF);
+  ol.endItemList();
+  ol.popGeneratorState();
+}
+
 //----------------------------------------------------------------------------
 
 static bool g_memberIndexLetterUsed[256];
@@ -347,18 +375,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
     {
       if (!started)
       {
-        {
-          // UGLY HACK!
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Man);
-          ol.disable(OutputGenerator::Html);
-          if (level<6) ol.startIndexList();
-          ol.enableAll();
-          ol.disable(OutputGenerator::Latex);
-          ol.disable(OutputGenerator::RTF);
-          ol.startItemList();
-          ol.popGeneratorState();
-        }
+        startIndexHierarchy(ol,level);
         if (hasHtmlHelp) htmlHelp->incContentsDepth();
         if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
@@ -407,18 +424,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
   }
   if (started) 
   {
-    {
-      // UGLY HACK!
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
-      ol.disable(OutputGenerator::Html);
-      if (level<6) ol.endIndexList();
-      ol.enableAll();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-      ol.endItemList();
-      ol.popGeneratorState();
-    }
+    endIndexHierarchy(ol,level);
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -572,18 +578,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
       {
         if (!started)
         {
-          {
-            // UGLY HACK!
-            ol.pushGeneratorState();
-            ol.disable(OutputGenerator::Html);
-            ol.disable(OutputGenerator::Man);
-            ol.startIndexList();
-            ol.enableAll();
-            ol.disable(OutputGenerator::Latex);
-            ol.disable(OutputGenerator::RTF);
-            ol.startItemList();
-            ol.popGeneratorState();
-          }
+          startIndexHierarchy(ol,0);
           if (hasHtmlHelp) htmlHelp->incContentsDepth();
           if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
@@ -654,18 +649,7 @@ void writeClassHierarchy(OutputList &ol)
   writeClassTreeForList(ol,&Doxygen::hiddenClasses,started);
   if (started) 
   {
-    {
-      // UGLY HACK!
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Html);
-      ol.disable(OutputGenerator::Man);
-      ol.endIndexList();
-      ol.enableAll();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-      ol.endItemList();
-      ol.popGeneratorState();
-    }
+    endIndexHierarchy(ol,0);
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -2135,18 +2119,7 @@ void writePageIndex(OutputList &ol)
   }
   parseText(ol,theTranslator->trRelatedPagesDescription());
   ol.endTextBlock();
-  {
-    // UGLY HACK!
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Html);
-    ol.startIndexList();
-    ol.enableAll();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.startItemList();
-    ol.popGeneratorState();
-  }
+  startIndexHierarchy(ol,0);
   PageSDict::Iterator pdi(*Doxygen::pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
@@ -2177,18 +2150,7 @@ void writePageIndex(OutputList &ol)
       if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
     }
   }
-  {
-    // UGLY HACK!
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Html);
-    ol.endIndexList();
-    ol.enableAll();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.endItemList();
-    ol.popGeneratorState();
-  }
+  endIndexHierarchy(ol,0);
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
@@ -2247,7 +2209,7 @@ void writeGraphInfo(OutputList &ol)
  * \author KPW
  */
 
-void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
+void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp = 0;
@@ -2263,7 +2225,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     ftvHelp = FTVHelp::getInstance();
   }
 
-  if (!gd->visited && (!gd->isASubGroup() || subLevel))
+  if (!gd->visited && (!gd->isASubGroup() || level>0))
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
@@ -2338,14 +2300,14 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     // write subgroups
     if (hasSubGroups)
     {
-      ol.startIndexList();
+      startIndexHierarchy(ol,level+1);
       QListIterator<GroupDef> gli(*gd->groupList);
       GroupDef *subgd = 0;
-      for (gli.toLast();(subgd=gli.current());--gli)
+      for (gli.toFirst();(subgd=gli.current());++gli)
       {
-        writeGroupTreeNode(ol,subgd,TRUE);
+        writeGroupTreeNode(ol,subgd,level+1);
       }
-      ol.endIndexList(); 
+      endIndexHierarchy(ol,level+1); 
     }
 
 
@@ -2544,14 +2506,14 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 
 void writeGroupHierarchy(OutputList &ol)
 {
-  ol.startIndexList();
+  startIndexHierarchy(ol,0);
   GroupSDict::Iterator gli(Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
-    writeGroupTreeNode(ol,gd,FALSE);
+    writeGroupTreeNode(ol,gd,0);
   }
-  ol.endIndexList(); 
+  endIndexHierarchy(ol,0); 
 }
 
 //----------------------------------------------------------------------------

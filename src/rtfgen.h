@@ -152,12 +152,14 @@ class RTFGenerator : public OutputGenerator
     void endSubscript()     { t << "}"; }
     void startSuperscript() { t << "{\\super " << endl;}
     void endSuperscript()   { t << "}"; }
-    void startTable(int )   { }//t << "\\begin{TabularC}{" << c << "}\n\\hline\n";
-    void endTable()         { }//t << "\\\\\\hline\n\\end{TabularC}\n";
-    void nextTableRow()     { }
-    void endTableRow()      { }//t << "\\\\\\hline\n";
-    void nextTableColumn()  { }//t << "&";
-    void endTableColumn()   { }
+    void startTable(bool,int)   { /* not implemented */ }
+    void endTable(bool)         { /* not implemented */ }
+    void startCaption()     { /* not implemented */ }
+    void endCaption()       { /* not implemented */ }
+    void nextTableRow()     { /* not implemented */ }
+    void endTableRow()      { /* not implemented */ }
+    void nextTableColumn()  { /* not implemented */ }
+    void endTableColumn()   { /* not implemented */ }
     void writeCopyright()    { t << "\251"; }
     void writeQuote()        { t << "\""; }
     void writeUmlaut(char c);

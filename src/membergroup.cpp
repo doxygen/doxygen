@@ -53,7 +53,7 @@ MemberGroup::~MemberGroup()
   delete memberList;
 }
 
-void MemberGroup::insertMember(MemberDef *md)
+void MemberGroup::insertMember(Definition *d,MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p\n",
@@ -62,13 +62,13 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md->getSectionList());
   MemberDef *firstMd = memberList->first();
   if (inSameSection && memberList->count()>0 && 
-      firstMd->getSectionList()!=md->getSectionList())
+      firstMd->getSectionList(d)!=md->getSectionList(d))
   {
     inSameSection=FALSE;
   }
   else if (inDeclSection==0)
   {
-    inDeclSection = md->getSectionList();
+    inDeclSection = md->getSectionList(d);
   }
   memberList->append(md);
 
@@ -82,9 +82,9 @@ void MemberGroup::insertMember(MemberDef *md)
 }
 
 
-void MemberGroup::setAnchors()
+void MemberGroup::setAnchors(ClassDef *context)
 {
-  ::setAnchors(0,'z',memberList,grpId);
+  ::setAnchors(context,'z',memberList,grpId);
 }
 
 void MemberGroup::writeDeclarations(OutputList &ol,

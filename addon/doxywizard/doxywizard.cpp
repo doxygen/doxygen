@@ -179,7 +179,7 @@ void Wizard::newFile()
   if (hasChanged)
   {
     switch( QMessageBox::warning( this, "DoxyWizard", 
-            "Start a new file and lose changes?\n",
+            "Start a new file and lose changes?",
             "Yes", "No", 0, 0, 1 ))
     {
       case 0: 
@@ -219,7 +219,7 @@ void Wizard::loadFile()
   if (hasChanged)
   {
     switch( QMessageBox::warning( 
-            this, "DoxyWizard", "Load a new file and lose changes?\n",
+            this, "DoxyWizard", "Load a new file and lose changes?",
             "Yes", "No", 0, 0, 1 ))
     {
       case 0: 
@@ -278,7 +278,7 @@ void Wizard::quit()
 {
   if (hasChanged)
   {
-    switch( QMessageBox::warning( this, "DoxyWizard", "Quit and lose changes?\n",
+    switch( QMessageBox::warning( this, "DoxyWizard", "Quit and lose changes?",
             "Yes", "No", 0, 0, 1 ))
     {
       case 0: 

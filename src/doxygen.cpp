@@ -6968,6 +6968,9 @@ void parseInput()
   msg("Adding classes to their packages...\n");
   addClassesToPackages();
 
+  msg("Building full member lists recursively...\n");
+  buildCompleteMemberLists();
+  
   msg("Adding members to member groups.\n");
   addMembersToMemberGroup();
 
@@ -6976,9 +6979,6 @@ void parseInput()
     msg("Distributing member group documentation.\n");
     distributeMemberGroupDocumentation();
   }
-  
-  msg("Building full member lists recursively...\n");
-  buildCompleteMemberLists();
   
   msg("Computing member references...\n");
   computeMemberReferences(); 

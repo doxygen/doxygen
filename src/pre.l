@@ -1078,17 +1078,24 @@ BN	[ \t\r\n]
 					    BEGIN(CopyLine);
 					  }
   					}
+<CopyLine>"extern"{BN}*"\"C\""*{BN}*"{"	{
+                                          QCString text=yytext;
+  					  g_yyLineNr+=text.contains('\n');
+					  outputArray(yytext,yyleng);
+  					}
 <CopyLine>"{"				{ // count brackets inside the main file
   					  if (g_includeStack.isEmpty()) 
+					  {
 					    g_curlyCount++;
+					  }
 					  outputChar(*yytext);
   					}
 <CopyLine>"}"				{ // count brackets inside the main file
-  					  if (g_includeStack.isEmpty()) 
+  					  if (g_includeStack.isEmpty() && g_curlyCount>0) 
+					  {
 					    g_curlyCount--;
+					  }
 					  outputChar(*yytext);
-					  // This should hold otherwise the preprocessor is confused
-					  //ASSERT(g_curlyCount>=0); 
   					}
 <CopyLine>"'"\\[0-7]{1,3}"'"		{ 
   					  outputArray(yytext,yyleng);

@@ -23,7 +23,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public TranslatorAdapter_1_2_11
+class TranslatorSlovak : public Translator
 {
   private:
 	/*! The Decode() inline assumes the source written in the
@@ -1221,13 +1221,13 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_11
 	/*! Used as ansicpg for RTF fcharset */
 	virtual QCString trRTFCharSet()
 	{
-	  return "0"; //???
+	  return "3";
 	}
 
 	/*! Used as header RTF general index */
 	virtual QCString trRTFGeneralIndex()
 	{
-	  return "Index"; //???
+	  return "Index";
 	}
 
 	/*! This is used for translation of the word that will possibly
@@ -1330,6 +1330,17 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_11
 	  QCString result((first_capital ? "Auto" : "auto"));
 	  result += (singular) ? "r" : "ri";
 	  return result;
+	}
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+	/*! This text is put before the list of members referenced by a member
+	 */
+	virtual QCString trReferences()
+	{
+	  return Decode("Odkazuje sa na");
 	}
 };
 

@@ -232,45 +232,83 @@ void ListItemHandler::startParagraph(const QXmlAttributes& attrib)
   m_children.append(parHandler);
 }
 
+IDocIterator *ListItemHandler::contents() const
+{
+  return new ListItemIterator(*this);
+}
+
 //----------------------------------------------------------------------
-// ListHandler
+// OrderedListHandler
 //----------------------------------------------------------------------
 
-ListHandler::ListHandler(Kind k,IBaseHandler *parent) 
-  : m_parent(parent), m_kind(k)
+OrderedListHandler::OrderedListHandler(IBaseHandler *parent) : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
-  const char *endListName=0;
-  switch(k)
-  {
-    case ItemizedList : endListName="itemizedlist"; break;
-    case OrderedList :  endListName="orderedlist";  break;
-    default: ASSERT(0);
-  }
-  addEndHandler(endListName,this,&ListHandler::endList);
-
-  addStartHandler("listitem",this,&ListHandler::startListItem);
+  addEndHandler("orderedlist",this,&OrderedListHandler::endOrderedList);
+  addStartHandler("listitem",this,&OrderedListHandler::startOrderedListItem);
 }
 
-ListHandler::~ListHandler()
+OrderedListHandler::~OrderedListHandler()
 {
 }
 
-void ListHandler::startList(const QXmlAttributes& /*attrib*/)
+void OrderedListHandler::startOrderedList(const QXmlAttributes& /*attrib*/)
 {
   m_parent->setDelegate(this);
 }
 
-void ListHandler::endList()
+void OrderedListHandler::endOrderedList()
 {
   m_parent->setDelegate(0);
 }
 
-void ListHandler::startListItem(const QXmlAttributes& attrib)
+void OrderedListHandler::startOrderedListItem(const QXmlAttributes& attrib)
 {
   ListItemHandler *liHandler = new ListItemHandler(this);
   liHandler->startListItem(attrib);
   m_children.append(liHandler);
+}
+
+IDocIterator *OrderedListHandler::elements() const
+{
+  return new OrderedListIterator(*this);
+}
+
+//----------------------------------------------------------------------
+// ItemizedListHandler
+//----------------------------------------------------------------------
+
+ItemizedListHandler::ItemizedListHandler(IBaseHandler *parent) : m_parent(parent)
+{
+  m_children.setAutoDelete(TRUE);
+  addEndHandler("itemizedlist",this,&ItemizedListHandler::endItemizedList);
+  addStartHandler("listitem",this,&ItemizedListHandler::startItemizedListItem);
+}
+
+ItemizedListHandler::~ItemizedListHandler()
+{
+}
+
+void ItemizedListHandler::startItemizedList(const QXmlAttributes& /*attrib*/)
+{
+  m_parent->setDelegate(this);
+}
+
+void ItemizedListHandler::endItemizedList()
+{
+  m_parent->setDelegate(0);
+}
+
+void ItemizedListHandler::startItemizedListItem(const QXmlAttributes& attrib)
+{
+  ListItemHandler *liHandler = new ListItemHandler(this);
+  liHandler->startListItem(attrib);
+  m_children.append(liHandler);
+}
+
+IDocIterator *ItemizedListHandler::elements() const
+{
+  return new ItemizedListIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -370,6 +408,11 @@ void ParameterListHandler::startParameterDescription(const QXmlAttributes& attri
 {
   ASSERT(m_curParam!=0);
   m_curParam->startParameterDescription(attrib);
+}
+
+IDocIterator *ParameterListHandler::params() const
+{
+  return new ParameterListIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -1116,6 +1159,8 @@ TableHandler::TableHandler(IBaseHandler *parent)
   m_children.setAutoDelete(TRUE);
   addEndHandler("table",this,&TableHandler::endTable);
   addStartHandler("row",this,&TableHandler::startRow);
+  addStartHandler("caption",this,&TableHandler::startCaption);
+  addEndHandler("caption",this,&TableHandler::endCaption);
 }
 
 TableHandler::~TableHandler()
@@ -1139,6 +1184,16 @@ void TableHandler::startRow(const QXmlAttributes& attrib)
   RowHandler *rh = new RowHandler(this);
   rh->startRow(attrib);
   m_children.append(rh);
+}
+
+void TableHandler::startCaption(const QXmlAttributes& /*attrib*/)
+{
+  m_curString="";
+}
+
+void TableHandler::endCaption()
+{
+  m_caption = m_curString;
 }
 
 //----------------------------------------------------------------------
@@ -1195,16 +1250,16 @@ void ParagraphHandler::endParagraph()
 void ParagraphHandler::startItemizedList(const QXmlAttributes& attrib)
 {
   addTextNode();
-  ListHandler *listHandler = new ListHandler(ItemizedList,this);
-  listHandler->startList(attrib);
+  ItemizedListHandler *listHandler = new ItemizedListHandler(this);
+  listHandler->startItemizedList(attrib);
   m_children.append(listHandler);
 }
 
 void ParagraphHandler::startOrderedList(const QXmlAttributes& attrib)
 {
   addTextNode();
-  ListHandler *listHandler = new ListHandler(OrderedList,this);
-  listHandler->startList(attrib);
+  OrderedListHandler *listHandler = new OrderedListHandler(this);
+  listHandler->startOrderedList(attrib);
   m_children.append(listHandler);
 }
 

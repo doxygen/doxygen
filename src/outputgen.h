@@ -198,8 +198,10 @@ class BaseOutputDocInterface
     virtual void endSubscript() = 0;
     virtual void startSuperscript() = 0;
     virtual void endSuperscript() = 0;
-    virtual void startTable(int cols) = 0;
-    virtual void endTable() = 0;
+    virtual void startTable(bool hasCaption,int cols) = 0;
+    virtual void endTable(bool hasCaption) = 0;
+    virtual void startCaption() = 0;
+    virtual void endCaption() = 0;
     virtual void nextTableRow() = 0;
     virtual void endTableRow() = 0;
     virtual void nextTableColumn() = 0;

@@ -309,6 +309,7 @@ bool GroupDef::containsGroup(const GroupDef *def)
 
 void GroupDef::addGroup(const GroupDef *def)
 {
+  //printf("adding group `%s' to group `%s'\n",def->name().data(),name().data());
   //if (Config_getBool("SORT_MEMBER_DOCS"))
   //  groupList->inSort(def);
   //else
@@ -317,10 +318,10 @@ void GroupDef::addGroup(const GroupDef *def)
 
 void GroupDef::addParentGroup(const GroupDef *def)
 {
-  if (Config_getBool("SORT_MEMBER_DOCS"))
-    parentGroupList->inSort(def);
-  else
-    parentGroupList->append(def);
+  //if (Config_getBool("SORT_MEMBER_DOCS"))
+  //  parentGroupList->inSort(def);
+  //else
+  parentGroupList->append(def);
 }
 
 bool GroupDef::isASubGroup() const
