@@ -147,10 +147,20 @@ QTime and QIODevice classes.
 Another reason is for the nice and bug free utility classes, like QList, 
 QDict, QString, QArray, QTextStream, QRegExp etc. 
 
+The GUI front-end doxywizard uses Qt for... well... the GUI!
+
 <li><b>Can use doxygen on my Java code?</b>
 
 No, at the moment there is no support for Java. I suggest to
 use Sun's JavaDoc instead.
+
+<li><b>How can I exclude all test directories from my directory tree?</b>
+
+Simply put an exclude pattern like this in the configuration file:
+
+\verbatim
+EXCLUDE_PATTERNS = */test/*
+\endverbatim
 
 </ol>
 

@@ -44,13 +44,16 @@ int MemberList::compareItems(GCI item1, GCI item2)
   return strcmp(c1->name(),c2->name());
 }
 
-void MemberList::countDecMembers(bool inGroup)
+void MemberList::countDecMembers(bool inGroup,bool countSubGroups)
 {
+  //printf("----- countDecMembers ----\n");
   varCnt=funcCnt=enumCnt=enumValCnt=typeCnt=protoCnt=defCnt=friendCnt=0;
   m_count=0;
   MemberDef *md=first();
   while (md)
   {
+    //printf("md=%p md->name()=`%s' inGroup=%d getMemberGroup()=%p\n",
+    //    md,md->name().data(),inGroup,md->getMemberGroup());
     if (!(md->memberClass()==0 && md->isStatic() && !Config::extractPrivateFlag) &&
         (!Config::hideMemberFlag || md->hasDocumentation()) &&
         (
@@ -60,7 +63,8 @@ void MemberList::countDecMembers(bool inGroup)
          (md->isEnumerate() &&
           md->hasDocumentedEnumValues()
          )
-        ) && inGroup==(md->getMemberGroup()!=0) &&
+        ) && 
+        inGroup==(md->getMemberGroup()!=0) &&
         !(inGroup && md->protection()==Private && !Config::extractPrivateFlag)
        )
     {
@@ -88,17 +92,18 @@ void MemberList::countDecMembers(bool inGroup)
     }
     md=next();
   }
-  if (memberGroupList && !inGroup)
+  if (memberGroupList && countSubGroups)
   {
     MemberGroupListIterator mgli(*memberGroupList);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      //printf("memberGroupList adding %d inGroup=%d\n",
-      //    mg->countDecMembers(),m_count);
-      m_count+=mg->countDecMembers();
+      int mgCount = mg->countDecMembers();
+      //printf("memberGroupList adding %d inGroup=%d\n",mgCount,inGroup);
+      m_count+=mgCount;
     }
   }
+  //printf("----- end countDecMembers ----\n");
 
   //printf("MemberList::countDecMembers(%d)=%d\n",inGroup,m_count);
 }
@@ -147,12 +152,13 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 
 void MemberList::writePlainDeclarations(OutputList &ol,
                        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-                       bool inGroup
+                       bool inGroup,bool countSubGroups
                       )
 {
-  countDecMembers(inGroup);
-  //printf("writePlainDeclaration() totalCount()=%d defineCount()=%d\n",totalCount(),defineCount());
+  //printf("----- writePlainDeclaration() ----\n");
+  countDecMembers(inGroup,countSubGroups);
   if (totalCount()==0) return; // no members in this list
+  //printf("----> writePlainDeclaration() inGroup=%d totalCount()=%d\n",inGroup,totalCount());
   
   ol.pushGeneratorState();
 
@@ -163,6 +169,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
   if (defineCount()>0)
   {
+    //printf("There are %d defines\n",defineCount());
     if (sectionPerType)
     {
       ol.startMemberHeader();
@@ -191,6 +198,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   
   if (protoCount()>0)
   {
+    //printf("There are %d prototypes\n",protoCount());
     if (sectionPerType)
     {
       ol.startMemberHeader();
@@ -214,6 +222,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   
   if (typedefCount()>0)
   {
+    //printf("There are %d typedefs\n",typedefCount());
     if (sectionPerType) 
     {
       ol.startMemberHeader();
@@ -236,6 +245,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // write enums 
   if (enumCount()>0)
   {
+    //printf("There are %d enums\n",enumCount());
     if (sectionPerType) 
     {
       ol.startMemberHeader();
@@ -357,6 +367,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             {
               ol.startMemberDescription();
               parseDoc(ol,
+                       md->getDefFileName(),md->getDefLine(),
                        cd?cd->name().data():0,md->name().data(),
                        md->briefDescription()
                       );
@@ -384,6 +395,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // write functions
   if (funcCount()>0)
   {
+    //printf("There are %d functions\n",funcCount());
     if (sectionPerType) 
     {
       ol.startMemberHeader();
@@ -408,6 +420,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   
   if (friendCount()>0)
   {
+    //printf("There are %d friends\n",friendCount());
     MemberListIterator mli(*this);
     for ( ; (md=mli.current()) ; ++mli )
     {
@@ -455,6 +468,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // write variables
   if (varCount()>0)
   {
+    //printf("There are %d variables\n",varCount());
     if (sectionPerType) 
     {
       ol.startMemberHeader();
@@ -483,6 +497,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       if (md->fromAnnonymousScope() && !md->annonymousDeclShown()
           && inGroup==(md->getMemberGroup()!=0))
       {
+        //printf("annonymous compound members\n");
         md->setFromAnnonymousScope(FALSE);
         md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
         md->setFromAnnonymousScope(TRUE);
@@ -493,16 +508,28 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   if (!sectionPerType) { ol.endMemberList(); /*ol.writeChar('\n');*/ }
 
   ol.popGeneratorState();
+  //printf("----- end writePlainDeclaration() ----\n");
 }
 
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle,bool inGroup)
+             const char *title,const char *subtitle,
+             bool inGroup,bool countSubGroups)
 {
-  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",
-  //    title,subtitle);
-  countDecMembers(inGroup);
-  if (totalCount()==0) return;
+  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')\n",title,subtitle);
+  //printf("----- writeDeclaration() ----\n");
+  countDecMembers(FALSE,countSubGroups);            // count member not in group
+  int normalMembers = totalCount();
+  int ingroupMembers = 0;
+  //printf("Normal members %d\n",normalMembers);
+  if (inGroup)
+  {
+    countDecMembers(TRUE,countSubGroups);             // count member inside group
+    ingroupMembers = totalCount();
+  }
+  int totalMembers = normalMembers + ingroupMembers;
+  //printf("Total members %d\n",totalMembers);
+  if (totalMembers==0) return;
   if (title) 
   {
     ol.startMemberHeader();
@@ -514,13 +541,13 @@ void MemberList::writeDeclarations(OutputList &ol,
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
     if (inGroup)
-      parseDoc(ol,0,0,subtitle);
+      parseDoc(ol,"<generated>",1,0,0,subtitle);
     else
       parseText(ol,subtitle);
     ol.endMemberSubtitle();
   }
 
-  writePlainDeclarations(ol,cd,nd,fd,gd,inGroup);
+  writePlainDeclarations(ol,cd,nd,fd,gd,inGroup,FALSE);
   
   if (memberGroupList)
   {
@@ -530,13 +557,17 @@ void MemberList::writeDeclarations(OutputList &ol,
     while ((mg=mgli.current()))
     {
       ol.startMemberGroupHeader();
-      parseText(ol,mg->header());
+      if (mg->header()!="[NOHEADER]")
+      {
+        parseText(ol,mg->header());
+      }
       ol.endMemberGroupHeader();
       if (!mg->documentation().isEmpty())
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        parseDoc(ol,0,0,mg->documentation());
+        parseDoc(ol,"<generated>",1,
+            0,0,mg->documentation());
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();
@@ -545,6 +576,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       ol.endMemberGroup(mgli.current()==0);
     }
   }
+  //printf("----- end writeDeclaration() ----\n");
 
 }
 

@@ -171,12 +171,12 @@ static FILE *findFile(const char *fileName)
       {
 	QCString cmd = Config::inputFilter+" "+absName;
 	f=popen(cmd,"r");
-	if (!f) warn("Warning: could not execute filter %s\n",cmd.data());
+	if (!f) err("Error: could not execute filter %s\n",cmd.data());
       }
       else
       {
 	f=fopen(absName,"r");
-	if (!f) warn("Warning: could not open file %s for reading\n",absName.data());
+	if (!f) err("Error: could not open file %s for reading\n",absName.data());
       }
       if (f)
       {
@@ -761,7 +761,9 @@ void addDefine()
 {
   //bool ambig;
   //FileDef   *fd=findFileDef(&inputNameDict,g_yyFileName,ambig);
-  MemberDef *md=new MemberDef("#define",g_defName,g_defArgsStr,0,
+  MemberDef *md=new MemberDef(
+      g_yyFileName,g_yyLineNr,
+      "#define",g_defName,g_defArgsStr,0,
       Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
   if (!g_defArgsStr.isEmpty())
   {
@@ -773,8 +775,8 @@ void addDefine()
   //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
   md->setInitializer(g_defLitText);
   
-  md->setDefFile(g_yyFileName);
-  md->setDefLine(g_yyLineNr);
+  //md->setDefFile(g_yyFileName);
+  //md->setDefLine(g_yyLineNr);
   md->setFileDef(g_yyFileDef);
   md->setDefinition("#define "+g_defName);
 

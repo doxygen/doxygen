@@ -56,7 +56,6 @@
 static bool             insideArgumentList;
 static QCString         className;
 static QCString         memberName;
-static QCString         refName;
 static OutputList *     outDoc;
 static QCString         code;
 static QCString         linkRef;
@@ -98,9 +97,9 @@ static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
 static Entry*		previous     = 0 ;
 static Entry*		tempEntry    = 0 ;
-static int		yyLineNr     = 0 ;
+static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
-static char		yyFileName[2048] ;
+static char		yyFileName[4096] ;
 static int              lastMemberGroupLine;
 static bool    		sig;
 static bool    		slot;
@@ -179,7 +178,6 @@ static void initParser()
   insideArgumentList=FALSE;
   className.resize(0);
   memberName.resize(0);
-  refName="<unknown>";
   code.resize(0);
   linkRef.resize(0);
   linkText.resize(0);
@@ -415,15 +413,18 @@ static void includeFile(OutputList &ol,const char *fileName,bool quiet)
   }
   else if (ambig)
   {
-    warn("Include file name %s is ambigious.\n",fileName);
-    warn("Possible candidates:\n");
-    //includeFileList.writeMatches(fileName);
-    showFileDefMatches(&exampleNameDict,fileName);
+    QCString text;
+    text.sprintf("Include file name %s is ambigious.\n",fileName);
+    text+="Possible candidates:\n";
+    text+=showFileDefMatches(&exampleNameDict,fileName);
+    warn(yyFileName,yyLineNr,text);
   }
   else
   {
-    warn("Warning: example file %s is not found. ",fileName);
-    warn("Check your EXAMPLE_PATH\n");
+    warn(yyFileName,yyLineNr,
+         "Warning: example file %s is not found. "
+         "Check your EXAMPLE_PATH",fileName
+	);
   }
 }
 
@@ -440,14 +441,17 @@ static void verbIncludeFile(OutputList &ol,const char *name)
   }
   else if (ambig)
   {
-    warn("Include file name %s is ambigious.\n",name);
-    warn("Possible candidates:\n");
-    showFileDefMatches(&exampleNameDict,name);
+    QCString text;
+    text.sprintf("Include file name %s is ambigious.\n",name);
+    text+=("Possible candidates:\n");
+    text+=showFileDefMatches(&exampleNameDict,name);
+    warn(yyFileName,yyLineNr,text);
   }
   else
   {
-    warn("Warning: example file %s is not found. ",name);
-    warn("Check your EXAMPLE_PATH\n");
+    warn(yyFileName,yyLineNr,
+         "Warning: example file %s is not found. "
+         "Check your EXAMPLE_PATH",name);
   }
 }
 
@@ -619,7 +623,8 @@ static void addListItemMarker(const char *marker)
       if (listIndentStack.isEmpty()) 
       {
 	insideItemList=FALSE;
-	warn("Warning: list item with invalid indent found!\n");
+	warn(yyFileName,yyLineNr,
+             "Warning: list item with invalid indent found!");
       }
       else
       {
@@ -690,7 +695,8 @@ static void addSection()
   }
   else
   {
-    warn("Warning: Duplicate label %s found!\n",sectionLabel.data());
+    warn(yyFileName,yyLineNr,
+         "Warning: Duplicate label %s found!",sectionLabel.data());
   }
 }
 
@@ -731,7 +737,7 @@ static void checkDocs()
      )
   {
     warn("Warning: Found lonely '<' symbol at the start of the documentation "
-	 "at line %d of %s\n",yyLineNr,yyFileName);
+	 "at line %d of %s",yyLineNr,yyFileName);
 	 
   }
 }
@@ -810,28 +816,33 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
       }
       else
       {
-	warn("Warning: could not write output image %s\n",outputFile.data());
+	warn(yyFileName,yyLineNr,
+             "Warning: could not write output image %s",outputFile.data());
       }
     }
     else
     {
-      warn("Warning: could not open image %s\n",fileName);
+      warn(yyFileName,yyLineNr,
+           "Warning: could not open image %s",fileName);
     }
   }
   else if (ambig)
   {
-    warn("Warning: image file name %s is ambigious.\n",fileName);
-    warn("Possible candidates:\n");
-    //includeFileList.writeMatches(fileName);
-    showFileDefMatches(&imageNameDict,fileName);
+    QCString text;
+    text.sprintf("Warning: image file name %s is ambigious.\n",fileName);
+    text+="Possible candidates:\n";
+    text+=showFileDefMatches(&imageNameDict,fileName);
+    warn(yyFileName,yyLineNr,text);
   }
   else
   {
     result=fileName;
     if (result.left(5)!="http:")
     {
-      warn("Warning: image file %s is not found in IMAGE_PATH: "  
-	   "assuming external image.\n",fileName);
+      warn(yyFileName,yyLineNr,
+           "Warning: image file %s is not found in IMAGE_PATH: "  
+	   "assuming external image.",fileName
+          );
     }
   }
   return result;
@@ -930,7 +941,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 %x      DefineArg
 %x	DefineEnd
 %x	Include
-%x	ClassName
+%x	CompoundName
 %x	ClassVar
 %x	ClassTemplSpec
 %x	Bases
@@ -1084,7 +1095,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <*>\x06[^\x06]*\x06			{ // new file
   					  if (memberGroupId!=NOGROUP)
 					  {
-					    warn("Warning: Missing //@} in file %s\n",yyFileName);
+					    warn(yyFileName,yyLineNr,"Warning: Missing //@}");
 					    memberGroupId=NOGROUP;
 					  }
   					  yyLineNr= 0 ; // there is always an extra newline at the start of the file
@@ -1246,8 +1257,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  BEGIN( DocScan );
   					}
   */
-<DocScan>{CMD}"endlink"/[^a-z_A-Z0-9]      { warn("Warning: \\endlink without \\link "
-    					         "in documentation of %s\n", refName.data()); 
+<DocScan>{CMD}"endlink"/[^a-z_A-Z0-9]   { warn(yyFileName,yyLineNr,
+                                               "Warning: \\endlink without \\link "
+    					       "in documentation."
+                                              ); 
 					}
 <DocScan>{CMD}"addindex"/{BN}		{
   					  BEGIN(DocIndexWord);
@@ -1620,8 +1633,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>{CMD}"endif"/[^a-z_A-Z0-9]	{
 					  if (--depthIf<0)
 					  {
-					    warn("Warning: documentation block contains \\endif without "
-						 "matching \\if found in documentation of %s!",refName.data());
+					    warn(yyFileName,yyLineNr,
+                                                 "Warning: documentation block contains \\endif without "
+						 "matching \\if found in documentation."
+                                                );
 					  }
 					  else
 					  {
@@ -1657,8 +1672,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  }
 					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
 					  {
-					    warn("Warning: reference to unknown section %s!\n",yytext);
-					    outDoc->writeBoldString(" unknown reference!");
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",yytext);
+					    outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1687,8 +1702,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  }
 					  else if (!generateLink(*outDoc,className,sectionRef,TRUE,text))
 					  {
-					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
-					    outDoc->writeBoldString("unknown reference!");
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",sectionRef.data());
+					    outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1705,8 +1720,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  }
 					  else
 					  {
-					    warn("Warning: reference to unknown section %s!\n",sectionRef.data());
-					    outDoc->writeBoldString("unknown reference!");
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",sectionRef.data());
+					    outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1767,10 +1782,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  BEGIN(DocScan);
   					}
 <DocImage>[a-z_A-Z0-9\.\-]+		{
-					  warn("Warning: %s is an unsupported output format for \\image\n",yytext);
+					  warn(yyFileName,yyLineNr,"Warning: %s is an unsupported output format for \\image",yytext);
   					}
 <DocImage,DocHtmlImageName,DocLatexImageName>\n {
-  					  warn("Warning: invalid \\image command found!\n");
+  					  warn(yyFileName,yyLineNr,"Warning: invalid \\image command found!");
 					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
@@ -1780,8 +1795,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  BEGIN( DocCodeBlock ); 
 					}
 <DocScan>{CMD}"endcode"/[^a-z_A-Z0-9] 	{ 
-  					  warn("Warning: \\endcode without <PRE> or \\code "
-    					       "in the documentation of %s\n",refName.data()); 
+  					  warn(yyFileName,yyLineNr,"Warning: \\endcode without <PRE> or \\code "
+    					       "in the documentation."); 
 					}
 <DocScan>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")"	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
@@ -1891,13 +1906,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"</"{STRONG}{ATTR}">"		{ outDoc->endBold(); }
 <DocScan>"<"{CENTER}{ATTR}">"		{ outDoc->startCenter(); }
 <DocScan>"</"{CENTER}{ATTR}">"		{ outDoc->endCenter(); }
-<DocScan>"<"{TABLE}{ATTR}">"		{ 
-  					  startTable();
-  					  /*outDoc->startTable();*/ }
-<DocScan>"</"{TABLE}{ATTR}">"		{
- 					  endTable(); 
-  					  /*outDoc->endTable();*/ 
-					}
+<DocScan>"<"{TABLE}{ATTR}">"		{ startTable(); }
+<DocScan>"</"{TABLE}{ATTR}">"		{ endTable(); }
 <DocScan>"<"{INPUT}{ATTR}">"
 <DocScan>"<"{SMALL}{ATTR}">"		{ outDoc->startSmall(); }
 <DocScan>"</"{SMALL}{ATTR}">"		{ outDoc->endSmall(); }
@@ -1928,8 +1938,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  BEGIN( DocCodeBlock ); 
 					}
 <DocScan>"</"{PRE}{ATTR}">"		 	{ 
-  					  warn("Warning: </PRE> without <PRE> or \\code"
-    					         "in the documentation of %s\n",refName.data()); 
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: </PRE> without <PRE> or \\code"
+    					       "in the documentation."
+                                              ); 
 					}
 <DocScan>"<"{SUB}{ATTR}">"		{ outDoc->startSubscript(); }
 <DocScan>"</"{SUB}{ATTR}">"		{ outDoc->endSubscript(); }
@@ -1945,7 +1957,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"</"{OL}{ATTR}">"		{ 
 					  if (currentListIndentLevel<=0)
 					  {
-					    warn("Warning: more </ol> tags than <ol> tags in the documentation of %s\n",yyFileName);
+					    warn(yyFileName,yyLineNr,
+                                                 "Warning: more </ol> tags than <ol> tags in the documentation."
+                                                );
 					  }
 					  else
 					  {
@@ -1959,7 +1973,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"</"{UL}{ATTR}">"		{ 
 					  if (currentListIndentLevel<=0)
 					  {
-					    warn("Warning: more </ul> tags than <ul> tags in the documentation of %s\n",yyFileName);
+					    warn(yyFileName,yyLineNr,
+                                                 "Warning: more </ul> tags than <ul> tags in the documentation."
+                                                );
 					  }
 					  else
 					  {
@@ -1980,7 +1996,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"</"{DL}{ATTR}">"		{ 
 					  if (currentListIndentLevel<=0)
 					  {
-					    warn("Warning: more </dl> tags than <dl> tags in the documentation of %s\n",yyFileName);
+					    warn(yyFileName,yyLineNr,
+                                                 "Warning: more </dl> tags than <dl> tags in the documentation."
+                                                );
 					  }
 					  else
 					  {
@@ -2278,7 +2296,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-  					  BEGIN( ClassName ); 
+  					  BEGIN( CompoundName ); 
 					}
 <FindMembers>{B}*"module"{BN}+		{ 
   					  isTypedef=FALSE;
@@ -2288,7 +2306,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-  					  BEGIN( ClassName ); 
+  					  BEGIN( CompoundName ); 
 					}
 <FindMembers>{B}*"interface"{BN}+ 	{ // M$/Corba IDL interface
   					  isTypedef=FALSE;
@@ -2299,7 +2317,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-					  BEGIN( ClassName );
+					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
@@ -2310,7 +2328,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-					  BEGIN( ClassName );
+					  BEGIN( CompoundName );
   					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -2321,7 +2339,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
-					  BEGIN( ClassName ) ;
+					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"struct"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -2332,7 +2350,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
-					  BEGIN( ClassName ) ;
+					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"union"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -2343,7 +2361,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
-					  BEGIN( ClassName ) ;
+					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*(("typedef"{BN}+)?)"enum"{BN}+	{ 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
@@ -2354,7 +2372,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
-					  BEGIN( ClassName ) ;
+					  BEGIN( CompoundName ) ;
 					}
 <Operator>"("{BN}*")"{BN}*/"("		{
   					  lineCount();
@@ -2689,15 +2707,17 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <FindMembers>"//@{"|"/*@{*/"		{
 					  if (memberGroupId!=NOGROUP)
 					  {
-  					    warn("Warning: ignoring nested member group "
-					         "at line %d of %s. Previous command was found at line %d\n",
-						 yyLineNr,yyFileName,lastMemberGroupLine);
+  					    warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
+					         "Previous command was found at line %d.",lastMemberGroupLine);
 					  }
 					  else if (memberGroupHeader.isEmpty())
 					  {
-					    warn("Warning: member group has empty header "
-						 "at line %d of %s.\n",yyLineNr,yyFileName);
-					    memberGroupHeader="[No header specified!]";
+					    //warn("Warning: member group does not have a header "
+					    //	 "at line %d of %s.\n",yyLineNr,yyFileName);
+					    memberGroupHeader="[NOHEADER]";
+					    memberGroupId = newMemberGroupId();
+					    current->mGrpId = memberGroupId;
+					    lastMemberGroupLine = yyLineNr;
 					  }
 					  else
 					  {
@@ -2709,8 +2729,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <FindMembers>"//@}"|"/*@}*/"		{
 					  if (memberGroupId==NOGROUP)
 					  {
-					    warn("Warning: end of member group without matching begin "
-						 "at line %d of %s.\n",yyLineNr,yyFileName);
+					    warn(yyFileName,yyLineNr,
+                                                 "Warning: end of member group without matching begin.");
 					  }
 					  else
 					  {
@@ -3708,7 +3728,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <SkipString>.				{
   				          //addToBodyCond(yytext);
   					}
-<Bases,ClassName>";"			{ 
+<Bases,CompoundName>";"			{ 
 					  current->section = Entry::EMPTY_SEC ;
 					  current->type.resize(0) ;
 					  current->name.resize(0) ;
@@ -3716,7 +3736,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->argList->clear();
 					  BEGIN( FindMembers ) ;
 					}
-<ClassName>{SCOPENAME}{BN}*/"<"		{
+<CompoundName>{SCOPENAME}{BN}*/"<"		{
   					  sharpCount = 0;
   					  current->name = yytext ;
 					  lineCount();
@@ -3739,7 +3759,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <ClassTemplSpec>.			{
   					  current->name += yytext;
 					}
-<ClassName>{SCOPENAME}			{ 
+<CompoundName>{SCOPENAME}			{ 
 					  current->name = yytext ;
 					  lineCount();
 					  BEGIN( ClassVar );
@@ -3790,7 +3810,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  }
 					  BEGIN( FindMembers );
     					}
-<ClassName,ClassVar>{B}*"{"{B}*		{ current->fileName = yyFileName ;
+<CompoundName,ClassVar>{B}*"{"{B}*	{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
 					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
@@ -4014,7 +4034,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  BEGIN( tmpDocType );
   					}
 <JavaDoc>"<"{TABLE}{ATTR}">"		{ 
-  					  current->doc+=yytext;
+  					  //current->doc+=yytext;
 					  int i;
 					  for (i=yyleng-1;i>=0;i--)
 					  {
@@ -4131,6 +4151,15 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->startLine = yyLineNr;
  					  BEGIN( ExampleDocArg1 );
 					}
+<LineDoc>{CMD}"name"[^\n]*\n		{
+  					  memberGroupHeader=&yytext[5];
+					  memberGroupHeader=memberGroupHeader.stripWhiteSpace(); 
+					  current->section = Entry::MEMBERGRP_SEC;
+					  current->fileName = yyFileName;
+					  current->startLine = yyLineNr;
+					  yyLineNr++;  
+					  BEGIN( lastDocContext );
+  					}
 <Doc,JavaDoc>{CMD}"name"{B}+ 		{
   					  //printf("--> mgroup found!\n");
 					  current->section = Entry::MEMBERGRP_SEC;
@@ -4160,8 +4189,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <NameSpaceDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <NameSpaceDocArg1>"\n"			{
-  					  warn("Warning: missing argument after "
-					       "\\namespace at line %d of %s.\n",yyLineNr,yyFileName);
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\namespace."
+                                              );
   					  yyLineNr++;
   					}
 <ClassDocArg1>{SCOPENAME}/"<"		{
@@ -4185,8 +4216,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					}
 <ClassDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <ClassDocArg1>"\n"			{
-  					  warn("Warning: missing argument after "
-					       "\\class at line %d of %s.\n",yyLineNr,yyFileName);
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\class."
+                                              );
   					  yyLineNr++;
 					  
   					}
@@ -4198,8 +4231,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <GroupDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <GroupDocArg1>"\n"			{
-  					  warn("Warning: missing argument after "
-					       "\\defgroup at line %d of %s.\n",yyLineNr,yyFileName);
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\defgroup."
+                                              );
 					  yyLineNr++;
 					  BEGIN( Doc );
   					}
@@ -4252,8 +4287,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					}
 <PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <PageDocArg1>"\n"			{
-  					  warn("Warning: missing argument after "
-					       "\\page at line %d of %s.\n",yyLineNr,yyFileName);
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after "
+					       "\\page."
+                                              );
   					  yyLineNr++;
 					  BEGIN( Doc );
   					}
@@ -4272,8 +4309,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++; }
 <EnumDocArg1>"\n"			{
-  					  warn("Warning: missing argument after "
-					       "\\enum at line %d of %s.\n",yyLineNr,yyFileName);
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: missing argument after \\enum."
+                                              );
   					  yyLineNr++;
 					  BEGIN( Doc );
   					}
@@ -4507,6 +4545,9 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					  lineCount();
   					  BEGIN( GroupName ); 
 					}
+<ClassDoc,LineDoc,Doc,JavaDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
+                                          current->subGrouping = FALSE; 
+                                        }
 <GroupName>{ID}				{
   					  current->groups->append(
 					    new QCString(yytext)
@@ -4696,9 +4737,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
   					}
 <ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
 					  current->doc += "\n\n";
-					  err("Warning: unexpected end of "
-				              "documentation block found in "
-					      "file %s at line %d\n",yyFileName,yyLineNr);
+					  warn(yyFileName,yyLineNr,
+                                              "Warning: unexpected end of "
+				              "documentation block."
+					      );
 					  BEGIN( lastDocContext );
 					}
 <FileDocArg1>"*/"			{
@@ -4905,27 +4947,13 @@ void parseDocument(OutputList &ol,const QCString &docString)
   if (inBlock()) endBlock();
   if (currentListIndentLevel>0)
   {
-    if (!refName.isEmpty())
-    {
-      warn("Warning: Documentation block of %s ended in the middle " 
-	   "of a list (indent level %d)!\n",refName.data(),
-	   currentListIndentLevel);
-    }
-    else if (!exampleName.isEmpty())
-    {
-      warn("Warning: Documentation block of %s ended in the middle " 
-	   "of a list (indent level %d)!\n",exampleName.data(),
-	   currentListIndentLevel);
-    }
-    else
-    {
-      warn("Warning: Documentation block ended in the middle " 
-	   "of a list (indent level %d)!\n",currentListIndentLevel);
-    }
+    warn(yyFileName,yyLineNr,"Warning: Documentation ended in the middle " 
+	   "of a list (indent level %d)!",currentListIndentLevel);
   }
   if (depthIf!=0)
   {
-    warn("Warning: Documentation block contains \\if without matching \\endif: %d\n",depthIf);
+    warn(yyFileName,yyLineNr,"Warning: Documentation block contains \\if "
+         "without matching \\endif: nesting level is %d",depthIf);
   }
   if (!tableStack.isEmpty())
   {
@@ -4933,7 +4961,9 @@ void parseDocument(OutputList &ol,const QCString &docString)
   }
   if (insideVerbatim)
   {
-    warn("Warning: file ended inside a \\verbatim block!\n");
+    warn(yyFileName,yyLineNr,
+         "Warning: file ended inside a \\verbatim block!"
+        );
   }
   ol+=*outDoc;
   delete outDoc; outDoc=0;
@@ -4942,27 +4972,17 @@ void parseDocument(OutputList &ol,const QCString &docString)
 
 //----------------------------------------------------------------------------
 
-void parseDoc(OutputList &ol,const char *clName,
-              const char *memName,const QCString &docString)
+void parseDoc(OutputList &ol,const char *fileName,int startLine,
+              const char *clName,const char *memName,const QCString &docString)
 {
-  //printf("Doc---------\n%s\n---------\n",docString.data());
+  //printf("parseDoc(file=`%s',line=%d)\n",fileName,startLine);
   initParser();
   initParseCodeContext();
   exampleDoc=FALSE;           // do not cross reference with member docs
   className=clName;
   memberName=memName;
-  if (memName)
-  {
-    refName=className+"::"+memberName;
-  }
-  else if (clName)
-  {
-    refName=className;
-  }
-  else
-  {
-    refName="<unknown>";
-  }
+  strcpy(yyFileName,fileName);
+  yyLineNr = startLine;
   parseDocument(ol,docString);
 
 }
@@ -4992,7 +5012,7 @@ void parseExample(OutputList &ol,const QCString &docString,
   initParseCodeContext();
   exampleDoc=TRUE;            // cross reference with member docs
   exampleName=fileName;
-  refName="example "+exampleName;
+  strcpy(yyFileName,fileName);
   parseDocument(ol,docString); 
 }
 

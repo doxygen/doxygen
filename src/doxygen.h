@@ -36,8 +36,14 @@
 
 struct PageInfo
 {
-  PageInfo(const char *n,const char *d,const char *t) 
-     { name=n; doc=d; title=t; }
+  PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
+     defFileName(f), defLine(l), name(n), doc(d), title(t) {}
+
+  // where the page definition was found
+  QCString defFileName;
+  int defLine;
+
+  // contents of the page
   QCString name;
   QCString doc;
   QCString title;

@@ -221,7 +221,7 @@ ClassDef *getResolvedClass(const char *name)
     }
     if (count==10)
     {
-      warn("Warning: possible recursive typedef dependency detected for %s!\n",name);
+      warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",name);
       return classDict[name];
     }
     else
@@ -734,7 +734,7 @@ QCString fileToString(const char *name)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      warn("Error: file `%s' not found\n",name);
+      err("Error: file `%s' not found\n",name);
       return "";
     }
     f.setName(name);
@@ -742,7 +742,7 @@ QCString fileToString(const char *name)
   }
   if (!fileOpened)  
   {
-    warn("Error: cannot open file `%s' for reading\n",name);
+    err("Error: cannot open file `%s' for reading\n",name);
     return "";
   }
   int fsize=f.size();
@@ -2086,8 +2086,9 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 
 //----------------------------------------------------------------------
 
-void showFileDefMatches(const FileNameDict *fnDict,const char *n)
+QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
 {
+  QCString result;
   QCString name=n;
   QCString path;
   int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
@@ -2104,11 +2105,12 @@ void showFileDefMatches(const FileNameDict *fnDict,const char *n)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
-        msg("   %s\n",fd->absFilePath().data());
+        result+="   %s\n",fd->absFilePath().data();
       }
       fd=fn->next();
     }
   }
+  return result;
 }
 
 //----------------------------------------------------------------------
@@ -2281,11 +2283,15 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   if (!templ.isEmpty() && scope.find('<')==-1)
   {
     int si,pi=0;
-    while ((si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ)
-      && !getClass(scope.left(si))) 
-       { //printf("Tried `%s'\n",(scope.left(si)+templ).data()); 
-         pi=si+2; 
-       }
+    ClassDef *cd=0;
+    while (
+            (si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ) && 
+            ((cd=getClass(scope.left(si)))==0 || cd->templateArguments()==0) 
+          ) 
+    { 
+      //printf("Tried `%s'\n",(scope.left(si)+templ).data()); 
+      pi=si+2; 
+    }
     if (si==-1) // not nested => append template specifier
     {
       result+=templ; 

@@ -1665,7 +1665,7 @@ void RTFGenerator::incrementIndentLevel()
   m_listLevel++;
   if (m_listLevel>indentLevels-1) 
   {
-    warn("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",indentLevels); 
+    warn_cont("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",indentLevels); 
     m_listLevel=indentLevels-1;
   }
 }
@@ -1675,7 +1675,7 @@ void RTFGenerator::decrementIndentLevel()
   m_listLevel--;
   if (m_listLevel<0) 
   {
-    warn("Warning: Negative indent level while generating RTF output!\n");
+    warn_cont("Warning: Negative indent level while generating RTF output!\n");
     m_listLevel=0;
   }
 }

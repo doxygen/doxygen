@@ -41,7 +41,7 @@ class MemberList : public QList<MemberDef>
     int protoCount() const     { return protoCnt;   }
     int defineCount() const    { return defCnt;     }
     int friendCount() const    { return friendCnt;  }
-    void countDecMembers(bool inGroup);
+    void countDecMembers(bool inGroup,bool countSubGroups);
     void countDocMembers();
     int totalCount() const 
          { return //varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
@@ -50,10 +50,11 @@ class MemberList : public QList<MemberDef>
          }
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup=FALSE);
+               bool inGroup=FALSE,bool countSubGroups=TRUE);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,bool inGroup=FALSE);
+               const char *title,const char *subtitle,
+               bool inGroup=FALSE,bool countSubGroups=TRUE);
     void writeDocumentation(OutputList &ol,const char *scopeName
                /*,MemberDef::MemberType m*/);
     void addMemberGroup(MemberGroup *mg);

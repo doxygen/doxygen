@@ -31,8 +31,8 @@
 #include "membergroup.h"
 #include "doxygen.h"
 
-GroupDef::GroupDef(const char *na,const char *t) : 
-   Definition(na)
+GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) : 
+   Definition(df,dl,na)
 {
   fileList = new FileList;
   classList = new ClassList;
@@ -64,6 +64,16 @@ GroupDef::~GroupDef()
   delete allMemberDict;
   delete memberGroupList;
   delete memberGroupDict;
+}
+
+void GroupDef::distributeMemberGroupDocumentation()
+{
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->distributeMemberGroupDocumentation();
+  }
 }
 
 void GroupDef::addFile(const FileDef *def)
@@ -159,7 +169,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol);
   if (!briefDescription().isEmpty())
   {
-    parseDoc(briefOutput,name(),0,briefDescription());
+    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -189,7 +199,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
         ol.startMemberDescription();
-        parseDoc(ol,0,0,fd->briefDescription());
+        parseDoc(ol,defFileName,defLine,0,0,fd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -214,7 +224,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!nd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
         ol.startMemberDescription();
-        parseDoc(ol,0,0,nd->briefDescription());
+        parseDoc(ol,defFileName,defLine,0,0,nd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -238,7 +248,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       if (!gd->briefDescription().isEmpty() && Config::briefMemDescFlag)
       {
         ol.startMemberDescription();
-        parseDoc(ol,0,0,gd->briefDescription());
+        parseDoc(ol,defFileName,defLine,0,0,gd->briefDescription());
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -284,7 +294,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     // write documentation
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,name(),0,documentation()+"\n");
+      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
     }
   }
 
@@ -427,7 +437,8 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       }
       else if (mgd!=gd)
       {
-        warn("Warning: Member %s found in multiple groups.!\n"
+        warn(mgd->getDefFileName(),mgd->getDefLine(),
+             "Warning: Member %s found in multiple groups.!\n"
              "The member will be put in group %s, and not in group %s",
               md->name().data(),mgd->name().data(),gd->name().data()
             );

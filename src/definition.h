@@ -25,12 +25,14 @@ class FileDef;
 class OutputList;
 class SectionList;
 
-/*! The common base class of all definitions. */
+/*! The common base class of all entity definitions found in the sources. */
 class Definition
 {
   public:
     /*! create a new definition */
-    Definition(const char *name,const char *b=0,const char *d=0);
+    Definition(
+        const char *defFileName,int defLine,
+        const char *name,const char *b=0,const char *d=0);
     /*! destroys the definition */
     virtual ~Definition();
     /*! returns the name of the definition */
@@ -92,10 +94,19 @@ class Definition
     FileDef *getBodyDef()                { return bodyDef; }
     void writeSourceRef(OutputList &ol,const char *scopeName);
 
+    /*! returns the file in which this definition was found */
+    QCString getDefFileName() const { return defFileName; }
+    /*! returns the line number at which the definition was found */
+    int getDefLine() const { return defLine; }
+
   protected:
     int      startBodyLine;   // line number of the start of the definition
     int      endBodyLine;     // line number of the end of the definition
     FileDef *bodyDef;         // file definition containing the function body
+
+    // where the item was found
+    QCString defFileName;
+    int      defLine;
 
   private: 
     QCString n;     // name of the definition
@@ -103,6 +114,7 @@ class Definition
     QCString doc;   // detailed description
     QCString ref;   // reference to external documentation
     SectionList *sectionList; // list of all sections
+
 };
 
 #endif

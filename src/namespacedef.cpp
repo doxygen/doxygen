@@ -27,7 +27,9 @@
 #include "doxygen.h"
 #include "message.h"
 
-NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
+NamespaceDef::NamespaceDef(const char *df,int dl,
+                           const char *name,const char *ref) : 
+   Definition(df,dl,name)
 {
   fileName="namespace_"+nameToFile(name);
   classList = new ClassList;
@@ -38,6 +40,8 @@ NamespaceDef::NamespaceDef(const char *name,const char *ref) : Definition(name)
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
+  defFileName = df;
+  defLine = dl;
 }
 
 NamespaceDef::~NamespaceDef()
@@ -49,6 +53,15 @@ NamespaceDef::~NamespaceDef()
   delete memberGroupDict;
 }
 
+void NamespaceDef::distributeMemberGroupDocumentation()
+{
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->distributeMemberGroupDocumentation();
+  }
+}
 void NamespaceDef::insertUsedFile(const char *f)
 {
   if (files.find(f)==-1) files.append(f);
@@ -130,7 +143,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty()) 
   {
-    parseDoc(briefOutput,name(),0,briefDescription());
+    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -183,7 +196,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,name(),0,documentation()+"\n");
+      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
       ol.newParagraph();
     }
     ol.endTextBlock();

@@ -59,7 +59,8 @@ class MemberDef : public Definition
                         // initialization 
     };
     
-    MemberDef(const char *type,const char *name,const char *args,
+    MemberDef(const char *defFileName,int defLine,
+              const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
               bool related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al);
@@ -96,8 +97,8 @@ class MemberDef : public Definition
     MemberList *getSectionList() const   { return section; }
     void setMemberType(MemberType t)     { mtype=t; }
     void setDefinition(const char *d)    { def=d; }
-    void setDefFile(const char *f)       { defFile=f; }
-    void setDefLine(int l)               { defLine=l; }
+    //void setDefFile(const char *f)       { defFile=f; }
+    //void setDefLine(int l)               { defLine=l; }
     void setFileDef(FileDef *fd)         { fileDef=fd; }
     void setFileDec(FileDef *fd)         { fileDec=fd; }
     void setAnchor(const char *a)        { anc=a; }
@@ -143,10 +144,8 @@ class MemberDef : public Definition
     ExampleList *getExampleList() const { return exampleList; }
 
     // prototype related members
-    const char *getDefFile()        { return defFile; }
-    int getDefLine()                { return defLine; }
-    void setDecFile(const char *f)  { declFile=f; }
-    void setDecLine(int l)          { defLine=l; }
+    //void setDecFile(const char *f)  { declFile=f; }
+    //void setDecLine(int l)          { defLine=l; }
     
     // convenience members
     bool isSignal() const    { return mtype==Signal;      }
@@ -219,8 +218,8 @@ class MemberDef : public Definition
     QCString declFile;        // file where the declaration was found
     int      declLine;        // line where the declaration was found
     QCString def;             // member definition in code (fully qualified name)
-    QCString defFile;         // file where the definition was found
-    int      defLine;         // line where the definition was found
+    //QCString defFile;         // file where the definition was found
+    //int      defLine;         // line where the definition was found
     QCString anc;             // HTML anchor name
     Specifier virt;           // normal/virtual/pure virtual
     Protection prot;          // protection type [Public/Protected/Private]

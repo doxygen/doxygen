@@ -36,7 +36,8 @@ class MemberGroupList;
 class NamespaceDef : public Definition
 {
   public:
-    NamespaceDef(const char *name,const char *ref=0);
+    NamespaceDef(const char *defFileName,int defLine,
+                 const char *name,const char *ref=0);
    ~NamespaceDef();
     //QCString namespaceFile() const { return fileName; }
     QCString getOutputFileBase() const { return fileName; }
@@ -72,6 +73,7 @@ class NamespaceDef : public Definition
     {
       return isLinkableInProject() || isReference();
     }
+    void distributeMemberGroupDocumentation();
     
   private:
     //QCString reference;

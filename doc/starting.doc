@@ -493,13 +493,16 @@ detailed information about the group.
 
 Nesting of member groups is not allowed. 
 
-If all members of a member group have the same type and protection level
-(for instance all are static public members), then the whole member 
-group is displayed as a subgroup of the type/protection level group 
-(the group is displayed as a subsection of the "Static Public Members" 
-section for instance). If two or more members have different types, 
-then the group is put at the same level as the automatically 
-generated groups. 
+If all members of a member group inside a class have the same type 
+and protection level (for instance all are static public members), 
+then the whole member group is displayed as a subgroup of 
+the type/protection level group (the group is displayed as a 
+subsection of the "Static Public Members" section for instance). 
+If two or more members have different types, then the group is put 
+at the same level as the automatically generated groups.
+If you want to force all member-groups of a class to be at the top level, 
+you should put a \ref cmdnosubgrouping "\\nosubgrouping" command inside the
+documentation of the class. 
 
 \par Example:
 \verbinclude memgrp.cpp

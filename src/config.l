@@ -40,7 +40,7 @@ void err(const char *fmt, ...)
   vfprintf(stderr, fmt, args);
   va_end(args); 
 }
-void warn(const char *fmt, ...)
+void warn_cont(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -67,8 +67,6 @@ QCString Config::projectName;
 QCString Config::projectNumber;
 QCString Config::outputDir;
 QCString Config::outputLanguage = "English";
-bool     Config::quietFlag = FALSE;
-bool     Config::warningFlag = TRUE;
 bool     Config::noIndexFlag = FALSE;
 bool     Config::extractAllFlag = FALSE;
 bool     Config::extractPrivateFlag = FALSE;
@@ -93,6 +91,10 @@ bool     Config::inlineInfoFlag = TRUE;
 bool     Config::sortMembersFlag = TRUE;
 int      Config::tabSize = 8;
 QStrList Config::sectionFilterList;
+bool     Config::quietFlag = FALSE;
+bool     Config::warningFlag = TRUE;
+bool     Config::warningUndocFlag = TRUE;
+QCString Config::warnFormat = "$file:$line: $text";
 QStrList Config::inputSources;
 QStrList Config::filePatternList;
 bool     Config::recursiveFlag = FALSE;
@@ -205,8 +207,6 @@ static int yyread(char *buf,int max_size)
 <Start>"PROJECT_NUMBER"[ \t]*"="        { BEGIN(GetString); s=&Config::projectNumber; s->resize(0); }
 <Start>"OUTPUT_DIRECTORY"[ \t]*"="      { BEGIN(GetString); s=&Config::outputDir; s->resize(0); }
 <Start>"OUTPUT_LANGUAGE"[ \t]*"="       { BEGIN(GetString); s=&Config::outputLanguage; s->resize(0); }
-<Start>"QUIET"[ \t]*"="                 { BEGIN(GetBool); b=&Config::quietFlag; }
-<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool); b=&Config::warningFlag; }
 <Start>"DISABLE_INDEX"[ \t]*"="         { BEGIN(GetBool); b=&Config::noIndexFlag; }
 <Start>"EXTRACT_ALL"[ \t]*"="           { BEGIN(GetBool); b=&Config::extractAllFlag; }
 <Start>"EXTRACT_PRIVATE"[ \t]*"="       { BEGIN(GetBool); b=&Config::extractPrivateFlag; }
@@ -231,6 +231,10 @@ static int yyread(char *buf,int max_size)
 <Start>"SORT_MEMBER_DOCS"[ \t]*"="      { BEGIN(GetBool); b=&Config::sortMembersFlag; }
 <Start>"TAB_SIZE"[ \t]*"="              { BEGIN(GetString); s=&tabSizeString; s->resize(0); }
 <Start>"ENABLED_SECTIONS"[ \t]*"="      { BEGIN(GetStrList); l=&Config::sectionFilterList; l->clear(); elemStr=""; }
+<Start>"QUIET"[ \t]*"="                 { BEGIN(GetBool); b=&Config::quietFlag; }
+<Start>"WARNINGS"[ \t]*"="              { BEGIN(GetBool); b=&Config::warningFlag; }
+<Start>"WARN_IF_UNDOCUMENTED"[ \t]*"="  { BEGIN(GetBool); b=&Config::warningUndocFlag; }
+<Start>"WARN_FORMAT"[ \t]*"="           { BEGIN(GetString); s=&Config::warnFormat; s->resize(0); }
 <Start>"INPUT"[ \t]*"="                 { BEGIN(GetStrList); l=&Config::inputSources; l->clear(); elemStr=""; }
 <Start>"FILE_PATTERNS"[ \t]*"="         { BEGIN(GetStrList); l=&Config::filePatternList; l->clear(); elemStr=""; }
 <Start>"RECURSIVE"[ \t]*"="             { BEGIN(GetBool); b=&Config::recursiveFlag; }
@@ -354,7 +358,7 @@ static int yyread(char *buf,int max_size)
 					  else 
 					  {
 					    *b=FALSE; 
-					    warn("Warning: Invalid value `%s' for "
+					    warn_cont("Warning: Invalid value `%s' for "
 						 "boolean tag in line %d; use YES or NO\n",
 						 bs.data(),yyLineNr);
 					  }
@@ -381,8 +385,6 @@ void dumpConfig()
   printf("projectNumber=`%s'\n",Config::projectNumber.data());
   printf("outputDir=`%s'\n",Config::outputDir.data());
   printf("outputLanguage=`%s'\n",Config::outputLanguage.data());
-  printf("quietFlag=`%d'\n",Config::quietFlag);
-  printf("warningFlag=`%d'\n",Config::warningFlag);
   printf("noIndexFlag=`%d'\n",Config::noIndexFlag);
   printf("extractAllFlag=`%d'\n",Config::extractAllFlag);
   printf("extractPrivateFlag=`%d'\n",Config::extractPrivateFlag);
@@ -421,6 +423,11 @@ void dumpConfig()
       is=Config::sectionFilterList.next();
     }
   }
+  printf("# configuration options related to warning and progress messages\n");
+  printf("quietFlag=`%d'\n",Config::quietFlag);
+  printf("warningFlag=`%d'\n",Config::warningFlag);
+  printf("warningUndocFlag=`%d'\n",Config::warningUndocFlag);
+  printf("warnFormat=`%s'\n",Config::warnFormat.data());
   printf("# configuration options related to the input files\n");
   {
     char *is=Config::inputSources.first();
@@ -586,8 +593,6 @@ void Config::init()
   Config::projectNumber.resize(0);
   Config::outputDir.resize(0);
   Config::outputLanguage = "English";
-  Config::quietFlag = FALSE;
-  Config::warningFlag = TRUE;
   Config::noIndexFlag = FALSE;
   Config::extractAllFlag = FALSE;
   Config::extractPrivateFlag = FALSE;
@@ -612,6 +617,10 @@ void Config::init()
   Config::sortMembersFlag = TRUE;
   Config::tabSize = 8;
   Config::sectionFilterList.clear();
+  Config::quietFlag = FALSE;
+  Config::warningFlag = TRUE;
+  Config::warningUndocFlag = TRUE;
+  Config::warnFormat = "$file:$line: $text";
   Config::inputSources.clear();
   Config::filePatternList.clear();
   Config::recursiveFlag = FALSE;
@@ -705,7 +714,7 @@ static void writeStringList(QTextStream &t,QStrList &l)
     const char *s=p;
     bool hasBlanks=FALSE;
     while ((c=*p++)!=0 && !hasBlanks) hasBlanks = (c==' ' || c=='\n' || c=='\t');
-    if (!first) t << "                       ";
+    if (!first) t << "                        ";
     first=FALSE;
     if (hasBlanks) t << "\"" << s << "\""; else t << s;
     p = l.next();
@@ -783,27 +792,6 @@ void writeTemplateConfig(QFile *f,bool sl)
   }
   t << "OUTPUT_LANGUAGE       = ";
   writeStringValue(t,Config::outputLanguage);
-  t << "\n";
-  if (!sl)
-  {
-    t << "\n";
-    t << "# The QUIET tag can be used to turn on/off the messages that are generated \n";
-    t << "# by doxygen. Possible values are YES and NO. If left blank NO is used. \n";
-    t << "\n";
-  }
-  t << "QUIET                 = ";
-  writeBoolValue(t,Config::quietFlag);
-  t << "\n";
-  if (!sl)
-  {
-    t << "\n";
-    t << "# The WARNINGS tag can be used to turn on/off the warning messages that are \n";
-    t << "# generated by doxygen. Possible values are YES and NO. If left blank \n";
-    t << "# NO is used. \n";
-    t << "\n";
-  }
-  t << "WARNINGS              = ";
-  writeBoolValue(t,Config::warningFlag);
   t << "\n";
   if (!sl)
   {
@@ -1067,6 +1055,57 @@ void writeTemplateConfig(QFile *f,bool sl)
   }
   t << "ENABLED_SECTIONS      = ";
   writeStringList(t,Config::sectionFilterList);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+  }
+  t << "#---------------------------------------------------------------------------\n";
+  t << "# configuration options related to warning and progress messages\n";
+  t << "#---------------------------------------------------------------------------\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The QUIET tag can be used to turn on/off the messages that are generated \n";
+    t << "# by doxygen. Possible values are YES and NO. If left blank NO is used. \n";
+    t << "\n";
+  }
+  t << "QUIET                 = ";
+  writeBoolValue(t,Config::quietFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The WARNINGS tag can be used to turn on/off the warning messages that are \n";
+    t << "# generated by doxygen. Possible values are YES and NO. If left blank \n";
+    t << "# NO is used. \n";
+    t << "\n";
+  }
+  t << "WARNINGS              = ";
+  writeBoolValue(t,Config::warningFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If WARN_IF_UNDOCUMENTED is set to YES, then doxygen will generate warnings \n";
+    t << "# for undocumented members. If EXTRACT_ALL is set to YES then this flag will \n";
+    t << "# automatically be disabled. \n";
+    t << "\n";
+  }
+  t << "WARN_IF_UNDOCUMENTED  = ";
+  writeBoolValue(t,Config::warningUndocFlag);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# The WARN_FORMAT tag determines the format of the warning messages that \n";
+    t << "# doxygen can produce. The string should contain the $file, $line, and $text \n";
+    t << "# tags, which will be replaced by the file and line number from which the \n";
+    t << "# warning originated and the warning text. \n";
+    t << "\n";
+  }
+  t << "WARN_FORMAT           = ";
+  writeStringValue(t,Config::warnFormat);
   t << "\n";
   if (!sl)
   {
@@ -1777,7 +1816,7 @@ void configStrToVal()
     int ts = tabSizeString.toInt(&ok);
     if (!ok || ts<1 || ts>16)
     {
-      warn("Warning: argument of TAB_SIZE is not a valid number, using tab size of 8 spaces!\n");
+      warn_cont("Warning: argument of TAB_SIZE is not a valid number, using tab size of 8 spaces!\n");
       ts=8;
     }
     Config::tabSize = ts;
@@ -1793,7 +1832,7 @@ void configStrToVal()
     int cols = colsInAlphaIndexString.toInt(&ok);
     if (!ok || cols<1 || cols>20)
     {
-      warn("Warning: argument of COLS_IN_ALPHA_INDEX is not a valid number in the range [1..20]!\n"
+      warn_cont("Warning: argument of COLS_IN_ALPHA_INDEX is not a valid number in the range [1..20]!\n"
 	   "Using the default of 5 columns!\n");
       cols = 5;
     }
@@ -1830,7 +1869,8 @@ static void substEnvVarsInStrList(QStrList &sl)
     if (!wasQuoted) /* as a result of the expansion, a single string
 		       may have expanded into a list, which we'll
 		       add to sl. If the orginal string already 
-		       contained multiple elements no splitting is done! */
+		       contained multiple elements no further 
+		       splitting is done to allow quoted items with spaces! */
     {
 
 
@@ -1843,10 +1883,10 @@ static void substEnvVarsInStrList(QStrList &sl)
       {
 	char c;
 	// skip until start of new word
-	for (;i<l && ((c=result.at(i))==' ' || c=='\t');i++) 
-	  p=i; // p marks the start index of the word
+	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++; 
+	p=i; // p marks the start index of the word
 	// skip until end of a word
-	for (;i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"');i++);
+	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
 	if (i<l) // not at the end of the string
 	{
 	  if (c=='"') // word within quotes
@@ -1909,6 +1949,7 @@ void substituteEnvironmentVars()
   substEnvVarsInString( Config::outputLanguage );
   substEnvVarsInStrList( Config::stripFromPath );
   substEnvVarsInStrList( Config::sectionFilterList );
+  substEnvVarsInString( Config::warnFormat );
   substEnvVarsInStrList( Config::inputSources );
   substEnvVarsInStrList( Config::filePatternList );
   substEnvVarsInStrList( Config::excludeSources );
@@ -1949,6 +1990,29 @@ void checkConfig()
   //  projectName[0]=toupper(projectName[0]);
   //}
 
+  if (Config::warnFormat.isEmpty())
+  {
+    Config::warnFormat="$file:$line $text";
+  }
+  else
+  {
+    if (Config::warnFormat.find("$file")==-1)
+    {
+      err("Error: warning format does not contain a $file tag!\n");
+      exit(1);
+    }
+    if (Config::warnFormat.find("$line")==-1)
+    {
+      err("Error: warning format does not contain a $line tag!\n");
+      exit(1);
+    }
+    if (Config::warnFormat.find("$text")==-1)
+    {
+      err("Error: wanring format foes not contain a $text tag!\n");
+      exit(1);
+    }
+  }
+  initWarningFormat();
 
   // set default man page extension if non is given by the user
   if (Config::manExtension.isEmpty())
@@ -2240,7 +2304,7 @@ void checkConfig()
       QFileInfo fi(Config::perlPath);
       if (!fi.exists())
       {
-        warn("Warning: tag PERL_PATH: perl interpreter not found at default or"
+        warn_cont("Warning: tag PERL_PATH: perl interpreter not found at default or"
             "user specified (%s) location\n",
         Config::perlPath.data());
       }

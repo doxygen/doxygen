@@ -65,7 +65,7 @@ extern ClassDef *getClass(const char *key);
 extern ClassDef *getResolvedClass(const char *key);
 extern FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
-extern void showFileDefMatches(const FileNameDict *fnDict,const char *n);
+extern QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
 extern int guessSection(const char *name);
 extern bool isId(char c);
 extern QCString removeRedundantWhiteSpace(const QCString &s);

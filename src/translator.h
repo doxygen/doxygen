@@ -793,7 +793,7 @@ class Translator
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return "Initial value:";
+      return "Initializer:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()

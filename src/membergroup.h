@@ -53,6 +53,7 @@ class MemberGroup /* : public Definition */
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();
     int countDecMembers();
+    void distributeMemberGroupDocumentation();
 
   private: 
     MemberList *memberList;      // list of all members in the group

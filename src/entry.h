@@ -159,6 +159,7 @@ class Entry
     bool stat;                // static ?
     bool proto;               // prototype ?
     bool inLine;              // inline ?
+    bool subGrouping;         // automatically group class members?
     Specifier    virt;        // virtualness of the entry 
     Entry       *parent;      // parent node in the tree
     QCString	 type;        // member type 
