@@ -36,6 +36,7 @@
 #include "rtfstyle.h"
 #include "rtfdocvisitor.h"
 #include "docparser.h"
+#include "dirdef.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -388,6 +389,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Module Index
       beginRTFChapter();
       break;
+    case isDirIndex:
+      //Directory Index
+      beginRTFChapter();
+      break;
     case isNamespaceIndex:
       //Namespace Index
       beginRTFChapter();
@@ -409,21 +414,6 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Related Page Index
       beginRTFChapter();
       break;
-    //case isPackageDocumentation:
-    //  {
-    //    //Package Documentation
-    //    PackageSDict::Iterator pdi(Doxygen::packageDict);
-    //    PackageDef *pd=pdi.toFirst();
-    //    bool found=FALSE;
-    //    while (pd && !found)
-    //    {
-    //      beginRTFChapter();
-    //      found=TRUE;
-    //      ++pdi;
-    //      pd=pdi.current();
-    //   }
-    //  }
-    //  break;
     case isModuleDocumentation:
       {
         //Module Documentation
@@ -433,6 +423,22 @@ void RTFGenerator::startIndexSection(IndexSections is)
         for (gli.toFirst();(gd=gli.current()) && !found;++gli)
         {
           if (!gd->isReference())
+          {
+            beginRTFChapter();
+            found=TRUE;
+          }
+        }
+      }
+      break;
+    case isDirDocumentation:
+      {
+        //Directory Documentation
+        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        DirDef *dd;
+        bool found=FALSE;
+        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        {
+          if (dd->isLinkableInProject())
           {
             beginRTFChapter();
             found=TRUE;
@@ -609,6 +615,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
       t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"modules.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
+    case isDirIndex:
+      t << "\\par " << rtf_Style_Reset << endl;
+      t << "{\\tc \\v " << theTranslator->trDirIndex() << "}"<< endl;
+      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"dirs.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
     case isNamespaceIndex:
       t << "\\par " << rtf_Style_Reset << endl;
       t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
@@ -634,22 +645,6 @@ void RTFGenerator::endIndexSection(IndexSections is)
       t << "{\\tc \\v " << theTranslator->trPageIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
-    //case isPackageDocumentation:
-    //  {
-    //    PackageSDict::Iterator pdi(Doxygen::packageDict);
-    //    PackageDef *pd=pdi.toFirst();
-    //    t << "{\\tc \\v " << theTranslator->trPackageDocumentation() << "}"<< endl;
-    //    while (pd)
-    //    {
-    //      t << "\\par " << rtf_Style_Reset << endl;
-    //      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-    //      t << pd->getOutputFileBase();
-    //      t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-    //      ++pdi;
-    //      pd=pdi.current();
-    //    }
-    //  }
-    //  break;
     case isModuleDocumentation:
       {
         GroupSDict::Iterator gli(Doxygen::groupSDict);
@@ -662,6 +657,23 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << "\\par " << rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << gd->getOutputFileBase();
+            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          }
+        }
+      }
+      break;
+    case isDirDocumentation:
+      {
+        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        DirDef *dd;
+        t << "{\\tc \\v " << theTranslator->trDirDocumentation() << "}"<< endl;
+        for (dli.toFirst();(dd=dli.current());++dli)
+        {
+          if (dd->isLinkableInProject())
+          {
+            t << "\\par " << rtf_Style_Reset << endl;
+            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+            t << dd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
         }

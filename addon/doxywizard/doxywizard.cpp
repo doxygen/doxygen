@@ -20,6 +20,8 @@
 #include <qmenubar.h>
 #include <qtooltip.h>
 
+#include <stdlib.h>
+
 #if defined(Q_OS_MACX)
 #include <CoreFoundation/CFBundle.h>
 #include <ApplicationServices/ApplicationServices.h>

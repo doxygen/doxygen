@@ -41,7 +41,7 @@
 #ifndef TRANSLATOR_NO_H
 #define TRANSLATOR_NO_H
 
-class TranslatorNorwegian : public Translator
+class TranslatorNorwegian : public TranslatorAdapter_1_3_9
 {
   public:
 

@@ -40,6 +40,7 @@
 "      <xsd:enumeration value=\"group\"/>\n"
 "      <xsd:enumeration value=\"page\"/>\n"
 "      <xsd:enumeration value=\"example\"/>\n"
+"      <xsd:enumeration value=\"dir\"/>\n"
 "    </xsd:restriction>\n"
 "  </xsd:simpleType>\n"
 "\n"

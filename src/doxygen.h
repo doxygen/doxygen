@@ -35,6 +35,7 @@
 #include "section.h"
 #include "membergroup.h"
 #include "reflist.h"
+#include "dirdef.h"
 
 class PageSList;
 class PageSDict;
@@ -113,7 +114,7 @@ class Doxygen
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
-    static SDict<DirDef>             directories;
+    static DirSDict                  directories;
 };
 
 void initDoxygen();

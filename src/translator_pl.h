@@ -13,14 +13,14 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Polish translation was updated to version 1.3 by
+ * Polish translation was updated to version 1.3.8 by
  * Piotr Kaminski (Piotr.Kaminski@ctm.gdynia.pl)
  */
 
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public TranslatorAdapter_1_3
+class TranslatorPolish : public TranslatorAdapter_1_3_9
 {
   private:
     /*! to avoid macro redefinition from translator_pl.h */
@@ -57,9 +57,6 @@ class TranslatorPolish : public TranslatorAdapter_1_3
     {
       return "\\usepackage{polski} \\usepackage[latin2]{inputenc} \\usepackage[T1]{fontenc}";
     }
-    /*! returns the name of the package that is included by LaTeX */
-    QCString latexBabelPackage() 
-    { return "polish"; }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -154,12 +151,6 @@ class TranslatorPolish : public TranslatorAdapter_1_3
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn()
     { return "zdefiniowana w"; }
-
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    QCString trVerbatimText(const char *f)
-    { return (QCString)decode("Tutaj znajduje siê zawarto¶æ pliku nag³ówkowego ")+f+"."; }
     
     // quick reference sections
 
@@ -472,10 +463,6 @@ class TranslatorPolish : public TranslatorAdapter_1_3
     QCString trEnumerationValues()
     { return decode("Warto¶ci wyliczeñ"); }
     
-    /*! This is used in man pages as the author section. */
-    QCString trAuthor()
-    { return "Autor"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -533,12 +520,6 @@ class TranslatorPolish : public TranslatorAdapter_1_3
       }
     }
 
-    /*! This is used in the documentation of a group before the list of 
-     *  links to documented files
-     */
-    QCString trFiles()
-    { return "Pliki"; }
-
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
      */
@@ -585,10 +566,6 @@ class TranslatorPolish : public TranslatorAdapter_1_3
     /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Data"; }
-
-    /*! this text is generated when the \\author command is used. */
-    QCString trAuthors()
-    { return "Autorzy"; }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns()
@@ -1408,6 +1385,130 @@ class TranslatorPolish : public TranslatorAdapter_1_3
     virtual QCString trEventDocumentation()
     {
       return decode("Dokumentacja zdarzeñ");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Typy pakietu";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Funkcje pakietu";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Statyczne funkcje pakietu";
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Atrybuty pakietu";
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return "Statyczne atrybuty pakietu";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "All";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Oto graf wywo³añ dla tej funkcji:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Szukaj";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Wyniki szukania";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Niestety ¿aden dokument nie pasuje do twojego zapytania.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Znaleziono <b>1</b> dokument pasuj±cy do twojego zapytania.";
+      }
+      int count = numDocuments % 10;
+      if ((count>=2) && (count<=4))
+      {
+        return "Znaleziono <b>$num</b> dokumenty pasuj±ce do twojego zapytania. "
+               "Najlepiej pasuj±ce dokumenty wy¶wietlane s± na pocz±tku listy.";
+      }
+      else 
+      {
+        return "Znaleziono <b>$num</b> dokumentów pasuj±cych do twojego zapytania. "
+               "Najlepiej pasuj±ce dokumenty wy¶wietlane s± na pocz±tku listy.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search 
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Pasuj±ce s³owa:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Plik ¼ród³owy " + filename;
     }
 
 

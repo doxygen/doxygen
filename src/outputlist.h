@@ -389,7 +389,6 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);
-    FORALLPROTO3(bool,bool,bool);
     FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);
@@ -399,6 +398,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO2(const char *,const char *);
     FORALLPROTO2(const char *,bool);
     FORALLPROTO2(const char *,SectionInfo::SectionType);
+    FORALLPROTO3(bool,bool,bool);
     FORALLPROTO3(const char *,const char *,bool);
     FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);
     FORALLPROTO3(uchar,uchar,uchar);

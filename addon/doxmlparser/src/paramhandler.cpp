@@ -64,8 +64,8 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
   addStartHandler("array");
   addEndHandler("array",this,&ParamHandler::endArray);
 
-  addStartHandler("attrib");
-  addEndHandler("attrib",this,&ParamHandler::endAttrib);
+  addStartHandler("attribute");
+  addEndHandler("attribute",this,&ParamHandler::endAttrib);
 
   addStartHandler("defval",this,&ParamHandler::startDefVal);
 

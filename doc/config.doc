@@ -182,6 +182,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_search_includes SEARCH_INCLUDES
 \refitem cfg_searchengine SEARCHENGINE
 \refitem cfg_short_names SHORT_NAMES
+\refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_used_files SHOW_USED_FILES
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
@@ -626,6 +627,13 @@ function's detailed documentation block.
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
+
+\anchor cfg_show_dirs
+<dt>\c SHOW_DIRECTORIES <dd>
+ \addindex SHOW_DIRECTORIES
+ If the sources in your project are distributed over multiple directories
+ then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy
+ in the documentation.
 
 </dl>
 

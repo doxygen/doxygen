@@ -49,7 +49,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapter_1_3_9
 {
   private:
     /*! The Decode() inline assumes the source written in the 

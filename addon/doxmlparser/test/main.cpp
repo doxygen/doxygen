@@ -616,7 +616,7 @@ int main(int argc,char **argv)
         {
           IMember *memr = mr->member();
           printf("      References %s at line %d\n",
-              mr->memberName()->latin1(),memr->bodyStart());
+              mr->name()->latin1(),memr->bodyStart());
         }
 
         mri->release();
@@ -625,7 +625,7 @@ int main(int argc,char **argv)
         {
           IMember *memr = mr->member();
           printf("      ReferencedBy %s at line %d\n",
-              mr->memberName()->latin1(),memr->bodyStart());
+              mr->name()->latin1(),memr->bodyStart());
         }
         mri->release();
 

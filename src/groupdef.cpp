@@ -455,7 +455,6 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
 void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
-  //ol.disable(OutputGenerator::Man);
   startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
   ol.parseText(title);

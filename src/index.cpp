@@ -36,6 +36,7 @@
 #include "ftvhelp.h"
 #include "dot.h"
 #include "pagedef.h"
+#include "dirdef.h"
 
 int annotatedClasses;
 int hierarchyClasses;
@@ -48,12 +49,14 @@ int documentedFileMembers[FMHL_Total];
 int documentedNamespaceMembers[NMHL_Total];
 int documentedHtmlFiles;
 int documentedPages;
+int documentedDirs;
 
 int countClassHierarchy();
 int countClassMembers(int filter=CMHL_All);
 int countFileMembers(int filter=FMHL_All);
 void countFiles(int &htmlFiles,int &files);
 int countGroups();
+int countDirs();
 int countNamespaces();
 int countAnnotatedClasses();
 int countNamespaceMembers(int filter=NMHL_All);
@@ -68,6 +71,7 @@ void countDataStructures()
   countRelatedPages(documentedPages,indexedPages);
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
+  documentedDirs             = countDirs();
   int i;
   for (i=0;i<(int)CMHL_Total;i++)
   {
@@ -201,144 +205,6 @@ static QCString fixSpaces(const QCString &s)
   return substitute(s," ","&nbsp;");
 }
 
-//void writeQuickLinks(OutputList &ol,bool compact,HighlightedItem hli,bool ext=FALSE)
-//{
-//  bool first=TRUE;
-//  ol.pushGeneratorState();
-//  ol.disableAllBut(OutputGenerator::Html);
-//  QCString extLink;
-//  if (ext) { extLink="_doc"; }
-//  if (compact) 
-//  {
-//    ol.writeString("<div class=\"qindex\">"); 
-//  }
-//  else 
-//  {
-//    ol.startItemList();
-//  }
-//
-//  if (Config_getBool("SEARCHENGINE"))
-//  {
-//    ol.writeString("  <form class=\"search\" action=\"search.php\" method=\"get\">\n");
-//  }
-//
-//  if (Config_getBool("GENERATE_TREEVIEW"))
-//  {
-//    startQuickIndexItem(ol,extLink,"main"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Main,compact,first);
-//  }
-//  else
-//  {
-//    startQuickIndexItem(ol,extLink,"index"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Main,compact,first);
-//  }
-//  ol.parseText(fixSpaces(theTranslator->trMainPage()));
-//  endQuickIndexItem(ol);
-//
-//  if (documentedGroups>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"modules"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Modules,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trModules()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (documentedNamespaces>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"namespaces"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Namespaces,compact,first);
-//    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-//    {
-//      ol.parseText(fixSpaces(theTranslator->trPackages()));
-//    }
-//    else
-//    {
-//      ol.parseText(theTranslator->trNamespaceList());
-//    }
-//    endQuickIndexItem(ol);
-//  }
-//  if (hierarchyClasses>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"hierarchy"+Doxygen::htmlFileExtension,
-//                           hli==HLI_Hierarchy,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trClassHierarchy()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (annotatedClasses>0)
-//  {
-//    if (Config_getBool("ALPHABETICAL_INDEX"))
-//    {
-//      startQuickIndexItem(ol,extLink,"classes"+Doxygen::htmlFileExtension,
-//                          hli==HLI_Classes,compact,first);
-//      ol.parseText(fixSpaces(theTranslator->trAlphabeticalList()));
-//      endQuickIndexItem(ol);
-//    }
-//    if (!compact) ol.writeListItem();
-//    startQuickIndexItem(ol,extLink,"annotated"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Annotated,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trCompoundList()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (documentedHtmlFiles>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"files"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Files,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trFileList()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (documentedNamespaceMembers[NMHL_All]>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"namespacemembers"+Doxygen::htmlFileExtension,
-//                        hli==HLI_NamespaceMembers,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trNamespaceMembers()));
-//    endQuickIndexItem(ol);
-//  }
-//  if (documentedClassMembers[CMHL_All]>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"functions"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Functions,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trCompoundMembers()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (documentedFileMembers[FMHL_All]>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"globals"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Globals,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trFileMembers()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (indexedPages>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"pages"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Pages,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trRelatedPages()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (Doxygen::exampleSDict->count()>0)
-//  {
-//    startQuickIndexItem(ol,extLink,"examples"+Doxygen::htmlFileExtension,
-//                        hli==HLI_Examples,compact,first);
-//    ol.parseText(fixSpaces(theTranslator->trExamples()));
-//    endQuickIndexItem(ol);
-//  } 
-//  if (Config_getBool("SEARCHENGINE"))
-//  {
-//    //startQuickIndexItem(ol,"_cgi","",hli==HLI_Search,compact,first);
-//    //ol.parseText(fixSpaces(theTranslator->trSearch()));
-//    //endQuickIndexItem(ol);
-//    ol.writeString("  | <span class=\"search\"><u>S</u>earch for "
-//                   "<input class=\"search\" type=\"text\" name=\"query\" value=\"\" size=\"30\" accesskey=\"s\"/>"
-//                   "</span>");
-//  } 
-//  if (compact) 
-//  {
-//    ol.writeString("</div>\n");
-//  }
-//  else 
-//  {
-//    ol.endItemList();
-//  }
-//  ol.popGeneratorState();
-//}
 
 void startTitle(OutputList &ol,const char *fileName)
 {
@@ -830,6 +696,12 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+static bool nameIsOk(FileDef *fd)
+{
+  return fd->name().right(4)!=".doc" && 
+         fd->name().right(4)!=".txt" &&
+         fd->name().right(4)!=".dox";
+}
 
 void countFiles(int &htmlFiles,int &files)
 {
@@ -845,8 +717,7 @@ void countFiles(int &htmlFiles,int &files)
     {
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      bool nameOk = fd->name().right(4)!=".doc" && 
-                    fd->name().right(4)!=".txt";
+      bool nameOk = nameIsOk(fd);
       if (nameOk)
       {
         if (doc || src)
@@ -952,8 +823,7 @@ void writeFileIndex(OutputList &ol)
       //printf("Found filedef %s\n",fd->name().data());
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      bool nameOk = fd->name().right(4)!=".doc" && 
-                    fd->name().right(4)!=".txt";
+      bool nameOk = nameIsOk(fd);
       if (nameOk && (doc || src) && 
               !fd->isReference())
       {
@@ -2587,6 +2457,24 @@ int countGroups()
   return count;
 }
 
+//----------------------------------------------------------------------------
+
+int countDirs()
+{
+  int count=0;
+  SDict<DirDef>::Iterator dli(Doxygen::directories);
+  DirDef *dd;
+  for (dli.toFirst();(dd=dli.current());++dli)
+  {
+    if (dd->isLinkableInProject())
+    {
+      dd->visited=FALSE;
+      count++;
+    }
+  }
+  return count;
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -2650,7 +2538,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     bool hasSubGroups = gd->groupList->count()>0;
     bool hasSubPages = gd->pageDict->count()>0;
     int numSubItems = 0;
-    if( Config_getBool("TOC_EXPAND"))
+    if ( Config_getBool("TOC_EXPAND"))
     {
       numSubItems += gd->docDefineMembers.count();
       numSubItems += gd->docTypedefMembers.count();
@@ -2666,7 +2554,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
     //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
-    if(htmlHelp)
+    if (htmlHelp)
     {
         htmlHelp->addContentsItem(isDir,gd->groupTitle(),gd->getOutputFileBase()); 
         htmlHelp->incContentsDepth();
@@ -2702,12 +2590,12 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     {
       SectionInfo *si=0;
       if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
-      if(htmlHelp) htmlHelp->addContentsItem(FALSE,
+      if (htmlHelp) htmlHelp->addContentsItem(FALSE,
                                    convertToHtml(pd->title()),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0
                                   ); 
-      if(ftvHelp)  ftvHelp->addContentsItem(FALSE,
+      if (ftvHelp)  ftvHelp->addContentsItem(FALSE,
                                    gd->getReference(),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0,
@@ -2764,23 +2652,23 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
               if (first)
               {
                 first=FALSE;
-                if(htmlHelp)
+                if (htmlHelp)
                 {
                   htmlHelp->addContentsItem(TRUE, convertToHtml(pMemInfo->name), gd->getOutputFileBase(),0);
                   htmlHelp->incContentsDepth();
                 }
-                if(ftvHelp)
+                if (ftvHelp)
                 {
 
                   ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, pMemInfo->name);
                   ftvHelp->incContentsDepth();
                 }
               }
-              if(htmlHelp)
+              if (htmlHelp)
               {
                 htmlHelp->addContentsItem(FALSE,md->name(),md->getOutputFileBase(),md->anchor()); 
               }
-              if(ftvHelp)
+              if (ftvHelp)
               {
                 ftvHelp->addContentsItem(FALSE,md->getReference(),md->getOutputFileBase(),md->anchor(),md->name()); 
               }
@@ -2788,8 +2676,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
             md=members->next();
           }
 
-          if(htmlHelp && !first) htmlHelp->decContentsDepth();
-          if(ftvHelp && !first)  ftvHelp->decContentsDepth();
+          if (htmlHelp && !first) htmlHelp->decContentsDepth();
+          if (ftvHelp && !first)  ftvHelp->decContentsDepth();
 
         }
       }
@@ -2798,13 +2686,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       NamespaceList *namespaceList=gd->namespaceList;
       if (namespaceList->count()>0)
       {
-        if(htmlHelp)
+        if (htmlHelp)
         {
           htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces()), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
-        if(ftvHelp)
+        if (ftvHelp)
         {
 
           ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trNamespaces());
@@ -2814,11 +2702,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         NamespaceDef *nsd=namespaceList->first();
         while (nsd)
         {
-          if(htmlHelp)
+          if (htmlHelp)
           {
             htmlHelp->addContentsItem(FALSE, convertToHtml(nsd->name()), nsd->getOutputFileBase());
           }
-          if(ftvHelp)
+          if (ftvHelp)
           {
             ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name()));
           }
@@ -2831,13 +2719,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       // write classes
       if (gd->classSDict->count()>0)
       {
-        if(htmlHelp)
+        if (htmlHelp)
         {
           htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trClasses()), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
-        if(ftvHelp)
+        if (ftvHelp)
         {
 
           ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trClasses());
@@ -2859,15 +2747,15 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         }
 
         //writeClassTree(gd->classSDict,1);
-        if(htmlHelp) htmlHelp->decContentsDepth();
-        if(ftvHelp)  ftvHelp->decContentsDepth();
+        if (htmlHelp) htmlHelp->decContentsDepth();
+        if (ftvHelp)  ftvHelp->decContentsDepth();
       }
 
       // write file list
       FileList *fileList=gd->fileList;
       if (fileList->count()>0)
       {
-        if(htmlHelp)
+        if (htmlHelp)
         {
           htmlHelp->addContentsItem(TRUE, 
               convertToHtml(theTranslator->trFile(TRUE,FALSE)), 
@@ -2875,7 +2763,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           htmlHelp->incContentsDepth();
         }
 
-        if(ftvHelp)
+        if (ftvHelp)
         {
 
           ftvHelp->addContentsItem(TRUE, gd->getReference(), 
@@ -2887,28 +2775,28 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         FileDef *fd=fileList->first();
         while (fd)
         {
-          if(htmlHelp)
+          if (htmlHelp)
             htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase());
-          if(ftvHelp)
+          if (ftvHelp)
             ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
           fd=fileList->next();
         }
-        if(htmlHelp)
+        if (htmlHelp)
           htmlHelp->decContentsDepth();
-        if(ftvHelp)
+        if (ftvHelp)
           ftvHelp->decContentsDepth();
       }
 
       // write examples
       if (gd->exampleDict->count()>0)
       {
-        if(htmlHelp)
+        if (htmlHelp)
         {
           htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trExamples()), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
-        if(ftvHelp)
+        if (ftvHelp)
         {
           ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trExamples());
           ftvHelp->incContentsDepth();
@@ -2918,11 +2806,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         PageDef *pd=eli.toFirst();
         while (pd)
         {
-          if(htmlHelp)
+          if (htmlHelp)
           {
             htmlHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase()); 
           }
-          if(ftvHelp)
+          if (ftvHelp)
           {
             ftvHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name()); 
           }
@@ -2949,6 +2837,121 @@ void writeGroupHierarchy(OutputList &ol)
   for (gli.toFirst();(gd=gli.current());++gli)
   {
     writeGroupTreeNode(ol,gd,0);
+  }
+  endIndexHierarchy(ol,0); 
+}
+
+//----------------------------------------------------------------------------
+void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
+{
+  HtmlHelp *htmlHelp=0;
+  FTVHelp  *ftvHelp = 0;
+  if (level>20)
+  {
+    warn(dd->getDefFileName(),dd->getDefLine(),
+        "Warning: maximum nesting level exceeded for directory %s: "
+        "check for possible recursive directory relation!\n",dd->name().data()
+        );
+    return;
+  }
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+  }
+
+  bool isDir = TRUE;
+  //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
+  if (htmlHelp)
+  {
+    htmlHelp->addContentsItem(isDir,dd->displayName(),dd->getOutputFileBase()); 
+    htmlHelp->incContentsDepth();
+  }
+  if (ftvHelp)
+  {
+    ftvHelp->addContentsItem(isDir,dd->getReference(),dd->getOutputFileBase(),
+        0,dd->displayName()); 
+    ftvHelp->incContentsDepth();
+  }
+
+  ol.writeIndexItem(dd->getReference(),dd->getOutputFileBase(),dd->shortName());
+  if (dd->isReference()) 
+  { 
+    ol.startTypewriter(); 
+    ol.docify(" [external]");
+    ol.endTypewriter();
+  }
+
+  // write subgroups
+  if (dd->subDirs().count()>0)
+  {
+    startIndexHierarchy(ol,level+1);
+    QListIterator<DirDef> dli(dd->subDirs());
+    DirDef *subdd = 0;
+    for (dli.toFirst();(subdd=dli.current());++dli)
+    {
+      writeDirTreeNode(ol,subdd,level+1);
+    }
+    endIndexHierarchy(ol,level+1); 
+  }
+
+  if (Config_getBool("TOC_EXPAND"))
+  {
+    // write file list
+    FileList *fileList=dd->getFiles();
+    if (fileList && fileList->count()>0)
+    {
+      if (htmlHelp)
+      {
+        htmlHelp->addContentsItem(TRUE, 
+            convertToHtml(theTranslator->trFile(TRUE,FALSE)), 
+            dd->getOutputFileBase(), 0);
+        htmlHelp->incContentsDepth();
+      }
+
+      if (ftvHelp)
+      {
+
+        ftvHelp->addContentsItem(TRUE, dd->getReference(), 
+            dd->getOutputFileBase(), 0, 
+            theTranslator->trFile(TRUE,FALSE));
+        ftvHelp->incContentsDepth();
+      }
+
+      FileDef *fd=fileList->first();
+      while (fd)
+      {
+        if (htmlHelp)
+          htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase());
+        if (ftvHelp)
+          ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
+        fd=fileList->next();
+      }
+      if (htmlHelp)
+        htmlHelp->decContentsDepth();
+      if (ftvHelp)
+        ftvHelp->decContentsDepth();
+    }
+  }
+
+  if (htmlHelp) htmlHelp->decContentsDepth();
+  if (ftvHelp)  ftvHelp->decContentsDepth();
+}
+
+void writeDirHierarchy(OutputList &ol)
+{
+  startIndexHierarchy(ol,0);
+  SDict<DirDef>::Iterator dli(Doxygen::directories);
+  DirDef *dd;
+  for (dli.toFirst();(dd=dli.current());++dli)
+  {
+    if (dd->getOuterScope()==Doxygen::globalScope) writeDirTreeNode(ol,dd,0);
   }
   endIndexHierarchy(ol,0); 
 }
@@ -2990,7 +2993,7 @@ void writeGroupList(OutputList &ol)
       if (hasHtmlHelp)
       {
         htmlHelp = HtmlHelp::getInstance();
-        if(!Config::instance()->get(""))
+        if (!Config::instance()->get(""))
         {
           htmlHelp->addContentsItem(FALSE,gd->groupTitle(),docFile);
         }
@@ -2998,7 +3001,7 @@ void writeGroupList(OutputList &ol)
       if (hasFtvHelp)
       {
         ftvHelp = FTVHelp::getInstance();
-        if(!Config::instance()->get(""))
+        if (!Config::instance()->get(""))
         {
           ftvHelp->addContentsItem(FALSE,gd->groupTitle(),docFile); 
         }
@@ -3045,6 +3048,59 @@ void writeGroupIndex(OutputList &ol)
   ol.parseText(theTranslator->trModulesDescription());
   ol.endTextBlock();
   writeGroupHierarchy(ol);
+  if (hasHtmlHelp)
+  {
+    htmlHelp->decContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
+  }
+  endFile(ol);
+  ol.popGeneratorState();
+}
+
+//----------------------------------------------------------------------------
+
+void writeDirIndex(OutputList &ol)
+{
+  if (documentedDirs==0) return; 
+  ol.pushGeneratorState(); 
+  ol.disable(OutputGenerator::Man);
+  startFile(ol,"dirs",0,theTranslator->trDirIndex().data(),HLI_Directories);
+  startTitle(ol,0);
+  QCString title = theTranslator->trDirectories();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
+  if (!Config_getString("PROJECT_NAME").isEmpty()) 
+  {
+    title.prepend(Config_getString("PROJECT_NAME")+" ");
+  }
+  ol.parseText(title);
+  endTitle(ol,0,0);
+  ol.startTextBlock();
+  HtmlHelp *htmlHelp = 0;
+  FTVHelp  *ftvHelp = 0;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"dirs"); 
+    htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,0,"dirs",0,ftvHelpTitle); 
+    ftvHelp->incContentsDepth();
+  }
+  ol.parseText(theTranslator->trDirDescription());
+  ol.endTextBlock();
+
+  writeDirHierarchy(ol);
+
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
@@ -3219,6 +3275,12 @@ void writeIndex(OutputList &ol)
       ol.parseText(projPrefix+theTranslator->trModuleIndex());
       ol.endIndexSection(isModuleIndex);
     }
+    if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
+    {
+      ol.startIndexSection(isDirIndex);
+      ol.parseText(projPrefix+theTranslator->trDirIndex());
+      ol.endIndexSection(isDirIndex);
+    }
     if (documentedNamespaces>0)
     {
       ol.startIndexSection(isNamespaceIndex);
@@ -3256,6 +3318,12 @@ void writeIndex(OutputList &ol)
     ol.startIndexSection(isModuleDocumentation);
     ol.parseText(projPrefix+theTranslator->trModuleDocumentation());
     ol.endIndexSection(isModuleDocumentation);
+  }
+  if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
+  {
+    ol.startIndexSection(isDirDocumentation);
+    ol.parseText(projPrefix+theTranslator->trDirDocumentation());
+    ol.endIndexSection(isDirDocumentation);
   }
   if (documentedNamespaces>0)
   {

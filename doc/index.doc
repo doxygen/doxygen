@@ -49,10 +49,10 @@ It can help you in three ways:
      for this manual).
 </ol>
 
-Doxygen is developed under <a href="http://www.linux.org">Linux</a>, 
-but is set-up to be highly portable. As a result, it runs on most 
-other Unix flavors as well. Furthermore, executables for 
-Windows 9x/NT and Mac OS X are available.
+Doxygen is developed under <a href="http://www.linux.org">Linux</a>
+and Mac OS X, but is set-up to be highly portable. As a result, it 
+runs on most other Unix flavors as well. Furthermore, executables for 
+Windows are available.
 
 \n This manual is divided into three parts, each of which is divided into several 
 sections.
@@ -128,9 +128,19 @@ for more details.
 Documents produced by doxygen are derivative works derived from the
 input used in their production; they are not affected by this license.
 
-<h2>Projects using doxygen</h2>
+<h2>User examples</h2>
 
-I have compiled a 
+Doxygen supports a number of \ref output "output formats" where HTML is the
+most popular one. I've gathered 
+\htmlonly
+<a href="http://www.doxygen.org/results.html">some nice examples</a> 
+\endhtmlonly
+\latexonly
+some nice examples (see {\tt http://www.doxygen.org/results.html})
+\endlatexonly
+of real-life projects using doxygen.
+
+These are part of a larger
 \htmlonly
 <a href="http://www.doxygen.org/projects.html">list of projects</a> 
 that use doxygen.

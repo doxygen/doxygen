@@ -230,7 +230,8 @@ class Entry
       USINGDECL_SEC    = 0x14000000,
       PACKAGE_SEC      = 0x15000000,
       PACKAGEDOC_SEC   = 0x16000000,
-      OBJCIMPL_SEC     = 0x17000000
+      OBJCIMPL_SEC     = 0x17000000,
+      DIRDOC_SEC       = 0x18000000,
     };
     enum MemberSpecifier
     {

@@ -22,10 +22,21 @@
 #include "sortdict.h"
 #include "definition.h"
 
+#include <qlist.h>
+
 class FileList;
 class ClassSDict;
 class QStrList;
 class FileDef;
+class OutputList;
+
+class DirDef;
+
+class DirDefList : public QList<DirDef>
+{
+  public:
+   int compareItems(GCI item1,GCI item2);
+};
 
 class DirDef : public Definition
 {
@@ -33,29 +44,54 @@ class DirDef : public Definition
     DirDef(const char *path);
     virtual ~DirDef();
     virtual DefType definitionType() { return TypeDir; }
-    virtual QCString getOutputFileBase() const { return ""; }
-    virtual bool isLinkableInProject() const { return FALSE; }
-    virtual bool isLinkable() const { return FALSE; }
+    virtual QCString getOutputFileBase() const;
+    virtual bool isLinkableInProject() const { return !isReference() && hasDocumentation(); }
+    virtual bool isLinkable() const { return isReference() || isLinkableInProject(); }
     QCString displayName() const { return m_dispName; }
+    QCString shortName() const { return m_shortName; }
     void addSubDir(DirDef *subdir);
     FileList *   getFiles() const        { return m_fileList; }
     ClassSDict * getClasses() const      { return m_classSDict; }
-    DirDef *parent() const { return m_parent; }
     void addFile(FileDef *fd);
+    void writeDetailedDocumentation(OutputList &ol);
+    void writeDocumentation(OutputList &ol);
+    void writeNavigationPath(OutputList &ol);
+    const QList<DirDef> &subDirs() const { return m_subdirs; }
+    
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
+    bool visited;
 
   private:
+    void writePathFragment(OutputList &ol);
     static DirDef *createNewDir(const char *path);
     static bool matchPath(const QCString &path,QStrList &l);
 
-    QList<DirDef> m_subdirs;
-    DirDef *m_parent;
+    DirDefList m_subdirs;
     QCString m_dispName;
+    QCString m_shortName;
     FileList *m_fileList;                 // list of files in the group
     ClassSDict *m_classSDict;             // list of classes in the group
+    int m_dirCount;
 };
 
+inline int DirDefList::compareItems(GCI item1,GCI item2)
+{
+  return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+}
+
+class DirSDict : public SDict<DirDef>
+{
+  public:
+    DirSDict(int size) : SDict<DirDef>(size) {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return stricmp(((DirDef *)item1)->shortName(),((DirDef *)item2)->shortName());
+    }
+};
+
+
 void buildDirectories();
+void generateDirDocs(OutputList &ol);
 
 #endif
