@@ -22,7 +22,6 @@
 #include "outputgen.h"
 
 class QFile;
-class HtmlHelp;
 
 class HtmlGenerator : public OutputGenerator
 {
@@ -249,7 +248,6 @@ class HtmlGenerator : public OutputGenerator
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);
 
-    static HtmlHelp *htmlHelp;
     int col;
 };
 

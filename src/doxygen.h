@@ -116,6 +116,7 @@ extern int documentedGroups;
 extern int documentedNamespaces;
 extern int documentedNamespaceMembers;
 extern int documentedIncludeFiles;
+extern int documentedPages;
 extern QCString spaces;
 
 extern const char * getOverloadDocs();

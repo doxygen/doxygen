@@ -810,11 +810,8 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->countMembers()>0)
-          {
-            beginRTFChapter();
-            found=TRUE;
-          }
+          beginRTFChapter();
+          found=TRUE;
           gd=groupList.next();
         }
       }
@@ -965,31 +962,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isModuleDocumentation:
       {
         GroupDef *gd=groupList.first();
-        bool found=FALSE;
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
-        while (gd && !found)
-        {
-          if (gd->countMembers()>0)
-          {
-            t << "\\par " << Rtf_Style_Reset << endl;
-            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << gd->getOutputFileBase();
-            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-
-            found=TRUE;
-          }
-          gd=groupList.next();
-        }
         while (gd)
         {
-          if (gd->countMembers()>0)
-          {
-            t << "\\par " << Rtf_Style_Reset << endl;
-            beginRTFSection();
-            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << gd->getOutputFileBase();
-            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-          }
+          t << "\\par " << Rtf_Style_Reset << endl;
+          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+          t << gd->getOutputFileBase();
+          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           gd=groupList.next();
         }
       }
@@ -1120,30 +1099,22 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
         PageSDictIterator pdi(*pageSDict);
         PageInfo *pi=pdi.toFirst();
-        if (pi)
+        bool first=TRUE;
+        for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          QCString pageName;
-          if (Config::caseSensitiveNames)
-            pageName=pi->name.copy();
-          else
-            pageName=pi->name.lower();
-          t << "\\par " << Rtf_Style_Reset << endl;
-          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << pageName;
-          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-        }
-        for (++pdi;(pi=pdi.current());++pdi)
-        {
-          QCString pageName;
-          if (Config::caseSensitiveNames)
-            pageName=pi->name.copy();
-          else
-            pageName=pi->name.lower();
-          //t << "\\par " << Rtf_Style_Reset << endl;
-          //beginRTFSection();
-          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << pageName;
-          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          if (!pi->inGroup)
+          {
+            QCString pageName;
+            if (Config::caseSensitiveNames)
+              pageName=pi->name.copy();
+            else
+              pageName=pi->name.lower();
+            if (first) t << "\\par " << Rtf_Style_Reset << endl;
+            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+            t << pageName;
+            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+            first=FALSE;
+          }
         }
       }
       break;

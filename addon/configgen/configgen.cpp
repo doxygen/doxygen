@@ -712,8 +712,8 @@ int main(int argc,char * argv[])
   // process template file
   while (!ctfile.atEnd()) 
   {
-    int l=ctfile.readLine(buf,maxLineLen-1);
-    if (buf[l-2]=='\r') // remove the \r for the folks using Windows
+    int l = ctfile.readLine(buf,maxLineLen-1);
+    if (l>1 && buf[l-2]=='\r') // remove the \r for the folks using Windows
     {
       buf[l-2]='\n';
       buf[l-1]='\r';
@@ -1302,6 +1302,31 @@ void init()
                     1,20
                 );
   addDependency("enumValuesPerLine","generateHtml");
+  ConfigBool::add(  "ftvHelpFlag",
+                    "GENERATE_TREEVIEW",
+                    "FALSE",
+                    "should a folder tree view be generated?",
+                    "If the GENERATE_TREEVIEW tag is set to YES, a side pannel will be\n"
+                    "generated containing a tree-like index structure (just like the one that \n"
+                    "is generated for HTML Help). For this to work a browser that supports \n"
+                    "JavaScript and frames is required (for instance Netscape 4.0+ \n"
+                    "or Internet explorer 4.0+). "
+                 );
+  addDependency("ftvHelpFlag","generateHtml");
+
+//  TODO: integrate this option
+//  ConfigBool::add(  "htmlHelpGroupsOnly",
+//                    "HTMLHELP_GROUPS_ONLY",
+//                    "FALSE",
+//                    "should \\ingroup's be used to create HTML Help hierarchy?",
+//                    "If the HTMLHELP_GROUPS_ONLY tag is set to YES,  documented objects are \n"
+//                    "displayed in the HTML Help tree if and only if they are \n"
+//                    "placed in a user-defined group using the \\ingroup markup. \n"
+//                    "Use \\defgroup to define a group before adding objects to a group. \n"
+//                    "Also affects FTV Help (see GENERATE_FTVHELP tag). \n"
+//                 );
+//  addDependency("htmlHelpGroupsOnly","generateHtml");
+
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "LaTeX","configuration options related to the LaTeX output");
   //-----------------------------------------------------------------------------------------------

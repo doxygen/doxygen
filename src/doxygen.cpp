@@ -51,6 +51,7 @@
 #include "language.h"
 #include "debug.h"
 #include "htmlhelp.h"
+#include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
 #include "xml.h"
@@ -193,6 +194,7 @@ int documentedGroups;
 int documentedNamespaces;
 int documentedNamespaceMembers;
 int documentedIncludeFiles;
+int documentedPages;
 
 QTextStream tagFile;
 
@@ -218,7 +220,7 @@ const char *getOverloadDocs()
 static void addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<QCString> *anchors,
                            const char *fileName,int startLine,
-                           int todoId,int testId
+                           int todoId,int testId,GroupDef *gd=0
                           )
 {
   PageInfo *pi=0;
@@ -251,6 +253,8 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
     setFileNameForSections(anchors,pageName);
 
     pageSDict->append(baseName,pi);
+
+    if (gd) gd->addPage(pi);
     
     if (!pi->title.isEmpty())
     {
@@ -259,12 +263,33 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
           pi->name,pi->title,SectionInfo::Section);
-      si->fileName=pageName;
+      if (gd)
+      {
+        si->fileName=gd->getOutputFileBase();
+      }
+      else
+      {
+        si->fileName=pageName;
+      }
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section info %s\n",pi->name.data());
       sectionDict.insert(pageName,si);
     }
   }
+}
+
+static void addRelatedPage(Entry *root)
+{
+  GroupDef *gd=0;
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    if (!s->isEmpty() && (gd=groupDict[*s])) break;
+  }
+  addRelatedPage(root->name,root->args,root->doc,root->anchors,
+      root->fileName,root->startLine,root->todoId,root->testId,gd
+     );
 }
 
 //----------------------------------------------------------------------------
@@ -1754,7 +1779,11 @@ static void buildMemberList(Entry *root)
             QCString nsName,rnsName;
             if (nd)  nsName  = nd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
+            QCString groupName,rgroupName;
+            if (md->getGroupDef()) groupName=md->getGroupDef()->name().copy();
+            if (root->groups && root->groups->first()) rgroupName=root->groups->first()->copy(); 
             //printf("namespace `%s' `%s'\n",nsName.data(),rnsName.data());
+            //printf("groupNames `%s' `%s'\n",groupName.data(),rgroupName.data());
             if ( 
                 matchArguments(md->argumentList(),root->argList,0,nsName)
                )
@@ -1764,7 +1793,10 @@ static void buildMemberList(Entry *root)
                     ((fd!=0 &&                          // no external reference and
                       fd->absFilePath()==root->fileName // prototype in the same file
                      ) || 
-                     md->getGroupDef()!=0               // member is part of a group
+                     (
+                      !groupName.isEmpty() ||           // member is or was part of a group
+                      !rgroupName.isEmpty()
+                     )
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
               
@@ -4565,9 +4597,7 @@ static void buildPageList(Entry *root)
   {
     if (!root->name.isEmpty())
     {
-      addRelatedPage(root->name,root->args,root->doc,root->anchors,
-                     root->fileName,root->startLine,root->todoId,root->testId
-                    );
+      addRelatedPage(root);
     }
   }
   else if (root->section == Entry::MAINPAGEDOC_SEC)
@@ -4670,32 +4700,36 @@ static void resolveUserReferences()
 
 static void generatePageDocs()
 {
+  if (documentedPages==0) return;
   PageSDictIterator pdi(*pageSDict);
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    msg("Generating docs for page %s...\n",pi->name.data());
-    outputList->disable(OutputGenerator::Man);
-    QCString pageName;
-    if (Config::caseSensitiveNames)
-      pageName=pi->name.copy();
-    else
-      pageName=pi->name.lower();
-    
-    startFile(*outputList,pageName,pi->title);
-    SectionInfo *si=0;
-    if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
-        (si=sectionDict[pi->name])!=0)
+    if (!pi->inGroup)
     {
-      outputList->startSection(si->label,si->title,FALSE);
-      outputList->docify(si->title);
-      outputList->endSection(si->label,FALSE);
+      msg("Generating docs for page %s...\n",pi->name.data());
+      outputList->disable(OutputGenerator::Man);
+      QCString pageName;
+      if (Config::caseSensitiveNames)
+        pageName=pi->name.copy();
+      else
+        pageName=pi->name.lower();
+
+      startFile(*outputList,pageName,pi->title);
+      SectionInfo *si=0;
+      if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
+          (si=sectionDict[pi->name])!=0)
+      {
+        outputList->startSection(si->label,si->title,FALSE);
+        outputList->docify(si->title);
+        outputList->endSection(si->label,FALSE);
+      }
+      outputList->startTextBlock();
+      parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
+      outputList->endTextBlock();
+      endFile(*outputList);
+      outputList->enable(OutputGenerator::Man);
     }
-    outputList->startTextBlock();
-    parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
-    outputList->endTextBlock();
-    endFile(*outputList);
-    outputList->enable(OutputGenerator::Man);
   }
 }
 
@@ -4724,6 +4758,7 @@ static void buildExampleList(Entry *root)
                                convertFileName(pi->name)+"-example"
                               );
         exampleSDict->inSort(root->name,pi);
+        addExampleToGroups(root,pi);
       }
     }
   }
@@ -4774,13 +4809,17 @@ static void generateGroupDocs()
   for (;(gd=gli.current());++gli)
   {
     //printf("group %s #members=%d\n",gd->name().data(),gd->countMembers());
-    if (gd->countMembers()>0) gd->writeDocumentation(*outputList);
-    else
-    {
-      warn(gd->getDefFileName(),gd->getDefLine(),
-           "Warning: group %s does not have any (documented) members.",
-            gd->name().data());
-    }
+    //if (gd->countMembers()>0) 
+    //{
+    // gd->writeDocumentation(*outputList);
+    //}
+    //else
+    //{
+    //  warn(gd->getDefFileName(),gd->getDefLine(),
+    //       "Warning: group %s does not have any (documented) members.",
+    //        gd->name().data());
+    //}
+    gd->writeDocumentation(*outputList);
   }
 }
 
@@ -5709,6 +5748,7 @@ int main(int argc,char **argv)
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
     if (Config::htmlHelpFlag) HtmlHelp::getInstance()->initialize();
+    if (Config::ftvHelpFlag) FTVHelp::getInstance()->initialize();
     copyStyleSheet();
   }
   if (Config::generateLatex) 
@@ -6037,6 +6077,7 @@ int main(int argc,char **argv)
   documentedGroups           = countGroups();
   documentedNamespaces       = countNamespaces();
   documentedNamespaceMembers = countNamespaceMembers();
+  documentedPages            = countRelatedPages();
   //documentedIncludeFiles     = countIncludeFiles();
  
   // compute the shortest possible names of all files
@@ -6153,6 +6194,10 @@ int main(int argc,char **argv)
   if (Config::generateHtml && Config::htmlHelpFlag)  
   {
     HtmlHelp::getInstance()->finalize();
+  }
+  if (Config::generateHtml && Config::ftvHelpFlag)  
+  {
+    FTVHelp::getInstance()->finalize();
   }
 
 

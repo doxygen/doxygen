@@ -24,6 +24,7 @@
 #include "definition.h"
 #include "memberlist.h"
 #include "memberdef.h"
+#include "htmlhelp.h"
 
 class FileList;
 class ClassList;
@@ -35,6 +36,8 @@ class OutputList;
 class NamespaceList;
 class MemberGroupList;
 class MemberGroupDict;
+class PageSDict;
+class PageInfo;
 
 class GroupDef : public Definition
 {
@@ -48,6 +51,8 @@ class GroupDef : public Definition
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
+    void addPage(PageInfo *def);                // pages in this group
+    void addExample(const PageInfo *def);       // examples in this group
     void insertMember(MemberDef *def);
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
@@ -64,6 +69,10 @@ class GroupDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
 
+    bool visited;    // number of times accessed for output - KPW
+
+    friend void writeGroupTreeNode(OutputList&, GroupDef*);      // make accessible for writing tree view of group in index.cpp - KPW
+
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
@@ -74,6 +83,8 @@ class GroupDef : public Definition
     ClassList *classList;               // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
     GroupList *groupList;               // list of sub groups.
+    PageSDict *pageDict;                // list of pages in the group
+    PageSDict *exampleDict;             // list of examples in the group
 
     MemberList *allMemberList;          // list of all members in the group
     QDict<MemberDef> *allMemberDict;
@@ -107,5 +118,8 @@ void addClassToGroups(Entry *root,ClassDef *cd);
 void addNamespaceToGroups(Entry *root,NamespaceDef *nd);
 void addGroupToGroups(Entry *root,GroupDef *subGroup);
 void addMemberToGroups(Entry *root,MemberDef *md);
+void addPageToGroups(Entry *root,PageInfo *pi);
+void addExampleToGroups(Entry *root,PageInfo *eg);
 
 #endif
+

@@ -267,7 +267,7 @@ void HtmlHelp::initialize()
   cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
-         "<param name=\"ImageType\" value=\"Folder\">\n"
+         "<param name=\"FrameName\" value=\"right\">\n"
          "</OBJECT>\n"
          "<UL>\n";
   
@@ -284,7 +284,7 @@ void HtmlHelp::initialize()
   kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
-         "<param name=\"ImageType\" value=\"Folder\">\n"
+         "<param name=\"FrameName\" value=\"right\">\n"
          "</OBJECT>\n"
          "<UL>\n";
 }
@@ -297,19 +297,21 @@ void HtmlHelp::createProjectFile()
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
+    QCString indexName="index.html";
+    if (Config::ftvHelpFlag) indexName="main.html";
     t << "[OPTIONS]\n"
          "Compatibility=1.1\n"
          "Full-text search=Yes\n"
          "Contents file=index.hhc\n"
          "Default Window=main\n"
-         "Default topic=index.html\n"
+         "Default topic=" << indexName << "\n"
          "Index file=index.hhk\n"
          "Title=" << Config::projectName << endl << endl;
     
     t << "[WINDOWS]" << endl;
     t << "main=\"" << Config::projectName << "\",\"index.hhc\","
-         "\"index.hhk\",\"index.html\",\"index.html\",,,,,0x23520,,"
-         "0x3006,,,,,,,,0" << endl << endl;
+         "\"index.hhk\",\"" << indexName << "\",\"" << 
+         indexName << "\",,,,,0x23520,,0x3006,,,,,,,,0" << endl << endl;
     
     t << "[FILES]" << endl;
     char *s = indexFiles.first();
@@ -380,19 +382,30 @@ int HtmlHelp::decContentsDepth()
  *  \param name the name of the item.
  *  \param ref  the URL of to the item.
  */
-void HtmlHelp::addContentsItem(const char *name,const char *ref, 
+void HtmlHelp::addContentsItem(bool isDir,
+                               const char *name,const char *ref, 
                                const char *anchor)
 {
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
-  if (ref)
+  cts << "<param name=\"Name\" value=\"" << name << "\">";
+  if (ref)      // made ref optional param - KPW
   {
     cts << "<param name=\"Local\" value=\"" << ref << ".html";
     if (anchor) cts << "#" << anchor;  
     cts << "\">";
   }
-  cts << "<param name=\"Name\" value=\"" << name << "\">"
-         "</OBJECT>\n";
+  cts << "<param name=\"ImageNumber\" value=\"";
+  if (isDir)  // added - KPW
+  {
+    cts << (int)BOOK_CLOSED ;
+  }
+  else
+  {
+    cts << (int)TEXT;
+  }
+  cts << "\">";
+  cts << "</OBJECT>\n";
 }
 
 /*! Add an list item to the index file.
@@ -406,3 +419,4 @@ void HtmlHelp::addIndexItem(const char *level1, const char *level2,
   index->addItem(level1,level2,ref,anchor,TRUE);
   index->addItem(level2,level1,ref,anchor,FALSE);
 }
+

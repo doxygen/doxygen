@@ -27,7 +27,8 @@ HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
 		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
                 translator_ru.h translator_pl.h dot.h rtfgen.h xml.h xml_dtd.h \
                 reflist.h page.h sortdict.h translator_hu.h translator_kr.h \
-                translator_ro.h translator_si.h translator_cn.h
+                translator_ro.h translator_si.h translator_cn.h ftvhelp.h \
+                treeview.h
 SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
                 memberdef.cpp membername.cpp index.cpp memberlist.cpp \
 		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
@@ -38,7 +39,7 @@ SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
 		diagram.cpp gifenc.cpp image.cpp namespacedef.cpp \
 		version.cpp language.cpp definition.cpp formula.cpp debug.cpp \
 		membergroup.cpp htmlhelp.cpp dot.cpp rtfgen.cpp xml.cpp \
-                reflist.cpp
+                reflist.cpp ftvhelp.cpp
 unix:LIBS    += -L../qtools -lqtools
 win32:INCLUDEPATH += .
 win32:LIBS   += qtools.lib shell32.lib 

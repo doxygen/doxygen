@@ -33,6 +33,7 @@
 #include "groupdef.h"
 #include "language.h"
 #include "htmlhelp.h"
+#include "ftvhelp.h"
 #include "dot.h"
 #include "page.h"
 
@@ -101,10 +102,16 @@ QCString abbreviate(const char *s,const char *name)
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 {
   HtmlHelp *htmlHelp=0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
-  if (Config::generateHtml && Config::htmlHelpFlag)
+  FTVHelp  *ftvHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
+  if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
   }
   BaseClassListIterator bcli(*bcl);
   bool started=FALSE;
@@ -117,9 +124,11 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
       {
         ol.startIndexList();
         if (hasHtmlHelp) htmlHelp->incContentsDepth();
+        if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
       }
       //printf("Passed...\n");
+      bool hasChildren = !cd->visited && !hideSuper && cd->superClasses()->count()>0;
       if (cd->isLinkable())
       {
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -131,19 +140,26 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         }
         if (hasHtmlHelp)
         {
-          htmlHelp->addContentsItem(cd->name(),cd->getOutputFileBase());
+          htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+        }
+        if (hasFtvHelp)
+        {
+          ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
         }
       }
       else
       {
         ol.writeIndexItem(0,0,cd->name());
-        //if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
         if (hasHtmlHelp)
         {
-          htmlHelp->addContentsItem(cd->name(),0);
+          htmlHelp->addContentsItem(hasChildren,cd->name(),0);
+        }
+        if (hasFtvHelp)
+        {
+          ftvHelp->addContentsItem(hasChildren,cd->name(),0);
         }
       }
-      if (!cd->visited && !hideSuper && cd->superClasses()->count()>0)
+      if (hasChildren)
       {
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
         bool wasVisited=cd->visited;
@@ -156,8 +172,117 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
   {
     ol.endIndexList(); 
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
+    if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
 }
+
+
+#if 0
+//----------------------------------------------------------------------------
+/*! Generates HTML Help tree of classes */
+
+void writeClassTree(BaseClassList *cl)
+{
+  HtmlHelp *htmlHelp=0;
+  FTVHelp  *ftvHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag && Config::htmlHelpGroupsOnly;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  && Config::htmlHelpGroupsOnly;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+  }
+  BaseClassListIterator cli(*cl);
+  bool started=FALSE;
+  for ( ; cli.current() ; ++cli)
+  {
+    ClassDef *cd=cli.current()->classDef;
+    if (cd->isVisibleInHierarchy() && !cd->visited)
+    {
+      if (!started)
+      {
+        if (hasHtmlHelp) htmlHelp->incContentsDepth();
+        if (hasFtvHelp)  ftvHelp->incContentsDepth();
+        started=TRUE;
+      }
+      bool hasChildren = cd->superClasses()->count()>0;
+      if (cd->isLinkable())
+      {
+        if (hasHtmlHelp)
+        {
+            htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+        }
+        if (hasFtvHelp)
+        {
+            ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+        }
+      }
+      if (hasChildren)
+      {
+        writeClassTree(cd->superClasses());
+      }
+      cd->visited=TRUE;
+    }
+  }
+  if (started) 
+  {
+    if (hasHtmlHelp) htmlHelp->decContentsDepth();
+    if (hasFtvHelp)  ftvHelp->decContentsDepth();
+  }
+}
+
+//----------------------------------------------------------------------------
+/*! Generates HTML Help tree of classes */
+
+void writeClassTree(ClassList *cl)
+{
+  HtmlHelp *htmlHelp=0;
+  FTVHelp  *ftvHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag && Config::htmlHelpGroupsOnly;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  && Config::htmlHelpGroupsOnly;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+  }
+  ClassListIterator cli(*cl);
+  bool started=FALSE;
+  for ( ; cli.current() ; ++cli)
+  {
+    ClassDef *cd=cli.current();
+    if (cd->isVisibleInHierarchy() && !cd->visited)
+    {
+      if (!started)
+      {
+        started=TRUE;
+      }
+      bool hasChildren = cd->superClasses()->count()>0;
+      if (cd->isLinkable())
+      {
+        if (hasHtmlHelp)
+        {
+          htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+        }
+        if (hasFtvHelp)
+        {
+          ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+        }
+      }
+      if (hasChildren)
+      {
+        writeClassTree(cd->superClasses());
+      }
+      cd->visited=TRUE;
+    }
+  }
+}
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -166,10 +291,16 @@ void writeClassHierarchy(OutputList &ol)
   initClassHierarchy(&classList);
 
   HtmlHelp *htmlHelp=0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
-  if (Config::generateHtml && Config::htmlHelpFlag)
+  FTVHelp  *ftvHelp=0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
+  if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
   }
 
   bool started=FALSE;
@@ -190,8 +321,10 @@ void writeClassHierarchy(OutputList &ol)
         {
           ol.startIndexList();
           if (hasHtmlHelp) htmlHelp->incContentsDepth();
+          if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
         }
+        bool hasChildren = !cd->visited && cd->superClasses()->count()>0; 
         if (cd->isLinkable())
         {
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -203,20 +336,26 @@ void writeClassHierarchy(OutputList &ol)
           }
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(cd->name(),cd->getOutputFileBase());
-            //cd->writeMembersToContents();
+            htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          }
+          if (hasFtvHelp)
+          {
+            ftvHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
           }
         }
         else
         {
           ol.writeIndexItem(0,0,cd->displayName());
-          //if (hasHtmlHelp) htmlHelp->addContentsItem(cd->name(),"nodoc");
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(cd->name(),0);
+            htmlHelp->addContentsItem(hasChildren,cd->name(),0);
+          }
+          if (hasFtvHelp)
+          {
+            ftvHelp->addContentsItem(hasChildren,cd->name(),0);
           }
         }
-        if (!cd->visited && cd->superClasses()->count()>0) 
+        if (hasChildren) 
         {
           writeClassTree(ol,cd->superClasses(),cd->visited);
           cd->visited=TRUE;
@@ -228,6 +367,7 @@ void writeClassHierarchy(OutputList &ol)
   {
     ol.endIndexList();
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
+    if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
 }
 
@@ -256,15 +396,23 @@ void writeHierarchicalIndex(OutputList &ol)
   startFile(ol,"hierarchy","Hierarchical Index");
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  if (Config::generateHtml && Config::htmlHelpFlag)
+  FTVHelp  *ftvHelp = 0;
+  if (Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"hierarchy"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"hierarchy"); 
+  }
+  if (Config::generateHtml && Config::ftvHelpFlag /*&& !Config::htmlHelpGroupsOnly*/)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"hierarchy"); 
   }
   if (Config::haveDotFlag && Config::gfxHierarchyFlag)
   {
@@ -295,21 +443,29 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   startFile(ol,"inherits","Graphical Class Hierarchy");
   startTitle(ol,0);
   QCString title = theTranslator->trGraphicalHierarchy();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
+  FTVHelp  *ftvHelp = 0;
   if (Config::generateHtml && Config::htmlHelpFlag)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"inherits"); 
+    htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"inherits"); 
+  }
+  if (Config::generateHtml && Config::ftvHelpFlag)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(FALSE,ftvHelpTitle,"inherits"); 
   }
   ol.startTextLink("hierarchy",0);
   parseText(ol,theTranslator->trGotoTextualHierarchy());
   ol.endTextLink();
   ol.newParagraph();
-  parseText(ol,theTranslator->trClassHierarchyDescription());
+  //parseText(ol,theTranslator->trClassHierarchyDescription());
   //ol.newParagraph();
   ol.endTextBlock();
   DotGfxHierarchyTable g;
@@ -363,17 +519,27 @@ void writeFileIndex(OutputList &ol)
   startFile(ol,"files","File Index");
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  FTVHelp  *ftvHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"files"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"files"); 
     htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"files"); 
+    ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
   parseText(ol,theTranslator->trFileListDescription(Config::extractAllFlag));
@@ -468,7 +634,11 @@ void writeFileIndex(OutputList &ol)
           ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(fd->name(),fd->getOutputFileBase());
+            htmlHelp->addContentsItem(FALSE,fd->name(),fd->getOutputFileBase());
+          }
+          if (hasFtvHelp)
+          {
+            ftvHelp->addContentsItem(FALSE,fd->name(),fd->getOutputFileBase());
           }
         }
         else
@@ -476,6 +646,14 @@ void writeFileIndex(OutputList &ol)
           ol.startBold();
           ol.docify(fd->name());
           ol.endBold();
+          if (hasHtmlHelp)
+          {
+            htmlHelp->addContentsItem(FALSE,fd->name(),0);
+          }
+          if (hasFtvHelp)
+          {
+            ftvHelp->addContentsItem(FALSE,fd->name(),0);
+          }
         }
         if (src)
         {
@@ -499,7 +677,6 @@ void writeFileIndex(OutputList &ol)
         }
         ol.popGeneratorState();
         // --------------------------------------------------------
-
       }
       fd=fl->next();
     }
@@ -510,79 +687,14 @@ void writeFileIndex(OutputList &ol)
   {
     htmlHelp->decContentsDepth();
   }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
+  }
   endFile(ol);
   //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
-
-//----------------------------------------------------------------------------
-#if 0
-void writeSourceIndex(OutputList &ol)
-{
-  ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,"sources","Source Index");
-  startTitle(ol,0);
-  QCString title = theTranslator->trSources();
-  if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
-  parseText(ol,title);
-  endTitle(ol,0,0);
-  ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"sources"); 
-    htmlHelp->incContentsDepth();
-  }
-  //ol.newParagraph();
-  //parseText(ol,theTranslator->trFileListDescription(Config::extractAllFlag));
-  //ol.newParagraph();
-  ol.endTextBlock();
-
-  //ol.startIndexList();
-  bool started=FALSE;
-  FileName *fn=inputNameList.first();
-  while (fn)
-  {
-    FileDef *fd=fn->first();
-    while (fd)
-    {
-      if (!fd->isReference())
-      {
-        if (!started)
-        {
-          started=TRUE;
-          ol.startItemList();
-        }
-        ol.writeListItem();
-        QCString path;
-        if (Config::fullPathNameFlag) 
-        {
-          path=stripFromPath(fd->getPath().copy());
-        }
-        if (!path.isEmpty()) ol.docify(path);
-        ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
-        ol.writeString("\n");
-        if (Config::generateHtml && Config::htmlHelpFlag)
-        {
-          HtmlHelp::getInstance()->addContentsItem(
-              fd->name(),fd->sourceName());
-        }
-      }
-      fd=fn->next();
-    }
-    fn=inputNameList.next();
-  }
-  if (started) ol.endItemList();
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  endFile(ol);
-  ol.enable(OutputGenerator::Man);
-}
-#endif
 
 //----------------------------------------------------------------------------
 int countNamespaces()
@@ -607,17 +719,27 @@ void writeNamespaceIndex(OutputList &ol)
   startFile(ol,"namespaces","Namespace Index");
   startTitle(ol,0);
   QCString title = theTranslator->trNamespaceList();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  FTVHelp  *ftvHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"namespaces"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"namespaces"); 
     htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"namespaces"); 
+    ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
   parseText(ol,theTranslator->trNamespaceListDescription(Config::extractAllFlag));
@@ -628,7 +750,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->isLinkableInProject())
+    if (nd->isLinkableInProject() && nd->countMembers()>0)
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       if (!nd->briefDescription().isEmpty())
@@ -642,16 +764,14 @@ void writeNamespaceIndex(OutputList &ol)
         ol+=briefOutput;
         ol.docify(")");
       }
-      //else
-      //{
-      //  ol.startEmphasis();
-      //  parseText(ol,theTranslator->trNoDescriptionAvailable());
-      //  ol.endEmphasis();
-      //}
       ol.writeEndAnnoItem(nd->getOutputFileBase());
       if (hasHtmlHelp)
       {
-        htmlHelp->addContentsItem(nd->name(),nd->getOutputFileBase());
+        htmlHelp->addContentsItem(FALSE,nd->name(),nd->getOutputFileBase());
+      }
+      if (hasFtvHelp)
+      {
+        ftvHelp->addContentsItem(FALSE,nd->name(),nd->getOutputFileBase());
       }
     }
     nd=namespaceList.next();
@@ -660,6 +780,10 @@ void writeNamespaceIndex(OutputList &ol)
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
   }
   endFile(ol);
   //ol.enable(OutputGenerator::Man);
@@ -689,6 +813,8 @@ int countAnnotatedClasses()
 
 void writeAnnotatedClassList(OutputList &ol)
 {
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp =  Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   ol.startIndexList(); 
   //ClassDef *cd=classList.first();
   //while (cd)
@@ -718,18 +844,14 @@ void writeAnnotatedClassList(OutputList &ol)
         ol+=briefOutput;
         ol.docify(")");
       }
-      //else
-      //{
-      //  ol.startEmphasis();
-      //  parseText(ol,theTranslator->trNoDescriptionAvailable());
-      //  ol.endEmphasis();
-      //}
       ol.writeEndAnnoItem(cd->getOutputFileBase());
-      if (Config::generateHtml && Config::htmlHelpFlag)
+      if (hasHtmlHelp)
       {
-        HtmlHelp::getInstance()->addContentsItem(
-            cd->name(),cd->getOutputFileBase());
-        //cd->writeMembersToContents();
+        HtmlHelp::getInstance()->addContentsItem(FALSE,cd->name(),cd->getOutputFileBase());
+      }
+      if (hasFtvHelp)
+      {
+        FTVHelp::getInstance()->addContentsItem(FALSE,cd->name(),cd->getOutputFileBase());
       }
     }
     cd=classList.next(); 
@@ -910,6 +1032,9 @@ void writeAlphabeticalIndex(OutputList &ol)
 
 void writeAnnotatedIndex(OutputList &ol)
 {
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
+
   if (annotatedClasses==0) return;
   
   //if (classList.count()==0) return;
@@ -918,24 +1043,37 @@ void writeAnnotatedIndex(OutputList &ol)
   startFile(ol,"annotated","Annotated Index");
   startTitle(ol,0);
   QCString title = theTranslator->trCompoundList();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle =  title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  if (Config::generateHtml && Config::htmlHelpFlag)
+  FTVHelp  *ftvHelp = 0;
+  if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"annotated"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"annotated"); 
     htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"annotated"); 
+    ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trCompoundListDescription());
   //ol.newParagraph();
   ol.endTextBlock();
   writeAnnotatedClassList(ol);
-  if (Config::generateHtml && Config::htmlHelpFlag)
+  if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
   }
   
   endFile(ol);
@@ -1371,92 +1509,6 @@ void writeNamespaceMemberIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-//int countIncludeFiles()
-//{
-//  int count=0;
-//  FileDef *fd=includeFiles.first();
-//  while (fd)
-//  {
-//    //if (fd->isLinkableInProject())
-//    //{
-//      count++;
-//    //}
-//    fd=includeFiles.next();
-//  }  
-//  return count;
-//}
-//
-////----------------------------------------------------------------------------
-//
-//void writeHeaderFileList(OutputList &ol)
-//{
-//  bool started=FALSE;
-//  FileDef *fd=includeFiles.first();
-//  while (fd)
-//  {
-//    /*
-//    if (fd->isLinkableInProject())
-//    {
-//    */
-//      if (!started)
-//      {
-//        started=TRUE;
-//        ol.startItemList();
-//      }
-//      ol.writeListItem();
-//      QCString path;
-//      if (Config::fullPathNameFlag) 
-//      {
-//        path=stripFromPath(fd->getPath().copy());
-//      }
-//      if (!path.isEmpty()) ol.docify(path);
-//      ol.writeObjectLink(0,fd->includeName(),0,fd->name());
-//      ol.writeString("\n");
-//      if (Config::generateHtml && Config::htmlHelpFlag)
-//      {
-//        HtmlHelp::getInstance()->addContentsItem(
-//            fd->name(),fd->includeName());
-//      }
-//    /*
-//    }
-//    */
-//    fd=includeFiles.next();
-//  }  
-//  if (started) ol.endItemList();
-//}
-//
-////----------------------------------------------------------------------------
-//
-//void writeHeaderIndex(OutputList &ol)
-//{
-//  if (documentedIncludeFiles==0) return;
-//  ol.disable(OutputGenerator::Man);
-//  ol.disable(OutputGenerator::Latex);
-//  startFile(ol,"headers","Header File Index");
-//  startTitle(ol,0);
-//  QCString title = Config::projectName+" "+theTranslator->trHeaderFiles();
-//  parseText(ol,title);
-//  endTitle(ol,0,0);
-//  HtmlHelp *htmlHelp = 0;
-//  if (Config::generateHtml && Config::htmlHelpFlag)
-//  {
-//    htmlHelp = HtmlHelp::getInstance();
-//    htmlHelp->addContentsItem(title,"headers"); 
-//    htmlHelp->incContentsDepth();
-//  }
-//  parseText(ol,theTranslator->trHeaderFilesDescription());
-//  writeHeaderFileList(ol);
-//  if (Config::generateHtml && Config::htmlHelpFlag)
-//  {
-//    htmlHelp->decContentsDepth();
-//  }
-//  endFile(ol);
-//  ol.enable(OutputGenerator::Latex);
-//  ol.enable(OutputGenerator::Man);
-//}
-
-//----------------------------------------------------------------------------
-
 void writeExampleIndex(OutputList &ol)
 {
   if (exampleSDict->count()==0) return;
@@ -1465,17 +1517,27 @@ void writeExampleIndex(OutputList &ol)
   startFile(ol,"examples","Example Index");
   startTitle(ol,0);
   QCString title = theTranslator->trExamples();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  FTVHelp  *ftvHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  /*&& !Config::htmlHelpGroupsOnly*/;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"examples"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"examples"); 
     htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"examples"); 
+    ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trExamplesDescription());
   //ol.newParagraph();
@@ -1490,12 +1552,14 @@ void writeExampleIndex(OutputList &ol)
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
-      if (hasHtmlHelp) htmlHelp->addContentsItem(pi->title,n);
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->title,n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->title,n);
     }
     else
     {
       ol.writeObjectLink(0,n,0,pi->name);
-      if (hasHtmlHelp) htmlHelp->addContentsItem(pi->name,n);
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pi->name,n);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->name,n);
     }
     ol.writeString("\n");
   }
@@ -1504,6 +1568,10 @@ void writeExampleIndex(OutputList &ol)
   {
     htmlHelp->decContentsDepth();
   }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
+  }
   endFile(ol);
   //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
@@ -1511,25 +1579,49 @@ void writeExampleIndex(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+int countRelatedPages()
+{
+  int count=0;
+  PageSDictIterator pdi(*pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  {
+    if (!pi->inGroup) count++;
+  }
+  return count;
+}
+
+//----------------------------------------------------------------------------
+
 void writePageIndex(OutputList &ol)
 {
-  if (pageSDict->count()==0) return;
+  if (documentedPages==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   startFile(ol,"pages","Page Index");
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
-  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  FTVHelp  *ftvHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag /*&& !Config::htmlHelpGroupsOnly*/;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag  /*&&  !Config::htmlHelpGroupsOnly*/;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"pages"); 
+    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"pages"); 
     htmlHelp->incContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    ftvHelp->addContentsItem(TRUE,ftvHelpTitle,"pages"); 
+    ftvHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trRelatedPagesDescription());
   //ol.newParagraph();
@@ -1539,29 +1631,37 @@ void writePageIndex(OutputList &ol)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    QCString pageName,pageTitle;
-    
-    if (Config::caseSensitiveNames)
-      pageName=pi->name.copy();
-    else
-      pageName=pi->name.lower();
-    
-    if (pi->title.isEmpty())
-      pageTitle=pi->name;
-    else
-      pageTitle=pi->title;
-    
-    //ol.writeListItem();
-    ol.writeStartAnnoItem("pages",pageName,0,pageTitle);
-    //ol.writeObjectLink(0,pageName,0,pageTitle);
-    ol.writeEndAnnoItem(pageName);
-    ol.writeString("\n");
-    if (hasHtmlHelp) htmlHelp->addContentsItem(pageTitle,pageName);
+    if (!pi->inGroup)
+    {
+      QCString pageName,pageTitle;
+
+      if (Config::caseSensitiveNames)
+        pageName=pi->name.copy();
+      else
+        pageName=pi->name.lower();
+
+      if (pi->title.isEmpty())
+        pageTitle=pi->name;
+      else
+        pageTitle=pi->title;
+
+      //ol.writeListItem();
+      ol.writeStartAnnoItem("pages",pageName,0,pageTitle);
+      //ol.writeObjectLink(0,pageName,0,pageTitle);
+      ol.writeEndAnnoItem(pageName);
+      ol.writeString("\n");
+      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pageTitle,pageName);
+    }
   }
   ol.endIndexList();
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp->decContentsDepth();
   }
   endFile(ol);
   //ol.enable(OutputGenerator::Man);
@@ -1577,36 +1677,12 @@ int countGroups()
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
-    if (gd->countMembers()>0) count++;
+    gd->visited=FALSE;
+    count++;
   }
   return count;
 }
 
-//----------------------------------------------------------------------------
-
-void writeGroupList(OutputList &ol)
-{
-  ol.startDescription();
-  GroupListIterator gli(groupList);
-  GroupDef *gd;
-  for (;(gd=gli.current());++gli)
-  {
-    //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
-    if (gd->countMembers()>0)
-    {
-      ol.startDescItem();
-      ol.startTextLink(gd->getOutputFileBase(),0);
-      parseText(ol,gd->groupTitle());
-      ol.endTextLink();
-      ol.endDescItem();
-      parseDoc(ol,
-          gd->getDefFileName(),gd->getDefLine(),
-          0,0,gd->briefDescription());
-      ol.newParagraph();
-    }
-  }
-  ol.endDescription();
-}
 
 //----------------------------------------------------------------------------
 
@@ -1630,6 +1706,239 @@ void writeGraphInfo(OutputList &ol)
 }
 
 //----------------------------------------------------------------------------
+/*!
+ * write groups as hierarchial trees
+ * \author KPW
+ */
+
+void writeGroupTreeNode(OutputList &ol, GroupDef *gd)
+{
+  HtmlHelp *htmlHelp=0;
+  FTVHelp  *ftvHelp = 0;
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag;
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+  }
+
+  GroupDef *subgd = 0;
+  GroupListIterator gli(*gd->groupList);
+  if (!gd->visited)
+  {
+    //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
+    // write group info
+    bool hasSubGroups = gd->groupList->count()>0;
+    bool hasSubPages = gd->pageDict->count()>0;
+    //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
+    if(htmlHelp)
+    {
+        htmlHelp->addContentsItem(hasSubGroups || hasSubPages,gd->groupTitle(),gd->getOutputFileBase()); 
+        htmlHelp->incContentsDepth();
+    }
+    if(ftvHelp)
+    {
+        ftvHelp->addContentsItem(hasSubGroups || hasSubPages,gd->groupTitle(),gd->getOutputFileBase()); 
+        ftvHelp->incContentsDepth();
+    }
+
+    //ol.writeListItem();
+    //ol.startTextLink(gd->getOutputFileBase(),0);
+    //parseText(ol,gd->groupTitle());
+    //ol.endTextLink();
+    
+    ol.writeIndexItem(0,gd->getOutputFileBase(),gd->groupTitle());
+    
+    //ol.writeStartAnnoItem(0,gd->getOutputFileBase(),0,gd-);
+    //parseText(ol,gd->groupTitle());
+    //ol.writeEndAnnoItem(gd->getOutputFileBase());
+
+    // write pages
+    PageSDictIterator pli(*gd->pageDict);
+    PageInfo *pi = 0;
+    for (pli.toFirst();(pi=pli.current());++pli)
+    {
+      SectionInfo *si=0;
+      if (!pi->name.isEmpty()) si=sectionDict[pi->name];
+      if(htmlHelp) htmlHelp->addContentsItem(FALSE,
+                                   convertToHtml(pi->title),
+                                   gd->getOutputFileBase(),
+                                   si ? si->label.data() : 0
+                                  ); 
+      if(ftvHelp)  ftvHelp->addContentsItem(FALSE,
+                                   convertToHtml(pi->title),
+                                   gd->getOutputFileBase(),
+                                   si ? si->label.data() : 0
+                                  ); 
+    }
+
+    // write subgroups
+    if (hasSubGroups)
+    {
+      ol.startIndexList();
+      for (gli.toLast();(subgd=gli.current());--gli)
+      {
+        writeGroupTreeNode(ol,subgd);
+      }
+      ol.endIndexList(); 
+    }
+
+#if 0
+    // write namespaces
+    NamespaceList *namespaceList=gd->namespaceList;
+    if (namespaceList->count()>0)
+    {
+        NamespaceDef *nsd=namespaceList->first();
+        while (nsd)
+        {
+            if(htmlHelp)
+                htmlHelp->addContentsItem(FALSE,convertToHtml(nsd->name()).data(),nsd->getOutputFileBase()); 
+            if(ftvHelp)
+                ftvHelp->addContentsItem(FALSE,convertToHtml(nsd->name()).data(),nsd->getOutputFileBase()); 
+            nsd=namespaceList->next();
+        }
+    }
+
+    // write classes
+    writeClassTree(gd->classList);
+
+    // write members
+    MemberList memberLists[7] = {
+        gd->defineMembers,
+        gd->typedefMembers,
+        gd->enumMembers,
+        gd->enumValMembers,
+        gd->funcMembers,
+        gd->varMembers,
+        gd->protoMembers
+    };
+    MemberList members;
+    for (int i=0;i<7;i++)
+    {
+        members=memberLists[i];
+        if (members.count()>0)
+        {
+            MemberDef *md=members.first();
+            while (md)
+            {
+                if(htmlHelp)
+                    htmlHelp->addContentsItem(FALSE,md->name(),md->getGroupDef()->getOutputFileBase().data(),md->anchor()); 
+                if(ftvHelp)
+                    ftvHelp->addContentsItem(FALSE,md->name(),md->getGroupDef()->getOutputFileBase().data(),md->anchor()); 
+                md=members.next();
+            }
+        }
+    }
+       
+    // write file list
+    FileList *fileList=gd->fileList;
+    if (fileList->count()>0)
+    {
+        FileDef *fd=fileList->first();
+        while (fd)
+        {
+            if(htmlHelp)
+                htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase().data()); 
+            if(ftvHelp)
+                ftvHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase().data()); 
+            fd=fileList->next();
+        }
+    }
+    
+    // write examples
+    PageSDictIterator eli(*(gd->exampleDict));
+    {
+        PageInfo *pi=eli.toFirst();
+        while (pi)
+        {
+            if(htmlHelp)
+                htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
+            if(ftvHelp)
+                ftvHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
+            pi=++eli;
+        }
+    }
+#endif
+
+    if(htmlHelp) htmlHelp->decContentsDepth();
+    if(ftvHelp)  ftvHelp->decContentsDepth();
+    gd->visited=TRUE;
+  }
+}
+
+void writeGroupHierarchy(OutputList &ol)
+{
+  ol.startIndexList();
+  GroupListIterator gli(groupList);
+  GroupDef *gd;
+  for (;(gd=gli.current());++gli)
+  {
+    writeGroupTreeNode(ol,gd);
+  }
+  ol.endIndexList(); 
+}
+
+//----------------------------------------------------------------------------
+
+#if 0
+void writeGroupList(OutputList &ol)
+{
+  bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag;
+  HtmlHelp *htmlHelp = 0;
+  FTVHelp  *ftvHelp  = 0;
+  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
+  if (hasFtvHelp) ftvHelp = FTVHelp::getInstance();
+  ol.startDescription();
+  GroupListIterator gli(groupList);
+  GroupDef *gd;
+  for (;(gd=gli.current());++gli)
+  {
+    //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
+    //if (gd->countMembers()>0)
+    //{
+    if (gd->hasDocumentation())
+    {
+      ol.startDescItem();
+      ol.startTextLink(gd->getOutputFileBase(),0);
+      parseText(ol,gd->groupTitle());
+      ol.endTextLink();
+      ol.endDescItem();
+      parseDoc(ol,
+          gd->getDefFileName(),gd->getDefLine(),
+          0,0,gd->briefDescription());
+      ol.newParagraph();
+      //}
+
+      const char *docFile = 0;
+      if (gd->hasDocumentation()) docFile = gd->getOutputFileBase();
+      if (hasHtmlHelp)
+      {
+        htmlHelp = HtmlHelp::getInstance();
+        if(!Config::htmlHelpGroupsOnly)
+        {
+          htmlHelp->addContentsItem(FALSE,gd->groupTitle(),docFile);
+        }
+      }
+      if (hasFtvHelp)
+      {
+        ftvHelp = FTVHelp::getInstance();
+        if(!Config::htmlHelpGroupsOnly)
+        {
+          ftvHelp->addContentsItem(FALSE,gd->groupTitle(),docFile); 
+        }
+      }
+    }
+  }
+  ol.endDescription();
+}
+#endif
+
+//----------------------------------------------------------------------------
 
 void writeGroupIndex(OutputList &ol)
 {
@@ -1639,24 +1948,52 @@ void writeGroupIndex(OutputList &ol)
   startFile(ol,"modules","Module Index");
   startTitle(ol,0);
   QCString title = theTranslator->trModules();
+  QCString htmlHelpTitle = title;
+  QCString ftvHelpTitle  = title;
   if (!Config::projectName.isEmpty()) title.prepend(Config::projectName+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
+  FTVHelp  *ftvHelp = 0;
   bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
+  bool hasFtvHelp  = Config::generateHtml && Config::ftvHelpFlag;
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(title,"modules"); 
-    htmlHelp->incContentsDepth();
+    //if(!Config::htmlHelpGroupsOnly)
+    //{
+        htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
+        htmlHelp->incContentsDepth();
+    //}
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+    //if(!Config::htmlHelpGroupsOnly)
+    //{
+        ftvHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
+        ftvHelp->incContentsDepth();
+    //}
   }
   parseText(ol,theTranslator->trModulesDescription());
   ol.endTextBlock();
-  writeGroupList(ol);
+  writeGroupHierarchy(ol);
   if (hasHtmlHelp)
   {
-    htmlHelp->decContentsDepth();
+    //writeGroupTree(ol);   // KPW - modified to write hierarchial HMTL Help
+    //if(!Config::htmlHelpGroupsOnly)
+    //{
+        htmlHelp->decContentsDepth();
+    //}
+  }
+  if (hasFtvHelp)
+  {
+    //writeGroupTree(ol);   // KPW - modified to write hierarchial FTV Help
+    //if(!Config::htmlHelpGroupsOnly)
+    //{
+        ftvHelp->decContentsDepth();
+    //}
   }
   endFile(ol);
   ol.popGeneratorState();
@@ -1667,9 +2004,6 @@ void writeGroupIndex(OutputList &ol)
 void writeIndex(OutputList &ol)
 {
   // save old generator state
-  //bool manEnabled = ol.isEnabled(OutputGenerator::Man);
-  //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
-  //bool htmEnabled = ol.isEnabled(OutputGenerator::Html);
   ol.pushGeneratorState();
 
   QCString projPrefix;
@@ -1691,17 +2025,24 @@ void writeIndex(OutputList &ol)
   QCString title;
   if (!mainPage || mainPage->title.isEmpty())
   {
-    title = "Main Index";
+    title = theTranslator->trMainPage();
   }
   else 
   {
     title = substitute(mainPage->title,"%","");
   }
-  ol.startFile("index",title,FALSE);
 
+  QCString indexName="index";
+  if (Config::ftvHelpFlag) indexName="main";
+  ol.startFile(indexName,title,FALSE);
+  
   if (Config::generateHtml && Config::htmlHelpFlag)
   {
-    HtmlHelp::getInstance()->addContentsItem(title,"index"); 
+    HtmlHelp::getInstance()->addContentsItem(FALSE,title,indexName); 
+  }
+  if (Config::generateHtml && Config::ftvHelpFlag)
+  {
+    FTVHelp::getInstance()->addContentsItem(FALSE,title,indexName); 
   }
 
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
@@ -1801,7 +2142,7 @@ void writeIndex(OutputList &ol)
     parseText(ol,projPrefix+theTranslator->trFileIndex());
     ol.endIndexSection(isFileIndex);
   }
-  if (pageSDict->count()>0)
+  if (documentedPages>0)
   {
     ol.startIndexSection(isPageIndex);
     parseText(ol,projPrefix+theTranslator->trPageIndex());
@@ -1875,3 +2216,4 @@ void writeIndex(OutputList &ol)
   //           else ol.disable(OutputGenerator::Html);
   ol.popGeneratorState();
 }
+

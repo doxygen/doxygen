@@ -30,6 +30,7 @@
 #include "message.h"
 #include "membergroup.h"
 #include "doxygen.h"
+#include "page.h"
 
 GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) : 
    Definition(df,dl,na)
@@ -38,7 +39,8 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   classList = new ClassList;
   groupList = new GroupList;
   namespaceList = new NamespaceList;
-
+  pageDict = new PageSDict(257);
+  exampleDict = new PageSDict(257);
   allMemberList = new MemberList;
   allMemberDict = new QDict<MemberDef>;
   if (t) 
@@ -52,6 +54,8 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
+
+  visited = 0;
 }
 
 GroupDef::~GroupDef()
@@ -60,6 +64,8 @@ GroupDef::~GroupDef()
   delete classList;
   delete groupList;
   delete namespaceList;
+  delete pageDict;
+  delete exampleDict;
   delete allMemberList;
   delete allMemberDict;
   delete memberGroupList;
@@ -98,6 +104,17 @@ void GroupDef::addNamespace(const NamespaceDef *def)
     namespaceList->inSort(def);  
   else
     namespaceList->append(def);
+}
+
+void GroupDef::addPage(PageInfo *def)
+{
+  pageDict->append(def->name,def);
+  def->inGroup = this;
+}
+
+void GroupDef::addExample(const PageInfo *def)
+{
+  exampleDict->append(def->name,def);
 }
 
 void GroupDef::addMemberListToGroup(MemberList *ml,
@@ -214,7 +231,9 @@ int GroupDef::countMembers() const
          classList->count()+
          namespaceList->count()+
          groupList->count()+
-         allMemberList->count();
+         allMemberList->count()+
+         pageDict->count()+
+         exampleDict->count();
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -249,6 +268,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
     //ol.enable(OutputGenerator::Latex);
     ol.popGeneratorState();
   }
+
+  
   ol.startMemberSections();
   if (fileList->count()>0)
   {
@@ -340,30 +361,58 @@ void GroupDef::writeDocumentation(OutputList &ol)
     allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
   }
   ol.endMemberSections();
-  //int dl=doc.length();
-  //doc=doc.stripWhiteSpace();
+
+
   if (!briefDescription().isEmpty() || !documentation().isEmpty())
   {
-    ol.writeRuler();
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Latex);
-    ol.disable(OutputGenerator::RTF);
-    ol.writeAnchor(0,"_details");
-    ol.popGeneratorState();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDetailedDescription());
-    ol.endGroupHeader();
-    // repeat brief description
-    if (!briefDescription().isEmpty())
+    
+    if (pageDict->count()!=countMembers()) // classical layout
     {
-      ol+=briefOutput;
-      ol.newParagraph();
+      ol.writeRuler();
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Latex);
+      ol.disable(OutputGenerator::RTF);
+      ol.writeAnchor(0,"_details");
+      ol.popGeneratorState();
+      ol.startGroupHeader();
+      parseText(ol,theTranslator->trDetailedDescription());
+      ol.endGroupHeader();
+
+      // repeat brief description
+      if (!briefDescription().isEmpty() && Config::repeatBriefFlag)
+      {
+        ol+=briefOutput;
+        ol.newParagraph();
+      }
     }
+
     // write documentation
     if (!documentation().isEmpty())
     {
       parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
     }
+  }
+  PageInfo *pi=0;
+  PageSDictIterator pdi(*pageDict);
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  {
+    QCString pageName;
+    if (Config::caseSensitiveNames)
+      pageName=pi->name.copy();
+    else
+      pageName=pi->name.lower();
+    
+    SectionInfo *si=0;
+    if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
+        (si=sectionDict[pi->name])!=0)
+    {
+      ol.startSection(si->label,si->title,TRUE);
+      ol.docify(si->title);
+      ol.endSection(si->label,TRUE);
+    }
+    ol.startTextBlock();
+    parseDoc(ol,pi->defFileName,pi->defLine,0,0,pi->doc);
+    ol.endTextBlock();
   }
 
   defineMembers.countDocMembers(TRUE);
@@ -506,4 +555,21 @@ void addMemberToGroups(Entry *root,MemberDef *md)
     }
   }
 }
+
+
+void addExampleToGroups(Entry *root,PageInfo *eg)
+{
+  QListIterator<QCString> sli(*root->groups);
+  QCString *s;
+  for (;(s=sli.current());++sli)
+  {
+    GroupDef *gd=0;
+    if (!s->isEmpty() && (gd=groupDict[*s]))
+    {
+      gd->addExample(eg);
+      //printf("Example %s: in group %s\n",eg->name().data(),s->data());
+    }
+  }
+}
+
 

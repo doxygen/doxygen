@@ -788,7 +788,14 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   if (compact) ol.startCenter(); else ol.startItemList();
 
   if (!compact) ol.writeListItem();
-  ol.startQuickIndexItem(extLink,"index.html");
+  if (Config::ftvHelpFlag)
+  {
+    ol.startQuickIndexItem(extLink,"main.html");
+  }
+  else
+  {
+    ol.startQuickIndexItem(extLink,"index.html");
+  }
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
 
@@ -869,7 +876,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
     parseText(ol,theTranslator->trFileMembers());
     ol.endQuickIndexItem();
   } 
-  if (pageSDict->count()>0)
+  if (documentedPages>0)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,"pages.html");
@@ -2433,8 +2440,19 @@ bool generateLink(OutputList &ol,const char *clName,
   }
   else if ((pi=pageSDict->find(linkRef))) // link to a page
   {
-    ol.writeObjectLink(0,pi->name,0,lt);  
-    writePageRef(ol,pi->name,0);
+    GroupDef *gd = pi->inGroup;
+    if (gd)
+    {
+      SectionInfo *si=0;
+      if (!pi->name.isEmpty()) si=sectionDict[pi->name];
+      ol.writeObjectLink(0,gd->getOutputFileBase(),si ? si->label.data() : 0,lt);  
+      writePageRef(ol,gd->getOutputFileBase(),si ? si->label.data() : 0);
+    }
+    else
+    {
+      ol.writeObjectLink(0,pi->name,0,lt);  
+      writePageRef(ol,pi->name,0);
+    }
     return TRUE;
   }
   else if ((pi=exampleSDict->find(linkRef))) // link to an example
@@ -2754,7 +2772,28 @@ QCString convertNameToFile(const char *name,bool allowDots)
         break;
     }
   }
-  //printf("convertNameToFile(%s)=`%s'\n",name,result.data());
+  return result;
+}
+
+/*! Converts a string to HTML-encoded string */
+QCString convertToHtml(const QCString &s)
+{
+  QCString result;
+  char c;
+  const char *p=s.data();
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '<': result+="&lt;"; break;
+      case '>': result+="&gt;"; break;
+      case '&': result+="&amp;"; break;
+      case '"': result+="&quot;"; break;
+      default: 
+          result+=c;
+          break;
+    }
+  }
   return result;
 }
 
@@ -2837,3 +2876,4 @@ QCString stripScope(const char *name)
   }
   return result;
 }
+

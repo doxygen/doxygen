@@ -34,6 +34,32 @@ class HtmlHelpIndex;
  */
 class HtmlHelp 
 {
+    /*! used in imageNumber param of HTMLHelp::addContentsItem() function 
+        to specify document icon in tree view.  
+        Writes <param name="ImageNumber" value="xx"> in .HHC file. */
+    enum ImageNumber { 
+      BOOK_CLOSED=1,    BOOK_OPEN,
+      BOOK_CLOSED_NEW,  BOOK_OPEN_NEW,
+      FOLDER_CLOSED,    FOLDER_OPEN,
+      FOLDER_CLOSED_NEW,FOLDER_OPEN_NEW,
+      QUERY,            QUERY_NEW,
+      TEXT,             TEXT_NEW,
+      WEB_DOC,          WEB_DOC_NEW,
+      WEB_LINK,         WEB_LINK_NEW,
+      INFO,             INFO_NEW,
+      LINK,             LINK_NEW,
+      BOOKLET,          BOOKLET_NEW,
+      EMAIL,            EMAIL_NEW,
+      EMAIL2,           EMAIL2_NEW,
+      IMAGE,            IMAGE_NEW,
+      AUDIO,            AUDIO_NEW,
+      MUSIC,            MUSIC_NEW,
+      VIDEO,            VIDEO_NEW,
+      INDEX,            INDEX_NEW,
+      IDEA,             IDEA_NEW,
+      NOTE,             NOTE_NEW,
+      TOOL,             TOOL_NEW
+    };
   public:
     static HtmlHelp *getInstance();
     void initialize();
@@ -42,11 +68,15 @@ class HtmlHelp
     int  decContentsDepth();
     /*! return the current depth of the contents tree */ 
     int  contentsDepth() { return dc; }
-    void addContentsItem(const char *name, const char *ref, 
+    // added imageNumber - KPW
+    void addContentsItem(bool isDir,
+                         const char *name, 
+                         const char *ref = 0, 
                          const char *anchor = 0);
     void addIndexItem(const char *level1, const char *level2, 
                       const char *ref, const char *anchor);
     void addIndexFile(const char *name);
+
 
   private:
     void createProjectFile();
@@ -61,3 +91,4 @@ class HtmlHelp
 };
 
 #endif /* HTMLHELP_H */
+
