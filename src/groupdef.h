@@ -94,14 +94,23 @@ class GroupDef : public Definition
     MemberList *allMemberList;
     MemberNameInfoDict *allMemberNameInfoDict;
     
-    // members sorted by type
-    MemberList defineMembers;
-    MemberList protoMembers;
-    MemberList typedefMembers;
-    MemberList enumMembers;
-    MemberList enumValMembers;
-    MemberList funcMembers;
-    MemberList varMembers;
+    // members in the declaration part of the documentation
+    MemberList decDefineMembers;
+    MemberList decProtoMembers;
+    MemberList decTypedefMembers;
+    MemberList decEnumMembers;
+    MemberList decEnumValMembers;
+    MemberList decFuncMembers;
+    MemberList decVarMembers;
+
+    // members in the documentation part of the documentation
+    MemberList docDefineMembers;
+    MemberList docProtoMembers;
+    MemberList docTypedefMembers;
+    MemberList docEnumMembers;
+    MemberList docEnumValMembers;
+    MemberList docFuncMembers;
+    MemberList docVarMembers;
 
     /* user defined member groups */
     MemberGroupList *memberGroupList;   // list of member groups in this group

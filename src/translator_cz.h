@@ -97,6 +97,11 @@
 //  - Minor correction of comments which copied the same
 //    corrections in translator.h (doubled backslash) just after 
 //    1.2.6 release.
+//    
+// 2001/04/10 (Petr Prikryl)
+//  - Update for OPTIMIZE_OUTPUT_FOR_C (1.2.6-20010408).
+//  - Removed implementation of latexBabelPackage().
+//  - Removed implementation of trVerbatimText().
 //         
 // Notices:
 // -------- 
@@ -113,7 +118,7 @@ class TranslatorCzech : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
-        Windows encoding (maintainer dependent). 
+        Windows encoding (maintainer only dependent). 
      */
     inline QCString Decode(const QCString & sInput)
     { 
@@ -133,10 +138,6 @@ class TranslatorCzech : public Translator
     virtual QCString latexLanguageSupportCommand()
     { return "\\usepackage{czech}\n"; }
     
-    /*! returns the name of the package that is included by LaTeX */
-    virtual QCString latexBabelPackage() 
-    { return ""; }
-
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
@@ -175,7 +176,16 @@ class TranslatorCzech : public Translator
     
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { return Decode("Dokumentace k datovým èlenùm"); }
+    {       
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Dokumentace k položkám"); 
+      }
+      else
+      {
+        return Decode("Dokumentace k datovým èlenùm");
+      }
+    }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
@@ -220,12 +230,6 @@ class TranslatorCzech : public Translator
     virtual QCString trDefinedIn()
     { return Decode("definován v"); }
 
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    virtual QCString trVerbatimText(const char *f)
-    { return Decode((QCString)"Úplný text vkládaného souboru "+f+"."); }
-    
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
@@ -240,8 +244,17 @@ class TranslatorCzech : public Translator
     
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { return Decode("Seznam tøíd"); }
-    
+    {  
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Datové struktury");
+      }
+      else
+      { 
+        return Decode("Seznam tøíd"); 
+      }
+    }
+   
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return Decode("Seznam souborù"); }
@@ -252,11 +265,29 @@ class TranslatorCzech : public Translator
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { return Decode("Seznam èlenù tøíd"); }
-
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Datové položky"); 
+      }
+      else
+      {
+        return Decode("Seznam èlenù tøíd"); 
+      }
+    }
+   
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { return Decode("Symboly v souborech"); }
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Globální symboly"); 
+      }
+      else
+      {
+        return Decode("Symboly v souborech"); 
+      }
+    }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
@@ -287,22 +318,65 @@ class TranslatorCzech : public Translator
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { return Decode("Následující seznam obsahuje pøedevším identifikace tøíd, "
-             "ale nachází se zde i další netriviální prvky, jako jsou "
-             "struktury (struct), unie (union) a rozhraní (interface). "
-             "V seznamu jsou uvedeny jejich struèné popisy:"); 
+    {       
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Následující seznam obsahuje identifikace datových "
+                      "struktur a jejich struèné popisy:"); 
+      }
+      else
+      {
+        return Decode("Následující seznam obsahuje pøedevším identifikace "
+                      "tøíd, ale nacházejí se zde i další netriviální prvky, "
+                      "jako jsou struktury (struct), unie (union) a rozhraní "
+                      "(interface). V seznamu jsou uvedeny jejich struèné "
+                      "popisy:");
+      }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Zde naleznete seznam všech ";
-      if (!extractAll) result+="dokumentovaných ";
-      result+="èlenù tøíd s odkazy na ";
-      if (extractAll) 
-        result+="dokumentaci tøíd, ke kterým pøíslušejí:";
-      else 
-        result+="tøídy, ke kterým pøíslušejí:";
+      QCString result= "Zde naleznete seznam všech ";
+      if (!extractAll) 
+      {
+        result += "dokumentovaných ";
+      }
+            
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        result += "položek struktur (struct) a unií (union) ";
+      }
+      else
+      {
+        result += "èlenù tøíd ";
+      }
+      
+      result += "s odkazy na ";  
+      
+      if (extractAll)
+      {
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        {
+          result += "dokumentaci struktur/unií, ke kterým pøíslušejí:";
+        }
+        else
+        {
+          result += "dokumentaci tøíd, ke kterým pøíslušejí:";
+        }
+      }
+      else
+      {
+        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+        {
+          result+="struktury/unie, ke kterým pøíslušejí:";
+        }
+        else
+        {
+          result+="tøídy, ke kterým pøíslušejí:";
+        }
+      }
+        
       return Decode(result);
     }
 
@@ -311,18 +385,22 @@ class TranslatorCzech : public Translator
     {
       QCString result="Zde naleznete seznam všech ";
       if (!extractAll) result+="dokumentovaných ";
-      result+="symbolù, které jsou definovány na úrovni svých souborù. "
-              "Pro každý symbol je uveden odkaz na ";
+
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        result+="funkcí, promìnných, maker, výètù a definic typù (typedef) "
+                "s odkazy na ";
+      }
+      else
+      {
+        result+="symbolù, které jsou definovány na úrovni svých souborù. "
+                "Pro každý symbol je uveden odkaz na ";
+      }
+        
       if (extractAll) 
-        result+="dokumentaci pøíslušného souboru";
+        result+="soubory, ke kterým pøíslušejí:";
       else 
-        result+="soubor, ve kterém je symbol definován";
-      result+=". Podle zpùsobu definice mùže být symbol globálním symbolem "
-              "nebo symbolem, který je viditelný pouze z daného souboru "
-              "(to se týká napøíklad statických promìnných v C++). "
-              "Seznam neobsahuje symboly èlenù tøíd. "
-              "Symbol mùže oznaèovat makro, typ, instanci tøídy, "
-              "promìnnou, konstantu, funkci, výèet, hodnotu výètu a podobnì:";  
+        result+="dokumentaci:";
         
       return Decode(result);
     }
@@ -374,8 +452,17 @@ class TranslatorCzech : public Translator
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { return Decode("Rejstøík tøíd"); }
-
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      { 
+        return Decode("Rejstøík datových struktur");
+      }
+      else
+      {
+        return Decode("Rejstøík tøíd"); 
+      }
+    }
+   
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
@@ -508,8 +595,17 @@ class TranslatorCzech : public Translator
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { return Decode("Tøídy"); }
-
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      { 
+        return Decode("Datové struktry");
+      }
+      else
+      {
+        return Decode("Tøídy"); 
+      }
+    }
+   
     /*! This is used in the documentation of a group before the list of 
      *  links to documented files
      */
@@ -954,7 +1050,14 @@ class TranslatorCzech : public Translator
     }
     virtual QCString trPublicAttribs()
     {
-      return Decode("Veøejné atributy");
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return Decode("Datové položky");
+      }
+      else
+      {
+        return Decode("Veøejné atributy");
+      }
     }
     virtual QCString trStaticPublicAttribs()
     {

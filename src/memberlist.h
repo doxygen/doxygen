@@ -33,36 +33,35 @@ class MemberList : public QList<MemberDef>
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
     int compareItems(GCI item1,GCI item2);
-    int varCount() const       { return varCnt;     }
-    int funcCount() const      { return funcCnt;    }
-    int enumCount() const      { return enumCnt;    }
-    int enumValueCount() const { return enumValCnt; }
-    int typedefCount() const   { return typeCnt;    }
-    int protoCount() const     { return protoCnt;   }
-    int defineCount() const    { return defCnt;     }
-    int friendCount() const    { return friendCnt;  }
-    void countDecMembers(bool inGroup,bool countSubGroups,bool sectionPerType);
-    void countDocMembers(bool listOfGroup=FALSE);
-    int totalCount() const 
-         { return //varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+
-                  //protoCnt+defCnt+friendCnt; 
-                  m_count;
-         }
+    int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
+    int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
+    int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
+    int enumValueCount() const { ASSERT(m_numDecMembers!=-1); return m_enumValCnt; }
+    int typedefCount() const   { ASSERT(m_numDecMembers!=-1); return m_typeCnt;    }
+    int protoCount() const     { ASSERT(m_numDecMembers!=-1); return m_protoCnt;   }
+    int defineCount() const    { ASSERT(m_numDecMembers!=-1); return m_defCnt;     }
+    int friendCount() const    { ASSERT(m_numDecMembers!=-1); return m_friendCnt;  }
+    int numDecMembers() const  { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
+    int numDocMembers() const  { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
+    void countDecMembers(/*bool inGroup,bool countSubGroups,bool sectionPerType*/);
+    void countDocMembers();
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup=FALSE,bool countSubGroups=TRUE);
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               const char *title,const char *subtitle,
-               bool inGroup=FALSE,bool countSubGroups=TRUE);
+               const char *title,const char *subtitle);
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container);
+               Definition *container,const char *title);
     void addMemberGroup(MemberGroup *mg);
+    void setInGroup(bool group) { m_inGroup=group; }
 
   private:
-    int varCnt,funcCnt,enumCnt,enumValCnt,typeCnt,protoCnt,defCnt,friendCnt; 
-    int m_count;
+    int m_varCnt,m_funcCnt,m_enumCnt,m_enumValCnt,m_typeCnt;
+    int m_protoCnt,m_defCnt,m_friendCnt; 
+    int m_numDecMembers; // number of members in the brief part of the memberlist
+    int m_numDocMembers; // number of members in the detailed part of the memberlist
     MemberGroupList *memberGroupList;
+    bool m_inGroup; // is this list part of a group
 };
 
 class MemberListIterator : public QListIterator<MemberDef>

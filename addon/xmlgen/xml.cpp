@@ -420,18 +420,18 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
   t << "      <compoundname>";
   writeXMLString(t,fd->name());
   t << "</compoundname>" << endl;
-  int numMembers = fd->defineMembers.count()+fd->protoMembers.count()+
-                   fd->typedefMembers.count()+fd->enumMembers.count()+
-                   fd->funcMembers.count()+fd->varMembers.count();
+  int numMembers = fd->decDefineMembers.count()+fd->decProtoMembers.count()+
+                   fd->decTypedefMembers.count()+fd->decEnumMembers.count()+
+                   fd->decFuncMembers.count()+fd->decVarMembers.count();
   if (numMembers>0)
   {
     t << "      <sectionlist>" << endl;
-    generateXMLFileSection(fd,t,&fd->defineMembers,"define");
-    generateXMLFileSection(fd,t,&fd->protoMembers,"prototype");
-    generateXMLFileSection(fd,t,&fd->typedefMembers,"typedef");
-    generateXMLFileSection(fd,t,&fd->enumMembers,"enum");
-    generateXMLFileSection(fd,t,&fd->funcMembers,"func");
-    generateXMLFileSection(fd,t,&fd->varMembers,"var");
+    generateXMLFileSection(fd,t,&fd->decDefineMembers,"define");
+    generateXMLFileSection(fd,t,&fd->decProtoMembers,"prototype");
+    generateXMLFileSection(fd,t,&fd->decTypedefMembers,"typedef");
+    generateXMLFileSection(fd,t,&fd->decEnumMembers,"enum");
+    generateXMLFileSection(fd,t,&fd->decFuncMembers,"func");
+    generateXMLFileSection(fd,t,&fd->decVarMembers,"var");
     t << "      </sectionlist>" << endl;
   }
   t << "    </compounddef>" << endl;

@@ -1276,6 +1276,24 @@ class Translator
       return "Bug List";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.?
+//////////////////////////////////////////////////////////////////////////
+    /*! Used as ansicpg for RTF file */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+    /*! Used as ansicpg for RTF fcharset */
+    virtual QCString trRTFCharSet()
+    {
+      return "0";
+    }
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Index";
+    }
 };
 
 #endif

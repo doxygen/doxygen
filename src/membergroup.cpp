@@ -43,7 +43,7 @@ MemberGroup::MemberGroup(int id,const char *hdr,const char *d) /* : Definition(i
   scope          = 0;
   inSameSection  = TRUE;
   inDeclSection  = 0;
-  numDeclMembers = -1;
+  m_numDecMembers = -1;
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -89,15 +89,22 @@ void MemberGroup::setAnchors()
 void MemberGroup::writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,doc,TRUE,TRUE);
+  //printf("MemberGroup::writeDeclarations() memberList->count()=%d\n",memberList->count());
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,doc/*,TRUE,TRUE*/);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-               bool inGroup)
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd
+              )
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inGroup);
+  memberList->writePlainDeclarations(ol,cd,nd,fd,gd);
+}
+
+void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
+               Definition *container)
+{
+  memberList->writeDocumentation(ol,scopeName,container,0);
 }
 
 /*! Add this group as a subsection of the declaration section, instead
@@ -111,14 +118,14 @@ void MemberGroup::addToDeclarationSection()
   }
 }
 
-int MemberGroup::countDecMembers(bool sectionPerType)
+int MemberGroup::countDecMembers(/*bool sectionPerType*/)
 {
-  if (numDeclMembers==-1) /* number of member not cached */
+  if (m_numDecMembers==-1) /* number of member not cached */
   {
-    memberList->countDecMembers(TRUE,TRUE,sectionPerType);
-    numDeclMembers = memberList->totalCount();
+    memberList->countDecMembers(/*TRUE,TRUE,sectionPerType*/);
+    m_numDecMembers = memberList->numDecMembers();
   }
-  return numDeclMembers;
+  return m_numDecMembers;
 }
 
 void MemberGroup::distributeMemberGroupDocumentation()
@@ -140,4 +147,59 @@ void MemberGroup::distributeMemberGroupDocumentation()
       omd=memberList->next();
     }
   }
+}
+
+int MemberGroup::varCount() const       
+{ 
+  return memberList->varCount(); 
+}
+
+int MemberGroup::funcCount() const      
+{ 
+  return memberList->funcCount(); 
+}
+
+int MemberGroup::enumCount() const      
+{ 
+  return memberList->enumCount(); 
+}
+
+int MemberGroup::enumValueCount() const 
+{ 
+  return memberList->enumValueCount(); 
+}
+
+int MemberGroup::typedefCount() const   
+{ 
+  return memberList->typedefCount(); 
+}
+
+int MemberGroup::protoCount() const     
+{ 
+  return memberList->protoCount(); 
+}
+
+int MemberGroup::defineCount() const    
+{ 
+  return memberList->defineCount(); 
+}
+
+int MemberGroup::friendCount() const    
+{ 
+  return memberList->friendCount(); 
+}
+
+int MemberGroup::numDecMembers() const  
+{ 
+  return memberList->numDecMembers(); 
+}
+
+int MemberGroup::numDocMembers() const  
+{ 
+  return memberList->numDocMembers(); 
+}
+
+void MemberGroup::setInGroup(bool b)
+{
+  memberList->setInGroup(b);
 }

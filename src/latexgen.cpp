@@ -261,16 +261,6 @@ static void writeDefaultHeaderPart1(QTextStream &t)
       // The result of the LatexLanguageSupportCommand()
       // is empty, which means that the language prefers
       // the babel package, or no package is needed at all.
-      if (theTranslator->latexBabelPackage()=="russian")
-      {
-        // The russian babel package also needs an encoding.
-        // Assume the encoding matched the platform.
-#if defined(_WIN32)
-        t << "\\usepackage[cp1251]{inputenc}\n";
-#else
-        t << "\\usepackage[koi8-r]{inputenc}\n";
-#endif
-      }
       t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
     }
   }

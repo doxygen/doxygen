@@ -179,21 +179,6 @@ bool isId(char c)
   return c=='_' || isalnum(c);
 }
 
-// strip annonymous left hand side part of the scope
-//QCString stripAnnonymousScope(const QCString &s)
-//{
-//  QCString result=s;
-//  int i=0;
-//  while (!result.isEmpty() && result.at(0)=='@' && (i=result.find("::"))!=-1)
-//  { 
-//    result=result.right(result.length()-i-2);
-//  }
-//  //if (result.at(0)=='@')
-//  //{
-//  //  result.resize(0);
-//  //}
-//  return result;
-//}
 
 /*! 
   Removes all anoymous scopes from string s
@@ -256,7 +241,7 @@ QCString replaceAnonymousScopes(const QCString &s)
 
 
 // strip annonymous left hand side part of the scope
-QCString stripAnnonymousNamespaceScope(const QCString &s)
+QCString stripAnonymousNamespaceScope(const QCString &s)
 {
   int oi=0,i=0,p=0;
   if (s.isEmpty()) return s;
@@ -264,12 +249,12 @@ QCString stripAnnonymousNamespaceScope(const QCString &s)
          Doxygen::namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
   if (oi==0) 
   {
-    //printf("stripAnnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.data());
+    //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.data());
     return s;
   }
   else 
   {
-    //printf("stripAnnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.right(s.length()-oi-2).data());
+    //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.right(s.length()-oi-2).data());
     return s.right(s.length()-oi-2);
   }
 }
@@ -2537,39 +2522,6 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
-#if 0
-QCString convertFileName(const QCString &s)
-{
-  if (Config_getBool("SHORT_NAMES")) 
-  {
-    printf("convertFileName(%s)\n",s.data());
-    return convertNameToFile(s,FALSE);
-  }
-  QCString result;
-  int i,l=s.length();
-  for (i=0;i<l;i++)
-  {
-    if (s.at(i)!='/' && s.at(i)!='.')
-    {
-      if (Config_getBool("CASE_SENSE_NAMES"))
-      {
-        result+=s[i]; 
-      }
-      else
-      {
-        result+=tolower(s[i]); 
-      }
-    }
-    else 
-    {
-      result+="_";
-    }
-  }
-  return result;
-}
-#endif
-
-
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with templete 
  *  arguments, so special characters need to be escaped.
@@ -2754,3 +2706,40 @@ const char *getOverloadDocs()
          "function only in what argument(s) it accepts.";
 }
       
+void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
+                             MemberGroupList *memberGroupList)
+{
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  uint index;
+  for (index=0;(md=mli.current());)
+  {
+    int groupId=md->getMemberGroupId();
+    if (groupId!=-1)
+    {
+      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      QCString *pDocs      = Doxygen::memberDocDict[groupId];
+      if (pGrpHeader)
+      {
+        MemberGroup *mg = memberGroupDict->find(groupId);
+        if (mg==0)
+        {
+          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          memberGroupDict->insert(groupId,mg);
+          memberGroupList->append(mg);
+        }
+        md = ml->take(index);
+        mg->insertMember(md);
+        md->setMemberGroup(mg);
+      }
+      else
+      {
+        ++mli;++index;
+      }
+    }
+    else
+    {
+      ++mli;++index;
+    }
+  }
+}

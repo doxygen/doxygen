@@ -400,7 +400,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
   ol.popGeneratorState();
 }
 
-bool Definition::hasDocumentation() 
+bool Definition::hasDocumentation() const
 { 
   return !doc.isEmpty() ||             // has detailed docs
          !brief.isEmpty() ||           // has brief description

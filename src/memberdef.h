@@ -95,6 +95,7 @@ class MemberDef : public Definition
     Specifier virtualness() const         { return virt; }
     MemberType memberType() const         { return mtype; }
 
+
     // convenience methods
     bool isSignal() const                 { return mtype==Signal;      }
     bool isSlot() const                   { return mtype==Slot;        }
@@ -117,8 +118,9 @@ class MemberDef : public Definition
     // output info
     bool isLinkableInProject();
     bool isLinkable();
-    bool detailsAreVisible() const;
-    bool hasDocumentation();  // overrides hasDocumentation in definition.h
+    bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
+    bool isBriefSectionVisible() const;
+    bool isDetailedSectionVisible(bool inGroup=FALSE) const;
 
     // set functions
     void setMemberType(MemberType t)      { mtype=t; }
@@ -148,7 +150,8 @@ class MemberDef : public Definition
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                    bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
-                            const char *scopeName,Definition *container);
+                            const char *scopeName,Definition *container,
+                            bool inGroup);
     void warnIfUndocumented();
     
     // relation to other members
@@ -162,8 +165,8 @@ class MemberDef : public Definition
     void setEnumScope(MemberDef *md)         { enumScope=md; }
     MemberDef *getEnumScope() const          { return enumScope; }
     void setEnumDecl(OutputList &ed);
-    void setEnumUsed()                       { eUsed=TRUE; }
-    bool enumUsed() const                    { return eUsed; }
+    //void setEnumUsed()                       { eUsed=TRUE; }
+    //bool enumUsed() const                    { return eUsed; }
     OutputList *enumDecl() const             { return enumDeclList; }
     MemberList *enumFieldList() const        { return enumFields; }
     void setDocumentedEnumValues(bool value) { docEnumValues=value; }
@@ -202,11 +205,11 @@ class MemberDef : public Definition
     void setMemberGroupId(int id) { grpId=id; }
     int getMemberGroupId() const { return grpId; }
     
-    // annonymous scope members
-    void setFromAnnonymousScope(bool b) { annScope=b; }    
-    void setFromAnnonymousMember(MemberDef *m) { annMemb=m; }    
-    bool fromAnnonymousScope() const { return annScope; }
-    bool annonymousDeclShown() const { return annUsed; }
+    // anonymous scope members
+    void setFromAnonymousScope(bool b) { annScope=b; }    
+    void setFromAnonymousMember(MemberDef *m) { annMemb=m; }    
+    bool fromAnonymousScope() const { return annScope; }
+    bool anonymousDeclShown() const { return annUsed; }
     void setIndentDepth( int i) { indDepth=i; }
     int  indentDepth() { return indDepth; }
 
@@ -214,7 +217,7 @@ class MemberDef : public Definition
 
     QCString getScopeString() const;
     
-    //void generateXML(QTextStream &t,Definition *def);
+    ClassDef *getClassDefOfAnonymousType(const char *scopeName) const;
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -247,7 +250,7 @@ class MemberDef : public Definition
     bool    stat;             // is it a static function?
     int     memSpec;          // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
-    bool eUsed;               // is the enumerate already placed in a list
+    //bool eUsed;               // is the enumerate already placed in a list
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
     bool annScope;            // member is part of an annoymous scope

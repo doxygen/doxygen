@@ -38,6 +38,8 @@ class ClassList;
 class BaseClassList;
 class GroupDef;
 class NamespaceList;
+class MemberGroupList;
+class MemberGroupDict;
 
 //--------------------------------------------------------------------
 
@@ -123,8 +125,7 @@ QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleList *el);
 //void setFileNameForSections(QList<QCString> *anchorList,const char *fileName,
 //                            PageInfo *pi=0);
-QCString stripAnnonymousScope(const QCString &s);
-QCString stripAnnonymousNamespaceScope(const QCString &s);
+QCString stripAnonymousNamespaceScope(const QCString &s);
 QCString stripFromPath(const QCString &path);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
@@ -144,6 +145,8 @@ int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
 QCString convertToHtml(const char *s);
 QCString convertToXML(const char *s);
 const char * getOverloadDocs();
+void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
+                             MemberGroupList *memberGroupList);
 
 #endif
 

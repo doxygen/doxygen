@@ -1,5 +1,5 @@
 /****************************************************************************
-** $Id$
+** 
 **
 ** Macros for pasting tokens; utilized by our generic classes
 **

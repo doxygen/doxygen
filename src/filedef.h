@@ -149,15 +149,22 @@ class FileDef : public Definition
     //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
 
     MemberList allMemberList;
-    MemberList defineMembers;
-    MemberList protoMembers;
-    MemberList typedefMembers;
-    MemberList enumMembers;
-    MemberList funcMembers;
-    MemberList varMembers;
 
-  protected:
-    void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
+    // members in the declaration part of the documentation
+    MemberList decDefineMembers;
+    MemberList decProtoMembers;
+    MemberList decTypedefMembers;
+    MemberList decEnumMembers;
+    MemberList decFuncMembers;
+    MemberList decVarMembers;
+
+    // members in the documentation part of the documentation
+    MemberList docDefineMembers;
+    MemberList docProtoMembers;
+    MemberList docTypedefMembers;
+    MemberList docEnumMembers;
+    MemberList docFuncMembers;
+    MemberList docVarMembers;
 
   private: 
     

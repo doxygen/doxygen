@@ -164,6 +164,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
+<li> \refitem cfg_short_names SHORT_NAMES
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 <li> \refitem cfg_show_used_files SHOW_USED_FILES
 <li> \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
@@ -350,6 +351,13 @@ followed by the descriptions of the tags grouped by category.
  \c YES upper case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
  supports case sensitive file names.
+
+\anchor cfg_short_names
+<dt>\c SHORT_NAMES <dd>
+ \addindex SHORT_NAMES
+ If the \c SHORT_NAMES tag is set to \c YES, doxygen will generate much shorter
+ (but less readable) file names. This can be useful is your file systems
+ doesn't support long names like on DOS, Mac, or CD-ROM.
 
 \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>

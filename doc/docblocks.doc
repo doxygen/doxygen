@@ -43,7 +43,7 @@ The following types of special documentation blocks are supported by doxygen:
 Doxygen only allows one brief and one detailed description. If there is
 one brief description before a declaration and one before a
 definition, only the one before the \e declaration will be used. If
-the same situation occurs for a detail description,
+the same situation occurs for a detailed description,
 the one before the \e definition is preferred and the one before the
 declaration will be ignored.
 
@@ -56,14 +56,15 @@ Here is an example of a documented piece of C++ code using the Qt style:
 
 The one-line comments should contain a brief description, 
 whereas the multi-line comment blocks contain a more detailed description.
-The brief descriptions are included in the member overview of a class, 
-namespace or file and are printed using a small italic font 
-(this description can be hidden by 
- setting \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" to \c NO in 
-the config file). By default the brief descriptions are also the first 
-sentence of the detailed description 
-(this can be changed by setting the \ref cfg_repeat_brief "REPEAT_BRIEF" tag 
-to \c NO). Both the brief and the detailed descriptions are optional 
+Note that consecutive one-line comments are merged together in one brief 
+description. The brief descriptions are included in the member overview of a 
+class, namespace or file and are printed using a small italic font 
+(this description can be hidden by setting 
+\ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" to \c NO in 
+the config file). By default the brief descriptions become the first 
+sentence of the detailed descriptions 
+(but this can be changed by setting the \ref cfg_repeat_brief "REPEAT_BRIEF" 
+tag to \c NO). Both the brief and the detailed descriptions are optional 
 for the Qt style. 
 
 By default a JavaDoc style documentation block behaves the same way as a
@@ -71,7 +72,7 @@ Qt style documentation block. This is not according the JavaDoc specification
 however, where the first sentence of the documentation block is automatically
 treated as a brief description. To enable this behaviour you should set
 \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" to YES in the configuration
-file. If you enble this option and want to put a dot in the middle of a
+file. If you enable this option and want to put a dot in the middle of a
 sentence without ending it, you should put a backslash and a space after it.
 Here is an example:
 \verbatim
@@ -112,7 +113,8 @@ of a function or inside a normal C style comment block), as long as you put a
 structural command inside the documentation block.
 
 Structural commands (like all other commands) start with a backslash 
-(<tt>\\</tt>) followed by a command name and one or more parameters.
+(<tt>\\</tt>), or an at-sign (<tt>\@</tt>) in JavaDoc style, 
+followed by a command name and one or more parameters.
 For instance, if you want to document the class \c Test in the example
 above, you could have also put the following documentation block somewhere
 in the input that is read by doxygen:
@@ -124,7 +126,7 @@ in the input that is read by doxygen:
 */
 \endverbatim
 
-Here the special command \c \class is used to indicated that the
+Here the special command \c \class is used to indicate that the
 comment block contains documentation for the class \c Test.
 Other structural commands are:
 <ul>
@@ -142,10 +144,16 @@ commands. Note that the documentation block belonging to a file
 should always contain a structural command.
 
 To document a member of a C++ class, you must also document the class 
-itself. The same holds for namespaces. To document a C function, typedef, 
+itself. The same holds for namespaces. To document a global C function, typedef, 
 enum or preprocessor definition you must first document the file that 
 contains it (usually this will be a header file, because that file contains 
 the information that is exported to other source files).
+
+Let's repeat that, because it is often overlooked:
+to document global objects (functions, typedefs, enum, macros, etc), you
+<em>must</em> document the file in which they are defined. In other words, 
+there <em>must</em> at least be a \verbatim /*! \file */ \endverbatim
+or a \verbatim /** @file */ \endverbatim line in this file.
 
 Here is an example of a C header named \c structcmd.h that is documented 
 using structural commands:
@@ -164,7 +172,7 @@ using structural commands:
 
 \subsection memberdoc Documenting compound members.
 
-If you want to document the members of a file, struct, union, class, or enum 
+If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,
 it is sometimes desired to place the documentation block after the member 
 instead of before. For this purpose doxygen has the following 
@@ -172,7 +180,7 @@ additional comment blocks:
 \verbatim
 /*!< ... */
 \endverbatim
-This block can be used to put a qt style documentation blocks after a member.
+This block can be used to put a Qt style documentation blocks after a member.
 The one line version look as follows:
 \verbatim
 //!< ...
@@ -189,7 +197,7 @@ Note that these blocks have the same structure and meaning as the
 special comment blocks above only the \< indicates that the member is 
 located in front of the block instead of after the block.
 
-Here is an example of a the use of these comment blocks:
+Here is an example of the use of these comment blocks:
 \verbinclude afterdoc.h
  \htmlonly
  Click <a href="$(DOXYGEN_DOCDIR)/examples/afterdoc/html/class_test.html">here</a>
@@ -198,9 +206,9 @@ Here is an example of a the use of these comment blocks:
 
 \warning These blocks can only be used to document \e members.
          They cannot be used to document files, classes, unions, structs,
-         groups, namespaces and enums. Furthermore, the structural commands 
-         mentioned in the previous section (like <code>\\class</code>) are ignored 
-         inside these comment blocks.
+         groups, namespaces and enums themselves. Furthermore, the structural 
+         commands mentioned in the previous section 
+         (like <code>\\class</code>) are ignored inside these comment blocks.
 
 \htmlonly
 Go to the <a href="lists.html">next</a> section or return to the

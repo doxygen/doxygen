@@ -56,6 +56,22 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
 
+  decDefineMembers.setInGroup(TRUE);
+  decProtoMembers.setInGroup(TRUE);
+  decTypedefMembers.setInGroup(TRUE);
+  decEnumMembers.setInGroup(TRUE);
+  decEnumValMembers.setInGroup(TRUE);
+  decFuncMembers.setInGroup(TRUE);
+  decVarMembers.setInGroup(TRUE);
+
+  docDefineMembers.setInGroup(TRUE);
+  docProtoMembers.setInGroup(TRUE);
+  docTypedefMembers.setInGroup(TRUE);
+  docEnumMembers.setInGroup(TRUE);
+  docEnumValMembers.setInGroup(TRUE);
+  docFuncMembers.setInGroup(TRUE);
+  docVarMembers.setInGroup(TRUE);
+
   visited = 0;
 }
 
@@ -119,6 +135,7 @@ void GroupDef::addExample(const PageInfo *def)
   exampleDict->append(def->name,def);
 }
 
+#if 0
 void GroupDef::addMemberListToGroup(MemberList *ml,
                                 bool (MemberDef::*func)() const)
 {
@@ -147,9 +164,12 @@ void GroupDef::addMemberListToGroup(MemberList *ml,
     }
   }
 }
+#endif
+
 
 void GroupDef::addMembersToMemberGroup()
 {
+#if 0
   addMemberListToGroup(allMemberList,&MemberDef::isDefine);
   addMemberListToGroup(allMemberList,&MemberDef::isTypedef);
   addMemberListToGroup(allMemberList,&MemberDef::isEnumerate);
@@ -158,6 +178,23 @@ void GroupDef::addMembersToMemberGroup()
   addMemberListToGroup(allMemberList,&MemberDef::isSlot);
   addMemberListToGroup(allMemberList,&MemberDef::isSignal);
   addMemberListToGroup(allMemberList,&MemberDef::isVariable);
+#endif
+
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decEnumValMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupDict,memberGroupList);
+
+  //printf("GroupDef::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->setInGroup(TRUE);
+  }
 }
 
 
@@ -189,49 +226,55 @@ void GroupDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
+      decVarMembers.append(md); 
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        varMembers.inSort(md); 
+        docVarMembers.inSort(md); 
       else
-        varMembers.append(md);
+        docVarMembers.append(md);
       break;
     case MemberDef::Function: 
+      decFuncMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))    
-        funcMembers.inSort(md); 
+        docFuncMembers.inSort(md); 
       else
-        funcMembers.append(md);
+        docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
+      decTypedefMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        typedefMembers.inSort(md); 
+        docTypedefMembers.inSort(md); 
       else
-        typedefMembers.append(md);
+        docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
+      decEnumMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        enumMembers.inSort(md); 
+        docEnumMembers.inSort(md); 
       else
-        enumMembers.append(md);
+        docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      if (Config_getBool("SORT_MEMBER_DOCS"))
-        enumValMembers.inSort(md); 
-      else
-        enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
+      decProtoMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        protoMembers.inSort(md); 
+        docProtoMembers.inSort(md); 
       else
-        protoMembers.append(md);
+        docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
+      decDefineMembers.append(md);
       if (Config_getBool("SORT_MEMBER_DOCS"))
-        defineMembers.inSort(md); 
+        docDefineMembers.inSort(md); 
       else
-        defineMembers.append(md);
+        docDefineMembers.append(md);
       break;
     default:
-      err("FileDef::insertMembers(): unexpected member insert in file!\n");
+      err("GroupDef::insertMembers(): "
+           "member `%s' with class scope `%s' inserted in group scope `%s'!\n",
+           md->name().data(),
+           md->getClassDef() ? md->getClassDef()->name().data() : "",
+           name().data());
   }
   //addMemberToGroup(md,groupId);
 }
@@ -410,7 +453,13 @@ void GroupDef::writeDocumentation(OutputList &ol)
       mg->writeDeclarations(ol,0,0,0,this);
     }
 
-    allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
+    //allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
+    decDefineMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trDefines(),0);
+    decProtoMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFuncProtos(),0);
+    decTypedefMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trTypedefs(),0);
+    decEnumMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trEnumerations(),0);
+    decFuncMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFunctions(),0);
+    decVarMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trVariables(),0);
   }
   ol.endMemberSections();
 
@@ -471,65 +520,23 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  defineMembers.countDocMembers(TRUE);
-  if (defineMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trDefineDocumentation());
-    ol.endGroupHeader();
-    defineMembers.writeDocumentation(ol,name(),this);
-  }
+  docDefineMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trDefineDocumentation());
   
-  protoMembers.countDocMembers(TRUE); 
-  if (protoMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trFunctionPrototypeDocumentation());
-    ol.endGroupHeader();
-    protoMembers.writeDocumentation(ol,name(),this);
-  }
+  docProtoMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trFunctionPrototypeDocumentation());
 
-  typedefMembers.countDocMembers(TRUE);
-  if (typedefMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trTypedefDocumentation());
-    ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name(),this);
-  }
+  docTypedefMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trTypedefDocumentation());
   
-  enumMembers.countDocMembers(TRUE);
-  if (enumMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationTypeDocumentation());
-    ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name(),this);
-  }
+  docEnumMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trEnumerationTypeDocumentation());
 
-  funcMembers.countDocMembers(TRUE);
-  if (funcMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trFunctionDocumentation());
-    ol.endGroupHeader();
-    funcMembers.writeDocumentation(ol,name(),this);
-  }
+  docFuncMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trFunctionDocumentation());
   
-  varMembers.countDocMembers(TRUE);
-  if (varMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trVariableDocumentation());
-    ol.endGroupHeader();
-    varMembers.writeDocumentation(ol,name(),this);
-  }
+  docVarMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trVariableDocumentation());
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

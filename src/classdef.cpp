@@ -150,58 +150,31 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
   inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
 }
 
-void ClassDef::addMemberListToGroup(MemberList *ml)
-{
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
-  {
-    int groupId=md->getMemberGroupId();
-    if (groupId!=-1)
-    {
-      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      if (pGrpHeader)
-      {
-        MemberGroup *mg = memberGroupDict->find(groupId);
-        if (mg==0)
-        {
-          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-          memberGroupDict->insert(groupId,mg);
-          memberGroupList->append(mg);
-        }
-        mg->insertMember(md);
-        md->setMemberGroup(mg);
-      }
-    }
-  }
-}
-
 void ClassDef::addMembersToMemberGroup()
 {
-  addMemberListToGroup(&pubTypes);
-  addMemberListToGroup(&pubMembers);
-  addMemberListToGroup(&pubAttribs);
-  addMemberListToGroup(&pubSlots);
-  addMemberListToGroup(&signals);
-  addMemberListToGroup(&dcopMethods);
-  addMemberListToGroup(&pubStaticMembers);
-  addMemberListToGroup(&pubStaticAttribs);
-  addMemberListToGroup(&proTypes);
-  addMemberListToGroup(&proMembers);
-  addMemberListToGroup(&proAttribs);
-  addMemberListToGroup(&proSlots);
-  addMemberListToGroup(&proStaticMembers);
-  addMemberListToGroup(&proStaticAttribs);
-  addMemberListToGroup(&priTypes);
-  addMemberListToGroup(&priMembers);
-  addMemberListToGroup(&priAttribs);
-  addMemberListToGroup(&priSlots);
-  addMemberListToGroup(&priStaticMembers);
-  addMemberListToGroup(&priStaticAttribs);
-  addMemberListToGroup(&friends);
-  addMemberListToGroup(&related);
-  addMemberListToGroup(&properties);
+  ::addMembersToMemberGroup(&pubTypes,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubSlots,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&signals,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&dcopMethods,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubStaticMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&pubStaticAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proTypes,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proSlots,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proStaticMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&proStaticAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priTypes,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priSlots,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priStaticMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&priStaticAttribs,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&friends,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&related,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&properties,memberGroupDict,memberGroupList);
 }
 
 // adds new member definition to the class
@@ -1037,85 +1010,26 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeTemplateSpec(ol,outerTempArgList,pageType,name());
   }
   
-  typedefMembers.countDocMembers();
-  if (typedefMembers.totalCount()>0)
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trMemberTypedefDocumentation());
-    ol.endGroupHeader();
-    typedefMembers.writeDocumentation(ol,name(),this);
-  }
+  typedefMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trMemberTypedefDocumentation());
 
-  enumMembers.countDocMembers();
-  if (enumMembers.totalCount()>0)
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trMemberEnumerationDocumentation());
-    ol.endGroupHeader();
-    enumMembers.writeDocumentation(ol,name(),this);
-  }
+  enumMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trMemberEnumerationDocumentation());
   
-  //enumValMembers.countDocMembers();
-  //if (enumValMembers.totalCount()>0)
-  //{
-  //  ol.writeRuler();
-  //  ol.startGroupHeader();
-  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
-  //  ol.endGroupHeader();
-  //  enumValMembers.writeDocumentation(ol,name());
-  //}
+  constructors.writeDocumentation(ol,name(),this,
+                         theTranslator->trConstructorDocumentation());
 
-  constructors.countDocMembers();
-  if (constructors.totalCount()>0) 
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trConstructorDocumentation());
-    ol.endGroupHeader();
-    constructors.writeDocumentation(ol,name(),this);
-  }
+  functionMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trMemberFunctionDocumentation());
 
-  functionMembers.countDocMembers();
-  if (functionMembers.totalCount()>0) 
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trMemberFunctionDocumentation());
-    ol.endGroupHeader();
-    functionMembers.writeDocumentation(ol,name(),this);
-  }
+  relatedMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trRelatedFunctionDocumentation());
 
-  relatedMembers.countDocMembers();
-  if (relatedMembers.totalCount()>0)
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trRelatedFunctionDocumentation());
-    ol.endGroupHeader();
-    relatedMembers.writeDocumentation(ol,name(),this);
-  }
-
-  variableMembers.countDocMembers();
-  if (variableMembers.totalCount()>0) 
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trMemberDataDocumentation());
-    ol.endGroupHeader();
-    variableMembers.writeDocumentation(ol,name(),this);
-  }
+  variableMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trMemberDataDocumentation());
   
-  propertyMembers.countDocMembers();
-  if (propertyMembers.totalCount()>0) 
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trPropertyDocumentation());
-    ol.endGroupHeader();
-    propertyMembers.writeDocumentation(ol,name(),this);
-  }
+  propertyMembers.writeDocumentation(ol,name(),this,
+                         theTranslator->trPropertyDocumentation());
   
   ol.startTextBlock();
 
@@ -1398,13 +1312,16 @@ bool ClassDef::hasNonReferenceSuperClass()
   return found;
 }
 
+/*! called from MemberDef::writeDeclaration() to (recusively) write the 
+ *  definition of an annonymous struct, union or class.
+ */
 void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 {
   //ol.insertMemberAlign();
   //printf("ClassName=`%s' inGroup=%d\n",name().data(),inGroup);
 
-  if (inGroup && md && md->getClassDef()==this) return;
-  
+  //if (inGroup && md && md->getClassDef()==this) return;
+
   ol.docify(compoundTypeString());
   int ri=name().findRev("::");
   if (ri==-1) ri=name().length();
@@ -1417,45 +1334,64 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   ol.docify(" {");
   ol.endMemberItem(FALSE); 
 
-  // insert members of this class
-  if (inGroup)
+  // write user defined member groups
+  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writePlainDeclarations(ol,this,0,0,0);
-    }
+    mg->setInGroup(inGroup);
+    mg->writePlainDeclarations(ol,this,0,0,0);
   }
-  else
+
+  pubTypes.setInGroup(inGroup);
+  pubTypes.writePlainDeclarations(ol,this,0,0,0); 
+  pubMembers.setInGroup(inGroup);
+  pubMembers.writePlainDeclarations(ol,this,0,0,0); 
+  pubAttribs.setInGroup(inGroup);
+  pubAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  pubSlots.setInGroup(inGroup);
+  pubSlots.writePlainDeclarations(ol,this,0,0,0); 
+  signals.setInGroup(inGroup);
+  signals.writePlainDeclarations(ol,this,0,0,0); 
+  dcopMethods.setInGroup(inGroup);
+  dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
+  properties.setInGroup(inGroup);
+  properties.writePlainDeclarations(ol,this,0,0,0); 
+  pubStaticMembers.setInGroup(inGroup);
+  pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+  pubStaticAttribs.setInGroup(inGroup);
+  pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  proTypes.setInGroup(inGroup);
+  proTypes.writePlainDeclarations(ol,this,0,0,0); 
+  proMembers.setInGroup(inGroup);
+  proMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proAttribs.setInGroup(inGroup);
+  proAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  proSlots.setInGroup(inGroup);
+  proSlots.writePlainDeclarations(ol,this,0,0,0); 
+  proStaticMembers.setInGroup(inGroup);
+  proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+  proStaticAttribs.setInGroup(inGroup);
+  proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
+  if (Config_getBool("EXTRACT_PRIVATE"))
   {
-    pubTypes.writePlainDeclarations(ol,this,0,0,0); 
-    pubMembers.writePlainDeclarations(ol,this,0,0,0); 
-    pubAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    pubSlots.writePlainDeclarations(ol,this,0,0,0); 
-    signals.writePlainDeclarations(ol,this,0,0,0); 
-    dcopMethods.writePlainDeclarations(ol,this,0,0,0); 
-    properties.writePlainDeclarations(ol,this,0,0,0); 
-    pubStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
-    pubStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    proTypes.writePlainDeclarations(ol,this,0,0,0); 
-    proMembers.writePlainDeclarations(ol,this,0,0,0); 
-    proAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    proSlots.writePlainDeclarations(ol,this,0,0,0); 
-    proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
-    proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    if (Config_getBool("EXTRACT_PRIVATE"))
-    {
-      priTypes.writePlainDeclarations(ol,this,0,0,0); 
-      priMembers.writePlainDeclarations(ol,this,0,0,0); 
-      priAttribs.writePlainDeclarations(ol,this,0,0,0); 
-      priSlots.writePlainDeclarations(ol,this,0,0,0); 
-      priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
-      priStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    }
-    friends.writePlainDeclarations(ol,this,0,0,0);
-    related.writePlainDeclarations(ol,this,0,0,0); 
+    priTypes.setInGroup(inGroup);
+    priTypes.writePlainDeclarations(ol,this,0,0,0); 
+    priMembers.setInGroup(inGroup);
+    priMembers.writePlainDeclarations(ol,this,0,0,0); 
+    priAttribs.setInGroup(inGroup); 
+    priAttribs.writePlainDeclarations(ol,this,0,0,0); 
+    priSlots.setInGroup(inGroup); 
+    priSlots.writePlainDeclarations(ol,this,0,0,0); 
+    priStaticMembers.setInGroup(inGroup); 
+    priStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
+    priStaticAttribs.setInGroup(inGroup); 
+    priStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
   }
+  friends.setInGroup(inGroup);
+  friends.writePlainDeclarations(ol,this,0,0,0);
+  related.setInGroup(inGroup);
+  related.writePlainDeclarations(ol,this,0,0,0); 
 }
 
 /*! a link to this class is possible within this project */
@@ -1476,6 +1412,11 @@ bool ClassDef::isVisibleInHierarchy()
     (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
     // documented or show anyway or documentation is external 
     (hasDocumentation() || !Config_getBool("HIDE_UNDOC_CLASSES") || isReference());
+}
+
+bool ClassDef::hasDocumentation() const
+{
+  return Definition::hasDocumentation();
 }
 
 //----------------------------------------------------------------------
