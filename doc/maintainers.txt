@@ -65,6 +65,11 @@ Kenji Nagamatsu: naga@joyful.club.ne.jp
 TranslatorKorean
 Richard Kim: ryk@dspwiz.com
 
+TranslatorLithuanian
+Tomas Simonaitis: haden@homelan.lt
+Mindaugas Radzius: mindaugasradzius@takas.lt
+Aidas Berukstis: aidasber@takas.lt
+
 TranslatorNorwegian
 Lars Erik Jordet: lej@circuitry.no
 

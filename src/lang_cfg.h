@@ -27,3 +27,4 @@
 #define LANG_TW
 #define LANG_SR
 #define LANG_CA
+#define LANG_LT

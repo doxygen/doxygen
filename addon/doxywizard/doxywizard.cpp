@@ -479,6 +479,7 @@ void ConfigFile::addDependency(QDict<QObject> *switches,
 {
   if (!dep.isEmpty())
   {
+    //printf("ConfigFile::addDependency(%s)\n",name.data());
     IInput *parent = m_inputWidgets->find(dep);
     ASSERT(parent!=0);
     IInput *child = m_inputWidgets->find(name);

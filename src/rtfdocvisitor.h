@@ -154,6 +154,7 @@ class RTFDocVisitor : public DocVisitor
     bool m_hide;
     int m_indentLevel;
     QStack<bool> m_enabled;
+    bool m_lastIsPara;
 };
 
 #endif

@@ -60,7 +60,16 @@ extern char **environ;
 
 //------------------------------------------------------------------------
 
-static QCache<ClassDef*> g_lookupCache(20000,20000); 
+struct LookupInfo
+{
+  LookupInfo(ClassDef *cd=0,MemberDef *td=0,QCString ts="") 
+    : classDef(cd), typeDef(td), templSpec(ts) {}
+  ClassDef  *classDef;
+  MemberDef *typeDef;
+  QCString   templSpec;
+};
+
+static QCache<LookupInfo> g_lookupCache(20000,20000); 
 
 // object that automatically initializes the cache at startup
 class CacheInitializer
@@ -448,7 +457,6 @@ int guessSection(const char *name)
   return 0;
 }
 
-// TODO: remove this!
 QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
                         Definition **typedefContext)
 {
@@ -639,6 +647,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   }
   type=type.stripWhiteSpace(); // strip leading and trailing whitespace
   ClassDef *result = getResolvedClassRec(md->getOuterScope(),fileScope,type,0,0);
+  //printf("type=%s result=%p\n",type.data(),result);
   if (result==0)
   {
     // try unspecialized version if type is template
@@ -1025,16 +1034,21 @@ ClassDef *getResolvedClassRec(Definition *scope,
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
   QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
-  ClassDef **pval=g_lookupCache.find(key);
+  LookupInfo *pval=g_lookupCache.find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
   {
-    return *pval; 
+    if (pTemplSpec) *pTemplSpec=pval->templSpec;
+    if (pTypeDef)   *pTypeDef=pval->typeDef;
+    //printf("] cachedMatch=%s\n",
+    //    pval->classDef?pval->classDef->name().data():"<none>");
+    //if (pTemplSpec) printf("templSpec=%s\n",pTemplSpec->data());
+    return pval->classDef; 
   }
   else // not found yet; we already add a 0 to avoid the possibility of 
        // endless recursion.
   {
-    g_lookupCache.insert(key,new ClassDef*(0));
+    g_lookupCache.insert(key,new LookupInfo);
   }
 
   ClassDef *bestMatch=0;
@@ -1114,14 +1128,17 @@ ClassDef *getResolvedClassRec(Definition *scope,
   pval=g_lookupCache.find(key);
   if (pval)
   {
-    *pval=bestMatch;
+    pval->classDef  = bestMatch;
+    pval->typeDef   = bestTypedef;
+    pval->templSpec = bestTemplSpec;
   }
   else
   {
-    g_lookupCache.insert(key,new ClassDef*(bestMatch));
+    g_lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
+  //if (pTemplSpec) printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
 }
 

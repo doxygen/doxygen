@@ -235,28 +235,31 @@ void FileDef::writeDocumentation(OutputList &ol)
                      << "</filename>" << endl;
   }
   
-  ol.startTextBlock();
   if (Config_getBool("DETAILS_AT_TOP"))
   {
+    ol.startTextBlock(); 
     writeDetailedDocumentation(ol);
-    ol.newParagraph();
+    ol.endTextBlock();
   }
-  else if (briefDescription()) 
+  else if (!briefDescription().isEmpty()) 
   {
     ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
-    ol.writeString(" \n");
+    //ol.writeString(" \n");
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(0,"_details");
     ol.parseText(theTranslator->trMore());
     ol.endTextLink();
     ol.enableAll();
+
+    ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
-    ol.enable(OutputGenerator::Man);
+    ol.popGeneratorState();
   }
   ol.writeSynopsis();
  
-  if (Config_getBool("SHOW_INCLUDE_FILES"))
+  if (Config_getBool("SHOW_INCLUDE_FILES") && includeList->count()>0)
   {
     ol.startTextBlock(TRUE);
     QListIterator<IncludeInfo> ili(*includeList);
@@ -323,12 +326,7 @@ void FileDef::writeDocumentation(OutputList &ol)
       if (isIDLorJava) 
         ol.docify(";");
       ol.endTypewriter();
-      ol.disable(OutputGenerator::RTF);
       ol.lineBreak();
-      ol.enableAll();
-      ol.disableAllBut(OutputGenerator::RTF);
-      ol.newParagraph();
-      ol.enableAll();
     }
     ol.endTextBlock();
   }
@@ -339,12 +337,14 @@ void FileDef::writeDocumentation(OutputList &ol)
     DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),FALSE);
     if (!incDepGraph.isTrivial())
     {
+      ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclDepGraph(name()));
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
+      ol.endTextBlock(TRUE);
     }
     //incDepGraph.writeGraph(Config_getString("HTML_OUTPUT"),fd->getOutputFileBase());
   }
@@ -355,12 +355,14 @@ void FileDef::writeDocumentation(OutputList &ol)
     DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),TRUE);
     if (!incDepGraph.isTrivial())
     {
+      ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
       ol.newParagraph();
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
       ol.enableAll();
+      ol.endTextBlock(TRUE);
     }
     //incDepGraph.writeGraph(Config_getString("HTML_OUTPUT"),fd->getOutputFileBase());
   }
@@ -375,8 +377,6 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.endTextLink();
     ol.enableAll();
   }
-  
-  ol.endTextBlock();
   
   ol.startMemberSections();
 

@@ -15,260 +15,141 @@
  *
  */
 
-#ifndef TRANSLATOR_CZ_H
-#define TRANSLATOR_CZ_H
+/* Translation from English to Lithanian by Tomas Simonaitis, Mindaugas Radzius and Aidas Berukstis
+ *  (haden@homelan.lt/mindaugasradzius@takas.lt/aidasber@takas.lt)
+ *  We tried to keep meaning close to original, 
+ *  if you have any suggestions drop us an email
+ *  -------------------------------------------
+ *  Project start                  :13.May.2k4
+ *  Last Doxygen version covered   : 1.3.6
+ *  Last revision                  :
+ *
+*/
 
-// $Id$
-//
-// The first translation from English to Czech was started by
-// Vlastimil Havran (1999--2000). The prototype version of Czech strings 
-// with diacritics was implemented by Petr Prikryl (prikrylp@skil.cz), 
-// 2000/06/20. Vlastimil agreed that Petr be the new maintainer.
-//
-// Updates:
-// --------
-// 2000/06/20
-//  - The prototype version of Czech strings with diacritics. The
-//    translation was based on translator.h of Doxygen version
-//    1.1.4 (from scratch).
-//
-// 2000/07/10
-//  - Updated version based on 1.1.5 sources (including important updates
-//    of the up-to-1.1.4 strings). Czech strings in this file were written
-//    in windows-1250 encoding. On-line decoding into iso-8859-2 ensured
-//    via conditional compilation if the sources are compiled under UNIX.
-//
-// 2000/07/19
-//  - Encoding conversion tables moved to the methods that use them.
-//  - Updates for "new since 1.1.5".
-//
-// 2000/08/02 (Petr Prikryl)
-//  - Updated for 1.2.0
-//
-// 2000/08/24
-//  - Changed trTodo() text from "Udelat" to "Planovane upravy"
-//    which seems more appropriate in the document context.
-//  - Typo corrected in trMemberTypedefDocumentation().
-//
-// 2000/08/30
-//  - Macro DECODE replaced by the inline Decode() (proposed by
-//    Boris Bralo <boris.bralo@zg.tel.hr> in translator_hr.h).
-//
-// 2000/08/31
-//  - Methods ISOToWin() and WinToISO() renamed and moved to the
-//    base class (in translator.h) to be shared with the Croatian
-//    translator.
-//
-// 2000/09/06
-//  - Reimplementation of the method trInheritsList() which takes 
-//    into account quantity of base classes.
-//
-// 2000/09/11
-//  - Update for "new since 1.2.1" version. The text of trDCOPMethods()
-//    was translated rather blindly (not knowing what exactly
-//    the DCOP means).
-//    
-// 2000/10/17
-//  - Update for "new since 1.2.2" version. 
-//
-// 2001/01/09
-//  - Update for "new since 1.2.4" version. As I do not use Java,
-//    I tried my best to guess the Czech terminology for the Java.
-//    Let me know if some wording should be changed/improved.
-//         
-// 2001/02/15
-//  - trMore() now returns only "..." (ellipsis).  The Czech replacement
-//    of "(more)" was too much visible.  The previous "(...)" did not 
-//    look well.
-//    
-// 2001/02/26
-//  - Update for "new since 1.2.5" version (trBug(), trBugList()).
-//         
-// 2001/03/12
-//  - Minor correction of comments which copied the same
-//    corrections in translator.h (doubled backslash) just after 
-//    1.2.6 release.
-//    
-// 2001/04/10
-//  - Update for OPTIMIZE_OUTPUT_FOR_C (1.2.6-20010408).
-//  - Removed implementation of latexBabelPackage().
-//  - Removed implementation of trVerbatimText().
-//  
-// 2001/04/20
-//  - Update for "new since 1.2.6-20010422". Experimental version
-//    introducing TranslatorAdapter class and the abstract base
-//    class Translator.  The English translator is now on the same
-//    level as other translators.
-//
-// 2001/05/02
-//  - The Decode() inline identifier changed to decode (i.e. lower
-//    case) to be consistent with HR and RU translator, which also
-//    use the approach.
-//  - Removed the obsolete method trFiles().
-//         
-// 2001/05/18 
-//  - The trRelatedPagesDescription() content updated to fit 
-//    the context better.
-//  - Implemented new method trAuthor(params).
-//  - Removed obsolete methods trAuthor() and trAuthors().
-//
-// 2001/05/25
-//  - Updated misleading information in trLegendDocs().
-//  - The trReimplementedInList() updated to fit the context better.
-//  - The trReimplementedFromList() updated to fit the context better.
-//
-// 2001/07/16 - trClassDocumentation() updated as in the English translator.
-// 2001/11/06 - trReferences() implemented.
-// 2002/01/23 - Two new methods "since 1.2.13" implemented.
-// 2002/03/05 - ... forgot to replace TranslatorAdapter... by Translator.
-// 2002/07/08 (my birthday! ;) - The new trRTFTableOfContents() implemented.
-// 2002/07/29 - The new trDeprecatedList() implemented.
-// 2002/10/15 - The new trEvents() and trEventDocumentation() implemented.
-// 2003/04/28 - Five new methods "since 1.3" implemented.
-// 2003/06/10 - Two new methods "since 1.3.1" implemented.
-// 2003/08/13 - Four new methods "since 1.3.3" implemented. 
-// 2004/02/26 - trLegendDocs() updated.
-// 2004/02/27 - Text inside the trCallGraph() corrected.
+#ifndef TRANSLATOR_LT_H
+#define TRANSLATOR_LT_H
 
-// Todo
-// ----
-//  - The trReimplementedFromList() should pass the kind of the 
-//    reimplemented element.  It can be method, typedef or possibly 
-//    something else.  It is difficult to find the general translation
-//    for all kinds in the Czech language.
-// 
-// Notices:
-// -------- 
-// The conditional compilation ensures or the neutral functionality
-// of the private inline decode(), or calling the WinToISO() method
-// for on-line encoding conversion. If you want to maintain the
-// source in the iso-8859-2, do convert the encoding of the source,
-// change the conditional definition of the inline decode() using the
-// method ISO88592ToWin1250() -- for conversion of strings for the
-// Windows version. The version which does not call the function is
-// probably slightly faster.
 
-class TranslatorCzech : public Translator
+class TranslatorLithuanian : public Translator
 {
-  private:
-    /*! The decode() inline assumes the source written in the 
-        Windows encoding (maintainer only dependent). 
-     */
-    inline QCString decode(const QCString & sInput)
-    { 
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return sInput;
-      }
-      else
-      {
-        return Win1250ToISO88592(sInput);
-      }
-    }
-    
   public:
+
     // --- Language control methods -------------------
-
-    virtual QCString idLanguage()
-    { return "czech"; }
-
-    virtual QCString latexLanguageSupportCommand()
-    { return "\\usepackage{czech}\n"; }
     
+    /*! Used for identification of the language. The identification 
+     * should not be translated. It should be replaced by the name 
+     * of the language in English using lower-case characters only
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * the identification used in language.cpp.
+     */
+    virtual QCString idLanguage()
+    { return "lithuanian"; }
+    
+    /*! Used to get the LaTeX command(s) for the language support. 
+     *  This method should return string with commands that switch
+     *  LaTeX to the desired language.  For example 
+     *  <pre>"\\usepackage[german]{babel}\n"
+     *  </pre>
+     *  or
+     *  <pre>"\\usepackage{polski}\n"
+     *  "\\usepackage[latin2]{inputenc}\n"
+     *  "\\usepackage[T1]{fontenc}\n"
+     *  </pre>
+     * 
+     * The English LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
+     */
+    virtual QCString latexLanguageSupportCommand()
+    {
+      return "";
+    }
+
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return "windows-1250";
-      }
-      else
-      {
-        return "iso-8859-2";
-      }
+      return "iso-8859-13";
     }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return decode("Související funkce"); }
+    { return "Susijæ Funkcijos"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return decode("(Uvedené funkce nejsou èlenskými funkcemi.)"); }
+    { return "Atkreipkite dëmesá, èià ne metodai"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return decode("Detailní popis"); }
+    { return "Smulkus apraðymas"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return decode("Dokumentace k èlenským typùm"); }
+    { return "Tipo Apraðymo Dokumentacija"; }
     
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return decode("Dokumentace k èlenským výètùm"); }
+    { return "Iðvardinimo Dokumentacija"; }
     
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return decode("Dokumentace k metodám"); }
+    { return "Metodø Dokumentacija"; }
     
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    {       
+    { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Dokumentace k položkám"); 
+        return "Lauko apraðymas"; 
       }
       else
       {
-        return decode("Dokumentace k datovým èlenùm");
+        return "Atributø Dokumentacija"; 
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
-    { return decode("..."); }
+    { return "Daugiau..."; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return decode("Seznam všech èlenù."); }
+    { return "Visø nariø sàraðas."; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return decode("Seznam èlenù tøídy"); }
+    { return "Nariø sàraðas"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode("Zde naleznete úplný seznam èlenù tøídy "); }
+    { return "Tai galutinis nariø sàraðas "; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return decode(", vèetnì všech zdìdìných èlenù."); }
+    { return ", átraukiant visus paveldëtus narius."; }
     
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
-    { QCString result="Generováno automaticky programem Doxygen "
-                      "ze zdrojových textù";
-      if (s) result+=(QCString)" projektu "+s;
-      result+="."; 
-      return decode(result);
+    { QCString result="Automatiðkai sugeneruota Doxygen árankiu";
+      if (s) result+=(QCString)" "+s;
+      result+=" ið programos kodo."; 
+      return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return decode("jméno výètu"); }
+    { return "iðvardinimo vardas"; }
     
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return decode("hodnota výètu"); }
+    { return "iðvardinimo reikðmë"; }
     
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return decode("definován v"); }
+    { return "apibrëþta"; }
 
     // quick reference sections
 
@@ -276,243 +157,232 @@ class TranslatorCzech : public Translator
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return decode("Moduly"); }
+    { return "Moduliai"; }
     
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return decode("Hierarchie tøíd"); }
+    { return "Klasiø hierarchija"; }
     
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    {  
+    { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Datové struktury");
+        return "Duomenø Struktûros";
       }
       else
-      { 
-        return decode("Seznam tøíd"); 
+      {
+        return "Klasës"; 
       }
     }
-   
+    
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return decode("Seznam souborù"); }
+    { return "Failai"; }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
-    { return decode("Seznam hlavièkových souborù"); }
+    { return "Antraðèiø Failai"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Datové položky"); 
+        return "Duomenø Laukai"; 
       }
       else
       {
-        return decode("Seznam èlenù tøíd"); 
+        return "Klasiø Nariai"; 
       }
     }
-   
+
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Globální symboly"); 
+        return "Globalûs Nariai"; 
       }
       else
       {
-        return decode("Symboly v souborech"); 
+        return "Globalûs Nariai"; 
       }
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return decode("Ostatní stránky"); }
+    { return "Susijæ Puslapiai"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return decode("Pøíklady"); }
+    { return "Pavyzdþiai"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return decode("Hledat"); }
+    { return "Paieðka"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return decode("Zde naleznete seznam, vyjadøující vztah dìdiènosti tøíd. "
-             "Je seøazen pøibližnì (ale ne úplnì) podle abecedy:");
+    { return "Ðis paveldëjimo sàraðas yra beveik surikiuotas "
+             "abëcëlës tvarka:";
     }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Zde naleznete seznam všech ";
-      if (!extractAll) result+="dokumentovaných ";
-      result+="souborù se struènými popisy:";
-      return decode(result);
+      QCString result="Visø ";
+      if (!extractAll) result+="dokumentuotø ";
+      result+="failø sàraðas su trumpais apraðymais:";
+      return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    {       
+    { 
+      
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Následující seznam obsahuje identifikace datových "
-                      "struktur a jejich struèné popisy:"); 
+        return "Duomenø struktûros su trumpais apraðymais:"; 
       }
       else
       {
-        return decode("Následující seznam obsahuje pøedevším identifikace "
-                      "tøíd, ale nacházejí se zde i další netriviální prvky, "
-                      "jako jsou struktury (struct), unie (union) a rozhraní "
-                      "(interface). V seznamu jsou uvedeny jejich struèné "
-                      "popisy:");
+        return "Klasës, struktûros, "
+               "sàjungos ir sàsajos su trumpais apraðymais:"; 
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result= "Zde naleznete seznam všech ";
-      if (!extractAll) 
+      QCString result="Visø ";
+      if (!extractAll)
       {
-        result += "dokumentovaných ";
+        result+="dokumentuotø ";
       }
-            
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result += "položek struktur (struct) a unií (union) ";
+        result+="struktûrø ir sàjungø laukø sàraðas";
       }
       else
       {
-        result += "èlenù tøíd ";
+        result+="klasiø nariai";
       }
-      
-      result += "s odkazy na ";  
-      
-      if (extractAll)
+      result+=" su ryðiais á ";
+      if (!extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result += "dokumentaci struktur/unií, ke kterým pøíslušejí:";
+          result+="struktûrø/sàjungø kiekvieno lauko dokumentacijà:";
         }
         else
         {
-          result += "dokumentaci tøíd, ke kterým pøíslušejí:";
+          result+="klasës dokumentacija kiekvienam nariui:";
         }
       }
-      else
+      else 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="struktury/unie, ke kterým pøíslušejí:";
+          result+="struktûros/sàjungos, kurios priklauso:";
         }
         else
         {
-          result+="tøídy, ke kterým pøíslušejí:";
+          result+="klasës, kurios priklauso:";
         }
       }
-        
-      return decode(result);
+      return result;
     }
 
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Zde naleznete seznam všech ";
-      if (!extractAll) result+="dokumentovaných ";
-
+      QCString result="Sàraðas visø ";
+      if (!extractAll) result+="dokumentuotø ";
+      
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="funkcí, promìnných, maker, výètù a definic typù (typedef) "
-                "s odkazy na ";
+        result+="funkcijø, kintamøjø, apibrëþimø, iðvardinimø, ir tipø apibrëþimø";
       }
       else
       {
-        result+="symbolù, které jsou definovány na úrovni svých souborù. "
-                "Pro každý symbol je uveden odkaz na ";
+        result+="globaliø nariø";
       }
-        
+      result+=" su ryðiais á ";
       if (extractAll) 
-        result+="soubory, ke kterým pøíslušejí:";
+        result+="failus, kuriems jie priklauso:";
       else 
-        result+="dokumentaci:";
-        
-      return decode(result);
+        result+="dokumentacija:";
+      return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
     virtual QCString trHeaderFilesDescription()
-    { return decode("Zde naleznete hlavièkové soubory, které tvoøí "
-             "aplikaèní programátorské rozhraní (API):"); }
+    { return "Antraðèiø failai, kurie sudaro API:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return decode("Zde naleznete seznam všech pøíkladù:"); }
+    { return "Visø pavyzdþiø sàraðas:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode("Následující seznam odkazuje na další stránky projektu:"); }
+    { return "Visø susijusiø dokumentacijos puslapiø sàraðas:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return decode("Zde naleznete seznam všech modulù:"); }
+    { return "Visø moduliø sàraðas:"; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given. 
      */
     virtual QCString trNoDescriptionAvailable()
-    { return decode("Popis není k dispozici"); }
+    { return "Apraðymo nëra"; }
     
     // index titles (the project name is prepended for these) 
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return decode("Dokumentace"); }
+    { return "Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return decode("Rejstøík modulù"); }
+    { return "Modulio Indeksas"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return decode("Rejstøík hierarchie tøíd"); }
+    { return "Hierarchijos Indeksas"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
-        return decode("Rejstøík datových struktur");
+        return "Duomenø Struktûros Indeksas";
       }
       else
       {
-        return decode("Rejstøík tøíd"); 
+        return "Klasës Indeksas"; 
       }
     }
-   
+
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
     virtual QCString trFileIndex() 
-    { return decode("Rejstøík souborù"); }
+    { return "Failo Indeksas"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return decode("Dokumentace modulù"); }
+    { return "Modulio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -521,234 +391,235 @@ class TranslatorCzech : public Translator
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Dokumentace datových struktur"); 
+        return "Duomenø Struktûros Dokumentacija"; 
       }
       else
       {
-        return decode("Dokumentace tøíd"); 
-      }      
+        return "Klasës Dokumentacija"; 
+      }
     }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return decode("Dokumentace souborù"); }
+    { return "Failo Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return decode("Dokumentace pøíkladù"); }
+    { return "Pavyzdþio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return decode("Dokumentace souvisejících stránek"); }
+    { return "Puslapio Dokumentacija"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return decode("Referenèní pøíruèka"); }
+    { return "Informacinis Vadovas"; }
     
     /*! This is used in the documentation of a file as a header before the 
      *  list of defines
      */
     virtual QCString trDefines()
-    { return decode("Definice maker"); }
+    { return "Apibrëþimai"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return decode("Prototypy"); }
+    { return "Funkcijø Prototipai"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return decode("Definice typù"); }
+    { return "Tipø apibrëþimai"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return decode("Výèty"); }
+    { return "Iðvardinimai"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return decode("Funkce"); }
+    { return "Funkcijos"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return decode("Promìnné"); }
+    { return "Kintamieji"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return decode("Hodnoty výètu"); }
+    { return "Iðvardinimø reikðmës"; }
     
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return decode("Dokumentace k definicím maker"); }
+    { return "Apibrëþimø Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return decode("Dokumentace prototypù"); }
+    { return "Funkcijø Prototipø Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return decode("Dokumentace definic typù"); }
+    { return "Tipø apibrëþimø Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return decode("Dokumentace výètových typù"); }
+    { return "Iðvardinimo Tipo Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return decode("Dokumentace výètových hodnot"); }
+    { return "Iðvardinimo Reikðmiø Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return decode("Dokumentace funkcí"); }
+    { return "Funkcijos Dokumentacija"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return decode("Dokumentace promìnných"); }
+    { return "Kintamojo Dokumentacija"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
-        return decode("Datové struktry");
+      {
+        return "Duomenø struktøros";
       }
       else
       {
-        return decode("Tøídy"); 
+        return "Klasës";
       }
     }
-   
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
-      QCString result=(QCString)"Generováno "+date;
-      if (projName) result+=(QCString)" pro projekt "+projName;
-      result+=(QCString)" programem";
-      return decode(result);
+    {
+      QCString result=(QCString)"Sugeneruota "+date;/*FIXME*/
+      if (projName) result+=(QCString)" "+projName;/*FIXME*/
+      result+=(QCString)" ";/*FIXME*/
+      return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
     {
-      return decode(" -- autor ");
+      return "paraðyta";
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return decode((QCString)"Diagram dìdiènosti pro tøídu "+clName);
+      return (QCString)"Paveldimumo diagrama "+clName+":"; /*FIXME*/
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
-    { return decode("Pouze pro vnitøní použití."); }
+    { return "Tiktai vidiniam naudojimui."; }
 
     /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
-    { return decode("Reimplementováno z interních dùvodù; "
-                    "aplikaèní rozhraní zachováno."); }
+    { return "Reimplemented for internal reasons; the API is not affected."; }/*FIXME*/
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
-    { return decode("Pozor"); }
+    { return "Áspëjimas"; }
 
     /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
-    { return decode("Chyby a omezení"); }
+    { return "Klaidos ir apribojimai"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
-    { return decode("Verze"); }
+    { return "Versija"; }
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return decode("Datum"); }
+    { return "Data"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return decode("Návratová hodnota"); }
+    { return "Graþina"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return decode("Viz také"); }
+    { return "Taip pat þiûrëti"; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return decode("Parametry"); }
+    { return "Parametrai"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return decode("Výjimky"); }
-    
+    { return "Iðimtys"; }
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
-    { return decode("Generováno programem"); }
+    { return "Sugeneruota"; }
 
-    // new since 0.49-990307
-    
+//////////////////////////////////////////////////////////////////////////
+// new since 0.49-990307
+//////////////////////////////////////////////////////////////////////////
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return decode("Seznam prostorù jmen"); }
+    { return "Varø Srities Sàraðas"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Zde naleznete seznam všech ";
-      if (!extractAll) result+="dokumentovaných ";
-      result+="prostorù jmen se struèným popisem:";
-      return decode(result);
+      QCString result="Sàraðas visø ";
+      if (!extractAll) result+="dokumentuotø ";
+      result+="vardø srièiø su trumpais apraðymais:";
+      return result;
     }
 
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return decode("Friends"); }
-    
+    { return "Draugai"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return decode("Dokumentace k friends"); }
-    
+    { return "Draugiðkø Ir Susijusiø Funkcijø Dokumentacija"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -758,62 +629,58 @@ class TranslatorCzech : public Translator
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
-      QCString result("Dokumentace ");
-      if (isTemplate) result+="šablony ";
+      QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:      result+="tøídy "; break;
-        case ClassDef::Struct:     result+="struktury "; break;
-        case ClassDef::Union:      result+="unie "; break;
-        case ClassDef::Interface:  result+="rozhraní "; break;
-        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
-        case ClassDef::Category:   result+="category "; break; // translate me!
-        case ClassDef::Exception:  result+="výjimky "; break;
+        case ClassDef::Class:      result+=" Klasë"; break;
+        case ClassDef::Struct:     result+=" Struktûra"; break;
+        case ClassDef::Union:      result+=" Sàjunga"; break;
+        case ClassDef::Interface:  result+=" Sàsaja"; break;
+        case ClassDef::Protocol:   result+=" Protokolas"; break;
+        case ClassDef::Category:   result+=" Kategorija"; break;
+        case ClassDef::Exception:  result+=" Iðimtis"; break;
       }
-      result+=clName;
-      return decode(result);
+      if (isTemplate) result+=" Ðablonas";
+      return result;
     }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result("Dokumentace souboru ");
-      result+=fileName; 
-      return decode(result);
+      QCString result=fileName;
+      result+=" Failo Nuoroda";
+      return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result("Dokumentace prostoru jmen ");
-      result+=namespaceName;
-      return decode(result);
+      QCString result=namespaceName;
+      result+=" Vardø Srities Nuoroda";
+      return result;
     }
-    
-    /* 
-     *  these are for the member sections of a class, struct or union 
-     */
+
     virtual QCString trPublicMembers()
-    { return decode("Veøejné metody"); }
+    { return "Vieði Metodai"; }
     virtual QCString trPublicSlots()
-    { return decode("Veøejné sloty"); }
+    { return "Vieði Slotai"; } /*FIXME*/
     virtual QCString trSignals()
-    { return decode("Signály"); }
+    { return "Signalai"; }
     virtual QCString trStaticPublicMembers()
-    { return decode("Statické veøejné metody"); }
+    { return "Statiniai Vieði Metodai"; }
     virtual QCString trProtectedMembers()
-    { return decode("Chránìné metody"); }
+    { return "Apsaugoti Metodai"; }
     virtual QCString trProtectedSlots()
-    { return decode("Chránìné sloty"); }
+    { return "Apsaugoti Slotai"; }/*FIXME*/
     virtual QCString trStaticProtectedMembers()
-    { return decode("Statické chránìné metody"); }
+    { return "Statiniai Apsaugoti Metodai"; }
     virtual QCString trPrivateMembers()
-    { return decode("Privátní metody"); }
+    { return "Privatatûs Metodai"; }
     virtual QCString trPrivateSlots()
-    { return decode("Privátní sloty"); }
+    { return "Privatûs Slotai"; }/*FIXME*/
     virtual QCString trStaticPrivateMembers()
-    { return decode("Statické privátní metody"); }
-    
+    { return "Statiniai Privatûs Metodai"; }
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -822,32 +689,29 @@ class TranslatorCzech : public Translator
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=" a ";
+            result+=", ir ";
         }
       }
-      return decode(result); 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      QCString result("Dìdí z ");
-      result += (numEntries == 1) ? "bázové tøídy " : "bázových tøíd ";
-      result += trWriteList(numEntries)+".";
-      return decode(result);
+      return "Paveldi "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -855,20 +719,15 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      QCString result("Zdìdìna ");
-      result += (numEntries == 1) ? "tøídou " : "tøídami ";
-      result += trWriteList(numEntries)+".";
-      return decode(result);
+      return "Paveldëta "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      QCString result("Reimplementuje stejnojmenný prvek z ");
-      result += trWriteList(numEntries)+".";
-      return decode(result);
+      return "Perkrauna metodà ið "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -876,39 +735,36 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      QCString result("Reimplementováno v ");
-      result += trWriteList(numEntries)+".";
-      return decode(result);
+      return "Metodas perkraunamas "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return decode("Symboly v prostorech jmen"); }
+    { return "Vardø Srities Nariai"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
-      QCString result="Zde naleznete seznam všech ";
-      if (!extractAll) result+="dokumentovaných ";
-      result+="symbolù, které jsou definovány ve svých prostorech jmen. "
-              "U každého je uveden odkaz na ";
-      if (extractAll) 
-        result+="dokumentaci pøíslušného prostoru jmen:";
-      else 
-        result+="pøíslušný prostor jmen:";
-      return decode(result);
+    {
+      QCString result="Sàraðas visø ";
+      if (!extractAll) result+="dokumentuotø ";
+      result+="vardø srities nariø su nuorodomis á ";
+      if (extractAll)
+        result+="vardø srities dokumentacijà kiekvienam nariui:";
+      else
+        result+="vardø sritis, kurioms jos priklauso:";
+      return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return decode("Rejstøík prostorù jmen"); }
+    { return "Vardø Srities Indeksas"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return decode("Dokumentace prostorù jmen"); }
+    { return "Vardø Srities Dokumentacija"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -918,7 +774,7 @@ class TranslatorCzech : public Translator
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return decode("Prostory jmen"); }
+    { return "Vardø Sritys"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -931,28 +787,27 @@ class TranslatorCzech : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentace pro ";
+      QCString result=(QCString)"Dokumentacija ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="tuto tøídu"; break;
-        case ClassDef::Struct:     result+="tuto strukturu (struct)"; break;
-        case ClassDef::Union:      result+="tuto unii (union)"; break;
-        case ClassDef::Interface:  result+="toto rozhraní"; break;
-        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
-        case ClassDef::Category:   result+="category "; break; // translate me!
-        case ClassDef::Exception:  result+="tuto výjimku"; break;
+        case ClassDef::Class:      result+="ðiai klasei"; break;
+        case ClassDef::Struct:     result+="ðiai struktûrai"; break;
+        case ClassDef::Union:      result+="ðiai sàjungai"; break;
+        case ClassDef::Interface:  result+="ðiai sàsajai"; break;
+        case ClassDef::Protocol:   result+="ðiam protocolui"; break;
+        case ClassDef::Category:   result+="ðiai kategorijai"; break;
+        case ClassDef::Exception:  result+="ðiai iðimèiai"; break;
       }
-      result+=" byla generována z ";
-      if (single) result+="následujícího souboru:"; 
-      else        result+="následujících souborù:";
-      return decode(result);
+      result+=" sugeneruota ið ";
+      if (single) result+="ðio failo:"; else result+="ðiø failø:";
+      return result;
     }
 
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return decode("Rejstøík tøíd"); }
+    { return "Abëcëlinis Sàraðas"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -960,18 +815,18 @@ class TranslatorCzech : public Translator
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return decode("Vracené hodnoty"); }
+    { return "Graþinamos reikðmës"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return decode("Hlavní stránka"); }
+    { return "Pagrindinis Puslapis"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { return decode("s."); }
+    { return "psl."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
@@ -979,15 +834,15 @@ class TranslatorCzech : public Translator
 
     virtual QCString trSources()
     {
-      return decode("Zdroje");
+      return "Ðaltiniai";/*FIXME cia gali buti ir programos tekstai*/
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return decode("Definice je uvedena na øádku @0 v souboru @1.");
+      return "Apibrëþimas failo @1 eilutëje @0.";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return decode("Definice v souboru @0.");
+      return "Apibrëþimas faile @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -996,7 +851,7 @@ class TranslatorCzech : public Translator
 
     virtual QCString trDeprecated()
     {
-      return decode("Zastaralé");
+      return "Smerktina";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1006,258 +861,243 @@ class TranslatorCzech : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return decode((QCString)"Diagram tøíd pro "+clName+":");
+      return (QCString)"Bendradarbiavimo diagrama "+clName+":";/*FIXME*/
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return decode((QCString)"Graf závislostí na vkládaných souborech "
-                    "pro "+fName+":");
+      return (QCString)"Átraukimo priklausomybiø diagrama "+fName+":";/*FIXME*/
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return decode("Dokumentace konstruktoru a destruktoru"); 
+      return "Konstruktoriaus ir Destruktoriaus Dokumentacija";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return decode("Zobrazit zdrojový text tohoto souboru.");
+      return "Eiti á ðio failo programos kodà.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return decode("Zobrazit dokumentaci tohoto souboru.");
+      return "Eiti á ðio failo dokumentacijà.";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return decode("Precondition");
+      return "Iðakstinë sàlyga";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return decode("Postcondition");
+      return "Postcondition";/*FIXME*/
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return decode("Invariant");
+      return "Pastovus";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return decode("Initializer:");
+      return "Pradinë reikðmë:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return decode("zdrojový text");
+      return "tekstas";/*FIXME*/
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return decode("Grafické zobrazení hierarchie tøíd");
+      return "Grafinë Klasës Hierarchija";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return decode("Zobrazit grafickou podobu hierarchie tøíd");
+      return "Eiti á grafinæ klasës hierarchijà";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return decode("Zobrazit textovou podobu hierarchie tøíd");
+      return "Eiti á tekstinæ klasës hierarchijà";
     }
     virtual QCString trPageIndex()
     {
-      return decode("Rejstøík stránek");
+      return "Puslapio Indeksas";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
-      return decode("Poznámka");
+      return "Pastaba";
     }
     virtual QCString trPublicTypes()
     {
-      return decode("Veøejné typy");
+      return "Vieði Tipai";
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode("Datové položky");
+        return "Duomenø Laukai";
       }
       else
       {
-        return decode("Veøejné atributy");
+        return "Vieði Atributai";
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return decode("Statické veøejné atributy");
+      return "Statiniai Vieði Atributai";
     }
     virtual QCString trProtectedTypes()
     {
-      return decode("Chránìné typy");
+      return "Apsaugoti Tipai";
     }
     virtual QCString trProtectedAttribs()
     {
-      return decode("Chránìné atributy");
+      return "Apsaugoti Atributai";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return decode("Statické chránìné atributy");
+      return "Statiniai Apsaugoti Atributai";
     }
     virtual QCString trPrivateTypes()
     {
-      return decode("Privátní typy");
+      return "Privatûs Tipai";
     }
     virtual QCString trPrivateAttribs()
     {
-      return decode("Privátní atributy");
+      return "Privatûs Atributai";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return decode("Statické privátní atributy");
+      return "Statiniai Privatûs Atributai";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as a marker that is put before a todo item */
+    /*! Used as a marker that is put before a \\todo item */
     virtual QCString trTodo()
     {
-      return decode("Plánované úpravy");
+      return "Daryti";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return decode("Seznam plánovaných úprav");
+      return "Tolimesni Darbai";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trReferencedBy()
     {
-      return decode("Používá se v");
+      return "Naudojamas";
     }
     virtual QCString trRemarks()
     {
-      return decode("Poznámky"); // ??? not checked in a context
+      return "Pastabos";
     }
     virtual QCString trAttention()
     {
-      return decode("Upozornìní"); // ??? not checked in a context
+      return "Attention";
     }
     virtual QCString trInclByDepGraph()
     {
-      return decode("Následující graf ukazuje, které soubory pøímo nebo "
-             "nepøímo vkládají tento soubor:");
+      return "Ðis grafas rodo, kuris failas tiesiogiai ar "
+             "netiesiogiai átraukia ðá failà:";
     }
     virtual QCString trSince()
     {
-      return decode("Od"); // ??? not checked in a context
+      return "Nuo";
     }
-
-////////////////////////////////////////////////////////////////////////////
+    
+//////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return decode("Vysvìtlivky ke grafu");
+      return "Grafo Legenda";
     }
-    /*! page explaining how the dot graph's should be interpreted */
+    /*! page explaining how the dot graph's should be interpreted 
+     *  The %A in the text below are to prevent link to classes called "A".
+     */
     virtual QCString trLegendDocs()
     {
-      QCString result(  
-        "Zde naleznete vysvìtlení, jak mají být interpretovány grafy, "
-        "které byly generovány programem doxygen.<p>\n"
-        "Uvažujte následující pøíklad:\n"
-        "\\code\n"
-        "/*! Neviditelná tøída, která se v grafu nezobrazuje, protože "
-        "došlo k oøezání grafu. */\n"
+      return 
+        "Ðis puslapis paaiðkina, kaip interpretuoti sugeneruotus grafus "
+        "su Doxygen árankiu.<p>\n"
+        "Panagrinëkite pavyzdá:\n"
+        "\\kodo pradþia\n"
+        "/*! Invisible class because of truncation */\n"
         "class Invisible { };\n\n"
-        "/*! Tøída, u které došlo k oøezání grafu. Vztah dìdiènosti "
-        "je skryt. */\n"
+        "/*! Truncated class, inheritance relation is hidden */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/*! Bázová tøída dìdìná veøejnì (public inheritance). */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! Bázová tøída, použitá pro chránìné dìdìní "
-        "(protected inheritance). */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Bázová tøída, využitá pro privátní dìdìní "
-        "(private inheritance). */\n"
-        "class PrivateBase { };\n\n"
-        "/* Tøída, která není dokumentována komentáøi programu doxygen. */\n"
+        "/* Class not documented with doxygen comments */\n"
         "class Undocumented { };\n\n"
-        "/*! Šablona tøídy. */\n"
+        "/*! Class that is inherited using public inheritance */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! A template class */\n"
         "template<class T> class Templ { };\n\n"
-        "/*! Tøída, která je využívána tøídou Inherited. */\n"
+        "/*! Class that is inherited using protected inheritance */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Class that is inherited using private inheritance */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Class that is used by the Inherited class */\n"
         "class Used { };\n\n"
-        "/*! Odvozená tøída, která rùzným zpùsobem dìdí z více bázových "
-        "tøíd. */\n"
+        "/*! Super class that inherits a number of other classes */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
-        "                  public Undocumented,\n"
+        "                  public Undocumented\n"
         "                  public Templ<int>\n"
         "{\n"
         "  private:\n"
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Pokud je položka \\c MAX_DOT_GRAPH_HEIGHT konfiguraèního souboru "
-        "nastavena na hodnotu 200, bude vygenerován následující graf:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+        "is set to 240 this will result in the following graph:"
+        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
-        "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
+        "The boxes in the above graph have the following meaning:\n"
         "<ul>\n"
-        "<li>Èernì vyplnìný obdélník reprezentuje strukturu nebo tøídu, "
-            "pro kterou byl graf generován.\n"
-        "<li>Obdélník s èerným obrysem oznaèuje dokumentovanou "
-            "strukturu nebo tøídu.\n"
-        "<li>Obdélník s šedým obrysem oznaèuje nedokumentovanou "
-            "strukturu nebo tøídu.\n"
-        "<li>Obdélník s èerveným obrysem oznaèuje dokumentovanou "
-            "strukturu nebo tøídu, pro kterou\n"
-            "nejsou zobrazeny všechny vztahy dìdiènosti nebo obsažení. "
-            "Graf je oøezán v pøípadì, kdy jej\n"
-            "není možné umístit do vymezeného prostoru.\n"
+        "<li>%A filled black box represents the struct or class for which the "
+        "graph is generated.\n"
+        "<li>%A box with a black border denotes a documented struct or class.\n"
+        "<li>%A box with a grey border denotes an undocumented struct or class.\n"
+        "<li>%A box with a red border denotes a documented struct or class for"
+        "which not all inheritance/containment relations are shown. %A graph is "
+        "truncated if it does not fit within the specified boundaries.\n"
         "</ul>\n"
-        "Šipky (tj. hrany grafu) mají následující význam:\n"
+        "The arrows have the following meaning:\n"
         "<ul>\n"
-        "<li>Tmavì modrá šipka se používá pro oznaèení vztahu veøejné "
-            "dìdiènosti (public) mezi dvìma tøídami.\n"
-        "<li>Tmavì zelená šipka oznaèuje vztah chránìné dìdiènosti "
-            "(protected).\n"
-        "<li>Tmavì èervená šipka oznaèuje vztah privátní dìdiènosti "
-            "(private).\n"
-        "<li>Purpurová šipka kreslená èárkovanì se používá v pøípadì, "
-            "kdy je tøída obsažena v jiné tøídì,\n"
-            "nebo kdy je používána jinou tøídou. Je oznaèena identifikátorem "
-            "jedné nebo více promìných, pøes které\n"
-            "je tøída nebo struktura zpøístupnìna.\n"
-        "<li>Žlutá šipka kreslená èárkovanì vyjadøuje vztah mezi instancí šablony " 
-            "a šablonou tøídy, na základì které byla\n"
-            "instance šablony vytvoøena. V popisu šipky jsou uvedeny  pøíslušné"
-            " parametry šablony.\n"
-        "</ul>\n");
-        
-        return decode(result);
+        "<li>%A dark blue arrow is used to visualize a public inheritance "
+        "relation between two classes.\n"
+        "<li>%A dark green arrow is used for protected inheritance.\n"
+        "<li>%A dark red arrow is used for private inheritance.\n"
+        "<li>%A purple dashed arrow is used if a class is contained or used "
+        "by another class. The arrow is labeled with the variable(s) "
+        "through which the pointed class or struct is accessible.\n"
+        "<li>%A yellow dashed arrow denotes a relation between a template instance and "
+        "the template class it was instantiated from. The arrow is labeled with "
+        "the template parameters of the instance.\n"
+        "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return decode("vysvìtlivky");
+      return "legenda";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
@@ -1265,13 +1105,12 @@ class TranslatorCzech : public Translator
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-      return decode("Test");
+      return "Testas";
     }
-   
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return decode("Seznam testù");
+      return "Testo Sàraðas";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1281,7 +1120,7 @@ class TranslatorCzech : public Translator
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return decode("Metody DCOP");
+      return "DCOP Metodai";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1291,13 +1130,14 @@ class TranslatorCzech : public Translator
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return decode("Vlastnosti");
+      return "Savybës";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return decode("Dokumentace k vlastnosti");
+      return "Savybës Dokumentacija";
     }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
@@ -1305,45 +1145,51 @@ class TranslatorCzech : public Translator
     /*! Used for Java interfaces in the summary section of Java packages */
     virtual QCString trInterfaces()
     {
-      return decode("Rozhraní");
+      return "Sàsajos";
     }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      return decode("Tøídy");
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Duomenø Struktûros";
+      }
+      else
+      {
+        return "Klasës";
+      }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return decode((QCString)"Balík "+name);
+      return (QCString)"Paketas "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return decode("Seznam balíkù");
+      return "Paketo Sàraðas";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return decode("Zde naleznete seznam balíkù se struèným popisem "
-                    "(pokud byl uveden):");
+      return "Paketai su trumpu apraðymu:";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return decode("Balíky");
+      return "Paketai";
     }
     /*! Used as a chapter title for Latex & RTF output */
     virtual QCString trPackageDocumentation()
     {
-      return decode("Dokumentace balíku");
+      return "Paketo Dokumentacija";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return decode("Hodnota:");
+      return "Reikðmë:";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
@@ -1351,45 +1197,72 @@ class TranslatorCzech : public Translator
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return decode("Chyba");
+      return "Klaida";
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode("Seznam chyb");
+      return "Klaidø Sàraðas";
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.2.6-20010422
+// new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file */
+    /*! Used as ansicpg for RTF file 
+     * 
+     * The following table shows the correlation of Charset name, Charset Value and 
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     * 
+     */
     virtual QCString trRTFansicp()
     {
-      return "1250";
+      return "1252";
     }
     
-    /*! Used as ansicpg for RTF fcharset */
+
+    /*! Used as ansicpg for RTF fcharset 
+     *  \see trRTFansicp() for a table of possible values.
+     */
     virtual QCString trRTFCharSet()
     {
-      return "238";
+      return "0";
     }
 
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return decode("Rejstøík");
+      return "Indeksas";
     }
-                                                                          
+   
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Tøíd" : "tøíd"));
-      result+=(singular ? "a" : "y");
-      return decode(result); 
+      QCString result((first_capital ? "Klasë" : "klasë"));
+      if (!singular)  result+="s";
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1398,9 +1271,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trFile(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Soubor" : "soubor"));
-      if (!singular)  result+="y";
-      return decode(result); 
+      QCString result((first_capital ? "Faila" : "faila"));
+      if (!singular)  result+="i";
+      else  result+="s";
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1409,10 +1283,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Prostor" : "prostor"));
-      if (!singular)  result+="y";
-      result+=" jmen";
-      return decode(result); 
+      QCString result((first_capital ? "Vardø srit" : "vardø srit"));
+      if (!singular)  result+="ys";
+      else  result+="is";
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1421,9 +1295,9 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trGroup(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Skupin" : "skupin"));
-      result+=(singular ? "a" : "y");
-      return decode(result); 
+      QCString result((first_capital ? "Grupë" : "grupë"));
+      if (!singular)  result+="s";
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1432,9 +1306,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trPage(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Stránk" : "stránk"));
-      result+=(singular ? "a" : "y");
-      return decode(result); 
+      QCString result((first_capital ? "Puslapi" : "puslapi"));
+      if (!singular)  result+="ai";
+      else  result+="s";
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1443,9 +1318,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trMember(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Èlen" : "èlen"));
-      if (!singular)  result+="y";
-      return decode(result); 
+      QCString result((first_capital ? "Nar" : "nar"));
+      if (!singular)  result+="iai";
+      else  result+="ys";
+      return result; 
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1454,18 +1330,21 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trField(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Položk" : "položk"));
-      result+=(singular ? "a" : "y");
-      return decode(result); 
+      QCString result((first_capital ? "Lauka" : "lauka"));
+      if (!singular)  result+="i";
+      else  result+="s";
+      return result; 
     }
 
-    /*! ??? Jak to prelozit? Bylo by dobre, kdyby se ozval nekdo,
-     * kdo to pouziva.
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
     { 
       QCString result((first_capital ? "Global" : "global"));
-      if (!singular)  result+="s";  
+      if (!singular)  result+="ûs";
+      else  result+="us";
       return result; 
     }
 
@@ -1477,9 +1356,10 @@ class TranslatorCzech : public Translator
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
     {                                                                         
-      QCString result((first_capital ? "Auto" : "auto"));
-      result += (singular) ? "r" : "øi";
-      return decode(result); 
+      QCString result((first_capital ? "Autori" : "autori"));
+      if (!singular)  result+="ai";
+      else  result+="us";
+      return result; 
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1490,7 +1370,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReferences()
     {
-      return decode("Odkazuje se na");
+      return "Ryðiai";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1502,15 +1382,15 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "Implementuje "+trWriteList(numEntries)+".";
+      return "Realizuoja "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
-     *  all members that implement this member.
+     *  all members that implement this abstract member.
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return decode("Implementováno v "+trWriteList(numEntries)+".");
+      return "Realizuota "+trWriteList(numEntries)+".";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1522,7 +1402,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trRTFTableOfContents()
     {
-      return decode("Obsah");
+      return "Turinys";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1534,7 +1414,7 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trDeprecatedList()
     {
-      return decode("Seznam zastaralých prvkù");
+      return "Smerktinumø Sàraðas";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1546,12 +1426,12 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trEvents()
     {
-      return decode("Události");
+      return "Ávykiai";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return decode("Dokumentace událostí");
+      return "Ávykio Dokumentacija";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1562,37 +1442,37 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trPackageTypes()
     { 
-      return decode("Typy v balíku");
+      return "Paketo Tipai";
     }
     /*! Used as a heading for a list of Java class functions with package 
      * scope. 
      */
     virtual QCString trPackageMembers()
     { 
-      return decode("Funkce v balíku");
+      return "Paketo Funkcijos";
     }
     /*! Used as a heading for a list of static Java class functions with 
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     { 
-      return decode("Statické funkce v balíku");
+      return "Statinës Paketo Funkcijos";
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
      */
     virtual QCString trPackageAttribs()
     { 
-      return decode("Atributy balíku");
+      return "Paketo Atributai";
     }
     /*! Used as a heading for a list of static Java class variables with 
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     { 
-      return decode("Statické atributy balíku");
+      return "Statiniai Paketo Atributai";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.1
 //////////////////////////////////////////////////////////////////////////
@@ -1602,31 +1482,32 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trAll()
     {
-      return decode("Vše");
+      return "Visi";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return decode("Graf volání pro tuto funkci:");
+      return "Funkcijos kvietimo grafas:";
     }
-   
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3.3
 //////////////////////////////////////////////////////////////////////////
 
-    /*! When the search engine is enabled this text is put in the index 
-     *  of each page before the search field. 
+    /*! When the search engine is enabled this text is put in the header 
+     *  of each page before the field where one can enter the text to search 
+     *  for. 
      */
     virtual QCString trSearchForIndex()
     {
-      return decode("Vyhledat");
+      return "Ieðkoti";
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return decode("Výsledky vyhledávání");
+      return "Paieðkos Rezultatai";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
@@ -1640,17 +1521,16 @@ class TranslatorCzech : public Translator
     {
       if (numDocuments==0)
       {
-        return decode("Lituji. Vašemu dotazu neodpovídá žádný dokument.");
+        return "Atsipraðome, jokiø dokumentø nerasta pagal Jûsø uþklausà.";
       }
       else if (numDocuments==1)
       {
-        return decode("Nalezen jediný dokument, který vyhovuje vašemu dotazu.");
+        return "Surasta <b>1</b> dokumentas, atitinkantis Jûsø uþklausà.";
       }
       else 
       {
-        return decode("Nalezeno <b>$num</b> dokumentù, které vyhovují vašemu "
-                      "dotazu. Nejlépe odpovídající dokumenty jsou zobrazeny "
-                      "jako první.");
+        return "Surasti <b>$num</b> dokumentø, atitinkanèiø Jûsø uþklausà. "
+               "Pirmiausiai rodomi labiausiai tenkinantys uþklausà.";
       }
     }
     /*! This string is put before the list of matched words, for each search 
@@ -1658,8 +1538,9 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trSearchMatches()
     {
-      return decode("Nalezená slova:");
+      return "Atitikmenys:";
     }
+
 };
 
-#endif // TRANSLATOR_CZ_H
+#endif

@@ -35,7 +35,7 @@
 
 //--------------------------------------------------------------------
 
-static const int maxCmdLine = 4096;
+static const int maxCmdLine = 40960;
 
 /*! mapping from protection levels to color names */
 static const char *edgeColorMap[] =
@@ -981,9 +981,10 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       f.close();
 
       QCString dotArgs(maxCmdLine);
-      dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",
-          imgExt.data(), dotName.data(),imgName.data());
-      //printf("Running: dot -T%s %s -o %s\n",imgExt.data(),dotName.data(),imgName.data());
+      dotArgs.sprintf("\"%s\" -T%s -o \"%s\" -Timap -o \"%s\"",
+          dotName.data(), imgExt.data(), imgName.data(), mapName.data());
+      //printf("Running: dot %s -T%s -o %s -Timap -o %s\n",
+      //       dotName.data(),imgExt.data(),imgName.data(),mapName.data());
       if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Problems running dot. Check your installation!\n");
@@ -991,14 +992,6 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
         return;
       }
       checkDotResult(imgName);
-      dotArgs.sprintf("-Timap \"%s\" -o \"%s\"",dotName.data(),mapName.data());
-      //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
-      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      {
-        err("Problems running dot. Check your installation!\n");
-        out << "</table>" << endl;
-        return;
-      }
       if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
     }
     // write image and map in a table row
@@ -1673,8 +1666,14 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     {
       QCString dotArgs(maxCmdLine);
       QCString imgName = baseName+"."+imgExt;
-      dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
-          imgExt.data(),baseName.data(),imgName.data());
+      dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
+          baseName.data(),imgExt.data(),imgName.data());
+      if (generateImageMap)
+      {
+        // run dot also to create an image map
+        dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
+            baseName.data());
+      }
       if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Error: Problems running dot. Check your installation!\n");
@@ -1682,17 +1681,6 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         return baseName;
       }
       checkDotResult(imgName);
-      if (generateImageMap)
-      {
-        // run dot again to create an image map
-        dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
-        if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-        {
-          err("Error: Problems running dot. Check your installation!\n");
-          QDir::setCurrent(oldDir);
-          return baseName;
-        }
-      }
     }
     else if (format==EPS) // run dot to create a .eps image
     {
@@ -1942,8 +1930,14 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
       QCString imgName=baseName+"."+imgExt;
-      dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
-          imgExt.data(),baseName.data(),imgName.data());
+      dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
+          baseName.data(),imgExt.data(),imgName.data());
+      if (generateImageMap)
+      {
+        // run dot also to create an image map
+        dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
+            baseName.data());
+      }
       if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Problems running dot. Check your installation!\n");
@@ -1951,21 +1945,6 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         return baseName;
       }
       checkDotResult(imgName);
-
-      if (generateImageMap)
-      {
-        // run dot again to create an image map
-        dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",
-            baseName.data(),baseName.data());
-        if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-        {
-          err("Problems running dot. Check your installation!\n");
-          QDir::setCurrent(oldDir);
-          return baseName;
-        }
-
-        //thisDir.remove(baseName+".map");
-      }
     }
     else if (format==EPS)
     {
@@ -2128,8 +2107,14 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
       QCString imgName=baseName+"."+imgExt;
-      dotArgs.sprintf("-T%s \"%s.dot\" -o \"%s\"",
-          imgExt.data(),baseName.data(),imgName.data());
+      dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
+          baseName.data(),imgExt.data(),imgName.data());
+      if (generateImageMap)
+      {
+        // run dot also to create an image map
+        dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
+            baseName.data());
+      }
       if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Problems running dot. Check your installation!\n");
@@ -2137,19 +2122,6 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
         return baseName;
       }
       checkDotResult(imgName);
-
-      if (generateImageMap)
-      {
-        // run dot again to create an image map
-        dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",
-            baseName.data(),baseName.data());
-        if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-        {
-          err("Problems running dot. Check your installation!\n");
-          QDir::setCurrent(oldDir);
-          return baseName;
-        }
-      }
     }
     else if (format==EPS)
     {

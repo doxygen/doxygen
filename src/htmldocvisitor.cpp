@@ -249,6 +249,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       m_t << "<pre><div class=\"fragment\">";
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
       m_t << "</div></pre>"; 
+      break;
     case DocInclude::IncWithLines:
       { 
          m_t << "<pre><div class=\"fragment\">";
@@ -257,7 +258,6 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
          m_t << "</div></pre>"; 
       }
-      break;
       break;
     case DocInclude::DontInclude: 
       break;

@@ -4807,7 +4807,8 @@ void DocRoot::parse()
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,
                             const char *input,bool indexWords,
-                            bool isExample, const char *exampleName)
+                            bool isExample, const char *exampleName,
+                            bool singleLine)
 {
   
   //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
@@ -4923,7 +4924,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   doctokenizerYYinit(input,g_fileName);
 
   // build abstract syntax tree
-  DocRoot *root = new DocRoot;
+  DocRoot *root = new DocRoot(md!=0,singleLine);
   root->parse();
 
   if (Debug::isFlagSet(Debug::PrintTree))

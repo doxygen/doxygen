@@ -35,5 +35,6 @@ TARGET                     =  doxygen
 unix:TARGETDEPS            =  ../lib/libdoxygen.a ../lib/libdoxycfg.a
 win32:TARGETDEPS           =  ..\lib\doxygen.lib ..\lib\doxycfg.lib
 win32-g++:TARGETDEPS       =  ../lib/libdoxygen.a ../lib/libdoxycfg.a
+win32-mingw:TARGETDEPS     =  ../lib/libdoxygen.a ../lib/libdoxycfg.a
 OBJECTS_DIR                =  ../objects
 

@@ -1507,17 +1507,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   if (!detailed.isEmpty())
   { 
     ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
-    ol.pushGeneratorState();
     if (!m_inbodyDocs.isEmpty())
     {
       ol.newParagraph();
       ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_inbodyDocs+"\n",TRUE,FALSE);
     }
-    ol.disableAllBut(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
   }
-  else if(!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
+  else if (!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
         !Config_getBool("BRIEF_MEMBER_DESC")))
   {
     if (!m_inbodyDocs.isEmpty())
@@ -1525,10 +1521,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.newParagraph();
       ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_inbodyDocs+"\n",TRUE,FALSE);
     }
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
   }
 
 
@@ -1678,9 +1670,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.parseText(reimplFromLine.right(
               reimplFromLine.length()-markerPos-2)); // text right from marker
 
-        ol.disableAllBut(OutputGenerator::RTF);
         ol.newParagraph();
-        ol.enableAll();
       }
       else
       {
@@ -1761,9 +1751,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         index=newIndex+matchLen;
       } 
       ol.parseText(reimplInLine.right(reimplInLine.length()-index));
-      ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
-      ol.enableAll();
     }
   }
   // write the list of examples that use this member
@@ -1780,10 +1768,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   writeSourceRefs(ol,cname);
   writeSourceReffedBy(ol,cname);
   writeInlineCode(ol,cname);
-
-  ol.disableAllBut(OutputGenerator::RTF);
-  ol.newParagraph();
-  ol.enableAll();
 
   if ((m_hasCallGraph || Config_getBool("CALL_GRAPH")) 
       && isFunction() && Config_getBool("HAVE_DOT")

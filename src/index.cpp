@@ -961,35 +961,6 @@ void writeFileIndex(OutputList &ol)
           fullName.prepend(path);
         }
 
-        // --------------- LaTeX/RTF only -------------------------
-#if 0
-        if (doc)
-        {
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Html);
-          ol.writeStartAnnoItem("file",
-              fd->getOutputFileBase(),
-              path,
-              fd->name()
-                               );
-          if (!fd->briefDescription().isEmpty())
-          {
-            ol.docify(" (");
-            parseDoc(ol,fd->absFilePath(),1,
-                0,0,
-                abbreviate(fd->briefDescription(),fd->name()));
-            ol.docify(")");
-          }
-          ol.writeEndAnnoItem(fd->getOutputFileBase());
-          ol.popGeneratorState();
-        }
-#endif
-        // --------------------------------------------------------
-
-        // ----------------- HTML only ----------------------------
-        //ol.pushGeneratorState();
-        //ol.disableAllBut(OutputGenerator::Html);
-        //ol.writeListItem();
         ol.startIndexKey();
         ol.docify(path);
         if (doc)
@@ -1041,7 +1012,9 @@ void writeFileIndex(OutputList &ol)
               fd,0,
               abbreviate(fd->briefDescription(),fd->name()),
               FALSE, // index words
-              FALSE  // isExample
+              FALSE, // isExample
+              0,     // example name
+              TRUE   // single line
              );
           //ol.docify(")");
         }

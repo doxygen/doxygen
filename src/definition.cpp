@@ -355,10 +355,6 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
   if (Config_getBool("SOURCE_BROWSER") && m_startBodyLine!=-1 && m_bodyDef)
   {
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.enableAll();
-
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
     int lineMarkerPos = refText.find("@0");
     int fileMarkerPos = refText.find("@1");
@@ -462,11 +458,11 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       initParseCodeContext();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       if (definitionType()==TypeMember) setParameterList((MemberDef *)this);
-      ol.newParagraph();
       ol.startCodeFragment();
       parseCode(ol,scopeName,codeFragment,FALSE,0,
           m_bodyDef,actualStart,actualEnd,TRUE);
       ol.endCodeFragment();
+      ol.newParagraph();
     }
   }
   ol.popGeneratorState();

@@ -638,7 +638,7 @@ class TranslatorRussian : public Translator
      * related classes 
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return decode("Документация по друзьям класса и функциям отноносящихся"
+    { return decode("Документация по друзьям класса и функциям отноносящимся"
         " к классу"); }
     
 //////////////////////////////////////////////////////////////////////////

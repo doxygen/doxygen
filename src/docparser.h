@@ -51,13 +51,16 @@ void initDocParser();
  *                   search index.
  *  @param isExample TRUE if the documentation belongs to an example.
  *  @param exampleName Base name of the example file (0 if isExample is FALSE).
+ *  @param singleLine Output should be presented on a single line, so without
+ *                   starting a new paragraph at the end.
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *context, MemberDef *md,
                             const char *input,bool indexWords,
-                            bool isExample,const char *exampleName=0);
+                            bool isExample,const char *exampleName=0,
+                            bool singleLine=FALSE);
 
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.
@@ -1185,11 +1188,17 @@ class DocText : public CompAccept<DocText>, public DocNode
 class DocRoot : public CompAccept<DocRoot>, public DocNode
 {
   public:
-    DocRoot() {}
+    DocRoot(bool indent,bool sl) : m_indent(indent), m_singleLine(sl) {}
     Kind kind() const       { return Kind_Root; }
     DocNode *parent() const { return 0; }
     void accept(DocVisitor *v) { CompAccept<DocRoot>::accept(this,v); }
     void parse();
+    bool indent() const { return m_indent; }
+    bool singleLine() const { return m_singleLine; }
+
+  private:
+    bool m_indent;
+    bool m_singleLine;
 };
 
 
