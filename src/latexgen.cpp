@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -429,12 +429,12 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2003";
+  //t << "Dimitri van Heesch \\copyright~1997-2004";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2003";
+  //t << "Dimitri van Heesch \\copyright~1997-2004";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -802,14 +802,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2003";
+        //t << " Dimitri van Heesch \\copyright~1997-2004";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2003";
+        //t << " Dimitri van Heesch \\copyright~1997-2004";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }

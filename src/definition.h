@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -49,7 +49,8 @@ class Definition
     /*! Create a new definition */
     Definition(
         const char *defFileName,int defLine,
-        const char *name,const char *b=0,const char *d=0);
+        const char *name,const char *b=0,const char *d=0,
+        bool isSymbol=TRUE);
     /*! Destroys the definition */
     virtual ~Definition();
     /*! Returns the name of the definition */
@@ -179,6 +180,7 @@ class Definition
     QCString m_briefFile;
     QList<ListItemInfo> *m_xrefListItems;
     QCString m_symbolName;
+    bool m_isSymbol;
 };
 
 class DefinitionList : public QList<Definition>

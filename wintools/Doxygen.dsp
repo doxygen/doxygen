@@ -23,8 +23,6 @@ CFG=Doxygen - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName "Doxygen"
-# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -42,8 +40,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "..\src" /I "..\qtools" /I "..\libpng" /D "ENGLISH_ONLY" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /W3 /GX /O2 /I "..\src" /I "..\qtools" /I "..\libpng" /I "..\libmd5" /D "ENGLISH_ONLY" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FD /Zm200 /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -67,7 +64,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src" /I "..\qtools" /I "..\libpng" /D "ENGLISH_ONLY" /D "_CONSOLE" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src" /I "..\qtools" /I "..\libpng" /I "..\libmd5" /D "ENGLISH_ONLY" /D "_CONSOLE" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FD /GZ /Zm200 /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 # SUBTRACT RSC /x
@@ -246,6 +243,10 @@ SOURCE=..\src\mangen.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\libmd5\md5.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\memberdef.cpp
 # End Source File
 # Begin Source File
@@ -311,6 +312,10 @@ SOURCE=..\src\rtfstyle.cpp
 # Begin Source File
 
 SOURCE=..\src\scanner.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\searchindex.cpp
 # End Source File
 # Begin Source File
 
@@ -543,6 +548,10 @@ SOURCE=..\src\outputgen.h
 # Begin Source File
 
 SOURCE=..\src\outputlist.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\packagedef.h
 # End Source File
 # Begin Source File
 

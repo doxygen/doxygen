@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -182,6 +182,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_used_files SHOW_USED_FILES
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
+\refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 \refitem cfg_source_browser SOURCE_BROWSER
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
@@ -534,6 +535,14 @@ function's detailed documentation block.
  If the \c SORT_MEMBER_DOCS tag is set to \c YES (the default) then doxygen
  will sort the (detailed) documentation of file and class members
  alphabetically by member name. If set to \c NO the members will appear in
+ declaration order.
+
+\anchor cfg_sort_brief_docs
+<dt>\c SORT_BRIEF_DOCS <dd>
+ \addindex SORT_BRIEF_DOCS
+ If the \c SORT_BRIEF_DOCS tag is set to \c YES then doxygen will sort the
+ brief descriptions of file, namespace and class members alphabetically
+ by member name. If set to \c NO (the default) the members will appear in
  declaration order.
 
 \anchor cfg_generate_deprecatedlist

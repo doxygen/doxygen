@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -126,6 +126,7 @@ static bool             useOverrideCommands = FALSE;
 static bool             insideIDL = FALSE;		//!< processing IDL code?
 static bool             insideJava = FALSE;		//!< processing Java code?
 static bool             insideCS = FALSE;		//!< processing C# code?
+static bool             insideD = FALSE;		//!< processing D code?
 static bool             insidePHP = FALSE;		//!< processing PHP code?
 static bool             insideCppQuote = FALSE;
 static bool             insideObjC = FALSE;             //!< processing Objective C code?
@@ -439,6 +440,7 @@ static void setContext()
                fileName.right(4)==".odl";
   insideJava = fileName.right(5)==".java";
   insideCS   = fileName.right(3)==".cs";
+  insideD    = fileName.right(3)==".d";
   insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
                fileName.right(4)==".inc" || fileName.right(6)==".phtml";
   insideObjC = fileName.right(2)==".m";
@@ -587,6 +589,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	DefineEnd
 %x	CompoundName
 %x	ClassVar
+%x	ClassCategory
 %x	ClassTemplSpec
 %x	Bases
 %x	BasesProt
@@ -969,6 +972,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->name = yytext;
   					}
 <ObjCMethod>":"				{ // start of parameter list
+  					  current->name += ':';
   					  Argument *a = new Argument;
 					  current->argList->append(a);
   					  BEGIN( ObjCParams );
@@ -981,11 +985,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ObjCParams>{ID}/":"			{ // Keyword of parameter
   					  current->argList->getLast()->attrib=(QCString)"["+yytext+"]";
+					  current->name += yytext;
   					}
 <ObjCParams>{ID}			{ // name of parameter
   					  current->argList->getLast()->name=yytext;
   					}
-<ObjCParams>":"				{ }
+<ObjCParams>":"				{ 
+					  current->name += ':';
+					}
 <ObjCParams>"("				{
   					  BEGIN( ObjCParamType );
   					}
@@ -1006,7 +1013,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <ObjCMethod,ObjCParams>";"		{ // end of method declaration
   					  current->args = argListToString(current->argList);
-					  printf("argList=%s\n",current->args.data());
+					  //printf("argList=%s\n",current->args.data());
   					  unput(';');
   					  BEGIN( Function );
   					}
@@ -1095,6 +1102,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->bodyLine  = yyLineNr;
   					    BEGIN( CompoundName ); 
 					  }
+					  else if (insideD)
+					  {
+					    lineCount();
+					    BEGIN(PackageName);
+					  }
 					  else
 					  {
 					    addType( current ) ;
@@ -1121,7 +1133,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
 					  lineCount();
-                                          if (insideIDL || insideJava || insideCS)
+                                          if (insideIDL || insideJava || insideCS || insideD)
 					  {
   					    isTypedef=FALSE;
 					    current->section = Entry::INTERFACE_SEC;
@@ -1454,11 +1466,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  {
 					    BEGIN(CppQuote);
 					  }
-					  else if ((insideIDL || insideJava) && yyleng==6 && strcmp(yytext,"import")==0)
+					  else if ((insideIDL || insideJava || insideD) && yyleng==6 && strcmp(yytext,"import")==0)
 					  {
 					    if (insideIDL)
 					      BEGIN(NextSemi);
-					    else // insideJava
+					    else // insideJava or insideD
 					      BEGIN(JavaImport);
 					  }
 					  else if (insideJava && strcmp(yytext,"package")==0)
@@ -1481,15 +1493,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    {
 					      addType( current ) ;
 					    }
-					    if ((insideJava || insideCS) && strcmp(yytext,"public")==0)
+					    bool javaLike = insideJava || insideCS || insideD;
+					    if (javaLike && strcmp(yytext,"public")==0)
 					    {
 					      current->protection = Public;
 					    }
-					    else if ((insideJava || insideCS) && strcmp(yytext,"protected")==0)
+					    else if (javaLike && strcmp(yytext,"protected")==0)
 					    {
 					      current->protection = Protected;
 					    }
-					    else if ((insideJava || insideCS) && strcmp(yytext,"private")==0)
+					    else if (javaLike && strcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
 					    }
@@ -1541,7 +1554,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					}
 <FindMembers>"."			{
-  					  if (insideJava || insideCS)
+  					  if (insideJava || insideCS || insideD)
 					  {
 					    current->name+=".";
 					  }
@@ -2207,7 +2220,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 						current = new Entry(*current);
 						if (current->section==Entry::NAMESPACE_SEC || 
 						    current->section==Entry::INTERFACE_SEC ||
-						    insideJava || insidePHP || insideCS
+						    insideJava || insidePHP || insideCS || insideD
 						   )
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						  current->reset();
@@ -3325,15 +3338,33 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
   					}
 <ClassVar>[(\[]				{
-                                          // probably a function anyway
-                                          unput(*yytext);
-					  BEGIN( FindMembers );
+    					  if (insideObjC && *yytext=='(') // class category
+					  {
+					    current->name+='(';
+					    BEGIN( ClassCategory );
+					  }
+					  else
+					  {
+                                            // probably a function anyway
+                                            unput(*yytext);
+					    BEGIN( FindMembers );
+					  }
+					}
+<ClassCategory>{ID}			{
+					  current->name+=yytext;
+					}
+<ClassCategory>")"			{
+					  current->name+=')';
+					  // category has no variables so push back an empty body
+					  unput('}');
+					  unput('{');
+					  BEGIN( ClassVar );
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
 					  if (current->section == Entry::INTERFACE_SEC || 
 					      current->section == Entry::STRUCT_SEC || 
-					      insidePHP || insideCS
+					      insidePHP || insideCS || insideD
 					     )
 					    baseProt=Public;
 					  else
@@ -3438,7 +3469,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
-					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP || insideCS)
+					  if (current->section == Entry::INTERFACE_SEC || insideJava || insidePHP || insideCS || insideD)
 					    baseProt=Public;
 					  else
 					    baseProt=Private;
@@ -3608,8 +3639,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  else
 					  {
-					    if ((insideJava || insideCS) && 
-						/*current->stat && */
+					    if ((insideJava || insideCS || insideD) &&
 						current->name.isEmpty() && 
 						current->type.isEmpty()
 					       )
@@ -5440,7 +5470,8 @@ static void parseCompounds(Entry *rt)
       {
 	if (
 	    ce->fileName.right(4)==".php" ||
-	    ce->fileName.right(4)==".inc"
+	    ce->fileName.right(4)==".inc" ||
+	    ce->fileName.right(2)==".d"
 	   )
           current->protection = protection = Public ; 
 	else if (ce->fileName.right(5)==".java")

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1304,7 +1304,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    if (getResolvedClass(g_currentDefinition,g_sourceFileDef,g_curClassName)==0)
 					    {
 					      ClassDef *ncd=new ClassDef("<code>",1,
-				 		  g_curClassName,ClassDef::Class);
+				 		  g_curClassName,ClassDef::Class,0,0,TRUE);
 					      g_codeClassSDict.append(g_curClassName,ncd);
 					      // insert base classes.
 					      char *s=g_curClassBases.first();
@@ -1313,7 +1313,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 						ClassDef *bcd;
 						bcd=g_codeClassSDict[s];
 						if (bcd==0) bcd=getResolvedClass(g_currentDefinition,g_sourceFileDef,s);
-						if (bcd)
+						if (bcd && bcd!=ncd)
 						{
 						  ncd->insertBaseClass(bcd,s,Public,Normal);
 						}

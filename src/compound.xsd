@@ -611,6 +611,7 @@
       <xsd:enumeration value="namespace" />
       <xsd:enumeration value="group" />
       <xsd:enumeration value="page" />
+      <xsd:enumeration value="example" />
     </xsd:restriction>
   </xsd:simpleType>
 

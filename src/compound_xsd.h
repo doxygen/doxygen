@@ -611,6 +611,7 @@
 "      <xsd:enumeration value=\"namespace\" />\n"
 "      <xsd:enumeration value=\"group\" />\n"
 "      <xsd:enumeration value=\"page\" />\n"
+"      <xsd:enumeration value=\"example\" />\n"
 "    </xsd:restriction>\n"
 "  </xsd:simpleType>\n"
 "\n"

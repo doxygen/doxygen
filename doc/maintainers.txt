@@ -1,5 +1,11 @@
-% comments start with % sign at the beginning
-% xml entities like &auml; are used for special characters
+% Comments start with % sign at the beginning.
+% XML entities like &auml; are used for special characters.
+% There is one record for each language. The records are separated
+% by the empty line and they do not contain empty lines.
+% First line of the record identifies the language.
+% The following one or more lines contain information about 
+% the maintainer(s) for the language (one line, one maintainer)
+% in the form: <readable name><colon><e-mail>
 
 Brazilian
 Fabio "FJTC" Jun Takada Chino: chino@icmc.sc.usp.br
@@ -44,6 +50,7 @@ Harry Kalogirou: harkal@rainbow.cs.unipi.gr
 
 Hungarian
 F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari@diatronltd.com
+&Aacute;kos Kiss: akiss@users.sourceforge.net
 
 Italian 
 Alessandro Falappa: alessandro@falappa.net 

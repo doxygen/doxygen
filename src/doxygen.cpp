@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2003 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -4040,7 +4040,8 @@ static void addMemberDocs(Entry *root,
 static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
-  ClassDef *tcd = getResolvedClass(nd,fd,scopeName);
+  ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE);
+#if 0
   if (tcd==0) // try using declaration
   {
     ClassSDict *cl = 0;
@@ -4096,6 +4097,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
       }
     }
   }
+#endif
   return tcd;
 }
 
@@ -7248,7 +7250,7 @@ static void readFormulaRepository()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2003\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2004\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -7537,6 +7539,9 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
+        break;
+      case 'b':
+        setvbuf(stdout,NULL,_IONBF,0);
         break;
       case 'h':
       case '?':

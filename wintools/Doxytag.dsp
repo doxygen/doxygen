@@ -23,8 +23,6 @@ CFG=Doxytag - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName "Doxytag"
-# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -95,14 +93,6 @@ SOURCE=..\src\doxytag.cpp
 # Begin Source File
 
 SOURCE=..\src\logos.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\searchindex.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\suffixtree.cpp
 # End Source File
 # Begin Source File
 
