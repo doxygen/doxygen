@@ -4,3 +4,5 @@
 # Set `PreservePermissions' to `yes' to save file status information
 # in the repository.
 #PreservePermissions=no
+
+TopLevelAdmin=yes
