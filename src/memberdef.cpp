@@ -428,6 +428,7 @@ MemberDef::MemberDef(const char *df,int dl,
   m_hasDocumentedParams = FALSE;
   m_hasDocumentedReturnType = FALSE;
   m_docProvider = 0;
+  m_isDMember = m_defFileName.right(2).lower()==".d";
 }
 
 /*! Destroys the member definition. */
@@ -2141,14 +2142,30 @@ Specifier MemberDef::virtualness() const
 bool MemberDef::isConstructor() const            
 { 
   if (classDef) 
-     return name()==classDef->localName();
+  {
+    if (m_isDMember) // for D
+    {
+      return name()=="this";
+    }
+    else // for other languages
+    {
+      return name()==classDef->localName();
+    }
+  }
   else
      return FALSE; 
 }
 
 bool MemberDef::isDestructor() const
 { 
-  return name().find('~')!=-1 && name().find("operator")==-1; 
+  if (m_isDMember) // for D
+  {
+    return name()=="~this";
+  }
+  else // other languages
+  {
+    return name().find('~')!=-1 && name().find("operator")==-1; 
+  }
 }
 
 void MemberDef::writeEnumDeclaration(OutputList &typeDecl,

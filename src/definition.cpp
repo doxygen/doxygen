@@ -29,6 +29,7 @@
 #include "code.h"
 #include "util.h"
 #include "groupdef.h"
+#include "pagedef.h"
 #include "section.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
@@ -788,6 +789,10 @@ void Definition::writePathFragment(OutputList &ol) const
     if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
     {
       ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const GroupDef*)this)->groupTitle());
+    }
+    else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
+    {
+      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const PageDef*)this)->title());
     }
     else
     {

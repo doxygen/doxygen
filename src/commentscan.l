@@ -72,6 +72,7 @@ static void handleName(const QCString &);
 static void handleTodo(const QCString &);
 static void handleTest(const QCString &);
 static void handleBug(const QCString &);
+static void handleSubpage(const QCString &s);
 static void handleDeprecated(const QCString &);
 static void handleXRefItem(const QCString &);
 static void handleRelated(const QCString &);
@@ -153,6 +154,7 @@ static DocCmdMap docCmdMap[] =
   { "relatedalso",     &handleRelatedAlso },
   { "relatesalso",     &handleRelatedAlso },
   { "refitem",         &handleRefItem },
+  { "subpage",         &handleSubpage },
   { "section",         &handleSection },
   { "subsection",      &handleSection },
   { "subsubsection",   &handleSection },
@@ -335,25 +337,25 @@ static QCString getDocSectionName(int s)
 {
   switch(s)
   {
-    case Entry::CLASSDOC_SEC:       return "@class";
-    case Entry::STRUCTDOC_SEC:      return "@struct";
-    case Entry::UNIONDOC_SEC:       return "@union";
-    case Entry::EXCEPTIONDOC_SEC:   return "@exception";
-    case Entry::NAMESPACEDOC_SEC:   return "@namespace";
-    case Entry::PROTOCOLDOC_SEC:    return "@protocol";
-    case Entry::CATEGORYDOC_SEC:    return "@category";
-    case Entry::ENUMDOC_SEC:        return "@enum";
-    case Entry::PAGEDOC_SEC:        return "@page";
-    case Entry::MEMBERDOC_SEC:      return "@fn";
-    case Entry::OVERLOADDOC_SEC:    return "@overload";
-    case Entry::FILEDOC_SEC:        return "@file";
-    case Entry::DEFINEDOC_SEC:      return "@def";
-    case Entry::GROUPDOC_SEC:       return "@defgroup";
-    case Entry::MAINPAGEDOC_SEC:    return "@mainpage";
-    case Entry::PACKAGEDOC_SEC:     return "@package";
-    case Entry::DIRDOC_SEC:         return "@dir";
-    case Entry::EXAMPLE_SEC:        return "@example";
-    case Entry::MEMBERGRP_SEC:      return "@name";
+    case Entry::CLASSDOC_SEC:       return "\\class";
+    case Entry::STRUCTDOC_SEC:      return "\\struct";
+    case Entry::UNIONDOC_SEC:       return "\\union";
+    case Entry::EXCEPTIONDOC_SEC:   return "\\exception";
+    case Entry::NAMESPACEDOC_SEC:   return "\\namespace";
+    case Entry::PROTOCOLDOC_SEC:    return "\\protocol";
+    case Entry::CATEGORYDOC_SEC:    return "\\category";
+    case Entry::ENUMDOC_SEC:        return "\\enum";
+    case Entry::PAGEDOC_SEC:        return "\\page";
+    case Entry::MEMBERDOC_SEC:      return "\\fn";
+    case Entry::OVERLOADDOC_SEC:    return "\\overload";
+    case Entry::FILEDOC_SEC:        return "\\file";
+    case Entry::DEFINEDOC_SEC:      return "\\def";
+    case Entry::GROUPDOC_SEC:       return "\\defgroup";
+    case Entry::MAINPAGEDOC_SEC:    return "\\mainpage";
+    case Entry::PACKAGEDOC_SEC:     return "\\package";
+    case Entry::DIRDOC_SEC:         return "\\dir";
+    case Entry::EXAMPLE_SEC:        return "\\example";
+    case Entry::MEMBERGRP_SEC:      return "\\name";
     default: return "";
   }
 }
@@ -645,7 +647,18 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-DETAILEDCMD {CMD}("arg"|"attention"|"author"|"bug"|"code"|"date"|"deprecated"|"dot"|"dotfile"|"example"|"htmlinclude"|"htmlonly"|"image"|"include"|"includelineno"|"internal"|"invariant"|"latexonly"|"li"|"line"|manonly"|"name"|"note"|"par"|"paragraph"|"param"|"post"|"pre"|"remarks"|"relate"[sd]"("also")?|"remarks"|"return"[s]?|"retval"|"sa"|"section"|"see"|"since"|"subsection"|"subsubsection"|"test"|"throw"|"todo"|"until"|"verbatim"|"verbinclude"|"version"|"warning"|"xrefitem")
+DCMD1     ("arg"|"attention"|"author"|"bug"|"code")
+DCMD2     ("date"|"deprecated"|"dot"|"dotfile"|"example")
+DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
+DCMD4     ("includelineno"|"internal"|"invariant")
+DCMD5     ("latexonly"|"li"|"line"|"manonly"|"name") 
+DCMD6     ("note"|"par"|"paragraph"|"param"|"post")
+DCMD7     ("pre"|"remarks"|(("relate"[sd])("also")?))
+DCMD8     ("remarks"|("return"[s]?)|"retval"|"sa"|"section")
+DCMD9     ("see"|"since"|"subsection"|"subsubsection")
+DCMD10    ("test"|"throw"|"todo"|"until"|"verbatim")
+DCMD11    ("verbinclude"|"version"|"warning"|"xrefitem")
+DETAILEDCMD {CMD}({DCMD1}|{DCMD2}|{DCMD3}|{DCMD4}|{DCMD5}|{DCMD6}|{DCMD7}|{DCMD8}|{DCMD9}|{DCMD10}|{DCMD11})
 PRE       [pP][rR][eE]
 TABLE	  [tT][aA][bB][lL][eE]
 P	  [pP]
@@ -672,7 +685,6 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
-%option nounput
 %option noyywrap
 
   /* comment parsing states. */
@@ -695,6 +707,8 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 %x	GroupDocArg2
 %x	SectionLabel
 %x	SectionTitle
+%x	SubpageLabel
+%x	SubpageTitle
 %x	FormatBlock
 %x	LineParam
 %x	GuardParam
@@ -736,7 +750,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
-<Comment>{DETAILEDCMD}/[^a-z_A-Z]	{ // command that can end a brief description
+<Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
 					  if (inContext!=OutputXRef) setOutput(OutputDoc);
 					  // continue with the same input
                                           REJECT;
@@ -1262,6 +1276,36 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  addOutput(*yytext);
   					}
 
+  /* ----- handle arguments of the subpage command ------- */
+
+<SubpageLabel>{LABELID}			{ // first argument
+                                          addOutput(yytext);
+					  // we add subpage labels as a kind of "inheritance" relation to prevent
+					  // needing to add another list to the Entry class.
+					  current->extends->append(new BaseInfo(yytext,Public,Normal));
+					  BEGIN(SubpageTitle);
+  					}
+<SubpageLabel>{DOCNL}			{ // missing argument
+  					  warn(yyFileName,yyLineNr,
+					      "Warning: \\subpage command has no label"
+					      );
+  					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+  					}
+<SubpageTitle>{DOCNL}			{ // no title, end command
+  					  addOutput(yytext);
+					  BEGIN( Comment );
+  					}
+<SubpageTitle>[ \t]*"\""[^\"\n]*"\""	{ // add title, end of command
+  					  addOutput(yytext);
+					  BEGIN( Comment );
+  					}
+<SubpageTitle>.				{ // no title, end of command
+  					  unput(*yytext);
+					  BEGIN( Comment );
+  					}
+
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}			{ // found argument
@@ -1771,6 +1815,20 @@ static void handleSection(const QCString &s)
   BEGIN(SectionLabel);
 }
 
+static void handleSubpage(const QCString &s)
+{
+  if (current->section!=Entry::EMPTY_SEC && 
+      current->section!=Entry::PAGEDOC_SEC &&
+      current->section!=Entry::MAINPAGEDOC_SEC
+     )
+  {
+    warn(yyFileName,yyLineNr,
+	"Warning: found \\subpage command in a comment block that is not marked as a page!");
+  }
+  addOutput("@"+s+" ");
+  BEGIN(SubpageLabel);
+}
+
 static void handleAnchor(const QCString &s)
 {
   addOutput("@"+s+" ");
@@ -1808,7 +1866,7 @@ static void handleElseIf(const QCString &)
   if (guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,
-	"Warning: found @else without matching start command");
+	"Warning: found \\else without matching start command");
   }
   else
   {
@@ -1822,7 +1880,7 @@ static void handleElse(const QCString &)
   if (guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,
-	"Warning: found @else without matching start command");
+	"Warning: found \\else without matching start command");
   }
   else
   {
@@ -1835,7 +1893,7 @@ static void handleEndIf(const QCString &)
   if (guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,
-	"Warning: found @endif without matching start command");
+	"Warning: found \\endif without matching start command");
   }
   else
   {
@@ -1960,6 +2018,7 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
   current        = curEntry;
   //previous       = prevEntry;
   inputString    = comment;
+  if (inputString==0) return FALSE; // avoid empty strings
   inputPosition  = 0;
   yyLineNr       = lineNr;
   yyFileName     = fileName;
@@ -1993,47 +2052,6 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
   return needNewEntry;
 }
 
-#if 0
-//----------------------------------------------------------------------------
-void commentScanTest()
-{
-  Entry *ce = new Entry;
-  Entry *pe = new Entry;
-  Entry *re = new Entry;
-  Protection prot=Public;
-
-  ce->doc.resize(0);ce->brief.resize(0);
-  parseCommentBlock(ce,pe,re,"@brief A brief description.\n\n"
-                             "This is a @e simple test!\n","test.dox",
-	            1,FALSE,FALSE,FALSE,prot);
-  printf("---------\nbrief test: result: brief=[%s] doc=[%s]\n",ce->brief.data(),ce->doc.data());
-
-  ce->doc.resize(0);ce->brief.resize(0);
-  parseCommentBlock(ce,pe,re,"@defgroup grp A group\n"
-                             "This is a @c group definition.","test.dox",
-	            1,FALSE,FALSE,FALSE,prot);
-  printf("---------\ndefgroup test: result: brief=[%s] doc=[%s]\n",ce->brief.data(),ce->doc.data());
-
-  ce->doc.resize(0);ce->brief.resize(0);
-  parseCommentBlock(ce,pe,re,"A code example:\n"
-                             "@code\n"
-			     "void main()\n"
-			     "{\n"
-			     "  printf(\"Hello world\");\n"
-			     "}\n"
-			     "@endcode\n"
-                             "More text follows.","test.dox",
-	            1,FALSE,FALSE,FALSE,prot);
-  printf("---------\ncode test: result: brief=[%s] doc=[%s]\n",ce->brief.data(),ce->doc.data());
-
-  ce->doc.resize(0);ce->brief.resize(0);
-  parseCommentBlock(ce,pe,re,"Some text <!-- A comment --> and more.\n"
-                             ,"test.dox",
-	            1,FALSE,FALSE,FALSE,prot);
-  printf("---------\nhtml comment test: result: brief=[%s] doc=[%s]\n",ce->brief.data(),ce->doc.data());
-
-}
-#endif
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------

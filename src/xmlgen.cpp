@@ -478,6 +478,18 @@ static void writeMemberReference(QTextStream &t,Definition *def,MemberDef *rmd,c
   
 }
 
+static void stripQualifiers(QCString &typeStr)
+{
+  bool done=FALSE;
+  while (!done)
+  {
+    if (typeStr.left(7)=="static ") typeStr=typeStr.mid(7);
+    else if (typeStr.left(8)=="virtual ") typeStr=typeStr.mid(8);
+    else if (typeStr.left(9)=="volatile ") typeStr=typeStr.mid(9);
+    else done=TRUE;
+  }
+}
+
 static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,Definition *def)
 {
 
@@ -612,6 +624,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       writeMemberTemplateLists(md,t);
     }
     QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
+    stripQualifiers(typeStr);
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),typeStr);
     t << "</type>" << endl;

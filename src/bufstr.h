@@ -55,6 +55,11 @@ class BufStr
       makeRoomFor(s);
       m_writeOffset+=s;
     }
+    void shrink( uint newlen )
+    {
+      m_writeOffset=newlen;
+      resize(newlen);
+    }
     void resize( uint newlen )
     {
       m_size=newlen;

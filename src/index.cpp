@@ -2404,9 +2404,10 @@ void countRelatedPages(int &docPages,int &indexPages)
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pd->getGroupDef() && (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pd->getGroupDef() && 
+        (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
     {
-      indexPages++;
+      indexPages++; 
       if (!pd->isReference()) docPages++;
     }
   }
@@ -2453,7 +2454,8 @@ void writePageIndex(OutputList &ol)
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    if (!pd->getGroupDef() && (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
+    if (!pd->getGroupDef() && 
+        (!pd->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       QCString pageTitle;
 

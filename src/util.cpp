@@ -908,6 +908,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
           Definition *cd;
           for (cli.toFirst();(cd=cli.current());++cli)
           {
+            //printf("Trying for class %s\n",cd->name().data());
             i = isAccessibleFromWithExpScope(scope,fileScope,item,cd->name());
             if (i!=-1)
             {
@@ -925,6 +926,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
           {
             if (g_visitedNamespaces.find(nd->name())==0)
             {
+              //printf("Trying for namespace %s\n",nd->name().data());
               i = isAccessibleFromWithExpScope(scope,fileScope,item,nd->name());
               if (i!=-1)
               {

@@ -682,22 +682,22 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*{ID}{FUNCARG}?
   			 return 0;
                        }
 
-<St_Ref>{REFWORD}      {
+<St_Ref>{REFWORD}      { // label to refer to
   			 g_token->name=yytext;
 			 return TK_WORD;
   		       }
-<St_Ref>{BLANK}+       { 
+<St_Ref>{BLANK}        { // white space
   			 unput(' ');
   			 return 0;
                        }
-<St_Ref>{WS}+"\""      {
+<St_Ref>{WS}+"\""      { // white space following by quoted string
   			 BEGIN(St_Ref2);
                        }
-<St_Ref>\n	       {
+<St_Ref>\n	       { // new line
                          unput(*yytext);
   			 return 0;
   		       }
-<St_Ref>.	       {
+<St_Ref>.	       { // any other character
                          unput(*yytext);
   			 return 0;
   		       }

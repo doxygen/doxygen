@@ -3620,6 +3620,7 @@ void DocPara::handleLink(const QString &cmdName,bool isJavaLink)
 
 void DocPara::handleRef(const QString &cmdName)
 {
+  DBG(("handleRef(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -3643,49 +3644,6 @@ endref:
   doctokenizerYYsetStatePara();
 }
 
-//int DocPara::handleLanguageSwitch()
-//{
-//  int retval=RetVal_OK;
-//
-//  if (!insideLang(this)) // start a language section at this level
-//  {
-//    do
-//    {
-//      int tok = doctokenizerYYlex();
-//      if (tok==TK_WHITESPACE)
-//      {
-//        // end of language specific sections
-//        retval=RetVal_OK;
-//        goto endlang;
-//      }
-//      else if (tok==TK_NEWPARA)
-//      {
-//        // end of language specific sections
-//        retval = tok;
-//        goto endlang;
-//      }
-//      else if (tok==TK_WORD || tok==TK_LNKWORD)
-//      {
-//        DocLanguage *dl = new DocLanguage(this,g_token->name);
-//        m_children.append(dl);
-//        retval = dl->parse();
-//      }
-//      else
-//      {
-//        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s as parameter of \\~",
-//            tokToString(tok));
-//        goto endlang;
-//      }
-//    }
-//    while (retval==RetVal_SwitchLang);        
-//  }
-//  else // return from this section
-//  {
-//    retval = RetVal_SwitchLang;
-//  }
-//endlang:
-//  return retval;
-//}
 
 void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
 {
@@ -4084,7 +4042,8 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_JAVALINK:
       handleLink(cmdName,TRUE);
       break;
-    case CMD_REF:
+    case CMD_REF: // fall through
+    case CMD_SUBPAGE:
       handleRef(cmdName);
       break;
     case CMD_SECREFLIST:

@@ -404,6 +404,8 @@ class MemberDef : public Definition
 
     // to store the output file base from tag files
     QCString explicitOutputFileBase;
+
+    bool m_isDMember;
 };
 
 #endif

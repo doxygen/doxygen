@@ -137,6 +137,7 @@ documentation:
 \refitem cmdskip \\skip
 \refitem cmdskipline \\skipline
 \refitem cmdstruct \\struct
+\refitem cmdsubpage \\subpage
 \refitem cmdsubsection \\subsection
 \refitem cmdsubsubsection \\subsubsection
 \refitem cmdtest \\test
@@ -1321,6 +1322,58 @@ void memcpy(void *dest, const void *src, size_t n);
 
   \sa
     Section \ref cmdpage "\\page" for an example of the \\ref command.
+
+<hr>
+\section cmdsubpage \\subpage <name> ["(text)"]
+
+  \addindex \\subpage
+  This command can be used to create a hierarchy of pages. The
+  same structure can be made using the \ref cmddefgroup "\\defgroup" and
+  \ref cmdingroup "\\ingroup" commands, but for pages the \\subpage command
+  is often more convenient. The main page (see \ref cmdmainpage "\\mainpage") 
+  is typically the root of hierarchy. 
+
+  This command behaves similar as \ref cmdref "\\ref" in the sense that
+  it creates a reference to a page labeled \<name\> with the optional
+  link text as specified in the second argument. 
+
+  It differs from the \\ref command in that it only works for pages,
+  and creates a parent-child relation between pages, where the
+  child page (or sub page) is identified by label \<name\>. 
+  
+  See the \ref cmdsection "\\section"
+  and \ref cmdsubsection "\\subsection" commands if you want to add structure
+  without creating multiple pages.
+
+  \note Each page can be the sub page of only one other page and
+  no cyclic relations are allowed, i.e. the page hierarchy must have a tree 
+  structure.
+  
+  Here is an example:
+\verbatim
+/*! \mainpage A simple manual
+
+Some general info.
+  
+This manual is divided in the following sections:
+- \subpage intro 
+- \subpage advanced "Advanced usage"
+*/
+
+//-----------------------------------------------------------
+
+/*! \page intro Introduction
+This page introduces the user to the topic.
+Now you can proceed to the \ref advanced "advanced section".  
+*/
+
+//-----------------------------------------------------------
+
+/*! \page advanced Advanced Usage
+This page is for advanced users.
+Make sure you have first read \ref intro "the introduction".
+*/
+\endverbatim
 
 <hr>
 \section cmdsection \\section <section-name> (section title)

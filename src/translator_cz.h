@@ -27,101 +27,33 @@
 //
 // Updates:
 // --------
-// 2000/06/20
-//  - The prototype version of Czech strings with diacritics. The
-//    translation was based on translator.h of Doxygen version
-//    1.1.4 (from scratch).
-//
-// 2000/07/10
-//  - Updated version based on 1.1.5 sources (including important updates
-//    of the up-to-1.1.4 strings). Czech strings in this file were written
-//    in windows-1250 encoding. On-line decoding into iso-8859-2 ensured
-//    via conditional compilation if the sources are compiled under UNIX.
-//
-// 2000/07/19
-//  - Encoding conversion tables moved to the methods that use them.
-//  - Updates for "new since 1.1.5".
-//
-// 2000/08/02 (Petr Prikryl)
-//  - Updated for 1.2.0
-//
-// 2000/08/24
-//  - Changed trTodo() text from "Udelat" to "Planovane upravy"
-//    which seems more appropriate in the document context.
-//  - Typo corrected in trMemberTypedefDocumentation().
-//
-// 2000/08/30
-//  - Macro DECODE replaced by the inline Decode() (proposed by
-//    Boris Bralo <boris.bralo@zg.tel.hr> in translator_hr.h).
-//
-// 2000/08/31
-//  - Methods ISOToWin() and WinToISO() renamed and moved to the
-//    base class (in translator.h) to be shared with the Croatian
-//    translator.
-//
-// 2000/09/06
-//  - Reimplementation of the method trInheritsList() which takes 
-//    into account quantity of base classes.
-//
-// 2000/09/11
-//  - Update for "new since 1.2.1" version. The text of trDCOPMethods()
-//    was translated rather blindly (not knowing what exactly
-//    the DCOP means).
-//    
-// 2000/10/17
-//  - Update for "new since 1.2.2" version. 
-//
-// 2001/01/09
-//  - Update for "new since 1.2.4" version. As I do not use Java,
-//    I tried my best to guess the Czech terminology for the Java.
-//    Let me know if some wording should be changed/improved.
-//         
-// 2001/02/15
-//  - trMore() now returns only "..." (ellipsis).  The Czech replacement
-//    of "(more)" was too much visible.  The previous "(...)" did not 
-//    look well.
-//    
-// 2001/02/26
-//  - Update for "new since 1.2.5" version (trBug(), trBugList()).
-//         
-// 2001/03/12
-//  - Minor correction of comments which copied the same
-//    corrections in translator.h (doubled backslash) just after 
-//    1.2.6 release.
-//    
-// 2001/04/10
-//  - Update for OPTIMIZE_OUTPUT_FOR_C (1.2.6-20010408).
-//  - Removed implementation of latexBabelPackage().
-//  - Removed implementation of trVerbatimText().
-//  
-// 2001/04/20
-//  - Update for "new since 1.2.6-20010422". Experimental version
-//    introducing TranslatorAdapter class and the abstract base
-//    class Translator.  The English translator is now on the same
-//    level as other translators.
-//
-// 2001/05/02
-//  - The Decode() inline identifier changed to decode (i.e. lower
-//    case) to be consistent with HR and RU translator, which also
-//    use the approach.
-//  - Removed the obsolete method trFiles().
-//         
-// 2001/05/18 
-//  - The trRelatedPagesDescription() content updated to fit 
-//    the context better.
-//  - Implemented new method trAuthor(params).
-//  - Removed obsolete methods trAuthor() and trAuthors().
-//
-// 2001/05/25
-//  - Updated misleading information in trLegendDocs().
-//  - The trReimplementedInList() updated to fit the context better.
-//  - The trReimplementedFromList() updated to fit the context better.
-//
+// 2000/06/20 - Prototype: with diacritics; based on ver. 1.1.4 (from scratch).
+// 2000/07/10 - Update to 1.1.5; conditionally decoding to iso-8859-2 for UNIX.
+// 2000/07/19 - Updates for "new since 1.1.5"; encoding conversion separated.
+// 2000/08/02 - Updated for 1.2.0
+// 2000/08/24 - Corrections, updates.
+// 2000/08/30 - Macro DECODE replaced by the inline (thanks to Boris Bralo).
+// 2000/08/31 - ISOToWin() and WinToISO() moved to the base class.
+// 2000/09/06 - Reimplementation of trInheritsList().
+// 2000/09/11 - Update for "new since 1.2.1" version.
+// 2000/10/17 - Update for "new since 1.2.2" version. 
+// 2001/01/09 - Update for "new since 1.2.4" version.
+// 2001/02/15 - trMore() now returns only "..." (ellipsis).
+// 2001/02/26 - Update for "new since 1.2.5" version (trBug(), trBugList()).
+// 2001/03/12 - Minor correction of comments (synchronous with translator.h).
+// 2001/04/10 - Updates (1.2.6-20010408), cleaning.
+// 2001/04/20 - Update for "new since 1.2.6-20010422". Experimental version
+//              introducing TranslatorAdapter class and the abstract base
+//              class Translator.  The English translator is now on the same
+//              level as other translators.
+// 2001/05/02 - Decode() inline changed to decode(); cleaning.
+// 2001/05/18 - Updates, corrections.
+// 2001/05/25 - Corrections.
 // 2001/07/16 - trClassDocumentation() updated as in the English translator.
 // 2001/11/06 - trReferences() implemented.
 // 2002/01/23 - Two new methods "since 1.2.13" implemented.
 // 2002/03/05 - ... forgot to replace TranslatorAdapter... by Translator.
-// 2002/07/08 (my birthday! ;) - The new trRTFTableOfContents() implemented.
+// 2002/07/08 - The new trRTFTableOfContents() implemented. (my birthday! ;) 
 // 2002/07/29 - The new trDeprecatedList() implemented.
 // 2002/10/15 - The new trEvents() and trEventDocumentation() implemented.
 // 2003/04/28 - Five new methods "since 1.3" implemented.
@@ -132,6 +64,7 @@
 // 2004/06/16 - The new method "since 1.3.8" implemented. 
 // 2004/09/14 - The new methods "since 1.3.9" implemented. 
 // 2005/02/11 - The "never used" methods removed.
+// 2005/03/08 - Update for "new since 1.4.1" (trOverloadText()) 
 
 // Todo
 // ----
@@ -151,7 +84,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public TranslatorAdapter_1_4_1
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1672,6 +1605,20 @@ class TranslatorCzech : public TranslatorAdapter_1_4_1
         if ( ! singular) 
             result += "e";
         return decode(result); 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return decode("Jde o pøetíženou (overloaded) metodu, "
+              "která má usnadnit používání. Od výše uvedené metody se liší "
+              "pouze jinak zadávanými argumenty.");
     }
 };
 

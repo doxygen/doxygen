@@ -18,6 +18,9 @@
 #include "definition.h"
 #include "sortdict.h"
 
+class PageSDict;
+class OutputList;
+
 class PageDef : public Definition
 {
   public:
@@ -32,18 +35,23 @@ class PageDef : public Definition
     {
       return isLinkableInProject() || isReference();
     } 
+    void addSubPage(PageDef *def);
+    void writeDocumentation(OutputList &ol);
 
     // functions to get a uniform interface with Definitions
     QCString getOutputFileBase() const;
     void findSectionsInDocumentation();
     QCString title() const { return m_title; }
-    GroupDef *getGroupDef() const;
+    GroupDef *  getGroupDef() const;
+    PageSDict * getSubPages() const { return subPageDict; }
     void setFileName(const char *name) { m_fileName = name; }
+    void addInnerCompound(Definition *d);
 
   private:
     QCString m_fileName;
     QCString m_title;
     GroupDef *m_inGroup;
+    PageSDict *subPageDict;                 // list of pages in the group
 };
 
 class PageSDict : public SDict<PageDef>
