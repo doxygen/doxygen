@@ -69,9 +69,9 @@ void SearchIndex::setCurrentDoc(const char *name,const char *url)
 static int charsToIndex(const char *word)
 {
   if (word==0) return -1;
-  int c1=word[0];
+  uint c1=word[0];
   if (c1==0) return -1;
-  int c2=word[1];
+  uint c2=word[1];
   if (c2==0) return -1;
   return c1*256+c2;
 }
@@ -82,7 +82,7 @@ void SearchIndex::addWord(const char *word)
   if (w==0)
   {
     int idx=charsToIndex(word);
-    if (idx==-1) return;
+    if (idx<0) return;
     w = new IndexWord(word);
     //printf("addWord(%s) at index %d\n",word,idx);
     m_index[idx]->append(w);

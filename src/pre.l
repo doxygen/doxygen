@@ -1669,7 +1669,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,yyleng);
 					  BEGIN(SkipCComment);
   					}
-<SkipCComment,SkipVerbatim>[^*\n\/]+	{
+<SkipCComment,SkipVerbatim>[^*\x06\n\/]+ {
   					  outputArray(yytext,yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 
@@ -1682,7 +1682,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }
 <RemoveCComment>"//"			
 <RemoveCComment>"/*"
-<RemoveCComment>[^*\n]+
+<RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n			{ g_yyLineNr++; outputChar('\n'); }
 <RemoveCComment>.			
 <SkipCPPComment,RemoveCPPComment>\n	{
@@ -1695,7 +1695,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCPPComment>"//"			{
   					  outputChar('/');outputChar('/');
   					}
-<SkipCPPComment>[^\n]+			{
+<SkipCPPComment>[^\x06\n]+		{
   					  outputArray(yytext,yyleng);
   					}
 <SkipCPPComment>.			{
@@ -1703,7 +1703,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <RemoveCPPComment>"/*"
 <RemoveCPPComment>"//"
-<RemoveCPPComment>[^\n]+
+<RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
 <DefineText>"#"				{
   					  g_quoteArg=TRUE;

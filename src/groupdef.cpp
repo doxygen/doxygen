@@ -205,7 +205,8 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
             md->getOuterScope()->definitionType()==Definition::TypeFile); 
       
-      if (matchArguments(srcMd->argumentList(),md->argumentList()) &&
+      if (srcMd->isFunction() && md->isFunction() && 
+          matchArguments(srcMd->argumentList(),md->argumentList()) &&
           sameScope
          )
       {
@@ -690,7 +691,8 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
 /*! Add a member to the group with the highest priority */
 void addMemberToGroups(Entry *root,MemberDef *md)
 {
-  //printf("  Root %p = %s, md %p=%s groups=%d\n", root, root->name.data(), md, md->name().data(), root->groups->count() );
+  //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n", 
+  //    root, root->name.data(), md, md->name().data(), root->groups->count() );
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;
 

@@ -1245,6 +1245,22 @@ void Config::check()
     Config_getBool("INLINE_INFO")=FALSE;
   }
   
+  // add default words if needed
+  QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");
+  if (annotationFromBrief.isEmpty())
+  {
+    annotationFromBrief.append("The $name class");
+    annotationFromBrief.append("The $name widget");
+    annotationFromBrief.append("The $name file");
+    annotationFromBrief.append("is");
+    annotationFromBrief.append("provides");
+    annotationFromBrief.append("specifies");
+    annotationFromBrief.append("contains");
+    annotationFromBrief.append("represents");
+    annotationFromBrief.append("a");
+    annotationFromBrief.append("an");
+    annotationFromBrief.append("the");
+  }
 }
 
 void Config::init()
@@ -1418,6 +1434,17 @@ void Config::create()
                     "Note: if both HIDE_UNDOC_MEMBERS and BRIEF_MEMBER_DESC are set to NO, the \n"
                     "brief descriptions will be completely suppressed. \n",
                     TRUE
+                 );
+  cl = addList(
+                    "ABBREVIATE_BRIEF",
+                    "This tag implements a quasi-intelligent brief description abbreviator \n"
+                    "that is used to form the text in various listings. Each string \n"
+                    "in this list, if found as the leading text of the brief description, will be \n"
+                    "stripped from the text and the result after processing the whole list, is used \n"
+		    "as the annotated text. Otherwise, the brief description is used as-is. If left \n"
+		    "blank, the following values are used (\"$name\" is automatically replaced with the \n"
+		    "name of the entity): \"The $name class\" \"The $name widget\" \"The $name file\" \n"
+		    "\"is\" \"provides\" \"specifies\" \"contains\" \"represents\" \"a\" \"an\" \"the\"\n"
                  );
   cb = addBool(
                     "ALWAYS_DETAILED_SEC",

@@ -72,6 +72,7 @@ class ClassDef : public Definition
     QCString getSourceFileBase() const; 
     QCString getReference() const;
     bool isReference() const;
+    bool isLocal() const { return m_isLocal; }
 
     bool hasDocumentation() const;
 

@@ -74,7 +74,7 @@ function search($file,$word,&$statsList)
           $freq=readInt($file); 
           $docInfo[$i]=array("idx"=>$idx,"freq"=>$freq,"rank"=>0.0);
           $totalFreq+=$freq;
-          if ($statInfo["full"]) $totalfreq+=$freq;
+          if ($statInfo["full"]) $totalFreq+=$freq;
         }
         // read name an url info for the doc
         for ($i=0;$i<$numDocs;$i++)

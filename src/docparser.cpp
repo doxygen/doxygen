@@ -1218,6 +1218,8 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
     else
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid anchor id `%s'",id.data());
+      m_anchor = "invalid";
+      m_file = "invalid";
     }
   }
 }
@@ -4730,7 +4732,7 @@ void DocRoot::parse()
     }
     else
     {
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid anchor id `%s'; ignoring section",g_token->sectionId.data());
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid section id `%s'; ignoring section",g_token->sectionId.data());
       retval = 0;
     }
   }

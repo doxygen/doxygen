@@ -55,6 +55,7 @@ Below is an alphabetical index of the tags that are recognized
 followed by the descriptions of the tags grouped by category.
 
 \secreflist
+\refitem cfg_abbreviate_brief ABBREVIATE_BRIEF
 \refitem cfg_aliases ALIASES
 \refitem cfg_allexternals ALLEXTERNALS 
 \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
@@ -200,7 +201,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_warnings WARNINGS
 \refitem cfg_xml_dtd XML_DTD
 \refitem cfg_xml_output XML_OUTPUT
-\refitem cfg_xml_programlising XML_PROGRAMLISTING
+\refitem cfg_xml_programlisting XML_PROGRAMLISTING
 \refitem cfg_xml_schema XML_SCHEMA
 \endsecreflist
 
@@ -271,6 +272,18 @@ followed by the descriptions of the tags grouped by category.
  \par Note: 
  If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
  brief descriptions will be completely suppressed.
+
+\anchor cfg_abbreviate_brief
+<dt>\c ABBREVIATE_BRIEF <dd>
+ \addindex ABBREVIATE_BRIEF
+ This tag implements a quasi-intelligent brief description abbreviator
+ that is used to form the text in various listings. Each string
+ in this list, if found as the leading text of the brief description, will be
+ stripped from the text and the result after processing the whole list, is used
+ as the annotated text. Otherwise, the brief description is used as-is. If left
+ blank, the following values are used ("\$name" is automatically replaced with the
+ name of the entity): "The $name class" "The $name widget" "The $name file"
+ "is" "provides" "specifies" "contains" "represents" "a" "an" "the".
 
 \anchor cfg_always_detailed_sec
 <dt>\c ALWAYS_DETAILED_SEC <dd>

@@ -88,29 +88,43 @@ inline void writeXMLCodeString(QTextStream &t,const char *s)
 
 static void writeXMLHeader(QTextStream &t)
 {
-  //QCString dtdName = Config_getString("XML_DTD");
-  //QCString schemaName = Config_getString("XML_SCHEMA");
-  //t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
-  //  << "' standalone='";
-  //if (dtdName.isEmpty() && schemaName.isEmpty()) t << "yes"; else t << "no";
-  //t << "'?>" << endl;
-  //if (!dtdName.isEmpty())
-  //{
-  //  t << "<!DOCTYPE doxygen SYSTEM \"doxygen.dtd\">" << endl;
-  //}
-  //t << "<doxygen ";
-  //if (!schemaName.isEmpty())
-  //{
-  //  t << "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
-  //  t << "xsi:noNamespaceSchemaLocation=\"doxygen.xsd\" ";
-  //}
-  //t << "version=\"" << versionString << "\">" << endl;
-
   t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
     << "' standalone='no'?>" << endl;;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
+}
+
+static void writeCombineScript()
+{
+  QCString outputDirectory = Config_getString("XML_OUTPUT");
+  QCString fileName=outputDirectory+"/combine.xslt";
+  QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  QTextStream t(&f);
+  t.setEncoding(QTextStream::Latin1);
+
+  t <<
+  "<!-- XSLT script to combine the generated output into a single file. \n"
+  "     If you have xsltproc you could use:\n"
+  "     xsltproc combine.xslt index.xml >all.xml\n"
+  "-->\n"
+  "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">\n"
+  "  <xsl:output method=\"xml\" version=\"1.0\" indent=\"yes\" standalone=\"yes\" />\n"
+  "  <xsl:template match=\"/\">\n"
+  "    <doxygen version=\"{doxygenindex/@version}\">\n"
+  "      <!-- Load all doxgen generated xml files -->\n"
+  "      <xsl:for-each select=\"doxygenindex/compound\">\n"
+  "        <xsl:copy-of select=\"document( concat( @refid, '.xml' ) )/doxygen/*\" />\n"
+  "      </xsl:for-each>\n"
+  "    </doxygen>\n"
+  "  </xsl:template>\n"
+  "</xsl:stylesheet>\n";
+
 }
 
 void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
@@ -1569,6 +1583,8 @@ void generateXML()
 
   //t << "  </compoundlist>" << endl;
   t << "</doxygenindex>" << endl;
+
+  writeCombineScript();
 }
 
 
