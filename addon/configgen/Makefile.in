@@ -16,7 +16,7 @@ all: Makefile.configgen config.h config.l
 	$(MAKE) -f Makefile.configgen $@
 
 Makefile.configgen: configgen.pro 
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) configgen.pro >Makefile.configgen
+	$(ENV) $(PERL) $(TMAKE) configgen.pro >Makefile.configgen
 
 config.h: $(CFGGEN_DIR)/configgen config_templ.h
 	$(CFGGEN_DIR)/configgen config_templ.h >config.h
@@ -28,7 +28,7 @@ $(CFGGEN_DIR)/configgen: Makefile.configgen configgen.cpp
 	$(MAKE) -f Makefile.configgen 
 
 tmake: 
-	export TMAKEPATH=$(TMAKEPATH) ; $(PERL) $(TMAKE) configgen.pro >Makefile.configgen
+	$(ENV) $(PERL) $(TMAKE) configgen.pro >Makefile.configgen
 
 install:
 	$(CP) config.l config.h ../../src
