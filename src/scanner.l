@@ -88,10 +88,6 @@ static int		squareCount  = 0 ;
 static int              padCount     = 0 ;
 static int              slStartContext = 0;
 static QCString         slString;
-//static int              testStartContext = 0;
-//static QCString         testString;
-//static int              bugStartContext = 0;
-//static QCString         bugString;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -616,6 +612,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x      TodoParam
 %x      TestParam
 %x      BugParam
+%x      DeprecatedParam
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1499,6 +1496,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             warn(yyFileName,yyLineNr,
 	                                        "Warning: end of group without matching begin.");
                                           }
+                                          //printf("end of member group marker ends group %d\n",memberGroupId);
   					  endGroup();
                                           memberGroupHeader.resize(0);
   					}
@@ -3214,10 +3212,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
 <SkipHtmlComment>.
-<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug")/[^a-z_A-Z0-9] {
+<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					}
-<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug")/[^a-z_A-Z0-9]	{
+<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated")/[^a-z_A-Z0-9]	{
   					  current->brief+=yytext;
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
@@ -3237,6 +3235,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"bug"/[^a-z_A-Z0-9]	{
   					  slStartContext = YY_START;
 					  lastBriefContext = BugParam; // this is where we will continue at the end of the argument
+					  slString = current->brief.copy(); // these will be swapped later on.
+					  current->brief.resize(0);
+					  BEGIN(ClassDocBrief);
+  					}
+<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"deprecated"/[^a-z_A-Z0-9]	{
+  					  slStartContext = YY_START;
+					  lastBriefContext = DeprecatedParam; // this is where we will continue at the end of the argument
 					  slString = current->brief.copy(); // these will be swapped later on.
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
@@ -3262,6 +3267,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <BugParam>"/*"                          |
 <BugParam>.				{
                                           addSpecialItem("bug");
+					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+					  BEGIN(slStartContext);
+  					}
+<DeprecatedParam>\n                     |
+<DeprecatedParam>"//"                   |
+<DeprecatedParam>"/*"                   |
+<DeprecatedParam>.		        {
+                                          addSpecialItem("deprecated");
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -3457,6 +3470,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    memberGroupDocs+="\n\n";
 					  }
 					  memberGroupDocs+=current->doc;
+					  Doxygen::memberDocDict.insert(memberGroupId,
+					      new QCString(memberGroupDocs)
+								       );
 					  current->doc.resize(0);
 					  current->brief.resize(0);
 					  BEGIN(lastDocContext);
@@ -3618,6 +3634,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                                              warn(yyFileName,yyLineNr,
 	                                                          "Warning: end of group without matching begin.");
                                                           }
+                                                          //printf("end of member group marker ends group %d\n",memberGroupId);
   							  endGroup();
                                                           memberGroupHeader.resize(0);
   							}
@@ -4295,12 +4312,13 @@ static void startGroup()
   }
   else 
   {
-    if (memberGroupId!=NOGROUP)
-    {
-      //warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
-      //	"Previous command was found at line %d.",lastMemberGroupLine);
-      endGroup();
-    }
+    //if (memberGroupId!=NOGROUP)
+    //{
+    //  //warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
+    //  //	"Previous command was found at line %d.",lastMemberGroupLine);
+    //  printf("startGroup ends group %d\n",memberGroupId);
+    //  endGroup();
+    //}
     if (memberGroupHeader.isEmpty())
     {
       // warn( yyFileName, yyLineNr, "Warning: member group does not have a header" );
@@ -4327,10 +4345,11 @@ static void startGroupInDoc()
   }
   else if (current->section == Entry::MEMBERGRP_SEC) /* scope for a member group: @name */
   {
-    if (memberGroupId!=NOGROUP)
-    {
-      endGroup();
-    }
+    //if (memberGroupId!=NOGROUP)
+    //{
+    //  printf("startGroupInDoc ends group %d\n",memberGroupId);
+    //  endGroup();
+    //}
     memberGroupId = newMemberGroupId();
     Doxygen::memberHeaderDict.insert(memberGroupId,
 	new QCString(memberGroupHeader.stripWhiteSpace())
@@ -4378,7 +4397,11 @@ static void endGroup()
 
 static void forceEndGroup()
 {
-  while (memberGroupId!=NOGROUP || !autoGroupStack.isEmpty()) endGroup();
+  while (memberGroupId!=NOGROUP || !autoGroupStack.isEmpty()) 
+  {
+    //printf("forceEndGroup ends group %d\n",memberGroupId);
+    endGroup();
+  }
 }
 
 //----------------------------------------------------------------------------

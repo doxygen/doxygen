@@ -15,13 +15,14 @@
 #ifndef _INPUTBOOL_H
 #define _INPUTBOOL_H
 
+#include <qwidget.h>
 #include <qcheckbox.h>
 
 #include "input.h"
 
 class PageWidget;
 
-class InputBool : public QCheckBox, public IInput
+class InputBool : public QWidget, /*QCheckBox,*/ public IInput
 {
   Q_OBJECT
 
@@ -29,7 +30,7 @@ class InputBool : public QCheckBox, public IInput
     InputBool( const QString &text, PageWidget *parent, bool &flag );
     ~InputBool(){};
     void init();
-    void setEnabled(bool b) { QCheckBox::setEnabled(b); }
+    void setEnabled(bool b) { cb->setEnabled(b); }
     QObject *qobject() { return this; }
     bool getState() const { return state; }
 
@@ -42,6 +43,7 @@ class InputBool : public QCheckBox, public IInput
 
   private:
     bool &state;
+    QCheckBox *cb;
 
 };
 

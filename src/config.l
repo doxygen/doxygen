@@ -1557,6 +1557,13 @@ void Config::create()
                     "commands in the documentation.\n",
                     TRUE
                  );
+  cb = addBool(
+                    "GENERATE_DEPRECATEDLIST",
+                    "The GENERATE_DEPRECATEDLIST tag can be used to enable (YES) or \n"
+                    "disable (NO) the deprecated list. This list is created by putting "
+		    "\\deprecated commands in the documentation.\n",
+                    TRUE
+	         );
   cl = addList(
                     "ALIASES",
                     "This tag can be used to specify a number of aliases that acts \n"
@@ -1732,7 +1739,7 @@ void Config::create()
                     "FILTER_SOURCE_FILES",
                     "If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using \n"
                     "INPUT_FILTER) will be used to filter the input files when producing source \n"
-                    "files to browse. \n",
+                    "files to browse (i.e. when SOURCE_BROWSER is set to YES). \n",
                     FALSE
                 );    
   //-----------------------------------------------------------------------------------------------

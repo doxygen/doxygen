@@ -18,15 +18,6 @@
 
 #include "reflist.h"
 
-#if 0
-/*! The one and only todo list */
-RefList todoList;
-/*! The test criteria list */
-RefList testList;
-/*! The bug list */
-RefList bugList;
-#endif
-
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
  *  @param optionName String representation of the option enabling the list.

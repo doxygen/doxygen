@@ -1382,17 +1382,9 @@ void writeAlphabeticalClassList(OutputList &ol)
       }
       else if (cd) // a real class, insert a link
       {
-        QCString cname;
         QCString namesp;
-        if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->name();
-        if (Config_getBool("HIDE_SCOPE_NAMES"))
-        {
-          cname=cd->displayName();
-        }
-        else
-        {
-          cname=cd->className();
-        }
+        if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
+        QCString cname=cd->displayName();
 
         ol.writeObjectLink(cd->getReference(),
                            cd->getOutputFileBase(),0,cname);

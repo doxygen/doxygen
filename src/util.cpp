@@ -3148,7 +3148,7 @@ bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStr
 /*! Substitutes any occurrence of a formal argument from argument list
  *  \a formalArgs in \a name by the corresponding actual argument in
  *  argument list \a actualArgs. The result after substitution
- *  is returned as a string. The argument \a className is used to
+ *  is returned as a string. The argument \a name is used to
  *  prevent recursive substitution.
  */
 QCString substituteTemplateArgumentsInString(
@@ -3189,7 +3189,9 @@ QCString substituteTemplateArgumentsInString(
           result += actArg->type; 
           found=TRUE;
         }
-        else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty())
+        else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&
+                 formArg->defval!=name /* to prevent recursion */
+                )
         {
           result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs);
           found=TRUE;

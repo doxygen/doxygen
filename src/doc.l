@@ -1692,9 +1692,11 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
   					}
 <DocScan>"\\todo "[0-9]+		| /* generated labels */
 <DocScan>"\\test "[0-9]+		|
-<DocScan>"\\bug "[0-9]+			{ 
+<DocScan>"\\bug "[0-9]+			|
+<DocScan>"\\deprecated "[0-9]+		{ 
                                           writeSpecialItem(yytext);
   					}
+ /*
 <DocScan>{CMD}"deprecated"{BSEP}	{
   					  if (insideItemList)
 					  {
@@ -1713,7 +1715,8 @@ LINKMASK  [a-z_A-Z0-9:#.,~&*/\[\]<>()\-\+]+({B}*("const"|"volatile"))?
 					  {
 					    outDoc->writeDescItem();
 					  }
-  					}
+                                        }
+  */
 <DocScan>"$"[a-zA-Z_0-9]+":"[^\n\$]+"$"	{ // RCS tag
   					  QCString tagName(&yytext[1]);
 					  int i=tagName.find(':');

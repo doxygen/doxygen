@@ -309,12 +309,13 @@ void Wizard::refreshCaption()
 
 void Wizard::about()
 {
-  QMessageBox::about(this, "DoxyWizard",
-                      "<qt><center>A tool to create and edit configuration files "
-                      "that can be read by doxygen.</center><p>"
-                      "<center>Written by Dimitri van Heesch</center><p>"
-                      "<center>(c) 2000-2002</center></qt>"
-                    );
+  QCString text(4096);
+  text.sprintf( "<qt><center>A tool to create and edit configuration files "
+                "that can be read by doxygen version %s.</center><p>"
+                "<center>Written by Dimitri van Heesch</center><p>"
+                "<center>(c) 2000-2002</center></qt>",versionString
+              );
+  QMessageBox::about(this, "DoxyWizard",text);
 }
 
 //----------------------------------------------------------------------

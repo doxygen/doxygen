@@ -750,7 +750,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, OutputList &briefOutput,
 void ClassDef::writeDocumentation(OutputList &ol)
 {
   // write title
-  QCString pageTitle=name().copy();
+  QCString pageTitle=displayName().copy();
   QCString pageType;
   QCString cType=compoundTypeString();
   toupper(cType.at(0));

@@ -109,7 +109,7 @@ static int yyread(char *buf,int max_size)
 				     copyToOutput(yytext+i,yyleng-i); 
 				     BEGIN(SComment); 
                                    }
-<Scan>"//"[\/!].*\n		   { /* one line C++ comment */ 
+<Scan>"//".*\n		           { /* one line C++ comment */ 
   				     copyToOutput(yytext,yyleng); 
 				   }
 <Scan>"/*"			   { /* start of a C comment */

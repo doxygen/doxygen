@@ -220,7 +220,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
   
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
-  QCString pageTitle=name()+" Namespace Reference";
+  QCString pageTitle=displayName()+" Namespace Reference";
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);

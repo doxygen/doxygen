@@ -50,6 +50,7 @@ Definition::Definition(const char *df,int dl,
   m_todoId=0;
   m_testId=0;
   m_bugId=0;
+  m_deprecatedId=0;
   m_outerScope=Doxygen::globalScope;
   m_partOfGroups=0;
   m_specialListItems=0;

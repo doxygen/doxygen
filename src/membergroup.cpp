@@ -37,6 +37,7 @@
 
 MemberGroup::MemberGroup(int id,const char *hdr,const char *d) /* : Definition(idToName(id)) */
 {
+  //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList     = new MemberList;
   grpId          = id;
   grpHeader      = hdr;
