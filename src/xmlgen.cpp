@@ -47,6 +47,14 @@
 // debug inside output
 //#define XML_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
+//------------------
+
+static const char index_xsd[] =
+#include "index_xsd.h"
+;
+
+//------------------
+
 
 inline void writeXMLString(QTextStream &t,const char *s)
 {
@@ -1448,8 +1456,18 @@ void generateXML()
     }
   }
   QDir xmlDir(outputDirectory);
-  QCString fileName=outputDirectory+"/index.xml";
+  QCString fileName=outputDirectory+"/index.xsd";
   QFile f(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  f.writeBlock(index_xsd,strlen(index_xsd));
+  f.close();
+
+  fileName=outputDirectory+"/index.xml";
+  f.setName(fileName);
   if (!f.open(IO_WriteOnly))
   {
     err("Cannot open file %s for writing!\n",fileName.data());
@@ -1457,7 +1475,14 @@ void generateXML()
   }
   QTextStream t(&f);
   t.setEncoding(QTextStream::Latin1);
-  writeXMLHeader(t);
+
+  // write index header
+  t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
+    << "' standalone='no'?>" << endl;;
+  t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+  t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
+  t << "version=\"" << versionString << "\">" << endl;
+
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)

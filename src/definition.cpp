@@ -27,6 +27,7 @@
 #include "code.h"
 #include "util.h"
 #include "groupdef.h"
+#include "section.h"
 
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
@@ -74,33 +75,31 @@ Definition::~Definition()
   delete m_xrefListItems;
 }
 
-void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
+void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
 {
   if (!anchorList) return;
   //printf("%s: addSectionsToDefinition(%d)\n",name().data(),anchorList->count());
-  QCString *s=anchorList->first();
-  while (s)
+  SectionInfo *si=anchorList->first();
+  while (si)
   {
-    SectionInfo *si=0;
-    if (!s->isEmpty() && (si=Doxygen::sectionDict[*s]))
+    //printf("Add section `%s' to definition `%s'\n",
+    //    si->label.data(),name().data());
+    SectionInfo *gsi=Doxygen::sectionDict.find(si->label);
+    if (gsi==0)
     {
-      //printf("Add section `%s' to definition `%s'\n",
-      //    si->label.data(),n.data());
-      if (m_sectionDict==0) 
-      {
-        m_sectionDict = new SectionDict(17);
-      }
-      if (m_sectionDict->find(*s)==0)
-      {
-        m_sectionDict->insert(*s,si);
-      }
-      si->definition = this;
+      gsi = new SectionInfo(*si);
+      Doxygen::sectionDict.insert(si->label,gsi);
     }
-    else
+    if (m_sectionDict==0) 
     {
-      //printf("Section `%s' not found!\n",s->data());
+      m_sectionDict = new SectionDict(17);
     }
-    s=anchorList->next();
+    if (m_sectionDict->find(gsi->label)==0)
+    {
+      m_sectionDict->insert(gsi->label,gsi);
+      gsi->definition = this;
+    }
+    si=anchorList->next();
   }
 }
 
@@ -108,7 +107,7 @@ void Definition::writeDocAnchorsToTagFile()
 {
   if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_sectionDict)
   {
-    //printf("%s: writeDocAnchors(%d)\n",name().data(),m_sectionDict->count());
+    //printf("%s: writeDocAnchorsToTagFile(%d)\n",name().data(),m_sectionDict->count());
     QDictIterator<SectionInfo> sdi(*m_sectionDict);
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
@@ -556,6 +555,7 @@ void Definition::addSourceReferences(MemberDef *md)
     }
     if (m_sourceRefsDict->find(name)==0)
     {
+      //printf("Adding reference %s->%s\n",md->name().data(),name.data());
       m_sourceRefsDict->inSort(name,md);
     }
   }

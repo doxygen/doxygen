@@ -426,7 +426,9 @@ static void writeBoxMemberList(QTextStream &t,char prot,MemberList &ml,ClassDef 
   {
     if (mma->getClassDef() == scope)
     {
-      t << prot << " " << convertLabel(mma->name()) << "\\l";
+      t << prot << " " << convertLabel(mma->name());
+      if (mma->isFunction()) t << "()";
+      t << "\\l";
     }
   }
 }

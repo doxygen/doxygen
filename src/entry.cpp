@@ -17,6 +17,7 @@
 
 #include "entry.h"
 #include "util.h"
+#include "section.h"
 
 int Entry::num=0;
 
@@ -32,8 +33,7 @@ Entry::Entry()
   extends->setAutoDelete(TRUE);
   groups = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
-  anchors = new QList<QCString>;
-  anchors->setAutoDelete(TRUE);
+  anchors = new QList<SectionInfo>;
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
@@ -92,8 +92,7 @@ Entry::Entry(const Entry &e)
   extends->setAutoDelete(TRUE);
   groups      = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
-  anchors     = new QList<QCString>;
-  anchors->setAutoDelete(TRUE);
+  anchors     = new QList<SectionInfo>;
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
   tArgLists = 0;
@@ -123,11 +122,11 @@ Entry::Entry(const Entry &e)
     groups->append(new Grouping(*g));
   }
   
-  QListIterator<QCString> sli2(*e.anchors);
-  QCString *s;
+  QListIterator<SectionInfo> sli2(*e.anchors);
+  SectionInfo *s;
   for (;(s=sli2.current());++sli2)
   {
-    anchors->append(new QCString(*s));
+    anchors->append(new SectionInfo(*s));
   }
 
   // deep copy argument list
@@ -300,13 +299,6 @@ int Entry::getSize()
     size+=g->groupname.length()+1;
     size+=sizeof(g->pri);
     g=groups->next();
-  }
-  QCString *s=anchors->first();
-  while (s)
-  {
-    size+=sizeof(QLNode);
-    size+=s->length()+1;
-    s=anchors->next();
   }
   Entry *e=sublist->first();
   while (e)

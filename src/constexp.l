@@ -22,7 +22,6 @@
 #include "cppvalue.h"
 #include "ce_parse.h" // generated header file
 
-#define YY_NO_UNPUT
 #define YY_NEVER_INTERACTIVE 1
   
 QCString    g_strToken;  

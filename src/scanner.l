@@ -336,7 +336,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
-    current->anchors->append(new QCString(anchorLabel));
+    current->anchors->append(new SectionInfo(*si));
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -503,7 +503,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
-SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
@@ -3976,14 +3976,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  *pSkipDoc+=*yytext;
   					}
 <AnchorLabel>{LABELID}			{
-  					  //sectionLabel=yytext;
-					  //addSection();
-					  //current->doc += "\\anchor "+sectionLabel+" ";
+                                          SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
+                                          Doxygen::sectionDict.insert(yytext,si);
+  					  current->anchors->append(si);
                                           current->doc+=yytext;
 					  BEGIN(lastAnchorContext);
   					}
 <SectionLabel>{LABELID}			{
-  					  //sectionLabel=yytext;
+  					  sectionLabel=yytext;
 					  sectionTitle.resize(0);
                                           current->doc+=yytext;
 					  BEGIN(SectionTitle);
@@ -3991,8 +3991,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <SectionTitle>[^\n*]*/"\n"		{
 					  sectionTitle+=yytext;
 					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  //current->doc += "\\section "+sectionLabel+" ";
-					  //addSection();
+  					  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
+  					  current->anchors->append(si);
+                                          Doxygen::sectionDict.insert(yytext,si);
                                           current->doc+=yytext;
 					  BEGIN(PageDoc);
   					}

@@ -111,6 +111,8 @@ NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globa
 QDict<RefList> *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 
 bool           Doxygen::parseSourcesNeeded = FALSE;
+double         Doxygen::sysElapsedTime = 0.0;
+QTime          Doxygen::runningTime;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -6072,8 +6074,6 @@ static void findMainPage(Entry *root)
                               indexName, root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setFileName(indexName);
-      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
-      //Doxygen::mainPage->addSections(root->anchors);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
@@ -6082,6 +6082,7 @@ static void findMainPage(Entry *root)
           Doxygen::mainPage->title(),
           SectionInfo::Section);
       Doxygen::sectionDict.insert(indexName,si);
+      Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }
     else
     {
@@ -7109,6 +7110,7 @@ void initDoxygen()
   setlocale(LC_NUMERIC,"C");
 #endif
   
+  Doxygen::runningTime.start();
   initPreprocessor();
 
   Doxygen::sectionDict.setAutoDelete(TRUE);
@@ -8194,5 +8196,12 @@ void generateOutput()
     QDir::setCurrent(oldDir);
   }
   cleanUpDoxygen();
+  if (Debug::isFlagSet(Debug::Time))
+  {
+    printf("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
+         ((double)Doxygen::runningTime.elapsed())/1000.0,
+         Doxygen::sysElapsedTime
+        );
+  }
 }
 

@@ -129,6 +129,7 @@ class MemberDef : public Definition
     bool isDestructor() const;
     bool hasOneLineInitializer() const;
     bool hasMultiLineInitializer() const;
+    bool protectionVisible() const;
 
     // output info
     bool isLinkableInProject() const;

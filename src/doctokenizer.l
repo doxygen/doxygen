@@ -206,7 +206,7 @@ static void parseHtmlAttribs(const char *att)
 
 static void processSection()
 {
-  //printf("found section/anchor with name `%s'\n",g_secLabel.data());
+  //printf("%s: found section/anchor with name `%s'\n",g_fileName.data(),g_secLabel.data());
   QCString file;
   if (g_memberGroup)
   {
@@ -221,15 +221,11 @@ static void processSection()
     warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
   }
   SectionInfo *si=0;
-  if ((si=Doxygen::sectionDict.find(g_secLabel))==0)
+  if ((si=Doxygen::sectionDict.find(g_secLabel)))
   {
-    si = new SectionInfo(file,g_secLabel,g_secTitle,g_secType);
-    Doxygen::sectionDict.insert(g_secLabel,si);
-  }
-  else if (!si->generated)
-  {
-    warn(g_fileName,yylineno,"Duplicate section/anchor label %s found!\n",
-	g_secLabel.data());
+    si->fileName = file;
+    //si = new SectionInfo(file,g_secLabel,g_secTitle,g_secType);
+    //Doxygen::sectionDict.insert(g_secLabel,si);
   }
 }
 

@@ -36,7 +36,7 @@ class HtmlHelp
 {
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function 
         to specify document icon in tree view.  
-        Writes <param name="ImageNumber" value="xx"> in .HHC file. */
+        Writes \<param name="ImageNumber" value="xx"\> in .HHC file. */
     enum ImageNumber { 
       BOOK_CLOSED=1,    BOOK_OPEN,
       BOOK_CLOSED_NEW,  BOOK_OPEN_NEW,

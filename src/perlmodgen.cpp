@@ -226,7 +226,7 @@ void PerlModOutput::iaddQuoted(const char *s)
 {
   char c;
   while ((c = *s++) != 0) {
-    if (c == '\'')
+    if ((c == '\'') || (c == '\\'))
       m_stream->add('\\');
     m_stream->add(c);
   }
@@ -243,7 +243,7 @@ void PerlModOutput::iaddFieldQuotedChar(const char *field, char content)
 {
   iaddField(field);
   m_stream->add('\'');
-  if (content == '\'')
+  if ((content == '\'') || (content == '\\'))
     m_stream->add('\\');
   m_stream->add(content);
   m_stream->add('\'');

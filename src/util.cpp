@@ -25,6 +25,7 @@
 #include <qregexp.h>
 #include <qfileinfo.h>
 #include <qdir.h>
+#include <qdatetime.h>
 
 #include "util.h"
 #include "message.h"
@@ -91,6 +92,8 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 /*! Implements an interruptable system call on Unix/Windows */
 int iSystem(const char *command,const char *args,bool isBatchFile)
 {
+  QTime time;
+  time.start();
 #ifndef _WIN32
   isBatchFile=isBatchFile;
   /*! taken from the system() manpage on my Linux box */
@@ -129,6 +132,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
       }
     }
   }
+  Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
   return status;
 
 #else  // Other Unices just use fork
@@ -157,6 +161,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
     }
     else
     {
+      Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
       return status;
     }
   }
@@ -199,9 +204,10 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
       CloseHandle(sInfo.hProcess);
     }
   }
+  Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
   return 0;
-  //return system(command);
 #endif
+
 }
 
 
@@ -3635,7 +3641,7 @@ found:
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,
-                           QList<QCString> * /*anchors*/,
+                           QList<SectionInfo> * /*anchors*/,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
                            GroupDef *gd,

@@ -22,6 +22,7 @@ HEADERS      =	bufstr.h \
                 cmdmapper.h \
                 code.h \
 		commentcnv.h \
+                compound_xsd.h \
                 config.h \
 		constexp.h \
 		cppvalue.h \
@@ -50,6 +51,7 @@ HEADERS      =	bufstr.h \
 		htmlhelp.h \
 		image.h \
 		index.h \
+                index_xsd.h \
 		instdox.h \
 		language.h \
                 latexdocvisitor.h \

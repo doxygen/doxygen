@@ -31,6 +31,7 @@ class MemberDef;
 class GroupDef;
 class GroupList;
 struct ListItemInfo;
+class SectionInfo;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
@@ -89,7 +90,7 @@ class Definition
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
      */
-    void addSectionsToDefinition(QList<QCString> *anchorList);
+    void addSectionsToDefinition(QList<SectionInfo> *anchorList);
     void writeDocAnchorsToTagFile();
 
     // source references

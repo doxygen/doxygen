@@ -1010,7 +1010,7 @@ static int yyread(char *buf,int max_size)
 B       [ \t]
 BN      [ \t\n\r]
 ID	[a-z_A-Z][a-z_A-Z0-9]*
-SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
@@ -1178,6 +1178,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <ClassName,ClassVar>[*&]+       	{
 					  addType();
 					  g_code->codify(yytext);
+					  BEGIN( Body ); // variable of type struct *
 					}
 <ClassName>{ID}("::"{ID})*	        {
                                           g_curClassName=yytext;

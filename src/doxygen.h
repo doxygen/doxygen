@@ -21,6 +21,7 @@
 
 #include "qtbc.h"
 #include <qtextstream.h>
+#include <qdatetime.h>
 #include "groupdef.h"
 #include "filedef.h"
 #include "classdef.h"
@@ -94,6 +95,8 @@ class Doxygen
     static QDict<RefList>           *xrefLists; // array of xref lists: todo, test, bug, deprecated ...
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
+    static double                    sysElapsedTime;
+    static QTime                     runningTime;
 };
 
 void initDoxygen();

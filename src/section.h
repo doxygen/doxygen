@@ -25,7 +25,6 @@
 #include "sortdict.h"
 
 class Definition;
-class PageInfo;
 
 struct SectionInfo
 {
@@ -33,18 +32,23 @@ struct SectionInfo
                      Subsubsection, Paragraph, Anchor 
                    };
   SectionInfo(const char *f,const char *l,const char *t,
-              SectionType st,const char *r=0)
-    { label=l; title=t; type=st; ref=r; 
-      definition=0; pageRef=0; generated=FALSE; 
-      fileName=f;
-    }
+              SectionType st,const char *r=0) :
+    label(l), title(t), type(st), ref(r), definition(0), 
+    fileName(f), generated(FALSE)
+  { 
+  }
+  SectionInfo(const SectionInfo &s)
+  {
+    label=s.label.copy(); title=s.title.copy(); ref=s.ref.copy();
+    type =s.type; definition=s.definition;
+    fileName=s.fileName.copy(); generated=s.generated;
+  }
  ~SectionInfo() {}
   QCString label; 
   QCString title;
-  QCString ref;
   SectionType type;
+  QCString ref;
   Definition *definition;
-  PageInfo *pageRef;
   QCString fileName;
   bool generated;
 };

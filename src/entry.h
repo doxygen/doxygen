@@ -21,6 +21,8 @@
 #include "qtbc.h"
 #include <qlist.h>
 
+class SectionInfo;
+
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
 enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
@@ -281,7 +283,7 @@ class Entry
     QList<Entry>    *sublist; //!< entries that are children of this one
     QList<BaseInfo> *extends; //!< list of base classes    
     QList<Grouping> *groups;  //!< list of groups this entry belongs to
-    QList<QCString> *anchors; //!< list of anchors defined in this entry
+    QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in

@@ -48,6 +48,7 @@ struct TagInfo;
 class MemberNameInfoSDict;
 struct ListItemInfo;
 class PageDef;
+class SectionInfo;
 
 //--------------------------------------------------------------------
 
@@ -185,7 +186,7 @@ int filterCRLF(char *buf,int len);
 void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
                         const char *name,const char *title,const char *args=0);
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
-                           const QCString &doc,QList<QCString> *anchors,
+                           const QCString &doc,QList<SectionInfo> *anchors,
                            const char *fileName,int startLine,
                            const QList<ListItemInfo> *sli,
                            GroupDef *gd=0,

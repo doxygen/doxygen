@@ -1,0 +1,11 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="doxygen" type="DoxygenType"/>
+
+  <xsd:complexType name="DoxygenType">
+    <xsd:sequence>
+    </xsd:sequence>
+    <xsd:attribute name="version" type="xsd:string" use="required"/>
+  </xsd:complexType>
+
+</xsd:schema>
+

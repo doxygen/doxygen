@@ -499,7 +499,19 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
   }
   else // local link
   {
-    ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
+    QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
+    if (cd)
+    {
+      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),cd->name()+sep+name());
+    }
+    else if (nd)
+    {
+      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),nd->name()+sep+name());
+    }
+    else
+    {
+      ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
+    }
   }
 }
 
@@ -2015,5 +2027,13 @@ void MemberDef::enableCallGraph(bool e)
 { 
   m_hasCallGraph=e; 
   if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+bool MemberDef::protectionVisible() const
+{
+  return prot==Public || 
+         (prot==Private   && Config_getBool("EXTRACT_PRIVATE"))   ||
+         (prot==Protected && Config_getBool("EXTRACT_PROTECTED")) ||
+         (prot==Package   && Config_getBool("EXTRACT_PACKAGE"));
 }
 
