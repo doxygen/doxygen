@@ -19,6 +19,7 @@
 #include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
+#include "sortdict.h"
 
 class ClassDef;
 class FileDef;
@@ -68,16 +69,17 @@ class DotNode
                  );
     void setDistance(int distance);
     void addParent(DotNode *n);
-    void deleteNode(DotNodeList &deletedList);
+    void deleteNode(DotNodeList &deletedList,SIntDict<DotNode> *skipNodes=0);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
-    int  number() const { return m_number; }
     void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,
                int maxDistance=1000,bool backArrows=TRUE);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t);
     void writeDEF(QTextStream &t);
+    QCString label() const { return m_label; }
+    int  number() const { return m_number; }
 
   private:
     void colorConnectedNodes(int curColor);

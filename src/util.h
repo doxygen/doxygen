@@ -42,6 +42,7 @@ class ClassList;
 class MemberGroupSDict;
 class Definition;
 struct TagInfo;
+class MemberNameInfoSDict;
 
 //--------------------------------------------------------------------
 
@@ -148,7 +149,9 @@ int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
 QCString convertToHtml(const char *s);
 QCString convertToXML(const char *s);
 const char * getOverloadDocs();
-void addMembersToMemberGroup(MemberList *ml,MemberGroupSDict *memberGroupSDict);
+void addMembersToMemberGroup(MemberList *ml,
+                             MemberGroupSDict *memberGroupSDict,
+                             Definition *context=0);
 bool extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec);
 QCString substituteTemplateArgumentsInString(

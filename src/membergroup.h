@@ -40,8 +40,8 @@ class MemberGroup
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
-    void insertMember(MemberDef *);
-    void setAnchors();
+    void insertMember(Definition *d,MemberDef *md);
+    void setAnchors(ClassDef *);
     void writePlainDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclarations(OutputList &ol,

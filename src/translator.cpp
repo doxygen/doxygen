@@ -191,3 +191,81 @@ QCString Translator::Windows1251ToKoi8R( const QCString & sInput )
   return result.local8Bit();
 }
 
+/*! returns the caracter converted from hankaku-kana to zenkakukana. 
+  Thanks Yongmao Ni http://alfin.mine.utsunomiya-u.ac.jp/~niy/algo/ */
+unsigned int hankaku2zen(int hankaku)
+{
+    static unsigned int z[64] = {
+        0x2121,0x2123,0x2156,0x2157,0x2122,0x2126,0x2572,0x2521,
+        0x2523,0x2525,0x2527,0x2529,0x2563,0x2565,0x2567,0x2543,
+        0x213c,0x2522,0x2524,0x2526,0x2528,0x252a,0x252b,0x252d,
+        0x252f,0x2531,0x2533,0x2535,0x2537,0x2539,0x253b,0x253d,
+        0x253f,0x2541,0x2544,0x2546,0x2548,0x254a,0x254b,0x254c,
+        0x254d,0x254e,0x254f,0x2552,0x2555,0x2558,0x255b,0x255e,
+        0x255f,0x2560,0x2561,0x2562,0x2564,0x2566,0x2568,0x2569,
+        0x256a,0x256b,0x256c,0x256d,0x256f,0x2573,0x212b,0x212c };
+
+    if (hankaku < 0xa0 || hankaku > 0xdf) return 0;
+    return z[hankaku - 0xa0];
+}
+
+/*! returns the character converted from japaneseEUC to SJIS
+  Thanks Yongmao Ni http://alfin.mine.utsunomiya-u.ac.jp/~niy/algo/ */
+unsigned int euc2sjis(unsigned int euc)
+{
+    unsigned int jis;
+    unsigned int hib, lob;
+
+    if ((euc & 0xff00) == 0x8e00)
+        jis = hankaku2zen(euc & 0xff);
+    else jis = euc & ~0x8080;
+    
+    hib = (jis >> 8) & 0xff;
+    lob = jis & 0xff;
+    lob += (hib & 1) ? 0x1f : 0x7d;
+    if (lob >= 0x7f) lob++;
+    hib = ((hib - 0x21) >> 1) + 0x81;
+    if (hib > 0x9f) hib += 0x40;
+
+    return (hib << 8) | lob;
+}
+
+
+/*! returns the string converted from Japanese-EUC to SJIS */
+
+QCString Translator::JapaneseEucToSjis( const QCString & sInput )
+{
+  QString result;
+  int len = sInput.length();
+  int c1,c2,sj;
+
+  result.setUnicode(0, len);
+  QChar* uc = (QChar*)result.unicode(); // const_cast
+  const unsigned char * c = (const unsigned char *)(const char*)sInput;
+  
+  for( int i=0; i<len;)
+    {
+      c1 = c[i];
+
+      if( c1 == EOF ) break;
+      
+      /* if MSB=0 then the character is ascii */
+      if(!( c1 & 0x80))
+	{
+	  uc[i] = c[i];
+	  i=i+1;
+	}
+      else
+	{
+	  c2 = c[i+1];
+	  if( c2 == EOF ) break;
+	  sj     = euc2sjis( (c1 << 8) + c2 );
+	  uc[i]   = sj >> 8;
+	  uc[i+1] = sj & 0xff;
+	  i+=2;
+	}
+    }
+
+  return result.local8Bit();
+
+}

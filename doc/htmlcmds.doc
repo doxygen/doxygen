@@ -31,6 +31,8 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c <BR>    Forces a line break.
 <li>\c <CENTER> starts a section of centered text.
 <li>\c </CENTER> ends a section of centered text.
+<li>\c <CAPTION> Starts a caption. Use within a table only.
+<li>\c </CAPTION> Ends a caption. Use within a table only.
 <li>\c <CODE>  Starts a piece of text displayed in a typewriter font.
 <li>\c </CODE> End a \c <CODE> section.
 <li>\c <DD>    Starts an item description.

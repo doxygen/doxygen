@@ -152,8 +152,10 @@ class ManGenerator : public OutputGenerator
     void endSubscript()       { t << "\\*>"; firstCol=FALSE; }
     void startSuperscript()   { t << "\\*{"; firstCol=FALSE; }
     void endSuperscript()     { t << "\\*}"; firstCol=FALSE; }
-    void startTable(int)      {}
-    void endTable()           {}
+    void startTable(bool,int) {}
+    void endTable(bool)       {}
+    void startCaption()       {}
+    void endCaption()         {}
     void nextTableRow()       {}
     void endTableRow()        {}
     void nextTableColumn()    {}

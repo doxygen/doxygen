@@ -41,6 +41,35 @@ Doxygen has a number of ways to create lists of items.
 If you use tabs within lists, please make sure that \ref cfg_tab_size "TAB_SIZE" in the 
 configuration file is set to the correct tab size.
 
+You can end a list by starting a new paragraph or 
+by putting a dot (.) on an empty line at the same indent level as the 
+list you would like to end.
+
+Here is an example that speaks for itself:
+
+\verbatim
+/**
+ * Text before the list
+ * - list item 1
+ *   - sub item 1
+ *     - sub sub item 1
+ *     - sub sub item 2
+ *     . 
+ *     The dot above ends the sub sub item list.
+ *     More text for the first sub item
+ *   .
+ *   The dot above ends the first sub item.
+ *   More text for the first list item
+ *   - sub item 2
+ *   - sub item 3
+ * - list item 2
+ * .
+ * More text in the same paragraph.
+ *
+ * More text in a new paragraph.
+ */
+\endverbatim
+
 <b>Using HTML commands</b>
 
 If you like you can also use HTML commands inside the documentation

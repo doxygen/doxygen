@@ -10,8 +10,14 @@
 # See the GNU General Public License for more details.
 # 
 
-all: Makefile.doxywizard  
+all: config.h config.l Makefile.doxywizard  
 	$(MAKE) -f Makefile.doxywizard $@
+
+config.h:
+	$(CP) ../../src/config.h config.h
+
+config.l:
+	$(CP) ../../src/config.l config.l
 
 Makefile.doxywizard: doxywizard.pro 
 	$(ENV) $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
@@ -21,9 +27,10 @@ tmake:
 
 clean: Makefile.doxywizard 
 	$(MAKE) -f Makefile.doxywizard clean 
+	$(RM) config.cpp
 
 distclean: clean
-	$(RM) Makefile.doxywizard 
+	$(RM) Makefile.doxywizard config.l config.h
 
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin	

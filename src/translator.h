@@ -44,6 +44,9 @@ class Translator
 
     /*! Returns the string converted from windows-1251 to koi8-r. */
     QCString Windows1251ToKoi8R( const QCString & sInput );
+    
+    /*! Returns the string converted from Japanese-EUC to SJIS. */
+    QCString JapaneseEucToSjis( const QCString & sInput );
 
   public:
 

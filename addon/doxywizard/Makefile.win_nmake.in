@@ -30,8 +30,9 @@ tmake:
 
 clean: Makefile.doxywizard 
 	$(MAKE) -f Makefile.doxywizard clean 
+	$(RM) config.cpp
 
 distclean: clean
-	$(RM) Makefile.doxywizard config.cpp
+	$(RM) Makefile.doxywizard config.l config.h
 
 FORCE:

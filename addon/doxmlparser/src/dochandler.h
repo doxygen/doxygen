@@ -63,6 +63,8 @@ class MarkupModifierNode : public IDocMarkupModifier
   
     // IDocMarkupModifier
     virtual Kind kind() const { return MarkupModifier; }
+    virtual bool enabled() const { return m_enabled; }
+    virtual int markup() const { return m_markup; }
 
   private:
     int m_markup;
@@ -106,6 +108,59 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
     int             m_curMarkup;
 };
 
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing a paragraph of text and commands.
+ *
+ */
+// children: itemizedlist, orderedlist, parameterlist, simplesect, ref,
+//           variablelist, hruler, linebreak, ulink, email, link
+//           programlisting, formula, image, dotfile, indexentry,
+//           table
+//
+// children handled by MarkupHandler: 
+//           bold, computeroutput, emphasis, center,
+//           small, subscript, superscript. 
+//
+class ParagraphHandler : public IDocPara, 
+                         public BaseHandler<ParagraphHandler>
+{
+    friend class ParagraphIterator;
+
+  public:
+    virtual void startParagraph(const QXmlAttributes& attrib);
+    virtual void endParagraph();
+    virtual void startItemizedList(const QXmlAttributes& attrib);
+    virtual void startOrderedList(const QXmlAttributes& attrib);
+    virtual void startParameterList(const QXmlAttributes& attrib);
+    virtual void startSimpleSect(const QXmlAttributes& attrib);
+    virtual void startRef(const QXmlAttributes& attrib);
+    virtual void startVariableList(const QXmlAttributes& attrib);
+    virtual void startHRuler(const QXmlAttributes& attrib);
+    virtual void startLineBreak(const QXmlAttributes& attrib);
+    virtual void startULink(const QXmlAttributes& attrib);
+    virtual void startEMail(const QXmlAttributes& attrib);
+    virtual void startLink(const QXmlAttributes& attrib);
+    virtual void startProgramListing(const QXmlAttributes& attrib);
+    virtual void startFormula(const QXmlAttributes& attrib);
+    virtual void startImage(const QXmlAttributes& attrib);
+    virtual void startDotFile(const QXmlAttributes& attrib);
+    virtual void startIndexEntry(const QXmlAttributes& attrib);
+    virtual void startTable(const QXmlAttributes& attrib);
+
+    ParagraphHandler(IBaseHandler *parent);
+    virtual ~ParagraphHandler();
+
+    // IDocPara
+    virtual Kind kind() const { return Para; }
+    virtual IDocIterator *contents() const;
+
+  private:
+    void addTextNode();
+    IBaseHandler   *m_parent;
+    QList<IDoc>  m_children;
+    MarkupHandler  *m_markupHandler;
+};
 
 //-----------------------------------------------------------------------------
 
@@ -114,6 +169,7 @@ class MarkupHandler : public BaseFallBackHandler<MarkupHandler>
  */
 class ListItemHandler : public IDocListItem, public BaseHandler<ListItemHandler>
 {
+    friend class ListItemIterator;
   public:
     ListItemHandler(IBaseHandler *parent);
     virtual ~ListItemHandler();
@@ -123,10 +179,18 @@ class ListItemHandler : public IDocListItem, public BaseHandler<ListItemHandler>
 
     // IDocItem
     virtual Kind kind() const { return ListItem; }
+    virtual IDocIterator *contents() const;
 
   private:
     IBaseHandler   *m_parent;
     QList<IDoc>  m_children;
+};
+
+class ListItemIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    ListItemIterator(const ListItemHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
 };
 
 
@@ -135,27 +199,66 @@ class ListItemHandler : public IDocListItem, public BaseHandler<ListItemHandler>
 /*! \brief Node representing list of items.
  *
  */
-class ListHandler : public IDocList, public BaseHandler<ListHandler>
+class OrderedListHandler : public IDocOrderedList, public BaseHandler<OrderedListHandler>
 {
+    friend class OrderedListIterator;
   public:
-    ListHandler(Kind k,IBaseHandler *parent);
-    virtual ~ListHandler();
-    virtual void startList(const QXmlAttributes& attrib);
-    virtual void endList();
-    virtual void startListItem(const QXmlAttributes& attrib);
+    OrderedListHandler(IBaseHandler *parent);
+    virtual ~OrderedListHandler();
+    virtual void startOrderedList(const QXmlAttributes& attrib);
+    virtual void endOrderedList();
+    virtual void startOrderedListItem(const QXmlAttributes& attrib);
 
-    // IDocList
-    virtual Kind kind() const { return m_kind; }
+    // IDocOrderedList
+    virtual Kind kind() const { return OrderedList; }
+    virtual IDocIterator *elements() const;
 
   private:
     IBaseHandler   *m_parent;
     QList<IDoc>  m_children;
-    Kind            m_kind;
+};
+
+class OrderedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    OrderedListIterator(const OrderedListHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
 };
 
 
 //-----------------------------------------------------------------------------
 
+/*! \brief Node representing list of items.
+ *
+ */
+class ItemizedListHandler : public IDocItemizedList, public BaseHandler<ItemizedListHandler>
+{
+    friend class ItemizedListIterator;
+  public:
+    ItemizedListHandler(IBaseHandler *parent);
+    virtual ~ItemizedListHandler();
+    virtual void startItemizedList(const QXmlAttributes& attrib);
+    virtual void endItemizedList();
+    virtual void startItemizedListItem(const QXmlAttributes& attrib);
+
+    // IDocItemizedList
+    virtual Kind kind() const { return ItemizedList; }
+    virtual IDocIterator *elements() const;
+
+  private:
+    IBaseHandler   *m_parent;
+    QList<IDoc>  m_children;
+};
+
+class ItemizedListIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    ItemizedListIterator(const ItemizedListHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+};
+
+
+//-----------------------------------------------------------------------------
 /*! \brief Node representing a parameter.
  *
  */
@@ -173,6 +276,8 @@ class ParameterHandler : public IDocParameter,
 
     // IDocParameter
     virtual Kind kind() const { return Parameter; }
+    virtual QString name() const { return m_name; }
+    virtual IDocPara *description() const { return m_description; }
 
   private:
     IBaseHandler     *m_parent;
@@ -180,17 +285,16 @@ class ParameterHandler : public IDocParameter,
     ParagraphHandler *m_description;
 };
 
-
 //-----------------------------------------------------------------------------
 
 /* \brief Node representing a parameter list.
  *
  */
-class ParameterListHandler : public IDocParameter, 
+class ParameterListHandler : public IDocParameterList, 
                              public BaseHandler<ParameterListHandler>
 {
+    friend class ParameterListIterator;
   public:
-    enum Types { Param, RetVal, Exception };
     ParameterListHandler(IBaseHandler *parent);
     virtual ~ParameterListHandler();
     virtual void startParameterList(const QXmlAttributes& attrib);
@@ -200,12 +304,21 @@ class ParameterListHandler : public IDocParameter,
 
     // IDocParameterList
     virtual Kind kind() const { return ParameterList; }
+    virtual Types listType() const { return m_type; }
+    virtual IDocIterator *params() const;
 
   private:
     IBaseHandler            *m_parent;
     QList<ParameterHandler>  m_parameters;
     ParameterHandler        *m_curParam;
     Types                    m_type;
+};
+
+class ParameterListIterator : public BaseIterator<IDocIterator,IDoc,ParameterHandler>
+{
+  public:
+    ParameterListIterator(const ParameterListHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,ParameterHandler>(handler.m_parameters) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -335,11 +448,11 @@ class RefHandler : public IDocRef, public BaseHandler<RefHandler>
 
     // IDocRef
     virtual Kind kind() const { return Ref; }
+    virtual QString refId() const { return m_refId; }
 
   private:
     IBaseHandler   *m_parent;
     QString        m_refId;
-    QString        m_anchor;
     QString        m_linkText;
 };
 
@@ -390,14 +503,6 @@ class SimpleSectHandler : public IDocSimpleSect,
                           public BaseHandler<SimpleSectHandler>
 {
   public:
-    enum Types { Invalid = 0,
-                 See, Return, Author, Version, 
-                 Since, Date, Bug, Note,
-                 Warning, Par, Deprecated, Pre, 
-                 Post, Invar, Remark, Attention,
-                 Todo, Test, RCS, EnumValues, 
-                 Examples
-    };
     SimpleSectHandler(IBaseHandler *parent);
     virtual ~SimpleSectHandler();
     virtual void startSimpleSect(const QXmlAttributes& attrib);
@@ -407,6 +512,9 @@ class SimpleSectHandler : public IDocSimpleSect,
 
     // IDocSimpleSect
     virtual Kind kind() const { return SimpleSect; }
+    virtual Types sectionType() const { return m_type; }
+    virtual IDocTitle *title() const { return m_title; }
+    virtual IDocPara *description() const { return m_paragraph; }
 
   private:
     IBaseHandler            *m_parent;
@@ -697,7 +805,7 @@ class RowHandler : public IDocRow, public BaseHandler<RowHandler>
 /*! \brief Node representing an entry in the table.
  *
  */
-// children: row
+// children: row, caption
 class TableHandler : public IDocTable, public BaseHandler<TableHandler>
 {
   public:
@@ -706,6 +814,8 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
     void startTable(const QXmlAttributes& attrib);
     void endTable();
     void startRow(const QXmlAttributes& attrib);
+    void startCaption(const QXmlAttributes& attrib);
+    void endCaption();
 
     // IDocTable
     virtual Kind kind() const { return Table; }
@@ -714,61 +824,10 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
     IBaseHandler      *m_parent;
     QList<RowHandler>  m_children;
     int                m_numColumns;
+    QString            m_caption;
 };
 
 //-----------------------------------------------------------------------------
-
-/*! \brief Node representing a paragraph of text and commands.
- *
- */
-// children: itemizedlist, orderedlist, parameterlist, simplesect, ref,
-//           variablelist, hruler, linebreak, ulink, email, link
-//           programlisting, formula, image, dotfile, indexentry,
-//           table
-//
-// children handled by MarkupHandler: 
-//           bold, computeroutput, emphasis, center,
-//           small, subscript, superscript. 
-//
-class ParagraphHandler : public IDocPara, 
-                         public BaseHandler<ParagraphHandler>
-{
-    friend class ParagraphIterator;
-
-  public:
-    virtual void startParagraph(const QXmlAttributes& attrib);
-    virtual void endParagraph();
-    virtual void startItemizedList(const QXmlAttributes& attrib);
-    virtual void startOrderedList(const QXmlAttributes& attrib);
-    virtual void startParameterList(const QXmlAttributes& attrib);
-    virtual void startSimpleSect(const QXmlAttributes& attrib);
-    virtual void startRef(const QXmlAttributes& attrib);
-    virtual void startVariableList(const QXmlAttributes& attrib);
-    virtual void startHRuler(const QXmlAttributes& attrib);
-    virtual void startLineBreak(const QXmlAttributes& attrib);
-    virtual void startULink(const QXmlAttributes& attrib);
-    virtual void startEMail(const QXmlAttributes& attrib);
-    virtual void startLink(const QXmlAttributes& attrib);
-    virtual void startProgramListing(const QXmlAttributes& attrib);
-    virtual void startFormula(const QXmlAttributes& attrib);
-    virtual void startImage(const QXmlAttributes& attrib);
-    virtual void startDotFile(const QXmlAttributes& attrib);
-    virtual void startIndexEntry(const QXmlAttributes& attrib);
-    virtual void startTable(const QXmlAttributes& attrib);
-
-    ParagraphHandler(IBaseHandler *parent);
-    virtual ~ParagraphHandler();
-
-    // IDocPara
-    virtual Kind kind() const { return Para; }
-    virtual IDocIterator *contents() const;
-
-  private:
-    void addTextNode();
-    IBaseHandler   *m_parent;
-    QList<IDoc>  m_children;
-    MarkupHandler  *m_markupHandler;
-};
 
 class ParagraphIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
 {

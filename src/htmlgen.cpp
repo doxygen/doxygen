@@ -38,6 +38,7 @@
 
 static const char *defaultStyleSheet = 
       "H1 { text-align: center; }\n"
+      "CAPTION { font-weight: bold }\n"
       "A.qindex {}\n"
       "A.qindexRef {}\n"
       "A.el { text-decoration: none; font-weight: bold }\n"

@@ -22,7 +22,9 @@ class ILT_Text : public ILinkedText
 class ILT_Ref : public ILinkedText
 {
   public:
+    enum TargetKind { Member, Compound };
     virtual QString id() const = 0;
+    virtual TargetKind targetKind() const = 0;
     virtual QString external() const = 0;
     virtual QString text() const = 0;
 };
@@ -104,8 +106,8 @@ class IDoc
       Para,               //  0 -> IDocPara
       Text,               //  1 -> IDocText
       MarkupModifier,     //  2 -> IDocMarkupModifier
-      ItemizedList,       //  3 -> IDocList
-      OrderedList,        //  4 -> IDocList
+      ItemizedList,       //  3 -> IDocItemizedList
+      OrderedList,        //  4 -> IDocOrderedList
       ListItem,           //  5 -> IDocListItem
       ParameterList,      //  6 -> IDocParameterList
       Parameter,          //  7 -> IDocParameter
@@ -168,26 +170,42 @@ class IDocText : public IDocMarkup
 
 class IDocMarkupModifier : public IDoc
 {
+  public:
+    virtual bool enabled() const = 0;
+    virtual int markup() const = 0;
 };
 
-class IDocList : public IDoc
+class IDocItemizedList : public IDoc
 {
+  public:
+    virtual IDocIterator *elements() const = 0;
+};
+
+class IDocOrderedList : public IDoc
+{
+  public:
+    virtual IDocIterator *elements() const = 0;
 };
 
 class IDocListItem : public IDoc
 {
+  public:
+    virtual IDocIterator *contents() const = 0;
 };
 
 class IDocParameterList : public IDoc
 {
+  public:
+    enum Types { Param, RetVal, Exception };
+    virtual Types listType() const = 0;
+    virtual IDocIterator *params() const = 0;
 };
 
 class IDocParameter : public IDoc
 {
-};
-
-class IDocSimpleSect : public IDoc
-{
+  public:
+    virtual QString name() const = 0;
+    virtual IDocPara *description() const = 0;
 };
 
 class IDocTitle : public IDoc
@@ -196,8 +214,30 @@ class IDocTitle : public IDoc
     virtual IDocIterator *title() const = 0;
 };
 
+class IDocSimpleSect : public IDoc
+{
+  public:
+    enum Types { Invalid = 0,
+                 See, Return, Author, Version, 
+                 Since, Date, Bug, Note,
+                 Warning, Par, Deprecated, Pre, 
+                 Post, Invar, Remark, Attention,
+                 Todo, Test, RCS, EnumValues, 
+                 Examples
+    };
+    virtual Types sectionType() const = 0;
+    virtual IDocTitle *title() const = 0;
+    virtual IDocPara *description() const = 0;
+};
+
 class IDocRef : public IDoc
 {
+  public:
+    enum TargetKind { Member, Compound };
+    virtual QString id() const = 0;
+    virtual TargetKind targetKind() const = 0;
+    virtual QString external() const = 0;
+    virtual QString text() const = 0;
 };
 
 class IDocVariableList : public IDoc

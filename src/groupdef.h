@@ -78,7 +78,7 @@ class GroupDef : public Definition
 
     bool visited;    // number of times accessed for output - KPW
 
-    friend void writeGroupTreeNode(OutputList&, GroupDef*,bool);      
+    friend void writeGroupTreeNode(OutputList&, GroupDef*, int);      
                     // make accessible for writing tree view of group in index.cpp - KPW
 
     // members in the declaration part of the documentation

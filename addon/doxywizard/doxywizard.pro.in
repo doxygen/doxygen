@@ -12,8 +12,7 @@
 # project file for the doxywizard project
 
 # special template configuration file because we use flex
-unix:TEMPLATE     =	app.t
-win32:TEMPLATE    =	doxywizard.t
+TEMPLATE    =	doxywizard.t
 
 # executable to generate
 TARGET      =   ../../bin/doxywizard
@@ -29,8 +28,8 @@ HEADERS     =	doxywizard.h \
                 inputbool.h \
 		inputstrlist.h \
 		inputint.h \
-	        pixmaps.h
-win32:HEADERS += config.h
+	        pixmaps.h \
+                config.h
 
 # source flle for the project
 SOURCES     =	doxywizard.cpp \
@@ -40,8 +39,8 @@ SOURCES     =	doxywizard.cpp \
 		inputbool.cpp \
 		inputstrlist.cpp \
 		inputint.cpp \
-		pixmaps.cpp
-win32:SOURCES += config.cpp
+		pixmaps.cpp \
+                config.cpp
 
 # where to put the objects
 OBJECTS_DIR =   obj
@@ -57,5 +56,4 @@ win32:INCLUDEPATH       += .
 # extra link options
 win32:TMAKE_LIBS = $(QTDIR)\lib\qtmain.lib $(QTDIR)\lib\qt-mt230nc.lib user32.lib gdi32.lib comdlg32.lib imm32.lib ole32.lib uuid.lib wsock32.lib 
 win32:TMAKE_LIBS_QT = 
-unix:LIBS           = -L../../lib -ldoxycfg
 

@@ -165,8 +165,14 @@ class HtmlGenerator : public OutputGenerator
     void endSubscript()       { t << "</sub>"; }
     void startSuperscript()   { t << "<sup>"; }
     void endSuperscript()     { t << "</sup>"; }
-    void startTable(int)      { t << "<table border=1 cellspacing=3 cellpadding=3>"; }
-    void endTable()           { t << "</table>" << endl; }
+    void startTable(bool,int) 
+                              { t << "<table border=1 cellspacing=3 cellpadding=3>"; }
+    void endTable(bool hasCaption) 
+                              { if (!hasCaption) t << "</tr>"; 
+                                t << "</table>" << endl; 
+                              }
+    void startCaption()       { t << "</tr><caption align=\"bottom\">"; }
+    void endCaption()         { t << "</caption>" << endl; }
     void nextTableRow()       { t << "<tr><td>"; }
     void endTableRow()        { t << "</tr>" << endl; }
     void nextTableColumn()    { t << "<td>"; }

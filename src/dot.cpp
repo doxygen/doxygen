@@ -197,11 +197,12 @@ class DotNodeList : public QList<DotNode>
 /*! helper function that deletes all nodes in a connected graph, given
  *  one of the graph's nodes
  */
-static void deleteNodes(DotNode *node)
+static void deleteNodes(DotNode *node,SIntDict<DotNode> *skipNodes=0)
 {
+  //printf("deleteNodes skipNodes=%p\n",skipNodes);
   static DotNodeList deletedNodes;
   deletedNodes.setAutoDelete(TRUE);
-  node->deleteNode(deletedNodes); // collect nodes to be deleted.
+  node->deleteNode(deletedNodes,skipNodes); // collect nodes to be deleted.
   deletedNodes.clear(); // actually remove the nodes.
 }
 
@@ -220,6 +221,7 @@ DotNode::DotNode(int n,const char *lab,const char *url,int distance,bool isRoot)
 
 DotNode::~DotNode()
 {
+  //printf("DotNode::~DotNode() %s\n",m_label.data());
   delete m_children;
   delete m_parents;
   delete m_edgeInfo;
@@ -276,7 +278,7 @@ void DotNode::removeParent(DotNode *n)
   if (m_parents) m_parents->remove(n);
 }
 
-void DotNode::deleteNode(DotNodeList &deletedList)
+void DotNode::deleteNode(DotNodeList &deletedList,SIntDict<DotNode> *skipNodes)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
   m_deleted=TRUE;
@@ -287,7 +289,7 @@ void DotNode::deleteNode(DotNodeList &deletedList)
     for (dnlip.toFirst();(pn=dnlip.current());++dnlip)
     {
       //pn->removeChild(this);
-      pn->deleteNode(deletedList);
+      pn->deleteNode(deletedList,skipNodes);
     }
   }
   if (m_children!=0) // delete all child nodes of this node
@@ -297,11 +299,16 @@ void DotNode::deleteNode(DotNodeList &deletedList)
     for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
     {
       //cn->removeParent(this);
-      cn->deleteNode(deletedList);
+      cn->deleteNode(deletedList,skipNodes);
     }
   }
   // add this node to the list of deleted nodes.
-  deletedList.append(this);
+  //printf("skipNodes=%p find(%p)=%p\n",skipNodes,this,skipNodes ? skipNodes->find((int)this) : 0);
+  if (skipNodes==0 || skipNodes->find((int)this)==0)
+  {
+    //printf("deleting\n");
+    deletedList.append(this);
+  }
 }
 
 static QCString convertLabel(const QCString &l)
@@ -882,12 +889,22 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
 
 DotGfxHierarchyTable::~DotGfxHierarchyTable()
 {
+  //printf("DotGfxHierarchyTable::~DotGfxHierarchyTable\n");
+  SIntDict<DotNode> skipNodes(17);
+  skipNodes.setAutoDelete(TRUE);
   DotNode *n = m_rootNodes->first();
   while (n)
   {
-    DotNode *oldNode=n;
+    //printf("adding %s %p\n",n->label().data(),n);
+    skipNodes.append((int)n,n);
     n=m_rootNodes->next();
-    deleteNodes(oldNode); 
+  }
+  n = m_rootNodes->first();
+  while (n)
+  {
+    //printf("Deleting root node %s\n",n->label().data());
+    deleteNodes(n,&skipNodes); 
+    n=m_rootNodes->next();
   }
   delete m_rootNodes;
   delete m_usedNodes;

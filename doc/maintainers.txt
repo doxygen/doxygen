@@ -44,6 +44,7 @@ Alessandro Falappa: alessandro@falappa.net
 Ahmed Aldo Faisal: aaf23@cam.ac.uk
 
 Japanese 
+Ryunosuke Sato: puyo@mint.freemail.ne.jp
 Kenji Nagamatsu: naga@joyful.club.ne.jp
 
 Korean
@@ -65,7 +66,7 @@ Russian
 Alexandr Chelpanov: cav@cryptopro.ru
 
 Slovak
-Stanislav Kudl&aacute;&ccaron;: qwerty1@pobox.sk
+Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
 
 Slovene
 Matjaz Ostroversnik: matjaz.ostroversnik@zrs-tk.si

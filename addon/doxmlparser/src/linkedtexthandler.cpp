@@ -36,10 +36,12 @@ class LT_Ref : public ILT_Ref
     void setRefId(const QString &refId) { m_refId=refId; }
     void setText(const QString &text) { m_text=text; }
     void setExtId(const QString &extId) { m_extId=extId; }
+    void setTargetKind(TargetKind k) { m_targetKind=k; }
 
     // ILT_Ref
     virtual QString text() const { return m_text; }
     virtual QString id() const { return m_refId; }
+    virtual TargetKind targetKind() const { return m_targetKind; }
     virtual QString external() const { return m_extId; }
     virtual Kind kind() const { return Kind_Ref; }
     
@@ -47,6 +49,7 @@ class LT_Ref : public ILT_Ref
     QString m_refId;
     QString m_extId;
     QString m_text;
+    TargetKind m_targetKind;
 };
 
 LinkedTextHandler::LinkedTextHandler(IBaseHandler *parent,
@@ -92,8 +95,10 @@ void LinkedTextHandler::startRef(const QXmlAttributes& attrib)
   }
   ASSERT(m_ref==0);
   m_ref = new LT_Ref;
-  m_ref->setRefId(attrib.value("idref"));
+  m_ref->setRefId(attrib.value("refid"));
   m_ref->setExtId(attrib.value("external"));
+  ASSERT(attrib.value("kindref")=="compound" || attrib.value("kindref")=="member");
+  m_ref->setTargetKind(attrib.value("kindref")=="compound" ? Compound : Member);
 }
 
 void LinkedTextHandler::endRef()

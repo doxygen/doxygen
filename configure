@@ -139,6 +139,9 @@ if test -z "$f_platform"; then
     dgux:*)
       f_platform=dgux-g++
       ;;
+    Darwin:*)
+      f_platform=macosx-c++
+      ;;
     FreeBSD:*)
       f_platform=freebsd-g++
       ;;
@@ -290,10 +293,13 @@ fi
 
 if test "$f_insttool" = NO; then
   if test "$install_found" = YES; then
-    echo "GNU version of install is required!"
+    echo;
   else
     echo "not found!";
+    echo
   fi
+  echo "GNU version of install is required: this is part of the fileutils package: "
+  echo "see http://www.gnu.org/software/fileutils/fileutils.html"
   echo
   exit 2
 fi

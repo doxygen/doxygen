@@ -277,10 +277,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startSuperscript); }
     void endSuperscript() 
     { forall(&OutputGenerator::endSuperscript); }
-    void startTable(int cols)
-    { forall(&OutputGenerator::startTable,cols); }
-    void endTable() 
-    { forall(&OutputGenerator::endTable); }
+    void startTable(bool hasCaption,int cols)
+    { forall(&OutputGenerator::startTable,hasCaption,cols); }
+    void endTable(bool hasCaption) 
+    { forall(&OutputGenerator::endTable,hasCaption); }
+    void startCaption()
+    { forall(&OutputGenerator::startCaption); }
+    void endCaption() 
+    { forall(&OutputGenerator::endCaption); }
     void nextTableRow() 
     { forall(&OutputGenerator::nextTableRow); }
     void endTableRow() 

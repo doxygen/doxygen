@@ -936,11 +936,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <FindMembers>"template"({BN}*)"<"/[>]?	{ 
   					  lineCount();
-					  // class template specifier already found => member template specifier
-					  // already inside class => member template specifier
-					  //if (current->tArgList /*|| (current_root->section&Entry::COMPOUND_MASK)*/)
-					  //{
-					  //  printf("-------> member template \n");
 					  if (current->tArgLists==0)
 					  {
 					    current->tArgLists = new QList<ArgumentList>;
@@ -950,33 +945,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  al->setAutoDelete(TRUE);
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
-					  //if (current->mtArgList)
-					  //  {
-					  //    if (current->tArgList)
-					  //    {
-					  //      delete current->tArgList;
-					  //    }
-					  //    current->tArgList = current->mtArgList;
-					  //    current->mtArgList = 0;
-                                          //  }
-					  //  current->mtArgList = new ArgumentList;
-					  //  current->mtArgList->setAutoDelete(TRUE);
-					  //  currentArgumentList = current->mtArgList;
-					  //}
-					  //else // class template specifier
-					  //{
-					  //  printf("-------> class template\n");
-					  //  if (current->tArgList)
-					  //  {
-					  //    current->tArgList->clear();
-                                          //  }
-					  //  else
-					  //  {
-					  //    current->tArgList = new ArgumentList;
-					  //    current->tArgList->setAutoDelete(TRUE);
-					  //  }
-					  //  currentArgumentList = current->tArgList;
-					  //}
 					  templateStr="<";
 					  fullArgString = templateStr.copy();
 					  copyArgString = &templateStr;
@@ -2198,7 +2166,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(SkipCPP);
 					}
   */
-<FuncQual>[{:;]                         { unput(*yytext); BEGIN( Function ); }
+<FuncQual>[{:;,]                        { unput(*yytext); BEGIN( Function ); }
 <FuncQual>{BN}*"const"{BN}*       	{ 
   					  lineCount() ; 
   					  current->args += " const "; 
@@ -2263,7 +2231,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Function>":"				{
   					  BEGIN(SkipInits);
   					}
-<Function>[;{]				{ 
+<Function>[;{,]				{ 
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
@@ -2325,7 +2293,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current = new Entry ;
 					  initEntry();
 					  lastCurlyContext = FindMembers;
-					  if( *yytext == '{' )
+					  if ( *yytext == ',' )
+					  {
+					    current->type = previous->type.data();
+					  }
+					  if ( *yytext == '{' )
 					  {
 					    if (current_root->section & Entry::COMPOUND_MASK)
 					      previous->memSpec = previous->memSpec | Entry::Inline;
@@ -4023,8 +3995,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->doc += yytext; 
 					}
+<Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
+  				         current->doc += yytext; 
+					}
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->brief += "-"; 
+					}
+<ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
+  				         current->brief += "."; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 

@@ -31,6 +31,7 @@
 #include <qstack.h>
   
 #include "config.h"
+#include "lang_cfg.h"
 #include "version.h"
 
 #undef Config_getString

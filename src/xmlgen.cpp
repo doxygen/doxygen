@@ -83,16 +83,12 @@ inline void writeXMLString(QTextStream &t,const char *s)
 void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
                   const char *anchorId,const char *text)
 {
-  t << "<ref idref=\"" << compoundId;
-  if (anchorId)
-  {
-    t << "_1" << anchorId;
-  }
+  t << "<ref refid=\"" << compoundId;
+  if (anchorId) t << "_1" << anchorId;
+  t << "\" kindref=\"";
+  if (anchorId) t << "member"; else t << "compound"; 
   t << "\"";
-  if (extRef)
-  {
-    t << " external=\"" << extRef << "\"";
-  }
+  if (extRef) t << " external=\"" << extRef << "\"";
   t << ">";
   writeXMLString(t,text);
   t << "</ref>";
@@ -613,16 +609,26 @@ class XMLGenerator : public OutputDocInterface
       XML_DB(("(endSuperscript)\n"));
       m_t << "</superscript>";
     }
-    void startTable(int cols) 
+    void startTable(bool,int cols) 
     {
       XML_DB(("startTable\n"));
       startParMode();
       m_t << "<table cols=\"" << cols << "\">\n";
     }
-    void endTable() 
+    void endTable(bool) 
     {
       XML_DB(("endTable\n"));
       m_t << "</row>\n</table>";
+    }
+    void startCaption()
+    {
+      XML_DB(("startCaption"));
+      m_t << "<caption>";
+    }
+    void endCaption()
+    {
+      XML_DB(("encCaption"));
+      m_t << "</caption";
     }
     void nextTableRow() 
     {
@@ -764,15 +770,20 @@ class XMLGenerator : public OutputDocInterface
     {
       XML_DB(("(endPageRef)\n"));
     }
-    void writeLineNumber(const char *,const char *file, // TODO: support external references
-                         const char *anchor,int l)
+    void writeLineNumber(const char *extRef,const char *compId,
+                         const char *anchorId,int l)
     {
       XML_DB(("(writeLineNumber)\n"));
       m_t << "<linenumber";
       m_t << " line=\"" << l << "\"";
-      if (file)
+      if (compId)
       {
-        m_t << " refid=\"" << file << "_1" << anchor << "\"";
+        m_t << " refid=\"" << compId;
+        if (anchorId) m_t << "_1" << anchorId; 
+        m_t << "\" kindref=\"";
+        if (anchorId) m_t << "member"; else m_t << "compound"; 
+        m_t << "\"";
+        if (extRef) m_t << " external=\"" << extRef << "\"";
       }
       m_t << "/>";
     }
@@ -1172,7 +1183,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
   {
     t << "        <exceptions>";
     linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),md->excpString());
-    t << "</exception>" << endl;
+    t << "</exceptions>" << endl;
   }
   
   if (md->memberType()==MemberDef::Enumeration) // enum
@@ -1293,7 +1304,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      t << "    <basecompoundref idref=\"" 
+      t << "    <basecompoundref refid=\"" 
         << bcd->classDef->getOutputFileBase()
         << "\" prot=\"";
       switch (bcd->prot)
@@ -1318,7 +1329,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &t)
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
     {
-      t << "    <derivedcompoundref idref=\"" 
+      t << "    <derivedcompoundref refid=\"" 
         << bcd->classDef->getOutputFileBase()
         << "\" prot=\"";
       switch (bcd->prot)

@@ -111,7 +111,7 @@ void CompoundHandler::endCompoundName()
 void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 {
   SuperClass *sc=new SuperClass(
-          attrib.value("idref"),
+          attrib.value("refid"),
           attrib.value("prot"),
           attrib.value("virt")
          );
@@ -125,7 +125,7 @@ void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
 {
   SubClass *sc = new SubClass(
-          attrib.value("idref"),
+          attrib.value("refid"),
           attrib.value("prot"),
           attrib.value("virt")
          );
