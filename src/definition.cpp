@@ -563,12 +563,18 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
 
 void Definition::writeSourceReffedBy(OutputList &ol,const char *scopeName)
 {
-  writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_sourceRefByDict,FALSE);
+  if (Config_getBool("REFERENCED_BY_RELATION"))
+  {
+    writeSourceRefList(ol,scopeName,theTranslator->trReferencedBy(),m_sourceRefByDict,FALSE);
+  }
 }
 
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
-  writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_sourceRefsDict,TRUE);
+  if (Config_getBool("REFERENCES_RELATION"))
+  {
+    writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_sourceRefsDict,TRUE);
+  }
 }
 
 bool Definition::hasDocumentation() const
@@ -758,7 +764,6 @@ void Definition::writePathFragment(OutputList &ol) const
   if (m_outerScope && m_outerScope!=Doxygen::globalScope)
   {
     m_outerScope->writePathFragment(ol);
-    ol.writeString("&nbsp;");
     if (m_outerScope->definitionType()==Definition::TypeClass ||
         m_outerScope->definitionType()==Definition::TypeNamespace)
     {
@@ -773,11 +778,21 @@ void Definition::writePathFragment(OutputList &ol) const
     }
     else
     {
+      ol.writeString("&nbsp;");
       ol.writeString("/");
+      ol.writeString("&nbsp;");
     }
-    ol.writeString("&nbsp;");
   }
-  ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_localName);
+  if (isLinkable())
+  {
+    ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_localName);
+  }
+  else
+  {
+    ol.startBold();
+    ol.docify(m_localName);
+    ol.endBold();
+  }
 }
 
 void Definition::writeNavigationPath(OutputList &ol) const

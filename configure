@@ -180,7 +180,7 @@ if test -z "$f_platform"; then
       f_platform=sunos-g++
       ;;
     SunOS:5*)
-      f_platform=solaris-cc
+      f_platform=solaris-g++
       ;;
     ULTRIX:*)
       f_platform=ultrix-g++

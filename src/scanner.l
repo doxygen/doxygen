@@ -83,6 +83,7 @@ static int              lastInternalDocContext;
 static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
+static int              lastFileDocContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -299,34 +300,14 @@ static QCString stripQuotes(const char *s)
   return name;
 }
 
-//static QCString stripCComments(const QCString &s)
-//{
-//  int p=0,i;
-//  QCString result;
-//  while ((i=s.find("/*",p))!=-1)
-//  {
-//    result+=s.mid(p,i-p);
-//    int ei = s.find("*/",i+1);
-//    if (ei!=-1)
-//    {
-//      p=ei+2;
-//    }
-//    else
-//    {
-//      return result;
-//    }
-//  }
-//  result+=s.right(s.length()-p);
-//  printf("stripCComments: input=%s output=%s\n",s.data(),result.data());
-//  return result;
-//}
-
 static void newDocState();
 
 //-----------------------------------------------------------------
 
-static void addXRefItem(const char *listName,const char *itemTitle,const char *listTitle)
+static void addXRefItem(bool inBody,const char *listName,const char *itemTitle,const char *listTitle)
 {
+  Entry *docEntry = inBody && previous ? previous : current;
+  //printf("docEntry=%p\n",docEntry);
   if (listName==0) return;
 
   //printf("addXRefItem(%s,%s,%s)\n",listName,itemTitle,listTitle);
@@ -338,9 +319,9 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
     Doxygen::xrefLists->insert(listName,refList);
     //printf("new list!\n");
   }
-  if (current->sli)
+  if (docEntry->sli)
   {
-    QListIterator<ListItemInfo> slii(*current->sli);
+    QListIterator<ListItemInfo> slii(*docEntry->sli);
     for (slii.toFirst();(lii=slii.current());++slii)
     {
       if (strcmp(lii->type,listName)==0) 
@@ -350,9 +331,11 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
       }
     }
   }
+#if 0 // with this code multiple @todo items can be put under the same
+      // heading, I removed it because it changes the text flow.
   if (lii) // already found item of same type before
   {
-    //printf("listName=%s item id = %d\n",listName,lii->itemId);
+    //printf("listName=%s item id = %d existing\n",listName,lii->itemId);
     RefItem *item = refList->getRefItem(lii->itemId);
     ASSERT(item!=0);
     item->text += " <p>";
@@ -360,25 +343,29 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
+#endif
   {
     int itemId  = refList->addRefItem();
-    //printf("listName=%s item id = %d\n",listName,itemId);
+    //printf("listName=%s item id = %d new current=%p\n",listName,itemId,current);
+
+    // if we have already an item from the same list type (e.g. a second @todo)
+    // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
     char anchorLabel[1024];
-    sprintf(anchorLabel,"_%s%06d",listName,itemId);
+    sprintf(anchorLabel,"_%s%06d",listName,lii ? lii->itemId : itemId);
     RefItem *item = refList->getRefItem(itemId);
     ASSERT(item!=0);
-    item->text = current->brief.copy();
+    item->text = current->brief;
     item->listAnchor = anchorLabel;
-    current->addSpecialListItem(listName,itemId);
+    docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
     cmdString.sprintf("\\xrefitem %s %d\n",listName,itemId);
-    current->doc += cmdString;
+    docEntry->doc += cmdString;
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
-    current->anchors->append(si);
+    docEntry->anchors->append(si);
   }
-  current->brief  = slString.copy(); // restore orginial brief desc.
+  current->brief  = slString; // restore orginial brief desc.
 }
 
 //-----------------------------------------------------------------------------
@@ -405,6 +392,8 @@ static QCString addFormula()
   return formLabel;
 }
 
+//-----------------------------------------------------------------------------
+
 static bool nameIsOperator(QCString &name)
 {
   int i=name.find("operator");
@@ -414,6 +403,8 @@ static bool nameIsOperator(QCString &name)
   return FALSE; // case TEXToperatorTEXT
 }
 
+//-----------------------------------------------------------------------------
+
 static void checkFormula()
 {
   if (insideFormula)
@@ -421,6 +412,8 @@ static void checkFormula()
     warn(yyFileName,yyLineNr,"Warning: End of comment block while inside formula.");
   }
 }
+
+//-----------------------------------------------------------------------------
 
 static void checkDocs()
 {
@@ -436,33 +429,7 @@ static void checkDocs()
   }
 }
 
-#if 0
-static QCString extractName(const QCString &s)
-{
-  //static const QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
-  //int i,p=0,l;
-  //while ((i=id.match(s,p,&l))!=-1)
-  //{
-  //  QCString idstr=s.mid(i,l);
-  //  if (idstr!="struct" && idstr!="class" && idstr!="union") 
-  //  {
-  //    
-  //    return idstr;
-  //  }
-  //  p=i+l;
-  //}
-  //return "";
-  QCString result=s;
-  if (result.left(7)=="struct ") result=result.right(result.length()-7);
-  if (result.left(6)=="class " ) result=result.right(result.length()-6);
-  if (result.left(6)=="union " ) result=result.right(result.length()-6);
-  int l=result.length()-1;
-  while (l>=0 && 
-         (result.at(l)=='*' || result.at(l)==' ' || isspace(result.at(l)))
-        ) l--;
-  return removeRedundantWhiteSpace(result.left(l+1));
-}
-#endif
+//-----------------------------------------------------------------------------
 
 static void setContext()
 {
@@ -482,6 +449,8 @@ static void setContext()
   }
   //printf("setContext(%s) insideIDL=%d\n",yyFileName,insideIDL);
 }
+
+//-----------------------------------------------------------------------------
 
 static void prependScope()
 {
@@ -516,6 +485,8 @@ static void prependScope()
   }
 }
 
+//-----------------------------------------------------------------------------
+
 /*! Returns TRUE iff the current entry could be a K&R style C function */
 static bool checkForKnRstyleC()
 {
@@ -531,6 +502,8 @@ static bool checkForKnRstyleC()
   }
   return TRUE;
 }
+
+//-----------------------------------------------------------------------------
 
 static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
 {
@@ -604,6 +577,8 @@ static void splitKnRArg(QCString &oldStyleArgPtr,QCString &oldStyleArgName)
   }
   //fprintf(stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data());
 }
+
+//-----------------------------------------------------------------------------
 
 /*! Update the argument \a name with additional \a type info. For K&R style
  *  function the type is found \e after the argument list, so this routine
@@ -930,6 +905,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN( FindMembers );
 					  }
 					}
+<NextSemi>\'				{
+  					  if (insidePHP)
+					  {
+					    lastStringContext=NextSemi;
+					    BEGIN(SkipPHPString);
+					  }
+  					}
 <NextSemi>{CHARLIT}			{ if (insidePHP) REJECT; }
 <NextSemi>\"				{
   					  lastStringContext=NextSemi;
@@ -965,7 +947,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  else
 					    REJECT;
 					}
-<FindMembers>{B}*("properties"|"__property"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
+<FindMembers>{B}*("properties"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
   					  current->mtype = mtype = Property;
 					  current->protection = protection = Public ;
 					  current->type.resize(0); 
@@ -1440,6 +1422,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
+					}
+<Operator>"("{BN}*")"({BN}*"<"[^>]*">"){BN}*/"("  {  // A::operator()<int>(int arg)
+  					  lineCount();
+					  current->name += "()";
+					  BEGIN( FindMembers );
 					}
 <Operator>"("{BN}*")"{BN}*/"("		{
   					  lineCount();
@@ -2125,6 +2112,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  initBracketCount--;
   					  current->initializer+=*yytext; 
   					}
+<ReadInitializer>\'			{	
+  					  if (insidePHP)
+					  {
+					    current->initializer+=yytext; 
+                                            pCopyQuotedString = &current->initializer;
+                                            lastStringContext=YY_START;
+					    BEGIN(CopyPHPString);
+					  }
+					  else
+					  {
+					    current->initializer+=yytext; 
+					  }
+  					}
 <ReadInitializer>{CHARLIT}              { 
                                           if (insidePHP) 
 					  {
@@ -2218,6 +2218,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++;
   					  *pCopyRoundString+=*yytext;
   					}
+<CopyRound>\'				{
+  					  if (insidePHP)
+					  {
+					    current->initializer+=yytext; 
+                                            pCopyQuotedString = pCopyRoundString;
+                                            lastStringContext=YY_START;
+					    BEGIN(CopyPHPString);
+					  }
+					  else
+					  {
+					    *pCopyRoundString+=yytext;
+					  }
+  					}
 <CopyRound>{CHARLIT}		        { 
                                           if (insidePHP)
 					  {
@@ -2241,6 +2254,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  pCopyQuotedString=pCopyCurlyString;
 					  lastStringContext=YY_START;
 					  BEGIN(CopyString);
+					}
+<CopyCurly>\'				{
+					  *pCopyCurlyString+=*yytext;
+  					  if (insidePHP)
+					  {
+					    pCopyQuotedString=pCopyCurlyString;
+					    lastStringContext=YY_START;
+					    BEGIN(CopyPHPString);
+					  }
 					}
 <CopyCurly>"{"				{
   					  *pCopyCurlyString+=*yytext;
@@ -2439,6 +2461,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lastContext = YY_START ;
 					  BEGIN( Comment ) ;
 					}
+<ReadBody,ReadNSBody,ReadBodyIntf>"'"	{
+  					  if (!insidePHP)
+					  {
+					    current->program += yytext;
+					  }
+					  else
+					  { // begin of single quoted string
+					    current->program += yytext;
+                                            pCopyQuotedString = &current->program;
+                                            lastStringContext=YY_START;
+					    BEGIN(CopyPHPString);
+					  }
+  					}
 <ReadBody,ReadNSBody,ReadBodyIntf>{CHARLIT} { 
                                               if (insidePHP) 
 					      {
@@ -2698,19 +2733,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  initEntry();
 					  insideObjC=FALSE;
 					  BEGIN( FindMembers ); 
-  					}
-<ReadBody,ReadNSBody,ReadBodyIntf>"'"	{
-  					  if (!insidePHP)
-					  {
-					    current->program += yytext;
-					  }
-					  else
-					  { // begin of single quoted string
-					    current->program += yytext;
-                                            pCopyQuotedString = &current->program;
-                                            lastStringContext=YY_START;
-					    BEGIN(CopyPHPString);
-					  }
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 
@@ -3155,6 +3177,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  lastStringContext=FuncPtrInit;
 					  BEGIN(CopyString);
 					}
+<FuncPtrInit>\'				{
+                                          current->args += *yytext; 
+					  if (insidePHP)
+					  {
+					    pCopyQuotedString=&current->args;
+					    lastStringContext=FuncPtrInit;
+					    BEGIN(CopyPHPString);
+					  }
+					}
 <FuncPtrInit>{CHARLIT}			{
                                           if (insidePHP)
 					  {
@@ -3459,10 +3490,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current = tempEntry;
   					  BEGIN( lastCurlyContext );
   					}
-<SkipCurly>{CHARLIT}                    {
-  				          //addToBody(yytext);
-                                          if (insidePHP) REJECT;
-  					}
 <SkipCurly>\"			        { 
   				          //addToBody(yytext);
   					  lastStringContext=SkipCurly;
@@ -3526,6 +3553,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  pSkipVerbString=&current->initializer;
 					  BEGIN(SkipVerbString);
   					}
+<SkipInits,SkipCurly,SkipCurlyCpp>\'	{
+  					  if (insidePHP)
+					  {
+					    lastStringContext=YY_START;
+					    BEGIN(SkipPHPString);
+					  }
+					}
 <SkipInits,SkipCurly,SkipCurlyCpp>{CHARLIT}	{
                                           if (insidePHP) REJECT;
                                         }
@@ -4319,6 +4353,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->section = Entry::FILEDOC_SEC;
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
+					  lastFileDocContext = YY_START;
 					  BEGIN( FileDocArg1 );
   					}
 <Doc,LineDoc,JavaDoc>{B}*{CMD}"dir"{B}*	{
@@ -4406,7 +4441,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <TodoParam>"//"                         |
 <TodoParam>"/*"                         |
 <TodoParam>.				{
-                                          addXRefItem("todo",theTranslator->trTodo(),theTranslator->trTodoList());
+                                          addXRefItem(lastDocContext==SkipCurly,
+                                              "todo",theTranslator->trTodo(),theTranslator->trTodoList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4414,7 +4450,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <TestParam>"//"                         |
 <TestParam>"/*"                         |
 <TestParam>.				{
-                                          addXRefItem("test",theTranslator->trTest(),theTranslator->trTestList());
+                                          addXRefItem(lastDocContext==SkipCurly,
+                                              "test",theTranslator->trTest(),theTranslator->trTestList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4422,7 +4459,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <BugParam>"//"                          |
 <BugParam>"/*"                          |
 <BugParam>.				{
-                                          addXRefItem("bug",theTranslator->trBug(),theTranslator->trBugList());
+                                          addXRefItem(lastDocContext==SkipCurly,
+                                              "bug",theTranslator->trBug(),theTranslator->trBugList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4430,7 +4468,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <DeprecatedParam>"//"                   |
 <DeprecatedParam>"/*"                   |
 <DeprecatedParam>.		        {
-                                          addXRefItem("deprecated",theTranslator->trDeprecated(),theTranslator->trDeprecatedList());
+                                          addXRefItem(lastDocContext==SkipCurly,
+                                              "deprecated",theTranslator->trDeprecated(),theTranslator->trDeprecatedList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4469,7 +4508,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <XRefItemParam4>"//"                    |
 <XRefItemParam4>"/*"                    |
 <XRefItemParam4>.		        {
-                                          addXRefItem(xrefItemKey,xrefItemTitle,xrefListTitle);
+                                          addXRefItem(lastDocContext==SkipCurly,
+                                              xrefItemKey,xrefItemTitle,xrefListTitle);
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4649,6 +4689,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->name = yyFileName;
   					  yyLineNr++;
 					  newDocState();
+					  if (lastFileDocContext==LineDoc)
+					  {
+  					    current->doc += "\n\n";
+					    current_root->addSubEntry(current);
+					    current = new Entry ;
+					    initEntry();
+					    BEGIN( FindMembers );
+					  }
   					}
 <PageDocArg1>{FILE}			{
 					  current->name = stripQuotes(yytext);
@@ -5734,25 +5782,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
                                           if (!handled)
                                           {
-  					    //QCString *pValue=Doxygen::aliasDict[yytext+1];
-					    //if (pValue)
-					    //{
-					    //  int i,l=pValue->length();
-					    //  char c;
-					    //  for (i=l-1;i>=0;i--)
-					    //  {
-					    //  	c=pValue->at(i);
-					    //    unput(c);
-					    //	if (c=='\n') yyLineNr--;
-					    //  }
-					    //}
-					    //else
-					    //{
 					    if (YY_START==CopyArgComment)
 					      fullArgString+=yytext;
 					   else
   					      current->doc+=yytext;
-					    //}
                                           }
   					}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
@@ -5766,22 +5799,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					    current->brief+=yytext;
                                         }
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-  					  //QCString *pValue=Doxygen::aliasDict[yytext+1];
-					  //if (pValue)
-					  //{
-					  //  int i,l=pValue->length();
-					  //  for (i=l-1;i>=0;i--)
-					  //  {
-					  //    unput(pValue->at(i));
-					  //  }
-					  //}
-					  //else
-					  //{
 					    if (YY_START==CopyArgCommentLine)
 					      fullArgString+=yytext;
 					    else
   					      current->brief+=yytext;
-					  //}
   					}
 <DefLineDoc,LineDoc,ClassDoc,PageDoc,Doc>"/*"|"//"   { current->doc += yytext; }
 <SkipCxxComment>.*/\n			{ 

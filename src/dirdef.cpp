@@ -222,7 +222,7 @@ void DirDef::writeDocumentation(OutputList &ol)
       else
       {
         ol.startBold();
-        ol.writeString(fd->name()); 
+        ol.docify(fd->name()); 
         ol.endBold();
       }
       if (fd->generateSourceFile())

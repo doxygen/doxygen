@@ -603,6 +603,7 @@ int countClassHierarchy()
 
 void writeHierarchicalIndex(OutputList &ol)
 {
+  //printf("writeHierarchicalIndex: %d classes\n",hierarchyClasses);
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);

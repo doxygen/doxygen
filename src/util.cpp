@@ -3561,6 +3561,7 @@ bool resolveLink(/* in */ const char *scName,
   *resContext=0;
   
   QCString linkRef=lr;
+  printf("ResolveLink linkRef=%s\n",lr);
   FileDef  *fd;
   GroupDef *gd;
   PageDef  *pd;
@@ -4704,7 +4705,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
                 const char *prefix,
                 const char *name,const char *title,const char *args)
 {
-  //printf("addRefItem(prefix=%s,name=%s,title=%s,args=%s)\n",prefix,name,title,args);
+  //printf("addRefItem(sli=%p,prefix=%s,name=%s,title=%s,args=%s)\n",sli,prefix,name,title,args);
   if (sli)
   {
     QListIterator<ListItemInfo> slii(*sli);
@@ -4724,7 +4725,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
       {
         RefItem *item = refList->getRefItem(lii->itemId);
         ASSERT(item!=0);
-        //printf("anchor=%s\n",item->listAnchor.data());
+        //printf("anchor=%s written=%d\n",item->listAnchor.data(),item->written);
         if (item->written) return;
 
         QCString doc(1000);

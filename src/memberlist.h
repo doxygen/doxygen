@@ -58,6 +58,7 @@ class MemberList : public QList<MemberDef>
     void setInGroup(bool group) { m_inGroup=group; }
     void addListReferences(Definition *def);
     void findSectionsInDocumentation();
+    MemberGroupList *getMemberGroupList() const { return memberGroupList; }
 
   private:
     int m_varCnt,m_funcCnt,m_enumCnt,m_enumValCnt,m_typeCnt;

@@ -930,8 +930,9 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
   m_t << "\\begin{Desc}" << endl;
+  bool anonymousEnum = x->file()=="@";
   m_t << "\\item[";
-  if (Config_getBool("PDF_HYPERLINKS"))
+  if (Config_getBool("PDF_HYPERLINKS") && !anonymousEnum)
   {
     m_t << "\\hyperlink{" << stripPath(x->file()) << "_" << x->anchor() << "}{";
   }
