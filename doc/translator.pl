@@ -77,6 +77,11 @@
 #    the simplified language.doc from the template was moved to 
 #    the separate function CopyTemplateToLanguageDoc().
 #
+# 2001/10/17
+#  - Minor update of GetInfoFrom() to ignore spaces between the
+#    method identifier and the opening parenthesis to match better
+#    the method prototype with the one in the translator.h.
+#
 ################################################################
 
 use 5.005;
@@ -316,6 +321,7 @@ sub GetInfoFrom  ##{{{
     $cont =~ s{^\s+}{}s;
     $cont =~ s{\s+$}{}s;
     
+    $cont =~ s{\s+\(}{(}g;
     $cont =~ s{\)\s*}{)\n}g;
     
     # Split the string and add it to the ouptut list.

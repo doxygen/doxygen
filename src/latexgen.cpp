@@ -1265,6 +1265,7 @@ void LatexGenerator::docify(const char *str)
   static bool isKorean    = theTranslator->idLanguage()=="korean";
   static bool isRussian   = theTranslator->idLanguage()=="russian";
   static bool isUkrainian = theTranslator->idLanguage()=="ukrainian";
+  static bool isChinese   = theTranslator->idLanguage()=="chinese";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1329,9 +1330,9 @@ void LatexGenerator::docify(const char *str)
                      break;
 
           default:   
-
-             if (isJapanese || isKorean)
-             { // Japanese language uses wide characters
+             // Some languages uses wide characters
+             if (isJapanese || isKorean || isChinese)
+             { 
                if (c>=128) 
                {
                  t << (char)c;

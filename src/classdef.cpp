@@ -1232,7 +1232,8 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.writeObjectLink(getReference(),getOutputFileBase(),0,name());
   parseText(ol,theTranslator->trIncludingInheritedMembers());
   
-  ol.startItemList();
+  //ol.startItemList();
+  ol.writeString("<table>\n");
   
   //MemberNameInfo *mni=m_allMemberNameInfoList->first();
   MemberNameInfoSDict::Iterator mnii(*m_allMemberNameInfoSDict); 
@@ -1244,17 +1245,6 @@ void ClassDef::writeMemberList(OutputList &ol)
     {
       MemberDef *md=mi->memberDef;
       ClassDef  *cd=md->getClassDef();
-      
-      // compute the protection level for this member
-      //Protection prot=md->protection();
-      //if (mi->prot==Protected) // inherited protection: Protected
-      //{
-      //  if (prot==Public) prot=Protected;
-      //}
-      //else if (mi->prot==Private) // inherited protection: Private
-      //{
-      //  prot=Private;
-      //}
       Protection prot = mi->prot;
       
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
@@ -1268,23 +1258,15 @@ void ClassDef::writeMemberList(OutputList &ol)
         rmd  = rmd->reimplements();
       }
 
-      if (cd && !md->name().isEmpty() && md->name()[0]!='@' 
-          // && 
-          //(
-          // md->isFriend() 
-           // || 
-           //(/*mi->prot!=Private &&*/ 
-           // (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
-           //)
-          //)
-         )
+      if (cd && !md->name().isEmpty() && md->name()[0]!='@')
       {
         bool memberWritten=FALSE;
         if (cd->isLinkable() && md->isLinkable()) 
           // create a link to the documentation
         {
           QCString name=mi->ambiguityResolutionScope+md->name();
-          ol.writeListItem();
+          //ol.writeListItem();
+          ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
               md->anchor(),name);
           if ( md->isFunction() || md->isSignal() || md->isSlot() ||
@@ -1298,13 +1280,15 @@ void ClassDef::writeMemberList(OutputList &ol)
             ol.docify(" typedef");
           else if (md->isFriend() && !strcmp(md->typeString(),"friend class"))
             ol.docify(" class");
-          ol.writeString("\n");
+          //ol.writeString("\n");
+          ol.writeString("</td>");
           memberWritten=TRUE;
         }
         else if (!Config_getBool("HIDE_UNDOC_MEMBERS")) // no documentation, 
                                   // generate link to the class instead.
         {
-          ol.writeListItem();
+          //ol.writeListItem();
+          ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");
           ol.startBold();
           ol.docify(md->name());
           ol.endBold();
@@ -1329,7 +1313,16 @@ void ClassDef::writeMemberList(OutputList &ol)
             ol.endBold();
           }
           ol.writeString(")");
+          ol.writeString("</td>");
           memberWritten=TRUE;
+        }
+        if (memberWritten)
+        {
+          ol.writeString("<td>");
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
+                             0,cd->name());
+          ol.writeString("</td>");
+          ol.writeString("<td>");
         }
         if ((prot!=Public || virt!=Normal || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
@@ -1368,11 +1361,19 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.docify("]");
           ol.endTypewriter();
         }
+        if (memberWritten)
+        {
+          ol.writeString("</td>");
+          ol.writeString("</tr>\n");
+        }
       }
       mi=mni->next();
     }
   }
-  ol.endItemList();
+  //ol.endItemList();
+
+  ol.writeString("</table>");
+  
   endFile(ol);
   ol.popGeneratorState();
 }

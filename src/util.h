@@ -42,7 +42,7 @@ class ClassList;
 class MemberGroupList;
 class MemberGroupDict;
 class Definition;
-class TagInfo;
+struct TagInfo;
 
 //--------------------------------------------------------------------
 
