@@ -1375,13 +1375,6 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     t << fixSpaces(theTranslator->trModules());
     endQuickIndexItem(t);
   } 
-  if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
-  {
-    startQuickIndexItem(t,"dirs"+Doxygen::htmlFileExtension,
-                        hli==HLI_Directories,compact,first,relPath);
-    t << fixSpaces(theTranslator->trDirectories());
-    endQuickIndexItem(t);
-  } 
   if (documentedNamespaces>0)
   {
     startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
@@ -1415,6 +1408,13 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
                         hli==HLI_Annotated,compact,first,relPath);
     t << fixSpaces(theTranslator->trCompoundList());
+    endQuickIndexItem(t);
+  } 
+  if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
+  {
+    startQuickIndexItem(t,"dirs"+Doxygen::htmlFileExtension,
+                        hli==HLI_Directories,compact,first,relPath);
+    t << fixSpaces(theTranslator->trDirectories());
     endQuickIndexItem(t);
   } 
   if (documentedHtmlFiles>0)

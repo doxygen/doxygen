@@ -154,7 +154,7 @@ void EnumValueHandler::startDetailedDesc(const QXmlAttributes& attrib)
 //------------------------------------------------------------------------------
 
 MemberHandler::MemberHandler(IBaseHandler *parent)
-  : m_parent(parent), m_compound(0), m_brief(0), m_detailed(0)
+  : m_parent(parent), m_compound(0), m_brief(0), m_detailed(0), m_inbody(0)
 {
   //printf("MemberHandler::MemberHandler() %p\n",this);
   addEndHandler("memberdef",this,&MemberHandler::endMember);
@@ -163,10 +163,21 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addEndHandler("templateparamlist",this,&MemberHandler::endTemplateParamList);
 
   addStartHandler("type",this,&MemberHandler::startType);
-  // definition
-  // argsstring
+
+  addStartHandler("definition",this,&MemberHandler::startDefinition);
+  addEndHandler("definition",this,&MemberHandler::endDefinition);
+
+  addStartHandler("argsstring",this,&MemberHandler::startArgsString);
+  addEndHandler("argsstring",this,&MemberHandler::endArgsString);
+
   addStartHandler("name",this,&MemberHandler::startName);
   addEndHandler("name",this,&MemberHandler::endName);
+
+  addStartHandler("read",this,&MemberHandler::startRead);
+  addEndHandler("read",this,&MemberHandler::endRead);
+
+  addStartHandler("write",this,&MemberHandler::startWrite);
+  addEndHandler("write",this,&MemberHandler::endWrite);
 
   addStartHandler("reimplements",this,&MemberHandler::startReimplements);
   addEndHandler("reimplements",this,&MemberHandler::endReimplements);
@@ -180,13 +191,13 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addEndHandler("enumvalue",this,&MemberHandler::endMember);
 
   addStartHandler("initializer",this,&MemberHandler::startInitializer);
-  addStartHandler("exception",this,&MemberHandler::startException);
+  addStartHandler("exceptions",this,&MemberHandler::startException);
 
   addStartHandler("briefdescription",this,&MemberHandler::startBriefDesc);
 
   addStartHandler("detaileddescription",this,&MemberHandler::startDetailedDesc);
 
-  // inbodydescription
+  addStartHandler("inbodydescription",this,&MemberHandler::startInbodyDesc);
   
   addStartHandler("location",this,&MemberHandler::startLocation);
   addEndHandler("location");
@@ -219,6 +230,7 @@ MemberHandler::~MemberHandler()
   debug(2,"MemberHandler::~MemberHandler() %p\n",this);
   delete m_brief;
   delete m_detailed;
+  delete m_inbody;
   delete m_linkedTextHandler;
   delete m_reimplements;
 }
@@ -230,10 +242,17 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
   //printf("startMember kindString=`%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
-  m_virtualness = attrib.value("virt");
   m_protection = attrib.value("prot");
+  m_isStatic = attrib.value("static")=="yes";
   m_isConst = attrib.value("const")=="yes";
+  m_isExplicit = attrib.value("explicit")=="yes";
+  m_isInline = attrib.value("inline")=="yes";
+  m_virtualness = attrib.value("virt");
   m_isVolatile = attrib.value("volatile")=="yes";
+  m_isMutable = attrib.value("mutable")=="yes";
+  m_isReadable = attrib.value("readable")=="yes";
+  m_isWritable = attrib.value("writable")=="yes";
+
   debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
       m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
@@ -245,10 +264,16 @@ void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
   //printf("startEnumValue kindString=`%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
-  m_virtualness = "non-virtual";
   m_protection = attrib.value("prot");
+  m_isStatic = FALSE;
   m_isConst = FALSE;
+  m_isExplicit = FALSE;
+  m_isInline = FALSE;
+  m_virtualness = "non-virtual";
   m_isVolatile = FALSE;
+  m_isMutable = FALSE;
+  m_isReadable = FALSE;
+  m_isWritable = FALSE;
   debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
       m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
@@ -273,6 +298,13 @@ void MemberHandler::startDetailedDesc(const QXmlAttributes& attrib)
   DocHandler *docHandler = new DocHandler(this);
   docHandler->startDoc(attrib);
   m_detailed = docHandler;
+}
+
+void MemberHandler::startInbodyDesc(const QXmlAttributes& attrib)
+{
+  DocHandler *docHandler = new DocHandler(this);
+  docHandler->startDoc(attrib);
+  m_inbody = docHandler;
 }
 
 void MemberHandler::startLocation(const QXmlAttributes& attrib)
@@ -364,7 +396,7 @@ void MemberHandler::startException(const QXmlAttributes &)
   debug(2,"startException!\n");
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_exception);
-  m_linkedTextHandler->start("exception");
+  m_linkedTextHandler->start("exceptions");
 }
 
 void MemberHandler::startName(const QXmlAttributes &)
@@ -378,6 +410,50 @@ void MemberHandler::endName()
   debug(2,"member name=`%s'\n",m_name.data());
 }
 
+void MemberHandler::startRead(const QXmlAttributes &)
+{
+  m_curString="";
+}
+
+void MemberHandler::endRead()
+{
+  m_read = m_curString.stripWhiteSpace();
+  debug(2,"member read=`%s'\n",m_read.data());
+}
+
+void MemberHandler::startWrite(const QXmlAttributes &)
+{
+  m_curString="";
+}
+
+void MemberHandler::endWrite()
+{
+  m_write = m_curString.stripWhiteSpace();
+  debug(2,"member write=`%s'\n",m_write.data());
+}
+
+void MemberHandler::startDefinition(const QXmlAttributes&)
+{
+  m_curString="";
+}
+
+void MemberHandler::endDefinition()
+{
+  m_definition = m_curString.stripWhiteSpace();
+  debug(2,"definition=%s\n",m_definition.data());
+}
+  
+void MemberHandler::startArgsString(const QXmlAttributes&)
+{
+  m_curString="";
+}
+
+void MemberHandler::endArgsString()
+{
+  m_argsstring = m_curString.stripWhiteSpace();
+  debug(2,"arggstring=%s\n",m_argsstring.data());
+}
+  
 void MemberHandler::startParam(const QXmlAttributes& attrib)
 {
   ParamHandler *paramHandler = new ParamHandler(this);
@@ -513,5 +589,10 @@ IDocRoot *MemberHandler::briefDescription() const
 IDocRoot *MemberHandler::detailedDescription() const
 { 
   return m_detailed; 
+}
+
+IDocRoot *MemberHandler::inbodyDescription() const
+{ 
+  return m_inbody; 
 }
 

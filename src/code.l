@@ -297,9 +297,12 @@ class CallContext
     virtual ~CallContext() {}
     void setClass(ClassDef *cd)
     {
-      DBG_CTX((stderr,"** Set call context %s (%p)\n",cd==0 ? "<null>" : cd->name().data(),cd));
-      m_classList.removeLast();
-      m_classList.append(cd);
+      if (cd)
+      {
+	DBG_CTX((stderr,"** Set call context %s (%p)\n",cd==0 ? "<null>" : cd->name().data(),cd));
+	m_classList.removeLast();
+	m_classList.append(cd);
+      }
     }
     void pushScope()
     {
@@ -744,11 +747,11 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   {
     className+="-p";
   }
-  ClassDef *cd=0;
+  ClassDef *cd=0,*lcd=0;
   MemberDef *md=0;
 
-  //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
-  if (!g_theVarContext.findVariable(className)) // not a local variable
+  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
+  if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
     Definition *d = g_currentDefinition;
     //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
@@ -761,11 +764,12 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
   else
   {
-    //printf("is a local variable!\n");
+    if (lcd!=VariableContext::dummyContext) g_theCallContext.setClass(lcd);
+    //fprintf(stderr,"is a local variable!\n");
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
-    //printf("is linkable class %s\n",clName);
+    //fprintf(stderr,"is linkable class %s\n",clName);
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -926,7 +930,9 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
 	}
       }
 
-      g_theCallContext.setClass(stripClassName(xmd->typeString()));
+      ClassDef *typeClass = stripClassName(xmd->typeString());
+      //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
+      g_theCallContext.setClass(typeClass);
 
       Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
 	               xmd->getBodyDef() : xmd->getOuterScope();
@@ -1755,7 +1761,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   					  BEGIN( Body ); 
 					}
 <ClassName,ClassVar>[*&]+       	{
-					  addType();
+  					  g_type=g_curClassName;
+  					  g_name.resize(0);
 					  g_code->codify(yytext);
 					  BEGIN( Body ); // variable of type struct *
 					}
@@ -2121,6 +2128,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <MemberCall>{SCOPENAME}/{B}*		{
 					  if (g_theCallContext.getClass())
 					  {
+					    //fprintf(stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass());
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
 					      g_code->codify(yytext);
@@ -2130,6 +2138,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					  }
 					  else
 					  {
+					    //fprintf(stderr,"no class context!\n");
   					    g_code->codify(yytext);
 					    addToSearchIndex(yytext);
   					    g_name.resize(0);
@@ -2167,7 +2176,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					    g_code->codify(yytext);
 					    g_saveName = g_name.copy();
 					    g_saveType = g_type.copy();
-					    if (!g_type.isEmpty()) 
+					    if (*yytext!='[' && !g_type.isEmpty()) 
 					    {
 					      if (g_scopeStack.top()!=CLASSBLOCK)
 					      {
@@ -2175,7 +2184,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					      }
 					      g_name.resize(0);
 					    }
-					    if (*yytext==';') 
+					    if (*yytext==';' || *yytext=='=') 
 					    {
 					      g_type.resize(0);
 					      g_name.resize(0);
@@ -2388,7 +2397,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 					    BEGIN( SkipInits );
 					  }
   					}
-<CallEnd,OldStyleArgs>({BN}"const"|"volatile")*{BN}*"{" {
+<CallEnd>("const"|"volatile")({BN}+("const"|"volatile"))*{BN}*/";" {
+					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+  					}
+<CallEnd,OldStyleArgs>("const"|"volatile")*({BN}+("const"|"volatile"))*"{" {
                                           if (g_insideBody)
 					  {
 					    g_theVarContext.pushScope();
@@ -2878,6 +2892,7 @@ static void restoreObjCContext()
 
 void initParseCodeContext()
 {
+  //printf("***initParseCodeContext()\n");
   g_theVarContext.clear();
   g_codeClassSDict.setAutoDelete(TRUE);
   g_codeClassSDict.clear();
@@ -2889,6 +2904,7 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment)
 {
+  //printf("***parseCode()\n");
   if (s.isEmpty()) return;
   g_code = &od;
   g_inputString   = s;

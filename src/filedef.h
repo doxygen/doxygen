@@ -156,6 +156,7 @@ class FileDef : public Definition
     void addIncludedUsingDirectives();
 
     void addListReferences();
+    bool isDocumentationFile() const;
 
     //void generateXML(QTextStream &t);
     //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);

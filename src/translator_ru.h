@@ -18,7 +18,7 @@
  *
  * Nickolay Semyonov
  * Andrey V. Stolyarov released Feb 14, 2001
- * Alexandr V. Chelpanov <cav@cryptopro.ru> released Jun 16, 2004
+ * Alexandr V. Chelpanov <cav@cryptopro.ru> released Sep 25, 2004
  *
  * При переводе заголовков слова list и documentation убраны.
  *
@@ -49,7 +49,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public TranslatorAdapter_1_3_9
+class TranslatorRussian : public Translator
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -1570,7 +1570,51 @@ class TranslatorRussian : public TranslatorAdapter_1_3_9
      */
     virtual QCString trSourceFile(QCString& filename)
     {
-      return "Исходный файл " + filename;
+      return decode( "Исходный файл " + filename );
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return decode( "Дерево директорий" ); }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return decode( "Директории" ); }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return decode( "Алфавитный указатель директорий" ); }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return decode( "Дерево директорий" ); }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=QCString("Содержание директории ")+ dirName; return decode( result ); }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Директори" : "директори"));
+      if (singular) result+="я"; else result+="и";
+      return decode( result ); 
     }
 };
 

@@ -1041,6 +1041,19 @@ ClassDef *getResolvedClassRec(Definition *scope,
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
   QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
+  // if a file scope is given and it contains using statements we should
+  // also use the file part in the key (as a class name can be in
+  // two different namespaces and a using statement in a file can select 
+  // one of them).
+  if (fileScope && ((fileScope->getUsedNamespaces() && 
+                     fileScope->getUsedNamespaces()->count()>0) ||
+                    (fileScope->getUsedClasses() && 
+                     fileScope->getUsedClasses()->count()>0)) 
+     )
+  {
+    key+="+"+fileScope->name();
+  }
+      
   LookupInfo *pval=Doxygen::lookupCache.find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
@@ -1080,6 +1093,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
       g_visitedNamespaces.clear();
       // test accessibility of definition within scope.
       int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
+      //printf("distance %s is %d\n",d->name().data(),distance);
       if (distance!=-1) // definition is accessible
       {
         // see if we are dealing with a class or a typedef
@@ -1087,6 +1101,26 @@ ClassDef *getResolvedClassRec(Definition *scope,
         {
           if (distance<minDistance) // found a definition that is "closer"
           {
+            minDistance=distance;
+            bestMatch = (ClassDef *)d; 
+            bestTypedef = 0;
+            bestTemplSpec.resize(0);
+          }
+          else if (distance==minDistance &&
+                   fileScope && 
+                   fileScope->getUsedNamespaces() && 
+                   d->getOuterScope()->definitionType()==Definition::TypeNamespace && 
+                   bestMatch->getOuterScope()==Doxygen::globalScope
+                  )
+          {
+            // in case the distance is equal it could be that a class X
+            // is defined in a namespace and in the global scope. When searched
+            // in the global scope the distance is 0 in both cases. We have
+            // to choose one of the definitions: we choose the one in the
+            // namespace if the fileScope imports namespaces and the definition
+            // found was in a namespace while the best match so far isn't.
+            // Just a non-perfect heuristic but it could help in some situations
+            // (kdecore code is an example).
             minDistance=distance;
             bestMatch = (ClassDef *)d; 
             bestTypedef = 0;
@@ -1930,7 +1964,7 @@ static QCString trimTemplateSpecifiers(
   }
   //printf("result=%s\n",result.data());
     
-  return result;
+  return result.stripWhiteSpace();
 }
 
 /*!
@@ -2120,6 +2154,36 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
 }
 #endif
 
+static void stripIrrelevantString(QCString &target,const QCString &str)
+{
+  if (target==str) { target.resize(0); return; }
+  int i,p=0;
+  int l=str.length();
+  while ((i=target.find(str,p))!=-1)
+  {
+    bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
+                   (i+l==(int)target.length() || !isId(target.at(i+l))); // not a character after str
+    if (isMatch)
+    {
+      int i1=target.find('*',i+l);
+      int i2=target.find('&',i+l);
+      if (i1==-1 && i2==-1)
+      {
+        // strip str from target at index i
+        target=target.left(i)+target.right(target.length()-i-l); 
+        i-=l;
+      }
+      else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
+      {
+        // move str to front
+        target=str+" "+target.left(i)+target.right(target.length()-i-l);
+        i++;
+      }
+    }
+    p = i+l;
+  }
+}
+
 /*! According to the C++ spec and Ivan Vecerina:
 
     Parameter declarations  that differ only in the presence or absence
@@ -2138,53 +2202,8 @@ static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
 void stripIrrelevantConstVolatile(QCString &s)
 {
   //printf("stripIrrelevantConstVolatile(%s)=",s.data());
-  int i;
-  if (s=="const")    { s.resize(0); return; }
-  if (s=="volatile") { s.resize(0); return; }
-
-  // strip occurrences of const
-  int constLen=5+1;
-  i = s.find("const ");
-  if (i==-1 && s.right(5)=="const") { i=s.length()-5;constLen=5; }
-  while (i!=-1) 
-  {
-    // no & or * after the const
-    int i1=s.find('*',i+constLen);
-    int i2=s.find('&',i+constLen);
-    if (i1==-1 && i2==-1)
-    {
-      s=s.left(i)+s.right(s.length()-i-constLen); 
-      i-=constLen;
-    }
-    else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // const before * or &
-    {
-      // move const to front
-      s=(QCString)"const "+s.left(i)+s.right(s.length()-i-constLen);
-    }
-    i = s.find("const ",i+constLen);
-  }
-
-  // strip occurrences of volatile
-  int volatileLen=8+1;
-  i = s.find("volatile ");
-  if (i==-1 && s.right(8)=="volatile") { i=s.length()-8;constLen=8; }
-  while (i!=-1) 
-  {
-    // no & or * after the volatile
-    int i1=s.find('*',i+volatileLen);
-    int i2=s.find('&',i+volatileLen);
-    if (i1==-1 && i2==-1)
-    {
-      s=s.left(i)+s.right(s.length()-i-volatileLen); 
-      i-=volatileLen;
-    }
-    else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // volatile before * or &
-    {
-      // move volatile to front
-      s=(QCString)"volatile "+s.left(i)+s.right(s.length()-i-volatileLen);
-    }
-    i = s.find("volatile ",i+volatileLen);
-  }
+  stripIrrelevantString(s,"const");
+  stripIrrelevantString(s,"volatile");
   //printf("%s\n",s.data());
 }
 
@@ -2201,7 +2220,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    NamespaceSDict *usingNamespaces,
                    SDict<Definition> *usingClasses)
 {
-  //printf("match argument start %s:%s <-> %s:%s using nsp=%p class=%p\n",
+  //printf("match argument start `%s|%s' <-> `%s|%s' using nsp=%p class=%p\n",
   //    srcA->type.data(),srcA->name.data(),
   //    dstA->type.data(),dstA->name.data(),
   //    usingNamespaces,
@@ -2214,6 +2233,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
 
   QCString srcAType=trimTemplateSpecifiers(namespaceName,className,srcA->type);
   QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
+  QCString srcAName=srcA->name.stripWhiteSpace();
+  QCString dstAName=dstA->name.stripWhiteSpace();
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
   if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
   
@@ -2221,23 +2242,25 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   // from a syntactic point of view they would be two names of the same 
   // type "const". This is not fool prove ofcourse, but should at least 
   // catch the most common cases.
-  if ((srcAType=="const" || srcAType=="volatile") && !srcA->name.isEmpty())
+  if ((srcAType=="const" || srcAType=="volatile") && !srcAName.isEmpty())
   {
     srcAType+=" ";
-    srcAType+=srcA->name;
+    srcAType+=srcAName;
   } 
-  if ((dstAType=="const" || dstAType=="volatile") && !dstA->name.isEmpty())
+  if ((dstAType=="const" || dstAType=="volatile") && !dstAName.isEmpty())
   {
     dstAType+=" ";
-    dstAType+=dstA->name;
+    dstAType+=dstAName;
   }
-  if (srcA->name=="const" || srcA->name=="volatile")
+  if (srcAName=="const" || srcAName=="volatile")
   {
-    srcAType+=srcA->name;
+    srcAType+=srcAName;
+    srcAName.resize(0);
   }
-  if (dstA->name=="const" || dstA->name=="volatile")
+  else if (dstA->name=="const" || dstA->name=="volatile")
   {
     dstAType+=dstA->name;
+    dstAName.resize(0);
   }
       
   stripIrrelevantConstVolatile(srcAType);
@@ -2260,8 +2283,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   //srcAType=stripTemplateSpecifiersFromScope(srcAType,FALSE);
   //dstAType=stripTemplateSpecifiersFromScope(dstAType,FALSE);
 
-  //printf("srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcA->name.data(),
-  //      dstAType.data(),dstA->name.data());
+  //printf("srcA=`%s|%s' dstA=`%s|%s'\n",srcAType.data(),srcAName.data(),
+  //      dstAType.data(),dstAName.data());
 
   if (srcA->array!=dstA->array) // nomatch for char[] against char
   {
@@ -2326,17 +2349,17 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       }
     }
 
-    //printf("2. srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcA->name.data(),
-    //    dstAType.data(),dstA->name.data());
+    //printf("2. srcA=%s|%s dstA=%s|%s\n",srcAType.data(),srcAName.data(),
+    //    dstAType.data(),dstAName.data());
     
-    if (!srcA->name.isEmpty() && !dstA->type.isEmpty() &&
-        (srcAType+" "+srcA->name)==dstAType)
+    if (!srcAName.isEmpty() && !dstA->type.isEmpty() &&
+        (srcAType+" "+srcAName)==dstAType)
     {
       MATCH
       return TRUE;
     }
-    else if (!dstA->name.isEmpty() && !srcA->type.isEmpty() &&
-        (dstAType+" "+dstA->name)==srcAType)
+    else if (!dstAName.isEmpty() && !srcA->type.isEmpty() &&
+        (dstAType+" "+dstAName)==srcAType)
     {
       MATCH
       return TRUE;
@@ -2365,7 +2388,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       {
         //printf("partial match srcPos=%d dstPos=%d!\n",srcPos,dstPos);
         // check if a name if already found -> if no then there is no match
-        if (!srcA->name.isEmpty() || !dstA->name.isEmpty()) 
+        if (!srcAName.isEmpty() || !dstAName.isEmpty()) 
         {
           NOMATCH
           return FALSE;
@@ -2404,7 +2427,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     {
       if (!isspace((uchar)dstAType.at(dstPos))) // maybe the names differ
       {
-        if (!dstA->name.isEmpty()) // dst has its name separated from its type
+        if (!dstAName.isEmpty()) // dst has its name separated from its type
         {
           NOMATCH
           return FALSE;
@@ -2420,7 +2443,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       {
         dstPos++;
         while (dstPos<dstAType.length() && isId(dstAType.at(dstPos))) dstPos++;
-        if (dstPos!=dstAType.length() || !srcA->name.isEmpty()) 
+        if (dstPos!=dstAType.length() || !srcAName.isEmpty()) 
         {
           NOMATCH
           return FALSE; // nope not a name -> no match
@@ -2431,7 +2454,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     {
       if (!isspace((uchar)srcAType.at(srcPos))) // maybe the names differ
       {
-        if (!srcA->name.isEmpty()) // src has its name separated from its type
+        if (!srcAName.isEmpty()) // src has its name separated from its type
         {
           NOMATCH
           return FALSE;
@@ -2447,7 +2470,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       {
         srcPos++;
         while (srcPos<srcAType.length() && isId(srcAType.at(srcPos))) srcPos++;
-        if (srcPos!=srcAType.length() || !dstA->name.isEmpty()) 
+        if (srcPos!=srcAType.length() || !dstAName.isEmpty()) 
         {
           NOMATCH
           return FALSE; // nope not a name -> no match
@@ -2588,6 +2611,20 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
       //printf("Defval changing `%s'->`%s'\n",dstA->defval.data(),srcA->defval.data());
       dstA->defval=srcA->defval.copy();
     }
+
+    // fix wrongly detected const or volatile specificiers before merging.
+    // example: "const A *const" is detected as type="const A *" name="const"
+    if (srcA->name=="const" || srcA->name=="volatile")
+    {
+      srcA->type+=" "+srcA->name;
+      srcA->name.resize(0);
+    }
+    if (dstA->name=="const" || dstA->name=="volatile")
+    {
+      dstA->type+=" "+dstA->name;
+      dstA->name.resize(0);
+    }
+
     if (srcA->type==dstA->type)
     {
       if (srcA->name.isEmpty() && !dstA->name.isEmpty())
@@ -2671,8 +2708,11 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
     {
       dstA->docs = srcA->docs.copy();
     }
+    //printf("Merge argument `%s|%s' `%s|%s'\n",
+    //    srcA->type.data(),srcA->name.data(),
+    //    dstA->type.data(),dstA->name.data());
   }
-  //printf("result mergeArguments `%s', `%s'\n",
+  //printf("result mergeArguments `%s|%s', `%s|%s'\n",
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
 }
 

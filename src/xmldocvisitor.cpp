@@ -750,6 +750,8 @@ void XmlDocVisitor::visitPost(DocParamSect *)
 void XmlDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
+  m_t << "<parameteritem>" << endl;
+  m_t << "<parameternamelist>" << endl;
   QStrListIterator li(pl->parameters());
   const char *s;
   for (li.toFirst();(s=li.current());++li)
@@ -776,13 +778,15 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     filter(s);
     m_t << "</parametername>" << endl;
   }
+  m_t << "</parameternamelist>" << endl;
   m_t << "<parameterdescription>" << endl;
 }
 
 void XmlDocVisitor::visitPost(DocParamList *)
 {
   if (m_hide) return;
-  m_t << "</parameterdescription>";
+  m_t << "</parameterdescription>" << endl;
+  m_t << "</parameteritem>" << endl;
 }
 
 void XmlDocVisitor::visitPre(DocXRefItem *x)

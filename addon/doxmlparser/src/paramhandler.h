@@ -27,6 +27,7 @@
 
 class LinkedTextImpl;
 class LinkedTextHandler;
+class DocHandler;
 
 
 class ParamHandler : public IParam, public BaseHandler<ParamHandler>
@@ -40,6 +41,7 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
     virtual void endAttrib();
     virtual void endArray();
     virtual void startDefVal(const QXmlAttributes& attrib);
+    virtual void startBriefDesc(const QXmlAttributes& attrib);
 
     ParamHandler(IBaseHandler *parent);
     virtual ~ParamHandler();
@@ -51,9 +53,11 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
     virtual const IString * attrib() const { return &m_attrib; } 
     virtual const IString * arraySpecifier() const { return &m_array; }
     virtual ILinkedTextIterator *defaultValue() const;
+    virtual IDocRoot *briefDescription() const;
 
   private:
     IBaseHandler *m_parent;
+    DocHandler  *m_brief;
     QList<LinkedTextImpl> m_type;
     StringImpl m_declName;
     StringImpl m_defName;

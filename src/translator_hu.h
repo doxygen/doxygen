@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_HU_H
 #define TRANSLATOR_HU_H
 
-class TranslatorHungarian : public TranslatorAdapter_1_3_9
+class TranslatorHungarian : public Translator
 {
   private:
     const char * zed(char c)
@@ -1524,6 +1524,52 @@ class TranslatorHungarian : public TranslatorAdapter_1_3_9
     virtual QCString trSourceFile(QCString& filename)
     {
       return filename + " Forrásfájl";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Könyvtárhierarchia"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Könyvtárak dokumentációja"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Könyvtárak"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Majdnem (de nem teljesen) betûrendbe szedett "
+             "könyvtárhierarchia:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=" könyvtárreferencia"; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool /*singular*/)
+    { 
+      QCString result((first_capital ? "Könyvtár" : "könyvtár"));
+      //if (singular) result+="y"; else result+="ies";
+      return result; 
     }
 
 };

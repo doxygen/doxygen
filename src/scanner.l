@@ -197,6 +197,7 @@ static void initParser()
   autoGroupStack.setAutoDelete(TRUE);
   lastDefGroup.groupname.resize(0);
   insideFormula = FALSE;
+  insideCode=FALSE;
 }
 
 static void initEntry()
@@ -843,6 +844,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %%
 
 <*>\x06[^\x06]*\x06			{ // new file
+  					  if (YY_START==Comment)
+    					  {
+   					     warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+  					  }
   					  if (memberGroupId!=DOX_NOGROUP)
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: Missing //@}");
@@ -1661,6 +1666,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  unput(';');
 					  BEGIN(FindMembers);
   					}
+<FindMembers>"friend"{BN}+("class"|"union"|"struct"){BN}+ {
+  					  current->name=yytext;
+				          BEGIN(FindMembers);
+			 	        }
 <FindMembers,FindMemberName>{SCOPENAME}	{
 					  lineCount();
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
@@ -2112,7 +2121,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  yyLineNr++;
   					}
 <ReadInitializer>"@\""			{ 
-  					  printf("insideCS=%d\n",insideCS);
+  					  //printf("insideCS=%d\n",insideCS);
   					  current->initializer+=yytext;
                                           if (!insideCS && !insideObjC) 
 					  {
@@ -2273,7 +2282,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->section = Entry::VARIABLE_SEC ;
 					    current->fileName = yyFileName;
 					    current->startLine = yyLineNr;
-					    //printf("New variable type=`%s' name=`%s' groupId=%d\n",current->type.data(),current->name.data(),current->mGrpId);
 					    current_root->addSubEntry( current ) ;
 					  }
 					  if ( *yytext == ',')
@@ -2962,6 +2970,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CopyArgCommentLine>.			{ fullArgString+=*yytext; }
 <CopyArgComment>\n			{ fullArgString+=*yytext; yyLineNr++; }
 <CopyArgComment>.			{ fullArgString+=*yytext; }
+<CopyArgComment>{CMD}("brief"|"short"){B}+ {
+  					  warn(yyFileName,yyLineNr,
+					      "Warning: Ignoring %cbrief command inside argument documentation",*yytext
+					     );
+                                          fullArgString+=' ';
+                                        }
 <ReadTempArgs>"<"			{
 					  *copyArgString+=*yytext;
 					  fullArgString+=*yytext;
@@ -3103,8 +3117,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  BEGIN(SkipCPP);
 					}	
 <FuncQual>"="				{ // typically an initialized function pointer
-                                          current->args += *yytext; 
-					  BEGIN(FuncPtrInit);
+                                          //current->args += *yytext; 
+					  //BEGIN(FuncPtrInit);
+  					  lastInitializerContext=YY_START;
+  					  BEGIN(ReadInitializer);
   					}
 <FuncPtrInit>[{;]			{
   					  unput(*yytext);
@@ -4265,7 +4281,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->startLine = yyLineNr;
  					  BEGIN( ExampleDocArg1 );
 					}
-<Doc>{B}*{CMD}"details"{B}+		{ /* nop */
+<ClassDoc,PageDoc,Doc,JavaDoc>{B}*{CMD}"details"{B}+	{ /* nop */
 					}
 <LineDoc>{CMD}"name"[^\n]*\n		{
   					  lastDefGroup.groupname.resize(0);
@@ -5988,6 +6004,10 @@ void parseMain(Entry *rt)
   scanYYrestart( scanYYin );
   BEGIN( FindMembers );
   scanYYlex();
+  if (YY_START==Comment)
+  {
+    warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+  }
 
   forceEndGroup();
 

@@ -29,6 +29,7 @@
 #include <qtoolbutton.h>
 #include <qscrollview.h>
 #include <qlayout.h>
+#include <qtooltip.h>
 
 #include "expert.h"
 #include "inputbool.h"
@@ -71,6 +72,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           view->addChild(page);
           addTab(view,option->name());
           QWhatsThis::add(page, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(page, option->docs() );
         }
         break;
       case ConfigOption::O_String:
@@ -91,6 +93,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
                        ); 
           pageLayout->addWidget(inputString);
           QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(inputString,option->docs());
           connect(inputString,SIGNAL(changed()),SIGNAL(changed()));
           m_inputWidgets->insert(option->name(),inputString);
           addDependency(m_switches,option->dependsOn(),option->name());
@@ -113,6 +116,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
           }
           inputString->init();
           QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(inputString, option->docs());
           connect(inputString,SIGNAL(changed()),SIGNAL(changed()));
           m_inputWidgets->insert(option->name(),inputString);
           addDependency(m_switches,option->dependsOn(),option->name());
@@ -137,6 +141,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
                         );
           pageLayout->addWidget(inputStrList);
           QWhatsThis::add(inputStrList, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(inputStrList, option->docs());
           connect(inputStrList,SIGNAL(changed()),SIGNAL(changed()));
           m_inputWidgets->insert(option->name(),inputStrList);
           addDependency(m_switches,option->dependsOn(),option->name());
@@ -153,6 +158,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
                         );
           pageLayout->addWidget(inputBool);
           QWhatsThis::add(inputBool, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(inputBool, option->docs() );
           connect(inputBool,SIGNAL(changed()),SIGNAL(changed()));
           m_inputWidgets->insert(option->name(),inputBool);
           addDependency(m_switches,option->dependsOn(),option->name());
@@ -170,6 +176,7 @@ Expert::Expert( QWidget *parent ) : QTabDialog( parent )
                         );
           pageLayout->addWidget(inputInt);
           QWhatsThis::add(inputInt, option->docs().simplifyWhiteSpace() );
+          QToolTip::add(inputInt, option->docs() );
           connect(inputInt,SIGNAL(changed()),SIGNAL(changed()));
           m_inputWidgets->insert(option->name(),inputInt);
           addDependency(m_switches,option->dependsOn(),option->name());

@@ -718,7 +718,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       t << "        <param><defname>" << a->type << "</defname></param>" << endl;
     }
   }
-  if (!md->initializer().isEmpty())
+  // avoid that extremely large tables are written to the output. 
+  // todo: it's better to adhere to MAX_INITIALIZER_LINES.
+  if (!md->initializer().isEmpty() && md->initializer().length()<2000)
   {
     t << "        <initializer>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md->name(),md->initializer());

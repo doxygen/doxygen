@@ -1,4 +1,4 @@
-(1.3.8-20040907)
+(1.3.8-20040913)
 
 Doxygen supports the following 30 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
 Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
 Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 2 translators are up-to-date, 28 translators are based on
+Of them, 4 translators are up-to-date, 26 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,8 +17,10 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 201 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
+  TranslatorPolish
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -27,14 +29,12 @@ version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
   TranslatorRussian               1.3.9 	 6 methods to implement
-  TranslatorPolish                1.3.9 	 6 methods to implement
   TranslatorNorwegian             1.3.9 	 6 methods to implement
   TranslatorJapanese              1.3.9 	 6 methods to implement
   TranslatorItalian               1.3.9 	 6 methods to implement
   TranslatorHungarian             1.3.9 	 6 methods to implement
   TranslatorGerman                1.3.9 	 6 methods to implement
   TranslatorDanish                1.3.9 	 6 methods to implement
-  TranslatorCzech                 1.3.9 	 6 methods to implement
   TranslatorCroatian              1.3.9 	 6 methods to implement
   TranslatorChinese               1.3.9 	 6 methods to implement
   TranslatorBrazilian             1.3.9 	 6 methods to implement
@@ -162,21 +162,6 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_3_8)  7 methods to implement
 
 TranslatorCroatian   (TranslatorAdapter_1_3_9)  6 methods to implement
 ------------------
-
-  Implements 195 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
-
-
-TranslatorCzech   (TranslatorAdapter_1_3_9)  6 methods to implement
----------------
 
   Implements 195 of the required methods.
 
@@ -498,21 +483,6 @@ TranslatorLithuanian   (TranslatorAdapter_1_3_8)  7 methods to implement
 
 TranslatorNorwegian   (TranslatorAdapter_1_3_9)  6 methods to implement
 -------------------
-
-  Implements 195 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
-
-
-TranslatorPolish   (TranslatorAdapter_1_3_9)  6 methods to implement
-----------------
 
   Implements 195 of the required methods.
 

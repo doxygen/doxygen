@@ -1110,4 +1110,9 @@ void FileDef::combineUsingRelations()
   }
 }
 
-
+bool FileDef::isDocumentationFile() const
+{
+  return name().right(4)==".doc" ||
+         name().right(4)==".txt" ||
+         name().right(4)==".dox";
+}

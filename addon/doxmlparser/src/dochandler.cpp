@@ -551,16 +551,13 @@ void TocItemHandler::endTocItem()
 //----------------------------------------------------------------------
 
 ParameterHandler::ParameterHandler(IBaseHandler *parent) : 
-  m_parent(parent), m_description(0)
+  m_parent(parent)
 {
   addEndHandler("parametername",this,&ParameterHandler::endParameterName);
-  addEndHandler("parameterdescription",this,&ParameterHandler::endParameterDescription);
-  addStartHandler("para",this,&ParameterHandler::startParagraph);
 }
 
 ParameterHandler::~ParameterHandler()
 {
-  delete m_description;
 }
 
 void ParameterHandler::startParameterName(const QXmlAttributes& /*attrib*/)
@@ -576,21 +573,55 @@ void ParameterHandler::endParameterName()
   m_parent->setDelegate(0);
 }
 
-void ParameterHandler::startParameterDescription(const QXmlAttributes& /*attrib*/)
+//----------------------------------------------------------------------
+// ParameterListHandler
+//----------------------------------------------------------------------
+
+ParameterItemHandler::ParameterItemHandler(IBaseHandler *parent) 
+  : m_parent(parent)
+{
+  addEndHandler("parameteritem",this,&ParameterItemHandler::endParameterItem);
+  addStartHandler("parameternamelist");
+  addEndHandler("parameternamelist");
+  addStartHandler("parametername",this,&ParameterItemHandler::startParameterName);
+  addStartHandler("parameterdescription");
+  addEndHandler("parameterdescription");
+  addStartHandler("para",this,&ParameterItemHandler::startParagraph);
+  m_parameters.setAutoDelete(TRUE);
+  m_description = 0;
+}
+
+ParameterItemHandler::~ParameterItemHandler()
+{
+  delete m_description;
+}
+
+void ParameterItemHandler::startParameterItem(const QXmlAttributes&)
 {
   m_parent->setDelegate(this);
 }
 
-void ParameterHandler::endParameterDescription()
+void ParameterItemHandler::endParameterItem()
 {
   m_parent->setDelegate(0);
 }
 
-void ParameterHandler::startParagraph(const QXmlAttributes& attrib)
+void ParameterItemHandler::startParameterName(const QXmlAttributes& attrib)
 {
-  ASSERT(m_description==0);
+  ParameterHandler *param = new ParameterHandler(this);
+  m_parameters.append(param);
+  param->startParameterName(attrib);
+}
+
+void ParameterItemHandler::startParagraph(const QXmlAttributes& attrib)
+{
   m_description = new ParagraphHandler(this);
   m_description->startParagraph(attrib);
+}
+
+IDocIterator *ParameterItemHandler::paramNames() const
+{
+  return new ParameterItemIterator(*this);
 }
 
 //----------------------------------------------------------------------
@@ -601,12 +632,8 @@ ParameterListHandler::ParameterListHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   addEndHandler("parameterlist",this,&ParameterListHandler::endParameterList);
-  addStartHandler("parametername",this,&ParameterListHandler::startParameterName);
-  addStartHandler("parameterdescription",this,&ParameterListHandler::startParameterDescription);
-  addStartHandler("title");
-  addEndHandler("title");
-  m_parameters.setAutoDelete(TRUE);
-  m_curParam=0;
+  addStartHandler("parameteritem",this,&ParameterListHandler::startParameterItem);
+  m_paramItems.setAutoDelete(TRUE);
 }
 
 ParameterListHandler::~ParameterListHandler()
@@ -632,17 +659,11 @@ void ParameterListHandler::endParameterList()
   m_parent->setDelegate(0);
 }
 
-void ParameterListHandler::startParameterName(const QXmlAttributes& attrib)
+void ParameterListHandler::startParameterItem(const QXmlAttributes& attrib)
 {
-  m_curParam = new ParameterHandler(this);
-  m_parameters.append(m_curParam);
-  m_curParam->startParameterName(attrib);
-}
-
-void ParameterListHandler::startParameterDescription(const QXmlAttributes& attrib)
-{
-  ASSERT(m_curParam!=0);
-  m_curParam->startParameterDescription(attrib);
+  ParameterItemHandler *paramItem = new ParameterItemHandler(this);
+  m_paramItems.append(paramItem);
+  paramItem->startParameterItem(attrib);
 }
 
 IDocIterator *ParameterListHandler::params() const
@@ -1734,9 +1755,9 @@ void ParagraphHandler::startOrderedList(const QXmlAttributes& attrib)
 void ParagraphHandler::startParameterList(const QXmlAttributes& attrib)
 {
   addTextNode();
-  ParameterListHandler *parListHandler = new ParameterListHandler(this);
-  parListHandler->startParameterList(attrib);
-  m_children.append(parListHandler);
+  ParameterListHandler *listHandler = new ParameterListHandler(this);
+  listHandler->startParameterList(attrib);
+  m_children.append(listHandler);
 }
 
 void ParagraphHandler::startSimpleSect(const QXmlAttributes& attrib)
@@ -2148,6 +2169,7 @@ DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
 
   addEndHandler("briefdescription",this,&DocHandler::endDoc);
   addEndHandler("detaileddescription",this,&DocHandler::endDoc);
+  addEndHandler("inbodydescription",this,&DocHandler::endDoc);
   addEndHandler("internal");
 
   addStartHandler("para",this,&DocHandler::startParagraph);

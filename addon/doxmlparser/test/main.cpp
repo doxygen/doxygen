@@ -130,10 +130,25 @@ void DumpDoc(IDoc *doc,int level)
         InPrint(("</list item>\n"));
       }
       break;
+    case IDoc::ParameterItem:
+      {
+        IDocParameterItem *item = dynamic_cast<IDocParameterItem*>(doc);
+        InPrint(("<parameter item>\n"));
+        IDocIterator *di = item->paramNames();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        di->release();
+        DumpDoc(item->description(),level+1);
+        InPrint(("</parameter item>\n"));
+      }
+      break;
     case IDoc::ParameterList:
       {
         IDocParameterList *list = dynamic_cast<IDocParameterList*>(doc);
-        InPrint(("<parameter list type=%d>\n",list->listType()));
+        InPrint(("<parameter list type=%d>\n",list->sectType()));
         IDocIterator *di = list->params();
         IDoc *pdoc;
         for (di->toFirst();(pdoc=di->current());di->toNext())
@@ -149,9 +164,7 @@ void DumpDoc(IDoc *doc,int level)
       {
         IDocParameter *par = dynamic_cast<IDocParameter*>(doc);
         ASSERT(par!=0);
-        InPrint(("<parameter name=%s>\n",par->name()->latin1()));
-        DumpDoc(par->description(),level+1);
-        InPrint(("<parameter/>\n"));
+        InPrint(("<parameter name=%s/>\n",par->name()->latin1()));
       }
       break;
     case IDoc::SimpleSect:

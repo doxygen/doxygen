@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2004/09: translated new items used since version 1.3.9
  *  2004/06: translated new items used since version 1.3.8
  *  2003/11: translated new items used since version 1.3.3
  *  2003/06: translated new items used since version 1.3.1
@@ -71,7 +72,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_3_9
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1514,6 +1515,51 @@ class TranslatorItalian : public TranslatorAdapter_1_3_9
     virtual QCString trSourceFile(QCString& filename)
     {
       return " File sorgente " + filename ;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Gerarchia delle directory"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Documentazione delle directory"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Directory"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Questa gerarchia di directory è ordinata "
+        "approssimativamente, ma non completamente, in ordine alfabetico:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result="Riferimenti per la directory "; result+=dirName; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool)
+    {
+      QCString result((first_capital ? "Directory" : "directory"));
+      return result;
     }
 
 };

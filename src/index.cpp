@@ -696,13 +696,6 @@ void writeGraphicalClassHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-static bool nameIsOk(FileDef *fd)
-{
-  return fd->name().right(4)!=".doc" && 
-         fd->name().right(4)!=".txt" &&
-         fd->name().right(4)!=".dox";
-}
-
 void countFiles(int &htmlFiles,int &files)
 {
   htmlFiles=0;
@@ -717,7 +710,7 @@ void countFiles(int &htmlFiles,int &files)
     {
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      bool nameOk = nameIsOk(fd);
+      bool nameOk = !fd->isDocumentationFile();
       if (nameOk)
       {
         if (doc || src)
@@ -823,7 +816,7 @@ void writeFileIndex(OutputList &ol)
       //printf("Found filedef %s\n",fd->name().data());
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSourceFile();
-      bool nameOk = nameIsOk(fd);
+      bool nameOk = !fd->isDocumentationFile();
       if (nameOk && (doc || src) && 
               !fd->isReference())
       {
@@ -2870,13 +2863,13 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
   //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
   if (htmlHelp)
   {
-    htmlHelp->addContentsItem(isDir,dd->displayName(),dd->getOutputFileBase()); 
+    htmlHelp->addContentsItem(isDir,dd->shortName(),dd->getOutputFileBase()); 
     htmlHelp->incContentsDepth();
   }
   if (ftvHelp)
   {
     ftvHelp->addContentsItem(isDir,dd->getReference(),dd->getOutputFileBase(),
-        0,dd->displayName()); 
+        0,dd->shortName()); 
     ftvHelp->incContentsDepth();
   }
 

@@ -25,6 +25,33 @@
 
 //----------------------------------------------------------------------------
 
+IncludeHandler::IncludeHandler(IBaseHandler *parent,const char *endtag) :
+  m_parent(parent)
+{
+  addEndHandler(endtag,this,&IncludeHandler::endInclude);
+}
+
+IncludeHandler::~IncludeHandler()
+{
+}
+
+void IncludeHandler::startInclude(const QXmlAttributes &attrib)
+{
+  m_curString = "";
+  m_refId     = attrib.value("refid");
+  m_isLocal   = attrib.value("local")=="yes";
+  m_parent->setDelegate(this);
+}
+
+void IncludeHandler::endInclude()
+{
+  m_name = m_curString;
+  m_parent->setDelegate(0);
+  debug(2,"Found include %s\n",m_name.data());
+}
+
+//----------------------------------------------------------------------------
+
 class CompoundIdIterator : public ICompoundIterator,
                            public QListIterator<QString>
 {
@@ -107,11 +134,15 @@ class CompoundTypeMap
       m_map.insert("struct",new int(ICompound::Struct));
       m_map.insert("union",new int(ICompound::Union));
       m_map.insert("interface",new int(ICompound::Interface));
+      m_map.insert("protocol",new int(ICompound::Interface));
+      m_map.insert("category",new int(ICompound::Interface));
       m_map.insert("exception",new int(ICompound::Exception));
-      m_map.insert("namespace",new int(ICompound::Namespace));
       m_map.insert("file",new int(ICompound::File));
+      m_map.insert("namespace",new int(ICompound::Namespace));
       m_map.insert("group",new int(ICompound::Group));
       m_map.insert("page",new int(ICompound::Page));
+      m_map.insert("example",new int(ICompound::Page));
+      m_map.insert("dir",new int(ICompound::Page));
     }
     virtual ~CompoundTypeMap()
     {
@@ -157,6 +188,8 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   m_memberNameDict.setAutoDelete(TRUE);
   m_innerCompounds.setAutoDelete(TRUE);
   m_params.setAutoDelete(TRUE);
+  m_includes.setAutoDelete(TRUE);
+  m_includedBy.setAutoDelete(TRUE);
 
   addStartHandler("doxygen");
   addEndHandler("doxygen");
@@ -175,12 +208,15 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("derivedcompoundref",this,&CompoundHandler::addSubClass);
   addEndHandler("derivedcompoundref");
 
-  // includes
-  // includedby
-  
+  addStartHandler("includes",this,&CompoundHandler::startIncludes);
+  addStartHandler("includedby",this,&CompoundHandler::startIncludedBy);
+
   addStartHandler("incdepgraph",this,&CompoundHandler::startIncludeDependencyGraph);
 
   addStartHandler("invincdepgraph",this,&CompoundHandler::startIncludedByDependencyGraph);
+
+  addStartHandler("innerdir",this,&CompoundHandler::startInnerDir);
+  addEndHandler("innerdir");
 
   addStartHandler("innerfile",this,&CompoundHandler::startInnerFile);
   addEndHandler("innerfile");
@@ -191,7 +227,8 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("innernamespace",this,&CompoundHandler::startInnerNamespace);
   addEndHandler("innernamespace");
 
-  // innerpage
+  addStartHandler("innerpage",this,&CompoundHandler::startInnerPage);
+  addEndHandler("innerpage");
   
   addStartHandler("innergroup",this,&CompoundHandler::startInnerGroup);
   addEndHandler("innergroup");
@@ -259,6 +296,20 @@ void CompoundHandler::startProgramListing(const QXmlAttributes& attrib)
   m_programListing = plHandler;
 }
 
+void CompoundHandler::startIncludes(const QXmlAttributes& attrib)
+{
+  IncludeHandler *inc = new IncludeHandler(this,"includes");
+  m_includes.append(inc);
+  inc->startInclude(attrib);
+}
+
+void CompoundHandler::startIncludedBy(const QXmlAttributes& attrib)
+{
+  IncludeHandler *inc = new IncludeHandler(this,"includedby");
+  m_includedBy.append(inc);
+  inc->startInclude(attrib);
+}
+
 void CompoundHandler::startCompound(const QXmlAttributes& attrib)
 {
   m_id = attrib.value("id");
@@ -303,6 +354,16 @@ void CompoundHandler::startInnerFile(const QXmlAttributes& attrib)
 }
 
 void CompoundHandler::startInnerGroup(const QXmlAttributes& attrib)
+{
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startInnerPage(const QXmlAttributes& attrib)
+{
+  m_innerCompounds.append(new QString(attrib.value("refid")));
+}
+
+void CompoundHandler::startInnerDir(const QXmlAttributes& attrib)
 {
   m_innerCompounds.append(new QString(attrib.value("refid")));
 }
@@ -537,6 +598,16 @@ ICompoundIterator *CompoundHandler::nestedCompounds() const
 IDocProgramListing *CompoundHandler::source() const
 {
   return m_programListing;
+}
+
+IIncludeIterator *CompoundHandler::includes() const
+{
+  return new IncludeIterator(m_includes);
+}
+
+IIncludeIterator *CompoundHandler::includedBy() const
+{
+  return new IncludeIterator(m_includedBy);
 }
 
 IParamIterator *CompoundHandler::templateParameters() const

@@ -359,7 +359,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
     {                                                                         
-      QCString result((first_capital ? "Author" : "author"));
+      QCString result((first_capital ? "Autor" : "autor"));
       if (!singular)  result+="s";
       return result; 
     }

@@ -129,8 +129,17 @@ class MemberHandler : public IDefine,
     virtual void startType(const QXmlAttributes& attrib);
     virtual void startName(const QXmlAttributes& attrib);
     virtual void endName();
+    virtual void startRead(const QXmlAttributes& attrib);
+    virtual void endRead();
+    virtual void startWrite(const QXmlAttributes& attrib);
+    virtual void endWrite();
+    virtual void startDefinition(const QXmlAttributes& attrib);
+    virtual void endDefinition();
+    virtual void startArgsString(const QXmlAttributes& attrib);
+    virtual void endArgsString();
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
+    virtual void startInbodyDesc(const QXmlAttributes& attrib);
     virtual void startLocation(const QXmlAttributes& attrib);
     virtual void startReferences(const QXmlAttributes& attrib);
     virtual void endReferences();
@@ -165,10 +174,30 @@ class MemberHandler : public IDefine,
     { return &m_virtualness; }
     virtual const IString *name() const 
     { return &m_name; }
+    virtual const IString *readAccessor() const 
+    { return &m_read; }
+    virtual const IString *writeAccessor() const 
+    { return &m_write; }
+    virtual const IString *definition() const 
+    { return &m_definition; }
+    virtual const IString *argsstring() const 
+    { return &m_argsstring; }
     virtual bool isConst() const 
     { return m_isConst; }
     virtual bool isVolatile() const 
     { return m_isVolatile; }
+    virtual bool isStatic() const 
+    { return m_isStatic; }
+    virtual bool isExplicit() const 
+    { return m_isExplicit; }
+    virtual bool isInline() const 
+    { return m_isInline; }
+    virtual bool isMutable() const 
+    { return m_isMutable; }
+    virtual bool isReadable() const 
+    { return m_isReadable; }
+    virtual bool isWritable() const 
+    { return m_isWritable; }
     virtual ILinkedTextIterator *type() const;
     virtual const IString *typeString() const;
     virtual IParamIterator *parameters() const;
@@ -190,6 +219,7 @@ class MemberHandler : public IDefine,
     virtual IMemberReferenceIterator *reimplementedBy() const;
     virtual IDocRoot *briefDescription() const;
     virtual IDocRoot *detailedDescription() const;
+    virtual IDocRoot *inbodyDescription() const;
 
     // IEnum
     virtual IMemberIterator *enumValues() const;
@@ -212,8 +242,13 @@ class MemberHandler : public IDefine,
     QList<LinkedTextImpl> m_initializer;
     QList<LinkedTextImpl> m_exception;
     StringImpl m_name;
+    StringImpl m_read;
+    StringImpl m_write;
+    StringImpl m_definition;
+    StringImpl m_argsstring;
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
+    DocHandler  *m_inbody;
     QList<ParamHandler> m_params;
     QList<ParamHandler> m_templateParams;
     QList<MemberReference> m_references;
@@ -230,6 +265,12 @@ class MemberHandler : public IDefine,
     QList<MemberHandler> m_enumValues;
     bool m_insideTemplateParamList;
     bool m_hasTemplateParamList;
+    bool m_isStatic;
+    bool m_isExplicit;
+    bool m_isInline;
+    bool m_isMutable;
+    bool m_isReadable;
+    bool m_isWritable;
 };
 
 class MemberIterator : public BaseIteratorVia<IMemberIterator,
