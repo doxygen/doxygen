@@ -62,7 +62,7 @@ void initWarningFormat()
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_UNPUT
-  
+
 Config *Config::m_instance = 0;
 
 void ConfigInt::convertStrToVal() 
@@ -80,81 +80,81 @@ void ConfigInt::convertStrToVal()
   }
 }
 
-QCString &Config::getString(const char *name) const
+QCString &Config::getString(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    err("ConfigOption::getString: Requested unknown option %s!\n",name);
+    err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
   }
   else if (opt->kind()!=ConfigOption::O_String)
   {
-    err("ConfigOption::getString: Requested option %s not of string type!\n",name);
+    err("%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigString *)opt)->valueRef();
 }
 
-QStrList &Config::getList(const char *name) const
+QStrList &Config::getList(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    err("ConfigOption::getList: Requested unknown option %s!\n",name);
+    err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
   }
   else if (opt->kind()!=ConfigOption::O_List)
   {
-    err("ConfigOption::getList: Requested option %s not of list type!\n",name);
+    err("%d<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigList *)opt)->valueRef();
 }
 
-QCString &Config::getEnum(const char *name) const
+QCString &Config::getEnum(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    err("ConfigOption::getEnum: Requested unknown option %s!\n",name);
+    err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
   }
   else if (opt->kind()!=ConfigOption::O_Enum)
   {
-    err("ConfigOption::getEnum: Requested option %s not of enum type!\n",name);
+    err("%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigEnum *)opt)->valueRef();
 }
 
-int &Config::getInt(const char *name) const
+int &Config::getInt(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    err("ConfigOption::getInt: Requested unknown option %s!\n",name);
+    err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
   }
   else if (opt->kind()!=ConfigOption::O_Int)
   {
-    err("ConfigOption::getInt: Requested option %s not of integer type!\n",name);
+    err("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigInt *)opt)->valueRef();
 }
 
-bool &Config::getBool(const char *name) const
+bool &Config::getBool(const char *fileName,int num,const char *name) const
 {
   ConfigOption *opt = m_dict->find(name);
   if (opt==0) 
   {
-    err("ConfigOption::getInt: Requested unknown option %s!\n",name);
+    err("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
     exit(1);
   }
   else if (opt->kind()!=ConfigOption::O_Bool)
   {
-    err("ConfigOption::getInt: Requested option %s not of integer type!\n",name);
+    err("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
     exit(1);
   }
   return *((ConfigBool *)opt)->valueRef();
@@ -367,7 +367,40 @@ static void readIncludeFile(const char *incName)
 						 break;
 					     }
 					   }
-					 }
+					}
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ QCString cmd=yytext;
+                                          cmd=cmd.left(cmd.length()-2).stripWhiteSpace(); 
+					  ConfigOption *option = config->get(cmd);
+					  if (option==0) // oops not known
+					  {
+					    err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+						yytext,yyLineNr,yyFileName.data()); 
+					    BEGIN(SkipInvalid);
+					  }
+					  else // known tag
+					  {
+					    switch(option->kind())
+					    {
+					      case ConfigOption::O_Info:
+					        // shouldn't get here!
+					        BEGIN(SkipInvalid);
+						break;
+					      case ConfigOption::O_List:
+					        l = ((ConfigList *)option)->valueRef();
+						elemStr="";
+					        BEGIN(GetStrList);
+					        break;
+					      case ConfigOption::O_Enum:
+					      case ConfigOption::O_String:
+					      case ConfigOption::O_Int:
+					      case ConfigOption::O_Bool:
+					        err("Warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
+						    yytext,yyLineNr,yyFileName.data()); 
+					        BEGIN(SkipInvalid);
+						break;
+					     }
+					   }
+					}
 <Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); l=&includePathList; l->clear(); elemStr=""; }
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
@@ -675,7 +708,7 @@ void Config::check()
   //  projectName[0]=toupper(projectName[0]);
   //}
 
-  QCString &warnFormat = getString("WARN_FORMAT");
+  QCString &warnFormat = getString(__FILE__,__LINE__,"WARN_FORMAT");
   if (warnFormat.isEmpty())
   {
     warnFormat="$file:$line $text";
@@ -700,14 +733,15 @@ void Config::check()
   }
   initWarningFormat();
 
-  QCString &manExtension = getString("MAN_EXTENSION");
+  QCString &manExtension = getString(__FILE__,__LINE__,"MAN_EXTENSION");
+  
   // set default man page extension if non is given by the user
   if (manExtension.isEmpty())
   {
     manExtension=".3";
   }
   
-  QCString &paperType = getEnum("PAPER_TYPE");
+  QCString &paperType = getEnum(__FILE__,__LINE__,"PAPER_TYPE");
   paperType=paperType.lower().stripWhiteSpace(); 
   if (paperType.isEmpty())
   {
@@ -719,7 +753,7 @@ void Config::check()
     err("Error: Unknown page type specified");
   }
   
-  QCString &outputLanguage=getEnum("OUTPUT_LANGUAGE");
+  QCString &outputLanguage=getEnum(__FILE__,__LINE__,"OUTPUT_LANGUAGE");
   outputLanguage=outputLanguage.stripWhiteSpace();
   if (outputLanguage.isEmpty())
   {
@@ -740,7 +774,7 @@ void Config::check()
   }
   
   // expand the relative stripFromPath values
-  QStrList &stripFromPath = getList("STRIP_FROM_PATH");
+  QStrList &stripFromPath = getList(__FILE__,__LINE__,"STRIP_FROM_PATH");
   char *sfp = stripFromPath.first();
   while (sfp)
   {
@@ -763,7 +797,7 @@ void Config::check()
   
   
   // Test to see if HTML header is valid
-  QCString &headerFile = getString("HTML_HEADER");
+  QCString &headerFile = getString(__FILE__,__LINE__,"HTML_HEADER");
   if (!headerFile.isEmpty())
   {
     QFileInfo fi(headerFile);
@@ -775,7 +809,7 @@ void Config::check()
     }
   }
   // Test to see if HTML footer is valid
-  QCString &footerFile = getString("HTML_FOOTER");
+  QCString &footerFile = getString(__FILE__,__LINE__,"HTML_FOOTER");
   if (!footerFile.isEmpty())
   {
     QFileInfo fi(footerFile);
@@ -787,7 +821,7 @@ void Config::check()
     }
   }
   // Test to see if LaTeX header is valid
-  QCString &latexHeaderFile = getString("LATEX_HEADER");
+  QCString &latexHeaderFile = getString(__FILE__,__LINE__,"LATEX_HEADER");
   if (!latexHeaderFile.isEmpty())
   {
     QFileInfo fi(latexHeaderFile);
@@ -799,7 +833,7 @@ void Config::check()
     }
   }
   // check include path
-  QStrList &includePath = getList("INCLUDE_PATH");
+  QStrList &includePath = getList(__FILE__,__LINE__,"INCLUDE_PATH");
   char *s=includePath.first();
   while (s)
   {
@@ -813,7 +847,7 @@ void Config::check()
   }
 
   // check aliases
-  QStrList &aliasList = getList("ALIASES");
+  QStrList &aliasList = getList(__FILE__,__LINE__,"ALIASES");
   s=aliasList.first();
   while (s)
   {
@@ -828,7 +862,7 @@ void Config::check()
   }
   
   // check dot path
-  QCString &dotPath = getString("DOT_PATH");
+  QCString &dotPath = getString(__FILE__,__LINE__,"DOT_PATH");
   if (!dotPath.isEmpty())
   {
     if (dotPath.find('\\')!=-1)
@@ -870,7 +904,7 @@ void Config::check()
   }
   
   // check input
-  QStrList &inputSources=getList("INPUT");
+  QStrList &inputSources=getList(__FILE__,__LINE__,"INPUT");
   if (inputSources.count()==0)
   {
     err("Error: tag INPUT: no input files specified after the INPUT tag.\n");
@@ -892,38 +926,38 @@ void Config::check()
   }
 
   // add default pattern if needed
-  QStrList &filePatternList = getList("FILE_PATTERNS");
+  QStrList &filePatternList = getList(__FILE__,__LINE__,"FILE_PATTERNS");
   if (filePatternList.isEmpty())
   {
     filePatternList.append("*");
   }
 
   // add default pattern if needed
-  QStrList &examplePatternList = getList("EXAMPLE_PATTERNS");
+  QStrList &examplePatternList = getList(__FILE__,__LINE__,"EXAMPLE_PATTERNS");
   if (examplePatternList.isEmpty())
   {
     examplePatternList.append("*");
   }
 
   // add default pattern if needed
-  //QStrList &imagePatternList = getList("IMAGE_PATTERNS");
+  //QStrList &imagePatternList = getList(__FILE__,__LINE__,"IMAGE_PATTERNS");
   //if (imagePatternList.isEmpty())
   //{
   //  imagePatternList.append("*");
   //}
   
   // more checks needed if and only if the search engine is enabled.
-  if (getBool("SEARCHENGINE"))
+  if (getBool(__FILE__,__LINE__,"SEARCHENGINE"))
   {
     // check cgi name
-    QCString &cgiName = getString("CGI_NAME");
+    QCString &cgiName = getString(__FILE__,__LINE__,"CGI_NAME");
     if (cgiName.isEmpty())
     {
       err("Error: tag CGI_NAME: no cgi script name after the CGI_NAME tag.\n");
       exit(1);
     }
     // check cgi URL
-    QCString &cgiURL = getString("CGI_URL");
+    QCString &cgiURL = getString(__FILE__,__LINE__,"CGI_URL");
     if (cgiURL.isEmpty())
     {
       err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
@@ -938,10 +972,10 @@ void Config::check()
       exit(1);
     }
     // check documentation URL
-    QCString &docURL = getString("DOC_URL");
+    QCString &docURL = getString(__FILE__,__LINE__,"DOC_URL");
     if (docURL.isEmpty())
     {
-      docURL = getString("OUTPUT_DIRECTORY").copy().prepend("file://").append("html");
+      docURL = getString(__FILE__,__LINE__,"OUTPUT_DIRECTORY").copy().prepend("file://").append("html");
     }
     else if (docURL.left(7)!="http://" && 
 	     docURL.left(8)!="https://" &&
@@ -953,10 +987,10 @@ void Config::check()
       exit(1);
     }
     // check absolute documentation path
-    QCString &docAbsPath = getString("DOC_ABSPATH");
+    QCString &docAbsPath = getString(__FILE__,__LINE__,"DOC_ABSPATH");
     if (docAbsPath.isEmpty())
     {
-      docAbsPath = getString("OUTPUT_DIRECTORY")+"/html"; 
+      docAbsPath = getString(__FILE__,__LINE__,"OUTPUT_DIRECTORY")+"/html"; 
     }
     else if (docAbsPath[0]!='/' && docAbsPath[1]!=':')
     {
@@ -964,7 +998,7 @@ void Config::check()
       exit(1);
     }
     // check path to doxysearch
-    QCString &binAbsPath = getString("BIN_ABSPATH");
+    QCString &binAbsPath = getString(__FILE__,__LINE__,"BIN_ABSPATH");
     if (binAbsPath.isEmpty())
     {
       err("Error: tag BIN_ABSPATH: no absolute path to doxysearch "
@@ -979,7 +1013,7 @@ void Config::check()
 
     // check perl path
     bool found=FALSE;
-    QCString &perlPath = getString("PERL_PATH");
+    QCString &perlPath = getString(__FILE__,__LINE__,"PERL_PATH");
     if (perlPath.isEmpty())
     {
       QFileInfo fi;
@@ -1017,7 +1051,7 @@ void Config::check()
 #else
 #define PUTENV putenv
 #endif
-  if (getBool("HAVE_DOT")) PUTENV("DOTFONTPATH=.");
+  if (getBool(__FILE__,__LINE__,"HAVE_DOT")) PUTENV("DOTFONTPATH=.");
   
 }
 
@@ -1048,18 +1082,18 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   
   
-  cs = addString(//"projectName",
+  cs = addString(
                  "PROJECT_NAME",
                  "The PROJECT_NAME tag is a single word (or a sequence of words surrounded \n"
                  "by quotes) that should identify the project. "
                 );
-  cs = addString(//"projectNumber",
+  cs = addString(
                  "PROJECT_NUMBER",
                  "The PROJECT_NUMBER tag can be used to enter a project or revision number. \n"
                  "This could be handy for archiving the generated documentation or \n"
                  "if some version control system is used.\n"
                 );
-  cs = addString(//"outputDir",
+  cs = addString(
                  "OUTPUT_DIRECTORY",
                  "The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) \n"
                  "base path where the generated documentation will be put. \n"
@@ -1067,7 +1101,7 @@ void Config::create()
                  "where doxygen was started. If left blank the current directory will be used.\n"
 		);
   cs->setWidgetType(ConfigString::Dir);
-  ce = addEnum(//"outputLanguage",
+  ce = addEnum(
                     "OUTPUT_LANGUAGE",
                     "The OUTPUT_LANGUAGE tag is used to specify the language in which all \n"
                     "documentation generated by doxygen is written. Doxygen will use this \n"
@@ -1098,7 +1132,7 @@ void Config::create()
   ce->addValue("Slovene");
   ce->addValue("Spanish");
   ce->addValue("Swedish");
-  cb = addBool(  //"extractAllFlag",
+  cb = addBool(
                     "EXTRACT_ALL",
                     "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
                     "documentation are documented, even if no documentation was available. \n"
@@ -1106,19 +1140,19 @@ void Config::create()
                     "the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES \n",
                     FALSE
                  );
-  cb = addBool(  //"extractPrivateFlag",
+  cb = addBool(
                     "EXTRACT_PRIVATE",
                     "If the EXTRACT_PRIVATE tag is set to YES all private members of a class \n"
                     "will be included in the documentation. \n",
                     FALSE
                  );
-  cb = addBool(  //"extractStaticFlag",
+  cb = addBool(
                     "EXTRACT_STATIC",
                     "If the EXTRACT_STATIC tag is set to YES all static members of a file \n"
                     "will be included in the documentation. \n",
                     FALSE
                  );
-  cb = addBool(  //"hideMemberFlag",
+  cb = addBool(
                     "HIDE_UNDOC_MEMBERS",
                     "If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all \n"
                     "undocumented members of documented classes, files or namespaces. \n"
@@ -1127,7 +1161,7 @@ void Config::create()
                     "This option has no effect if EXTRACT_ALL is enabled. \n",
                     FALSE
                  );
-  cb = addBool(  //"hideClassFlag",
+  cb = addBool(
                     "HIDE_UNDOC_CLASSES",
                     "If the HIDE_UNDOC_CLASSES tag is set to YES, Doxygen will hide all \n"
                     "undocumented classes that are normally visible in the class hierarchy. \n"
@@ -1135,7 +1169,7 @@ void Config::create()
                     "overviews. This option has no effect if EXTRACT_ALL is enabled. \n",
                     FALSE
                  );
-  cb = addBool(  //"briefMemDescFlag",
+  cb = addBool(
                     "BRIEF_MEMBER_DESC",
                     "If the BRIEF_MEMBER_DESC tag is set to YES (the default) Doxygen will \n"
                     "include brief member descriptions after the members that are listed in \n"
@@ -1143,7 +1177,7 @@ void Config::create()
                     "Set to NO to disable this. \n",
                     TRUE
                  );
-  cb = addBool(  //"repeatBriefFlag",
+  cb = addBool(
                     "REPEAT_BRIEF",
                     "If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend \n"
                     "the brief description of a member or function before the detailed description. \n"
@@ -1151,21 +1185,21 @@ void Config::create()
                     "brief descriptions will be completely suppressed. \n",
                     TRUE
                  );
-  cb = addBool(  //"alwaysDetailsFlag",
+  cb = addBool(
                     "ALWAYS_DETAILED_SEC",
                     "If the ALWAYS_DETAILED_SEC and REPEAT_BRIEF tags are both set to YES then \n"
                     "Doxygen will generate a detailed section even if there is only a brief \n"
                     "description. \n",
                     FALSE
                  );
-  cb = addBool(  //"fullPathNameFlag",
+  cb = addBool(
                     "FULL_PATH_NAMES",
                     "If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full \n"
                     "path before files name in the file list and in the header files. If set \n"
                     "to NO the shortest path that makes the file name unique will be used. \n",
                     FALSE
                  );
-  cl = addList(  //"stripFromPath",
+  cl = addList(
                     "STRIP_FROM_PATH",
                     "If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag \n"
                     "can be used to strip a user defined part of the path. Stripping is \n"
@@ -1173,7 +1207,7 @@ void Config::create()
                     "the path. It is allowed to use relative paths in the argument list.\n"
                  );
   cl->addDependency("FULL_PATH_NAMES");
-  cb = addBool(  //"internalDocsFlag",
+  cb = addBool(
                     "INTERNAL_DOCS",
                     "The INTERNAL_DOCS tag determines if documentation \n"
                     "that is typed after a \\internal command is included. If the tag is set \n"
@@ -1181,33 +1215,33 @@ void Config::create()
                     "Set it to YES to include the internal documentation. \n",
                     FALSE
                  );
-  cb = addBool(  //"classDiagramFlag",
+  cb = addBool(
                     "CLASS_DIAGRAMS",
                     "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will \n"
                     "generate a class diagram (in Html and LaTeX) for classes with base or \n"
                     "super classes. Setting the tag to NO turns the diagrams off. \n",
                     TRUE
                  );
-  cb = addBool(  //"sourceBrowseFlag",
+  cb = addBool(
                     "SOURCE_BROWSER",
                     "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
                     "be generated. Documented entities will be cross-referenced with these sources. \n",
                     FALSE
                  );
-  cb = addBool(  //"inlineSourceFlag",
+  cb = addBool(
                     "INLINE_SOURCES",
                     "Setting the INLINE_SOURCES tag to YES will include the body \n"
                     "of functions and classes directly in the documentation. \n",
                     FALSE
                  );
-  cb = addBool(  //"stripCommentsFlag",
+  cb = addBool(
                     "STRIP_CODE_COMMENTS",
                     "Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct \n"
                     "doxygen to hide any special comment blocks from generated source code \n"
                     "fragments. Normal C and C++ comments will always remain visible. \n",
                     TRUE
                  );
-  cb = addBool(  //"caseSensitiveNames",
+  cb = addBool(
                     "CASE_SENSE_NAMES",
                     "If the CASE_SENSE_NAMES tag is set to NO then Doxygen will only generate \n"
                     "file names in lower case letters. If set to YES upper case letters are also \n"
@@ -1216,28 +1250,35 @@ void Config::create()
                     "users are adviced to set this option to NO.\n",
                     TRUE
                  );
-  cb = addBool(  //"hideScopeNames",
+  cb = addBool(
+                    "SHORT_NAMES",
+		    "If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter \n"
+		    "(but less readable) file names. This can be useful is your file systems \n"
+		    "doesn't support long names like on DOS, Mac, or CD-ROM. \n",
+		    FALSE
+                 );
+  cb = addBool(
                     "HIDE_SCOPE_NAMES",
                     "If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen \n"
                     "will show members with their full class and namespace scopes in the \n"
                     "documentation. If set to YES the scope will be hidden. \n",
                     FALSE
                  );
-  cb = addBool(  //"verbatimHeaderFlag",
+  cb = addBool(
                     "VERBATIM_HEADERS",
                     "If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen \n"
                     "will generate a verbatim copy of the header file for each class for \n"
                     "which an include is specified. Set to NO to disable this. \n",
                     TRUE
                  );
-  cb = addBool(  //"showIncFileFlag",
+  cb = addBool(
                     "SHOW_INCLUDE_FILES",
                     "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
                     "will put list of the files that are included by a file in the documentation \n"
                     "of that file. \n",
                     TRUE
                  );
-  cb = addBool(  //"autoBriefFlag",
+  cb = addBool(
                     "JAVADOC_AUTOBRIEF",
                     "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
                     "will interpret the first line (until the first dot) of a JavaDoc-style \n"
@@ -1246,20 +1287,20 @@ void Config::create()
                     "explict @brief command for a brief description. \n",
                     FALSE
                  );
-  cb = addBool(  //"inheritDocsFlag",
+  cb = addBool(
                     "INHERIT_DOCS",
                     "If the INHERIT_DOCS tag is set to YES (the default) then an undocumented \n"
                     "member inherits the documentation from any documented member that it \n"
                     "reimplements. \n",
                     TRUE
                  );
-  cb = addBool(  //"inlineInfoFlag",
+  cb = addBool(
                     "INLINE_INFO",
                     "If the INLINE_INFO tag is set to YES (the default) then a tag [inline] \n"
                     "is inserted in the documentation for inline members. \n",
                     TRUE
                  );
-  cb = addBool(  //"sortMembersFlag",
+  cb = addBool(
                     "SORT_MEMBER_DOCS",
                     "If the SORT_MEMBER_DOCS tag is set to YES (the default) then doxygen \n"
                     "will sort the (detailed) documentation of file and class members \n"
@@ -1267,7 +1308,7 @@ void Config::create()
                     "declaration order. \n",
                     TRUE
                  );
-  cb = addBool(  //"distributeDocFlag",
+  cb = addBool(
                     "DISTRIBUTE_GROUP_DOC",
                     "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
                     "tag is set to YES, then doxygen will reuse the documentation of the first \n"
@@ -1275,39 +1316,39 @@ void Config::create()
                     "all members of a group must be documented explicitly.\n",
                     FALSE
                  );
-  ci = addInt(   //"tabSize",
+  ci = addInt(
                     "TAB_SIZE",
                     "The TAB_SIZE tag can be used to set the number of spaces in a tab. \n"
                     "Doxygen uses this value to replace tabs by spaces in code fragments. \n",
                     1,16,8
                 );
-  cl = addList(  //"sectionFilterList",
+  cl = addList(
                     "ENABLED_SECTIONS",
-                    "The ENABLE_SECTIONS tag can be used to enable conditional \n"
+                    "The ENABLED_SECTIONS tag can be used to enable conditional \n"
                     "documentation sections, marked by \\if sectionname ... \\endif. \n"
                  );
-  cb = addBool(  //"generateTodoList",
+  cb = addBool(
                     "GENERATE_TODOLIST",
                     "The GENERATE_TODOLIST tag can be used to enable (YES) or \n"
                     "disable (NO) the todo list. This list is created by putting \\todo \n"
                     "commands in the documentation.\n",
                     TRUE
                  );
-  cb = addBool(  //"generateTestList",
+  cb = addBool(
                     "GENERATE_TESTLIST",
                     "The GENERATE_TESTLIST tag can be used to enable (YES) or \n"
                     "disable (NO) the test list. This list is created by putting \\test \n"
                     "commands in the documentation.\n",
                     TRUE
                  );
-  cb = addBool(  //"generateBugList",
+  cb = addBool(
                     "GENERATE_BUGLIST",
                     "The GENERATE_BUGLIST tag can be used to enable (YES) or \n"
                     "disable (NO) the bug list. This list is created by putting \\bug \n"
                     "commands in the documentation.\n",
                     TRUE
                  );
-  cl = addList(  //"aliasList",
+  cl = addList(
                     "ALIASES",
                     "This tag can be used to specify a number of aliases that acts \n"
                     "as commands in the documentation. An alias has the form \"name=value\". \n"
@@ -1316,7 +1357,7 @@ void Config::create()
                     "will result in a user defined paragraph with heading \"Side Effects:\". \n"
                     "You can put \\n's in the value part of an alias to insert newlines. \n" 
                  );
-  ci = addInt(   //"maxInitLines",
+  ci = addInt(
                     "MAX_INITIALIZER_LINES",
                     "The MAX_INITIALIZER_LINES tag determines the maximum number of lines \n"
                     "the initial value of a variable or define consist of for it to appear in \n"
@@ -1327,7 +1368,7 @@ void Config::create()
                     "command in the documentation regardless of this setting. \n",
                     0,10000,30
                  );
-  cb = addBool(  //"optimizeForCFlag",
+  cb = addBool(
                     "OPTIMIZE_OUTPUT_FOR_C",
                     "Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources \n"
                     "only. Doxygen will then generate output that is more tailored for C. \n"
@@ -1335,7 +1376,7 @@ void Config::create()
                     "of all members will be omitted, etc. \n",
                     FALSE
                  );
-  cb = addBool(  //"showUsedFilesFlag",
+  cb = addBool(
                     "SHOW_USED_FILES",
                     "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
                     "at the bottom of the documentation of classes and structs. If set to YES the \n"
@@ -1346,27 +1387,27 @@ void Config::create()
   addInfo(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------
 
-  cb = addBool(  //"quietFlag",
+  cb = addBool(
                     "QUIET",
                     "The QUIET tag can be used to turn on/off the messages that are generated \n"
                     "by doxygen. Possible values are YES and NO. If left blank NO is used. \n",
                     FALSE
                  );
-  cb = addBool(  //"warningFlag",
+  cb = addBool(
                     "WARNINGS",
                     "The WARNINGS tag can be used to turn on/off the warning messages that are \n"
                     "generated by doxygen. Possible values are YES and NO. If left blank \n"
                     "NO is used. \n",
                     TRUE
                  );
-  cb = addBool(  //"warningUndocFlag",
+  cb = addBool(
                     "WARN_IF_UNDOCUMENTED",
                     "If WARN_IF_UNDOCUMENTED is set to YES, then doxygen will generate warnings \n"
                     "for undocumented members. If EXTRACT_ALL is set to YES then this flag will \n"
                     "automatically be disabled. \n",
                     TRUE
                  );
-  cs = addString(//"warnFormat",
+  cs = addString(
                     "WARN_FORMAT",
                     "The WARN_FORMAT tag determines the format of the warning messages that \n"
                     "doxygen can produce. The string should contain the $file, $line, and $text \n"
@@ -1374,7 +1415,7 @@ void Config::create()
                     "warning originated and the warning text. \n"
                    ); 
   cs->setDefaultValue("$file:$line: $text");
-  cs = addString(//"warnLogFile",
+  cs = addString(
                     "WARN_LOGFILE",
                     "The WARN_LOGFILE tag can be used to specify a file to which warning \n"
                     "and error messages should be written. If left blank the output is written \n"
@@ -1383,7 +1424,7 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Input","configuration options related to the input files");
   //-----------------------------------------------------------------------------------------------
-  cl = addList(  //"inputSources",
+  cl = addList(
                     "INPUT",
                     "The INPUT tag can be used to specify the files and/or directories that contain \n"
                     "documented source files. You may enter file names like \"myfile.cpp\" or \n"
@@ -1391,55 +1432,55 @@ void Config::create()
                     "with spaces. \n"
                  );
   cl->setWidgetType(ConfigList::FileAndDir);
-  cl = addList(  //"filePatternList",
+  cl = addList(
                     "FILE_PATTERNS",
                     "If the value of the INPUT tag contains directories, you can use the \n"
                     "FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp \n"
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank all files are included. \n"
                  );
-  cb = addBool(  //"recursiveFlag",
+  cb = addBool(
                     "RECURSIVE",
                     "The RECURSIVE tag can be used to turn specify whether or not subdirectories \n"
                     "should be searched for input files as well. Possible values are YES and NO. \n"
                     "If left blank NO is used. \n",
                     FALSE
                  );
-  cl = addList(  //"excludeSources",
+  cl = addList(
                     "EXCLUDE",
                     "The EXCLUDE tag can be used to specify files and/or directories that should \n"
                     "excluded from the INPUT source files. This way you can easily exclude a \n"
                     "subdirectory from a directory tree whose root is specified with the INPUT tag. \n"
                  );
   cl->setWidgetType(ConfigList::FileAndDir);
-  cl = addList(  //"excludePatternList",
+  cl = addList(
                     "EXCLUDE_PATTERNS",
                     "If the value of the INPUT tag contains directories, you can use the \n"
                     "EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude \n"
                     "certain files from those directories. \n"
                  );
-  cl = addList(  //"examplePath",
+  cl = addList(
                     "EXAMPLE_PATH",
                     "The EXAMPLE_PATH tag can be used to specify one or more files or \n"
                     "directories that contain example code fragments that are included (see \n"
                     "the \\include command). \n"
                  );
   cl->setWidgetType(ConfigList::Dir);
-  cl = addList(  //"examplePatternList",
+  cl = addList(
                     "EXAMPLE_PATTERNS",
                     "If the value of the EXAMPLE_PATH tag contains directories, you can use the \n"
                     "EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp \n"
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank all files are included. \n"
                  );
-  cl = addList(  //"imagePath",
+  cl = addList(
                     "IMAGE_PATH",
                     "The IMAGE_PATH tag can be used to specify one or more files or \n"
                     "directories that contain image that are included in the documentation (see \n"
                     "the \\image command). \n"
                  );
   cl->setWidgetType(ConfigList::Dir);
-  cs = addString(//"inputFilter",
+  cs = addString(
                     "INPUT_FILTER",
                     "The INPUT_FILTER tag can be used to specify a program that doxygen should \n"
                     "invoke to filter for each input file. Doxygen will invoke the filter program \n"
@@ -1449,7 +1490,7 @@ void Config::create()
                     "to standard output. \n"
                    );
   cl->setWidgetType(ConfigList::File);
-  cb = addBool(  //"filterForSourceFlag",
+  cb = addBool(
                     "FILTER_SOURCE_FILES",
                     "If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using \n"
                     "INPUT_FILTER) will be used to filter the input files when producing source \n"
@@ -1461,21 +1502,21 @@ void Config::create()
   addInfo(  "Index","configuration options related to the alphabetical class index");
   //-----------------------------------------------------------------------------------------------
   
-  cb = addBool(  //"alphaIndexFlag",
+  cb = addBool(
                     "ALPHABETICAL_INDEX",
                     "If the ALPHABETICAL_INDEX tag is set to YES, an alphabetical index \n"
                     "of all compounds will be generated. Enable this if the project \n"
                     "contains a lot of classes, structs, unions or interfaces. \n",
                     FALSE
                  );
-  ci = addInt(   //"colsInAlphaIndex",
+  ci = addInt(
                     "COLS_IN_ALPHA_INDEX",
                     "If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then \n"
                     "the COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns \n"
                     "in which this list will be split (can be a number in the range [1..20]) \n",
                     1,20,5
                 );
-  cl = addList(  //"ignorePrefixList",
+  cl = addList(
                     "IGNORE_PREFIX",
                     "In case all classes in a project start with a common prefix, all \n"
                     "classes will be put under the same header in the alphabetical index. \n"
@@ -1485,13 +1526,13 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "HTML","configuration options related to the HTML output");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"generateHtml",
+  cb = addBool(
                     "GENERATE_HTML",
                     "If the GENERATE_HTML tag is set to YES (the default) Doxygen will \n"
                     "generate HTML output. \n",
                     TRUE
                  );
-  cs = addString(//"htmlOutputDir",
+  cs = addString(
                     "HTML_OUTPUT",
                     "The HTML_OUTPUT tag is used to specify where the HTML docs will be put. \n"
                     "If a relative path is entered the value of OUTPUT_DIRECTORY will be \n"
@@ -1500,7 +1541,7 @@ void Config::create()
   cs->setDefaultValue("html");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_HTML");
-  cs = addString(//"headerFile",
+  cs = addString(
                     "HTML_HEADER",
                     "The HTML_HEADER tag can be used to specify a personal HTML header for \n"
                     "each generated HTML page. If it is left blank doxygen will generate a \n"
@@ -1508,7 +1549,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
-  cs = addString(//"footerFile",
+  cs = addString(
                     "HTML_FOOTER",
                     "The HTML_FOOTER tag can be used to specify a personal HTML footer for \n"
                     "each generated HTML page. If it is left blank doxygen will generate a \n"
@@ -1516,7 +1557,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
-  cs = addString(//"htmlStyleSheet",
+  cs = addString(
                     "HTML_STYLESHEET",
                     "The HTML_STYLESHEET tag can be used to specify a user defined cascading \n"
                     "style sheet that is used by each HTML page. It can be used to \n"
@@ -1525,7 +1566,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
-  cb = addBool(  //"htmlAlignMemberFlag",
+  cb = addBool( 
                     "HTML_ALIGN_MEMBERS",
                     "If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, \n"
                     "files or namespaces will be aligned in HTML using tables. If set to \n"
@@ -1533,7 +1574,7 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("GENERATE_HTML");
-  cb = addBool(  //"htmlHelpFlag",
+  cb = addBool(
                     "GENERATE_HTMLHELP",
                     "If the GENERATE_HTMLHELP tag is set to YES, additional index files \n"
                     "will be generated that can be used as input for tools like the \n"
@@ -1542,7 +1583,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  cb = addBool(  //"htmlHelpChiFlag",
+  cb = addBool(
                     "GENERATE_CHI",
                     "If the GENERATE_HTMLHELP tag is set to YES, the GENERATE_CHI flag \n"
                     "controls if a separate .chi index file is generated (YES) or that \n"
@@ -1550,7 +1591,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  cb = addBool(  //"htmlHelpTocFlag",
+  cb = addBool(
                     "BINARY_TOC",
                     "If the GENERATE_HTMLHELP tag is set to YES, the BINARY_TOC flag \n"
                     "controls whether a binary table of contents is generated (YES) or a \n"
@@ -1558,14 +1599,14 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  cb = addBool(  //"htmlHelpTocExpandFlag",
+  cb = addBool(
                     "TOC_EXPAND",
                     "The TOC_EXPAND flag can be set YES to add extra items for group members \n"
                     "to the contents of the Html help documentation and to the tree view. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  cb = addBool(  //"noIndexFlag",
+  cb = addBool(
                     "DISABLE_INDEX",
                     "The DISABLE_INDEX tag can be used to turn on/off the condensed index at \n"
                     "top of each HTML page. The value NO (the default) enables the index and \n"
@@ -1573,14 +1614,14 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  ci = addInt(   //"enumValuesPerLine",
+  ci = addInt(
                     "ENUM_VALUES_PER_LINE",
                     "This tag can be used to set the number of enum values (range [1..20]) \n"
                     "that doxygen will group on one line in the generated HTML documentation. \n",
                     1,20,4
                 );
   ci->addDependency("GENERATE_HTML");
-  cb = addBool(  //"ftvHelpFlag",
+  cb = addBool(
                     "GENERATE_TREEVIEW",
                     "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
                     "generated containing a tree-like index structure (just like the one that \n"
@@ -1590,7 +1631,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
-  ci = addInt(   //"treeViewWidth",
+  ci = addInt(
                     "TREEVIEW_WIDTH",
                     "If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be \n"
                     "used to set the initial width (in pixels) of the frame in which the tree \n"
@@ -1602,13 +1643,13 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "LaTeX","configuration options related to the LaTeX output");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"generateLatex",
+  cb = addBool(
                     "GENERATE_LATEX",
                     "If the GENERATE_LATEX tag is set to YES (the default) Doxygen will \n"
                     "generate Latex output. \n",
                     TRUE
                  );
-  cs = addString(//"latexOutputDir",
+  cs = addString(
                     "LATEX_OUTPUT",
                     "The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. \n"
                     "If a relative path is entered the value of OUTPUT_DIRECTORY will be \n"
@@ -1617,7 +1658,7 @@ void Config::create()
   cs->setDefaultValue("latex");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_LATEX");
-  cb = addBool(  //"compactLatexFlag",
+  cb = addBool(
                     "COMPACT_LATEX",
                     "If the COMPACT_LATEX tag is set to YES Doxygen generates more compact \n"
                     "LaTeX documents. This may be useful for small projects and may help to \n"
@@ -1625,7 +1666,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_LATEX");
-  ce = addEnum(//"paperType",
+  ce = addEnum(
                     "PAPER_TYPE",
                     "The PAPER_TYPE tag can be used to set the paper type that is used \n"
                     "by the printer. Possible values are: a4, a4wide, letter, legal and \n"
@@ -1638,13 +1679,13 @@ void Config::create()
   ce->addValue("legal");
   ce->addValue("executive");
   ce->addDependency("GENERATE_LATEX");
-  cl = addList(  //"extraPackageList",
+  cl = addList(
                     "EXTRA_PACKAGES",
                     "The EXTRA_PACKAGES tag can be to specify one or more names of LaTeX \n"
                     "packages that should be included in the LaTeX output. \n"
                  );
   cl->addDependency("GENERATE_LATEX");
-  cs = addString(//"latexHeaderFile",
+  cs = addString(
                     "LATEX_HEADER",
                     "The LATEX_HEADER tag can be used to specify a personal LaTeX header for \n"
                     "the generated latex document. The header should contain everything until \n"
@@ -1653,7 +1694,7 @@ void Config::create()
                  );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_LATEX");
-  cb = addBool(  //"pdfHyperFlag",
+  cb = addBool(
                     "PDF_HYPERLINKS",
                     "If the PDF_HYPERLINKS tag is set to YES, the LaTeX that is generated \n"
                     "is prepared for conversion to pdf (using ps2pdf). The pdf file will \n"
@@ -1662,7 +1703,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_LATEX");
-  cb = addBool(  //"usePDFLatexFlag",
+  cb = addBool(
                     "USE_PDFLATEX",
                     "If the USE_PDFLATEX tag is set to YES, pdflatex will be used instead of \n"
                     "plain latex in the generated Makefile. Set this option to YES to get a \n"
@@ -1670,7 +1711,7 @@ void Config::create()
                     FALSE
                  );   
   cb->addDependency("GENERATE_LATEX");
-  cb = addBool(  //"latexBatchModeFlag",
+  cb = addBool(
                     "LATEX_BATCHMODE",
                     "If the LATEX_BATCHMODE tag is set to YES, doxygen will add the \\\\batchmode. \n"
                     "command to the generated LaTeX files. This will instruct LaTeX to keep \n"
@@ -1682,14 +1723,14 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "RTF","configuration options related to the RTF output");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"generateRTF",
+  cb = addBool(
                     "GENERATE_RTF",
                     "If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output \n"
                     "The RTF output is optimised for Word 97 and may not look very pretty with \n"
                     "other RTF readers or editors.\n",
                     TRUE
                  );
-  cs = addString(//"rtfOutputDir",
+  cs = addString(
                     "RTF_OUTPUT",
                     "The RTF_OUTPUT tag is used to specify where the RTF docs will be put. \n"
                     "If a relative path is entered the value of OUTPUT_DIRECTORY will be \n"
@@ -1698,7 +1739,7 @@ void Config::create()
   cs->setDefaultValue("rtf");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_RTF");
-  cb = addBool(  //"compactRTFFlag",
+  cb = addBool(
                     "COMPACT_RTF",
                     "If the COMPACT_RTF tag is set to YES Doxygen generates more compact \n"
                     "RTF documents. This may be useful for small projects and may help to \n"
@@ -1706,7 +1747,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_RTF");
-  cb = addBool(  //"rtfHyperFlag",
+  cb = addBool(
                     "RTF_HYPERLINKS",
                     "If the RTF_HYPERLINKS tag is set to YES, the RTF that is generated \n"
                     "will contain hyperlink fields. The RTF file will \n"
@@ -1717,7 +1758,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_RTF");
-  cs = addString(//"rtfStylesheetFile",
+  cs = addString(
                     "RTF_STYLESHEET_FILE",
                     "Load stylesheet definitions from file. Syntax is similar to doxygen's \n"
                     "config file, i.e. a series of assigments. You only have to provide \n"
@@ -1725,7 +1766,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_RTF");
-  cs = addString(//"rtfExtentionsFile", 
+  cs = addString(
                     "RTF_EXTENSIONS_FILE",
                     "Set optional variables used in the generation of an rtf document. \n"
                     "Syntax is similar to doxygen's config file.\n"
@@ -1736,13 +1777,13 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Man","configuration options related to the man page output");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"generateMan",
+  cb = addBool(
                     "GENERATE_MAN",
                     "If the GENERATE_MAN tag is set to YES (the default) Doxygen will \n"
                     "generate man pages \n",
                     TRUE
                    );
-  cs = addString(//"manOutputDir",
+  cs = addString(
                     "MAN_OUTPUT",
                     "The MAN_OUTPUT tag is used to specify where the man pages will be put. \n"
                     "If a relative path is entered the value of OUTPUT_DIRECTORY will be \n"
@@ -1751,7 +1792,7 @@ void Config::create()
   cs->setDefaultValue("man");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_MAN");
-  cs = addString(//"manExtension",
+  cs = addString(
                     "MAN_EXTENSION",
                     "The MAN_EXTENSION tag determines the extension that is added to \n"
                     "the generated man pages (default is the subroutine's section .3) \n"
@@ -1773,14 +1814,14 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"preprocessingFlag",
+  cb = addBool(
                     "ENABLE_PREPROCESSING",
                     "If the ENABLE_PREPROCESSING tag is set to YES (the default) Doxygen will \n"
                     "evaluate all C-preprocessor directives found in the sources and include \n"
                     "files. \n",
                     TRUE
                  );
-  cb = addBool(  //"macroExpansionFlag",
+  cb = addBool(
                     "MACRO_EXPANSION",
                     "If the MACRO_EXPANSION tag is set to YES Doxygen will expand all macro \n"
                     "names in the source code. If set to NO (the default) only conditional \n"
@@ -1789,7 +1830,7 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("ENABLE_PREPROCESSING");
-  cb = addBool(  //"onlyPredefinedFlag",
+  cb = addBool(
                     "EXPAND_ONLY_PREDEF",
                     "If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n"
                     "then the macro expansion is limited to the macros specified with the \n"
@@ -1797,14 +1838,14 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("ENABLE_PREPROCESSING");
-  cb = addBool(  //"searchIncludeFlag",
+  cb = addBool(
                     "SEARCH_INCLUDES",
                     "If the SEARCH_INCLUDES tag is set to YES (the default) the includes files \n"
                     "in the INCLUDE_PATH (see below) will be search if a #include is found. \n",
                     TRUE
                  );
   cb->addDependency("ENABLE_PREPROCESSING");
-  cl = addList(  //"includePath",
+  cl = addList(
                     "INCLUDE_PATH",
                     "The INCLUDE_PATH tag can be used to specify one or more directories that \n"
                     "contain include files that are not input files but should be processed by \n"
@@ -1812,7 +1853,7 @@ void Config::create()
                  );
   cl->setWidgetType(ConfigList::Dir);
   cl->addDependency("ENABLE_PREPROCESSING");
-  cl = addList(  //"includeFilePatternList",
+  cl = addList(
                     "INCLUDE_FILE_PATTERNS",
                     "You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard \n"
                     "patterns (like *.h and *.hpp) to filter out the header-files in the \n"
@@ -1820,7 +1861,7 @@ void Config::create()
                     "be used. \n"
                  );
   cl->addDependency("ENABLE_PREPROCESSING");
-  cl = addList(  //"predefined",
+  cl = addList(
                     "PREDEFINED",
                     "The PREDEFINED tag can be used to specify one or more macro names that \n"
                     "are defined before the preprocessor is started (similar to the -D option of \n"
@@ -1829,7 +1870,7 @@ void Config::create()
                     "omitted =1 is assumed. \n"
                  );
   cl->addDependency("ENABLE_PREPROCESSING");
-  cl = addList(  //"expandAsDefinedList",
+  cl = addList(
                     "EXPAND_AS_DEFINED",
                     "If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then \n"
                     "this tag can be used to specify a list of macro names that should be expanded. \n"
@@ -1840,25 +1881,25 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "External","Configuration::addtions related to external references   ");
   //-----------------------------------------------------------------------------------------------
-  cl = addList(  //"tagFileList",
+  cl = addList(
                     "TAGFILES",
                     "The TAGFILES tag can be used to specify one or more tagfiles. \n"
                  );
   cl->setWidgetType(ConfigList::File);
-  cs = addString(//"genTagFile",
+  cs = addString(
                     "GENERATE_TAGFILE",
                     "When a file name is specified after GENERATE_TAGFILE, doxygen will create \n"
                     "a tag file that is based on the input files it reads. \n"
                    );
   cs->setWidgetType(ConfigString::File);
-  cb = addBool(  //"allExtFlag",
+  cb = addBool(
                     "ALLEXTERNALS",
                     "If the ALLEXTERNALS tag is set to YES all external classes will be listed \n"
                     "in the class index. If set to NO only the inherited external classes \n"
                     "will be listed. \n",
                     FALSE
                  );
-  cs = addString(//"perlPath",
+  cs = addString(
                     "PERL_PATH",
                     "The PERL_PATH should be the absolute path and name of the perl script \n"
                     "interpreter (i.e. the result of `which perl'). \n"
@@ -1869,7 +1910,7 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Dot","Configuration options related to the dot tool   ");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"haveDotFlag",
+  cb = addBool(
                     "HAVE_DOT",
                     "If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is \n"
                     "available from the path. This tool is part of Graphviz, a graph visualization \n"
@@ -1877,7 +1918,7 @@ void Config::create()
                     "have no effect if this option is set to NO (the default) \n",
                     FALSE
                  );
-  cb = addBool(  //"classGraphFlag",
+  cb = addBool(
                     "CLASS_GRAPH",
                     "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
                     "will generate a graph for each documented class showing the direct and \n"
@@ -1886,7 +1927,7 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cb = addBool(  //"collGraphFlag",
+  cb = addBool(
                     "COLLABORATION_GRAPH",
                     "If the COLLABORATION_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
                     "will generate a graph for each documented class showing the direct and \n"
@@ -1895,7 +1936,7 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cb = addBool(  //"includeGraphFlag",
+  cb = addBool(
                     "INCLUDE_GRAPH",
                     "If the ENABLE_PREPROCESSING, INCLUDE_GRAPH, and HAVE_DOT tags are set to \n"
                     "YES then doxygen will generate a graph for each documented file showing \n"
@@ -1904,7 +1945,7 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cb = addBool(  //"includedByGraphFlag",
+  cb = addBool(
                     "INCLUDED_BY_GRAPH",
                     "If the ENABLE_PREPROCESSING, INCLUDED_BY_GRAPH, and HAVE_DOT tags are set to \n"
                     "YES then doxygen will generate a graph for each documented header file showing \n"
@@ -1912,21 +1953,21 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cb = addBool(  //"gfxHierarchyFlag",
+  cb = addBool(
                     "GRAPHICAL_HIERARCHY",
                     "If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen \n"
                     "will graphical hierarchy of all classes instead of a textual one. \n",
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cs = addString(//"dotPath",
+  cs = addString(
                     "DOT_PATH",
                     "The tag DOT_PATH can be used to specify the path where the dot tool can be \n"
                     "found. If left blank, it is assumed the dot tool can be found on the path. \n"
                    );
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("HAVE_DOT");
-  ci = addInt(   //"maxDotGraphWidth",
+  ci = addInt(
                     "MAX_DOT_GRAPH_WIDTH",
                     "The MAX_DOT_GRAPH_WIDTH tag can be used to set the maximum allowed width \n"
                     "(in pixels) of the graphs generated by dot. If a graph becomes larger than \n"
@@ -1936,7 +1977,7 @@ void Config::create()
                     100,30000, 1024
                 );
   ci->addDependency("HAVE_DOT");
-  ci = addInt(   //"maxDotGraphHeight",
+  ci = addInt(
                     "MAX_DOT_GRAPH_HEIGHT",
                     "The MAX_DOT_GRAPH_HEIGHT tag can be used to set the maximum allows height \n"
                     "(in pixels) of the graphs generated by dot. If a graph becomes larger than \n"
@@ -1946,7 +1987,7 @@ void Config::create()
                     100,30000,1024
                 );
   ci->addDependency("HAVE_DOT");
-  cb = addBool(  //"generateLegend",
+  cb = addBool(
                     "GENERATE_LEGEND",
                     "If the GENERATE_LEGEND tag is set to YES (the default) Doxygen will \n"
                     "generate a legend page explaining the meaning of the various boxes and \n"
@@ -1954,7 +1995,7 @@ void Config::create()
                     TRUE
                  );
   cb->addDependency("HAVE_DOT");
-  cb = addBool(  //"dotCleanUp",
+  cb = addBool(
                     "DOT_CLEANUP",
                     "If the DOT_CLEANUP tag is set to YES (the default) Doxygen will \n"
                     "remove the intermedate dot files that are used to generate \n"
@@ -1966,13 +2007,13 @@ void Config::create()
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Search","Configuration::addtions related to the search engine   ");
   //-----------------------------------------------------------------------------------------------
-  cb = addBool(  //"searchEngineFlag",
+  cb = addBool(
                     "SEARCHENGINE",
                     "The SEARCHENGINE tag specifies whether or not a search engine should be \n"
                     "used. If set to NO the values of all tags below this one will be ignored. \n",
                     FALSE
                  );
-  cs = addString(//"cgiName",
+  cs = addString(
                     "CGI_NAME",
                     "The CGI_NAME tag should be the name of the CGI script that \n"
                     "starts the search engine (doxysearch) with the correct parameters. \n"
@@ -1980,21 +2021,21 @@ void Config::create()
                    );
   cs->setDefaultValue("search.cgi");
   cs->addDependency("SEARCHENGINE");
-  cs = addString(//"cgiURL",
+  cs = addString(
                     "CGI_URL",
                     "The CGI_URL tag should be the absolute URL to the directory where the \n"
                     "cgi binaries are located. See the documentation of your http daemon for \n"
                     "details. \n"
                    );
   cs->addDependency("SEARCHENGINE");
-  cs = addString(//"docURL",
+  cs = addString(
                     "DOC_URL",
                     "The DOC_URL tag should be the absolute URL to the directory where the \n"
                     "documentation is located. If left blank the absolute path to the \n"
                     "documentation, with file:// prepended to it, will be used. \n"
                    );
   cs->addDependency("SEARCHENGINE");
-  cs = addString(//"docAbsPath",
+  cs = addString(
                     "DOC_ABSPATH",
                     "The DOC_ABSPATH tag should be the absolute path to the directory where the \n"
                     "documentation is located. If left blank the directory on the local machine \n"
@@ -2002,7 +2043,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("SEARCHENGINE");
-  cs = addString(//"binAbsPath",
+  cs = addString(
                     "BIN_ABSPATH",
                     "The BIN_ABSPATH tag must point to the directory where the doxysearch binary \n"
                     "is installed. \n"
@@ -2010,7 +2051,7 @@ void Config::create()
   cs->setDefaultValue("/usr/local/bin/");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("SEARCHENGINE");
-  cl = addList(  //"extDocPathList",
+  cl = addList(
                     "EXT_DOC_PATHS",
                     "The EXT_DOC_PATHS tag can be used to specify one or more paths to \n"
                     "documentation generated for other projects. This allows doxysearch to search \n"

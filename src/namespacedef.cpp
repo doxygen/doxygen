@@ -31,7 +31,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref) : 
    Definition(df,dl,name)
 {
-  fileName="namespace_"+nameToFile(name);
+  fileName=(QCString)"namespace_"+name;
   classList = new ClassList;
   classDict = new ClassDict(1009);
   //memList = new MemberList;
@@ -68,7 +68,7 @@ void NamespaceDef::insertUsedFile(const char *f)
 {
   if (files.find(f)==-1) 
   {
-    if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+    if (Config_getBool("SORT_MEMBER_DOCS"))
       files.inSort(f);
     else
       files.append(f);
@@ -79,7 +79,7 @@ void NamespaceDef::insertClass(ClassDef *cd)
 {
   if (classDict->find(cd->name())==0)
   {
-    if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+    if (Config_getBool("SORT_MEMBER_DOCS"))
       classList->inSort(cd);
     else
       classList->append(cd);
@@ -131,43 +131,43 @@ void NamespaceDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         varMembers.inSort(md); 
       else
         varMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))    
+      if (Config_getBool("SORT_MEMBER_DOCS"))    
         funcMembers.inSort(md); 
       else
         funcMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         typedefMembers.inSort(md); 
       else
         typedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         enumMembers.inSort(md); 
       else
         enumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         enumValMembers.inSort(md); 
       else
         enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         protoMembers.inSort(md); 
       else
         protoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         defineMembers.inSort(md); 
       else
         defineMembers.append(md);
@@ -192,17 +192,17 @@ void NamespaceDef::computeAnchors()
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   QCString pageTitle=name()+" Namespace Reference";
-  startFile(ol,fileName,pageTitle);
+  startFile(ol,getOutputFileBase(),pageTitle);
   startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);
   parseText(ol,theTranslator->trNamespaceReference(name()));
   endTitle(ol,getOutputFileBase(),name());
   
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty())
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
   }
   
   ol.startTextBlock();
@@ -241,7 +241,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
   ol.endMemberSections();
   
-  if ((!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) || 
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty())
   {
     ol.writeRuler();
@@ -256,11 +256,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     parseText(ol,theTranslator->trDetailedDescription());
     ol.endGroupHeader();
     ol.startTextBlock();
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
     }
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF") &&
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
     {
       ol.newParagraph();
@@ -350,9 +350,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config::instance()->getString("PROJECT_NAME")));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -385,3 +385,9 @@ void NamespaceDef::addUsingDeclaration(ClassDef *cd)
   }
   usingDeclList->append(cd);
 }
+
+QCString NamespaceDef::getOutputFileBase() const 
+{ 
+  return convertNameToFile(fileName); 
+}
+

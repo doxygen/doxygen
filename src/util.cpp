@@ -1,4 +1,4 @@
-/******************************************************************************
+/*****************************************************************************
  *
  * 
  *
@@ -280,8 +280,8 @@ void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
   
   od.disable(OutputGenerator::Html);
   od.disable(OutputGenerator::Man);
-  if (Config::instance()->getBool("PDF_HYPERLINKS")) od.disable(OutputGenerator::Latex);
-  if (Config::instance()->getBool("RTF_HYPERLINKS")) od.disable(OutputGenerator::RTF);
+  if (Config_getBool("PDF_HYPERLINKS")) od.disable(OutputGenerator::Latex);
+  if (Config_getBool("RTF_HYPERLINKS")) od.disable(OutputGenerator::RTF);
   od.startPageRef();
   od.docify(theTranslator->trPageAbbreviation());
   od.endPageRef(cn,mn);
@@ -301,11 +301,11 @@ QCString generateMarker(int id)
 }
 
 /*! strip part of \a path if it matches
- *  one of the paths in the Config::instance()->getList("STRIP_FROM_PATH") list
+ *  one of the paths in the Config_getList("STRIP_FROM_PATH") list
  */
 QCString stripFromPath(const QCString &path)
 {
-  const char *s=Config::instance()->getList("STRIP_FROM_PATH").first();
+  const char *s=Config_getList("STRIP_FROM_PATH").first();
   while (s)
   {
     QCString prefix = s;
@@ -313,7 +313,7 @@ QCString stripFromPath(const QCString &path)
     {
       return path.right(path.length()-prefix.length());
     }
-    s = Config::instance()->getList("STRIP_FROM_PATH").next();
+    s = Config_getList("STRIP_FROM_PATH").next();
   }
   return path;
 }
@@ -812,7 +812,7 @@ QCString fileToString(const char *name,bool filter)
       err("Error: file `%s' not found\n",name);
       return "";
     }
-    if (Config::instance()->getString("INPUT_FILTER").isEmpty() || !filter)
+    if (Config_getString("INPUT_FILTER").isEmpty() || !filter)
     {
       f.setName(name);
       fileOpened=f.open(IO_ReadOnly);
@@ -832,11 +832,11 @@ QCString fileToString(const char *name,bool filter)
     }
     else // filter the input
     {
-      QCString cmd=Config::instance()->getString("INPUT_FILTER")+" "+name;
+      QCString cmd=Config_getString("INPUT_FILTER")+" "+name;
       FILE *f=popen(cmd,"r");
       if (!f)
       {
-        err("Error: could not execute filter %s\n",Config::instance()->getString("INPUT_FILTER").data());
+        err("Error: could not execute filter %s\n",Config_getString("INPUT_FILTER").data());
         return "";
       }
       const int bSize=4096;
@@ -1761,7 +1761,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //printf("  >Searching for arbitrary member\n");
           for (mmli.toFirst();(mmd=mmli.current());++mmli)
           {
-            if (//(mmd->protection()!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
+            if (//(mmd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
                 //(
                 //mmd->hasDocumentation() 
                 /*mmd->detailsAreVisible()*/
@@ -2073,7 +2073,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       {
         od.writeObjectLink(cd->getReference(),
             cd->getOutputFileBase(),0,linkText);
-        if (!cd->isReference() /*&& !Config::instance()->getBool("PDF_HYPERLINKS")*/) 
+        if (!cd->isReference() /*&& !Config_getBool("PDF_HYPERLINKS")*/) 
         {
           writePageRef(od,cd->getOutputFileBase(),0);
         }
@@ -2082,7 +2082,7 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       {
         od.writeObjectLink(nd->getReference(),
             nd->getOutputFileBase(),0,linkText);
-        if (!nd->getReference() /*&& !Config::instance()->getBool("PDF_HYPERLINKS")*/) 
+        if (!nd->getReference() /*&& !Config_getBool("PDF_HYPERLINKS")*/) 
         {
           writePageRef(od,nd->getOutputFileBase(),0);
         }
@@ -2279,10 +2279,10 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   }
   else if ((pi=Doxygen::exampleSDict->find(linkRef))) // link to an example
   {
-    od.writeObjectLink(0,convertFileName(pi->name)+"-example",0,lt);
+    od.writeObjectLink(0,convertNameToFile(pi->name+"-example"),0,lt);
     if (!pi->isReference())
     {
-      writePageRef(od,convertFileName(pi->name)+"-example",0);
+      writePageRef(od,convertNameToFile(pi->name+"-example"),0);
     }
     return TRUE;
   }
@@ -2358,33 +2358,6 @@ QCString substituteClassNames(const QCString &s)
   return result;
 }
 #endif
-
-//----------------------------------------------------------------------
-
-QCString convertFileName(const QCString &s)
-{
-  QCString result;
-  int i,l=s.length();
-  for (i=0;i<l;i++)
-  {
-    if (s.at(i)!='/' && s.at(i)!='.')
-    {
-      if (Config::instance()->getBool("CASE_SENSE_NAMES"))
-      {
-        result+=s[i]; 
-      }
-      else
-      {
-        result+=tolower(s[i]); 
-      }
-    }
-    else 
-    {
-      result+="_";
-    }
-  }
-  return result;
-}
 
 //----------------------------------------------------------------------
 // substitute all occurences of `src' in `s' by `dst'
@@ -2487,15 +2460,15 @@ QCString substituteKeywords(const QCString &s,const char *title)
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
   result = substitute(result,"$doxygenversion",versionString);
-  result = substitute(result,"$projectname",Config::instance()->getString("PROJECT_NAME"));
-  result = substitute(result,"$projectnumber",Config::instance()->getString("PROJECT_NUMBER"));
+  result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
+  result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));
   return result;
 }
     
 //----------------------------------------------------------------------
 
 /*! Returns the character index within \a name of the first prefix
- *  in Config::instance()->getList("IGNORE_PREFIX") that matches \a name at the left hand side,
+ *  in Config_getList("IGNORE_PREFIX") that matches \a name at the left hand side,
  *  or zero if no match was found
  */ 
 int getPrefixIndex(const QCString &name)
@@ -2503,7 +2476,7 @@ int getPrefixIndex(const QCString &name)
   int ni = name.findRev("::");
   if (ni==-1) ni=0; else ni+=2;
   //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
-  char *s = Config::instance()->getList("IGNORE_PREFIX").first();
+  char *s = Config_getList("IGNORE_PREFIX").first();
   while (s)
   {
     const char *ps=s;
@@ -2514,7 +2487,7 @@ int getPrefixIndex(const QCString &name)
     {
       return ni+i;
     }
-    s = Config::instance()->getList("IGNORE_PREFIX").next();
+    s = Config_getList("IGNORE_PREFIX").next();
   }
   return ni;
 }
@@ -2562,34 +2535,105 @@ bool hasVisibleRoot(BaseClassList *bcl)
   return FALSE;
 }
 
-QCString convertNameToFile(const char *name,bool allowDots)
+//----------------------------------------------------------------------
+
+#if 0
+QCString convertFileName(const QCString &s)
 {
-  QCString result;
-  char c;
-  const char *p=name;
-  while ((c=*p++)!=0)
+  if (Config_getBool("SHORT_NAMES")) 
   {
-    switch(c)
+    printf("convertFileName(%s)\n",s.data());
+    return convertNameToFile(s,FALSE);
+  }
+  QCString result;
+  int i,l=s.length();
+  for (i=0;i<l;i++)
+  {
+    if (s.at(i)!='/' && s.at(i)!='.')
     {
-      case ':': result+="_"; break;
-      case '<': result+="_lt"; break;
-      case '>': result+="_gt"; break;
-      case '*': result+="_ast"; break;
-      case '&': result+="_amp"; break;
-      case '|': result+="_p_"; break;
-      case '!': result+="_e_"; break;
-      case ',': result+="_x_"; break;
-      case '.': if (allowDots) result+="."; else result+="_"; break;
-      case ' ': break;
-      default: 
-        if (Config::instance()->getBool("CASE_SENSE_NAMES"))
-          result+=c;
-        else
-          result+=tolower(c); 
-        break;
+      if (Config_getBool("CASE_SENSE_NAMES"))
+      {
+        result+=s[i]; 
+      }
+      else
+      {
+        result+=tolower(s[i]); 
+      }
+    }
+    else 
+    {
+      result+="_";
     }
   }
   return result;
+}
+#endif
+
+
+/*! This function determines the file name on disk of an item
+ *  given its name, which could be a class name with templete 
+ *  arguments, so special characters need to be escaped.
+ */
+QCString convertNameToFile(const char *name,bool allowDots)
+{
+  if (Config_getBool("SHORT_NAMES"))
+  {
+    static QDict<void> usedNames(10007);
+    static int count=1;
+
+    void *value=usedNames.find(name);
+    int num;
+    if (value==0)
+    {
+      usedNames.insert(name,(void *)count);
+      num = count++;
+    }
+    else
+    {
+      num = (int)value;
+    }
+    QCString result;
+    result.sprintf("a%05d",num); 
+    return result;
+  }
+  else // long names
+  {
+
+    QCString result;
+    char c;
+    const char *p=name;
+    while ((c=*p++)!=0)
+    {
+      switch(c)
+      {
+        case '_': result+="__"; break;
+        case '-': result+="-";  break;
+        case ':': result+="_1"; break;
+        case '/': result+="_2"; break;
+        case '<': result+="_3"; break;
+        case '>': result+="_4"; break;
+        case '*': result+="_5"; break;
+        case '&': result+="_6"; break;
+        case '|': result+="_7"; break;
+        case '.': if (allowDots) result+="."; else result+="_8"; break;
+        case '!': result+="_9"; break;
+        case ',': result+="_00"; break;
+        case ' ': result+="_01"; break;
+        default: 
+          if (Config_getBool("CASE_SENSE_NAMES") || !isupper(c))
+          {
+            result+=c;
+          }
+          else
+          {
+            result+="_";
+            result+=tolower(c); 
+          }
+          break;
+      }
+    }
+    return result;
+  }
 }
 
 /*! Input is a scopeName, output is the scopename split into a

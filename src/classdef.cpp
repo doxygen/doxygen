@@ -54,9 +54,13 @@ ClassDef::ClassDef(
   compType=ct;
   QCString compoundName=compoundTypeString();
   if (fName)
+  {
     fileName=stripExtension(fName);
+  }
   else
-    fileName=compoundName+"_"+nameToFile(nm);
+  {
+    fileName=compoundName+nm;
+  }
   if (lref) 
   {
     //url=(QCString)"doxygen=\""+lref+":\" href=\""+fileName;
@@ -69,7 +73,7 @@ ClassDef::ClassDef(
     exampleList = new ExampleList;
     exampleDict = new ExampleDict(17);
   }
-  memListFileName=compoundName+"_"+nameToFile(nm)+"-members";
+  memListFileName=convertNameToFile(compoundName+nm+"-members");
   inherits      = new BaseClassList;
   inherits->setAutoDelete(TRUE);
   inheritedBy   = new BaseClassList;
@@ -119,7 +123,7 @@ ClassDef::~ClassDef()
 
 QCString ClassDef::displayName() const
 {
-  if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
+  if (Config_getBool("HIDE_SCOPE_NAMES"))
   {
     return stripScope(name());
   }
@@ -209,7 +213,7 @@ void ClassDef::insertMember(MemberDef *md)
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
-    if (md->isRelated() && (Config::instance()->getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
+    if (md->isRelated() && (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private))
     {
       related.append(md);
       md->setSectionList(&related);
@@ -357,11 +361,11 @@ void ClassDef::insertMember(MemberDef *md)
     /* insert member in the detailed documentation section */
     /*******************************************************/
     if ((md->isRelated() && 
-          (Config::instance()->getBool("EXTRACT_PRIVATE") || md->protection()!=Private)
+          (Config_getBool("EXTRACT_PRIVATE") || md->protection()!=Private)
         ) || md->isFriend()
        )
     {
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         relatedMembers.inSort(md);
       else
         relatedMembers.append(md);
@@ -371,14 +375,14 @@ void ClassDef::insertMember(MemberDef *md)
       switch (md->memberType())
       {
         case MemberDef::Property:
-          if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+          if (Config_getBool("SORT_MEMBER_DOCS"))
             propertyMembers.inSort(md);
           else
             propertyMembers.append(md);
           break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
-          if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+          if (Config_getBool("SORT_MEMBER_DOCS"))
             functionMembers.inSort(md);
           else
             functionMembers.append(md);
@@ -387,21 +391,21 @@ void ClassDef::insertMember(MemberDef *md)
           switch (md->protection())
           {
             case Protected: 
-              if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+              if (Config_getBool("SORT_MEMBER_DOCS"))
                 functionMembers.inSort(md); 
               else
                 functionMembers.append(md);
               break;
             case Public:    
-              if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+              if (Config_getBool("SORT_MEMBER_DOCS"))
                 functionMembers.inSort(md); 
               else
                 functionMembers.append(md);
               break;
             case Private:   
-              if (Config::instance()->getBool("EXTRACT_PRIVATE"))
+              if (Config_getBool("EXTRACT_PRIVATE"))
               {
-                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                if (Config_getBool("SORT_MEMBER_DOCS"))
                   functionMembers.inSort(md); 
                 else
                   functionMembers.append(md);
@@ -410,24 +414,24 @@ void ClassDef::insertMember(MemberDef *md)
           }
           break;
         default: // any of the other members
-          if (md->protection()!=Private || Config::instance()->getBool("EXTRACT_PRIVATE"))
+          if (md->protection()!=Private || Config_getBool("EXTRACT_PRIVATE"))
           {
             switch (md->memberType())
             {
               case MemberDef::Typedef:
-                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                if (Config_getBool("SORT_MEMBER_DOCS"))
                   typedefMembers.inSort(md);
                 else
                   typedefMembers.append(md);
                 break;
               case MemberDef::Enumeration:
-                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                if (Config_getBool("SORT_MEMBER_DOCS"))
                   enumMembers.inSort(md);
                 else
                   enumMembers.append(md);
                 break;
               case MemberDef::EnumValue:
-                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                if (Config_getBool("SORT_MEMBER_DOCS"))
                   enumValMembers.inSort(md);
                 else
                   enumValMembers.append(md);
@@ -443,14 +447,14 @@ void ClassDef::insertMember(MemberDef *md)
                 }
                 else
                 {
-                  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                  if (Config_getBool("SORT_MEMBER_DOCS"))
                     functionMembers.inSort(md);
                   else
                     functionMembers.append(md);
                 }
                 break;
               case MemberDef::Variable:
-                if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+                if (Config_getBool("SORT_MEMBER_DOCS"))
                   variableMembers.inSort(md);
                 else
                   variableMembers.append(md);
@@ -653,7 +657,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   pageType+=cType;
   pageTitle+=pageType+" Reference";
   if (outerTempArgList) pageTitle.prepend(" Template");
-  startFile(ol,fileName,pageTitle);
+  startFile(ol,getOutputFileBase(),pageTitle);
   startTitle(ol,getOutputFileBase());
   parseText(ol,theTranslator->trCompoundReference(name(),compType,outerTempArgList!=0));
   endTitle(ol,getOutputFileBase(),name());
@@ -720,16 +724,16 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
   }
 
   
-  if (Config::instance()->getBool("CLASS_DIAGRAMS")) ol.disableAllBut(OutputGenerator::Man);
+  if (Config_getBool("CLASS_DIAGRAMS")) ol.disableAllBut(OutputGenerator::Man);
 
   
   // write subclasses
@@ -753,7 +757,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
           {
             Doxygen::tagFile << "    <base";
             if (bcd->prot==Protected)
@@ -819,7 +823,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.newParagraph();
   }
 
-  if (Config::instance()->getBool("CLASS_DIAGRAMS")) ol.enableAll();
+  if (Config_getBool("CLASS_DIAGRAMS")) ol.enableAll();
   
 
   count=0;
@@ -840,7 +844,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   
-  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("CLASS_GRAPH"))
+  if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_GRAPH"))
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,DotClassGraph::Inheritance);
@@ -851,7 +855,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trClassDiagram(name()));
       ol.endDotGraph(inheritanceGraph);
-      if (Config::instance()->getBool("GENERATE_LEGEND"))
+      if (Config_getBool("GENERATE_LEGEND"))
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -865,7 +869,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.popGeneratorState();
     }
   }
-  else if (Config::instance()->getBool("CLASS_DIAGRAMS") && count>0) 
+  else if (Config_getBool("CLASS_DIAGRAMS") && count>0) 
     // write class diagram using build-in generator
   {
     ClassDiagram diagram(this); // create a diagram of this class.
@@ -873,10 +877,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.disable(OutputGenerator::Man);
     parseText(ol,theTranslator->trClassDiagram(name()));
     ol.enable(OutputGenerator::Man);
-    ol.endClassDiagram(diagram,fileName,name());
+    ol.endClassDiagram(diagram,getOutputFileBase(),name());
   } 
 
-  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("COLLABORATION_GRAPH"))
+  if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
   {
     DotClassGraph usageImplGraph(this,DotClassGraph::Implementation);
     if (!usageImplGraph.isTrivial())
@@ -886,7 +890,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
       ol.endDotGraph(usageImplGraph);
-      if (Config::instance()->getBool("GENERATE_LEGEND"))
+      if (Config_getBool("GENERATE_LEGEND"))
       {
         ol.pushGeneratorState();
         ol.disableAllBut(OutputGenerator::Html);
@@ -902,7 +906,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // write link to list of all members (HTML only)
-  if (allMemberNameInfoList->count()>0 && !Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C"))
+  if (allMemberNameInfoList->count()>0 && !Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
   {
     ol.disableAllBut(OutputGenerator::Html);
     ol.startTextLink(memListFileName,0);
@@ -953,7 +957,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   proStaticMembers.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
   proStaticAttribs.writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
 
-  if (Config::instance()->getBool("EXTRACT_PRIVATE"))
+  if (Config_getBool("EXTRACT_PRIVATE"))
   {
     // private non-static members
     priTypes.writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
@@ -973,9 +977,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     
   // write detailed description
   bool exampleFlag=hasExamples();
-  if ((!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) || 
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
-      /*(Config::instance()->getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
+      /*(Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
       exampleFlag)
   {
     ol.writeRuler();
@@ -992,11 +996,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeTemplateSpec(ol,outerTempArgList,pageType,name());
     
     // repeat brief description
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
       ol+=briefOutput;
     }
-    if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF") &&
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
         !documentation().isEmpty())
     {
       ol.newParagraph();
@@ -1118,7 +1122,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write the list of used files (not for man pages)
   ol.pushGeneratorState();
 
-  if (Config::instance()->getBool("SHOW_USED_FILES"))
+  if (Config_getBool("SHOW_USED_FILES"))
   {
     ol.disable(OutputGenerator::Man);
     ol.writeRuler();
@@ -1140,14 +1144,14 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
         ol.writeListItem();
         QCString path=fd->getPath().copy();
-        if (Config::instance()->getBool("FULL_PATH_NAMES"))
+        if (Config_getBool("FULL_PATH_NAMES"))
         {
           ol.docify(stripFromPath(path));
         }
 
         if (fd->generateSourceFile())
         {
-          ol.writeObjectLink(0,fd->sourceName(),0,fd->name());
+          ol.writeObjectLink(0,fd->getSourceFileBase(),0,fd->name());
         }
         else if (fd->isLinkable())
         {
@@ -1171,12 +1175,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.startGroupHeader();
   parseText(ol,theTranslator->trAuthor());
   ol.endGroupHeader();
-  parseText(ol,theTranslator->trGeneratedAutomatically(Config::instance()->getString("PROJECT_NAME")));
+  parseText(ol,theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
   ol.popGeneratorState();
 
   ol.endTextBlock();
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -1188,7 +1192,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 // write the list of all (inherited) members for this class
 void ClassDef::writeMemberList(OutputList &ol)
 {
-  if (allMemberNameInfoList->count()==0 || Config::instance()->getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
+  if (allMemberNameInfoList->count()==0 || Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1198,7 +1202,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   parseText(ol,name()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
   parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
-  ol.writeObjectLink(getReference(),fileName,0,name());
+  ol.writeObjectLink(getReference(),getOutputFileBase(),0,name());
   parseText(ol,theTranslator->trIncludingInheritedMembers());
   
   ol.startItemList();
@@ -1238,7 +1242,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           (
            md->isFriend() || 
            (/*mi->prot!=Private &&*/ 
-            (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE"))
+            (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
            )
           )
          )
@@ -1265,7 +1269,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("\n");
           memberWritten=TRUE;
         }
-        else if (!Config::instance()->getBool("HIDE_UNDOC_MEMBERS")) // no documentation, 
+        else if (!Config_getBool("HIDE_UNDOC_MEMBERS")) // no documentation, 
                                   // generate link to the class instead.
         {
           ol.writeListItem();
@@ -1297,7 +1301,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         }
         if ((prot!=Public || virt!=Normal || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
-             md->isMutable() || (md->isInline() && Config::instance()->getBool("INLINE_INFO")) ||
+             md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
              md->isStatic()
             )
@@ -1310,7 +1314,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           else if (md->isRelated()) sl.append("related");
           else
           {
-            if (Config::instance()->getBool("INLINE_INFO") && md->isInline())        
+            if (Config_getBool("INLINE_INFO") && md->isInline())        
                                        sl.append("inline");
             if (md->isExplicit())      sl.append("explicit");
             if (md->isMutable())       sl.append("mutable");
@@ -1401,12 +1405,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 
   if (inGroup && md && md->getClassDef()==this) return;
   
-  switch(compType)
-  {
-    case Class:  ol.docify("class"); break;
-    case Struct: ol.docify("struct"); break;
-    default:     ol.docify("union");  break; 
-  } 
+  ol.docify(compoundTypeString());
   int ri=name().findRev("::");
   if (ri==-1) ri=name().length();
   QCString cn=name().right(name().length()-ri-2);
@@ -1445,7 +1444,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     proSlots.writePlainDeclarations(ol,this,0,0,0); 
     proStaticMembers.writePlainDeclarations(ol,this,0,0,0); 
     proStaticAttribs.writePlainDeclarations(ol,this,0,0,0); 
-    if (Config::instance()->getBool("EXTRACT_PRIVATE"))
+    if (Config_getBool("EXTRACT_PRIVATE"))
     {
       priTypes.writePlainDeclarations(ol,this,0,0,0); 
       priMembers.writePlainDeclarations(ol,this,0,0,0); 
@@ -1463,20 +1462,20 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 bool ClassDef::isLinkableInProject() 
 { 
   return !name().isEmpty() && name().find('@')==-1 && 
-    (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
+    (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
     hasDocumentation() && !isReference();
 }
 
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
 { return // show all classes or a subclass is visible
-  (Config::instance()->getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
+  (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
     // and not an annonymous compound
     name().find('@')==-1 &&
     // and not privately inherited
-    (prot!=Private || Config::instance()->getBool("EXTRACT_PRIVATE")) &&
+    (prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
     // documented or show anyway or documentation is external 
-    (hasDocumentation() || !Config::instance()->getBool("HIDE_UNDOC_CLASSES") || isReference());
+    (hasDocumentation() || !Config_getBool("HIDE_UNDOC_CLASSES") || isReference());
 }
 
 //----------------------------------------------------------------------
@@ -1898,5 +1897,20 @@ QCString ClassDef::compoundTypeString() const
     case Exception: return "exception";
   }
   return "unknown";
+}
+
+QCString ClassDef::getOutputFileBase() const 
+{ 
+  return convertNameToFile(fileName); 
+}
+
+QCString ClassDef::getFileBase() const 
+{ 
+  return fileName; 
+}
+
+QCString ClassDef::getSourceFileBase() const 
+{ 
+  return convertNameToFile(fileName+"-source"); 
 }
 

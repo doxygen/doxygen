@@ -249,7 +249,7 @@ struct ImageInfo
 static void generateFolderTreeViewData()
 {
   // Generate tree view script
-  QCString fileName=Config::instance()->getString("HTML_OUTPUT")+"/treeview.js";
+  QCString fileName=Config_getString("HTML_OUTPUT")+"/treeview.js";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -264,7 +264,7 @@ static void generateFolderTreeViewData()
   }
 
   // Generate alternative index.html as a frame
-  fileName=Config::instance()->getString("HTML_OUTPUT")+"/index.html";
+  fileName=Config_getString("HTML_OUTPUT")+"/index.html";
   f.setName(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -278,16 +278,16 @@ static void generateFolderTreeViewData()
     t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
       << theTranslator->idLanguageCharset() << "\">\n";
     t << "<title>"; 
-    if (Config::instance()->getString("PROJECT_NAME").isEmpty())
+    if (Config_getString("PROJECT_NAME").isEmpty())
     {
       t << "Doxygen Documentation";
     }
     else
     {
-      t << Config::instance()->getString("PROJECT_NAME");
+      t << Config_getString("PROJECT_NAME");
     }
     t << "</title></head>" << endl;
-    t << "<frameset cols=\"" << Config::instance()->getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
+    t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
     t << "  <frame src=\"tree.html\" name=\"treefrm\">" << endl;
     t << "  <frame src=\"main.html\" name=\"basefrm\">" << endl;
     t << "</frameset>" << endl;
@@ -296,7 +296,7 @@ static void generateFolderTreeViewData()
   }
   
   // Generate tree view frame
-  fileName=Config::instance()->getString("HTML_OUTPUT")+"/tree.html";
+  fileName=Config_getString("HTML_OUTPUT")+"/tree.html";
   f.setName(fileName);
   if (!f.open(IO_WriteOnly))
   {
@@ -308,13 +308,13 @@ static void generateFolderTreeViewData()
     QTextStream t(&f);
     t << "<html><head>" << endl;
     t << "<link rel=\"stylesheet\" href=\"";
-    if (Config::instance()->getString("HTML_STYLESHEET").isEmpty())
+    if (Config_getString("HTML_STYLESHEET").isEmpty())
     {
       t << "doxygen.css";
     }
     else
     {
-      QFileInfo cssfi(Config::instance()->getString("HTML_STYLESHEET"));
+      QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
       if (!cssfi.exists())
       {
         err("Error: user specified HTML style sheet file does not exist!\n");
@@ -338,7 +338,7 @@ static void generateFolderTreeViewData()
   ImageInfo *p = image_info;
   while (p->name)
   {
-    QCString fileName=Config::instance()->getString("HTML_OUTPUT")+"/"+p->name;
+    QCString fileName=Config_getString("HTML_OUTPUT")+"/"+p->name;
     QFile f(fileName);
     if (f.open(IO_WriteOnly)) 
       f.writeBlock((char *)p->data,p->len);
@@ -380,7 +380,7 @@ FTVHelp *FTVHelp::getInstance()
 void FTVHelp::initialize()
 {
   /* open the contents file */
-  QCString fName = Config::instance()->getString("HTML_OUTPUT") + "/tree.js";
+  QCString fName = Config_getString("HTML_OUTPUT") + "/tree.js";
   m_cf = new QFile(fName);
   if (!m_cf->open(IO_WriteOnly))
   {
@@ -390,13 +390,13 @@ void FTVHelp::initialize()
   /* Write the header of the contents file */
   m_cts.setDevice(m_cf);
   m_cts << "foldersTree = gFld(\"<b>";
-  if (Config::instance()->getString("PROJECT_NAME").isEmpty())
+  if (Config_getString("PROJECT_NAME").isEmpty())
   {
     m_cts << "Root";
   }
   else
   {
-    m_cts << Config::instance()->getString("PROJECT_NAME");
+    m_cts << Config_getString("PROJECT_NAME");
   }
   m_cts << "</b>\", \"\", \"\")\n";
 }

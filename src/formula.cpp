@@ -70,14 +70,14 @@ void FormulaList::generateBitmaps(const char *path)
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
-    if (Config::instance()->getBool("LATEX_BATCHMODE")) t << "\\batchmode" << endl;
+    if (Config_getBool("LATEX_BATCHMODE")) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
-    const char *s=Config::instance()->getList("EXTRA_PACKAGES").first();
+    const char *s=Config_getList("EXTRA_PACKAGES").first();
     while (s)
     {
       t << "\\usepackage{" << s << "}\n";
-      s=Config::instance()->getList("EXTRA_PACKAGES").next();
+      s=Config_getList("EXTRA_PACKAGES").next();
     }
     t << "\\pagestyle{empty}" << endl; 
     t << "\\begin{document}" << endl;

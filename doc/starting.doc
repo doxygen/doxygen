@@ -111,11 +111,11 @@ format.
 
 The default output directory is the directory in which \c doxygen
 is started. The directory to which the output is written can be changed 
-using the \ref cfg_output_directory "OUTPUT_DIRECTORY" , 
-\ref cfg_html_output "HTML_OUTPUT", \ref cfg_latex_output "LATEX_OUTPUT", 
-and \ref cfg_man_output "MAN_OUTPUT" tags of the configuration file. 
-If the output directory does not exist, \c doxygen will try to create it 
-for you.
+using the \ref cfg_output_directory "OUTPUT_DIRECTORY", 
+\ref cfg_html_output "HTML_OUTPUT", \ref cfg_rtf_output "RTF_OUTPUT",
+\ref cfg_latex_output "LATEX_OUTPUT", and \ref cfg_man_output "MAN_OUTPUT" 
+tags of the configuration file. If the output directory does not exist, 
+\c doxygen will try to create it for you.
 
 \addindex browser
 The generated HTML documentation can be viewed by pointing a HTML browser

@@ -51,7 +51,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
     title = na;
     title.at(0)=toupper(title.at(0));
   }
-  fileName = "group_"+nameToFile(na);
+  fileName = (QCString)"group_"+na;
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
@@ -86,7 +86,7 @@ void GroupDef::distributeMemberGroupDocumentation()
 
 void GroupDef::addFile(const FileDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     fileList->inSort(def);
   else
     fileList->append(def);
@@ -94,7 +94,7 @@ void GroupDef::addFile(const FileDef *def)
 
 void GroupDef::addClass(const ClassDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     classList->inSort(def);
   else
     classList->append(def);
@@ -102,7 +102,7 @@ void GroupDef::addClass(const ClassDef *def)
 
 void GroupDef::addNamespace(const NamespaceDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     namespaceList->inSort(def);  
   else
     namespaceList->append(def);
@@ -189,43 +189,43 @@ void GroupDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         varMembers.inSort(md); 
       else
         varMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))    
+      if (Config_getBool("SORT_MEMBER_DOCS"))    
         funcMembers.inSort(md); 
       else
         funcMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         typedefMembers.inSort(md); 
       else
         typedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         enumMembers.inSort(md); 
       else
         enumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         enumValMembers.inSort(md); 
       else
         enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         protoMembers.inSort(md); 
       else
         protoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+      if (Config_getBool("SORT_MEMBER_DOCS"))
         defineMembers.inSort(md); 
       else
         defineMembers.append(md);
@@ -238,7 +238,7 @@ void GroupDef::insertMember(MemberDef *md)
 
 void GroupDef::addGroup(const GroupDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     groupList->inSort(def);
   else
     groupList->append(def);
@@ -246,7 +246,7 @@ void GroupDef::addGroup(const GroupDef *def)
 
 void GroupDef::addParentGroup(const GroupDef *def)
 {
-  if (Config::instance()->getBool("SORT_MEMBER_DOCS"))
+  if (Config_getBool("SORT_MEMBER_DOCS"))
     parentGroupList->inSort(def);
   else
     parentGroupList->append(def);
@@ -279,7 +279,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
   //ol.disable(OutputGenerator::Man);
-  startFile(ol,fileName,title);
+  startFile(ol,getOutputFileBase(),title);
   startTitle(ol,getOutputFileBase());
   ol.docify(title);
   endTitle(ol,getOutputFileBase(),title);
@@ -302,12 +302,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"group\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <title>" << convertToXML(title) << "</title>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
   }
   
   ol.startMemberSections();
@@ -324,12 +324,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.docify("file ");
       ol.insertMemberAlign();
       ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,fd->name());
-      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
         Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
       }
       ol.endMemberItem(FALSE);
-      if (!fd->briefDescription().isEmpty() && Config::instance()->getBool("BRIEF_MEMBER_DESC"))
+      if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
         parseDoc(ol,defFileName,defLine,0,0,fd->briefDescription());
@@ -353,12 +353,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.docify("namespace ");
       ol.insertMemberAlign();
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,nd->name());
-      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
         Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
       }
       ol.endMemberItem(FALSE);
-      if (!nd->briefDescription().isEmpty() && Config::instance()->getBool("BRIEF_MEMBER_DESC"))
+      if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
         parseDoc(ol,defFileName,defLine,0,0,nd->briefDescription());
@@ -381,12 +381,12 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.startMemberItem(0);
       //ol.insertMemberAlign();
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
-      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
         Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
       }
       ol.endMemberItem(FALSE);
-      if (!gd->briefDescription().isEmpty() && Config::instance()->getBool("BRIEF_MEMBER_DESC"))
+      if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
         parseDoc(ol,defFileName,defLine,0,0,gd->briefDescription());
@@ -431,7 +431,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       ol.endGroupHeader();
 
       // repeat brief description
-      if (!briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF"))
+      if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
       {
         ol+=briefOutput;
         ol.newParagraph();
@@ -452,7 +452,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     {
       QCString pageName = pi->getOutputFileBase();
 
-      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
       {
         Doxygen::tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
       }
@@ -531,7 +531,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     varMembers.writeDocumentation(ol,name(),this);
   }
 
-  if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;
@@ -635,4 +635,7 @@ void addExampleToGroups(Entry *root,PageInfo *eg)
   }
 }
 
-
+QCString GroupDef::getOutputFileBase() const 
+{ 
+  return convertNameToFile(fileName); 
+}

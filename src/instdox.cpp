@@ -30,14 +30,14 @@
 
 void writeInstallScript()
 {
-  QCString fileName=Config::instance()->getString("HTML_OUTPUT")+"/installdox";
+  QCString fileName=Config_getString("HTML_OUTPUT")+"/installdox";
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
     QTextStream t(&f);
-    t << "#!" << Config::instance()->getString("PERL_PATH") << endl << endl << "%subst = ( ";
+    t << "#!" << Config_getString("PERL_PATH") << endl << endl << "%subst = ( ";
     
-    char *s=Config::instance()->getList("TAGFILES").first();
+    char *s=Config_getList("TAGFILES").first();
     while (s)
     {
       QCString tagLine=s;
@@ -53,7 +53,7 @@ void writeInstallScript()
       }
       QFileInfo fi(fileName);
       t << "\"" << fi.fileName() << "\", \"\"";
-      s=Config::instance()->getList("TAGFILES").next();
+      s=Config_getList("TAGFILES").next();
       if (s) t << ", ";
     }
     
@@ -108,7 +108,7 @@ void writeInstallScript()
     t << "    print STDERR \"No substitute given for tag file `$sub'\\n\";\n";
     t << "    &usage();\n";
     t << "  }\n";
-    t << "  elsif ( ! $quiet && $sub!=\"_doc\" && $sub!=\"_cgi\" )\n";
+    t << "  elsif ( ! $quiet && $sub ne \"_doc\" && $sub ne \"_cgi\" )\n";
     t << "  {\n";
     t << "    print \"Substituting $subst{$sub} for each occurence of tag file $sub\\n\"; \n";
     t << "  }\n";

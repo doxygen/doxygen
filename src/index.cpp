@@ -155,7 +155,7 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   if (compact) ol.startCenter(); else ol.startItemList();
 
   if (!compact) ol.writeListItem();
-  if (Config::instance()->getBool("GENERATE_TREEVIEW"))
+  if (Config_getBool("GENERATE_TREEVIEW"))
   {
     ol.startQuickIndexItem(extLink,"main.html");
   }
@@ -196,7 +196,7 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   } 
   if (annotatedClasses>0)
   {
-    if (Config::instance()->getBool("ALPHABETICAL_INDEX"))
+    if (Config_getBool("ALPHABETICAL_INDEX"))
     {
       if (!compact) ol.writeListItem();
       ol.startQuickIndexItem(extLink,"classes.html");
@@ -215,14 +215,14 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
     parseText(ol,theTranslator->trFileList());
     ol.endQuickIndexItem();
   } 
-  //if (documentedIncludeFiles>0 && Config::instance()->getBool("VERBATIM_HEADERS"))
+  //if (documentedIncludeFiles>0 && Config_getBool("VERBATIM_HEADERS"))
   //{
   //  if (!compact) ol.writeListItem();
   //  ol.startQuickIndexItem(extLink,"headers.html");
   //  parseText(ol,theTranslator->trHeaderFiles());
   //  ol.endQuickIndexItem();
   //}
-  //if (Config::instance()->getBool("SOURCE_BROWSER")) 
+  //if (Config_getBool("SOURCE_BROWSER")) 
   //{
   //  if (!compact) ol.writeListItem();
   //  ol.startQuickIndexItem(extLink,"sources.html");
@@ -264,7 +264,7 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
     parseText(ol,theTranslator->trExamples());
     ol.endQuickIndexItem();
   } 
-  if (Config::instance()->getBool("SEARCHENGINE"))
+  if (Config_getBool("SEARCHENGINE"))
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem("_cgi","");
@@ -303,7 +303,7 @@ void endTitle(OutputList &ol,const char *fileName,const char *name)
 void startFile(OutputList &ol,const char *name,const char *title,bool external)
 {
   ol.startFile(name,title,external);
-  if (!Config::instance()->getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,external);
+  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE,external);
 }
 
 void endFile(OutputList &ol,bool external)
@@ -311,15 +311,15 @@ void endFile(OutputList &ol,bool external)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   ol.writeFooter(0,external); // write the footer
-  if (Config::instance()->getString("HTML_FOOTER").isEmpty())
+  if (Config_getString("HTML_FOOTER").isEmpty())
   {
     parseText(ol,theTranslator->trGeneratedAt(
               dateToString(TRUE),
-              Config::instance()->getString("PROJECT_NAME")
+              Config_getString("PROJECT_NAME")
              ));
   }
   ol.writeFooter(1,external); // write the link to the picture
-  if (Config::instance()->getString("HTML_FOOTER").isEmpty())
+  if (Config_getString("HTML_FOOTER").isEmpty())
   {
     parseText(ol,theTranslator->trWrittenBy());
   }
@@ -334,8 +334,9 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -415,8 +416,9 @@ void writeClassTree(BaseClassList *cl)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -471,8 +473,9 @@ void writeClassTree(ClassList *cl)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -521,8 +524,9 @@ void writeClassHierarchy(OutputList &ol)
 
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -627,23 +631,26 @@ void writeHierarchicalIndex(OutputList &ol)
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/)
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
     htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"hierarchy"); 
   }
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW") /*&& !Config::instance()->get("")*/)
+  if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(TRUE,0,"hierarchy",0,ftvHelpTitle); 
   }
-  if (Config::instance()->getBool("HAVE_DOT") && Config::instance()->getBool("GRAPHICAL_HIERARCHY"))
+  if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
   {
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
@@ -674,18 +681,21 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   QCString title = theTranslator->trGraphicalHierarchy();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP"))
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
     htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"inherits"); 
   }
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW"))
+  if (hasFtvHelp)
   {
     ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"inherits",0,ftvHelpTitle); 
@@ -750,14 +760,15 @@ void writeFileIndex(OutputList &ol)
   QCString title = theTranslator->trFileList();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -771,7 +782,7 @@ void writeFileIndex(OutputList &ol)
     ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
-  parseText(ol,theTranslator->trFileListDescription(Config::instance()->getBool("EXTRACT_ALL")));
+  parseText(ol,theTranslator->trFileListDescription(Config_getBool("EXTRACT_ALL")));
   //ol.newParagraph();
   ol.endTextBlock();
 
@@ -779,7 +790,7 @@ void writeFileIndex(OutputList &ol)
   OutputNameList outputNameList;
   outputNameList.setAutoDelete(TRUE);
   
-  if (Config::instance()->getBool("FULL_PATH_NAMES"))
+  if (Config_getBool("FULL_PATH_NAMES"))
   {
     // re-sort input files in (dir,file) output order instead of (file,dir) input order 
     FileName *fn=Doxygen::inputNameList.first();
@@ -812,7 +823,7 @@ void writeFileIndex(OutputList &ol)
   
   ol.startIndexList();
   FileList *fl=0;
-  if (Config::instance()->getBool("FULL_PATH_NAMES"))
+  if (Config_getBool("FULL_PATH_NAMES"))
   {
     fl = outputNameList.first();
   }
@@ -834,7 +845,7 @@ void writeFileIndex(OutputList &ol)
               !fd->isReference())
       {
         QCString path;
-        if (Config::instance()->getBool("FULL_PATH_NAMES")) 
+        if (Config_getBool("FULL_PATH_NAMES")) 
         {
           path=stripFromPath(fd->getPath().copy());
         }
@@ -920,7 +931,7 @@ void writeFileIndex(OutputList &ol)
       }
       fd=fl->next();
     }
-    if (Config::instance()->getBool("FULL_PATH_NAMES"))
+    if (Config_getBool("FULL_PATH_NAMES"))
     {
       fl=outputNameList.next();
     }
@@ -968,14 +979,15 @@ void writeNamespaceIndex(OutputList &ol)
   QCString title = theTranslator->trNamespaceList();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp  = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -989,7 +1001,7 @@ void writeNamespaceIndex(OutputList &ol)
     ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
-  parseText(ol,theTranslator->trNamespaceListDescription(Config::instance()->getBool("EXTRACT_ALL")));
+  parseText(ol,theTranslator->trNamespaceListDescription(Config_getBool("EXTRACT_ALL")));
   //ol.newParagraph();
   ol.endTextBlock();
 
@@ -1065,8 +1077,9 @@ int countAnnotatedClasses()
 
 void writeAnnotatedClassList(OutputList &ol)
 {
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ol.startIndexList(); 
   //ClassDef *cd=Doxygen::classList.first();
   //while (cd)
@@ -1107,8 +1120,9 @@ void writeAnnotatedClassList(OutputList &ol)
 
 void writePackageList(OutputList &ol)
 {
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ol.startIndexList(); 
   PackageSDict::Iterator pdi(Doxygen::packageDict);
   PackageDef *pd;
@@ -1168,7 +1182,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   }
 
   // the number of columns in the table
-  const int columns = Config::instance()->getInt("COLS_IN_ALPHA_INDEX");
+  const int columns = Config_getInt("COLS_IN_ALPHA_INDEX");
 
   int i,j;
   int totalItems = headerItems + annotatedClasses;            // number of items in the table
@@ -1249,7 +1263,7 @@ void writeAlphabeticalClassList(OutputList &ol)
       {
         QCString cname;
         QCString namesp;
-        if (Config::instance()->getBool("HIDE_SCOPE_NAMES"))
+        if (Config_getBool("HIDE_SCOPE_NAMES"))
         {
           cname=cd->displayName();
         }
@@ -1304,7 +1318,7 @@ void writeAlphabeticalIndex(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,"classes.html","Alphabetical index");
   startTitle(ol,0);
-  parseText(ol,Config::instance()->getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
+  parseText(ol,Config_getString("PROJECT_NAME")+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
   writeAlphabeticalClassList(ol);
   endFile(ol);
@@ -1315,8 +1329,9 @@ void writeAlphabeticalIndex(OutputList &ol)
 
 void writeAnnotatedIndex(OutputList &ol)
 {
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
 
   if (annotatedClasses==0) return;
   
@@ -1327,7 +1342,7 @@ void writeAnnotatedIndex(OutputList &ol)
   QCString title = theTranslator->trCompoundList();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
@@ -1365,8 +1380,9 @@ void writeAnnotatedIndex(OutputList &ol)
 
 void writePackageIndex(OutputList &ol)
 {
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
 
   if (documentedPackages==0) return;
   
@@ -1377,7 +1393,7 @@ void writePackageIndex(OutputList &ol)
   QCString title = theTranslator->trPackageList();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
@@ -1568,7 +1584,7 @@ void writeMemberIndex(OutputList &ol)
   QCString title = theTranslator->trCompoundMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   startTitle(ol,0);
   parseText(ol,title);
   endTitle(ol,0,0);
@@ -1577,8 +1593,9 @@ void writeMemberIndex(OutputList &ol)
   {
     writeQuickMemberIndex(ol,g_memberIndexLetterUsed);
   }
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     HtmlHelp *htmlHelp = HtmlHelp::getInstance();
@@ -1589,7 +1606,7 @@ void writeMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"functions",0,ftvHelpTitle); 
   }
-  parseText(ol,theTranslator->trCompoundMembersDescription(Config::instance()->getBool("EXTRACT_ALL")));
+  parseText(ol,theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
   writeMemberList(ol,quickIndex);
   endFile(ol);
   ol.popGeneratorState();
@@ -1824,7 +1841,7 @@ void writeFileMemberIndex(OutputList &ol)
   QCString title = theTranslator->trFileMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   startTitle(ol,0);
   parseText(ol,title);
   endTitle(ol,0,0);
@@ -1833,8 +1850,9 @@ void writeFileMemberIndex(OutputList &ol)
   {
     writeQuickMemberIndex(ol,g_fileIndexLetterUsed);
   }
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     HtmlHelp *htmlHelp = HtmlHelp::getInstance();
@@ -1845,7 +1863,7 @@ void writeFileMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"globals",0,ftvHelpTitle); 
   }
-  parseText(ol,theTranslator->trFileMembersDescription(Config::instance()->getBool("EXTRACT_ALL")));
+  parseText(ol,theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
   writeFileMemberList(ol,quickIndex);
   endFile(ol);
   ol.popGeneratorState();
@@ -1862,7 +1880,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
   QCString title = theTranslator->trNamespaceMembers();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle =  title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   startTitle(ol,0);
   parseText(ol,title);
   endTitle(ol,0,0);
@@ -1871,8 +1889,9 @@ void writeNamespaceMemberIndex(OutputList &ol)
   {
     writeQuickMemberIndex(ol,g_namespaceIndexLetterUsed);
   }
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     HtmlHelp *htmlHelp = HtmlHelp::getInstance();
@@ -1883,7 +1902,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
     FTVHelp *ftvHelp = FTVHelp::getInstance();
     ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,ftvHelpTitle); 
   }
-  parseText(ol,theTranslator->trNamespaceMemberDescription(Config::instance()->getBool("EXTRACT_ALL")));
+  parseText(ol,theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
   writeNamespaceMemberList(ol,quickIndex);
   endFile(ol);
   ol.popGeneratorState();
@@ -1901,14 +1920,15 @@ void writeExampleIndex(OutputList &ol)
   QCString title = theTranslator->trExamples();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&& !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -1930,7 +1950,7 @@ void writeExampleIndex(OutputList &ol)
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
     ol.writeListItem();
-    QCString n=convertFileName(pi->name)+"-example";
+    QCString n=convertNameToFile(pi->name+"-example");
     if (!pi->title.isEmpty())
     {
       ol.writeObjectLink(0,n,0,pi->title);
@@ -1968,7 +1988,7 @@ void countRelatedPages(int &docPages,int &indexPages)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup)
+    if (!pi->inGroup && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       indexPages++;
       if (!pi->isReference()) docPages++;
@@ -2005,14 +2025,15 @@ void writePageIndex(OutputList &ol)
   QCString title = theTranslator->trRelatedPages();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP") /*&& !Config::instance()->get("")*/;
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW")  /*&&  !Config::instance()->get("")*/;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -2033,11 +2054,11 @@ void writePageIndex(OutputList &ol)
   PageInfo *pi=0;
   for (pdi.toFirst();(pi=pdi.current());++pdi)
   {
-    if (!pi->inGroup /*&& !pi->isReference()*/)
+    if (!pi->inGroup && (!pi->isReference() || Config_getBool("ALLEXTERNALS")))
     {
       QCString pageName,pageTitle;
 
-      if (Config::instance()->getBool("CASE_SENSE_NAMES"))
+      if (Config_getBool("CASE_SENSE_NAMES"))
         pageName=pi->name.copy();
       else
         pageName=pi->name.lower();
@@ -2099,19 +2120,19 @@ int countGroups()
 
 void writeGraphInfo(OutputList &ol)
 {
-  if (!Config::instance()->getBool("HAVE_DOT") || !Config::instance()->getBool("GENERATE_HTML")) return;
+  if (!Config_getBool("HAVE_DOT") || !Config_getBool("GENERATE_HTML")) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  generateGraphLegend(Config::instance()->getString("HTML_OUTPUT"));
+  generateGraphLegend(Config_getString("HTML_OUTPUT"));
   startFile(ol,"graph_legend","Graph Legend");
   startTitle(ol,0);
   parseText(ol,theTranslator->trLegendTitle());
   endTitle(ol,0,0);
-  bool oldStripCommentsState = Config::instance()->getBool("STRIP_CODE_COMMENTS");
+  bool oldStripCommentsState = Config_getBool("STRIP_CODE_COMMENTS");
   // temporarily disable the stripping of comments for our own code example!
-  Config::instance()->getBool("STRIP_CODE_COMMENTS") = FALSE;
+  Config_getBool("STRIP_CODE_COMMENTS") = FALSE;
   parseDoc(ol,"graph_legend",1,0,0,theTranslator->trLegendDocs());
-  Config::instance()->getBool("STRIP_CODE_COMMENTS") = oldStripCommentsState;
+  Config_getBool("STRIP_CODE_COMMENTS") = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -2126,8 +2147,9 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -2206,7 +2228,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     }
 
 
-    if (Config::instance()->getBool("TOC_EXPAND"))
+    if (Config_getBool("TOC_EXPAND"))
     {
       // write members
       struct MemInfo
@@ -2375,11 +2397,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
         {
           if(htmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name)+"-example"); 
+            htmlHelp->addContentsItem(FALSE,convertToHtml(pi->name),convertNameToFile(pi->name+"-example")); 
           }
           if(ftvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,pi->getReference(),convertToHtml(pi->name)+"-example",0,convertNameToFile(pi->name)); 
+            ftvHelp->addContentsItem(FALSE,pi->getReference(),convertToHtml(pi->name+"-example"),0,convertNameToFile(pi->name)); 
           }
           pi=++eli;
         }
@@ -2413,8 +2435,8 @@ void writeGroupHierarchy(OutputList &ol)
 #if 0
 void writeGroupList(OutputList &ol)
 {
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_TREEVIEW");
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp  = 0;
   if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
@@ -2476,14 +2498,15 @@ void writeGroupIndex(OutputList &ol)
   QCString title = theTranslator->trModules();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty()) title.prepend(Config::instance()->getString("PROJECT_NAME")+" ");
+  if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   parseText(ol,title);
   endTitle(ol,0,0);
   ol.startTextBlock();
   HtmlHelp *htmlHelp = 0;
   FTVHelp  *ftvHelp = 0;
-  bool hasHtmlHelp = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW");
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   if (hasHtmlHelp)
   {
     htmlHelp = HtmlHelp::getInstance();
@@ -2527,9 +2550,9 @@ void writeIndex(OutputList &ol)
   ol.pushGeneratorState();
 
   QCString projPrefix;
-  if (!Config::instance()->getString("PROJECT_NAME").isEmpty())
+  if (!Config_getString("PROJECT_NAME").isEmpty())
   {
-    projPrefix=Config::instance()->getString("PROJECT_NAME")+" ";
+    projPrefix=Config_getString("PROJECT_NAME")+" ";
   }
 
   //--------------------------------------------------------------------
@@ -2553,19 +2576,22 @@ void writeIndex(OutputList &ol)
   }
 
   QCString indexName="index";
-  if (Config::instance()->getBool("GENERATE_TREEVIEW")) indexName="main";
+  if (Config_getBool("GENERATE_TREEVIEW")) indexName="main";
   ol.startFile(indexName,title,FALSE);
   
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_HTMLHELP"))
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
   {
     HtmlHelp::getInstance()->addContentsItem(FALSE,title,indexName); 
   }
-  if (Config::instance()->getBool("GENERATE_HTML") && Config::instance()->getBool("GENERATE_TREEVIEW"))
+  if (hasFtvHelp)
   {
     FTVHelp::getInstance()->addContentsItem(FALSE,0,indexName,0,title); 
   }
 
-  if (!Config::instance()->getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE);
+  if (!Config_getBool("DISABLE_INDEX")) writeQuickLinks(ol,TRUE);
   ol.startTitleHead(0);
   if (Doxygen::mainPage && !Doxygen::mainPage->title.isEmpty())
   {
@@ -2577,13 +2603,13 @@ void writeIndex(OutputList &ol)
   }
   ol.endTitleHead(0,0);
   ol.newParagraph();
-  if (!Config::instance()->getString("PROJECT_NUMBER").isEmpty())
+  if (!Config_getString("PROJECT_NUMBER").isEmpty())
   {
     ol.startProjectNumber();
-    parseDoc(ol,defFileName,defLine,0,0,Config::instance()->getString("PROJECT_NUMBER"));
+    parseDoc(ol,defFileName,defLine,0,0,Config_getString("PROJECT_NUMBER"));
     ol.endProjectNumber();
   }
-  if (Config::instance()->getBool("DISABLE_INDEX") && Doxygen::mainPage==0) writeQuickLinks(ol,FALSE);
+  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) writeQuickLinks(ol,FALSE);
 
   if (Doxygen::mainPage)
   {
@@ -2601,16 +2627,16 @@ void writeIndex(OutputList &ol)
 
   ol.startFile("refman",0,FALSE);
   ol.startIndexSection(isTitlePageStart);
-  if (!Config::instance()->getString("LATEX_HEADER").isEmpty()) 
+  if (!Config_getString("LATEX_HEADER").isEmpty()) 
   {
     ol.disable(OutputGenerator::Latex);
   }
 
   parseText(ol,projPrefix+theTranslator->trReferenceManual());
-  if (!Config::instance()->getString("PROJECT_NUMBER").isEmpty())
+  if (!Config_getString("PROJECT_NUMBER").isEmpty())
   {
     ol.startProjectNumber(); 
-    parseDoc(ol,defFileName,defLine,0,0,Config::instance()->getString("PROJECT_NUMBER"));
+    parseDoc(ol,defFileName,defLine,0,0,Config_getString("PROJECT_NUMBER"));
     ol.endProjectNumber();
   }
   ol.endIndexSection(isTitlePageStart);

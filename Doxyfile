@@ -53,7 +53,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 INPUT                  = src 
 FILE_PATTERNS          = *.h \
-                         *.cpp \
+                         *.cpp
 RECURSIVE              = NO
 EXCLUDE                = src/code.cpp \
                          src/config.cpp \

@@ -61,7 +61,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
          )
       {
         bool isLink = cd->isLinkable();
-        if (isLink || !Config::instance()->getBool("HIDE_UNDOC_CLASSES"))
+        if (isLink || !Config_getBool("HIDE_UNDOC_CLASSES"))
         {
           if (!found)
           {
@@ -78,7 +78,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
             ol.startMemberList();
             found=TRUE;
           }
-          if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty()) 
+          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
           {
             Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
                     << "\">" << convertToXML(cd->name()) << "</class>" << endl;
@@ -107,7 +107,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
           {
             ol.startMemberDescription();
             parseDoc(ol,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
-            if ((!cd->briefDescription().isEmpty() && Config::instance()->getBool("REPEAT_BRIEF")) ||
+            if ((!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
                 !cd->documentation().isEmpty())
             {
               ol.pushGeneratorState();

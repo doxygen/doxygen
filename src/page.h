@@ -76,7 +76,7 @@ class PageInfo
     
     void writeDocAnchorsToTagFile()
     {
-      if (!Config::instance()->getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
       {
         QDictIterator<SectionInfo> sdi(*sectionDict);
         SectionInfo *si;

@@ -62,13 +62,6 @@ class TranslatorSlovene : public Translator
     { return "Opis metod"; }
     QCString trMemberDataDocumentation()
     { return "Opis atributov"; }
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-      QCString result=(QCString)"Dokumentacija za "+s+
-                     "je generirana iz ";
-      if (single) result+="datoteke :";   else result+="naslednih datotek:";
-      return result;
-    }
     QCString trMore()
     { return "..."; }
     QCString trListOfAllMembers()

@@ -51,13 +51,6 @@ class TranslatorChinese : public Translator
     { return "成员函数文档"; }
     QCString trMemberDataDocumentation()
     { return "成员数据文档"; }
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-      QCString result=(QCString)"De documentatie voor deze"+s+
-                     " is gegenereerd op grond van de volgende file";
-      if (single) result+=":";   else result+="s:";
-      return result;
-    }
     QCString trMore()
     { return "更多..."; }
     QCString trListOfAllMembers()

@@ -167,9 +167,9 @@ static FILE *checkAndOpenFile(const QCString &absName)
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
-    if (!Config::instance()->getString("INPUT_FILTER").isEmpty())
+    if (!Config_getString("INPUT_FILTER").isEmpty())
     {
-      QCString cmd = Config::instance()->getString("INPUT_FILTER")+" "+absName;
+      QCString cmd = Config_getString("INPUT_FILTER")+" "+absName;
       f=popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
@@ -892,7 +892,7 @@ static inline void outputArray(const char *a,int len)
 
 static void readIncludeFile(const QCString &inc)
 {
-  if (!Config::instance()->getBool("SEARCH_INCLUDES")) return; // do not read include files
+  if (!Config_getBool("SEARCH_INCLUDES")) return; // do not read include files
   uint i=0;
   
   // find the start of the include file name
@@ -1703,7 +1703,7 @@ BN	[ \t\r\n]
 					  {
 					    FileState *fs=g_includeStack.pop();
 					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
-					    if (Config::instance()->getString("INPUT_FILTER").isEmpty())
+					    if (Config_getString("INPUT_FILTER").isEmpty())
 					      fclose(fs->filePtr);
 					    else
 					      pclose(fs->filePtr);
@@ -1846,8 +1846,8 @@ void preprocessFile(const char *fileName,BufStr &output)
   uint orgOffset=output.curPos();
 //#endif
 
-  g_macroExpansion = Config::instance()->getBool("MACRO_EXPANSION");
-  g_expandOnlyPredef = Config::instance()->getBool("EXPAND_ONLY_PREDEF");
+  g_macroExpansion = Config_getBool("MACRO_EXPANSION");
+  g_expandOnlyPredef = Config_getBool("EXPAND_ONLY_PREDEF");
   g_curlyCount=0;
   g_nospaces=FALSE;
   g_outputBuf=&output;
@@ -1859,7 +1859,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_expandedDict->clear();
   
   // add predefined macros
-  char *defStr = Config::instance()->getList("PREDEFINED").first();
+  char *defStr = Config_getList("PREDEFINED").first();
   while (defStr)
   {
     //printf("Predefined: `%s'\n",defStr);
@@ -1948,10 +1948,10 @@ void preprocessFile(const char *fileName,BufStr &output)
       //  def->name.data(),def->definition.data(),def->nargs);
     }
     
-    defStr=Config::instance()->getList("PREDEFINED").next();
+    defStr=Config_getList("PREDEFINED").next();
   }
  
-  QCString &inputFilter = Config::instance()->getString("INPUT_FILTER");
+  QCString &inputFilter = Config_getString("INPUT_FILTER");
   if (inputFilter.isEmpty())
   {
     preYYin = fopen(fileName,"r");

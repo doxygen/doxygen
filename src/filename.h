@@ -62,7 +62,7 @@ class FileNameDict : public QDict<FileName>
 {
   public:
     FileNameDict(uint size) : 
-       QDict<FileName>(size,Config::instance()->getBool("CASE_SENSE_NAMES")) {}
+       QDict<FileName>(size,Config_getBool("CASE_SENSE_NAMES")) {}
    ~FileNameDict() {}
 };
 

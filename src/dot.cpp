@@ -167,9 +167,9 @@ static bool isLeaf(ClassDef *cd)
       // if class is not a leaf
       if (!isLeaf(bClass)) return FALSE;
       // or class is not documented in this project
-      if (!Config::instance()->getBool("ALLEXTERNALS") && !bClass->isLinkableInProject()) return FALSE;
+      if (!Config_getBool("ALLEXTERNALS") && !bClass->isLinkableInProject()) return FALSE;
       // or class is not documented and all ALLEXTERNALS = YES
-      if (Config::instance()->getBool("ALLEXTERNALS") && !bClass->isLinkable()) return FALSE;    
+      if (Config_getBool("ALLEXTERNALS") && !bClass->isLinkable()) return FALSE;    
     }
   }
   return TRUE;
@@ -549,7 +549,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
   DotNode *n;
   for (dnli.toFirst();(n=dnli.current());++dnli)
   {
-    QCString baseName;
+    QCString baseName="inherit_graph_";
     QCString diskName=n->m_url.copy();
     int i=diskName.find('$'); 
     if (i!=-1)
@@ -558,9 +558,9 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     }
     else /* take the label name as the file name (and strip any template stuff) */
     {
-      diskName=convertNameToFile(n->m_label);
+      diskName=n->m_label;
     }
-    baseName.sprintf("inherit_graph_%s",diskName.data());
+    baseName = convertNameToFile(baseName+diskName);
     QCString dotName=baseName+".dot";
     QCString gifName=baseName+".gif";
     QCString mapName=baseName+".map";
@@ -583,7 +583,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     QCString dotArgs(4096);
     dotArgs.sprintf("-Tgif \"%s\" -o \"%s\"",dotName.data(),gifName.data());
     //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
@@ -591,7 +591,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     }
     dotArgs.sprintf("-Timap \"%s\" -o \"%s\"",dotName.data(),mapName.data());
     //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
@@ -602,7 +602,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     out << "<map name=\"" << n->m_label << "_map\">" << endl;
     convertMapFile(out,mapName);
     out << "</map>" << endl;
-    if (Config::instance()->getBool("DOT_CLEANUP")) thisDir.remove(dotName);
+    if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
     thisDir.remove(mapName);
   }
   out << "</table>" << endl;
@@ -819,7 +819,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   else // new class
   {
     QCString displayName=className;
-    if (Config::instance()->getBool("HIDE_SCOPE_NAMES")) displayName=stripScope(displayName);
+    if (Config_getBool("HIDE_SCOPE_NAMES")) displayName=stripScope(displayName);
     QCString tmp_url;
     if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
     bn = new DotNode(m_curNodeNumber++,
@@ -912,7 +912,7 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
     buildGraph(cd,m_startNode,1,TRUE);
     if (t==Inheritance) buildGraph(cd,m_startNode,1,FALSE);
   }
-  m_diskName = cd->getOutputFileBase().copy();
+  m_diskName = cd->getFileBase().copy();
 }
 
 bool DotClassGraph::isTrivial() const
@@ -996,7 +996,7 @@ static void findMaximalDotGraph(DotNode *root,
   int height=0;
 
   // binary search for the maximal inheritance depth that fits in a reasonable
-  // sized image (dimensions: Config::instance()->getInt("MAX_DOT_GRAPH_WIDTH"), Config::instance()->getInt("MAX_DOT_GRAPH_HEIGHT"))
+  // sized image (dimensions: Config_getInt("MAX_DOT_GRAPH_WIDTH"), Config_getInt("MAX_DOT_GRAPH_HEIGHT"))
   do
   {
     writeDotGraph(root,format,baseName,lrRank,renderParents,
@@ -1005,7 +1005,7 @@ static void findMaximalDotGraph(DotNode *root,
     QCString dotArgs(4096);
     // create annotated dot file
     dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       return;
@@ -1016,9 +1016,9 @@ static void findMaximalDotGraph(DotNode *root,
     width  = width *96/72; // 96 pixels/inch, 72 points/inch
     height = height*96/72; // 96 pixels/inch, 72 points/inch
     //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
-    //    Config::instance()->getInt("MAX_DOT_GRAPH_WIDTH"),Config::instance()->getInt("MAX_DOT_GRAPH_HEIGHT"));
+    //    Config_getInt("MAX_DOT_GRAPH_WIDTH"),Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
     
-    lastFit=(width<Config::instance()->getInt("MAX_DOT_GRAPH_WIDTH") && height<Config::instance()->getInt("MAX_DOT_GRAPH_HEIGHT"));
+    lastFit=(width<Config_getInt("MAX_DOT_GRAPH_WIDTH") && height<Config_getInt("MAX_DOT_GRAPH_HEIGHT"));
     if (lastFit) // image is small enough
     {
       minDistance=curDistance;
@@ -1042,7 +1042,7 @@ static void findMaximalDotGraph(DotNode *root,
     writeDotGraph(root,
                   format,
                   baseName,
-                  lrRank || (curDistance==1 && width>Config::instance()->getInt("MAX_DOT_GRAPH_WIDTH")),
+                  lrRank || (curDistance==1 && width>Config_getInt("MAX_DOT_GRAPH_WIDTH")),
                   renderParents,
                   minDistance,
                   backArrows
@@ -1090,18 +1090,16 @@ void DotClassGraph::writeGraph(QTextStream &out,
   switch (m_graphType)
   {
     case Implementation:
-      baseName.sprintf("%s_coll_graph",m_diskName.data());
       mapName="coll_map";
       break;
     case Interface:
-      baseName.sprintf("%s_intf_graph",m_diskName.data());
       mapName="intf_map";
       break;
     case Inheritance:
-      baseName.sprintf("%s_inherit_graph",m_diskName.data());
       mapName="inherit_map";
       break;
   }
+  baseName = convertNameToFile(diskName());
 
   findMaximalDotGraph(m_startNode,m_maxDistance,baseName,
                       thisDir,format,!isTBRank,m_graphType==Inheritance);
@@ -1111,7 +1109,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     QCString dotArgs(4096);
     dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
                    baseName.data(),baseName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1121,7 +1119,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     {
       // run dot again to create an image map
       dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",baseName.data(),baseName.data());
-      if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Error: Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
@@ -1152,7 +1150,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
   {
     QCString dotArgs(4096);
     dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1165,7 +1163,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
       QDir::setCurrent(oldDir);
       return;
     }
-    if (Config::instance()->getBool("USE_PDFLATEX"))
+    if (Config_getBool("USE_PDFLATEX"))
     {
       QCString epstopdfArgs(4096);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
@@ -1187,7 +1185,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
            "\\end{center}\n"
            "\\end{figure}\n";
   }
-  if (Config::instance()->getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
+  if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1254,8 +1252,8 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
   m_maxDistance = 0;
   m_inverse = inverse;
   ASSERT(fd!=0);
-  m_diskName  = fd->getOutputFileBase().copy();
-  QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
+  m_diskName  = fd->getFileBase().copy();
+  QCString tmp_url=fd->getReference()+"$"+fd->getFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->name(),
                             tmp_url.data(),
@@ -1278,7 +1276,7 @@ QCString DotInclDepGraph::diskName() const
   QCString result=m_diskName.copy();
   if (m_inverse) result+="_dep";
   result+="_incl";
-  return result; 
+  return convertNameToFile(result); 
 }
 
 void DotInclDepGraph::writeGraph(QTextStream &out,
@@ -1301,6 +1299,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   QCString baseName=m_diskName;
   if (m_inverse) baseName+="_dep";
   baseName+="_incl";
+  baseName=convertNameToFile(baseName);
   QCString mapName=m_startNode->m_label.copy();
   if (m_inverse) mapName+="dep";
 
@@ -1313,7 +1312,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     QCString dotArgs(4096);
     dotArgs.sprintf("-Tgif \"%s.dot\" -o \"%s.gif\"",
                    baseName.data(),baseName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1325,7 +1324,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       // run dot again to create an image map
       dotArgs.sprintf("-Timap \"%s.dot\" -o \"%s.map\"",
                       baseName.data(),baseName.data());
-      if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
       {
         err("Problems running dot. Check your installation!\n");
         QDir::setCurrent(oldDir);
@@ -1349,7 +1348,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     QCString dotArgs(4096);
     dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
                    baseName.data(),baseName.data());
-    if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1362,7 +1361,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
       QDir::setCurrent(oldDir);
       return;
     }
-    if (Config::instance()->getBool("USE_PDFLATEX"))
+    if (Config_getBool("USE_PDFLATEX"))
     {
       QCString epstopdfArgs(4096);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
@@ -1387,7 +1386,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
            "\\end{figure}\n";
   }
 
-  if (Config::instance()->getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
+  if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
 
   QDir::setCurrent(oldDir);
 }
@@ -1440,7 +1439,7 @@ void generateGraphLegend(const char *path)
   // run dot to generate the a .gif image from the graph
   QCString dotArgs(4096);
   dotArgs.sprintf("-Tgif graph_legend.dot -o graph_legend.gif");
-  if (iSystem(Config::instance()->getString("DOT_PATH")+"dot",dotArgs)!=0)
+  if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
   {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);

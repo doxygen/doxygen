@@ -191,7 +191,7 @@ Doxygen. Unrecognized commands are treated as normal text.
   Indicates that a comment block contains documentation for a
   \ref modules "group" of classes, files or namespaces. This can be used to
   categorize classes, files or namespaces, and document those
-  categories. You can also uses groups as members of other groups,
+  categories. You can also use groups as members of other groups,
   thus building a hierarchy of groups.
 
   The \<name\> argument should an single word identifier.
@@ -639,7 +639,7 @@ Public/Protected/Private/... section.
   \addindex \if
   Starts a conditional documentation section. The section ends 
   with a matching \c \endif command. A conditional section is
-  disable by default. To enable it you must put the
+  disabled by default. To enable it you must put the
   section-label after the \ref cfg_enabled_sections "ENABLED_SECTIONS" 
   tag in the configuration
   file. Conditional blocks can be nested. A nested section is
@@ -900,7 +900,7 @@ Public/Protected/Private/... section.
 \subsection cmdanchor \anchor <word>
 
   \addindex \anchor
-  This command places an invisible, named anchor into to documentation
+  This command places an invisible, named anchor into the documentation
   to which you can refer with the \\ref command.
 
   \sa section \ref cmdref "\\ref".
@@ -1235,13 +1235,13 @@ Public/Protected/Private/... section.
   will result in the following text:<br><br>
   ... this is a \e really good example ...
 
-  Equvalent to \ref cmdem "\\em"
+  Equivalent to \ref cmdem "\\em"
 
 <hr>
 \subsection cmdem \em <word>
 
   \addindex \e 
-  Displays the argument \<word\> in italics.
+  Displayis the argument \<word\> in italics.
   Use this command to emphasize words.
 
   \par Example:

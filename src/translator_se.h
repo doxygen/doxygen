@@ -93,14 +93,6 @@ class TranslatorSwedish : public Translator
     QCString trMemberDataDocumentation()
     { return "Dokumentation över datamedlemmar"; }
 
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-
-    QCString result=(QCString)"Dokumentationen för denna"+s+
-                     " är skapad utifrån följande fil";
-      if (single) result+=":";   else result+="er:";
-      return result;
-    }
     QCString trMore()
     { return "Mer..."; }
 

@@ -66,7 +66,9 @@ class ClassDef : public Definition
                         Exception=Entry::EXCEPTION_SEC
                       };
     DefType definitionType() { return TypeClass; }
-    QCString getOutputFileBase() const { return fileName; }
+    QCString getOutputFileBase() const; 
+    QCString getFileBase() const;
+    QCString getSourceFileBase() const; 
 
     /*! Returns the name as it is appears in the documentation */
     QCString displayName() const;

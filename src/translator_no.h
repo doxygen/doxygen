@@ -55,14 +55,6 @@ class TranslatorNorwegian : public Translator
     QCString trMemberDataDocumentation()
     { return "Dokumentasjon over datamedlemmer"; }
 
-    QCString trGeneratedFrom(const char *s,bool single)
-    { 
-
-    QCString result=(QCString)"Dokumentasjonen for denne"+s+
-                     " er generert fra følgende fil";
-      if (single) result+=":";   else result+="er:";
-      return result;
-    }
     QCString trMore()
     { return "Mer..."; }
 
