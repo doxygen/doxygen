@@ -760,7 +760,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLMASK   [a-z_A-Z0-9\~\:\?\@\%\#\.\-\+\/\=]+
+URLMASK   [a-z_A-Z0-9\~\:\?\@\&\%\#\.\-\+\/\=]+
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?

@@ -133,7 +133,6 @@ void setFileNameForSections(QList<QCString> *anchorList,const char *fileName);
 QCString stripAnnonymousScope(const QCString &s);
 QCString stripAnnonymousNamespaceScope(const QCString &s);
 QCString stripFromPath(const QCString &path);
-QCString convertToXML(const char *s);
 bool rightScopeMatch(const QCString &scope, const QCString &name);
 bool leftScopeMatch(const QCString &scope, const QCString &name);
 void writePageRef(OutputList &ol,const char *cn,const char *mn);
@@ -145,12 +144,13 @@ void initClassHierarchy(ClassList *cl);
 bool hasVisibleRoot(BaseClassList *bcl);
 int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 QCString convertNameToFile(const char *name,bool allowDots=FALSE);
-QCString convertToHtml(const QCString &s);
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 QCString stripScope(const char *name);
 int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
+QCString convertToHtml(const char *s);
+QCString convertToXML(const char *s);
 
 #endif
 

@@ -704,7 +704,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject() && nd->countMembers()>0) count++;
+    if (nd->isLinkableInProject()) count++;
   }
   return count;
 }
@@ -746,12 +746,17 @@ void writeNamespaceIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
 
-  ol.startIndexList();
+  bool first=TRUE;
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->isLinkableInProject() && nd->countMembers()>0)
+    if (nd->isLinkableInProject())
     {
+      if (first)
+      {
+        ol.startIndexList();
+        first=FALSE;
+      }
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       if (!nd->briefDescription().isEmpty())
       {
@@ -776,7 +781,7 @@ void writeNamespaceIndex(OutputList &ol)
     }
     nd=namespaceList.next();
   }
-  ol.endIndexList();
+  if (!first) ol.endIndexList();
   if (hasHtmlHelp)
   {
     htmlHelp->decContentsDepth();

@@ -146,7 +146,7 @@ void writeInstallScript()
     t << "      print STDERR \"Error: opening file $oldf for writing\\n\";\n";
     t << "      exit 1;\n";
     t << "    }\n";
-    t << "    if ($oldf!=\"tree.js\") {\n";
+    t << "    if ($oldf ne \"tree.js\") {\n";
     t << "      while (<F>) {\n";
     t << "        s/doxygen\\=\\\"([^ \\\"\\:\\t\\>\\<]*)\\:([^ \\\"\\t\\>\\<]*)\\\" (href|src)=\\\"\\2/doxygen\\=\\\"$1:$subst{$1}\\\" \\3=\\\"$subst{$1}/g;\n";
     t << "        print G \"$_\";\n";

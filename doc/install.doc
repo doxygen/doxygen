@@ -462,19 +462,17 @@ Compilation is now done by performing the following steps:
     nmake
 \endverbatim
 
-<li>To generate the doxygen documentation, do ensure, that the
-    <code>html</code> and <code>latex</code> subdirectories exist.
-    Then go to the <code>doc</code> subdirectory and type:
+<li>To generate the doxygen documentation, go to the <code>doc</code> 
+    subdirectory and type:
 
 \verbatim
-    doxygen
     nmake
 \endverbatim
 
-    The generated docs int HTML are located in the <code>html</code>
+    The generated docs int HTML are located in the <code>..\html</code>
     subdirectory.
 
-    The sources for LaTeX documentation are located in <code>latex</code>
+    The sources for LaTeX documentation are located in <code>..\latex</code>
     subdirectory. From those sources, the DVI, PostScript, and PDF
     documentation can be generated. 
 </ol>

@@ -258,7 +258,7 @@ MemberDef::MemberDef(const char *df,int dl,
   initLines=0;
   type=t;
   args=a;
-  args=args.stripWhiteSpace();
+  args=removeRedundantWhiteSpace(args);
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
   declLine=0;
   memberGroup=0;
@@ -763,11 +763,11 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
     // if member template specifiers are not part of the name, but they are
     // present, we add them
-    if (tArgList && !(name().find('<')!=-1 && name().find('>')!=-1)
-        && cd && cd->templateArguments())
-    {
-      ol.docify(tempArgListToString(tArgList));
-    }
+    //if (tArgList && !(name().find('<')!=-1 && name().find('>')!=-1)
+    //    && cd && cd->templateArguments())
+    //{
+    //  ol.docify(tempArgListToString(tArgList));
+    //}
 
     if (argsString()) 
     {
@@ -923,6 +923,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if (si==-1) si=0;
         while ((pi=r.match(ldef,i+l,&l))!=-1) ei=i=pi+l;
         // first si characters of ldef contain compound type name
+        ol.startMemberDocName();
         ol.docify(ldef.left(si));
         ol.docify(" { ... } ");
         // last ei characters of ldef contain pointer/reference specifiers
