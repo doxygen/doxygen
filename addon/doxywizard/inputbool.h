@@ -27,7 +27,7 @@ class InputBool : public QWidget, /*QCheckBox,*/ public IInput
   Q_OBJECT
 
   public:
-    InputBool( const QString &text, PageWidget *parent, bool &flag );
+    InputBool( const QString &text, QWidget *parent, bool &flag );
     ~InputBool(){};
     void init();
     void setEnabled(bool b) { cb->setEnabled(b); }

@@ -193,6 +193,48 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   return TRUE;
 }
 
+static QArray<int> * s_newNumber = new QArray<int>();
+static int s_max_newNumber=0;
+
+inline int reNumberNode(int number, bool doReNumbering)
+{
+  if (!doReNumbering) 
+  {
+    return number;
+  } 
+  else 
+  {
+    int s = s_newNumber->size();
+    if (number>=s) 
+    {
+      int ns=0;
+      ns = s * 3 / 2 + 5; // new size
+      if (number>=ns) // number still doesn't fit
+      {
+        ns = number * 3 / 2 + 5;
+      }
+      s_newNumber->resize(ns);
+      for (int i=s;i<ns;i++) // clear new part of the array
+      {
+        s_newNumber->at(i)=0;
+      }
+    }
+    int i = s_newNumber->at(number);
+    if (i == 0) // not yet mapped
+    {
+      i = ++s_max_newNumber; // start from 1
+      s_newNumber->at(number) = i;
+    }
+    return i;
+  }
+}
+
+static void resetReNumbering() 
+{
+  s_max_newNumber=0;
+  s_newNumber->resize(s_max_newNumber);
+}
+
 static bool readBoundingBoxDot(const char *fileName,int *width,int *height)
 {
   QFile f(fileName);
@@ -497,14 +539,15 @@ static void writeBoxMemberList(QTextStream &t,char prot,MemberList &ml,ClassDef 
 void DotNode::writeBox(QTextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
-                       bool hasNonReachableChildren)
+                       bool hasNonReachableChildren,
+                       bool reNumber)
 {
   const char *labCol = 
           m_url.isEmpty() ? "grey75" :  // non link
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << m_number << " [label=\"";
+  t << "  Node" << reNumberNode(m_number,reNumber) << " [label=\"";
 
   if (Config_getBool("UML_LOOK") && (gt==Inheritance || gt==Collaboration))
   {
@@ -567,13 +610,14 @@ void DotNode::writeArrow(QTextStream &t,
                          DotNode *cn,
                          EdgeInfo *ei,
                          bool topDown, 
-                         bool pointBack
+                         bool pointBack,
+                         bool reNumber
                         )
 {
   t << "  Node";
-  if (topDown) t << cn->number(); else t << m_number;
+  if (topDown) t << reNumberNode(cn->number(),reNumber); else t << reNumberNode(m_number,reNumber);
   t << " -> Node";
-  if (topDown) t << m_number; else t << cn->number();
+  if (topDown) t << reNumberNode(m_number,reNumber); else t << reNumberNode(cn->number(),reNumber);
   t << " [";
   if (pointBack) t << "dir=back,";
   t << "color=\"" << edgeColorMap[ei->m_color] 
@@ -603,7 +647,8 @@ void DotNode::write(QTextStream &t,
                     bool topDown,
                     bool toChildren,
                     int distance,
-                    bool backArrows
+                    bool backArrows,
+                    bool reNumber
                    )
 {
   //printf("DotNode::write(%d) name=%s this=%p written=%d\n",distance,m_label.data(),this,m_written);
@@ -620,7 +665,7 @@ void DotNode::write(QTextStream &t,
       if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
     }
   }
-  writeBox(t,gt,format,hasNonReachableChildren);
+  writeBox(t,gt,format,hasNonReachableChildren,reNumber);
   m_written=TRUE;
   if (nl)
   {
@@ -634,9 +679,9 @@ void DotNode::write(QTextStream &t,
         if (cn->m_distance<=distance) 
         {
           //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
-          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
+          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows,reNumber);
         }
-        cn->write(t,gt,format,topDown,toChildren,distance,backArrows);
+        cn->write(t,gt,format,topDown,toChildren,distance,backArrows,reNumber);
       }
     }
     else // render parents
@@ -654,10 +699,11 @@ void DotNode::write(QTextStream &t,
               pn,
               pn->m_edgeInfo->at(pn->m_children->findRef(this)),
               FALSE,
-              backArrows
+              backArrows,
+              reNumber
               );
         }
-        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows);
+        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows,reNumber);
       }
     }
   }
@@ -946,9 +992,10 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     {
       if (node->m_subgraphId==n->m_subgraphId) 
       {
-        node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
+        node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE,TRUE);
       }
     }
+    resetReNumbering();
     uchar md5_sig[16];
     QCString sigStr(33);
     MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
@@ -974,11 +1021,12 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       {
         if (node->m_subgraphId==n->m_subgraphId) 
         {
-          node->write(t,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE);
+          node->write(t,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE,TRUE);
         }
       }
       writeGraphFooter(t);
       f.close();
+      resetReNumbering();
 
       QCString dotArgs(maxCmdLine);
       dotArgs.sprintf("\"%s\" -T%s -o \"%s\" -Timap -o \"%s\"",
@@ -1407,7 +1455,8 @@ void writeDotGraph(DotNode *root,
                    bool lrRank,
                    bool renderParents,
                    int distance,
-                   bool backArrows
+                   bool backArrows,
+                   bool reNumber
                   )
 {
   // generate the graph description for dot
@@ -1423,7 +1472,7 @@ void writeDotGraph(DotNode *root,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows);
+    root->write(t,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows,reNumber);
     if (renderParents && root->m_parents) 
     {
       //printf("rendering parents!\n");
@@ -1439,10 +1488,11 @@ void writeDotGraph(DotNode *root,
                            pn,
                            pn->m_edgeInfo->at(pn->m_children->findRef(root)),
                            FALSE,
-                           backArrows
+                           backArrows,
+                           reNumber
                           );
         }
-        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows);
+        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows,reNumber);
       }
     }
     writeGraphFooter(t);
@@ -1462,6 +1512,8 @@ QCString computeMd5Signature(DotNode *root,
                    bool backArrows
                   )
 {
+  bool reNumber=TRUE;
+    
   //printf("computeMd5Signature\n");
   QString buf;
   QTextStream md5stream(&buf,IO_WriteOnly);
@@ -1470,7 +1522,7 @@ QCString computeMd5Signature(DotNode *root,
     md5stream << "rankdir=LR;" << endl;
   }
   root->clearWriteFlag();
-  root->write(md5stream,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows);
+  root->write(md5stream,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows,reNumber);
   if (renderParents && root->m_parents) 
   {
     QListIterator<DotNode>  dnli(*root->m_parents);
@@ -1485,16 +1537,21 @@ QCString computeMd5Signature(DotNode *root,
             pn,
             pn->m_edgeInfo->at(pn->m_children->findRef(root)),
             FALSE,
-            backArrows
+            backArrows,
+            reNumber
             );
       }
-      pn->write(md5stream,gt,format,TRUE,FALSE,distance,backArrows);
+      pn->write(md5stream,gt,format,TRUE,FALSE,distance,backArrows,reNumber);
     }
   }
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
+  if (reNumber)
+  {
+    resetReNumbering();
+  }
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;
 }
@@ -1510,6 +1567,7 @@ static bool findMaximalDotGraph(DotNode *root,
                                 bool backArrows /*=TRUE*/
                                )
 {
+  bool reNumber=TRUE;
   int minDistance=1; // min distance that shows only direct children.
   int curDistance; //=QMIN(2,maxDist); // current distance to try
   int maxDistance=maxDist; // max distance that show whole graph
@@ -1526,7 +1584,7 @@ static bool findMaximalDotGraph(DotNode *root,
     curDistance = (minDistance+maxDistance)/2;
 
     writeDotGraph(root,gt,format,baseName,lrRank,renderParents,
-        curDistance,backArrows);
+        curDistance,backArrows,reNumber);
 
     QCString dotArgs(maxCmdLine);
     // create annotated dot file
@@ -1576,8 +1634,13 @@ static bool findMaximalDotGraph(DotNode *root,
                 hasLRRank,
                 renderParents,
                 lastFit,
-                backArrows
+                backArrows,
+                reNumber
                );
+  if (reNumber)
+  {
+    resetReNumbering();
+  }
   return TRUE;
 }
 

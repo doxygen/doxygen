@@ -239,7 +239,7 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c CREATE_SUBDIRS <dd> 
  \addindex CREATE_SUBDIRS
  If the \c CREATE_SUBDIRS tag is set to \c YES, then doxygen will create
- 2 levels of 10 sub-directories under the output directory of each output 
+ 4096 sub-directories (in 2 levels) under the output directory of each output 
  format and will distribute the generated files over these directories. 
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise

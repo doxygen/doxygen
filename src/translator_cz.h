@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_CZ_H
 #define TRANSLATOR_CZ_H
 
-// $Id$
+// 
 //
 // The first translation from English to Czech was started by
 // Vlastimil Havran (1999--2000). The prototype version of Czech strings 
@@ -129,6 +129,7 @@
 // 2003/08/13 - Four new methods "since 1.3.3" implemented. 
 // 2004/02/26 - trLegendDocs() updated.
 // 2004/02/27 - Text inside the trCallGraph() corrected.
+// 2004/06/16 - The new method "since 1.3.8" implemented. 
 
 // Todo
 // ----
@@ -148,7 +149,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public TranslatorAdapter_1_3_8
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1660,6 +1661,18 @@ class TranslatorCzech : public TranslatorAdapter_1_3_8
     {
       return decode("Nalezená slova:");
     }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return decode("Zdrojový soubor ") + filename;
+    }
+    
 };
 
 #endif // TRANSLATOR_CZ_H

@@ -13,7 +13,6 @@
  */
 
 #include "inputint.h"
-#include "pagewidget.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,8 +21,8 @@
 #include <qwindowsstyle.h>
 #include <qspinbox.h>
 
-InputInt::InputInt( const QString & label, PageWidget *parent, int &val, int minVal,int maxVal )
-  : QWidget( parent->getLayout() ), m_val(val), m_minVal(minVal), m_maxVal(maxVal)
+InputInt::InputInt( const QString & label, QWidget *parent, int &val, int minVal,int maxVal )
+  : QWidget( parent), m_val(val), m_minVal(minVal), m_maxVal(maxVal)
 {
   QHBoxLayout *layout = new QHBoxLayout( this, 5 );
 
@@ -44,7 +43,6 @@ InputInt::InputInt( const QString & label, PageWidget *parent, int &val, int min
   connect(sp,   SIGNAL(valueChanged(int)), 
           this, SLOT(valueChanged(int)) );
 
-  parent->addWidget(this);
 }
 
 void InputInt::valueChanged(int val)

@@ -27,6 +27,7 @@ f_prefix=/usr/local
 f_insttool=NO
 f_english=NO
 f_wizard=NO
+f_thread=NO
 f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt
 
 while test -n "$1";  do
@@ -233,21 +234,21 @@ if test "$f_wizard" = YES; then
     if test -d "/usr/lib/qt3/lib"; then
       if test -d "/usr/lib/qt3/include"; then
         if test -x "/usr/lib/qt3/bin/moc"; then
-          QTDIR="/usr/lib/qt3";
+          QTDIR="/usr/lib/qt3"
         fi
       fi
     fi
     if test -d "/usr/lib/qt2/lib"; then
       if test -d "/usr/lib/qt2/include"; then
         if test -x "/usr/lib/qt2/bin/moc"; then
-          QTDIR="/usr/lib/qt2";
+          QTDIR="/usr/lib/qt2"
         fi
       fi
     fi
     if test -d "/usr/lib/qt/lib"; then
       if test -d "/usr/lib/qt/include"; then
         if test -x "/usr/lib/qt/bin/moc"; then
-          QTDIR="/usr/lib/qt";
+          QTDIR="/usr/lib/qt"
         fi
       fi
     fi
@@ -260,19 +261,22 @@ if test "$f_wizard" = YES; then
     exit 2
   else
     if test ! -d "$QTDIR/lib"; then
-      echo "QTDIR is set, but library directory does not exist!"
+      echo "QTDIR is set to $QTDIR, but library directory $QTDIR/lib does not exist!"
       exit 2
     fi
     if test ! -d "$QTDIR/include"; then
-      echo "QTDIR is set, but include directory does not exist!"
+      echo "QTDIR is set to $QTDIR, but include directory $QTDIR/include does not exist!"
       exit 2
     fi
     if test ! -x "$QTDIR/bin/moc"; then
-      echo "QTDIR is set, but the moc tool could not be found in $QTDIR/bin!"
+      echo "QTDIR is set to $QTDIR, but the moc tool could not be found in $QTDIR/bin!"
       exit 2
     fi
     echo " headers $QTDIR/include,"
     echo "                     libraries $QTDIR/lib"  
+    if test -n "`ls $QTDIR/lib/* | grep qt-mt`"; then
+      f_thread=YES
+    fi
   fi
 fi
    
@@ -418,6 +422,7 @@ INSTALL   = $f_prefix
 INSTTOOL  = $f_insttool
 DOXYDOCS  = ..
 DOCDIR    = $f_docdir
+QTDIR     = $QTDIR
 EOF
 
 if test "$f_dot" != NO; then
@@ -505,10 +510,14 @@ for i in $f_inprofiles ; do
 
 EOF
      if test "$f_debug" = NO; then
-       cat $SRC .tmakeconfig | sed -e "s/\$extraopts/release/g" >> $DST
+       realopts="release"
      else
-       cat $SRC .tmakeconfig | sed -e "s/\$extraopts/debug/g" >> $DST
+       realopts="debug"
      fi
+     if test "$f_thread" = YES; then
+       realopts="$realopts thread"
+     fi
+     cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" >> $DST
      echo "  Created $DST from $SRC..."
 done
 

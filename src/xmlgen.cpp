@@ -1557,6 +1557,7 @@ void generateXML()
     }
   }
   QDir xmlDir(outputDirectory);
+  createSubDirs(xmlDir);
   QCString fileName=outputDirectory+"/index.xsd";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))

@@ -11,7 +11,7 @@
 # 
 
 all: config.h config.l version.cpp Makefile.doxywizard  
-	$(MAKE) -f Makefile.doxywizard $@
+	$(MAKE) -f Makefile.doxywizard QTDIR=$(QTDIR) $@
 
 config.h: ../../src/config.h
 	$(CP) ../../src/config.h config.h

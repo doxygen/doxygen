@@ -5500,11 +5500,22 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <Doc>"*/"				{ 
   				          checkDocs();
-  					  current->doc += "\n\n";
 					  //printf("End of docs at line %d: %s\n",yyLineNr,current->doc.data());
-					  if (lastDocContext==SkipCurly && Config_getBool("HIDE_IN_BODY_DOCS"))
+					  if (lastDocContext==SkipCurly)
 					  {
+					    if (!Config_getBool("HIDE_IN_BODY_DOCS"))
+					    {
+					      if (!previous->doc.isEmpty())
+					      {
+						previous->doc+="<p>";
+					      }
+					      previous->doc += current->doc;
+					    }
 					    current->doc.resize(0);
+					  }
+					  else
+					  {
+  					    current->doc += "\n\n";
 					  }
 					  if (current->section==Entry::GROUPDOC_SEC)
 					  {

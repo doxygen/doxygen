@@ -24,7 +24,6 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QListBox;
-class PageWidget;
 class QStrList;
 
 class InputStrList : public QWidget, public IInput
@@ -38,7 +37,7 @@ class InputStrList : public QWidget, public IInput
                     ListFileDir=ListFile|ListDir 
                   };
     
-    InputStrList( const QString &text, PageWidget *parent, 
+    InputStrList( const QString &text, QWidget *parent, 
                   QStrList &sl, ListMode v=ListString );
     ~InputStrList() {};
     void setEnabled(bool);

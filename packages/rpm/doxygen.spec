@@ -1,6 +1,6 @@
 Summary: A documentation system for C/C++.
 Name: doxygen
-Version: 1.3.7_20040617
+Version: 1.3.7_20040704
 Release: 1
 Epoch: 1
 Source0: ftp://ftp.stack.nl/pub/users/dimitri/%{name}-%{version}.src.tar.gz

@@ -810,9 +810,9 @@ static void addClassToContext(Entry *root)
       }
     }
 
-    // if the class is not in a namespace then we insert 
-    // it in the file definition
-    if (!found && fd && (root->section & Entry::COMPOUND_MASK)) 
+    // add the class to the file (we do this even if we have already inserted
+    // it into the namespace)
+    if (fd && (root->section & Entry::COMPOUND_MASK)) 
     {
       //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
       //    cd->name().data(),
@@ -1677,14 +1677,13 @@ static MemberDef *addVariableToFile(
     nd->insertMember(md); 
     md->setNamespace(nd);
   }
-  else
+
+  // add member to the file (we do this even if we have already inserted
+  // it into the namespace. 
+  if (fd)
   {
-    // find file definition
-    if (fd)
-    {
-      fd->insertMember(md);
-      md->setFileDef(fd); 
-    }
+    fd->insertMember(md);
+    md->setFileDef(fd); 
   }
 
   // add member definition to the list of globals 
@@ -1739,6 +1738,8 @@ static bool isVarWithConstructor(Entry *root)
   Definition *ctx = 0;
   FileDef *fd = 0;
   bool ambig;
+  int ti;
+
   if (root->parent && root->parent->section&Entry::COMPOUND_MASK)
   { // inside a class
     result=FALSE;
@@ -1760,6 +1761,10 @@ static bool isVarWithConstructor(Entry *root)
   type = root->type;
   if (type.left(6)=="const ") type=type.right(type.length()-6);
   typeIsClass=getResolvedClass(ctx,fd,type)!=0;
+  if (!typeIsClass && (ti=type.find('<'))!=-1)
+  {
+    typeIsClass=getResolvedClass(ctx,fd,type.left(ti))!=0;
+  }
   if (typeIsClass) // now we still have to check if the arguments are 
                    // types or values. Since we do not have complete type info
                    // we need to rely on heuristics :-(
@@ -2453,9 +2458,11 @@ static void buildFunctionList(Entry *root)
             nd->insertMember(md); 
             md->setNamespace(nd);
           }
-          else if (fd)
+
+          if (fd)
           {
-            // add member to the file
+            // add member to the file (we do this even if we have already
+            // inserted it into the namespace)
             fd->insertMember(md);
             md->setFileDef(fd); 
           }
@@ -5367,10 +5374,14 @@ static void findEnums(Entry *root)
         nd->insertMember(md);
         md->setNamespace(nd);
       }
-      else if (isGlobal)
+
+      // even if we have already added the enum to a namespace, we still
+      // also want to add it to other appropriate places such as file
+      // or class.
+      if (isGlobal)
       {
         md->setDefinition(name);
-        if (fd==0 && root->tagInfo)
+        if (fd==0 && root->parent)
         {
           bool ambig;
           QCString filePathName = root->parent->fileName;
