@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -2117,7 +2117,7 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n)
     {
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
-        result+="   %s\n",fd->absFilePath().data();
+        result+="   "+fd->absFilePath()+"\n";
       }
       fd=fn->next();
     }
