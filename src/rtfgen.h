@@ -109,8 +109,8 @@ class RTFGenerator : public OutputGenerator
     void endPreFragment() { endCodeFragment(); }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }
-    void writeBoldString(const char *text) 
-                         { t << "{\\b "; docify(text); t << "}"; }
+    //void writeBoldString(const char *text) 
+    //                     { t << "{\\b "; docify(text); t << "}"; }
     void startEmphasis() { t << "{\\i ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\b "; }
@@ -168,9 +168,9 @@ class RTFGenerator : public OutputGenerator
     void endDescList();
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
-    void writeSectionRef(const char *,const char *,const char *);
+    void writeSectionRef(const char *,const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
-    void writeSectionRefAnchor(const char *,const char *,const char *);
+    //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *);
     void startIndent();
     void endIndent();
@@ -178,8 +178,8 @@ class RTFGenerator : public OutputGenerator
     //void generateExternalIndex() {}
     void startClassDiagram();
     void endClassDiagram(ClassDiagram &,const char *filename,const char *name);
-    void startColorFont(uchar,uchar,uchar) {}
-    void endColorFont()   {}
+    //void startColorFont(uchar,uchar,uchar) {}
+    //void endColorFont()   {}
     void startPageRef();
     void endPageRef(const char *,const char *);
     void startQuickIndexItem(const char *,const char *) {}

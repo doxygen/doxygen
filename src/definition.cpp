@@ -35,7 +35,7 @@ Definition::Definition(const char *df,int dl,
   n=name; 
   brief=b; 
   doc=d; 
-  sectionList=0, 
+  sectionDict=0, 
   startBodyLine=endBodyLine=-1, 
   bodyDef=0;
   sourceRefList=0;
@@ -46,7 +46,7 @@ Definition::Definition(const char *df,int dl,
 
 Definition::~Definition()
 {
-  delete sectionList;
+  delete sectionDict;
   delete sourceRefList;
   delete sourceRefDict;
 }
@@ -90,17 +90,38 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
   while (s)
   {
     SectionInfo *si=0;
-    if (!s->isEmpty() && (si=sectionDict[*s]))
+    if (!s->isEmpty() && (si=Doxygen::sectionDict[*s]))
     {
       //printf("Add section `%s' to definition `%s'\n",
       //    si->label.data(),n.data());
-      if (sectionList==0) sectionList = new SectionList;
-      sectionList->append(si);
+      if (sectionDict==0) 
+      {
+        sectionDict = new SectionDict(17);
+      }
+      if (sectionDict->find(*s)==0)
+      {
+        sectionDict->insert(*s,si);
+      }
       si->definition = this;
     }
     s=anchorList->next();
   }
 }
+
+void Definition::writeDocAnchorsToTagFile()
+{
+  if (!Config::genTagFile.isEmpty() && sectionDict)
+  {
+    QDictIterator<SectionInfo> sdi(*sectionDict);
+    SectionInfo *si;
+    for (;(si=sdi.current());++sdi)
+    {
+      if (definitionType()==TypeMember) Doxygen::tagFile << "  ";
+      Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+    }
+  }
+}
+
 
 void Definition::setBriefDescription(const char *b) 
 { 
@@ -177,32 +198,34 @@ static bool readCodeFragment(const char *fileName,
       }
       if (found) 
       {
-        // full the line with spaces until the right column
-        int i;
-        for (i=0;i<col;i++) result+=' ';
+        // fill the line with spaces until the right column
+        QCString spaces;
+        spaces.fill(' ',col);
+        result+=spaces;
         // copy until end of line
         result+=c;
         if (c==':') result+=cn;
         startLine=lineNr;
         const int maxLineLength=4096;
         char lineStr[maxLineLength];
-        char *p=lineStr;
-        while ((c=f.getch())!='\n' && c!=-1) *p++=c;
-        //printf("First line str=`%s' atEnd=%d lineNr=%d endLine=%d\n",lineStr.data(),f.atEnd(),lineNr,endLine);
-        *p++='\n';
-        *p++='\0';
-        while (lineNr<endLine && !f.atEnd())
+        do 
         {
-          //printf("adding line=`%s' lineNr=%d\n",lineStr.data(),lineNr);
-          result+=lineStr;  
-          f.readLine(lineStr,maxLineLength);
+          int size_read;
+          do {
+            // read up to maxLineLength-1 bytes, the last byte being zero
+            size_read = f.readLine(lineStr, maxLineLength);
+            result+=lineStr;
+          } while (size_read == (maxLineLength-1));
+
           lineNr++; 
+        } while (lineNr<endLine && !f.atEnd());
+
+        int charIndex = result.findRev('}');
+        if (charIndex > 0) 
+        {
+          result.truncate(charIndex+1);
+          result+='\n';
         }
-        p=lineStr+strlen(lineStr);
-        while (--p>=lineStr && *p!='}') /* skip */;
-        *(++p)='\n';
-        *(++p)='\0';
-        result+=lineStr;
         endLine=lineNr;
         return TRUE;
       }
@@ -394,8 +417,6 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
   }
   ol.popGeneratorState();
 }
-
-
 
 bool Definition::hasDocumentation() 
 { 

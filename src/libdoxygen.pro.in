@@ -1,0 +1,48 @@
+#
+# 
+#
+# Copyright (C) 1997-2001 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+#
+# TMake project file for doxygen
+
+TEMPLATE     =	libdoxygen.t
+CONFIG       =	console warn_on staticlib
+HEADERS      =	doxygen.h scanner.h doc.h classdef.h classlist.h memberdef.h \
+                membername.h index.h memberlist.h definition.h \
+                entry.h logos.h instdox.h message.h code.h \
+                filedef.h util.h cppvalue.h constexp.h \
+		outputgen.h outputlist.h htmlgen.h latexgen.h \
+	        filename.h defargs.h groupdef.h gifenc.h diagram.h image.h \
+		namespacedef.h version.h language.h translator.h \
+		translator_nl.h translator_se.h translator_cz.h translator_fr.h \
+		translator_it.h formula.h debug.h membergroup.h htmlhelp.h \
+                translator_ru.h translator_pl.h dot.h rtfgen.h \
+                reflist.h page.h sortdict.h translator_hu.h translator_kr.h \
+                translator_ro.h translator_si.h translator_cn.h ftvhelp.h \
+                treeview.h tagreader.h packagedef.h
+SOURCES      =	doxygen.cpp scanner.cpp doc.cpp classdef.cpp classlist.cpp \
+                memberdef.cpp membername.cpp index.cpp memberlist.cpp \
+		entry.cpp logos.cpp instdox.cpp message.cpp code.cpp \
+                config.cpp filedef.cpp util.cpp groupdef.cpp \
+                outputgen.cpp outputlist.cpp htmlgen.cpp latexgen.cpp mangen.cpp \
+	        cppvalue.cpp ce_lex.cpp ce_parse.cpp pre.cpp \
+		filename.cpp declinfo.cpp defargs.cpp define.cpp \
+		diagram.cpp gifenc.cpp image.cpp namespacedef.cpp \
+		version.cpp language.cpp definition.cpp formula.cpp debug.cpp \
+		membergroup.cpp htmlhelp.cpp dot.cpp rtfgen.cpp \
+                reflist.cpp ftvhelp.cpp tagreader.cpp packagedef.cpp
+win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+INCLUDEPATH                += ../qtools
+win32:INCLUDEPATH          += .
+DESTDIR                    =  ../lib
+TARGET                     =  doxygen
+OBJECTS_DIR                =  ../objects

@@ -85,6 +85,7 @@ typedef QList<CodeVarDef>   CodeVarList;
  *	statics
  */
   
+static OutputDocInterface * g_code;
 static CodeClassList g_codeClassList;
 static CodeClassDict g_codeClassDict(1009);
 static CodeVarList   g_codeVarList;
@@ -109,7 +110,6 @@ static bool          g_inClass;
 static QCString      g_classScope;
 static QCString      g_realScope;
 static QStack<void>  g_scopeStack;      // 1 if bracket starts a scope, 2 for internal blocks 
-static OutputList *  g_code;
 static CodeClassDef  g_ccd;
 static CodeVarDef    g_cvd;
 static bool          g_exampleBlock;
@@ -268,7 +268,7 @@ static void codifyLines(char *text)
  * line numbers for each line. If \a text contains newlines, the link will be 
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(OutputList &ol,
+static void writeMultiLineCodeLink(OutputDocInterface &ol,
                   const char *ref,const char *file,
                   const char *anchor,const char *text)
 {
@@ -379,7 +379,7 @@ static void addParameter()
   }
 }
 
-static void generateClassLink(OutputList &ol,char *clName,int *clNameLen=0)
+static void generateClassLink(OutputDocInterface &ol,char *clName,int *clNameLen=0)
 {
   int i=0;
   QCString className=clName;
@@ -450,7 +450,7 @@ static ClassDef *stripClassName(const char *s)
 }
 
 static bool getLink(const char *className,
-                    const char *memberName,OutputList &result,
+                    const char *memberName,OutputDocInterface &result,
 		    const char *text=0)
 {
   MemberDef    *md;
@@ -505,10 +505,10 @@ static bool getLink(const char *className,
   return FALSE;
 }
 
-static bool generateClassMemberLink(OutputList &ol,ClassDef *mcd,const char *memName)
+static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const char *memName)
 {
   //printf("generateClassMemberLink(%s,%s)\n",mcd->name().data(),memName);
-  MemberName *mmn=memberNameDict[memName];
+  MemberName *mmn=Doxygen::memberNameDict[memName];
   if (mmn)
   {
     MemberNameIterator mmni(*mmn);
@@ -548,7 +548,7 @@ static bool generateClassMemberLink(OutputList &ol,ClassDef *mcd,const char *mem
   return FALSE;
 }
 
-static void generateMemberLink(OutputList &ol,const char *varName,
+static void generateMemberLink(OutputDocInterface &ol,const char *varName,
             char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
@@ -567,21 +567,23 @@ static void generateMemberLink(OutputList &ol,const char *varName,
     if (ccd)
     {
       //printf("Class found!\n");
-      OutputList result(&ol);
-      if (getLink(ccd->name,memName,result)) 
+      OutputDocInterface *result = ol.clone();
+      if (getLink(ccd->name,memName,*result)) 
       {
         //printf("Found result!\n");
-        ol+=result;
+        ol.append(result);
+	delete result;
         return;
       }
       char *s=ccd->bases.first();
       while (s)
       {
-	OutputList result(&ol);
-	if (getLink(s,memName,result)) 
+	OutputDocInterface *result = ol.clone();
+	if (getLink(s,memName,*result)) 
 	{
 	  //printf("Found result!\n");
-	  ol+=result;
+	  ol.append(result);
+	  delete result;
 	  return;
 	}
 	s=ccd->bases.next();
@@ -590,16 +592,17 @@ static void generateMemberLink(OutputList &ol,const char *varName,
     else 
     {
       //printf("Class not found!\n");
-      OutputList result(&ol);
+      OutputDocInterface *result = ol.clone();
       //printf("cvd->type=`%s'\n",cvd->type.data());
-      if (getLink(cvd->type,memName,result))
+      if (getLink(cvd->type,memName,*result))
       {
-        ol+=result;
+        ol.append(result);
       }
       else
       {
         codifyLines(memName);
       }
+      delete result;
       return;
     }
   }
@@ -609,7 +612,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName);
-      MemberName *vmn=memberNameDict[varName];
+      MemberName *vmn=Doxygen::memberNameDict[varName];
       if (vmn==0)
       {
 	int vi;
@@ -619,7 +622,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
-	  vmn=memberNameDict[vn];
+	  vmn=Doxygen::memberNameDict[vn];
 	  //printf("Trying name `%s' scope=%s\n",vn.data(),scope.data());
 	  if (vmn)
 	  {
@@ -666,9 +669,9 @@ static void generateMemberLink(OutputList &ol,const char *varName,
   return;
 }
 
-static void generateFunctionLink(OutputList &ol,char *funcName)
+static void generateFunctionLink(OutputDocInterface &ol,char *funcName)
 {
-  OutputList result(&ol);
+  OutputDocInterface *result = ol.clone();
   CodeClassDef *ccd=0;
   QCString locScope=g_classScope.copy();
   QCString locFunc=removeRedundantWhiteSpace(funcName);
@@ -693,22 +696,24 @@ static void generateFunctionLink(OutputList &ol,char *funcName)
     char *s=ccd->bases.first();
     while (s)
     {
-      if (getLink(s,locFunc,result,funcName)) 
+      if (getLink(s,locFunc,*result,funcName)) 
       {
-	ol+=result;
+	ol.append(result);
+	delete result;
 	return;
       }
       s=ccd->bases.next();
     }
   }
-  if (getLink(locScope,locFunc,result,funcName))
+  if (getLink(locScope,locFunc,*result,funcName))
   {
-    ol+=result;
+    ol.append(result);
   }
   else
   {
     codifyLines(funcName);
   }
+  delete result;
   return;
 }
 
@@ -808,7 +813,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  //FileInfo *f;
 					  bool ambig;
                                           FileDef *fd;
-					  if ((fd=findFileDef(inputNameDict,yytext,ambig)) &&
+					  if ((fd=findFileDef(Doxygen::inputNameDict,yytext,ambig)) &&
 					      fd->isLinkable())
 					  {
 					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
@@ -1561,12 +1566,12 @@ void initParseCodeContext()
   g_anchorCount = 0;
 }
 
-void parseCode(OutputList &ol,const char *className,const QCString &s, 
+void parseCode(OutputDocInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment)
 {
   if (s.isEmpty()) return;
-  g_code = new OutputList(&ol);
+  g_code = od.clone();
   g_inputString   = s;
   g_inputPosition = 0;
   g_currentFontClass = 0;
@@ -1606,7 +1611,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   BEGIN( Body );
   codeYYlex();
   endFontClass();
-  ol+=*g_code;
+  od.append(g_code);
   delete g_code;
   return;
 }

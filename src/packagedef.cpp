@@ -74,7 +74,7 @@ void PackageDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty())
   {
-    tagFile << "  <compound kind=\"package\">" << endl;
+    Doxygen::tagFile << "  <compound kind=\"package\">" << endl;
   }
   
   ol.startMemberSections();
@@ -87,7 +87,8 @@ void PackageDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty())
   {
-    tagFile << "  </compound>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
   
   if (!briefDescription().isEmpty() || !documentation().isEmpty())

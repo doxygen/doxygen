@@ -80,7 +80,7 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
           }
           if (!Config::genTagFile.isEmpty()) 
           {
-            tagFile << "    <class kind=\"" << cd->compoundTypeString() 
+            Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
                     << "\">" << convertToXML(cd->name()) << "</class>" << endl;
           }
           ol.startMemberItem(FALSE);
@@ -102,6 +102,25 @@ void ClassList::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *fi
             ol.endBold();
           }
           ol.endMemberItem(FALSE);
+          if (!cd->briefDescription().isEmpty())
+          {
+            ol.startMemberDescription();
+            parseDoc(ol,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
+            if ((!cd->briefDescription().isEmpty() && Config::repeatBriefFlag) ||
+                !cd->documentation().isEmpty())
+            {
+              ol.pushGeneratorState();
+              ol.disableAllBut(OutputGenerator::Html);
+              ol.endEmphasis();
+              ol.docify(" ");
+              ol.startTextLink(cd->getOutputFileBase(),"_details");
+              parseText(ol,theTranslator->trMore());
+              ol.endTextLink();
+              ol.startEmphasis();
+              ol.popGeneratorState();
+            }
+            ol.endMemberDescription();
+          }
         }
       }
       cd=next();

@@ -1,7 +1,7 @@
 
-all: src/version.cpp configgen doxywizard
-	cd qtools ; $(MAKE)
-	cd src ; $(MAKE)
+#all: src/version.cpp configgen doxywizard 
+#	cd qtools ; $(MAKE)
+#	cd src ; $(MAKE)
 
 clean: FORCE
 	cd examples ; $(MAKE) clean
@@ -11,6 +11,7 @@ clean: FORCE
 	cd addon/configgen ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
 	cd addon/xmlread ; $(MAKE) clean
+	cd addon/xmlgen ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
@@ -18,13 +19,17 @@ distclean: clean
 	cd src ; $(MAKE) distclean
 	cd addon/configgen ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
+	cd addon/xmlread ; $(MAKE) distclean
+	cd addon/xmlgen ; $(MAKE) distclean
+	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html
 	-rm -f objects/*.o
-	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch qtools/Makefile.qtools
+	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen src/Makefile.doxytag 
+	-rm -f src/Makefile.doxysearch qtools/Makefile.qtools
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro
+	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro
 	-rm -f src/version.cpp
 	-rm -r addon/configgen/Makefile addon/doxywizard/Makefile
 	-rm -f addon/configgen/Makefile.configgen 
@@ -36,6 +41,9 @@ distclean: clean
 	-rm -f addon/xmlread/xmlread.pro 
 	-rm -f addon/xmlread/Makefile addon/xmlread/Makefile.xmlread
 	-rm -f addon/xmlread/*.o
+	-rm -f addon/xmlgen/xmlgen.pro
+	-rm -f addon/xmlgen/Makefile addon/xmlgen/Makefile.xmlgen
+	-rm -f addon/xmlgen/*.o
 
 install: doxywizard_install
 	$(INSTTOOL) -d $(INSTALL)/bin
@@ -68,7 +76,7 @@ pdf: docs
 	cd latex ; $(MAKE)
 
 archive: clean
-	tar zcvf dx`date +%y%m%d`.tgz addon tmake doc wintools examples bin objects \
+	tar zcvf dx`date +%y%m%d`.tgz Doxyfile addon tmake doc wintools examples bin lib objects \
 	       qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
                Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
                VERSION packages

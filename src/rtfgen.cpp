@@ -810,7 +810,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isPackageDocumentation:
       {
         //Package Documentation
-        PackageSDict::Iterator pdi(packageDict);
+        PackageSDict::Iterator pdi(Doxygen::packageDict);
         PackageDef *pd=pdi.toFirst();
         bool found=FALSE;
         while (pd && !found)
@@ -825,7 +825,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isModuleDocumentation:
       {
         //Module Documentation
-        GroupDef *gd=groupList.first();
+        GroupDef *gd=Doxygen::groupList.first();
         bool found=FALSE;
         while (gd && !found)
         {
@@ -834,14 +834,14 @@ void RTFGenerator::startIndexSection(IndexSections is)
             beginRTFChapter();
             found=TRUE;
           }
-          gd=groupList.next();
+          gd=Doxygen::groupList.next();
         }
       }
       break;
     case isNamespaceDocumentation:
       {
         // Namespace Documentation
-        NamespaceDef *nd=namespaceList.first();
+        NamespaceDef *nd=Doxygen::namespaceList.first();
         bool found=FALSE;
         while (nd && !found)
         {
@@ -850,14 +850,14 @@ void RTFGenerator::startIndexSection(IndexSections is)
             beginRTFChapter();
             found=TRUE;
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         } 
       }
       break;
     case isClassDocumentation:
       {
         //Compound Documentation
-        ClassDef *cd=classList.first();
+        ClassDef *cd=Doxygen::classList.first();
         bool found=FALSE;
         while (cd && !found)
         {
@@ -866,7 +866,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
             beginRTFChapter();
             found=TRUE;
           }
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
       }
       break;
@@ -874,7 +874,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //File Documentation
         bool isFirst=TRUE;
-        FileName *fn=inputNameList.first();
+        FileName *fn=Doxygen::inputNameList.first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -891,7 +891,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=inputNameList.next();
+          fn=Doxygen::inputNameList.next();
         }
       }
       break;
@@ -988,7 +988,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isPackageDocumentation:
       {
-        PackageSDict::Iterator pdi(packageDict);
+        PackageSDict::Iterator pdi(Doxygen::packageDict);
         PackageDef *pd=pdi.toFirst();
         t << "{\\tc \\v " << theTranslator->trPackageDocumentation() << "}"<< endl;
         while (pd)
@@ -1004,7 +1004,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupDef *gd=groupList.first();
+        GroupDef *gd=Doxygen::groupList.first();
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         while (gd)
         {
@@ -1015,13 +1015,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << gd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
-          gd=groupList.next();
+          gd=Doxygen::groupList.next();
         }
       }
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=namespaceList.first();
+        NamespaceDef *nd=Doxygen::namespaceList.first();
         bool found=FALSE;
         while (nd && !found)
         {
@@ -1033,7 +1033,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             found=TRUE;
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         }
         while (nd)
         {
@@ -1045,13 +1045,13 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << nd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
-          nd=namespaceList.next();
+          nd=Doxygen::namespaceList.next();
         }
       }
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=classList.first();
+        ClassDef *cd=Doxygen::classList.first();
         bool found=FALSE;
 
         t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
@@ -1065,7 +1065,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
             found=TRUE;
           }
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
         while (cd)
         {
@@ -1077,14 +1077,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
             t << cd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           } 
-          cd=classList.next();
+          cd=Doxygen::classList.next();
         }
       }
       break;
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=inputNameList.first();
+        FileName *fn=Doxygen::inputNameList.first();
 
         t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}"<< endl;
         while (fn)
@@ -1113,7 +1113,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=inputNameList.next();
+          fn=Doxygen::inputNameList.next();
         }
       }
       break;
@@ -1121,7 +1121,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         //t << "}\n";
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
-        PageSDictIterator pdi(*exampleSDict);
+        PageSDictIterator pdi(*Doxygen::exampleSDict);
         PageInfo *pi=pdi.toFirst();
         if (pi)
         {
@@ -1143,12 +1143,12 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation:
       {
         t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
-        PageSDictIterator pdi(*pageSDict);
+        PageSDictIterator pdi(*Doxygen::pageSDict);
         PageInfo *pi=pdi.toFirst();
         bool first=TRUE;
         for (pdi.toFirst();(pi=pdi.current());++pdi)
         {
-          if (!pi->inGroup)
+          if (!pi->inGroup && !pi->isReference())
           {
             QCString pageName;
             if (Config::caseSensitiveNames)
@@ -1809,16 +1809,23 @@ void RTFGenerator::endSection(const char *lab,bool)
   t << "}";
 }
 
-void RTFGenerator::writeSectionRef(const char *,const char *lab,
-    const char *title)
+void RTFGenerator::writeSectionRef(const char *ref,const char *,
+                                   const char *lab,const char *title)
 {
-  startBold();
-  docify(title);
-  endBold();
-  t << " (";
-  docify(theTranslator->trPageAbbreviation());
-  WriteRTFReference(lab);
-  t << ")" << endl;
+  if (ref)
+  {
+    docify(title);
+  }
+  else
+  {
+    startBold();
+    docify(title);
+    endBold();
+    t << " (";
+    docify(theTranslator->trPageAbbreviation());
+    WriteRTFReference(lab);
+    t << ")" << endl;
+  }
 }
 
 void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
@@ -1830,11 +1837,11 @@ void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
   t << endl;
 }
 
-void RTFGenerator::writeSectionRefAnchor(const char *name,const char *lab,
-    const char *title)
-{
-  writeSectionRef(name,lab,title);
-}
+//void RTFGenerator::writeSectionRefAnchor(const char *name,const char *lab,
+//    const char *title)
+//{
+//  writeSectionRef(name,lab,title);
+//}
 
 void RTFGenerator::docify(const char *str)
 {

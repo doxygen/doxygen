@@ -249,8 +249,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					    BEGIN( ReadDocBlock );
   					}
 <ReadFuncArgType,ReadFuncArgDef>[,)>]	{
-					  g_curArgTypeName=removeRedundantWhiteSpace(
-					                   g_curArgTypeName.simplifyWhiteSpace());
+					  g_curArgTypeName=removeRedundantWhiteSpace(g_curArgTypeName);
 					  g_curArgDefValue=g_curArgDefValue.stripWhiteSpace();
 					  int l=g_curArgTypeName.length();
 					  if (l>0)

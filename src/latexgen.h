@@ -114,8 +114,8 @@ class LatexGenerator : public OutputGenerator
     void endPreFragment()    { t << "\\end{alltt}\\normalsize " << endl; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }
-    void writeBoldString(const char *text) 
-                         { t << "{\\bf "; docify(text); t << "}"; }
+    //void writeBoldString(const char *text) 
+    //                     { t << "{\\bf "; docify(text); t << "}"; }
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\bf "; }
@@ -182,9 +182,9 @@ class LatexGenerator : public OutputGenerator
     void endDescList()       { t << "\\end{Desc}" << endl; }
     void startSection(const char *,const char *,bool);
     void endSection(const char *,bool);
-    void writeSectionRef(const char *,const char *,const char *);
+    void writeSectionRef(const char *,const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
-    void writeSectionRefAnchor(const char *,const char *,const char *);
+    //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *);
     void startIndent()       {}
     void endIndent()         {}
@@ -192,8 +192,8 @@ class LatexGenerator : public OutputGenerator
     //void generateExternalIndex() {}
     void startClassDiagram();
     void endClassDiagram(ClassDiagram &,const char *,const char *);
-    void startColorFont(uchar,uchar,uchar) {}
-    void endColorFont()   {}
+    //void startColorFont(uchar,uchar,uchar) {}
+    //void endColorFont()   {}
     void startPageRef();
     void endPageRef(const char *,const char *);
     void startQuickIndexItem(const char *,const char *) {}

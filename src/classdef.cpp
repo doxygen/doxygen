@@ -33,7 +33,7 @@
 #include "example.h"
 #include "outputlist.h"
 #include "dot.h"
-#include "xml.h"
+//#include "xml.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -155,8 +155,8 @@ void ClassDef::addMemberListToGroup(MemberList *ml)
     int groupId=md->getMemberGroupId();
     if (groupId!=-1)
     {
-      QCString *pGrpHeader = memberHeaderDict[groupId];
-      QCString *pDocs      = memberDocDict[groupId];
+      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      QCString *pDocs      = Doxygen::memberDocDict[groupId];
       if (pGrpHeader)
       {
         MemberGroup *mg = memberGroupDict->find(groupId);
@@ -721,10 +721,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  <compound kind=\"" << compoundTypeString();
-    tagFile << "\">" << endl;
-    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();
+    Doxygen::tagFile << "\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
   }
 
   
@@ -754,20 +754,20 @@ void ClassDef::writeDocumentation(OutputList &ol)
         {
           if (!Config::genTagFile.isEmpty()) 
           {
-            tagFile << "    <base";
+            Doxygen::tagFile << "    <base";
             if (bcd->prot==Protected)
             {
-              tagFile << " protection=\"protected\"";
+              Doxygen::tagFile << " protection=\"protected\"";
             }
             else if (bcd->prot==Private)
             {
-              tagFile << " protection=\"private\"";
+              Doxygen::tagFile << " protection=\"private\"";
             }
             if (bcd->virt==Virtual)
             {
-              tagFile << " virtualness=\"virtual\"";
+              Doxygen::tagFile << " virtualness=\"virtual\"";
             }
-            tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+            Doxygen::tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
           }
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
         }
@@ -1121,7 +1121,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   while (file)
   {
     bool ambig;
-    FileDef *fd=findFileDef(inputNameDict,file,ambig);
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
     if (fd)
     {
       if (first)
@@ -1169,7 +1169,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  </compound>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
  
   endFile(ol);
@@ -1254,7 +1255,9 @@ void ClassDef::writeMemberList(OutputList &ol)
                                   // generate link to the class instead.
         {
           ol.writeListItem();
-          ol.writeBoldString(md->name());
+          ol.startBold();
+          ol.docify(md->name());
+          ol.endBold();
           if ( md->isFunction() || md->isSignal() || md->isSlot() ) 
             ol.docify(md->argsString());
           else if (md->isEnumerate())
@@ -1271,7 +1274,9 @@ void ClassDef::writeMemberList(OutputList &ol)
           }
           else
           {
-            ol.writeBoldString(cd->name());
+            ol.startBold();
+            ol.docify(cd->name());
+            ol.endBold();
           }
           ol.writeString(")");
           memberWritten=TRUE;
@@ -1850,126 +1855,6 @@ void ClassDef::determineIntfUsageRelation()
   }
 }
 #endif
-
-void ClassDef::generateXMLSection(QTextStream &t,MemberList *ml,const char *type)
-{
-  if (ml->count()>0)
-  {
-    t << "        <sectiondef type=\"" << type << "\">" << endl;
-    t << "          <memberlist>" << endl;
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
-    {
-      md->generateXML(t,this);
-    }
-    t << "          </memberlist>" << endl;
-    t << "        </sectiondef>" << endl;
-  }
-}
-
-void ClassDef::generateXML(QTextStream &t)
-{
-  if (name().find('@')!=-1) return; // skip anonymous compounds
-  t << "    <compounddef id=\"" 
-    << getOutputFileBase() << "\" type=\"" 
-    << compoundTypeString() << "\">" << endl;
-  t << "      <compoundname>"; 
-  writeXMLString(t,name()); 
-  t << "</compoundname>" << endl;
-  if (inherits->count()>0)
-  {
-    t << "      <basecompoundlist>" << endl;
-    BaseClassListIterator bcli(*inherits);
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
-    {
-      t << "        <basecompoundref idref=\"" 
-        << bcd->classDef->getOutputFileBase()
-        << "\" prot=\"";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-      }
-      t << "\" virt=\"";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual";  break;
-        case Virtual: t << "virtual";      break;
-        case Pure:    t <<"pure-virtual"; break;
-      }
-      t << "\"/>" << endl;
-    }
-    t << "      </basecompoundlist>" << endl;
-  }
-  if (inheritedBy->count()>0)
-  {
-    t << "      <derivedcompoundlist>" << endl;
-    BaseClassListIterator bcli(*inheritedBy);
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
-    {
-      t << "        <derivedcompoundref idref=\"" 
-        << bcd->classDef->getOutputFileBase()
-        << "\" prot=\"";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-      }
-      t << "\" virt=\"";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual";  break;
-        case Virtual: t << "virtual";      break;
-        case Pure:    t << "pure-virtual"; break;
-      }
-      t << "\"/>" << endl;
-    }
-    t << "      </derivedcompoundlist>" << endl;
-  }
-  int numMembers = 
-    pubTypes.count()+pubMembers.count()+pubAttribs.count()+
-    pubSlots.count()+signals.count()+dcopMethods.count()+
-    pubStaticMembers.count()+
-    pubStaticAttribs.count()+proTypes.count()+proMembers.count()+
-    proAttribs.count()+proSlots.count()+proStaticMembers.count()+
-    proStaticAttribs.count()+priTypes.count()+priMembers.count()+
-    priAttribs.count()+priSlots.count()+priStaticMembers.count()+
-    priStaticAttribs.count()+friends.count()+related.count();
-  if (numMembers>0)
-  {
-    t << "      <sectionlist>" << endl;
-    generateXMLSection(t,&pubTypes,"public-type");
-    generateXMLSection(t,&pubMembers,"public-func");
-    generateXMLSection(t,&pubAttribs,"public-attrib");
-    generateXMLSection(t,&pubSlots,"public-slot");
-    generateXMLSection(t,&signals,"signal");
-    generateXMLSection(t,&dcopMethods,"dcop-func");
-    generateXMLSection(t,&properties,"property");
-    generateXMLSection(t,&pubStaticMembers,"public-static-func");
-    generateXMLSection(t,&pubStaticAttribs,"public-static-attrib");
-    generateXMLSection(t,&proTypes,"protected-type");
-    generateXMLSection(t,&proMembers,"protected-func");
-    generateXMLSection(t,&proAttribs,"protected-attrib");
-    generateXMLSection(t,&proSlots,"protected-slot");
-    generateXMLSection(t,&proStaticMembers,"protected-static-func");
-    generateXMLSection(t,&proStaticAttribs,"protected-static-attrib");
-    generateXMLSection(t,&priTypes,"private-type");
-    generateXMLSection(t,&priMembers,"private-func");
-    generateXMLSection(t,&priAttribs,"private-attrib");
-    generateXMLSection(t,&priSlots,"private-slot");
-    generateXMLSection(t,&priStaticMembers,"private-static-func");
-    generateXMLSection(t,&priStaticAttribs,"private-static-attrib");
-    generateXMLSection(t,&friends,"signal");
-    generateXMLSection(t,&related,"related");
-    t << "      </sectionlist>" << endl;
-  }
-  t << "    </compounddef>" << endl;
-}
 
 PackageDef *ClassDef::packageDef() const
 {

@@ -19,13 +19,13 @@ CONFIG       =	console warn_on $extraopts
 HEADERS      =  suffixtree.h searchindex.h logos.h version.h
 SOURCES      =	doxytag.cpp suffixtree.cpp searchindex.cpp \
 		logos.cpp version.cpp 
-unix:LIBS                  += -L../qtools -lqtools
+unix:LIBS                  += -L../lib -lqtools
 win32:INCLUDEPATH          += .
-win32-mingw:LIBS           += -L../qtools -lqtools
+win32-mingw:LIBS           += -L../lib -lqtools
 win32-msvc:LIBS            += qtools.lib shell32.lib 
-win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\qtools
+win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\lib
 win32-borland:LIBS         += qtools.lib shell32.lib
-win32-borland:TMAKE_LFLAGS += -L..\qtools
+win32-borland:TMAKE_LFLAGS += -L..\lib
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 INCLUDEPATH                += ../qtools
 OBJECTS_DIR                =  ../objects

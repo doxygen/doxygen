@@ -37,11 +37,11 @@ class DotClassGraph;
 class DotInclDepGraph;
 class DotGfxHierarchyTable;
 
-class OutputList
+class OutputList : public OutputDocInterface
 {
   public:
     OutputList(bool);
-   ~OutputList();
+    virtual ~OutputList();
     OutputList(const OutputList *ol);
     OutputList &operator=(const OutputList &ol);
     OutputList &operator+=(const OutputList &ol);
@@ -56,7 +56,20 @@ class OutputList
     bool isEnabled(OutputGenerator::OutputType o);
     void pushGeneratorState();
     void popGeneratorState();
-    
+
+    //////////////////////////////////////////////////
+    // OutputDocInterface implementation
+    //////////////////////////////////////////////////
+
+    OutputDocInterface *clone()
+    {
+      return new OutputList(this);
+    }
+    void append(const OutputDocInterface *g)
+    {
+      operator+=(*(OutputList *)g);
+    }
+
     //void writeIndex() 
     //{ forall(&OutputGenerator::writeIndex); }
     void startIndexSection(IndexSections is)
@@ -190,8 +203,8 @@ class OutputList
     { forall(&OutputGenerator::startCodeLine); }
     void endCodeLine() 
     { forall(&OutputGenerator::endCodeLine); }
-    void writeBoldString(const char *text)
-    { forall(&OutputGenerator::writeBoldString,text); }
+    //void writeBoldString(const char *text)
+    //{ forall(&OutputGenerator::writeBoldString,text); }
     void startEmphasis() 
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis() 
@@ -303,12 +316,13 @@ class OutputList
     { forall(&OutputGenerator::startSection,lab,title,sub); }
     void endSection(const char *lab,bool sub)
     { forall(&OutputGenerator::endSection,lab,sub); }
-    void writeSectionRef(const char *page,const char *lab, const char *title)
-    { forall(&OutputGenerator::writeSectionRef,page,lab,title); }
+    void writeSectionRef(const char *ref,const char *file,
+                         const char *anchor, const char *title)
+    { forall(&OutputGenerator::writeSectionRef,ref,file,anchor,title); }
     void writeSectionRefItem(const char *page,const char *lab, const char *title)
     { forall(&OutputGenerator::writeSectionRefItem,page,lab,title); }
-    void writeSectionRefAnchor(const char *page,const char *lab, const char *title)
-    { forall(&OutputGenerator::writeSectionRefAnchor,page,lab,title); }
+    //void writeSectionRefAnchor(const char *page,const char *lab, const char *title)
+    //{ forall(&OutputGenerator::writeSectionRefAnchor,page,lab,title); }
     void addIndexItem(const char *s1,const char *s2)
     { forall(&OutputGenerator::addIndexItem,s1,s2); }
     void writeSynopsis() 
@@ -317,10 +331,10 @@ class OutputList
     { forall(&OutputGenerator::startClassDiagram); }
     void endClassDiagram(ClassDiagram &d,const char *f,const char *n)
     { forall(&OutputGenerator::endClassDiagram,d,f,n); }
-    void startColorFont(uchar r,uchar g,uchar b)
-    { forall(&OutputGenerator::startColorFont,r,g,b); }
-    void endColorFont()
-    { forall(&OutputGenerator::endColorFont); }
+    //void startColorFont(uchar r,uchar g,uchar b)
+    //{ forall(&OutputGenerator::startColorFont,r,g,b); }
+    //void endColorFont()
+    //{ forall(&OutputGenerator::endColorFont); }
     void startPageRef()
     { forall(&OutputGenerator::startPageRef); }
     void endPageRef(const char *c,const char *a)

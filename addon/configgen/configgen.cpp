@@ -1509,17 +1509,17 @@ void init()
                    );
   addDependency("manExtension","generateMan");
   //-----------------------------------------------------------------------------------------------
-  ConfigInfo::add(  "XML","configuration options related to the XML output");
+  //ConfigInfo::add(  "XML","configuration options related to the XML output");
   //-----------------------------------------------------------------------------------------------
-  ConfigBool::add(  "generateXML",
-                    "GENERATE_XML",
-                    "FALSE",
-                    "generate XML output",
-                    "If the GENERATE_XML tag is set to YES Doxygen will \n"
-                    "generate an XML file that captures the structure of \n"
-                    "the code including all documentation. Warning: This feature \n"
-                    "is still experimental and very incomplete.\n"
-                 );
+  //ConfigBool::add(  "generateXML",
+  //                  "GENERATE_XML",
+  //                  "FALSE",
+  //                  "generate XML output",
+  //                  "If the GENERATE_XML tag is set to YES Doxygen will \n"
+  //                  "generate an XML file that captures the structure of \n"
+  //                  "the code including all documentation. Warning: This feature \n"
+  //                  "is still experimental and very incomplete.\n"
+  //               );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------

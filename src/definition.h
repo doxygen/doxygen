@@ -23,7 +23,7 @@
 
 class FileDef;
 class OutputList;
-class SectionList;
+class SectionDict;
 class MemberList;
 class MemberDict;
 class MemberDef;
@@ -93,6 +93,7 @@ class Definition
      * documentation.
      */
     void addSectionsToDefinition(QList<QCString> *anchorList);
+    void writeDocAnchorsToTagFile();
 
     // source references
     void setBodySegment(int bls,int ble) 
@@ -136,7 +137,7 @@ class Definition
     QCString brief; // brief description
     QCString doc;   // detailed description
     QCString ref;   // reference to external documentation
-    SectionList *sectionList; // list of all sections
+    SectionDict *sectionDict;  // dictionary of all sections
     MemberList  *sourceRefList;  // list of entities that refer to this
                                  // entity in their definition 
     MemberDict *sourceRefDict;

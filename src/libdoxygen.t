@@ -14,7 +14,7 @@
 #!
 #! doxygen.t: This is a custom template for building Doxygen
 #!
-#$ IncludeTemplate("app.t");
+#$ IncludeTemplate("lib.t");
 
 LEX     =   flex
 YACC    =   bison
@@ -74,9 +74,6 @@ sub GenerateDep {
 #$ GenerateDep("ce_parse.h","constexp.y");
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
 	-rm ce_parse.c	
-
-xml_dtd.h: doxygen.dtd
-	cat doxygen.dtd | sed -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >xml_dtd.h 
 
 treeview.h: treeview.js
 	cat treeview.js | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >treeview.h 

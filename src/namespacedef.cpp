@@ -97,8 +97,8 @@ void NamespaceDef::addMemberListToGroup(MemberList *ml,
     int groupId=md->getMemberGroupId();
     if ((md->*func)() && groupId!=-1)
     {
-      QCString *pGrpHeader = memberHeaderDict[groupId];
-      QCString *pDocs      = memberDocDict[groupId];
+      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
+      QCString *pDocs      = Doxygen::memberDocDict[groupId];
       if (pGrpHeader)
       {
         MemberGroup *mg = memberGroupDict->find(groupId);
@@ -200,9 +200,9 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   
   if (!Config::genTagFile.isEmpty())
   {
-    tagFile << "  <compound kind=\"namespace\">" << endl;
-    tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-    tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
+    Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(fileName) << ".html</filename>" << endl;
   }
   
   ol.startTextBlock();
@@ -354,7 +354,8 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   if (!Config::genTagFile.isEmpty()) 
   {
-    tagFile << "  </compound>" << endl;
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
   }
 
   ol.popGeneratorState();

@@ -158,13 +158,13 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
     if (!ref.isEmpty()) 
     {
       t << "doxygen=\"" << ref << ":";
-      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
       t << "\" ";
     }
     t << "href=\"";
     if (!ref.isEmpty())
     {
-      if ((dest=tagDestinationDict[ref])) t << *dest << "/";
+      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
     t << cd->getOutputFileBase() << ".html\" ";
     t << "alt=\"" << cd->name(); 
@@ -916,7 +916,7 @@ void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
 
 void clearVisitFlags()
 {
-  ClassListIterator cli(classList);
+  ClassListIterator cli(Doxygen::classList);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {

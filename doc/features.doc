@@ -23,7 +23,7 @@
 <li>Requires very little overhead from the writer of the documentation. 
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
-<li>Supports C++, (Corba, Microsoft, and KDE-DCOP) IDL and C sources.
+<li>Supports C++, (Corba, Microsoft, and KDE-DCOP) Java, IDL and C sources.
 <li>Supports documentation of files, namespaces, classes, structs, unions, 
     templates, variables, functions, typedefs, enums and defines. 
 <li>JavaDoc (1.1), Qt-Doc, and KDOC compatible.

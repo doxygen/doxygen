@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
@@ -16,36 +16,25 @@
  *
  */
 
-#ifndef SECTION_H
-#define SECTION_H
+#include "doxygen.h"
+#include "message.h"
+#include "xml.h"
 
-#include "qtbc.h"
-#include <qlist.h>
-#include <qdict.h>
-#include "sortdict.h"
+/*! \file
+ *  \brief main entry point for doxygen's XML generator
+ *
+ *  This file contains main()
+ */
 
-class Definition;
-
-struct SectionInfo
+/*! Main that generate XML output
+ *  
+ */
+int main(int argc,char **argv)
 {
-  enum SectionType { Section, Subsection, Anchor };
-  SectionInfo(const char *l,const char *t,SectionType st,const char *r=0)
-    { label=l; title=t; type=st; ref=r; definition=0; pageRef=0; }
- ~SectionInfo() {}
-  QCString label; 
-  QCString title;
-  QCString ref;
-  SectionType type;
-  Definition *definition;
-  PageInfo *pageRef;
-  QCString fileName;
-};
-
-class SectionDict : public QDict<SectionInfo>
-{
-  public:
-    SectionDict(int size) : QDict<SectionInfo>(size) {}
-   ~SectionDict() {}
-};
-
-#endif
+  initDoxygen();
+  readConfiguration(argc,argv);
+  parseInput();
+  msg("Generating XML output\n");
+  generateXML();
+  return 0;
+}

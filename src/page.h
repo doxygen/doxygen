@@ -18,12 +18,14 @@
 #include "sortdict.h"
 #include "config.h"
 
+#include "section.h"
+
 class PageInfo
 {
   public:
     PageInfo(const char *f, int l,const char *n,const char *d,const char *t) :
       defFileName(f), defLine(l), name(n), 
-      doc(d), title(t), todoId(0), testId(0),inGroup(0) {}
+      doc(d), title(t), todoId(0), testId(0),inGroup(0), sectionDict(0) {}
 
     // where the page definition was found
     QCString defFileName;
@@ -36,19 +38,62 @@ class PageInfo
 
     // external reference? if so then this is the tag file name
     QCString reference;
+    QCString fileName;
 
     // functions to get a uniform interface with Definitions
     QCString getOutputFileBase() const 
-    { if (Config::caseSensitiveNames) return name; else return name.lower(); }
+    { return fileName; }
     bool isReference() const { return !reference.isEmpty(); }
     QCString getReference() const { return reference; }
     
+    void addSections(QList<QCString> *anchorList)
+    {
+      if (anchorList)
+      {
+        QCString *s=anchorList->first();
+        while (s)
+        {
+          SectionInfo *si=0;
+          if (!s->isEmpty() && (si=Doxygen::sectionDict[*s]))
+          {
+            //printf("Add section `%s' to definition `%s'\n",
+            //    si->label.data(),n.data());
+            if (sectionDict==0) 
+            {
+              sectionDict = new SectionDict(17);
+            }
+            if (sectionDict->find(*s)==0)
+            {
+              sectionDict->insert(*s,si);
+            }
+            si->pageRef = this;
+            si->fileName = fileName;
+          }
+          s=anchorList->next();
+        }
+      }
+    }
+    
+    void writeDocAnchorsToTagFile()
+    {
+      if (!Config::genTagFile.isEmpty() && sectionDict)
+      {
+        QDictIterator<SectionInfo> sdi(*sectionDict);
+        SectionInfo *si;
+        for (;(si=sdi.current());++sdi)
+        {
+          Doxygen::tagFile << "    <docanchor>" << si->label << "</docanchor>" << endl;
+        }
+      }
+    }
+
     // ids
     int todoId;
     int testId;
 
     // is this page part of a group
     GroupDef *inGroup;
+    SectionDict *sectionDict;
 };
 
 class PageSDict : public SDict<PageInfo>
