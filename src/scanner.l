@@ -92,6 +92,9 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              ifCount      = 0 ;
+static int              todoAnchor   = 0 ;
+static int              todoStartContext = 0;
+static QCString         todoString = 0;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
@@ -889,7 +892,7 @@ ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
-URLMASK   [a-z_A-Z0-9\~\:\?\@\#\.\-\+\/]+
+URLMASK   [a-z_A-Z0-9\~\:\?\@\#\.\-\+\/\=]+
 NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
@@ -933,7 +936,7 @@ TR	  [tT][rR]
 TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
-DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
+DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 
 %option noyywrap
 
@@ -1067,6 +1070,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 %x	DocHtmlImageName
 %x	DocLatexImageName
 %x	DocLatexImageWidth
+%x      TodoParam
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1583,7 +1587,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocParam>({DOCPARAM}{BN}*","{BN}*)*{DOCPARAM} {
 					  outDoc->startDescTableTitle();
 					  outDoc->startEmphasis();
-  					  outDoc->docify(yytext); 
+  					  outDoc->docify(substitute(yytext,"\"","")); 
 					  outDoc->endEmphasis();
 					  outDoc->endDescTableTitle();
 					  outDoc->startDescTableData();
@@ -1616,7 +1620,8 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  SectionInfo *sec;
 					  if ((sec=sectionDict[secName]))
 					  {
-					    outDoc->writeAnchor(sec->label);
+					    //printf("writeAnchor %s_%s\n",sec->fileName.data(),sec->label.data());
+					    outDoc->writeAnchor(sec->fileName,sec->label);
 					  }
   					}
 <DocScan>{CMD}"ref"		{
@@ -1662,7 +1667,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					      text=sec->title;
 					    if (sec->type==SectionInfo::Anchor)
 					    {
-					      outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					      //outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
+					      //printf("Writing page ref `%s'\n",sec->label.data());
+					      writePageRef(*outDoc,sec->label,0);
 					    }
 					    else
 					    {
@@ -1693,7 +1701,10 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  {
 					    if (sec->type==SectionInfo::Anchor)
 					    {
-					      outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					      //outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
+					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
+					      //printf("Writing page ref `%s'\n",sec->label.data());
+					      writePageRef(*outDoc,sec->label,0);
 					    }
 					    else
 					    {
@@ -2028,7 +2039,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <DocScan>"<"{H3}{ATTR}">"		{ outDoc->startSubsubsection(); }
 <DocScan>"</"{H3}{ATTR}">"		{ outDoc->endSubsubsection(); }
 <DocHtmlLink>{NAME}{BN}*"="{BN}*("\""?)	{ BEGIN(DocHtmlAnchor); }
-<DocHtmlAnchor>[a-z_A-Z0-9.\-\+\/]+	{ outDoc->writeAnchor(yytext); } 
+<DocHtmlAnchor>[a-z_A-Z0-9.\-\+\/]+	{ outDoc->writeAnchor(0,yytext); } 
 <DocHtmlLink>{HREF}{BN}*"="{BN}*("\""?)	{ 
   					  htmlUrl.resize(0);
 					  htmlText.resize(0);
@@ -2434,7 +2445,21 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
                                           BEGIN(Using); 
                                         }
 <Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
-<Using>";"				{ BEGIN(FindMembers); }
+<Using>{ID}{BN}*"::"{BN}*{ID}({BN}*"::"{BN}*{ID})*	{
+  					  current->name=yytext;
+                                          current->fileName = yyFileName; 
+  					  current->section=Entry::USINGDECL_SEC;
+					  //printf("Found using declaration %s\n",yytext);
+					  current_root->addSubEntry(current);
+					  current             = new Entry ;
+					  current->protection = protection ;
+				          current->sig        = sig;
+					  current->virt       = virt;
+					  current->stat       = gstat;
+					  current->slot       = slot;
+					  current->mGrpId     = memberGroupId;
+					  BEGIN(Using);
+  					}
 <UsingDirective>{SCOPENAME}		{ current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
@@ -2449,6 +2474,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  current->mGrpId     = memberGroupId;
 					  BEGIN(Using);
   					}
+<Using>";"				{ BEGIN(FindMembers); }
 <FindMembers>{SCOPENAME}{BN}*"<>"	{ // guided template decl
 					  QCString n=yytext;
 					  addType( current );
@@ -3775,7 +3801,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  {
 					    if (isTypedef)
 					    {
-					      QCString dest = extractName(current->name);
+					      //QCString dest = extractName(current->name);
 					      typedefDict.insert(yytext,new QCString(current->name));
 					      //current->extends->append(
 					      //   new BaseInfo(yytext,Public,Normal)
@@ -4171,6 +4197,50 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  memberGroupDocs.resize(0);
 					  BEGIN(GroupHeader);
   					}
+<LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"{B}+	{
+  					  todoStartContext = YY_START;
+					  todoString.resize(0);
+					  BEGIN(TodoParam);
+  					}
+<TodoParam>[^*/\n]+			{
+  					  todoString+=yytext;
+  					}
+<TodoParam>.				{
+  					  todoString+=*yytext;
+  					}
+<TodoParam>"\n"|"*/"			{
+					  char anchorLabel[12];
+					  sprintf(anchorLabel,"_todo%06d",todoAnchor++);
+					  QCString todoItemNum;
+					  todoItemNum.sprintf("%d",todoAnchor);
+					  sectionType=SectionInfo::Anchor;
+					  sectionLabel=anchorLabel;
+					  addSection();
+					  current->doc += "\\anchor "+sectionLabel+"\n";
+					  current->doc += "<p><b>\\link todo ";
+					  current->doc += theTranslator->trTodo();
+					  current->doc += ":\\endlink </b>"; 
+					  current->doc += todoString + "<p>";
+					  Entry *page = new Entry;
+					  page->section = Entry::PAGEDOC_SEC;
+					  page->fileName = yyFileName;
+					  page->startLine = yyLineNr;
+					  page->name = "todo";
+					  page->args = theTranslator->trTodoList();
+					  page->doc += "\\ref ";
+					  page->doc += anchorLabel;
+					  page->doc += " \""+todoItemNum+"\"\n"+todoString+"<p>";
+					  global_root->addSubEntry(page);
+					  if (*yytext=='*')
+					  {
+					    unput('/');unput('*');
+					  }
+					  else
+					  {
+					    unput('\n');
+					  }
+					  BEGIN(todoStartContext);
+					}
 <ExampleDocArg1>{FILE}			{
 				          current->name = stripQuotes(yytext);	
 					  BEGIN( ExampleDoc );

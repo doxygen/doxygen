@@ -163,6 +163,7 @@ Thanks go to:
     PDF links, and the configuration generator.
 <li>Matthias Andree for providing a .spec script for building rpms from the
     sources.
+<li>Tim Mensch for adding the todo command.
 <li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 
     Vlastimil Havran, Ahmed Also Faisal, Alessandro Falappa, Kenji Nagamatsu,
     Francisco Oltra Thennet, Olli Korhonen for providing translations into
@@ -236,6 +237,7 @@ Peter Garner,
 Fred Labrosse,
 Frank Schimmel,
 Reinhard Nissl,
+Alexander Gidon,
 and many others for suggestions, patches and bug reports.
 </ul>
 */

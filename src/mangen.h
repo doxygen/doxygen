@@ -103,7 +103,7 @@ class ManGenerator : public OutputGenerator
     void endMemberGroup(bool);
 
     void writeRuler()    {}
-    void writeAnchor(const char *) {}
+    void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
     void startCodeLine() {}

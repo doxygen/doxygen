@@ -710,7 +710,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
       parseText(ol,theTranslator->trClassDiagram(name()));
@@ -735,7 +734,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
       parseText(ol,theTranslator->trCollaborationDiagram(name()));
@@ -822,7 +820,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.pushGeneratorState();
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::RTF);
-      ol.writeAnchor("_details");
+      ol.writeAnchor(0,"_details");
     ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());

@@ -141,7 +141,8 @@ class Entry
       GROUPDOC_SEC     = 0x01000000,
       USINGDIR_SEC     = 0x01100000,
       MAINPAGEDOC_SEC  = 0x01200000,
-      MEMBERGRP_SEC    = 0x01300000
+      MEMBERGRP_SEC    = 0x01300000,
+      USINGDECL_SEC    = 0x01400000
     };
 
     Entry();

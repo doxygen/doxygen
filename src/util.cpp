@@ -1070,8 +1070,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
       // (assuming a using statement was used)
       trimNamespaceScope(srcAType,dstAType);
 
-      QCString srcScope;
-      QCString dstScope;
+      //QCString srcScope;
+      //QCString dstScope;
 
       // strip redundant scope specifiers
       if (!className.isEmpty())
@@ -1400,7 +1400,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       QCString className = scopeName.left(scopeOffset);
       if (!className.isEmpty() && !mScope.isEmpty())
       {
-        className.append("::"+mScope);
+        className+="::"+mScope;
       }
       else if (!mScope.isEmpty())
       {
@@ -1507,7 +1507,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         QCString namespaceName = scopeName.left(scopeOffset);
         if (!namespaceName.isEmpty() && !mScope.isEmpty())
         {
-          namespaceName.append("::"+mScope);
+          namespaceName+="::"+mScope;
         }
         else if (!mScope.isEmpty())
         {
@@ -2247,7 +2247,7 @@ void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName)
 {
   QCString clName=scopeName.copy();
-  QCString nsName;
+  //QCString nsName;
   if (!clName.isEmpty() && namespaceDict[clName] && getClass(clName)==0)
   { // the whole name is a namespace (and not a class)
     namespaceName=clName.copy();

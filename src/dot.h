@@ -25,6 +25,8 @@ class FileDef;
 class QTextStream;
 class DotNodeList;
 
+enum GraphOutputFormat { GIF , EPS };
+
 struct EdgeInfo
 {
   enum Colors { Blue=0, Green=1, Red=2, Black=3, Grey=4 };
@@ -44,8 +46,13 @@ class DotNode
   friend class DotClassGraph;
   friend class DotInclDepGraph;
   friend class DotNodeList;
-  friend void writeDotGraph(DotNode *root,const QCString &baseName,
-                   bool lrRank,bool renderParents,int distance);
+  friend void writeDotGraph(
+                      DotNode *root,
+                      GraphOutputFormat f,
+                      const QCString &baseName,
+                      bool lrRank,
+                      bool renderParents,
+                      int distance);
   public:
     DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE);
    ~DotNode();
@@ -62,15 +69,17 @@ class DotNode
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int  number() const { return m_number; }
-    void write(QTextStream &t,bool topDown,bool toChildren,int maxDistance=1000);
+    void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,
+               int maxDistance=1000);
     int  m_subgraphId;
     void clearWriteFlag();
 
   private:
     void colorConnectedNodes(int curColor);
-    void writeBox(QTextStream &t,bool hasNonReachableChildren);
-    void writeArrow(QTextStream &t,DotNode *cn,EdgeInfo *ei,bool topDown,
-                    bool pointBack=TRUE);
+    void writeBox(QTextStream &t,GraphOutputFormat f,
+                  bool hasNonReachableChildren);
+    void writeArrow(QTextStream &t,GraphOutputFormat f,DotNode *cn,
+                    EdgeInfo *ei,bool topDown, bool pointBack=TRUE);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
     QCString         m_label;     //!< label text
@@ -108,7 +117,8 @@ class DotClassGraph
     DotClassGraph(ClassDef *cd,GraphType t,int maxRecusionDepth=1000);
    ~DotClassGraph();
     bool isTrivial() const;
-    void writeGraph(QTextStream &t,const char *path,bool TBRank=TRUE);
+    void writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
+                    bool TBRank=TRUE);
     QCString diskName() const;
 
   private:
@@ -129,7 +139,7 @@ class DotInclDepGraph
   public:
     DotInclDepGraph(FileDef *fd);
    ~DotInclDepGraph();
-    void writeGraph(QTextStream &t, const char *path);
+    void writeGraph(QTextStream &t, GraphOutputFormat f,const char *path);
     bool isTrivial() const;
     QCString diskName() const;
 

@@ -149,7 +149,7 @@ QDict, QString, QArray, QTextStream, QRegExp etc.
 
 The GUI front-end doxywizard uses Qt for... well... the GUI!
 
-<li><b>Can use doxygen on my Java code?</b>
+<li><b>Can I use doxygen on my Java code?</b>
 
 No, at the moment there is no support for Java. I suggest to
 use Sun's JavaDoc instead.

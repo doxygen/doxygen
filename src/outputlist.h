@@ -180,8 +180,8 @@ class OutputList
     { forall(&OutputGenerator::insertMemberAlign); }
     void writeRuler() 
     { forall(&OutputGenerator::writeRuler); }
-    void writeAnchor(const char *name)
-    { forall(&OutputGenerator::writeAnchor,name); }
+    void writeAnchor(const char *fileName,const char *name)
+    { forall(&OutputGenerator::writeAnchor,fileName,name); }
     void startCodeFragment() 
     { forall(&OutputGenerator::startCodeFragment); }
     void endCodeFragment() 

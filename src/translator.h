@@ -863,9 +863,19 @@ class Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
-// new since 1.1.1
+// new since 1.1.3
 //////////////////////////////////////////////////////////////////////////
 
+    /*! Used as a marker that is put before a todo item */
+    virtual QCString trTodo()
+    {
+      return "Todo";
+    }
+    /*! Used as the header of the todo list */
+    virtual QCString trTodoList()
+    {
+      return "Todo List";
+    }
 };
 
 #endif

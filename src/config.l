@@ -47,6 +47,9 @@ void warn_cont(const char *fmt, ...)
   vfprintf(stderr, fmt, args);
   va_end(args);
 }
+void initWarningFormat()
+{
+}
 #else
 #include "doxygen.h"
 #include "message.h"
@@ -1842,7 +1845,7 @@ void configStrToVal()
 
 static void substEnvVarsInString(QCString &s)
 {
-  QRegExp re("\\$([a-z_A-Z0-9]+)");
+  static QRegExp re("\\$\\([a-z_A-Z0-9]+\\)");
   int p=0;
   int i,l;
   //printf("substEnvVarInString(%s) start\n",s.data());
@@ -2206,19 +2209,19 @@ void checkConfig()
   }
 
   // add default pattern if needed
-  if (Config::filePatternList.count()==0)
+  if (Config::filePatternList.isEmpty())
   {
-    Config::filePatternList.append("*");
+    Config::filePatternList="*";
   }
 
   // add default pattern if needed
-  if (Config::examplePatternList.count()==0)
+  if (Config::examplePatternList.isEmpty())
   {
-    Config::examplePatternList.append("*");
+    Config::examplePatternList="*";
   }
 
   // add default pattern if needed
-  //if (Config::imagePatternList.count()==0)
+  //if (Config::imagePatternList.isEmpty())
   //{
   //  Config::imagePatternList.append("*");
   //}
@@ -2247,7 +2250,7 @@ void checkConfig()
     // check documentation URL
     if (Config::docURL.isEmpty())
     {
-      Config::docURL = Config::outputDir.copy().prepend("file://").append("html");
+      Config::docURL = Config::outputDir.copy().prepend("file://")+"html";
     }
     else if (Config::docURL.left(7)!="http://" && Config::docURL.left(7)!="file://")
     {

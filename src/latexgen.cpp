@@ -27,6 +27,7 @@
 #include "diagram.h"
 #include "language.h"
 #include "version.h"
+#include "dot.h"
 
 static QCString filterTitle(const char *s)
 {
@@ -549,7 +550,7 @@ void LatexGenerator::writeStyleInfo(int part)
   {
     case 0:
       {
-        QCString pname=Config::projectName.stripWhiteSpace();
+        //QCString pname=Config::projectName.stripWhiteSpace();
         startPlainFile("doxygen.sty");
         t << "\\NeedsTeXFormat{LaTeX2e}\n";
         t << "\\ProvidesPackage{doxygen}\n";
@@ -765,7 +766,8 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   {
     t << "\\hyperlink{";
     if (f) t << f;
-    if (anchor) t << "_" << anchor; 
+    if (f && anchor) t << "_"; 
+    if (anchor) t << anchor; 
     t << "}{";
     docify(text);
     t << "}";
@@ -910,6 +912,15 @@ void LatexGenerator::endDoxyAnchor()
   }
 }
 
+void LatexGenerator::writeAnchor(const char *fName,const char *name)
+{ 
+  t << "\\label{" << name << "}" << endl; 
+  if (fName && Config::pdfHyperFlag)
+  {
+    t << "\\hypertarget{" << fName << "_" << name << "}{}" << endl;
+  }
+}
+
 
 //void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
 //{
@@ -939,6 +950,10 @@ void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
   if (sub) t << "subsection{"; else t << "section{";
   docify(title);
   t << "}\\label{" << lab << "}" << endl;
+  if (Config::pdfHyperFlag)
+  {
+    t << "\\hypertarget{" << lab << "}{}";
+  }
 }
 
 void LatexGenerator::writeSectionRef(const char *,const char *lab,
@@ -955,6 +970,7 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
   t << "}{\\ref{" << lab << "}}{}" << endl;
 }
 
+// TODO: remove this function
 void LatexGenerator::writeSectionRefAnchor(const char *,const char *lab,
                                      const char *title)
 {
@@ -1277,3 +1293,23 @@ void LatexGenerator::endMemberGroup(bool)
 {
   t << "\\end{Indent}" << endl;
 }
+
+void LatexGenerator::startDotGraph() 
+{
+}
+
+void LatexGenerator::endDotGraph(DotClassGraph &g) 
+{
+  g.writeGraph(t,EPS,Config::latexOutputDir);
+}
+
+void LatexGenerator::startInclDepGraph() 
+{
+}
+
+void LatexGenerator::endInclDepGraph(DotInclDepGraph &g) 
+{
+  g.writeGraph(t,EPS,Config::latexOutputDir);
+}
+
+

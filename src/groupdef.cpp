@@ -280,7 +280,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
-    ol.writeAnchor("_details");
+    ol.writeAnchor(0,"_details");
     ol.popGeneratorState();
     ol.startGroupHeader();
     parseText(ol,theTranslator->trDetailedDescription());

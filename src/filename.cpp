@@ -38,7 +38,7 @@ FileName::~FileName()
 
 void FileName::generateDiskNames()
 {
-  QCString commonPrefix;
+  //QCString commonPrefix;
   FileDef *fd=first();
   int count=0;
   while (fd) { if (!fd->isReference()) count++; fd=next(); }
