@@ -46,7 +46,7 @@ struct Argument
     docs=a.docs.copy();
     array=a.array.copy();
   }
-  /* Assignment of an argument (does a deep copy of all strings). */
+  /*! Assignment of an argument (does a deep copy of all strings). */
   Argument &operator=(const Argument &a)
   {
     if (this!=&a)
@@ -144,6 +144,12 @@ class Entry
       MEMBERGRP_SEC    = 0x01300000,
       USINGDECL_SEC    = 0x01400000
     };
+    enum MemberSpecifier
+    {
+      Inline    = 0x1,
+      Explicit  = 0x2,
+      Mutable   = 0x4
+    };
 
     Entry();
     Entry(const Entry &);
@@ -159,7 +165,8 @@ class Entry
     bool slot;                // a Qt slot ?
     bool stat;                // static ?
     bool proto;               // prototype ?
-    bool inLine;              // inline ?
+    int  memSpec;             // member specifiers
+    int  initLines;           // define/variable initializer lines to show 
     bool subGrouping;         // automatically group class members?
     Specifier    virt;        // virtualness of the entry 
     Entry       *parent;      // parent node in the tree

@@ -147,6 +147,7 @@ bool     Config::classGraphFlag = TRUE;
 bool     Config::collGraphFlag = TRUE;
 bool     Config::includeGraphFlag = TRUE;
 bool     Config::gfxHierarchyFlag = TRUE;
+QCString Config::dotPath;
 bool     Config::searchEngineFlag = FALSE;
 QCString Config::cgiName = "search.cgi";
 QCString Config::cgiURL;
@@ -287,6 +288,7 @@ static int yyread(char *buf,int max_size)
 <Start>"COLLABORATION_GRAPH"[ \t]*"="   { BEGIN(GetBool); b=&Config::collGraphFlag; }
 <Start>"INCLUDE_GRAPH"[ \t]*"="         { BEGIN(GetBool); b=&Config::includeGraphFlag; }
 <Start>"GRAPHICAL_HIERARCHY"[ \t]*"="   { BEGIN(GetBool); b=&Config::gfxHierarchyFlag; }
+<Start>"DOT_PATH"[ \t]*"="              { BEGIN(GetString); s=&Config::dotPath; s->resize(0); }
 <Start>"SEARCHENGINE"[ \t]*"="          { BEGIN(GetBool); b=&Config::searchEngineFlag; }
 <Start>"CGI_NAME"[ \t]*"="              { BEGIN(GetString); s=&Config::cgiName; s->resize(0); }
 <Start>"CGI_URL"[ \t]*"="               { BEGIN(GetString); s=&Config::cgiURL; s->resize(0); }
@@ -573,6 +575,7 @@ void dumpConfig()
   printf("collGraphFlag=`%d'\n",Config::collGraphFlag);
   printf("includeGraphFlag=`%d'\n",Config::includeGraphFlag);
   printf("gfxHierarchyFlag=`%d'\n",Config::gfxHierarchyFlag);
+  printf("dotPath=`%s'\n",Config::dotPath.data());
   printf("# Configuration::addtions related to the search engine   \n");
   printf("searchEngineFlag=`%d'\n",Config::searchEngineFlag);
   printf("cgiName=`%s'\n",Config::cgiName.data());
@@ -673,6 +676,7 @@ void Config::init()
   Config::collGraphFlag = TRUE;
   Config::includeGraphFlag = TRUE;
   Config::gfxHierarchyFlag = TRUE;
+  Config::dotPath.resize(0);
   Config::searchEngineFlag = FALSE;
   Config::cgiName = "search.cgi";
   Config::cgiURL.resize(0);
@@ -1726,6 +1730,16 @@ void writeTemplateConfig(QFile *f,bool sl)
   if (!sl)
   {
     t << "\n";
+    t << "# This tag can be used to specify the path where the dot tool can be found. \n";
+    t << "# If left blank, it is assumed the dot tool can be found on the path. \n";
+    t << "\n";
+  }
+  t << "DOT_PATH              = ";
+  writeStringValue(t,Config::dotPath);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
   t << "# Configuration::addtions related to the search engine   \n";
@@ -1978,6 +1992,7 @@ void substituteEnvironmentVars()
   substEnvVarsInStrList( Config::tagFileList );
   substEnvVarsInString( Config::genTagFile );
   substEnvVarsInString( Config::perlPath );
+  substEnvVarsInString( Config::dotPath );
   substEnvVarsInString( Config::cgiName );
   substEnvVarsInString( Config::cgiURL );
   substEnvVarsInString( Config::docURL );
@@ -2187,6 +2202,39 @@ void checkConfig()
 #endif
     s=Config::includePath.next();
   }
+  
+  // check dot path
+  if (!Config::dotPath.isEmpty())
+  {
+    if (Config::dotPath.find('\\')!=-1)
+    {
+      if (Config::dotPath.at(Config::dotPath.length()-1)!='\\')
+      {
+	Config::dotPath+='\\';
+      } 
+    } 
+    else if (Config::dotPath.find('/')!=-1)
+    {
+      if (Config::dotPath.at(Config::dotPath.length()-1)!='/')
+      {
+	Config::dotPath+='/';
+      } 
+    } 
+#if defined(_WIN32)
+    QFileInfo dp(Config::dotPath+"dot.exe");
+#else
+    QFileInfo dp(Config::dotPath+"dot");
+#endif
+    if (!dp.exists() || !dp.isFile())
+    {
+      err("Warning: the dot tool could not be found at %s\n",Config::dotPath.data());
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    Config::dotPath="";
+  }
+  
   // check input
   if (Config::inputSources.count()==0)
   {
@@ -2211,13 +2259,13 @@ void checkConfig()
   // add default pattern if needed
   if (Config::filePatternList.isEmpty())
   {
-    Config::filePatternList="*";
+    Config::filePatternList.append("*");
   }
 
   // add default pattern if needed
   if (Config::examplePatternList.isEmpty())
   {
-    Config::examplePatternList="*";
+    Config::examplePatternList.append("*");
   }
 
   // add default pattern if needed
@@ -2241,18 +2289,23 @@ void checkConfig()
       err("Error: tag CGI_URL: no URL to cgi directory specified.\n");
       exit(1);
     }
-    else if (Config::cgiURL.left(7)!="http://")
+    else if (Config::cgiURL.left(7)!="http://" && 
+	     Config::cgiURL.left(8)!="https://"
+	    )
     {
       err("Error: tag CGI_URL: URL to cgi directory is invalid (must "
-	  "start with http://).\n");
+	  "start with http:// or https://).\n");
       exit(1);
     }
     // check documentation URL
     if (Config::docURL.isEmpty())
     {
-      Config::docURL = Config::outputDir.copy().prepend("file://")+"html";
+      Config::docURL = Config::outputDir.copy().prepend("file://").append("html");
     }
-    else if (Config::docURL.left(7)!="http://" && Config::docURL.left(7)!="file://")
+    else if (Config::docURL.left(7)!="http://" && 
+	     Config::docURL.left(8)!="https://" &&
+	     Config::docURL.left(7)!="file://"
+	    )
     {
       err("Error: tag DOC_URL: URL to documentation is invalid or "
 	  "not absolute.\n"); 

@@ -69,8 +69,9 @@ Entry::Entry(const Entry &e)
   mGrpId      = e.mGrpId;
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
-  inLine      = e.inLine;
+  memSpec     = e.memSpec;
   initializer = e.initializer;
+  initLines   = e.initLines;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -207,6 +208,7 @@ void Entry::reset()
   scopeSpec.resize(0);
   memberSpec.resize(0);
   initializer.resize(0);
+  initLines = -1;
   startLine = 1;
   bodyLine = -1;
   endBodyLine = -1;
@@ -217,7 +219,7 @@ void Entry::reset()
   slot    = FALSE;
   stat    = FALSE;
   proto   = FALSE;
-  inLine  = FALSE;
+  memSpec  = 0;
   subGrouping = TRUE;
   protection = Public;
   sublist->clear();

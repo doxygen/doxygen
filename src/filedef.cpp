@@ -269,7 +269,10 @@ void FileDef::writeDocumentation(OutputList &ol)
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
-    mg->writeDeclarations(ol,0,0,this,0);
+    if (mg->header()!="[NOHEADER]")
+    {
+      mg->writeDeclarations(ol,0,0,this,0);
+    }
   }
 
   allMemberList.writeDeclarations(ol,0,0,this,0,0,0);
@@ -439,44 +442,75 @@ void FileDef::writeSource(OutputList &ol)
 
 /*! Adds a member \a md to the member group with id \a groupId.
  */ 
-void FileDef::addMemberToGroup(MemberDef *md,int groupId)
+void FileDef::addMemberListToGroup(MemberList *ml,
+                               bool (MemberDef::*func)() const)
 {
-  if (groupId!=-1)
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
   {
-    QCString *pGrpHeader = memberHeaderDict[groupId];
-    QCString *pDocs      = memberDocDict[groupId];
-    if (pGrpHeader)
+    int groupId=md->getMemberGroupId();
+    if ((md->*func)() && groupId!=-1)
     {
-      MemberGroup *mg = memberGroupDict->find(groupId);
-      if (mg==0)
+      QCString *pGrpHeader = memberHeaderDict[groupId];
+      QCString *pDocs      = memberDocDict[groupId];
+      if (pGrpHeader)
       {
-        mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-        memberGroupDict->insert(groupId,mg);
-        memberGroupList->append(mg);
+        MemberGroup *mg = memberGroupDict->find(groupId);
+        if (mg==0)
+        {
+          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          memberGroupDict->insert(groupId,mg);
+          memberGroupList->append(mg);
+        }
+        mg->insertMember(md);
+        md->setMemberGroup(mg);
       }
-      mg->insertMember(md);
-      md->setMemberGroup(mg);
     }
   }
 }
 
+void FileDef::addMembersToMemberGroup()
+{
+  addMemberListToGroup(&allMemberList,&MemberDef::isDefine);
+  addMemberListToGroup(&allMemberList,&MemberDef::isTypedef);
+  addMemberListToGroup(&allMemberList,&MemberDef::isEnumerate);
+  addMemberListToGroup(&allMemberList,&MemberDef::isEnumValue);
+  addMemberListToGroup(&allMemberList,&MemberDef::isFunction);
+  addMemberListToGroup(&allMemberList,&MemberDef::isVariable);
+}
+
 /*! Adds member definition \a md to the list of all members of this file */
-void FileDef::insertMember(MemberDef *md,int groupId)
+void FileDef::insertMember(MemberDef *md)
 {
   allMemberList.append(md); 
   switch(md->memberType())
   {
-    case MemberDef::Variable:     varMembers.inSort(md); break;
-    case MemberDef::Function:     funcMembers.inSort(md); break;
-    case MemberDef::Typedef:      typedefMembers.inSort(md); break;
-    case MemberDef::Enumeration:  enumMembers.inSort(md); break;
-    case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
-    case MemberDef::Prototype:    protoMembers.inSort(md); break;
-    case MemberDef::Define:       defineMembers.inSort(md); break;
+    case MemberDef::Variable:     
+      varMembers.inSort(md); 
+      break;
+    case MemberDef::Function:     
+      funcMembers.inSort(md); 
+      break;
+    case MemberDef::Typedef:      
+      typedefMembers.inSort(md); 
+      break;
+    case MemberDef::Enumeration:  
+      enumMembers.inSort(md); 
+      break;
+    case MemberDef::EnumValue:    
+      enumValMembers.inSort(md); 
+      break;
+    case MemberDef::Prototype:    
+      protoMembers.inSort(md); 
+      break;
+    case MemberDef::Define:       
+      defineMembers.inSort(md); 
+      break;
     default:
        err("FileDef::insertMembers(): unexpected member insert in file!\n");
   }
-  addMemberToGroup(md,groupId);
+  //addMemberToGroup(md,groupId);
 }
 
 /*! Adds compound definition \a cd to the list of all compounds of this file */

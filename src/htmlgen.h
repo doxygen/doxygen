@@ -98,7 +98,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberList();
     void startMemberItem(int);
 
-    void startMemberGroupHeader();
+    void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
     void startMemberGroupDocs();
     void endMemberGroupDocs();

@@ -463,6 +463,10 @@ QCString argListToString(ArgumentList *al)
     {
       result+= a->type;
     }
+    if (!a->defval.isEmpty())
+    {
+      result+="="+a->defval;
+    }
     a = al->next();
     if (a) result+=","; 
   }
@@ -1062,6 +1066,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     stripIrrelevantConstVolatile(srcAType);
     stripIrrelevantConstVolatile(dstAType);
 
+    if (srcA->array!=dstA->array) return FALSE;
     if (srcAType!=dstAType) // check if the argument only differs on name 
     {
       //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
@@ -1256,8 +1261,6 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl)
 {
   //printf("mergeArguments `%s', `%s'\n",
   //    argListToString(srcAl).data(),argListToString(dstAl).data());
-  //printArgList(srcAl);printf(" <=> ");
-  //printArgList(dstAl);printf("\n");
 
   if (srcAl==0 || dstAl==0 || srcAl->count()!=dstAl->count())
   {
@@ -1795,6 +1798,15 @@ bool generateRef(OutputList &ol,const char *scName,
   } 
   //printf("scope=`%s' name=`%s' arg=`%s' linkText=`%s'\n",
   //       scopeStr.data(),nameStr.data(),argsStr.data(),linkText.data());
+  
+  // strip template specifier
+  // TODO: match against the correct partial template instantiation 
+  int templPos=nameStr.find('<');
+  if (templPos!=-1 && nameStr.find("operator")==-1)
+  {
+    int endTemplPos=nameStr.findRev('>');
+    nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+  }
 
   MemberDef *md    = 0;
   ClassDef *cd     = 0;

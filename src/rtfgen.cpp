@@ -46,20 +46,24 @@ static ListItemInfo listItemInfo[indentLevels];
 static QCString formatBmkStr(const char *name)
 {
   QCString result=name;
-  int i=0;
-  char c;
-  while ((c=result.at(i))!=0)
+  if (!result.isEmpty())
   {
-    switch(c)
+    char c;
+    char *p=result.data();
+    while ((c=*p))
     {
-      case '.': 
-      case ':':  
-        result.at(i)='_';
-        break;
-      default:
-        break;
+      switch(c)
+      {
+        case '.':
+          // fall through 
+        case ':':  
+          *p='_'; 
+          break;
+        default: 
+          break;
+      }
+      p++;
     }
-    i++;
   }
   return result;
 }
@@ -1146,18 +1150,16 @@ void RTFGenerator::endTitleHead(const char *fileName,const char *name)
     t << "}" << endl;
 
     // make an index entry
-    addToIndex(name,NULL);
+    addToIndex(name,0);
 
-
-    if (fileName)
+    if (name)
     {
-      // doxygen expects different anchors for pdf and if "FULL PATHS"
-      writeAnchor(fileName,0);
-    }
-    else
-    {
-      // make a bookmark for referencing
       writeAnchor(0,name);
+    }
+
+    if (Config::rtfHyperFlag && fileName)
+    {
+      writeAnchor(fileName,0);
     }
   }
 }
@@ -1193,8 +1195,11 @@ void RTFGenerator::startMemberDoc(const char *clname,
     const char *)
 {
   t << "{\\comment startMemberDoc}" << endl;
-  addToIndex(memname,clname);
-  addToIndex(clname,memname);
+  if (memname && memname[0]!='@')
+  {
+    addToIndex(memname,clname);
+    addToIndex(clname,memname);
+  }
   //t << Rtf_Style_Reset << Rtf_Style_ListBullet1;
   t << Rtf_Style_Reset << Rtf_Style_Heading4;
   //styleStack.push(Rtf_Style_Heading4);
@@ -1352,7 +1357,7 @@ void RTFGenerator::startDescList()
 { 
   t << "{\\comment (startDescList)}"    << endl; 
   t << "{";
-  ///*if (!m_omitParagraph)*/ newParagraph();
+  newParagraph();
 }
 
 void RTFGenerator::endDescTitle()      
@@ -2027,11 +2032,11 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   return TRUE;
 }
 
-void RTFGenerator::startMemberGroupHeader()
+void RTFGenerator::startMemberGroupHeader(bool hasHeader)
 {
   t << "{\\comment startMemberGroupHeader}" << endl;
   t << "{" << endl;
-  incrementIndentLevel();
+  if (hasHeader) incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_Style_GroupHeader;
 }
 
@@ -2061,10 +2066,10 @@ void RTFGenerator::startMemberGroup()
   t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl;
 }
 
-void RTFGenerator::endMemberGroup(bool)
+void RTFGenerator::endMemberGroup(bool hasHeader)
 {
   t << "{\\comment endMemberGroup}" << endl;
-  decrementIndentLevel();
+  if (hasHeader) decrementIndentLevel();
   t << "}";
 }
 

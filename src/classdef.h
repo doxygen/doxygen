@@ -68,8 +68,7 @@ class ClassDef : public Definition
     //void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
-    void insertMember(MemberDef *,int grpId);
-    void addMemberToGroup(MemberDef *,int grpId);
+    void insertMember(MemberDef *);
     void insertUsedFile(const char *);
     void computeAnchors();
     void computeMemberGroups();
@@ -121,10 +120,12 @@ class ClassDef : public Definition
     
     bool visited;
 
+    void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
    
   protected:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
+    void addMemberListToGroup(MemberList *);
 
   private: 
     QCString fileName;                   // HTML containing the class docs

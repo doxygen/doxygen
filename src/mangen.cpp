@@ -385,7 +385,7 @@ void ManGenerator::endMemberList()
   }
 }
 
-void ManGenerator::startMemberGroupHeader()
+void ManGenerator::startMemberGroupHeader(bool)
 {
   t << "\n.PP\n.RI \"\\fB";
 }

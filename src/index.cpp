@@ -1534,10 +1534,21 @@ void writeIndex(OutputList &ol)
   int defLine =
     mainPage ? mainPage->defLine : 1;
 
+  QCString title;
   if (!mainPage || mainPage->title.isEmpty())
-    ol.startFile("index","Main Index",FALSE);
+  {
+    title = "Main Index";
+  }
   else 
-    ol.startFile("index",mainPage->title,FALSE);
+  {
+    title = mainPage->title;
+  }
+  ol.startFile("index",title,FALSE);
+
+  if (Config::generateHtml && Config::htmlHelpFlag)
+  {
+    HtmlHelp::getInstance()->addContentsItem(title,"index"); 
+  }
 
   if (!Config::noIndexFlag) writeQuickLinks(ol,TRUE);
   ol.startTitleHead(0);

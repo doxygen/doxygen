@@ -41,7 +41,7 @@ class MemberList : public QList<MemberDef>
     int protoCount() const     { return protoCnt;   }
     int defineCount() const    { return defCnt;     }
     int friendCount() const    { return friendCnt;  }
-    void countDecMembers(bool inGroup,bool countSubGroups);
+    void countDecMembers(bool inGroup,bool countSubGroups,bool sectionPerType);
     void countDocMembers();
     int totalCount() const 
          { return //varCnt+funcCnt+enumCnt+enumValCnt+typeCnt+

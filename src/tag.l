@@ -119,21 +119,21 @@ static void addMember(const char *name,const char *anchor,const char *args)
     if (cd) // member of a class
     {
       md->setMemberClass(cd);
-      cd->insertMember(md,-1); /* TODO: store group info */
+      cd->insertMember(md); 
       mnd=&memberNameDict;
       mnl=&memberNameList;
     }
     else if (nd) // member of a namespace
     {
       md->setNamespace(nd);
-      nd->insertMember(md,-1); /* TODO: store group info */
+      nd->insertMember(md); 
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }
     else // member of a file
     {
       md->setFileDef(fd);
-      fd->insertMember(md,-1); /* TODO: store group info */
+      fd->insertMember(md);
       mnd=&functionNameDict;
       mnl=&functionNameList;
     }

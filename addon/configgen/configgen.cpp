@@ -1486,6 +1486,15 @@ void init()
                     "will graphical hierarchy of all classes instead of a textual one. \n"
                  );
   addDependency("gfxHierarchyFlag","haveDotFlag");
+  ConfigString::add("dotPath",
+                    "DOT_PATH",
+                    "",
+                    "path to the dot tool",
+                    "This tag can be used to specify the path where the dot tool can be found. \n"
+                    "If left blank, it is assumed the dot tool can be found on the path. \n",
+                    ConfigString::Dir
+                   );
+  addDependency("dotPath","haveDotFlag");
 
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Search","Configuration::addtions related to the search engine   ");
@@ -1555,12 +1564,4 @@ void init()
   addDependency("extDocPathList","searchEngineFlag");
 
   // The IMAGE_PATTERNS tag is now officially obsolete.
-  //-----------------------------------------------------------------------------------------------
-  //ConfigInfo::add("not used");
-  //-----------------------------------------------------------------------------------------------
-  //ConfigList::add("imagePatternList",
-  //                "IMAGE_PATTERNS",
-  //                "",
-  //                "list of image paths",
-  //                "don´t know\n");
 }

@@ -52,7 +52,7 @@ class MemberGroup /* : public Definition */
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();
-    int countDecMembers();
+    int countDecMembers(bool sectionPerType);
     void distributeMemberGroupDocumentation();
 
   private: 

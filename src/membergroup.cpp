@@ -53,7 +53,9 @@ MemberGroup::~MemberGroup()
 
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember(%s)\n",md->name().data());
+  //printf("MemberGroup::insertMember memberList=%p count=%d"
+  //       " member section list: %p\n",memberList,memberList->count(),
+  //       md->getSectionList());
   if (inSameSection && memberList->count()>0 && 
       memberList->first()->getSectionList()!=md->getSectionList())
   {
@@ -97,11 +99,11 @@ void MemberGroup::addToDeclarationSection()
   }
 }
 
-int MemberGroup::countDecMembers()
+int MemberGroup::countDecMembers(bool sectionPerType)
 {
   if (numDeclMembers==-1) /* number of member not cached */
   {
-    memberList->countDecMembers(TRUE,TRUE);
+    memberList->countDecMembers(TRUE,TRUE,sectionPerType);
     numDeclMembers = memberList->totalCount();
   }
   return numDeclMembers;

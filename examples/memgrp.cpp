@@ -2,10 +2,8 @@
 class Test
 {
   public:
-    /** @name Group1
-     */
     //@{
-    /** Function 1 in group 1. Details. */
+    /** Same documentation for both members. Details */
     void func1InGroup1();
     void func2InGroup1();
     //@}
@@ -30,3 +28,13 @@ void Test::func2InGroup2() {}
 void Test::func1InGroup2() {}
 //@}
 
+/*! \file 
+ *  docs for this file
+ */
+
+//@{
+//! one description for all members of this group
+#define A 1
+#define B 2
+void glob_func();
+//@}

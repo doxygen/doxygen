@@ -164,8 +164,8 @@ class OutputList
     { forall(&OutputGenerator::startMemberItem,i1); }
     void endMemberItem(bool b2) 
     { forall(&OutputGenerator::endMemberItem,b2); }
-    void startMemberGroupHeader() 
-    { forall(&OutputGenerator::startMemberGroupHeader); }
+    void startMemberGroupHeader(bool b) 
+    { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()
     { forall(&OutputGenerator::endMemberGroupHeader); }
     void startMemberGroupDocs()

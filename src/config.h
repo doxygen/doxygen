@@ -112,6 +112,7 @@ struct Config
   static bool     collGraphFlag; // collaboration graph
   static bool     includeGraphFlag; // include graph
   static bool     gfxHierarchyFlag; // flag to enable graphical hierarchy
+  static QCString dotPath; // path to the dot tool
   static bool     searchEngineFlag; // generate search engine flag
   static QCString cgiName; // the name of the CGI binary
   static QCString cgiURL; // the absolute URL to the CGI binary
