@@ -20,6 +20,8 @@ type makeconfig                   > Makefile
 type Makefile.win_%MAKE%.in       >>Makefile
 type makeconfig                   > qtools\Makefile
 type qtools\Makefile.in           >>qtools\Makefile
+type makeconfig                   > libpng\Makefile
+type libpng\Makefile.in           >>libpng\Makefile
 type makeconfig                   > src\Makefile
 type src\Makefile.in              >>src\Makefile
 type makeconfig                   > examples\Makefile
@@ -32,6 +34,7 @@ type addon\doxywizard\Makefile.win_%MAKE%.in >>addon\doxywizard\Makefile
 REM build in release or debug mode 
 REM sed is used to replace $extraopts by either debug or release while copying
 sed "s/\$extraopts/%MODE%/g" qtools\qtools.pro.in >qtools\qtools.pro
+sed "s/\$extraopts/%MODE%/g" libpng\libpng.pro.in >libpng\libpng.pro
 sed "s/\$extraopts/%MODE%/g" src\libdoxygen.pro.in >src\libdoxygen.pro
 sed "s/\$extraopts/%MODE%/g" src\libdoxycfg.pro.in >src\libdoxycfg.pro
 sed "s/\$extraopts/%MODE%/g" src\doxygen.pro.in >src\doxygen.pro

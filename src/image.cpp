@@ -18,7 +18,7 @@
 
 #include "qtbc.h"
 #include "image.h"
-#include "gifenc.h"
+#include "pngenc.h"
 #include <qglobal.h>
 
 const int charSetWidth=80;
@@ -321,19 +321,11 @@ void Image::fillRect(int x,int y,int lwidth,int lheight,uchar colIndex,uint mask
 
 bool Image::save(const char *fileName,int mode)
 {
-  GifEncoder gifenc(data,
-                    mode==0 ? palette : palette2,
-                    width,height,
-                    mode==0 ? 3 : 4,
-                    0);
-  QFile file(fileName);
-  if (file.open(IO_WriteOnly))
-  {
-    gifenc.writeGIF(file);
-    return TRUE;
-  }
-  else
-  {
-    return FALSE;
-  }
+  PngEncoder enc(data,
+                 mode==0 ? palette : palette2,
+                 width,height,
+                 mode==0 ? 3 : 4,
+                  0);
+  enc.write(fileName);
+  return TRUE;
 }

@@ -1009,7 +1009,7 @@ class TranslatorBrazilian: public Translator
 
         "Se a tag \\c MAX_DOT_GRAPH_HEIGHT no arquivo de configuração tem o valor"
         "200, o seguinte gráfo será gerado:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "As caixas no grafo acima tem as seguintes interpretações:\n"
         "<ul>\n"

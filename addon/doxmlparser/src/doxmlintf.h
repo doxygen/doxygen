@@ -109,28 +109,28 @@ class IDoc
   public:
     enum Kind 
     { 
-      Para,               //  0 -> IDocPara
-      Text,               //  1 -> IDocText
-      MarkupModifier,     //  2 -> IDocMarkupModifier
-      ItemizedList,       //  3 -> IDocItemizedList
-      OrderedList,        //  4 -> IDocOrderedList
-      ListItem,           //  5 -> IDocListItem
-      ParameterList,      //  6 -> IDocParameterList
-      Parameter,          //  7 -> IDocParameter
-      SimpleSect,         //  8 -> IDocSimpleSect
-      Title,              //  9 -> IDocTitle
-      Ref,                // 10 -> IDocRef
-      VariableList,       // 11 -> IDocVariableList
-      VariableListEntry,  // 12 -> IDocVariableListEntry
-      HRuler,             // 13 -> IDocHRuler
-      LineBreak,          // 14 -> IDocLineBreak
-      ULink,              // 15 -> IDocULink
-      EMail,              // 16 -> IDocEMail
-      Link,               // 17 -> IDocLink
-      ProgramListing,     // 18 -> IDocProgramListing
-      CodeLine,           // 19 -> IDocCodeLine
-      Highlight,          // 20 -> IDocHighlight
-      Anchor,             // 21 -> IDocAnchor
+      Invalid = 0,        //  0
+      Para,               //  1 -> IDocPara
+      Text,               //  2 -> IDocText
+      MarkupModifier,     //  3 -> IDocMarkupModifier
+      ItemizedList,       //  4 -> IDocItemizedList
+      OrderedList,        //  5 -> IDocOrderedList
+      ListItem,           //  6 -> IDocListItem
+      ParameterList,      //  7 -> IDocParameterList
+      Parameter,          //  8 -> IDocParameter
+      SimpleSect,         //  9 -> IDocSimpleSect
+      Title,              // 10 -> IDocTitle
+      Ref,                // 11 -> IDocRef
+      VariableList,       // 12 -> IDocVariableList
+      VariableListEntry,  // 13 -> IDocVariableListEntry
+      HRuler,             // 14 -> IDocHRuler
+      LineBreak,          // 15 -> IDocLineBreak
+      ULink,              // 16 -> IDocULink
+      EMail,              // 17 -> IDocEMail
+      Link,               // 18 -> IDocLink
+      ProgramListing,     // 19 -> IDocProgramListing
+      CodeLine,           // 20 -> IDocCodeLine
+      Highlight,          // 21 -> IDocHighlight
       Formula,            // 22 -> IDocFormula
       Image,              // 23 -> IDocImage
       DotFile,            // 24 -> IDocDotFile
@@ -270,58 +270,97 @@ class IDocLineBreak : public IDoc
 
 class IDocULink : public IDoc
 {
+  public:
+    virtual QString url() = 0;
+    virtual QString text() = 0;
 };
 
 class IDocEMail : public IDoc
 {
+  public:
+    virtual QString address() = 0;
 };
 
 class IDocLink : public IDoc
 {
+  public:
+    virtual QString refId() = 0;
+    virtual QString text() = 0;
 };
 
 class IDocProgramListing : public IDoc
 {
+  public:
+    virtual IDocIterator *codeLines() = 0;
 };
 
 class IDocCodeLine : public IDoc
 {
+  public:
+    virtual int lineNumber() = 0;
+    virtual QString refId() = 0;
+    virtual IDocIterator *codeElements() = 0;
 };
 
 class IDocHighlight : public IDoc
 {
-};
-
-class IDocAnchor : public IDoc
-{
+  public:
+    enum HighlightKind 
+    { Invalid=0,
+      Comment, Keyword, 
+      KeywordType, KeywordFlow, CharLiteral, 
+      StringLiteral, Preprocessor
+    };
+    virtual HighlightKind highlightKind() = 0;
+    virtual IDocIterator *codeElements() = 0;
 };
 
 class IDocFormula : public IDoc
 {
+  public:
+    virtual QString id() = 0;
+    virtual QString text() = 0;
 };
 
 class IDocImage : public IDoc
 {
+  public:
+    virtual QString name() = 0;
+    virtual QString caption() = 0;
 };
 
 class IDocDotFile : public IDoc
 {
+  public:
+    virtual QString name() = 0;
+    virtual QString caption() = 0;
 };
 
 class IDocIndexEntry : public IDoc
 {
+  public:
+    virtual QString primary() = 0;
+    virtual QString secondary() = 0;
 };
 
 class IDocTable : public IDoc
 {
+  public:
+    virtual IDocIterator *rows() = 0;
+    virtual int numColumns() = 0;
+    virtual QString caption() = 0;
 };
 
 class IDocRow : public IDoc
 {
+  public:
+    virtual IDocIterator *entries() = 0;
 };
 
 class IDocEntry : public IDoc
 {
+  public:
+    virtual IDocIterator *contents() = 0;
 };
 
 class IDocSection : public IDoc

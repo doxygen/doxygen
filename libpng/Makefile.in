@@ -1,0 +1,16 @@
+all: Makefile.libpng 
+	$(MAKE) -f Makefile.libpng
+
+clean: Makefile.libpng 
+	$(MAKE) -f Makefile.libpng clean
+
+distclean: clean
+	$(RM) -f Makefile.libpng libpng.pro Makefile 
+
+tmake:
+	$(ENV) $(PERL) $(TMAKE) libpng.pro >Makefile.libpng
+
+Makefile.libpng: libpng.pro
+	$(ENV) $(PERL) $(TMAKE) libpng.pro >Makefile.libpng
+
+install:

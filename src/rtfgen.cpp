@@ -2152,14 +2152,14 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
 {
   newParagraph();
 
-  // create a gif file
+  // create a png file
   d.writeImage(t,dir,fileName,FALSE);
 
   // display the file
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << fileName << ".gif";
+  t << fileName << ".png";
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }

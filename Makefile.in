@@ -7,6 +7,7 @@ clean: FORCE
 	cd doc ; $(MAKE) clean
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
+	cd libpng ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
 	cd addon/doxmlparser/src ; $(MAKE) clean
 	cd addon/doxmlparser/test ; $(MAKE) clean
@@ -16,6 +17,7 @@ clean: FORCE
 
 distclean: clean
 	cd src ; $(MAKE) distclean
+	cd libpng ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
 	cd addon/doxmlparser/src ; $(MAKE) distclean
 	cd addon/doxmlparser/test ; $(MAKE) distclean
@@ -27,9 +29,10 @@ distclean: clean
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.doxytag src/Makefile.libdoxycfg
 	-rm -f src/Makefile.doxysearch qtools/Makefile.qtools
+	-rm -f libpng/Makefile.libpng
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro src/libdoxycfg.pro
+	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro src/doxysearch.pro qtools/qtools.pro src/libdoxycfg.pro libpng/libpng.pro
 	-rm -f src/version.cpp
 	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/Makefile.doxywizard
@@ -73,7 +76,7 @@ pdf: docs
 	cd latex ; $(MAKE)
 
 archive: clean
-	tar zcvf dx`date +%y%m%d`.tgz Doxyfile addon tmake doc wintools examples bin lib objects \
+	tar zcvf dx`date +%y%m%d`.tgz Doxyfile libpng addon tmake doc wintools examples bin lib objects \
 	       qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
                Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
                VERSION packages

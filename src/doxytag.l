@@ -594,9 +594,9 @@ int main(int argc,char **argv)
     if (fi.exists())
     {
       QCString dir=convertToQCString(fi.dir().absPath());
-      fi.setFile(dir+"/search.gif");
+      fi.setFile(dir+"/search.png");
       if (!fi.exists()) writeSearchButton(dir);
-      fi.setFile(dir+"/doxygen.gif");
+      fi.setFile(dir+"/doxygen.png");
       if (!fi.exists()) writeLogo(dir);
       fi.setFile(dir+"/search.cgi");
       if (!fi.exists())

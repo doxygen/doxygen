@@ -184,7 +184,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   t << "<hr><address><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << " <a href=\"http://www.doxygen.org/index.html\">\n"
-    << "<img src=\"doxygen.gif\" alt=\"doxygen\" " 
+    << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
     << "align=\"middle\" border=0 width=110 height=53>\n"
     << "</a> $doxygenversion " << theTranslator->trWrittenBy()
     << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
@@ -273,7 +273,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
         {
           t << "src=\"";
         }
-        t << "doxygen.gif\" alt=\"doxygen\" " 
+        t << "doxygen.png\" alt=\"doxygen\" " 
           << "align=\"middle\" border=0 " << endl << 
              "width=110 height=53></a>" << versionString <<" ";
       }
@@ -649,7 +649,7 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
   t << "\n<p><center><img src=\""
-    << fileName << ".gif\" usemap=\"#" << name << "_map\""
+    << fileName << ".png\" usemap=\"#" << name << "_map\""
     << " border=\"0\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
 
@@ -679,7 +679,7 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
   t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
                              // displays formulas nicely with align == "middle" 
 #endif
-  t << " src=\"" << n << ".gif\">" << endl;
+  t << " src=\"" << n << ".png\">" << endl;
   if (text && text[0]=='\\') t << "</center><p>" << endl;
 }
 

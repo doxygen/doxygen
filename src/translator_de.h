@@ -1082,7 +1082,7 @@ class TranslatorGerman : public Translator
         "\\endcode\n\n"
         "Setzen des Tags \\c MAX_DOT_GRAPH_HEIGHT in der Konfigurationsdatei "
         "auf 240 liefert den folgenden Graphen:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "Die Rechtecke in obigem Graphen bedeuten:\n"
         "<ul>\n"

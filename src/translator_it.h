@@ -1060,7 +1060,7 @@ class TranslatorItalian : public Translator
         "\\endcode\n"
         "Se il tag \\c MAX_DOT_GRAPH_HEIGHT nel file di configurazione "
         "è impostato a 200 verrà prodotto il grafo seguente:"
-        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p><center><img src=\"graph_legend.png\"></center>\n"
         "<p>\n"
         "I riquadri nel grafo qui sopra hanno il seguente significato:\n"
         "<ul>\n"

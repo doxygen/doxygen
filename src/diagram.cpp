@@ -1255,13 +1255,6 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
   uint superRows=super->computeRows();
   uint rows=baseRows+superRows-1;
 
-//  t << "<p>Class diagram for "; 
-//  HtmlGenerator::docifyStatic(t,name);
-//  t << ".\n<p><center><img src=\"" 
-//    << fileName << ".gif\" usemap=\"#" << name << "_map\""
-//    << " border=\"0\"></center>" << endl
-//    << "<map name=\"" << name << "_map\"><p>" << endl;
-  
   uint lb,ls,xb,xs;
   base->computeExtremes(&lb,&xb);
   super->computeExtremes(&ls,&xs);
@@ -1281,7 +1274,7 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
-  image.save((QCString)path+"/"+fileName+".gif");
+  image.save((QCString)path+"/"+fileName+".png");
   
   if (generateMap) t << "</map>" << endl;
 }
