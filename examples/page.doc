@@ -1,0 +1,12 @@
+/*! \page page1 A documentation page
+  This page contains the subsections \ref subsection1 and \ref subsection2.
+  For more info see section \ref page2.
+  \subsection subsection1 The first subsection
+  Text.
+  \subsection subsection2 The second subsection
+  More text.
+*/
+
+/*! \page page2 Another page
+  Even more info.
+*/

@@ -1,0 +1,111 @@
+/******************************************************************************
+ *
+ * $Id$
+ *
+ * Copyright (C) 1997-1999 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * All output generated with Doxygen is not covered by this license.
+ *
+ */
+/*! \page htmlcmds HTML Commands
+
+Here is a list of all HTML commands that may be used inside the
+documentation. Notice that all attributes of a HTML tag are ignored 
+(the HREF and NAME attributes for the A tag are the only exception).
+
+<ul>
+<li><tt>\<A HREF="..."\></tt> Starts a HTML hyper-link (HTML only). 
+<li><tt>\<A NAME="..."\></tt> Starts an named anchor (HTML only).
+<li>\c </A>    Ends a link or anchor (HTML only).
+<li>\c <B>     Starts a piece of text displayed in a bold font.
+<li>\c </B>    Ends a \c <B> section.
+<li>\c <BODY>  Does not generate any output.
+<li>\c </BODY> Does not generate any output.
+<li>\c <BR>    Forces a line break.
+<li>\c <CENTER> starts a section of centered text.
+<li>\c </CENTER> ends a section of centered text.
+<li>\c <CODE>  Starts a piece of text displayed in a typewriter font.
+<li>\c </CODE> End a \c <CODE> section.
+<li>\c <DD>    Starts an item description.
+<li>\c <DFN>   Starts a piece of text displayed in a typewriter font.
+<li>\c </DFN>  Ends a \c <DFN> section.
+<li>\c <DL>    Starts a description list.
+<li>\c </DL>   Ends a description list.
+<li>\c <DT>    Starts a item title.
+<li>\c </DT>   Does not generate any output.
+<li>\c <EM>    Starts a piece of text displayed in an italic font.
+<li>\c </EM>   Ends a \c <EM> section.
+<li>\c <FORM>  Does not generate any output.
+<li>\c </FORM> Does not generate any output.
+<li>\c <HR>    Writes a horizontal ruler.
+<li>\c <H1>    Starts an unnumbered section.
+<li>\c </H1>   Ends an unnumberd section.
+<li>\c <H2>    Starts an unnumbered subsection.
+<li>\c </H2>   Ends an unnumbered subsection.
+<li>\c <H?>    Where ? is one of {3,4,5,6}, starts an unnumbered subsubsection.
+<li>\c </H?>   Where ? is one of {3,4,5,6}, ends an unnumbered subsubsection.
+<li>\c <I>     Starts a piece of text displayed in an italic font.
+<li>\c <INPUT> Does not generated any output.
+<li>\c </I>    Ends a \c <I> section.
+<li>\c <IMG>   This command is written with attributes to the HTML output only.
+<li>\c <LI>    Starts a new list item.
+<li>\c </LI>   Does not generate any output.
+<li>\c <META>  Does not generate any output.
+<li>\c <MULTICOL> ignored by Doxygen.
+<li>\c </MUTLICOL> ignored by Doxygen.
+<li>\c <OL>    Starts a numbered item list.
+<li>\c </OL>   Ends a numbered item list.
+<li>\c <P>     Starts a new paragraph.
+<li>\c </P>    Does not generate any output.
+<li>\c <PRE> starts a code fragment, 
+             equivalent to the command \\code (see section \ref cmdcode).
+<li>\c </PRE> ends a code fragment,
+             equivalent to the command \\endcode (see section \ref cmdendcode).
+<li>\c <SMALL> starts a section of text displayed in a smaller font.
+<li>\c </SMALL> ends a \c <SMALL> section.
+<li>\c <STRONG> starts a section of bold text.
+<li>\c </STRONG> ends a section of bold text.
+<li>\c <SUB>   Starts a piece of text displayed in superscript.
+<li>\c </SUB>  Ends a \c <SUB> section.
+<li>\c <SUP>   Starts a piece of text displayed in subscript.
+<li>\c </SUP>  Ends a \c </SUP> section.
+<li>\c <TABLE> starts a table, the available space of a page is always 
+               divided equally amount the columns. 
+<li>\c </TABLE> ends a table
+<li>\c <TD>    Starts a new table element.
+<li>\c </TD>   Does not generate any output.
+<li>\c <TR>    Starts a new table row.
+<li>\c </TR>   Does not generate any output. 
+<li>\c <TT>    Starts a piece of text displayed in a typewriter font.
+<li>\c </TT>   Ends a \c <TT> section.
+<li>\c <UL>    Starts an unnumbered item list.
+<li>\c </UL>   Ends an unnumbered item list.
+<li>\c <VAR>   Starts a piece of text displayed in an italic font.
+<li>\c </VAR>  Ends a \c </VAR> section.
+</ul>
+
+The special HTML characters entities that are recognized by Doxygen:
+
+<ul>
+<li>\c &copy; the copyright symbol
+<li>\c &quot; a double quote
+<li>\c &?uml;   where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y}, 
+       writes a character with a diaeresis accent (like &auml;).
+<li>\c &?acute; where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y},
+       writes a character with a acute accent (like &aacute;). 
+<li>\c &?grave; where ? is one of {A,E,I,O,U,a,e,i,o,u,y},
+       writes a character with a grave accent (like &agrave;).
+<li>\c &?circ;  where ? is one of {A,E,I,O,U,a,e,i,o,u,y},
+       writes a character with a circumflex accent (like &acirc;).
+<li>\c &?tilde; where ? is one of {A,N,O,a,n,o},
+       writes a character with a tilde accent (like &atilde;).
+</ul>
+
+*/
+ 

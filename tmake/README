@@ -1,0 +1,7 @@
+			    tmake version 1.2
+
+tmake is an easy-to-use tool for creating and maintaining makefiles across
+many platforms and compilers. The tmake manual (doc/tmake.html) explains
+how to install and use tmake.
+
+Download the latest version from: <ftp://ftp.troll.no/freebies/tmake>

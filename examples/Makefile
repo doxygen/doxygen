@@ -1,0 +1,94 @@
+include ../Makefile.config
+DOXYDIR = ../bin
+
+all: class/html/index.html \
+     define/html/index.html \
+     enum/html/index.html \
+     file/html/index.html \
+     func/html/index.html \
+     page/html/index.html \
+     relates/html/index.html \
+     author/html/index.html \
+     par/html/index.html \
+     overload/html/index.html \
+     example/html/index.html \
+     include/html/index.html \
+     qtstyle/html/index.html \
+     jdstyle/html/index.html \
+     structcmd/html/index.html \
+     autolink/html/index.html \
+     resdefine/html/index.html \
+     restypedef/html/index.html \
+     afterdoc/html/index.html \
+     template/html/index.html \
+     tag/html/index.html 
+
+clean:
+	rm -rf  class define enum file func page relates author \
+                par overload example include qtstyle jdstyle structcmd \
+		autolink tag resdefine restypedef afterdoc template
+
+class/html/index.html: class.h class.cfg
+	$(DOXYDIR)/doxygen class.cfg
+
+define/html/index.html: define.h define.cfg
+	$(DOXYDIR)/doxygen define.cfg
+
+enum/html/index.html: enum.h enum.cfg
+	$(DOXYDIR)/doxygen enum.cfg
+
+file/html/index.html: file.h file.cfg
+	$(DOXYDIR)/doxygen file.cfg
+
+func/html/index.html: func.h func.cfg
+	$(DOXYDIR)/doxygen func.cfg
+
+page/html/index.html: page.doc page.cfg
+	$(DOXYDIR)/doxygen page.cfg
+
+relates/html/index.html: relates.cpp relates.cfg
+	$(DOXYDIR)/doxygen relates.cfg
+
+author/html/index.html: author.cpp author.cfg
+	$(DOXYDIR)/doxygen author.cfg
+
+par/html/index.html: par.cpp par.cfg
+	$(DOXYDIR)/doxygen par.cfg
+
+overload/html/index.html: overload.cpp overload.cfg
+	$(DOXYDIR)/doxygen overload.cfg
+
+example/html/index.html: example.cpp example_test.cpp example.cfg 
+	$(DOXYDIR)/doxygen example.cfg
+
+include/html/index.html: include.cpp example_test.cpp include.cfg 
+	$(DOXYDIR)/doxygen include.cfg
+
+qtstyle/html/index.html: qtstyle.cpp qtstyle.cfg 
+	$(DOXYDIR)/doxygen qtstyle.cfg
+
+jdstyle/html/index.html: jdstyle.cpp jdstyle.cfg 
+	$(DOXYDIR)/doxygen jdstyle.cfg
+
+structcmd/html/index.html: structcmd.h structcmd.cfg 
+	$(DOXYDIR)/doxygen structcmd.cfg
+
+autolink/html/index.html: autolink.cpp autolink.cfg 
+	$(DOXYDIR)/doxygen autolink.cfg
+
+tag/html/index.html: tag.cpp tag.cfg 
+	$(DOXYDIR)/doxygen tag.cfg
+	sed -e "1,1s.perl.$(PERL).g" tag/html/installdox >tag/html/installdox.perl
+	cd tag/html ; $(PERL) installdox.perl -lexample.tag@../../example/html
+
+resdefine/html/index.html: resdefine.cpp resdefine.cfg 
+	$(DOXYDIR)/doxygen resdefine.cfg
+
+restypedef/html/index.html: restypedef.cpp restypedef.cfg 
+	$(DOXYDIR)/doxygen restypedef.cfg
+
+afterdoc/html/index.html: afterdoc.h afterdoc.cfg
+	$(DOXYDIR)/doxygen afterdoc.cfg
+
+template/html/index.html: templ.cpp templ.cfg
+	$(DOXYDIR)/doxygen templ.cfg

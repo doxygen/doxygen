@@ -1,0 +1,132 @@
+DOXYGEN Version 0.49-990425
+
+INSTALLATION INSTRUCTIONS FOR UNIX:
+-----------------------------------
+
+1.  Unpack the archive, unless you already have:
+   
+    gunzip doxygen-0.49-990425.src.tar.gz    # uncompress the archive
+    tar xf doxygen-0.49-990425.src.tar       # unpack it
+
+2.  Make sure Qt is installed properly (check the environment variable $QTDIR)
+
+    Note: on some systems (like FreeBSD) it is possible that qt is not
+    installed in one single directory. In this case I suggest to create a 
+    local qt directory to which the QTDIR variable should point. Then
+    create two links in that directory like this:
+      ln -s <location_of_the_qt_includes> include
+      ln -s <location_of_the_qt_libs> lib
+
+3.  Look at the first two entries of Makefile.config and modify them if needed.
+    Note: Doxygen requires GNU make to build. On some systems this is 
+    known as gmake. If you have such a system, you must edit Makefile.config
+    and replace make by gmake in rest of this document.
+
+4.  Compile the program.
+
+    Type:
+      
+      make
+
+    You'll see a list of all supported platforms/compiler combinations.
+    
+    To build for the Linux platform with g++ as the compiler for example, type:
+ 
+      make linux-g++
+
+    The program should compile without problems and three binaries (doxygen,
+    doxytag, and doxysearch) should be available in the bin directory of the 
+    distribution.
+
+5.  Generate the user manual.
+    
+    type:
+   
+      make docs
+
+    to let doxygen generate the HTML and LaTeX documentation.
+    (you will need the stream editor `sed' for this)
+
+    type:
+   
+      make ps
+
+    to generate a postscript version of the manual. 
+    (you will need latex and dvips for this)
+
+    The html directory of the distribution will now contain the html 
+    documentation (just point a HTML browser to the file index.html in the 
+    html directory).
+    
+    The postscript manual doxygen_manual.ps will be located in the latex
+    directory of the distribution. Just send it to a postscript printer to 
+    print it or use ghostview to view it. 
+
+INSTALLATION INSTRUCTIONS FOR WINDOWS:
+--------------------------------------
+
+Currently, only Microsoft Visual C++ version 5.0 is supported. For other
+platforms you may need to edit the Makefiles a bit. Let me know what you
+had to change if you got Doxygen working with another windows compiler. 
+
+You will need to install the windows/dos versions of following tools:
+- Perl 5.0+
+- flex (you can use the DJGPP version)
+- bison (you can use the DJGPP version, but you need to copy 
+         lib\bison.sim to c:\djgpp\lib\bison.simple and
+         lib\bison.hai to c:\djgpp\lib\bison.hairy.
+         The paths seem to be hardcoded in the executable)
+- Qt (Hint: only the tools section is required, so you can use the free 
+      X-windows version as well!)
+- Microsoft Visual C++ version 5.0, use the vcvars32.bat to set the environment
+  variables.
+
+Make sure all tools are accessible from the command-line.
+
+Open a dos box, goto the doxygen root dir and type:
+
+make.bat
+
+This should build the executables doxygen.exe, doxytag.exe, and doxysearch.exe
+(The compiler should not produce any warnings or errors).
+
+To build the examples type:
+
+nmake -f Makefile.windows examples
+
+-----------------------------------------------------------------------------
+KNOWN CONFIGURATION PROBLEMS
+
+LATEX RELATED PROBLEMS:
+
+- the LaTeX translation of HTML tables doesn't seem to work for all 
+  compilers. It is known to work for teTeX (versions 0.4 and 0.9)
+- the file a4wide.sty is not available for all distributions. If
+  your distribution does not have it please select another paper type
+  in the config file (see PAPER_TYPE)
+- the file fancyheader.sty is known as fancyhdr.sty on some systems.
+  Please change that in src/latexgen.cpp
+
+HP-UX PROBLEMS:
+- If you are compiling for HP-UX with aCC and you get this error:
+    /opt/aCC/lbin/ld: Unsatisfied symbols:
+    alloca (code)
+  then you should edit ce_parse.cpp and replace
+    extern "C" {
+      void *alloca (unsigned int);
+    };
+  with
+    #include <alloca.h>  
+  This seems to be a problem with bison, but I don't know how to fix it.
+-----------------------------------------------------------------------------
+
+That's it!
+
+Please report any problems to dimitri@stack.nl
+
+The latest version of doxygen can be obtained at
+  http://www.stack.nl/~dimitri/doxygen
+
+Enjoy,
+
+Dimitri van Heesch (25 April 1999)

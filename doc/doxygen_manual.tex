@@ -1,0 +1,42 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+\usepackage{makeidx}
+\usepackage{fancyheadings}
+\usepackage{epsf}
+\usepackage{doxygen}
+\usepackage{multicol}
+\makeindex
+\setcounter{tocdepth}{1}
+\setlength{\footrulewidth}{0.4pt}
+\begin{document}
+\begin{titlepage}
+\setlength{\epsfxsize}{\textwidth}
+\epsffile{doxygen_logo.eps}
+\begin{center}
+Manual for version $VERSION\\[2ex]
+Written by Dimitri van Heesch\\[2ex]
+\copyright 1997-1998
+\end{center}
+\end{titlepage}
+\clearemptydoublepage
+\tableofcontents
+\clearemptydoublepage
+\pagenumbering{arabic}
+\include{index}
+\part{User Manual}
+\input{install}
+\input{starting}
+\input{trouble}
+\part{Reference Manual}
+\input{features}
+\input{history}
+\input{doxygen_usage}
+\input{doxytag_usage}
+\input{doxysearch_usage}
+\input{installdox_usage}
+\input{autolink}
+\input{config}
+\input{commands}
+\input{htmlcmds}
+\printindex
+\end{document}

@@ -1,0 +1,44 @@
+#
+# $Id$
+#
+# Copyright (C) 1997-1999 by Dimitri van Heesch.
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+# 
+# All output generated with Doxygen is not covered by this license.
+# 
+
+include ../Makefile.config
+
+all: Makefile.doxygen Makefile.doxytag Makefile.doxysearch Makefile
+	$(MAKE) -f Makefile.doxygen    $@
+	$(MAKE) -f Makefile.doxytag    $@
+	$(MAKE) -f Makefile.doxysearch $@
+
+Makefile.doxygen: doxygen.pro doxygen.t 
+	$(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+
+Makefile.doxytag: doxytag.pro doxytag.t 
+	$(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
+
+Makefile.doxysearch: doxysearch.pro
+	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
+
+tmake:
+	$(PERL) $(TMAKE) doxygen.pro >Makefile.doxygen
+	$(PERL) $(TMAKE) doxytag.pro >Makefile.doxytag
+	$(PERL) $(TMAKE) doxysearch.pro >Makefile.doxysearch
+
+clean: 
+	$(MAKE) -f Makefile.doxygen    clean 
+	$(MAKE) -f Makefile.doxytag    clean
+	$(MAKE) -f Makefile.doxysearch clean
+	-rm -f scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
+               ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp \
+	       declinfo.cpp defargs.cpp version.cpp
+
+FORCE:
