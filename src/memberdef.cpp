@@ -316,7 +316,7 @@ MemberDef::MemberDef(const char *df,int dl,
   annEnumType=0;
   //indDepth=0;
   section=0;
-  bodyMemb=0;
+  groupAlias=0;
   explExt=FALSE;
   cachedAnonymousType=0;
   maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
@@ -377,6 +377,7 @@ MemberDef::MemberDef(const char *df,int dl,
   docsForDefinition = TRUE;
   m_isTypedefValCached = FALSE;
   m_cachedTypedefValue = 0;
+  m_inbodyLine = -1;
 }
 
 /*! Destroys the member definition. */
@@ -461,6 +462,10 @@ QCString MemberDef::getOutputFileBase() const
   {
     return m_templateMaster->getOutputFileBase();
   }
+  else if (group)
+  {
+    return group->getOutputFileBase();
+  }
   else if (classDef)
   {
     return classDef->getOutputFileBase();
@@ -469,10 +474,6 @@ QCString MemberDef::getOutputFileBase() const
   {
     return nspace->getOutputFileBase();
   }
-  //else if (group)
-  //{
-  //  return group->getOutputFileBase();
-  //}
   else if (fileDef)
   {
     return fileDef->getOutputFileBase();
@@ -484,6 +485,105 @@ QCString MemberDef::getOutputFileBase() const
   return "dummy";
 }
 
+QCString MemberDef::getReference() const
+{
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getReference();
+  }
+  else if (group)
+  {
+    return group->getReference();
+  }
+  else if (classDef)
+  {
+    return classDef->getReference();
+  }
+  else if (nspace)
+  {
+    return nspace->getReference();
+  }
+  else if (fileDef)
+  {
+    return fileDef->getReference();
+  }
+  return "";
+}
+
+QCString MemberDef::anchor() const
+{
+  QCString result=anc;
+  if (groupAlias)       return groupAlias->anchor();
+  if (m_templateMaster) return m_templateMaster->anchor();
+  if (enumScope) result.prepend(enumScope->anchor());
+  if (group) result.prepend("g");
+  return result;
+}
+
+bool MemberDef::isLinkableInProject() const
+{
+  //printf("MemberDef::isLinkableInProject()\n");
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkableInProject();
+  }
+  if (name().isEmpty() || name().at(0)=='@') 
+  {
+    //printf("name invalid\n");
+    return FALSE; // not a valid or a dummy name
+  }
+  if (!hasDocumentation() && !isReference()) 
+  {
+    //printf("no docs or reference\n");
+    return FALSE; // no documentation
+  }
+  if (group && !group->isLinkableInProject()) 
+  {
+    //printf("group but group not linkable!\n");
+    return FALSE; // group but group not linkable
+  }
+  if (!group && classDef && !classDef->isLinkableInProject()) 
+  {
+    //printf("in a class but class not linkable!\n");
+    return FALSE; // in class but class not linkable
+  }
+  if (!group && nspace && !nspace->isLinkableInProject()) 
+  {
+    //printf("in a namespace but namespace not linkable!\n");
+    return FALSE; // in namespace but namespace not linkable
+  }
+  if (!group && fileDef && !fileDef->isLinkableInProject()) 
+  {
+    //printf("in a file but file not linkable!\n");
+    return FALSE; // in file but file not linkable
+  }
+  if (prot==Private && !Config_getBool("EXTRACT_PRIVATE") && mtype!=Friend) 
+  {
+    //printf("private and invisible!\n");
+    return FALSE; // hidden due to protection
+  }
+  if (isStatic() && classDef==0 && !Config_getBool("EXTRACT_STATIC")) 
+  {
+    //printf("static and invisible!\n");
+    return FALSE; // hidden due to staticness
+  }
+  //printf("linkable!\n");
+  return TRUE; // linkable!
+}
+
+bool MemberDef::isLinkable() const
+{
+  if (m_templateMaster)
+  {
+    return m_templateMaster->isLinkable();
+  }
+  else
+  {
+    return isLinkableInProject() || isReference();
+  }
+}
+
+
 void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 {
   if (lists)
@@ -493,24 +593,24 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
   }
 }
 
-void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
-                      FileDef *fd,GroupDef *gd)
+void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
+                      FileDef *,GroupDef *gd)
 {
-  Definition *d=0;
-  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
-  if (d==0) { err("Member %s without definition! Please report this bug!\n",name().data()); return; }
-  if (group!=0 && gd==0) // forward link to the group
-  {
-    ol.writeObjectLink(group->getReference(),group->getOutputFileBase(),anchor(),name());
-  }
-  else // local link
-  {
+  //Definition *d=0;
+  //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
+  //if (d==0) { err("Member %s without definition! Please report this bug!\n",name().data()); return; }
+  //if (group!=0 && gd==0) // forward link to the group
+  //{
+  //  ol.writeObjectLink(group->getReference(),group->getOutputFileBase(),anchor(),name());
+  //}
+  //else // local link
+  //{
     QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
     QCString n = name();
     if (classDef && gd) n.prepend(classDef->name()+sep);
     else if (nspace && gd) n.prepend(nspace->name()+sep);
-    ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),n);
-  }
+    ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
+  //}
 }
 
 /*! If this member has an anonymous class/struct/union as its type, then
@@ -714,16 +814,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     Doxygen::tagFile << "    </member>" << endl;
   }
 
-  Definition *d=0;
-  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
-  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
-  QCString cname  = d->name();
-  QCString cfname = d->getOutputFileBase();
-  QCString osname = cname;
-  // in case of class members that are put in a group the name of the outerscope
-  // differs from the cname.
-  if (getOuterScope()) osname=getOuterScope()->name();
-  
+  // write search index info
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION")+"#"+anchor());
@@ -731,6 +822,15 @@ void MemberDef::writeDeclaration(OutputList &ol,
     Doxygen::searchIndex->addWord(qualifiedName().lower());
   }
 
+  Definition *d=0;
+  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
+  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+  QCString cname  = d->name();
+  QCString cfname = getOutputFileBase();
+  QCString osname = cname;
+  // in case of class members that are put in a group the name of the outerscope
+  // differs from the cname.
+  if (getOuterScope()) osname=getOuterScope()->name();
 
 
   HtmlHelp *htmlHelp=0;
@@ -951,18 +1051,18 @@ void MemberDef::writeDeclaration(OutputList &ol,
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
-      ol.endEmphasis();
+      //ol.endEmphasis();
       ol.docify(" ");
       if (group!=0 && gd==0) // forward link to the group
       {
-        ol.startTextLink(group->getOutputFileBase(),anchor());
+        ol.startTextLink(getOutputFileBase(),anchor());
       }
-      else
+      else // local link
       {
         ol.startTextLink(0,anchor());
       }
       ol.endTextLink();
-      ol.startEmphasis();
+      //ol.startEmphasis();
       ol.popGeneratorState();
     }
     //ol.newParagraph();
@@ -979,6 +1079,8 @@ bool MemberDef::isDetailedSectionLinkable() const
          Config_getBool("EXTRACT_ALL") ||          
          // has detailed docs
          !documentation().isEmpty() ||             
+         // has inbody docs
+         !inbodyDocumentation().isEmpty() ||
          // is an enum with values that are documented
          (mtype==Enumeration && docEnumValues) ||  
          // is documented enum value
@@ -1047,7 +1149,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
   
     QCString cname  = container->name();
-    QCString cfname = container->getOutputFileBase();  
+    QCString cfname = getOutputFileBase();  
 
     //ol.addIndexItem(name(),cname);
     //ol.addIndexItem(cname,name());
@@ -1313,6 +1415,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     { 
       ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
       ol.pushGeneratorState();
+      if (!m_inbodyDocs.isEmpty())
+      {
+        ol.newParagraph();
+        ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_inbodyDocs+"\n",TRUE,FALSE);
+      }
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
       ol.popGeneratorState();
@@ -1320,6 +1427,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else if(!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
             !Config_getBool("BRIEF_MEMBER_DESC")))
     {
+      if (!m_inbodyDocs.isEmpty())
+      {
+        ol.newParagraph();
+        ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_inbodyDocs+"\n",TRUE,FALSE);
+      }
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1449,16 +1561,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.parseText(reimplFromLine.left(markerPos)); //text left from marker
           if (bmd->isLinkable()) // replace marker with link
           {
-            Definition *bd=bmd->group;
-            if (bd==0) bd=bcd;
-            ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
+            //Definition *bd=bmd->group;
+            //if (bd==0) bd=bcd;
+            ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
                 bmd->anchor(),bcd->displayName());
 
             //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
             //    bmd->anchor(),bcd->name());
-            if ( bd->isLinkableInProject() ) 
+            if ( bmd->isLinkableInProject() ) 
             {
-              writePageRef(ol,bd->getOutputFileBase(),bmd->anchor());
+              writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
             }
           }
           else
@@ -1544,15 +1656,12 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           {
             //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
             //    bmd->anchor(),bcd->name());
-            Definition* bd;
-            if (bmd->group) bd=bmd->group; else bd=bcd;
-            
-            ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
+            ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
                 bmd->anchor(),bcd->displayName());
                 
-            if (bd->isLinkableInProject() ) 
+            if (bmd->isLinkableInProject() ) 
             {
-              writePageRef(ol,bd->getOutputFileBase(),bmd->anchor());
+              writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
             }
           }
           ++mli;
@@ -1630,7 +1739,7 @@ void MemberDef::warnIfUndocumented()
   //       "isDocumentedFriendClass()=%d name()=%s prot=%d\n",
   //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
   //       name().data(),prot);
-  if (d && d->isLinkable() && !isLinkable() && 
+  if (/*d && d->isLinkable() &&*/ !isLinkable() && 
       !isDocumentedFriendClass() && 
       name().find('@')==-1 &&
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
@@ -1641,35 +1750,6 @@ void MemberDef::warnIfUndocumented()
   }
 }
 
-
-bool MemberDef::isLinkableInProject() const
-{
-  if (m_templateMaster)
-  {
-    return m_templateMaster->isLinkableInProject();
-  }
-  else
-  {
-    return !name().isEmpty() && name().at(0)!='@' &&
-      (hasDocumentation() && !isReference()) && 
-      (prot!=Private || Config_getBool("EXTRACT_PRIVATE") || 
-      mtype==Friend) && // not a hidden member due to protection
-      (classDef!=0 || Config_getBool("EXTRACT_STATIC") || 
-      !isStatic()); // not a static file/namespace member
-  }
-}
-
-bool MemberDef::isLinkable() const
-{
-  if (m_templateMaster)
-  {
-    return m_templateMaster->isLinkable();
-  }
-  else
-  {
-    return isLinkableInProject() || isReference();
-  }
-}
 
 //void MemberDef::setEnumDecl(OutputList &ed) 
 //{ 
@@ -1689,6 +1769,7 @@ bool MemberDef::isDocumentedFriendClass() const
 bool MemberDef::hasDocumentation() const
 { 
   return Definition::hasDocumentation() || 
+         !m_inbodyDocs.isEmpty() ||
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (defArgList!=0 && defArgList->hasDocumentation()); // has doc arguments
 }
@@ -1715,13 +1796,6 @@ QCString MemberDef::getScopeString() const
 void MemberDef::setAnchor(const char *a)
 {
   anc=a;
-}
-
-QCString MemberDef::anchor() const
-{
-  if (m_templateMaster) return m_templateMaster->anchor();
-  if (enumScope) return enumScope->anchor()+anc;
-  return anc;
 }
 
 void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs)
@@ -1792,7 +1866,7 @@ MemberDef *MemberDef::createTemplateInstanceMember(
   imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getStartBodyLine(),getEndBodyLine());
-  imd->setBodyMember(this);
+  //imd->setBodyMember(this);
 
   // TODO: init other member variables (if needed).
   // TODO: reimplemented info
@@ -1824,7 +1898,7 @@ void MemberDef::setInitializer(const char *initializer)
   initLines=init.contains('\n');
 }
 
-void MemberDef::addListReference(Definition *d)
+void MemberDef::addListReference(Definition *)
 {
   visited=TRUE;
   if (!isLinkableInProject()) return;
@@ -1855,7 +1929,7 @@ void MemberDef::addListReference(Definition *d)
   }
   //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
   addRefItem(xrefListItems(),memLabel,
-      d->getOutputFileBase()+"#"+anchor(),memName,argsString());
+      getOutputFileBase()+"#"+anchor(),memName,argsString());
 }
 
 MemberList *MemberDef::getSectionList(Definition *d) const 
@@ -2042,5 +2116,14 @@ bool MemberDef::protectionVisible() const
          (prot==Private   && Config_getBool("EXTRACT_PRIVATE"))   ||
          (prot==Protected && Config_getBool("EXTRACT_PROTECTED")) ||
          (prot==Package   && Config_getBool("EXTRACT_PACKAGE"));
+}
+
+void MemberDef::setInbodyDocumentation(const char *docs,
+                  const char *docFile,int docLine)
+{
+  m_inbodyDocs = docs;
+  m_inbodyDocs = m_inbodyDocs.stripWhiteSpace();
+  m_inbodyLine = docLine;
+  m_inbodyFile = docFile;
 }
 

@@ -51,12 +51,13 @@ static void addToMap(const char *name,Definition *d)
     }
     //printf("******* adding symbol `%s'\n",symbolName.data());
     dl->append(d);
+    d->setSymbolName(symbolName);
   }
 }
 
 static void removeFromMap(Definition *d)
 {
-  QCString symbolName = d->name();
+  QCString symbolName = d->symbolName();
   int index=symbolName.findRev("::");
   if (index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
@@ -510,8 +511,8 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         if (md->isFunction() || md->isSlot() || 
             md->isPrototype() || md->isSignal()
            ) name+="()";
-        Definition *d = md->getOuterScope();
-        if (d==Doxygen::globalScope) d=md->getBodyDef();
+        //Definition *d = md->getOutputFileBase();
+        //if (d==Doxygen::globalScope) d=md->getBodyDef();
         if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
         {
           //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope); 
@@ -530,12 +531,13 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
           ol.docify(name);
           ol.popGeneratorState();
         }
-        else if (md->isLinkable() && d && d->isLinkable())
+        else if (md->isLinkable() /*&& d && d->isLinkable()*/)
         {
           // for HTML write a real link
           ol.pushGeneratorState();
           ol.disableAllBut(OutputGenerator::Html);
-          ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+          ol.writeObjectLink(md->getReference(),
+                             md->getOutputFileBase(),
                              md->anchor(),name);
           ol.popGeneratorState();
 

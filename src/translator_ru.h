@@ -1554,6 +1554,7 @@ class TranslatorRussian : public Translator
       return decode( "Найдено:" );
     }
 
+private:
     QCString as_documents( int num )
     {
       if( num % 10 == 1 ) return "";

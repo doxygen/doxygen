@@ -247,8 +247,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                   ol.docify(" ");
                   if (md->getGroupDef()!=0 && gd==0) // forward link to group
                   {
-                    ol.startTextLink(md->getGroupDef()->getOutputFileBase(),
-                        md->anchor());
+                    ol.startTextLink(md->getOutputFileBase(),
+                                     md->anchor());
                   }
                   else
                   {

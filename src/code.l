@@ -355,15 +355,23 @@ static void startCodeLine()
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
-      QCString anchor;
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
-      if (g_currentMemberDef) anchor=g_currentMemberDef->getBodyAnchor();
-      g_code->writeLineNumber(d->getReference(),d->getOutputFileBase(),
-	                      anchor,g_yyLineNr);
+      if (g_currentMemberDef)
+      {
+        g_code->writeLineNumber(g_currentMemberDef->getReference(),
+	                        g_currentMemberDef->getOutputFileBase(),
+	                        g_currentMemberDef->anchor(),g_yyLineNr);
+      }
+      else
+      {
+        g_code->writeLineNumber(d->getReference(),
+	                        d->getOutputFileBase(),
+	                        0,g_yyLineNr);
+      }
     }
     else
     {
@@ -702,13 +710,13 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       if (md)
       {
         //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
-        Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-	                md->getBodyDef() : md->getOuterScope();
+        //Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+	//                md->getBodyDef() : md->getOuterScope();
 	//printf("definition %s\n",d?d->name().data():"<none>");
-        if (md->getGroupDef()) d = md->getGroupDef();
-	if (d && d->isLinkable() && md->isLinkable())
+        //if (md->getGroupDef()) d = md->getGroupDef();
+	if (md->isLinkable())
 	{
-	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->getBodyAnchor(),clName);
+	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
 	  if (g_currentMemberDef)
 	  {
 	    addDocCrossReference(g_currentMemberDef,md);
@@ -770,8 +778,10 @@ static bool getLink(const char *className,
       }
       //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
-      writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),
-	                       md->getBodyAnchor(),text ? text : memberName);
+      writeMultiLineCodeLink(ol,md->getReference(),
+	                        md->getOutputFileBase(),
+	                        md->anchor(),
+				text ? text : memberName);
       return TRUE;
     } 
   }
@@ -822,8 +832,8 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
 	}
 
 	// write the actual link
-	writeMultiLineCodeLink(ol,xd->getReference(),
-	    xd->getOutputFileBase(),xmd->getBodyAnchor(),memName);
+	writeMultiLineCodeLink(ol,xmd->getReference(),
+	    xmd->getOutputFileBase(),xmd->anchor(),memName);
 	return TRUE;
       }
 

@@ -2740,7 +2740,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    {
 					      // copy documentation found inside the body
 					      // to the previous item
-					      previous->doc += current->doc;
+					      if (previous->inbodyLine==-1)
+					      {
+					        previous->inbodyLine = current->docLine;
+					        previous->inbodyFile = current->docFile;
+					      }
+					      previous->inbodyDocs += current->doc;
 					      current->doc.resize(0);
 					    }
 					    if (current->sli) // copy special list items
@@ -3159,6 +3164,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
+					  printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
@@ -3169,6 +3175,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           }
 					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
 					    tmpDocType=-1;
 					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
 						YY_START==SkipCurly) // inside body
@@ -3178,13 +3186,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    else
 					    {
   					      current->doc.resize(0);
-					      current->docLine = yyLineNr;
-					      current->docFile = yyFileName;
 					    }
 					    BEGIN( Doc );
 					  }
 					  else // Use the javadoc style
 					  {
+					    current->docLine = yyLineNr;
+					    current->docFile = yyFileName;
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
 					    if (!Config_getBool("HIDE_IN_BODY_DOCS") &&
 						YY_START==SkipCurly) // inside body
 					    {
@@ -3198,10 +3208,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					      tmpDocType=Doc;
 					      current->doc.resize(0);
 					      current->brief.resize(0);
-					      current->docLine = yyLineNr;
-					      current->docFile = yyFileName;
-					      current->briefLine = yyLineNr;
-					      current->briefFile = yyFileName;
 					      BEGIN( JavaDoc );
 					    }
 					  }

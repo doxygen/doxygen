@@ -263,7 +263,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION"));
     Doxygen::searchIndex->addWord(localName().lower());
   }
 

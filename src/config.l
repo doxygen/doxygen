@@ -1841,7 +1841,9 @@ void Config::create()
   cb = addBool(
                     "SOURCE_BROWSER",
                     "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
-                    "be generated. Documented entities will be cross-referenced with these sources. \n",
+                    "be generated. Documented entities will be cross-referenced with these sources. \n"
+		    "Note: To get rid of all source code in the generated output, make sure also \n"
+		    "VERBATIM_HEADERS is set to NO. \n",
                     FALSE
                  );
   cb = addBool(

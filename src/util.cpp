@@ -1030,7 +1030,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5 && !isId(s.at(i+1))) // prevent const ::A from being converted to const::A
+    else if (c=='t' && csp==5 && !(isId(s.at(i+1)) || s.at(i+1)==' ')) // prevent const ::A from being converted to const::A
     {
       result+="t ";
       csp=0;
@@ -1208,14 +1208,12 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileSco
           (external ? md->isLinkable() : md->isLinkableInProject()) 
          )
       {
-        Definition *d=0;
-        if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
         //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
-        if (d && (external ? d->isLinkable() : d->isLinkableInProject()))
+        if ((external ? md->isLinkable() : md->isLinkableInProject()))
         {
           //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
           //                       md->anchor(),word);
-          out.writeLink(d->getReference(),d->getOutputFileBase(),
+          out.writeLink(md->getReference(),md->getOutputFileBase(),
               md->anchor(),word);
           found=TRUE;
         }
@@ -1356,8 +1354,9 @@ void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
       else
         anchor.sprintf("%c%d_%d",id,groupId,count++);
       if (cd) anchor.prepend(escapeCharsInString(cd->name(),FALSE));
-      //printf("Member %s anchor %s\n",md->name().data(),anchor.data());
       md->setAnchor(anchor);
+      //printf("setAnchors(): Member %s outputFileBase=%s anchor %s result %s\n",
+      //    md->name().data(),md->getOutputFileBase().data(),anchor.data(),md->anchor().data());
     }
   }
 }
@@ -2881,8 +2880,8 @@ bool resolveRef(/* in */  const char *scName,
      )
   {
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
-    *resMember=md;
-    if      (cd) *resContext=cd;
+    if      (md) { *resMember=md; *resContext=md; }
+    else if (cd) *resContext=cd;
     else if (nd) *resContext=nd;
     else if (fd) *resContext=fd;
     else if (gd) *resContext=gd;
@@ -2966,14 +2965,13 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   {
     if (md) // link to member
     {
-      od.writeObjectLink(compound->getReference(),
-                         compound->getOutputFileBase(),
+      od.writeObjectLink(md->getReference(),
+                         md->getOutputFileBase(),
                          md->anchor(),linkText);
       // generate the page reference (for LaTeX)
-      if (!compound->isReference() && !md->anchor().isEmpty() && 
-          md->isLinkableInProject())
+      if (md->isLinkableInProject())
       {
-        writePageRef(od,compound->getOutputFileBase(),md->anchor());
+        writePageRef(od,md->getOutputFileBase(),md->anchor());
       }
     }
     else // link to compound
@@ -3007,12 +3005,10 @@ bool resolveLink(/* in */ const char *scName,
                  /* in */ const char *lr,
                  /* in */ bool inSeeBlock,
                  /* out */ Definition **resContext,
-                 /* out PageInfo **resPageInfo,*/
                  /* out */ QCString &resAnchor
                 )
 {
   *resContext=0;
-  //*resPageInfo=0;
   
   QCString linkRef=lr;
   FileDef  *fd;
@@ -3094,16 +3090,6 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   //printf("generateLink linkText=%s\n",linkText.data());
   if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
   {
-    //if (pageInfo) // link to page
-    //{
-    //  od.writeObjectLink(pageInfo->getReference(),
-    //                     pageInfo->getOutputFileBase(),anchor,linkText);
-    //  if (!pageInfo->isReference())
-    //  {
-    //    writePageRef(od,pageInfo->getOutputFileBase(),anchor);
-    //  }
-    //}
-    //else 
     if (compound) // link to compound
     {
       if (lt==0 && anchor.isEmpty() &&                      /* compound link */
@@ -4022,9 +4008,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pageName=pd->name();
     else
       pageName=pd->name().lower();
-    //setFileNameForSections(anchors,pageName,pi);
     pd->setFileName(pageName);
-    //pi->addSections(anchors);
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);

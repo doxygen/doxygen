@@ -40,6 +40,17 @@
 #include "qfile.h"
 #include "qfiledefs_p.h"
 
+#if defined(_OS_MAC_) || defined(_OS_MSDOS_) || defined(_OS_WIN32_) || defined(_OS_OS2_)
+# define HAS_TEXT_FILEMODE			// has translate/text filemode
+#endif
+#if defined(O_NONBLOCK)
+# define HAS_ASYNC_FILEMODE
+# define OPEN_ASYNC O_NONBLOCK
+#elif defined(O_NDELAY)
+# define HAS_ASYNC_FILEMODE
+# define OPEN_ASYNC O_NDELAY
+#endif
+
 bool qt_file_access( const QString& fn, int t )
 {
     if ( fn.isEmpty() )

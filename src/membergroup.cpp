@@ -138,17 +138,22 @@ void MemberGroup::distributeMemberGroupDocumentation()
 {
   //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",grpHeader.data());
   MemberDef *md=memberList->first();
-  if (md && !(md->documentation().isEmpty() && md->briefDescription().isEmpty()))
+  if (md && !(md->documentation().isEmpty() && 
+              md->briefDescription().isEmpty() && 
+              md->inbodyDocumentation().isEmpty()
+             )
+     )
   {
     //printf("First member %s has documentation!\n",md->name().data());
     MemberDef *omd=memberList->next();
     while (omd)
     {
-      if (omd->documentation().isEmpty() && omd->briefDescription().isEmpty())
+      if (omd->documentation().isEmpty() && omd->briefDescription().isEmpty() && omd->inbodyDocumentation().isEmpty())
       {
         //printf("Copying documentation to member %s\n",omd->name().data());
         omd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
         omd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+        omd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       }
       omd=memberList->next();
     }

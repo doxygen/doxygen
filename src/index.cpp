@@ -1678,15 +1678,15 @@ void writeMemberList(OutputList &ol,bool useSections,ClassMemberHighlight filter
         ClassDef *cd=md->getClassDef();
         if (
             md->isLinkableInProject() &&
-            prevName!=cd->displayName() && 
-            cd->isLinkableInProject() && cd->templateMaster()==0
+            prevName!=cd->displayName() &&
+            cd->templateMaster()==0
            )
         {
           if (count==0) 
             ol.docify(": ");
           else 
             ol.docify(", ");
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),md->anchor(),
+          ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),
                             cd->displayName());
           count++;
           prevName=cd->displayName();
@@ -1965,9 +1965,7 @@ static void writeFileMemberList(OutputList &ol,
       while (md)
       {
         FileDef *fd=md->getFileDef();
-        bool hasDocs = md->getFileDef() && 
-                       md->getFileDef()->isLinkableInProject();
-        if (fd && hasDocs && 
+        if (fd && fd->isLinkableInProject() && 
             md->isLinkableInProject() &&
             prevName!=fd->name())
         {
@@ -1975,9 +1973,9 @@ static void writeFileMemberList(OutputList &ol,
             ol.docify(": ");
           else 
             ol.docify(", ");
-          QCString baseName=fd->name().copy();
-          ol.writeObjectLink(fd->getReference(),
-              fd->getOutputFileBase(),md->anchor(), baseName);
+          QCString baseName=fd->name();
+          ol.writeObjectLink(md->getReference(),
+              md->getOutputFileBase(),md->anchor(), baseName);
           count++;
           prevName=fd->name();
         }
@@ -2064,7 +2062,7 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections,
             ol.docify(": ");
           else 
             ol.docify(", ");
-          ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),
+          ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),
                              md->anchor(),nd->name());
           count++;
           prevName=nd->name();
@@ -2734,14 +2732,13 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
                   ftvHelp->incContentsDepth();
                 }
               }
-              GroupDef *gd=md->getGroupDef();
               if(htmlHelp)
               {
-                htmlHelp->addContentsItem(FALSE,md->name(),gd->getOutputFileBase(),md->anchor()); 
+                htmlHelp->addContentsItem(FALSE,md->name(),md->getOutputFileBase(),md->anchor()); 
               }
               if(ftvHelp)
               {
-                ftvHelp->addContentsItem(FALSE,gd->getReference(),gd->getOutputFileBase(),md->anchor(),md->name()); 
+                ftvHelp->addContentsItem(FALSE,md->getReference(),md->getOutputFileBase(),md->anchor(),md->name()); 
               }
             }
             md=members->next();

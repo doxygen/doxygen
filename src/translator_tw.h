@@ -41,7 +41,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public TranslatorAdapter_1_3_3
+class TranslatorChinesetraditional : public Translator
 {
   public:
 
@@ -1470,6 +1470,57 @@ class TranslatorChinesetraditional : public TranslatorAdapter_1_3_3
     virtual QCString trCallGraph()
     {
       return "這是此函數的引用函數圖:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "搜尋索引";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "搜尋結果";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "找不到符合的資料.";
+      }
+      else if (numDocuments==1)
+      {
+        return "找到 <b>1</b> 筆符合的資料.";
+      }
+      else
+      {
+        return "找到 <b>$num</b> 筆符合的資料. "
+               "越符合的結果顯示在越前面.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "符合:";
     }
 
 };

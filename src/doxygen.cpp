@@ -1298,11 +1298,13 @@ static void findUsingDeclImports(Entry *root)
                 {
                   newMd->setDocumentation(root->doc,root->docFile,root->docLine);
                   newMd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  newMd->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 }
                 else
                 {
                   newMd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
                   newMd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+                  newMd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
                 }
                 newMd->setDefinition(md->definition());
                 newMd->enableCallGraph(root->callGraph);
@@ -1453,6 +1455,7 @@ static MemberDef *addVariableToClass(
   //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setDefinition(def);
   md->setBitfields(root->bitfields);
   md->addSectionsToDefinition(root->anchors);
@@ -1599,8 +1602,9 @@ static MemberDef *addVariableToFile(
         // merge ingroup specifiers
         if (md->getGroupDef()==0 && root->groups->first())
         {
-          GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-          md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+          //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
+          //md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+          addMemberToGroups(root,md);
         }
         else if (md->getGroupDef()!=0 && root->groups->count()==0)
         {
@@ -1624,6 +1628,7 @@ static MemberDef *addVariableToFile(
   //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
@@ -2041,6 +2046,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setDocsForDefinition(!root->proto);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->memSpec);
   md->setMemberGroupId(root->mGrpId);
@@ -2289,6 +2295,7 @@ static void buildFunctionList(Entry *root)
               if (md->documentation().isEmpty() && !root->doc.isEmpty())
               {
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
+                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 md->setDocsForDefinition(!root->proto);
                 ArgumentList *argList = new ArgumentList;
                 stringToArgumentList(root->args,argList);
@@ -2346,14 +2353,15 @@ static void buildFunctionList(Entry *root)
                 // the documented implementation below it from being added 
                 //addMemberToGroups(root,md);
                 //GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-                if (gd)
-                {
-                  bool success = gd->insertMember(md);
-                  if (success)
-                  {
-                    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
-                  }
-                }
+                //if (gd)
+                //{
+                //  bool success = gd->insertMember(md);
+                //  if (success)
+                //  {
+                //    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+                //  }
+                //}
+                addMemberToGroups(root,md);
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
               {
@@ -2391,6 +2399,7 @@ static void buildFunctionList(Entry *root)
           //md->setDefLine(root->startLine);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setPrototype(root->proto);
           md->setDocsForDefinition(!root->proto);
           //md->setBody(root->body);
@@ -2565,18 +2574,26 @@ static void findFriends()
             {
               fmd->setBriefDescription(mmd->briefDescription(),mmd->briefFile(),mmd->briefLine());
             }
+            if (!fmd->inbodyDocumentation().isEmpty())
+            {
+              mmd->setInbodyDocumentation(fmd->inbodyDocumentation(),fmd->inbodyFile(),fmd->inbodyLine());
+            }
+            else if (!mmd->inbodyDocumentation().isEmpty())
+            {
+              fmd->setInbodyDocumentation(mmd->inbodyDocumentation(),mmd->inbodyFile(),mmd->inbodyLine());
+            }
             //printf("body mmd %d fmd %d\n",mmd->getStartBodyLine(),fmd->getStartBodyLine());
             if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
             {
               mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
               mmd->setBodyDef(fmd->getBodyDef());
-              mmd->setBodyMember(fmd);
+              //mmd->setBodyMember(fmd);
             }
             else if (mmd->getStartBodyLine()!=-1 && fmd->getStartBodyLine()==-1)
             {
               fmd->setBodySegment(mmd->getStartBodyLine(),mmd->getEndBodyLine());
               fmd->setBodyDef(mmd->getBodyDef());
-              fmd->setBodyMember(mmd);
+              //fmd->setBodyMember(mmd);
             }
             mmd->setDocsForDefinition(fmd->isDocsForDefinition());
 
@@ -2696,19 +2713,27 @@ static void transferFunctionDocumentation()
                   mdef->setDeclArgumentList(mdecAl);
                 }
               }
+              if (!mdef->inbodyDocumentation().isEmpty())
+              {
+                mdec->setInbodyDocumentation(mdef->inbodyDocumentation(),mdef->inbodyFile(),mdef->inbodyLine());
+              }
+              else if (!mdec->inbodyDocumentation().isEmpty())
+              {
+                mdef->setInbodyDocumentation(mdec->inbodyDocumentation(),mdec->inbodyFile(),mdec->inbodyLine());
+              }
               if (mdec->getStartBodyLine()!=-1 && mdef->getStartBodyLine()==-1)
               {
                 //printf("body mdec->mdef %d-%d\n",mdec->getStartBodyLine(),mdef->getEndBodyLine());
                 mdef->setBodySegment(mdec->getStartBodyLine(),mdec->getEndBodyLine());
                 mdef->setBodyDef(mdec->getBodyDef());
-                mdef->setBodyMember(mdec);
+                //mdef->setBodyMember(mdec);
               }
               else if (mdef->getStartBodyLine()!=-1 && mdec->getStartBodyLine()==-1)
               {
                 //printf("body mdef->mdec %d-%d\n",mdef->getStartBodyLine(),mdec->getEndBodyLine());
                 mdec->setBodySegment(mdef->getStartBodyLine(),mdef->getEndBodyLine());
                 mdec->setBodyDef(mdef->getBodyDef());
-                mdec->setBodyMember(mdef);
+                //mdec->setBodyMember(mdef);
               }
               mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
               mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
@@ -3902,6 +3927,7 @@ static void addMemberDocs(Entry *root,
       doc+=root->doc;
     }
     md->setDocumentation(doc,root->docFile,root->docLine); 
+    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
     md->setDocsForDefinition(!root->proto);
   }
   else  
@@ -3936,6 +3962,15 @@ static void addMemberDocs(Entry *root,
     {
       //printf("overwrite!\n");
       md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+    }
+
+    if (
+        (md->inbodyDocumentation().isEmpty() ||
+         !root->parent->name.isEmpty()
+        ) && !root->inbodyDocs.isEmpty()
+       )
+    {
+      md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
     }
   }
 
@@ -4815,6 +4850,7 @@ static void findMember(Entry *root,
           doc+="<p>";
           doc+=root->doc;
           md->setDocumentation(doc,root->docFile,root->docLine);
+          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
           md->addSectionsToDefinition(root->anchors);
@@ -4946,7 +4982,7 @@ static void findMember(Entry *root,
               {
                 md->setBodySegment(rmd->getStartBodyLine(),rmd->getEndBodyLine());
                 md->setBodyDef(rmd->getBodyDef());
-                md->setBodyMember(rmd);
+                //md->setBodyMember(rmd);
               }
             }
           }
@@ -4968,6 +5004,7 @@ static void findMember(Entry *root,
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
+          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
           md->setPrototype(root->proto);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -5275,6 +5312,7 @@ static void findEnums(Entry *root)
       md->setDocumentation(root->doc,root->docFile,root->docLine);
       md->setDocsForDefinition(!root->proto);
       md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
 
       //printf("Adding member=%s\n",md->name().data());
       MemberName *mn;
@@ -5417,6 +5455,11 @@ static void findEnumDocumentation(Entry *root)
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }
 
+              if (!md->inbodyDocumentation() || !root->parent->name.isEmpty())
+              {
+                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+              }
+
               if (root->mGrpId!=-1 && md->getMemberGroupId()==-1)
               {
                 md->setMemberGroupId(root->mGrpId);
@@ -5441,6 +5484,7 @@ static void findEnumDocumentation(Entry *root)
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setDocsForDefinition(!root->proto);
           md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
           found=TRUE;
@@ -5858,6 +5902,7 @@ static void inheritDocumentation()
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
           md->setDocsForDefinition(bmd->isDocsForDefinition());
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
+          md->setInbodyDocumentation(bmd->inbodyDocumentation(),bmd->inbodyFile(),bmd->inbodyLine());
         }
       }
     }
@@ -6089,7 +6134,13 @@ static void findDefineDocumentation(Entry *root)
               md->setDocsForDefinition(!root->proto);
             }
             if (md->briefDescription().isEmpty())
+            {
               md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+            }
+            if (md->inbodyDocumentation().isEmpty())
+            {
+              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+            }
             md->setBodySegment(root->bodyLine,root->endBodyLine);
             bool ambig;
             md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
@@ -6126,7 +6177,13 @@ static void findDefineDocumentation(Entry *root)
                 md->setDocsForDefinition(!root->proto);
               }
               if (md->briefDescription().isEmpty())
+              {
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+              }
+              if (md->inbodyDocumentation().isEmpty())
+              {
+                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+              }
               md->setBodySegment(root->bodyLine,root->endBodyLine);
               bool ambig;
               md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
@@ -8100,7 +8157,6 @@ void parseInput()
 
   msg("Adding source references...\n");
   addSourceReferences();
-
 
   msg("Adding todo/test/bug list items...\n");
   addListReferences();

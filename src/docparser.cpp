@@ -705,8 +705,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     {
       children.append(new 
           DocLinkedWord(parent,name,
-            compound->getReference(),
-            compound->getOutputFileBase(),
+            member->getReference(),
+            member->getOutputFileBase(),
             member->anchor()
                        )
                      );

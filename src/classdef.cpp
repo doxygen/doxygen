@@ -853,7 +853,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEARCHENGINE"))
   {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase()+Config_getString("HTML_FILE_EXTENSION"));
     Doxygen::searchIndex->addWord(localName().lower());
   }
 
@@ -1428,10 +1428,11 @@ void ClassDef::writeMemberList(OutputList &ol)
           QCString name=mi->ambiguityResolutionScope+md->name();
           //ol.writeListItem();
           ol.writeString("  <tr class=\"memlist\"><td>");
-          Definition *bd = md->getGroupDef();
-          if (bd==0) bd=cd;
-          ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
-              md->anchor(),name);
+          //Definition *bd = md->getGroupDef();
+          //if (bd==0) bd=cd;
+          ol.writeObjectLink(md->getReference(),
+                             md->getOutputFileBase(),
+                             md->anchor(),name);
 
           if ( md->isFunction() || md->isSignal() || md->isSlot() ||
                (md->isFriend() && md->argsString())) 
@@ -2430,8 +2431,6 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
     Debug::print(Debug::Classes,0,"  New template instance class %s%s\n",name().data(),templSpec.data());
     templateClass = new ClassDef(
         fileName,startLine,name()+templSpec,ClassDef::Class);
-    //templateClass->setBriefDescription(briefDescription());
-    //templateClass->setDocumentation(documentation());
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     m_templateInstances->insert(templSpec,templateClass);
@@ -2486,6 +2485,7 @@ void ClassDef::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
       imd->setTemplateMaster(md);
       imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+      imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
       insertMember(imd);
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",

@@ -1,4 +1,4 @@
-/*-*- c-basic-offset: 2 -*-*/
+/*-*- c-basic-offset: 2; tab-width: 8 -*-*/
 /******************************************************************************
  *
  *
@@ -22,6 +22,7 @@
  *
  * First version (not complete) for Doxygen 1.2.7
  * Extended and revised for Doxygen 1.3
+ * Extended and revised for Doxygen 1.3.4
  */
 
 /*  Translator's notes:
@@ -71,7 +72,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-class TranslatorDanish : public TranslatorAdapter_1_3
+class TranslatorDanish : public Translator
 {
   public:
 
@@ -99,10 +100,10 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString latexLanguageSupportCommand()
     {
-		return
-			"\\usepackage[danish]{babel}\n"
-			"\\usepackage[latin1]{inputenc}\n"
-			"\\usepackage[T1]{fontenc}\n";
+      return
+	"\\usepackage[danish]{babel}\n"
+	"\\usepackage[latin1]{inputenc}\n"
+	"\\usepackage[T1]{fontenc}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */
@@ -145,8 +146,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
         return "Felt-dokumentation";
       } else {
-		return "Dokumentation af feltvariable";
-		//medlems-data";
+	return "Dokumentation af feltvariable";
       }
     }
 
@@ -225,12 +225,9 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
         return "Data-felter";
-      }
-      else
-      {
+      } else {
         return "Felter i sammensatte typer";
       }
     }
@@ -241,8 +238,8 @@ class TranslatorDanish : public TranslatorAdapter_1_3
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
         return "Globale symboler";
       } else {
-		return "Placering i filer"; // Fil-medlemmer"; //TODO
-		//"Globale definitioner" ?
+	return "Placering i filer"; // Fil-medlemmer"; //TODO
+	//"Globale definitioner" ?
       }
     }
 
@@ -542,9 +539,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
-    {
-      return "skrevet af";
-    }
+    { return "skrevet af"; }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
@@ -628,7 +623,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-	{ return "Dokumentation af friends og af relaterede funktioner"; }
+    { return "Dokumentation af friends og af relaterede funktioner"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -803,8 +798,8 @@ class TranslatorDanish : public TranslatorAdapter_1_3
         case ClassDef::Interface:  result+="grænseflade"; break;
         case ClassDef::Exception:  result+="exception"; break;
       }
-      result+=" blev genereret ud fra følgende fil";
-      if (single) result+=":"; else result+="er:";
+      result+=" blev genereret ud fra fil";
+      if (single) result+="en:"; else result+="erne:";
       return result;
     }
 
@@ -838,13 +833,13 @@ class TranslatorDanish : public TranslatorAdapter_1_3
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trSources()
-    {
-      return "Kilder"; //??
-    }
+    { return "Kilder"; /* Tranlation?? */ }
+
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Defineret på linje @0 i filen @1.";
     }
+
     virtual QCString trDefinedInSourceFile()
     {
       return "Defineret i filen @0.";
@@ -877,73 +872,52 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-		return "Dokumentation af konstruktører og destruktører";
-		  // "Constructor & Destructor dokumentation";
+      return "Dokumentation af konstruktører og destruktører";
+      // "Constructor & Destructor dokumentation";
     }
+
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
-    {
-      return "Hop til denne fils kildekode.";
-    }
+    { return "Hop til denne fils kildekode."; }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
-    {
-      return "Hop til denne fils dokumentation.";
-    }
+    { return "Hop til denne fils dokumentation."; }
+
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
-    {
-      return "Forudsætninger (precondition)";
-    }
+    { return "Forudsætninger (precondition)"; }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
-    {
-      return "Resultat (postcondition)";
-    }
+    { return "Resultat (postcondition)"; }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
-    {
-      return "Invariant";
-    }
+    { return "Invariant"; }
+
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
-    {
-      return "Startværdi:";
-    }
+    { return "Startværdi:"; }
+
     /*! Text used the source code in the file index */
     virtual QCString trCode()
-    {
-      return "kildekode";
-    }
+    { return "kildekode"; }
     virtual QCString trGraphicalHierarchy()
-    {
-      return "Grafisk klassehierarki";
-    }
+    { return "Grafisk klassehierarki"; }
     virtual QCString trGotoGraphicalHierarchy()
-    {
-      return "Hop til det grafiske klassehierarki";
-    }
+    { return "Hop til det grafiske klassehierarki"; }
     virtual QCString trGotoTextualHierarchy()
-    {
-      return "Hop til det tekstuelle klassehierarki";
-    }
+    { return "Hop til det tekstuelle klassehierarki"; }
     virtual QCString trPageIndex()
-    {
-      return "Sideindeks";
-    }
+    { return "Sideindeks"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trNote()
-    {
-      return "Note";
-    }
+    { return "Note"; }
     virtual QCString trPublicTypes()
-    {
-      return "Offentlige typer";
-    }
+    { return "Offentlige typer"; }
+
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) {
@@ -952,34 +926,21 @@ class TranslatorDanish : public TranslatorAdapter_1_3
         return "Offentlige attributter";
       }
     }
+
     virtual QCString trStaticPublicAttribs()
-    {
-      return "Statiske, offentlige attributter";
-    }
+    { return "Statiske, offentlige attributter"; }
     virtual QCString trProtectedTypes()
-    {
-      return "Beskyttede typer";
-    }
+    { return "Beskyttede typer"; }
     virtual QCString trProtectedAttribs()
-    {
-      return "Beskyttede attributter";
-    }
+    { return "Beskyttede attributter"; }
     virtual QCString trStaticProtectedAttribs()
-    {
-      return "Statiske, beskyttede attributter";
-    }
+    { return "Statiske, beskyttede attributter"; }
     virtual QCString trPrivateTypes()
-    {
-      return "Private typer";
-    }
+    { return "Private typer"; }
     virtual QCString trPrivateAttribs()
-    {
-      return "Private attributter";
-    }
+    { return "Private attributter"; }
     virtual QCString trStaticPrivateAttribs()
-    {
-      return "Statiske, private attributter";
-    }
+    { return "Statiske, private attributter"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.3
@@ -1015,8 +976,8 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     virtual QCString trInclByDepGraph()
     {
       return
-		"Denne graf viser, hvilke filer der direkte eller "
-		"indirekte inkluderer denne fil:";
+	"Denne graf viser, hvilke filer der direkte eller "
+	"indirekte inkluderer denne fil:";
     }
     virtual QCString trSince()
     {
@@ -1138,7 +1099,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-		return "Egenskaber";
+      return "Egenskaber";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
@@ -1177,9 +1138,9 @@ class TranslatorDanish : public TranslatorAdapter_1_3
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-	  return
-		"Her er en liste over pakkerne, med korte beskrivelser "
-		"(hvor en sådan findes):";
+      return
+	"Her er en liste over pakkerne, med korte beskrivelser "
+	"(hvor en sådan findes):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1247,11 +1208,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      //QCString result(first_capital ? "Klasse" : "klasse");
-      //if (first_capital) result.at(0) = toupper(result.at(0));
-      //if (!singular)  result+="r";
-      //return result;
-	  return createNoun(first_capital, singular, "klasse", "r");
+      return createNoun(first_capital, singular, "klasse", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1260,10 +1217,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trFile(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Fil" : "fil"));
-      //if (!singular)  result+="er";
-      //return result;
-	  return createNoun(first_capital, singular, "fil", "er");
+      return createNoun(first_capital, singular, "fil", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1272,10 +1226,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Namespace" : "namespace"));
-      //if (!singular)  result+="s";
-      //return result;
-	  return createNoun(first_capital, singular, "namespace", "s");
+      return createNoun(first_capital, singular, "namespace", "s");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1284,10 +1235,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trGroup(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Gruppe" : "gruppe"));
-      //if (!singular)  result+="r";
-      //return result;
-	  return createNoun(first_capital, singular, "gruppe", "r");
+      return createNoun(first_capital, singular, "gruppe", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1296,10 +1244,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trPage(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Side" : "side"));
-      //if (!singular)  result+="r";
-      //return result;
-	  return createNoun(first_capital, singular, "side", "r");
+      return createNoun(first_capital, singular, "side", "r");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1308,10 +1253,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trMember(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Medlem" : "medlem"));
-      //if (!singular)  result+="mer";
-      //return result;
-	  return createNoun(first_capital, singular, "medlem", "mer");
+      return createNoun(first_capital, singular, "medlem", "mer");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1320,10 +1262,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trField(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Felt" : "felt"));
-      //if (!singular)  result+="er";
-      //return result;
-	  return createNoun(first_capital, singular, "felt", "er");
+      return createNoun(first_capital, singular, "felt", "er");
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1332,10 +1271,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Global" : "global"));
-      //if (!singular)  result+="e";
-      //return result;
-	  return createNoun(first_capital, singular, "global", "e");
+      return createNoun(first_capital, singular, "global", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1346,10 +1282,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
     {
-      //QCString result((first_capital ? "Forfatter" : "forfatter"));
-      //if (!singular)  result+="e";
-      //return result;
-	  return createNoun(first_capital, singular, "forfatter", "e");
+      return createNoun(first_capital, singular, "forfatter", "e");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1392,7 +1325,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trRTFTableOfContents()
     {
-	  return "Indholdsfortegnelse";
+      return "Indholdsfortegnelse";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1404,7 +1337,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trDeprecatedList()
     {
-	  return "Liste over fortidslevn, hvis brug frarådes";
+      return "Liste over fortidslevn, hvis brug frarådes";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1416,7 +1349,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3
      */
     virtual QCString trEvents()
     {
-		return "Begivenheder";
+      return "Begivenheder";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
@@ -1424,6 +1357,89 @@ class TranslatorDanish : public TranslatorAdapter_1_3
       return "Begivenhedsdokumentation";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /* Java: Entities with package scope... */
+    virtual QCString trPackageTypes()
+    { return "Typer med pakke-scope"; }
+    virtual QCString trPackageMembers()
+    { return "Metoder med pakke-scope"; }
+    virtual QCString trStaticPackageMembers()
+    { return "Statiske metoder med pakke-scope"; }
+    virtual QCString trPackageAttribs()
+    { return "Attributter med pakke-scope"; }
+    virtual QCString trStaticPackageAttribs()
+    { return "Statiske attributter med pakke-scope"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Alle";
+    }
+
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Her er kald-grafen for denne funktion:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Søg efter";
+    }
+
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Søgeresultater";
+    }
+
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0) {
+        return "Beklager - ingen dokumenter passede til din forespørgsel.";
+      } else if (numDocuments==1) {
+        return "Fandt <b>1</b> dokument, der passer til din forespørgsel.";
+      } else {
+        return
+	  "Fandt <b>$num</b> dokumenter, der passer til din forespørgsel. "
+	  "De, der passer bedst, vises først.";
+      }
+    }
+
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Fundne ord:"; //translation?
+    }
 
 /*---------- For internal use: ----------------------------------------*/
   protected:
@@ -1431,13 +1447,13 @@ class TranslatorDanish : public TranslatorAdapter_1_3
 	 *  \internal
 	 */
     QCString createNoun(bool first_capital, bool singular,
-						const char* base, const char* plurSuffix)
-	{
-	  QCString result(base);
-	  if (first_capital) result.at(0) = toupper(result.at(0));
-	  if (!singular)  result+=plurSuffix;
-	  return result;
-	}
+			const char* base, const char* plurSuffix)
+    {
+      QCString result(base);
+      if (first_capital) result.at(0) = toupper(result.at(0));
+      if (!singular)  result+=plurSuffix;
+      return result;
+    }
 };
 
 #endif
