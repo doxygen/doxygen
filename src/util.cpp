@@ -287,6 +287,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
   int newIndex;
   int skipIndex=0;
   int floatingIndex=0;
+  if (strLen==0) return;
   // read a word from the text string
   while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
   {
@@ -1987,6 +1988,7 @@ QCString substituteClassNames(const QCString &s)
 {
   int i=0,l,p;
   QCString result;
+  if (s.isEmpty()) return result;
   QRegExp r("[a-z_A-Z][a-z_A-Z0-9]*");
   while ((p=r.match(s,i,&l))!=-1)
   {

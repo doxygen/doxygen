@@ -1165,10 +1165,9 @@ void buildVarList(Entry *root)
       root->type=root->name;
       QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
       int l;
-      i=re.match(root->args,0,&l);
+      i=root->args.isEmpty() ? -1 : re.match(root->args,0,&l);
       root->name=root->args.mid(i,l);
-      root->args=root->args.mid(i+l,
-          root->args.find(')',i+l)-i-l);
+      root->args=root->args.mid(i+l,root->args.find(')',i+l)-i-l);
       //printf("new: type=`%s' name=`%s' args=`%s'\n",
       //    root->type.data(),root->name.data(),root->args.data());
     }
@@ -1350,7 +1349,7 @@ static void buildMemberList(Entry *root)
          )
       {
         int l;
-        if ((i=re.match(root->type,0,&l))!=-1) // function variable
+        if (!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // function variable
         {
           root->args+=root->type.right(root->type.length()-i-l);
           root->type=root->type.left(i+l);
@@ -1882,8 +1881,14 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           int typeLen = baseClassName.length();
           while (e<typeLen && brCount!=0)
           {
-            if (baseClassName.at(e)=='<') brCount++;
-            if (baseClassName.at(e)=='>') brCount--;
+            if (baseClassName.at(e)=='<') 
+            {
+              if (e<typeLen-1 && baseClassName.at(e+1)=='<') e++; else brCount++;
+            }
+            if (baseClassName.at(e)=='>') 
+            {
+              if (e<typeLen-1 && baseClassName.at(e+1)=='>') e++; else brCount--;
+            }
             e++;
           }
           if (brCount==0) // end of template was found at e
@@ -2185,6 +2190,8 @@ static void addMemberDocs(Entry *root,
       FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
       md->setBodyDef(fd);
     }
+
+    
   }
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
@@ -2192,6 +2199,7 @@ static void addMemberDocs(Entry *root,
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
   if (cd) cd->insertUsedFile(root->fileName);
+  //printf("root->mGrpId=%d\n",root->mGrpId);
   if (root->mGrpId!=-1)
   {
     if (md->getMemberGroupId()!=-1)
@@ -2208,23 +2216,9 @@ static void addMemberDocs(Entry *root,
     }
     else // set group id
     {
+      //printf("setMemberGroupId=%d md=%s\n",root->mGrpId,md->name().data());
       md->setMemberGroupId(root->mGrpId);
     }
-      //md->setMemberGroup(memberGroupDict[root->mGrpId]);
-    //  if (cd)
-    //    cd->addMemberToGroup(md,root->mGrpId);
-    //  else if (nd)
-    //    nd->addMemberToGroup(md,root->mGrpId);
-    // else
-    // {
-    //    bool ambig;
-    //    FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
-    //    if (fd)
-    //    {
-    //      //fd->addMemberToGroup(md,root->mGrpId);
-    //    }
-    //  }
-    //}
   }
 }
 
@@ -2419,24 +2413,26 @@ static void substituteTemplateArgNames(ArgumentList *src,
     bool isReplaced=FALSE;
     QRegExp re(idMask);
     int i,p=0,l,c=0;
-    while ((i=re.match(s,p,&l))!=-1) // for each template name found at the
-                                     // member definition
+    while (!s.isEmpty() && (i=re.match(s,p,&l))!=-1) // for each template name found at the
+                                                     // member definition
     {
       Argument *ta = c<(int)tempArgs->count() ? tempArgs->at(c) : 0;
       if (ta) // get matching template argument of the class
       {
         QCString dstName=s.mid(i,l);
-        QCString srcName=ta->type.copy();
+        QCString srcName=ta->name.copy();
+        if (srcName.isEmpty()) srcName=ta->type.copy();
+        //printf("1.Template Name = `%s' -> `%s'\n",srcName.data(),dstName.data());
         int bi;
         if ((bi=srcName.findRev(' '))!=-1) // search for separator
         {
-          // strip the type specifier (usuall class or typename)
+          // strip the type specifier (usually class or typename)
           srcName=srcName.right(srcName.length()-bi-1);
         }
 
         //if (srcName.left(6)=="class ")    srcName=srcName.right(srcName.length()-6);
         //if (srcName.left(9)=="typename ") srcName=srcName.right(srcName.length()-9);
-        //printf("Template Name = `%s' -> `%s'\n",srcName.data(),dstName.data());
+        //printf("2.Template Name = `%s' -> `%s'\n",srcName.data(),dstName.data());
         if (srcName!=dstName) /* we need to substitute */
         {
           int ti,tp=0;
@@ -2478,7 +2474,7 @@ static void substituteTemplateArgNames(ArgumentList *src,
     }
     dst->append(na);
   }
-  //printf("substituteTemplateArgNames(src=`%s',tempNameStr=`%s',tempArgs=`%s',dest=`%s')\n",
+  //printf("substituteTemplateArgNames(\nsrc=`%s',\ntempNameStr=`%s',\ntempArgs=`%s',\ndest=`%s'\n)\n",
   //    argListToString(src).data(),
   //    s.data(),
   //    argListToString(tempArgs).data(),
@@ -3210,14 +3206,14 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
 
 static void findMemberDocumentation(Entry *root)
 {
-  int i,l;
+  int i=-1,l;
   QRegExp re("([a-zA-Z0-9: ]*\\*+[ \\*]*");
   Debug::print(Debug::FindMembers,0,
-         "root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d\n",
-          root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec
+         "root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d root->mGrpId=%d\n",
+          root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
          );
   bool isFunc=TRUE;
-  if ((i=re.match(root->type,0,&l))!=-1) // func variable/typedef to func ptr
+  if (!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // func variable/typedef to func ptr
   {
     root->args+=root->type.right(root->type.length()-i-l);
     root->type=root->type.left(i+l);
@@ -3249,14 +3245,13 @@ static void findMemberDocumentation(Entry *root)
   else if 
     ((root->section==Entry::FUNCTION_SEC // function
       ||   
-      (root->section==Entry::VARIABLE_SEC && 
+      (root->section==Entry::VARIABLE_SEC && // variable
       !root->type.isEmpty() && root->type.left(8)!="typedef " &&
        compoundKeywordDict.find(root->type)==0
       )
      ) && 
-     (!root->doc.isEmpty() || !root->brief.isEmpty() || 
-      root->bodyLine!=-1 
-      || (root->memSpec&Entry::Inline)
+     (!root->doc.isEmpty() || !root->brief.isEmpty() || root->bodyLine!=-1 || 
+      (root->memSpec&Entry::Inline) || root->mGrpId!=-1
      )
     )
   {
@@ -3386,7 +3381,14 @@ static void findEnums(Entry *root)
       //}
       if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
       {
-        md->setDefinition(nd->name()+"::"+name);  
+        if (Config::hideScopeNames)
+        {
+          md->setDefinition(name);  
+        }
+        else
+        {
+          md->setDefinition(nd->name()+"::"+name);  
+        }
         nd->insertMember(md);
         md->setNamespace(nd);
       }
@@ -3397,7 +3399,14 @@ static void findEnums(Entry *root)
       }
       else if (cd)
       {
-        md->setDefinition(cd->name()+"::"+name);
+        if (Config::hideScopeNames)
+        {
+          md->setDefinition(name);  
+        }
+        else
+        {
+          md->setDefinition(cd->name()+"::"+name);  
+        }
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
       }
@@ -3538,7 +3547,6 @@ static void findEnumDocumentation(Entry *root)
 
               if (root->mGrpId!=-1 && md->getMemberGroupId()==-1)
               {
-                //cd->addMemberToGroup(md,root->mGrpId);
                 md->setMemberGroupId(root->mGrpId);
               }
               
@@ -3562,6 +3570,7 @@ static void findEnumDocumentation(Entry *root)
           md->setDocumentation(root->doc);
           md->setBriefDescription(root->brief);
           md->addSectionsToDefinition(root->anchors);
+          md->setMemberGroupId(root->mGrpId);
           found=TRUE;
         }
       } 
@@ -3853,7 +3862,8 @@ static void addSourceReferences()
       {
         //printf("Found member `%s' in file `%s' at line `%d'\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine()); 
-        Definition *d=gd ? gd : (nd ? nd : fd);
+        Definition *d=gd!=0 ? (Definition *)gd : 
+                               (nd!=0 ? (Definition *)nd : (Definition *)fd);
         fd->addSourceRef(md->getStartBodyLine(),d,md);
       }  
     }

@@ -99,6 +99,7 @@ class ClassDef : public Definition
     
     // template argument functions
     ArgumentList *templateArguments() const { return tempArgs; }
+    ArgumentList *outerTemplateArguments() const;
     void setTemplateArguments(ArgumentList *al);
     //QCString getTemplateNameString();
     void setNamespace(NamespaceDef *nd) { nspace = nd; }

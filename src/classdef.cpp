@@ -566,23 +566,44 @@ void ClassDef::setIncludeFile(FileDef *fd,const char *incName,bool local)
   }
 }
 
+ArgumentList *ClassDef::outerTemplateArguments() const
+{
+  int ti;
+  ClassDef *pcd=0;
+  int pi=0;
+  // find the outer most class scope
+  while ((ti=name().find("::",pi))!=-1 && 
+      (pcd=getClass(name().left(ti)))==0
+        ) pi=ti+2;
+  if (pcd)
+  {
+    return pcd->templateArguments();
+  }
+  else
+  {
+    return tempArgs;
+  }
+}
+    
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
   // write title
   QCString pageTitle=name().copy();
   QCString pageType;
+  ArgumentList *outerTempArgList = outerTemplateArguments();
+  if (outerTempArgList) pageType+=" Template";
   switch(compType)
   {
-    case Class:  pageType=" Class";     break;
-    case Struct: pageType=" Struct";    break;
-    case Union:  pageType=" Union";     break;
-    default:     pageType=" Interface"; break;
+    case Class:  pageType+=" Class"; break;
+    case Struct: pageType+=" Struct";    break;
+    case Union:  pageType+=" Union";     break;
+    default:     pageType+=" Interface"; break;
   } 
   pageTitle+=pageType+" Reference";
   startFile(ol,fileName,pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trCompoundReference(name(),compType));
+  parseText(ol,theTranslator->trCompoundReference(name(),compType,outerTempArgList!=0));
   endTitle(ol,getOutputFileBase(),name());
 
   ol.startTextBlock();
@@ -868,24 +889,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.endGroupHeader();
     ol.startTextBlock();
     
-    ArgumentList *al=0;
-    int ti;
-    ClassDef *pcd=0;
-    int pi=0;
-    // find the outer most class scope
-    while ((ti=name().find("::",pi))!=-1 && 
-           (pcd=getClass(name().left(ti)))==0
-          ) pi=ti+2;
-    
-    if (pcd)
-    {
-      al=pcd->templateArguments();
-    }
-    else
-    {
-      al=tempArgs;
-    }
-    
+    ArgumentList *al=outerTempArgList;
     if (al) // class is a template
     {
       ol.startSubsubsection(); 
@@ -894,7 +898,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
       while (a)
       {
         ol.docify(a->type);
-        ol.docify(a->name);
+        if (!a->name.isEmpty())
+        {
+          ol.docify(" ");
+          ol.docify(a->name);
+        }
         if (a->defval.length()!=0)
         {
           ol.docify(" = ");
@@ -1583,45 +1591,48 @@ void ClassDef::determineImplUsageRelation()
         //            name().data(),type.data(),md->name().data());
         int p=0,i,l;
         bool found=FALSE;
-        while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
+        if (typeLen>0)
         {
-          int ts=i+l;
-          int te=ts;
-          while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
-          if (type.at(ts)=='<') // assume template instance
+          while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
           {
-            // locate end of template
-            te=ts+1;
-            int brCount=1;
-            while (te<typeLen && brCount!=0)
+            int ts=i+l;
+            int te=ts;
+            while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
+            if (type.at(ts)=='<') // assume template instance
             {
-              if (type.at(te)=='<') brCount++;
-              if (type.at(te)=='>') brCount--;
-              te++;
+              // locate end of template
+              te=ts+1;
+              int brCount=1;
+              while (te<typeLen && brCount!=0)
+              {
+                if (type.at(te)=='<') brCount++;
+                if (type.at(te)=='>') brCount--;
+                te++;
+              }
             }
-          }
-          QCString templSpec;
-          if (te>ts) templSpec = type.mid(ts,te-ts);
-          ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
-          if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
-          if (cd) // class exists 
-          {
-            found=TRUE;
-            if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 
-            UsesClassDef *ucd=usesImplClassDict->find(cd->name());
-            if (ucd==0 || ucd->templSpecifiers!=templSpec)
+            QCString templSpec;
+            if (te>ts) templSpec = type.mid(ts,te-ts);
+            ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
+            if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
+            if (cd) // class exists 
             {
-              ucd = new UsesClassDef(cd);
-              usesImplClassDict->insert(cd->name(),ucd);
-              ucd->templSpecifiers = templSpec;
-              //printf("Adding used class %s to class %s\n",
-              //    cd->name().data(),name().data());
+              found=TRUE;
+              if (usesImplClassDict==0) usesImplClassDict = new UsesClassDict(257); 
+              UsesClassDef *ucd=usesImplClassDict->find(cd->name());
+              if (ucd==0 || ucd->templSpecifiers!=templSpec)
+              {
+                ucd = new UsesClassDef(cd);
+                usesImplClassDict->insert(cd->name(),ucd);
+                ucd->templSpecifiers = templSpec;
+                //printf("Adding used class %s to class %s\n",
+                //    cd->name().data(),name().data());
+              }
+              ucd->addAccessor(md->name());
+              //printf("Adding accessor %s to class %s\n",
+              //    md->name().data(),ucd->classDef->name().data());
             }
-            ucd->addAccessor(md->name());
-            //printf("Adding accessor %s to class %s\n",
-            //    md->name().data(),ucd->classDef->name().data());
+            p=i+l;
           }
-          p=i+l;
         }
       }
     }

@@ -380,7 +380,8 @@ class TranslatorSwedish : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trCompoundReference(const char *clName,
-                                    ClassDef::CompoundType compType)
+                                    ClassDef::CompoundType compType,
+                                    bool /*isTemplate*/)
     {
       QCString result=(QCString)clName+" ";
       switch(compType)

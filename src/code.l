@@ -396,6 +396,7 @@ static bool getLink(const char *className,
 static ClassDef *stripClassName(const char *s)
 {
   QCString tmp=s;
+  if (tmp.isEmpty()) return 0;
   static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   int p=0,i,l;
   while ((i=re.match(tmp,p,&l))!=-1)
@@ -1131,10 +1132,10 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    endFontClass();
 					  }
   					}
-<*>\n({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)		{ // remove one-line group marker
+<*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config::stripCommentsFlag)
 					  {
-					    g_yyLineNr+=((QCString)yytext).contains('\n');
+					    g_yyLineNr+=2;
 					    g_code->endCodeLine();
 					    if (g_yyLineNr<g_inputLines) 
 					    {
@@ -1148,7 +1149,26 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    endFontClass();
 					  }
   					}
-<*>^{B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n	{ // remove one-line group marker
+<*>\n{B}*"/*@"[{}]			{ // remove one-line group marker
+					  if (Config::stripCommentsFlag)
+  					  {
+					    g_lastSpecialCContext = YY_START;
+					    g_yyLineNr++;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+					    // check is to prevent getting stuck in skipping C++ comments
+					    if (YY_START != SkipCxxComment)
+					    {
+  					      g_lastCContext = YY_START ;
+					    }
+					    startFontClass("comment");
+					    codifyLines(yytext);
+					    BEGIN(SkipComment);
+  					  }
+  					}
+<*>^{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config::stripCommentsFlag)
 					  {
 					    g_yyLineNr++;
@@ -1164,6 +1184,20 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    codifyLines(yytext);
 					    endFontClass();
 					  }
+  					}
+<*>^{B}*"/*@"[{}]			{ // remove multi-line group marker
+					  if (Config::stripCommentsFlag)
+					  {
+					    g_lastSpecialCContext = YY_START;
+					    BEGIN(RemoveSpecialCComment);
+					  }
+					  else
+					  {
+  					    g_lastCContext = YY_START ;
+					    startFontClass("comment");
+					    g_code->codify(yytext);
+					    BEGIN(SkipComment);
+ 					  }
   					}
 <*>^{B}*"//"[!/][^\n]*\n		{ // remove special one-line comment
   					  if (Config::stripCommentsFlag)

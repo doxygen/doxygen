@@ -30,11 +30,8 @@
 
 //--------------------------------------------------------------------
 
-const int maxImageWidth=1024;
-const int maxImageHeight=1024;
-  
 /*! mapping from protection levels to color names */
-static char *edgeColorMap[] =
+static const char *edgeColorMap[] =
 {
   "midnightblue",  // Public
   "darkgreen",     // Protected
@@ -43,7 +40,7 @@ static char *edgeColorMap[] =
   "grey"           // Undocumented
 };
 
-static char *edgeStyleMap[] =
+static const char *edgeStyleMap[] =
 {
   "solid",         // inheritance
   "dashed"         // usage
@@ -364,7 +361,8 @@ void DotNode::write(QTextStream &t,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
-                    int distance
+                    int distance,
+                    bool backArrows
                    )
 {
   //printf("DotNode::write(%d) name=%s\n",distance,m_label.data());
@@ -394,9 +392,9 @@ void DotNode::write(QTextStream &t,
       {
         if (cn->m_distance<=distance) 
         {
-          writeArrow(t,format,cn,dnli2.current(),topDown);
+          writeArrow(t,format,cn,dnli2.current(),topDown,backArrows);
         }
-        cn->write(t,format,topDown,toChildren,distance);
+        cn->write(t,format,topDown,toChildren,distance,backArrows);
       }
     }
     else // render parents
@@ -411,10 +409,11 @@ void DotNode::write(QTextStream &t,
                      format,
                      pn,
                      pn->m_edgeInfo->at(pn->m_children->findRef(this)),
-                     FALSE
+                     FALSE,
+                     backArrows
                     );
         }
-        pn->write(t,format,TRUE,FALSE,distance);
+        pn->write(t,format,TRUE,FALSE,distance,backArrows);
       }
     }
   }
@@ -915,11 +914,12 @@ void writeDotGraph(DotNode *root,
                    const QCString &baseName,
                    bool lrRank,
                    bool renderParents,
-                   int distance
+                   int distance,
+                   bool backArrows
                   )
 {
   // generate the graph description for dot
-  //printf("writeDotGraph(%s,%d)\n",baseName.data(),renderParents);
+  //printf("writeDotGraph(%s,%d)\n",baseName.data(),backArrows);
   QFile f;
   f.setName(baseName+".dot");
   if (f.open(IO_WriteOnly))
@@ -932,7 +932,7 @@ void writeDotGraph(DotNode *root,
       t << "  rankdir=LR;" << endl;
     }
     root->clearWriteFlag();
-    root->write(t,format,TRUE,TRUE,distance);
+    root->write(t,format,TRUE,TRUE,distance,backArrows);
     if (renderParents && root->m_parents) 
     {
       //printf("rendering parents!\n");
@@ -946,10 +946,11 @@ void writeDotGraph(DotNode *root,
                            format,
                            pn,
                            pn->m_edgeInfo->at(pn->m_children->findRef(root)),
-                           FALSE
+                           FALSE,
+                           backArrows
                           );
         }
-        pn->write(t,format,TRUE,FALSE,distance);
+        pn->write(t,format,TRUE,FALSE,distance,backArrows);
       }
     }
     t << "}" << endl;
@@ -963,7 +964,8 @@ static void findMaximalDotGraph(DotNode *root,
                                 QDir &thisDir,
                                 GraphOutputFormat format,
                                 bool lrRank=FALSE,
-                                bool renderParents=FALSE
+                                bool renderParents=FALSE,
+                                bool backArrows=TRUE
                                )
 {
   bool lastFit;
@@ -974,10 +976,11 @@ static void findMaximalDotGraph(DotNode *root,
   int height=0;
 
   // binary search for the maximal inheritance depth that fits in a reasonable
-  // sized image (dimensions: maxImageWidth, maxImageHeight)
+  // sized image (dimensions: Config::maxDotGraphWidth, Config::maxDotGraphHeight)
   do
   {
-    writeDotGraph(root,format,baseName,lrRank,renderParents,curDistance);
+    writeDotGraph(root,format,baseName,lrRank,renderParents,
+                  curDistance,backArrows);
 
     QCString dotCmd(4096);
     // create annotated dot file
@@ -995,7 +998,7 @@ static void findMaximalDotGraph(DotNode *root,
     height = height*96/72; // 96 pixels/inch, 72 points/inch
     //printf("Found bounding box (%d,%d)\n",width,height);
     
-    lastFit=(width<maxImageWidth && height<maxImageHeight);
+    lastFit=(width<Config::maxDotGraphWidth && height<Config::maxDotGraphHeight);
     if (lastFit) // image is small enough
     {
       minDistance=curDistance;
@@ -1020,9 +1023,10 @@ static void findMaximalDotGraph(DotNode *root,
     writeDotGraph(root,
                   format,
                   baseName,
-                  lrRank || (curDistance==1 && width>maxImageWidth),
+                  lrRank || (curDistance==1 && width>Config::maxDotGraphWidth),
                   renderParents,
-                  minDistance
+                  minDistance,
+                  backArrows
                  );
   }
 }
@@ -1131,7 +1135,8 @@ int DotInclDepGraph::m_curNodeNumber;
 
 void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
 {
-  QList<IncludeInfo> *includeFiles = fd->includeFileList();
+  QList<IncludeInfo> *includeFiles = 
+     m_inverse ? fd->includedByFileList() : fd->includeFileList();
   QListIterator<IncludeInfo> ili(*includeFiles);
   IncludeInfo *ii;
   for (;(ii=ili.current());++ili)
@@ -1178,9 +1183,10 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
   }
 }
 
-DotInclDepGraph::DotInclDepGraph(FileDef *fd)
+DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
 {
   m_maxDistance = 0;
+  m_inverse = inverse;
   ASSERT(fd!=0);
   m_diskName  = fd->getOutputFileBase().copy();
   m_startNode = new DotNode(m_curNodeNumber++,
@@ -1221,9 +1227,14 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
-  QCString baseName=m_diskName+"_incldep";
+  QCString baseName=m_diskName;
+  if (m_inverse) baseName+="_dep";
+  baseName+="_incl";
+  QCString mapName=m_startNode->m_label.copy();
+  if (m_inverse) mapName+="dep";
 
-  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,format);
+  findMaximalDotGraph(m_startNode,m_maxDistance,baseName,thisDir,format,
+                      FALSE,FALSE,!m_inverse);
 
   if (format==GIF)
   {
@@ -1247,8 +1258,8 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     }
 
     out << "<p><center><img src=\"" << baseName << ".gif\" border=\"0\" usemap=\"#"
-      << m_startNode->m_label << "_map\"></center>" << endl;
-    out << "<map name=\"" << m_startNode->m_label << "_map\">" << endl;
+      << mapName << "_map\"></center>" << endl;
+    out << "<map name=\"" << mapName << "_map\">" << endl;
     convertMapFile(out,baseName+".map");
     out << "</map><p>" << endl;
     thisDir.remove(baseName+".map");
@@ -1257,7 +1268,6 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
   {
     // run dot to create a .eps image
     QCString dotCmd;
-
     dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
     if (system(dotCmd)!=0)

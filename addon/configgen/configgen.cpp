@@ -787,18 +787,25 @@ void init()
   ConfigBool::add(  "extractAllFlag",
                     "EXTRACT_ALL",
                     "FALSE",
-                    "gererate docs for all classes flag",
+                    "generate docs for all classes flag",
                     "If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in \n"
                     "documentation are documented, even if no documentation was available. \n"
                     "Private class members and static file members will be hidden unless \n"
-                    "the EXTRACT_PRIVATE tag is set to YES \n"
+                    "the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES \n"
                  );
   ConfigBool::add(  "extractPrivateFlag",
                     "EXTRACT_PRIVATE",
                     "FALSE",
                     "generate docs for private members flag",
                     "If the EXTRACT_PRIVATE tag is set to YES all private members of a class \n"
-                    "and the static members of a file will be included in the documentation. \n"
+                    "will be included in the documentation. \n"
+                 );
+  ConfigBool::add(  "extractStaticFlag",
+                    "EXTRACT_STATIC",
+                    "FALSE",
+                    "generate docs for static members flag",
+                    "If the EXTRACT_STATIC tag is set to YES all static members of a file \n"
+                    "will be included in the documentation. \n"
                  );
   ConfigBool::add(  "hideMemberFlag",
                     "HIDE_UNDOC_MEMBERS",
@@ -806,6 +813,8 @@ void init()
                     "hide undocumented members.",
                     "If the HIDE_UNDOC_MEMBERS tag is set to YES, Doxygen will hide all \n"
                     "undocumented members of documented classes, files or namespaces. \n"
+                    "If set to NO (the default) these members will be included in the \n"
+                    "various overviews, but no documentation section is generated. \n"
                     "This option has no effect if EXTRACT_ALL is enabled. \n"
                  );
   ConfigBool::add(  "hideClassFlag",
@@ -814,7 +823,8 @@ void init()
                     "hide undocumented members.",
                     "If the HIDE_UNDOC_CLASSESS tag is set to YES, Doxygen will hide all \n"
                     "undocumented classes that are normally visible in the class hierarchy. \n"
-                    "This option has no effect if EXTRACT_ALL is enabled. \n"
+                    "If set to NO (the default) these class will be included in the various \n"
+                    "overviews. This option has no effect if EXTRACT_ALL is enabled. \n"
                  );
   ConfigBool::add(  "briefMemDescFlag",
                     "BRIEF_MEMBER_DESC",
@@ -1290,7 +1300,7 @@ void init()
   //-----------------------------------------------------------------------------------------------
   ConfigBool::add(  "generateRTF",
                     "GENERATE_RTF",
-                    "FALSE",
+                    "TRUE",
                     "generate RTF flag",
                     "If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output \n"
                     "For now this is experimental and is disabled by default. The RTF output \n"
@@ -1490,6 +1500,15 @@ void init()
                     "documented files. \n"
                  );
   addDependency("includeGraphFlag","haveDotFlag");
+  ConfigBool::add(  "includedByGraphFlag",
+                    "INCLUDED_BY_GRAPH",
+                    "TRUE",
+                    "depends on include graph",
+                    "If the ENABLE_PREPROCESSING, INCLUDED_BY_GRAPH, and HAVE_DOT tags are set to \n"
+                    "YES then doxygen will generate a graph for each documented header file showing \n"
+                    "the documented files that directly or indirectly include this file \n"
+                 );
+  addDependency("includedByGraphFlag","haveDotFlag");
   ConfigBool::add(  "gfxHierarchyFlag",
                     "GRAPHICAL_HIERARCHY",
                     "TRUE",
@@ -1502,11 +1521,36 @@ void init()
                     "DOT_PATH",
                     "",
                     "path to the dot tool",
-                    "This tag can be used to specify the path where the dot tool can be found. \n"
-                    "If left blank, it is assumed the dot tool can be found on the path. \n",
+                    "The tag DOT_PATH can be used to specify the path where the dot tool can be \n"
+                    "found. If left blank, it is assumed the dot tool can be found on the path. \n",
                     ConfigString::Dir
                    );
   addDependency("dotPath","haveDotFlag");
+  ConfigInt::add(   "maxDotGraphWidth",
+                    "MAX_DOT_GRAPH_WIDTH",
+                    "1024",
+                    "max dot graph width",
+                    "The MAX_DOT_GRAPH_WIDTH tag can be used to set the maximum allowed width \n"
+                    "(in pixels) of the graphs generated by dot. If a graph becomes larger than \n"
+                    "this value, doxygen will try to truncate the graph, so that it fits within \n"
+                    "the specified constraint. Beware that most browsers cannot cope with very \n"
+                    "large images. \n",
+                    250,30000
+                );
+  addDependency("maxDotGraphWidth","haveDotFlag");
+  ConfigInt::add(   "maxDotGraphHeight",
+                    "MAX_DOT_GRAPH_HEIGHT",
+                    "1024",
+                    "max dot graph height",
+                    "The MAX_DOT_GRAPH_HEIGHT tag can be used to set the maximum allows height \n"
+                    "(in pixels) of the graphs generated by dot. If a graph becomes larger than \n"
+                    "this value, doxygen will try to truncate the graph, so that it fits within \n"
+                    "the specified constraint. Beware that most browsers cannot cope with very \n"
+                    "large images. \n",
+                    250,30000
+                );
+  addDependency("maxDotGraphHeight","haveDotFlag");
+ 
 
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Search","Configuration::addtions related to the search engine   ");

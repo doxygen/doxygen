@@ -111,14 +111,17 @@ int MemberGroup::countDecMembers(bool sectionPerType)
 
 void MemberGroup::distributeMemberGroupDocumentation()
 {
+  //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",grpHeader.data());
   MemberDef *md=memberList->first();
-  if (md && md->hasDocumentation())
+  if (md && !(md->documentation().isEmpty() && md->briefDescription().isEmpty()))
   {
+    //printf("First member %s has documentation!\n",md->name().data());
     MemberDef *omd=memberList->next();
     while (omd)
     {
-      if (!omd->hasDocumentation())
+      if (omd->documentation().isEmpty() && omd->briefDescription().isEmpty())
       {
+        //printf("Copying documentation to member %s\n",omd->name().data());
         omd->setBriefDescription(md->briefDescription());
         omd->setDocumentation(md->documentation());
       }

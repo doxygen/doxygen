@@ -524,7 +524,8 @@ class TranslatorSpanish : public Translator
 
     /*! used as the title of the HTML page of a class/struct/union */
     virtual QCString trCompoundReference(const char *clName,
-                                    ClassDef::CompoundType compType)
+                                    ClassDef::CompoundType compType,
+                                    bool /*isTemplate*/)
     {
       QCString result=(QCString)clName+" ";
       switch(compType)

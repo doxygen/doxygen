@@ -104,6 +104,7 @@ documentation:
 <li> \refitem cmdsa \sa
 <li> \refitem cmdsection \section
 <li> \refitem cmdshowinitializer \showinitializer
+<li> \refitem cmdsince \since
 <li> \refitem cmdskip \skip
 <li> \refitem cmdskipline \skipline
 <li> \refitem cmdstruct \struct
@@ -800,6 +801,16 @@ Public/Protected/Private/... section.
 
   \sa section \ref autolink "\\autolink" for information on how to create links 
       to objects.
+
+<hr>
+\subsection cmdsince \since { text }
+
+  \addindex \since
+  This tag can be used to specify since when (version or time) an
+  entity is available. The paragraph that follows \\since does not have any
+  special internal structure. All visual enhancement commands may be 
+  used inside the paragraph. The \\since description ends when a blank 
+  line or some other sectioning command is encountered. 
 
 <hr>
 \subsection cmdthrow \throw <exception-object> { exception description }

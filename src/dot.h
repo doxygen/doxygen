@@ -52,7 +52,9 @@ class DotNode
                       const QCString &baseName,
                       bool lrRank,
                       bool renderParents,
-                      int distance);
+                      int distance,
+                      bool backArrow
+                     );
   public:
     DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE);
    ~DotNode();
@@ -70,7 +72,7 @@ class DotNode
     void removeParent(DotNode *n);
     int  number() const { return m_number; }
     void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,
-               int maxDistance=1000);
+               int maxDistance=1000,bool backArrows=TRUE);
     int  m_subgraphId;
     void clearWriteFlag();
 
@@ -137,7 +139,7 @@ class DotClassGraph
 class DotInclDepGraph
 {
   public:
-    DotInclDepGraph(FileDef *fd);
+    DotInclDepGraph(FileDef *fd,bool inverse=FALSE);
    ~DotInclDepGraph();
     void writeGraph(QTextStream &t, GraphOutputFormat f,const char *path);
     bool isTrivial() const;
@@ -150,4 +152,5 @@ class DotInclDepGraph
     static int      m_curNodeNumber;
     QCString        m_diskName;
     int             m_maxDistance;
+    bool            m_inverse;
 };

@@ -519,9 +519,11 @@ class Translator
 
     /*! used as the title of the HTML page of a class/struct/union */
     virtual QCString trCompoundReference(const char *clName,
-                                    ClassDef::CompoundType compType)
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
     {
       QCString result=(QCString)clName+" ";
+      if (isTemplate) result+=" Template";
       switch(compType)
       {
         case ClassDef::Class:      result+=" Class"; break;
@@ -892,6 +894,15 @@ class Translator
     virtual QCString trAttention()
     {
       return "Attention";
+    }
+    virtual QCString trInclByDepGraph()
+    {
+      return "This graph shows which files directly or "
+             "indirectly include this file:";
+    }
+    virtual QCString trSince()
+    {
+      return "Since";
     }
 };
 

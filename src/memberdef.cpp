@@ -475,8 +475,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (Config::hideMemberFlag && documentation().isEmpty() && 
       !Config::briefMemDescFlag && !Config::repeatBriefFlag 
      ) return;
-  // hide static file & namespace members unless extract private is on
-  if (cd==0 && isStatic() && !Config::extractPrivateFlag) return;
+  // hide static file & namespace members unless extract static is on
+  if (cd==0 && isStatic() && !Config::extractStaticFlag) return;
 
   // hide private member that are put into a member group. Non-grouped
   // members are not rendered anyway.
@@ -489,7 +489,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // strip `friend' keyword from type
   if (type.left(7)=="friend ") type=type.right(type.length()-7);
   static QRegExp r("@[0-9]+");
-  if ((i=r.match(type,0,&l))==-1 || !enumUsed())
+  i=-1;
+  if ((type.isEmpty() || (i=r.match(type,0,&l))==-1) || !enumUsed())
   {
     
     if (!Config::genTagFile.isEmpty())
@@ -792,7 +793,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scopeName)
 {
-  if (memberClass()==0 && isStatic() && !Config::extractPrivateFlag) return;
+  if (memberClass()==0 && isStatic() && !Config::extractStaticFlag) return;
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
   if (
@@ -834,14 +835,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     int i=0,l;
     static QRegExp r("@[0-9]+");
 
-    //ENUM
     if (isEnumValue()) return;
-    //if (isEnumValue() && def[0]=='@') def = def.right(def.length()-2);
-    //int dummy;
-    //if (isEnumerate() && r.match(def,0,&l)!=-1) return;
-    //MemberDef *smd;
-    //if (isEnumValue() && (smd = getEnumScope()) 
-    //    && r.match(smd->name(),0,&dummy)==-1) return;
 
     ol.pushGeneratorState();
 
@@ -1342,7 +1336,7 @@ bool MemberDef::isLinkableInProject()
          ((hasDocumentation() && !isReference())  
          ) && 
          (prot!=Private || Config::extractPrivateFlag || isFriend()) && // not a private class member
-         (classDef!=0 || Config::extractPrivateFlag || !isStatic()); // not a private file/namespace member
+         (classDef!=0 || Config::extractStaticFlag || !isStatic()); // not a static file/namespace member
 }
 
 bool MemberDef::isLinkable()

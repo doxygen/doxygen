@@ -52,8 +52,8 @@ followed by the descriptions of the tags grouped by category.
 \begin{CompactList}
 \endlatexonly
 <li> \refitem cfg_allexternals ALLEXTERNALS 
-<li> \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 <li> \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
+<li> \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 <li> \refitem cfg_bin_abspath BIN_ABSPATH 
 <li> \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 <li> \refitem cfg_case_sense_names CASE_SENSE_NAMES 
@@ -68,6 +68,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_disable_index DISABLE_INDEX 
 <li> \refitem cfg_doc_abspath DOC_ABSPATH 
 <li> \refitem cfg_doc_url DOC_URL
+<li> \refitem cfg_dot_path DOT_PATH
 <li> \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 <li> \refitem cfg_enabled_sections ENABLED_SECTIONS
 <li> \refitem cfg_example_path EXAMPLE_PATH
@@ -79,6 +80,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_extra_packages EXTRA_PACKAGES
 <li> \refitem cfg_extract_all EXTRACT_ALL
 <li> \refitem cfg_extract_private EXTRACT_PRIVATE
+<li> \refitem cfg_extract_static EXTRACT_STATIC
 <li> \refitem cfg_file_patterns FILE_PATTERNS
 <li> \refitem cfg_full_path_names FULL_PATH_NAMES
 <li> \refitem cfg_generate_html GENERATE_HTML
@@ -114,6 +116,8 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_macro_expansion MACRO_EXPANSION
 <li> \refitem cfg_man_extension MAN_EXTENSION
 <li> \refitem cfg_man_output MAN_OUTPUT
+<li> \refitem cfg_max_dot_graph_height MAX_DOT_GRAPH_HEIGHT
+<li> \refitem cfg_max_dot_graph_width MAX_DOT_GRAPH_WIDTH
 <li> \refitem cfg_output_directory OUTPUT_DIRECTORY
 <li> \refitem cfg_output_language OUTPUT_LANGUAGE
 <li> \refitem cfg_paper_type PAPER_TYPE
@@ -125,6 +129,8 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_quiet QUIET
 <li> \refitem cfg_recursive RECURSIVE
 <li> \refitem cfg_repeat_brief REPEAT_BRIEF
+<li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
+<li> \refitem cfg_rtf_output RTF_OUTPUT
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
@@ -132,14 +138,12 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_source_browser SOURCE_BROWSER
 <li> \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 <li> \refitem cfg_strip_from_path STRIP_FROM_PATH
-<li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
-<li> \refitem cfg_rtf_output RTF_OUTPUT
 <li> \refitem cfg_tab_size TAB_SIZE
 <li> \refitem cfg_tagfiles TAGFILES
 <li> \refitem cfg_verbatim_headers VERBATIM_HEADERS
-<li> \refitem cfg_warnings WARNINGS
 <li> \refitem cfg_warn_format WARN_FORMAT
 <li> \refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
+<li> \refitem cfg_warnings WARNINGS
 \htmlonly
 </ul>
 </multicol>
@@ -197,8 +201,10 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_extract_all
 <dt>\c EXTRACT_ALL <dd>
  \addindex EXTRACT_ALL
- If the \c EXTRACT_ALL tag is set to \c YES all classes and functions will be
- included in the documentation, even if no documentation was available.
+ If the \c EXTRACT_ALL tag is set to \c YES doxygen will assume all 
+ entities in documentation are documented, even if no documentation was 
+ available. Private class members and static file members will be hidden 
+ unless the \c EXTRACT_PRIVATE and \c EXTRACT_STATIC tags are set to \c YES
 
  \par Note: 
  This will also disable the warnings about undocumented members 
@@ -207,8 +213,14 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_extract_private
 <dt>\c EXTRACT_PRIVATE <dd>
  \addindex EXTRACT_PRIVATE
- If the \c EXTRACT_PRIVATE tag is set to \c YES all
- documentation for private members will be extracted as well.
+ If the \c EXTRACT_PRIVATE tag is set to \c YES all private members of a 
+ class will be included in the documentation.
+
+\anchor cfg_extract_static
+<dt>\c EXTRACT_STATIC <dd>
+ \addindex EXTRACT_STATIC
+ If the \c EXTRACT_STATIC tag is set to \c YES all static members of a file
+ will be included in the documentation.
 
 \anchor cfg_hide_undoc_members
 <dt>\c HIDE_UNDOC_MEMBERS <dd>
@@ -217,6 +229,7 @@ followed by the descriptions of the tags grouped by category.
  undocumented members inside documented classes or files. 
  If set to \c NO (the default) these members will be included in the
  various overviews, but no documentation section is generated.
+ This option has no effect if \c EXTRACT_ALL is enabled.
 
 \anchor cfg_hide_undoc_classes
 <dt>\c HIDE_UNDOC_CLASSES <dd>
@@ -225,6 +238,7 @@ followed by the descriptions of the tags grouped by category.
  undocumented classes.
  If set to \c NO (the default) these classes will be included in the
  various overviews.
+ This option has no effect if \c EXTRACT_ALL is enabled.
 
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
@@ -247,6 +261,7 @@ followed by the descriptions of the tags grouped by category.
 
 \anchor cfg_always_detailed_sec
 <dt>\c ALWAYS_DETAILED_SEC <dd>
+ \addindex ALWAYS_DETAILED_SEC
  If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
  Doxygen will generate a detailed section even if there is only a brief
  description.
@@ -822,13 +837,13 @@ EXTRA_PACKAGES = times
  put in front of it. If left blank `man' will be used as the default path.
  A directory man3 will be created inside the directory specified by 
  \c MAN_OUTPUT.
+</dl>
 
 \anchor cfg_man_extension
 <dt>\c MAN_EXTENSION <dd>
  \addindex MAX_EXTENSION
  The \c MAN_EXTENSION tag determines the extension that is added to
  the generated man pages (default is the subroutine's section .3)
-</dl>
 
 \subsection config_prepro Preprocessor related options
 \anchor cfg_enable_preprocessing
@@ -964,6 +979,14 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  showing the direct and indirect include dependencies of the file with other
  documented files.
 
+\anchor cfg_included_by_graph
+<dt>\c INCLUDED_BY_GRAPH <dd>
+ \addindex INCLUDED_BY_GRAPH 
+ If the \c ENABLE_PREPROCESSING, \c INCLUDED_BY_GRAPH, and \c HAVE_DOT tags are 
+ set to \c YES then doxygen will generate a graph for each documented header
+ file showing the documented files that directly or indirectly include this
+ file.
+
 \anchor cfg_graphical_hierarchy
 <dt>\c GRAPHICAL_HIERARCHY <dd>
  \addindex GRAPHICAL_HIERATCHY
@@ -975,6 +998,24 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex DOT_PATH
  This tag can be used to specify the path where the dot tool can be found. 
  If left blank, it is assumed the dot tool can be found on the path. 
+
+\anchor cfg_max_dot_graph_height 
+<dt>\c MAX_DOT_GRAPH_HEIGHT <dd>
+ \addindex MAX_DOT_GRAPH_HEIGHT
+ The \c MAX_DOT_GRAPH_HEIGHT tag can be used to set the maximum allows height
+ (in pixels) of the graphs generated by dot. If a graph becomes larger than
+ this value, doxygen will try to truncate the graph, so that it fits within
+ the specified constraint. Beware that most browsers cannot cope with very
+ large images.
+
+\anchor cfg_max_dot_graph_width 
+<dt>\c MAX_DOT_GRAPH_WIDTH <dd>
+ \addindex MAX_DOT_GRAPH_WIDTH
+ The \c MAX_DOT_GRAPH_WIDTH tag can be used to set the maximum allowed width
+ (in pixels) of the graphs generated by dot. If a graph becomes larger than
+ this value, doxygen will try to truncate the graph, so that it fits within
+ the specified constraint. Beware that most browsers cannot cope with very
+ large images.
 
 </dl>
 \subsection config_search Search engine options
@@ -1007,7 +1048,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex DOC_URL
  The \c DOC_URL tag should be the absolute URL to the directory where the
  documentation is located. If left blank the absolute path to the 
- documentation, with <tt>file://</tt> prepended to it, will be used. 
+ documentation, with \c file:// prepended to it, will be used. 
  This is correct for local viewing only.
 
 \anchor cfg_doc_abspath
