@@ -40,7 +40,17 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_2_16 : public TranslatorAdapterBase
+class TranslatorAdapter_1_2_17 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage() 
+    { return createUpdateNeededMessage(idLanguage(),"release 1.2.17"); }
+
+    virtual QCString trDeprecatedList()
+    { return english.trDeprecatedList(); }
+};
+
+class TranslatorAdapter_1_2_16 : public TranslatorAdapter_1_2_17
 {
   public:
     virtual QCString updateNeededMessage() 

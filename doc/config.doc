@@ -711,7 +711,7 @@ followed by the descriptions of the tags grouped by category.
  functions referencing it will be listed. 
 
 \anchor cfg_references_relation
-<dt>\c REFERENCE_RELATION <dd>
+<dt>\c REFERENCES_RELATION <dd>
  \addindex REFERENCES_RELATION
  If the \c REFERENCES_RELATION tag is set to \c YES (the default)
  then for each documented function all documented entities

@@ -15,23 +15,31 @@
 #include "inputbool.h"
 #include "pagewidget.h"
 #include <qwindowsstyle.h>
+#include <qlayout.h>
 
 InputBool::InputBool( const QString & text, PageWidget * parent, bool &flag )
-  : QCheckBox( text, parent->getLayout() ), state(flag)
+  : /*QCheckBox( text, parent->getLayout() )*/ QWidget(parent->getLayout()), state(flag)
 {
-  QWindowsStyle *winStyle = new QWindowsStyle();
-  setChecked( flag );
-  setStyle( winStyle );
-  setMinimumSize( sizeHint() );
+  QBoxLayout *layout = new QHBoxLayout(this);
+  cb = new QCheckBox(text,this);
+  layout->addWidget(cb);
+  layout->addStretch(10);
 
-  connect( this, SIGNAL(toggled(bool)), SLOT(setState(bool)) );
+  QWindowsStyle *winStyle = new QWindowsStyle();
+  cb->setChecked( flag );
+  cb->setStyle( winStyle );
+  cb->setMinimumSize( sizeHint() );
+
+  connect( cb, SIGNAL(toggled(bool)), SLOT(setState(bool)) );
 
   parent->addWidget(this);
+
+  layout->activate();
 }
 
 void InputBool::init()
 {
-  setChecked(state);
+  cb->setChecked(state);
 }
 
 void InputBool::setState( bool s )
@@ -39,7 +47,7 @@ void InputBool::setState( bool s )
   if (state!=s) 
   {
     emit changed();
-    emit toggle(text(),s);
+    emit toggle(cb->text(),s);
   }
   state=s;
 }

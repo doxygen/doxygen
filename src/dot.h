@@ -69,7 +69,7 @@ class DotNode
                  );
     void setDistance(int distance);
     void addParent(DotNode *n);
-    void deleteNode(DotNodeList &deletedList,SIntDict<DotNode> *skipNodes=0);
+    void deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes=0);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     void write(QTextStream &t,GraphOutputFormat f,bool topDown,bool toChildren,

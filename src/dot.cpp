@@ -75,7 +75,24 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
     //printf("ReadLine `%s'\n",buf);
     if (strncmp(buf,"rect",4)==0)
     {
+      // obtain the url and the coordinates in the order used by graphviz-1.5
       sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y2,&x2,&y1);
+      // later versions of graphviz corrected the y coordinate order
+      // the rule is that y2>=y1, so test and switch if needed
+      if (y2<y1)
+      {
+        int temp=y2;
+        y2=y1;
+        y1=temp;
+      }
+      // there shouldn't be any need for this for known versions of graphviz
+      // but it can't do any harm to check that x follows the rules as well
+      if (x2<x1)
+      {
+        int temp=x2;
+        x2=x1;
+        x1=temp;
+      }
       char *refPtr = url;
       char *urlPtr = strchr(url,'$');
       //printf("url=`%s'\n",url);
@@ -230,7 +247,7 @@ class DotNodeList : public QList<DotNode>
 /*! helper function that deletes all nodes in a connected graph, given
  *  one of the graph's nodes
  */
-static void deleteNodes(DotNode *node,SIntDict<DotNode> *skipNodes=0)
+static void deleteNodes(DotNode *node,SDict<DotNode> *skipNodes=0)
 {
   //printf("deleteNodes skipNodes=%p\n",skipNodes);
   static DotNodeList deletedNodes;
@@ -311,7 +328,7 @@ void DotNode::removeParent(DotNode *n)
   if (m_parents) m_parents->remove(n);
 }
 
-void DotNode::deleteNode(DotNodeList &deletedList,SIntDict<DotNode> *skipNodes)
+void DotNode::deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
   m_deleted=TRUE;
@@ -337,7 +354,7 @@ void DotNode::deleteNode(DotNodeList &deletedList,SIntDict<DotNode> *skipNodes)
   }
   // add this node to the list of deleted nodes.
   //printf("skipNodes=%p find(%p)=%p\n",skipNodes,this,skipNodes ? skipNodes->find((int)this) : 0);
-  if (skipNodes==0 || skipNodes->find((int)this)==0)
+  if (skipNodes==0 || skipNodes->find((char*)this)==0)
   {
     //printf("deleting\n");
     deletedList.append(this);
@@ -933,13 +950,13 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
 DotGfxHierarchyTable::~DotGfxHierarchyTable()
 {
   //printf("DotGfxHierarchyTable::~DotGfxHierarchyTable\n");
-  SIntDict<DotNode> skipNodes(17);
+  SDict<DotNode> skipNodes(17);
   skipNodes.setAutoDelete(TRUE);
   DotNode *n = m_rootNodes->first();
   while (n)
   {
     //printf("adding %s %p\n",n->label().data(),n);
-    skipNodes.append((int)n,n);
+    skipNodes.append((char*)n,n);
     n=m_rootNodes->next();
   }
   n = m_rootNodes->first();

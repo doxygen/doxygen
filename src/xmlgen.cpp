@@ -667,7 +667,7 @@ class XMLGenerator : public OutputDocInterface
       // we need manually add a para here because cells are
       // parsed before the table is generated, and thus
       // are already parsed as if they are inside a paragraph.
-      //m_t << "<para>";
+      m_t << "<para>";
     }
     void endTableRow() 
     {
@@ -1521,7 +1521,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
       {
         t << " id=\"" << ii->fileDef->getOutputFileBase() << "\"";
       }
-      t << " local=\"" << (ii->local ? "yes" : "no") << "\"";
+      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
       t << nm;
       t << "</includes>" << endl;
     }

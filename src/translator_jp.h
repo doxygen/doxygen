@@ -61,7 +61,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     }
 };
 
-class TranslatorJapanese : public Translator
+class TranslatorJapanese : public TranslatorAdapter_1_2_17
 {
  private:
   /*! The decode() can change euc into sjis */

@@ -25,7 +25,7 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.16-20020707), 27 languages 
+Currently (version 1.2.14-20020317), 27 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Chinese Traditional, Croatian, Czech, 
 Danish, Dutch, English, Finnish, French, 
@@ -55,7 +55,7 @@ when the translator was updated.
       <TD>Brazilian Portuguese</TD>  
       <TD>Fabio "FJTC" Jun Takada Chino</TD>
       <TD>chino@NOSPAM.icmc.sc.usp.br</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Chinese</TD>  
@@ -73,13 +73,13 @@ when the translator was updated.
       <TD>Croatian</TD>  
       <TD>Boris Bralo</TD>
       <TD>boris.bralo@NOSPAM.zg.tel.hr</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Czech</TD>  
       <TD>Petr P&#x0159;ikryl</TD>
       <TD>prikrylp@NOSPAM.skil.cz</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Danish</TD>  
@@ -109,13 +109,13 @@ when the translator was updated.
       <TD>French</TD>  
       <TD>Xavier Outhier</TD>
       <TD>xouthier@NOSPAM.yahoo.fr</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>German</TD>  
       <TD>Jens Seidel<br>Jens Breitenstein</TD>
       <TD>jensseidel@NOSPAM.users.sf.net<br>Jens.Breitenstein@NOSPAM.tlc.de</TD>
-      <TD>1.2.16</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Greek</TD>  
@@ -133,13 +133,13 @@ when the translator was updated.
       <TD>Italian</TD>  
       <TD>Alessandro Falappa<br>Ahmed Aldo Faisal</TD>
       <TD>alessandro@NOSPAM.falappa.net<br>aaf23@NOSPAM.cam.ac.uk</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Japanese</TD>  
       <TD>Ryunosuke Sato<br>Kenji Nagamatsu</TD>
       <TD>puyo@NOSPAM.mint.freemail.ne.jp<br>naga@NOSPAM.joyful.club.ne.jp</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Korean</TD>  
@@ -163,7 +163,7 @@ when the translator was updated.
       <TD>Portuguese</TD>  
       <TD>Rui Godinho Lopes</TD>
       <TD>ruiglopes@NOSPAM.yahoo.com</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Romanian</TD>  
@@ -175,7 +175,7 @@ when the translator was updated.
       <TD>Russian</TD>  
       <TD>Alexandr Chelpanov</TD>
       <TD>cav@NOSPAM.cryptopro.ru</TD>
-      <TD>up-to-date</TD>
+      <TD>1.2.17</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Serbian</TD>  
@@ -224,16 +224,16 @@ when the translator was updated.
   {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
   \hline
   \hline
-  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & up-to-date \\
+  Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt chino@icmc.sc.usp.br} & 1.2.17 \\
   \hline
   Chinese & Wei Liu & {\tt liuwei@asiainfo.com} & 1.2.13 \\
    & Wang Weihan & {\tt wangweihan@capinfo.com.cn} &  \\
   \hline
   Chinese Traditional & Gary Lee & {\tt garylee@ecosine.com.tw} & 1.2.16 \\
   \hline
-  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & up-to-date \\
+  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} & 1.2.17 \\
   \hline
-  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & up-to-date \\
+  Czech & Petr P\v{r}ikryl & {\tt prikrylp@skil.cz} & 1.2.17 \\
   \hline
   Danish & Erik S\o{}e S\o{}rensen & {\tt erik@mail.nu} & 1.2.7 \\
   \hline
@@ -243,19 +243,19 @@ when the translator was updated.
   \hline
   Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & obsolete \\
   \hline
-  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
+  French & Xavier Outhier & {\tt xouthier@yahoo.fr} & 1.2.17 \\
   \hline
-  German & Jens Seidel & {\tt jensseidel@users.sf.net} & 1.2.16 \\
+  German & Jens Seidel & {\tt jensseidel@users.sf.net} & 1.2.17 \\
    & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} &  \\
   \hline
   Greek & Harry Kalogirou & {\tt harkal@rainbow.cs.unipi.gr} & 1.2.11 \\
   \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & up-to-date \\
+  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & 1.2.17 \\
    & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} &  \\
   \hline
-  Japanese & Ryunosuke Sato & {\tt puyo@mint.freemail.ne.jp} & up-to-date \\
+  Japanese & Ryunosuke Sato & {\tt puyo@mint.freemail.ne.jp} & 1.2.17 \\
    & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} &  \\
   \hline
   Korean & Richard Kim & {\tt ryk@dspwiz.com} & 1.2.13 \\
@@ -265,11 +265,11 @@ when the translator was updated.
   Polish & Piotr Kaminski & {\tt Piotr.Kaminski@ctm.gdynia.pl} & 1.2.16 \\
    & Grzegorz Kowal & {\tt g\_kowal@poczta.onet.pl} &  \\
   \hline
-  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & up-to-date \\
+  Portuguese & Rui Godinho Lopes & {\tt ruiglopes@yahoo.com} & 1.2.17 \\
   \hline
   Romanian & Alexandru Iosup & {\tt aiosup@yahoo.com} & 1.2.16 \\
   \hline
-  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & up-to-date \\
+  Russian & Alexandr Chelpanov & {\tt cav@cryptopro.ru} & 1.2.17 \\
   \hline
   Serbian & Dejan Milosavljevic & {\tt dmilos@email.com} & 1.2.16 \\
   \hline

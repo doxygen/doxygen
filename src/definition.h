@@ -161,9 +161,10 @@ class Definition
     SectionDict *m_sectionDict;  // dictionary of all sections
     MemberSDict *m_sourceRefByDict;
     MemberSDict *m_sourceRefsDict;
-    int m_testId;     // id for test list item
-    int m_todoId;     // id for todo list item
-    int m_bugId;      // id for bug list item
+    int m_testId;       // id for test list item
+    int m_todoId;       // id for todo list item
+    int m_bugId;        // id for bug list item
+    int m_deprecatedId; // id for deprecated list item
     int m_docLine;
     QCString m_docFile;
     int m_briefLine;

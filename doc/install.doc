@@ -354,6 +354,13 @@ On some platforms (such as OpenBSD) using some versions of gcc with
 such as config.cpp. As a workaround use --debug as a configure option 
 or omit the -O2 for the particular files in the Makefile.
 
+<b>Dot problems</b>
+
+Due to a change in the way image maps are generated, older versions
+of doxygen (<=1.2.17) will not work correctly with newer versions of
+graphviz (>=1.8.8). The effect of this incompatibility is that
+generated graphs in HTML are not properly clickable.
+
 \subsection install_src_windows Compiling from source on Windows
 
 Currently, I have only compiled doxygen for Windows using Microsoft's 

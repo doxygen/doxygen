@@ -2541,6 +2541,107 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
   return templateNames;
 }
 
+/*! Searches a class from within the context of \a cd and returns its
+ *  definition if found (otherwise 0 is returned).
+ *  This function differs from getResolvedClass in that it also takes 
+ *  using declarations and definition into account.
+ */
+ClassDef *findClassWithinClassContext(ClassDef *cd,const QCString &name)
+{
+  ClassDef *result=0;
+
+  // try using of namespaces in namespace scope
+  NamespaceDef *nd=cd->getNamespaceDef();
+  FileDef *fd=cd->getFileDef();
+  if (nd) // class is inside a namespace
+  {
+    QCString fName = nd->name()+"::"+name;
+    result = getResolvedClass(cd,fName); 
+    if (result && result!=cd) 
+    {
+      return result;
+    }
+    NamespaceList *nl = nd->getUsedNamespaces();
+    if (nl) // try to prepend any of the using namespace scopes.
+    {
+      NamespaceListIterator nli(*nl);
+      NamespaceDef *nd;
+      for (nli.toFirst() ; (nd=nli.current()) ; ++nli)
+      {
+        fName = nd->name()+"::"+name;
+        result = getResolvedClass(cd,fName);
+        if (result && result!=cd) return result;
+      }
+    }
+    ClassList *cl = nd->getUsedClasses();
+    if (cl)
+    {
+      ClassListIterator cli(*cl);
+      ClassDef *ucd;
+      for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
+      {
+        if (rightScopeMatch(ucd->name(),name))
+        {
+          return ucd;
+        }
+      }
+    }
+    // TODO: check any inbetween namespaces as well!
+    if (fd) // and in the global namespace
+    {
+      ClassList *cl = fd->getUsedClasses();
+      if (cl)
+      {
+        ClassListIterator cli(*cl);
+        ClassDef *ucd;
+        for (cli.toFirst(); (ucd=cli.current()); ++cli)
+        {
+          if (rightScopeMatch(ucd->name(),name))
+          {
+            return ucd;
+          }
+        }
+      }
+    }
+  }
+
+  // try using of namespaces in file scope
+  if (fd)
+  {
+    // look for the using statement in this file in which the
+    // class was found
+    NamespaceList *nl = fd->getUsedNamespaces();
+    if (nl) // try to prepend any of the using namespace scopes.
+    {
+      NamespaceListIterator nli(*nl);
+      NamespaceDef *nd;
+      for (nli.toFirst() ; (nd=nli.current()) ; ++nli)
+      {
+        QCString fName = nd->name()+"::"+name;
+        result=getResolvedClass(cd,fName);
+        if (result && result!=cd)
+        {
+          return result;
+        }
+      }
+    }
+    ClassList *cl = fd->getUsedClasses();
+    if (cl)
+    {
+      ClassListIterator cli(*cl);
+      ClassDef *ucd;
+      for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
+      {
+        if (rightScopeMatch(ucd->name(),name))
+        {
+          return ucd;
+        }
+      }
+    }
+  }
+
+  return getResolvedClass(cd,name);
+}
 
 enum FindBaseClassRelation_Mode 
 { 
@@ -2586,6 +2687,7 @@ static void findUsedClassesForClass(Entry *root,
         QCString usedClassName;
         QCString templSpec;
         bool found=FALSE;
+        // the type can contain template variables, replace them if present
         if (actualArgs)
         {
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
@@ -2593,12 +2695,17 @@ static void findUsedClassesForClass(Entry *root,
         //printf("findUsedClassesForClass(%s)=%s\n",masterCd->name().data(),type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
         {
+          // the name could be a type definition, resolve it
+          // TODO: recursive typedef resolution
           QCString typeName = resolveTypeDef(masterCd,usedClassName);
+          
+          // add any template arguments to the class
           QCString usedName = usedClassName+templSpec;
-          if (!typeName.isEmpty())
-          {
-            usedName=typeName;
-          }
+
+          //if (!typeName.isEmpty())
+          //{
+          //  usedName=typeName;
+          //}
           //printf("usedName=`%s'\n",usedName.data());
 
           bool delTempNames=FALSE;
@@ -2642,11 +2749,16 @@ static void findUsedClassesForClass(Entry *root,
 
           if (!found)
           {
-            Definition *scope=masterCd->getOuterScope();
             ClassDef *usedCd=0;
+#if 0
+            Definition *scope=masterCd->getOuterScope();
             do
             {
-              QCString scopeName = scope ? scope->qualifiedName().data() : 0;
+              // TODO: also consider using declarations and directives
+              //       as done for inheritance relations.
+
+              QCString scopeName;
+              if (scope) scopeName=scope->qualifiedName();
               if (!scopeName.isEmpty())
               {
                 usedCd=getResolvedClass(masterCd,scopeName+"::"+usedName,0,&templSpec);
@@ -2661,8 +2773,10 @@ static void findUsedClassesForClass(Entry *root,
               }
               if (scope) scope=scope->getOuterScope();
             } while (scope && usedCd==0);
+#endif
+            usedCd = findClassWithinClassContext(masterCd,usedName);
 
-            if (usedCd) 
+            if (usedCd && usedCd!=masterCd) 
             {
               found=TRUE;
               Debug::print(Debug::Classes,0,"    Adding used class `%s'\n", usedCd->name().data());
@@ -2944,7 +3058,6 @@ static bool findClassRelation(
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
-        NamespaceDef *nd=cd->getNamespaceDef();
         if (!found && (i=baseClassName.findRev("::"))!=-1)
         {
           // replace any namespace aliases
@@ -2953,9 +3066,19 @@ static bool findClassRelation(
           found=baseClass!=0 && baseClass!=cd;
         }
         
-        FileDef *fd=cd->getFileDef();
+        //printf("root->name=%s biName=%s baseClassName=%s\n",
+        //        root->name.data(),biName.data(),baseClassName.data());
+
+        //FileDef *fd=cd->getFileDef();
+        //NamespaceDef *nd=cd->getNamespaceDef();
         if (!found)
         {
+          baseClass=findClassWithinClassContext(cd,baseClassName);
+          //printf("findClassWithinClassContext(%s,%s)=%p\n",
+          //    cd->name().data(),baseClassName.data(),baseClass);
+          found = baseClass!=0 && baseClass!=cd;
+
+#if 0
           if (fd)
           {
             // look for the using statement in this file in which the
@@ -2968,7 +3091,8 @@ static bool findClassRelation(
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 QCString fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(cd,fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(cd,fName))!=0 && 
+                  baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -3002,7 +3126,8 @@ static bool findClassRelation(
               for (nli.toFirst() ; (nd=nli.current()) && !found ; ++nli)
               {
                 fName = nd->name()+"::"+baseClassName;
-                found = (baseClass=getResolvedClass(cd,fName))!=0 && baseClass!=cd &&
+                found = (baseClass=getResolvedClass(cd,fName))!=0 && 
+                  baseClass!=cd &&
                   root->name!=fName;
               }
             }
@@ -3042,6 +3167,7 @@ static bool findClassRelation(
               }
             }
           }
+#endif
         }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
         if (found)
@@ -5808,11 +5934,11 @@ static void resolveUserReferences()
         si->fileName=si->definition->getOutputFileBase().copy();
       }
     }
-    // hack: the items of a todo/test/bug list are all fragments from 
+    // hack: the items of a todo/test/bug/deprecated list are all fragments from 
     // different files, so the resulting section's all have the wrong file 
-    // name (not from the todo/test/bug list, but from the file in which they 
-    // are defined). We correct this here by looking at the generated section 
-    // labels!
+    // name (not from the todo/test/bug/deprecated list, but from the file in 
+    // which they are defined). We correct this here by looking at the 
+    // generated section labels!
     QDictIterator<RefList> rli(*Doxygen::specialLists);
     RefList *rl;
     for (rli.toFirst();(rl=rli.current());++rli)
@@ -7038,6 +7164,15 @@ void readConfiguration(int argc, char **argv)
                   BaseOutputDocInterface::Bug
                  )
   );
+  Doxygen::specialLists->insert("deprecated", 
+      new RefList("deprecated", 
+                  "GENERATE_DEPRECATEDLIST", 
+                  theTranslator->trDeprecatedList(),
+                  theTranslator->trDeprecated(),
+                  BaseOutputDocInterface::Deprecated
+                 )
+  );
+
 }
 
 void parseInput()

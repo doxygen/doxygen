@@ -71,7 +71,7 @@
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_2_16
+class TranslatorGerman : public TranslatorAdapter_1_2_17
 {
   public:
 

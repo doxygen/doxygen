@@ -93,7 +93,7 @@ class Doxygen
     static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
     static QDict<void> expandAsDefinedDict;
     static NamespaceDef *globalScope;
-    static QDict<RefList> *specialLists; // array of special lists: todo, test, bug ...
+    static QDict<RefList> *specialLists; // array of special lists: todo, test, bug, deprecated ...
 };
 
 void initDoxygen();

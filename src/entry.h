@@ -283,10 +283,7 @@ class Entry
     QList<QCString> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
-    //int         todoId;     //!< id of the todo list item of this entry
-    //int         testId;     //!< id of the test list item of this entry
-    //int         bugId;      //!< id of the bug list item of this entry
-    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/..) this entry is in
+    QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
     enum 

@@ -1002,6 +1002,17 @@ class TranslatorDutch : public Translator
     virtual QCString trRTFTableOfContents()
     { return "Inhoudsopgave"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Deprecated Lijst";
+    }
 };
 
 #endif
