@@ -727,6 +727,12 @@ class ISection
     virtual bool isProtected() const = 0;
 };
 
+class IUserDefined : public ISection
+{
+  public:
+    virtual const IString * header() const = 0;
+};
+
 class ISectionIterator 
 {
   public:

@@ -47,7 +47,7 @@
 
   
 #define YY_NEVER_INTERACTIVE 1
-  
+
 /* -----------------------------------------------------------------
  *
  *	statics
@@ -181,6 +181,7 @@ static void initParser()
   insideTryBlock = FALSE;
   autoGroupStack.setAutoDelete(TRUE);
   lastDefGroup.groupname.resize(0);
+  insideFormula = FALSE;
 }
 
 static void initEntry()
@@ -959,7 +960,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
 					  lineCount();
-                                          if (insideIDL || insideJava)
+                                          if (insideIDL || insideJava || insideCS)
 					  {
   					    isTypedef=FALSE;
 					    current->section = Entry::INTERFACE_SEC;
@@ -3899,6 +3900,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   							}
 <ReadFormulaShort>\n					{
   							  formulaText+=" ";
+							  yyLineNr++;
 							  if (lastFormulaContext==LineDoc || 
 							      lastFormulaContext==AfterDocLine
 							     )
@@ -3922,7 +3924,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 							  insideFormula=FALSE;
 							  BEGIN(lastFormulaContext);
   							}
-<ReadFormulaLong>\n					{ formulaText+=*yytext; }
+<ReadFormulaLong>\n					{ formulaText+=*yytext; yyLineNr++; }
 <ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
 <ExampleDoc,PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
   					  checkDocs();
@@ -4195,7 +4197,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					}
 <ClassDocBrief>"<"{BR}{ATTR}">"
-<ClassDocBrief>{BS}/{SECTIONCMD}	{ 
+<ClassDocBrief>{BS}/{SECTIONCMD}	|
+<ClassDocBrief>{B}*/{SECTIONCMD}	{ 
   					  current->brief=current->brief.stripWhiteSpace();
                                           BEGIN( lastBriefContext ); 
                                         }
@@ -4445,12 +4448,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
   				         current->doc += yytext; 
+					 yyLineNr++;
 					}
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
   				         current->brief += "-"; 
 					}
 <ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
-  				         current->brief += "."; 
+  				         current->brief += "."; yyLineNr++; 
 					}
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
 <Doc,JavaDoc,ClassDoc,PageDoc,ExampleDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 

@@ -98,7 +98,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 
   if (command==0) return 1;
 
-//#ifdef _OS_SOLARIS_
+#ifdef _OS_SOLARIS // for Solaris we use vfork since it is more memory efficient
 
   // on Solaris fork() duplicates the memory usage
   // so we use vfork instead
@@ -131,38 +131,36 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   }
   return status;
 
-//#else  /* Other unices where clients do copy on demand for the parent's pages 
-//        * when forked.
-//        */
-//
-//  pid = fork();
-//  if (pid==-1) return -1;
-//  if (pid==0)
-//  {
-//    char buf[4096];
-//    strcpy(buf,command);
-//    strcat(buf," ");
-//    strcat(buf,args);
-//    const char * argv[4];
-//    argv[0] = "sh";
-//    argv[1] = "-c";
-//    argv[2] = buf;
-//    argv[3] = 0;
-//    execve("/bin/sh",(char * const *)argv,environ);
-//    exit(127);
-//  }
-//  for (;;)
-//  {
-//    if (waitpid(pid,&status,0)==-1)
-//    {
-//      if (errno!=EINTR) return -1;
-//    }
-//    else
-//    {
-//      return status;
-//    }
-//  }
-//#endif
+#else  // Other Unices just use fork
+
+  pid = fork();
+  if (pid==-1) return -1;
+  if (pid==0)
+  {
+    char buf[4096];
+    strcpy(buf,command);
+    strcat(buf," ");
+    strcat(buf,args);
+    const char * argv[4];
+    argv[0] = "sh";
+    argv[1] = "-c";
+    argv[2] = buf;
+    argv[3] = 0;
+    execve("/bin/sh",(char * const *)argv,environ);
+    exit(127);
+  }
+  for (;;)
+  {
+    if (waitpid(pid,&status,0)==-1)
+    {
+      if (errno!=EINTR) return -1;
+    }
+    else
+    {
+      return status;
+    }
+  }
+#endif // _OS_SOLARIS
 
 #else
   if (isBatchFile)

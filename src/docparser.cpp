@@ -543,12 +543,19 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
     return tok;
   }
   while ((tok=doctokenizerYYlex()) && 
-         tok!=TK_WHITESPACE && 
-         tok!=TK_NEWPARA &&
-         tok!=TK_LISTITEM && 
-         tok!=TK_ENDLIST
+          tok!=TK_WHITESPACE && 
+          tok!=TK_NEWPARA &&
+          tok!=TK_LISTITEM && 
+          tok!=TK_ENDLIST
         )
   {
+    static QRegExp specialChar("[.,|()\\[\\]:;\\?]");
+    if (tok==TK_WORD && g_token->name.length()==1 && 
+        g_token->name.find(specialChar)!=-1)
+    {
+      // special character that ends the markup command
+      return tok;
+    }
     if (!defaultHandleToken(parent,tok,children))
     {
       switch (tok)
@@ -732,6 +739,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
     DBG((" name=%s",g_token->name.data()));
   }
   DBG(("\n"));
+reparsetoken:
   QString tokenName = g_token->name;
   switch (tok)
   {
@@ -767,8 +775,9 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
-            children.append(new DocWhiteSpace(parent," "));
+            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
+            else if (tok==TK_WORD) goto reparsetoken;
           }
           break;
         case CMD_BOLD:
@@ -776,8 +785,9 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
-            children.append(new DocWhiteSpace(parent," "));
+            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
+            else if (tok==TK_WORD) goto reparsetoken;
           }
           break;
         case CMD_CODE:
@@ -785,8 +795,9 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
-            children.append(new DocWhiteSpace(parent," "));
+            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
+            else if (tok==TK_WORD) goto reparsetoken;
           }
           break;
         case CMD_HTMLONLY:
@@ -1001,7 +1012,14 @@ handlepara:
         return FALSE;
       break;
     case TK_URL:
-      children.append(new DocURL(parent,g_token->name,g_token->isEMailAddr));
+      if (g_insideHtmlLink)
+      {
+        children.append(new DocWord(parent,g_token->name));
+      }
+      else
+      {
+        children.append(new DocURL(parent,g_token->name,g_token->isEMailAddr));
+      }
       break;
     default:
       return FALSE;
@@ -1347,16 +1365,18 @@ void DocXRefItem::parse()
   {
     RefItem *item = refList->getRefItem(m_id);
     ASSERT(item!=0);
-
-    m_file   = refList->listName();
-    m_anchor = item->listAnchor;
-    m_title  = refList->sectionTitle();
-
-    if (!item->text.isEmpty())
+    if (item)
     {
-      docParserPushContext();
-      internalValidatingParseDoc(this,m_children,item->text);
-      docParserPopContext();
+      m_file   = refList->listName();
+      m_anchor = item->listAnchor;
+      m_title  = refList->sectionTitle();
+
+      if (!item->text.isEmpty())
+      {
+        docParserPushContext();
+        internalValidatingParseDoc(this,m_children,item->text);
+        docParserPopContext();
+      }
     }
   }
 }
@@ -3392,19 +3412,19 @@ int DocPara::handleCommand(const QString &cmdName)
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
-      m_children.append(new DocWhiteSpace(this," "));
+      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BOLD:
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
-      m_children.append(new DocWhiteSpace(this," "));
+      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_CODE:
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
-      m_children.append(new DocWhiteSpace(this," "));
+      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BSLASH:
       m_children.append(new DocSymbol(this,DocSymbol::BSlash));
@@ -4255,7 +4275,7 @@ reparsetoken:
 	    // the command ended normally, keep scanner for new tokens.
 	    retval = 0;
 	  }
-          else if (retval==TK_LISTITEM || retval==TK_ENDLIST)
+          else if (retval==TK_LISTITEM || retval==TK_ENDLIST || retval==TK_WORD)
           {
             tok = retval;
             goto reparsetoken;

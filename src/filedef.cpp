@@ -651,26 +651,32 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local)
 
 void FileDef::addIncludedUsingDirectives()
 {
-  if (!visited)
+  if (visited) return;
+  visited=TRUE;
+  //printf("( FileDef::addIncludedUsingDirectives for file %s\n",name().data());
+
+  NamespaceList nl;
+  if (includeList) // file contains #includes
   {
-    visited=TRUE;
-    NamespaceList nl;
-    if (includeList) // file contains #includes
     {
       QListIterator<IncludeInfo> iii(*includeList);
       IncludeInfo *ii;
-      for (;(ii=iii.current());++iii) // foreach #include...
+      for (iii.toFirst();(ii=iii.current());++iii) // foreach #include...
       {
-        if (ii->fileDef) // ...that is a known file
+        if (ii->fileDef && !ii->fileDef->visited) // ...that is a known file
         {
           // recurse into this file
           ii->fileDef->addIncludedUsingDirectives();
         }
       }
+    }
+    {
+      QListIterator<IncludeInfo> iii(*includeList);
+      IncludeInfo *ii;
       // iterate through list from last to first
       for (iii.toLast();(ii=iii.current());--iii)
       {
-        if (ii->fileDef)
+        if (ii->fileDef && ii->fileDef!=this)
         {
           NamespaceList *unl = ii->fileDef->usingDirList;
           if (unl)
@@ -681,14 +687,16 @@ void FileDef::addIncludedUsingDirectives()
             {
               // append each using directive found in a #include file
               if (usingDirList==0) usingDirList = new NamespaceList;
+              //printf("Prepending used namespace %s to the list of file %s\n",
+              //    nd->name().data(),name().data());
               usingDirList->prepend(nd);
             }
           }
         }
       }
     }
-    // add elements of nl to usingDirList
   }
+  //printf(") end FileDef::addIncludedUsingDirectives for file %s\n",name().data());
 }
 
 

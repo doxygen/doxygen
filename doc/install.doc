@@ -25,10 +25,10 @@ to get the latest distribution, if you did not have it already.
 This section is divided into the following sections:
 <ul>
 <li>\ref install_src_unix  "Compiling from source on Unix"
-<li>\ref install_bin_unix  "Installating the binaries on Unix"
+<li>\ref install_bin_unix  "Installing the binaries on Unix"
 <li>\ref unix_problems "Known compilation problems for Unix"
 <li>\ref install_src_windows "Compiling from source on Windows"
-<li>\ref install_bin_windows "Installating the binaries on Windows"
+<li>\ref install_bin_windows "Installing the binaries on Windows"
 <li>\ref build_tools "Tools used to develop doxygen"
 </ul>
 
@@ -158,7 +158,7 @@ Compilation is now done by performing the following steps:
 
 </ol>
 
-\section install_bin_unix    Installating the binaries on Unix
+\section install_bin_unix    Installing the binaries on Unix
 
     After the compilation of the source code do a <code>make install</code>
     to install doxygen. If you downloaded the binary distribution for Unix,
@@ -540,7 +540,7 @@ Compilation is now done by performing the following steps:
     documentation can be generated. 
 </ol>
 
-\section install_bin_windows Installating the binaries on Windows
+\section install_bin_windows Installing the binaries on Windows
 
 There is no fancy installation procedure at the moment (if anyone can
 add it in a location independent way please let me know).

@@ -111,7 +111,6 @@ HEADERS      =	bufstr.h \
 		translator_sr.h \
 		translator_tw.h \
 		translator_ua.h \
-		treeview.h \
 		unistd.h \
 		util.h \
 		version.h \
