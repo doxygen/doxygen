@@ -340,10 +340,10 @@ void endFile(OutputList &ol,bool external)
              ));
   }
   ol.writeFooter(1,external); // write the link to the picture
-  if (Config_getString("HTML_FOOTER").isEmpty())
-  {
-    parseText(ol,theTranslator->trWrittenBy());
-  }
+  //if (Config_getString("HTML_FOOTER").isEmpty())
+  //{
+  //  parseText(ol,theTranslator->trWrittenBy());
+  //}
   ol.writeFooter(2,external); // end the footer
   ol.popGeneratorState();
   ol.endFile();
@@ -2228,7 +2228,10 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     ftvHelp = FTVHelp::getInstance();
   }
 
-  if (!gd->visited && (!gd->isASubGroup() || level>0))
+  /* Some groups should appear twice under different parent-groups.
+   * That is why we should not check if it was visited 
+   */
+  if (/*!gd->visited &&*/ (!gd->isASubGroup() || level>0))
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
@@ -2503,7 +2506,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     if (htmlHelp) htmlHelp->decContentsDepth();
     if (ftvHelp)  ftvHelp->decContentsDepth();
     
-    gd->visited=TRUE;
+    //gd->visited=TRUE;
   }
 }
 

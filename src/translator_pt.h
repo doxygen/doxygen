@@ -15,9 +15,12 @@
  *
  * The translation into Portuguese was provided by
  *   Rui Godinho Lopes <ruiglopes@yahoo.com>
+ *     http://www.ruilopes.com
  *
  * VERSION HISTORY
  * ---------------
+ * 004 03 march 2002
+ *   ! Updated for doxygen v1.2.14
  * 003 23 november 2001
  *   - Removed some obsolete methods (latexBabelPackage, trAuthor, trAuthors and trFiles)
  * 002 19 november 2001
@@ -31,7 +34,7 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_2_13
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -1048,7 +1051,7 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_13
         "\\endcode\n"
         "Se no ficheiro de configuração estiver a tag \\c MAX_DOT_GRAPH_HEIGHT "
         "com o valor de 200 então o seguinte grafo será gerado:"
-        "<p><center><img src=\"graph_legend.png\"></center>\n"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
         "<p>\n"
         "As caixas no grafo anterior têm as seguintes interpretações:\n"
         "<ul>\n"
@@ -1343,6 +1346,26 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "Referências";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of 
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementa "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementado em "+trWriteList(numEntries)+".";
     }
 
 };

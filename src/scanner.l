@@ -2859,7 +2859,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->brief+=' ';
 					  lineCount();
   					}
-<JavaDoc>".\\"/[ \t\r\n]		{
+<JavaDoc,AfterDocBrief>".\\"/[ \t\r\n]		{
 					  current->brief+=".";
 					}
 <JavaDoc>"."[ \t\r\n]			{

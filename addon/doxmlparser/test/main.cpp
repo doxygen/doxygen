@@ -234,12 +234,6 @@ void DumpDoc(IDoc *doc)
         ASSERT(hl!=0);
       }
       break;
-    case IDoc::Anchor:
-      {
-        IDocAnchor *anc = dynamic_cast<IDocAnchor*>(anc);
-        ASSERT(anc!=0);
-      }
-      break;
     case IDoc::Formula:
       {
         IDocFormula *fm = dynamic_cast<IDocFormula*>(fm);

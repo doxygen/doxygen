@@ -407,12 +407,14 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   QCString &projectName = Config_getString("PROJECT_NAME");
 
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
-  t << " doxygen " << theTranslator->trWrittenBy() << " ";
-  t << "Dimitri van Heesch \\copyright~1997-2002";
+  t << " doxygen";
+  //t << " " << theTranslator->trWrittenBy() << " ";
+  //t << "Dimitri van Heesch \\copyright~1997-2002";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
-  t << " doxygen " << theTranslator->trWrittenBy() << " ";
-  t << "Dimitri van Heesch \\copyright~1997-2002";
+  t << " doxygen";
+  //t << " << theTranslator->trWrittenBy() << " ";
+  //t << "Dimitri van Heesch \\copyright~1997-2002";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -824,14 +826,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        t << " Dimitri van Heesch \\copyright~1997-2002";
+        //t << " Dimitri van Heesch \\copyright~1997-2002";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        t << " Dimitri van Heesch \\copyright~1997-2002";
+        //t << " Dimitri van Heesch \\copyright~1997-2002";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }

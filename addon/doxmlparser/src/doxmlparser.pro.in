@@ -4,12 +4,12 @@ HEADERS      =	basehandler.h mainhandler.h \
                 compoundhandler.h sectionhandler.h \
                 memberhandler.h paramhandler.h \
                 dochandler.h linkedtexthandler.h \
-                debug.h
+                debug.h graphhandler.h
 SOURCES      =	mainhandler.cpp \
                 compoundhandler.cpp sectionhandler.cpp \
                 memberhandler.cpp paramhandler.cpp \
                 dochandler.cpp linkedtexthandler.cpp \
-                basehandler.cpp debug.cpp
+                basehandler.cpp debug.cpp graphhandler.cpp
 unix:LIBS                  += -L../../../lib -lqtools 
 win32:INCLUDEPATH          += .
 win32-mingw:LIBS           += -L../../../lib -lqtools 

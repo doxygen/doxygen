@@ -51,7 +51,7 @@ Korean
 Richard Kim: ryk@dspwiz.com
 
 Norwegian
-Lars Erik Jordet: larsej@stud.ifd.hibu.no
+Lars Erik Jordet: lej@circuitry.no
 
 Polish 
 Grzegorz Kowal:  g_kowal@poczta.onet.pl

@@ -1999,7 +1999,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
              MemberDef *&md, 
              ClassDef *&cd, FileDef *&fd, NamespaceDef *&nd, GroupDef *&gd,
              bool forceEmptyScope,
-             FileDef *currentFile
+             FileDef *currentFile,
+             bool checkCV
             )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
@@ -2076,7 +2077,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           if (mmd->isLinkable())
           {
             bool match=args==0 || 
-              matchArguments(mmd->argumentList(),argList,className,0,FALSE); 
+              matchArguments(mmd->argumentList(),argList,className,0,checkCV); 
             //printf("match=%d\n",match);
             if (match)
             {
@@ -2187,7 +2188,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
               match=matchArguments(mmd->argumentList(),argList,0,
-                  namespaceName,FALSE); 
+                  namespaceName,checkCV); 
             }
             if (match)
             {
@@ -2247,7 +2248,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               {
                 argList=new ArgumentList;
                 stringToArgumentList(args,argList);
-                match=matchArguments(md->argumentList(),argList); 
+                match=matchArguments(md->argumentList(),argList,0,0,checkCV); 
                 delete argList; argList=0;
               }
               if (match) 
@@ -2489,8 +2490,13 @@ bool generateRef(OutputDocInterface &od,const char *scName,
   //        scopeStr.data(),nameStr.data(),argsStr.data());
 
   // check if nameStr is a member or global.
-  if (getDefs(scopeStr,nameStr,argsStr,md,cd,fd,nd,gd,
-              scopePos==0 && !memberScopeFirst))
+  if (getDefs(scopeStr,nameStr,argsStr,
+              md,cd,fd,nd,gd,
+              scopePos==0 && !memberScopeFirst,
+              0,
+              TRUE
+             )
+     )
   {
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
     QCString anchor;

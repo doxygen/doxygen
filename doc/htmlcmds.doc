@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -114,6 +114,12 @@ The special HTML character entities that are recognized by Doxygen:
        writes an \c a with a ring (like &aring;).
 <li>\c &nbsp; a non breakable space.
 </ul>
+
+Finally, to put invisible comments inside comment blocks, HTML style
+comments can be used:
+\verbatim
+/*! <!-- This is a comment with a comment block --> Visible text */
+\endverbatim
 
 */
  

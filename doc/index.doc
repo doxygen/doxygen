@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -24,25 +24,6 @@ Version: $(VERSION)
 \endhtmlonly
 </center>
 \endif
-
-<h2>Doxygen license</h2>
-\addindex license
-\addindex GPL
-
-Copyright &copy; 1997-2001 by 
-<a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
-
-Permission to use, copy, modify, and distribute this software and its
-documentation under the terms of the GNU General Public License is hereby 
-granted. No representations are made about the suitability of this software 
-for any purpose. It is provided "as is" without express or implied warranty.
-See the 
-<a href="http://www.gnu.org/copyleft/gpl.html">
-GNU General Public License</a>
-for more details.
-<p>
-Documents produced by doxygen are derivative works derived from the
-input used in their production; they are not affected by this license.
 
 <h2>Introduction</h2>
 Doxygen is a documentation system for C++, Java, IDL 
@@ -70,8 +51,8 @@ It can help you in three ways:
 
 Doxygen is developed under <a href="http://www.linux.org">Linux</a>, 
 but is set-up to be highly portable. As a result, it runs on most 
-other Unix flavors as well. Furthermore, an executable for 
-Windows 9x/NT is also available.
+other Unix flavors as well. Furthermore, executables for 
+Windows 9x/NT and Mac OS X are available.
 
 This manual is divided into three parts, each of which is divided into several 
 sections.
@@ -128,6 +109,25 @@ The third part provides information for developers:
               output languages.
 </ul>
 
+<h2>Doxygen license</h2>
+\addindex license
+\addindex GPL
+
+Copyright &copy; 1997-2002 by 
+<a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
+
+Permission to use, copy, modify, and distribute this software and its
+documentation under the terms of the GNU General Public License is hereby 
+granted. No representations are made about the suitability of this software 
+for any purpose. It is provided "as is" without express or implied warranty.
+See the 
+<a href="http://www.gnu.org/copyleft/gpl.html">
+GNU General Public License</a>
+for more details.
+<p>
+Documents produced by doxygen are derivative works derived from the
+input used in their production; they are not affected by this license.
+
 <h2>Projects using doxygen</h2>
 
 I have compiled a 
@@ -165,20 +165,19 @@ Thanks go to:
 <li>My brother <a href="http://www.stack.nl/~fidget/index.html">Frank</a>
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
-<li>Wouter Slegers for registering the www.doxygen.org domain.
+<li>Wouter Slegers of 
+    <a href="http://www.yourcreativesolutions.nl">Your Creative Solutions</a> 
+    for registering the www.doxygen.org domain.
 <li>Parker Waechter for adding the RTF output generator.
 <li>Joerg Baumann, for adding conditional documentation blocks, 
     PDF links, and the configuration generator.
 <li>Matthias Andree for providing a .spec script for building rpms from the
     sources.
 <li>Tim Mensch for adding the todo command.
+<li>Christian Hammond for redesigning the web-site.
 <li>Ken Wong for providing the HTML tree view code.
-<li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 
-    Vlastimil Havran, Petr Prikryl, Ahmed Also Faisal, Alessandro Falappa, 
-    Kenji Nagamatsu, Francisco Oltra Thennet, Olli Korhonen, 
-    Boris Bralo, Nickolay Semyonov, Richard Kim, Földvári György,
-    Grzegorz Kowal, and Wang Weihan 
-    for providing translations into various languages.
+<li>Petr Prikryl for coordinating the internationalisation support.
+    All language maintainers for providing translations into many languages.
 <li>Erik Jan Lingen of <a href="http://www.habanera.nl/">Habanera</a> for
     donating money.
 <li>The Comms group of <a href="http://www.symbian.com">Symbian</a> for donating

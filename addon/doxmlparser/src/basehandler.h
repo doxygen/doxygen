@@ -22,6 +22,8 @@
 
 #include "debug.h"
 
+//-----------------------------------------------------------------------------
+
 class IBaseHandler
 {
   public:
@@ -29,6 +31,8 @@ class IBaseHandler
     virtual QXmlDefaultHandler *delegate() const = 0;
     virtual ~IBaseHandler() {}
 };
+
+//-----------------------------------------------------------------------------
 
 class IFallBackHandler
 {
@@ -38,6 +42,8 @@ class IFallBackHandler
     virtual bool handleEndElement(const QString &name) = 0;
     virtual ~IFallBackHandler() {}
 };
+
+//-----------------------------------------------------------------------------
 
 template<class T> class ElementMapper
 {
@@ -108,10 +114,14 @@ template<class T> class ElementMapper
     QDict<EndElementHandlerT>   m_endHandlers;
 };
 
+//-----------------------------------------------------------------------------
+
 struct LocatorContainer
 {
     static QXmlLocator *s_theLocator;
 };
+
+//-----------------------------------------------------------------------------
 
 template<class T> class BaseHandler : public QXmlDefaultHandler,
                                       public ElementMapper<T>,
@@ -268,6 +278,8 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
     QXmlDefaultHandler         *m_delegateHandler;
     IFallBackHandler           *m_fallBackHandler;
 };
+
+//-----------------------------------------------------------------------------
 
 template<class T> class BaseFallBackHandler : public ElementMapper<T>,
                                               public IFallBackHandler

@@ -181,14 +181,16 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr><address><small>\n";
+  t << "<hr><address align=\"right\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << " <a href=\"http://www.doxygen.org/index.html\">\n"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
     << "align=\"middle\" border=0 width=110 height=53>\n"
-    << "</a> $doxygenversion " << theTranslator->trWrittenBy()
-    << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
-    << " &copy;&nbsp;1997-2002</small></address>\n"
+    << "</a> $doxygenversion";
+  //  << " " << theTranslator->trWrittenBy()
+  //  << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
+  //  << " &copy;&nbsp;1997-2002"
+  t << "</small></address>\n"
     << "</body>\n"
     << "</html>\n";
 }
@@ -255,7 +257,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
   {
     case 0:
       if (g_footer.isEmpty())
-        t << "<hr><address><small>";
+        t << "<hr><address align=\"right\"><small>";
       else
         t << substituteKeywords(g_footer,convertToHtml(lastTitle));
       break;
@@ -280,8 +282,10 @@ void HtmlGenerator::writeFooter(int part,bool external)
       break;
     default:
       if (g_footer.isEmpty())
-        t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;"
-             "1997-2002</small></address>\n</body>\n</html>\n";
+      {
+        //t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;1997-2002";
+        t << "</small></address>\n</body>\n</html>\n";
+      }
       break;
       
   }

@@ -162,6 +162,13 @@ class ParagraphHandler : public IDocPara,
     MarkupHandler  *m_markupHandler;
 };
 
+class ParagraphIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    ParagraphIterator(const ParagraphHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+};
+
 //-----------------------------------------------------------------------------
 
 /*! \brief Node representing a list item.
@@ -358,6 +365,8 @@ class LinkHandler : public IDocLink, public BaseHandler<LinkHandler>
 
     // IDocLink
     virtual Kind kind() const { return Link; }
+    virtual QString refId() const { return m_ref; }
+    virtual QString text() const { return m_text; }
 
   private:
     IBaseHandler   *m_parent;
@@ -382,6 +391,7 @@ class EMailHandler : public IDocEMail, public BaseHandler<EMailHandler>
 
     // IDocEMail
     virtual Kind kind() const { return EMail; }
+    virtual QString address() const { return m_address; }
 
   private:
     IBaseHandler   *m_parent;
@@ -405,6 +415,8 @@ class ULinkHandler : public IDocULink, public BaseHandler<ULinkHandler>
 
     // IDocULink
     virtual Kind kind() const { return ULink; }
+    virtual QString url() const { return m_url; }
+    virtual QString text() const { return m_text; }
 
   private:
     IBaseHandler   *m_parent;
@@ -601,9 +613,10 @@ class VariableListIterator : public BaseIterator<IDocIterator,IDoc,VariableListE
 /*! \brief Node representing a highlighted text fragment.
  *
  */
-// TODO: children: ref
+// children: ref
 class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandler>
 {
+    friend class HighlightIterator;
   public:
     HighlightHandler(IBaseHandler *parent);
     virtual ~HighlightHandler();
@@ -613,13 +626,23 @@ class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandl
 
     // IDocHighlight
     virtual Kind kind() const { return Highlight; }
+    virtual HighlightKind highlightKind() const { return m_hl; }
+    virtual IDocIterator *codeElements() const;
 
   private:
     void addTextNode();
     
     IBaseHandler   *m_parent;
-    QString        m_class;
-    QList<IDoc> m_children;
+    HighlightKind  m_hl;
+    QString        m_hlString;
+    QList<IDoc>    m_children;
+};
+
+class HighlightIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    HighlightIterator(const HighlightHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -630,6 +653,7 @@ class HighlightHandler : public IDocHighlight, public BaseHandler<HighlightHandl
 // children: linenumber, highlight, anchor, ref
 class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
 {
+    friend class CodeLineIterator;
   public:
 
     virtual void startCodeLine(const QXmlAttributes&);
@@ -644,6 +668,9 @@ class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
 
     // IDocCodeLine
     virtual Kind kind() const { return CodeLine; }
+    virtual int lineNumber() const { return m_lineNumber; }
+    virtual QString refId() const { return m_refId; }
+    virtual IDocIterator *codeElements() const;
 
   private:
     void addTextNode();
@@ -654,6 +681,13 @@ class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
     QList<IDoc> m_children;
 };
 
+class CodeLineIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    CodeLineIterator(const CodeLineHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+};
+
 //-----------------------------------------------------------------------------
 
 /*! \brief Node representing a program listing
@@ -662,6 +696,7 @@ class CodeLineHandler : public IDocCodeLine, public BaseHandler<CodeLineHandler>
 // children: codeline, linenumber
 class ProgramListingHandler : public IDocProgramListing, public BaseHandler<ProgramListingHandler>
 {
+    friend class ProgramListingIterator;
   public:
     virtual void startProgramListing(const QXmlAttributes& attrib);
     virtual void endProgramListing();
@@ -673,11 +708,21 @@ class ProgramListingHandler : public IDocProgramListing, public BaseHandler<Prog
 
     // IDocProgramListing
     virtual Kind kind() const { return ProgramListing; }
+    virtual IDocIterator *codeLines() const;
 
   private:
     IBaseHandler           *m_parent;
     QList<CodeLineHandler>  m_children;
     bool m_hasLineNumber;
+};
+
+//-----------------------------------------------------------------------------
+
+class ProgramListingIterator : public BaseIterator<IDocIterator,IDoc,CodeLineHandler>
+{
+  public:
+    ProgramListingIterator(const ProgramListingHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,CodeLineHandler>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -696,6 +741,8 @@ class FormulaHandler : public IDocFormula, public BaseHandler<FormulaHandler>
 
     // IDocFormula
     virtual Kind kind() const { return Formula; }
+    virtual QString id() const { return m_id; }
+    virtual QString text() const { return m_text; }
 
   private:
     IBaseHandler  *m_parent;
@@ -719,6 +766,8 @@ class ImageHandler : public IDocImage, public BaseHandler<ImageHandler>
 
     // IDocImage
     virtual Kind kind() const { return Image; }
+    virtual QString name() const { return m_name; }
+    virtual QString caption() const { return m_caption; }
 
   private:
     IBaseHandler  *m_parent;
@@ -742,6 +791,8 @@ class DotFileHandler : public IDocDotFile, public BaseHandler<DotFileHandler>
 
     // IDocDotFile
     virtual Kind kind() const { return DotFile; }
+    virtual QString name() const { return m_name; }
+    virtual QString caption() const { return m_caption; }
 
   private:
     IBaseHandler  *m_parent;
@@ -769,6 +820,8 @@ class IndexEntryHandler : public IDocIndexEntry, public BaseHandler<IndexEntryHa
 
     // IDocIndexEntry
     virtual Kind kind() const { return IndexEntry; }
+    virtual QString primary() const { return m_primary; }
+    virtual QString secondary() const { return m_secondary; }
 
   private:
     IBaseHandler  *m_parent;
@@ -784,6 +837,7 @@ class IndexEntryHandler : public IDocIndexEntry, public BaseHandler<IndexEntryHa
 // children: para
 class EntryHandler : public IDocEntry, public BaseHandler<EntryHandler>
 {
+    friend class EntryIterator;
   public:
     EntryHandler(IBaseHandler *parent);
     virtual ~EntryHandler();
@@ -793,10 +847,18 @@ class EntryHandler : public IDocEntry, public BaseHandler<EntryHandler>
 
     // IDocEntry
     virtual Kind kind() const { return Entry; }
+    virtual IDocIterator *contents() const;
 
   private:
     IBaseHandler   *m_parent;
     QList<IDoc>  m_children;
+};
+
+class EntryIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+{
+  public:
+    EntryIterator(const EntryHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -807,6 +869,7 @@ class EntryHandler : public IDocEntry, public BaseHandler<EntryHandler>
 // children: entry
 class RowHandler : public IDocRow, public BaseHandler<RowHandler>
 {
+    friend class RowIterator;
   public:
     RowHandler(IBaseHandler *parent);
     virtual ~RowHandler();
@@ -816,10 +879,18 @@ class RowHandler : public IDocRow, public BaseHandler<RowHandler>
 
     // IDocRow
     virtual Kind kind() const { return Row; }
+    virtual IDocIterator *entries() const;
 
   private:
     IBaseHandler        *m_parent;
     QList<EntryHandler>  m_children;
+};
+
+class RowIterator : public BaseIterator<IDocIterator,IDoc,EntryHandler>
+{
+  public:
+    RowIterator(const RowHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,EntryHandler>(handler.m_children) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -830,6 +901,7 @@ class RowHandler : public IDocRow, public BaseHandler<RowHandler>
 // children: row, caption
 class TableHandler : public IDocTable, public BaseHandler<TableHandler>
 {
+    friend class TableIterator;
   public:
     TableHandler(IBaseHandler *parent);
     virtual ~TableHandler();
@@ -841,6 +913,9 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
 
     // IDocTable
     virtual Kind kind() const { return Table; }
+    virtual IDocIterator *rows() const;
+    virtual int numColumns() const { return m_numColumns; }
+    virtual QString caption() const { return m_caption; }
 
   private:
     IBaseHandler      *m_parent;
@@ -849,13 +924,11 @@ class TableHandler : public IDocTable, public BaseHandler<TableHandler>
     QString            m_caption;
 };
 
-//-----------------------------------------------------------------------------
-
-class ParagraphIterator : public BaseIterator<IDocIterator,IDoc,IDoc>
+class TableIterator : public BaseIterator<IDocIterator,IDoc,RowHandler>
 {
   public:
-    ParagraphIterator(const ParagraphHandler &handler) : 
-      BaseIterator<IDocIterator,IDoc,IDoc>(handler.m_children) {}
+    TableIterator(const TableHandler &handler) : 
+      BaseIterator<IDocIterator,IDoc,RowHandler>(handler.m_children) {}
 };
 
 

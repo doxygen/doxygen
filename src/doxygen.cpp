@@ -3909,7 +3909,8 @@ static void findMember(Entry *root,
         int count=0;
         MemberNameIterator mni(*mn);
         MemberDef *md;
-        for (mni.toFirst();(md=mni.current());++mni)
+        bool memFound=FALSE;
+        for (mni.toFirst();!memFound && (md=mni.current());++mni)
         {
           ClassDef *cd=md->getClassDef();
           Debug::print(Debug::FindMembers,0,
@@ -3993,13 +3994,64 @@ static void findMember(Entry *root,
 
             bool ambig;
             FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-            // list of namespaces using in the file that this member definition is part of
-            NamespaceList *nl = 0;
-            if (nd) nl = nd->getUsedNamespaces();
-            else if (fd) nl = fd->getUsedNamespaces();
-            ClassList *cl = 0;
-            if (nd) cl = nd->getUsedClasses();
-            else if (fd) cl = fd->getUsedClasses();
+
+            // list of namespaces using in the file/namespace that this 
+            // member definition is part of
+            NamespaceList *nl = new NamespaceList;
+            if (nd) 
+            {
+              NamespaceList *nnl = nd->getUsedNamespaces();
+              if (nnl)
+              {
+                NamespaceDef *nnd = nnl->first();
+                while (nnd)
+                {
+                  nl->append(nnd);
+                  nnd = nnl->next();
+                }
+              }
+            }
+            if (fd)
+            {
+              NamespaceList *fnl = fd->getUsedNamespaces();
+              if (fnl)
+              {
+                NamespaceDef *fnd = fnl->first();
+                while (fnd)
+                {
+                  nl->append(fnd);
+                  fnd = fnl->next();
+                }
+              }
+            }
+
+            ClassList *cl = new ClassList;
+            if (nd) 
+            {
+              ClassList *ncl = nd->getUsedClasses();
+              if (ncl)
+              {
+                ClassDef *ncd = ncl->first();
+                while (ncd)
+                {
+                  cl->append(ncd);
+                  ncd = ncl->next();
+                }
+              }
+            }
+            if (fd) 
+            {
+              ClassList *fcl = fd->getUsedClasses();
+              if (fcl)
+              {
+                ClassDef *fcd = fcl->first();
+                while (fcd)
+                {
+                  cl->append(fcd);
+                  fcd = fcl->next();
+                }
+              }
+            }
             
             bool matching=
               md->isVariable() || md->isTypedef() || // needed for function pointers
@@ -4038,8 +4090,10 @@ static void findMember(Entry *root,
               //         root->inLine,md->isInline());
               addMemberDocs(root,md,funcDecl,0,overloaded,nl);
               count++;
-              break;
+              memFound=TRUE;
             }
+            delete cl;
+            delete nl;
           } 
         } 
         if (count==0 && !(isFriend && funcType=="class"))
@@ -6565,13 +6619,19 @@ void readConfiguration(int argc, char **argv)
           else
           {
             Config::instance()->init();
-            setTranslator("English");
           }
           if (optind+3>=argc)
           {
             err("Error: option \"-w html\" does not have enough arguments\n");
             exit(1);
           }
+
+		  QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+		  if (!setTranslator(outputLanguage))
+		  {
+			  err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+		  }
+
           QFile f;
           if (openOutputFile(argv[optind+1],f))
           {
@@ -6605,13 +6665,19 @@ void readConfiguration(int argc, char **argv)
           else // use default config
           {
             Config::instance()->init();
-            setTranslator("English");
           }
           if (optind+2>=argc)
           {
-            err("Error: option \"-w html\" does not have enough arguments\n");
+            err("Error: option \"-w latex\" does not have enough arguments\n");
             exit(1);
           }
+
+		  QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
+		  if (!setTranslator(outputLanguage))
+		  {
+			  err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+		  }
+
           QFile f;
           if (openOutputFile(argv[optind+1],f))
           {
@@ -6713,7 +6779,7 @@ void readConfiguration(int argc, char **argv)
   Config::instance()->check();
   initWarningFormat();
   QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
-  if (!outputLanguage.isEmpty() && !setTranslator(outputLanguage))
+  if (!setTranslator(outputLanguage))
   {
     err("Error: Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
@@ -7335,13 +7401,13 @@ void generateOutput()
             theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(1); // write second part
-  parseText(*outputList,theTranslator->trWrittenBy());
+  //parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(2); // write third part
   parseText(*outputList,
             theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
           );
   outputList->writeStyleInfo(3); // write fourth part
-  parseText(*outputList,theTranslator->trWrittenBy());
+  //parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(4); // write last part
   outputList->enableAll();
   

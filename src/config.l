@@ -881,9 +881,10 @@ void Config::check()
     if (p)
     {
       char c;
-      while ((c=*p++))
+      while ((c=*p))
       {
-	if (c=='\\') c='/';
+	if (c=='\\') *p='/';
+	p++;
       }
     }
     QCString path = sfp;

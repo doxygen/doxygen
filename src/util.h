@@ -86,7 +86,8 @@ extern bool getDefs(const QCString &scopeName,
                     NamespaceDef *&nd,
                     GroupDef *&gd,
                     bool forceEmptyScope=FALSE,
-                    FileDef *currentFile=0
+                    FileDef *currentFile=0,
+                    bool checkCV=FALSE
                    );
 
 extern bool generateRef(OutputDocInterface &od,const char *,

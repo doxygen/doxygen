@@ -16,6 +16,7 @@
 #include <qxml.h>
 #include "mainhandler.h"
 #include "compoundhandler.h"
+#include "sectionhandler.h"
 #include "debug.h"
 
 class ErrorHandler : public QXmlErrorHandler

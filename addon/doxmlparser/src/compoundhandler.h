@@ -22,11 +22,12 @@
 
 #include "basehandler.h"
 #include "baseiterator.h"
-#include "sectionhandler.h"
 
 class MainHandler;
 class DocHandler;
 class ProgramListingHandler;
+class GraphHandler;
+class MemberHandler;
 
 class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 {
@@ -41,6 +42,8 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
     virtual void startLocation(const QXmlAttributes& attrib);
     virtual void startProgramListing(const QXmlAttributes& attrib);
+    virtual void startInheritanceGraph(const QXmlAttributes& attrib);
+    virtual void startCollaborationGraph(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
@@ -54,43 +57,25 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     QString id()   const { return m_id;   }
     CompoundKind kind() const { return m_kind; }
     QString kindString() const { return m_kindString; }
-    ISectionIterator *sections() const 
-    { return new SectionIterator(m_sections); }
-    virtual IDocRoot *briefDescription() const
-    { return m_brief; }
-    virtual IDocRoot *detailedDescription() const
-    { return m_detailed; }
-    virtual IMember *memberById(const QString &id) const
-    { return m_memberDict[id]; }
-    virtual IMemberIterator *memberByName(const QString &name) const
-    { 
-      QList<MemberHandler> *ml = m_memberNameDict[name]; 
-      if (ml==0) return 0;
-      return new MemberIterator(*ml);
-    }
-    virtual void release();
+    ISectionIterator *sections() const;
+    IDocRoot *briefDescription() const;
+    IDocRoot *detailedDescription() const;
+    IMember *memberById(const QString &id) const;
+    IMemberIterator *memberByName(const QString &name) const;
+    void release();
 
   private:
-    struct SuperClass
+    struct RelatedClass
     {
-      SuperClass(const QString &id,const QString &prot,const QString &virt) :
+      RelatedClass(const QString &id,const QString &prot,const QString &virt) :
         m_id(id),m_protection(prot),m_virtualness(virt) {}
 
       QString m_id;
       QString m_protection;
       QString m_virtualness;
     };
-    struct SubClass
-    {
-      SubClass(const QString &id,const QString &prot,const QString &virt) :
-        m_id(id),m_protection(prot),m_virtualness(virt) {}
-
-      QString m_id;
-      QString m_protection;
-      QString m_virtualness;
-    };
-    QList<SuperClass>       m_superClasses;
-    QList<SubClass>         m_subClasses;
+    QList<RelatedClass>     m_superClasses;
+    QList<RelatedClass>     m_subClasses;
     QList<ISection>         m_sections;
     DocHandler             *m_brief;
     DocHandler             *m_detailed;
@@ -106,6 +91,9 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     QDict<MemberHandler>          m_memberDict;
     QDict<QList<MemberHandler> >  m_memberNameDict;
     MainHandler            *m_mainHandler;
+    GraphHandler           *m_inheritanceGraph;
+    GraphHandler           *m_collaborationGraph;
+
 };
 
 void compoundhandler_init();
