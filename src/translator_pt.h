@@ -18,16 +18,18 @@
  *
  * VERSION HISTORY
  * ---------------
+ * 002 19 november 2001
+ *   ! Updated for doxygen v1.2.12
  * 001 20 july 2001
- *   - Updated for doxygen v1.2.8.1
+ *   ! Updated for doxygen v1.2.8.1
  * 000 ?
- *   - Initial translation for doxygen v1.1.5
+ *   + Initial translation for doxygen v1.1.5
  */
 
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_2_11
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -1348,5 +1350,17 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_11
       return result;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Referências";
+    }
+
 };
+
 #endif

@@ -67,6 +67,20 @@ void MainHandler::initialize()
     m_compoundNameDict.insert(compHandler->name(),compHandler);
     m_compoundDict.insert(compHandler->id(),compHandler);
   }
+
+  // for each member
+  QDictIterator< QList<IMember> > mndi(m_memberNameDict);
+  QList<IMember> *ml;
+  for (;(ml=mndi.current());++mndi)
+  {
+    QListIterator<IMember> mli(*ml);
+    IMember *mem;
+    for (;(mem=mli.current());++mli)
+    {
+      ((MemberHandler*)mem)->initialize(this);
+    }
+  }
+
 }
 
 class ErrorHandler : public QXmlErrorHandler

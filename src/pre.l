@@ -721,7 +721,7 @@ QCString removeIdsAndMarkers(const char *s)
 	p++;
         inNum=TRUE;	
       }
-      else if (c=='d') // identifier starting with a `d'
+      else if (c=='d' && !inNum) // identifier starting with a `d'
       {
 	if (strncmp(p,"defined ",8)==0 || strncmp(p,"defined(",8)==0) 
 	           // defined keyword
@@ -745,7 +745,7 @@ QCString removeIdsAndMarkers(const char *s)
       {
 	result+=c;
 	char lc=tolower(c);
-	if (lc!='l' && lc!='u') inNum=FALSE;
+	if (!isId(lc) && lc!='.' && lc!='-' && lc!='+') inNum=FALSE;
 	p++;
       }
     }

@@ -177,7 +177,6 @@ static void initParser()
   isTypedef = FALSE;
   autoGroupStack.clear();
   insideTryBlock = FALSE;
-  insideIDL = FALSE;
   autoGroupStack.setAutoDelete(TRUE);
   lastDefGroup.groupname.resize(0);
 }
@@ -379,6 +378,7 @@ static void setContext()
   QCString fileName = yyFileName;
   insideIDL  = fileName.right(4)==".idl";
   insideJava = fileName.right(5)==".java";
+  //printf("setContext(%s) insideIDL=%d\n",yyFileName,insideIDL);
 }
 
 static void prependScope()

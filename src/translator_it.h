@@ -22,6 +22,8 @@
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (since June 1999)
  * Updates:
+ *        2001/11: corrected the translation fixing the issues reported by the translator.pl script
+ *                 translated new items used since version 1.2.11
  *        2001/08: corrected the translation fixing the issues reported by the translator.pl script
  *                 translated new items used since version 1.2.7
  *        2001/05: adopted new translation mechanism (trough adapters),
@@ -53,13 +55,13 @@
  * tecnica (ad es "lista dei file" e non "lista dei files")
  *
  * Se avete suggerimenti sulla traduzione di alcuni termini o volete segnalare
- * eventuali sviste potete scrivermi all'indirizzo: a.falappa@flashnet.it
+ * eventuali sviste potete scrivermi all'indirizzo: afalappa@interfree.it
  */
 
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_2_11
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1307,6 +1309,17 @@ class TranslatorItalian : public TranslatorAdapter_1_2_11
       QCString result((first_capital ? "Autor" : "autor"));
       result+=(singular ? "e" : "i");
       return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Riferimenti";
     }
 };
 

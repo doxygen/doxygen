@@ -20,10 +20,24 @@
  *   d2set@d2set.org).
  */
 
+/******************************************************************************
+ * History of content
+ *
+ *   Date       | Description
+ *  ============+=============================================================
+ *  2001-11-22  | Removed obsolet methods:
+ *              |  QCString latexBabelPackage()
+ *              |  QCString trAuthor()
+ *              |  QCString trAuthors()
+ *              |  QCString trFiles()
+ *              |  QCString trIncludeFile()
+ *              |  QCString trVerbatimText(const char *f)
+ * -------------+------------------------------------------------------------
+ */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public TranslatorAdapter_1_2_11
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
@@ -46,9 +60,6 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
     {
       return "\\usepackage[french]{babel}\n";
     }
-    /*! returns the name of the package that is included by LaTeX */
-    QCString latexBabelPackage()
-    { return "french"; }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -125,14 +136,6 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn()
     { return "défini dans"; }
-
-    /*! put as in introduction in the verbatim header file of a class.
-     *  parameter f is the name of the include file.
-     */
-    QCString trIncludeFile()
-    { return "Fichier inclu"; }
-    QCString trVerbatimText(const char *f)
-    { return (QCString)"Ce texte provient du fichier inclu "+f+"."; }
 
     // quick reference sections
 
@@ -351,10 +354,6 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
     QCString trEnumerationValues()
     { return "Éléments énumérés"; }
     
-    /*! This is used in man pages as the author section. */
-    QCString trAuthor()
-    { return "Auteur"; }
-
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
@@ -402,12 +401,6 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
      */
     QCString trCompounds()
     { return "Composants"; }
-
-    /*! This is used in the documentation of a group before the list of 
-     *  links to documented files
-     */
-    QCString trFiles()
-    { return "Fichiers"; }
 
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
@@ -457,10 +450,6 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
     /*! this text is generated when the \\date command is used. */
     QCString trDate()
     { return "Date"; }
-
-    /*! this text is generated when the \\author command is used. */
-    QCString trAuthors()
-    { return "Auteur(s)"; }
 
     /*! this text is generated when the \\return command is used. */
     QCString trReturns()
@@ -1233,5 +1222,15 @@ class TranslatorFrench : public TranslatorAdapter_1_2_11
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Références";
+    }
 };
 #endif

@@ -16,6 +16,7 @@
 #include "memberhandler.h"
 #include "sectionhandler.h"
 #include "dochandler.h"
+#include "mainhandler.h"
 
 MemberHandler::MemberHandler(IBaseHandler *parent)
   : m_parent(parent), m_brief(0), m_detailed(0)
@@ -90,6 +91,7 @@ void MemberHandler::startReferences(const QXmlAttributes& attrib)
 {
   MemberReference *mr = new MemberReference;
   mr->m_memId = attrib.value("id");
+  mr->m_line  = attrib.value("line").toInt();
   m_references.append(mr);
   m_curString="";
 }
@@ -103,6 +105,7 @@ void MemberHandler::startReferencedBy(const QXmlAttributes& attrib)
 {
   MemberReference *mr = new MemberReference;
   mr->m_memId = attrib.value("id");
+  mr->m_line  = attrib.value("line").toInt();
   m_referencedBy.append(mr);
   m_curString="";
 }
@@ -136,4 +139,22 @@ void MemberHandler::startParam(const QXmlAttributes& attrib)
   m_params.append(paramHandler);
 }
 
+void MemberHandler::initialize(MainHandler *mh)
+{
+  QListIterator<MemberReference> mli(m_references);
+  MemberReference *mr;
+  for (;(mr=mli.current());++mli)
+  {
+    mr->initialize(mh);
+  }
+}
 
+void MemberHandler::MemberReference::initialize(MainHandler *mh)
+{
+  m_mainHandler = mh;
+}
+
+IMember *MemberHandler::MemberReference::getMember() const
+{
+  return m_mainHandler->getMemberById(m_memId);
+}

@@ -20,7 +20,7 @@
 
 #include "qtbc.h"
 #include <qlist.h>
-#include <qintdict.h>
+#include "sortdict.h"
 
 #define NOGROUP -1
 
@@ -33,7 +33,7 @@ class GroupDef;
 class OutputList;
 class Definition;
 
-class MemberGroup /* : public Definition */
+class MemberGroup 
 {
   public:
     MemberGroup(int id,const char *header,const char *docs);
@@ -66,6 +66,7 @@ class MemberGroup /* : public Definition */
     int numDocMembers() const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
+    MemberList *members() const { return memberList; }
 
   private: 
     MemberList *memberList;      // list of all members in the group
@@ -95,6 +96,13 @@ class MemberGroupDict : public QIntDict<MemberGroup>
   public:
     MemberGroupDict(int size) : QIntDict<MemberGroup>(size) {}
    ~MemberGroupDict() {}
+};
+
+class MemberGroupSDict : public SIntDict<MemberGroup>
+{
+  public:
+    MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
+   ~MemberGroupSDict() {}
 };
 
 class MemberGroupDictIterator : public QIntDictIterator<MemberGroup>

@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public TranslatorAdapter_1_2_11
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
@@ -962,6 +962,17 @@ class TranslatorDutch : public TranslatorAdapter_1_2_11
       QCString result((first_capital ? "Auteur" : "auteur"));
       if (!singular)  result+="s";
       return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Gebruikt";
     }
 
 };

@@ -913,7 +913,7 @@ TT	  [tT][tT]
 UL	  [uU][lL]
 VAR	  [vV][aA][rR]
 BLOCKQUOTE [bB][lL][oO][cC][kK][qQ][uU][oO][tT][eE]
-DOCPARAM  ("#")?([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
+DOCPARAM  ("#")?([a-z_A-Z0-9:\!\<\~\>\^\&\=\.\-]+)|("\"".*"\"")
 OPNEW     {B}+"new"({B}*"[]")?
 OPDEL     {B}+"delete"({B}*"[]")?
 OPARG     "("[a-z_A-Z0-9,\<\> \t\*\&]*")"

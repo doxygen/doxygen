@@ -31,8 +31,7 @@ class OutputList;
 class ClassSDict;
 class MemberDef;
 class NamespaceList;
-class MemberGroupDict;
-class MemberGroupList;
+class MemberGroupSDict;
 class NamespaceSDict;
 
 class NamespaceDef : public Definition
@@ -97,6 +96,9 @@ class NamespaceDef : public Definition
     MemberList docFuncMembers;
     MemberList docVarMembers;
 
+    /* user defined member groups */
+    MemberGroupSDict    *memberGroupSDict;
+
     /*! Classes inside this namespace */
     ClassSDict *classSDict;
     /*! Namespaces inside this namespace */
@@ -114,9 +116,6 @@ class NamespaceDef : public Definition
 
     MemberList allMemberList;
 
-    /* user defined member groups */
-    MemberGroupList    *memberGroupList;
-    MemberGroupDict    *memberGroupDict;
 };
 
 class NamespaceList : public QList<NamespaceDef>

@@ -46,9 +46,8 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   allMemberNameInfoSDict = new MemberNameInfoSDict(17);
   fileName = (QCString)"group_"+na;
   setGroupTitle( t );
-  memberGroupList = new MemberGroupList;
-  memberGroupList->setAutoDelete(TRUE);
-  memberGroupDict = new MemberGroupDict(1009);
+  memberGroupSDict = new MemberGroupSDict;
+  memberGroupSDict->setAutoDelete(TRUE);
 
   decDefineMembers.setInGroup(TRUE);
   decProtoMembers.setInGroup(TRUE);
@@ -79,8 +78,7 @@ GroupDef::~GroupDef()
   delete exampleDict;
   delete allMemberList;
   delete allMemberNameInfoSDict;
-  delete memberGroupList;
-  delete memberGroupDict;
+  delete memberGroupSDict;
 }
 
 void GroupDef::setGroupTitle( const char *t )
@@ -101,7 +99,7 @@ void GroupDef::setGroupTitle( const char *t )
 
 void GroupDef::distributeMemberGroupDocumentation()
 {
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -147,16 +145,16 @@ void GroupDef::addExample(const PageInfo *def)
 
 void GroupDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decEnumValMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decEnumValMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict);
 
   //printf("GroupDef::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -476,7 +474,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   if (allMemberList->count()>0)
   {
     /* write user defined member groups */
-    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
@@ -740,7 +738,7 @@ void GroupDef::addListReferences()
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name()
             );
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {

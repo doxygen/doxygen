@@ -50,6 +50,7 @@ CPPValue parseHexadecimal()
     else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
     else if (*p >= 'A' && *p <= 'F') val = val * 16 + *p - 'A' + 10;
   }
+  //printf("parseHexadecimal %s->%x\n",g_strToken.data(),val);
   return CPPValue(val);
 }
 

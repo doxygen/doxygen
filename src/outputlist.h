@@ -478,6 +478,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(bool);
     FORALLPROTO2(bool,int);
     FORALLPROTO2(bool,bool);
+    FORALLPROTO4(const char *,const char *,const char *,int);
 #endif
     FORALLPROTO2(int,bool);
     FORALLPROTO2(const char *,const char *);
@@ -488,7 +489,6 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(ClassDiagram &,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);
-    FORALLPROTO4(const char *,const char *,const char *,int);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

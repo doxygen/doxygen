@@ -377,13 +377,17 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         {
           name.prepend(scope+"::");
         }
+        Definition *d = md->getOuterScope();
+        if (d==Doxygen::globalScope) d=md->getBodyDef();
         if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
         {
+          //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope); 
           // for HTML write a real link
           ol.pushGeneratorState();
           ol.disableAllBut(OutputGenerator::Html);
           QCString lineStr,anchorStr;
           anchorStr.sprintf("l%05d",md->getStartBodyLine());
+          //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
           ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
           ol.popGeneratorState();
 
@@ -393,9 +397,8 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
           ol.docify(name);
           ol.popGeneratorState();
         }
-        else if (md->isLinkable() && md->getOuterScope())
+        else if (md->isLinkable() && d && d->isLinkable())
         {
-          Definition *d = md->getOuterScope();
           // for HTML write a real link
           ol.pushGeneratorState();
           ol.disableAllBut(OutputGenerator::Html);

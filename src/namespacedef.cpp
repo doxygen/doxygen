@@ -38,9 +38,8 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   usingDirList = 0;
   usingDeclList = 0;
   setReference(lref);
-  memberGroupList = new MemberGroupList;
-  memberGroupList->setAutoDelete(TRUE);
-  memberGroupDict = new MemberGroupDict(1009);
+  memberGroupSDict = new MemberGroupSDict;
+  memberGroupSDict->setAutoDelete(TRUE);
 }
 
 NamespaceDef::~NamespaceDef()
@@ -50,13 +49,12 @@ NamespaceDef::~NamespaceDef()
   delete m_innerCompounds;
   delete usingDirList;
   delete usingDeclList;
-  delete memberGroupList;
-  delete memberGroupDict;
+  delete memberGroupSDict;
 }
 
 void NamespaceDef::distributeMemberGroupDocumentation()
 {
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -96,44 +94,15 @@ void NamespaceDef::insertNamespace(NamespaceDef *nd)
   }
 }
 
-#if 0
-void NamespaceDef::addMemberListToGroup(MemberList *ml,
-                                        bool (MemberDef::*func)() const)
-{
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
-  {
-    int groupId=md->getMemberGroupId();
-    if ((md->*func)() && groupId!=-1)
-    {
-      QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      if (pGrpHeader)
-      {
-        MemberGroup *mg = memberGroupDict->find(groupId);
-        if (mg==0)
-        {
-          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
-          memberGroupDict->insert(groupId,mg);
-          memberGroupList->append(mg);
-        }
-        mg->insertMember(md);
-        md->setMemberGroup(mg);
-      }
-    }
-  }
-}
-#endif
 
 void NamespaceDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict);
 }
 
 void NamespaceDef::insertMember(MemberDef *md)
@@ -199,12 +168,6 @@ void NamespaceDef::insertMember(MemberDef *md)
 void NamespaceDef::computeAnchors()
 {
   setAnchors('a',&allMemberList);
-  //MemberGroupListIterator mgli(*memberGroupList);
-  //MemberGroup *mg;
-  //for (;(mg=mgli.current());++mgli)
-  //{
-  //  mg->setAnchors();
-  //}
 }
 
 void NamespaceDef::writeDocumentation(OutputList &ol)
@@ -249,7 +212,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   classSDict->writeDeclaration(ol);
 
   /* write user defined member groups */
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -380,7 +343,7 @@ void NamespaceDef::addListReferences()
              theTranslator->trNamespace(TRUE,TRUE),
              getOutputFileBase(),name()
             );
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {

@@ -64,9 +64,8 @@ FileDef::FileDef(const char *p,const char *nm,const char *lref)
   {
     docname.prepend(stripFromPath(path.copy()));
   }
-  memberGroupList = new MemberGroupList;
-  memberGroupList->setAutoDelete(TRUE);
-  memberGroupDict = new MemberGroupDict(1009);
+  memberGroupSDict = new MemberGroupSDict;
+  memberGroupSDict->setAutoDelete(TRUE);
 }
 
 /*! destroy the file definition */
@@ -81,8 +80,7 @@ FileDef::~FileDef()
   delete srcMemberDict;
   delete usingDirList;
   delete usingDeclList;
-  delete memberGroupList;
-  delete memberGroupDict;
+  delete memberGroupSDict;
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
@@ -93,7 +91,7 @@ void FileDef::computeAnchors()
 
 void FileDef::distributeMemberGroupDocumentation()
 {
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -161,9 +159,22 @@ void FileDef::writeDocumentation(OutputList &ol)
     for (;(ii=ili.current());++ili)
     {
       FileDef *fd=ii->fileDef;
+      bool isIDLorJava = FALSE;
+      if (fd)
+      {
+        isIDLorJava = fd->name().right(4)==".idl" || 
+                      fd->name().right(5)==".java";
+      }
       ol.startTypewriter();
-      ol.docify("#include ");
-      if (ii->local)
+      if (isIDLorJava)
+      {
+        ol.docify("import ");
+      }
+      else
+      {
+        ol.docify("#include ");
+      }
+      if (ii->local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify("<");
@@ -185,10 +196,12 @@ void FileDef::writeDocumentation(OutputList &ol)
       }
       
       ol.enableAll();
-      if (ii->local)
+      if (ii->local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify(">");
+      if (isIDLorJava) 
+        ol.docify(";");
       ol.endTypewriter();
       ol.disable(OutputGenerator::RTF);
       ol.lineBreak();
@@ -301,7 +314,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   classSDict->writeDeclaration(ol);
   
   /* write user defined member groups */
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {
@@ -425,13 +438,10 @@ void FileDef::writeSource(OutputList &ol)
 
   initParseCodeContext();
   ol.startCodeFragment();
-  //if (name().left(9)=="memory.c")
-  //{
   parseCode(ol,0,
             fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,0,this
            );
-  //}
   ol.endCodeFragment();
   endFile(ol);
   ol.enableAll();
@@ -440,12 +450,12 @@ void FileDef::writeSource(OutputList &ol)
 
 void FileDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupDict,memberGroupList);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupDict,memberGroupList);
+  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict);
+  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict);
 }
 
 /*! Adds member definition \a md to the list of all members of this file */
@@ -631,7 +641,7 @@ void FileDef::addListReferences()
              theTranslator->trFile(TRUE,TRUE),
              getOutputFileBase(),name()
             );
-  MemberGroupListIterator mgli(*memberGroupList);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
   {

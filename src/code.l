@@ -1967,9 +1967,9 @@ void parseCode(OutputDocInterface &od,const char *className,const QCString &s,
   codeYYrestart( codeYYin );
   BEGIN( Body );
   codeYYlex();
-  endFontClass();
   if (g_inputLines==1)
   {
+    endFontClass();
     g_code->endCodeLine();
   }
   od.append(g_code);
