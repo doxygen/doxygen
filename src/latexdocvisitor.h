@@ -135,7 +135,8 @@ class LatexDocVisitor : public DocVisitor
     void filter(const char *str);
     void startLink(const QString &ref,const QString &file,
                    const QString &anchor);
-    void endLink();
+    void endLink(const QString &ref,const QString &file,
+                 const QString &anchor);
     QString escapeMakeIndexChars(const char *s);
 
     void pushEnabled();

@@ -840,6 +840,34 @@ static void buildClassDocList(Entry *root)
   }
 }
 
+Definition *buildScopeFromQualifiedName(const QCString name,int level)
+{
+  int i=0;
+  int p=0,l;
+  Definition *prevScope=Doxygen::globalScope;
+  QCString fullScope;
+  while (i<level)
+  {
+    int idx=getScopeFragment(name,p,&l);
+    QCString nsName = name.mid(idx,l);
+    if (!fullScope.isEmpty()) fullScope+="::";
+    fullScope+=nsName;
+    //printf("adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+    // introduce bogus namespace
+    NamespaceDef *nd=new NamespaceDef(
+        "<generated>",1,fullScope);
+
+    // add namespace to the list
+    Doxygen::namespaceSDict.inSort(fullScope,nd);
+    prevScope->addInnerCompound(nd);
+    nd->setOuterScope(prevScope);
+    p=idx+l+2;
+    prevScope=nd;
+    i++;
+  }
+  return prevScope;
+}
+
 static void resolveClassNestingRelations()
 {
   ClassSDict::Iterator cli(Doxygen::classSDict);
@@ -986,13 +1014,11 @@ static void buildNamespaceList(Entry *root)
         //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"none");
         if (d==0)
         {
+          Definition *d = buildScopeFromQualifiedName(fullName,fullName.contains("::"));
+          d->addInnerCompound(nd);
+          nd->setOuterScope(d);
           // TODO: Due to the order in which the tag file is written
           // a nested class can be found before its parent!
-          //
-          //warn(root->fileName,root->startLine,
-          //     "Warning: Internal inconsistency: scope for namespace %s not "
-          //     "found!\n",fullName.data()
-          //    );
         }
         else
         {
@@ -2226,8 +2252,8 @@ static void buildFunctionList(Entry *root)
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
               
-              //printf("combining function with prototype found=%d `%s'<->`%s'!\n",
-              //    found,fd->absFilePath().data(),root->fileName.data());
+              //printf("combining function with prototype found=%d in namespace %s\n",
+              //    found,nsName.data());
 
               // merge argument lists
               //mergeArguments(root->argList,md->argumentList());
@@ -2266,9 +2292,18 @@ static void buildFunctionList(Entry *root)
                   md->setArgumentList(argList);
                 }
               }
+              else if (!md->documentation().isEmpty() && !root->doc.isEmpty())
+              {
+                warn(root->docFile,root->docLine,"Warning: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->docLine(),md->docFile().data());
+              }
+
               if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
               {
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+              }
+              else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty())
+              {
+                warn(root->briefFile,root->briefLine,"Warning: ignoring the brief description found here, since another one was found at line %d of file %s!",md->briefLine(),md->briefFile().data());
               }
               
               md->addSectionsToDefinition(root->anchors);
@@ -2279,10 +2314,17 @@ static void buildFunctionList(Entry *root)
               if (md->getGroupDef()==0 && root->groups->first())
               {
                 // if we do addMemberToGroups here an undocumented declaration may prevent 
-                // the documented implementation below from being added 
+                // the documented implementation below it from being added 
                 //addMemberToGroups(root,md);
                 GroupDef *gd=Doxygen::groupSDict[root->groups->first()->groupname.data()];
-                md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+                if (gd)
+                {
+                  bool success = gd->insertMember(md);
+                  if (success)
+                  {
+                    md->setGroupDef(gd, root->groups->first()->pri, root->fileName, root->startLine, !root->doc.isEmpty());
+                  }
+                }
               }
               else if (md->getGroupDef()!=0 && root->groups->count()==0)
               {
@@ -8198,7 +8240,7 @@ void generateOutput()
   cleanUpDoxygen();
   if (Debug::isFlagSet(Debug::Time))
   {
-    printf("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
+    msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
          ((double)Doxygen::runningTime.elapsed())/1000.0,
          Doxygen::sysElapsedTime
         );

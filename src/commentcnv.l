@@ -198,7 +198,7 @@ void replaceComment(int offset);
 <CComment>[^\\@*\n]*	           { /* anything that is not a '*' */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
-<CComment>"*"+[^*/\n]*             { /* stars without slashes */
+<CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>\n                       { /* new line in comment */

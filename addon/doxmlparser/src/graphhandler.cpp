@@ -110,7 +110,7 @@ void NodeHandler::endNode()
 
 void NodeHandler::startLink(const QXmlAttributes &attrib)
 {
-  m_link = attrib.value("id");
+  m_link = attrib.value("refid");
 }
 
 void NodeHandler::endLink()
@@ -156,7 +156,7 @@ ChildNodeHandler::~ChildNodeHandler()
 void ChildNodeHandler::startChildNode(const QXmlAttributes &attrib)
 {
   debug(2,"startChildNode\n");
-  m_id             = attrib.value("id");
+  m_id             = attrib.value("refid");
   m_relationString = attrib.value("relation");
   m_relation       = s_edgeRelationMapper->stringToNodeRelation(m_relationString);
   m_parent->setDelegate(this);

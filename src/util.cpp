@@ -641,12 +641,49 @@ ClassDef *getResolvedClass(
     }
     else // not a typedef
     {
-      //printf("  not a typedef value\n");
+      //printf("  %s is not a typedef value in scope %s\n",name.data(),scope?scope->name().data():"<global>");
       if (pIsTypeDef) *pIsTypeDef=FALSE;
       if (scope!=Doxygen::globalScope) 
+      {
         cd = Doxygen::classSDict.find(scope->name()+"::"+name);
+      }
       else
+      {
         cd = Doxygen::classSDict.find(name);
+      }
+      if (cd==0) 
+      {
+        if (scope->definitionType()==Definition::TypeNamespace)
+        {
+          NamespaceDef *nscope = (NamespaceDef*)scope;
+          ClassList *cl = nscope->getUsedClasses();
+          if (cl) // see if the class was imported via a using statement 
+          {
+            ClassListIterator cli(*cl);
+            ClassDef *ucd;
+            for (cli.toFirst();(ucd=cli.current());++cli)
+            {
+              //printf("comparing %s<->%s\n",ucd->name().data(),name.data());
+              if (rightScopeMatch(ucd->name(),name))
+              {
+                cd=ucd;
+                break;
+              }
+            }
+          }
+          NamespaceList *nl = nscope->getUsedNamespaces();
+          if (nl) // check used namespaces for the class
+          {
+            NamespaceListIterator nli(*nl);
+            NamespaceDef *und;
+            for (nli.toFirst();(und=nli.current());++nli)
+            {
+              cd = getResolvedClass(und,name,pIsTypeDef,pTemplSpec);
+              if (cd) break;
+            }
+          }
+        }
+      }
       if (cd) goto found;
     }
 
@@ -831,7 +868,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,const char * /*n
       //int scopeOffset=scopeName.length();
       do // for each scope (starting with full scope and going to empty scope)
       {
-        //printf("Searching in %s...\n",curScope?curScope->name().data():"<global>");
+        //printf("Searching %s in %s...\n",word.data(),curScope?curScope->name().data():"<global>");
         QCString fullName = word;
         QCString prefix;
         replaceNamespaceAliases(fullName,fullName.length());
@@ -2749,7 +2786,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
   //PageDef *pageDef=0;
   QCString anchor,linkText=linkToText(lt);
   //printf("generateLink linkText=%s\n",linkText.data());
-  if (resolveLink(clName,lr,inSeeBlock,&compound,/*&pageInfo,*/anchor))
+  if (resolveLink(clName,lr,inSeeBlock,&compound,anchor))
   {
     //if (pageInfo) // link to page
     //{

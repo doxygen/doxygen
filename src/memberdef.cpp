@@ -84,6 +84,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (defArgList==0) return; // member has no function like argument list
   if (!md->isDefine()) ol.docify(" ");
 
+  //printf("writeDefArgList(%d)\n",defArgList->count());
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   ol.endMemberDocName();

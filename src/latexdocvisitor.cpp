@@ -80,7 +80,7 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 
 
 LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_insideItem(FALSE), m_hide(FALSE) 
+  : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), m_insideItem(FALSE), m_hide(FALSE) 
 {
 }
 
@@ -99,7 +99,7 @@ void LatexDocVisitor::visit(DocLinkedWord *w)
   if (m_hide) return;
   startLink(w->ref(),w->file(),w->anchor());
   filter(w->word());
-  endLink();
+  endLink(w->ref(),w->file(),w->anchor());
 }
 
 void LatexDocVisitor::visit(DocWhiteSpace *w)
@@ -797,10 +797,10 @@ void LatexDocVisitor::visitPre(DocLink *lnk)
   startLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
-void LatexDocVisitor::visitPost(DocLink *) 
+void LatexDocVisitor::visitPost(DocLink *lnk) 
 {
   if (m_hide) return;
-  endLink();
+  endLink(lnk->ref(),lnk->file(),lnk->anchor());
 }
 
 void LatexDocVisitor::visitPre(DocRef *ref)
@@ -810,10 +810,10 @@ void LatexDocVisitor::visitPre(DocRef *ref)
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
-void LatexDocVisitor::visitPost(DocRef *) 
+void LatexDocVisitor::visitPost(DocRef *ref) 
 {
   if (m_hide) return;
-  endLink();
+  endLink(ref->ref(),ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPre(DocSecRefItem *)
@@ -942,10 +942,10 @@ void LatexDocVisitor::visitPre(DocInternalRef *ref)
   startLink(0,ref->file(),ref->anchor());
 }
 
-void LatexDocVisitor::visitPost(DocInternalRef *) 
+void LatexDocVisitor::visitPost(DocInternalRef *ref) 
 {
   if (m_hide) return;
-  endLink();
+  endLink(0,ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPre(DocCopy *)
@@ -986,9 +986,16 @@ void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QSt
   }
 }
 
-void LatexDocVisitor::endLink()
+void LatexDocVisitor::endLink(const QString &ref,const QString &file,const QString &anchor)
 {
   m_t << "}";
+  if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
+  {
+    m_t << "{\\rm (" << theTranslator->trPageAbbreviation();
+    m_t << "\\,\\pageref{" << file;
+    if (!anchor.isEmpty()) m_t << "_" << anchor;
+    m_t << "})}";
+  }
 }
 
 void LatexDocVisitor::pushEnabled()

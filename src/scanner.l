@@ -157,6 +157,7 @@ static QCString         xrefItemKey;
 static QCString         xrefItemTitle;
 static QCString         xrefListTitle;
 
+static QCString         g_skipBlockName;
 
 //-----------------------------------------------------------------------------
 
@@ -2809,6 +2810,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
+<SkipInits>\"				{
+  					  lastStringContext=YY_START;
+  				          BEGIN( SkipString ); 
+					}
 <SkipInits>;	                        {
   					  warn(yyFileName,yyLineNr,
 					      "Warning: Found ';' while parsing initializer list! "
@@ -3855,31 +3860,37 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\verbatim";
+					  g_skipBlockName="verbatim";
   					  BEGIN(SkipVerbatim);
   					}
 <JavaDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] 	{
 					  lastVerbState=YY_START;
 					  current->brief+="\\verbatim";
+					  g_skipBlockName="verbatim";
   					  BEGIN(SkipVerbatim);
   					}
 <Doc,PageDoc,ClassDoc>{CMD}"latexonly"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\latexonly";
+					  g_skipBlockName="latexonly";
   					  BEGIN(SkipVerbatim);
   					}
 <JavaDoc>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
 					  lastVerbState=YY_START;
 					  current->brief+="\\latexonly";
+					  g_skipBlockName="latexonly";
   					  BEGIN(SkipVerbatim);
   					}
 <Doc,PageDoc,ClassDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
 					  lastVerbState=YY_START;
 					  current->doc+="\\htmlonly";
+					  g_skipBlockName="htmlonly";
   					  BEGIN(SkipVerbatim);
   					}
 <JavaDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] 	{
 					  lastVerbState=YY_START;
 					  current->brief+="\\htmlonly";
+					  g_skipBlockName="htmlonly";
   					  BEGIN(SkipVerbatim);
   					}
 <Doc,PageDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
@@ -3946,7 +3957,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <SkipVerbatim>.				{
   					  current->doc+=*yytext;
   					}
-<SkipCode>{CMD}"endcode"		{
+<SkipVerbatim><<EOF>>			{
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s!",g_skipBlockName.data(),g_skipBlockName.data()
+                                              );
+					  yyterminate();
+  					}
+<SkipCode>{CMD}"endcode"/[^a-z_A-Z0-9]	{
   					  *pSkipDoc+="\\endcode";
 					  BEGIN(lastCodeState);
   					}
@@ -3974,6 +3991,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipCode>.				{
   					  *pSkipDoc+=*yytext;
+  					}
+<SkipCode><<EOF>>			{
+  					  warn(yyFileName,yyLineNr,
+                                               "Warning: reached end of file while inside a @code block; check for missing @endcode!"
+                                              );
+					  yyterminate();
   					}
 <AnchorLabel>{LABELID}			{
                                           SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
@@ -4493,6 +4516,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  yyLineNr++; 
 					  current->name = current->name.stripWhiteSpace();
 					  newDocState();
+  					}
+<DefLineDoc,LineDoc,AfterDocLine>{SECTIONCMD}	{
+  					  warn(yyFileName,yyLineNr,"Command %s not allowed in single-line C++ comment! Ignoring.",yytext);
   					}
 <Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
 <Doc,PageDoc,AfterDoc,LineDoc,ClassDoc>("\\\\"|"@@")	{ current->doc += yytext; }

@@ -821,7 +821,7 @@ class DocInternal : public CompAccept<DocInternal>, public DocNode
 {
   public:
     DocInternal(DocNode *parent) : m_parent(parent) {}
-    int parse();
+    int parse(int);
     Kind kind() const          { return Kind_Internal; }
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocInternal>::accept(this,v); }
@@ -1103,6 +1103,7 @@ class DocHtmlCaption : public CompAccept<DocHtmlCaption>, public DocNode
   private:
     DocNode *     m_parent;
     HtmlAttribList m_attribs;
+    bool           m_atTop;
 };
 
 /*! @brief Node representing a HTML table row */
@@ -1137,27 +1138,8 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     bool hasCaption()       { return m_caption!=0; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
-    uint numCols() const
-    {
-      uint cols=0;
-      QListIterator<DocNode> cli(m_children);
-      DocNode *n;
-      for (cli.toFirst();(n=cli.current());++cli)
-      {
-        ASSERT(n->kind()==DocNode::Kind_HtmlRow);
-        cols=QMAX(cols,((DocHtmlRow *)n)->numCells());
-      }
-      return cols;
-    }
-    void accept(DocVisitor *v) 
-    { 
-      v->visitPre(this); 
-      QListIterator<DocNode> cli(m_children);
-      DocNode *n;
-      for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
-      if (m_caption) m_caption->accept(v);
-      v->visitPost(this); 
-    }
+    uint numCols() const;
+    void accept(DocVisitor *v);
 
   private:
     DocNode *          m_parent;

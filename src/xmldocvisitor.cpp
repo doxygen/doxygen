@@ -28,7 +28,7 @@
 #include "util.h"
 
 XmlDocVisitor::XmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+  : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
 {
 }
 
@@ -424,13 +424,15 @@ void XmlDocVisitor::visitPost(DocSimpleListItem *)
 void XmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
-  m_t << "<sect" << s->level()+1 << " id=\"" << s->id() << "\">";
+  m_t << "<sect" << s->level() << " id=\"" << s->id() << "\">" << endl;
+  m_t << "<title>";
   filter(s->title());
-  m_t << "</sect" << s->level()+1 << ">\n";
+  m_t << "</title>" << endl;
 }
 
-void XmlDocVisitor::visitPost(DocSection *) 
+void XmlDocVisitor::visitPost(DocSection *s) 
 {
+  m_t << "</sect" << s->level() << ">\n";
 }
 
 void XmlDocVisitor::visitPre(DocHtmlList *s)
@@ -575,13 +577,13 @@ void XmlDocVisitor::visitPost(DocHRef *)
 void XmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
   if (m_hide) return;
-  m_t << "<heading" << header->level() << ">";
+  m_t << "<heading level=\"" << header->level() << "\">";
 }
 
-void XmlDocVisitor::visitPost(DocHtmlHeader *header) 
+void XmlDocVisitor::visitPost(DocHtmlHeader *) 
 {
   if (m_hide) return;
-  m_t << "</heading" << header->level() << ">\n";
+  m_t << "</heading>\n";
 }
 
 void XmlDocVisitor::visitPre(DocImage *img)
@@ -689,7 +691,7 @@ void XmlDocVisitor::visitPost(DocSecRefList *)
 void XmlDocVisitor::visitPre(DocLanguage *l)
 {
   if (m_hide) return;
-  m_t << "<language id=\"" << l->id() << "\">";
+  m_t << "<language langid=\"" << l->id() << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocLanguage *) 

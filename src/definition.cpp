@@ -126,6 +126,7 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
 { 
   if (d==0) return;
   //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
+  QCString doc;
   if (stripWhiteSpace)
   {
     // strip leading empty lines in front of the text, but not the 
@@ -141,20 +142,21 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
       s++;
     }
     if (c=='\0') return;
-    m_doc=d+so;
+    doc=d+so;
     // zero any trailing whitespace
-    int e=m_doc.length()-1;
-    while (e>=0 && (c=m_doc.at(e)) && (c==' ' || c=='\r' || c=='\n'))
+    int e=doc.length()-1;
+    while (e>=0 && (c=doc.at(e)) && (c==' ' || c=='\r' || c=='\n'))
     {
-      m_doc.at(e)='\0';
+      doc.at(e)='\0';
       e--;
     }
   }
   else // don't strip whitespace
   {
-    m_doc=d;
+    doc=d;
   }
   //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
+  m_doc=doc;
   m_docFile = docFile;
   m_docLine = docLine;
 }
@@ -163,7 +165,7 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
 { 
   if (b==0) return;
   //printf("Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-  m_brief=QCString(b).stripWhiteSpace(); 
+  m_brief=QCString(b).stripWhiteSpace();
   int bl=m_brief.length(); 
   if (bl>0) // add puntuation if needed
   {

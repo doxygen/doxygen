@@ -25,7 +25,8 @@
 class PrintDocVisitor : public DocVisitor
 {
   public:
-    PrintDocVisitor() : m_indent(0), m_needsEnter(FALSE), m_insidePre(FALSE) {}
+    PrintDocVisitor() : DocVisitor(DocVisitor_Other), m_indent(0), 
+                        m_needsEnter(FALSE), m_insidePre(FALSE) {}
     
     //--------------------------------------
     

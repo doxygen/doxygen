@@ -94,8 +94,8 @@ MainHandler::MainHandler() : m_compoundDict(2999), m_compoundNameDict(2999),
 {
   m_compounds.setAutoDelete(TRUE);
   m_memberNameDict.setAutoDelete(TRUE);
-  addStartHandler("doxygen"); 
-  addEndHandler("doxygen");
+  addStartHandler("doxygenindex"); 
+  addEndHandler("doxygenindex");
   addStartHandler("compound",this,&MainHandler::startCompound);
   addEndHandler("compound");
   addStartHandler("member",this,&MainHandler::startMember);

@@ -95,6 +95,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           }
           ol.startMemberItem(FALSE);
           QCString tmp = cd->compoundTypeString();
+          QCString cname = substitute(cd->className(),"::",".");
           ol.writeString(tmp);
           ol.writeString(" ");
           ol.insertMemberAlign();
@@ -103,13 +104,13 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.writeObjectLink(cd->getReference(),
                 cd->getOutputFileBase(),
                 0,
-                cd->className()
+                cname
                );
           }
           else 
           {
             ol.startBold();
-            ol.docify(cd->className());
+            ol.docify(cname);
             ol.endBold();
           }
           ol.endMemberItem();
