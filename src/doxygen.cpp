@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
@@ -4735,7 +4735,7 @@ static void copyStyleSheet()
     QFileInfo cssfi(Config::htmlStyleSheet);
     if (cssf.open(IO_ReadOnly))
     {
-      QCString destFileName = Config::htmlOutputDir+"/"+cssfi.fileName();
+      QCString destFileName = Config::htmlOutputDir+"/"+cssfi.fileName().data();
       QFile df(destFileName);
       if (df.open(IO_WriteOnly))
       {
