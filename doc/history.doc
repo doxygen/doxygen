@@ -85,8 +85,8 @@
 <h2>Version 0.3</h2>
 <h3>Major new features:</h3>
 <ul>
-<li>A search engine <a href="doxysearch_usage.html">doxysearch</a>, 
-    that allows you to search through the generated documentation.
+<li>A PHP based search engine that allows you to search through the generated 
+    documentation.
 <li>A configuration file instead of command-line options. A default 
     configuration file can be generated 
     by <a href="doxygen_usage.html">doxygen</a>.

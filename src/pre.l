@@ -1061,6 +1061,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x      Ifdef
 %x      Ifndef
 %x	SkipCComment
+%x	SkipVerbatim
 %x	SkipCPPComment
 %x	RemoveCComment
 %x	RemoveCPPComment
@@ -1660,14 +1661,22 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
-<SkipCComment>[^*\n\/]+			{
+<SkipCComment>[\\@]"verbatim"{BN}+	{
+  					  outputArray(yytext,yyleng);
+					  BEGIN(SkipVerbatim);
+  					}
+<SkipVerbatim>[\\@]"endverbatim"	{
+  					  outputArray(yytext,yyleng);
+					  BEGIN(SkipCComment);
+  					}
+<SkipCComment,SkipVerbatim>[^*\n\/]+	{
   					  outputArray(yytext,yyleng);
   					}
-<SkipCComment>\n			{ 
+<SkipCComment,SkipVerbatim>\n		{ 
   					  g_yyLineNr++;
   					  outputChar('\n');
   					}
-<SkipCComment>.				{
+<SkipCComment,SkipVerbatim>.		{
   					  outputChar(*yytext);
   					}
 <RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }

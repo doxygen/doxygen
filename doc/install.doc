@@ -125,7 +125,7 @@ Compilation is now done by performing the following steps:
 \endverbatim
 
     The program should compile without problems and three binaries 
-    (<code>doxygen</code>, <code>doxytag</code>, and <code>doxysearch</code>) 
+    (<code>doxygen</code> and <code>doxytag</code>) 
     should be available in the bin directory of the distribution.
 
 <li>Optional: Generate the user manual.
@@ -314,7 +314,7 @@ virtual function of class QList<PageInfo> is defined]
 \endverbatim
 
 These are generated because the compiler is confused about the object sharing
-between \c doxygen and \c doxytag. To compile \c doxytag and \c doxysearch 
+between \c doxygen and \c doxytag. To compile \c doxytag 
 anyway do:
 
 \verbatim
@@ -322,7 +322,6 @@ rm -rf objects
 mkdir objects
 cd src
 gmake -f Makefile.doxytag
-gmake -f Makefile.doxysearch
 \endverbatim
 
 when configuring with <code>--static</code> I got:
@@ -457,8 +456,8 @@ Here is what is required:
     steps.
 
 <li>From Doxygen-1.2.2-20001015 onwards, the distribution includes the part
-    of Qt-2.x.y that is needed for to compile doxygen, doxytag,
-    and doxysearch. The Windows specific part were also created.
+    of Qt-2.x.y that is needed for to compile doxygen and doxytag,
+    The Windows specific part were also created.
     As a result doxygen can be compiled on systems without X11 or the
     commerical version of Qt. 
 
@@ -539,8 +538,8 @@ Compilation is now done by performing the following steps:
 \endverbatim
 
     This should build the executables 
-    <code>doxygen.exe</code>, <code>doxytag.exe</code>, and 
-    <code>doxysearch.exe</code> using Microsoft's Visual C++ compiler
+    <code>doxygen.exe</code> and <code>doxytag.exe</code>
+    using Microsoft's Visual C++ compiler
     (The compiler should not produce any serious warnings or errors).
 
     You can use also the <code>bcc</code> argument to build

@@ -856,13 +856,17 @@ Definition *buildScopeFromQualifiedName(const QCString name,int level)
     QCString nsName = name.mid(idx,l);
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
-    //printf("adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
-    // introduce bogus namespace
-    NamespaceDef *nd=new NamespaceDef(
+    NamespaceDef *nd=Doxygen::namespaceSDict.find(fullScope);
+    if (nd==0)
+    {
+      // introduce bogus namespace
+      //printf("adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+      nd=new NamespaceDef(
         "<generated>",1,fullScope);
 
-    // add namespace to the list
-    Doxygen::namespaceSDict.inSort(fullScope,nd);
+      // add namespace to the list
+      Doxygen::namespaceSDict.inSort(fullScope,nd);
+    }
     prevScope->addInnerCompound(nd);
     nd->setOuterScope(prevScope);
     p=idx+l+2;
@@ -897,13 +901,13 @@ static void resolveClassNestingRelations()
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,cd->name());
         if (d==0)
         {
-          //Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
-          //d->addInnerCompound(nd);
-          //nd->setOuterScope(d);
-          warn(cd->getDefFileName(),cd->getDefLine(),
-              "Warning: Internal inconsistency: scope for class %s not "
-              "found!\n",cd->name().data()
-              );
+          Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
+          d->addInnerCompound(cd);
+          cd->setOuterScope(d);
+          //warn(cd->getDefFileName(),cd->getDefLine(),
+          //    "Warning: Internal inconsistency: scope for class %s not "
+          //    "found!\n",cd->name().data()
+          //    );
         }
         else
         {

@@ -56,7 +56,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_3_1
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1130,6 +1130,83 @@ class TranslatorCroatian : public TranslatorAdapter_1_3_1
     { 
       return decode("Statièki atributi u paketu");
     }
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.3.1
+	//////////////////////////////////////////////////////////////////////////
+
+	/*! Used in the quick index of a class/file/namespace member list page 
+	*  to link to the unfiltered list of all members.
+	*/
+	virtual QCString trAll()
+	{
+		return "Sve";
+	}
+	/*! Put in front of the call graph for a function. */
+	virtual QCString trCallGraph()
+	{
+		return "Ovo je dijagram poziva za ovu funkciju:";
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.3.3
+	//////////////////////////////////////////////////////////////////////////
+
+	/*! When the search engine is enabled this text is put in the header 
+	*  of each page before the field where one can enter the text to search 
+	*  for. 
+	*/
+	virtual QCString trSearchForIndex()
+	{
+		return decode("Traži");
+	}
+	/*! This string is used as the title for the page listing the search
+	*  results.
+	*/
+	virtual QCString trSearchResultsTitle()
+	{
+		return "Rezultati pretrage";
+	}
+	/*! This string is put just before listing the search results. The
+	*  text can be different depending on the number of documents found.
+	*  Inside the text you can put the special marker $num to insert
+	*  the number representing the actual number of search results.
+	*  The @a numDocuments parameter can be either 0, 1 or 2, where the 
+	*  value 2 represents 2 or more matches. HTML markup is allowed inside
+	*  the returned string.
+	*/
+	virtual QCString trSearchResults(int numDocuments)
+	{
+		if (numDocuments==0)
+		{
+			return decode("Nema dokumenta koji odgovaraju vašem upitu");
+		}
+		else if (numDocuments==1)
+		{
+			return decode("Naðen <b>1</b> dokument koji odgovara vašem upitu.");
+		}
+		else if (numDocuments<5) 
+		{
+			// croatian handle numbers up to 5 differently 
+			// For those of you who like to read comments :
+			// There are only 4 men in the world in croatian.
+			// We say 1 èovjek (man), 2 èovjeka, 3 èovjeka , 4 èovjeka , but 5, 6, 7 ... ljudi (people)
+			// That's deep, isn't it :-)?
+			return decode("Naðena <b>$num</b> dokumenta koji odgovaraju vašem upitu."
+				"Najbolji su prikazani prvi.");
+		}
+		else 
+		{
+			return decode("Naðeno <b>$num</b> dokumenata koji odgovaraju vašem upitu."
+				"Najbolji su prikazani prvi.");
+		}
+	}
+	/*! This string is put before the list of matched words, for each search 
+	*  result. What follows is the list of words that matched the query.
+	*/
+	virtual QCString trSearchMatches()
+	{
+		return decode("Pronaðeno:");
+	}
 
 };
 

@@ -27,6 +27,8 @@
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include "pngenc.h"
 #include "message.h"
 
@@ -133,8 +135,15 @@ void PngEncoder::write(const char *name)
      png_set_rows(png_ptr,info_ptr,rows);
 
      file = fopen(name,"wb");
-     png_init_io(png_ptr,file);
-     png_write_png(png_ptr,info_ptr,PNG_TRANSFORM_IDENTITY,NULL);
+     if (file==0)
+     {
+       err("Error opening png file %s for writing: %s!\n",name,strerror(errno));
+     }
+     else
+     {
+       png_init_io(png_ptr,file);
+       png_write_png(png_ptr,info_ptr,PNG_TRANSFORM_IDENTITY,NULL);
+     }
    }
 
    png_destroy_write_struct(&png_ptr, &info_ptr);

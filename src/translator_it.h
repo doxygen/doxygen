@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2003/11: translated new items used since version 1.3.3
  *  2003/06: translated new items used since version 1.3.1
  *  2003/04: translated new items used since version 1.3
  *  2002/11: translated new items used since version 1.2.18
@@ -1446,6 +1447,57 @@ class TranslatorItalian : public TranslatorAdapter_1_3_3
     virtual QCString trCallGraph()
     {
       return "Questo è il grafo delle chiamate per questa funzione:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Cerca";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Risultati della ricerca";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Nessun documento soddisfa la tua richiesta.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Trovato <b>1</b> documento rispondente alla tua richiesta.";
+      }
+      else
+      {
+        return "Trovati <b>$num</b> documenti rispondenti alla tua richiesta. "
+               "Le corrispondenze migliori sono in testa.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Corrispondenze:";
     }
 
 };

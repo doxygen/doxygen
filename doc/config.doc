@@ -917,8 +917,7 @@ function's detailed documentation block.
  HTML files are now used as the Windows 98 help format, and will replace
  the old Windows help format (.hlp) on all Windows platforms in the future.
  Compressed HTML files also contain an index, a table of contents,
- and you can search for words in the documentation 
- (which basically renders \c doxysearch obsolete on Windows). 
+ and you can search for words in the documentation.
  The HTML workshop also contains a viewer for compressed HTML files.
 
 \anchor cfg_chm_file 
