@@ -927,8 +927,13 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     }
     else if (tmi->kind=="property")
     {
-      me->section = Entry::FUNCTION_SEC;
+      me->section = Entry::VARIABLE_SEC;
       me->mtype = Property;
+    }
+    else if (tmi->kind=="event")
+    {
+      me->section = Entry::VARIABLE_SEC;
+      me->mtype = Event;
     }
     else if (tmi->kind=="variable")
     {

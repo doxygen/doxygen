@@ -1285,7 +1285,8 @@ void writeAnnotatedClassList(OutputList &ol)
 // write an alphabetical index of all class with a header for each letter
 void writeAlphabeticalClassList(OutputList &ol)
 {
-  ol.startAlphabeticalIndexList(); 
+  //ol.startAlphabeticalIndexList(); 
+  ol.writeString("<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
 
   // first count the number of headers
   ClassSDict::Iterator cli(Doxygen::classSDict);
@@ -1363,12 +1364,14 @@ void writeAlphabeticalClassList(OutputList &ol)
   // generate table
   for (i=0;i<rows;i++) // foreach table row
   {
-    ol.nextTableRow();
+    //ol.nextTableRow();
+    ol.writeString("<tr>");
     // the last column may contain less items then the others
     int colsInRow = (i<rows-1) ? columns : itemsInLastRow; 
     //printf("row [%d]\n",i);
     for (j=0;j<colsInRow;j++) // foreach table column
     {
+      ol.writeString("<td>");
       ClassDef *cd = colIterators[j]->current();
       //printf("columns [%d] cd=%p\n",j,cd);
       if (cd==(ClassDef *)8) // the class pointer is really a header
@@ -1380,7 +1383,16 @@ void writeAlphabeticalClassList(OutputList &ol)
           int index = getPrefixIndex(cd->className());
           startLetter=toupper(cd->className().at(index));
           char s[2]; s[0]=startLetter; s[1]=0;
-          ol.writeIndexHeading(s);
+          //ol.writeIndexHeading(s);
+          ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
+                           "<tr>"
+                             "<td><div class=\"ah\">&nbsp;&nbsp;"); 
+          ol.writeString(s);
+          ol.writeString(         "&nbsp;&nbsp;"
+                             "</td>"
+                           "</tr>"
+                         "</table>\n");
+
         }
       }
       else if (cd) // a real class, insert a link
@@ -1410,12 +1422,15 @@ void writeAlphabeticalClassList(OutputList &ol)
         //printf("item ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
         ++(*colIterators[j]);
       }
-      ol.endTableColumn();
-      if (j<colsInRow-1) ol.nextTableColumn();
+      //ol.endTableColumn();
+      ol.writeString("</td>");
+      //if (j<colsInRow-1) ol.nextTableColumn();
     }
-    ol.endTableRow();
+    //ol.endTableRow();
+    ol.writeString("</tr>");
   }
-  ol.endAlphabeticalIndexList();
+  //ol.endAlphabeticalIndexList();
+  ol.writeString("</table>");
 
   // release the temporary memory
   for (i=0;i<columns;i++)

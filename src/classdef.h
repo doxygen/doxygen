@@ -226,6 +226,7 @@ class ClassDef : public Definition
     MemberList friends;
     MemberList dcopMethods;
     MemberList properties;
+    MemberList events;
     
     /* member list by types */
     MemberList constructors;
@@ -236,6 +237,7 @@ class ClassDef : public Definition
     MemberList relatedMembers;
     MemberList variableMembers;
     MemberList propertyMembers;
+    MemberList eventMembers;
 
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;

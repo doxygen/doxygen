@@ -30,8 +30,8 @@
 #include "config.h"
 #include "message.h"
 #include "util.h"
-#include "latexgen.h"
-#include "htmlgen.h"
+//#include "latexgen.h"
+//#include "htmlgen.h"
 #include "doxygen.h"
 
 //-----------------------------------------------------------------------------

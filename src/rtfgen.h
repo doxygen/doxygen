@@ -72,11 +72,11 @@ class RTFGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList();
     void endItemList();
-    void startEnumList();
-    void endEnumList();
-    void startAlphabeticalIndexList() {}
-    void endAlphabeticalIndexList() {} 
-    void writeIndexHeading(const char *) {}
+    //void startEnumList();
+    //void endEnumList();
+    //void startAlphabeticalIndexList() {}
+    //void endAlphabeticalIndexList() {} 
+    //void writeIndexHeading(const char *) {}
     void writeIndexItem(const char *ref,const char *file,const char *name);
     void docify(const char *text);
     void codify(const char *text);
@@ -88,7 +88,7 @@ class RTFGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void writeMailLink(const char *url);
+    //void writeMailLink(const char *url);
     void startTypewriter() { t << "{\\f2 "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
@@ -114,10 +114,10 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment();
     void endCodeFragment();
-    void startPreFragment()      { startCodeFragment(); }
-    void endPreFragment()        { endCodeFragment(); }
-    void startVerbatimFragment() { startCodeFragment(); }
-    void endVerbatimFragment()   { endCodeFragment(); }
+    //void startPreFragment()      { startCodeFragment(); }
+    //void endPreFragment()        { endCodeFragment(); }
+    //void startVerbatimFragment() { startCodeFragment(); }
+    //void endVerbatimFragment()   { endCodeFragment(); }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { lineBreak(); }
@@ -152,43 +152,43 @@ class RTFGenerator : public OutputGenerator
     void endCenter()        { t << "}"; }
     void startSmall()       { t << "{\\sub "; }
     void endSmall()         { t << "}"; }
-    void startSubscript()   { t << "{\\sub " << endl;}
-    void endSubscript()     { t << "}"; }
-    void startSuperscript() { t << "{\\super " << endl;}
-    void endSuperscript()   { t << "}"; }
-    void startTable(bool,int);
-    void endTable(bool);
-    void startCaption();
-    void endCaption();
-    void nextTableRow();
-    void endTableRow();
-    void nextTableColumn();
-    void endTableColumn();
-    void writeCopyright()    { t << "\251"; }
-    void writeQuote()        { t << "\""; }
-    void writeUmlaut(char c);
-    void writeAcute(char c);
-    void writeGrave(char c);
-    void writeCirc(char c);
-    void writeTilde(char c);
-    void writeRing(char c);
-    void writeSharpS()       { t << "\337"; }
-    void writeCCedil(char c);
+    //void startSubscript()   { t << "{\\sub " << endl;}
+    //void endSubscript()     { t << "}"; }
+    //void startSuperscript() { t << "{\\super " << endl;}
+    //void endSuperscript()   { t << "}"; }
+    //void startTable(bool,int);
+    //void endTable(bool);
+    //void startCaption();
+    //void endCaption();
+    //void nextTableRow();
+    //void endTableRow();
+    //void nextTableColumn();
+    //void endTableColumn();
+    //void writeCopyright()    { t << "\251"; }
+    //void writeQuote()        { t << "\""; }
+    //void writeUmlaut(char c);
+    //void writeAcute(char c);
+    //void writeGrave(char c);
+    //void writeCirc(char c);
+    //void writeTilde(char c);
+    //void writeRing(char c);
+    //void writeSharpS()       { t << "\337"; }
+    //void writeCCedil(char c);
 
     void startMemberDescription();
     void endMemberDescription();
     void startDescList(SectionTypes);
-    void endDescList();
+    //void endDescList();
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *);
     void endParamList();
-    void endDescTitle();
+    //void endDescTitle();
     void writeDescItem();
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
-    void writeSectionRef(const char *,const char *,const char *,const char *);
-    void writeSectionRefItem(const char *,const char *,const char *);
+    //void writeSectionRef(const char *,const char *,const char *,const char *);
+    //void writeSectionRefItem(const char *,const char *,const char *);
     //void writeSectionRefAnchor(const char *,const char *,const char *);
     void addIndexItem(const char *,const char *);
     void startIndent();
@@ -203,12 +203,12 @@ class RTFGenerator : public OutputGenerator
     void endPageRef(const char *,const char *);
     void startQuickIndexItem(const char *,const char *) {}
     void endQuickIndexItem() {}
-    void writeFormula(const char *,const char *);
+    //void writeFormula(const char *,const char *);
     void writeNonBreakableSpace(int);
-    void startImage(const char *,const char *,bool);
-    void endImage(bool);
-    void startDotFile(const char *,bool);
-    void endDotFile(bool);
+    //void startImage(const char *,const char *,bool);
+    //void endImage(bool);
+    //void startDotFile(const char *,bool);
+    //void endDotFile(bool);
 	
     void startDescTable();
     void endDescTable();
@@ -248,13 +248,13 @@ class RTFGenerator : public OutputGenerator
     void startFontClass(const char *) {}
     void endFontClass() {}
 
-    void startHtmlOnly()  {}
-    void endHtmlOnly()    {}
-    void startLatexOnly() {}
-    void endLatexOnly()   {}
+    //void startHtmlOnly()  {}
+    //void endHtmlOnly()    {}
+    //void startLatexOnly() {}
+    //void endLatexOnly()   {}
 
-    void startSectionRefList() {}
-    void endSectionRefList() {}
+    //void startSectionRefList() {}
+    //void endSectionRefList() {}
 
     void writeCodeAnchor(const char *) {}
 

@@ -66,6 +66,7 @@ void MemberList::countDecMembers()
       switch(md->memberType())
       {
         case MemberDef::Variable:    // fall through
+        case MemberDef::Event:       // fall through
         case MemberDef::Property:    m_varCnt++,m_numDecMembers++;  
                                      break;
         case MemberDef::Function:    // fall through
@@ -189,7 +190,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       case MemberDef::Signal:    // fall through
       case MemberDef::Slot:      // fall through
       case MemberDef::DCOP:      // fall through
-      case MemberDef::Property:  
+      case MemberDef::Property:  // fall through
+      case MemberDef::Event:  
       {
         if (first) ol.startMemberList(),first=FALSE;
         md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
@@ -198,6 +200,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       case MemberDef::Enumeration: 
       {
         if (first) ol.startMemberList(),first=FALSE;
+#if 0
         OutputList typeDecl(&ol);
         QCString name(md->name());
         int i=name.findRev("::");
@@ -313,9 +316,13 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           typeDecl.docify(" }");
           md->setEnumDecl(typeDecl);
         }
+#endif
         int enumVars=0;
         MemberListIterator vmli(*this);
         MemberDef *vmd;
+        QCString name(md->name());
+        int i=name.findRev("::");
+        if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
         if (name[0]=='@') // anonymous enum => append variables
         {
           for ( ; (vmd=vmli.current()) ; ++vmli)
@@ -335,7 +342,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           ol.startMemberItem(0);
           ol.writeString("enum ");
           ol.insertMemberAlign();
-          ol+=typeDecl; // append the enum values.
+          //ol+=typeDecl; // append the enum values.
+          md->writeEnumDeclaration(ol,cd,nd,fd,gd);
           ol.endMemberItem(FALSE);
           if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
           {

@@ -1240,6 +1240,7 @@ static MemberDef *addVariableToClass(
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
+  md->setMemberSpecifiers(root->memSpec);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
@@ -1670,6 +1671,8 @@ void buildVarList(Entry *root)
       mtype=MemberDef::Friend;
     else if (root->mtype==Property)
       mtype=MemberDef::Property;
+    else if (root->mtype==Event)
+      mtype=MemberDef::Event;
     else
       mtype=MemberDef::Variable;
 
@@ -1910,8 +1913,6 @@ static void buildFunctionList(Entry *root)
                  root->startLine,
                  root->bodyLine,
                  root->tArgLists ? (int)root->tArgLists->count() : -1,
-                 //root->tArgList ? (int)root->tArgList->count() : -1,
-                 //root->mtArgList ? (int)root->mtArgList->count() : -1,
                  root->mGrpId,
                  root->memSpec,
                  root->proto,
@@ -2053,13 +2054,7 @@ static void buildFunctionList(Entry *root)
               {
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }
-              // merge body definitions
-              if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
-              {
-                md->setBodySegment(root->bodyLine,root->endBodyLine);
-                bool ambig;
-                md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
-              } 
+              
               md->addSectionsToDefinition(root->anchors);
 
               // merge ingroup specifiers
@@ -2267,6 +2262,7 @@ static void findFriends()
             {
               fmd->setBriefDescription(mmd->briefDescription(),mmd->briefFile(),mmd->briefLine());
             }
+            //printf("body mmd %d fmd %d\n",mmd->getStartBodyLine(),fmd->getStartBodyLine());
             if (mmd->getStartBodyLine()==-1 && fmd->getStartBodyLine()!=-1)
             {
               mmd->setBodySegment(fmd->getStartBodyLine(),fmd->getEndBodyLine());
@@ -4727,6 +4723,7 @@ static void findMember(Entry *root,
               {
                 md->setBodySegment(rmd->getStartBodyLine(),rmd->getEndBodyLine());
                 md->setBodyDef(rmd->getBodyDef());
+                md->setBodyMember(rmd);
               }
             }
           }
@@ -7888,7 +7885,7 @@ void generateOutput()
   }
   if (Config_getBool("GENERATE_PERLMOD"))
   {
-    msg("Generating PerlMod output...\n");
+    msg("Generating Perl module output...\n");
     generatePerlMod();
   }
   if (Config_getBool("GENERATE_HTMLHELP") && !Config_getString("HHC_LOCATION").isEmpty())

@@ -509,9 +509,10 @@ ClassDef *getResolvedClass(
   //printf("===================\n");
   do
   {
-    //printf("trying getResolvedClass(%s,%s)\n",scope ? scope->name().data() : "<none>", n);
     Definition *typedefScope = 0;
     QCString subst = resolveTypeDef(scope,name,&typedefScope);
+    //printf("trying getResolvedClass(%s,%s) => subst=%s\n",
+    //    scope ? scope->name().data() : "<none>", name.data(),subst.data());
 
     if (!subst.isEmpty())
     {
@@ -520,7 +521,8 @@ ClassDef *getResolvedClass(
      
       // strip * and & from n
       int ip=subst.length()-1;
-      while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
+      while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || 
+                       subst.at(ip)==' ')) ip--;
       subst=subst.left(ip+1);
 
       if (pIsTypeDef) *pIsTypeDef=TRUE;
@@ -581,9 +583,12 @@ ClassDef *getResolvedClass(
             if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
             cd = Doxygen::classSDict.find(typeName.left(i));
           }
-          if (cd) goto found;
+          //if (cd) goto found;
         }
       }
+      // whether we found something or not, we stop searching to prevent
+      // finding false positives.
+      goto found;
     }
     else // not a typedef
     {
@@ -775,7 +780,8 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
         }
         //printf("Trying class %s\n",fullName.data());
 
-        if ((cd=getClass(fullName)))
+        bool isTypeDef=FALSE;
+        if ((cd=getResolvedClass(Doxygen::globalScope,fullName,&isTypeDef)))
         {
           // add link to the result
           if (external ? cd->isLinkable() : cd->isLinkableInProject())
@@ -784,6 +790,10 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
             out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             found=TRUE;
           }
+        }
+        else if (isTypeDef)
+        {
+          goto endloop;
         }
         
         if (scopeOffset==0)
@@ -796,6 +806,7 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
         }
       } while (!found && scopeOffset>=0);
 
+endloop:      
       //if (!found) printf("Trying to link %s in %s\n",word.data(),scName); 
       if (!found && 
           getDefs(scName,word,0,md,cd,fd,nd,gd) && 
@@ -830,6 +841,7 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
       out.writeString(word);
     }
     // set next start point in the string
+    //printf("index=%d/%d\n",index,txtStr.length());
     skipIndex=index=newIndex+matchLen;
     floatingIndex+=matchLen;
   }
@@ -1055,7 +1067,7 @@ QCString fileToString(const char *name,bool filter)
     }
     else // filter the input
     {
-      QCString cmd=Config_getString("INPUT_FILTER")+" "+name;
+      QCString cmd=Config_getString("INPUT_FILTER")+" \""+name+"\"";
       FILE *f=popen(cmd,"r");
       if (!f)
       {
@@ -2291,7 +2303,7 @@ bool resolveRef(/* in */  const char *scName,
   QCString tsName = name;
   bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
-  fullName = substitute(fullName,".","::");
+  fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
   
   int scopePos=fullName.findRev("::");
   int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
@@ -3745,7 +3757,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
 }
 
 void filterLatexString(QTextStream &t,const char *str,
-                       bool insideTabbing,bool insidePre)
+                       bool insideTabbing,bool insidePre,bool insideItem)
 {
   static bool isCzech         = theTranslator->idLanguage()=="czech";
   static bool isJapanese      = theTranslator->idLanguage()=="japanese";
@@ -3813,14 +3825,18 @@ void filterLatexString(QTextStream &t,const char *str,
           case '~':  t << "$\\sim$";       break;
           case '[':  if (Config_getBool("PDF_HYPERLINKS")) 
                        t << "\\mbox{[}"; 
-                     else 
+                     else if (insideItem)
+                       t << "\[";
+                     else
                        t << "[";
                      break;
           case ']':  if (pc=='[') t << "$\\,$";
-                       if (Config_getBool("PDF_HYPERLINKS"))
-                         t << "\\mbox{]}";
-                       else
-                         t << "]";             
+                     if (Config_getBool("PDF_HYPERLINKS"))
+                       t << "\\mbox{]}";
+                     else if (insideItem)
+                       t << "\[";
+                     else
+                       t << "]";             
                      break;
           case '-':  if (*p=='>') 
                        { t << " $\\rightarrow$ "; p++; }

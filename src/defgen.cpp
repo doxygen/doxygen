@@ -89,6 +89,7 @@ void generateDEFForMember(MemberDef *md,
     case MemberDef::Define:      memType="define";    break;
     case MemberDef::EnumValue:   ASSERT(0);           break;
     case MemberDef::Property:    memType="property";  break;
+    case MemberDef::Event:       memType="event";     break;
     case MemberDef::Variable:    memType="variable";  break;
     case MemberDef::Typedef:     memType="typedef";   break;
     case MemberDef::Enumeration: memType="enum";      break;

@@ -508,12 +508,12 @@ void HtmlGenerator::endHtmlLink()
   t << "</a>";
 }
 
-void HtmlGenerator::writeMailLink(const char *url)
-{
-  t << "<a href=\"mailto:" << url << "\">";
-  docify(url); 
-  t << "</a>";
-}
+//void HtmlGenerator::writeMailLink(const char *url)
+//{
+//  t << "<a href=\"mailto:" << url << "\">";
+//  docify(url); 
+//  t << "</a>";
+//}
 
 void HtmlGenerator::startGroupHeader()
 {
@@ -553,46 +553,46 @@ void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
   }
 }
 
-void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
-                                    const char *anchor,const char *title)
-{
-  QCString *dest;
-  //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
-  QCString refName=name;
-  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
-  {
-    refName+=Doxygen::htmlFileExtension;
-  }
-  t << "<a "; 
-  if (ref) 
-  {
-    t << "doxygen=\"" << ref << ":";
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-    t << "\" ";
-  }
-  t << "href=\""; 
-  if (ref)
-  {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-  }
-  t << refName << "#" << anchor << "\">";
-  docify(title);
-  t << "</a>";
-}
-
-void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
-                                    const char *title)
-{
-  QCString refName=name;
-  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
-  {
-    refName+=Doxygen::htmlFileExtension;
-  }
-  t << "<li><a href=\"" << refName << "#" << lab << "\">";
-  docify(title);
-  t << "</a>";
-}
-
+//void HtmlGenerator::writeSectionRef(const char *ref,const char *name,
+//                                    const char *anchor,const char *title)
+//{
+//  QCString *dest;
+//  //printf("writeSectionRef(%s,%s,%s,%s)\n",ref,name,anchor,title);
+//  QCString refName=name;
+//  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
+//  {
+//    refName+=Doxygen::htmlFileExtension;
+//  }
+//  t << "<a "; 
+//  if (ref) 
+//  {
+//    t << "doxygen=\"" << ref << ":";
+//    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+//    t << "\" ";
+//  }
+//  t << "href=\""; 
+//  if (ref)
+//  {
+//    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+//  }
+//  t << refName << "#" << anchor << "\">";
+//  docify(title);
+//  t << "</a>";
+//}
+//
+//void HtmlGenerator::writeSectionRefItem(const char *name,const char *lab,
+//                                    const char *title)
+//{
+//  QCString refName=name;
+//  if (refName.right(Doxygen::htmlFileExtension.length())!=Doxygen::htmlFileExtension) 
+//  {
+//    refName+=Doxygen::htmlFileExtension;
+//  }
+//  t << "<li><a href=\"" << refName << "#" << lab << "\">";
+//  docify(title);
+//  t << "</a>";
+//}
+//
 void HtmlGenerator::docify(const char *str)
 {
   if (str)
@@ -702,20 +702,20 @@ void HtmlGenerator::endClassDiagram(ClassDiagram &d,
 //  t << "</font>";
 //}
 
-void HtmlGenerator::writeFormula(const char *n,const char *text)
-{
-  if (text && text[0]=='\\') t << "<p><center>" << endl;
-  t << "<img align=";
-#if !defined(_WIN32)
-  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
-                             // not seem to support align == "middle" :-((
-#else
-  t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
-                             // displays formulas nicely with align == "middle" 
-#endif
-  t << " src=\"" << n << ".png\">" << endl;
-  if (text && text[0]=='\\') t << "</center><p>" << endl;
-}
+//void HtmlGenerator::writeFormula(const char *n,const char *text)
+//{
+//  if (text && text[0]=='\\') t << "<p><center>" << endl;
+//  t << "<img align=";
+//#if !defined(_WIN32)
+//  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
+//                             // not seem to support align == "middle" :-((
+//#else
+//  t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
+//                             // displays formulas nicely with align == "middle" 
+//#endif
+//  t << " src=\"" << n << ".png\">" << endl;
+//  if (text && text[0]=='\\') t << "</center><p>" << endl;
+//}
 
 void HtmlGenerator::startMemberList()  
 { 
@@ -900,76 +900,76 @@ void HtmlGenerator::endIndexValue(const char *,bool)
   t << "</td></tr>" << endl;
 }
 
-void HtmlGenerator::startAlphabeticalIndexList()
-{
-  t << "<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" << endl;
-}
+//void HtmlGenerator::startAlphabeticalIndexList()
+//{
+//  t << "<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" << endl;
+//}
 
-void HtmlGenerator::endAlphabeticalIndexList()
-{
-  t << "</table>" << endl;
-}
+//void HtmlGenerator::endAlphabeticalIndexList()
+//{
+//  t << "</table>" << endl;
+//}
 
-void HtmlGenerator::writeIndexHeading(const char *s)
-{
-  t << "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"ah\">&nbsp;&nbsp;" << s 
-    << "&nbsp;&nbsp;</td></tr></table>";
-}
+//void HtmlGenerator::writeIndexHeading(const char *s)
+//{
+//  t << "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"ah\">&nbsp;&nbsp;" << s 
+//    << "&nbsp;&nbsp;</td></tr></table>";
+//}
 
-void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)
-{
-  QCString baseName=name;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1); 
-  }
-  t << "<div align=\"center\">" << endl;
-  t << "<img src=\"" << name << "\" alt=\"" << baseName << "\">" << endl;
-  if (hasCaption)
-  {
-    t << "<p><strong>";
-  } 
-}
+//void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)
+//{
+//  QCString baseName=name;
+//  int i;
+//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+//  {
+//    baseName=baseName.right(baseName.length()-i-1); 
+//  }
+//  t << "<div align=\"center\">" << endl;
+//  t << "<img src=\"" << name << "\" alt=\"" << baseName << "\">" << endl;
+//  if (hasCaption)
+//  {
+//    t << "<p><strong>";
+//  } 
+//}
 
-void HtmlGenerator::endImage(bool hasCaption)
-{
-  if (hasCaption)
-  {
-    t << "</strong></p>" << endl;
-  }
-  t << "</div>" << endl;
-}
+//void HtmlGenerator::endImage(bool hasCaption)
+//{
+//  if (hasCaption)
+//  {
+//    t << "</strong></p>" << endl;
+//  }
+//  t << "</div>" << endl;
+//}
 
-void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
-{
-  QCString baseName=name;
-  int i;
-  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1); 
-  }
-  QCString outDir = Config_getString("HTML_OUTPUT");
-  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
-  t << "<div align=\"center\">" << endl;
-  t << "<img src=\"" << baseName << "." 
-    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\"" 
-    << baseName << "\">" << endl;
-  if (hasCaption)
-  {
-    t << "<p><strong>";
-  } 
-}
-
-void HtmlGenerator::endDotFile(bool hasCaption)
-{
-  if (hasCaption)
-  {
-    t << "</strong></p>" << endl;
-  }
-  t << "</div>" << endl;
-}
-
+//void HtmlGenerator::startDotFile(const char *name,bool hasCaption)
+//{
+//  QCString baseName=name;
+//  int i;
+//  if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
+//  {
+//    baseName=baseName.right(baseName.length()-i-1); 
+//  }
+//  QCString outDir = Config_getString("HTML_OUTPUT");
+//  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
+//  t << "<div align=\"center\">" << endl;
+//  t << "<img src=\"" << baseName << "." 
+//    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\"" 
+//    << baseName << "\">" << endl;
+//  if (hasCaption)
+//  {
+//    t << "<p><strong>";
+//  } 
+//}
+//
+//void HtmlGenerator::endDotFile(bool hasCaption)
+//{
+//  if (hasCaption)
+//  {
+//    t << "</strong></p>" << endl;
+//  }
+//  t << "</div>" << endl;
+//}
+//
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
@@ -1235,17 +1235,17 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
-void HtmlGenerator::startSectionRefList()
-{
-  t << "<multicol cols=3>" << endl;
-  t << "<ul>" << endl;
-}
+//void HtmlGenerator::startSectionRefList()
+//{
+//  t << "<multicol cols=3>" << endl;
+//  t << "<ul>" << endl;
+//}
 
-void HtmlGenerator::endSectionRefList()
-{
-  t << "</ul>" << endl;
-  t << "</multicol>" << endl;
-}
+//void HtmlGenerator::endSectionRefList()
+//{
+//  t << "</ul>" << endl;
+//  t << "</multicol>" << endl;
+//}
 
 
 void HtmlGenerator::printDoc(DocNode *n)

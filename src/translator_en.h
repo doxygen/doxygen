@@ -1415,6 +1415,24 @@ class TranslatorEnglish : public Translator
     {
       return "Deprecated List";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Events";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Event Documentation";
+    }
+
 };
 
 #endif

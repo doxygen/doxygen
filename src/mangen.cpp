@@ -213,10 +213,10 @@ void ManGenerator::endHtmlLink()
 {
 }
 
-void ManGenerator::writeMailLink(const char *url)
-{
-  docify(url);
-}
+//void ManGenerator::writeMailLink(const char *url)
+//{
+//  docify(url);
+//}
 
 void ManGenerator::startGroupHeader()
 {
@@ -451,11 +451,11 @@ void ManGenerator::startDescItem()
   firstCol=FALSE;
 }
 
-void ManGenerator::endDescTitle()
-{
-  endBold();
-  paragraph=TRUE;
-}
+//void ManGenerator::endDescTitle()
+//{
+//  endBold();
+//  paragraph=TRUE;
+//}
 
 void ManGenerator::writeDescItem()
 {

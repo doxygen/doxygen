@@ -349,10 +349,6 @@ static void startCodeLine()
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       if (g_currentMemberDef) anchor=g_currentMemberDef->getBodyAnchor();
-      //g_code->startCodeAnchor(lineAnchor);
-      //g_code->writeCodeLink(d->getReference(),d->getOutputFileBase(),
-      // 	               anchor,lineNumber);
-      //g_code->endCodeAnchor();
       g_code->writeLineNumber(d->getReference(),d->getOutputFileBase(),
 	                      anchor,g_yyLineNr);
     }
@@ -429,6 +425,7 @@ static void writeMultiLineCodeLink(BaseCodeDocInterface &ol,
     {
       g_yyLineNr++;
       *(p-1)='\0';
+      //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(ref,file,anchor,sp);
       endCodeLine();
       if (g_yyLineNr<g_inputLines) 
@@ -438,6 +435,7 @@ static void writeMultiLineCodeLink(BaseCodeDocInterface &ol,
     }
     else
     {
+      //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(ref,file,anchor,sp);
       done=TRUE;
     }
@@ -582,6 +580,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
         if (md->getBodyDef()==g_sourceFileDef)
         {
           g_theCallContext.setClass(stripClassName(md->typeString()));
+	  //printf("returning member %s in source file %s\n",md->name().data(),g_sourceFileDef->name().data());
           return md;
         }
 	md=mn->next();

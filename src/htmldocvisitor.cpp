@@ -742,7 +742,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
   for (li.toFirst();(s=li.current());++li)
   {
     if (!first) m_t << ","; else first=FALSE;
-    m_t << s;
+    filter(s);
   }
   m_t << "</em>&nbsp;</td><td>";
 }

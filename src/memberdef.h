@@ -60,7 +60,8 @@ class MemberDef : public Definition
       Slot,
       Friend,
       DCOP,
-      Property
+      Property,
+      Event
     };
 
     MemberDef(const char *defFileName,int defLine,
@@ -114,11 +115,14 @@ class MemberDef : public Definition
     bool isFriend() const                 { return mtype==Friend;      }
     bool isDCOP() const                   { return mtype==DCOP;        }
     bool isProperty() const               { return mtype==Property;    }
+    bool isEvent() const                  { return mtype==Event;       }
     bool isRelated() const                { return related; }
     bool isStatic() const                 { return stat; }
     bool isInline() const                 { return (memSpec&Entry::Inline)!=0; }
     bool isExplicit() const               { return (memSpec&Entry::Explicit)!=0; }
     bool isMutable() const                { return (memSpec&Entry::Mutable)!=0; }
+    bool isGettable() const               { return (memSpec&Entry::Gettable)!=0; }
+    bool isSettable() const               { return (memSpec&Entry::Settable)!=0; }
     bool isExternal() const               { return explExt; }
     bool isConstructor() const;
     bool isDestructor() const;
@@ -173,10 +177,10 @@ class MemberDef : public Definition
     void insertEnumField(MemberDef *md);
     void setEnumScope(MemberDef *md);
     MemberDef *getEnumScope() const          { return enumScope; }
-    void setEnumDecl(OutputList &ed);
     //void setEnumUsed()                       { eUsed=TRUE; }
     //bool enumUsed() const                    { return eUsed; }
-    OutputList *enumDecl() const             { return enumDeclList; }
+    //void setEnumDecl(OutputList &ed);
+    //OutputList *enumDecl() const             { return enumDeclList; }
     MemberList *enumFieldList() const        { return enumFields; }
     void setDocumentedEnumValues(bool value) { docEnumValues=value; }
     bool hasDocumentedEnumValues() const     { return docEnumValues; }
@@ -252,6 +256,10 @@ class MemberDef : public Definition
     MemberDef *memberDefinition() const { return memDef; }
     MemberDef *memberDeclaration() const { return memDec; }
         
+    void writeEnumDeclaration(OutputList &typeDecl,
+            ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+
+    
     bool visited;
     
   private:
