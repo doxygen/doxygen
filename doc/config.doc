@@ -200,6 +200,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_warnings WARNINGS
 \refitem cfg_xml_dtd XML_DTD
 \refitem cfg_xml_output XML_OUTPUT
+\refitem cfg_xml_programlising XML_PROGRAMLISTING
 \refitem cfg_xml_schema XML_SCHEMA
 \endsecreflist
 
@@ -1231,6 +1232,14 @@ EXTRA_PACKAGES = times
  The \c XML_DTD tag can be used to specify an XML DTD,
  which can be used by a validating XML parser to check the
  syntax of the XML files.
+
+\anchor cfg_xml_programlisting
+<dt>\c XML_PROGRAMLISTING <dd>
+ \addindex XML_PROGRAMLISTING
+ If the \c XML_PROGRAMLISTING tag is set to \c YES Doxygen will
+ dump the program listings (including syntax highlighting
+ and cross-referencing information) to the XML output. Note that
+ enabling this will significantly increase the size of the XML output.
 
 </dl>
 

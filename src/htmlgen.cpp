@@ -293,9 +293,9 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   QTextStream t(&file);
   t << "<hr size=\"1\"><address style=\"align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
-  t << " <a href=\"http://www.doxygen.org/index.html\">\n"
+  t << " <a href=\"http://www.doxygen.org/index.html\">"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-    << "align=\"middle\" border=0>\n"
+    << "align=\"middle\" border=0>"
     << "</a> $doxygenversion";
   t << "</small></address>\n"
     << "</body>\n"

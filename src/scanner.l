@@ -3164,7 +3164,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
-					  printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
+					  //printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";

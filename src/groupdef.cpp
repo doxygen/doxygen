@@ -198,6 +198,7 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
     for ( ; (srcMi=srcMnii.current()) ; ++srcMnii )
     {
       MemberDef *srcMd = srcMi->memberDef;
+      if (srcMd==md) return FALSE; // already added before!
 
       bool sameScope = srcMd->getOuterScope()==md->getOuterScope() || // same class or namespace
           // both inside a file => definition and declaration do not have to be in the same file
@@ -208,8 +209,15 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
           sameScope
          )
       {
-        md->setGroupAlias(srcMd); 
-        return FALSE; // member already added
+        if (srcMd->getGroupAlias()==0) 
+        {
+          md->setGroupAlias(srcMd); 
+        }
+        else
+        {
+          md->setGroupAlias(srcMd->getGroupAlias()); 
+        }
+        return FALSE; // member is the same as one that is already added
       }
     }
     mni->append(new MemberInfo(md,md->protection(),md->virtualness(),FALSE));

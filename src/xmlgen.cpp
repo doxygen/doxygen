@@ -1257,9 +1257,12 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
   t << "    </detaileddescription>" << endl;
-  t << "    <programlisting>" << endl;
-  writeXMLCodeBlock(t,fd);
-  t << "    </programlisting>" << endl;
+  if (Config_getBool("XML_PROGRAMLISTING"))
+  {
+    t << "    <programlisting>" << endl;
+    writeXMLCodeBlock(t,fd);
+    t << "    </programlisting>" << endl;
+  }
   t << "    <location file=\"" << fd->getDefFileName() << "\"/>" << endl;
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;

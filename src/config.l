@@ -2276,6 +2276,16 @@ void Config::create()
 		    "syntax of the XML files. \n"
                  );
   cs->addDependency("GENERATE_XML");
+  cb = addBool(
+                    "XML_PROGRAMLISTING",
+                    "If the XML_PROGRAMLISTING tag is set to YES Doxygen will \n"
+                    "dump the program listings (including syntax highlighting \n"
+		    "and cross-referencing information) to the XML output. Note that \n"
+		    "enabling this will significantly increase the size of the XML output. \n",
+                    TRUE
+                 );
+  cb->addDependency("GENERATE_XML");
+
   //--------------------------------------------------------------------------
   addInfo(  "DEF","configuration options for the AutoGen Definitions output");
   //--------------------------------------------------------------------------
