@@ -1,5 +1,5 @@
 #
-# 
+# $Id$
 #
 # Copyright (C) 1997-2001 by Dimitri van Heesch.
 #
@@ -26,13 +26,11 @@ all: language FORCE
 	@cp doxygen_logo.eps ../latex
 
 clean: 
-	rm -rf ../html ../latex language.doc
+	rm -rf ../html ../latex *.bak translator_report.txt
 
 language: language.doc 
 
-translators: $(wildcard ../src/translator_*.h)
-
-language.doc: translators maintainers.txt language.tpl translator.pl
+language.doc: maintainers.txt language.tpl translator.pl
 	$(PERL) translator.pl
 
 FORCE:

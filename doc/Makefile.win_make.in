@@ -30,9 +30,7 @@ clean:
 
 language: language.doc
 
-translators: ..\src\translator_*.h
-
-language.doc: translators maintainers.txt language.tpl translator.pl
+language.doc: maintainers.txt language.tpl translator.pl
 	$(PERL) translator.pl
 
 FORCE:
