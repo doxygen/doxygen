@@ -27,7 +27,7 @@ f_prefix=/usr
 f_insttool=NO
 f_english=NO
 f_wizard=NO
-f_langs=nl,se,cz,fr,it,de,jp,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua
+f_langs=nl,se,cz,fr,it,de,jp,es,fi,ru,hr,pl,pt,hu,kr,ro,si,cn,no,br,dk,sk,ua,gr
 
 while test -n "$1";  do
   case $1 in
@@ -409,7 +409,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/xmlparse/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -441,7 +441,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/doxywizard/doxywizard.pro.in addon/xmlparse/xmlparse.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in src/doxysearch.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i
@@ -467,7 +467,7 @@ echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
 	@allowed=(NL,SE,CZ,FR,IT,DE,JP,ES,FI,RU,HR,PL,PT,HU,KR,RO,SI,CN,NO,BR,
-		  DK,SK,UA);
+		  DK,SK,UA,GR);
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

@@ -8,14 +8,16 @@ clean: FORCE
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
-	cd addon/xmlparse ; $(MAKE) clean
+	cd addon/doxmlparser/src ; $(MAKE) clean
+	cd addon/doxmlparser/test ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
 distclean: clean
 	cd src ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
-	cd addon/xmlparse ; $(MAKE) distclean
+	cd addon/doxmlparser/src ; $(MAKE) distclean
+	cd addon/doxmlparser/test ; $(MAKE) distclean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html
@@ -48,6 +50,7 @@ install_docs:
 	echo "DOXYGEN  = $(INSTALL)" >  $(DOCDIR)/doc/Makefile
 	echo "DOXYDOCS = .."         >> $(DOCDIR)/doc/Makefile
 	echo "VERSION  = $(VERSION)" >> $(DOCDIR)/doc/Makefile
+	echo "PERL     = $(PERL)"    >> $(DOCDIR)/doc/Makefile
 	cat doc/Makefile.in          >> $(DOCDIR)/doc/Makefile
 	cd $(DOCDIR)/examples ; $(MAKE)
 	cd $(DOCDIR)/doc ; $(MAKE)

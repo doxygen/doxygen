@@ -1107,14 +1107,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_code->codify(yytext);
 					}
 <ClassName>{ID}			        {
-					  //g_ccd.name=yytext;
                                           g_curClassName=yytext;
 					  addType();
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( ClassVar );
 					}
 <ClassVar>"="				{
-					  g_code->codify(yytext);
 					  unput(*yytext);
 					  BEGIN( Body );
   					}
@@ -1124,7 +1122,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  g_theVarContext.addVariable(g_type,g_name);
 					  generateClassOrGlobalLink(*g_code,yytext);
   					}
-<ClassName,ClassVar>[ \t\n]*":"[ \t\n]*		{
+<ClassName,ClassVar>[ \t\n]*":"[ \t\n]*	{
   					  codifyLines(yytext);
 					  g_curClassBases.clear();
   					  BEGIN( Bases ); 

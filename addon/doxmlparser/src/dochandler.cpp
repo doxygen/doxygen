@@ -58,8 +58,8 @@ static TypeNameMapper g_typeMapper;
 // MarkupHandler
 //----------------------------------------------------------------------
 
-MarkupHandler::MarkupHandler(QList<DocNode> &children,QString &curString)
-  : m_children(children), m_curString(curString), m_curMarkup(DocNode::Normal)
+MarkupHandler::MarkupHandler(QList<IDoc> &children,QString &curString)
+  : m_children(children), m_curString(curString), m_curMarkup(IDocMarkup::Normal)
 {
   addStartHandler("bold",this,&MarkupHandler::startBold);
   addEndHandler("bold",this,&MarkupHandler::endBold);
@@ -100,99 +100,99 @@ void MarkupHandler::addTextNode()
 void MarkupHandler::startBold(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Bold,TRUE));
-  m_curMarkup |= DocNode::Bold;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Bold,TRUE));
+  m_curMarkup |= IDocMarkup::Bold;
 }
 
 void MarkupHandler::endBold()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Bold,FALSE));
-  m_curMarkup &= ~DocNode::Bold;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Bold,FALSE));
+  m_curMarkup &= ~IDocMarkup::Bold;
 }
 
 void MarkupHandler::startEmphasis(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Emphasis,TRUE));
-  m_curMarkup |= DocNode::Emphasis;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Emphasis,TRUE));
+  m_curMarkup |= IDocMarkup::Emphasis;
 }
 
 void MarkupHandler::endEmphasis()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Emphasis,FALSE));
-  m_curMarkup &= ~DocNode::Emphasis;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Emphasis,FALSE));
+  m_curMarkup &= ~IDocMarkup::Emphasis;
 }
 
 void MarkupHandler::startComputerOutput(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::ComputerOutput,TRUE));
-  m_curMarkup |= DocNode::ComputerOutput;
+  m_children.append(new MarkupModifierNode(IDocMarkup::ComputerOutput,TRUE));
+  m_curMarkup |= IDocMarkup::ComputerOutput;
 }
 
 void MarkupHandler::endComputerOutput()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::ComputerOutput,FALSE));
-  m_curMarkup &= ~DocNode::ComputerOutput;
+  m_children.append(new MarkupModifierNode(IDocMarkup::ComputerOutput,FALSE));
+  m_curMarkup &= ~IDocMarkup::ComputerOutput;
 }
 
 void MarkupHandler::startCenter(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Center,TRUE));
-  m_curMarkup |= DocNode::Center;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Center,TRUE));
+  m_curMarkup |= IDocMarkup::Center;
 }
 
 void MarkupHandler::endCenter()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Center,FALSE));
-  m_curMarkup &= ~DocNode::Center;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Center,FALSE));
+  m_curMarkup &= ~IDocMarkup::Center;
 }
 
 void MarkupHandler::startSmallFont(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::SmallFont,TRUE));
-  m_curMarkup |= DocNode::SmallFont;
+  m_children.append(new MarkupModifierNode(IDocMarkup::SmallFont,TRUE));
+  m_curMarkup |= IDocMarkup::SmallFont;
 }
 
 void MarkupHandler::endSmallFont()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::SmallFont,FALSE));
-  m_curMarkup &= ~DocNode::SmallFont;
+  m_children.append(new MarkupModifierNode(IDocMarkup::SmallFont,FALSE));
+  m_curMarkup &= ~IDocMarkup::SmallFont;
 }
 
 void MarkupHandler::startSubscript(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Subscript,TRUE));
-  m_curMarkup |= DocNode::Subscript;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Subscript,TRUE));
+  m_curMarkup |= IDocMarkup::Subscript;
 }
 
 void MarkupHandler::endSubscript()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Subscript,FALSE));
-  m_curMarkup &= ~DocNode::Subscript;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Subscript,FALSE));
+  m_curMarkup &= ~IDocMarkup::Subscript;
 }
 
 void MarkupHandler::startSuperscript(const QXmlAttributes & /*attrib*/)
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Superscript,TRUE));
-  m_curMarkup |= DocNode::Superscript;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Superscript,TRUE));
+  m_curMarkup |= IDocMarkup::Superscript;
 }
 
 void MarkupHandler::endSuperscript()
 {
   addTextNode();
-  m_children.append(new MarkupModifierNode(DocNode::Superscript,FALSE));
-  m_curMarkup &= ~DocNode::Superscript;
+  m_children.append(new MarkupModifierNode(IDocMarkup::Superscript,FALSE));
+  m_curMarkup &= ~IDocMarkup::Superscript;
 }
 
 //----------------------------------------------------------------------
@@ -200,7 +200,7 @@ void MarkupHandler::endSuperscript()
 //----------------------------------------------------------------------
 
 ListItemHandler::ListItemHandler(IBaseHandler *parent) 
-  : DocNode(ListItem), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   
@@ -236,8 +236,8 @@ void ListItemHandler::startParagraph(const QXmlAttributes& attrib)
 // ListHandler
 //----------------------------------------------------------------------
 
-ListHandler::ListHandler(NodeKind k,IBaseHandler *parent) 
-  : DocNode(k), m_parent(parent)
+ListHandler::ListHandler(Kind k,IBaseHandler *parent) 
+  : m_parent(parent), m_kind(k)
 {
   m_children.setAutoDelete(TRUE);
   const char *endListName=0;
@@ -277,7 +277,7 @@ void ListHandler::startListItem(const QXmlAttributes& attrib)
 // ParameterHandler
 //----------------------------------------------------------------------
 
-ParameterHandler::ParameterHandler(IBaseHandler *parent) : DocNode(Parameter),
+ParameterHandler::ParameterHandler(IBaseHandler *parent) : 
   m_parent(parent), m_description(0)
 {
   addEndHandler("parametername",this,&ParameterHandler::endParameterName);
@@ -325,7 +325,7 @@ void ParameterHandler::startParagraph(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 ParameterListHandler::ParameterListHandler(IBaseHandler *parent) 
-  : DocNode(ParameterList), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("parameterlist",this,&ParameterListHandler::endParameterList);
   addStartHandler("parametername",this,&ParameterListHandler::startParameterName);
@@ -377,7 +377,7 @@ void ParameterListHandler::startParameterDescription(const QXmlAttributes& attri
 //----------------------------------------------------------------------
 
 LinkHandler::LinkHandler(IBaseHandler *parent)
-  : DocNode(Link), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("link",this,&LinkHandler::endLink);
 }
@@ -407,7 +407,7 @@ void LinkHandler::endLink()
 //----------------------------------------------------------------------
 
 EMailHandler::EMailHandler(IBaseHandler *parent)
-  : DocNode(EMail), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("email",this,&EMailHandler::endEMail);
 }
@@ -436,7 +436,7 @@ void EMailHandler::endEMail()
 //----------------------------------------------------------------------
 
 ULinkHandler::ULinkHandler(IBaseHandler *parent)
-  : DocNode(ULink), m_parent(parent)
+  :  m_parent(parent)
 {
   addEndHandler("ulink",this,&ULinkHandler::endULink);
 }
@@ -466,7 +466,7 @@ void ULinkHandler::endULink()
 //----------------------------------------------------------------------
 
 LineBreakHandler::LineBreakHandler(IBaseHandler *parent)
-  : DocNode(LineBreak), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("linebreak",this,&LineBreakHandler::endLineBreak);
 }
@@ -492,7 +492,7 @@ void LineBreakHandler::endLineBreak()
 //----------------------------------------------------------------------
 
 HRulerHandler::HRulerHandler(IBaseHandler *parent)
-  : DocNode(HRuler), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("hruler",this,&HRulerHandler::endHRuler);
 }
@@ -518,7 +518,7 @@ void HRulerHandler::endHRuler()
 //----------------------------------------------------------------------
 
 RefHandler::RefHandler(IBaseHandler *parent)
-  : DocNode(Ref), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("ref",this,&RefHandler::endRef);
 }
@@ -549,7 +549,7 @@ void RefHandler::endRef()
 //----------------------------------------------------------------------
 
 TitleHandler::TitleHandler(IBaseHandler *parent)
-  : DocNode(Title), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   m_markupHandler = new MarkupHandler(m_children,m_curString);
@@ -595,12 +595,17 @@ void TitleHandler::startRef(const QXmlAttributes& attrib)
   m_children.append(ref);
 }
 
+IDocIterator *TitleHandler::title() const
+{
+  return new TitleIterator(*this);
+}
+
 //----------------------------------------------------------------------
 // SimpleSectHandler
 //----------------------------------------------------------------------
 
 SimpleSectHandler::SimpleSectHandler(IBaseHandler *parent)
-  : DocNode(Para), m_parent(parent), m_paragraph(0), m_title(0)
+  : m_parent(parent), m_paragraph(0), m_title(0)
 {
   addStartHandler("title",this,&SimpleSectHandler::startTitle);
   addStartHandler("para",this,&SimpleSectHandler::startParagraph);
@@ -643,7 +648,7 @@ void SimpleSectHandler::startParagraph(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 VariableListEntryHandler::VariableListEntryHandler(IBaseHandler *parent)
-   : DocNode(VariableListEntry), m_parent(parent), m_description(0)
+   : m_parent(parent), m_description(0)
 {
   addStartHandler("term",this,&VariableListEntryHandler::startTerm);
   addEndHandler("term",this,&VariableListEntryHandler::endTerm);
@@ -706,7 +711,7 @@ void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 VariableListHandler::VariableListHandler(IBaseHandler *parent) 
-  : DocNode(VariableList), m_parent(parent)
+  : m_parent(parent)
 {
   m_entries.setAutoDelete(TRUE);
   addStartHandler("varlistentry",this,&VariableListHandler::startVarListEntry);
@@ -749,7 +754,7 @@ void VariableListHandler::startListItem(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 HighlightHandler::HighlightHandler(IBaseHandler *parent)
-  : DocNode(Highlight), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("highlight",this,&HighlightHandler::endHighlight);
 }
@@ -777,7 +782,7 @@ void HighlightHandler::endHighlight()
 //----------------------------------------------------------------------
 
 CodeLineHandler::CodeLineHandler(IBaseHandler *parent)
-  : DocNode(CodeLine), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   addEndHandler("codeline",this,&CodeLineHandler::endCodeLine);
@@ -837,7 +842,7 @@ void CodeLineHandler::addTextNode()
 {
   if (!m_curString.isEmpty())
   {
-    m_children.append(new TextNode(m_curString,DocNode::Normal));
+    m_children.append(new TextNode(m_curString,IDocMarkup::Normal));
     printf("addTextNode() text=\"%s\"\n",
         m_curString.data());
     m_curString="";
@@ -849,7 +854,7 @@ void CodeLineHandler::addTextNode()
 //----------------------------------------------------------------------
 
 ProgramListingHandler::ProgramListingHandler(IBaseHandler *parent)
-  : DocNode(ProgramListing), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   m_hasLineNumber=FALSE;
@@ -905,7 +910,7 @@ void ProgramListingHandler::startCodeLine(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 FormulaHandler::FormulaHandler(IBaseHandler *parent)
-  : DocNode(Formula), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("formula",this,&FormulaHandler::endFormula);
 }
@@ -933,7 +938,7 @@ void FormulaHandler::endFormula()
 //----------------------------------------------------------------------
 
 ImageHandler::ImageHandler(IBaseHandler *parent)
-  : DocNode(Image), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("image",this,&ImageHandler::endImage);
 }
@@ -961,7 +966,7 @@ void ImageHandler::endImage()
 //----------------------------------------------------------------------
 
 DotFileHandler::DotFileHandler(IBaseHandler *parent)
-  : DocNode(DotFile), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("image",this,&DotFileHandler::endDotFile);
 }
@@ -989,7 +994,7 @@ void DotFileHandler::endDotFile()
 //----------------------------------------------------------------------
 
 IndexEntryHandler::IndexEntryHandler(IBaseHandler *parent)
-  : DocNode(IndexEntry), m_parent(parent)
+  : m_parent(parent)
 {
   addEndHandler("indexentry",this,&IndexEntryHandler::endIndexEntry);
   addStartHandler("primaryie",this,&IndexEntryHandler::startPrimaryIE);
@@ -1040,7 +1045,7 @@ void IndexEntryHandler::endSecondaryIE()
 //----------------------------------------------------------------------
 
 EntryHandler::EntryHandler(IBaseHandler *parent)
-  : DocNode(Entry), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   addEndHandler("entry",this,&EntryHandler::endEntry);
@@ -1073,7 +1078,7 @@ void EntryHandler::startParagraph(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 RowHandler::RowHandler(IBaseHandler *parent)
-  : DocNode(Row), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   addEndHandler("row",this,&RowHandler::endRow);
@@ -1106,7 +1111,7 @@ void RowHandler::startEntry(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 TableHandler::TableHandler(IBaseHandler *parent)
-  : DocNode(Table), m_parent(parent)
+  :  m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
   addEndHandler("table",this,&TableHandler::endTable);
@@ -1141,7 +1146,7 @@ void TableHandler::startRow(const QXmlAttributes& attrib)
 //----------------------------------------------------------------------
 
 ParagraphHandler::ParagraphHandler(IBaseHandler *parent) 
-  : DocNode(Para), m_parent(parent)
+  : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
 
@@ -1334,6 +1339,70 @@ void ParagraphHandler::addTextNode()
   }
 }
 
+IDocIterator *ParagraphHandler::contents() const
+{
+  return new ParagraphIterator(*this);
+}
+
+//----------------------------------------------------------------------
+// DocSectionHandler
+//----------------------------------------------------------------------
+
+DocSectionHandler::DocSectionHandler(IBaseHandler *parent,int level)
+  : m_parent(parent), m_level(level)
+{
+  m_children.setAutoDelete(TRUE);
+  m_markupHandler = new MarkupHandler(m_children,m_curString);
+  setFallBackHandler(m_markupHandler);
+  addStartHandler("ref",this,&DocSectionHandler::startRef);
+  QString sectionKey;
+  sectionKey.sprintf("sect%d",level);
+  addEndHandler(sectionKey,this,&DocSectionHandler::endDocSection);
+}
+
+DocSectionHandler::~DocSectionHandler()
+{
+  delete m_markupHandler;
+}
+
+void DocSectionHandler::startDocSection(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  printf("Start docsection\n");
+  m_id = attrib.value("id");
+  m_curString="";
+}
+
+void DocSectionHandler::endDocSection()
+{
+  addTextNode();
+  m_parent->setDelegate(0);
+  printf("End docsection\n");
+}
+
+void DocSectionHandler::addTextNode()
+{
+  if (!m_curString.isEmpty())
+  {
+    m_children.append(new TextNode(m_curString,m_markupHandler->markup()));
+    printf("addTextNode() text=\"%s\" markup=%x\n",
+        m_curString.data(),m_markupHandler->markup());
+    m_curString="";
+  }
+}
+
+void DocSectionHandler::startRef(const QXmlAttributes& attrib)
+{
+  RefHandler *ref = new RefHandler(this);
+  ref->startRef(attrib);
+  m_children.append(ref);
+}
+
+IDocIterator *DocSectionHandler::title() const
+{
+  return new DocSectionIterator(*this);
+}
+
 //----------------------------------------------------------------------
 // DocHandler
 //----------------------------------------------------------------------
@@ -1346,6 +1415,10 @@ DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
   addEndHandler("detaileddescription",this,&DocHandler::endDoc);
 
   addStartHandler("para",this,&DocHandler::startParagraph);
+  addStartHandler("sect1",this,&DocHandler::startSect1);
+  addStartHandler("sect2",this,&DocHandler::startSect2);
+  addStartHandler("sect3",this,&DocHandler::startSect3);
+  addStartHandler("title",this,&DocHandler::startTitle);
 }
 
 DocHandler::~DocHandler()
@@ -1369,5 +1442,38 @@ void DocHandler::startParagraph(const QXmlAttributes& attrib)
   ParagraphHandler *parHandler = new ParagraphHandler(this);
   parHandler->startParagraph(attrib);
   m_children.append(parHandler);
+}
+
+void DocHandler::startSect1(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,1);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startSect2(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,2);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startSect3(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,3);
+  secHandler->startDocSection(attrib);
+  m_children.append(secHandler);
+}
+
+void DocHandler::startTitle(const QXmlAttributes& attrib)
+{
+  TitleHandler *titleHandler = new TitleHandler(this);
+  titleHandler->startTitle(attrib);
+  m_children.append(titleHandler);
+}
+
+IDocIterator *DocHandler::contents() const
+{
+  return new DocIterator(*this);
 }
 

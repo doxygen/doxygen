@@ -62,11 +62,20 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-#include "translator_adapter.h"
-
-class TranslatorSwedish : public TranslatorAdapter_1_0_0
+class TranslatorSwedish : public TranslatorEnglish
 {
   public:
+    /*! This method is used to generate a warning message to signal
+     *  the user that the translation of his/her language of choice
+     *  needs updating.
+     */
+    virtual QCString updateNeededMessage()
+    {
+      return "Warning: The Swedish translator is really obsolete.\n"
+             "It was not updated since version 1.0.0.  As a result,\n"
+             "some sentences may appear in English.\n\n";
+    }
+
     QCString idLanguage()
     { return "swedish"; }
     QCString latexBabelPackage()

@@ -135,7 +135,7 @@ class MemberDef : public Definition
     void setMemberType(MemberType t)      { mtype=t; }
     void setDefinition(const char *d)     { def=d; }
     void setFileDef(FileDef *fd)          { fileDef=fd; }
-    void setAnchor(const char *a)         { anc=a; }
+    void setAnchor(const char *a);
     void setProtection(Protection p)      { prot=p; }
     void setMemberSpecifiers(int s)       { memSpec=s; }
     void mergeMemberSpecifiers(int s)     { memSpec|=s; }

@@ -33,6 +33,9 @@ German
 Jens Seidel: jensseidel@users.sf.net
 Jens Breitenstein: Jens.Breitenstein@tlc.de
 
+Greek
+Harry Kalogirou: harkal@rainbow.cs.unipi.gr
+
 Hungarian
 F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari@diatronltd.com
 

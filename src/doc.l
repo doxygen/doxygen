@@ -1002,21 +1002,25 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  outDoc->docify(getenv(envvar));
 					}
 <DocScan>{CMD}"htmlonly"/[^a-z_A-Z0-9]	{
+  					  outDoc->startHtmlOnly();
   				          outDoc->pushGeneratorState(); 
   					  outDoc->disableAllBut(OutputGenerator::Html); 
 					  BEGIN(DocHtmlScan);
   					}
 <DocHtmlScan>{CMD}"endhtmlonly"/[^a-z_A-Z0-9] {
   					  outDoc->popGeneratorState();
+					  outDoc->endHtmlOnly();
 					  BEGIN(DocScan);
   					}
 <DocScan>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
+  					  outDoc->startLatexOnly();
   					  outDoc->pushGeneratorState();
   					  outDoc->disableAllBut(OutputGenerator::Latex);
 					  BEGIN(DocLatexScan);
   					}
 <DocLatexScan>{CMD}"endlatexonly"/[^a-z_A-Z0-9] {
   					  outDoc->popGeneratorState();
+					  outDoc->endLatexOnly();
 					  BEGIN(DocScan);
   					}
 <DocHtmlScan,DocLatexScan>"//"|"/*"|"*/"	{

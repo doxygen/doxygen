@@ -19,12 +19,22 @@
 #include <qstring.h>
 #include <qlist.h>
 #include <qxml.h>
+#include <doxmlintf.h>
 
 #include "basehandler.h"
 #include "memberhandler.h"
-#include "doxmlintf.h"
 
 class MainHandler;
+
+
+class SectionIterator : 
+     public BaseIterator<ISectionIterator,ISection,ISection>
+{
+  public:
+    SectionIterator(const QList<ISection> &list) : 
+      BaseIterator<ISectionIterator,ISection,ISection>(list) {}
+};
+
 
 class SectionHandler : public ISection, public BaseHandler<SectionHandler>
 {
@@ -38,7 +48,8 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
 
     // ISection
     virtual QString kind() const { return m_kind; }
-    virtual QListIterator<IMember> getMemberIterator() const { return m_members; }
+    virtual IMemberIterator *members() const 
+    { return new MemberIterator(m_members); }
 
     void initialize(MainHandler *m);
 

@@ -18,14 +18,22 @@
 #include <qstring.h>
 #include <qlist.h>
 #include <qxml.h>
+#include <doxmlintf.h>
 
 #include "basehandler.h"
+#include "baseiterator.h"
 #include "sectionhandler.h"
-#include "doxmlintf.h"
 
 class MainHandler;
 class DocHandler;
 class ProgramListingHandler;
+
+class CompoundIterator : public BaseIterator<ICompoundIterator,ICompound,ICompound>
+{
+  public:
+    CompoundIterator(const QList<ICompound> &list) : 
+      BaseIterator<ICompoundIterator,ICompound,ICompound>(list) {}
+};
 
 class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 {
@@ -43,13 +51,19 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 
     CompoundHandler(IBaseHandler *parent);
     virtual ~CompoundHandler();
+    void initialize(MainHandler *m);
 
-    // ICompound
+    // ICompound implementation
     QString name() const { return m_name; }
     QString id()   const { return m_id;   }
     QString kind() const { return m_kind; }
-    QListIterator<ISection> getSectionIterator() const { return m_sections; }
-    void initialize(MainHandler *m);
+    ISectionIterator *sections() const 
+    { return new SectionIterator(m_sections); }
+    virtual IDocRoot *briefDescription() const
+    { return m_brief; }
+    virtual IDocRoot *detailedDescription() const
+    { return m_detailed; }
+
 
   private:
     struct SuperClass

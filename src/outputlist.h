@@ -434,6 +434,15 @@ class OutputList : public OutputDocInterface
     void endFontClass()
     { forall(&OutputGenerator::endFontClass); }
 
+    void startHtmlOnly()
+    { forall(&OutputGenerator::startHtmlOnly); }
+    void endHtmlOnly()
+    { forall(&OutputGenerator::endHtmlOnly); }
+    void startLatexOnly()
+    { forall(&OutputGenerator::startLatexOnly); }
+    void endLatexOnly()
+    { forall(&OutputGenerator::endLatexOnly); }
+
 #if 0
     void startPlainFile(const char *name)
     { forall(&OutputGenerator::startPlainFile,name); }

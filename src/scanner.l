@@ -920,6 +920,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  current->name = current->name.simplifyWhiteSpace();
 					  BEGIN( FindMembers ) ;
   					}
+<Operator>";"				{ // can occur when importing members
+  					  unput(';');
+					  BEGIN( FindMembers ) ;
+  					}
 <Operator>[^(]				{ 
     					  lineCount();
     					  current->name += *yytext ;
@@ -1093,6 +1097,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN( ReadFuncArgType ) ;
 					  }
 					}
+<EndTemplate>">"{BN}*/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
+  					  lineCount();
+  					  current->name+='>';
+					  BEGIN(FindMembers);
+  					}
 <EndTemplate>">"{BN}*/"::"		{
   					  lineCount();
   					  current->name+='>';
@@ -2033,24 +2042,58 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 	/* a special comment */
 <ReadFuncArgType>("/*"[*!]|"//"[/!])("<"?)	{ 
-  					  fullArgString+=yytext;
-  					  lastCopyArgChar=0;
-					  if (yytext[1]=='/')
-					    BEGIN( CopyArgCommentLine );
+                                          if (currentArgumentContext==DefineEnd)
+					  {
+					    // for defines we interpret a comment
+					    // as documentation for the define 
+					    int i;for (i=yyleng-1;i>=0;i--)
+					    {
+					      unput(yytext[i]);
+					    }
+					    stringToArgumentList(fullArgString,current->argList);
+					    BEGIN( currentArgumentContext );
+					  }
 					  else
-  					    BEGIN( CopyArgComment );
+					  {
+					    // for functions we interpret a comment
+					    // as documentation for the argument
+					    fullArgString+=yytext;
+					    lastCopyArgChar=0;
+					    if (yytext[1]=='/')
+					      BEGIN( CopyArgCommentLine );
+					    else
+					      BEGIN( CopyArgComment );
+					  }
   					}
 	/* `)' followed by a special comment */
 <ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<"	{
   					  lineCount();
-					  lastCopyArgChar=*yytext;
-					  QCString text=&yytext[1];
-					  text=text.stripWhiteSpace();
-					  fullArgString+=text;
-					  if (text.find("//")!=-1)
-					    BEGIN( CopyArgCommentLine );
+                                          if (currentArgumentContext==DefineEnd)
+					  {
+					    // for defines we interpret a comment
+					    // as documentation for the define 
+					    int i;for (i=yyleng-1;i>0;i--)
+					    {
+					      unput(yytext[i]);
+					    }
+					    *copyArgString+=*yytext;
+					    fullArgString+=*yytext;
+					    stringToArgumentList(fullArgString,current->argList);
+					    BEGIN( currentArgumentContext );
+					  }
 					  else
-					    BEGIN( CopyArgComment );
+					  {
+					    // for functions we interpret a comment
+					    // as documentation for the last argument
+					    lastCopyArgChar=*yytext;
+					    QCString text=&yytext[1];
+					    text=text.stripWhiteSpace();
+					    fullArgString+=text;
+					    if (text.find("//")!=-1)
+					      BEGIN( CopyArgCommentLine );
+					    else
+					      BEGIN( CopyArgComment );
+					  }
   					}
 <CopyArgComment>[^\n\*]+		{ fullArgString+=yytext; }
 <CopyArgComment>"*/"			{ fullArgString+=yytext; 

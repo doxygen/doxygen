@@ -25,13 +25,13 @@ Doxygen has built-in support for multiple languages. This means
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
 
-Currently (version 1.2.12-20011125), 24 languages 
+Currently (version 1.2.13), 25 languages 
 are supported (sorted alphabetically): 
 Brazilian Portuguese, Chinese, Croatian, Czech, Danish, 
 Dutch, English, Finnish, French, German, 
-Hungarian, Italian, Japanese, Korean, Norwegian, 
-Polish, Portuguese, Romanian, Russian, Slovak, 
-Slovene, Spanish, Swedish, and Ukrainian.
+Greek, Hungarian, Italian, Japanese, Korean, 
+Norwegian, Polish, Portuguese, Romanian, Russian, 
+Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
 The table of information related to the supported languages follows.
 It is sorted by language alphabetically.  The <b>Status</b> column
@@ -96,7 +96,7 @@ when the translator was updated.
       <TD>Finnish</TD>  
       <TD>Olli Korhonen</TD>
       <TD>Olli.Korhonen@NOSPAM.ccc.fi</TD>
-      <TD>1.0.0</TD>
+      <TD>obsolete</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>French</TD>  
@@ -111,6 +111,12 @@ when the translator was updated.
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
+      <TD>Greek</TD>  
+      <TD>Harry Kalogirou</TD>
+      <TD>harkal@NOSPAM.rainbow.cs.unipi.gr</TD>
+      <TD>1.2.11</TD>
+  </TR>
+  <TR BGCOLOR="#ffffff">
       <TD>Hungarian</TD>  
       <TD>F&ouml;ldv&aacute;ri Gy&ouml;rgy</TD>
       <TD>foldvari@NOSPAM.diatronltd.com</TD>
@@ -118,8 +124,8 @@ when the translator was updated.
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Italian</TD>  
-      <TD>Ahmed Aldo Faisal<br>Alessandro Falappa</TD>
-      <TD>aaf23@NOSPAM.cam.ac.uk<br>a.falappa@NOSPAM.flashnet.it</TD>
+      <TD>Alessandro Falappa<br>Ahmed Aldo Faisal</TD>
+      <TD>alessandro@NOSPAM.falappa.net<br>aaf23@NOSPAM.cam.ac.uk</TD>
       <TD>up-to-date</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -186,7 +192,7 @@ when the translator was updated.
       <TD>Swedish</TD>  
       <TD>XeT Erixon</TD>
       <TD>xet@NOSPAM.hem.passagen.se</TD>
-      <TD>1.0.0</TD>
+      <TD>obsolete</TD>
   </TR>
   <TR BGCOLOR="#ffffff">
       <TD>Ukrainian</TD>  
@@ -220,17 +226,19 @@ when the translator was updated.
   \hline
   English & Dimitri van Heesch & {\tt dimitri@stack.nl} & up-to-date \\
   \hline
-  Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & 1.0.0 \\
+  Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} & obsolete \\
   \hline
   French & Xavier Outhier & {\tt xouthier@yahoo.fr} & up-to-date \\
   \hline
   German & Jens Seidel & {\tt jensseidel@users.sf.net} & up-to-date \\
    & Jens Breitenstein & {\tt Jens.Breitenstein@tlc.de} &  \\
   \hline
+  Greek & Harry Kalogirou & {\tt harkal@rainbow.cs.unipi.gr} & 1.2.11 \\
+  \hline
   Hungarian & F\"{o}ldv\'{a}ri Gy\"{o}rgy & {\tt foldvari@diatronltd.com} & 1.2.1 \\
   \hline
-  Italian & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} & up-to-date \\
-   & Alessandro Falappa & {\tt a.falappa@flashnet.it} &  \\
+  Italian & Alessandro Falappa & {\tt alessandro@falappa.net} & up-to-date \\
+   & Ahmed Aldo Faisal & {\tt aaf23@cam.ac.uk} &  \\
   \hline
   Japanese & Kenji Nagamatsu & {\tt naga@joyful.club.ne.jp} & 1.2.5 \\
   \hline
@@ -252,7 +260,7 @@ when the translator was updated.
   \hline
   Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} & 1.2.7 \\
   \hline
-  Swedish & XeT Erixon & {\tt xet@hem.passagen.se} & 1.0.0 \\
+  Swedish & XeT Erixon & {\tt xet@hem.passagen.se} & obsolete \\
   \hline
   Ukrainian & Olexij Tkatchenko & {\tt olexij.tkatchenko@gmx.de} & 1.2.11 \\
   \hline
@@ -522,6 +530,23 @@ Do not blindly implement all methods that are implemented by your
 translator adapter base class.  The reason is that the adapter
 classes implement also obsolete methods.  Another reason is that
 some of the methods could become obsolete from some newer adapter on.
+
+<b>The really obsolete language translators</b> may lead to too much
+complicated adapters.  Because of that, doxygen developers may decide
+to derive such translators from the \c TranslatorEnglish class, which 
+is by definition always up-to-date.
+
+When doing so, all the missing methods will be replaced by the
+English translation.  This means that not-implemented methods will
+always return the English result.  Such translators are marked using
+word \c obsolete.  You should read it <b>really obsolete</b>. No
+guess about the last update can be done.  
+
+Often, it is possible to construct better result from the obsolete
+methods.  Because of that, the translator adapter classes should be
+used if possible.  On the other hand, implementation of adapters for
+really obsolete translators brings too much maintenance and
+run-time overhead.
 
 */
 

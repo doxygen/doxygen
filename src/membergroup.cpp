@@ -84,7 +84,7 @@ void MemberGroup::insertMember(MemberDef *md)
 
 void MemberGroup::setAnchors()
 {
-  ::setAnchors('z',memberList,grpId);
+  ::setAnchors(0,'z',memberList,grpId);
 }
 
 void MemberGroup::writeDeclarations(OutputList &ol,

@@ -202,6 +202,9 @@ template<class T> class BaseHandler : public IBaseHandler,
       return TRUE;
     }
 
+    /*! called when a number of characters are received by the parser.
+     *  \param ch the characters.
+     */
     virtual bool characters ( const QString & ch ) 
     {
       if (m_delegateHandler) 

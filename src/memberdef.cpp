@@ -129,6 +129,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     }
     if ((vp=a->type.find(re))!=-1) // argument type is a function pointer
     {
+      //printf("a->type=`%s' a->name=`%s'\n",a->type.data(),a->name.data());
       QCString n=a->type.left(vp);
       if (!cName.isEmpty()) n=addTemplateNames(n,cd->name(),cName);
       linkifyText(TextGeneratorOLImpl(ol),scopeName,md->name(),n);
@@ -367,10 +368,7 @@ void MemberDef::setReimplements(MemberDef *md)
   {
     m_templateMaster->setReimplements(md);
   }
-  else
-  {
-    redefines=md; 
-  }
+  redefines=md; 
 }
 
 void MemberDef::insertReimplementedBy(MemberDef *md)
@@ -379,11 +377,8 @@ void MemberDef::insertReimplementedBy(MemberDef *md)
   {
     m_templateMaster->insertReimplementedBy(md);
   }
-  else
-  {
-    if (redefinedBy==0) redefinedBy = new MemberList;
-    redefinedBy->inSort(md);
-  }
+  if (redefinedBy==0) redefinedBy = new MemberList;
+  redefinedBy->inSort(md);
 }
 
 void MemberDef::insertEnumField(MemberDef *md)
@@ -491,6 +486,7 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
   if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");
   int l,i=r.match(ltype,0,&l);
+  //printf("ltype=`%s' i=%d\n",ltype.data(),i);
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=0;
   if (i!=-1) // found anonymous scope in type
@@ -498,10 +494,9 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
     int il=i-1,ir=i+l;
     // extract anonymous scope
     while (il>=0 && (isId(ltype.at(il)) || ltype.at(il)==':' || ltype.at(il)=='@')) il--;
-    if (il>0) il++;
+    if (il>0) il++; else if (il<0) il=0;
     while (ir<(int)ltype.length() && (isId(ltype.at(ir)) || ltype.at(ir)==':' || ltype.at(ir)=='@')) ir++;
 
-    //QCString annName = ltype.mid(i,l);
     QCString annName = ltype.mid(il,ir-il);
 
     // if inside a class or namespace try to prepend the scope name
@@ -745,7 +740,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   // write name
-  if (!name().isEmpty() && name().at(0)!='@')
+  if (!name().isEmpty() && name().at(0)!='@') // hide annonymous stuff 
   {
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
     if (isLinkable())
@@ -764,7 +759,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
       else
       {
         //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
-        writeLink(ol,cd,nd,fd,gd);
+        ClassDef *rcd = cd;
+        if (isReference() && classDef) rcd = classDef; 
+        writeLink(ol,rcd,nd,fd,gd);
       }
     }
     else if (isDocumentedFriendClass())
@@ -903,7 +900,7 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup) const
 { 
   bool groupFilter = getGroupDef()==0 || inGroup; 
 
-  bool visible = isDetailedSectionLinkable() && groupFilter;
+  bool visible = isDetailedSectionLinkable() && groupFilter && !isReference();
   //printf("MemberDef::isDetailedSectionVisible() %d\n",visible);
   return visible;
 }
@@ -1102,7 +1099,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         isFriend() || isRelated() || isExplicit() ||
         isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
         isSignal() || isSlot() ||
-        isStatic()
+        isStatic() || (classDef && classDef!=container) 
        )
     {
       // write the member specifier list
@@ -1126,6 +1123,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isSignal())              sl.append("signal");
         if      (isSlot())                sl.append("slot");
       }
+      if (classDef && classDef!=container) sl.append("inherited");
       const char *s=sl.first();
       while (s)
       {
@@ -1165,22 +1163,29 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       parseCode(ol,scopeName,init,FALSE,0);
       ol.endCodeFragment();
     }
+
+    QCString brief    = m_templateMaster ? 
+                        m_templateMaster->briefDescription() : briefDescription();
+    QCString detailed = m_templateMaster ?
+                        m_templateMaster->documentation() : documentation();
+    ArgumentList *docArgList = m_templateMaster ? 
+                        m_templateMaster->argList : argList;
     
     /* write brief description */
-    if (!briefDescription().isEmpty() && 
+    if (!brief.isEmpty() && 
         (Config_getBool("REPEAT_BRIEF")  
          /* || (!Config_getBool("BRIEF_MEMBER_DESC") && documentation().isEmpty())*/
         ) /* || !annMemb */
        )  
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),briefDescription());
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),brief);
       ol.newParagraph();
     }
 
     /* write detailed description */
-    if (!documentation().isEmpty())
+    if (!detailed.isEmpty())
     { 
-      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),detailed+"\n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1190,7 +1195,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     //printf("***** argList=%p name=%s docs=%s hasDocs=%d\n",
     //     argList, 
     //     argList?argList->hasDocumentation():-1);
-    if (argList && argList->hasDocumentation())
+    if (docArgList && docArgList->hasDocumentation())
     {
       //printf("***** argumentList is documented\n");
       ol.startParamList(BaseOutputDocInterface::Param);
@@ -1198,7 +1203,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.endDescTitle();
       ol.writeDescItem();
       ol.startDescTable();
-      ArgumentListIterator ali(*argList);
+      ArgumentListIterator ali(*docArgList);
       Argument *a;
       for (ali.toFirst();(a=ali.current());++ali)
       {
@@ -1293,21 +1298,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ClassDef  *bcd=0; 
     if (bmd && (bcd=bmd->getClassDef()))
     {
-#if 0
-      if (lvirt!=Normal) // search for virtual member of the deepest base class
-      {
-        MemberDef *lastBmd=bmd;
-        while (lastBmd) 
-        {
-          ClassDef *lastBcd = lastBmd->getClassDef();
-          if (lastBmd->virtualness()!=Normal && 
-              lastBmd->isLinkable() &&
-              lastBcd->isLinkable()
-             ) { bmd=lastBmd; bcd=lastBcd; }
-          lastBmd=lastBmd->reimplements();
-        }
-      }
-#endif
       // write class that contains a member that is reimplemented by this one
       if (bcd->isLinkable())
       {
@@ -1543,6 +1533,11 @@ QCString MemberDef::getScopeString() const
   return result;
 }
 
+void MemberDef::setAnchor(const char *a)
+{
+  anc=a;
+}
+
 QCString MemberDef::anchor() const
 {
   if (m_templateMaster) return m_templateMaster->anchor();
@@ -1601,6 +1596,9 @@ MemberDef *MemberDef::createTemplateInstanceMember(
       actArg->type = substituteTemplateArgumentsInString(actArg->type,formalArgs,actualArgs);
       actualArgList->append(actArg);
     }
+    actualArgList->constSpecifier    = argList->constSpecifier;
+    actualArgList->volatileSpecifier = argList->volatileSpecifier;
+    actualArgList->pureSpecifier     = argList->pureSpecifier;
   }
 
   MemberDef *imd = new MemberDef(
@@ -1613,7 +1611,11 @@ MemberDef *MemberDef::createTemplateInstanceMember(
                    );
   imd->argList = actualArgList;
   imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
+  imd->setBodyDef(getBodyDef());
+  imd->setBodySegment(getStartBodyLine(),getEndBodyLine());
+
   // TODO: init other member variables (if needed).
+  // TODO: reimplemented info
   return imd; 
 }
 
@@ -1663,6 +1665,7 @@ void MemberDef::addListReference(Definition *d)
       memName.prepend(pd->name()+"::");
     }
   }
+  //printf("*** addListReference %s todo=%d test=%d bug=%d\n",name().data(),todoId(),testId(),bugId());
   addRefItem(todoId(),testId(),bugId(),memLabel,
       d->getOutputFileBase()+":"+anchor(),memName,argsString());
 }

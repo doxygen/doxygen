@@ -118,7 +118,9 @@ IDoxygen *createObjectModelFromXML(const char * xmlFileName)
   reader.setContentHandler( handler );
   reader.setErrorHandler( &errorHandler );
   reader.parse( source );
+  printf("<---------- initialize ----------->\n");
   handler->initialize();
+  printf("<-------- end initialize --------->\n");
   return handler;
 }
 

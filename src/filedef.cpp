@@ -84,7 +84,7 @@ FileDef::~FileDef()
 /*! Compute the HTML anchor names for all members in the class */ 
 void FileDef::computeAnchors()
 {
-  setAnchors('a',&allMemberList);
+  setAnchors(0,'a',&allMemberList);
 }
 
 void FileDef::distributeMemberGroupDocumentation()

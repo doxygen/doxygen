@@ -20,8 +20,7 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
 {
   addEndHandler("param",this,&ParamHandler::endParam);
 
-  addStartHandler("type");
-  addEndHandler("type",this,&ParamHandler::endType);
+  addStartHandler("type",this,&ParamHandler::startType);
 
   addStartHandler("declname");
   addEndHandler("declname",this,&ParamHandler::endDeclName);
@@ -35,8 +34,9 @@ ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent)
   addStartHandler("attrib");
   addEndHandler("attrib",this,&ParamHandler::endAttrib);
 
-  addStartHandler("defval");
-  addEndHandler("defval",this,&ParamHandler::endDefVal);
+  addStartHandler("defval",this,&ParamHandler::startDefVal);
+
+  m_linkedTextHandler = 0;
 }
 
 ParamHandler::~ParamHandler()
@@ -54,10 +54,12 @@ void ParamHandler::endParam()
   m_parent->setDelegate(0);
 }
 
-void ParamHandler::endType()
+void ParamHandler::startType(const QXmlAttributes& /*attrib*/)
 {
-  m_type = m_curString.stripWhiteSpace();
-  printf("param type=`%s'\n",m_type.data());
+  delete m_linkedTextHandler;
+  m_linkedTextHandler = new LinkedTextHandler(this,m_type);
+  m_linkedTextHandler->start("type");
+  printf("param type\n");
 }
 
 void ParamHandler::endDeclName()
@@ -84,10 +86,12 @@ void ParamHandler::endArray()
   printf("member array=`%s'\n",m_array.data());
 }
 
-void ParamHandler::endDefVal()
+void ParamHandler::startDefVal(const QXmlAttributes& /*attrib*/)
 {
-  m_defVal = m_curString.stripWhiteSpace();
-  printf("member defVal=`%s'\n",m_defVal.data());
+  delete m_linkedTextHandler;
+  m_linkedTextHandler = new LinkedTextHandler(this,m_defVal);
+  m_linkedTextHandler->start("type");
+  printf("member defVal\n");
 }
 
 

@@ -32,6 +32,7 @@
 #include "doxygen.h"
 #include "util.h"
 #include "message.h"
+#include "defargs.h"
 //#include "reflist.h"
 
 /*! Container for member specific info that can be read from a tagfile */
@@ -859,6 +860,11 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     me->type       = tmi->type;
     me->name       = tmi->name;
     me->args       = tmi->arglist;
+    if (!me->args.isEmpty())
+    {
+      me->argList = new ArgumentList;
+      stringToArgumentList(me->args,me->argList);
+    }
     me->protection = tmi->prot;
     me->virt       = tmi->virt;
     me->stat       = tmi->isStatic;

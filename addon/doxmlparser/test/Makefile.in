@@ -11,6 +11,3 @@ Makefile.xmlparse: xmlparse.pro
 	$(ENV) $(PERL) $(TMAKE) xmlparse.pro >Makefile.xmlparse
 
 install:
-	$(INSTTOOL) -d $(INSTALL)/bin	
-	$(INSTTOOL) -m 755 ../../bin/xmlparse $(INSTALL)/bin	
-

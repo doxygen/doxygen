@@ -373,54 +373,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       }
       case MemberDef::Friend:
       {
-#if 0
-        //printf("Writing friend `%s'\n",md->name().data());
-        QCString type=md->typeString();
-        //printf("Friend: type=%s name=%s\n",type.data(),md->name().data());
-        bool isFriendClass = type=="friend class";
-        if (!isFriendClass)
-        {
-#endif
-          if (first) ol.startMemberList(),first=FALSE;
-          md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
-#if 0
-        }
-        else // isFriendClass
-             // friend is undocumented as a member but it is a class, 
-             // so generate a link to the class if that is documented.
-        {
-          ClassDef *cd=getClass(md->name());
-          if (md->hasDocumentation()) // friend is documented
-          {
-            if (first) ol.startMemberList(),first=FALSE;
-            ol.startMemberItem(0);
-            ol.docify("class ");
-            ol.insertMemberAlign();
-            ol.writeObjectLink(0,0,md->anchor(),md->name());
-            ol.endMemberItem(FALSE);
-          }
-          else if (cd && cd->isLinkable()) // class is documented
-          {
-            if (first) ol.startMemberList(),first=FALSE;
-            ol.startMemberItem(0);
-            ol.docify("class ");
-            ol.insertMemberAlign();
-            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
-            ol.endMemberItem(FALSE);
-          }
-          else if (!Config_getBool("HIDE_UNDOC_MEMBERS")) // no documentation
-          {
-            if (first) ol.startMemberList(),first=FALSE;
-            ol.startMemberItem(0);
-            ol.docify("class ");
-            ol.insertMemberAlign();
-            ol.startBold();
-            ol.docify(md->name());
-            ol.endBold();
-            ol.endMemberItem(FALSE);
-          }
-        }
-#endif
+        if (first) ol.startMemberList(),first=FALSE;
+        md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
         break;
       }
       case MemberDef::EnumValue: 

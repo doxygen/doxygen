@@ -869,7 +869,7 @@ QCString tempArgListToString(ArgumentList *al)
 
 
 // compute the HTML anchors for a list of members
-void setAnchors(char id,MemberList *ml,int groupId)
+void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
 {
   int count=0;
   MemberListIterator mli(*ml);
@@ -883,7 +883,8 @@ void setAnchors(char id,MemberList *ml,int groupId)
         anchor.sprintf("%c%d",id,count++);
       else
         anchor.sprintf("%c%d_%d",id,groupId,count++);
-      //printf("Member %s anchor %s\n",md->name(),anchor.data());
+      if (cd) anchor.prepend(escapeCharsInString(cd->name(),FALSE));
+      //printf("Member %s anchor %s\n",md->name().data(),anchor.data());
       md->setAnchor(anchor);
     }
   }
@@ -2878,6 +2879,44 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
+QCString escapeCharsInString(const char *name,bool allowDots)
+{
+  QCString result;
+  char c;
+  const char *p=name;
+  while ((c=*p++)!=0)
+  {
+    switch(c)
+    {
+      case '_': result+="__"; break;
+      case '-': result+="-";  break;
+      case ':': result+="_1"; break;
+      case '/': result+="_2"; break;
+      case '<': result+="_3"; break;
+      case '>': result+="_4"; break;
+      case '*': result+="_5"; break;
+      case '&': result+="_6"; break;
+      case '|': result+="_7"; break;
+      case '.': if (allowDots) result+="."; else result+="_8"; break;
+      case '!': result+="_9"; break;
+      case ',': result+="_00"; break;
+      case ' ': result+="_01"; break;
+      default: 
+        if (Config_getBool("CASE_SENSE_NAMES") || !isupper(c))
+        {
+          result+=c;
+        }
+        else
+        {
+          result+="_";
+          result+=tolower(c); 
+        }
+        break;
+    }
+  }
+  return result;
+}
+
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with templete 
  *  arguments, so special characters need to be escaped.
@@ -2906,41 +2945,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
   }
   else // long names
   {
-
-    QCString result;
-    char c;
-    const char *p=name;
-    while ((c=*p++)!=0)
-    {
-      switch(c)
-      {
-        case '_': result+="__"; break;
-        case '-': result+="-";  break;
-        case ':': result+="_1"; break;
-        case '/': result+="_2"; break;
-        case '<': result+="_3"; break;
-        case '>': result+="_4"; break;
-        case '*': result+="_5"; break;
-        case '&': result+="_6"; break;
-        case '|': result+="_7"; break;
-        case '.': if (allowDots) result+="."; else result+="_8"; break;
-        case '!': result+="_9"; break;
-        case ',': result+="_00"; break;
-        case ' ': result+="_01"; break;
-        default: 
-          if (Config_getBool("CASE_SENSE_NAMES") || !isupper(c))
-          {
-            result+=c;
-          }
-          else
-          {
-            result+="_";
-            result+=tolower(c); 
-          }
-          break;
-      }
-    }
-    return result;
+    return escapeCharsInString(name,allowDots);
   }
 }
 

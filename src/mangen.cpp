@@ -143,6 +143,7 @@ void ManGenerator::startFile(const char *,const char *manName,
 
 void ManGenerator::endFile()
 {
+  t << endl;
   endPlainFile();
 }
 

@@ -255,6 +255,11 @@ class LatexGenerator : public OutputGenerator
 
     void startFontClass(const char *) {}
     void endFontClass() {}
+
+    void startHtmlOnly()  {}
+    void endHtmlOnly()    {}
+    void startLatexOnly() {}
+    void endLatexOnly()   {}
     
   private:
     void latin2ToLatex(unsigned char);

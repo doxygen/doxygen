@@ -311,6 +311,8 @@ class ClassDef : public Definition
     /*! \} Interal API */
 
   private: 
+    void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
+    
     /*! file name that forms the base for the output file containing the
      *  class documentation. For compatibility with Qt (e.g. links via tag 
      *  files) this name cannot be derived from the class name directly.
@@ -408,6 +410,12 @@ class ClassDef : public Definition
 
     /*! Is the class part of an unnamed namespace? */
     bool m_isStatic;
+
+    /*! TRUE if classes members are merged with those of the base classes. */
+    bool m_membersMerged;
+
+    /*! TRUE if the class is defined in a source file rather than a header file. */
+    bool m_isLocal;
 };
 
 /*! \brief Class that contains information about a usage relation. 

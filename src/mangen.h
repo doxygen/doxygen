@@ -237,6 +237,11 @@ class ManGenerator : public OutputGenerator
     void startFontClass(const char *) {}
     void endFontClass() {}
 
+    void startHtmlOnly()  {}
+    void endHtmlOnly()    {}
+    void startLatexOnly() {}
+    void endLatexOnly()   {}
+
   private:
     bool firstCol;
     bool paragraph;

@@ -343,7 +343,7 @@ int GroupDef::countMembers() const
 /*! Compute the HTML anchor names for all members in the class */ 
 void GroupDef::computeAnchors()
 {
-  setAnchors('a',allMemberList);
+  setAnchors(0,'a',allMemberList);
 }
 
 void GroupDef::writeDocumentation(OutputList &ol)
