@@ -38,7 +38,6 @@ Entry::Entry()
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
   tArgLists = 0;
-  //mtArgList = 0;
   mGrpId = -1;
   tagInfo = 0;
   sli = 0;
@@ -88,9 +87,6 @@ Entry::Entry(const Entry &e)
   initLines   = e.initLines;
   callGraph   = e.callGraph;
   objc        = e.objc;
-  //todoId      = e.todoId;
-  //testId      = e.testId;
-  //bugId       = e.bugId;
   tagInfo     = e.tagInfo;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
@@ -152,19 +148,6 @@ Entry::Entry(const Entry &e)
     tArgLists = copyArgumentLists(e.tArgLists);
   }
 
-  // deep copy template argument list
-  //if (e.mtArgList)
-  //{
-  //  mtArgList = new ArgumentList;
-  //  mtArgList->setAutoDelete(TRUE);
-  //  //printf("Entry::Entry(copy) new tArgList=%p\n",tArgList);
-  //  QListIterator<Argument> mtali(*e.mtArgList);
-  //  for (;(a=mtali.current());++mtali)
-  //  {
-  //    mtArgList->append(new Argument(*a));
-  //    //printf("appending argument %s %s\n",a->type.data(),a->name.data());
-  //  }
-  //}
   if (e.sli)
   {
     sli = new QList<ListItemInfo>;
@@ -206,17 +189,6 @@ void Entry::addSubEntry(Entry *current)
   //printf("Entry::addSubEntry(%s) %p\n",current->name.data(),current->tArgList);
   current->parent=this;
   sublist->append(current);  
-  
-  //if (current->tArgList)
-  //{
-  //  Argument * a=current->tArgList->first();
-  //  while (a)
-  //  {
-  //    printf("type=%s name=%s\n",a->type.data(),a->name.data());
-  //    a=current->tArgList->next();
-  //  }
-  //}
-
 }
 
 void Entry::reset()
@@ -227,7 +199,6 @@ void Entry::reset()
   bitfields.resize(0);
   exception.resize(0);
   program.resize(0);
-  //body.resize(0);
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
@@ -243,8 +214,6 @@ void Entry::reset()
   inbodyLine=-1;
   inside.resize(0);
   fileName.resize(0);
-  //scopeSpec.resize(0);
-  //memberSpec.resize(0);
   initializer.resize(0);
   initLines = -1;
   startLine = 1;
@@ -252,9 +221,6 @@ void Entry::reset()
   endBodyLine = -1;
   mGrpId = -1;
   callGraph = FALSE;
-  //todoId = 0;
-  //testId = 0;
-  //bugId = 0;
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;
@@ -347,18 +313,6 @@ int Entry::getSize()
       al=tArgLists->next();
     }
   }
-  //if (mtArgList)
-  //{
-  //  a=mtArgList->first();
-  //  while (e)
-  //  {
-  //    size+=sizeof(Argument);
-  //    size+=a->type.length()+1
-  //      +a->name.length()+1
-  //      +a->defval.length()+1;
-  //    a=mtArgList->next();
-  //  }
-  //}
   return size;
 }
 

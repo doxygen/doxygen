@@ -34,7 +34,6 @@
 #include "section.h"
 #include "membergroup.h"
 #include "reflist.h"
-//#include "packagedef.h"
 
 class PageSList;
 class PageSDict;

@@ -82,12 +82,14 @@ static void writeGraphFooter(QTextStream &t)
  *  site image map.
  *  \param t the stream to which the result is written.
  *  \param mapName the name of the map file.
+ *  \param relPath the relative path to the root of the output directory
+ *                 (used in case CREATE_SUBDIRS is enabled).
  *  \param urlOnly if FALSE the url field in the map contains an external 
  *                 references followed by a $ and then the URL.  
  *  \returns TRUE if succesful.
  */
 static bool convertMapFile(QTextStream &t,const char *mapName,
-                           bool urlOnly=FALSE)
+                           const QCString relPath, bool urlOnly=FALSE)
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly)) 
@@ -146,7 +148,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
           {
             if ((dest=Doxygen::tagDestinationDict[df->ref()])) t << *dest << "/";
           }
-          if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
+          if (!df->file().isEmpty()) t << relPath << df->file() << Doxygen::htmlFileExtension;
           if (!df->anchor().isEmpty()) t << "#" << df->anchor();
         }
         else
@@ -175,7 +177,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
             if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
             t << "\" ";
           }
-          t << "href=\""; 
+          t << "href=\"" << relPath; 
           if (*refPtr!='\0')
           {
             if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
@@ -1004,7 +1006,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#" 
       << mapLabel << "_map\">" << endl;
     out << "<map name=\"" << mapLabel << "_map\">" << endl;
-    convertMapFile(out,mapName);
+    convertMapFile(out,mapName,"");
     out << "</map></td></tr>" << endl;
     //thisDir.remove(mapName);
   }
@@ -1740,7 +1742,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     out << "\"></center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
-    convertMapFile(tmpout,baseName+".map");
+    convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapLabel << "\">" << endl;
@@ -2004,7 +2006,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
-    convertMapFile(tmpout,baseName+".map");
+    convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapName << "_map\">" << endl;
@@ -2185,7 +2187,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
-    convertMapFile(tmpout,baseName+".map");
+    convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
       out << "<map name=\"" << mapName << "_map\">" << endl;
@@ -2421,7 +2423,7 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir)
   }
   QString result;
   QTextOStream tmpout(&result);
-  convertMapFile(tmpout, outFile, TRUE);
+  convertMapFile(tmpout, outFile, "",TRUE);
   QDir().remove(outFile);
 // printf("result=%s\n",result.data());
 

@@ -153,7 +153,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorXMLImpl(QTextStream &t): m_t(t) {}
-    void writeString(const char *s) const
+    void writeString(const char *s,bool /*keepSpaces*/) const
     {
       writeXMLString(m_t,s); 
     }

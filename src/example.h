@@ -31,24 +31,6 @@ struct Example
   QCString file;
 };
 
-//class ExampleList : public QList<Example>
-//{
-//  public:
-//    ExampleList() : QList<Example>() {}
-//   ~ExampleList() {}
-//    int compareItems(GCI item1,GCI item2)
-//    {
-//      return stricmp(((Example *)item1)->name,((Example *)item2)->name);
-//    }
-//};
-
-//class ExampleDict : public QDict<Example>
-//{
-//  public:
-//    ExampleDict(int size=17) : QDict<Example>(size) {}
-//   ~ExampleDict() {}
-//};
-
 class ExampleSDict : public SDict<Example>
 {
   public:

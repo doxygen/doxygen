@@ -23,7 +23,7 @@ f_make=NO
 f_dot=NO
 f_perl=NO
 f_plf_auto=NO
-f_prefix=/usr
+f_prefix=/usr/local
 f_insttool=NO
 f_english=NO
 f_wizard=NO
@@ -135,6 +135,9 @@ if test -z "$f_platform"; then
   case "$u_system:$u_release" in
     AIX*)
       f_platform=aix-xlc
+      ;;
+    BeOS*)
+      f_platform=beos-g++
       ;;
     dgux:*)
       f_platform=dgux-g++
@@ -253,7 +256,7 @@ if test "$f_wizard" = YES; then
     echo "QTDIR not set and Qt not found at standard locations!"
     echo
     echo "tmake requires the QTDIR environment variable to be set."
-    echo "check your Qt installation!"
+    echo "check the Qt installation instructions!"
     exit 2
   else
     if test ! -d "$QTDIR/lib"; then

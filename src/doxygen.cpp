@@ -3679,7 +3679,7 @@ static void computeClassRelations()
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && 
         bName.right(2)!="::")
     {
-      if (!root->name.isEmpty() && root->name[0]!='@' && // normal name
+      if (!root->name.isEmpty() && root->name.find('@')==-1 && // normal name
           (guessSection(root->fileName)==Entry::HEADER_SEC || 
            Config_getBool("EXTRACT_LOCAL_CLASSES")) && // not defined in source file
           (root->protection!=Private || Config_getBool("EXTRACT_PRIVATE")) && // hidden by protection

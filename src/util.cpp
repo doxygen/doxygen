@@ -78,9 +78,27 @@ TextGeneratorOLImpl::TextGeneratorOLImpl(OutputDocInterface &od) : m_od(od)
 {
 }
 
-void TextGeneratorOLImpl::writeString(const char *s) const
+void TextGeneratorOLImpl::writeString(const char *s,bool keepSpaces) const
 { 
-  m_od.docify(s); 
+  if (keepSpaces)
+  {
+    const char *p=s;
+    if (p)
+    {
+      char cs[2];
+      char c;
+      cs[1]='\0';
+      while ((c=*p++))
+      {
+        if (c==' ') m_od.writeNonBreakableSpace(1); 
+        else cs[0]=c,m_od.docify(cs);
+      }
+    }
+  }
+  else
+  {
+    m_od.docify(s); 
+  }
 }
 
 void TextGeneratorOLImpl::writeBreak() const
@@ -1171,9 +1189,26 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   uint csp=0;
   for (i=0;i<l;i++)
   {
+nextChar:
     char c=s.at(i);
     if (csp<6 && c==constScope[csp]) csp++; else csp=0;
-    if (i<l-2 && c=='<' &&  // current char is a <
+    if (c=='"') // quoted string
+    {
+      i++;
+      result+=c;
+      while (i<l)
+      {
+        char cc=s.at(i);
+        result+=cc;
+        if (cc=='\\') // escaped character
+        { result+=s.at(i+1); i+=2; }
+        else if (cc=='"') // end of string
+        { i++; goto nextChar; }
+        else // any other character
+        { i++; }
+      }
+    }
+    else if (i<l-2 && c=='<' &&  // current char is a <
         (isId(s.at(i+1)) || isspace((uchar)s.at(i+1))) && // next char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
        )
@@ -1252,7 +1287,10 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
 }
 
 
-void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileScope,const char * /*name*/,const char *text,bool autoBreak,bool external)
+void linkifyText(const TextGeneratorIntf &out,Definition *scope,
+                 FileDef *fileScope,const char *,
+                 const char *text, bool autoBreak,bool external,
+                 bool keepSpaces)
 {
   //printf("`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
@@ -1290,20 +1328,20 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileSco
       if (i==-1) i=splitText.find(' ');
       if (i!=-1) // add a link-break at i in case of Html output
       {
-        out.writeString(splitText.left(i+1));
+        out.writeString(splitText.left(i+1),keepSpaces);
         out.writeBreak();
-        out.writeString(splitText.right(splitLength-i-1));
+        out.writeString(splitText.right(splitLength-i-1),keepSpaces);
       } 
       else
       {
-        out.writeString(splitText); 
+        out.writeString(splitText,keepSpaces); 
       }
       floatingIndex=splitLength-i-1;
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex)); 
-      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex)); 
+      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces); 
     }
     // get word from string
     QCString word=txtStr.mid(newIndex,matchLen);
@@ -1370,7 +1408,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileSco
     if (!found) // add word to the result
     {
       //ol.docify(word);
-      out.writeString(word);
+      out.writeString(word,keepSpaces);
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -1379,7 +1417,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,FileDef *fileSco
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
-  out.writeString(txtStr.right(txtStr.length()-skipIndex));
+  out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
 }
 
 
