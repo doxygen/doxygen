@@ -2166,6 +2166,7 @@ static void findFriends()
               fmd->setBodyDef(mmd->getBodyDef());
               fmd->setBodyMember(mmd);
             }
+            mmd->setDocsForDefinition(fmd->isDocsForDefinition());
           }
         }
       }
@@ -7419,7 +7420,6 @@ void parseInput()
 
   msg("Adding todo/test/bug list items...\n");
   addListReferences();
-  
 }
 
 void generateOutput()

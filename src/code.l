@@ -1057,13 +1057,16 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					      if (!name.isEmpty() && g_sourceFileDef)
 					      {
 					        FileName *fn = Doxygen::inputNameDict->find(name);
-						FileNameIterator fni(*fn);
-						// for each include name
-						for (fni.toFirst();!found && (fd=fni.current());++fni)
+						if (fn)
 						{
-						  // see if this source file actually includes the file
-						  found = g_sourceFileDef->isIncluded(fd->absFilePath());
-						  //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
+						  FileNameIterator fni(*fn);
+						  // for each include name
+						  for (fni.toFirst();!found && (fd=fni.current());++fni)
+						  {
+						    // see if this source file actually includes the file
+						    found = g_sourceFileDef->isIncluded(fd->absFilePath());
+						    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
+						  }
 						}
 					      }
 					    }

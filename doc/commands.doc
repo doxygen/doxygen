@@ -56,6 +56,7 @@ documentation:
 <li> \refitem cmdc \c
 <li> \refitem cmdclass \class
 <li> \refitem cmdcode \code
+<li> \refitem cmdcopydoc \copydoc
 <li> \refitem cmddate \date
 <li> \refitem cmddef \def
 <li> \refitem cmddefgroup \defgroup
@@ -1362,6 +1363,40 @@ ALIASES  = "english=\if english" \
   links to the documentation. 
 
   \sa section \ref cmdendcode "\\endcode", section \ref cmdverbatim "\\verbatim"  
+
+<hr>
+\subsection cmdcopydoc \copydoc <link-object>
+
+  \addindex \copydoc
+  Copies a documentation block from the object specified by \<link-object\>
+  and pastes it at the location of the command. This command can be useful 
+  to avoid cases where a documentation block would otherwise have to be 
+  duplicated or it can be used to extend the documentation of an inherited 
+  member.
+  
+  The link object can point to a member, a class, a namespace, a group,
+  a page, or a file (checked in that order). To copy the 
+  documentation for a member of a class for instance one can put the 
+  following in the documentation
+
+\verbatim
+  /*! @copydoc MyClass::myfunction() 
+   *  More documentation.
+   */
+\endverbatim
+
+  if the member is overloaded, you should specify the argument types 
+  explicitly (without spaces!), like in the following:
+
+\verbatim
+  /*! @copydoc MyClass::myfunction(type1,type2) */
+\endverbatim
+
+  Qualified names are only needed if the context in which the documentation
+  block is found requires them.
+
+  The copydoc command can be used recursively, but cycles in the copydoc
+  relation will be broken and flagged as an error.
 
 <hr>
 \subsection cmddotfile \dotfile <file> ["caption"] 
