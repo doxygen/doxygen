@@ -30,7 +30,8 @@ It has two functions:
   directly from the HTML files. This has the advantage that you do not need 
   to have the sources from which the documentation was extracted.
   If you \e do have the sources it is better to let \c doxygen generate the
-  tag file by putting the name of the tag file after \c GENERATE_TAGFILE in
+  tag file by putting the name of the tag file after 
+  \ref cfg_generate_tagfile "GENERATE_TAGFILE" in
   the configuration file.
 <li>
   Doxytag can generate a <em>search index</em> for the documentation 

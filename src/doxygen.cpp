@@ -58,7 +58,6 @@
 #define pclose _pclose
 #endif
 
-
 // lists
 ClassList      classList;          // all documented classes
 NamespaceList  namespaceList;      // all namespaces
@@ -1032,32 +1031,6 @@ static MemberDef *addVariableToFile(
       root->protection
               );
 
-  // new global variable, enum value or typedef
-  MemberDef *md=new MemberDef(
-      root->fileName,root->startLine,
-      root->type,name,root->args,0,
-      Public, Normal,root->stat,FALSE,
-      mtype,0,0);
-  //md->setDefFile(root->fileName);
-  //md->setDefLine(root->startLine);
-  md->setDocumentation(root->doc);
-  md->setBriefDescription(root->brief);
-  md->addSectionsToDefinition(root->anchors);
-  md->setFromAnnonymousScope(fromAnnScope);
-  md->setFromAnnonymousMember(fromAnnMemb);
-  md->setIndentDepth(indentDepth);
-  md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer);
-  md->setMaxInitLines(root->initLines);
-  md->setMemberGroupId(root->mGrpId);
-  bool ambig;
-  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
-  md->setBodyDef(fd);
-  //if (root->mGrpId!=-1) 
-  //{
-  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
-  //}
-
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
   if (!scope.isEmpty())
@@ -1068,21 +1041,6 @@ static MemberDef *addVariableToFile(
       nd = namespaceDict[nscope];
     }
   }
-  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
-  {
-    nd->insertMember(md); 
-    md->setNamespace(nd);
-  }
-  else
-  {
-    // find file definition
-    if (fd)
-    {
-      fd->insertMember(md);
-      md->setFileDef(fd); 
-    }
-  }
-
   QCString def;
   // determine the definition of the global variable
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' && 
@@ -1114,11 +1072,72 @@ static MemberDef *addVariableToFile(
     }
   }
   if (def.left(7)=="static ") def=def.right(def.length()-7);
-  md->setDefinition(def);
 
-  MemberName *mn = 0;
+  MemberName *mn=functionNameDict[name];
+  if (mn)
+  {
+    MemberDef *md=mn->first();
+    while (md)
+    {
+      QCString nscope=removeAnnonymousScopes(scope);
+      NamespaceDef *nd=0;
+      if (!nscope.isEmpty())
+      {
+        nd = namespaceDict[nscope];
+      }
+      if (nd==0 || md->getNamespace()==nd) 
+        // variable already in the scope
+      {
+        addMemberDocs(root,md,def,0,FALSE);
+        return md;
+      }
+      md=mn->next();
+    } 
+  }
+  // new global variable, enum value or typedef
+  MemberDef *md=new MemberDef(
+      root->fileName,root->startLine,
+      root->type,name,root->args,0,
+      Public, Normal,root->stat,FALSE,
+      mtype,0,0);
+  //md->setDefFile(root->fileName);
+  //md->setDefLine(root->startLine);
+  md->setDocumentation(root->doc);
+  md->setBriefDescription(root->brief);
+  md->addSectionsToDefinition(root->anchors);
+  md->setFromAnnonymousScope(fromAnnScope);
+  md->setFromAnnonymousMember(fromAnnMemb);
+  md->setIndentDepth(indentDepth);
+  md->setBodySegment(root->bodyLine,root->endBodyLine);
+  md->setInitializer(root->initializer);
+  md->setMaxInitLines(root->initLines);
+  md->setMemberGroupId(root->mGrpId);
+  bool ambig;
+  FileDef *fd=findFileDef(inputNameDict,root->fileName,ambig);
+  md->setBodyDef(fd);
+  md->setDefinition(def);
+  //if (root->mGrpId!=-1) 
+  //{
+  //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
+  //}
+
+  if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+  {
+    nd->insertMember(md); 
+    md->setNamespace(nd);
+  }
+  else
+  {
+    // find file definition
+    if (fd)
+    {
+      fd->insertMember(md);
+      md->setFileDef(fd); 
+    }
+  }
+
   // add member definition to the list of globals 
-  if ((mn=functionNameDict[name]))
+  if (mn)
   {
     mn->inSort(md);
   }
@@ -1344,6 +1363,23 @@ static void buildMemberList(Entry *root)
       //    root->parent->name.data(),getClass(root->parent->name),
       //    root->type.find(re,0));
       QCString scope=stripAnnonymousNamespaceScope(root->parent->name.copy());
+
+      bool isMember=FALSE;
+      int memIndex=root->name.find("::");
+      if (memIndex!=-1)
+      {
+        int ts=root->name.find('<');
+        int te=root->name.find('>');
+        if (ts==-1 || te==-1)
+        {
+          isMember=TRUE;
+        }
+        else
+        {
+          isMember=memIndex<ts && memIndex<te;
+        }
+      }
+      
       int i;
       if (root->parent && 
           !root->parent->name.isEmpty() &&
@@ -1494,10 +1530,13 @@ static void buildMemberList(Entry *root)
       }
       else if (root->parent && 
                !(root->parent->section & Entry::COMPOUND_MASK) &&
-               root->name.find("::")==-1 && // TODO: remove this check
-                                            // it breaks cases like 
-                                            // func<A::B>(), but it is needed
-                                            // for detect that A::func() is a member 
+               !isMember &&
+
+               //root->name.find("::")==-1 && // TODO: remove this check
+               //                             // it breaks cases like 
+               //                             // func<A::B>(), but it is needed
+               //                             // for detect that A::func() is a member 
+               
                root->relates.isEmpty() &&
                root->type.left(7)!="extern " &&
                root->type.left(8)!="typedef " 
@@ -2193,7 +2232,8 @@ static void addMemberDocs(Entry *root,
     //{
     //  md->setBody(root->body);
     //}
-    if (md->getStartBodyLine()==-1 && root->bodyLine!=-1)
+    if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) || 
+        (md->isVariable() && !root->explicitExternal))
     {
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
@@ -3792,7 +3832,6 @@ static void buildCompleteMemberLists()
 static void generateFileSources()
 {
   if (documentedHtmlFiles==0) return;
-  writeFileIndex(*outputList);
   
   if (inputNameList.count()>0)
   {
@@ -3821,7 +3860,6 @@ static void generateFileSources()
 static void generateFileDocs()
 {
   if (documentedHtmlFiles==0) return;
-  writeFileIndex(*outputList);
   
   if (inputNameList.count()>0)
   {
@@ -4602,8 +4640,11 @@ static void generateSearchIndex()
 }
 
 //----------------------------------------------------------------------------
-// generate the configuration file
 
+/*! Generate a template version of the configuration file.
+ *  If the \a shortList parameter is TRUE a configuration file without
+ *  comments will be generated.
+ */
 static void generateConfigFile(const char *configFile,bool shortList)
 {
   QFile f;
@@ -4619,6 +4660,9 @@ static void generateConfigFile(const char *configFile,bool shortList)
     if (fi.exists()) // create a backup
     {
       QDir dir=fi.dir();
+      QFileInfo backup(fi.fileName()+".bak");
+      if (backup.exists()) // remove existing backup
+        dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     } 
     f.setName(configFile);
@@ -4642,10 +4686,64 @@ static void generateConfigFile(const char *configFile,bool shortList)
   }
   else
   {
-    err("Error: Cannot open file %s for writing\n");
+    err("Error: Cannot open file %s for writing\n",configFile);
     exit(1);
   }
 }
+
+//----------------------------------------------------------------------------
+
+/*! Generate a template stylesheet
+ */
+static void generateStyleSheetFile(OutputGenerator::OutputType outType,const char *sheetName)
+{
+  QFile f;
+  bool fileOpened=FALSE;
+  bool writeToStdout = strcmp(sheetName,"-")==0;
+  if (writeToStdout) // write to stdout
+  {
+    fileOpened = f.open(IO_WriteOnly,stdout);
+  }
+  else // write to file
+  {
+    QFileInfo fi(sheetName);
+    if (fi.exists()) // create a backup
+    {
+      QDir dir=fi.dir();
+      QFileInfo backup(fi.fileName()+".bak");
+      if (backup.exists()) // remove existing backup
+        dir.remove(backup.fileName());
+      dir.rename(fi.fileName(),fi.fileName()+".bak");
+    } 
+    f.setName(sheetName);
+    fileOpened = f.open(IO_WriteOnly);
+  }
+ 
+  if (fileOpened)
+  {
+    switch(outType)
+    {
+      case OutputGenerator::RTF:
+        RTFGenerator::writeStyleSheetFile(f);
+        break;
+      case OutputGenerator::Html:
+        HtmlGenerator::writeStyleSheetFile(f);
+        break;
+      case OutputGenerator::Latex:
+        LatexGenerator::writeStyleSheetFile(f);
+        break;    
+      default:
+        break;
+    }
+    f.close();
+  }
+  else
+  {
+    err("Error: Cannot open file %s for writing\n",sheetName);
+    exit(1);
+  }
+}
+
 
 //----------------------------------------------------------------------------
 // read and parse a tag file
@@ -5080,7 +5178,7 @@ static void readFormulaRepository()
 static void usage(const char *name)
 {
   msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2000\n\n",versionString);
-  msg("You can use doxygen in three ways:\n\n");
+  msg("You can use doxygen in four ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
   msg("    If - is used for configName doxygen will write to standard output.\n\n");
@@ -5090,6 +5188,9 @@ static void usage(const char *name)
   msg("configuration file:\n");
   msg("    %s [configName]\n\n",name);
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
+  msg("4) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
+  msg("    %s -w rtf|html|latex outputFileName [configName]\n",name);
+  msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
   msg("If -s is specified the comments in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
   exit(1);
@@ -5127,11 +5228,13 @@ int main(int argc,char **argv)
   int optind=1;
   const char *configName=0;
   const char *debugLabel;
+  const char *formatName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
   bool updateConfig=FALSE;
   while (optind<argc && argv[optind][0]=='-' && 
-               (isalpha(argv[optind][1]) || argv[optind][1]=='?')
+               (isalpha(argv[optind][1]) || argv[optind][1]=='?' || 
+                argv[optind][1]=='-')
         )
   {
     switch(argv[optind][1])
@@ -5150,6 +5253,64 @@ int main(int argc,char **argv)
         break;
       case 'u':
         updateConfig=TRUE;
+        break;
+      case 'w':
+        formatName=getArg(argc,argv,optind);
+        if (!formatName)
+        {
+          err("Error: option -w is missing format specifier rtf, html or latex\n");
+          exit(1);
+        } 
+        if (optind+1>=argc)
+        {
+          err("Error: option -w is missing a configuration file name\n");
+          exit(1);
+        }
+        if (strcasecmp(formatName,"rtf")==0)
+        {
+          generateStyleSheetFile(OutputGenerator::RTF,argv[optind+1]);
+          exit(1);
+        }
+        else if (strcasecmp(formatName,"html")==0)
+        {
+          generateStyleSheetFile(OutputGenerator::Html,argv[optind+1]);
+          exit(1);
+        }
+        else if (strcasecmp(formatName,"latex")==0)
+        {
+          if (optind+2<argc) // use config file to get settings
+          {
+            QCString configFile=fileToString(argv[optind+2]);
+            if (configFile.isEmpty()) exit(1);
+            parseConfig(fileToString(argv[optind+2])); 
+            configStrToVal();
+            substituteEnvironmentVars();
+            checkConfig();
+          }
+          else // use default config
+          {
+            Config::init();
+            setTranslator("English");
+          }
+          generateStyleSheetFile(OutputGenerator::Latex,argv[optind+1]);
+          exit(1);
+        }
+        else 
+        {
+          err("Error: Illegal format specifier %s: should be one of rtf, html, or latex\n",formatName);
+          exit(1);
+        }
+        break;
+      case '-':
+        if (strcmp(&argv[optind][2],"help")==0)
+        {
+          usage(argv[0]);
+        }
+        else if (strcmp(&argv[optind][2],"version")==0)
+        {
+          msg("%s\n",versionString); 
+          exit(1);
+        }
         break;
       case 'h':
       case '?':
@@ -5284,7 +5445,9 @@ int main(int argc,char **argv)
   s=Config::includePath.first();
   while (s)
   {
-    readFileOrDirectory(s,0,includeNameDict,0,&Config::filePatternList,
+    QStrList *pl = &Config::includeFilePatternList;
+    if (pl->count()==0) pl = &Config::filePatternList;
+    readFileOrDirectory(s,0,includeNameDict,0,pl,
                         &Config::excludePatternList,0,0);
     s=Config::includePath.next(); 
   }
@@ -5429,15 +5592,15 @@ int main(int argc,char **argv)
   msg("Search for main page...\n");
   findMainPage(root);
   
+  msg("Searching for documented variables...\n");
+  buildVarList(root);
+
   msg("Building member list...\n"); // using class info only !
   buildMemberList(root);
   transferFunctionDocumentation();
 
   msg("Searching for friends...\n");
   findFriends();
-  
-  msg("Searching for documented variables...\n");
-  buildVarList(root);
   
   msg("Searching for documented defines...\n");
   findDefineDocumentation(root); 
@@ -5533,6 +5696,9 @@ int main(int argc,char **argv)
 
   msg("Generating index page...\n"); 
   writeIndex(*outputList);
+
+  msg("Generating file index...\n");
+  writeFileIndex(*outputList);
 
   msg("Generating example documentation...\n");
   generateExampleDocs();

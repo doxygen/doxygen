@@ -985,9 +985,11 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   output << ":\\begin{figure}[H]\n"
             "\\begin{center}\n"
             "\\leavevmode\n";
-  output << "\\setlength{\\epsfysize}{" << realHeight << "cm}\n";
-  output << "\\epsfbox{" << fileName << ".eps}\n"
-            "\\end{center}\n"
+  //output << "\\setlength{\\epsfysize}{" << realHeight << "cm}\n";
+  //output << "\\epsfbox{" << fileName << ".eps}\n"
+  output << "\\includegraphics[height=" << realHeight << "cm]{" 
+                                        << fileName << "}" << endl;
+  output << "\\end{center}\n"
             "\\end{figure}\n";
   
   //printf("writeFigure rows=%d cols=%d\n",rows,cols);

@@ -27,6 +27,8 @@ class RTFGenerator : public OutputGenerator
   public:
     RTFGenerator();
    ~RTFGenerator();
+    static void init();
+    static void writeStyleSheetFile(QFile &f);
 
     OutputGenerator *copy();
     //OutputGenerator *clone() { return new RTFGenerator(*this); }
@@ -39,7 +41,6 @@ class RTFGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==RTF && active); } 
     OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
-    static void init();
     void startFile(const char *name,const char *title, bool external);
     void writeFooter(int,bool) {}
     void endFile();

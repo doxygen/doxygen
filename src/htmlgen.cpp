@@ -28,11 +28,36 @@
 #include "diagram.h"
 #include "version.h"
 #include "dot.h"
+#include "language.h"
 
 #define GROUP_COLOR "#ff8080"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x) 
+
+static const char *defaultStyleSheet = 
+      "H1 { text-align: center; }\n"
+      "A.qindex {}\n"
+      "A.qindexRef {}\n"
+      "A.el { text-decoration: none; font-weight: bold }\n"
+      "A.elRef { font-weight: bold }\n"
+      "A.code { text-decoration: none; font-weight: normal; color: #4444ee }\n"
+      "A.codeRef { font-weight: normal; color: #4444ee }\n"
+      "DL.el { margin-left: -1cm }\n"
+      "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
+      "DIV.in { margin-left: 16 }\n"
+      "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }\n"
+      "TD.md { background-color: #f2f2ff }\n"
+      "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }\n"
+      "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }\n"
+      "FONT.keyword       { color: #008000 }\n"
+      "FONT.keywordtype   { color: #604020 }\n"
+      "FONT.keywordflow   { color: #e08000 }\n"
+      "FONT.comment       { color: #800000 }\n"
+      "FONT.preprocessor  { color: #806020 }\n"
+      "FONT.stringliteral { color: #002080 }\n"
+      "FONT.charliteral   { color: #008080 }\n";
+
 
 HtmlHelp *HtmlGenerator::htmlHelp = 0;
 
@@ -66,6 +91,11 @@ void HtmlGenerator::init()
   writeNullImage(Config::htmlOutputDir);
 }
 
+void HtmlGenerator::writeStyleSheetFile(QFile &file)
+{
+  QTextStream t(&file);
+  t << defaultStyleSheet;
+}
 void HtmlGenerator::startFile(const char *name,const char *title,bool external)
 {
   QCString fileName=name;
@@ -77,6 +107,8 @@ void HtmlGenerator::startFile(const char *name,const char *title,bool external)
   {
     t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n"
          "<html><head><meta name=\"robots\" content=\"noindex\">\n"
+         "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
+         << theTranslator->idLanguageCharset() << "\">\n"
          "<title>" << title << "</title>\n";
     t << "<link ";
     if (external) 
@@ -198,29 +230,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       //t << "H1 { text-align: center; border-width: thin none thin none;" << endl;
       //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }" << endl;
 
-      t << "H1 { text-align: center; }" << endl;
-      t << "A.qindex {}" << endl;
-      t << "A.qindexRef {}" << endl;
-      t << "A.el { text-decoration: none; font-weight: bold }" << endl;
-      t << "A.elRef { font-weight: bold }" << endl;
-      t << "A.code { text-decoration: none; font-weight: normal; color: #4444ee }" << endl;
-      t << "A.codeRef { font-weight: normal; color: #4444ee }" << endl;
-      t << "DL.el { margin-left: -1cm }" << endl;
-      t << "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }" << endl;
-      t << "DIV.in { margin-left: 16 }" << endl;
-      t << "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }" << endl;
-      t << "TD.md { background-color: #f2f2ff }" << endl;
-      t << "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }" << endl;
-      t << "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }" << endl;
-      t << "FONT.keyword       { color: #008000 }" << endl;
-      t << "FONT.keywordtype   { color: #604020 }" << endl;
-      t << "FONT.keywordflow   { color: #e08000 }" << endl;
-      t << "FONT.comment       { color: #800000 }" << endl;
-      t << "FONT.preprocessor  { color: #806020 }" << endl;
-      t << "FONT.stringliteral { color: #002080 }" << endl;
-      t << "FONT.charliteral   { color: #008080 }" << endl;
-      //t << "TD.groupLine { background-color: #3080ff }" << endl;
-      t << endl;
+      t << defaultStyleSheet;
       endPlainFile();
     }
     else // write user defined style sheet
@@ -759,8 +769,8 @@ void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const 
   t << "<p>" << endl;
   t << "<table width=\"100%\" cellpadding=\"2\" cellspacing=\"0\" border=\"0\">" << endl;
   t << "  <tr>" << endl;
-  t << "    <td class=\"md\"><b>" << endl; 
-  t << "      <table cellspadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;
+  t << "    <td class=\"md\">" << endl; 
+  t << "      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
@@ -887,3 +897,20 @@ void HtmlGenerator::endMemberGroup(bool)
 {
 }
 
+void HtmlGenerator::startIndent()        
+{ 
+  //t << "<div class=\"in\">" << endl; 
+  t << "<table cellspacing=5 cellpadding=0 border=0>\n"
+       "  <tr>\n"
+       "    <td>\n"
+       "      &nbsp;\n"
+       "    </td>\n"
+       "    <td>\n";
+}
+void HtmlGenerator::endIndent()          
+{ 
+  t << "    </td>\n"
+       "  </tr>\n"
+       "</table>\n";
+  //t << "</div>" << endl; 
+}

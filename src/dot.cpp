@@ -39,7 +39,7 @@ static const char *edgeColorMap[] =
   "darkgreen",     // Protected
   "firebrick4",    // Private
   "darkorchid3",   // "use" relation
-  "grey"           // Undocumented
+  "grey50"         // Undocumented
 };
 
 static const char *edgeStyleMap[] =
@@ -82,7 +82,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
         QCString *dest;
         *urlPtr++='\0';
         //printf("refPtr=`%s' urlPtr=`%s'\n",refPtr,urlPtr);
-        //printf("Found url=%s coords=%d,%d,%d,%d\n",file,x1,y1,x2,y2);
+        //printf("Found url=%s coords=%d,%d,%d,%d\n",url,x1,y1,x2,y2);
         t << "<area ";
         if (*refPtr!='\0')
         {
@@ -319,7 +319,7 @@ void DotNode::writeBox(QTextStream &t,
                        bool hasNonReachableChildren)
 {
   const char *labCol = 
-          m_url.isEmpty() ? "grey" :  // non link
+          m_url.isEmpty() ? "grey50" :  // non link
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
@@ -584,7 +584,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     dotCmd.sprintf("%sdot -Tgif \"%s\" -o \"%s\"",
                    Config::dotPath.data(),dotName.data(),gifName.data());
     //printf("Running: dot -Tgif %s -o %s\n",dotName.data(),gifName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
@@ -593,7 +593,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     dotCmd.sprintf("%sdot -Timap \"%s\" -o \"%s\"",
                    Config::dotPath.data(),dotName.data(),mapName.data());
     //printf("Running: dot -Timap %s -o %s\n",dotName.data(),mapName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       out << "</table>" << endl;
@@ -658,11 +658,12 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
       }
       else 
       {
+        QCString tmp_url="";
+        if (bClass->isLinkable()) 
+          tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
         bn = new DotNode(m_curNodeNumber++,
              bClass->displayName(),
-             bClass->isLinkable() ? 
-              (bClass->getReference()+"$"+bClass->getOutputFileBase()).data() : 
-              0
+             tmp_url.data()
            );
         //printf("Adding node %s to new base node %s (c=%d,p=%d)\n",
         //   n->m_label.data(),
@@ -704,12 +705,13 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
     {
       if (cd->isVisibleInHierarchy()) // root class in the graph
       {
+        QCString tmp_url="";
+        if (cd->isLinkable()) 
+          tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
         //printf("Inserting root class %s\n",cd->name().data());
         DotNode *n = new DotNode(m_curNodeNumber++,
                 cd->displayName(),
-                cd->isLinkable() ?
-                  (cd->getReference()+"$"+cd->getOutputFileBase()).data() :
-                  0
+                tmp_url.data()
                );
         
         //m_usedNodes->clear();
@@ -812,10 +814,11 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   {
     QCString displayName=className.copy();
     if (Config::hideScopeNames) displayName=stripScope(displayName);
+    QCString tmp_url;
+    if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
     bn = new DotNode(m_curNodeNumber++,
         displayName,
-        cd->isLinkable() ? 
-          (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
+        tmp_url.data(),
         distance
        );
     if (distance>m_maxDistance) m_maxDistance=distance;
@@ -883,10 +886,11 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
   m_graphType = t;
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
+  QCString tmp_url="";
+  if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
                             cd->displayName(),
-                            cd->isLinkable() ? 
-                              (cd->getReference()+"$"+cd->getOutputFileBase()).data() : 0,
+                            tmp_url.data(),
                             0,                         // distance
                             TRUE                       // is a root node
                            );
@@ -992,7 +996,7 @@ static void findMaximalDotGraph(DotNode *root,
     // create annotated dot file
     dotCmd.sprintf("%sdot -Tdot \"%s.dot\" -o \"%s_tmp.dot\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       return;
@@ -1084,7 +1088,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1093,7 +1097,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     // run dot again to create an image map
     dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1111,7 +1115,7 @@ void DotClassGraph::writeGraph(QTextStream &out,
     QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
        err("Error: Problems running dot. Check your installation!\n");
        QDir::setCurrent(oldDir);
@@ -1129,8 +1133,10 @@ void DotClassGraph::writeGraph(QTextStream &out,
     out << "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
-           "\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
-           "\\epsfbox{" << baseName << ".eps}\n"
+           //"\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
+           //"\\epsfbox{" << baseName << ".eps}\n"
+           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+                                      << "pt]{" << baseName << "}\n"
            "\\end{center}\n"
            "\\end{figure}\n";
   }
@@ -1163,7 +1169,8 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
     }
     if (doc || src)
     {
-      QCString url=bfd ? bfd->getOutputFileBase().data() : "";
+      QCString url="";
+      if (bfd) url=bfd->getOutputFileBase().copy();
       if (!doc && src)
       {
         url+="-source";
@@ -1177,10 +1184,12 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
       }
       else
       {
+        QCString tmp_url="";
+        if (bfd) tmp_url=bfd->getReference()+"$"+url;
         bn = new DotNode(
                           m_curNodeNumber++,
                           ii->includeName,
-                          bfd ? (bfd->getReference()+"$"+url).data() : 0,
+                          tmp_url,
                           distance
                         );
         if (distance>m_maxDistance) m_maxDistance=distance;
@@ -1199,9 +1208,10 @@ DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
   m_inverse = inverse;
   ASSERT(fd!=0);
   m_diskName  = fd->getOutputFileBase().copy();
+  QCString tmp_url=fd->getReference()+"$"+fd->getOutputFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->name(),
-                            fd->getReference()+"$"+fd->getOutputFileBase(),
+                            tmp_url.data(),
                             0,       // distance
                             TRUE     // root node
                            );
@@ -1252,7 +1262,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tgif \"%s.dot\" -o \"%s.gif\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1262,7 +1272,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     // run dot again to create an image map
     dotCmd.sprintf("%sdot -Timap \"%s.dot\" -o \"%s.map\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1283,7 +1293,7 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     QCString dotCmd(4096);
     dotCmd.sprintf("%sdot -Tps \"%s.dot\" -o \"%s.eps\"",
                    Config::dotPath.data(),baseName.data(),baseName.data());
-    if (system(dotCmd)!=0)
+    if (iSystem(dotCmd)!=0)
     {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);
@@ -1301,8 +1311,10 @@ void DotInclDepGraph::writeGraph(QTextStream &out,
     out << "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
-           "\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
-           "\\epsfbox{" << baseName << ".eps}\n"
+           //"\\setlength{\\epsfxsize}{" << QMIN(width/2,maxWidth) << "pt}\n"
+           //"\\epsfbox{" << baseName << ".eps}\n"
+           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
+                                      << "pt]{" << baseName << "}\n"
            "\\end{center}\n"
            "\\end{figure}\n";
   }
@@ -1341,7 +1353,7 @@ void generateGraphLegend(const char *path)
   dotText << "  Node12 -> Node7 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
   dotText << "  Node12 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_privatebase.html\"];\n";
   dotText << "  Node13 -> Node7 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"doxfont\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"grey50\"];\n";
   dotText << "  Node14 -> Node7 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"doxfont\"];\n";
   dotText << "  Node14 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\",color=\"black\",URL=\"$class_used.html\"];\n";
   dotText << "}\n";
@@ -1361,7 +1373,7 @@ void generateGraphLegend(const char *path)
   QCString dotCmd(4096);
   dotCmd.sprintf("%sdot -Tgif graph_legend.dot -o graph_legend.gif",
                    Config::dotPath.data());
-  if (system(dotCmd)!=0)
+  if (iSystem(dotCmd)!=0)
   {
       err("Problems running dot. Check your installation!\n");
       QDir::setCurrent(oldDir);

@@ -91,6 +91,7 @@ The first part forms a user manual:
 <li>Section \ref formulas shows how to insert formulas in the documentation.
 <li>Section \ref diagrams describes the diagrams and graphs that doxygen can generate.
 <li>Section \ref preprocessing explains how doxygen deals with macro definitions.
+<li>Section \ref external explains how to let doxygen create links to externally generated documentation.
 <li>Section \ref faq gives answers to frequently asked questions. 
 <li>Section \ref trouble tells you what to do when you have problems.
 </ul>
@@ -165,9 +166,10 @@ Thanks go to:
     sources.
 <li>Tim Mensch for adding the todo command.
 <li>Jens Breitenstein, Christophe Bordeaux, Samuel Hägglund, Xet Erixon, 
-    Vlastimil Havran, Ahmed Also Faisal, Alessandro Falappa, Kenji Nagamatsu,
-    Francisco Oltra Thennet, Olli Korhonen for providing translations into
-    various languages.
+    Vlastimil Havran, Petr Prikryl, Ahmed Also Faisal, Alessandro Falappa, 
+    Kenji Nagamatsu, Francisco Oltra Thennet, Olli Korhonen, 
+    Boris Bralo, Nickolay Semyonov, and Grzegorz Kowal for providing 
+    translations into various languages.
 <li>
 Arnt Gulbrandsen, 
 Adam P. Jenkins, 

@@ -18,15 +18,16 @@
 
 <h2>Known problems:</h2>
 <ul>
-<li>Doxygen is <em>not</em> a compiler, it is only a lexical scanner.
+<li>Doxygen is <em>not</em> a real compiler, it is only a lexical scanner.
     This means that it can and will not detect errors in your source code.
 <li>Since it impossible to test all possible code fragments, it is
     very well possible, that some valid piece of C/C++ code is not handled
     properly. If you find such a piece, please send it to me, so I can
     improve doxygen's parsing capabilities. Try to make the piece of code 
     you send as small as possible, to help me narrow down the search.
-<li>Using declarations are not yet supported. They are simply ignored.
-    Using directives are supported however. 
+<li>Using declarations for member are not yet supported. 
+    They are simply ignored. Using declarations for class and using 
+    directives are supported however. 
 <li>Doxygen does not work properly if there are multiple classes, structs
     or unions with the same name in your code. It should not crash however,
     rather it should ignore all of the classes with the same name except one.
@@ -52,6 +53,9 @@
   then doxygen will remove the braces and correctly parse the result.
 <li>Not all names in code fragments that are included in the documentation
     are replaced by links (for instance when using \c SOURCE_BROWSER = \c YES). 
+    This also holds for the "Referenced by" list that is generated for
+    each function.
+
     For a part this is because the code parser isn't smart enough at the
     moment. I'll try to improve this in the future. But even with these
     improvements not everthing can be properly linked to the corresponding
@@ -60,6 +64,10 @@
 <li>It is not possible to insert a non-member function f in a class A 
     using the \relates command, if class A already has a member with name f
     and the same argument list.
+<li>There is only very limited support for member specialization at the
+    moment. It only works if there is a specialized template class as
+    well.
+<li>Not all special commands are properly translated to RTF.
 </ul>
 
 

@@ -859,11 +859,18 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   return result;
 }
 
+// find first identifier in string (exclusing type keywords)
 QCString extractName(const QCString &s)
 {
-  uint i=0;
-  while (i<s.length() && isId(s.at(i))) i++;
-  return s.left(i);
+  static const QRegExp id("[a-z_A-Z][a-z_A-Z0-9]*");
+  int i,p=0,l;
+  while ((i=id.match(s,p,&l))!=-1)
+  {
+    QCString idstr=s.mid(i,l);
+    if (idstr!="struct" && idstr!="class" && idstr!="union") return idstr;
+    p=i+l;
+  }
+  return "";
 }
 
 /* ----------------------------------------------------------------- */
@@ -1288,7 +1295,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->addToIndex(yytext,0);
   					  BEGIN(DocScan);
   					}
-<DocScan>{CMD}"arg"/{BN}	        { 
+<DocScan>{CMD}("arg"|"li")/{BN}	        { 
   					  if (insideArgumentList)
 					  {
 					    outDoc->writeListItem();
@@ -1778,7 +1785,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
 					  {
 					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",yytext);
-					    outDoc->writeBoldString(" unknown reference! ");
+					    //outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
   					}
@@ -1907,24 +1914,29 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
     					       "in the documentation."); 
 					}
 					
-<DocScan>{ID}"<"[^>\ \t\n]*">"("::"{ID})+"("?[a-z_A-Z0-9,:\<\> \t\*\&]*")"?	{
+<DocScan,DocRefName>{ID}"<"[^>\ \t\n]*">"("::"{ID})+"("?[a-z_A-Z0-9,:\<\> \t\*\&]*")"?	{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  BEGIN(DocScan);
   					}
-<DocScan>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")" {
+<DocScan,DocRefName>{SCOPEMASK}"("[a-z_A-Z0-9,:\<\> \t\*\&]+")" {
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  BEGIN(DocScan);
   					}
-<DocScan>{SCOPEMASK}("()")?		{
+<DocScan,DocRefName>{SCOPEMASK}("()")?		{
   					  generateRef(*outDoc,className,yytext,inSeeBlock);
+					  BEGIN(DocScan);
   					}
-<DocScan>({SCOPEMASK}"::")?"operator()("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
+<DocScan,DocRefName>({SCOPEMASK}"::")?"operator()("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
 				          QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
+					  BEGIN(DocScan);
 					}
-<DocScan>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+"("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
+<DocScan,DocRefName>({SCOPEMASK}"::")?"operator"[^(\r\n.,]+"("[a-z_A-Z0-9,\<\> \t\*\&]*")"	{ 
     					  QCString oName=yytext;
 					  generateRef(*outDoc,className,
 					              removeRedundantWhiteSpace(oName),inSeeBlock);
+					  BEGIN(DocScan);
 					}
 <DocScan>("http:"|"https:"|"ftp:"|"file:"){URLMASK}	{ outDoc->writeHtmlLink(yytext,yytext); }
 <DocScan>[a-zA-Z_0-9\.\-]+"@"[0-9a-z_A-Z\.\-]+	{ outDoc->writeMailLink(yytext); }
@@ -1943,10 +1955,9 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  outDoc->endCodeFragment();
 					  BEGIN( DocScan ); 
 					}
-<DocScan>{CMD}"e"{BN}+	                { BEGIN( DocEmphasis ); }
-<DocScan>{CMD}"a"{BN}+                  { BEGIN( DocEmphasis ); }
+<DocScan>{CMD}("e"|"em"|"a"){BN}+       { BEGIN( DocEmphasis ); }
 <DocScan>{CMD}"b"{BN}+			{ BEGIN( DocBold ); }
-<DocScan>{CMD}"c"{BN}+                  { BEGIN( DocCode ); }
+<DocScan>{CMD}("c"|"p"){BN}+            { BEGIN( DocCode ); }
 <DocScan>{CMD}"l"{BN}+		
 <DocScan>"\\n"/[^a-z_A-Z0-9]		{ outDoc->lineBreak(); }
 <DocScan>{CMD}"include"{BN}+		{ BEGIN( DocInclude ); }
@@ -2167,7 +2178,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocEmphasis>{WORD}			{ 
   					  outDoc->startEmphasis();
-  					  linkifyText(*outDoc,className,0,yytext);
+  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
 					  outDoc->endEmphasis();
 					  BEGIN( DocScan );
 					}
@@ -2185,7 +2196,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocBold>{WORD}				{ 
   					  outDoc->startBold();
-  					  linkifyText(*outDoc,className,0,yytext);
+  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
 					  outDoc->endBold();
 					  BEGIN( DocScan );
 					}
@@ -2197,7 +2208,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					}
 <DocCode>{WORD}				{ 
   					  outDoc->startTypewriter();
-  					  linkifyText(*outDoc,className,0,yytext);
+  					  linkifyText(*outDoc,className,0,yytext,FALSE,FALSE);
 					  outDoc->endTypewriter();
 					  BEGIN( DocScan );
 					}
@@ -2347,7 +2358,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  current->argList->clear();
 					  lineCount();
 					}
-
+<FindMembers>{B}*"properties"{B}":"	{ /* M$-IDL only: ignored */ }
+<FindMembers>{B}*"methods"{B}":"	{ /* M$-IDL only: ignored */ }
 <FindMembers>{B}*"public"{BN}*":"{BN}*	{ 
 					  current->protection = protection = Public ;
 					  current->slot = slot = FALSE;
@@ -2387,6 +2399,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <FindMembers>{B}*"extern"{BN}+		{
   					  current->stat = FALSE;
+					  current->explicitExternal = TRUE;
 					  lineCount();
   					}
 <FindMembers>{B}*"virtual"{BN}+    	{ current->type += " virtual ";
@@ -2436,7 +2449,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  lineCount();
   					  BEGIN( CompoundName ); 
 					}
-<FindMembers>{B}*"interface"{BN}+ 	{ // M$/Corba IDL interface
+<FindMembers>{B}*("disp")?"interface"{BN}+ 	{ // M$/Corba IDL interface
   					  isTypedef=FALSE;
 					  current->section = Entry::INTERFACE_SEC;
 					  addType( current ) ;
@@ -3047,9 +3060,9 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    {
 					      // add typedef to dictionary
 					      QCString dest = extractName(current->type.right(current->type.length()-8));
-					      if (!dest.isEmpty())
+					      if (typedefDict[current->name]==0 && !dest.isEmpty())
 					      {		
-						//printf(">>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
+						//printf("1>>>>>>>>>> adding %s->%s\n",current->name.data(),dest.data());
 					        typedefDict.insert(current->name, new QCString(dest));
 					      }
 					    }
@@ -3323,6 +3336,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      //printf("current->name = %s %s\n",current->name.data(),msName.data());
 					      if (!current->name.isEmpty() && current->name.at(0)!='@')
 					      {
+						//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
 						typedefDict.insert(msName,new QCString(current->name));
 					      }
 					    }
@@ -3956,6 +3970,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    if (isTypedef)
 					    {
 					      //QCString dest = extractName(current->name);
+				   	      //printf("3>>>>>>>>>> adding %s->%s\n",yytext,current->name.data());
 					      typedefDict.insert(yytext,new QCString(current->name));
 					      //current->extends->append(
 					      //   new BaseInfo(yytext,Public,Normal)
@@ -4656,7 +4671,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <SkipCode>"//"				{
   					  current->doc+=yytext;
   					}
-<SkipCode>[^ \*\t\/\\\n]+		{
+<SkipCode>[^ \<\*\t\/\\\n]+		{
   					  current->doc+=yytext;
   					}
 <SkipCode>\n				{

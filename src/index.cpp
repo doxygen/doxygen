@@ -37,6 +37,8 @@
 
 //----------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------
+
 // strips w from s iff s starts with w
 bool stripWord(QCString &s,QCString w)
 {
@@ -367,19 +369,50 @@ void writeFileIndex(OutputList &ol)
   //ol.newParagraph();
   ol.endTextBlock();
 
-  ol.startIndexList();
+  OutputNameDict outputNameDict(1009);
+  OutputNameList outputNameList;
+  outputNameList.setAutoDelete(TRUE);
+  
+  // re-sort input files in (dir,file) output order instead of (file,dir) input order 
   FileName *fn=inputNameList.first();
   while (fn)
   {
     FileDef *fd=fn->first();
     while (fd)
     {
+      QCString path=fd->getPath();
+      if (path.isEmpty()) path="[external]";
+      FileList *fl = outputNameDict.find(path);
+      if (fl)
+      {
+        fl->inSort(fd);
+        //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+      }
+      else
+      {
+        //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+        fl = new FileList(path);
+        fl->inSort(fd);
+        outputNameList.inSort(fl);
+        outputNameDict.insert(path,fl);
+      }
+      fd=fn->next();
+    }
+    fn=inputNameList.next();
+  }
+  
+  ol.startIndexList();
+  FileList *fl=outputNameList.first();
+  while (fl)
+  {
+    FileDef *fd=fl->first();
+    while (fd)
+    {
+      //printf("Found filedef %s\n",fd->name().data());
       bool doc = fd->isLinkableInProject();
       bool src = fd->generateSource() || Config::sourceBrowseFlag;
       if ((doc || src) && !fd->isReference())
       {
-        //ol.writeIndexItem(fd->getReference(),fd->diskName(),
-        //    fd->name());
         QCString path;
         if (Config::fullPathNameFlag) 
         {
@@ -419,6 +452,10 @@ void writeFileIndex(OutputList &ol)
         if (doc)
         {
           ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
+          if (hasHtmlHelp)
+          {
+            htmlHelp->addContentsItem(fd->name(),fd->getOutputFileBase());
+          }
         }
         else
         {
@@ -434,7 +471,6 @@ void writeFileIndex(OutputList &ol)
           parseText(ol,theTranslator->trCode());
           ol.docify("]");
           ol.endTextLink();
-          //ol.writeObjectLink(0,fd->includeName(),0," [src]");
         }
         if (!fd->briefDescription().isEmpty())
         {
@@ -447,18 +483,13 @@ void writeFileIndex(OutputList &ol)
           ol+=briefOutput;
           ol.docify(")");
         }
-        //ol.enable(OutputGenerator::Latex);
         ol.popGeneratorState();
         // --------------------------------------------------------
 
-        if (hasHtmlHelp)
-        {
-          htmlHelp->addContentsItem(fd->name(),fd->getOutputFileBase());
-        }
       }
-      fd=fn->next();
+      fd=fl->next();
     }
-    fn=inputNameList.next();
+    fl=outputNameList.next();
   }
   ol.endIndexList();
   if (hasHtmlHelp)
@@ -773,7 +804,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   }
 
   // generate table
-  for (i=0;i<rows;i++) // forarch table row
+  for (i=0;i<rows;i++) // foreach table row
   {
     ol.nextTableRow();
     // the last column may contain less items then the others
@@ -1474,10 +1505,7 @@ void writeGroupList(OutputList &ol)
     {
       ol.startDescItem();
       ol.startTextLink(gd->getOutputFileBase(),0);
-      parseDoc(ol,
-          gd->getDefFileName(),gd->getDefLine(),
-          0,0,
-          gd->groupTitle());
+      parseText(ol,gd->groupTitle());
       ol.endTextLink();
       ol.endDescItem();
       parseDoc(ol,

@@ -15,6 +15,8 @@
  *
  */
 
+// translation by Boris Bralo <boris.bralo@zg.tel.hr>
+
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
@@ -27,6 +29,14 @@ class TranslatorCroatian : public Translator
     { return "croatian"; }
     QCString latexBabelPackage()
     { return "croatian"; }
+    QCString idLanguageCharset()
+    { 
+#ifdef _WIN32
+      return "windows-1250"; 
+#else
+      return "iso-8859-2"; 
+#endif
+    }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -612,7 +622,11 @@ class TranslatorCroatian : public Translator
     }
     virtual QCString trAttention()
     {
+#ifdef _WIN32
+      return "Pa?nja";
+#else
       return "Pa¾nja";
+#endif
     }
     virtual QCString trInclByDepGraph()
     {

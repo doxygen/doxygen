@@ -345,7 +345,7 @@ class TranslatorGerman : public Translator
     { return "Nur f&uuml;r den internen Gebrauch."; }
     QCString trReimplementedForInternalReasons()
       // this text is generated when the \reimp command is used.
-    { return "Aufgrund interner Gr&uuml;nde neu implementiert; "
+    { return "Aus internen Gr&uuml;nden neu implementiert. "
              "Das API wird davon nicht ber&uuml;hrt.";
     }
     QCString trWarning()

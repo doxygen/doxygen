@@ -68,7 +68,7 @@ as <code>PREPROCESSING = YES</code>.
 
 Look at section \ref preprocessing for the answer.
 
-<li><b>How can I change what's after the <code>#include</code> in class documentation?</b>
+<li><b>How can I change what's after the <code>\#include</code> in the class documentation?</b>
 
 You can document your class like
 
@@ -161,6 +161,13 @@ Simply put an exclude pattern like this in the configuration file:
 \verbatim
 EXCLUDE_PATTERNS = */test/*
 \endverbatim
+
+<li><b>Doxygen automatically generates a link to the 
+       class MyClass somewhere in the running text. 
+       How do I prevent that at a certain place?</b>
+
+Put a \% in front of the class name. Like this: \%MyClass. Doxygen will then
+remove the % and keep the word unlinked.
 
 </ol>
 

@@ -37,6 +37,55 @@
 #include "version.h"
 #include "groupdef.h"
 
+#ifndef _WIN32
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+extern char **environ;
+#endif
+
+/*! Implements an interruptable system call on Unix */
+int iSystem(const char *command)
+{
+#ifndef _WIN32
+  /*! taken from the system() manpage on my Linux box */
+  int pid,status;
+
+  if (command==0) return 1;
+  pid = fork();
+  if (pid==-1) return -1;
+  if (pid==0)
+  {
+    const char * argv[4];
+    argv[0] = "sh";
+    argv[1] = "-c";
+    argv[2] = command;
+    argv[3] = 0;
+    execve("/bin/sh",(char * const *)argv,environ);
+    exit(127);
+  }
+  for (;;)
+  {
+    if (waitpid(pid,&status,0)==-1)
+    {
+      if (errno!=EINTR) return -1;
+    }
+    else
+    {
+      return status;
+    }
+  }
+#else
+  system(command);
+#endif
+}
+
+
+
+
+
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
 
@@ -212,6 +261,7 @@ ClassDef *getResolvedClass(const char *name)
   QCString *subst = typedefDict[name];
   if (subst) // there is a typedef with this name
   {
+    //printf("getResolvedClass `%s'->`%s'\n",name,subst->data());
     if (*subst==name) // avoid resolving typedef struct foo foo; 
     {
       return classDict[name];
@@ -220,6 +270,7 @@ ClassDef *getResolvedClass(const char *name)
     QCString *newSubst;
     while ((newSubst=typedefDict[*subst]) && count<10)
     {
+      if (*subst==*newSubst) return classDict[subst->data()]; // for breaking typedef struct A A; 
       subst=newSubst;
       count++;
     }
@@ -249,11 +300,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   for (i=0;i<l;i++)
   {
     char c=s.at(i);
-    if (i<l-2 && c=='<' && s.at(i+1)!='<')
+    if (i<l-2 && c=='<' && (isId(s.at(i+1)) || isspace(s.at(i+1))))
     {
       result+="< ";
     }
-    else if (i>0 && c=='>' && s.at(i-1)!='>')
+    else if (i>0 && c=='>' && (isId(s.at(i-1)) || isspace(s.at(i-1))))
     {
       result+=" >";
     }
@@ -267,6 +318,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=c;
     }
   }
+  //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
   return result;
 }  
 
@@ -288,7 +340,7 @@ bool leftScopeMatch(const QCString &scope, const QCString &name)
      );
 }
 
-void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text,bool autoBreak)
+void linkifyText(OutputList &ol,const char *scName,const char *name,const char *text,bool autoBreak,bool external)
 {
   //printf("scope=`%s' name=`%s' Text: `%s'\n",scName,name,text);
   static QRegExp regExp("[a-z_A-Z][a-z_A-Z0-9:]*");
@@ -362,7 +414,7 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
         if ((cd=getClass(fullName)))
         {
           // add link to the result
-          if (cd->isLinkable())
+          if (external ? cd->isLinkable() : cd->isLinkableInProject())
           {
             ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,word);
             found=TRUE;
@@ -384,13 +436,13 @@ void linkifyText(OutputList &ol,const char *scName,const char *name,const char *
           getDefs(scName,word,0,md,cd,fd,nd,gd) && 
           (md->isTypedef() || md->isEnumerate() || 
            md->isReference() || md->isVariable()) && 
-          md->isLinkable() 
+           (external ? md->isLinkable() : md->isLinkableInProject()) 
          )
       {
         //printf("Found ref\n");
         Definition *d=0;
         if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
-        if (d && d->isLinkable())
+        if (d && (external ? d->isLinkable() : d->isLinkableInProject()))
         {
           ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
                                  md->anchor(),word);
