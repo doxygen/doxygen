@@ -210,6 +210,10 @@ class OutputGenerator
     virtual void endTextBlock() = 0;
     virtual void lastIndexPage() = 0;
 
+    virtual void startMemberDocPrefixItem() = 0;
+    virtual void endMemberDocPrefixItem() = 0;
+    virtual void startMemberDocName() = 0;
+    virtual void endMemberDocName() = 0;
     virtual void startParameter(bool) = 0;
     virtual void endParameter(bool) = 0;
 

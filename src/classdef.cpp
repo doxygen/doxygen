@@ -1637,7 +1637,7 @@ void ClassDef::determineImplUsageRelation()
         bool found=FALSE;
         while ((i=re.match(type,p,&l))!=-1 && !found) // for each class name in the type
         {
-          int ts=p+l;
+          int ts=i+l;
           int te=ts;
           while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
           if (type.at(ts)=='<') // assume template instance

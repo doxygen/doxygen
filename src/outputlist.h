@@ -364,6 +364,14 @@ class OutputList
     void lastIndexPage()
     { forall(&OutputGenerator::lastIndexPage); }
 
+    void startMemberDocPrefixItem()
+    { forall(&OutputGenerator::startMemberDocPrefixItem); }
+    void endMemberDocPrefixItem()
+    { forall(&OutputGenerator::endMemberDocPrefixItem); }
+    void startMemberDocName()
+    { forall(&OutputGenerator::startMemberDocName); }
+    void endMemberDocName()
+    { forall(&OutputGenerator::endMemberDocName); }
     void startParameter(bool first)
     { forall(&OutputGenerator::startParameter,first); }
     void endParameter(bool last)

@@ -349,9 +349,15 @@ fi
 
 touch .tmakeconfig
 if test "$f_shared" = NO; then
+  if test "$f_platform" = "osf1-cxx"; then
   cat >> .tmakeconfig <<EOF
-TMAKE_LFLAGS = -static
+    TMAKE_LFLAGS = -non_shared
 EOF
+  else
+  cat >> .tmakeconfig <<EOF
+    TMAKE_LFLAGS = -static
+EOF
+  fi
 fi
 
 if test "$f_english" = YES; then

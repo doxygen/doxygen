@@ -224,6 +224,10 @@ class HtmlGenerator : public OutputGenerator
     void endTextBlock() {}
     void lastIndexPage() {}
 
+    void startMemberDocPrefixItem();
+    void endMemberDocPrefixItem();
+    void startMemberDocName();
+    void endMemberDocName();
     void startParameter(bool first);
     void endParameter(bool last);
 

@@ -73,6 +73,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   if (argList==0) return; // member has no function like argument list
   if (!md->isDefine()) ol.docify(" ");
   ol.docify("("); // start argument list
+  ol.endMemberDocName();
   Argument *a=argList->first();
   QCString cName;
   if (md->scopeDefTemplateArguments())
@@ -101,11 +102,11 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   }
   //printf("~~~ %s cName=%s\n",md->name().data(),cName.data());
 
+  //if (!md->isDefine()) ol.startParameter(TRUE); else ol.docify(" ");
+  ol.startParameter(TRUE); 
   bool first=TRUE;
   while (a)
   {
-    if (!md->isDefine()) ol.startParameter(first); else ol.docify(" ");
-    first=FALSE;
     QRegExp re(")(");
     int vp;
     if (!a->attrib.isEmpty()) // argument has an IDL attribute
@@ -155,12 +156,17 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (a) 
     {
       ol.docify(", "); // there are more arguments
-      if (!md->isDefine()) ol.endParameter(FALSE);
+      if (!md->isDefine()) 
+      {
+        ol.endParameter(first);
+        ol.startParameter(FALSE);
+      }
     }
+    first=FALSE;
   }
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  ol.writeString("&nbsp;");
+  if (!first) ol.writeString("&nbsp;");
   ol.popGeneratorState();
   ol.docify(")"); // end argument list
   if (argList->constSpecifier)
@@ -192,11 +198,11 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al,bool br=TRUE)
   ol.docify("> ");
   if (br)
   {
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Man);
-    ol.disable(OutputGenerator::Latex);
-    ol.lineBreak();
-    ol.popGeneratorState();
+  //  ol.pushGeneratorState();
+  //  ol.disable(OutputGenerator::Man);
+  //  ol.disable(OutputGenerator::Latex);
+  //  ol.lineBreak();
+  //  ol.popGeneratorState();
   }
 }
 
@@ -914,13 +920,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //   ) 
       if (scopeAl && !related) // class template prefix
       {
+        ol.startMemberDocPrefixItem();
         writeTemplatePrefix(ol,scopeAl);
+        ol.endMemberDocPrefixItem();
       }
       if (scopeAl && membAl) ol.docify(" ");
 
       if (membAl) // function template prefix
       {
+        ol.startMemberDocPrefixItem();
         writeTemplatePrefix(ol,membAl);
+        ol.endMemberDocPrefixItem();
       }
       if (cd)
       {
@@ -940,6 +950,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           def=addTemplateNames(def,cName,tempArgListToString(scopeAl));
         }
       }
+      ol.startMemberDocName();
       linkifyText(ol,scopeName,name(),def);
       writeDefArgumentList(ol,cd,scopeName,this);
       if (!init.isEmpty() && initLines==0) // add initializer

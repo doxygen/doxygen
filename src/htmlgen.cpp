@@ -207,9 +207,13 @@ void HtmlGenerator::writeStyleInfo(int part)
       t << "TD.md { background-color: #f2f2ff }" << endl;
       t << "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }" << endl;
       t << "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }" << endl;
-      t << "FONT.keyword      { color: #008000 }" << endl;
-      t << "FONT.comment      { color: #800000 }" << endl;
-      t << "FONT.preprocessor { color: #806020 }" << endl;
+      t << "FONT.keyword       { color: #008000 }" << endl;
+      t << "FONT.keywordtype   { color: #604020 }" << endl;
+      t << "FONT.keywordflow   { color: #e08000 }" << endl;
+      t << "FONT.comment       { color: #800000 }" << endl;
+      t << "FONT.preprocessor  { color: #806020 }" << endl;
+      t << "FONT.stringliteral { color: #002080 }" << endl;
+      t << "FONT.charliteral   { color: #008080 }" << endl;
       //t << "TD.groupLine { background-color: #3080ff }" << endl;
       t << endl;
       endPlainFile();
@@ -603,24 +607,6 @@ void HtmlGenerator::endMemberItem(bool)
   t << endl; 
 }
 
-void HtmlGenerator::startParameter(bool first)
-{
-  if (first)
-  {
-    t << endl << "</b></td>" << endl;
-    t << "<td valign=bottom><b>" << endl;
-  }
-  else
-  {
-    t << "<tr><td></td><td><b>" << endl;
-  }
-}
-
-void HtmlGenerator::endParameter(bool)
-{
-  t << "</b></td></tr>" << endl;
-}
-
 
 void HtmlGenerator::insertMemberAlign() 
 { 
@@ -764,20 +750,81 @@ void HtmlGenerator::writeImage(const char *name,const char *,const char *)
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
+  DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "<p>" << endl;
   t << "<table width=100% cellpadding=2 cellspacing=0 border=0>" << endl;
   t << "  <tr>" << endl;
   t << "    <td class=\"md\"><b>" << endl; 
   t << "      <table cellspadding=0 cellspacing=0 border=0>" << endl;
+}
+
+void HtmlGenerator::startMemberDocPrefixItem()
+{
+  DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td valign=top><b>" << endl;
+  t << "          <td colspan=\"2\"><b>" << endl; 
+}
+
+void HtmlGenerator::endMemberDocPrefixItem()
+{
+  DBG_HTML(t << "<!-- endMemberDocPrefixItem -->" << endl;)
+  t << "          </b></td>" << endl;
+  t << "        </tr>" << endl;
+}
+
+void HtmlGenerator::startMemberDocName()
+{
+  DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
+  t << "        <tr>" << endl;
+  t << "          <td nowrap valign=\"top\"><b> " << endl;
+}
+
+void HtmlGenerator::endMemberDocName()
+{
+  DBG_HTML(t << "<!-- endMemberDocName -->" << endl;)
+  t << endl;
+  t << "          </b></td>" << endl;
+}
+
+void HtmlGenerator::startParameter(bool first)
+{
+  if (first)
+  {
+    DBG_HTML(t << "<!-- startFirstParameter -->" << endl;)
+    t << "          <td valign=\"bottom\"><b>" << endl;
+  }
+  else
+  {
+    DBG_HTML(t << "<!-- startParameter -->" << endl;)
+    t << "        <tr>" << endl;
+    t << "          <td></td>" << endl;
+    t << "          <td><b>"   << endl;
+  }
+}
+
+void HtmlGenerator::endParameter(bool first)
+{
+  if (first)
+  {
+    DBG_HTML(t << "<!-- endFirstParameter -->" << endl;)
+    t << endl;
+    t << "          </b></td>" << endl;
+    //t << "          <td width=\"300\"><img src=\"null.gif\"></td>" << endl;
+    t << "        </tr>" << endl;
+  }
+  else
+  {
+    DBG_HTML(t << "<!-- endParameter -->" << endl;)
+    t << endl;
+    t << "          </b></td>" << endl;
+    t << "        </tr>" << endl;
+  }
 }
 
 void HtmlGenerator::endMemberDoc()     
 { 
+  DBG_HTML(t << "<!-- endMemberDoc -->" << endl;)
   t << endl;
-  t << "          </b></td>" << endl;
-  t << "        </tr>" << endl;
   t << "      </table>" << endl;
   t << "    </td>" << endl;
   t << "  </tr>" << endl;

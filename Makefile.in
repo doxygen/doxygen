@@ -21,7 +21,7 @@ distclean: clean
 	-rm -f html
 	-rm -f objects/*.o
 	-rm -f src/Makefile.doxygen src/Makefile.doxytag src/Makefile.doxysearch
-	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile
+	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
 	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
 	-rm -f src/version.cpp
