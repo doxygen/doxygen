@@ -1,20 +1,8 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
- * Initial Italian Translation by Ahmed Aldo Faisal
- * Revised and completed by Alessandro Falappa  (June 1999)
- * Updates:
- *        2001/02: translated new items used since version 1.2.4
- *        2000/11: modified slightly the translation in trLegendDocs() function,
- *                 translated new items used since version 1.2.1 and 1.2.2
- *        2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
- *        2000/03: translated new items used since version 1.0 and 1.1.0
- *        1999/19: entirely rewritten the translation to correct small variations due
- *                 to feature additions and to conform to the layout of the latest
- *                 commented translator.h for the english language
- *        1999/09: corrected some small typos in the "new since 0.49-990425" section
- *                 added the "new since 0.49-990728" section
+ *
+ * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -27,19 +15,80 @@
  *
  */
 
+/******************************************************************************
+ *
+ * Revision history
+ *
+ * Initial Italian Translation by Ahmed Aldo Faisal
+ * Revised and completed by Alessandro Falappa  (since June 1999)
+ * Updates:
+ *        2001/05: adopted new translation mechanism (trough adapters),
+ *                 translated new items used since version 1.2.5 and 1.2.6,
+ *                 revised those function returning strings in OPTIMIZE_OTPUT_FOR_C case,
+ *                 corrections regarding the plurals of some english terms mantained in the translation,
+ *                 changed some terms to better suit the sense
+ *        2001/02: translated new items used since version 1.2.4
+ *        2000/11: modified slightly the translation in trLegendDocs() function,
+ *                 translated new items used since version 1.2.1 and 1.2.2
+ *        2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
+ *        2000/03: translated new items used since version 1.0 and 1.1.0
+ *        1999/19: entirely rewritten the translation to correct small variations due
+ *                 to feature additions and to conform to the layout of the latest
+ *                 commented translator.h for the english language
+ *        1999/09: corrected some small typos in the "new since 0.49-990425" section
+ *                 added the "new since 0.49-990728" section
+ */
+
+/******************************************************************************
+ *
+ * Note sui criteri adottati per la traduzione
+ *
+ * Nella traduzione non si sono tradotti alcuni termini inglesi ormai entrati
+ * a far parte del "gergo" informatico (per es. file o namespace)
+ *
+ * Il plurale dei termini inglesi non tradotti è stato reso con il singolare
+ * della parola inglese secondo una convenzione spesso ritrovata nella documentazione
+ * tecnica (ad es "lista dei file" e non "lista dei files")
+ *
+ * Se avete suggerimenti sulla traduzione di alcuni termini o volete segnalare
+ * eventuali sviste potete scrivermi all'indirizzo: a.falappa@flashnet.it
+ */
+
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-#include "translator_adapter.h"
+#include "translator.h"
 
-class TranslatorItalian : public TranslatorAdapter_1_2_5
+class TranslatorItalian : public Translator
 {
   public:
-    QCString idLanguage()
+
+    // --- Language control methods -------------------
+
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
+     * of the language in English using lower-case characters only
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
+     * the identification used in language.cpp.
+     */
+    virtual QCString idLanguage()
     { return "italian"; }
-    /*! returns the name of the package that is included by LaTeX */
-    QCString latexBabelPackage()
-    { return "italian"; }
+
+    /*! Used to get the LaTeX command(s) for the language support. This method
+     *  was designed for languages which do wish to use a babel package.
+     */
+    virtual QCString latexLanguageSupportCommand()
+    {
+      return "\\usepackage[italian]{babel}\n";
+    }
+
+    /*! return the language charset. This will be used for the HTML output */
+    virtual QCString idLanguageCharset()
+    {
+      return "iso-8859-1";
+    }
+
+    // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions()
@@ -67,7 +116,16 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
-    { return "Documentazione dei dati membri"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Documentazione dei campi";
+      }
+      else
+      {
+        return "Documentazione dei dati membri";
+      }
+    }
 
     /*! this is the text of a link put after brief descriptions. */
     QCString trMore()
@@ -132,11 +190,20 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList()
-    { return "Lista dei composti"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Strutture dati";
+      }
+      else
+      {
+        return "Lista dei composti";
+      }
+    }
 
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList()
-    { return "Lista dei files"; }
+    { return "Lista dei file"; }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     QCString trHeaderFiles()
@@ -144,11 +211,29 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
-    { return "Membri dei composti"; }
+     {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Campi dei dati";
+      }
+      else
+      {
+        return "Membri dei composti";
+      }
+    }
 
     /*! This is put above each page as a link to all members of files. */
     QCString trFileMembers()
-    { return "Membri dei files"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Elementi globali";
+      }
+      else
+      {
+        return "Membri dei file";
+      }
+    }
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages()
@@ -173,26 +258,51 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     QCString trFileListDescription(bool extractAll)
     {
       QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei files documentati ";
-      else result+="di tutti i files ";
+      if (!extractAll) result+="dei file documentati ";
+      else result+="di tutti i file ";
       result+="con una loro breve descrizione:";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
     QCString trCompoundListDescription()
-    { return "Queste sono le classi, structs, unions e interfacce con una loro breve descrizione:";
+    {
+
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Queste sono le strutture dati con una loro breve descrizione:";
+      }
+      else
+      {
+        return "Queste sono le classi, structs, unions e interfacce con una loro breve descrizione:";
+      }
     }
 
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei membri documentati, ";
-      else result+="di tutti i membri ";
-      result+="con collegamenti ";
-      if (extractAll) result+="alla documentazione della classe di ciascun membro:";
-      else result+="alla documentazione delle classi a cui appartengono:";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        if (!extractAll) result+="delle struct e delle union documentate ";
+        else result+="di tutte le struct e le union ";
+      }
+      else
+      {
+        if (!extractAll) result+="dei membri documentati ";
+        else result+="di tutti i membri ";
+      }
+      result+="con collegamenti alla documentazione ";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+          if (extractAll) result+="della struct/union per ciascun campo:";
+          else result+="delle struct/union a cui appartengono:";
+      }
+      else
+      {
+          if (extractAll) result+="della classe di ciascun membro:";
+          else result+="delle classi a cui appartengono:";
+      }
       return result;
     }
 
@@ -200,17 +310,25 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei membri dei files documentati, ";
-      else result+="di tutti i membri dei files ";
-      result+="con collegamenti ";
-      if (extractAll) result+="alla documentazione del file di ciascun membro:";
-      else result+="alla documentazione dei files a cui appartengono:";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+          if (!extractAll) result+="delle funczioni, variabili, define, tipi enumerati, e typedefs documentati ";
+          else result+="di tutte le funczioni, variabili, define, tipi enumerati, e typedefs ";
+      }
+      else
+      {
+          if (!extractAll) result+="dei membri dei file documentati ";
+          else result+="di tutti i membri dei file ";
+      }
+      result+="con collegamenti alla documentazione";
+      if (extractAll) result+=" del file a cui appartengono:";
+      else result+=":";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
     QCString trHeaderFilesDescription()
-    { return "Questi sono gli header files che compongono l'API:"; }
+    { return "Questi sono gli header file che compongono l'API:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription()
@@ -253,13 +371,22 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      * annotated compound index.
      */
     QCString trCompoundIndex()
-    { return "Indice dei composti"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Indice delle strutture dati";
+      }
+      else
+      {
+        return "Indice dei composti";
+      }
+    }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
     QCString trFileIndex()
-    { return "Indice dei files"; }
+    { return "Indice dei file"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
@@ -277,7 +404,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      *  the documentation of all files.
      */
     QCString trFileDocumentation()
-    { return "Documentazione dei files"; }
+    { return "Documentazione dei file"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
@@ -387,13 +514,22 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      *  the list of links to documented compounds
      */
     QCString trCompounds()
-    { return "Composti"; }
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Strutture dati";
+      }
+      else
+      {
+        return "Composti";
+      }
+    }
 
     /*! This is used in the documentation of a group before the list of
      *  links to documented files
      */
     QCString trFiles()
-    { return "Files"; }
+    { return "File"; }
 
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
@@ -432,7 +568,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! this text is generated when the \\bug command is used. */
     QCString trBugsAndLimitations()
-    { return "Bugs e limitazioni"; }
+    { return "Bug e limitazioni"; }
 
     /*! this text is generated when the \\version command is used. */
     QCString trVersion()
@@ -472,14 +608,14 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList()
-    { return "Lista dei namespaces"; }
+    { return "Lista dei namespace"; }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Questa è la lista ";
-      if (!extractAll) result+="dei namespaces documentati, ";
-      else result+="di tutti i namespaces ";
+      if (!extractAll) result+="dei namespace documentati, ";
+      else result+="di tutti i namespace ";
       result+="con una loro breve descrizione:";
       return result;
     }
@@ -488,7 +624,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      *  friends of a class
      */
     QCString trFriends()
-    { return "Friends"; }
+    { return "Friend"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -498,7 +634,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      * related classes
      */
     QCString trRelatedFunctionDocumentation()
-    { return "Documentazione dei friends e delle funzioni collegate"; }
+    { return "Documentazione dei friend e delle funzioni collegate"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -507,9 +643,10 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     /*! used as the title of the HTML page of a class/struct/union */
     QCString trCompoundReference(const char *clName,
                                  ClassDef::CompoundType compType,
-                                 bool /* isTemplate */)
+                                 bool isTemplate)
     {
       QCString result="Riferimenti per ";
+      if (isTemplate) result="Template per ";
       switch(compType)
       {
         case ClassDef::Class:  result+="la classe "; break;
@@ -545,21 +682,21 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     QCString trPublicMembers()
     { return "Membri pubblici"; }
     QCString trPublicSlots()
-    { return "Slots pubblici"; }
+    { return "Slot pubblici"; }
     QCString trSignals()
-    { return "Signals"; }
+    { return "Signal"; }
     QCString trStaticPublicMembers()
     { return "Membri pubblici statici"; }
     QCString trProtectedMembers()
     { return "Membri protetti"; }
     QCString trProtectedSlots()
-    { return "Slots protetti"; }
+    { return "Slot protetti"; }
     QCString trStaticProtectedMembers()
     { return "Membri protetti statici"; }
     QCString trPrivateMembers()
     { return "Membri privati"; }
     QCString trPrivateSlots()
-    { return "Slots privati"; }
+    { return "Slot privati"; }
     QCString trStaticPrivateMembers()
     { return "Membri privati statici"; }
     /*! \endmgroup */
@@ -623,32 +760,32 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers()
-    { return "Membri dei namespaces"; }
+    { return "Membri dei namespace"; }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll)
     {
       QCString result="Questa è la lista ";
-      if (!extractAll) result+="dei membri dei namespaces documentati, ";
-       else result+="di tutti i membri dei namespaces ";
+      if (!extractAll) result+="dei membri dei namespace documentati, ";
+       else result+="di tutti i membri dei namespace ";
       result+="con collegamenti ";
       if (extractAll)
         result+="alla documentazione del namespace per ciascun membro:";
       else
-        result+="ai namespaces a cui appartengono:";
+        result+="ai namespace a cui appartengono:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     QCString trNamespaceIndex()
-    { return "Indice dei namespaces"; }
+    { return "Indice dei namespace"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation()
-    { return "Documentazione dei namespaces"; }
+    { return "Documentazione dei namespace"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -658,7 +795,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
      *  namespaces in a file.
      */
     QCString trNamespaces()
-    { return "Namespaces"; }
+    { return "Namespace"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -682,7 +819,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
       }
       result+=" è stata generata a partire ";
       if (single) result+="dal seguente file:";
-      else result+="dai seguenti files:";
+      else result+="dai seguenti file:";
       return result;
     }
 
@@ -744,7 +881,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Diagramma di interrelazione per "+clName+":";
+      return (QCString)"Diagramma di collaborazione per "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const char *fName)
@@ -822,8 +959,16 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     }
     QCString trPublicAttribs()
     {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Campi";
+      }
+      else
+      {
       return "Attributi pubblici";
+      }
     }
+
     QCString trStaticPublicAttribs()
     {
       return "Attributi pubblici statici";
@@ -860,7 +1005,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     /*! Used as a marker that is put before a todo item */
     virtual QCString trTodo()
     {
-      return "Da Fare";
+      return "Da fare";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
@@ -886,7 +1031,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Queato grafo mostra quali files includono direttamente o indirettamente questo file:";
+      return "Queato grafo mostra quali file includono direttamente o indirettamente questo file:";
     }
     virtual QCString trSince()
     {
@@ -996,7 +1141,7 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Documentazione delle Proprietà";
+      return "Documentazione delle proprietà";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1156,14 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
-      return "Classi";
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Strutture dati";
+      }
+      else
+      {
+          return "Classi";
+      }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
@@ -1042,6 +1194,129 @@ class TranslatorItalian : public TranslatorAdapter_1_2_5
     virtual QCString trDefineValue()
     {
       return "Valore:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a \\bug item */
+    virtual QCString trBug()
+    {
+      return "Bug";
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return "Lista dei bug";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+
+    /*! Used as ansicpg for RTF fcharset */
+    virtual QCString trRTFCharSet()
+    {
+      return "0";
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Indice";
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Class" : "class"));
+      result+=(singular ? "e" : "i");
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool)
+    {
+      QCString result((first_capital ? "File" : "file"));
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool)
+    {
+      QCString result((first_capital ? "Namespace" : "namespace"));
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Grupp" : "grupp"));
+      result+=(singular ? "o" : "i");
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Pagin" : "pagin"));
+      result+=(singular ? "a" : "e");
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Membr" : "membr"));
+      result+=(singular ? "o" : "i");
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Camp" : "camp"));
+      result+=(singular ? "o" : "i");
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Global" : "global"));
+      result+=(singular ? "e" : "i");
+      return result;
     }
 };
 

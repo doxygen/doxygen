@@ -24,7 +24,7 @@
 #include "definition.h"
 #include "sortdict.h"
 
-class ClassList;
+class ClassSDict;
 class ClassDef;
 class PackageList;
 class OutputList;
@@ -49,7 +49,7 @@ class PackageDef : public Definition
 
   private: 
     QCString packageFileName;           // base name of the generated file
-    ClassList *classList;               // list of classes in the package
+    ClassSDict *classSDict;             // list of classes in the package
 };
 
 class PackageSDict : public SDict<PackageDef>

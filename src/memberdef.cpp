@@ -241,8 +241,7 @@ MemberDef::MemberDef(const char *df,int dl,
   memDec=0;
   group=0;
   grpId=-1;
-  exampleList=0;
-  exampleDict=0;
+  exampleSDict=0;
   enumFields=0;
   enumScope=0;
   enumDeclList=0;
@@ -271,6 +270,7 @@ MemberDef::MemberDef(const char *df,int dl,
   indDepth=0;
   section=0;
   explExt=FALSE;
+  cachedAnonymousType=0;
   maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
   userInitLines=-1;
   docEnumValues=FALSE;
@@ -315,8 +315,7 @@ MemberDef::MemberDef(const char *df,int dl,
 MemberDef::~MemberDef()
 {
   delete redefinedBy;
-  delete exampleList;
-  delete exampleDict;
+  delete exampleSDict;
   delete enumFields;
   delete argList;
   delete tArgList;
@@ -338,17 +337,15 @@ bool MemberDef::addExample(const char *anchor,const char *nameStr,
                            const char *file)
 {
   //printf("%s::addExample(%s,%s,%s)\n",name.data(),anchor,nameStr,file);
-  if (exampleDict==0) exampleDict = new ExampleDict;
-  if (exampleList==0) exampleList = new ExampleList;
-  if (exampleDict->find(nameStr)==0) 
+  if (exampleSDict==0) exampleSDict = new ExampleSDict;
+  if (exampleSDict->find(nameStr)==0) 
   {
     //printf("Add reference to example %s to member %s\n",nameStr,name.data());
     Example *e=new Example;
     e->anchor=anchor;
     e->name=nameStr;
     e->file=file;
-    exampleDict->insert(nameStr,e);
-    exampleList->inSort(e); 
+    exampleSDict->inSort(nameStr,e);
     return TRUE;
   }
   return FALSE; 
@@ -356,31 +353,11 @@ bool MemberDef::addExample(const char *anchor,const char *nameStr,
 
 bool MemberDef::hasExamples()
 {
-  if (exampleList==0) 
+  if (exampleSDict==0) 
     return FALSE;
   else
-    return exampleList->count()>0;
+    return exampleSDict->count()>0;
 }
-
-#if 0
-void MemberDef::writeExample(OutputList &ol)
-{
-  Example *e=exampleList->first();
-  while (e)
-  {
-    ol.writeObjectLink(0,e->file,e->anchor,e->name);
-    e=exampleList->next();
-    if (e)
-    {
-      if (exampleList->at()==(int)exampleList->count()-1)
-        ol.writeString(" and ");
-      else
-        ol.writeString(", ");
-    }
-  }
-  ol.writeString(".");
-}
-#endif
 
 QCString MemberDef::getOutputFileBase() const
 {
@@ -396,7 +373,7 @@ QCString MemberDef::getOutputFileBase() const
   {
     return nspace->getOutputFileBase();
   }
-  warn(defFileName,defLine,
+  warn(m_defFileName,m_defLine,
        "Warning: Internal inconsistency: member %s does not belong to any"
        " container!",name().data()
       );
@@ -457,9 +434,19 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
 /*! If this member has an anonymous class/struct/union as its type, then
  *  this method will return the ClassDef that describes this return type.
  */
-ClassDef *MemberDef::getClassDefOfAnonymousType(const char *scopeName) const
+ClassDef *MemberDef::getClassDefOfAnonymousType() 
 {
-  QCString cname=scopeName;
+  if (cachedAnonymousType) return cachedAnonymousType;
+
+  QCString cname;
+  if (getClassDef()!=0) 
+  {
+    cname=getClassDef()->name().copy();
+  }
+  else if (getNamespaceDef()!=0)
+  {
+    cname=getNamespaceDef()->name().copy();
+  }
   QCString ltype(type);
   // strip `static' keyword from ltype
   if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
@@ -495,6 +482,7 @@ ClassDef *MemberDef::getClassDefOfAnonymousType(const char *scopeName) const
       annoClassDef=getClass(ts);
     }
   }
+  cachedAnonymousType = annoClassDef;
   return annoClassDef;
 }
     
@@ -539,7 +527,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
                bool inGroup
                )
 {
-  //printf("%s MemberDef::writeDeclaration()\n",name().data());
+  //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
 
   // hide members whose brief section should not be visible
   if (!isBriefSectionVisible()) return;
@@ -598,7 +586,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=getClassDefOfAnonymousType((cd||nd)?cname.data():0);
+  ClassDef *annoClassDef=getClassDefOfAnonymousType();
 
   // start a new member declaration
   ol.startMemberItem((annoClassDef || annMemb || annEnumType) ? 1 : 0);
@@ -659,7 +647,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (annoClassDef) // type is an anonymous compound
     {
       int ir=i+l;
-      //printf("class found!\n");
       annoClassDef->writeDeclaration(ol,annMemb,inGroup);
       ol.startMemberItem(2);
       int j;
@@ -674,10 +661,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
       {
         ol.docify(";"); 
       }
-      //else 
-      //{
-      //  ol.docify(varName);
-      //}
     }
     else
     {
@@ -724,7 +707,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // write name
   if (!name().isEmpty() && name().at(0)!='@')
   {
-    if (isLinkable())
+    //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
+    if (/*d->isLinkable() &&*/ isLinkable())
     {
       if (annMemb)
       {
@@ -738,8 +722,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
         annMemb->annUsed=annUsed=TRUE;
       }
       else
+      {
         //printf("writeLink %s->%d\n",name.data(),hasDocumentation());
         writeLink(ol,cd,nd,fd,gd);
+      }
     }
     else // there is a brief member description and brief member 
       // descriptions are enabled or there is no detailed description.
@@ -796,7 +782,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (!briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC") && !annMemb)
   {
     ol.startMemberDescription();
-    parseDoc(ol,defFileName,defLine,cname,name(),briefDescription());
+    parseDoc(ol,m_defFileName,m_defLine,cname,name(),briefDescription());
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -850,6 +836,7 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup) const
   bool staticFilter = getClassDef()!=0 || !isStatic() || Config_getBool("EXTRACT_STATIC"); 
          
   // details are not part of a group or this is for a group documentation page
+  // TODO: FIX THIS!!! This should made such that it is always TRUE.
   bool groupFilter = getGroupDef()==0 || inGroup; 
 
   // member is part of an anonymous scope that is the type of
@@ -887,7 +874,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     QCString cname  = container->name();
     QCString cfname = container->getOutputFileBase();  
 
-    
     // get member name
     QCString doxyName=name().copy();
     // prepend scope if there is any. TODO: make this optional for C only docs
@@ -1122,14 +1108,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ) /* || !annMemb */
        )  
     { 
-      parseDoc(ol,defFileName,defLine,scopeName,name(),briefDescription());
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),briefDescription());
       ol.newParagraph();
     }
 
     /* write detailed description */
     if (!documentation().isEmpty())
     { 
-      parseDoc(ol,defFileName,defLine,scopeName,name(),documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),documentation()+"\n");
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
       ol.newParagraph();
@@ -1161,7 +1147,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.endEmphasis();
           ol.endDescTableTitle();
           ol.startDescTableData();
-          parseDoc(ol,defFileName,defLine,scopeName,name(),a->docs);
+          parseDoc(ol,m_defFileName,m_defLine,scopeName,name(),a->docs);
           ol.endDescTableData();
         }
       }
@@ -1218,7 +1204,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
             if (!fmd->briefDescription().isEmpty())
             { 
-              parseDoc(ol,defFileName,defLine,scopeName,fmd->name(),fmd->briefDescription());
+              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd->name(),fmd->briefDescription());
               //ol.newParagraph();
             }
             if (!fmd->briefDescription().isEmpty() && 
@@ -1228,7 +1214,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             }
             if (!fmd->documentation().isEmpty())
             { 
-              parseDoc(ol,defFileName,defLine,scopeName,fmd->name(),fmd->documentation()+"\n");
+              parseDoc(ol,m_defFileName,m_defLine,scopeName,fmd->name(),fmd->documentation()+"\n");
             }
             ol.endDescTableData();
           }
@@ -1376,7 +1362,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.endBold();
       ol.endDescTitle();
       ol.writeDescItem();
-      writeExample(ol,getExampleList());
+      writeExample(ol,getExamples());
       //ol.endDescItem();
       ol.endDescList();
     }
@@ -1412,7 +1398,7 @@ void MemberDef::warnIfUndocumented()
     t="file", d=fd;
 
   if (d && d->isLinkable() && !isLinkable() && name().find('@')==-1)
-   warn_undoc(defFileName,defLine,"Warning: Member %s of %s %s is not documented.",
+   warn_undoc(m_defFileName,m_defLine,"Warning: Member %s of %s %s is not documented.",
         name().data(),t,d->name().data());
 }
 
@@ -1480,4 +1466,10 @@ QCString MemberDef::anchor() const
 {
   if (enumScope) return enumScope->anchor()+anc;
   return anc;
+}
+
+void MemberDef::setGroupDef(GroupDef *gd)
+{
+  printf("%s MemberDef::setGroupDef(%s)\n",name().data(),gd->name().data());
+  group=gd;
 }

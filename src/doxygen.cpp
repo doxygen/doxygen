@@ -65,8 +65,8 @@
 #define pclose _pclose
 #endif
 
-ClassList      Doxygen::classList;               // all documented classes
-ClassDict      Doxygen::classDict(1009);         
+ClassSDict     Doxygen::classSDict(1009);         
+ClassList      Doxygen::hiddenClasses;
 
 NamespaceList  Doxygen::namespaceList;           // all namespaces
 NamespaceDict  Doxygen::namespaceDict(257);      
@@ -107,6 +107,7 @@ QIntDict<QCString> Doxygen::memberDocDict(1009);    // dictionary of the member 
 
 PageInfo      *Doxygen::mainPage = 0;           
 QTextStream    Doxygen::tagFile;
+NamespaceDef  *Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -119,7 +120,7 @@ void clearAll()
   excludeNameDict.clear();  
   delete outputList; outputList=0;
 
-  Doxygen::classList.clear();       
+  Doxygen::classSDict.clear();       
   Doxygen::namespaceList.clear();   
   Doxygen::pageSDict->clear();         
   Doxygen::exampleSDict->clear();      
@@ -128,7 +129,7 @@ void clearAll()
   Doxygen::inputNameList.clear();   
   Doxygen::groupList.clear();       
   Doxygen::formulaList.clear();     
-  Doxygen::classDict.clear();        
+  Doxygen::classSDict.clear();        
   Doxygen::namespaceDict.clear();     
   Doxygen::memberNameDict.clear();  
   Doxygen::functionNameDict.clear();
@@ -143,6 +144,7 @@ void clearAll()
   Doxygen::formulaNameDict.clear();  
   Doxygen::tagDestinationDict.clear();
   delete Doxygen::mainPage; Doxygen::mainPage=0;
+
 }
 
 void statistics()
@@ -155,8 +157,8 @@ void statistics()
   Doxygen::exampleNameDict->statistics();
   fprintf(stderr,"--- imageNameDict stats ----\n");
   Doxygen::imageNameDict->statistics();
-  fprintf(stderr,"--- classDict stats ----\n");
-  Doxygen::classDict.statistics();
+  //fprintf(stderr,"--- classDict stats ----\n");
+  //Doxygen::classSDict.statistics();
   fprintf(stderr,"--- namespaceDict stats ----\n");
   Doxygen::namespaceDict.statistics();
   fprintf(stderr,"--- memberNameDict stats ----\n");
@@ -639,6 +641,62 @@ static bool addNamespace(Entry *root,ClassDef *cd)
   return FALSE;
 }
 
+static Definition *findScope(Entry *root,int level=0)
+{
+  if (root==0) return 0;
+  //printf("start findScope name=%s\n",root->name.data());
+  Definition *result=0;
+  if (root->section&Entry::SCOPE_MASK)
+  {
+    result = findScope(root->parent,level+1); // traverse to the root of the tree
+    if (result)
+    {
+      //printf("Found %s inside %s at level %d\n",root->name.data(),result->name().data(),level);
+      // TODO: look at template arguments
+      result = result->findInnerCompound(root->name);
+    }
+    else // reached the global scope
+    {
+      // TODO: look at template arguments
+      result = Doxygen::globalScope->findInnerCompound(root->name);
+      //printf("Found in globalScope %s at level %d\n",result->name().data(),level);
+    }
+  }
+  //printf("end findScope(%s,%d)=%s\n",root->name.data(),
+  //       level,result==0 ? "<none>" : result->name().data());
+  return result;
+}
+
+static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n)
+{
+  //printf("findScopeFromName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
+  QCString name(n);
+  if (startScope==0) startScope=Doxygen::globalScope;
+  int i = name.find("::");
+  if (i==-1) 
+  {
+    return startScope;
+  }
+
+  QCString scope;
+  while ((i = name.find("::"))!=-1)
+  {
+    int ti = name.find('<');
+    if (ti!=-1 && ti<i) i=ti; // strip template specifiers
+    QCString nestedNameSpecifier = name.left(i);
+    //Definition *oldScope = startScope;
+    startScope = startScope->findInnerCompound(nestedNameSpecifier);
+    if (startScope==0) 
+    {
+      //printf("name %s not found in scope %s\n",nestedNameSpecifier.data(),oldScope->name().data());
+      return 0;
+    }
+    name = name.right(name.length()-i-2);
+  }
+  //printf("findScopeFromName() result=%s\n",startScope ? startScope->name().data() : 0);
+  return startScope;
+}
+
 //----------------------------------------------------------------------
 // build a list of all classes mentioned in the documentation
 // and all classes that have a documentation block before their definition.
@@ -737,6 +795,7 @@ static void buildClassList(Entry *root)
       }
       else // new class
       {
+        
         ClassDef::CompoundType sec=ClassDef::Class; 
         switch(root->section)
         {
@@ -823,10 +882,27 @@ static void buildClassList(Entry *root)
 
         
         // add class to the list
-        Doxygen::classList.inSort(cd);
         //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-        //classDict.insert(resolveDefines(fullName),cd);
-        Doxygen::classDict.insert(fullName,cd);
+        Doxygen::classSDict.inSort(fullName,cd);
+
+        // also add class to the correct structural context 
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+        if (d==0)
+        {
+          // TODO: Due to the order in which the tag file is written
+          // a nested class can be found before its parent!
+          //
+          //warn(root->fileName,root->startLine,
+          //     "Warning: Internal inconsistency: scope for class %s not "
+          //     "found!\n",fullName.data()
+          //    );
+        }
+        else
+        {
+          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+          d->addInnerCompound(cd);
+          cd->setOuterScope(d);
+        }
       }
     }
   }
@@ -927,6 +1003,23 @@ static void buildNamespaceList(Entry *root)
         Doxygen::namespaceList.inSort(nd);
         Doxygen::namespaceDict.insert(fullName,nd);
 
+        // also add namespace to the correct structural context 
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
+        if (d==0)
+        {
+          // TODO: Due to the order in which the tag file is written
+          // a nested class can be found before its parent!
+          //
+          //warn(root->fileName,root->startLine,
+          //     "Warning: Internal inconsistency: scope for namespace %s not "
+          //     "found!\n",fullName.data()
+          //    );
+        }
+        else
+        {
+          d->addInnerCompound(nd);
+          nd->setOuterScope(d);
+        }
       }
     }
   }
@@ -2247,8 +2340,11 @@ static void replaceNamespaceAliases(QCString &scope,int i)
 }
 
 
-static bool findBaseClassRelation(Entry *root,ClassDef *cd,
+static bool findBaseClassRelation(
+                           Entry *root,
+                           ClassDef *cd,
                            BaseInfo *bi,
+                           int isTemplBaseClass,
                            bool insertUndocumented
                           )
 {
@@ -2416,7 +2512,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
             }
           }
         }
-        if (found)
+        if (isTemplBaseClass==-1 && found)
         {
           Debug::print(Debug::Classes,0,"    Documented base class `%s'\n",bi->name.data());
           // add base class to this class
@@ -2427,7 +2523,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           return TRUE;
         }
-        else if (scopeOffset==0 && insertUndocumented)
+        else if ((scopeOffset==0 && insertUndocumented) || isTemplBaseClass!=-1)
         {
           Debug::print(Debug::Classes,0,
                        "    Undocumented base class `%s' baseClassName=%s\n",
@@ -2441,12 +2537,18 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileName);
+          // is this an inherited template argument?
+          //printf("%s->setIsTemplateBaseClass(%d)\n",baseClass->name().data(),isTemplBaseClass);
+          baseClass->setIsTemplateBaseClass(isTemplBaseClass);
           // add class to the list
-          //classList.inSort(baseClass);
-          Doxygen::classList.inSort(baseClass);
-          //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-          //classDict.insert(resolveDefines(bi->name),baseClass);
-          Doxygen::classDict.insert(baseClassName,baseClass);
+          if (isTemplBaseClass==-1)
+          {
+            Doxygen::classSDict.inSort(baseClassName,baseClass);
+          }
+          else
+          {
+            Doxygen::hiddenClasses.append(baseClass);
+          }
           return TRUE;
         }
         else
@@ -2511,16 +2613,34 @@ static void computeClassRelations(Entry *root)
         cd->visited=TRUE; // mark class as used 
         if (root->extends->count()>0) // there are base classes
         {
+          
           // The base class could ofcouse also be a non-nested class
           QList<BaseInfo> *baseList=root->extends;
           BaseInfo *bi=baseList->first();
           while (bi) // for each base class
           {
+            // check if the base class is a template argument
+            int isTemplBaseClass = -1;
+            ArgumentList *tl = cd->templateArguments();
+            if (tl)
+            {
+              ArgumentListIterator ali(*tl);
+              Argument *arg;
+              int count=0;
+              for (ali.toFirst();(arg=ali.current());++ali,++count)
+              {
+                if (arg->name==bi->name) // base class is a template argument
+                {
+                  isTemplBaseClass = count;
+                  break;
+                }
+              }
+            }
             // find a documented base class in the correct scope
-            if (!findBaseClassRelation(root,cd,bi,FALSE))
+            if (!findBaseClassRelation(root,cd,bi,isTemplBaseClass,FALSE))
             {
               // no documented base class -> try to find an undocumented one
-              findBaseClassRelation(root,cd,bi,TRUE);
+              findBaseClassRelation(root,cd,bi,isTemplBaseClass,TRUE);
             }
             bi=baseList->next();
           }
@@ -2550,11 +2670,11 @@ static void computeClassRelations(Entry *root)
 
 static void computeMemberReferences()
 {
-  ClassDef *cd=Doxygen::classList.first();
-  while (cd)
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
     cd->computeAnchors();
-    cd=Doxygen::classList.next();
   } 
   FileName *fn=Doxygen::inputNameList.first();
   while (fn)
@@ -2585,14 +2705,14 @@ static void computeMemberReferences()
 
 static void addTodoTestBugReferences()
 {
-  ClassDef *cd=Doxygen::classList.first();
-  while (cd)
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
     addRefItem(cd->todoId(),cd->testId(),cd->bugId(),
                theTranslator->trClass(TRUE,TRUE),
                cd->getOutputFileBase(),cd->name()
               );
-    cd=Doxygen::classList.next();
   } 
   FileName *fn=Doxygen::inputNameList.first();
   while (fn)
@@ -4115,39 +4235,41 @@ static void findEnums(Entry *root)
         {
           MemberNameIterator fmni(*fmn);
           MemberDef *fmd;
-          for (fmni.toFirst();
-               (fmd=fmni.current()) && fmd->isEnumValue();
-               ++fmni
-              ) // search for the scope with the right name
+          for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
           {
-            if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+            if (fmd->isEnumValue())
             {
-              NamespaceDef *fnd=fmd->getNamespaceDef();
-              if (fnd==nd) // enum value is inside a namespace
+              if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
               {
-                md->insertEnumField(fmd);
-                fmd->setEnumScope(md);
+                NamespaceDef *fnd=fmd->getNamespaceDef();
+                if (fnd==nd) // enum value is inside a namespace
+                {
+                  md->insertEnumField(fmd);
+                  fmd->setEnumScope(md);
+                }
               }
-            }
-            else if (isGlobal)
-            {
-              FileDef *ffd=fmd->getFileDef();
-              if (ffd==fd) // enum value has file scope
+              else if (isGlobal)
               {
-                md->insertEnumField(fmd);
-                fmd->setEnumScope(md);
+                FileDef *ffd=fmd->getFileDef();
+                if (ffd==fd) // enum value has file scope
+                {
+                  md->insertEnumField(fmd);
+                  fmd->setEnumScope(md);
+                }
               }
-            }
-            else
-            {
-              ClassDef *fcd=fmd->getClassDef();
-              if (fcd==cd) // enum value is inside a class
+              else
               {
-                md->insertEnumField(fmd); // add field def to list
-                fmd->setEnumScope(md);    // cross ref with enum name
+                ClassDef *fcd=fmd->getClassDef();
+                if (fcd==cd) // enum value is inside a class
+                {
+                  //printf("Inserting enum field %s in enum scope %s\n",
+                  //    fmd->name().data(),md->name().data());
+                  md->insertEnumField(fmd); // add field def to list
+                  fmd->setEnumScope(md);    // cross ref with enum name
+                }
               }
-            }
-          } 
+            } 
+          }
         }
       }
     }
@@ -4373,7 +4495,7 @@ static void computeMemberRelations()
 static void computeClassImplUsageRelations()
 {
   ClassDef *cd;
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for (;(cd=cli.current());++cli)
   {
     cd->determineImplUsageRelation();
@@ -4388,7 +4510,7 @@ static void buildCompleteMemberLists()
 {
   ClassDef *cd;
   // merge the member list of base classes into the inherited classes.
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (!cd->isReference() && // not an external class
@@ -4401,7 +4523,7 @@ static void buildCompleteMemberLists()
   // now sort the member list of all classes.
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    cd->memberNameInfoList()->sort();
+    cd->memberNameInfoSDict()->sort();
   }
 }
 
@@ -4463,7 +4585,7 @@ static void generateFileDocs()
 static void addSourceReferences()
 {
   // add source references for class definitions
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
@@ -4568,7 +4690,7 @@ static void generateClassDocs()
     msg("Generating example index...\n");
   }
 
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for ( ; cli.current() ; ++cli )
   {
     ClassDef *cd=cli.current();
@@ -4621,7 +4743,7 @@ static void inheritDocumentation()
 static void addMembersToMemberGroup()
 {
   // for each class
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
@@ -4660,7 +4782,7 @@ static void addMembersToMemberGroup()
 static void distributeMemberGroupDocumentation()
 {
   // for each class
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
@@ -4923,7 +5045,7 @@ static void buildPackageList(Entry *root)
 static void addClassesToPackages()
 {
   ClassDef *cd;
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for (;(cd=cli.current());++cli)
   {
     PackageDef *pd = cd->packageDef();
@@ -4974,7 +5096,7 @@ static void generatePageDocs()
     if (!pi->inGroup && !pi->isReference())
     {
       msg("Generating docs for page %s...\n",pi->name.data());
-      outputList->disable(OutputGenerator::Man);
+      //outputList->disable(OutputGenerator::Man);
       QCString pageName;
       if (Config_getBool("CASE_SENSE_NAMES"))
         pageName=pi->name.copy();
@@ -4982,19 +5104,29 @@ static void generatePageDocs()
         pageName=pi->name.lower();
 
       startFile(*outputList,pageName,pi->title);
+
+      startFile(*outputList,pageName,pi->title);
+ 
+      // save old generator state and write title only to Man generator
+      outputList->pushGeneratorState();
+      outputList->disableAllBut(OutputGenerator::Man);
+      outputList->startTitleHead(pageName);
+      outputList->endTitleHead(pageName, pageName);
+      outputList->popGeneratorState();
+      
       SectionInfo *si=0;
       if (!pi->title.isEmpty() && !pi->name.isEmpty() &&
           (si=Doxygen::sectionDict.find(pi->name))!=0)
       {
-        outputList->startSection(si->label,si->title,FALSE);
+        outputList->startSection(si->label,si->title,si->type==SectionInfo::Subsection);
         outputList->docify(si->title);
-        outputList->endSection(si->label,FALSE);
+        outputList->endSection(si->label,si->type==SectionInfo::Subsection);
       }
       outputList->startTextBlock();
       parseDoc(*outputList,pi->defFileName,pi->defLine,0,0,pi->doc);
       outputList->endTextBlock();
       endFile(*outputList);
-      outputList->enable(OutputGenerator::Man);
+      //outputList->enable(OutputGenerator::Man);
 
       if (!Config_getString("GENERATE_TAGFILE").isEmpty() && pi->name!="todo" && pi->name!="test")
       {
@@ -5287,7 +5419,8 @@ static bool openOutputFile(const char *outFile,QFile &f)
  *  If the \a shortList parameter is TRUE a configuration file without
  *  comments will be generated.
  */
-static void generateConfigFile(const char *configFile,bool shortList)
+static void generateConfigFile(const char *configFile,bool shortList,
+                               bool updateOnly=FALSE)
 {
   QFile f;
   bool fileOpened=openOutputFile(configFile,f);
@@ -5297,13 +5430,20 @@ static void generateConfigFile(const char *configFile,bool shortList)
     Config::instance()->writeTemplate(&f,shortList);
     if (!writeToStdout)
     {
-      msg("\n\nConfiguration file `%s' created.\n\n",configFile);
-      msg("Now edit the configuration file and enter\n\n");
-      if (strcmp(configFile,"Doxyfile") || strcmp(configFile,"doxyfile"))
-        msg("  doxygen %s\n\n",configFile);
+      if (!updateOnly)
+      {
+        msg("\n\nConfiguration file `%s' created.\n\n",configFile);
+        msg("Now edit the configuration file and enter\n\n");
+        if (strcmp(configFile,"Doxyfile") || strcmp(configFile,"doxyfile"))
+          msg("  doxygen %s\n\n",configFile);
+        else
+          msg("  doxygen\n\n");
+        msg("to generate the documentation for your project\n\n");
+      }
       else
-        msg("  doxygen\n\n");
-      msg("to generate the documentation for your project\n\n");
+      {
+        msg("\n\nConfiguration file `%s' updated.\n\n",configFile);
+      }
     }
   }
   else
@@ -6014,7 +6154,7 @@ void readConfiguration(int argc, char **argv)
 
   if (updateConfig)
   {
-    generateConfigFile(configName,shortList);
+    generateConfigFile(configName,shortList,TRUE);
     exit(1);
   }
   

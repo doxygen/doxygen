@@ -21,17 +21,19 @@
 #include "qtbc.h"
 #include <qstrlist.h>
 #include <qdict.h>
+#include "sortdict.h"
 #include "definition.h"
 #include "memberlist.h"
 
 class ClassDef;
-class OutputList;
 class ClassList;
-class ClassDict;
+class OutputList;
+class ClassSDict;
 class MemberDef;
 class NamespaceList;
 class MemberGroupDict;
 class MemberGroupList;
+class NamespaceSDict;
 
 class NamespaceDef : public Definition
 {
@@ -43,8 +45,11 @@ class NamespaceDef : public Definition
     QCString getOutputFileBase() const;
     void insertUsedFile(const char *fname);
     void writeDocumentation(OutputList &ol);
+
     void insertClass(ClassDef *cd);
+    void insertNamespace(NamespaceDef *nd);
     void insertMember(MemberDef *md);
+
     void computeAnchors();
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
@@ -65,6 +70,9 @@ class NamespaceDef : public Definition
     }
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+
+    virtual Definition *findInnerCompound(const char *name);
+    void addInnerCompound(Definition *d);
     
   //protected:
   //  void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
@@ -73,10 +81,15 @@ class NamespaceDef : public Definition
     //QCString reference;
     QCString fileName;
     QStrList files;
-    ClassList *classList;
-    ClassDict *classDict;
+
+    /*! Classes inside this namespace */
+    ClassSDict *classSDict;
+    /*! Namespaces inside this namespace */
+    NamespaceSDict *namespaceSDict;
+
     NamespaceList *usingDirList;
     ClassList *usingDeclList;
+    SDict<Definition> *m_innerCompounds;
 
     MemberList allMemberList;
 
@@ -127,5 +140,20 @@ class NamespaceDict : public QDict<NamespaceDef>
     NamespaceDict(int size) : QDict<NamespaceDef>(size) {}
    ~NamespaceDict() {}
 };
+
+class NamespaceSDict : public SDict<NamespaceDef>
+{
+  public:
+    NamespaceSDict(int size) : SDict<NamespaceDef>(size) {}
+   ~NamespaceSDict() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return stricmp(((NamespaceDef *)item1)->name(),
+                    ((NamespaceDef *)item2)->name()
+                   );
+    }
+};
+
+
 
 #endif

@@ -20,6 +20,7 @@
 
 #include <qlist.h>
 #include "memberdef.h"
+#include "sortdict.h"
 
 class MemberName : public QList<MemberDef>
 { 
@@ -105,6 +106,19 @@ class MemberNameInfoDict : public QDict<MemberNameInfo>
   public:
     MemberNameInfoDict(int size) : QDict<MemberNameInfo>(size) {}
    ~MemberNameInfoDict() {}
+};
+
+class MemberNameInfoSDict : public SDict<MemberNameInfo>
+{
+  public:
+    MemberNameInfoSDict(int size) : SDict<MemberNameInfo>(size) {}
+   ~MemberNameInfoSDict() {}
+    int compareItems(GCI item1,GCI item2) 
+    { return stricmp(
+                    ((MemberNameInfo *)item1)->memberName(),
+                    ((MemberNameInfo *)item2)->memberName()
+                   );
+    }
 };
 
 class MemberNameInfoListIterator : public QListIterator<MemberNameInfo>

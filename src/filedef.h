@@ -29,8 +29,9 @@
 
 class FileDef;
 class FileList;
-class ClassList;
+class ClassSDict;
 class ClassDef;
+class ClassList;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
@@ -168,7 +169,7 @@ class FileDef : public Definition
 
   private: 
     
-    ClassList  *classList;
+    ClassSDict *classSDict;
     QDict<IncludeInfo> *includeDict;
     QList<IncludeInfo> *includeList;
     QDict<IncludeInfo> *includedByDict;

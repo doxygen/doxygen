@@ -831,6 +831,7 @@ HREF      [hH][rR][eE][fF]
 I         [iI]
 IMG       [iI][mM][gG]
 INPUT     [iI][nN][pP][uU][tT]
+KBD	  [kK][bB][dD]
 LI	  [lL][iI]
 META	  [mM][eE][tT][aA]
 MULTICOL  [mM][uU][lL][tT][iI][cC][oO][lL]
@@ -2099,6 +2100,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"</"{LI}{ATTR}">"		
 <DocScan>"<"{TT}{ATTR}">"		{ outDoc->startTypewriter(); }
 <DocScan>"</"{TT}{ATTR}">"		{ outDoc->endTypewriter(); }
+<DocScan>"<"{KBD}{ATTR}">"		{ outDoc->startTypewriter(); }
+<DocScan>"</"{KBD}{ATTR}">"		{ outDoc->endTypewriter(); }
 <DocScan>"<"{EM}{ATTR}">"		{ outDoc->startEmphasis(); }
 <DocScan>"</"{EM}{ATTR}">"		{ outDoc->endEmphasis(); }
 <DocScan>"<"{HR}{ATTR}">"		{ outDoc->writeRuler(); }

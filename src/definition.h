@@ -47,26 +47,28 @@ class Definition
     /*! Destroys the definition */
     virtual ~Definition();
     /*! Returns the name of the definition */
-    const QCString& name() const { return n; }
+    const QCString& name() const { return m_name; }
     /*! Returns the base name of the output file that contains this 
      *  definition. 
      */
+    QCString qualifiedName() const;
+    QCString localName() const;
     virtual QCString getOutputFileBase() const = 0;
     /*! Returns the name of the source listing of this file. */
     const QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
     /*! Returns the detailed description of this definition */
-    const QCString& documentation() const { return doc; }
+    const QCString& documentation() const { return m_doc; }
     /*! Returns the brief description of this definition */
-    const QCString& briefDescription() const { return brief; }
+    const QCString& briefDescription() const { return m_brief; }
     /*! Sets a new \a name for the definition */
-    void setName(const char *name) { n=name; }
+    void setName(const char *name) { m_name=name; }
     /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,bool stripWhiteSpace=TRUE) 
       { 
         if (stripWhiteSpace)
-          doc=((QCString)d).stripWhiteSpace();
+          m_doc=((QCString)d).stripWhiteSpace();
         else
-          doc=d;
+          m_doc=d;
       }
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
@@ -77,9 +79,9 @@ class Definition
     virtual bool isLinkableInProject() = 0;
     virtual bool isLinkable() = 0;
 
-    bool isReference() const { return !ref.isEmpty(); }
-    void setReference(const char *r) { ref=r; }
-    QCString getReference() const { return ref; }
+    bool isReference() const { return !m_ref.isEmpty(); }
+    void setReference(const char *r) { m_ref=r; }
+    QCString getReference() const { return m_ref; }
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
@@ -90,13 +92,13 @@ class Definition
     // source references
     void setBodySegment(int bls,int ble) 
     {
-      startBodyLine=bls; 
-      endBodyLine=ble; 
+      m_startBodyLine=bls; 
+      m_endBodyLine=ble; 
     }
-    void setBodyDef(FileDef *fd)         { bodyDef=fd; }
-    int getStartBodyLine() const         { return startBodyLine; }
-    int getEndBodyLine() const           { return endBodyLine; }
-    FileDef *getBodyDef()                { return bodyDef; }
+    void setBodyDef(FileDef *fd)         { m_bodyDef=fd; }
+    int getStartBodyLine() const         { return m_startBodyLine; }
+    int getEndBodyLine() const           { return m_endBodyLine; }
+    FileDef *getBodyDef()                { return m_bodyDef; }
     void writeSourceDef(OutputList &ol,const char *scopeName);
     void writeInlineCode(OutputList &ol,const char *scopeName);
     void writeSourceRefs(OutputList &ol,const char *scopeName);
@@ -113,28 +115,40 @@ class Definition
     int bugId() const { return m_bugId; }
 
     /*! returns the file in which this definition was found */
-    QCString getDefFileName() const { return defFileName; }
+    QCString getDefFileName() const { return m_defFileName; }
     /*! returns the line number at which the definition was found */
-    int getDefLine() const { return defLine; }
+    int getDefLine() const { return m_defLine; }
+
+    virtual Definition *findInnerCompound(const char *name);
+    virtual Definition *getOuterScope() { return m_outerScope; }
+    virtual void addInnerCompound(Definition *d);
+    virtual void setOuterScope(Definition *d) { m_outerScope = d; }
 
   protected:
-    int      startBodyLine;   // line number of the start of the definition
-    int      endBodyLine;     // line number of the end of the definition
-    FileDef *bodyDef;         // file definition containing the function body
+    int      m_startBodyLine;   // line number of the start of the definition
+    int      m_endBodyLine;     // line number of the end of the definition
+    FileDef *m_bodyDef;         // file definition containing the function body
 
     // where the item was found
-    QCString defFileName;
-    int      defLine;
+    QCString m_defFileName;
+    int      m_defLine;
+
+    /*! The class, namespace in which this class is located 
+     */ 
+    Definition *m_outerScope;
+    QCString m_name;     // name of the definition
+    QCString m_localName;      // local (unqualified) name of the definition
+                               // in the future m_name should become m_localName
 
   private: 
-    QCString n;     // name of the definition
-    QCString brief; // brief description
-    QCString doc;   // detailed description
-    QCString ref;   // reference to external documentation
-    SectionDict *sectionDict;  // dictionary of all sections
-    MemberList  *sourceRefList;  // list of entities that refer to this
+    //QCString m_qualifiedName;  // name of the definition
+    QCString m_brief; // brief description
+    QCString m_doc;   // detailed description
+    QCString m_ref;   // reference to external documentation
+    SectionDict *m_sectionDict;  // dictionary of all sections
+    MemberList  *m_sourceRefList;  // list of entities that refer to this
                                  // entity in their definition 
-    MemberDict *sourceRefDict;
+    MemberDict *m_sourceRefDict;
     int m_testId;     // id for test list item
     int m_todoId;     // id for todo list item
     int m_bugId;      // id for bug list item

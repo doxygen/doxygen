@@ -338,7 +338,7 @@ int guessSection(const char *name)
 ClassDef *getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  return Doxygen::classDict[name];
+  return Doxygen::classSDict.find(name);
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
@@ -376,30 +376,30 @@ ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef,QCString *pTemplSpe
     //printf("getResolvedClass `%s'->`%s'\n",name,subst->data());
     if (*subst==name) // avoid resolving typedef struct foo foo; 
     {
-      return Doxygen::classDict[name];
+      return Doxygen::classSDict.find(name);
     }
     int count=0; // recursion detection guard
     QCString *newSubst;
     while ((newSubst=Doxygen::typedefDict[*subst]) && count<10)
     {
-      if (*subst==*newSubst) return Doxygen::classDict[subst->data()]; // for breaking typedef struct A A; 
+      if (*subst==*newSubst) return Doxygen::classSDict.find(subst->data()); // for breaking typedef struct A A; 
       subst=newSubst;
       count++;
     }
     if (count==10)
     {
       warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",name);
-      return Doxygen::classDict[name];
+      return Doxygen::classSDict.find(name);
     }
     else
     {
       //printf("getClass: subst %s->%s\n",name,subst->data());
       int i;
-      ClassDef *cd = Doxygen::classDict[subst->data()];
+      ClassDef *cd = Doxygen::classSDict.find(subst->data());
       if (cd==0 && (i=subst->find('<'))>0) // try unspecialized version as well
       {
         if (pTemplSpec) *pTemplSpec = subst->right(subst->length()-i);
-        return Doxygen::classDict[subst->left(i)];
+        return Doxygen::classSDict.find(subst->left(i));
       }
       else
       {
@@ -410,7 +410,7 @@ ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef,QCString *pTemplSpe
   else
   {
     if (pIsTypeDef) *pIsTypeDef=FALSE;
-    return Doxygen::classDict[name];
+    return Doxygen::classSDict.find(name);
   }
 }
 
@@ -635,9 +635,9 @@ void linkifyText(const TextGeneratorIntf &out,const char *scName,const char *nam
 }
 
 
-void writeExample(OutputList &ol,ExampleList *el)
+void writeExample(OutputList &ol,ExampleSDict *ed)
 {
-  QCString exampleLine=theTranslator->trWriteList(el->count());
+  QCString exampleLine=theTranslator->trWriteList(ed->count());
  
   //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
   //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
@@ -650,7 +650,7 @@ void writeExample(OutputList &ol,ExampleList *el)
     bool ok;
     parseText(ol,exampleLine.mid(index,newIndex-index));
     uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-    Example *e=el->at(entryIndex);
+    Example *e=ed->at(entryIndex);
     if (ok && e) 
     {
       ol.pushGeneratorState();
@@ -1091,6 +1091,23 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
   if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
   if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+  
+  // allow distingishing "const A" from "const B" even though 
+  // from a syntactic point of view they would be two names of the same 
+  // type "const". This is not fool prove ofcourse, but should at least 
+  // catch the most common cases.
+  if (srcAType=="const" && !srcA->name.isEmpty())
+  {
+    srcAType+=" ";
+    srcAType+=srcA->name;
+  } 
+  if (dstAType=="const" && !dstA->name.isEmpty())
+  {
+    dstAType+=" ";
+    dstAType+=dstA->name;
+  }
+  //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
+      
   stripIrrelevantConstVolatile(srcAType);
   stripIrrelevantConstVolatile(dstAType);
 
@@ -1101,7 +1118,6 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   }
   if (srcAType!=dstAType) // check if the argument only differs on name 
   {
-    //printf("scope=`%s': `%s' <=> `%s'\n",className.data(),srcAType.data(),dstAType.data());
 
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
@@ -2461,7 +2477,8 @@ int getPrefixIndex(const QCString &name)
   int ni = name.findRev("::");
   if (ni==-1) ni=0; else ni+=2;
   //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
-  char *s = Config_getList("IGNORE_PREFIX").first();
+  QStrList &sl = Config_getList("IGNORE_PREFIX");
+  char *s = sl.first();
   while (s)
   {
     const char *ps=s;
@@ -2472,7 +2489,7 @@ int getPrefixIndex(const QCString &name)
     {
       return ni+i;
     }
-    s = Config_getList("IGNORE_PREFIX").next();
+    s = sl.next();
   }
   return ni;
 }
@@ -2495,9 +2512,9 @@ static void initBaseClassHierarchy(BaseClassList *bcl)
 
 //----------------------------------------------------------------------------
 
-void initClassHierarchy(ClassList *cl)
+void initClassHierarchy(ClassSDict *cl)
 {
-  ClassListIterator cli(*cl);
+  ClassSDict::Iterator cli(*cl);
   ClassDef *cd;
   for ( ; (cd=cli.current()); ++cli)
   {
@@ -2743,3 +2760,50 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
     }
   }
 }
+
+/*! Extracts a (sub-)string from \a type starting at \a pos that
+ *  could form a class. When TRUE is returned the result is the 
+ *  class \a name and a template argument list \a templSpec.
+ */
+bool extractClassNameFromType(const QCString &type,int &pos,
+            QCString &name,QCString &templSpec)
+{
+  static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
+  name.resize(0);
+  templSpec.resize(0);
+  int i,l;
+  int typeLen=type.length();
+  if (typeLen>0)
+  {
+    if ((i=re.match(type,pos,&l))!=-1) // for each class name in the type
+    {
+      int ts=i+l;
+      int te=ts;
+      while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
+      if (type.at(ts)=='<') // assume template instance
+      {
+        // locate end of template
+        te=ts+1;
+        int brCount=1;
+        while (te<typeLen && brCount!=0)
+        {
+          if (type.at(te)=='<') 
+          {
+            if (te<typeLen-1 && type.at(te+1)=='<') te++; else brCount++;
+          }
+          if (type.at(te)=='>') 
+          {
+            if (te<typeLen-1 && type.at(te+1)=='>') te++; else brCount--;
+          }
+          te++;
+        }
+      }
+      if (te>ts) templSpec = type.mid(ts,te-ts);
+      name = type.mid(i,l);
+      pos=i+l;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+

@@ -469,26 +469,8 @@ void writeClassTree(BaseClassList *cl)
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-void writeClassTree(ClassList *cl)
+void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &started)
 {
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp=0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
-  ClassListIterator cli(*cl);
-  bool started=FALSE;
-  for ( ; cli.current() ; ++cli)
-  {
-    ClassDef *cd=cli.current();
     if (cd->isVisibleInHierarchy() && !cd->visited)
     {
       if (!started)
@@ -500,11 +482,11 @@ void writeClassTree(ClassList *cl)
       {
         if (hasHtmlHelp)
         {
-          htmlHelp->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
+          HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->name(),cd->getOutputFileBase());
         }
         if (hasFtvHelp)
         {
-          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+          FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->name());
         }
       }
       if (hasChildren)
@@ -513,6 +495,31 @@ void writeClassTree(ClassList *cl)
       }
       cd->visited=TRUE;
     }
+}
+
+void writeClassTree(ClassList *cl)
+{
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  ClassListIterator cli(*cl);
+  bool started=FALSE;
+  for ( ; cli.current() ; ++cli)
+  {
+    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started);
+  }
+}
+
+void writeClassTree(ClassSDict *d)
+{
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  ClassSDict::Iterator cli(*d);
+  bool started=FALSE;
+  for ( ; cli.current() ; ++cli)
+  {
+    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started);
   }
 }
 
@@ -520,7 +527,7 @@ void writeClassTree(ClassList *cl)
 
 void writeClassHierarchy(OutputList &ol)
 {
-  initClassHierarchy(&Doxygen::classList);
+  initClassHierarchy(&Doxygen::classSDict);
 
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
@@ -537,7 +544,7 @@ void writeClassHierarchy(OutputList &ol)
   }
 
   bool started=FALSE;
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for (;cli.current(); ++cli)
   {
     ClassDef *cd=cli.current();
@@ -546,9 +553,9 @@ void writeClassHierarchy(OutputList &ol)
     //              hasVisibleRoot(cd->baseClasses()),
     //              cd->isVisibleInHierarchy()
     //      );
-    if (!hasVisibleRoot(cd->baseClasses()))
+    if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
     {
-      if (cd->isVisibleInHierarchy()) 
+      if (cd->isVisibleInHierarchy()) // should it be visible
       {
         if (!started)
         {
@@ -560,6 +567,7 @@ void writeClassHierarchy(OutputList &ol)
         bool hasChildren = !cd->visited && cd->subClasses()->count()>0; 
         if (cd->isLinkable())
         {
+          //printf("Writing class %s\n",cd->name().data());
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
           if (cd->isReference()) 
           {
@@ -609,9 +617,9 @@ void writeClassHierarchy(OutputList &ol)
 // TODO: let this function return the real number of items in the hierarchy.
 int countClassHierarchy()
 {
-  initClassHierarchy(&Doxygen::classList);
+  initClassHierarchy(&Doxygen::classSDict);
   int count=0;
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   for ( ; cli.current(); ++cli)
   {
     if (cli.current()->subClasses()->count()>0) count++;
@@ -1060,7 +1068,7 @@ int countAnnotatedClasses()
 {
   int count=0;
   //ClassDef *cd=Doxygen::classList.first();
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
@@ -1083,7 +1091,7 @@ void writeAnnotatedClassList(OutputList &ol)
   ol.startIndexList(); 
   //ClassDef *cd=Doxygen::classList.first();
   //while (cd)
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
@@ -1164,7 +1172,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   ol.startAlphabeticalIndexList(); 
 
   // first count the number of headers
-  ClassListIterator cli(Doxygen::classList);
+  ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
   char startLetter=0;
   int headerItems=0;
@@ -2167,15 +2175,33 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
     // write group info
     bool hasSubGroups = gd->groupList->count()>0;
     bool hasSubPages = gd->pageDict->count()>0;
+    int numSubItems = 0;
+    if( Config_getBool("TOC_EXPAND"))
+    {
+      numSubItems += gd->docDefineMembers.count();
+      numSubItems += gd->docTypedefMembers.count();
+      numSubItems += gd->docEnumMembers.count();
+      numSubItems += gd->docEnumValMembers.count();
+      numSubItems += gd->docFuncMembers.count();
+      numSubItems += gd->docVarMembers.count();
+      numSubItems += gd->docProtoMembers.count();
+      numSubItems += gd->namespaceList->count();
+      numSubItems += gd->classSDict->count();
+      numSubItems += gd->fileList->count();
+      numSubItems += gd->exampleDict->count();
+    }
+
+    bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
     //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
     if(htmlHelp)
     {
-        htmlHelp->addContentsItem(hasSubGroups || hasSubPages,gd->groupTitle(),gd->getOutputFileBase()); 
+        htmlHelp->addContentsItem(isDir,gd->groupTitle(),gd->getOutputFileBase()); 
         htmlHelp->incContentsDepth();
     }
     if(ftvHelp)
     {
-        ftvHelp->addContentsItem(hasSubGroups || hasSubPages,gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle()); 
+        ftvHelp->addContentsItem(isDir,gd->getReference(),gd->getOutputFileBase(),
+                                 0,gd->groupTitle()); 
         ftvHelp->incContentsDepth();
     }
 
@@ -2324,7 +2350,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
       }
 
       // write classes
-      if(gd->classList->count()>0)
+      if(gd->classSDict->count()>0)
       {
         if(htmlHelp)
         {
@@ -2339,7 +2365,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
           ftvHelp->incContentsDepth();
         }
 
-        writeClassTree(gd->classList);
+        writeClassTree(gd->classSDict);
         if(htmlHelp) htmlHelp->decContentsDepth();
         if(ftvHelp)  ftvHelp->decContentsDepth();
       }

@@ -31,26 +31,33 @@
 Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,const char *d)
 {
-  defFileName = df;
-  defLine = dl;
-  n=name; 
-  brief=b; 
-  doc=d; 
-  sectionDict=0, 
-  startBodyLine=endBodyLine=-1, 
-  bodyDef=0;
-  sourceRefList=0;
-  sourceRefDict=0;
+  m_defFileName = df;
+  m_defLine = dl;
+  m_name=name; 
+  m_localName=name;
+  int i=m_localName.findRev("::");
+  if (i!=-1)
+  {
+    m_localName=m_localName.right(m_localName.length()-i-2);
+  }
+  m_brief=b; 
+  m_doc=d; 
+  m_sectionDict=0, 
+  m_startBodyLine=m_endBodyLine=-1, 
+  m_bodyDef=0;
+  m_sourceRefList=0;
+  m_sourceRefDict=0;
   m_todoId=0;
   m_testId=0;
   m_bugId=0;
+  m_outerScope=0;
 }
 
 Definition::~Definition()
 {
-  delete sectionDict;
-  delete sourceRefList;
-  delete sourceRefDict;
+  delete m_sectionDict;
+  delete m_sourceRefList;
+  delete m_sourceRefDict;
 }
 
 
@@ -65,13 +72,13 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
     {
       //printf("Add section `%s' to definition `%s'\n",
       //    si->label.data(),n.data());
-      if (sectionDict==0) 
+      if (m_sectionDict==0) 
       {
-        sectionDict = new SectionDict(17);
+        m_sectionDict = new SectionDict(17);
       }
-      if (sectionDict->find(*s)==0)
+      if (m_sectionDict->find(*s)==0)
       {
-        sectionDict->insert(*s,si);
+        m_sectionDict->insert(*s,si);
       }
       si->definition = this;
     }
@@ -81,9 +88,9 @@ void Definition::addSectionsToDefinition(QList<QCString> *anchorList)
 
 void Definition::writeDocAnchorsToTagFile()
 {
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && sectionDict)
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && m_sectionDict)
   {
-    QDictIterator<SectionInfo> sdi(*sectionDict);
+    QDictIterator<SectionInfo> sdi(*m_sectionDict);
     SectionInfo *si;
     for (;(si=sdi.current());++sdi)
     {
@@ -99,14 +106,14 @@ void Definition::writeDocAnchorsToTagFile()
 
 void Definition::setBriefDescription(const char *b) 
 { 
-  brief=QCString(b).stripWhiteSpace(); 
-  int bl=brief.length(); 
+  m_brief=QCString(b).stripWhiteSpace(); 
+  int bl=m_brief.length(); 
   if (bl>0) // add puntuation if needed
   {
-    switch(brief.at(bl-1))
+    switch(m_brief.at(bl-1))
     {
       case '.': case '!': case '?': break;
-      default: brief+='.'; break;
+      default: m_brief+='.'; break;
     }
   }
 }
@@ -219,7 +226,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef)
+  if (Config_getBool("SOURCE_BROWSER") && m_startBodyLine!=-1 && m_bodyDef)
   {
     //ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
@@ -231,15 +238,15 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
       QCString lineStr,anchorStr;
-      lineStr.sprintf("%d",startBodyLine);
-      anchorStr.sprintf("l%05d",startBodyLine);
+      lineStr.sprintf("%d",m_startBodyLine);
+      anchorStr.sprintf("l%05d",m_startBodyLine);
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
         // write text left from linePos marker
         parseText(ol,refText.left(lineMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
+        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -253,12 +260,12 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
-            0,bodyDef->name());
+        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
+            0,m_bodyDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         // write normal text (Latex/Man only)
-        ol.docify(bodyDef->name());
+        ol.docify(m_bodyDef->name());
         ol.enableAll();
         
         // write text right from file marker
@@ -271,12 +278,12 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         parseText(ol,refText.left(fileMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
-            0,bodyDef->name());
+        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
+            0,m_bodyDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         // write normal text (Latex/Man only)
-        ol.docify(bodyDef->name());
+        ol.docify(m_bodyDef->name());
         ol.enableAll();
         
         // write text between markers
@@ -285,7 +292,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,bodyDef->getSourceFileBase(),
+        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -316,12 +323,12 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        startBodyLine,endBodyLine,bodyDef);
-  if (Config_getBool("INLINE_SOURCES") && startBodyLine!=-1 && 
-      endBodyLine>=startBodyLine && bodyDef)
+  if (Config_getBool("INLINE_SOURCES") && m_startBodyLine!=-1 && 
+      m_endBodyLine>=m_startBodyLine && m_bodyDef)
   {
     QCString codeFragment;
-    int actualStart=startBodyLine,actualEnd=endBodyLine;
-    if (readCodeFragment(bodyDef->absFilePath(),
+    int actualStart=m_startBodyLine,actualEnd=m_endBodyLine;
+    if (readCodeFragment(m_bodyDef->absFilePath(),
           actualStart,actualEnd,codeFragment)
        )
     {
@@ -330,7 +337,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       if (definitionType()==TypeMember) setParameterList((MemberDef *)this);
       ol.startCodeFragment();
       parseCode(ol,scopeName,codeFragment,FALSE,0,
-          bodyDef,actualStart,actualEnd,TRUE);
+          m_bodyDef,actualStart,actualEnd,TRUE);
       ol.endCodeFragment();
     }
   }
@@ -343,13 +350,13 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
-  if (Config_getBool("SOURCE_BROWSER") && sourceRefList)
+  if (Config_getBool("SOURCE_BROWSER") && m_sourceRefList)
   {
     ol.newParagraph();
     parseText(ol,theTranslator->trReferencedBy());
     ol.docify(" ");
 
-    QCString ldefLine=theTranslator->trWriteList(sourceRefList->count());
+    QCString ldefLine=theTranslator->trWriteList(m_sourceRefList->count());
 
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
@@ -359,7 +366,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
       bool ok;
       parseText(ol,ldefLine.mid(index,newIndex-index));
       uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      MemberDef *md=sourceRefList->at(entryIndex);
+      MemberDef *md=m_sourceRefList->at(entryIndex);
       if (ok && md)
       {
         QCString scope=md->getScopeString();
@@ -402,8 +409,8 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 
 bool Definition::hasDocumentation() const
 { 
-  return !doc.isEmpty() ||             // has detailed docs
-         !brief.isEmpty() ||           // has brief description
+  return !m_doc.isEmpty() ||             // has detailed docs
+         !m_brief.isEmpty() ||           // has brief description
          Config_getBool("EXTRACT_ALL");       // extract everything
 }
 
@@ -419,16 +426,49 @@ void Definition::addSourceReference(MemberDef *md)
       name.prepend(scope+"::");
     }
 
-    if (sourceRefList==0)
+    if (m_sourceRefList==0)
     {
-      sourceRefDict = new MemberDict(53);
-      sourceRefList = new MemberList;
+      m_sourceRefDict = new MemberDict(53);
+      m_sourceRefList = new MemberList;
     }
-    if (sourceRefDict->find(name)==0)
+    if (m_sourceRefDict->find(name)==0)
     {
-      sourceRefDict->insert(name,md);
-      sourceRefList->inSort(md);
+      m_sourceRefDict->insert(name,md);
+      m_sourceRefList->inSort(md);
     }
   }
+}
+
+Definition *Definition::findInnerCompound(const char *)
+{
+  return 0;
+}
+
+void Definition::addInnerCompound(Definition *)
+{
+  err("Error: Definition::addInnerCompound() called\n");
+}
+
+QCString Definition::qualifiedName() const
+{
+  //printf("start Definition::qualifiedName()\n");
+  if (m_outerScope==0) return m_localName; // TODO: remove this check
+
+  QCString qualifiedName;
+  if (m_outerScope->name()=="<globalScope>")
+  {
+    qualifiedName = m_localName.copy();
+  }
+  else
+  {
+    qualifiedName = m_outerScope->qualifiedName()+"::"+m_localName;
+  }
+  //printf("end Definition::qualifiedName()=%s\n",qualifiedName.data());
+  return qualifiedName;
+};
+
+QCString Definition::localName() const
+{
+  return m_localName;
 }
 

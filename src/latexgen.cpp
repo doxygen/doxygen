@@ -536,9 +536,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=Doxygen::classList.first();
+        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassDef *cd=0;
         bool found=FALSE;
-        while (cd && !found)
+        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
           if (cd->isLinkableInProject())
           {
@@ -546,7 +547,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; //Compound Documentation}\n";
             found=TRUE;
           }
-          cd=Doxygen::classList.next();
         }
       }
       break;
@@ -703,25 +703,24 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassDef *cd=Doxygen::classList.first();
+        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassDef *cd=0;
         bool found=FALSE;
-        while (cd && !found)
+        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
           if (cd->isLinkableInProject())
           {
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          cd=Doxygen::classList.next();
         }
-        while (cd)
+        for (;(cd=cli.current());++cli)
         {
           if (cd->isLinkableInProject())
           {
             if (compactLatex) t << "\\input"; else t << "\\include";
             t << "{" << cd->getOutputFileBase() << "}\n";
           } 
-          cd=Doxygen::classList.next();
         }
       }
       break;

@@ -32,23 +32,22 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
    Definition(df,dl,name)
 {
   fileName=(QCString)"namespace_"+name;
-  classList = new ClassList;
-  classDict = new ClassDict(1009);
-  //memList = new MemberList;
+  classSDict = new ClassSDict(257);
+  namespaceSDict = new NamespaceSDict(257);
+  m_innerCompounds = new SDict<Definition>(257);
   usingDirList = 0;
   usingDeclList = 0;
   setReference(lref);
   memberGroupList = new MemberGroupList;
   memberGroupList->setAutoDelete(TRUE);
   memberGroupDict = new MemberGroupDict(1009);
-  defFileName = df;
-  defLine = dl;
 }
 
 NamespaceDef::~NamespaceDef()
 {
-  delete classList;
-  delete classDict;
+  delete classSDict;
+  delete namespaceSDict;
+  delete m_innerCompounds;
   delete usingDirList;
   delete usingDeclList;
   delete memberGroupList;
@@ -77,13 +76,23 @@ void NamespaceDef::insertUsedFile(const char *f)
 
 void NamespaceDef::insertClass(ClassDef *cd)
 {
-  if (classDict->find(cd->name())==0)
+  if (classSDict->find(cd->name())==0)
   {
     if (Config_getBool("SORT_MEMBER_DOCS"))
-      classList->inSort(cd);
+      classSDict->inSort(cd->name(),cd);
     else
-      classList->append(cd);
-    classDict->insert(cd->name(),cd);
+      classSDict->append(cd->name(),cd);
+  }
+}
+
+void NamespaceDef::insertNamespace(NamespaceDef *nd)
+{
+  if (namespaceSDict->find(nd->name())==0)
+  {
+    if (Config_getBool("SORT_MEMBER_DOCS"))
+      namespaceSDict->inSort(nd->name(),nd);
+    else
+      namespaceSDict->append(nd->name(),nd);
   }
 }
 
@@ -219,7 +228,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   OutputList briefOutput(&ol); 
   if (!briefDescription().isEmpty()) 
   {
-    parseDoc(briefOutput,defFileName,defLine,name(),0,briefDescription());
+    parseDoc(briefOutput,m_defFileName,m_defLine,name(),0,briefDescription());
     ol+=briefOutput;
     ol.writeString(" \n");
     ol.pushGeneratorState();
@@ -237,7 +246,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.endTextBlock();
   
   ol.startMemberSections();
-  classList->writeDeclaration(ol);
+  classSDict->writeDeclaration(ol);
 
   /* write user defined member groups */
   MemberGroupListIterator mgli(*memberGroupList);
@@ -283,7 +292,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     }
     if (!documentation().isEmpty())
     {
-      parseDoc(ol,defFileName,defLine,name(),0,documentation()+"\n");
+      parseDoc(ol,m_defFileName,m_defLine,name(),0,documentation()+"\n");
       ol.newParagraph();
     }
     ol.endTextBlock();
@@ -328,7 +337,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 int NamespaceDef::countMembers()
 {
   allMemberList.countDocMembers();
-  return allMemberList.numDocMembers()+classList->count();
+  return allMemberList.numDocMembers()+classSDict->count();
 }
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)
@@ -353,4 +362,16 @@ QCString NamespaceDef::getOutputFileBase() const
 { 
   return convertNameToFile(fileName); 
 }
+
+Definition *NamespaceDef::findInnerCompound(const char *name)
+{
+  if (name==0) return 0;
+  return m_innerCompounds->find(name);
+}
+
+void NamespaceDef::addInnerCompound(Definition *d)
+{
+  m_innerCompounds->append(d->localName(),d);
+}
+
 
