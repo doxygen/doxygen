@@ -102,8 +102,10 @@ class LatexGenerator : public OutputGenerator
     void endMemberSubtitle() {}
     void startMemberList();
     void endMemberList();
+    void startAnonTypeScope(int);
+    void endAnonTypeScope(int);
     void startMemberItem(int);
-    void endMemberItem(bool);
+    void endMemberItem();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();

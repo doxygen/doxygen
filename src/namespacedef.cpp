@@ -25,6 +25,7 @@
 #include "memberlist.h"
 #include "doxygen.h"
 #include "message.h"
+#include "docparser.h"
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref) : 
@@ -61,6 +62,24 @@ void NamespaceDef::distributeMemberGroupDocumentation()
     mg->distributeMemberGroupDocumentation();
   }
 }
+
+void NamespaceDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),0,this,0);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->findSectionsInDocumentation();
+  }
+  decDefineMembers.findSectionsInDocumentation();
+  decProtoMembers.findSectionsInDocumentation();
+  decTypedefMembers.findSectionsInDocumentation();
+  decEnumMembers.findSectionsInDocumentation();
+  decFuncMembers.findSectionsInDocumentation();
+  decVarMembers.findSectionsInDocumentation();
+}
+
 void NamespaceDef::insertUsedFile(const char *f)
 {
   if (files.find(f)==-1) 

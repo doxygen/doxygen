@@ -158,7 +158,9 @@ void LatexDocVisitor::visit(DocURL *u)
   if (m_hide) return;
   if (Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "\\href{" << u->url() << "}";
+    m_t << "\\href{";
+    if (u->isEmail()) m_t << "mailto:";
+    m_t << u->url() << "}";
   }
   m_t << "{\\tt ";
   filter(u->url());

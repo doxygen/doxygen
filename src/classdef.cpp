@@ -34,6 +34,7 @@
 #include "dot.h"
 #include "defargs.h"
 #include "debug.h"
+#include "docparser.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -551,6 +552,41 @@ void ClassDef::distributeMemberGroupDocumentation()
   {
     mg->distributeMemberGroupDocumentation();
   }
+}
+
+void ClassDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),0,this,0);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->findSectionsInDocumentation();
+  }
+  pubTypes.findSectionsInDocumentation();
+  pubMethods.findSectionsInDocumentation();
+  pubAttribs.findSectionsInDocumentation();
+  pubSlots.findSectionsInDocumentation();
+  signals.findSectionsInDocumentation();
+  dcopMethods.findSectionsInDocumentation();
+  pubStaticMethods.findSectionsInDocumentation();
+  pubStaticAttribs.findSectionsInDocumentation();
+  proTypes.findSectionsInDocumentation();
+  proMethods.findSectionsInDocumentation();
+  proAttribs.findSectionsInDocumentation();
+  proSlots.findSectionsInDocumentation();
+  proStaticMethods.findSectionsInDocumentation();
+  proStaticAttribs.findSectionsInDocumentation();
+  priTypes.findSectionsInDocumentation();
+  priMethods.findSectionsInDocumentation();
+  priAttribs.findSectionsInDocumentation();
+  priSlots.findSectionsInDocumentation();
+  priStaticMethods.findSectionsInDocumentation();
+  priStaticAttribs.findSectionsInDocumentation();
+  friends.findSectionsInDocumentation();
+  related.findSectionsInDocumentation();
+  properties.findSectionsInDocumentation();
+  events.findSectionsInDocumentation();
 }
 
 
@@ -1558,7 +1594,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     }
   }
   ol.docify(" {");
-  ol.endMemberItem(FALSE); 
+  ol.endMemberItem(); 
 
   // write user defined member groups
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);

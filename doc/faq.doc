@@ -229,7 +229,8 @@ generator -> gen
 \endverbatim
 
 At the time I was looking into lex and yacc, where a lot of things start with
-"yy", so the "y" slipped in and made things pronounceable.
+"yy", so the "y" slipped in and made things pronounceable 
+(the proper pronouncement is Docs-ee-gen, so with a long "e").
 
 <li><b>What was the reason to develop doxygen?</b>
 

@@ -161,10 +161,14 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberList); }
     void endMemberList() 
     { forall(&OutputGenerator::endMemberList); }
+    void startAnonTypeScope(int i1) 
+    { forall(&OutputGenerator::startAnonTypeScope,i1); }
+    void endAnonTypeScope(int i1) 
+    { forall(&OutputGenerator::endAnonTypeScope,i1); }
     void startMemberItem(int i1) 
     { forall(&OutputGenerator::startMemberItem,i1); }
-    void endMemberItem(bool b2) 
-    { forall(&OutputGenerator::endMemberItem,b2); }
+    void endMemberItem() 
+    { forall(&OutputGenerator::endMemberItem); }
     void startMemberGroupHeader(bool b) 
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()

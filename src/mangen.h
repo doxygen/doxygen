@@ -100,8 +100,10 @@ class ManGenerator : public OutputGenerator
     void writeListItem();
     void startMemberList();
     void endMemberList();
+    void startAnonTypeScope(int);
+    void endAnonTypeScope(int);
     void startMemberItem(int);
-    void endMemberItem(bool);
+    void endMemberItem();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();

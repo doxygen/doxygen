@@ -104,6 +104,23 @@ void GroupDef::distributeMemberGroupDocumentation()
   }
 }
 
+void GroupDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),0,this,0);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->findSectionsInDocumentation();
+  }
+  decDefineMembers.findSectionsInDocumentation();
+  decProtoMembers.findSectionsInDocumentation();
+  decTypedefMembers.findSectionsInDocumentation();
+  decEnumMembers.findSectionsInDocumentation();
+  decFuncMembers.findSectionsInDocumentation();
+  decVarMembers.findSectionsInDocumentation();
+}
+
 void GroupDef::addFile(const FileDef *def)
 {
   if (Config_getBool("SORT_MEMBER_DOCS"))
@@ -435,7 +452,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       {
         Doxygen::tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
       }
-      ol.endMemberItem(FALSE);
+      ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
@@ -466,7 +483,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       {
         Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
       }
-      ol.endMemberItem(FALSE);
+      ol.endMemberItem();
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
@@ -496,7 +513,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       {
         Doxygen::tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
       }
-      ol.endMemberItem(FALSE);
+      ol.endMemberItem();
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();

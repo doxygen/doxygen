@@ -1149,7 +1149,7 @@ static MemberDef *addVariableToClass(
     /*const QCString &scope,*/
     const QCString &name,
     bool fromAnnScope,
-    int indentDepth,
+    /*int indentDepth,*/
     MemberDef *fromAnnMemb,
     Protection prot)
 {
@@ -1236,7 +1236,7 @@ static MemberDef *addVariableToClass(
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
-  md->setIndentDepth(indentDepth);
+  //md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
@@ -1284,7 +1284,7 @@ static MemberDef *addVariableToFile(
     const QCString &scope,
     const QCString &name,
     bool fromAnnScope,
-    int indentDepth,
+    /*int indentDepth,*/
     MemberDef *fromAnnMemb)
 {
   Debug::print(Debug::Variables,0,
@@ -1403,7 +1403,7 @@ static MemberDef *addVariableToFile(
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
-  md->setIndentDepth(indentDepth);
+  //md->setIndentDepth(indentDepth);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
@@ -1661,7 +1661,7 @@ void buildVarList(Entry *root)
          if (cd)
          {
            addVariableToClass(root,cd,MemberDef::Friend,/*scope,*/
-                               root->name,FALSE,0,0,Public);
+                               root->name,FALSE,/*0,*/0,Public);
          }
       }
       goto nextMember;
@@ -1693,44 +1693,51 @@ void buildVarList(Entry *root)
     scope=classScope;
     if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
     {
+      // TODO: clean up this mess!
       MemberDef *md=0;
       // if cd is an annonymous scope we insert the member 
       // into a non-annonymous scope as well.
-      int indentDepth=0;
+      //int indentDepth=0;
       int si=scope.find('@');
+      //int anonyScopes = 0;
+      bool added=FALSE;
       if (si!=-1)
       {
-        //printf("name=`%s' scope=%s\n",name.data(),scope.data());
         QCString pScope;
         ClassDef *pcd=0;
         pScope = scope.left(QMAX(si-2,0));
-        indentDepth = scope.right(scope.length()-si).contains("::")+1;
         if (!pScope.isEmpty())
           pScope.prepend(annScopePrefix);
         else if (annScopePrefix.length()>2)
           pScope=annScopePrefix.left(annScopePrefix.length()-2);
-        //printf("pScope=`%s'\n",pScope.data());
         if (name.at(0)!='@')
         {
           if (!pScope.isEmpty() && (pcd=getClass(pScope)))
           {
             //Protection p = (Protection)QMAX((int)root->protection,(int)cd->protection());
-            md=addVariableToClass(root,pcd,mtype,/*pScope,*/name,TRUE,indentDepth,0,root->protection);
+            md=addVariableToClass(root,pcd,mtype,name,
+                     TRUE,0,root->protection);
+            added=TRUE;
           }
           else // annonymous scope inside namespace or file => put variable in the global scope
           {
-            //printf("Inserting member in global scope %s!\n",pScope.data());
-            //md=addVariableToFile(root,mtype,pScope,name,!pScope.isEmpty(),indentDepth,0); 
-            md=addVariableToFile(root,mtype,pScope,name,TRUE,indentDepth,0); 
+            md=addVariableToFile(root,mtype,pScope,name,TRUE,0); 
+            added=TRUE;
           }
         }
-      } 
-      addVariableToClass(root,cd,mtype,/*scope,*/name,FALSE,indentDepth,md,root->protection);
+      }
+      //printf("name=`%s' scope=%s scope.right=%s indentDepth=%d anonyScopes=%d\n",
+      //                   name.data(),scope.data(),
+      //                   scope.right(scope.length()-si).data(),
+      //                   indentDepth,
+      //                   anonyScopes);
+      addVariableToClass(root,cd,mtype,name,
+          FALSE,md,root->protection);
     }
     else if (!name.isEmpty()) // global variable
     {
       //printf("Inserting member in global scope %s!\n",scope.data());
-      addVariableToFile(root,mtype,scope,name,FALSE,0,0);
+      addVariableToFile(root,mtype,scope,name,FALSE,/*0,*/0);
     }
     //if (mtype==MemberDef::Typedef)
     //{
@@ -5719,6 +5726,53 @@ static void distributeMemberGroupDocumentation()
 
 //----------------------------------------------------------------------------
 
+static void findSectionsInDocumentation()
+{
+  // for each class
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassDef *cd;
+  for ( ; (cd=cli.current()) ; ++cli )
+  {
+    cd->findSectionsInDocumentation();
+  }
+  // for each file
+  FileName *fn=Doxygen::inputNameList.first();
+  while (fn)
+  {
+    FileDef *fd=fn->first();
+    while (fd)
+    {
+      fd->findSectionsInDocumentation();
+      fd=fn->next();
+    }
+    fn=Doxygen::inputNameList.next();
+  }
+  // for each namespace
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for ( ; (nd=nli.current()) ; ++nli )
+  {
+    nd->findSectionsInDocumentation();
+  }
+  // for each group
+  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->findSectionsInDocumentation();
+  }
+  // for each page
+  PageSDict::Iterator pdi(*Doxygen::pageSDict);
+  PageInfo *pi=0;
+  for (pdi.toFirst();(pi=pdi.current());++pdi)
+  {
+    pi->findSectionsInDocumentation();
+  }
+  if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
+}
+
+//----------------------------------------------------------------------------
+
 static void findDefineDocumentation(Entry *root)
 {
   if ((root->section==Entry::DEFINEDOC_SEC ||
@@ -5896,8 +5950,10 @@ static void findMainPage(Entry *root)
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
-          Doxygen::mainPage->name,Doxygen::mainPage->title,SectionInfo::Section);
-      si->fileName=indexName;
+          indexName,
+          Doxygen::mainPage->name,
+          Doxygen::mainPage->title,
+          SectionInfo::Section);
       Doxygen::sectionDict.insert(indexName,si);
     }
     else
@@ -7700,8 +7756,10 @@ void parseInput()
   msg("Adding source references...\n");
   addSourceReferences();
 
+
   msg("Adding todo/test/bug list items...\n");
   addListReferences();
+
 }
 
 void generateOutput()
@@ -7774,6 +7832,9 @@ void generateOutput()
   
   msg("Resolving user defined references...\n");
   resolveUserReferences();
+
+  msg("Finding anchor and section in the documentation...\n");
+  findSectionsInDocumentation();
 
   msg("Generating index page...\n"); 
   writeIndex(*outputList);

@@ -30,6 +30,9 @@
 
 class DocNode;
 class MemberDef;
+class PageInfo;
+class Definition;
+class MemberGroup;
 
 //---------------------------------------------------------------------------
 
@@ -54,6 +57,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
  *  fragments are limited to words, whitespace and symbols.
  */
 DocNode *validatingParseText(const char *input);
+
+/*! Searches for section and anchor commands in the input */
+void docFindSections(const char *input,PageInfo *pi,Definition *d,MemberGroup *m);
 
 //---------------------------------------------------------------------------
 
@@ -200,16 +206,18 @@ class DocLinkedWord : public DocNode
 class DocURL : public DocNode
 {
   public:
-    DocURL(DocNode *parent,const QString &url) : 
-      m_parent(parent), m_url(url) {}
+    DocURL(DocNode *parent,const QString &url,bool isEmail) : 
+      m_parent(parent), m_url(url), m_isEmail(isEmail) {}
     QString url() const { return m_url; }
     Kind kind() const { return Kind_URL; }
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
+    bool isEmail() const { return m_isEmail; }
 
   private:
     DocNode *m_parent;
     QString  m_url;
+    bool m_isEmail;
 };
 
 /*! @brief Node representing a line break */
@@ -912,6 +920,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleInclude(const QString &cmdName,DocInclude::Type t);
     void handleLink(const QString &cmdName,bool isJavaLink);
     void handleRef(const QString &cmdName);
+    void handleSection(const QString &cmdName);
     int handleLanguageSwitch();
 
   private:

@@ -657,8 +657,9 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       result+=", ";
     }
     else if (i>0 && 
-              (isId(s.at(i)) && s.at(i-1)==')') || 
-              (s.at(i)=='\''  && s.at(i-1)==' ')
+              ((isId(s.at(i)) && s.at(i-1)==')') || 
+               (s.at(i)=='\''  && s.at(i-1)==' ')
+              )
             )
     {
       result+=' ';
@@ -670,7 +671,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       csp=0;
     }
     else if (!isspace(c) ||
-	      ( i!=0 && i!=l-1 && 
+	      ( i>0 && i<l-1 && 
                 (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']') && 
                 isId(s.at(i+1))
               ) 
@@ -3157,7 +3158,7 @@ void addMembersToMemberGroup(MemberList *ml,
               MemberGroup *mg = memberGroupSDict->find(groupId);
               if (mg==0)
               {
-                mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+                mg = new MemberGroup(context,groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
                 memberGroupSDict->append(groupId,mg);
               }
               mg->insertMember(context,fmd); // insert in member group
@@ -3178,7 +3179,7 @@ void addMembersToMemberGroup(MemberList *ml,
         MemberGroup *mg = memberGroupSDict->find(groupId);
         if (mg==0)
         {
-          mg = new MemberGroup(groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
+          mg = new MemberGroup(context,groupId,*pGrpHeader,pDocs ? pDocs->data() : 0);
           memberGroupSDict->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list
@@ -3551,20 +3552,21 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
       //outputList->writeTitle(pi->name,pi->title);
 
       // a page name is a label as well!
-      SectionInfo *si=new SectionInfo(
-          pi->name,pi->title,SectionInfo::Page,pi->reference);
+      QCString file;
       if (gd)
       {
-        si->fileName=gd->getOutputFileBase();
+        file=gd->getOutputFileBase();
       }
       else if (pi->getGroupDef())
       {
-        si->fileName=pi->getGroupDef()->getOutputFileBase().copy();
+        file=pi->getGroupDef()->getOutputFileBase().copy();
       }
       else
       {
-        si->fileName=pageName;
+        file=pageName;
       }
+      SectionInfo *si=new SectionInfo(
+          file,pi->name,pi->title,SectionInfo::Page,pi->reference);
       //printf("si->label=`%s' si->definition=%s si->fileName=`%s'\n",
       //      si->label.data(),si->definition?si->definition->name().data():"<none>",
       //      si->fileName.data());

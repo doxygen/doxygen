@@ -74,6 +74,7 @@ class GroupDef : public Definition
 
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+    void findSectionsInDocumentation();
 
     void addListReferences();
 

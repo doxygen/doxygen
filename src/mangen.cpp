@@ -473,21 +473,32 @@ void ManGenerator::endDescItem()
   firstCol=TRUE;
 }
 
-void ManGenerator::startMemberItem(int annType) 
+void ManGenerator::startAnonTypeScope(int indentLevel)
+{
+  if (indentLevel==0)
+  {
+    insideTabbing=TRUE;
+  }
+}
+
+void ManGenerator::endAnonTypeScope(int indentLevel)
+{
+  if (indentLevel==0)
+  {
+    insideTabbing=FALSE;
+  }
+}
+
+
+void ManGenerator::startMemberItem(int) 
 { 
   if (firstCol && !insideTabbing) t << ".in +1c\n";
   t << "\n.ti -1c\n.RI \""; 
   firstCol=FALSE;
-  if (annType!=0) insideTabbing=TRUE;
 }
 
-void ManGenerator::endMemberItem(bool endItem) 
+void ManGenerator::endMemberItem() 
 { 
-  if (endItem)
-  {
-    insideTabbing=FALSE;
-    t << "\"\n.br\n.RI \"";
-  }
   t << "\"\n.br"; 
 }
 
@@ -619,5 +630,6 @@ void ManGenerator::printDoc(DocNode *n)
   ManDocVisitor *visitor = new ManDocVisitor(t,*this);
   n->accept(visitor);
   delete visitor; 
+  firstCol=FALSE;
 }
 

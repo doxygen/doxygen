@@ -23,6 +23,10 @@
 #include <qlist.h>
 #include "htmlattrib.h"
 
+class Definition;
+class PageInfo;
+class MemberGroup;
+
 enum Tokens
 {
   TK_WORD          = 1,
@@ -37,21 +41,24 @@ enum Tokens
   TK_RCSTAG        = 10,
   TK_URL           = 11,
 
-  RetVal_OK           = 0x10000,
-  RetVal_SimpleSec    = 0x10001,
-  RetVal_ListItem     = 0x10002,
-  RetVal_Section      = 0x10003,
-  RetVal_EndList      = 0x10004,
-  RetVal_EndPre       = 0x10005,
-  RetVal_DescData     = 0x10006,
-  RetVal_DescTitle    = 0x10007,
-  RetVal_EndDesc      = 0x10008,
-  RetVal_TableRow     = 0x10009,
-  RetVal_TableCell    = 0x1000A,
-  RetVal_TableHCell   = 0x1000B,
-  RetVal_EndTable     = 0x1000C,
-  RetVal_Internal     = 0x1000D,
-  RetVal_SwitchLang   = 0x1000E
+  RetVal_OK             = 0x10000,
+  RetVal_SimpleSec      = 0x10001,
+  RetVal_ListItem       = 0x10002,
+  RetVal_Section        = 0x10003,
+  RetVal_Subsection     = 0x10004,
+  RetVal_Subsubsection  = 0x10005,
+  RetVal_Paragraph      = 0x10006,
+  RetVal_EndList        = 0x10007,
+  RetVal_EndPre         = 0x10008,
+  RetVal_DescData       = 0x10009,
+  RetVal_DescTitle      = 0x1000A,
+  RetVal_EndDesc        = 0x1000B,
+  RetVal_TableRow       = 0x1000C,
+  RetVal_TableCell      = 0x1000D,
+  RetVal_TableHCell     = 0x1000E,
+  RetVal_EndTable       = 0x1000F,
+  RetVal_Internal       = 0x10010,
+  RetVal_SwitchLang     = 0x10011
 };
 
 struct TokenInfo
@@ -89,6 +96,9 @@ struct TokenInfo
 
   // whitespace
   QString chars;
+
+  // url
+  bool isEMailAddr;
 };
 
 // globals
@@ -100,6 +110,8 @@ extern FILE *doctokenizerYYin;
 const char *tokToString(int token);
 
 // operations on the scanner
+void doctokenizerYYFindSections(const char *input,PageInfo *pi,Definition *d,
+                                MemberGroup *mg);
 void doctokenizerYYinit(const char *input,const char *fileName);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();
@@ -119,5 +131,7 @@ void doctokenizerYYsetStateLink();
 void doctokenizerYYsetStateRef();
 void doctokenizerYYsetStateInternalRef();
 void doctokenizerYYsetStateText();
+void doctokenizerYYsetStateSkipTitle();
+void doctokenizerYYsetInsidePre(bool b);
 
 #endif

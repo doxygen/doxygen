@@ -110,7 +110,9 @@ void HtmlDocVisitor::visit(DocSymbol *s)
 void HtmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  m_t << "<a href=\"" << u->url() << "\">";
+  m_t << "<a href=\"";
+  if (u->isEmail()) m_t << "mailto:";
+  m_t << u->url() << "\">";
   filter(u->url());
   m_t << "</a>";
 }
@@ -156,7 +158,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
-        m_t << "<pre" << htmlAttribsToString(s->attribs()) << ">\n";
+        m_t << "<pre" << htmlAttribsToString(s->attribs()) << ">";
         m_insidePre=TRUE;
       }
       else

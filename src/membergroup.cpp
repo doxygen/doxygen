@@ -27,6 +27,7 @@
 #include "scanner.h"
 #include "groupdef.h"
 #include "doxygen.h"
+#include "docparser.h"
 
 //static QCString idToName(int id)
 //{
@@ -35,17 +36,19 @@
 //  return result;
 //}
 
-MemberGroup::MemberGroup(int id,const char *hdr,const char *d) /* : Definition(idToName(id)) */
+MemberGroup::MemberGroup(Definition *parent,
+      int id,const char *hdr,const char *d) /* : Definition(idToName(id)) */
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
-  memberList     = new MemberList;
-  grpId          = id;
-  grpHeader      = hdr;
-  doc            = d;
-  scope          = 0;
-  inSameSection  = TRUE;
-  inDeclSection  = 0;
+  memberList      = new MemberList;
+  grpId           = id;
+  grpHeader       = hdr;
+  doc             = d;
+  scope           = 0;
+  inSameSection   = TRUE;
+  inDeclSection   = 0;
   m_numDecMembers = -1;
+  m_parent        = parent;
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -210,3 +213,10 @@ void MemberGroup::addListReferences(Definition *def)
 {
   memberList->addListReferences(def);
 }
+
+void MemberGroup::findSectionsInDocumentation()
+{
+  docFindSections(doc,0,0,this);
+  memberList->findSectionsInDocumentation();
+}
+

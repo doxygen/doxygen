@@ -95,7 +95,9 @@ void XmlDocVisitor::visit(DocSymbol *s)
 void XmlDocVisitor::visit(DocURL *u)
 {
   if (m_hide) return;
-  m_t << "<ulink url=\"" << u->url() << "\">";
+  m_t << "<ulink url=\""; 
+  if (u->isEmail()) m_t << "mailto:";
+  m_t << u->url() << "\">";
   filter(u->url());
   m_t << "</ulink>";
 }

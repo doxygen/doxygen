@@ -29,6 +29,7 @@
 #include "dot.h"
 #include "message.h"
 #include "code.h"
+#include "docparser.h"
 //#include "xml.h"
 
 /*! create a new file definition, where \a p is the file path, 
@@ -95,6 +96,23 @@ void FileDef::distributeMemberGroupDocumentation()
   {
     mg->distributeMemberGroupDocumentation();
   }
+}
+
+void FileDef::findSectionsInDocumentation()
+{
+  docFindSections(documentation(),0,this,0);
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    mg->findSectionsInDocumentation();
+  }
+  decDefineMembers.findSectionsInDocumentation();
+  decProtoMembers.findSectionsInDocumentation();
+  decTypedefMembers.findSectionsInDocumentation();
+  decEnumMembers.findSectionsInDocumentation();
+  decFuncMembers.findSectionsInDocumentation();
+  decVarMembers.findSectionsInDocumentation();
 }
 
 void FileDef::writeDetailedDocumentation(OutputList &ol)
@@ -369,7 +387,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.docify(nd->displayName());
           ol.endBold();
         }
-        ol.endMemberItem(FALSE);
+        ol.endMemberItem();
       }
     }
     if (found) ol.endMemberList();

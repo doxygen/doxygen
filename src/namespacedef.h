@@ -72,6 +72,7 @@ class NamespaceDef : public Definition
     }
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
+    void findSectionsInDocumentation();
 
     virtual Definition *findInnerCompound(const char *name);
     void addInnerCompound(Definition *d);

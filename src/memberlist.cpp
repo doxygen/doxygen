@@ -344,7 +344,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           ol.insertMemberAlign();
           //ol+=typeDecl; // append the enum values.
           md->writeEnumDeclaration(ol,cd,nd,fd,gd);
-          ol.endMemberItem(FALSE);
+          ol.endMemberItem();
           if (!md->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
           {
             ol.startMemberDescription();
@@ -533,6 +533,25 @@ void MemberList::addListReferences(Definition *def)
     for (;(mg=mgli.current());++mgli)
     {
       mg->addListReferences(def);
+    }
+  }
+}
+
+void MemberList::findSectionsInDocumentation()
+{
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()) ; ++mli)
+  {
+    md->findSectionsInDocumentation();
+  }
+  if (memberGroupList)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->findSectionsInDocumentation();
     }
   }
 }
