@@ -372,6 +372,7 @@ FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+"\"")
 ID        [a-z_A-Z][a-z_A-Z0-9]*
+LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 ATTR      ({B}+[^>\n]*)?
@@ -3149,13 +3150,13 @@ TITLE     [tT][iI][tT][lL][eE]
 <SkipCode>.				{
   					  *pSkipDoc+=*yytext;
   					}
-<AnchorLabel>{ID}			{
+<AnchorLabel>{LABELID}			{
   					  sectionLabel=yytext;
 					  addSection();
 					  current->doc += "\\anchor "+sectionLabel+"\n";
 					  BEGIN(lastAnchorContext);
   					}
-<SectionLabel>{ID}			{
+<SectionLabel>{LABELID}			{
   					  sectionLabel=yytext;
 					  sectionTitle.resize(0);
 					  BEGIN(SectionTitle);

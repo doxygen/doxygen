@@ -344,11 +344,11 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
+  //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
+  //        startBodyLine,endBodyLine,bodyDef);
   if (Config::inlineSourceFlag && startBodyLine!=-1 && 
       endBodyLine>=startBodyLine && bodyDef)
   {
-    //printf("Source Fragment %s: %d-%d\n",name().data(),
-    //        startBodyLine,endBodyLine);
     QCString codeFragment;
     int actualStart=startBodyLine,actualEnd=endBodyLine;
     if (readCodeFragment(bodyDef->absFilePath(),
@@ -425,6 +425,7 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
     } 
     parseText(ol,ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
+    ol.newParagraph();
   }
   ol.popGeneratorState();
 }

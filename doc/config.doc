@@ -158,6 +158,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_quiet QUIET
 <li> \refitem cfg_recursive RECURSIVE
 <li> \refitem cfg_repeat_brief REPEAT_BRIEF
+<li> \refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
 <li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
 <li> \refitem cfg_rtf_output RTF_OUTPUT
 <li> \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
@@ -955,6 +956,13 @@ EXTRA_PACKAGES = times
 
  See also section \ref doxygen_usage for information on how to generate
  the default style sheet that doxygen normally uses.
+
+\anchor cfg_rtf_extensions_file
+<dt>\c RTF_EXTENSIONS_FILE <dd>
+ Set optional variables used in the generation of an rtf document.
+ Syntax is similar to doxygen's config file. 
+ A template extensions file can be generated using 
+ <code>doxygen -e rtf extensionFile</code>.
 
 </dl>
 

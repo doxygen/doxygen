@@ -38,6 +38,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t) :
   fileList = new FileList;
   classList = new ClassList;
   groupList = new GroupList;
+  parentGroupList = new GroupList;
   namespaceList = new NamespaceList;
   pageDict = new PageSDict(257);
   exampleDict = new PageSDict(257);
@@ -63,6 +64,7 @@ GroupDef::~GroupDef()
   delete fileList;
   delete classList;
   delete groupList;
+  delete parentGroupList;
   delete namespaceList;
   delete pageDict;
   delete exampleDict;
@@ -241,6 +243,20 @@ void GroupDef::addGroup(const GroupDef *def)
   else
     groupList->append(def);
 }
+
+void GroupDef::addParentGroup(const GroupDef *def)
+{
+  if (Config::sortMembersFlag)
+    parentGroupList->inSort(def);
+  else
+    parentGroupList->append(def);
+}
+
+bool GroupDef::isASubGroup() const
+{
+  return parentGroupList->count()!=0;
+}
+
 
 int GroupDef::countMembers() const
 {
@@ -569,6 +585,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
     if (!s->isEmpty() && (gd=Doxygen::groupDict[*s]))
     {
       gd->addGroup(subGroup);
+      subGroup->addParentGroup(gd);
     }
   }
 }

@@ -1544,6 +1544,15 @@ void init()
                     ConfigString::File
                    );
   addDependency("rtfStylesheetFile","generateRTF");                  
+  ConfigString::add("rtfExtensionsFile",
+                    "RTF_EXTENSIONS_FILE",
+                    "",
+                    "file to load rtf extensions from",
+                    "Set optional variables used in the generation of an rtf document. \n"
+                    "Syntax is similar to doxygen's config file.\n",
+                    ConfigString::File
+                   );                  
+  addDependency("rtfExtensionsFile","generateRTF");
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Man","configuration options related to the man page output");
   //-----------------------------------------------------------------------------------------------

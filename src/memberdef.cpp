@@ -1432,7 +1432,7 @@ bool MemberDef::isLinkable()
 bool MemberDef::detailsAreVisible() const          
 { 
   return !documentation().isEmpty() || // has detailed docs
-         //(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
+         //((Config::sourceBrowseFlag || Config::inlineSourceFlag) && startBodyLine!=-1 && bodyDef) ||  // has reference to sources 
          (mtype==Enumeration && docEnumValues) ||  // has enum values
          (mtype==EnumValue && !briefDescription().isEmpty()) || // is doc enum value
          (!briefDescription().isEmpty() && 

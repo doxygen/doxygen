@@ -52,6 +52,7 @@ class GroupDef : public Definition
     void addClass(const ClassDef *def);
     void addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
+    void addParentGroup(const GroupDef *def);
     void addPage(PageInfo *def);                // pages in this group
     void addExample(const PageInfo *def);       // examples in this group
     void insertMember(MemberDef *def);
@@ -65,6 +66,7 @@ class GroupDef : public Definition
     {
       return isLinkableInProject() || isReference();
     }
+    bool isASubGroup() const;
     void computeAnchors();
 
     void addMembersToMemberGroup();
@@ -72,7 +74,8 @@ class GroupDef : public Definition
 
     bool visited;    // number of times accessed for output - KPW
 
-    friend void writeGroupTreeNode(OutputList&, GroupDef*);      // make accessible for writing tree view of group in index.cpp - KPW
+    friend void writeGroupTreeNode(OutputList&, GroupDef*,bool);      
+                    // make accessible for writing tree view of group in index.cpp - KPW
 
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
@@ -84,6 +87,7 @@ class GroupDef : public Definition
     ClassList *classList;               // list of classes in the group
     NamespaceList *namespaceList;       // list of namespaces in the group
     GroupList *groupList;               // list of sub groups.
+    GroupList *parentGroupList;         // list of parent groups.
     PageSDict *pageDict;                // list of pages in the group
     PageSDict *exampleDict;             // list of examples in the group
 

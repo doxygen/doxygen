@@ -93,6 +93,11 @@
 // 2001/02/26 (Petr Prikryl)
 //  - Update for "new since 1.2.5" version (trBug(), trBugList()).
 //         
+// 2001/03/12 (Petr Prikryl)
+//  - Minor correction of comments which copied the same
+//    corrections in translator.h (doubled backslash) just after 
+//    1.2.6 release.
+//         
 // Notices:
 // -------- 
 // The conditional compilation ensures or the neutral functionality
@@ -224,7 +229,7 @@ class TranslatorCzech : public Translator
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
-     *  compounds or files (see the \group command).
+     *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return Decode("Moduly"); }
@@ -534,48 +539,48 @@ class TranslatorCzech : public Translator
       return Decode((QCString)"Diagram dìdiènosti pro tøídu "+clName);
     }
     
-    /*! this text is generated when the \internal command is used. */
+    /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return Decode("Pouze pro vnitøní použití."); }
 
-    /*! this text is generated when the \reimp command is used. */
+    /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
     { return Decode("Reimplementováno z interních dùvodù; "
                     "aplikaèní rozhraní zachováno."); }
 
-    /*! this text is generated when the \warning command is used. */
+    /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return Decode("Pozor"); }
 
-    /*! this text is generated when the \bug command is used. */
+    /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
     { return Decode("Chyby a omezení"); }
 
-    /*! this text is generated when the \version command is used. */
+    /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
     { return Decode("Verze"); }
 
-    /*! this text is generated when the \date command is used. */
+    /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
     { return Decode("Datum"); }
 
-    /*! this text is generated when the \author command is used. */
+    /*! this text is generated when the \\author command is used. */
     virtual QCString trAuthors()
     { return Decode("Autor/autoøi"); }
 
-    /*! this text is generated when the \return command is used. */
+    /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
     { return Decode("Návratová hodnota"); }
 
-    /*! this text is generated when the \sa command is used. */
+    /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
     { return Decode("Viz také"); }
 
-    /*! this text is generated when the \param command is used. */
+    /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
     { return Decode("Parametry"); }
 
-    /*! this text is generated when the \exception command is used. */
+    /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return Decode("Výjimky"); }
     
@@ -1195,7 +1200,7 @@ class TranslatorCzech : public Translator
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
     
-    /*! Used as a marker that is put before a \bug item */
+    /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
       return Decode("Chyba");
