@@ -51,7 +51,7 @@ PageWidget::PageWidget( QTabWidget *parent, const char *name )
   m_parent->addTab( this, name );
 }
 
-void PageWidget::addStretch(int stretch=0) 
+void PageWidget::addStretch(int stretch) 
 { 
   lay->addStretch(stretch); 
   //printf("Viewport SizeHint %d,%d\n",viewport()->sizeHint().width(),viewport()->sizeHint().height());

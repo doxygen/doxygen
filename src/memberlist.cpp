@@ -304,19 +304,25 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       ol.startMemberList();
     }
     MemberListIterator mli(*this);
-    for ( ; (md=mli.current()) ; ++mli )
+    for ( ; (md=mli.current()) ; ++mli ) // iterate through the members
     {
+      // see if member is hidden by protection
       if (md->protection()==Private && !Config::extractPrivateFlag) continue;
-      /*bool hasDocs=md->hasDocumentation();*/
+      
       QCString type=md->typeString();
-      type=type.stripWhiteSpace();
+      type=type.stripWhiteSpace();  // TODO: is this really needed?
+
+      // filter out enums that are in a group iff inGroup holds
       if (md->isEnumerate() && inGroup==(md->getMemberGroup()!=0) /*&& (hasDocs || !Config::hideMemberFlag)*/) 
       {
-        if (!Config::hideMemberFlag ||                // do not hide undocumented members or
-            !md->documentation().isEmpty() || // member has detailed descr. or
-            md->hasDocumentedEnumValues() ||  // member has documented enum vales.
-            Config::briefMemDescFlag ||               // brief descr. is shown or
-            Config::repeatBriefFlag                   // brief descr. is repeated.
+        // filter out invisible enums
+        if ( !Config::hideMemberFlag ||        // do not hide undocumented members or
+             !md->documentation().isEmpty() || // member has detailed descr. or
+             md->hasDocumentedEnumValues() ||  // member has documented enum vales.
+             ( 
+               !md->briefDescription().isEmpty() &&
+               Config::briefMemDescFlag              // brief descr. is shown or
+             )                                        
            )
         {
           OutputList typeDecl(&ol);
@@ -325,15 +331,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           if (i!=-1) name=name.right(name.length()-i-2); // strip scope
           if (name[0]!='@') // not an anonymous enum
           {
-            //if (Config::extractAllFlag ||
-            //    (md->briefDescription().isEmpty() || !Config::briefMemDescFlag) &&
-            //    (!md->documentation().isEmpty() || md->hasDocumentedEnumValues() ||
-            //     (!md->briefDescription().isEmpty() && 
-            //      !Config::briefMemDescFlag &&
-            //      Config::repeatBriefFlag
-            //     )
-            //    )
-            //   )
             if (md->isLinkableInProject() || md->hasDocumentedEnumValues())
             {
               if (!Config::genTagFile.isEmpty())
@@ -400,23 +397,29 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             for ( ; (vmd=vmli.current()) ; ++vmli)
             {
               QCString vtype=vmd->typeString();
-              if ((vtype.find(name))!=-1) enumVars++;
+              if ((vtype.find(name))!=-1) 
+              {
+                enumVars++;
+                vmd->setAnonymousEnumType(md);
+              }
             }
           }
-          if (enumVars==0) // no variable of this enum type
+          // if this is an annoymous enum and there are variable of this
+          // enum type (i.e. enumVars>0), then we do not show the enum here.
+          if (enumVars==0) // show enum here
           {
             ol.startMemberItem(0);
             ol.writeString("enum ");
             ol.insertMemberAlign();
-            ol+=typeDecl;
+            ol+=typeDecl; // append the enum values.
             ol.endMemberItem(FALSE);
-            //QCString brief=md->briefDescription();
-            //brief=brief.stripWhiteSpace();
             if (!md->briefDescription().isEmpty() && Config::briefMemDescFlag)
             {
               ol.startMemberDescription();
-              parseDoc(ol,cd?cd->name().data():0,
-                  md->name().data(),md->briefDescription());
+              parseDoc(ol,
+                       cd?cd->name().data():0,md->name().data(),
+                       md->briefDescription()
+                      );
               if (!md->documentation().isEmpty() || md->hasDocumentedEnumValues())
               {
                 ol.disableAllBut(OutputGenerator::Html);
@@ -429,9 +432,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.enableAll();
               }
               ol.endMemberDescription();
-              //ol.disable(OutputGenerator::Man);
-              //ol.newParagraph();
-              //ol.enable(OutputGenerator::Man);
             }
           }
           md->warnIfUndocumented();

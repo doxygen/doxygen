@@ -148,59 +148,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   ol.endTextBlock();
   
   ol.startMemberSections();
-  if (classList->count()>0)
-  {
-    ClassDef *cd=classList->first();
-    bool found=FALSE;
-    while (cd)
-    {
-      if (cd->name().find('@')==-1)
-      {
-        if (!found)
-        {
-          ol.startMemberHeader();
-          parseText(ol,theTranslator->trCompounds());
-          ol.endMemberHeader();
-          ol.startMemberList();
-          found=TRUE;
-        }
-        QCString clName=cd->name().copy();
-        if (clName.left(name().length()+2)==name()+"::")
-        {
-          clName = clName.right(clName.length()-name().length()-2);
-        }
-        
-        ol.startMemberItem(0);
-        switch (cd->compoundType())
-        {
-          case ClassDef::Class:      ol.writeString("class");      break;
-          case ClassDef::Struct:     ol.writeString("struct");     break;
-          case ClassDef::Union:      ol.writeString("union");      break;
-          case ClassDef::Interface:  ol.writeString("interface");  break;
-          case ClassDef::Exception:  ol.writeString("exception");  break;
-        }
-        ol.writeString(" ");
-        ol.insertMemberAlign();
-        if (cd->isLinkable()) 
-        {
-          ol.writeObjectLink(cd->getReference(),
-                             cd->getOutputFileBase(),
-                             0,
-                             clName
-                            );
-        }
-        else
-        {
-          ol.startBold();
-          ol.docify(clName);
-          ol.endBold();
-        }
-        ol.endMemberItem(FALSE);
-      }
-      cd=classList->next();
-    }
-    if (found) ol.endMemberList();
-  }
+  classList->writeDeclaration(ol);
 
   /* write user defined member groups */
   MemberGroupListIterator mgli(*memberGroupList);
@@ -213,7 +161,8 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   allMemberList.writeDeclarations(ol,0,this,0,0,0,0);
   ol.endMemberSections();
   
-  if (!briefDescription().isEmpty() || !documentation().isEmpty())
+  if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 
+      !documentation().isEmpty())
   {
     ol.writeRuler();
     ol.pushGeneratorState();
@@ -281,15 +230,15 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name());
   }
 
-  enumValMembers.countDocMembers();
-  if ( enumValMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationValueDocumentation());
-    ol.endGroupHeader();
-    enumValMembers.writeDocumentation(ol,name());
-  }
+  //enumValMembers.countDocMembers();
+  //if ( enumValMembers.totalCount()>0 )
+  //{
+  //  ol.writeRuler();
+  //  ol.startGroupHeader();
+  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
+  //  ol.endGroupHeader();
+  //  enumValMembers.writeDocumentation(ol,name());
+  //}
 
   funcMembers.countDocMembers();
   if ( funcMembers.totalCount()>0 )

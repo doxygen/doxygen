@@ -369,6 +369,11 @@ class OutputList
     void endParameter(bool last)
     { forall(&OutputGenerator::endParameter,last); }
 
+    void startFontClass(const char *c)
+    { forall(&OutputGenerator::startFontClass,c); }
+    void endFontClass()
+    { forall(&OutputGenerator::endFontClass); }
+
   private:
     void debug();
     void clear();

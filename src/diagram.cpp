@@ -196,7 +196,14 @@ DiagramItem::~DiagramItem()
 
 QCString DiagramItem::label() const
 {
-  return classDef->name()+templSpec;
+  if (!templSpec.isEmpty())
+  {
+    return insertTemplateSpecifierInScope(classDef->name(),templSpec);
+  }
+  else
+  {
+    return classDef->name();
+  }
 }
 
 QCString DiagramItem::fileName() const

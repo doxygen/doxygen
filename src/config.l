@@ -740,7 +740,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# by quotes) that should identify the project. \n";
     t << "\n";
   }
-  t << "PROJECT_NAME = ";
+  t << "PROJECT_NAME          = ";
   writeStringValue(t,Config::projectName);
   t << "\n";
   if (!sl)
@@ -751,7 +751,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# if some version control system is used.\n";
     t << "\n";
   }
-  t << "PROJECT_NUMBER = ";
+  t << "PROJECT_NUMBER        = ";
   writeStringValue(t,Config::projectNumber);
   t << "\n";
   if (!sl)
@@ -763,7 +763,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# where doxygen was started. If left blank the current directory will be used.\n";
     t << "\n";
   }
-  t << "OUTPUT_DIRECTORY = ";
+  t << "OUTPUT_DIRECTORY      = ";
   writeStringValue(t,Config::outputDir);
   t << "\n";
   if (!sl)
@@ -777,7 +777,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Spanish and Russian\n";
     t << "\n";
   }
-  t << "OUTPUT_LANGUAGE = ";
+  t << "OUTPUT_LANGUAGE       = ";
   writeStringValue(t,Config::outputLanguage);
   t << "\n";
   if (!sl)
@@ -787,7 +787,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# by doxygen. Possible values are YES and NO. If left blank NO is used. \n";
     t << "\n";
   }
-  t << "QUIET = ";
+  t << "QUIET                 = ";
   writeBoolValue(t,Config::quietFlag);
   t << "\n";
   if (!sl)
@@ -798,7 +798,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# NO is used. \n";
     t << "\n";
   }
-  t << "WARNINGS = ";
+  t << "WARNINGS              = ";
   writeBoolValue(t,Config::warningFlag);
   t << "\n";
   if (!sl)
@@ -809,7 +809,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the value YES disables it. \n";
     t << "\n";
   }
-  t << "DISABLE_INDEX = ";
+  t << "DISABLE_INDEX         = ";
   writeBoolValue(t,Config::noIndexFlag);
   t << "\n";
   if (!sl)
@@ -819,7 +819,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# included in the documentation, even if no documentation was available. \n";
     t << "\n";
   }
-  t << "EXTRACT_ALL = ";
+  t << "EXTRACT_ALL           = ";
   writeBoolValue(t,Config::extractAllFlag);
   t << "\n";
   if (!sl)
@@ -829,7 +829,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be included in the documentation. \n";
     t << "\n";
   }
-  t << "EXTRACT_PRIVATE = ";
+  t << "EXTRACT_PRIVATE       = ";
   writeBoolValue(t,Config::extractPrivateFlag);
   t << "\n";
   if (!sl)
@@ -839,7 +839,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# undocumented members inside documented classes or files. \n";
     t << "\n";
   }
-  t << "HIDE_UNDOC_MEMBERS = ";
+  t << "HIDE_UNDOC_MEMBERS    = ";
   writeBoolValue(t,Config::hideMemberFlag);
   t << "\n";
   if (!sl)
@@ -849,7 +849,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# undocumented classes. \n";
     t << "\n";
   }
-  t << "HIDE_UNDOC_CLASSES = ";
+  t << "HIDE_UNDOC_CLASSES    = ";
   writeBoolValue(t,Config::hideClassFlag);
   t << "\n";
   if (!sl)
@@ -861,7 +861,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Set to NO to disable this. \n";
     t << "\n";
   }
-  t << "BRIEF_MEMBER_DESC = ";
+  t << "BRIEF_MEMBER_DESC     = ";
   writeBoolValue(t,Config::briefMemDescFlag);
   t << "\n";
   if (!sl)
@@ -873,7 +873,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# brief descriptions will be completely suppressed. \n";
     t << "\n";
   }
-  t << "REPEAT_BRIEF = ";
+  t << "REPEAT_BRIEF          = ";
   writeBoolValue(t,Config::repeatBriefFlag);
   t << "\n";
   if (!sl)
@@ -884,7 +884,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# description. \n";
     t << "\n";
   }
-  t << "ALWAYS_DETAILED_SEC = ";
+  t << "ALWAYS_DETAILED_SEC   = ";
   writeBoolValue(t,Config::alwaysDetailsFlag);
   t << "\n";
   if (!sl)
@@ -895,7 +895,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# to NO the shortest path that makes the file name unique will be used. \n";
     t << "\n";
   }
-  t << "FULL_PATH_NAMES = ";
+  t << "FULL_PATH_NAMES       = ";
   writeBoolValue(t,Config::fullPathNameFlag);
   t << "\n";
   if (!sl)
@@ -907,7 +907,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the path. \n";
     t << "\n";
   }
-  t << "STRIP_FROM_PATH = ";
+  t << "STRIP_FROM_PATH       = ";
   writeStringList(t,Config::stripFromPath);
   t << "\n";
   if (!sl)
@@ -919,7 +919,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Set it to YES to include the internal documentation. \n";
     t << "\n";
   }
-  t << "INTERNAL_DOCS = ";
+  t << "INTERNAL_DOCS         = ";
   writeBoolValue(t,Config::internalDocsFlag);
   t << "\n";
   if (!sl)
@@ -930,7 +930,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# super classes. Setting the tag to NO turns the diagrams off. \n";
     t << "\n";
   }
-  t << "CLASS_DIAGRAMS = ";
+  t << "CLASS_DIAGRAMS        = ";
   writeBoolValue(t,Config::classDiagramFlag);
   t << "\n";
   if (!sl)
@@ -940,7 +940,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# be generated. Documented entities will be cross-referenced with these sources. \n";
     t << "\n";
   }
-  t << "SOURCE_BROWSER = ";
+  t << "SOURCE_BROWSER        = ";
   writeBoolValue(t,Config::sourceBrowseFlag);
   t << "\n";
   if (!sl)
@@ -950,7 +950,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of functions and classes directly in the documentation. \n";
     t << "\n";
   }
-  t << "INLINE_SOURCES = ";
+  t << "INLINE_SOURCES        = ";
   writeBoolValue(t,Config::inlineSourceFlag);
   t << "\n";
   if (!sl)
@@ -961,7 +961,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# fragments. Normal C and C++ comments will always remain visible. \n";
     t << "\n";
   }
-  t << "STRIP_CODE_COMMENTS = ";
+  t << "STRIP_CODE_COMMENTS   = ";
   writeBoolValue(t,Config::stripCommentsFlag);
   t << "\n";
   if (!sl)
@@ -974,7 +974,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# supports case sensitive file names. \n";
     t << "\n";
   }
-  t << "CASE_SENSE_NAMES = ";
+  t << "CASE_SENSE_NAMES      = ";
   writeBoolValue(t,Config::caseSensitiveNames);
   t << "\n";
   if (!sl)
@@ -985,7 +985,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# which an include is specified. Set to NO to disable this. \n";
     t << "\n";
   }
-  t << "VERBATIM_HEADERS = ";
+  t << "VERBATIM_HEADERS      = ";
   writeBoolValue(t,Config::verbatimHeaderFlag);
   t << "\n";
   if (!sl)
@@ -996,7 +996,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of that file. \n";
     t << "\n";
   }
-  t << "SHOW_INCLUDE_FILES = ";
+  t << "SHOW_INCLUDE_FILES    = ";
   writeBoolValue(t,Config::showIncFileFlag);
   t << "\n";
   if (!sl)
@@ -1008,7 +1008,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# behave just like the Qt-style comments. \n";
     t << "\n";
   }
-  t << "JAVADOC_AUTOBRIEF = ";
+  t << "JAVADOC_AUTOBRIEF     = ";
   writeBoolValue(t,Config::autoBriefFlag);
   t << "\n";
   if (!sl)
@@ -1019,7 +1019,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# reimplements. \n";
     t << "\n";
   }
-  t << "INHERIT_DOCS = ";
+  t << "INHERIT_DOCS          = ";
   writeBoolValue(t,Config::inheritDocsFlag);
   t << "\n";
   if (!sl)
@@ -1029,7 +1029,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# is inserted in the documentation for inline members. \n";
     t << "\n";
   }
-  t << "INLINE_INFO = ";
+  t << "INLINE_INFO           = ";
   writeBoolValue(t,Config::inlineInfoFlag);
   t << "\n";
   if (!sl)
@@ -1041,7 +1041,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# declaration order. \n";
     t << "\n";
   }
-  t << "SORT_MEMBER_DOCS = ";
+  t << "SORT_MEMBER_DOCS      = ";
   writeBoolValue(t,Config::sortMembersFlag);
   t << "\n";
   if (!sl)
@@ -1051,7 +1051,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Doxygen uses this value to replace tabs by spaces in code fragments. \n";
     t << "\n";
   }
-  t << "TAB_SIZE = ";
+  t << "TAB_SIZE              = ";
   writeIntValue(t,Config::tabSize);
   t << "\n";
   if (!sl)
@@ -1061,7 +1061,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# documentation sections, marked by \\if sectionname ... \\endif. \n";
     t << "\n";
   }
-  t << "ENABLED_SECTIONS = ";
+  t << "ENABLED_SECTIONS      = ";
   writeStringList(t,Config::sectionFilterList);
   t << "\n";
   if (!sl)
@@ -1080,7 +1080,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# with spaces. \n";
     t << "\n";
   }
-  t << "INPUT = ";
+  t << "INPUT                 = ";
   writeStringList(t,Config::inputSources);
   t << "\n";
   if (!sl)
@@ -1092,7 +1092,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# blank all files are included. \n";
     t << "\n";
   }
-  t << "FILE_PATTERNS = ";
+  t << "FILE_PATTERNS         = ";
   writeStringList(t,Config::filePatternList);
   t << "\n";
   if (!sl)
@@ -1103,7 +1103,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# If left blank NO is used. \n";
     t << "\n";
   }
-  t << "RECURSIVE = ";
+  t << "RECURSIVE             = ";
   writeBoolValue(t,Config::recursiveFlag);
   t << "\n";
   if (!sl)
@@ -1114,7 +1114,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# subdirectory from a directory tree whose root is specified with the INPUT tag. \n";
     t << "\n";
   }
-  t << "EXCLUDE = ";
+  t << "EXCLUDE               = ";
   writeStringList(t,Config::excludeSources);
   t << "\n";
   if (!sl)
@@ -1125,7 +1125,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# certain files from those directories. \n";
     t << "\n";
   }
-  t << "EXCLUDE_PATTERNS = ";
+  t << "EXCLUDE_PATTERNS      = ";
   writeStringList(t,Config::excludePatternList);
   t << "\n";
   if (!sl)
@@ -1136,7 +1136,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the \\include command). \n";
     t << "\n";
   }
-  t << "EXAMPLE_PATH = ";
+  t << "EXAMPLE_PATH          = ";
   writeStringList(t,Config::examplePath);
   t << "\n";
   if (!sl)
@@ -1148,7 +1148,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# blank all files are included. \n";
     t << "\n";
   }
-  t << "EXAMPLE_PATTERNS = ";
+  t << "EXAMPLE_PATTERNS      = ";
   writeStringList(t,Config::examplePatternList);
   t << "\n";
   if (!sl)
@@ -1159,7 +1159,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the \\image command). \n";
     t << "\n";
   }
-  t << "IMAGE_PATH = ";
+  t << "IMAGE_PATH            = ";
   writeStringList(t,Config::imagePath);
   t << "\n";
   if (!sl)
@@ -1173,7 +1173,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# to standard output. \n";
     t << "\n";
   }
-  t << "INPUT_FILTER = ";
+  t << "INPUT_FILTER          = ";
   writeStringValue(t,Config::inputFilter);
   t << "\n";
   if (!sl)
@@ -1191,7 +1191,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# contains a lot of classes, structs, unions or interfaces. \n";
     t << "\n";
   }
-  t << "ALPHABETICAL_INDEX = ";
+  t << "ALPHABETICAL_INDEX    = ";
   writeBoolValue(t,Config::alphaIndexFlag);
   t << "\n";
   if (!sl)
@@ -1202,7 +1202,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# in which this list will be split (can be a number in the range [1..20]) \n";
     t << "\n";
   }
-  t << "COLS_IN_ALPHA_INDEX = ";
+  t << "COLS_IN_ALPHA_INDEX   = ";
   writeIntValue(t,Config::colsInAlphaIndex);
   t << "\n";
   if (!sl)
@@ -1214,7 +1214,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# should be ignored while generating the index headers. \n";
     t << "\n";
   }
-  t << "IGNORE_PREFIX = ";
+  t << "IGNORE_PREFIX         = ";
   writeStringList(t,Config::ignorePrefixList);
   t << "\n";
   if (!sl)
@@ -1231,7 +1231,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate HTML output. \n";
     t << "\n";
   }
-  t << "GENERATE_HTML = ";
+  t << "GENERATE_HTML         = ";
   writeBoolValue(t,Config::generateHtml);
   t << "\n";
   if (!sl)
@@ -1242,7 +1242,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `html' will be used as the default path. \n";
     t << "\n";
   }
-  t << "HTML_OUTPUT = ";
+  t << "HTML_OUTPUT           = ";
   writeStringValue(t,Config::htmlOutputDir);
   t << "\n";
   if (!sl)
@@ -1253,7 +1253,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard header.\n";
     t << "\n";
   }
-  t << "HTML_HEADER = ";
+  t << "HTML_HEADER           = ";
   writeStringValue(t,Config::headerFile);
   t << "\n";
   if (!sl)
@@ -1264,7 +1264,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard footer.\n";
     t << "\n";
   }
-  t << "HTML_FOOTER = ";
+  t << "HTML_FOOTER           = ";
   writeStringValue(t,Config::footerFile);
   t << "\n";
   if (!sl)
@@ -1276,7 +1276,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will generate a default style sheet \n";
     t << "\n";
   }
-  t << "HTML_STYLESHEET = ";
+  t << "HTML_STYLESHEET       = ";
   writeStringValue(t,Config::htmlStyleSheet);
   t << "\n";
   if (!sl)
@@ -1287,7 +1287,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# NO a bullet list will be used. \n";
     t << "\n";
   }
-  t << "HTML_ALIGN_MEMBERS = ";
+  t << "HTML_ALIGN_MEMBERS    = ";
   writeBoolValue(t,Config::htmlAlignMemberFlag);
   t << "\n";
   if (!sl)
@@ -1299,7 +1299,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# of the generated HTML documentation. \n";
     t << "\n";
   }
-  t << "GENERATE_HTMLHELP = ";
+  t << "GENERATE_HTMLHELP     = ";
   writeBoolValue(t,Config::htmlHelpFlag);
   t << "\n";
   if (!sl)
@@ -1316,7 +1316,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate Latex output. \n";
     t << "\n";
   }
-  t << "GENERATE_LATEX = ";
+  t << "GENERATE_LATEX        = ";
   writeBoolValue(t,Config::generateLatex);
   t << "\n";
   if (!sl)
@@ -1327,7 +1327,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `latex' will be used as the default path. \n";
     t << "\n";
   }
-  t << "LATEX_OUTPUT = ";
+  t << "LATEX_OUTPUT          = ";
   writeStringValue(t,Config::latexOutputDir);
   t << "\n";
   if (!sl)
@@ -1338,7 +1338,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# save some trees in general. \n";
     t << "\n";
   }
-  t << "COMPACT_LATEX = ";
+  t << "COMPACT_LATEX         = ";
   writeBoolValue(t,Config::compactLatexFlag);
   t << "\n";
   if (!sl)
@@ -1349,7 +1349,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# executive. If left blank a4wide will be used. \n";
     t << "\n";
   }
-  t << "PAPER_TYPE = ";
+  t << "PAPER_TYPE            = ";
   writeStringValue(t,Config::paperType);
   t << "\n";
   if (!sl)
@@ -1359,7 +1359,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# packages that should be included in the LaTeX output. \n";
     t << "\n";
   }
-  t << "EXTRA_PACKAGES = ";
+  t << "EXTRA_PACKAGES        = ";
   writeStringList(t,Config::extraPackageList);
   t << "\n";
   if (!sl)
@@ -1371,7 +1371,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# standard header. Notice: only use this tag if you know what you are doing! \n";
     t << "\n";
   }
-  t << "LATEX_HEADER = ";
+  t << "LATEX_HEADER          = ";
   writeStringValue(t,Config::latexHeaderFile);
   t << "\n";
   if (!sl)
@@ -1383,7 +1383,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# This makes the output suitable for online browsing using a pdf viewer. \n";
     t << "\n";
   }
-  t << "PDF_HYPERLINKS = ";
+  t << "PDF_HYPERLINKS        = ";
   writeBoolValue(t,Config::pdfHyperFlag);
   t << "\n";
   if (!sl)
@@ -1395,7 +1395,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# This option is also used when generating formulas in HTML. \n";
     t << "\n";
   }
-  t << "LATEX_BATCHMODE = ";
+  t << "LATEX_BATCHMODE       = ";
   writeBoolValue(t,Config::latexBatchModeFlag);
   t << "\n";
   if (!sl)
@@ -1414,7 +1414,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# or editors.\n";
     t << "\n";
   }
-  t << "GENERATE_RTF = ";
+  t << "GENERATE_RTF          = ";
   writeBoolValue(t,Config::generateRTF);
   t << "\n";
   if (!sl)
@@ -1425,7 +1425,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `rtf' will be used as the default path. \n";
     t << "\n";
   }
-  t << "RTF_OUTPUT = ";
+  t << "RTF_OUTPUT            = ";
   writeStringValue(t,Config::rtfOutputDir);
   t << "\n";
   if (!sl)
@@ -1436,7 +1436,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# save some trees in general. \n";
     t << "\n";
   }
-  t << "COMPACT_RTF = ";
+  t << "COMPACT_RTF           = ";
   writeBoolValue(t,Config::compactRTFFlag);
   t << "\n";
   if (!sl)
@@ -1450,7 +1450,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# Note: wordpad (write) and others do not support links. \n";
     t << "\n";
   }
-  t << "RTF_HYPERLINKS = ";
+  t << "RTF_HYPERLINKS        = ";
   writeBoolValue(t,Config::rtfHyperFlag);
   t << "\n";
   if (!sl)
@@ -1467,7 +1467,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# generate man pages \n";
     t << "\n";
   }
-  t << "GENERATE_MAN = ";
+  t << "GENERATE_MAN          = ";
   writeBoolValue(t,Config::generateMan);
   t << "\n";
   if (!sl)
@@ -1478,7 +1478,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# put in front of it. If left blank `man' will be used as the default path. \n";
     t << "\n";
   }
-  t << "MAN_OUTPUT = ";
+  t << "MAN_OUTPUT            = ";
   writeStringValue(t,Config::manOutputDir);
   t << "\n";
   if (!sl)
@@ -1488,7 +1488,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the generated man pages (default is the subroutine's section .3) \n";
     t << "\n";
   }
-  t << "MAN_EXTENSION = ";
+  t << "MAN_EXTENSION         = ";
   writeStringValue(t,Config::manExtension);
   t << "\n";
   if (!sl)
@@ -1506,7 +1506,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# files. \n";
     t << "\n";
   }
-  t << "ENABLE_PREPROCESSING = ";
+  t << "ENABLE_PREPROCESSING  = ";
   writeBoolValue(t,Config::preprocessingFlag);
   t << "\n";
   if (!sl)
@@ -1517,7 +1517,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# compilation will be performed. \n";
     t << "\n";
   }
-  t << "MACRO_EXPANSION = ";
+  t << "MACRO_EXPANSION       = ";
   writeBoolValue(t,Config::macroExpansionFlag);
   t << "\n";
   if (!sl)
@@ -1527,7 +1527,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# in the INCLUDE_PATH (see below) will be search if a #include is found. \n";
     t << "\n";
   }
-  t << "SEARCH_INCLUDES = ";
+  t << "SEARCH_INCLUDES       = ";
   writeBoolValue(t,Config::searchIncludeFlag);
   t << "\n";
   if (!sl)
@@ -1538,7 +1538,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the preprocessor. \n";
     t << "\n";
   }
-  t << "INCLUDE_PATH = ";
+  t << "INCLUDE_PATH          = ";
   writeStringList(t,Config::includePath);
   t << "\n";
   if (!sl)
@@ -1551,7 +1551,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# omitted =1 is assumed. \n";
     t << "\n";
   }
-  t << "PREDEFINED = ";
+  t << "PREDEFINED            = ";
   writeStringList(t,Config::predefined);
   t << "\n";
   if (!sl)
@@ -1562,7 +1562,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# PREDEFINED tag. \n";
     t << "\n";
   }
-  t << "EXPAND_ONLY_PREDEF = ";
+  t << "EXPAND_ONLY_PREDEF    = ";
   writeBoolValue(t,Config::onlyPredefinedFlag);
   t << "\n";
   if (!sl)
@@ -1578,7 +1578,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# The TAGFILES tag can be used to specify one or more tagfiles. \n";
     t << "\n";
   }
-  t << "TAGFILES = ";
+  t << "TAGFILES              = ";
   writeStringList(t,Config::tagFileList);
   t << "\n";
   if (!sl)
@@ -1588,7 +1588,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# a tag file that is based on the input files it reads. \n";
     t << "\n";
   }
-  t << "GENERATE_TAGFILE = ";
+  t << "GENERATE_TAGFILE      = ";
   writeStringValue(t,Config::genTagFile);
   t << "\n";
   if (!sl)
@@ -1599,7 +1599,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be listed. \n";
     t << "\n";
   }
-  t << "ALLEXTERNALS = ";
+  t << "ALLEXTERNALS          = ";
   writeBoolValue(t,Config::allExtFlag);
   t << "\n";
   if (!sl)
@@ -1609,7 +1609,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# interpreter (i.e. the result of `which perl'). \n";
     t << "\n";
   }
-  t << "PERL_PATH = ";
+  t << "PERL_PATH             = ";
   writeStringValue(t,Config::perlPath);
   t << "\n";
   if (!sl)
@@ -1628,7 +1628,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# have no effect if this option is set to NO (the default) \n";
     t << "\n";
   }
-  t << "HAVE_DOT = ";
+  t << "HAVE_DOT              = ";
   writeBoolValue(t,Config::haveDotFlag);
   t << "\n";
   if (!sl)
@@ -1640,7 +1640,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# class references variables) of the class with other documented classes. \n";
     t << "\n";
   }
-  t << "COLLABORATION_GRAPH = ";
+  t << "COLLABORATION_GRAPH   = ";
   writeBoolValue(t,Config::collGraphFlag);
   t << "\n";
   if (!sl)
@@ -1652,7 +1652,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# documented files. \n";
     t << "\n";
   }
-  t << "INCLUDE_GRAPH = ";
+  t << "INCLUDE_GRAPH         = ";
   writeBoolValue(t,Config::includeGraphFlag);
   t << "\n";
   if (!sl)
@@ -1662,7 +1662,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will graphical hierarchy of all classes instead of a textual one. \n";
     t << "\n";
   }
-  t << "GRAPHICAL_HIERARCHY = ";
+  t << "GRAPHICAL_HIERARCHY   = ";
   writeBoolValue(t,Config::gfxHierarchyFlag);
   t << "\n";
   if (!sl)
@@ -1679,7 +1679,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# used. If set to NO the values of all tags below this one will be ignored. \n";
     t << "\n";
   }
-  t << "SEARCHENGINE = ";
+  t << "SEARCHENGINE          = ";
   writeBoolValue(t,Config::searchEngineFlag);
   t << "\n";
   if (!sl)
@@ -1690,7 +1690,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# A script with this name will be generated by doxygen. \n";
     t << "\n";
   }
-  t << "CGI_NAME = ";
+  t << "CGI_NAME              = ";
   writeStringValue(t,Config::cgiName);
   t << "\n";
   if (!sl)
@@ -1701,7 +1701,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# details. \n";
     t << "\n";
   }
-  t << "CGI_URL = ";
+  t << "CGI_URL               = ";
   writeStringValue(t,Config::cgiURL);
   t << "\n";
   if (!sl)
@@ -1712,7 +1712,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# documentation, with file:// prepended to it, will be used. \n";
     t << "\n";
   }
-  t << "DOC_URL = ";
+  t << "DOC_URL               = ";
   writeStringValue(t,Config::docURL);
   t << "\n";
   if (!sl)
@@ -1723,7 +1723,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# will be used. \n";
     t << "\n";
   }
-  t << "DOC_ABSPATH = ";
+  t << "DOC_ABSPATH           = ";
   writeStringValue(t,Config::docAbsPath);
   t << "\n";
   if (!sl)
@@ -1733,7 +1733,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# is installed. \n";
     t << "\n";
   }
-  t << "BIN_ABSPATH = ";
+  t << "BIN_ABSPATH           = ";
   writeStringValue(t,Config::binAbsPath);
   t << "\n";
   if (!sl)
@@ -1744,7 +1744,7 @@ void writeTemplateConfig(QFile *f,bool sl)
     t << "# the documentation for these projects as well. \n";
     t << "\n";
   }
-  t << "EXT_DOC_PATHS = ";
+  t << "EXT_DOC_PATHS         = ";
   writeStringList(t,Config::extDocPathList);
   t << "\n";
 }
@@ -1808,65 +1808,79 @@ static void substEnvVarsInStrList(QStrList &sl)
   while (s)
   {
     QCString result(s);
+    bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1);
     substEnvVarsInString(result);
-    
-    int l=result.length();
-    int i,p=0;
-    // skip spaces
-    // search for a "word"
-    for (i=0;i<l;i++)
+
+    if (!wasQuoted) /* as a result of the expansion, a single string
+		       may have expanded into a list, which we'll
+		       add to sl. If the orginal string already 
+		       contained multiple elements no splitting is done! */
     {
-      char c;
-      // skip until start of new word
-      for (;i<l && ((c=result.at(i))==' ' || c=='\t');i++) 
-      p=i; // p marks the start index of the word
-      // skip until end of a word
-      for (;i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"');i++);
-      if (i<l) // not at the end of the string
+
+
+
+      int l=result.length();
+      int i,p=0;
+      // skip spaces
+      // search for a "word"
+      for (i=0;i<l;i++)
       {
-	if (c=='"') // word within quotes
+	char c;
+	// skip until start of new word
+	for (;i<l && ((c=result.at(i))==' ' || c=='\t');i++) 
+	  p=i; // p marks the start index of the word
+	// skip until end of a word
+	for (;i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"');i++);
+	if (i<l) // not at the end of the string
 	{
-	  p=i+1;
-	  for (i++;i<l;i++)
+	  if (c=='"') // word within quotes
 	  {
-	    c=result.at(i);
-	    if (c=='"') // end quote
+	    p=i+1;
+	    for (i++;i<l;i++)
 	    {
-	      // replace the string in the list and go to the next item.
-	      sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
-	      sl.next();                 // current item is now the old item
-	      p=i+1;
-	      break; 
-	    }
-	    else if (c=='\\') // skip escaped stuff
-	    {
-	      i++;
+	      c=result.at(i);
+	      if (c=='"') // end quote
+	      {
+		// replace the string in the list and go to the next item.
+		sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
+		sl.next();                 // current item is now the old item
+		p=i+1;
+		break; 
+	      }
+	      else if (c=='\\') // skip escaped stuff
+	      {
+		i++;
+	      }
 	    }
 	  }
-	}
-	else if (c==' ' || c=='\t') // separator
-	{
-	  // replace the string in the list and go to the next item.
-	  sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
-	  sl.next();                 // current item is now the old item
-	  p=i+1;
+	  else if (c==' ' || c=='\t') // separator
+	  {
+	    // replace the string in the list and go to the next item.
+	    sl.insert(sl.at(),result.mid(p,i-p)); // insert new item before current item.
+	    sl.next();                 // current item is now the old item
+	    p=i+1;
+	  }
 	}
       }
+      if (p!=l) // add the leftover as a string
+      {
+	// replace the string in the list and go to the next item.
+	sl.insert(sl.at(),result.right(l-p)); // insert new item before current item.
+	sl.next();                 // current item is now the old item
+      }
+
+      // remove the old unexpanded string from the list
+      i=sl.at();
+      sl.remove(); // current item index changes if the last element is removed.
+      if (sl.at()==i)     // not last item
+	s = sl.current();
+      else                // just removed last item
+	s = 0;
     }
-    if (p!=l) // add the leftover as a string
+    else // just goto the next element in the list
     {
-      // replace the string in the list and go to the next item.
-      sl.insert(sl.at(),result.right(l-p)); // insert new item before current item.
-      sl.next();                 // current item is now the old item
+      s=sl.next();
     }
-    
-    // remove the old unexpanded string from the list
-    i=sl.at();
-    sl.remove(); // current item index changes if the last element is removed.
-    if (sl.at()==i)     // not last item
-      s = sl.current();
-    else                // just removed last item
-      s = 0;
   }
 }
 

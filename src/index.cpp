@@ -828,15 +828,16 @@ void writeAlphabeticalClassList(OutputList &ol)
 
 void writeAlphabeticalIndex(OutputList &ol)
 {
-  ol.disableAllBut(OutputGenerator::Html);
   if (annotatedClasses==0) return;
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
   startFile(ol,"classes.html","Alphabetical index");
   startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trCompoundIndex());
   endTitle(ol,0,0);
   writeAlphabeticalClassList(ol);
   endFile(ol);
-  ol.enableAll();
+  ol.popGeneratorState();
 }
 
 //----------------------------------------------------------------------------

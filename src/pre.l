@@ -125,7 +125,15 @@ static void decrLevel()
 
 static bool otherCaseDone()
 {
-  return g_levelGuard[g_level-1];
+  if (g_level==0)
+  {
+    err("Error: Found an #else without a preceding #if.\n");
+    return TRUE;
+  }
+  else
+  {
+    return g_levelGuard[g_level-1];
+  }
 }
 
 static void setCaseDone(bool value)
@@ -1079,7 +1087,7 @@ BN	[ \t\r\n]
 					  g_guardExpr.resize(0);
 					  BEGIN(Guard);
 					}
-<Command>"elif"/[ \t(]			{
+<Command>("elif"|"else"{B}*"if")/[ \t(]	{
   					  if (!otherCaseDone())
 					  {
 					    g_guardExpr.resize(0);
@@ -1107,7 +1115,7 @@ BN	[ \t\r\n]
 <Command>"undef"{B}+			{
   					  BEGIN(Ung_defName);
   					}
-<Command>"elif"/[ \t(]			{
+<Command>("elif"|"else"{B}*"if")/[ \t(]	{
   					  if (!otherCaseDone())
 					  {
 					    g_guardExpr.resize(0);
@@ -1208,7 +1216,7 @@ BN	[ \t\r\n]
 					    BEGIN(Start);
 					  }
   					}
-<SkipCommand>"elif"/[ \t(]		{
+<SkipCommand>("elif"|"else"{B}*"if")/[ \t(]		{
   					  if (g_ifcount==0) 
 					  {
   					    if (!otherCaseDone())
@@ -1693,6 +1701,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   char *defStr = Config::predefined.first();
   while (defStr)
   {
+    //printf("Predefined: `%s'\n",defStr);
     QCString ds = defStr;
     int i_equals=ds.find('=');
     int i_obrace=ds.find('(');

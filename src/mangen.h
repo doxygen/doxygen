@@ -209,6 +209,9 @@ class ManGenerator : public OutputGenerator
     void startParameter(bool) {}
     void endParameter(bool) {}
 
+    void startFontClass(const char *) {}
+    void endFontClass() {}
+
   private:
     bool firstCol;
     bool paragraph;

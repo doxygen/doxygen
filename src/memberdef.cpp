@@ -259,6 +259,7 @@ MemberDef::MemberDef(const char *t,const char *na,const char *a,const char *e,
   annMemb=0;
   annUsed=FALSE;
   annShown=FALSE;
+  annEnumType=0;
   indDepth=0;
   section=0;
   docEnumValues=FALSE;
@@ -463,7 +464,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   //    name().data(),cd->name().data(),annScope,annMemb);
   //}
 
-  // hide members in annonymous scopes 
+  // hide members in anonymous scopes 
   // (they are displayed by there parent placeholder)
   if (annScope) return;
   // hide undocumented members unless overwritten by the configuration
@@ -535,16 +536,16 @@ void MemberDef::writeDeclaration(OutputList &ol,
     bool hasHtmlHelp = Config::generateHtml && Config::htmlHelpFlag;
     if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
     
-    // search for the last annonymous scope in the member type
+    // search for the last anonymous scope in the member type
     ClassDef *annoClassDef=0;
     //while (i!=-1 && cname.find(type.mid(i,l))!=-1)
     //{
     //  i=r.match(type,i+l,&l);
     //}
     int il=i-1,ir=i+l;
-    if (i!=-1) // found annonymous scope in type
+    if (i!=-1) // found anonymous scope in type
     {
-      // extract annonymous scope
+      // extract anonymous scope
       while (il>=0 && (isId(type.at(il)) || type.at(il)==':' || type.at(il)=='@')) il--;
       if (il>0) il++;
       while (ir<(int)type.length() && (isId(type.at(ir)) || type.at(ir)==':' || type.at(ir)=='@')) ir++;
@@ -569,7 +570,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     }
 
     // start a new member declaration
-    ol.startMemberItem(/* gId!=-1,*/(annoClassDef || annMemb) ? 1 : 0);
+    ol.startMemberItem((annoClassDef || annMemb || annEnumType) ? 1 : 0);
     
     // If there is no detailed description we need to write the anchor here.
     bool detailsVisible = detailsAreVisible();
@@ -605,12 +606,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       writeTemplatePrefix(ol,tArgList,FALSE);
     }
     
-    if (i!=-1) // render member with annonymous componound as result type.
+    if (i!=-1) // member has an anonymous type
     {
-      //printf("annoClassDef=%p annMemb=%p scopeName=`%s' annonymous=`%s'\n",
+      //printf("annoClassDef=%p annMemb=%p scopeName=`%s' anonymous=`%s'\n",
       //    annoClassDef,annMemb,cname.data(),type.mid(i,l).data());
 
-      if (annoClassDef)
+      if (annoClassDef) // type is an anonymous compound
       {
         //printf("class found!\n");
         annoClassDef->writeDeclaration(ol,annMemb,inGroup);
@@ -633,8 +634,17 @@ void MemberDef::writeDeclaration(OutputList &ol,
       }
       else
       {
-        type = type.left(i) + " { ... } " + type.right(type.length()-i-l);
-        linkifyText(ol,cname,name(),type,TRUE); 
+        if (getAnonymousEnumType()) // type is an anonymous enum
+        {
+          linkifyText(ol,cname,name(),type.left(i),TRUE); 
+          ol+=*getAnonymousEnumType()->enumDecl();
+          linkifyText(ol,cname,name(),type.right(type.length()-i-l),TRUE); 
+        }
+        else
+        {
+          type = type.left(i) + " { ... } " + type.right(type.length()-i-l);
+          linkifyText(ol,cname,name(),type,TRUE); 
+        }
       }
     }
     else
@@ -749,7 +759,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       ol.endDoxyAnchor();
     }
 
-    ol.endMemberItem(annoClassDef!=0 && indDepth==0);
+    ol.endMemberItem((annoClassDef!=0 && indDepth==0) || annEnumType);
     
     //ol.endMemberItem(gId!=-1,gFile,gHeader,annoClassDef || annMemb);
     // write brief description
@@ -775,7 +785,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
   warnIfUndocumented();
 }
 
-
+/*! Writes the "detailed documentation" section of this member to
+ *  all active output formats.
+ */
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scopeName)
 {
@@ -783,37 +795,52 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool hasDocs = detailsAreVisible();
   //printf("MemberDef::writeDocumentation(): type=`%s' def=`%s'\n",type.data(),definition());
   if (
-       (/*memberType()==m &&*/                       // filter member type
-        (Config::extractAllFlag || hasDocs) 
-        /*&& groupId()==-1 */                        // not in a group
-       ) || /* member is part of an annonymous scope that is the type of
-             * another member in the list.
-             */ 
+      Config::extractAllFlag || hasDocs 
+      || /* member is part of an anonymous scope that is the type of
+          * another member in the list.
+          */ 
        (!hasDocs && !briefDescription().isEmpty() && annUsed)
      )
   {
+    // get definition. TODO: make a method of this
     NamespaceDef *nd=getNamespace();
     ClassDef     *cd=memberClass();
     FileDef      *fd=getFileDef();
     Definition   *d = 0;
     if (cd) d=cd; else if (nd) d=nd; else d=fd;
+    ASSERT(d!=0);
+
     QCString cname  = d->name();
     QCString cfname = d->getOutputFileBase();  
 
     // get member name
     QCString doxyName=name().copy();
-    // prepend scope if there is any 
+    // prepend scope if there is any. TODO: make this optional for C only docs
     if (scopeName) doxyName.prepend((QCString)scopeName+"::");
 
     QCString def = definition();
-    if (isEnumerate()) def.prepend("enum ");
-    MemberDef *smd;
-    if (isEnumValue() && def[0]=='@') def = def.right(def.length()-2);
-    int i=0,l,dummy;
+    if (isEnumerate()) 
+    {
+      if (name().at(0)=='@')
+      {
+        def = "anonymous enum";
+      }
+      else
+      {
+        def.prepend("enum ");
+      }
+    }
+    int i=0,l;
     static QRegExp r("@[0-9]+");
-    if (isEnumerate() && r.match(def,0,&l)!=-1) return;
-    if (isEnumValue() && (smd = getEnumScope()) 
-        && r.match(smd->name(),0,&dummy)==-1) return;
+
+    //ENUM
+    if (isEnumValue()) return;
+    //if (isEnumValue() && def[0]=='@') def = def.right(def.length()-2);
+    //int dummy;
+    //if (isEnumerate() && r.match(def,0,&l)!=-1) return;
+    //MemberDef *smd;
+    //if (isEnumValue() && (smd = getEnumScope()) 
+    //    && r.match(smd->name(),0,&dummy)==-1) return;
 
     ol.pushGeneratorState();
 
@@ -823,7 +850,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
     if ((isVariable() || isTypedef()) && (i=r.match(def,0,&l))!=-1)
     {
-      // find enum type an insert it in the definition
+      // find enum type and insert it in the definition
       MemberListIterator vmli(*ml);
       MemberDef *vmd;
       bool found=FALSE;
@@ -840,7 +867,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           linkifyText(ol,scopeName,name(),def.left(i));
           ol+=*vmd->enumDecl();
           linkifyText(ol,scopeName,name(),def.right(def.length()-i-l));
-          //ol.endDoxyAnchor();
 
           found=TRUE;
         }
@@ -854,7 +880,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         {
           htmlHelp->addIndexItem(cname,name(),cfname,anchor());
         }
-        // strip annonymous compound names from definition
+        // strip anonymous compound names from definition
         int si=def.find(' '),pi,ei=i+l;
         if (si==-1) si=0;
         while ((pi=r.match(def,i+l,&l))!=-1) ei=i=pi+l;
@@ -1329,6 +1355,7 @@ bool MemberDef::detailsAreVisible() const
 void MemberDef::setEnumDecl(OutputList &ed) 
 { 
   enumDeclList=new OutputList(&ed); 
+  *enumDeclList+=ed;
 }
 
 bool MemberDef::hasDocumentation()

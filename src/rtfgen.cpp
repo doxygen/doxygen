@@ -528,41 +528,44 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isMainPage:
       t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"index.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isModuleIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"modules.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isNamespaceIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isClassHierarchyIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
-      t << "{\\tc \\v Hierarchical Index}"<< endl;;
+      t << "{\\tc \\v " << theTranslator->trHierarchicalIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"hierarchy.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isCompoundIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
-      t << "{\\tc \\v Compound Index}"<< endl;;
+      t << "{\\tc \\v " << theTranslator->trCompoundIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"annotated.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isFileIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
-      t << "{\\tc \\v File Index}"<< endl;;
+      t << "{\\tc \\v " << theTranslator->trFileIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"files.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isPageIndex:
       t << "\\par " << Rtf_Style_Reset  << endl;
-      t << "{\\tc \\v Page Index}"<< endl;;
+      t << "{\\tc \\v " << theTranslator->trPageIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isModuleDocumentation:
       {
         GroupDef *gd=groupList.first();
         bool found=FALSE;
-        t << "{\\tc \\v Module Documentation}"<< endl;;
+        t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         while (gd && !found)
         {
           if (gd->isLinkableInProject() || gd->countMembers()>0)
@@ -625,7 +628,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         ClassDef *cd=classList.first();
         bool found=FALSE;
 
-        t << "{\\tc \\v Class Documentation}"<< endl;;
+        t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
         while (cd && !found)
         {
           if (cd->isLinkableInProject())
@@ -657,7 +660,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool isFirst=TRUE;
         FileName *fn=inputNameList.first();
 
-        t << "{\\tc \\v File Documentation}"<< endl;
+        t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}"<< endl;
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -692,6 +695,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         //t << "}\n";
         PageInfo *pi=exampleList.first();
+        t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
         if (pi)
         {
           t << "\\par " << Rtf_Style_Reset  << endl;
@@ -713,7 +717,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isPageDocumentation:
       {
-        t << "{\\tc \\v Page Documentation}"<< endl;;
+        t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
         PageInfo *pi=pageList.first();
         if (pi)
         {
@@ -1346,7 +1350,7 @@ void RTFGenerator::startDescList()
 { 
   t << "{\\comment (startDescList)}"    << endl; 
   t << "{";
-  /*if (!m_omitParagraph)*/ newParagraph();
+  ///*if (!m_omitParagraph)*/ newParagraph();
 }
 
 void RTFGenerator::endDescTitle()      
@@ -1378,6 +1382,7 @@ void RTFGenerator::endDescList()
 void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
 {
   t << "{\\comment (writeSection)}"    << endl; 
+  t << "{";
   t<< Rtf_Style_Reset;
   if (sub)
   {
@@ -1404,12 +1409,19 @@ void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
   newParagraph();
   // make bookmark
   writeAnchor(lab);
+  t << "}";
 }
 
 void RTFGenerator::writeSectionRef(const char *,const char *lab,
-    const char *)
+    const char *title)
 {
+  startBold();
+  docify(title);
+  endBold();
+  t << " (";
+  docify(theTranslator->trPageAbbreviation());
   WriteRTFReference(lab);
+  t << ")" << endl;
 }
 
 void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
@@ -1421,13 +1433,10 @@ void RTFGenerator::writeSectionRefItem(const char *,const char *lab,
   t << endl;
 }
 
-void RTFGenerator::writeSectionRefAnchor(const char *,const char *lab,
+void RTFGenerator::writeSectionRefAnchor(const char *name,const char *lab,
     const char *title)
 {
-  startBold();
-  docify(title);
-  endBold();
-  t << " (p.~\\pageref{" << lab << "})" << endl;
+  writeSectionRef(name,lab,title);
 }
 
 void RTFGenerator::docify(const char *str)

@@ -277,6 +277,19 @@ void DotNode::deleteNode(DotNodeList &deletedList)
   deletedList.append(this);
 }
 
+static QCString convertLabel(const QCString &l)
+{
+  QCString result;
+  const char *p=l.data();
+  char c;
+  while ((c=*p++))
+  {
+    if (c=='\\') result+="\\\\";
+    else result+=c;
+  }
+  return result;
+}
+
 void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
 {
   const char *labCol = 
@@ -284,7 +297,8 @@ void DotNode::writeBox(QTextStream &t,bool hasNonReachableChildren)
            (
             (hasNonReachableChildren) ? "red" : "black"
            );
-  t << "  Node" << m_number << " [shape=\"box\",label=\"" << m_label    
+  t << "  Node" << m_number << " [shape=\"box\",label=\""
+    << convertLabel(m_label)    
     << "\",fontsize=10,height=0.2,width=0.4,fontname=\"doxfont\"";
   t << ",color=\"" << labCol << "\"";
   if (m_isRoot)

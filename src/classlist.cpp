@@ -18,6 +18,9 @@
 #include "classlist.h"
 #include "config.h"
 #include "util.h"
+#include "outputlist.h"
+#include "language.h"
+#include "scanner.h"
 
 ClassList::ClassList() : QList<ClassDef>()
 {
@@ -43,3 +46,59 @@ ClassListIterator::ClassListIterator(const ClassList &cllist) :
   QListIterator<ClassDef>(cllist)
 {
 }
+
+void ClassList::writeDeclaration(OutputList &ol)
+{
+  if (count()>0)
+  {
+    ClassDef *cd=first();
+    bool found=FALSE;
+    while (cd)
+    {
+      if (cd->name().find('@')==-1)
+      {
+        bool isLink = cd->isLinkable();
+        if (isLink || !Config::hideClassFlag)
+        {
+          if (!found)
+          {
+            ol.startMemberHeader();
+            parseText(ol,theTranslator->trCompounds());
+            ol.endMemberHeader();
+            ol.startMemberList();
+            found=TRUE;
+          }
+          ol.startMemberItem(FALSE);
+          switch (cd->compoundType())
+          {
+            case ClassDef::Class:      ol.writeString("class");  break;
+            case ClassDef::Struct:     ol.writeString("struct"); break;
+            case ClassDef::Union:      ol.writeString("union");  break;
+            case ClassDef::Interface:  ol.writeString("interface");  break;
+            case ClassDef::Exception:  ol.writeString("exception");  break;
+          }
+          ol.writeString(" ");
+          ol.insertMemberAlign();
+          if (isLink) 
+          {
+            ol.writeObjectLink(cd->getReference(),
+                cd->getOutputFileBase(),
+                0,
+                cd->name()
+               );
+          }
+          else 
+          {
+            ol.startBold();
+            ol.docify(cd->name());
+            ol.endBold();
+          }
+          ol.endMemberItem(FALSE);
+        }
+      }
+      cd=next();
+    }
+    if (found) ol.endMemberList();
+  }
+}
+  

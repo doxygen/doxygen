@@ -221,6 +221,9 @@ class LatexGenerator : public OutputGenerator
     void endTextBlock() {}
     void startParameter(bool) {}
     void endParameter(bool) {}
+
+    void startFontClass(const char *) {}
+    void endFontClass() {}
     
   private:
     LatexGenerator(const LatexGenerator &);

@@ -164,6 +164,18 @@ Here is a list of the languages and their current maintainers:
                         snob@NOSPAM.int.spb.ru</a>
       </TD>
   </TR>
+  <TR BGCOLOR="#ffffff">
+      <TD>
+        Croatian
+      </TD>
+      <TD>
+        Boris Bralo
+      </TD>
+      <TD>
+        <a href="mailto:boris.bralo@NOSPAM.zg.tel.hr">
+                        boris.bralo@NOSPAM.zg.tel.hr</a>
+      </TD>
+  </TR>
 
   <TR BGCOLOR="#ffffff">
       <TD>
@@ -205,9 +217,11 @@ Here is a list of the languages and their current maintainers:
   \hline
   Spanish & Francisco Oltra Thennet & {\tt foltra@puc.cl} \\
   \hline
-  Finish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} \\
+  Finnish & Olli Korhonen & {\tt Olli.Korhonen@ccc.fi} \\
   \hline
-  Russian & Vladimir Vodolazkiy & {\tt voldemarus@geocities.com} \\
+  Russian & Nickolay Semyonov & {\tt snob@int.spb.ru} \\
+  \hline
+  Croatian & Boris Bralo & {\tt boris.bralo@zg.tel.hr} \\
   \hline
   Dutch & Dimitri van Heesch & {\tt dimitri@stack.nl} \\
   \hline

@@ -21,9 +21,10 @@
 #include <qfile.h>
 #include <qlist.h>
 #include <qdict.h>
-#include <qstringlist.h>
+#include <qstrlist.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 static QString spaces="                                                ";
 
@@ -122,7 +123,9 @@ class ConfigOption
       stringToC(t,longDesc,"    t << \"# ","\\n\";");
       t << "    t << \"\\n\";" << endl;
       t << "  }" << endl;
-      t << "  t << \"" << cfgName << " = \";" << endl;
+      t << "  t << \"" << cfgName;
+      t << spaces.left(22-cfgName.length());
+      t << "= \";" << endl;
       t << "  " << writeFunc << "(t,Config::" << varName << ");" << endl;
       t << "  t << \"\\n\";" << endl;
     }
@@ -406,9 +409,11 @@ class ConfigString : public ConfigOption
               << ",SIGNAL(changed()),this,SIGNAL(changed()));" << endl;
             if (m_values.count()>0)
             {
-              for ( QStringList::Iterator it = m_values.begin(); it != m_values.end(); ++it ) 
+              char *s = m_values.first();
+              while (s)
               {
-                 t << "  " << varName << "->addValue(\"" << (*it) << "\");" << endl;
+                t << "  " << varName << "->addValue(\"" << s << "\");" << endl;
+                s = m_values.next();
               }
             }
           }  
@@ -434,7 +439,7 @@ class ConfigString : public ConfigOption
   private:
     ConfigInfo *m_parent;
     WidgetType m_widgetType;
-    QStringList m_values;
+    QStrList m_values;
 };
 
 class ConfigInt : public ConfigOption
