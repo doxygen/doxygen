@@ -1219,7 +1219,7 @@ static MemberDef *addVariableToClass(
     mn->append(md);
     //printf("Adding memberName=%s\n",mn->memberName());
     memberNameDict.insert(name,mn);
-    memberNameList.inSort(mn);
+    memberNameList.append(mn);
     // add the member to the class
   }
   cd->insertMember(md);
@@ -1309,7 +1309,8 @@ static MemberDef *addVariableToFile(
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      if ((nd==0 && root->fileName==md->getFileDef()->absFilePath())
+      if ((nd==0 && md->getFileDef() && 
+          root->fileName==md->getFileDef()->absFilePath())
           || (nd!=0 && md->getNamespaceDef()==nd))
         // variable already in the scope
       {
@@ -1390,7 +1391,7 @@ static MemberDef *addVariableToFile(
     mn = new MemberName(name);
     mn->append(md);
     functionNameDict.insert(name,mn);
-    functionNameList.inSort(mn);
+    functionNameList.append(mn);
   }
   return md;
 }
@@ -1777,7 +1778,7 @@ static void buildMemberList(Entry *root)
           mn->append(md);
           //printf("Adding memberName=%s\n",mn->memberName());
           memberNameDict.insert(name,mn);
-          memberNameList.inSort(mn);
+          memberNameList.append(mn);
         }
 
         // add member to the class cd
@@ -1975,7 +1976,7 @@ static void buildMemberList(Entry *root)
             mn = new MemberName(name);
             mn->append(md);
             functionNameDict.insert(name,mn);
-            functionNameList.inSort(mn);
+            functionNameList.append(mn);
           }
           addMemberToGroups(root,md);
         }
@@ -3706,7 +3707,7 @@ static void findMember(Entry *root,QCString funcDecl,QCString related,bool overl
           if (newMemberName)
           {
             //printf("Adding memberName=%s\n",mn->memberName());
-            memberNameList.inSort(mn);
+            memberNameList.append(mn);
             memberNameDict.insert(funcName,mn);
           }
         }
@@ -3977,7 +3978,7 @@ static void findEnums(Entry *root)
         mn = new MemberName(name);
         mn->append(md);
         mnd->insert(name,mn);
-        mnl->inSort(mn);
+        mnl->append(mn);
         //printf("add %s to new memberName. Now %d members\n",
         //       name.data(),mn->count());
       }
@@ -4265,20 +4266,21 @@ static void computeClassImplUsageRelations()
 static void buildCompleteMemberLists()
 {
   ClassDef *cd;
+  // merge the member list of base classes into the inherited classes.
   ClassListIterator cli(classList);
-  for (;(cd=cli.current());++cli)
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    //if (!cd->isReference()) printf("Building member for class %s\n",cd->name());
-    //ClassListIterator vcli(classList);
-    //for (;(vcd=vcli.current());++vcli) vcd->flag = FALSE;
     if (!cd->isReference() && // not an external class
          cd->superClasses()->count()==0 && // is a root of the hierarchy
          cd->baseClasses()->count()>0) // and has at least one base class
     {
       cd->mergeMembers();
-      //printf("merging members for class %s\n",cd->name());
-      //mergeMembers(cd,cd->baseClasses());
     }
+  }
+  // now sort the member list of all classes.
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    cd->memberNameInfoList()->sort();
   }
 }
 
@@ -4600,7 +4602,7 @@ static void findDefineDocumentation(Entry *root)
         mn = new MemberName(root->name);
         mn->append(md);
         functionNameDict.insert(root->name,mn);
-        functionNameList.inSort(mn);
+        functionNameList.append(mn);
       }
     }
     MemberName *mn=functionNameDict[root->name];
@@ -6105,8 +6107,6 @@ int main(int argc,char **argv)
   msg("Searching for enumerations...\n");
   findEnums(root);
   findEnumDocumentation(root);
-//  msg("Searching for function prototypes...\n");
-//  findPrototypes(root); // may introduce new members !
   
   msg("Searching for member function documentation...\n");
   findMemberDocumentation(root); // may introduce new members !
@@ -6118,6 +6118,10 @@ int main(int argc,char **argv)
   msg("Search for main page...\n");
   findMainPage(root);
 
+  msg("Sorting member lists...\n");
+  memberNameList.sort();
+  functionNameList.sort();
+  
   msg("Freeing entry tree\n");
   delete root;
   

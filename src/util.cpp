@@ -114,9 +114,10 @@ void TextGeneratorXMLImpl::writeLink(const char *extRef,const char *file,
 
     
 /*! Implements an interruptable system call on Unix/Windows */
-int iSystem(const char *command,const char *args)
+int iSystem(const char *command,const char *args,bool isBatchFile)
 {
 #ifndef _WIN32
+  isBatchFile=isBatchFile;
   /*! taken from the system() manpage on my Linux box */
   int pid,status;
 
@@ -149,30 +150,40 @@ int iSystem(const char *command,const char *args)
     }
   }
 #else
-  SHELLEXECUTEINFO sInfo = {
-    sizeof(SHELLEXECUTEINFO),   /* structure size */
-    SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
-    NULL,                       /* window handle */
-    NULL,                       /* action to perform: open */
-    command,                    /* file to execute */
-    args,                       /* argument list */ 
-    NULL,                       /* use current working dir */
-    SW_HIDE,                    /* minimize on start-up */
-    0,                          /* application instance handle */
-    NULL,                       /* ignored: id list */
-    NULL,                       /* ignored: class name */
-    NULL,                       /* ignored: key class */
-    0,                          /* ignored: hot key */
-    NULL,                       /* ignored: icon */
-    NULL                        /* resulting application handle */
-  };
-  if (!ShellExecuteEx(&sInfo))
+  if (isBatchFile)
   {
-    return -1;
+    QCString fullCmd = command;
+    fullCmd += " ";
+    fullCmd += args;
+    return system(fullCmd);
   }
-  else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
+  else
   {
-    WaitForSingleObject(sInfo.hProcess,INFINITE); 
+    SHELLEXECUTEINFO sInfo = {
+      sizeof(SHELLEXECUTEINFO),   /* structure size */
+      SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
+      NULL,                       /* window handle */
+      NULL,                       /* action to perform: open */
+      command,                    /* file to execute */
+      args,                       /* argument list */ 
+      NULL,                       /* use current working dir */
+      SW_HIDE,                    /* minimize on start-up */
+      0,                          /* application instance handle */
+      NULL,                       /* ignored: id list */
+      NULL,                       /* ignored: class name */
+      NULL,                       /* ignored: key class */
+      0,                          /* ignored: hot key */
+      NULL,                       /* ignored: icon */
+      NULL                        /* resulting application handle */
+    };
+    if (!ShellExecuteEx(&sInfo))
+    {
+      return -1;
+    }
+    else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
+    {
+      WaitForSingleObject(sInfo.hProcess,INFINITE); 
+    }
   }
   return 0;
   //return system(command);

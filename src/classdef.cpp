@@ -1665,7 +1665,6 @@ void ClassDef::mergeMembers()
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
             MemberInfo *newMi=new MemberInfo(mi->memberDef,bcd->prot,virt);
-            //if (mi->memberDef->getClassDef()!=bClass)
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
             newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
@@ -1674,7 +1673,7 @@ void ClassDef::mergeMembers()
         }
         
         // add it to the list and dictionary
-        dstMnl->inSort(newMni);
+        dstMnl->append(newMni);
         dstMnd->insert(newMni->memberName(),newMni);
       }
     }

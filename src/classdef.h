@@ -67,8 +67,6 @@ class ClassDef : public Definition
     void insertSuperClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     BaseClassList *superClasses() { return inheritedBy; }
     void setIncludeFile(FileDef *fd,const char *incName,bool local); 
-    //FileDef *includeFile() const { return incFile; }
-    //void setIncludeName(const char *n_) { incName=n_; }
     MemberNameInfoList *memberNameInfoList() { return allMemberNameInfoList; }
     MemberNameInfoDict *memberNameInfoDict() { return allMemberNameInfoDict; }
     void insertMember(MemberDef *);
@@ -79,12 +77,9 @@ class ClassDef : public Definition
     void dumpMembers();
     void writeDocumentation(OutputList &ol);
     void writeMemberList(OutputList &ol);
-    //void writeIncludeFile(OutputList &ol);
-    //void writeMembersToContents();
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
     bool addExample(const char *anchor,const char *name, const char *file);
     bool hasExamples();
-    //void writeExample(OutputList &ol);
     void setProtection(Protection p) { prot=p; }
     Protection protection() const { return prot; }
     bool isLinkableInProject();

@@ -150,7 +150,7 @@ void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 QCString stripScope(const char *name);
-int iSystem(const char *command,const char *args);
+int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
 
 #endif
 
