@@ -517,6 +517,9 @@ done
 
 # - generating src/lang_cfg.h 
 
+if test -e "src/lang_cfg.h"; then
+    chmod u+w src/lang_cfg.h   # make sure file can be overwritten
+fi
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 

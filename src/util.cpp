@@ -3372,7 +3372,7 @@ bool resolveRef(/* in */  const char *scName,
       return FALSE;
     }
 
-    //printf("scName=%s name=%s\n",scName,fullName.data());
+    //printf("scName=%s fullName=%s\n",scName,fullName.data());
     
     // check if this is a class or namespace reference
     if (scName!=fullName && getScopeDefs(scName,fullName,cd,nd))
@@ -3388,15 +3388,17 @@ bool resolveRef(/* in */  const char *scName,
       }
       return TRUE;
     }
-    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) // nothing to link => output plain text
+    else if (scName==fullName || (!inSeeBlock && scopePos==-1)) 
+      // nothing to link => output plain text
     {
+      //printf("found scName=%s fullName=%s scName==fullName=%d "
+      //    "inSeeBlock=%d scopePos=%d!\n",
+      //    scName,fullName.data(),scName==fullName,inSeeBlock,scopePos);
       return FALSE;
     }
     // continue search...
   }
   
-  //printf("scopeContext=%s scopeUser=%s\n",scopeContext.data(),scopeUser.data());
-
   // extract userscope+name
   QCString nameStr=fullName.left(endNamePos);
 
@@ -3561,7 +3563,7 @@ bool resolveLink(/* in */ const char *scName,
   *resContext=0;
   
   QCString linkRef=lr;
-  printf("ResolveLink linkRef=%s\n",lr);
+  //printf("ResolveLink linkRef=%s\n",lr);
   FileDef  *fd;
   GroupDef *gd;
   PageDef  *pd;

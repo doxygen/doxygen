@@ -578,8 +578,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
     while (gd)
     {
       ol.startMemberItem(0);
-      ol.docify(theTranslator->trGroup(FALSE,TRUE));
-      ol.docify(" ");
+      //ol.docify(theTranslator->trGroup(FALSE,TRUE));
+      //ol.docify(" ");
       ol.insertMemberAlign();
       ol.writeObjectLink(gd->getReference(),gd->getOutputFileBase(),0,gd->groupTitle());
       if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 

@@ -151,7 +151,7 @@ SCString &SCString::sprintf( const char *format, ... )
 int SCString::find( char c, int index, bool cs ) const
 {
   uint len = length();
-  if ( m_data==0 || (uint)index>=len )              // index outside string
+  if ( m_data==0 || (uint)index>len )               // index outside string
     return -1;
   register const char *d;
   if ( cs ) // case sensitive
@@ -173,7 +173,7 @@ int SCString::find( char c, int index, bool cs ) const
 int SCString::find( const char *str, int index, bool cs ) const
 {
   uint l = length();
-  if ( m_data==0 || (uint)index >= l )        // index outside string
+  if ( m_data==0 || (uint)index > l )         // index outside string
     return -1;
   if ( !str )                                 // no search string
     return -1;
@@ -222,7 +222,7 @@ int SCString::findRev( char c, int index, bool cs) const
     }
     index = len;
   } 
-  else if ( (uint)index >= len )  // bad index
+  else if ( (uint)index > len )  // bad index
   {      
     return -1;
   }
@@ -247,7 +247,7 @@ int SCString::findRev( const char *str, int index, bool cs) const
   uint len = length();
   if ( index < 0 )                           // neg index ==> start from end
     index = len-slen;
-  else if ( (uint)index >= len )             // bad index
+  else if ( (uint)index > len )              // bad index
     return -1;
   else if ( (uint)(index + slen) > len )     // str would be too long
     index = len - slen;
