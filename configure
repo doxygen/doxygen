@@ -349,7 +349,7 @@ fi
 
 touch .tmakeconfig
 if test "$f_shared" = NO; then
-  if test "$f_platform" = "osf1-cxx"; then
+  if test "$f_platform" = "osf1-cxx" -o "$f_platform" = "irix-n32"; then
   cat >> .tmakeconfig <<EOF
     TMAKE_LFLAGS = -non_shared
 EOF

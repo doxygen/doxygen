@@ -36,6 +36,9 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
+/*! local class definition, used for classes that are defined
+ *  inside code fragments.
+ */
 class CodeClassDef 
 {
   public:
@@ -51,6 +54,9 @@ class CodeClassDef
     QStrList bases;
 };  
   
+/*! local member definition, used for variables that are defined
+ *  inside code fragments.
+ */
 class CodeVarDef
 {
   public:
@@ -105,12 +111,18 @@ static QCString      g_exampleName;
 static QCString      g_exampleFile;
 static int           g_anchorCount;
 static FileDef *     g_sourceFileDef;
+static Definition *  g_currentDefinition;
+static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 static const char *  g_currentFontClass;
+static bool          g_searchingForBody;
+static bool          g_insideBody;
+static int           g_bodyCurlyCount;
 
-// start a new line of code, inserting a line number if g_sourceFileDef
-// is TRUE. If a definition starts at the current line, then the line
-// number is linked to the documentation of that definition.
+/*! start a new line of code, inserting a line number if g_sourceFileDef
+ * is TRUE. If a definition starts at the current line, then the line
+ * number is linked to the documentation of that definition.
+ */
 static void startCodeLine(OutputList &ol)
 {
   if (g_currentFontClass)
@@ -122,10 +134,17 @@ static void startCodeLine(OutputList &ol)
     QCString lineNumber,lineAnchor;
     lineNumber.sprintf("%05d",g_yyLineNr);
     lineAnchor.sprintf("l%05d",g_yyLineNr);
+   
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    QCString anchor = g_sourceFileDef->getSourceAnchor(g_yyLineNr);
     if (!g_includeCodeFragment && d && d->isLinkableInProject())
     {
+      g_currentDefinition = d;
+      g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
+      QCString anchor;
+      g_insideBody = FALSE;
+      g_searchingForBody = TRUE;
+      g_bodyCurlyCount = 0;
+      if (g_currentMemberDef) anchor=g_currentMemberDef->anchor();
       ol.startCodeAnchor(lineAnchor);
       ol.writeCodeLink(d->getReference(),d->getOutputFileBase(),
 	               anchor,lineNumber);
@@ -145,8 +164,9 @@ static void startCodeLine(OutputList &ol)
   }
 }
 
-// write a code fragment `text' that may span multiple lines, inserting
-// line numbers for each line.
+/*! write a code fragment `text' that may span multiple lines, inserting
+ * line numbers for each line.
+ */
 static void codifyLines(char *text)
 {
   char *p=text,*sp=p;
@@ -175,9 +195,10 @@ static void codifyLines(char *text)
   }
 }
 
-// writes a link to a fragment `text' that may span multiple lines, inserting
-// line numbers for each line. If `text' contains newlines, the link will be 
-// split into multiple links with the same destination, one for each line.
+/*! writes a link to a fragment \a text that may span multiple lines, inserting
+ * line numbers for each line. If \a text contains newlines, the link will be 
+ * split into multiple links with the same destination, one for each line.
+ */
 static void writeMultiLineCodeLink(OutputList &ol,
                   const char *ref,const char *file,
                   const char *anchor,const char *text)
@@ -358,6 +379,11 @@ static bool getLink(const char *className,
 
     if (d && d->isLinkable())
     {
+      if (g_currentDefinition && g_currentMemberDef &&
+	  md!=g_currentMemberDef && g_insideBody)
+      {
+        md->addSourceReference(g_currentMemberDef);
+      }
       //printf("d->getOutputBase()=`%s' name=`%s'\n",d->getOutputFileBase().data(),md->name().data());
       writeMultiLineCodeLink(result,d->getReference(),d->getOutputFileBase(),
 	                       md->anchor(),text ? text : memberName);
@@ -374,8 +400,21 @@ static ClassDef *stripClassName(const char *s)
   int p=0,i,l;
   while ((i=re.match(tmp,p,&l))!=-1)
   {
-    ClassDef *cd=getResolvedClass(tmp.mid(i,l));
-    if (cd) return cd;
+    ClassDef *cd=0;
+    QCString clName = tmp.mid(i,l);
+    //printf("g_classScope=`%s' clName=`%s'\n",g_classScope.data(),clName.data());
+    if (!g_classScope.isEmpty())
+    {
+      cd=getResolvedClass(g_classScope+"::"+clName);
+    }
+    if (cd==0)
+    {
+      cd=getResolvedClass(clName);
+    }
+    if (cd) 
+    {
+      return cd;
+    }
     p=i+l;
   }
   return 0;
@@ -385,7 +424,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
             char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
-  //                          varName,memName,classScope.data());
+  //                          varName,memName,g_classScope.data());
   CodeVarDef *cvd=g_codeParmList.last();
   while (cvd && cvd->name!=varName) cvd=g_codeParmList.prev();
   if (!cvd)
@@ -453,19 +492,35 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	    ClassDef *mcd=stripClassName(vmd->typeString());
 	    if (mcd && mcd->isLinkable())
 	    {
+	      //printf("Found class `%s'\n",mcd->name().data());
 	      MemberName *mmn=memberNameDict[memName];
 	      if (mmn)
 	      {
 		MemberNameIterator mmni(*mmn);
-		MemberDef *mmd;
+		MemberDef *mmd,*xmd=0;
+		ClassDef *xcd=0;
+		const int maxInheritanceDepth = 100000;
+		int mdist=maxInheritanceDepth;
 		for (;(mmd=mmni.current());++mmni)
 		{
-		  if (mmd->memberClass()==mcd)
+		  int m=minClassDistance(mcd,mmd->memberClass());
+		  if (m<mdist && mmd->memberClass()->isLinkable())
 		  {
-		    writeMultiLineCodeLink(ol,mcd->getReference(),
-			mcd->getOutputFileBase(),mmd->anchor(),memName);
-		    return;
+		    mdist=m;
+		    xcd=mmd->memberClass();
+		    xmd=mmd;
 		  }
+		}
+		if (mdist!=maxInheritanceDepth)
+		{
+                  if (g_currentDefinition && g_currentMemberDef &&
+	              xmd!=g_currentMemberDef && g_insideBody)
+                  {
+                    xmd->addSourceReference(g_currentMemberDef);
+                  }
+		  writeMultiLineCodeLink(ol,xcd->getReference(),
+		     xcd->getOutputFileBase(),xmd->anchor(),memName);
+		  return;
 		}
 	      }
 	    }
@@ -657,8 +712,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					}
 <Body>"{"				{ 
+  					  if (g_searchingForBody)
+					  {
+					    g_searchingForBody=FALSE;
+					    g_insideBody=TRUE;
+					  }
   					  g_code->codify(yytext);
   					  g_curlyCount++;
+					  if (g_insideBody) g_bodyCurlyCount++;
   					  g_type.resize(0); 
 					  g_name.resize(0);
 					}
@@ -670,9 +731,14 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_classScope.resize(0);
 					    g_codeParmList.clear();
 					  }
+					  if (--g_bodyCurlyCount<=0)
+					  {
+					    g_insideBody=FALSE;
+					  }
 					}
 <ClassName>";"				{ 
   					  g_code->codify(yytext);
+					  g_searchingForBody=FALSE; 
   					  BEGIN( Body ); 
 					}
 <ClassName>[*&]+          		{
@@ -692,6 +758,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					  g_curlyCount++;
 					  g_inClass=TRUE;
+  					  if (g_searchingForBody)
+					  {
+					    g_searchingForBody=FALSE;
+					    g_insideBody=TRUE;
+					  }
+					  if (g_insideBody) g_bodyCurlyCount++;
 					  if (!g_ccd.name.isEmpty())
 					  {
 					    g_classScope=g_ccd.name.copy();
@@ -921,6 +993,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <MemberCall2,FuncCall>")"[ \t\n]*";"	{
   					  codifyLines(yytext);
   					  g_bracketCount=0;
+					  g_searchingForBody=FALSE; 
 					  if (!g_inClass && !g_type.isEmpty())
 					    addVariable();
 					  g_name.resize(0);g_type.resize(0);
@@ -937,6 +1010,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  codifyLines(yytext+1);
 					  endFontClass();
 					  g_code->codify("{");
+  					  if (g_searchingForBody)
+					  {
+					    g_searchingForBody=FALSE;
+					    g_insideBody=TRUE;
+					  }
+					  if (g_insideBody) g_bodyCurlyCount++;
 					  g_curlyCount++;
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
@@ -954,6 +1033,12 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 <SkipInits>"{"				{ 
   					  g_code->codify(yytext);
 					  g_curlyCount++; 
+  					  if (g_searchingForBody)
+					  {
+					    g_searchingForBody=FALSE;
+					    g_insideBody=TRUE;
+					  }
+					  if (g_insideBody) g_bodyCurlyCount++;
 					  BEGIN( Body ); 
 					}
 <SkipInits>{ID}				{
@@ -1228,12 +1313,18 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   else
     g_yyLineNr    = 1;
   g_curlyCount    = 0;
+  g_bodyCurlyCount    = 0;
   g_bracketCount  = 0;
   g_sharpCount    = 0;
   g_classScope    = className;
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
+  g_currentDefinition = 0;
+  g_currentMemberDef = 0;
+  g_searchingForBody = FALSE;
+  g_insideBody = FALSE;
+  g_bracketCount = 0;
   g_exampleFile   = convertSlashes(g_exampleName,TRUE)+"-example";
   g_includeCodeFragment = inlineFragment;
   startCodeLine(*g_code);

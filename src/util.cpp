@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
@@ -2315,5 +2315,16 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   }
   //printf("insertTemplateSpecifierInScope(`%s',`%s')=%s\n",
   //    scope.data(),templ.data(),result.data());
+  return result;
+}
+
+QCString stripScope(const char *name)
+{
+  QCString result = name;
+  int i=result.findRev("::");
+  if (i!=-1)
+  {
+    result=result.right(result.length()-i-2);
+  }
   return result;
 }

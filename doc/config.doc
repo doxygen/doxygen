@@ -89,6 +89,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_generate_tagfile GENERATE_TAGFILE
 <li> \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
 <li> \refitem cfg_have_dot HAVE_DOT
+<li> \refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
 <li> \refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
 <li> \refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
 <li> \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
@@ -307,6 +308,13 @@ followed by the descriptions of the tags grouped by category.
  \c YES upper case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
  supports case sensitive file names.
+
+\anchor cfg_hide_scope_names
+<dt>\c HIDE_SCOPE_NAMES <dd>
+ \addindex HIDE_SCOPE_NAMES
+ If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen 
+ will show members with their full class and namespace scopes in the
+ documentation. If set to YES the scope will be hidden. 
 
 \anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>

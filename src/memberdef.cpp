@@ -251,6 +251,7 @@ MemberDef::MemberDef(const char *df,int dl,
   enumDeclList=0;
   scopeTAL=0;
   membTAL=0;
+  initLines=0;
   type=substituteClassNames(t);
   args=substituteClassNames(a);
   if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
@@ -911,36 +912,39 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //if (cd && (!isRelated() || templateArguments()!=0) && 
       //    ((al=scopeDefTemplateArguments()) || (al=cd->templateArguments()))
       //   ) 
-      if (scopeAl && !related) // class template prefix
+      if (!Config::hideScopeNames)
       {
-        ol.startMemberDocPrefixItem();
-        writeTemplatePrefix(ol,scopeAl);
-        ol.endMemberDocPrefixItem();
-      }
-      if (scopeAl && membAl) ol.docify(" ");
-
-      if (membAl) // function template prefix
-      {
-        ol.startMemberDocPrefixItem();
-        writeTemplatePrefix(ol,membAl);
-        ol.endMemberDocPrefixItem();
-      }
-      if (cd)
-      {
-        QCString cName=cd->name();
-        //printf("cName=%s\n",cName.data());
-        int il=cName.find('<');
-        int ir=cName.findRev('>');
-        if (il!=-1 && ir!=-1 && ir>il)
+        if (scopeAl && !related) // class template prefix
         {
-          def=addTemplateNames(def,
-                 cName.left(il),          /* class without template spec */
-                 cName.mid(il,ir-il+1)    /* templ spec */
-              ); 
+          ol.startMemberDocPrefixItem();
+          writeTemplatePrefix(ol,scopeAl);
+          ol.endMemberDocPrefixItem();
         }
-        else if (scopeAl)
+        if (scopeAl && membAl) ol.docify(" ");
+
+        if (membAl) // function template prefix
         {
-          def=addTemplateNames(def,cName,tempArgListToString(scopeAl));
+          ol.startMemberDocPrefixItem();
+          writeTemplatePrefix(ol,membAl);
+          ol.endMemberDocPrefixItem();
+        }
+        if (cd)
+        {
+          QCString cName=cd->name();
+          //printf("cName=%s\n",cName.data());
+          int il=cName.find('<');
+          int ir=cName.findRev('>');
+          if (il!=-1 && ir!=-1 && ir>il)
+          {
+            def=addTemplateNames(def,
+                cName.left(il),          /* class without template spec */
+                cName.mid(il,ir-il+1)    /* templ spec */
+                                ); 
+          }
+          else if (scopeAl)
+          {
+            def=addTemplateNames(def,cName,tempArgListToString(scopeAl));
+          }
         }
       }
       ol.startMemberDocName();
@@ -1296,7 +1300,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.endDescList();
     }
     // write reference to the source
-    writeSourceRef(ol,cname);
+    writeSourceDef(ol,cname);
+    writeSourceRefs(ol,cname);
+
     ol.endIndent();
     // enable LaTeX again
     //if (Config::extractAllFlag && !hasDocs) ol.enable(OutputGenerator::Latex); 
@@ -1378,4 +1384,12 @@ bool MemberDef::visibleMemberGroup(bool hideNoHeader)
 { 
   return memberGroup!=0 && 
           (!hideNoHeader || memberGroup->header()!="[NOHEADER]"); 
+}
+
+QCString MemberDef::getScopeString() const
+{
+  QCString result;
+  if (memberClass()) result=memberClass()->name();
+  else if (getNamespace()) result=getNamespace()->name();
+  return result;
 }

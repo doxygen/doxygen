@@ -905,6 +905,14 @@ void init()
                     "classes or files whose names only differ in case and if your file system \n"
                     "supports case sensitive file names. \n"
                  );
+  ConfigBool::add(  "hideScopeNames",
+                    "HIDE_SCOPE_NAMES",
+                    "FALSE",
+                    "hide the name of the scope.",
+                    "If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen \n"
+                    "will show members with their full class and namespace scopes in the \n"
+                    "documentation. If set to YES the scope will be hidden. \n"
+                 );
   ConfigBool::add(  "verbatimHeaderFlag",
                     "VERBATIM_HEADERS",
                     "TRUE",

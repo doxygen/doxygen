@@ -96,5 +96,6 @@ QCString convertNameToFile(const char *name);
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
 QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
+QCString stripScope(const char *name);
 
 #endif

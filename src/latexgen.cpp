@@ -958,7 +958,7 @@ void LatexGenerator::writeSection(const char *lab,const char *title,bool sub)
   }
 }
 
-void LatexGenerator::writeSectionRef(const char *fileName,const char *lab,
+void LatexGenerator::writeSectionRef(const char *,const char *lab,
                                      const char *text)
 {
   if (text && Config::pdfHyperFlag)
@@ -1010,6 +1010,7 @@ void LatexGenerator::docify(const char *str)
 {
   static bool isJapanese = theTranslator->latexBabelPackage()=="a4j";
   static bool isRussian  = theTranslator->latexBabelPackage()=="russian";
+  static bool isGerman   = theTranslator->latexBabelPackage()=="german";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1058,6 +1059,12 @@ void LatexGenerator::docify(const char *str)
                    else  
                      { t << "$\\backslash$"; }
                    break;           
+        case '"':  if (isGerman) // " has a special meaning if German
+                                 // - Thomas Vesper
+                     { t << "\\char`\\\""; }
+                   else
+                     { t << (char)c; }
+                   break;
         
         default:   
           if (isJapanese)
@@ -1127,7 +1134,7 @@ void LatexGenerator::docify(const char *str)
               case 219: t << "\\^{U}";        break;
               case 220: t << "\\\"{U}";       break;
               case 221: t << "\\'{Y}";        break;
-              case 223: t << "\"s ";          break; // assumes german package     
+              case 223: t << "\\ss ";         break; 
               case 224: t << "\\`{a}";        break;
               case 225: t << "\\'{a}";        break;
               case 226: t << "\\^{a}";        break;

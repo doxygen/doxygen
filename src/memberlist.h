@@ -71,4 +71,11 @@ class MemberListIterator : public QListIterator<MemberDef>
     MemberListIterator(const QList<MemberDef> &list);
 };
 
+class MemberDict : public QDict<MemberDef>
+{
+  public:
+    MemberDict(int size) : QDict<MemberDef>(size) {}
+   ~MemberDict() {}
+};
+
 #endif

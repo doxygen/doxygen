@@ -364,9 +364,12 @@ void HtmlHelp::addContentsItem(const char *name,const char *ref,
 {
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
-  cts << "<param name=\"Local\" value=\"" << ref << ".html";
-  if (anchor) cts << "#" << anchor;  
-  cts << "\">";
+  if (ref)
+  {
+    cts << "<param name=\"Local\" value=\"" << ref << ".html";
+    if (anchor) cts << "#" << anchor;  
+    cts << "\">";
+  }
   cts << "<param name=\"Name\" value=\"" << name << "\">"
          "</OBJECT>\n";
 }

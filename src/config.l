@@ -86,6 +86,7 @@ bool     Config::sourceBrowseFlag = FALSE;
 bool     Config::inlineSourceFlag = FALSE;
 bool     Config::stripCommentsFlag = TRUE;
 bool     Config::caseSensitiveNames = FALSE;
+bool     Config::hideScopeNames = FALSE;
 bool     Config::verbatimHeaderFlag = TRUE;
 bool     Config::showIncFileFlag = TRUE;
 bool     Config::autoBriefFlag = TRUE;
@@ -227,6 +228,7 @@ static int yyread(char *buf,int max_size)
 <Start>"INLINE_SOURCES"[ \t]*"="        { BEGIN(GetBool); b=&Config::inlineSourceFlag; }
 <Start>"STRIP_CODE_COMMENTS"[ \t]*"="   { BEGIN(GetBool); b=&Config::stripCommentsFlag; }
 <Start>"CASE_SENSE_NAMES"[ \t]*"="      { BEGIN(GetBool); b=&Config::caseSensitiveNames; }
+<Start>"HIDE_SCOPE_NAMES"[ \t]*"="      { BEGIN(GetBool); b=&Config::hideScopeNames; }
 <Start>"VERBATIM_HEADERS"[ \t]*"="      { BEGIN(GetBool); b=&Config::verbatimHeaderFlag; }
 <Start>"SHOW_INCLUDE_FILES"[ \t]*"="    { BEGIN(GetBool); b=&Config::showIncFileFlag; }
 <Start>"JAVADOC_AUTOBRIEF"[ \t]*"="     { BEGIN(GetBool); b=&Config::autoBriefFlag; }
@@ -413,6 +415,7 @@ void dumpConfig()
   printf("inlineSourceFlag=`%d'\n",Config::inlineSourceFlag);
   printf("stripCommentsFlag=`%d'\n",Config::stripCommentsFlag);
   printf("caseSensitiveNames=`%d'\n",Config::caseSensitiveNames);
+  printf("hideScopeNames=`%d'\n",Config::hideScopeNames);
   printf("verbatimHeaderFlag=`%d'\n",Config::verbatimHeaderFlag);
   printf("showIncFileFlag=`%d'\n",Config::showIncFileFlag);
   printf("autoBriefFlag=`%d'\n",Config::autoBriefFlag);
@@ -615,6 +618,7 @@ void Config::init()
   Config::inlineSourceFlag = FALSE;
   Config::stripCommentsFlag = TRUE;
   Config::caseSensitiveNames = FALSE;
+  Config::hideScopeNames = FALSE;
   Config::verbatimHeaderFlag = TRUE;
   Config::showIncFileFlag = TRUE;
   Config::autoBriefFlag = TRUE;
@@ -975,6 +979,17 @@ void writeTemplateConfig(QFile *f,bool sl)
   }
   t << "CASE_SENSE_NAMES      = ";
   writeBoolValue(t,Config::caseSensitiveNames);
+  t << "\n";
+  if (!sl)
+  {
+    t << "\n";
+    t << "# If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen \n";
+    t << "# will show members with their full class and namespace scopes in the \n";
+    t << "# documentation. If set to YES the scope will be hidden. \n";
+    t << "\n";
+  }
+  t << "HIDE_SCOPE_NAMES      = ";
+  writeBoolValue(t,Config::hideScopeNames);
   t << "\n";
   if (!sl)
   {

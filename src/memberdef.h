@@ -36,6 +36,12 @@ class ExampleDict;
 class OutputList;
 class GroupDef;
 
+struct SourceReference
+{
+  FileDef *fd;
+  QCString anchor;
+};
+
 class MemberDef : public Definition
 {
   public:
@@ -84,7 +90,7 @@ class MemberDef : public Definition
     const char *anchor() const           { return anc; }
     const QCString &initializer() const  { return init; }
     int initializerLines() const         { return initLines; }
-    ClassDef *memberClass()              { return classDef; }
+    ClassDef *memberClass() const        { return classDef; }
     Protection protection() const        { return prot; }
     Specifier virtualness() const        { return virt; }
     MemberType memberType() const        { return mtype; }
@@ -104,7 +110,7 @@ class MemberDef : public Definition
     void setAnchor(const char *a)        { anc=a; }
     void setProtection(Protection p)     { prot=p; }
     void setMemberSpecifiers(int s)      { memSpec=s; }
-    int  getMemberSpecifiers()           { return memSpec; }
+    int  getMemberSpecifiers() const     { return memSpec; }
     void mergeMemberSpecifiers(int s)    { memSpec|=s; }
     void setInitializer(const char *i)   { init=i; 
                                            init=init.stripWhiteSpace();
@@ -123,8 +129,8 @@ class MemberDef : public Definition
     // relation to other members
     void setReimplements(MemberDef *md) { redefines=md; }
     void insertReimplementedBy(MemberDef *md);
-    MemberDef  *reimplements()    { return redefines; }
-    MemberList *reimplementedBy() { return redefinedBy; }
+    MemberDef  *reimplements() const    { return redefines; }
+    MemberList *reimplementedBy() const { return redefinedBy; }
     
     // enumeration specific members
     void insertEnumField(MemberDef *md);
@@ -134,11 +140,11 @@ class MemberDef : public Definition
     void setEnumUsed()                       { eUsed=TRUE; }
     bool enumUsed() const                    { return eUsed; }
     OutputList *enumDecl() const             { return enumDeclList; }
-    MemberList *enumFieldList()              { return enumFields; }
+    MemberList *enumFieldList() const        { return enumFields; }
     void setDocumentedEnumValues(bool value) { docEnumValues=value; }
     bool hasDocumentedEnumValues() const     { return docEnumValues; }
     void setAnonymousEnumType(MemberDef *md) { annEnumType = md; }
-    MemberDef *getAnonymousEnumType()        { return annEnumType; }
+    MemberDef *getAnonymousEnumType() const  { return annEnumType; }
     
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
@@ -175,7 +181,7 @@ class MemberDef : public Definition
     //QCString getScopeTemplateNameString();
     
     // namespace related members
-    NamespaceDef *getNamespace() { return nspace; }
+    NamespaceDef *getNamespace() const { return nspace; }
     void setNamespace(NamespaceDef *nd) { nspace=nd; }
 
     // member group related members
@@ -186,12 +192,14 @@ class MemberDef : public Definition
     
     void setFromAnnonymousScope(bool b) { annScope=b; }    
     void setFromAnnonymousMember(MemberDef *m) { annMemb=m; }    
-    bool fromAnnonymousScope() { return annScope; }
-    bool annonymousDeclShown() { return annUsed; }
+    bool fromAnnonymousScope() const { return annScope; }
+    bool annonymousDeclShown() const { return annUsed; }
     void setIndentDepth( int i) { indDepth=i; }
     int  indentDepth() { return indDepth; }
 
     bool visibleMemberGroup(bool hideNoHeader);
+
+    QCString getScopeString() const;
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -245,6 +253,7 @@ class MemberDef : public Definition
     MemberGroup *memberGroup; // group's member definition
 
     GroupDef *group;          // group in which this member is in
+
 
     // disable copying of member defs
     MemberDef(const MemberDef &);

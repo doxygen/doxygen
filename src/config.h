@@ -51,6 +51,7 @@ struct Config
   static bool     inlineSourceFlag; // inline the definition bodies in the docs?
   static bool     stripCommentsFlag; // strip special comments from code fragments?
   static bool     caseSensitiveNames; // determines if output can be mixed case.
+  static bool     hideScopeNames; // hide the name of the scope.
   static bool     verbatimHeaderFlag; // enable/disable generation of verb headers.
   static bool     showIncFileFlag; // show include file in file documentation?
   static bool     autoBriefFlag; // javadoc comments behaves as Qt comments.

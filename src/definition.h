@@ -24,6 +24,9 @@
 class FileDef;
 class OutputList;
 class SectionList;
+class MemberList;
+class MemberDict;
+class MemberDef;
 
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
@@ -83,6 +86,7 @@ class Definition
      */
     void addSectionsToDefinition(QList<QCString> *anchorList);
 
+    // source references
     void setBodySegment(int bls,int ble) 
     {
       startBodyLine=bls; 
@@ -92,7 +96,9 @@ class Definition
     int getStartBodyLine() const         { return startBodyLine; }
     int getEndBodyLine() const           { return endBodyLine; }
     FileDef *getBodyDef()                { return bodyDef; }
-    void writeSourceRef(OutputList &ol,const char *scopeName);
+    void writeSourceDef(OutputList &ol,const char *scopeName);
+    void writeSourceRefs(OutputList &ol,const char *scopeName);
+    void addSourceReference(MemberDef *d);
 
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return defFileName; }
@@ -114,7 +120,31 @@ class Definition
     QCString doc;   // detailed description
     QCString ref;   // reference to external documentation
     SectionList *sectionList; // list of all sections
+    MemberList  *sourceRefList;  // list of entities that refer to this
+                                 // entity in their definition 
+    MemberDict *sourceRefDict;
 
+};
+
+class DefinitionList : public QList<Definition>
+{
+  public:
+    ~DefinitionList() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return stricmp(((Definition *)item1)->name(),
+                     ((Definition *)item2)->name()
+                    );
+    }
+
+};
+
+class DefinitionListIterator : public QListIterator<Definition>
+{
+  public:
+    DefinitionListIterator(const DefinitionList &l) :
+      QListIterator<Definition>(l) {}
+    ~DefinitionListIterator() {}
 };
 
 #endif

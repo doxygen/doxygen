@@ -1524,6 +1524,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"/{BN}	{
+					  QCString t=yytext;
+  					  if (t.contains('\n')>1 && insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inParamBlock)
 					  {
@@ -1544,6 +1549,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   				          BEGIN(DocParam); 
   					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"retval"/{BN}		{
+					  QCString t=yytext;
+  					  if (t.contains('\n')>1 && insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   				          endArgumentList();
   					  if (!inRetValBlock)
 					  {
@@ -1564,6 +1574,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   				          BEGIN(DocParam); 
   					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}("exception"|"throw")s?/{BN}	{
+					  QCString t=yytext;
+  					  if (t.contains('\n')>1 && insideItemList)
+					  {
+					    forceEndItemList();
+					  }
   					  endArgumentList();
 					  if (!inExceptionBlock)
 					  {
@@ -3238,7 +3253,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <Curly>.				{ current->program += yytext ; }
 
-<FindMembers>"("({BN}*{ID}{BN}*"::"{BN}*)*("*"{BN}*)+ {
+<FindMembers>"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ {
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -3800,6 +3815,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  lineCount();
 					  BEGIN( ClassVar );
 					}
+<ClassVar>{SCOPENAME}{BN}*/"("		{
+  					  addType(current);
+					  current->name = yytext;
+					  current->name = current->name.stripWhiteSpace();
+					  lineCount();
+  					  BEGIN( FindMembers );
+  					}
 <ClassVar>{ID}				{
   					  if (insideIDL && strcmp(yytext,"switch")==0)
 					  {
@@ -4303,7 +4325,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  yyLineNr++;
 					  
   					}
-<GroupDocArg1>{ID}(".html"?)		{
+<GroupDocArg1>{ID}(".html"?)		{ // the .html stuff is for Qt compatibility
   					  current->name = yytext;
 					  if (current->name.right(5)==".html") 
 					    current->name=current->name.left(current->name.length()-5);
@@ -4331,6 +4353,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
  					  newDocState();
   					}
 <GroupDocArg2>"\n"			{
+  					  yyLineNr++; 
  					  newDocState();
   					}
 <ClassDocArg2>{FILE}			{
@@ -4640,7 +4663,8 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  );
   					}
 <GroupName>\n				{
-  					  yyLineNr++; BEGIN( lastGroupContext );
+  					  yyLineNr++; 
+					  BEGIN( lastGroupContext );
   					}
 <ClassDoc,Doc>{B}*{CMD}("brief"|"short")	{ 
   					  lastBriefContext=YY_START;
