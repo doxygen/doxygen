@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -96,8 +97,14 @@ class HtmlGenerator : public OutputGenerator
     void startMemberList();
     void endMemberList();
     void startMemberItem(int);
-    //void memberGroupSpacing(bool inGroup);
-    //void memberGroupSeparator();
+
+    void startMemberGroupHeader();
+    void endMemberGroupHeader();
+    void startMemberGroupDocs();
+    void endMemberGroupDocs();
+    void startMemberGroup();
+    void endMemberGroup(bool);
+
     void insertMemberAlign();
     void endMemberItem(bool);
     void startMemberDescription();

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 /*! \page htmlcmds HTML Commands
@@ -71,9 +72,9 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </SMALL> ends a \c <SMALL> section.
 <li>\c <STRONG> starts a section of bold text.
 <li>\c </STRONG> ends a section of bold text.
-<li>\c <SUB>   Starts a piece of text displayed in superscript.
+<li>\c <SUB>   Starts a piece of text displayed in subscript.
 <li>\c </SUB>  Ends a \c <SUB> section.
-<li>\c <SUP>   Starts a piece of text displayed in subscript.
+<li>\c <SUP>   Starts a piece of text displayed in superscript.
 <li>\c </SUP>  Ends a \c </SUP> section.
 <li>\c <TABLE> starts a table, the available space of a page is always 
                divided equally amount the columns. 

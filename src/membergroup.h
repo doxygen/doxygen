@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -44,18 +45,25 @@ class MemberGroup /* : public Definition */
     void insertMember(MemberDef *);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
+               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               bool inGroup=TRUE);
     void writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     QCString documentation() { return doc; }
+    bool allMembersInSameSection() { return inSameSection; }
+    void addToDeclarationSection();
+    int countDecMembers();
 
   private: 
-    MemberList     *memberList;      // list of all members in the group
+    MemberList *memberList;      // list of all members in the group
     int grpId;
     QCString grpHeader;
-    QCString fileName;                   // base name of the generated file
+    QCString fileName;           // base name of the generated file
     Definition *scope;
     QCString doc;
+    MemberList *inDeclSection;
+    bool inSameSection;
+    int  numDeclMembers;
 };
 
 class MemberGroupList : public QList<MemberGroup>

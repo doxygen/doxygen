@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -621,6 +622,12 @@ void LatexGenerator::writeStyleInfo(int part)
         t << "  }\n";
         t << "}\n";
         t << "{\\end{list}}\n";
+
+        t << "\\newenvironment{Indent}\n";
+        t << "  {\\begin{list}{}{\\setlength{\\leftmargin}{0.5cm}}\n";
+        t << "      \\item[]\\ignorespaces}\n";
+        t << "  {\\unskip\\end{list}}\n";
+        
         t << "\\setlength{\\parindent}{0cm}\n";
         t << "\\setlength{\\parskip}{0.2cm}\n";
         t << "\\addtocounter{secnumdepth}{1}\n";
@@ -1233,4 +1240,33 @@ void LatexGenerator::writeImage(const char *name,const char *w,const char *h)
   else if (h)
     t << "," << h;
   t << "}}" << endl;
+}
+
+void LatexGenerator::startMemberGroupHeader()
+{
+  t << "\\begin{Indent}{\\bf ";
+}
+
+void LatexGenerator::endMemberGroupHeader()
+{
+  t << "}\\par" << endl;
+}
+
+void LatexGenerator::startMemberGroupDocs()
+{
+  t << "{\\em ";
+}
+
+void LatexGenerator::endMemberGroupDocs()
+{
+  t << "}";
+}
+
+void LatexGenerator::startMemberGroup()
+{
+}
+
+void LatexGenerator::endMemberGroup(bool)
+{
+  t << "\\end{Indent}" << endl;
 }

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -163,10 +164,18 @@ class OutputList
     { forall(&OutputGenerator::startMemberItem,i1); }
     void endMemberItem(bool b2) 
     { forall(&OutputGenerator::endMemberItem,b2); }
-    //void memberGroupSpacing(bool b) 
-    //{ forall(&OutputGenerator::memberGroupSpacing,b); }
-    //void memberGroupSeparator() 
-    //{ forall(&OutputGenerator::memberGroupSeparator); }
+    void startMemberGroupHeader() 
+    { forall(&OutputGenerator::startMemberGroupHeader); }
+    void endMemberGroupHeader()
+    { forall(&OutputGenerator::endMemberGroupHeader); }
+    void startMemberGroupDocs()
+    { forall(&OutputGenerator::startMemberGroupDocs); }
+    void endMemberGroupDocs()
+    { forall(&OutputGenerator::endMemberGroupDocs); }
+    void startMemberGroup()
+    { forall(&OutputGenerator::startMemberGroup); }
+    void endMemberGroup(bool last)
+    { forall(&OutputGenerator::endMemberGroup,last); }
     void insertMemberAlign() 
     { forall(&OutputGenerator::insertMemberAlign); }
     void writeRuler() 

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -28,10 +29,12 @@
 
 MemberList::MemberList() : QList<MemberDef>()
 {
+  memberGroupList=0;
 }
 
 MemberList::~MemberList()
 {
+  delete memberGroupList;
 }
 
 int MemberList::compareItems(GCI item1, GCI item2)
@@ -85,6 +88,18 @@ void MemberList::countDecMembers(bool inGroup)
     }
     md=next();
   }
+  if (memberGroupList && !inGroup)
+  {
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      printf("memberGroupList adding %d inGroup=%d\n",
+          mg->countDecMembers(),m_count);
+      m_count+=mg->countDecMembers();
+    }
+  }
+
   //printf("MemberList::countDecMembers(%d)=%d\n",inGroup,m_count);
 }
 
@@ -553,6 +568,31 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
 
   writePlainDeclarations(ol,cd,nd,fd,gd,inGroup);
+  
+  if (memberGroupList)
+  {
+    printf("MemberList::writeDeclarations()\n");
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    while ((mg=mgli.current()))
+    {
+      ol.startMemberGroupHeader();
+      parseText(ol,mg->header());
+      ol.endMemberGroupHeader();
+      if (!mg->documentation().isEmpty())
+      {
+        printf("Member group has docs!\n");
+        ol.startMemberGroupDocs();
+        parseDoc(ol,0,0,mg->documentation());
+        ol.endMemberGroupDocs();
+      }
+      ol.startMemberGroup();
+      mg->writePlainDeclarations(ol,cd,nd,fd,gd);
+      ++mgli;
+      ol.endMemberGroup(mgli.current()==0);
+    }
+  }
+
 }
 
 void MemberList::writeDocumentation(OutputList &ol,
@@ -564,4 +604,14 @@ void MemberList::writeDocumentation(OutputList &ol,
   {
     md->writeDocumentation(this,ol,scopeName);
   }
+}
+
+void MemberList::addMemberGroup(MemberGroup *mg)
+{
+  printf("MemberList::addMemberGroup(%p)\n",mg);
+  if (memberGroupList==0)
+  {
+    memberGroupList=new MemberGroupList;
+  }
+  memberGroupList->append(mg);
 }

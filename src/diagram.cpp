@@ -11,7 +11,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -261,7 +262,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
       row=diagram->at(level+1);
     }
     /* insert base classes in the next row */
-    BaseClassDef *bcd=bcl->last();
+    BaseClassDef *bcd=bcl->first();
     while (bcd)
     {
       ClassDef *ccd=bcd->classDef;
@@ -271,7 +272,7 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
             doBases?bcd->virt:Normal,
             doBases?bcd->templSpecifiers.data():"");
       }
-      bcd=bcl->prev();
+      bcd=bcl->next();
     }
   }
 }

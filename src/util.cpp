@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -1268,7 +1269,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   
   QCString mName=memberName;
   QCString mScope;
-  if ((im=memberName.findRev("::"))!=-1)
+  if (memberName.left(9)!="operator " && // treat operator conversion methods
+                                         // as a special case
+      (im=memberName.findRev("::"))!=-1
+     )
   {
     mScope=memberName.left(im); 
     mName=memberName.right(memberName.length()-im-2);
@@ -2036,20 +2040,23 @@ QCString substituteKeywords(const QCString &s,const char *title)
  */ 
 int getPrefixIndex(const QCString &name)
 {
+  int ni = name.findRev("::");
+  if (ni==-1) ni=0; else ni+=2;
+  //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
   char *s = Config::ignorePrefixList.first();
   while (s)
   {
     const char *ps=s;
-    const char *pd=name.data();
+    const char *pd=name.data()+ni;
     int i=0;
     while (*ps!=0 && *pd!=0 && *ps==*pd) ps++,pd++,i++;
     if (*ps==0 && *pd!=0)
     {
-      return i;
+      return ni+i;
     }
     s = Config::ignorePrefixList.next();
   }
-  return 0;
+  return ni;
 }
 
 //----------------------------------------------------------------------------
@@ -2123,3 +2130,41 @@ QCString convertNameToFile(const char *name)
   }
   return result;
 }
+
+/*! Input is a scopeName, output is the scopename split into a
+ *  namespace part (as large as possible) and a classname part.
+ */
+void extractNamespaceName(const QCString &scopeName,
+                          QCString &className,QCString &namespaceName)
+{
+  QCString clName=scopeName.copy();
+  QCString nsName;
+  if (!clName.isEmpty() && namespaceDict[clName] && getClass(clName)==0)
+  { // the whole name is a namespace (and not a class)
+    namespaceName=clName.copy();
+    className.resize(0);
+    //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
+    //     className.data(),namespaceName.data());
+    return;
+  }
+  int i,p=clName.length()-2;
+  while (p>=0 && (i=clName.findRev("::",p))!=-1) 
+    // see if the first part is a namespace (and not a class)
+  {
+    if (i>0 && namespaceDict[clName.left(i)] && getClass(clName.left(i))==0)
+    {
+      namespaceName=clName.left(i);
+      className=clName.right(clName.length()-i-2);
+      //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
+      //   className.data(),namespaceName.data());
+      return;
+    } 
+    p=i-2; // try a smaller piece of the scope
+  }
+  className=scopeName.copy();
+  namespaceName.resize(0);
+  //printf("extractNamespace `%s' => `%s|%s'\n",scopeName.data(),
+  //       className.data(),namespaceName.data());
+  return;
+}
+

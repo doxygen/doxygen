@@ -1,8 +1,8 @@
 /*! \class WindowsNT
  *  \brief Windows Nice Try.
  *  \author Bill Gates
- *  \author Several hundred furry animals gathered in a cave and grooving
- *          with a pit.
+ *  \author Several species of small furry animals gathered together 
+ *          in a cave and grooving with a pict.
  *  \version 4.0
  *  \date    1996-1998
  *  \bug It crashes a lot and requires huge amounts of memory.

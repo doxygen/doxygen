@@ -7,11 +7,12 @@
  * Initial Italian Translation by Ahmed Aldo Faisal
  * Revised and completed by Alessandro Falappa  (June 1999)
  * Updates:
- *		1999/09/10: corrected some small typos in the "new since 0.49-990425" section
- *					added the "new since 0.49-990728" section
- *		1999/19/11: entirely rewritten the translation to correct small variations due
- *					to feature additions and to conform to the layout of the latest
- *					commented translator.h for the english language
+ *		2000/03: translated new items used since version 1.0 and 1.1.0
+ *		1999/19: entirely rewritten the translation to correct small variations due
+ *				 to feature additions and to conform to the layout of the latest
+ *				 commented translator.h for the english language
+ *		1999/09: corrected some small typos in the "new since 0.49-990425" section
+ *				 added the "new since 0.49-990728" section
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,7 +20,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -748,6 +750,127 @@ class TranslatorItalian : public Translator
     QCString trDefinedInSourceFile()
     {
       return "Definizione nel file @0.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.0.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDeprecated()
+    {
+      return "Deprecato";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! this text is put before a collaboration diagram */
+    QCString trCollaborationDiagram(const char *clName)
+    {
+      return (QCString)"Diagramma di interrelazione per "+clName+":";
+    }
+    /*! this text is put before an include dependency graph */
+    QCString trInclDepGraph(const char *fName)
+    {
+      return (QCString)"Grafo delle dipendenze di inclusione per "+fName+":";
+    }
+    /*! header that is put before the list of constructor/destructors. */
+    QCString trConstructorDocumentation()
+    {
+      return "Documentazione dei costruttori e dei distruttori"; 
+    }
+    /*! Used in the file documentation to point to the corresponding sources. */
+    QCString trGotoSourceCode()
+    {
+      return "Vai al codice sorgente di questo file.";
+    }
+    /*! Used in the file sources to point to the corresponding documentation. */
+    QCString trGotoDocumentation()
+    {
+      return "Vai alla documentazione di questo file.";
+    }
+    /*! Text for the \pre command */
+    QCString trPrecondition()
+    {
+      return "Precondizione";
+    }
+    /*! Text for the \post command */
+    QCString trPostcondition()
+    {
+      return "Postcondizione";
+    }
+    /*! Text for the \invariant command */
+    QCString trInvariant()
+    {
+      return "Invariante";
+    }
+    /*! Text shown before a multi-line variable/enum initialization */
+    QCString trInitialValue()
+    {
+      return "Valore iniziale:";
+    }
+    /*! Text used the source code in the file index */
+    QCString trCode()
+    {
+      return "codice";
+    }
+    QCString trGraphicalHierarchy()
+    {
+      return "Grafico della gerarchia delle classi";
+    }
+    QCString trGotoGraphicalHierarchy()
+    {
+      return "Vai al grafico della gerarchia delle classi";
+    }
+    QCString trGotoTextualHierarchy()
+    {
+      return "Vai alla gerarchia delle classi (testuale)";
+    }
+    QCString trPageIndex()
+    {
+      return "Indice delle pagine";
+    }
+    QCString trNote()
+    {
+      return "Nota";
+    }
+
+    QCString trPublicTypes()
+    {
+      return "Tipi pubblici";
+    }
+    QCString trPublicAttribs()
+    {
+      return "Attributi pubblici";
+    }
+    QCString trStaticPublicAttribs()
+    {
+      return "Attributi pubblici statici";
+    }
+    QCString trProtectedTypes()
+    {
+      return "Tipi protetti";
+    }
+    QCString trProtectedAttribs()
+    {
+      return "Attributi protetti";
+    }
+    QCString trStaticProtectedAttribs()
+    {
+      return "Attributi protetti statici";
+    }
+    QCString trPrivateTypes()
+    {
+      return "Tipi privati";
+    }
+    QCString trPrivateAttribs()
+    {
+      return "Attributi privati";
+    }
+    QCString trStaticPrivateAttribs()
+    {
+      return "Attributi privati statici";
     }
 };
 

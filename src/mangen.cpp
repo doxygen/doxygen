@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -276,8 +277,8 @@ void ManGenerator::writeListItem()
 void ManGenerator::startCodeFragment() 
 { 
   newParagraph();
-  t << ".nf"; 
-  firstCol=FALSE;
+  t << ".nf" << endl; 
+  firstCol=TRUE;
   paragraph=FALSE;
 }
 
@@ -384,3 +385,33 @@ void ManGenerator::endMemberList()
   }
 }
 
+void ManGenerator::startMemberGroupHeader()
+{
+  t << "\n.PP\n.RI \"\\fB";
+}
+
+void ManGenerator::endMemberGroupHeader()
+{
+  t << "\\fR\"\n.br\n";
+  firstCol=TRUE;
+}
+
+void ManGenerator::startMemberGroupDocs()
+{
+}
+
+void ManGenerator::endMemberGroupDocs()
+{
+  t << "\n.PP";
+}
+
+void ManGenerator::startMemberGroup()
+{
+  t << "\n.in +1c";
+}
+
+void ManGenerator::endMemberGroup(bool)
+{
+  t << "\n.in -1c";
+  firstCol=FALSE;
+}

@@ -11,7 +11,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  * The GIF compression code below is based on the file ppmtogif.c of the
  * netpbm package. The original copyright message follows:

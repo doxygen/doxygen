@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -129,6 +130,7 @@ const char *Rtf_Style_BodyText  = "\\s17\\sa60\\sb30\\widctlpar\\qj \\fs22\\cgri
 const char *Rtf_Style_DenseText = "\\s18\\widctlpar\\fs22\\cgrid ";
 const char *Rtf_Style_Header    = "\\s28\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\adjustright \\fs20\\cgrid ";
 const char *Rtf_Style_Footer    = "\\s29\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\qr\\adjustright \\fs20\\cgrid ";
+const char *Rtf_Style_GroupHeader = "\\s30\\li360\\sa60\\sb120\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ";
 const char *Rtf_Style_CodeExample[]  = 
 {
   "\\s40\\li0\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
@@ -256,6 +258,8 @@ void RTFGenerator::beginRTFDocument()
   t <<"{" << Rtf_Style_DenseText << "\\sbasedon0 \\snext18 DenseText;}\n";
   t <<"{" << Rtf_Style_Header << "\\sbasedon0 \\snext28 header;}\n";
   t <<"{" << Rtf_Style_Footer << "\\sbasedon0 \\snext29 footer;}\n";
+  t <<"{" << Rtf_Style_GroupHeader << "\\sbasedon0 \\snext30 GroupHeader}\n";
+
   for (i=0;i<indentLevels;i++)
   {
     t <<"{" << Rtf_Style_CodeExample[i] <<"\\sbasedon0 \\snext4" 
@@ -1164,6 +1168,7 @@ void RTFGenerator::startTitle()
 void RTFGenerator::startGroupHeader()
 {
   t <<"{\\comment startGroupHeader}" << endl;
+  newParagraph();
   t << Rtf_Style_Reset;
   t << Rtf_Style_Heading3; 
   t << endl;
@@ -1316,12 +1321,14 @@ void RTFGenerator::endDescItem()
 { 
   t << "{\\comment (endDescItem)}"    << endl;
   t << "}" << endl;
-  //newParagraph();
+  newParagraph();
 }
 
 void RTFGenerator::startMemberDescription() 
 { 
   t << "{\\comment (startMemberDescription)}"    << endl;
+  t << "{" << endl;
+  incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
   startEmphasis();
 }
@@ -1330,6 +1337,9 @@ void RTFGenerator::endMemberDescription()
 { 
   t << "{\\comment (endMemberDescription)}"    << endl;
   endEmphasis();
+  newParagraph();
+  decrementIndentLevel();
+  t << "}" << endl;
 }
 
 void RTFGenerator::startDescList()     
@@ -1372,18 +1382,18 @@ void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
   if (sub)
   {
     // set style
-    t << Rtf_Style_Heading2; 
+    t << Rtf_Style_Heading3; 
     // make table of contents entry
-    t << "{\\tc\\tcl2 \\v ";
+    t << "{\\tc\\tcl3 \\v ";
     docify(title);
     t << "}" << endl;
   }
   else
   {
     // set style
-    t << Rtf_Style_Heading3; 
+    t << Rtf_Style_Heading2; 
     // make table of contents entry
-    t << "{\\tc\\tcl3  \\v ";
+    t << "{\\tc\\tcl2 \\v ";
     docify(title);
     t << "}" << endl;
   }
@@ -1518,11 +1528,13 @@ void RTFGenerator::writeFormula(const char *,const char *text)
 
 void RTFGenerator::startMemberItem(int) 
 { 
+  t <<"{\\comment startMemberItem }" << endl;
   t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl; // set style to apropriate depth
 }
 
 void RTFGenerator::endMemberItem(bool) 
 {
+  t <<"{\\comment endMemberItem }" << endl;
   newParagraph();
 }
 
@@ -1566,6 +1578,8 @@ void RTFGenerator::writeNonBreakableSpace()
 void RTFGenerator::startMemberList()  
 {
   t << endl;
+  t << "{\\comment (startMemberList) }"    << endl; 
+  t << "{" << endl;
 #ifdef DELETEDCODE
   if (!insideTabbing)
     t << "\\begin{CompactItemize}" << endl; 
@@ -1574,6 +1588,8 @@ void RTFGenerator::startMemberList()
 
 void RTFGenerator::endMemberList()    
 {
+  t << "{\\comment (endMemberList) }"    << endl; 
+  t << "}" << endl;
 #ifdef DELETEDCODE
   if (!insideTabbing)
     t << "\\end{CompactItemize}"   << endl; 
@@ -1691,6 +1707,7 @@ const char * RTFGenerator::Rtf_Code_DepthStyle()
 
 void RTFGenerator::startTextBlock(bool dense)
 {
+  t << "{\\comment Start TextBlock}" << endl;
   t << "{" << endl;
   t << Rtf_Style_Reset;
   if (dense) // no spacing between "paragraphs"
@@ -1707,6 +1724,7 @@ void RTFGenerator::endTextBlock()
 {
   newParagraph();
   t << "}" << endl;
+  t << "{\\comment End TextBlock}" << endl;
   m_omitParagraph = TRUE;
 }
 
@@ -1728,8 +1746,105 @@ void RTFGenerator::endMemberSubtitle()
   t << "}" << endl;
 }
 
+void RTFGenerator::writeUmlaut(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\304'; break;
+    case 'E' : t << '\313'; break;
+    case 'I' : t << '\317'; break;
+    case 'O' : t << '\326'; break;
+    case 'U' : t << '\334'; break;
+    case 'Y' : t << 'Y';    break;
+    case 'a' : t << '\344'; break;
+    case 'e' : t << '\353'; break;
+    case 'i' : t << '\357'; break;
+    case 'o' : t << '\366'; break;
+    case 'u' : t << '\374'; break;
+    case 'y' : t << '\377'; break;
+    default: t << '?'; break;
+  }
+}
 
+void RTFGenerator::writeAcute(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\301'; break;
+    case 'E' : t << '\311'; break;
+    case 'I' : t << '\315'; break;
+    case 'O' : t << '\323'; break;
+    case 'U' : t << '\332'; break;
+    case 'Y' : t << '\335'; break;
+    case 'a' : t << '\341'; break;
+    case 'e' : t << '\351'; break;
+    case 'i' : t << '\355'; break;
+    case 'o' : t << '\363'; break;
+    case 'u' : t << '\372'; break;
+    case 'y' : t << '\375'; break;
+    default: t << '?'; break;
+  }
+}
 
+void RTFGenerator::writeGrave(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\300'; break;
+    case 'E' : t << '\310'; break;
+    case 'I' : t << '\314'; break;
+    case 'O' : t << '\322'; break;
+    case 'U' : t << '\331'; break;
+    case 'a' : t << '\340'; break;
+    case 'e' : t << '\350'; break;
+    case 'i' : t << '\354'; break;
+    case 'o' : t << '\362'; break;
+    case 'u' : t << '\371'; break;
+    default: t << '?'; break;
+  }
+}
+
+void RTFGenerator::writeCirc(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\302'; break;
+    case 'E' : t << '\312'; break;
+    case 'I' : t << '\316'; break;
+    case 'O' : t << '\324'; break;
+    case 'U' : t << '\333'; break;
+    case 'a' : t << '\342'; break;
+    case 'e' : t << '\352'; break;
+    case 'i' : t << '\356'; break;
+    case 'o' : t << '\364'; break;
+    case 'u' : t << '\373'; break;
+    default: t << '?'; break;
+  }
+}
+
+void RTFGenerator::writeTilde(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\303'; break;
+    case 'N' : t << '\321'; break;
+    case 'O' : t << '\325'; break;
+    case 'a' : t << '\343'; break;
+    case 'n' : t << '\361'; break;
+    case 'o' : t << '\365'; break;
+    default: t << '?'; break;
+  }
+}
+
+void RTFGenerator::writeRing(char c)
+{
+  switch(c)
+  {
+    case 'A' : t << '\305'; break;
+    case 'a' : t << '\345'; break;
+    default: t << '?'; break;
+  }
+}
 
 /**
  * VERY brittle routine inline RTF's included by other RTF's.
@@ -1896,3 +2011,45 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   QDir::setCurrent(oldDir);
   return TRUE;
 }
+
+void RTFGenerator::startMemberGroupHeader()
+{
+  t << "{\\comment startMemberGroupHeader}" << endl;
+  t << "{" << endl;
+  incrementIndentLevel();
+  t << Rtf_Style_Reset << Rtf_Style_GroupHeader;
+}
+
+void RTFGenerator::endMemberGroupHeader()
+{
+  t << "{\\comment endMemberGroupHeader}" << endl;
+  newParagraph();
+  t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+}
+
+void RTFGenerator::startMemberGroupDocs()
+{
+  t << "{\\comment startMemberGroupDocs}" << endl;
+  startEmphasis();
+}
+
+void RTFGenerator::endMemberGroupDocs()
+{
+  t << "{\\comment endMemberGroupDocs}" << endl;
+  endEmphasis();
+  newParagraph();
+}
+
+void RTFGenerator::startMemberGroup()
+{
+  t << "{\\comment startMemberGroup}" << endl;
+  t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl;
+}
+
+void RTFGenerator::endMemberGroup(bool)
+{
+  t << "{\\comment endMemberGroup}" << endl;
+  decrementIndentLevel();
+  t << "}";
+}
+

@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -689,9 +690,9 @@ void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject())
     {
       int index = getPrefixIndex(cd->name());
-      if (cd->name().at(index)!=startLetter) // new begin letter => new header
+      if (toupper(cd->name().at(index))!=startLetter) // new begin letter => new header
       {
-        startLetter=cd->name().at(index);
+        startLetter=toupper(cd->name().at(index));
         headerItems++;
       }
     }
@@ -722,10 +723,10 @@ void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject())
     {
       int index = getPrefixIndex(cd->name());
-      if (cd->name().at(index)!=startLetter)
+      if (toupper(cd->name().at(index))!=startLetter)
       {
         // insert a new header using a dummy class pointer.
-        startLetter=cd->name().at(index);
+        startLetter=toupper(cd->name().at(index));
         colList[col].append((ClassDef *)8); // insert dummy for the header
         row++;
         if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) 
@@ -770,15 +771,34 @@ void writeAlphabeticalClassList(OutputList &ol)
         {
           //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
           int index = getPrefixIndex(cd->name());
-          startLetter=cd->name().at(index);
+          startLetter=toupper(cd->name().at(index));
           char s[2]; s[0]=startLetter; s[1]=0;
           ol.writeIndexHeading(s);
         }
       }
       else if (cd) // a real class, insert a link
       {
+        QCString cname;
+        QCString namesp;
+        extractNamespaceName(cd->name(),cname,namesp);
+
         ol.writeObjectLink(cd->getReference(),
-                           cd->getOutputFileBase(),0,cd->name());
+                           cd->getOutputFileBase(),0,cname);
+        if (!namesp.isEmpty())
+        {
+          ol.docify(" (");
+          NamespaceDef *nd = namespaceDict[namesp];
+          if (nd && nd->isLinkable())
+          {
+            ol.writeObjectLink(nd->getReference(),
+                           nd->getOutputFileBase(),0,namesp);
+          }
+          else
+          {
+            ol.docify(namesp);
+          }
+          ol.docify(")");
+        }
         ol.writeNonBreakableSpace();
         //printf("item ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
         ++(*colIterators[j]);

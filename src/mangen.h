@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -93,8 +94,14 @@ class ManGenerator : public OutputGenerator
     void endMemberList();
     void startMemberItem(int);
     void endMemberItem(bool);
-    //void memberGroupSpacing(bool) {}
-    //void memberGroupSeparator() {}
+
+    void startMemberGroupHeader();
+    void endMemberGroupHeader();
+    void startMemberGroupDocs();
+    void endMemberGroupDocs();
+    void startMemberGroup();
+    void endMemberGroup(bool);
+
     void writeRuler()    {}
     void writeAnchor(const char *) {}
     void startCodeFragment();

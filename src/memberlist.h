@@ -10,7 +10,8 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * All output generated with Doxygen is not covered by this license.
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
  *
  */
 
@@ -20,6 +21,8 @@
 #include <qlist.h>
 #include "memberdef.h"
 class GroupDef;
+class MemberGroup;
+class MemberGroupList;
 
 class MemberList : public QList<MemberDef> 
 { 
@@ -53,10 +56,12 @@ class MemberList : public QList<MemberDef>
                const char *title,const char *subtitle,bool inGroup=FALSE);
     void writeDocumentation(OutputList &ol,const char *scopeName
                /*,MemberDef::MemberType m*/);
+    void addMemberGroup(MemberGroup *mg);
 
   private:
     int varCnt,funcCnt,enumCnt,enumValCnt,typeCnt,protoCnt,defCnt,friendCnt; 
     int m_count;
+    MemberGroupList *memberGroupList;
 };
 
 class MemberListIterator : public QListIterator<MemberDef>
