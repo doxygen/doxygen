@@ -243,9 +243,11 @@ QCString replaceAnonymousScopes(const QCString &s)
 // strip annonymous left hand side part of the scope
 QCString stripAnonymousNamespaceScope(const QCString &s)
 {
+#if 0
   int oi=0,i=0,p=0;
-  if (s.isEmpty()) return s;
-  while (s.at(p)=='@' && (i=s.find("::",p))!=-1 && 
+  p=s.find('@');
+  if (p==-1) return s;
+  while (s.at(p)=='@' && (i=s.find("::@",p))!=-1 && 
          Doxygen::namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
   if (oi==0) 
   {
@@ -257,6 +259,32 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
     //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.right(s.length()-oi-2).data());
     return s.right(s.length()-oi-2);
   }
+#endif
+
+  int i,p=0,l;
+  QCString newScope;
+  while ((i=getScopeFragment(s,p,&l))!=-1)
+  {
+    //printf("Scope fragment %s\n",s.mid(i,l).data());
+    if (Doxygen::namespaceDict[s.left(i+l)]!=0)
+    {
+      if (s.at(i)!='@')
+      {
+        if (!newScope.isEmpty()) newScope+="::";
+        newScope+=s.mid(i,l);
+      }
+    }
+    else
+    {
+      if (!newScope.isEmpty()) newScope+="::";
+      newScope+=s.right(s.length()-i);
+      goto done;
+    }
+    p=i+l;
+  }
+done:
+  //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),newScope.data());
+  return newScope;
 }
 
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn)
@@ -1134,7 +1162,7 @@ void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
  *  scope. If neither or both have a namespace scope, t1 and t2 remain
  *  unchanged.
  */
-static void trimNamespaceScope(QCString &t1,QCString &t2)
+static void trimNamespaceScope(QCString &t1,QCString &t2,const QCString &nsName)
 {
   int p1=t1.length();
   int p2=t2.length();
@@ -1149,20 +1177,54 @@ static void trimNamespaceScope(QCString &t1,QCString &t2)
     if (i1!=-1 && i2==-1) // only t1 has a scope
     {
       QCString scope=t1.left(i1);
-      if (!scope.isEmpty() && Doxygen::namespaceDict[scope]!=0) // scope is a namespace
+      
+      int so=nsName.length();
+      do
       {
-        t1 = t1.right(t1.length()-i1-2);
-        return;
+        QCString fullScope=nsName.left(so);
+        if (!fullScope.isEmpty() && !scope.isEmpty()) fullScope+="::";
+        fullScope+=scope;
+        if (!fullScope.isEmpty() && Doxygen::namespaceDict[fullScope]!=0) // scope is a namespace
+        {
+          t1 = t1.right(t1.length()-i1-2);
+          return;
+        }
+        if (so==0)
+        {
+          so=-1;
+        }
+        else if ((so=nsName.findRev("::",so-1))==-1)
+        {
+          so=0;
+        }
       }
+      while (so>=0);
     }
     else if (i1==-1 && i2!=-1) // only t2 has a scope
     {
       QCString scope=t2.left(i2);
-      if (!scope.isEmpty() && Doxygen::namespaceDict[scope]!=0) // scope is a namespace
+
+      int so=nsName.length();
+      do
       {
-        t2 = t2.right(t2.length()-i2-2);
-        return;
+        QCString fullScope=nsName.left(so);
+        if (!fullScope.isEmpty() && !scope.isEmpty()) fullScope+="::";
+        fullScope+=scope;
+        if (!fullScope.isEmpty() && Doxygen::namespaceDict[fullScope]!=0) // scope is a namespace
+        {
+          t2 = t2.right(t2.length()-i2-2);
+          return;
+        }
+        if (so==0)
+        {
+          so=-1;
+        }
+        else if ((so=nsName.findRev("::",so-1))==-1)
+        {
+          so=0;
+        }
       }
+      while (so>=0);
     }
     p1 = QMAX(i1-2,0);
     p2 = QMAX(i2-2,0);
@@ -1297,7 +1359,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
 
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
-    trimNamespaceScope(srcAType,dstAType);
+    trimNamespaceScope(srcAType,dstAType,namespaceName);
   
     //QCString srcScope;
     //QCString dstScope;
@@ -1521,7 +1583,7 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
 
     // remove a namespace scope that is only in one type 
     // (assuming a using statement was used)
-    trimNamespaceScope(srcAType,dstAType);
+    trimNamespaceScope(srcAType,dstAType,namespaceName);
 
 
     //QCString srcScope;

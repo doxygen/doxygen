@@ -22,7 +22,6 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -147,9 +146,11 @@ static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
 
 static bool             insideFormula;
 static bool  	        insideTryBlock=FALSE;
+static bool             needsSemi;
 
 static int              depthIf;
 static int  	        initializerSharpCount;
+
 
 //-----------------------------------------------------------------------------
 
@@ -600,6 +601,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <*>\x0d
 <NextSemi>"{"				{
   					  curlyCount=0;
+					  needsSemi = TRUE;
   					  BEGIN(SkipCurlyBlock); 
 					}
 <NextSemi>"("				{
@@ -623,8 +625,14 @@ TITLE     [tT][iI][tT][lL][eE]
 					  {
 					    --curlyCount ;
 					  }
-					  else
+					  else if (needsSemi)
+					  {
 					    BEGIN( NextSemi );
+					  }
+					  else
+					  {
+					    BEGIN( FindMembers );
+					  }
 					}
 <NextSemi>"'"\\[0-7]{1,3}"'"            
 <NextSemi>"'"\\."'"                     
@@ -848,7 +856,8 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct"{BN}+ { 
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct{" | 
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct"/{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::STRUCT_SEC ;
 					  addType( current ) ;
@@ -868,6 +877,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union{" |
 <FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::UNION_SEC ;
@@ -879,6 +889,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount() ;
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*(("typedef"{BN}+)?)"enum{" | 
 <FindMembers>{B}*(("typedef"{BN}+)?)"enum"{BN}+	{ 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::ENUM_SEC ;
@@ -2152,23 +2163,16 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->name=current->name.simplifyWhiteSpace();
   					  current->type=current->type.simplifyWhiteSpace();
   					  current->args=current->args.simplifyWhiteSpace();
-					  QCString &cn=current->name;
-					  QCString &rn=current_root->name;
-					  //printf("current_root->name=`%s'\n",rn.data());
-  					  //printf("Function: `%s' `%s' `%s'\n",current->type.data(),cn.data(),current->args.data());
-					  int i;
-					  if ((i=cn.findRev("::"))!=-1) // name contains scope
-					  {
-					    if (cn.left(i)==rn.right(i)) // scope name is redundant
-					    {
-                                              cn=cn.right(cn.length()-i-2); // strip scope
-					      //printf("new name=`%s'\n",cn.data());
-					    }
-					  }
-					  //if (cname.left(current_root->name.length()+2)==current_root->name+"::") 
-					  //{ // strip redundant scope
-					  //  current->name=current->name.right(current->name.length()-current_root->name.length()-2);
-					  //  printf("new name=`%s'\n",current->name.data());
+					  //QCString &cn=current->name;
+					  //QCString &rn=current_root->name;
+					  //int i;
+					  //if ((i=cn.findRev("::"))!=-1) // name contains scope
+					  //{
+					  //  if (cn.left(i)==rn.right(i)) // scope name is redundant
+					  //  {
+                                          //    cn=cn.right(cn.length()-i-2); // strip scope
+					  //    //printf("new name=`%s'\n",cn.data());
+					  //  }
 					  //}
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
@@ -2211,8 +2215,7 @@ TITLE     [tT][iI][tT][lL][eE]
 					      current->proto = TRUE;
 					    }
 					  }
-					  //printf("Adding entry `%s' inLine`%d' bodyLine=`%d'\n",
-					  //    current->name.data(),current->inLine,current->bodyLine);
+					  //printf("Adding entry `%s'\n",current->name.data());
 					  previous = current;
 					  current_root->addSubEntry(current);
 					  current = new Entry ;
@@ -2470,7 +2473,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					  current->startLine = yyLineNr ;
 					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
+					  {
 					    current->name.sprintf("@%d",anonCount++);
+					  }
 					  curlyCount=0;
 					  BEGIN( ReadBody ) ;
 					}
@@ -2652,9 +2657,18 @@ TITLE     [tT][iI][tT][lL][eE]
 					  lineCount();
 					}
 <FindMembers>"{"			{
-  					  current->type.resize(0);
-  					  current->name.resize(0);
-  					  current->args.resize(0);
+  					  if (insideJava && current->stat && current->name.isEmpty() && current->type.isEmpty())
+					  {
+					    // static Java initializer
+					    needsSemi = FALSE;
+					  }
+					  else
+					  {
+					    needsSemi = TRUE;
+					  }
+					  current->type.resize(0);
+					  current->name.resize(0);
+					  current->args.resize(0);
 					  current->argList->clear();
 					  curlyCount=0;
 					  BEGIN( SkipCurlyBlock );
@@ -4024,18 +4038,32 @@ static void parseCompounds(Entry *rt)
       //printf("---> Inner block starts at line %d\n",yyLineNr);
       //current->reset();
       current = new Entry;
+      gstat = FALSE;
+      int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
+      {
         current->protection = protection = Private ;
+      }
       else if (ce->section == Entry::ENUM_SEC ) // enum
+      {
 	current->protection = protection = ce->protection;
-      else if (!ce->name.isEmpty() && ce->name.at(0)=='@') // anonymous union
+      }
+      else if (!ce->name.isEmpty() && ce->name.at(ni)=='@') // unnamed union or namespace
+      {
+	if (ce->section == Entry::NAMESPACE_SEC ) // unnamed namespace
+	{
+          current->stat = gstat = TRUE;
+	}
 	current->protection = protection = ce->protection;
+      }
       else // named struct, union, or interface
+      {
 	current->protection = protection = Public ;
+      }
       mtype = Method;
-      gstat = FALSE;
       virt = Normal;
+      //printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
 
       memberGroupId = NOGROUP;
       

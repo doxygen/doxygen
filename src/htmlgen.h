@@ -236,7 +236,7 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDocName();
     void startParameterType(bool first);
     void endParameterType();
-    void startParameterName();
+    void startParameterName(bool);
     void endParameterName(bool last,bool emptyList);
     void startParameterList();
     void endParameterList();

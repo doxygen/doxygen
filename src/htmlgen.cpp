@@ -49,7 +49,8 @@ static const char *defaultStyleSheet =
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
       "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
       "TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
-      "TD.mdname { background-color: #f2f2ff; font-weight: bold; font-style: italic }\n"
+      "TD.mdname1 { background-color: #f2f2ff; font-weight: bold; font-style: italic; }\n"
+      "TD.mdname { background-color: #f2f2ff; font-weight: bold; font-style: italic; width: 600px; }\n"
       "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
       "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
       "FONT.keyword       { color: #008000 }\n"
@@ -911,7 +912,7 @@ void HtmlGenerator::startMemberDocPrefixItem()
 void HtmlGenerator::endMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- endMemberDocPrefixItem -->" << endl;)
-  t << "          </td>" << endl;
+  t << "</td>" << endl;
   t << "        </tr>" << endl;
 }
 
@@ -919,14 +920,13 @@ void HtmlGenerator::startMemberDocName()
 {
   DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td class=\"md\" nowrap valign=\"top\"> " << endl;
+  t << "          <td class=\"md\" nowrap valign=\"top\"> ";
 }
 
 void HtmlGenerator::endMemberDocName()
 {
   DBG_HTML(t << "<!-- endMemberDocName -->" << endl;)
-  t << endl;
-  t << "          </td>" << endl;
+  t << "</td>" << endl;
 }
 
 void HtmlGenerator::startParameterList()
@@ -955,13 +955,15 @@ void HtmlGenerator::startParameterType(bool first)
 void HtmlGenerator::endParameterType()
 {
   DBG_HTML(t << "<!-- endParameterType -->" << endl;)
-  t << "          </td>" << endl;
+  t << "</td>" << endl;
 }
 
-void HtmlGenerator::startParameterName()
+void HtmlGenerator::startParameterName(bool oneArgOnly)
 {
   DBG_HTML(t << "<!-- startParameterName -->" << endl;)
-  t << "          <td class=\"mdname\">";
+  t << "          <td class=\"mdname";
+  if (oneArgOnly) t << "1";
+  t << "\">&nbsp;";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList)
@@ -977,7 +979,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
     }
     else
     {
-      t << "          </td>" << endl;
+      t << "</td>" << endl;
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
       t << "          <td></td>" << endl;
@@ -987,7 +989,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
   }
   else
   {
-    t << "          </td>" << endl;
+    t << "</td>" << endl;
     t << "        </tr>" << endl;
   }
 }
@@ -995,7 +997,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList)
 void HtmlGenerator::endParameterList()
 {
   DBG_HTML(t << "<!-- endParameterList -->" << endl;)
-  t << "          </td>" << endl;
+  t << "</td>" << endl;
   t << "        </tr>" << endl;
 }
 

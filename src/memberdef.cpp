@@ -119,7 +119,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   bool first=TRUE;
   while (a)
   {
-    if (!md->isDefine() || first) ol.startParameterType(first);
+    if (md->isDefine() || first) ol.startParameterType(first);
     QRegExp re(")(");
     int vp;
     if (!a->attrib.isEmpty()) // argument has an IDL attribute
@@ -141,7 +141,7 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (!md->isDefine())
     {
       ol.endParameterType();
-      ol.startParameterName();
+      ol.startParameterName(argList->count()<2);
     }
     if (!a->name.isEmpty()) // argument has a name
     { 
@@ -191,13 +191,13 @@ static void writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.disableAllBut(OutputGenerator::Html);
   if (!md->isDefine()) 
   {
-    if (first) ol.startParameterName();
+    if (first) ol.startParameterName(argList->count()<2);
     ol.endParameterName(TRUE,argList->count()<2);
   }
   else 
   {
     ol.endParameterType();
-    ol.startParameterName();
+    ol.startParameterName(TRUE);
     ol.endParameterName(TRUE,TRUE);
   }
   ol.popGeneratorState();
@@ -260,7 +260,7 @@ MemberDef::MemberDef(const char *df,int dl,
                      const ArgumentList *tal,const ArgumentList *al
                     ) : Definition(df,dl,na)
 {
-  //printf("++++++ MemberDef(%s file=%s,line=%d) ++++++ \n",na,df,dl);
+  //printf("++++++ MemberDef(%s file=%s,line=%d static=%d) ++++++ \n",na,df,dl,s);
   classDef=0;
   fileDef=0;
   redefines=0;
@@ -884,10 +884,8 @@ bool MemberDef::isDetailedSectionLinkable() const
          (mtype==EnumValue && !briefDescription().isEmpty()) || 
          // has brief description that is part of the detailed description
          (!briefDescription().isEmpty() && 
-           (!Config_getBool("BRIEF_MEMBER_DESC") || 
-             Config_getBool("ALWAYS_DETAILED_SEC")) && 
-             Config_getBool("REPEAT_BRIEF"
-           ) 
+          Config_getBool("ALWAYS_DETAILED_SEC") && 
+          Config_getBool("REPEAT_BRIEF")
          ) ||
          // has a multi-line initialization block
          //(initLines>0 && initLines<maxInitLines) || 
@@ -1247,10 +1245,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             {
               //ol.newParagraph();
               ol.startDescList(BaseOutputDocInterface::EnumValues);
-              ol.startBold();
               parseText(ol,theTranslator->trEnumerationValues());
               ol.docify(":");
-              ol.endBold();
               ol.endDescTitle();
               ol.writeDescItem();
               //ol.startItemList();
@@ -1444,10 +1440,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (hasExamples())
     {
       ol.startDescList(BaseOutputDocInterface::Examples);
-      ol.startBold();
       parseText(ol,theTranslator->trExamples()+": ");
       //ol.writeBoldString("Examples: ");
-      ol.endBold();
       ol.endDescTitle();
       ol.writeDescItem();
       writeExample(ol,getExamples());

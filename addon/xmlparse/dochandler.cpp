@@ -14,7 +14,46 @@
  */
 
 #include "dochandler.h"
+#include <qmap.h>
 
+class TypeNameMapper
+{
+  public:
+    TypeNameMapper()
+    {
+      m_typeNameMap.insert("see",       SimpleSectHandler::See);
+      m_typeNameMap.insert("return",    SimpleSectHandler::Return);
+      m_typeNameMap.insert("author",    SimpleSectHandler::Author);
+      m_typeNameMap.insert("version",   SimpleSectHandler::Version);
+      m_typeNameMap.insert("since",     SimpleSectHandler::Since);
+      m_typeNameMap.insert("date",      SimpleSectHandler::Date);
+      m_typeNameMap.insert("bug",       SimpleSectHandler::Bug);
+      m_typeNameMap.insert("note",      SimpleSectHandler::Note);
+      m_typeNameMap.insert("warning",   SimpleSectHandler::Warning);
+      m_typeNameMap.insert("par",       SimpleSectHandler::Par);
+      m_typeNameMap.insert("deprecated",SimpleSectHandler::Deprecated);
+      m_typeNameMap.insert("pre",       SimpleSectHandler::Pre);
+      m_typeNameMap.insert("post",      SimpleSectHandler::Post);
+      m_typeNameMap.insert("invariant", SimpleSectHandler::Invar);
+      m_typeNameMap.insert("remark",    SimpleSectHandler::Remark);
+      m_typeNameMap.insert("attention", SimpleSectHandler::Attention);
+      m_typeNameMap.insert("todo",      SimpleSectHandler::Todo);
+      m_typeNameMap.insert("test",      SimpleSectHandler::Test);
+      m_typeNameMap.insert("rcs",       SimpleSectHandler::RCS);
+      m_typeNameMap.insert("enumvalues",SimpleSectHandler::EnumValues);
+      m_typeNameMap.insert("examples",  SimpleSectHandler::Examples);
+    }
+    SimpleSectHandler::Types stringToType(const QString &typeStr)
+    {
+      return m_typeNameMap[typeStr];
+    }
+  private:
+    QMap<QString,SimpleSectHandler::Types> m_typeNameMap;
+};
+
+static TypeNameMapper g_typeMapper;
+
+  
 //----------------------------------------------------------------------
 // MarkupHandler
 //----------------------------------------------------------------------
@@ -334,6 +373,56 @@ void ParameterListHandler::startParameterDescription(const QXmlAttributes& attri
 }
 
 //----------------------------------------------------------------------
+// SimpleSectHandler
+//----------------------------------------------------------------------
+
+SimpleSectHandler::SimpleSectHandler(IBaseHandler *parent)
+  : DocNode(Para), m_parent(parent), m_paragraph(0)
+{
+  addStartHandler("title",this,&SimpleSectHandler::startTitle);
+  addEndHandler("title",this,&SimpleSectHandler::endTitle);
+  addStartHandler("para",this,&SimpleSectHandler::startParagraph);
+}
+
+SimpleSectHandler::~SimpleSectHandler()
+{
+}
+
+void SimpleSectHandler::startSimpleSect(const QXmlAttributes& attrib)
+{
+  m_type = g_typeMapper.stringToType(attrib.value("kind"));
+  addEndHandler("simplesect",this,&SimpleSectHandler::endSimpleSect);
+  printf("start simple section %s\n",attrib.value("kind").data());
+  m_parent->setDelegate(this);
+}
+
+void SimpleSectHandler::endSimpleSect()
+{
+  printf("end simple section\n");
+  m_parent->setDelegate(0);
+}
+
+void SimpleSectHandler::startTitle(const QXmlAttributes& /*attrib*/)
+{
+  m_curString="";
+}
+
+void SimpleSectHandler::endTitle()
+{
+  printf("simpleSect title=\"%s\"\n",m_curString.data());
+  m_title = m_curString;
+  m_curString="";
+}
+
+
+void SimpleSectHandler::startParagraph(const QXmlAttributes& attrib)
+{
+  ASSERT(m_paragraph==0);
+  m_paragraph = new ParagraphHandler(this);
+  m_paragraph->startParagraph(attrib);
+}
+
+//----------------------------------------------------------------------
 // ParagraphHandler
 //----------------------------------------------------------------------
 
@@ -350,6 +439,7 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("itemizedlist",this,&ParagraphHandler::startItemizedList);
   addStartHandler("orderedlist",this,&ParagraphHandler::startOrderedList);
   addStartHandler("parameterlist",this,&ParagraphHandler::startParameterList);
+  addStartHandler("simplesect",this,&ParagraphHandler::startSimpleSect);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -392,6 +482,14 @@ void ParagraphHandler::startParameterList(const QXmlAttributes& attrib)
   ParameterListHandler *parListHandler = new ParameterListHandler(this);
   parListHandler->startParameterList(attrib);
   m_children.append(parListHandler);
+}
+
+void ParagraphHandler::startSimpleSect(const QXmlAttributes& attrib)
+{
+  addTextNode();
+  SimpleSectHandler *sectHandler = new SimpleSectHandler(this);
+  sectHandler->startSimpleSect(attrib);
+  m_children.append(sectHandler);
 }
 
 void ParagraphHandler::addTextNode()

@@ -316,6 +316,7 @@ void ManGenerator::startDescList(SectionTypes)
     col=0;
   }
   paragraph=FALSE;
+  startBold();
 }
 
 void ManGenerator::startParamList(ParamListTypes)      
@@ -458,6 +459,7 @@ void ManGenerator::startDescItem()
 
 void ManGenerator::endDescTitle()
 {
+  endBold();
   paragraph=TRUE;
 }
 

@@ -146,7 +146,7 @@ template<class T> class BaseHandler : public IBaseHandler,
         (*handler)(attrib);
         //printf("found start tag %s\n",name.data());
       }
-      else if (m_fallBackHandler && 
+      else if (!m_fallBackHandler ||
                !m_fallBackHandler->handleStartElement(name,attrib)
               )
       {

@@ -1285,6 +1285,7 @@ void writeAlphabeticalClassList(OutputList &ol)
       {
         QCString cname;
         QCString namesp;
+        if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->name();
         if (Config_getBool("HIDE_SCOPE_NAMES"))
         {
           cname=cd->displayName();

@@ -35,8 +35,8 @@ int ClassList::compareItems(GCI item1, GCI item2)
 {
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
-  return stricmp(c1->name().data()+getPrefixIndex(c1->localName()),
-                 c2->name().data()+getPrefixIndex(c2->localName())
+  return stricmp(c1->localName().data()+getPrefixIndex(c1->localName()),
+                 c2->localName().data()+getPrefixIndex(c2->localName())
                 );
 }
 
@@ -44,8 +44,8 @@ int ClassSDict::compareItems(GCI item1, GCI item2)
 {
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
-  return stricmp(c1->name().data()+getPrefixIndex(c1->localName()),
-                 c2->name().data()+getPrefixIndex(c2->localName())
+  return stricmp(c1->localName().data()+getPrefixIndex(c1->localName()),
+                 c2->localName().data()+getPrefixIndex(c2->localName())
                 );
 }
 
