@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
@@ -102,7 +102,7 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) 
+void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
 { 
   if (stripWhiteSpace)
     m_doc=((QCString)d).stripWhiteSpace();
