@@ -194,7 +194,7 @@ void OutputList::popGeneratorState()
 void OutputList::parseDoc(const char *fileName,int startLine,
                   const char * clName,MemberDef * md,
                   const QCString &docStr,bool isExample,
-                  const char *exampleName,SectionDict *sections)
+                  const char *exampleName)
 {
   int count=0;
   if (docStr.isEmpty()) return;
@@ -211,14 +211,12 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   if (docStr.at(docStr.length()-1)=='\n')
   {
     root = validatingParseDoc(fileName,startLine,
-                              clName,md,docStr,isExample,exampleName,
-                              sections);
+                              clName,md,docStr,isExample,exampleName);
   }
   else
   {
     root = validatingParseDoc(fileName,startLine,
-                              clName,md,docStr+"\n",isExample,exampleName,
-                              sections);
+                              clName,md,docStr+"\n",isExample,exampleName);
   }
 
   og=outputs->first();

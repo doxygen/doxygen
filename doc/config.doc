@@ -191,6 +191,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_source_browser SOURCE_BROWSER
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 \refitem cfg_strip_from_path STRIP_FROM_PATH
+\refitem cfg_subgrouping SUBGROUPING
 \refitem cfg_tab_size TAB_SIZE
 \refitem cfg_tagfiles TAGFILES
 \refitem cfg_template_relations TEMPLATE_RELATIONS
@@ -566,6 +567,15 @@ function's detailed documentation block.
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
+
+\anchor cfg_subgrouping
+<dt>\c SUBGROUPING <dd>
+ \addindex SUBGROUPING
+ Set the \c SUBGROUPING tag to \c YES (the default) to allow class member groups of
+ the same type (for instance a group of public functions) to be put as a
+ subgroup of that type (e.g. under the Public Functions section). Set it to
+ \c NO to prevent subgrouping. Alternatively, this can be done per class using
+ the \ref cmdnosubgrouping "\\nosubgrouping" command. 
 
 </dl>
 

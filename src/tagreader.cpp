@@ -865,7 +865,7 @@ void TagFileParser::addDocAnchors(Entry *e,QStrList &l)
       SectionInfo *si=new SectionInfo(e->fileName,*anchorName,*anchorName,
           SectionInfo::Anchor,m_tagName);
       Doxygen::sectionDict.insert(*anchorName,si);
-      e->anchors->append(anchorName);
+      e->anchors->append(si);
     }
     else
     {

@@ -82,7 +82,7 @@ ClassDef::ClassDef(
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
   m_innerClasses = new ClassSDict(17);
-  m_subGrouping=TRUE;
+  m_subGrouping=Config_getBool("SUBGROUPING");
   m_templateInstances = 0;
   m_templateMaster =0;
   m_templBaseClassNames = 0;

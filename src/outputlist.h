@@ -62,7 +62,7 @@ class OutputList : public OutputDocInterface
 
     void parseDoc(const char *fileName,int startLine,
                   const char *clName,MemberDef *md,const QCString &docStr,
-                  bool isExample,const char *exampleName=0,SectionDict *sections=0);
+                  bool isExample,const char *exampleName=0);
     void parseText(const QCString &textStr);
     
 

@@ -25,3 +25,11 @@ GroupDef *PageDef::getGroupDef() const
   return partOfGroups() ? partOfGroups()->getFirst() : 0; 
 }
 
+QCString PageDef::getOutputFileBase() const 
+{ 
+  if (getGroupDef()) 
+    return getGroupDef()->getOutputFileBase();
+  else 
+    return m_fileName; 
+}
+

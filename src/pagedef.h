@@ -34,7 +34,7 @@ class PageDef : public Definition
     } 
 
     // functions to get a uniform interface with Definitions
-    QCString getOutputFileBase() const { return m_fileName; }
+    QCString getOutputFileBase() const;
     void findSectionsInDocumentation();
     QCString title() const { return m_title; }
     GroupDef *getGroupDef() const;

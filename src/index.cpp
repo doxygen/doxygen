@@ -2132,7 +2132,15 @@ int countNamespaceMembers(int filter)
     while (md && !found)
     {
       NamespaceDef *nd=md->getNamespaceDef();
-      if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
+      if (nd && nd->isLinkableInProject() && md->isLinkableInProject() &&
+          ( filter==NMHL_All ||
+           (filter==NMHL_Functions  && md->isFunction())  ||
+           (filter==NMHL_Variables  && md->isVariable())  ||
+           (filter==NMHL_Typedefs   && md->isTypedef())   ||
+           (filter==NMHL_Enums      && md->isEnumerate()) ||
+           (filter==NMHL_EnumValues && md->isEnumValue())
+          )
+         )
       {
         QCString n = mn->memberName();
         if (!n.isEmpty()) g_namespaceIndexLetterUsed[filter][tolower(n.at(0))]=TRUE;
@@ -3120,18 +3128,15 @@ void writeIndex(OutputList &ol)
     if (!Config_getString("GENERATE_TAGFILE").isEmpty())
     {
        Doxygen::tagFile << "  <compound kind=\"page\">" << endl
-                        << "    <filename>"
-                        << convertToXML(Doxygen::mainPage->getOutputFileBase())
-                        << "</filename>"
-                        << endl
-                        << "    <title>"
-                        << convertToXML(Doxygen::mainPage->title())
-                        << "</title>"
-                        << endl
                         << "    <name>"
                         << convertToXML(Doxygen::mainPage->name())
-                        << "</name>"
-                        << endl;
+                        << "</name>" << endl
+                        << "    <title>"
+                        << convertToXML(Doxygen::mainPage->title())
+                        << "</title>" << endl
+                        << "    <filename>"
+                        << convertToXML(Doxygen::mainPage->getOutputFileBase())
+                        << "</filename>" << endl;
 
        Doxygen::mainPage->writeDocAnchorsToTagFile();
        Doxygen::tagFile << "  </compound>" << endl;

@@ -1144,8 +1144,8 @@ static void readTextFileByName(const QString &file,QString &text)
   }
   else
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included file %s is not found"
-           "Check you EXAMPLE_PATH",file.data());
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included file %s is not found. "
+           "Check your EXAMPLE_PATH",file.data());
   }
 }
 
@@ -1167,10 +1167,12 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
     SectionInfo *sec = Doxygen::sectionDict[id];
     if (sec)
     {
+      //printf("Found anchor %s\n",id.data());
       m_file   = sec->fileName;
       m_anchor = sec->label;
       if (g_sectionDict && g_sectionDict->find(id)==0)
       {
+        //printf("Inserting in dictionary!\n");
         g_sectionDict->insert(id,sec);
       }
     }
@@ -4672,8 +4674,7 @@ void DocRoot::parse()
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context,MemberDef *md,
                             const char *input,bool isExample,
-                            const char *exampleName,
-                            SectionDict *sections)
+                            const char *exampleName)
 {
   
   //printf("========== validating %s at line %d\n",fileName,startLine);
@@ -4696,7 +4697,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_hasParamCommand = FALSE;
   g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
-  g_sectionDict = sections;
+  g_sectionDict = 0; //sections;
   
   doctokenizerYYlineno=startLine;
   doctokenizerYYinit(input,g_fileName);

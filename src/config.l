@@ -1036,10 +1036,8 @@ void Config::check()
   QStrList &inputSources=Config_getList("INPUT");
   if (inputSources.count()==0)
   {
-    //config_err("Error: tag INPUT: no input files specified after the INPUT tag.\n");
-    //exit(1);
+    // use current dir as the default
     inputSources.append(QDir::currentDirPath());
-    //config_warn("Warning: no files after the INPUT tag, defaulting to the current dir\n");
   }
   else
   {
@@ -1670,6 +1668,15 @@ void Config::create()
                     "at the bottom of the documentation of classes and structs. If set to YES the \n"
                     "list will mention the files that were used to generate the documentation. \n",
                     TRUE
+                );
+  cb = addBool(    
+                    "SUBGROUPING",
+		    "Set the SUBGROUPING tag to YES (the default) to allow class member groups of \n"
+		    "the same type (for instance a group of public functions) to be put as a \n"
+		    "subgroup of that type (e.g. under the Public Functions section). Set it to \n"
+		    "NO to prevent subgrouping. Alternatively, this can be done per class using \n"
+		    "the \\nosubgrouping command. \n",
+		    TRUE
                 );
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Messages","configuration options related to warning and progress messages");

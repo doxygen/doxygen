@@ -30,7 +30,6 @@
 
 class DocNode;
 class MemberDef;
-class PageInfo;
 class Definition;
 class MemberGroup;
 class SectionDict;
@@ -48,15 +47,13 @@ class SectionDict;
  *  @param input     String representation of the documentation block.
  *  @param isExample TRUE if the documentation belongs to an example.
  *  @param exampleName Base name of the example file (0 if isExample is FALSE).
- *  @param sections  Sections (and anchors) found in the documentation are
- *                   collected here (if not 0).
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             const char *context, MemberDef *md,
                             const char *input,bool isExample,
-                            const char *exampleName=0,SectionDict *sections=0);
+                            const char *exampleName=0);
 
 /*! Main entry point for parsing simple text fragments. These 
  *  fragments are limited to words, whitespace and symbols.

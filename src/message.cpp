@@ -17,8 +17,11 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <qdatetime.h>
 #include "config.h"
 #include "util.h"
+#include "debug.h"
+#include "doxygen.h"
 
 static QCString outputFormat;
 static int warnFormatOrder; // 1 = $file,$line,$text
@@ -96,6 +99,10 @@ void msg(const char *fmt, ...)
 {
   if (!Config_getBool("QUIET"))
   {
+    if (Debug::isFlagSet(Debug::Time))
+    {
+      printf("%.3f sec: ",((double)Doxygen::runningTime.elapsed())/1000.0);
+    }
     va_list args;
     va_start(args, fmt);
     vfprintf(stdout, fmt, args);
