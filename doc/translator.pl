@@ -95,6 +95,21 @@
 #    as "obsolete" in the status (i.e. no guessing when it was last updated).
 #    The translator report include the notice about that situation.
 #
+# 2002/01/03
+#  - Minor correction of regexp to obtain the list of translator_xx.h files.
+#  - Translator report ASCII file now lists the implemented translator
+#    adapter classes; so you can check how many steps behind the up-to-date
+#    status your translator is.
+#
+# 2002/01/07
+#  - The list of the implemented translator-adapter classes now shows
+#    how many and what required methods the translator adapter implements.
+#
+# 2002/01/08
+#  - The mistake in comments inside the translator report corrected.
+#    The older translator adapters are derived from newer ones.
+#    The mistaken comment said the opposite.
+#
 ################################################################
 
 use 5.005;
@@ -193,7 +208,7 @@ sub GetPureVirtualFrom  ##{{{
 ################################################################
 # StripArgIdentifiers takes a method prototype (one line string),
 # removes the argument identifiers, and returns only the necessary
-# form of the prototype.
+# form of the prototype as the function result.
 #
 sub StripArgIdentifiers  ##{{{
 {
@@ -234,7 +249,7 @@ sub StripArgIdentifiers  ##{{{
         # Whitespaces are not only spaces. Moreover, the difference
         # may be in number of them in a sequence or in the type 
         # of a whitespace. This is the reason to replace each sequence
-        # of whitespace by a single, real space.
+        # of whitespaces by a single, real space.
         #
         $arg =~ s{\s+}{ }g;
         
@@ -344,6 +359,149 @@ sub GetInfoFrom  ##{{{
 }
 ##}}}
 
+
+################################################################
+# GetAdapterClassesInfo returns the list of strings with information
+# related to the adapter classes.  Each one-line string contains the
+# identifier of the adapter class and the number of required methods
+# that are implemented by the adapter.
+#
+# The function takes one agument -- the reference to the hash with
+# stripped prototypes of the required methods.
+#
+sub GetAdapterClassesInfo ##{{{
+{
+    # Get the reference to the hash with required prototypes.
+    #
+    my $reqref = shift; 
+    
+    # Let's open the file with the translator adapter classes.
+    #
+    my $fin = "$srcdir/translator_adapter.h";
+    open(FIN, "< $fin") or die "\nError when open < $fin: $!";
+    my @content = <FIN>;
+    close FIN;
+    my $cont = join("", @content);
+
+    # Prepare the list that will be returned as result.
+    #
+    my @result = ();
+    
+    # Remove the preprocessor directives.
+    #
+    $cont =~ s{^\s*#\w+.+$}{}mg;
+    
+    # Remove comments and empty lines.
+    #
+    $cont =~ s{\s*//.*$}{}mg;    # remove one-line comments
+    $cont =~ s{/\*.+?\*/}{}sg;   # remove C comments
+    $cont =~ s{\n\s*\n}{\n}sg;   # remove empty lines    
+
+    # Place delimiters to separate the classes, and remove 
+    # the TranslatorAdapterBase class.
+    #
+    $cont =~ s{\};\s*class\s+}{<class>}sg;
+    $cont =~ s{class\s+TranslatorAdapterBase\s+.+?<class>}{<class>}s;
+    $cont =~ s{\};}{}sg;
+    
+    # Remove the base classes and the beginning of the the class
+    # definitions.
+    #
+    $cont =~ s{(TranslatorAdapter[_0-9]+)\s*:.+?\{\s*(public\s*:)?}{$1}sg;
+    
+    # Remove all bodies of methods;
+    #
+    while ($cont =~ s/{[^{}]+?}//sg) {}
+    
+    # Remove the "virtual" keywords.
+    #
+    $cont =~ s{^\s*virtual\s+}{}mg;
+
+    # Remove the empty lines.
+    #
+    $cont =~ s{\n\s*\n}{\n}sg;
+
+    # Split the string into the lines again.
+    #
+    @content = split(/\n/, $cont);
+    
+    # Now the list contains only two kinds of lines.  The first
+    # kind of lines starts with the <class> tag and contains the
+    # identifier of the class.  The following lines list the
+    # non-stripped prototypes of implemented methods without the
+    # "virtual" keyword.
+    #
+    # Now we will produce the result by looping through all the
+    # lines and counting the prototypes of the required methods
+    # that are implemented by the adapter class.
+    #
+    my $info = '';
+    my $cnt = 0;
+    my $methods = '';
+    
+    foreach my $line (@content)
+    {
+        if ($line =~ m{^<class>(\w+)\s*$}i )
+        {
+            # Another adapter class found. 
+            #
+            my $adapter_class = $1;
+            
+            # If the $info is not empty then it contains partial
+            # information about the previously processed adapter. 
+            #
+            if ($info ne '')
+            {
+                # Complete the $info and push it into the @result.
+                #
+                $info .= sprintf("\timplements %2d required method%s...\n",
+                                 $cnt, (($cnt != 1) ? 's' : ''));
+                $methods .= "\n";
+                push(@result, "$info$methods");
+            }
+            
+            # Initialize the counter and store the adapter class identifier
+            # in the $info.
+            #
+            $info = $adapter_class;
+            $cnt = 0;
+            $methods = '';
+        }
+        else
+        {
+            # The line contains the prototype of the implemented method.
+            # If it is the required method, count it, and add it to the 
+            # string of methods.
+            #
+            my $stripped_prototype = StripArgIdentifiers($line);
+            
+            if (defined $$reqref{$stripped_prototype}) 
+            {
+                ++$cnt;
+                $methods .= "    $line\n";
+            }
+        }
+    }
+    
+    # If the $info is not empty then it contains partial
+    # information about the last processed adapter. 
+    #
+    if ($info ne '')
+    {
+        # Complete the $info and push it into the @result.
+        #
+        $info .= sprintf("\timplements %2d required method%s...\n",
+                         $cnt, (($cnt != 1) ? 's' : ''));
+        $methods .= "\n";
+        push(@result, "$info$methods");
+    }
+    
+    # Return the result list.
+    #
+    # push @result, $cont; # ???
+    return @result;
+}
+##}}}  
 
 ################################################################
 # GenerateLanguageDoc takes document templates and code sources
@@ -684,6 +842,7 @@ xxxTABLE_FOOTxxx
 }
 ##}}}
 
+
 ################################################################
 # CopyTemplateToLanguageDoc takes the $flangtpl template and 
 # generates $flangdoc without using information from other
@@ -816,7 +975,8 @@ print STDERR "\n\n";
     closedir DIR;          # ignore names with dot at the beginning
 
     my @files = sort 
-                grep { -f "$srcdir/$_" && m{^translator_..\.h$}i } 
+                grep { ! m{^translator_adapter\.h$}i }
+                grep { -f "$srcdir/$_" && m{^translator_\w+\.h$}i } 
                 @entries;
     ##}}}
     
@@ -832,13 +992,15 @@ print STDERR "\n\n";
     #
     my $output = '';
     my %details = ();
+    
+    # Initialize the list of the required methods.
+    #
+    my %required = ();
 
     # Remove the argument identifiers from the method prototypes
     # to get only the required form of the prototype. Fill the
     # hash with them. #{{{
     #
-    my %required = ();
-    
     foreach (@expected) {
         my $prototype = StripArgIdentifiers($_);
         $required{$prototype} = 1;
@@ -1110,17 +1272,34 @@ print STDERR "\n\n";
     }
     ##}}}
 
+    # List all the translator adapter classes to show for which versions
+    # the adapters had to be created.  Show, how many and what new methods
+    # are implemented by the adapters. #{{{
+    #
+    print FOUT "\n" .'-' x 70 . "\n";
+    print FOUT <<'xxxENDxxx';
+The following translator adapter classes are implemented -- the older (with
+lower number) are always derived from the newer. They implement the
+listed required methods. Notice that some versions of doxygen did not
+introduce any changes related to the language translators.  From here you may
+guess how much work should be done to update your translator:
+      
+xxxENDxxx
+  
+    my @adapter_info = GetAdapterClassesInfo(\%required);
+    
+    foreach (@adapter_info) { print FOUT "  $_"; }
+    
+    ##}}}
 
     # List the methods that are expected to be implemented.  #{{{
     #
-    print FOUT "\n\n" .'-' x 70 . "\n";
+    print FOUT "\n" .'-' x 70 . "\n";
     print FOUT "Localized translators are expected to implement "
              . "the following methods\n"
              . "(prototypes sorted aplhabetically):\n\n";
 
-    foreach (sort @expected) {
-        print FOUT "$_\n";
-    }
+    foreach (sort @expected) { print FOUT "$_\n";  }
     ##}}}
 
     # If there are some details for the translators, show them.  #{{{

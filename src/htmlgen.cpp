@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -31,36 +31,68 @@
 #include "language.h"
 #include "htmlhelp.h"
 
-#define GROUP_COLOR "#ff8080"
+// #define GROUP_COLOR "#ff8080"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x) 
 
+
+/*
+    changed default stylesheet, startIndexKey(), startIndexValue()
+    02 jan 2002, jh
+*/
+
 static const char *defaultStyleSheet = 
-      "H1 { text-align: center; }\n"
-      "CAPTION { font-weight: bold }\n"
-      "A.qindex {}\n"
-      "A.qindexRef {}\n"
-      "A.el { text-decoration: none; font-weight: bold }\n"
-      "A.elRef { font-weight: bold }\n"
-      "A.code { text-decoration: none; font-weight: normal; color: #4444ee }\n"
-      "A.codeRef { font-weight: normal; color: #4444ee }\n"
-      "A:hover { text-decoration: none; background-color: #f2f2ff }\n"
-      "DL.el { margin-left: -1cm }\n"
-      "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
-      "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
-      "TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
-      "TD.mdname1 { background-color: #f2f2ff; font-weight: bold; color: #602020; }\n"
-      "TD.mdname { background-color: #f2f2ff; font-weight: bold; color: #602020; width: 600px; }\n"
-      "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
-      "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
-      "FONT.keyword       { color: #008000 }\n"
-      "FONT.keywordtype   { color: #604020 }\n"
-      "FONT.keywordflow   { color: #e08000 }\n"
-      "FONT.comment       { color: #800000 }\n"
-      "FONT.preprocessor  { color: #806020 }\n"
-      "FONT.stringliteral { color: #002080 }\n"
-      "FONT.charliteral   { color: #008080 }\n";
+"H1 { text-align: center; }\n"
+"CAPTION { font-weight: bold }\n"
+"A.qindex {}\n"
+"A.qindexRef {}\n"
+"A.el { text-decoration: none; font-weight: bold }\n"
+"A.elRef { font-weight: bold }\n"
+"A.code { text-decoration: none; font-weight: normal; color: #4444ee }\n"
+"A.codeRef { font-weight: normal; color: #4444ee }\n"
+"A:hover { text-decoration: none; background-color: #f2f2ff }\n"
+"DL.el { margin-left: -1cm }\n"
+"DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
+"DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
+"TD.md { background-color: #f2f2ff; font-weight: bold; }\n"
+"TD.mdname1 { background-color: #f2f2ff; font-weight: bold; color: #602020; }\n"
+"TD.mdname { background-color: #f2f2ff; font-weight: bold; color: #602020; width: 600px; }\n"
+"DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
+"DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
+"BODY { background: white }\n"
+"TD.indexkey { \n"
+"   background-color: #eeeeff; \n"
+"   font-weight: bold; \n"
+"   padding-right  : 10px; \n"
+"   padding-top    : 2px; \n"
+"   padding-left   : 10px; \n"
+"   padding-bottom : 2px; \n"
+"   margin-left    : 0px; \n"
+"   margin-right   : 0px; \n"
+"   margin-top     : 2px; \n"
+"   margin-bottom  : 2px  \n"
+"}\n"
+"TD.indexvalue { \n"
+"   background-color: #eeeeff; \n"
+"   font-style: italic; \n"
+"   padding-right  : 10px; \n"
+"   padding-top    : 2px; \n"
+"   padding-left   : 10px; \n"
+"   padding-bottom : 2px; \n"
+"   margin-left    : 0px; \n"
+"   margin-right   : 0px; \n"
+"   margin-top     : 2px; \n"
+"   margin-bottom  : 2px  \n"
+"}\n"
+"FONT.keyword       { color: #008000 }\n"
+"FONT.keywordtype   { color: #604020 }\n"
+"FONT.keywordflow   { color: #e08000 }\n"
+"FONT.comment       { color: #800000 }\n"
+"FONT.preprocessor  { color: #806020 }\n"
+"FONT.stringliteral { color: #002080 }\n"
+"FONT.charliteral   { color: #008080 }\n";
+
 
 static QCString g_header;
 static QCString g_footer;
@@ -131,7 +163,7 @@ static void writeDefaultHeaderFile(QTextStream &t,const char *title,
     t << cssfi.fileName();
   }
   t << "\" rel=\"stylesheet\" type=\"text/css\">\n"
-    "</head><body bgcolor=\"#ffffff\">\n";
+    "</head><body>\n";
 }
 
 
@@ -154,7 +186,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
     << "align=\"middle\" border=0 width=110 height=53>\n"
     << "</a> $doxygenversion " << theTranslator->trWrittenBy()
     << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
-    << " &copy;&nbsp;1997-2001</small></address>\n"
+    << " &copy;&nbsp;1997-2002</small></address>\n"
     << "</body>\n"
     << "</html>\n";
 }
@@ -247,7 +279,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
     default:
       if (g_footer.isEmpty())
         t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;"
-             "1997-2001</small></address>\n</body>\n</html>\n";
+             "1997-2002</small></address>\n</body>\n</html>\n";
       break;
       
   }
@@ -614,7 +646,7 @@ void HtmlGenerator::startClassDiagram()
 void HtmlGenerator::endClassDiagram(ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
-  t << ":\n<p><center><img src=\""
+  t << "\n<p><center><img src=\""
     << fileName << ".gif\" usemap=\"#" << name << "_map\""
     << " border=\"0\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
@@ -812,7 +844,8 @@ void HtmlGenerator::endIndexList()
 
 void HtmlGenerator::startIndexKey() 
 { 
-  t << "  <tr bgcolor=\"#f0f0f0\"><td>"; 
+  // inserted 'class = ...', 02 jan 2002, jh
+  t << "  <tr><td class=\"indexkey\">"; 
 }
 
 void HtmlGenerator::endIndexKey()
@@ -822,7 +855,8 @@ void HtmlGenerator::endIndexKey()
 
 void HtmlGenerator::startIndexValue(bool) 
 { 
-  t << "<td>"; 
+  // inserted 'class = ...', 02 jan 2002, jh
+  t << "<td class=\"indexvalue\">"; 
 }
 
 void HtmlGenerator::endIndexValue(const char *,bool)

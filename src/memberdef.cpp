@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1305,7 +1305,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         ol.newParagraph();
 
-        QCString reimplFromLine = theTranslator->trReimplementedFromList(1);
+        QCString reimplFromLine; 
+        if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
+        {
+          reimplFromLine = theTranslator->trReimplementedFromList(1);
+        }
+        else
+        {
+          reimplFromLine = theTranslator->trImplementedFromList(1);
+        }
         int markerPos = reimplFromLine.find("@0");
         if (markerPos!=-1) // should always pass this.
         {
@@ -1359,7 +1367,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         // count the members that directly inherit from md and for
         // which the member and class are visible in the docs.
-        if ( bmd->isLinkable() && bcd->isLinkable() ) count++;
+        if ( bmd->isLinkable() && bcd->isLinkable() ) 
+        {
+          count++;
+        }
       }
       if (count>0)
       {
@@ -1367,8 +1378,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         // write the list of classes that overwrite this member
         ol.newParagraph();
 
-        QCString reimplInLine = 
-          theTranslator->trReimplementedInList(count);
+        QCString reimplInLine;
+        if (virt==Pure || (classDef && classDef->compoundType()==ClassDef::Interface))
+        {
+          reimplInLine = theTranslator->trImplementedInList(count);
+        }
+        else
+        {
+          reimplInLine = theTranslator->trReimplementedInList(count);
+        }
         static QRegExp marker("@[0-9]+");
         int index=0,newIndex,matchLen;
         // now replace all markers in reimplInLine with links to the classes

@@ -13,7 +13,7 @@
 # input used in their production; they are not affected by this license.
 
 all: language FORCE
-	@xcopy /y /s /q /i ..\examples ..\html\examples
+	@xcopy /s /q /i ..\examples ..\html\examples
 	set DOXYGEN_DOCDIR=. & \
 	set VERSION=$(VERSION) & \
 	$(DOXYGEN)\bin\doxygen

@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,13 +28,6 @@ class MainHandler;
 class DocHandler;
 class ProgramListingHandler;
 
-class CompoundIterator : public BaseIterator<ICompoundIterator,ICompound,ICompound>
-{
-  public:
-    CompoundIterator(const QList<ICompound> &list) : 
-      BaseIterator<ICompoundIterator,ICompound,ICompound>(list) {}
-};
-
 class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
 {
   public:
@@ -48,22 +41,34 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
     virtual void startLocation(const QXmlAttributes& attrib);
     virtual void startProgramListing(const QXmlAttributes& attrib);
+    virtual void addref() { m_refCount++; }
 
-    CompoundHandler(IBaseHandler *parent);
+    CompoundHandler(const QString &dirName);
     virtual ~CompoundHandler();
-    void initialize(MainHandler *m);
+    bool parseXML(const QString &compId);
+    void initialize(MainHandler *mh);
+    void insertMember(MemberHandler *mh);
 
     // ICompound implementation
     QString name() const { return m_name; }
     QString id()   const { return m_id;   }
-    QString kind() const { return m_kind; }
+    CompoundKind kind() const { return m_kind; }
+    QString kindString() const { return m_kindString; }
     ISectionIterator *sections() const 
     { return new SectionIterator(m_sections); }
     virtual IDocRoot *briefDescription() const
     { return m_brief; }
     virtual IDocRoot *detailedDescription() const
     { return m_detailed; }
-
+    virtual IMember *memberById(const QString &id) const
+    { return m_memberDict[id]; }
+    virtual IMemberIterator *memberByName(const QString &name) const
+    { 
+      QList<MemberHandler> *ml = m_memberNameDict[name]; 
+      if (ml==0) return 0;
+      return new MemberIterator(*ml);
+    }
+    virtual void release();
 
   private:
     struct SuperClass
@@ -87,15 +92,23 @@ class CompoundHandler : public ICompound, public BaseHandler<CompoundHandler>
     QList<SuperClass>       m_superClasses;
     QList<SubClass>         m_subClasses;
     QList<ISection>         m_sections;
-    IBaseHandler           *m_parent;
     DocHandler             *m_brief;
     DocHandler             *m_detailed;
     ProgramListingHandler  *m_programListing;
     QString                 m_id;
-    QString                 m_kind;
+    QString                 m_kindString;
+    CompoundKind            m_kind;
     QString                 m_name;
     QString                 m_defFile;
     int                     m_defLine;
+    QString                 m_xmlDir;
+    int                     m_refCount;
+    QDict<MemberHandler>          m_memberDict;
+    QDict<QList<MemberHandler> >  m_memberNameDict;
+    MainHandler            *m_mainHandler;
 };
+
+void compoundhandler_init();
+void compoundhandler_exit();
 
 #endif

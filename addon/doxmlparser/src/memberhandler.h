@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,6 +28,8 @@
 #include "dochandler.h"
 
 class MainHandler;
+class CompoundHandler;
+class SectionHandler;
 
 struct MemberReference : public IMemberReference
 {
@@ -46,13 +48,6 @@ class MemberReferenceIterator : public BaseIterator<IMemberReferenceIterator,IMe
   public:
     MemberReferenceIterator(const QList<MemberReference> &list) : 
       BaseIterator<IMemberReferenceIterator,IMemberReference,MemberReference>(list) {}
-};
-
-class MemberIterator : public BaseIterator<IMemberIterator,IMember,IMember>
-{
-  public:
-    MemberIterator(const QList<IMember> &list) : 
-      BaseIterator<IMemberIterator,IMember,IMember>(list) {}
 };
 
 class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
@@ -116,8 +111,12 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual ~MemberHandler();
 
     // IMember implementation
-    virtual QString kind() const 
+    virtual ICompound *compound() const;
+    virtual ISection *section() const;
+    virtual MemberKind kind() const
     { return m_kind; }
+    virtual QString kindString() const 
+    { return m_kindString; }
     virtual QString id() const 
     { return m_id; }
     virtual QString protection() const 
@@ -132,6 +131,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     { return m_isVolatile; }
     virtual ILinkedTextIterator *type() const 
     { return new LinkedTextIterator(m_type); }
+    virtual QString typeString() const
+    { return LinkedTextHandler::toString(m_type); }
     virtual IParamIterator *params() const 
     { return new ParamIterator(m_params); }
     virtual IMemberReferenceIterator *references() const 
@@ -162,10 +163,15 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     { return m_detailed; }
 
     void initialize(MainHandler *m);
+    void setCompoundHandler(CompoundHandler *c);
+    void setSectionHandler(SectionHandler *s);
 
   private:
     IBaseHandler *m_parent;
-    QString m_kind;
+    CompoundHandler *m_compound;
+    SectionHandler *m_section;
+    MemberKind m_kind;
+    QString m_kindString;
     QString m_id;
     QString m_protection;
     QString m_virtualness;
@@ -189,5 +195,15 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     LinkedTextHandler *m_linkedTextHandler;
     QList<EnumValueHandler> m_enumValues;
 };
+
+class MemberIterator : public BaseIterator<IMemberIterator,IMember,MemberHandler>
+{
+  public:
+    MemberIterator(const QList<MemberHandler> &list) : 
+      BaseIterator<IMemberIterator,IMember,MemberHandler>(list) {}
+};
+
+void memberhandler_init();
+void memberhandler_exit();
 
 #endif

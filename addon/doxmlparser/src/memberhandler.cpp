@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -18,6 +18,53 @@
 #include "dochandler.h"
 #include "mainhandler.h"
 #include "linkedtexthandler.h"
+#include "debug.h"
+
+//------------------------------------------------------------------------------
+
+class MemberTypeMap
+{
+  public:
+    MemberTypeMap()
+    {
+      m_map.setAutoDelete(TRUE);
+      m_map.insert("define",new int(IMember::Define));
+      m_map.insert("property",new int(IMember::Property));
+      m_map.insert("variable",new int(IMember::Variable));
+      m_map.insert("typedef",new int(IMember::Typedef));
+      m_map.insert("enum",new int(IMember::Enum));
+      m_map.insert("function",new int(IMember::Function));
+      m_map.insert("signal",new int(IMember::Signal));
+      m_map.insert("prototype",new int(IMember::Prototype));
+      m_map.insert("friend",new int(IMember::Friend));
+      m_map.insert("dcop",new int(IMember::DCOP));
+      m_map.insert("slot",new int(IMember::Slot));
+    }
+    IMember::MemberKind map(const QString &s)
+    {
+      int *val = m_map.find(s);
+      if (val==0) 
+      {
+        debug(1,"Warning: `%s' is an invalid member type\n",s.data());
+        return IMember::Invalid;
+      }
+      else return (IMember::MemberKind)*val;
+    }
+  private: 
+    QDict<int> m_map;
+};
+
+static MemberTypeMap *s_typeMap;
+
+void memberhandler_init()
+{
+  s_typeMap = new MemberTypeMap;
+}
+
+void memberhandler_exit()
+{
+  delete s_typeMap;
+}
 
 //------------------------------------------------------------------------------
 
@@ -28,7 +75,8 @@ void MemberReference::initialize(MainHandler *mh)
 
 IMember *MemberReference::member() const
 {
-  return m_mainHandler->memberById(m_memId);
+  //return m_mainHandler->memberById(m_memId);
+  return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -77,8 +125,9 @@ void EnumValueHandler::endInitializer()
 //------------------------------------------------------------------------------
 
 MemberHandler::MemberHandler(IBaseHandler *parent)
-  : m_parent(parent), m_brief(0), m_detailed(0)
+  : m_parent(parent), m_compound(0), m_brief(0), m_detailed(0)
 {
+  //printf("MemberHandler::MemberHandler() %p\n",this);
   addEndHandler("memberdef",this,&MemberHandler::endMember);
 
   addStartHandler("type",this,&MemberHandler::startType);
@@ -110,6 +159,9 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
   addStartHandler("location",this,&MemberHandler::startLocation);
   addEndHandler("location");
 
+  m_type.setAutoDelete(TRUE);
+  m_initializer.setAutoDelete(TRUE);
+  m_exception.setAutoDelete(TRUE);
   m_params.setAutoDelete(TRUE);
   m_references.setAutoDelete(TRUE);
   m_referencedBy.setAutoDelete(TRUE);
@@ -124,22 +176,25 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
 
 MemberHandler::~MemberHandler()
 {
+  debug(2,"MemberHandler::~MemberHandler() %p\n",this);
   delete m_brief;
   delete m_detailed;
   delete m_linkedTextHandler;
+  delete m_reimplements;
 }
 
 void MemberHandler::startMember(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
-  m_kind = attrib.value("kind");
+  m_kindString = attrib.value("kind");
+  m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_virtualness = attrib.value("virt");
   m_protection = attrib.value("prot");
   m_isConst = attrib.value("const")=="yes";
   m_isVolatile = attrib.value("volatile")=="yes";
-  printf("member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
-      m_kind.data(),m_id.data(),m_protection.data(),m_virtualness.data());
+  debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
+      m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
 
 void MemberHandler::startBriefDesc(const QXmlAttributes& attrib)
@@ -226,7 +281,7 @@ void MemberHandler::endMember()
 
 void MemberHandler::startType(const QXmlAttributes &)
 {
-  printf("startType!\n");
+  debug(2,"startType!\n");
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_type);
   m_linkedTextHandler->start("type");
@@ -234,7 +289,7 @@ void MemberHandler::startType(const QXmlAttributes &)
 
 void MemberHandler::startInitializer(const QXmlAttributes &)
 {
-  printf("startInitializer!\n");
+  debug(2,"startInitializer!\n");
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_initializer);
   m_linkedTextHandler->start("initializer");
@@ -242,7 +297,7 @@ void MemberHandler::startInitializer(const QXmlAttributes &)
 
 void MemberHandler::startException(const QXmlAttributes &)
 {
-  printf("startException!\n");
+  debug(2,"startException!\n");
   delete m_linkedTextHandler;
   m_linkedTextHandler = new LinkedTextHandler(this,m_exception);
   m_linkedTextHandler->start("exception");
@@ -251,7 +306,7 @@ void MemberHandler::startException(const QXmlAttributes &)
 void MemberHandler::endName()
 {
   m_name = m_curString.stripWhiteSpace();
-  printf("member name=`%s'\n",m_name.data());
+  debug(2,"member name=`%s'\n",m_name.data());
 }
 
 void MemberHandler::startParam(const QXmlAttributes& attrib)
@@ -296,4 +351,26 @@ void MemberHandler::initialize(MainHandler *mh)
   }
   if (m_reimplements) m_reimplements->initialize(mh);
 }
+
+void MemberHandler::setCompoundHandler(CompoundHandler *c)
+{
+  m_compound = c;
+}
+
+ICompound *MemberHandler::compound() const
+{
+  m_compound->addref();
+  return m_compound;
+}
+
+void MemberHandler::setSectionHandler(SectionHandler *c)
+{
+  m_section = c;
+}
+
+ISection *MemberHandler::section() const
+{
+  return m_section;
+}
+
 

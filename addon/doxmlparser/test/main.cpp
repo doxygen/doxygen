@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -312,11 +312,17 @@ int main(int argc,char **argv)
 {
   if (argc!=2)
   {
-    printf("Usage: %s file.xml\n",argv[0]);
+    printf("Usage: %s xmldir\n",argv[0]);
     exit(1);
   }
 
-  IDoxygen *dox = createObjectModelFromXML(argv[1]);
+  IDoxygen *dox = createObjectModel();
+
+  if (!dox->readXMLDir(argv[1]))
+  {
+    printf("Error reading %s/index.xml\n",argv[1]);
+    exit(1);
+  }
 
   ICompoundIterator *cli = dox->compounds();
   ICompound *comp;
@@ -324,12 +330,12 @@ int main(int argc,char **argv)
   for (cli->toFirst();(comp=cli->current());cli->toNext())
   {
     printf("Compound name=%s id=%s kind=%s\n",
-        comp->name().data(),comp->id().data(),comp->kind().data());
+        comp->name().data(),comp->id().data(),comp->kindString().data());
     ISectionIterator *sli = comp->sections();
     ISection *sec;
     for (sli->toFirst();(sec=sli->current());sli->toNext())
     {
-      printf("  Section kind=%s\n",sec->kind().data());
+      printf("  Section kind=%s\n",sec->kindString().data());
       IMemberIterator *mli = sec->members();
       IMember *mem;
       for (mli->toFirst();(mem=mli->current());mli->toNext())
@@ -412,6 +418,7 @@ int main(int argc,char **argv)
       printf("===== detailed description ==== \n");
       DumpDoc(doc);
     }
+    comp->release();
   }
   cli->release();
   printf("---------------------------\n");

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -179,6 +179,18 @@ void ClassDef::addMembersToMemberGroup()
   ::addMembersToMemberGroup(&friends,memberGroupSDict,this);
   ::addMembersToMemberGroup(&related,memberGroupSDict,this);
   ::addMembersToMemberGroup(&properties,memberGroupSDict,this);
+
+  // add members inside sections to their groups
+  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+  MemberGroup *mg;
+  for (;(mg=mgli.current());++mgli)
+  {
+    if (mg->allMembersInSameSection() && m_subGrouping) 
+    {
+      //printf("addToDeclarationSection(%s)\n",mg->header().data());
+      mg->addToDeclarationSection();
+    }
+  }
 }
 
 // adds new member definition to the class
@@ -722,7 +734,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
   ol.writeSynopsis();
   
-  if (m_incInfo)
+  if (m_incInfo && Config_getBool("SHOW_INCLUDE_FILES"))
   {
     QCString nm=m_incInfo->includeName.isEmpty() ? 
       (m_incInfo->fileDef ?
@@ -992,7 +1004,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     else // add this group to the corresponding member section
     {
       //printf("addToDeclarationSection(%s)\n",mg->header().data());
-      mg->addToDeclarationSection();
+      //mg->addToDeclarationSection();
     }
   }
 
@@ -1299,8 +1311,10 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("</td>");
           memberWritten=TRUE;
         }
-        else if (!Config_getBool("HIDE_UNDOC_MEMBERS")) // no documentation, 
-                                  // generate link to the class instead.
+        else if (!Config_getBool("HIDE_UNDOC_MEMBERS") && 
+                  (md->protection()!=Private || Config_getBool("EXTRACT_PRIVATE") || md->isFriend()) 
+                ) // no documentation, 
+                  // generate link to the class instead.
         {
           //ol.writeListItem();
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"><td>");

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -31,7 +31,6 @@
 #include <qstack.h>
   
 #include "config.h"
-#include "lang_cfg.h"
 #include "version.h"
 
 #undef Config_getString
@@ -1045,6 +1044,7 @@ void Config::check()
     filePatternList.append("*.hpp");
     filePatternList.append("*.h++");
     filePatternList.append("*.idl");
+    filePatternList.append("*.odl");
   }
 
   // add default pattern if needed
@@ -1602,8 +1602,8 @@ void Config::create()
                     "FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp \n"
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
-		    "*.c *.cc *.cxx *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
-		    "*.h++ *.idl \n"
+		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp \n"
+		    "*.h++ *.idl *.odl\n"
                  );
   cb = addBool(
                     "RECURSIVE",
@@ -1617,6 +1617,12 @@ void Config::create()
                     "The EXCLUDE tag can be used to specify files and/or directories that should \n"
                     "excluded from the INPUT source files. This way you can easily exclude a \n"
                     "subdirectory from a directory tree whose root is specified with the INPUT tag. \n"
+                 );
+  cb = addBool(
+                    "EXCLUDE_SYMLINKS",
+                    "The EXCLUDE_SYMLINKS tag can be used select whether or not files or directories \n"
+                    "that are symbolic links (a Unix filesystem feature) are excluded from the input. \n",
+                    FALSE
                  );
   cl->setWidgetType(ConfigList::FileAndDir);
   cl = addList(
@@ -2133,6 +2139,13 @@ void Config::create()
                     "in the class index. If set to NO only the inherited external classes \n"
                     "will be listed. \n",
                     FALSE
+                 );
+  cb = addBool(
+                    "EXTERNAL_GROUPS",
+                    "If the EXTERNAL_GROUPS tag is set to YES all external groups will be listed \n"
+                    "in the modules index. If set to NO, only the current project's groups will \n"
+                    "be listed. \n",
+                    TRUE
                  );
   cs = addString(
                     "PERL_PATH",

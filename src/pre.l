@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1568,6 +1568,10 @@ BN	[ \t\r\n]
                                           g_defArgsStr+=yytext;
 					  g_argDict->insert(argName,new int(g_defArgs)); 
 					  g_defArgs++;
+  					}
+<DefineText>"/**"|"/*!"			{
+  					  g_defText+=yytext;
+					  g_defLitText+=yytext;
   					}
 <DefineText>"/*"			{
   					  outputChar('/');outputChar('*');

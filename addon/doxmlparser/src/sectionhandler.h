@@ -3,7 +3,7 @@
  * $Id$
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -47,16 +47,43 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
     virtual ~SectionHandler();
 
     // ISection
-    virtual QString kind() const { return m_kind; }
+    virtual QString kindString() const 
+    { return m_kindString; }
+    virtual SectionKind kind() const 
+    { return m_kind; }
     virtual IMemberIterator *members() const 
     { return new MemberIterator(m_members); }
+    virtual bool isStatic() const
+    { 
+      return m_kind==PubStatFuncs || m_kind==PubStatAttribs || 
+             m_kind==ProStatFuncs || m_kind==ProStatAttribs || 
+             m_kind==PriStatFuncs || m_kind==PriStatAttribs;
+    }
+    virtual bool isPublic() const
+    {
+      return !isProtected() && !isPrivate();
+    }
+    virtual bool isProtected() const
+    {
+      return m_kind==ProTypes || m_kind==ProFuncs || m_kind==ProAttribs ||
+             m_kind==ProSlots || m_kind==ProStatFuncs || m_kind==ProStatAttribs;
+    }
+    virtual bool isPrivate() const
+    {
+      return m_kind==PriTypes || m_kind==PriFuncs || m_kind==PriAttribs ||
+             m_kind==PriSlots || m_kind==PriStatFuncs || m_kind==PriStatAttribs;
+    }
 
-    void initialize(MainHandler *m);
+    void initialize(CompoundHandler *c);
 
   private:
     IBaseHandler *m_parent;
-    QString m_kind;
-    QList<IMember> m_members;
+    SectionKind m_kind;
+    QString m_kindString;
+    QList<MemberHandler> m_members;
 };
+
+void sectionhandler_init();
+void sectionhandler_exit();
 
 #endif

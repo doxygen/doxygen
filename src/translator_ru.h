@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapter_1_2_13
 {
   private:
     /*! The Decode() inline assumes the source written in the 
@@ -1355,15 +1355,6 @@ class TranslatorRussian : public Translator
     {                                                                         
       QCString result((first_capital ? "Автор" : "автор"));
       if (!singular) result+="ы";
-      return decode(result); 
-    }
-
-    /*! This text is generated when the \\requirements command is used
-    */
-    virtual QCString trRequirements(bool first_capital, bool singular)
-    {                                                                         
-      QCString result((first_capital ? "Требовани" : "требовани"));
-      if (!singular)  result+="я"; else result+="е";
       return decode(result); 
     }
 

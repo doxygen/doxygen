@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -646,11 +646,15 @@ static void generateClassOrGlobalLink(OutputDocInterface &ol,char *clName,int *c
 	  writeMultiLineCodeLink(ol,d->getReference(),d->getOutputFileBase(),md->getBodyAnchor(),clName);
 	  if (g_currentMemberDef)
 	  {
-	    if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
+	    if (Config_getBool("REFERENCED_BY_RELATION") && 
+		(g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
+	       )
 	    {
               md->addSourceReferencedBy(g_currentMemberDef);
 	    }
-	    if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
+	    if (Config_getBool("REFERENCES_RELATION") && 
+	        (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
+	       )
 	    {
               g_currentMemberDef->addSourceReferences(md);
 	    }
@@ -710,11 +714,15 @@ static bool getLink(const char *className,
       if (g_currentDefinition && g_currentMemberDef &&
 	  md!=g_currentMemberDef && g_insideBody)
       {
-        if (Config_getBool("REFERENCED_BY_RELATION") && g_currentMemberDef->isFunction())
+        if (Config_getBool("REFERENCED_BY_RELATION") && 
+	    (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot()) 
+	   )
 	{
           md->addSourceReferencedBy(g_currentMemberDef);
 	}
-	if (Config_getBool("REFERENCES_RELATION") && g_currentMemberDef->isFunction())
+	if (Config_getBool("REFERENCES_RELATION") && 
+	    (g_currentMemberDef->isFunction() || g_currentMemberDef->isSlot())
+	   )
 	{
           g_currentMemberDef->addSourceReferences(md);
 	}

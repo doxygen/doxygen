@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -5221,6 +5221,7 @@ static void buildPageList(Entry *root)
 {
   if (root->section == Entry::PAGEDOC_SEC)
   {
+    //printf("buildPageList %s\n",root->name.data());
     if (!root->name.isEmpty())
     {
       addRelatedPage(root);
@@ -6038,6 +6039,7 @@ static int readDir(QFileInfo *fi,
          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
       }
       else if (cfi->isFile() && 
+          (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
           (patList==0 || patternMatch(cfi,patList)) && 
           !patternMatch(cfi,exclPatList))
       {
@@ -6069,6 +6071,7 @@ static int readDir(QFileInfo *fi,
         if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
       }
       else if (recursive &&
+          (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
           cfi->isDir() && cfi->fileName()!="." && 
           cfi->fileName()!="..")
       {
@@ -6150,40 +6153,45 @@ static int readFileOrDirectory(const char *s,
       {
         err("Error: source %s is not a readable file or directory... skipping.\n",s);
       }
-      else if (fi.isFile()) 
+      else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
       {
-        totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
-        //fiList->inSort(new FileInfo(fi));
-        QCString name=convertToQCString(fi.fileName());
-        //printf("New file %s\n",name.data());
-        if (fnDict)
+        if (fi.isFile())
         {
-          FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
-          FileName *fn=0;
-          if (!name.isEmpty() && (fn=(*fnDict)[name]))
+          totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input); 
+          //fiList->inSort(new FileInfo(fi));
+          QCString name=convertToQCString(fi.fileName());
+          //printf("New file %s\n",name.data());
+          if (fnDict)
           {
-            fn->append(fd);
+            FileDef  *fd=new FileDef(fi.dirPath(TRUE)+"/",name);
+            FileName *fn=0;
+            if (!name.isEmpty() && (fn=(*fnDict)[name]))
+            {
+              fn->append(fd);
+            }
+            else
+            {
+              fn = new FileName(fi.absFilePath(),name);
+              fn->append(fd);
+              if (fnList) fnList->inSort(fn);
+              fnDict->insert(name,fn);
+            }
           }
-          else
+          QCString *rs=0;
+          if (resultList || resultDict)
           {
-            fn = new FileName(fi.absFilePath(),name);
-            fn->append(fd);
-            if (fnList) fnList->inSort(fn);
-            fnDict->insert(name,fn);
+            rs=new QCString(fi.absFilePath());
           }
+          if (resultList) resultList->append(rs);
+          if (resultDict) resultDict->insert(fi.absFilePath(),rs);
         }
-        QCString *rs=0;
-        if (resultList || resultDict)
+        else if (fi.isDir()) // readable dir
         {
-          rs=new QCString(fi.absFilePath());
+          totalSize+=readDir(&fi,fnList,fnDict,exclDict,patList,
+              exclPatList,resultList,resultDict,errorIfNotExist,
+              recursive);
         }
-        if (resultList) resultList->append(rs);
-        if (resultDict) resultDict->insert(fi.absFilePath(),rs);
       }
-      else if (fi.isDir()) // readable dir
-        totalSize+=readDir(&fi,fnList,fnDict,exclDict,patList,
-            exclPatList,resultList,resultDict,errorIfNotExist,
-            recursive);
     }
   }
   return totalSize;
@@ -6226,7 +6234,7 @@ static void readFormulaRepository()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2001\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2002\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);

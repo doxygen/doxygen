@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1072,23 +1072,26 @@ void TagFileParser::buildLists(Entry *root)
     tpgi = m_tagFilePackages.next();
   }
 
-  // build group list
-  TagGroupInfo *tgi = m_tagFileGroups.first();
-  while (tgi)
+  // build group list, but only if config file says to include it
+  if (Config_getBool("EXTERNAL_GROUPS")) 
   {
-    Entry *ge    = new Entry;
-    ge->section  = Entry::GROUPDOC_SEC;
-    ge->name     = tgi->name;
-    ge->type     = tgi->title;
-    addDocAnchors(ge,tgi->docAnchors);
-    TagInfo *ti  = new TagInfo;
-    ti->tagName  = m_tagName;
-    ti->fileName = tgi->filename;
-    ge->tagInfo  = ti;
-
-    buildMemberList(ge,tgi->members);
-    root->addSubEntry(ge);
-    tgi = m_tagFileGroups.next();
+    TagGroupInfo *tgi = m_tagFileGroups.first();
+    while (tgi)
+    {
+      Entry *ge    = new Entry;
+      ge->section  = Entry::GROUPDOC_SEC;
+      ge->name     = tgi->name;
+      ge->type     = tgi->title;
+      addDocAnchors(ge,tgi->docAnchors);
+      TagInfo *ti  = new TagInfo;
+      ti->tagName  = m_tagName;
+      ti->fileName = tgi->filename;
+      ge->tagInfo  = ti;
+      
+      buildMemberList(ge,tgi->members);
+      root->addSubEntry(ge);
+      tgi = m_tagFileGroups.next();
+    }
   }
 
   // build page list

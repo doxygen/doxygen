@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,7 +37,7 @@
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public Translator
+class TranslatorFrench : public TranslatorAdapter_1_2_13
 {
   public:
     QCString idLanguage()

@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public Translator
+class TranslatorJapanese : public TranslatorAdapter_1_2_13
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -52,7 +52,7 @@ class TranslatorJapanese : public Translator
     virtual QCString idLanguageCharset()
     {
 #ifdef _WIN32
-      return "ShiftJIS";
+      return "Shift_JIS";
 #else
       return "euc-jp";
 #endif
@@ -101,15 +101,15 @@ class TranslatorJapanese : public Translator
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return decode("すべてのメンバリスト"); }
+    { return decode("すべてのメンバ一覧"); }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return decode("メンバリスト"); }
+    { return decode("メンバ一覧"); }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode("これは全メンバリストです。"); }
+    { return decode("これは全メンバの一覧です。"); }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
@@ -120,9 +120,9 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result;
-      if (s) result=(QCString)s+"の";
-      result+="ソースコードから Doxygen が自動的に生成しました。";
-      return decode(result);
+      if (s) result=(QCString)s+decode("の");
+      result+=decode("ソースから Doxygen が生成しました。");
+      return result;
     }
 
     /*! put after an enum name in the list of all members */
@@ -135,7 +135,7 @@ class TranslatorJapanese : public Translator
     
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return decode("次で定義されました。"); }
+    { return decode("次で定義されています。"); }
 
     // quick reference sections
 
@@ -164,7 +164,7 @@ class TranslatorJapanese : public Translator
     
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return decode("ファイルリスト"); }
+    { return decode("ファイル一覧"); }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     virtual QCString trHeaderFiles()
@@ -209,17 +209,16 @@ class TranslatorJapanese : public Translator
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return decode("この継承リストはおおまかにはソートされていますが、"
-             "アルファベット順で完全にソートされてはいません。");
+    { return decode("この継承一覧はおおまかにはソートされていますが、"
+             "完全にアルファベット順でソートされてはいません。");
     }
 
     /*! This is an introduction to the list with all files. */
-    virtual QCString trFileListDescription(bool extractAll)
+    virtual QCString trFileListDescription(bool /*extractAll*/)
     {
-      QCString result="このリストは、";
-      if (!extractAll) result+="ドキュメント化され、";
-      result+="簡易説明を持つファイルすべてのリストです。";
-      return decode(result);
+      QCString result=decode("これは");
+      result+=decode("ファイル一覧です。");
+      return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
@@ -227,49 +226,46 @@ class TranslatorJapanese : public Translator
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  return decode("データ構造の簡単な説明です。");
+	  return decode("データ構造の解説です。");
 	}
       else
 	{
-	  return decode("クラス、構造体、共用体、インタフェースの簡単な説明です。");
+	  return decode("クラス、構造体、共用体、インタフェースの解説です。");
 	}
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="これは";
-      if (!extractAll) result+="ドキュメント化された";
+      QCString result=decode("これは");
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  result+="フィールドすべてのリストで、それぞれ";
-	  if (extractAll) result+="が属している構造体/共用体";
+	  result+=decode("フィールドの一覧でそれぞれ");
+	  if (extractAll) result+=decode("が属している構造体/共用体");
 	}
       else
 	{
-	  result+="クラスメンバすべてのリストで、それぞれ";
-	  if (extractAll) result+="が属しているクラス";
+	  result+=decode("クラスメンバの一覧で、それぞれ");
+	  if (extractAll) result+=decode("が属しているクラス");
 	}
-      result+="の解説へのリンクが張られています。";
-      return decode(result);
+      result+=decode("の解説へリンクしています。");
+      return result;
     }
 
     /*! This is an introduction to the page with all file members. */
-    virtual QCString trFileMembersDescription(bool extractAll)
+    virtual QCString trFileMembersDescription(bool /*extractAll*/)
     {
-      QCString result="これは";
-      if (!extractAll) result+="ドキュメント化された";
+      QCString result=decode("これは");
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
 	{
-	  result+="関数、変数、マクロ、列挙型、型定義のリストで、それぞれ";
+	  result+=decode("関数、変数、マクロ、列挙型、型定義の");
 	}
       else
 	{
-	  result+="ファイルメンバすべてのリストで、それぞれ";
+	  result+=decode("ファイルメンバの");
 	}
-      if (extractAll) result+="が属しているファイル";
-      result+="の解説へのリンクが張られています。";
-      return decode(result);
+      result+=decode("一覧です。それぞれが属しているファイルの解説へリンクしています。");
+      return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
@@ -278,15 +274,15 @@ class TranslatorJapanese : public Translator
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return decode("すべての例のリストです。"); }
+    { return decode("すべての例の一覧です。"); }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode("関連するドキュメントページすべてのリストです。"); }
+    { return decode("関連ページの一覧です。"); }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return decode("すべてのモジュールのリストです。"); }
+    { return decode("すべてのモジュールの一覧です。"); }
 
     /*! This sentences is used in the annotated class/file lists if no brief
      * description is given. 
@@ -480,9 +476,9 @@ class TranslatorJapanese : public Translator
     virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result;
-      if (projName) result+=(QCString)projName+"に対して";
-      result+=(QCString)date+"に生成されました。";
-      return decode(result);
+      if (projName) result+=(QCString)projName+decode("に対して");
+      result+=(QCString)date+decode("に生成されました。");
+      return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
@@ -494,7 +490,7 @@ class TranslatorJapanese : public Translator
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return decode((QCString)clName+"に対する継承グラフ");
+      return (QCString)clName+decode("に対する継承グラフ");
     }
     
     /*! this text is generated when the \\internal command is used. */
@@ -552,15 +548,14 @@ class TranslatorJapanese : public Translator
     
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return decode("名前空間リスト"); }
+    { return decode("名前空間一覧"); }
 
     /*! used as an introduction to the namespace list */
-    virtual QCString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool /*extractAll*/)
     {
-      QCString result="このリストは、簡易説明を持つすべての";
-      if (!extractAll) result+="ドキュメント化された";
-      result+="名前空間のリストです。";
-      return decode(result);
+      QCString result=decode("");
+      result+=decode("名前空間の一覧です。");
+      return result;
     }
 
     /*! used in the class documentation as a header before the list of all
@@ -591,29 +586,29 @@ class TranslatorJapanese : public Translator
       QCString result="";
       switch(compType)
       {
-        case ClassDef::Class:      result+="クラス "; break;
-        case ClassDef::Struct:     result+="構造体 "; break;
-        case ClassDef::Union:      result+="共用体 "; break;
-        case ClassDef::Interface:  result+="インタフェース"; break;
-        case ClassDef::Exception:  result+="例外"; break; //TODO:fixme
+        case ClassDef::Class:      result+=decode("クラス "); break;
+        case ClassDef::Struct:     result+=decode("構造体 "); break;
+        case ClassDef::Union:      result+=decode("共用体 "); break;
+        case ClassDef::Interface:  result+=decode("インタフェース"); break;
+        case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
-      if (isTemplate) result+=" テンプレート";
-      result+=(QCString)clName+" の解説";
-      return decode(result);
+      if (isTemplate) result+=decode(" テンプレート");
+      result+=(QCString)clName+decode(" の解説");
+      return result;
     }
 
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result="ファイル "+(QCString)fileName+" の解説"; 
-      return decode(result);
+      QCString result=decode("")+(QCString)fileName+decode(" の解説"); 
+      return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result="名前空間 "+(QCString)namespaceName+" の解説";
-      return decode(result);
+      QCString result=decode("名前空間 ")+(QCString)namespaceName+decode(" の解説");
+      return result;
     }
     
     /* these are for the member sections of a class, struct or union */
@@ -655,12 +650,12 @@ class TranslatorJapanese : public Translator
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
           if (i<numEntries-2) // not the fore last entry 
-            result+=", ";
+            result+=decode(", ");
           else                // the fore last entry
-            result+=", と ";
+            result+=decode(", と ");
         }
       }
-      return decode(result); 
+      return result; 
     }
     
     /*! used in class documentation to produce a list of base classes,
@@ -668,7 +663,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return decode(trWriteList(numEntries)+"を継承しています。");
+      return trWriteList(numEntries)+decode("を継承しています。");
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -676,7 +671,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return decode(trWriteList(numEntries)+"に継承されています。");
+      return trWriteList(numEntries)+decode("に継承されています。");
     }
 
     /*! used in member documentation blocks to produce a list of 
@@ -684,7 +679,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return decode(trWriteList(numEntries)+"を再定義しています。");
+      return trWriteList(numEntries)+decode("を再定義しています。");
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -692,7 +687,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return decode(trWriteList(numEntries)+"で再定義されています。");
+      return trWriteList(numEntries)+decode("で再定義されています。");
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -702,15 +697,14 @@ class TranslatorJapanese : public Translator
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     { 
-	QCString result="これは";
-      if (!extractAll) result+="ドキュメント化された";
-      result+="名前空間すべてのリストで、それぞれ";
+	QCString result=decode("これは");
+      result+=decode("名前空間の一覧です。それぞれ");
       if (extractAll) 
-	  result+="、名前空間の解説";
+	  result+=decode("の名前空間の解説");
       else 
-	  result+="が属している名前空間";
-      result+="へのリンクが張られています。";
-      return decode(result);
+	  result+=decode("が属している名前空間");
+      result+=decode("へリンクしています。");
+      return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the 
      *  index of all namespaces.
@@ -745,24 +739,24 @@ class TranslatorJapanese : public Translator
         bool)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"この";
+      QCString result=(QCString)decode("この");
       switch(compType)
       {
-        case ClassDef::Class:      result+="クラス"; break;
-        case ClassDef::Struct:     result+="構造体"; break;
-        case ClassDef::Union:      result+="共用体"; break;
-        case ClassDef::Interface:  result+="インタフェース"; break;
-        case ClassDef::Exception:  result+="例外"; break; //TODO:fixme
+        case ClassDef::Class:      result+=decode("クラス"); break;
+        case ClassDef::Struct:     result+=decode("構造体"); break;
+        case ClassDef::Union:      result+=decode("共用体"); break;
+        case ClassDef::Interface:  result+=decode("インタフェース"); break;
+        case ClassDef::Exception:  result+=decode("例外"); break; //TODO:fixme
       }
-      result+="の解説は次のファイルから生成されました:";
-      return decode(result);
+      result+=decode("の解説は次のファイルから生成されました:");
+      return result;
     }
 
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return decode("アルファベット順リスト"); }
+    { return decode("アルファベット順一覧"); }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -793,11 +787,11 @@ class TranslatorJapanese : public Translator
     }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return decode("ファイル @1 の @0 行で定義されています。");
+      return decode(" @1 の @0 行で定義されています。");
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return decode("ファイル @0 で定義されています。");
+      return decode(" @0 で定義されています。");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -816,12 +810,12 @@ class TranslatorJapanese : public Translator
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return decode((QCString)clName+"のコラボレーション図");
+      return (QCString)clName+decode("のコラボレーション図");
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-	return decode((QCString)fName+"のインクルード依存関係図");
+	return (QCString)fName+decode("のインクルード依存関係図");
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -831,12 +825,12 @@ class TranslatorJapanese : public Translator
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return decode("このファイルのソースコードを見る。");
+      return decode("ソースコードを見る。");
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return decode("このファイルの解説を見る。");
+      return decode("解説を見る。");
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
@@ -873,7 +867,7 @@ class TranslatorJapanese : public Translator
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return decode("クラス階層図(テキスト)を見る。");
+      return decode("クラス階層図を見る。");
     }
     virtual QCString trPageIndex()
     {
@@ -944,7 +938,7 @@ class TranslatorJapanese : public Translator
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return decode("TODOリスト");
+      return decode("TODO一覧");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -953,7 +947,7 @@ class TranslatorJapanese : public Translator
 
     virtual QCString trReferencedBy()
     {
-      return decode("参照位置");
+      return decode("呼出");
     }
     virtual QCString trRemarks()
     {
@@ -965,7 +959,7 @@ class TranslatorJapanese : public Translator
     }
     virtual QCString trInclByDepGraph()
     {
-	return decode("このグラフは、このファイルがどのファイルから直接、間接的に"
+	return decode("このグラフは、どのファイルから直接、間接的に"
              "インクルードされているかを示しています。");
     }
     virtual QCString trSince()
@@ -1056,7 +1050,7 @@ class TranslatorJapanese : public Translator
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return decode("テストリスト");
+      return decode("テスト一覧");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1109,17 +1103,17 @@ class TranslatorJapanese : public Translator
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return decode((QCString)"パッケージ "+name);
+      return (QCString)decode("パッケージ ")+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return decode("パッケージリスト");
+      return decode("パッケージ一覧");
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return decode("簡易説明を持つパッケージです。");
+      return decode("これはパッケージ一覧です。");
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1150,7 +1144,7 @@ class TranslatorJapanese : public Translator
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode("バグのリスト");
+      return decode("バグ一覧");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1210,8 +1204,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("クラス");
-      return decode(result); 
+      QCString result(decode("クラス"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1222,8 +1216,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("ファイル");
-      return decode(result); 
+      QCString result(decode("ファイル"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1234,8 +1228,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("名前空間");
-      return decode(result); 
+      QCString result(decode("名前空間"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1246,8 +1240,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("グループ");
-      return decode(result); 
+      QCString result(decode("グループ"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1258,8 +1252,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("ページ");
-      return decode(result); 
+      QCString result(decode("ページ"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1270,8 +1264,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("メンバ");
-      return decode(result); 
+      QCString result(decode("メンバ"));
+      return result; 
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1282,8 +1276,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("フィールド");
-      return decode(result); 
+      QCString result(decode("フィールド"));
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1294,8 +1288,8 @@ class TranslatorJapanese : public Translator
     { 
       first_capital = first_capital;
       singular = singular;
-      QCString result("グローバル");
-      return decode(result);
+      QCString result(decode("グローバル"));
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1308,8 +1302,8 @@ class TranslatorJapanese : public Translator
     {                                                                         
       first_capital = first_capital;
       singular = singular;
-      QCString result("作者");
-      return decode(result); 
+      QCString result(decode("作者"));
+      return result; 
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1324,9 +1318,5 @@ class TranslatorJapanese : public Translator
     }
 
 };
-
-
-
-
 
 #endif

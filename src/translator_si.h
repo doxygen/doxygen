@@ -21,7 +21,7 @@
 #define TRANSLATOR_SI_H
 
 
-class TranslatorSlovene : public Translator
+class TranslatorSlovene : public TranslatorAdapter_1_2_13
 {
   public:
     QCString idLanguage()

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -416,7 +416,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
         {
           ol.docify(name);
         }
-        if (md->isFunction()) ol.docify("()");
+        if (md->isFunction() && md->isSlot()) ol.docify("()");
       }
       index=newIndex+matchLen;
     } 

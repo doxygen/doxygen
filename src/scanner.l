@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1926,7 +1926,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FuncFuncType>.				{
   					  current->type += *yytext;
   					}
-<FindMembers>"("/{BN}*{ID}{BN}*"*"	{ // for catching typedef void (__stdcall *f)() like definitions
+<FindMembers>"("/{BN}*{ID}{BN}*"*"{BN}*{ID}*")(" { // for catching typedef void (__stdcall *f)() like definitions
                                           if (current->type.left(7)=="typedef" && current->bodyLine==-1) 
 					    // the bodyLine check is to prevent this guard to be true more than once
 					  {
@@ -2813,8 +2813,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  current->doc+=yytext;
 					  BEGIN( tmpDocType );
   					}
-<JavaDoc>"<"({TABLE}|{UL}|{OL}|{DL}){ATTR}|{P}">"	{  // end brief upon encountering any of these
-  					  //current->doc+=yytext;
+<JavaDoc>"<"({TABLE}|{UL}|{OL}|{DL}|{P}){ATTR}">"	{  // end brief upon encountering any of these
 					  int i;
 					  for (i=yyleng-1;i>=0;i--)
 					  {
@@ -4045,7 +4044,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    current->brief+=yytext;
 					  }
   					}
-<DefLineDoc,LineDoc,ClassDoc,Doc>"/*"   { current->doc += yytext; }
+<DefLineDoc,LineDoc,ClassDoc,PageDoc,ExampleDoc,Doc>"/*"|"//"   { current->doc += yytext; }
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}

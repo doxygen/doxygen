@@ -37,16 +37,28 @@ class TranslatorAdapterBase : public Translator
      *  \sa createUpdateNeededMessage()
      */
     virtual QCString updateNeededMessage() = 0;
+
 };
 
-class TranslatorAdapter_1_2_11 : public TranslatorAdapterBase
+class TranslatorAdapter_1_2_13 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage() 
+    { return createUpdateNeededMessage(idLanguage(),"release 1.2.13"); }
+
+    virtual QCString trImplementedFromList(int numEntries) 
+    { return english.trImplementedFromList(numEntries); }
+
+    virtual QCString trImplementedInList(int numEntries) 
+    { return english.trImplementedInList(numEntries); }
+};
+
+class TranslatorAdapter_1_2_11 : public TranslatorAdapter_1_2_13
 {
   public:
     virtual QCString updateNeededMessage() 
     { return createUpdateNeededMessage(idLanguage(),"release 1.2.11"); }
    
-    // Put new adapter methods below...
-    // 
     virtual QCString trReferences()
     { return english.trReferences(); }
     

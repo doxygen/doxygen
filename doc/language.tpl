@@ -291,10 +291,24 @@ translator adapter, that is used as your base class. When there is
 not such a method in your translator adapter base class, you probably
 can change the translator adapter base to the newer one.
 
-Do not blindly implement all methods that are implemented by your
-translator adapter base class.  The reason is that the adapter
+Probably the easiest approach of the gradual update is to look at
+the translator report to the part where the list of the implemented
+translator adapters is shown. Then:
+ - Look how many required methods each adapter implements and guess
+   how many methods you are willing to update (to spend the time
+   with).  
+ - Choose the related oldest translator adapters to be removed (i.e.
+   not used by your translator).
+ - Change the base class of your translator class to the translator
+   adapter that you want to use.
+ - Implement the methods that were implemented by the older translator
+   adapters.
+
+Notice: Do not blindly implement all methods that are implemented by
+your translator adapter base class.  The reason is that the adapter
 classes implement also obsolete methods.  Another reason is that
-some of the methods could become obsolete from some newer adapter on.
+some of the methods could become obsolete from some newer adapter
+on.  Focus on the methods listed as \e required.
 
 <b>The really obsolete language translators</b> may lead to too much
 complicated adapters.  Because of that, doxygen developers may decide

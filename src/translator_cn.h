@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2001 by Dimitri van Heesch.
+ * Copyright (C) 1997-2002 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -18,15 +18,13 @@
 #ifndef TRANSLATOR_CN_H
 #define TRANSLATOR_CN_H
 
-#include "translator_adapter.h"
-
 /*!
    If you want insert a space whenever Chinese meets English charactors, set
    CN_SPC to " ", else null.
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_2_11
+class TranslatorChinese : public TranslatorAdapter_1_2_13
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -54,17 +52,9 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
 		 */
 		virtual QCString latexLanguageSupportCommand()
 		{
-   		QCString result(latexBabelPackage());
-      if (!result.isEmpty())
-      {
-        result = "\\usepackage{" + result;
-        result += "}\n";
-      }
-      return result;
+      return "";
 		}
 
-    virtual QCString latexBabelPackage()
-    { return "CJK"; }
 
 		/*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
@@ -157,9 +147,6 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
 
 		// quick reference sections
 
-
-    virtual QCString trVerbatimText(const char *f)
-    { return (QCString)"这是头文件"CN_SPC+f+CN_SPC"的源代码。"; }
 
 		/*! This is put above each page as a link to the list of all groups of 
 		 *  compounds or files (see the \\group command).
@@ -384,8 +371,6 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
     virtual QCString trEnumerationValues()
     { return "枚举值"; }
 
-    virtual QCString trAuthor()
-    { return "作者"; }
 
  		virtual QCString trDefineDocumentation()
     { return "宏定义文档"; }
@@ -415,9 +400,6 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
 				return "组合类型"; 
 			}
 		}
-
- 		virtual QCString trFiles()
-    { return "文件"; }
 
  		virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
@@ -455,9 +437,6 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
 
  		virtual QCString trDate()
     { return "日期"; }
-
- 		virtual QCString trAuthors()
-    { return "作者"; }
 
  		virtual QCString trReturns()
     { return "返回"; }
@@ -1289,6 +1268,16 @@ class TranslatorChinese : public TranslatorAdapter_1_2_11
 			return "作者";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "参考";
+    }
 };
 
 #endif
