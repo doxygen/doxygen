@@ -1623,7 +1623,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defLitText+=' ';
   					  BEGIN(SkipCPPComment);
   					}
-<SkipCComment>"*/"			{
+<SkipCComment>[/]?"*/"			{
+  					  if (yytext[0]=='/') outputChar('/');
   					  outputChar('*');outputChar('/');
 					  if (--g_commentCount<=0)
 					  {
@@ -1647,7 +1648,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment>.				{
   					  outputChar(*yytext);
   					}
-<RemoveCComment>"*/"			{ BEGIN(g_lastCContext); }
+<RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }
 <RemoveCComment>"//"			
 <RemoveCComment>"/*"
 <RemoveCComment>[^*\n]+

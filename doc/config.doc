@@ -417,6 +417,8 @@ function's detailed documentation block.
   comments) as a brief description. This used to be the default behaviour.
   The new default is to treat a multi-line C++ comment block as a detailed
   description. Set this tag to YES if you prefer the old behaviour instead.
+  Note that setting this tag to YES also means that rational rose comments
+  are not recognised any more.
 
 \anchor cfg_details_at_top
 <dt>\c DETAILS_AT_TOP <dd>

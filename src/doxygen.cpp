@@ -1239,7 +1239,6 @@ static void findIncludedUsingDirectives()
     {
       fd->visited=FALSE;
     }
-    fn=Doxygen::inputNameList.next();
   }
   // then recursively add using directives found in #include files
   // to files that have not been visited.
@@ -1247,11 +1246,14 @@ static void findIncludedUsingDirectives()
   {
     FileNameIterator fni(*fn);
     FileDef *fd;
-    for (;(fd=fni.current());++fni)
+    for (fni.toFirst();(fd=fni.current());++fni)
     {
-      if (!fd->visited) fd->addIncludedUsingDirectives();
+      if (!fd->visited) 
+      {
+        //printf("----- adding using directives for file %s\n",fd->name().data());
+        fd->addIncludedUsingDirectives();
+      }
     }
-    fn=Doxygen::inputNameList.next();
   }
 }
 
@@ -4419,6 +4421,10 @@ static void findMember(Entry *root,
   { 
     Debug::print(Debug::FindMembers,0,
                  "1. funcName=`%s'\n",funcName.data());
+    if (funcName.left(9)=="operator ")
+    {
+      funcName = substitute(funcName,className+"::","");
+    }
     if (!funcTempList.isEmpty()) // try with member specialization
     {
       mn=Doxygen::memberNameSDict[funcName+funcTempList];
@@ -4677,9 +4683,10 @@ static void findMember(Entry *root,
                 {
                   warn_cont("%s ",md->typeString());
                 }
-                warn_cont("%s::%s%s\n",
-                    cd->qualifiedNameWithTemplateParameters().data(),
-                    md->name().data(),md->argsString());
+                QCString qScope = cd->qualifiedNameWithTemplateParameters();
+                if (!qScope.isEmpty()) warn_cont("%s::%s",qScope.data(),md->name().data());
+                if (md->argsString()) warn_cont("%s",md->argsString());
+                warn_cont("\n");
               }
             }
           }

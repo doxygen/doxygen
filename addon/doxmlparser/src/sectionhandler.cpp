@@ -88,6 +88,8 @@ SectionHandler::SectionHandler(IBaseHandler *parent) : m_parent(parent)
   m_members.setAutoDelete(TRUE);
   addEndHandler("sectiondef",this,&SectionHandler::endSection);
   addStartHandler("memberdef",this,&SectionHandler::startMember);
+  addStartHandler("header",this,&SectionHandler::startHeader);
+  addEndHandler("header",this,&SectionHandler::endHeader);
 }
 
 SectionHandler::~SectionHandler()
@@ -113,6 +115,18 @@ void SectionHandler::startMember(const QXmlAttributes& attrib)
   MemberHandler *memHandler = new MemberHandler(this);
   memHandler->startMember(attrib);
   m_members.append(memHandler);
+}
+
+void SectionHandler::startHeader(const QXmlAttributes&)
+{
+  m_header="";
+  m_curString="";
+}
+
+void SectionHandler::endHeader()
+{
+  m_header = m_curString.stripWhiteSpace();
+  debug(2,"member header=`%s'\n",m_header.data());
 }
 
 void SectionHandler::initialize(CompoundHandler *ch)

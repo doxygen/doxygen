@@ -16,8 +16,10 @@
 #!
 #$ IncludeTemplate("lib.t");
 
-LEX     =   flex
-YACC    =   bison
+LEX        = flex
+YACC       = bison
+PERL       = perl
+INCBUFSIZE = $(PERL) -n -e "s/YY_BUF_SIZE 16384/YY_BUF_SIZE 262144/g; print $$_;"
 
 #${
 sub GenerateDep {
@@ -45,13 +47,13 @@ sub GenerateDep {
 ####################
 
 #$ GenerateDep("scanner.cpp","scanner.l");
-	$(LEX) -PscanYY -t scanner.l >scanner.cpp
+	$(LEX) -PscanYY -t scanner.l | $(INCBUFSIZE) >scanner.cpp
 
 #$ GenerateDep("code.cpp","code.l");
-	$(LEX) -PcodeYY -t code.l >code.cpp
+	$(LEX) -PcodeYY -t code.l | $(INCBUFSIZE) >code.cpp
 
 #$ GenerateDep("pre.cpp","pre.l");
-	$(LEX) -PpreYY -t pre.l >pre.cpp 
+	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
 
 #$ GenerateDep("declinfo.cpp","declinfo.l");
 	$(LEX) -PdeclinfoYY -t declinfo.l >declinfo.cpp
@@ -75,6 +77,6 @@ sub GenerateDep {
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
 	-rm ce_parse.c	
 
-treeview.h: treeview.js
-	cat treeview.js | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >treeview.h 
+#treeview.h: treeview.js
+#	cat treeview.js | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >treeview.h 
 

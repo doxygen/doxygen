@@ -34,12 +34,14 @@ class SectionIterator :
 };
 
 
-class SectionHandler : public ISection, public BaseHandler<SectionHandler>
+class SectionHandler : public IUserDefined, public BaseHandler<SectionHandler>
 {
   public:
     virtual void startMember(const QXmlAttributes& attrib);
+    virtual void startHeader(const QXmlAttributes& attrib);
     virtual void startSection(const QXmlAttributes& attrib);
     virtual void endSection();
+    virtual void endHeader();
 
     SectionHandler(IBaseHandler *parent);
     virtual ~SectionHandler();
@@ -73,10 +75,17 @@ class SectionHandler : public ISection, public BaseHandler<SectionHandler>
 
     void initialize(CompoundHandler *c);
 
+    // IUserDefined implementation
+    virtual const IString *header() const 
+    {
+      return &m_header;
+    }
+
   private:
     IBaseHandler *m_parent;
     SectionKind m_kind;
     StringImpl m_kindString;
+    StringImpl m_header;
     QList<MemberHandler> m_members;
 };
 

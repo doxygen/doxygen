@@ -128,6 +128,8 @@
 #define _OS_UNIXWARE7_
 #elif !defined(_SCO_DS) && defined(__USLC__) && defined(__SCO_VERSION__)
 #define _OS_UNIXWARE7_
+#elif defined(__CYGWIN__)
+#define _OS_CYGWIN_
 #else
 #error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
 #endif

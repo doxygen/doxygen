@@ -421,13 +421,6 @@ TMAKE_MOC = $QTDIR/bin/moc
 EOF
 fi
 
-
-#if test "$f_platform" = "win32-g++"; then
-#  cat >> .tmakeconfig <<EOF
-#    TMAKE_LFLAGS += -D_WIN32
-#EOF
-#fi
-
 if test "$f_english" = YES; then
   cat >> .tmakeconfig <<EOF
 TMAKE_CXXFLAGS += -DENGLISH_ONLY

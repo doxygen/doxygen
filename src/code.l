@@ -1171,7 +1171,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  addType();
 					  g_code->codify(yytext);
 					}
-<ClassName>{ID}			        {
+<ClassName>{ID}("::"{ID})*	        {
                                           g_curClassName=yytext;
 					  addType();
 					  generateClassOrGlobalLink(*g_code,yytext);

@@ -41,11 +41,13 @@
  * -------------+------------------------------------------------------------
  *  2002-10-22  | Update for new since 1.2.18
  * -------------+------------------------------------------------------------
+ *  2003-02-04  | Corrected typo. Thanks to Bertrand M. :)
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-class TranslatorFrench : public TranslatorAdapter_1_2_17
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
@@ -205,7 +207,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
 
     /*! This is an introduction to the annotated compound list. */
     QCString trCompoundListDescription()
-    { return "Liste des classes, des strutures et des unions "
+    { return "Liste des classes, des structures et des unions "
 	"avec une brève description :"; 
     }
 
@@ -384,7 +386,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation()
-    { return "Documentation du type de l'énumeration"; }
+    { return "Documentation du type de l'énumération"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
@@ -959,13 +961,13 @@ class TranslatorFrench : public TranslatorAdapter_1_2_17
         "</ul>\n"
         "Les flèches ont la signification suivante:\n"
         "<ul>\n"
-        "<li>Une flèche bleu foncé est utilisée pour visuliser une relation d'héritage public "
+        "<li>Une flèche bleu foncé est utilisée pour visualiser une relation d'héritage public "
 		"entre deux classes.\n"
         "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégé.\n"
         "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privé.\n"
 		"<li>Une flèche violette en pointillés est utilisée si une classe est contenue ou "
 		"utilisée par une autre classe. La flèche est étiquetée avec la ou les variable(s) "
-		"qui permettent d'acceder à la classe ou structure pointée. \n"
+		"qui permettent d'accéder à la classe ou structure pointée. \n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */

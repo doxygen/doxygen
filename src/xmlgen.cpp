@@ -510,10 +510,17 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     ArgumentList *al = md->argumentList();
     t << " const=\"";
     if (al && al->constSpecifier)    t << "yes"; else t << "no"; 
-    t << "\" volatile=\"";
+    t << "\"";
+  }
+
+  if (md->memberType() == MemberDef::Variable)
+  {
+    ArgumentList *al = md->argumentList();
+    t << " volatile=\"";
     if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
     t << "\"";
   }
+
   t << ">" << endl;
 
   if (md->memberType()!=MemberDef::Define &&

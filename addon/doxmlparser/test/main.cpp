@@ -565,6 +565,11 @@ int main(int argc,char **argv)
       printf("  Section kind=%s\n",sec->kindString()->latin1());
       IMemberIterator *mli = sec->members();
       IMember *mem;
+      if( sec->kind() == ISection::UserDefined )
+      {
+	IUserDefined *group = dynamic_cast<IUserDefined*>(sec);
+	printf("    Title=%s\n", group->header()->latin1() );
+      }
       for (mli->toFirst();(mem=mli->current());mli->toNext())
       {
         ILinkedTextIterator *lti = mem->type();
