@@ -112,8 +112,8 @@ class HtmlGenerator : public OutputGenerator
     void writeRuler()    { t << "<hr>"; }
     void writeAnchor(const char *,const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
-    void startCodeFragment() { t << "<div class=\"fragment\"><pre>"; }
-    void endCodeFragment()   { t << "</pre></div>"; } 
+    void startCodeFragment() { t << "<pre class=\"fragment\"><div>"; }
+    void endCodeFragment()   { t << "</div></pre>"; } 
     void writeLineNumber(const char *,const char *,const char *,int);
     void startCodeLine() { col=0; }
     void endCodeLine()   { codify("\n"); }

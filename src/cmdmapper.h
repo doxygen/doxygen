@@ -105,7 +105,8 @@ enum CommandType
   CMD_DOT          = 71,
   CMD_ENDDOT       = 72,
   CMD_MANONLY      = 73,
-  CMD_ENDMANONLY   = 74
+  CMD_ENDMANONLY   = 74,
+  CMD_INCWITHLINES = 75
 };
 
 enum HtmlTagType

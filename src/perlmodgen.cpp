@@ -642,6 +642,18 @@ void PerlModDocVisitor::visit(DocInclude *inc)
   const char *type = 0;
   switch(inc->type())
   {
+  case DocInclude::IncWithLines:
+  #if 0
+      { 
+         m_t << "<div class=\"fragment\"><pre>";
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         m_t << "</pre></div>"; 
+      }
+      break;
+  #endif
+    return;
   case DocInclude::Include:
 #if 0
     m_output.add("<programlisting>");

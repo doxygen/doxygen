@@ -86,6 +86,7 @@ documentation:
 \refitem cmdifnot \\ifnot
 \refitem cmdimage \\image
 \refitem cmdinclude \\include
+\refitem cmdincludelineno \\includelineno
 \refitem cmdingroup \\ingroup
 \refitem cmdinternal \\internal
 \refitem cmdinvariant \\invariant
@@ -1307,6 +1308,15 @@ ALIASES  = "english=\if english" \
   and \\until commands. 
 
   \sa section \ref cmdexample "\\example" and \ref cmddontinclude "\\dontinclude".
+
+<hr>
+\section cmdincludelineno \includelineno <file-name>
+
+  \addindex \\includelineno
+  This command works the same way as \\include, but will add line 
+  numbers to the included file.
+
+  \sa section \ref cmdinclude "\\include".
 
 <hr>
 \section cmdline \line ( pattern )

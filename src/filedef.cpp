@@ -55,7 +55,7 @@ class DevNullCodeDocInterface : public BaseCodeDocInterface
 
 
 /*! create a new file definition, where \a p is the file path, 
-    \a the file name, and \a ref is an HTML anchor name if the
+    \a nm the file name, and \a ref is an HTML anchor name if the
     file was read from a tag file or 0 otherwise
 */
 FileDef::FileDef(const char *p,const char *nm,

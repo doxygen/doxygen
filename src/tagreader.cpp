@@ -950,6 +950,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     else if (tmi->kind=="typedef")
     {
       me->section = Entry::VARIABLE_SEC; //Entry::TYPEDEF_SEC;
+      me->type.prepend("typedef ");
       me->mtype = Method;
     }
     else if (tmi->kind=="enumeration")
@@ -975,6 +976,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     else if (tmi->kind=="friend")
     {
       me->section = Entry::FUNCTION_SEC;
+      me->type.prepend("friend ");
       me->mtype = Method;
     }
     else if (tmi->kind=="dcop")

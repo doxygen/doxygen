@@ -93,6 +93,7 @@ ClassDef::ClassDef(
   m_isStatic = FALSE;
   m_isObjC = FALSE;
   m_membersMerged = FALSE;
+  m_categoryOf = 0;
   QCString ns;
   extractNamespaceName(m_name,m_className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
@@ -140,6 +141,10 @@ QCString ClassDef::displayName() const
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
     n=substitute(n,"::",".");
+  }
+  if (m_compType==ClassDef::Protocol && n.right(2)=="-p")
+  {
+    n="< "+n.left(n.length()-2)+" >";
   }
   return n;
 }
@@ -2044,7 +2049,7 @@ void ClassDef::mergeMembers()
               //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
               if ((srcMi->virt!=Normal && dstMi->virt!=Normal) ||
                   bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath ||
-                  dstMd->getClassDef()->compoundType()==ClassDef::Interface
+                  dstMd->getClassDef()->compoundType()==Interface
                  ) 
               {
                 found=TRUE;
@@ -2180,6 +2185,52 @@ void ClassDef::mergeMembers()
     }
   }
   //printf("  end mergeMembers\n");
+}
+
+//----------------------------------------------------------------------------
+
+/*! Merges the members of a Objective-C category into this class.
+ */
+void ClassDef::mergeCategory(ClassDef *category)
+{
+  category->m_categoryOf = this;
+    
+  MemberNameInfoSDict *srcMnd  = category->m_allMemberNameInfoSDict;
+  MemberNameInfoSDict *dstMnd  =           m_allMemberNameInfoSDict;
+
+  MemberNameInfoSDict::Iterator srcMnili(*srcMnd);
+  MemberNameInfo *srcMni;
+  for ( ; (srcMni=srcMnili.current()) ; ++srcMnili)
+  {
+    MemberNameInfo *dstMni=dstMnd->find(srcMni->memberName());
+    if (dstMni) // method is already defined in the class
+    {
+      // TODO: we should remove the other member and insert this one.
+    }
+    else // new method name
+    {
+      // create a deep copy of the list (only the MemberInfo's will be 
+      // copied, not the actual MemberDef's)
+      MemberNameInfo *newMni = 0;
+      newMni = new MemberNameInfo(srcMni->memberName()); 
+
+      // copy the member(s) from the category to this class
+      MemberNameInfoIterator mnii(*srcMni);
+      MemberInfo *mi;
+      for (;(mi=mnii.current());++mnii)
+      {
+        //printf("Adding!\n");
+        MemberInfo *newMi=new MemberInfo(mi->memberDef,mi->prot,mi->virt,mi->inherited);
+        newMi->scopePath=mi->scopePath;
+        newMi->ambigClass=mi->ambigClass;
+        newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
+        newMni->append(newMi);
+      }
+
+      // add it to the dictionary
+      dstMnd->append(newMni->memberName(),newMni);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -2418,13 +2469,9 @@ void ClassDef::determineIntfUsageRelation()
 }
 #endif
 
-//PackageDef *ClassDef::packageDef() const
-//{
-//  return m_fileDef ? m_fileDef->packageDef() : 0;
-//}
-
 QCString ClassDef::compoundTypeString() const
 {
+  if (m_compType==Interface && m_isObjC) return "class";
   switch (m_compType)
   {
     case Class:     return "class";
@@ -2773,7 +2820,6 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
 {
   MemberDef *xmd = 0;
   MemberNameInfo *mni = m_allMemberNameInfoSDict->find(name);
-  //printf("getMemberByName(%s)=%p\n",name.data(),mni);
   if (mni)
   {
     const int maxInheritanceDepth = 100000;
@@ -2783,8 +2829,9 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
     for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
       ClassDef *mcd=mi->memberDef->getClassDef();
-      //printf("found member in %s\n",mcd->name().data());
       int m=minClassDistance(this,mcd);
+      //printf("found member in %s linkable=%d m=%d\n",
+      //    mcd->name().data(),mcd->isLinkable(),m);
       if (m<mdist && mcd->isLinkable())
       {
         mdist=m;
@@ -2792,6 +2839,7 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
       }
     }
   }
+  //printf("getMemberByName(%s)=%p\n",name.data(),xmd);
   return xmd;
 }
 

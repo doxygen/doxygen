@@ -25,6 +25,7 @@
 #include "dot.h"
 #include "util.h"
 #include "message.h"
+#include <qfileinfo.h> 
 
 ManDocVisitor::ManDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
@@ -220,6 +221,19 @@ void ManDocVisitor::visit(DocInclude *inc)
   if (m_hide) return;
   switch(inc->type())
   {
+    case DocInclude::IncWithLines:
+      { 
+         if (!m_firstCol) m_t << endl;
+         m_t << ".PP" << endl;
+         m_t << ".nf" << endl;
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         if (!m_firstCol) m_t << endl;
+         m_t << ".PP" << endl;
+         m_firstCol=TRUE;
+      }
+      break;
     case DocInclude::Include: 
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;

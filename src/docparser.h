@@ -380,7 +380,7 @@ class DocVerbatim : public DocNode
 class DocInclude : public DocNode
 {
   public:
-    enum Type { Include, DontInclude, VerbInclude, HtmlInclude };
+    enum Type { Include, DontInclude, VerbInclude, HtmlInclude, IncWithLines };
     DocInclude(DocNode *parent,const QString &file,
                const QString context, Type t,
                bool isExample,const QString exampleFile) : 

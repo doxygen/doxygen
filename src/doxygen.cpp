@@ -488,6 +488,10 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
           iName=iName.mid(1,iName.length()-2); // strip quotes or brackets
         }
       }
+      else if (!Config_getList("STRIP_FROM_INC_PATH").isEmpty()) 
+      {
+        iName=stripFromIncludePath(fd->absFilePath());
+      }
       else // use name of the file containing the class definition
       {
         iName=fd->name();
@@ -822,21 +826,6 @@ static void addClassToContext(Entry *root)
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->insertUsedFile(root->fileName);
 
-    //int bi;
-    //if (root->objc && (bi=fullName.find('<'))!=-1 && root->extends->count()==0)
-    //{
-    //  // add protocols as base classes
-    //  int be=fullName.find('>'),len;
-    //  static QRegExp re("[A-Z_a-z][A-Z_a-z0-9]*");
-    //  int p=0;
-    //  while ((p=re.match(fullName,bi+1,&len))!=-1 && p<be)
-    //  {
-    //    QCString baseName = fullName.mid(p,len);
-    //    printf("Adding artifical base class %s to %s\n",baseName.data(),fullName.data());
-    //    root->extends->append(new BaseInfo(baseName,Public,Normal));
-    //    bi=p+len; 
-    //  }
-    //}
 
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
@@ -5754,8 +5743,24 @@ static void createTemplateInstanceMembers()
 static void buildCompleteMemberLists()
 {
   ClassDef *cd;
-  // merge the member list of base classes into the inherited classes.
+  // merge members of categories into the class they extend
   ClassSDict::Iterator cli(Doxygen::classSDict);
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    int i=cd->name().find('(');
+    if (i!=-1) // it is an Objective-C category
+    {
+      QCString baseName=cd->name().left(i);
+      ClassDef *baseClass=Doxygen::classSDict.find(baseName);
+      if (baseClass)
+      {
+        //printf("*** merging members of category %s into %s\n",
+        //    cd->name().data(),baseClass->name().data());
+        baseClass->mergeCategory(cd);
+      }
+    }
+  }
+  // merge the member list of base classes into the inherited classes.
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (// !cd->isReference() && // not an external class
@@ -8372,6 +8377,7 @@ void generateOutput()
       exit(1);
     }
     Doxygen::tagFile.setDevice(tag);
+    Doxygen::tagFile.setEncoding(QTextStream::Latin1);
     Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>" << endl;
     Doxygen::tagFile << "<tagfile>" << endl;
   }

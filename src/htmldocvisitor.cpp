@@ -171,6 +171,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
         m_insidePre=FALSE;
         m_t << "</pre>";
       }
+      break;
     case DocStyleChange::Div:
       if (s->enable()) m_t << "<div" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</div>";
       break;
@@ -245,9 +246,18 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::Include: 
-      m_t << "<div class=\"fragment\"><pre>";
+      m_t << "<pre class=\"fragment\"><div>";
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
-      m_t << "</pre></div>"; 
+      m_t << "</div></pre>"; 
+    case DocInclude::IncWithLines:
+      { 
+         m_t << "<div class=\"fragment\"><pre>";
+         QFileInfo cfi( inc->file() );
+         FileDef fd( cfi.dirPath(), cfi.fileName() );
+         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         m_t << "</pre></div>"; 
+      }
+      break;
       break;
     case DocInclude::DontInclude: 
       break;
@@ -255,9 +265,9 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       m_t << inc->text(); 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "<div class=\"fragment\"><pre>";
+      m_t << "<pre class=\"fragment\"><div>";
       filter(inc->text());
-      m_t << "</pre></div>"; 
+      m_t << "</div></pre>"; 
       break;
   }
 }
@@ -268,7 +278,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    if (!m_hide) m_t << "<div class=\"fragment\"><pre>";
+    if (!m_hide) m_t << "<pre class=\"fragment\"><div>";
     pushEnabled();
     m_hide=TRUE;
   }
@@ -282,7 +292,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     popEnabled();
-    if (!m_hide) m_t << "</pre></div>"; 
+    if (!m_hide) m_t << "</div></pre>"; 
   }
   else
   {

@@ -21,15 +21,32 @@
   *
   * Extended, revised and updated by
   * Ákos Kiss  <akiss@users.sourceforge.net>
+  *
+  * Further extended, revised and updated by
+  * Tamási Ferenc <tf551@hszk.bme.hu>
   */
 
 #ifndef TRANSLATOR_HU_H
 #define TRANSLATOR_HU_H
 
 #include "translator.h"
+#include "../qtools/qdatetime.h"
 
 class TranslatorHungarian : public Translator
 {
+  private:
+    const char * zed(char c)
+    {
+        switch (c & ~('a' ^ 'A')) {
+            case 'B': case 'C': case 'D': case 'F': case 'G':
+            case 'H': case 'J': case 'K': case 'L': case 'M':
+            case 'N': case 'P': case 'Q': case 'R': case 'S':
+            case 'T': case 'V': case 'W': case 'X': case 'Z':
+                return "  ";
+            default:
+                return "z ";
+        }
+    }
   public:
 
     // --- Language control methods -------------------
@@ -110,12 +127,9 @@ class TranslatorHungarian : public Translator
     QCString trIncludingInheritedMembers()
     { return " osztály tagjainak teljes listája, az örökölt tagokkal együtt."; }
     
-    /*! this is put at the author sections at the bottom of man pages.
-     *  parameter s is name of the project name.
-     */
     QCString trGeneratedAutomatically(const char *s)
     { QCString result="Ezt a dokumentációt a Doxygen készítette ";
-      if (s) result+=(QCString)" a(z) "+s+(QCString)" projekthez";
+      if (s) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
       result+=" a forráskódból."; 
       return result;
     }
@@ -512,7 +526,7 @@ class TranslatorHungarian : public Translator
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"A(z) "+clName+" osztály származási diagramja:";
+      return (QCString)"A"+zed(clName[0])+clName+" osztály származási diagramja:";
     }
     
     /*! this text is generated when the \\internal command is used. */
@@ -835,12 +849,12 @@ class TranslatorHungarian : public Translator
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"A(z) "+clName+" osztály együttmûködési diagramja:";
+      return (QCString)"A"+zed(clName[0])+clName+" osztály együttmûködési diagramja:";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"A(z) "+fName+" definíciós fájl függési gráfja:";
+      return (QCString)"A"+zed(fName[0])+fName+" definíciós fájl függési gráfja:";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()

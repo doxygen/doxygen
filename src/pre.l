@@ -1862,12 +1862,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <DefineText>\\[\r]?\n			{ 
 					  g_defLitText+=yytext;
-  					  outputChar('\n');
+					  outputChar('\n');
   					  g_defText += ' '; g_yyLineNr++; 
 					}
 <DefineText>\n				{
-					  g_defLitText+=yytext;
 					  QCString comment=extractTrailingComment(g_defLitText);
+					  g_defLitText+=yytext;
 					  if (!comment.isEmpty())
 					  {
 					    outputArray(comment,comment.length());

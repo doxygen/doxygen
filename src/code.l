@@ -53,7 +53,6 @@
 static BaseCodeDocInterface * g_code;
 
 static ClassSDict    g_codeClassSDict(17);
-//static ClassDef     *g_curClassDef;
 static QCString      g_curClassName;
 static QStrList      g_curClassBases;
 
@@ -104,6 +103,35 @@ static int           g_memCallContext;
 static int	     g_lastCContext;
 
 static bool          g_insideObjC;
+static bool          g_insideProtocolList;
+
+// context for an Objective-C method call
+struct ObjCCallCtx
+{
+  int id;
+  QCString methodName;
+  QCString objectTypeOrName;
+  ClassDef *objectType;
+  MemberDef *objectVar;
+  MemberDef *method;
+  QCString format;
+  int lexState;
+  int braceCount;
+};
+
+// globals for objective-C method calls 
+static ObjCCallCtx *g_currentCtx=0;
+static int g_currentCtxId=0;
+static int g_currentNameId=0;
+static int g_currentObjId=0;
+static QStack<ObjCCallCtx> g_contextStack;
+static QIntDict<ObjCCallCtx> g_contextDict;
+static QIntDict<QCString> g_nameDict;
+static QIntDict<QCString> g_objectDict;
+static int g_braceCount=0;
+  
+static void saveObjCContext();
+static void restoreObjCContext();
 
 //-------------------------------------------------------------------
 
@@ -184,7 +212,8 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     ltype = ltype.right(ltype.length()-6);
   }
   if (ltype.isEmpty() || lname.isEmpty()) return;
-  DBG_CTX((stderr,"** AddVariable trying: type=%s name=%s\n",ltype.data(),lname.data()));
+  DBG_CTX((stderr,"** addVariable trying: type=%s name=%s g_currentDefinition=%s\n",
+	ltype.data(),lname.data(),g_currentDefinition?g_currentDefinition->name().data():"<none>"));
   Scope *scope = m_scopes.count()==0 ? &m_globalScope : m_scopes.getLast();
   ClassDef *varType;
   int i=0;
@@ -193,17 +222,17 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
       (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,ltype)) // look for global class definitions
      ) 
   {
-    DBG_CTX((stderr,"** AddVariable type=%s name=%s\n",ltype.data(),lname.data()));
+    DBG_CTX((stderr,"** addVariable type=%s name=%s\n",ltype.data(),lname.data()));
     scope->append(lname,varType); // add it to a list
   }
   else if ((i=ltype.find('<'))!=-1)
   {
-    // probably a template class, try without arguments as well
+    // probably a template class, try without template arguments as well
     addVariable(ltype.left(i),name);
   }
-  else // add a dummy entry so the name is hidden
+  else // add a dummy entry so the name is hidden to avoid false links
   {
-    //printf("adding dummy context!\n");
+    DBG_CTX((stderr,"** addVariable: dummy context\n"));
     scope->append(lname,dummyContext);
   }
 }
@@ -567,7 +596,7 @@ static ClassDef *stripClassName(const char *s)
 static MemberDef *setCallContextForVar(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  //printf("setCallContextForVar(%s) g_classScope=%s\n",name.data(),g_classScope.data());
+  //fprintf(stderr,"setCallContextForVar(%s) g_classScope=%s\n",name.data(),g_classScope.data());
 
   int scopeEnd = name.findRev("::");
   if (scopeEnd!=-1) // name with explicit scope
@@ -592,10 +621,10 @@ static MemberDef *setCallContextForVar(const QCString &name)
   ClassDef *mcd = g_theVarContext.findVariable(name);
   if (mcd) // local variable
   {
-    //printf("local variable\n");
+    //fprintf(stderr,"local variable\n");
     if (mcd!=VariableContext::dummyContext)
     {
-      //printf("local var `%s' mcd=%s\n",name.data(),mcd->name().data());
+      //fprintf(stderr,"local var `%s' mcd=%s\n",name.data(),mcd->name().data());
       g_theCallContext.setClass(mcd);
     }
   }
@@ -605,12 +634,14 @@ static MemberDef *setCallContextForVar(const QCString &name)
     mcd = getClass(g_classScope);
     if (mcd)
     {
+      //fprintf(stderr,"Inside class %s\n",mcd->name().data());
       MemberDef *md=mcd->getMemberByName(name);
       if (md) 
       {
+        //fprintf(stderr,"Found member %s\n",md->name().data());
 	if (g_scopeStack.top()!=CLASSBLOCK)
 	{
-          //printf("class member `%s' mcd=%s\n",name.data(),mcd->name().data());
+          //fprintf(stderr,"class member `%s' mcd=%s\n",name.data(),mcd->name().data());
 	  g_theCallContext.setClass(stripClassName(md->typeString()));
 	}
 	return md;
@@ -680,7 +711,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
                                       bool typeOnly=FALSE)
 {
   int i=0;
-  //printf("generateClassOrGlobalLink(clName=%s)\n",clName);
+  //fprintf(stderr,"generateClassOrGlobalLink(clName=%s)\n",clName);
   if (*clName=='~') // correct for matching negated values i.s.o. destructors.
   {
     g_code->codify("~");
@@ -688,6 +719,10 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
   QCString className=clName;
   if (className.isEmpty()) return;
+  if (g_insideProtocolList)
+  {
+    className+="-p";
+  }
   ClassDef *cd=0;
   MemberDef *md=0;
 
@@ -715,7 +750,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
 	g_anchorCount++;
       }
     }
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,className);
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
     addToSearchIndex(className);
     if (md)
     {
@@ -728,7 +763,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       }
     }
   }
-  else 
+  else // not a class, maybe a global member
   {
     //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
     if (md!=0 || (cd==0 && !typeOnly)) // not a class, see if it is a global enum/variable/typedef.
@@ -736,7 +771,15 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       if (md==0) // not found as a typedef
       {
 	md = setCallContextForVar(clName);
-        if (md && g_currentDefinition!=0 && 
+	if (md && g_currentDefinition)
+	{
+	  //fprintf(stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
+	  //    md->name().data(),g_currentDefinition->name().data(),
+	  //    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
+	  //    md->getOuterScope()->name().data());
+	}
+	     
+        if (md && g_currentDefinition && 
 	    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
 	{
 	  md=0; // variable not accessible
@@ -762,6 +805,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
       }
     }
     
+    // nothing found, just write out the word
     codifyLines(clName);
     addToSearchIndex(clName);
   }
@@ -1055,8 +1099,313 @@ static void startFontClass(const char *s)
   g_currentFontClass=s;
 }
 
+//----------------------------------------------------------------------------
 
+// recursively writes a linkified Objective-C method call
+static void writeObjCMethodCall(ObjCCallCtx *ctx)
+{
+  if (ctx==0) return;
+  const char *p = ctx->format.data();
+  //printf("writeObjCMethodCall(%s) obj=%s method=%s\n",
+  //    ctx->format.data(),ctx->objectTypeOrName.data(),ctx->methodName.data());
+  char c;
+  if (!ctx->objectTypeOrName.isEmpty() && ctx->objectTypeOrName.at(0)!='$')
+  {
+    //printf("Looking for object=%s method=%s\n",ctx->objectTypeOrName.data(),
+    //	ctx->methodName.data());
+    ClassDef *cd = g_theVarContext.findVariable(ctx->objectTypeOrName);
+    if (cd==0) // not a local variable
+    {
+      if (ctx->objectTypeOrName=="self")
+      {
+	if (g_currentDefinition && 
+	    g_currentDefinition->definitionType()==Definition::TypeClass)
+	{
+	  ctx->objectType = (ClassDef *)g_currentDefinition;
+	}
+      }
+      else
+      {
+        ctx->objectType = getResolvedClass(
+  	  g_currentDefinition,
+	  g_sourceFileDef,
+	  ctx->objectTypeOrName,
+	  &ctx->method);
+      }
+      //printf("  object is class? %p\n",ctx->objectType);
+      if (ctx->objectType) // found class
+      {
+	ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+        //printf("    yes->method=%s\n",ctx->method?ctx->method->name().data():"<none>");
+      }
+      else if (ctx->method==0) // search for class variable with the same name
+      {
+        //printf("    no\n");
+	//printf("g_currentDefinition=%p\n",g_currentDefinition);
+	if (g_currentDefinition && 
+	    g_currentDefinition->definitionType()==Definition::TypeClass)
+	{
+	  ctx->objectVar = ((ClassDef *)g_currentDefinition)->getMemberByName(ctx->objectTypeOrName);
+	  //printf("      ctx->objectVar=%p\n",ctx->objectVar);
+	  if (ctx->objectVar)
+	  {
+	    ctx->objectType = stripClassName(ctx->objectVar->typeString());
+	    //printf("        ctx->objectType=%p\n",ctx->objectType);
+	    if (ctx->objectType)
+	    {
+	      ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+	      //printf("          ctx->method=%p\n",ctx->method);
+	    }
+	  }
+	}
+      }
+    }
+    else // local variable
+    {
+      //printf("  object is local variable\n");
+      if (cd!=VariableContext::dummyContext)
+      {
+        ctx->method = cd->getMemberByName(ctx->methodName);
+        //printf("   class=%p method=%p\n",cd,ctx->method);
+      }
+    }
+  }
 
+  //printf("[");
+  while ((c=*p++)) // for each character in ctx->format
+  {
+    if (c=='$')
+    {
+      char nc=*p++;
+      if (nc=='$') // escaped $
+      {
+	g_code->codify("$");
+      }
+      else // name fragment or reference to a nested call 
+      {
+	if (nc=='n') // name fragment
+	{
+          nc=*p++;
+	  QCString refIdStr;
+	  while (nc!=0 && isdigit(nc)) { refIdStr+=nc; nc=*p++; }
+	  p--;
+	  int refId=refIdStr.toInt();
+	  QCString *pName = g_nameDict.find(refId);
+	  if (pName)
+	  {
+	    if (ctx->method && ctx->method->isLinkable())
+	    {
+              writeMultiLineCodeLink(*g_code,
+		                     ctx->method->getReference(),
+	                             ctx->method->getOutputFileBase(),
+	                             ctx->method->anchor(),
+				     pName->data());
+	      if (g_currentMemberDef)
+	      {
+	        addDocCrossReference(g_currentMemberDef,ctx->method);
+	      }
+	    }
+	    else
+	    {
+   	      codifyLines(pName->data());
+	    }
+	  }
+	  else
+	  {
+	    printf("Invalid name: id=%d\n",refId);
+	  }
+	}
+	else if (nc=='o') // reference to potential object name
+	{
+          nc=*p++;
+	  QCString refIdStr;
+	  while (nc!=0 && isdigit(nc)) { refIdStr+=nc; nc=*p++; }
+	  p--;
+	  int refId=refIdStr.toInt();
+	  QCString *pObject = g_objectDict.find(refId);
+	  if (pObject)
+	  {
+	    if (*pObject=="self")
+	    {
+	      if (g_currentDefinition && 
+		  g_currentDefinition->definitionType()==Definition::TypeClass)
+	      {
+	        ctx->objectType = (ClassDef *)g_currentDefinition;
+	        if (ctx->objectType->categoryOf()) 
+	        {
+	          ctx->objectType = ctx->objectType->categoryOf();
+	        }
+	        if (ctx->objectType)
+	        {
+	          ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+	        }
+	      }
+ 	      startFontClass("keyword");
+              codifyLines(pObject->data());
+	      endFontClass();
+	    }
+	    else if (*pObject=="super")
+	    {
+	      if (g_currentDefinition &&
+		  g_currentDefinition->definitionType()==Definition::TypeClass)
+	      {
+		ClassDef *cd = (ClassDef *)g_currentDefinition;
+		if (cd->categoryOf()) 
+		{
+		  cd = cd->categoryOf();
+		}
+		BaseClassList *bcd = cd->baseClasses();
+		if (bcd) // get direct base class (there should be only one)
+		{
+		  BaseClassListIterator bli(*bcd);
+		  BaseClassDef *bclass;
+		  for (bli.toFirst();(bclass=bli.current());++bli)
+		  {
+		    if (bclass->classDef->compoundType()!=ClassDef::Protocol)
+		    {
+		      ctx->objectType = bclass->classDef;
+		      if (ctx->objectType)
+		      {
+			ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+		      }
+		    }
+		  }
+		}
+	      }
+ 	      startFontClass("keyword");
+              codifyLines(pObject->data());
+	      endFontClass();
+	    }
+	    else if (ctx->objectVar && ctx->objectVar->isLinkable()) // object is class variable
+	    {
+	      writeMultiLineCodeLink(*g_code,
+		    ctx->objectVar->getReference(),
+		    ctx->objectVar->getOutputFileBase(),
+		    ctx->objectVar->anchor(),
+		    pObject->data());
+	      if (g_currentMemberDef)
+	      {
+	        addDocCrossReference(g_currentMemberDef,ctx->objectVar);
+	      }
+	    }
+	    else if (ctx->objectType && 
+		     ctx->objectType!=VariableContext::dummyContext && 
+		     ctx->objectType->isLinkable()
+		    ) // object is class name
+	    {
+	      ClassDef *cd = ctx->objectType;
+	      writeMultiLineCodeLink(*g_code,
+		    cd->getReference(),
+		    cd->getOutputFileBase(),
+		    0,
+		    pObject->data());
+	    }
+	    else // object still needs to be resolved
+	    {
+	      ClassDef *cd = getResolvedClass(g_currentDefinition, 
+		  g_sourceFileDef, *pObject);
+	      if (cd && cd->isLinkable())
+	      {
+		if (ctx->objectType==0) ctx->objectType=cd;
+	   	writeMultiLineCodeLink(*g_code,
+		    cd->getReference(),
+		    cd->getOutputFileBase(),
+		    0,
+		    pObject->data());
+	      }
+	      else
+	      {
+		codifyLines(pObject->data());
+	      }
+	    }
+	  }
+	  else
+	  {
+	    printf("Invalid object: id=%d\n",refId);
+	  }
+	}
+	else if (nc=='c') // reference to nested call
+	{
+          nc=*p++;
+	  QCString refIdStr;
+	  while (nc!=0 && isdigit(nc)) { refIdStr+=nc; nc=*p++; }
+	  p--;
+	  int refId=refIdStr.toInt();
+	  ObjCCallCtx *ictx = g_contextDict.find(refId);
+	  if (ictx) // recurse into nested call
+	  {
+	    writeObjCMethodCall(ictx);
+	    if (ictx->method) // link to nested call successfully
+	    {
+	      // get the ClassDef representing the method's return type
+	      if (QCString(ictx->method->typeString())=="id")
+	      {
+		// see if the method name is unique, if so we link to it
+		MemberName *mn=Doxygen::memberNameSDict.find(ctx->methodName);
+		//printf("mn->count=%d ictx->method=%s ctx->methodName=%s\n",
+		//    mn==0?-1:(int)mn->count(),
+		//    ictx->method->name().data(),
+		//    ctx->methodName.data());
+		if (mn && mn->count()==1) // member name unique
+		{
+		  ctx->method = mn->getFirst();
+		}
+	      } 
+	      else
+	      {
+		ctx->objectType = stripClassName(ictx->method->typeString());
+		if (ctx->objectType)
+		{
+		  ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+		}
+	      }
+	      //printf("  ***** method=%s -> object=%p\n",ictx->method->name().data(),ctx->objectType);
+	    }
+	  }
+	  else
+	  {
+	    printf("Invalid context: id=%d\n",refId);
+	  }
+	}
+	else // illegal marker
+	{
+	  ASSERT(!"invalid escape sequence");
+	}
+      }
+    }
+    else // normal non-marker character
+    {
+      char s[2];
+      s[0]=c;s[1]=0;
+      codifyLines(s);
+    }
+  }  
+  //printf("%s %s]\n",ctx->objectTypeOrName.data(),ctx->methodName.data());
+  //printf("}=(type='%s',name='%s')",
+  //    ctx->objectTypeOrName.data(),
+  //    ctx->methodName.data());
+}
+
+// Replaces an Objective-C method name fragment s by a marker of the form
+// $n12, the number (12) can later be used as a key for obtaining the name 
+// fragment, from g_nameDict
+static QCString escapeName(const char *s)
+{
+  QCString result;
+  result.sprintf("$n%d",g_currentNameId);
+  g_nameDict.insert(g_currentNameId,new QCString(s));
+  g_currentNameId++;
+  return result;
+}
+
+static QCString escapeObject(const char *s)
+{
+  QCString result;
+  result.sprintf("$o%d",g_currentObjId);
+  g_objectDict.insert(g_currentObjId,new QCString(s));
+  g_currentObjId++;
+  return result;
+}
 
 /* -----------------------------------------------------------------
  */
@@ -1087,6 +1436,7 @@ KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@int
 KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"self"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean"|"id"|"SEL")
+CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 
 %option noyywrap
 
@@ -1113,9 +1463,9 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 %x      ObjCMethod
 %x	ObjCParams
 %x	ObjCParamType
-%x	ObjCMemberCall
-%x	ObjCMemberCall2
-%x	ObjCMemberCall3
+%x      ObjCCall
+%x      ObjCMName
+%x      ObjCSkipStr
 
 %%
 
@@ -1146,8 +1496,13 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  endFontClass();
 					  BEGIN( PackageName ); 
 					}
-<Body,ClassVar>"-"|"+"			{
-					  if (!g_insideObjC)
+<ClassVar>\n				{
+  					  if (!g_insideObjC) REJECT;
+  					  codifyLines(yytext);
+					  BEGIN(Body);
+  					}
+<Body,ClassVar,Bases>"-"|"+"		{
+					  if (!g_insideObjC || g_insideBody)
 					  { 
   					    g_code->codify(yytext);
 					  }
@@ -1170,8 +1525,22 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					  if (*yytext=='{')
 					  {
-					    g_insideBody=TRUE;
+					    g_curlyCount++;
+					    g_inClass=TRUE;
+  					    if (g_searchingForBody)
+					    {
+					      g_searchingForBody=FALSE;
+					      g_insideBody=TRUE;
+					    }
+					    if (g_insideBody) g_bodyCurlyCount++;
+					    if (!g_curClassName.isEmpty()) // valid class name
+					    {
+					      pushScope(g_curClassName);
+  					      g_scopeStack.push(SCOPEBLOCK);
+					    }
 					  }
+                                          g_type.resize(0);
+                                          g_name.resize(0);
 					  BEGIN(Body);
   					}
 <ObjCParams>{ID}{B}*":"			{
@@ -1313,7 +1682,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
 					  BEGIN(Body);
 					}
-<Body>"@end"				{ 
+<Body,ClassVar>"@end"			{ 
   					  //printf("End of objc scope fd=%s\n",g_sourceFileDef->name().data());
                                           if (g_sourceFileDef)
 					  {
@@ -1326,12 +1695,16 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  {
 					    g_insideObjC = FALSE;
 					  }
-                                          g_theVarContext.popScope();
-
-					  int *scope = g_scopeStack.pop();
-  					  if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
+					  if (g_insideBody)
 					  {
-					    popScope();
+                                            g_theVarContext.popScope();
+
+					    int *scope = g_scopeStack.pop();
+  					    if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
+					    {
+					      popScope();
+					    }
+					    g_insideBody=FALSE;
 					  }
 
 					  startFontClass("keyword");
@@ -1340,7 +1713,6 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 
   					  g_inClass=FALSE; 
 
-					  g_insideBody=FALSE;
 					  g_currentMemberDef=0;
 					  if (g_currentDefinition) 
 					    g_currentDefinition=g_currentDefinition->getOuterScope();
@@ -1449,9 +1821,20 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <Bases>"<"                              { 
   					  g_code->codify(yytext);
-  					  g_sharpCount=1;
-					  BEGIN ( SkipSharp );
+					  if (!g_insideObjC)
+					  {
+  					    g_sharpCount=1;
+					    BEGIN ( SkipSharp );
+					  }
+					  else
+					  {
+					    g_insideProtocolList=TRUE;
+					  }
 					}
+<Bases>">"				{
+  					  g_code->codify(yytext);
+					  g_insideProtocolList=FALSE;
+  					}
 <SkipSharp>"<"                          {
   					  g_code->codify(yytext);
   					  ++g_sharpCount; 
@@ -1603,7 +1986,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<FuncCall,Body,MemberCall,MemberCall2,ObjCMemberCall2,ObjCMemberCall3>\"	{
+<FuncCall,Body,MemberCall,MemberCall2>\"	{
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
@@ -1729,9 +2112,19 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  {
 					    //printf("Found start of ObjC call!\n");
 					    // start of a method call
-					    g_code->codify(yytext);
-					    g_theCallContext.pushScope();
-					    BEGIN(ObjCMemberCall);
+					    g_contextDict.setAutoDelete(TRUE);
+					    g_nameDict.setAutoDelete(TRUE);
+					    g_objectDict.setAutoDelete(TRUE);
+					    g_contextDict.clear();
+					    g_nameDict.clear();
+					    g_objectDict.clear();
+					    g_currentCtxId  = 0;
+					    g_currentNameId  = 0;
+					    g_currentObjId  = 0;
+					    g_currentCtx = 0;
+					    g_braceCount = 0;
+					    unput('[');
+					    BEGIN(ObjCCall);
 					  }
 					  else
 					  {
@@ -1758,6 +2151,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					    g_args.resize(0);
 					  }
   					}
+  /*
 <ObjCMemberCall>{ID}			{
   					  if (strcmp(yytext,"self")==0 || strcmp(yytext,"super")==0)
 					  {
@@ -1802,6 +2196,70 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  g_code->codify(yytext);
 					  BEGIN(Body);
   					}
+  */
+<ObjCCall,ObjCMName>"["         { 
+                                   saveObjCContext();
+			           g_currentCtx->format+=*yytext;
+			           BEGIN(ObjCCall);
+		                   //printf("open\n");
+                                 }
+<ObjCCall,ObjCMName>"]"         { 
+			            g_currentCtx->format+=*yytext;
+                                    restoreObjCContext();
+			            BEGIN(ObjCMName);
+		             	    if (g_currentCtx==0)
+				    {
+				      // end of call
+				      writeObjCMethodCall(g_contextDict.find(0));
+				      BEGIN(Body);
+				    }
+			            //printf("close\n");
+                                  }
+<ObjCCall>{ID}	                  {
+                                    g_currentCtx->format+=escapeObject(yytext);
+			            if (g_braceCount==0)
+			            {
+			              g_currentCtx->objectTypeOrName=yytext;
+                                      //printf("new type=%s\n",g_currentCtx->objectTypeOrName.data());
+			              BEGIN(ObjCMName);
+			            }
+  		                  }
+<ObjCMName>{ID}/{BN}*"]"          { 
+                                    if (g_braceCount==0 && 
+					g_currentCtx->methodName.isEmpty())
+                                    {
+			              g_currentCtx->methodName=yytext; 
+                                      g_currentCtx->format+=escapeName(yytext);
+			            }
+				    else
+				    {
+                                      g_currentCtx->format+=yytext;
+				    }
+                                  }
+<ObjCMName>{ID}/{BN}*":"           { 
+                                     if (g_braceCount==0)
+                                     {
+			               g_currentCtx->methodName+=yytext;
+                                       g_currentCtx->methodName+=":";
+			             }
+                                     g_currentCtx->format+=escapeName(yytext);
+                                   }
+<ObjCSkipStr>[^\n\"$\\]*           { g_currentCtx->format+=yytext; }
+<ObjCSkipStr>\\.	           { g_currentCtx->format+=yytext; }
+<ObjCSkipStr>"\""	           { g_currentCtx->format+=yytext; 
+                                      BEGIN(g_lastStringContext); 
+                                   }
+<ObjCCall,ObjCMName>{CHARLIT}      { g_currentCtx->format+=yytext; }
+<ObjCCall,ObjCMName>"@"?"\""       { g_currentCtx->format+=yytext; 
+                                      g_lastStringContext=YY_START;
+                                      BEGIN(ObjCSkipStr); 
+                                   }
+<ObjCCall,ObjCMName,ObjCSkipStr>"$" { g_currentCtx->format+="$$"; }
+<ObjCCall,ObjCMName>"("            { g_currentCtx->format+=*yytext; g_braceCount++; }
+<ObjCCall,ObjCMName>")"            { g_currentCtx->format+=*yytext; g_braceCount--; }
+<ObjCCall,ObjCMName,ObjCSkipStr>.  { g_currentCtx->format+=*yytext; }
+<ObjCCall,ObjCMName,ObjCSkipStr>\n { g_currentCtx->format+=*yytext; }
+
 <Body>"]"				{
 					  g_theCallContext.popScope();
   					  g_code->codify(yytext);
@@ -2313,6 +2771,52 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 
 /*@ ----------------------------------------------------------------------------
  */
+
+static void saveObjCContext()
+{
+  if (g_currentCtx)
+  {
+    g_currentCtx->format+=QCString().sprintf("$c%d",g_currentCtxId);
+    if (g_braceCount==0 && YY_START==ObjCCall)
+    {
+      g_currentCtx->objectTypeOrName=g_currentCtx->format.mid(1);
+      //printf("new type=%s\n",g_currentCtx->objectTypeOrName.data());
+    }
+    g_contextStack.push(g_currentCtx);
+  }
+  else
+  {
+    //printf("Trying to save NULL context!\n");
+  }
+  ObjCCallCtx *newCtx = new ObjCCallCtx;
+  newCtx->id = g_currentCtxId;
+  newCtx->lexState = YY_START;
+  newCtx->braceCount = g_braceCount;
+  newCtx->objectType = 0;
+  newCtx->objectVar = 0;
+  newCtx->method = 0;
+  //printf("save state=%d\n",YY_START);
+  g_contextDict.insert(g_currentCtxId,newCtx);
+  g_currentCtx = newCtx;
+  g_braceCount = 0;
+  g_currentCtxId++;
+}
+
+static void restoreObjCContext()
+{
+  //printf("restore state=%d->%d\n",YY_START,g_currentCtx->lexState);
+  BEGIN(g_currentCtx->lexState);
+  g_braceCount = g_currentCtx->braceCount;
+  if (!g_contextStack.isEmpty())
+  {
+    g_currentCtx = g_contextStack.pop();
+  }
+  else
+  {
+    g_currentCtx = 0;
+    //printf("Trying to pop context while g_contextStack is empty!\n");
+  }
+}
 
 void initParseCodeContext()
 {

@@ -3048,7 +3048,7 @@ void writeIndex(OutputList &ol)
   QCString defFileName = 
     Doxygen::mainPage ? Doxygen::mainPage->getDefFileName().data() : "<generated>";
   int defLine =
-    Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : 1;
+    Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : -1;
 
   QCString title;
   if (!mainPageHasTitle())

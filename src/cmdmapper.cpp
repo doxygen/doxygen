@@ -105,6 +105,7 @@ CommandMap cmdMap[] =
   { "enddot",        CMD_ENDDOT },
   { "manonly",       CMD_MANONLY },
   { "endmanonly",    CMD_ENDMANONLY },
+  { "includelineno", CMD_INCWITHLINES },
   { 0,               0 }
 };
 

@@ -79,7 +79,8 @@ static int              lastSkipHtmlCommentContext;
 static int              lastIfContext;
 static int              lastInternalDocContext;
 static int              lastPreLineCtrlContext;
-static int              lastSkipVerbStringContext;;
+static int              lastSkipVerbStringContext;
+static int              lastCommentInArgContext;
 static int              nextDefContext;
 static int              overloadContext;
 static Protection	protection;
@@ -130,6 +131,7 @@ static bool             insideD = FALSE;		//!< processing D code?
 static bool             insidePHP = FALSE;		//!< processing PHP code?
 static bool             insideCppQuote = FALSE;
 static bool             insideObjC = FALSE;             //!< processing Objective C code?
+static bool             insideProtocolList = FALSE;
 
 static int              argRoundCount;
 static int              argSharpCount;
@@ -806,6 +808,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      ObjCReturnType
 %x      ObjCParams
 %x      ObjCParamType
+%x      ObjCProtocolList
 %x	QtPropType
 %x	QtPropName
 %x	QtPropRW
@@ -2745,6 +2748,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    // as documentation for the argument
 					    fullArgString+=yytext;
 					    lastCopyArgChar=0;
+					    lastCommentInArgContext=YY_START;
 					    if (yytext[1]=='/')
 					      BEGIN( CopyArgCommentLine );
 					    else
@@ -2794,6 +2798,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    lastCopyArgChar=*yytext;
 					    QCString text=&yytext[1];
 					    text=text.stripWhiteSpace();
+					    lastCommentInArgContext=YY_START;
 					    fullArgString+=text;
 					    if (text.find("//")!=-1)
 					      BEGIN( CopyArgCommentLine );
@@ -2806,13 +2811,13 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CopyArgComment>"*/"			{ fullArgString+=yytext; 
   					  if (lastCopyArgChar!=0)
 					    unput(lastCopyArgChar); 
-                                          BEGIN( ReadFuncArgType ); 
+                                          BEGIN( lastCommentInArgContext ); 
 					}
 <CopyArgCommentLine>\n			{ fullArgString+=yytext;
   					  yyLineNr++;
   					  if (lastCopyArgChar!=0)
 					    unput(lastCopyArgChar);
-					  BEGIN( ReadFuncArgType );
+					  BEGIN( lastCommentInArgContext );
   					}
 <CopyArgCommentLine>[^\\\@\n]+		{ fullArgString+=yytext; }
 <CopyArgCommentLine>.			{ fullArgString+=*yytext; }
@@ -3347,10 +3352,25 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CompoundName>{SCOPENAME}{BN}*/"<"	{
   					  sharpCount = 0;
   					  current->name = yytext ;
+					  if (current->section==Entry::PROTOCOL_SEC)
+					  {
+					    current->name+="-p";
+					  }
 					  lineCount();
 					  lastClassTemplSpecContext = ClassVar;
-					  BEGIN( ClassTemplSpec );
+					  if (insideObjC) // protocol list
+					  {
+					    BEGIN( ObjCProtocolList );
+					  }
+					  else // C++ template specialization
+					  {
+					    BEGIN( ClassTemplSpec );
+					  }
 					}
+<ObjCProtocolList>"<"			{
+  					  insideProtocolList=TRUE;
+  					  BEGIN( Bases );
+  					}
 <ClassTemplSpec>">"({BN}*"::"{BN}*{SCOPENAME})?	{
 					  current->name += yytext;
 					  lineCount();
@@ -3386,8 +3406,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
-					  if (current->section == Entry::PROTOCOL_SEC || 
-					      current->section == Entry::OBJCIMPL_SEC)
+					  if (current->section == Entry::PROTOCOL_SEC)
+					  {
+					    current->name += "-p";
+					  }
+					  if (current->section == Entry::PROTOCOL_SEC /*|| 
+					      current->section == Entry::OBJCIMPL_SEC*/)
 					  {
 					    unput('{'); // fake start of body
 					  }
@@ -3440,21 +3464,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
 					  else
 					  {
-					    //if (isTypedef)
-					    //{
-					    //  //QCString dest = extractName(current->name);
-				   	    //  //printf("3>>>>>>>>>> adding %s->%s\n",yytext,current->name.data());
-					    //  QCString scope;
-					    //  if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
-                                            //  Doxygen::typedefDict.insert(yytext,new TypedefInfo(current->name,scope));
-					    //  //current->extends->append(
-					    //  //   new BaseInfo(yytext,Public,Normal)
-					    //  //		      );
-					    //}
 					    current->type += ' ' ;
 					    current->type += current->name ;
 					    current->name = yytext ;
-					    //BEGIN( FindMembers );
 					  }
   					}
 <ClassVar>[(\[]				{
@@ -3532,19 +3544,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
-  					  //QCString bName = yytext;
-					  //bName = bName.stripWhiteSpace();
-  					  //bool globalScope = bName.at(0)==':' && baseName.isEmpty();
-  					  //if (!globalScope)
-  					  //  baseName += bName;
-					  //else
-					  //  baseName += (bName.data()+2);
   					  baseName+=yytext;
 					  current->args += ' ';
-					  //if (!globalScope)
-					  //  current->args += bName;
-					  //else
-					  //  current->args += (bName.data()+2);
 					  current->args += yytext;
 					}
 <Bases>{BN}*{ID}("."{ID})*		{ // Java style class
@@ -3553,16 +3554,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->args += ' ';
 					  current->args += name;
     					}
-<Bases>^{B}*/[\-+]			{
-  					  if (!insideObjC)
-					  { 
+<ClassVar,Bases>\n/{BN}*		{
+                                          if (!insideObjC) 
+					  {
 					    REJECT;
 					  }
 					  else
 					  {
-					    unput('{'); // insert start of fake body
+					    yyLineNr++;
+					    unput('{');
 					  }
-  					}
+					}
 <ClassVar,Bases>"@end"			{ // empty ObjC interface
   					  unput('d'); // insert fake body: {}@end
   					  unput('n'); 
@@ -3577,11 +3579,19 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  specName = &current->name;
 					  BEGIN ( Specialization );
 					}
-<Bases>"<"   	       	                { baseName += *yytext;
+<Bases>"<"   	       	                { 
   					  sharpCount=1; 
 					  lastSkipSharpContext = YY_START;
-					  specName = &baseName;
-					  BEGIN ( Specialization );
+					  if (insideObjC) // start of protocol list
+					  {
+					    unput(',');
+					  }
+					  else // template specialization
+					  {
+                                            baseName += *yytext;
+					    specName = &baseName;
+					    BEGIN ( Specialization );
+					  }
 					}
 <Specialization>"<"			{ *specName += *yytext;
   					  sharpCount++;
@@ -3606,22 +3616,46 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <SkipRound>")"				{ if (--roundCount<=0)
 					    BEGIN ( lastSkipRoundContext );
 					}
-<Bases>","|({BN}+"implements"{BN}*)	{ lineCount();
-                                          current->args += ',' ; 
+<Bases>","|">"|({BN}+"implements"{BN}*)	{ lineCount();
+                                          if (insideProtocolList)
+					  {
+					    baseName+="-p";
+					  }
+					  else
+					  {
+                                            current->args += ',' ; 
+					  }
 					  current->name = removeRedundantWhiteSpace(current->name);
   					  if (!baseName.isEmpty())
+					  {
   					    current->extends->append(
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
+					  }
 					  if (current->section==Entry::INTERFACE_SEC || 
 					      insideJava || insidePHP || insideCS || 
 					      insideD || insideObjC)
+					  {
 					    baseProt=Public;
+					  }
 					  else
+					  {
 					    baseProt=Private;
+					  }
 					  baseVirt=Normal;
 					  baseName.resize(0);
-					  BEGIN(BasesProt);
+                                          if (*yytext=='>')
+					  { // end of a ObjC protocol list
+  					    insideProtocolList=FALSE;
+					  }
+					  else
+					  {
+					    if (*yytext==',' && insideObjC) // Begin of protocol list
+					    {
+  					      insideProtocolList=TRUE;
+					    }
+					    BEGIN(BasesProt);
+					  }
 					}
 <Bases>{B}*"{"{B}*			{ current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;

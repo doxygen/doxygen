@@ -202,6 +202,8 @@ class ClassDef : public Definition
     /*! Returns TRUE if this class is implemented in Objective-C */
     bool isObjectiveC() const { return m_isObjC; }
 
+    ClassDef *categoryOf() const { return m_categoryOf; }
+
     /*! returns the name of the class including outer classes, but not
      *  including namespaces.
      */
@@ -273,6 +275,7 @@ class ClassDef : public Definition
     void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
     void setTemplateArguments(ArgumentList *al);
     void mergeMembers();
+    void mergeCategory(ClassDef *category);
     void setFileDef(FileDef *fd) { m_fileDef=fd; }
     //void determineImplUsageRelation();
     //void determineIntfUsageRelation();
@@ -442,6 +445,11 @@ class ClassDef : public Definition
 
     /*! class name with outer class scope, but without namespace scope. */
     QCString m_className;
+
+    /*! If this class is a Objective-C category, then this points to the
+     *  class which is extended.
+     */
+    ClassDef *m_categoryOf;
 };
 
 /*! \brief Class that contains information about a usage relation. 
