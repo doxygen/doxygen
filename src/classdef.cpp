@@ -1271,17 +1271,11 @@ void ClassDef::writeMemberList(OutputList &ol)
       MemberDef *md=mi->memberDef;
       ClassDef  *cd=md->getClassDef();
       Protection prot = mi->prot;
+      Specifier virt=md->virtualness();
       
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
 
-      Specifier virt=md->virtualness();
-      MemberDef *rmd=md->reimplements();
-      while (rmd && virt==Normal)
-      {
-        virt = rmd->virtualness()==Normal ? Normal : Virtual;
-        rmd  = rmd->reimplements();
-      }
 
       if (cd && !md->name().isEmpty() && md->name()[0]!='@')
       {

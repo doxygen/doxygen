@@ -1114,12 +1114,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
 
     Specifier lvirt=virtualness();
-    MemberDef *rmd=reimplements();
-    while (rmd && lvirt==Normal)
-    {
-      lvirt = rmd->virtualness()==Normal ? Normal : Virtual;
-      rmd  = rmd->reimplements();
-    }
 
     if (protection()!=Public || lvirt!=Normal ||
         isFriend() || isRelated() || isExplicit() ||
@@ -1723,5 +1717,17 @@ void MemberDef::setSectionList(Definition *d, MemberList *sl)
 { 
   if (classSectionSDict==0) classSectionSDict = new SIntDict<MemberList>(7);
   classSectionSDict->append((int)d,sl);
+}
+
+Specifier MemberDef::virtualness() const
+{
+  Specifier v = virt;
+  MemberDef *rmd = reimplements();
+  while (rmd && v==Normal)
+  {
+    v = rmd->virtualness()==Normal ? Normal : Virtual;
+    rmd = rmd->reimplements();
+  }
+  return v;
 }
 

@@ -727,12 +727,15 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
       switch(type)
       {
 	case IT_Html: 
+	  if (!Config_getBool("GENERATE_HTML")) return result;
 	  outputDir = Config_getString("HTML_OUTPUT");
 	  break;
 	case IT_Latex: 
+	  if (!Config_getBool("GENERATE_LATEX")) return result;
 	  outputDir = Config_getString("LATEX_OUTPUT");
 	  break;
 	case IT_RTF:
+	  if (!Config_getBool("GENERATE_RTF")) return result;
 	  outputDir = Config_getString("RTF_OUTPUT");
 	  break;
       }
@@ -884,7 +887,7 @@ static void checkArgName(const QCString &name)
 	return;
       }
     }
-    printf("member type=%d\n",memberDef->memberType());
+    //printf("member type=%d\n",memberDef->memberType());
     QCString scope=memberDef->getScopeString();
     if (!scope.isEmpty()) scope+="::"; else scope="";
     warn(memberDef->docFile(),memberDef->docLine(),

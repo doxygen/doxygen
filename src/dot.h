@@ -27,7 +27,7 @@ class QTextStream;
 class DotNodeList;
 class ClassSDict;
 
-enum GraphOutputFormat { GIF , EPS };
+enum GraphOutputFormat { BITMAP , EPS };
 
 struct EdgeInfo
 {

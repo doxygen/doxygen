@@ -58,15 +58,17 @@
 //    - trCompoundReference(), trLegendDocs() updated
 //    - Removed some TODO's
 //
+//  2002/02/13 Oliver Brandt (o.brandt@tu-bs.de)
+//    - Updated for "new since 1.2.13" version
+//    - Removed some TODO's
+//
 // Todo:
-//   - translation of all Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
-//     strings (see translator_en.h)
 //   - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_2_13
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -123,7 +125,9 @@ class TranslatorGerman : public TranslatorAdapter_1_2_13
 
     /* header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { return "Dokumentation der Datenelemente"; }
+    { /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
+      return "Dokumentation der Datenelemente";
+    }
 
     /* this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
@@ -215,6 +219,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_13
 
     /* This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
+    /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
     { return "Datei-Elemente"; }
 
     /* This is put above each page as a link to all related pages. */
@@ -340,11 +345,9 @@ class TranslatorGerman : public TranslatorAdapter_1_2_13
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
+    /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	return "Datenstruktur-Verzeichnis";
-      else
-	return "Datenstruktur-Verzeichnis";
+	    return "Datenstruktur-Verzeichnis";
     }
 
     /* This is used in LaTeX as the title of the chapter with the
@@ -1341,7 +1344,7 @@ class TranslatorGerman : public TranslatorAdapter_1_2_13
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Global" : "global")); // FIXME
-      if (!singular)  result+="s"; 
+      if (!singular)  result+="";
       return result;
     }
 
@@ -1368,7 +1371,27 @@ class TranslatorGerman : public TranslatorAdapter_1_2_13
     virtual QCString trReferences()
     {
       return "Benutzt";
-    }    
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+    /* used in member documentation blocks to produce a list of
+     * members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Implementiert " + trWriteList(numEntries) + ".";
+    }
+
+    /* used in member documentation blocks to produce a list of
+     * all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Implementiert in " + trWriteList(numEntries) + ".";
+    }
+
 };
 
 #endif

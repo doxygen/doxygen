@@ -63,6 +63,12 @@ Makefile. It contains of a number of assignments (tags) of the form:
 You can probably leave the values of most tags in a generated template 
 configuration file to their default value.  See section \ref config for 
 more details about the configuration file. 
+
+If you do not like to edit the config file with a text editor, you should 
+have a look at \ref doxywizard_usage "doxywizard", which is a GUI 
+front-end that can create, read and write doxygen configuration files, 
+and allows setting configuration options by entering them via dialogs.
+
 For a small project consisting of a few C and/or C++ source 
 and header files, you can leave
 \ref cfg_input "INPUT" tag empty and doxygen will search for sources in
@@ -79,6 +85,9 @@ For recursive parsing of a source tree you must set
 the \ref cfg_recursive "RECURSIVE" tag to \c YES. To further fine-tune the 
 list of files that is parsed the \ref cfg_exclude "EXCLUDE" and 
 \ref cfg_exclude_patterns "EXCLUDE_PATTERNS" tags can be used.
+To omit all \c test directories from a source tree for instance, one could use:
+\verbatim EXCLUDE_PATTERNS = */test/* 
+\endverbatim
 
 If you start using doxygen for an existing project (thus without any 
 documentation that doxygen is aware of), you can still get an idea of
@@ -94,7 +103,7 @@ a (documented) entity with its definition in the source files. Doxygen will
 generate such cross-references if you set 
 the \ref cfg_source_browser "SOURCE_BROWSER" tag to \c YES.  
 It can also include the sources directly into the documentation by setting
-\ref cfg_inline_sources "INLINE_SOURCES" to \c YES (this can be handly for 
+\ref cfg_inline_sources "INLINE_SOURCES" to \c YES (this can be handy for 
 code reviews for instance).
 
 \subsection step2 Step 2: Running doxygen

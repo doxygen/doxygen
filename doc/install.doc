@@ -533,9 +533,11 @@ To install doxygen, just copy the binaries from the <code>bin</code> directory
 to a location somewhere in the path. Alternatively, you can include 
 the <code>bin</code> directory of the distribution to the path.
 
+<!--
 For running doxywizard you need to install the non-commercial version of
 the Qt library first. This library can be downloaded from 
 http://www.trolltech.com/products/download/qt-win-noncomm.html
+-->
 
 \subsection build_tools Tools used to develop doxygen
 

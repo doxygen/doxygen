@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
@@ -1294,9 +1294,14 @@ static MemberDef *addVariableToFile(
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      if ((nd==0 && md->getFileDef() && 
-          root->fileName==md->getFileDef()->absFilePath())
-          || (nd!=0 && md->getNamespaceDef()==nd))
+      if (
+          ((nd==0 && md->getFileDef() && 
+            root->fileName==md->getFileDef()->absFilePath()
+           )
+           || (nd!=0 && md->getNamespaceDef()==nd)
+          )
+          && !md->isDefine() // function style #define's can be "overloaded" by typedefs or variables
+         )
         // variable already in the scope
       {
         addMemberDocs(root,md,def,0,FALSE);
