@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,7 @@
 #define _MANDOCVISITOR_H
 
 #include "docvisitor.h"
+#include <qstack.h>
 
 class QTextStream;
 class BaseCodeDocInterface;
@@ -133,6 +134,9 @@ class ManDocVisitor : public DocVisitor
     
     void filter(const char *str);
 
+    void pushEnabled();
+    void popEnabled();
+
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -143,6 +147,7 @@ class ManDocVisitor : public DocVisitor
     bool m_hide;
     bool m_firstCol;
     int  m_indent;
+    QStack<bool> m_enabled;
 };
 
 #endif

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -101,7 +101,7 @@ class TranslatorGerman : public Translator
     {
       QCString result="\\usepackage{ngerman}\n";
       result+="\\usepackage{t1enc}% Trennung verbessern bei Umlauten\n";
-      result+="%\\usepackage[latin1]{inputenc}% Kodierung (cp850,latin1,ansinew)\n";
+      //result+="%\\usepackage[latin1]{inputenc}% Kodierung (cp850,latin1,ansinew)\n";
       return result;
     }
 

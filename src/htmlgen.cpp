@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -191,7 +191,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
     << "</a> $doxygenversion";
   //  << " " << theTranslator->trWrittenBy()
   //  << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n"
-  //  << " &copy;&nbsp;1997-2002"
+  //  << " &copy;&nbsp;1997-2003"
   t << "</small></address>\n"
     << "</body>\n"
     << "</html>\n";
@@ -288,7 +288,7 @@ void HtmlGenerator::writeFooter(int part,bool external)
     default:
       if (g_footer.isEmpty())
       {
-        //t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;1997-2002";
+        //t << " <a href=\"mailto:dimitri@stack.nl\">Dimitri van Heesch</a>,\n &copy;&nbsp;1997-2003";
         t << "</small></address>\n</body>\n</html>\n";
       }
       break;

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,7 @@
 #define _RTFDOCVISITOR_H
 
 #include "docvisitor.h"
+#include <qstack.h>
 
 class QTextStream;
 class BaseCodeDocInterface;
@@ -139,6 +140,9 @@ class RTFDocVisitor : public DocVisitor
     void incIndentLevel();
     void decIndentLevel();
 
+    void pushEnabled();
+    void popEnabled();
+
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -148,6 +152,7 @@ class RTFDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_hide;
     int m_indentLevel;
+    QStack<bool> m_enabled;
 };
 
 #endif

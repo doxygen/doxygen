@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2002 by Dimitri van Heesch.
+ * Copyright (C) 1997-2003 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,7 @@
 #define _LATEXDOCVISITOR_H
 
 #include "docvisitor.h"
+#include <qstack.h>
 
 class QTextStream;
 class BaseCodeDocInterface;
@@ -137,6 +138,9 @@ class LatexDocVisitor : public DocVisitor
     void endLink();
     QString escapeMakeIndexChars(const char *s);
 
+    void pushEnabled();
+    void popEnabled();
+
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -146,6 +150,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
+    QStack<bool> m_enabled;
 };
 
 #endif
