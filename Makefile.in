@@ -1,3 +1,4 @@
+
 all: src/version.cpp
 	cd src ; $(MAKE)
 
@@ -15,6 +16,20 @@ distclean: clean
 	-rm -f Makefile src/Makefile examples/Makefile doc/Makefile
 	-rm -f src/doxygen.pro src/doxytag.pro src/doxysearch.pro
 	-rm -f src/version.cpp
+
+install:
+	$(INSTTOOL) -d $(INSTALL)/bin
+	$(INSTTOOL) -d $(INSTALL)/share/doxygen/doc
+	$(INSTTOOL) -d $(INSTALL)/share/doxygen/examples
+	$(INSTTOOL) -m 755 bin/doxy* $(INSTALL)/bin
+	cp -r doc $(INSTALL)/share/doxygen
+	cp -r examples $(INSTALL)/share/doxygen
+	echo "DOXYGEN  = $(INSTALL)" > $(INSTALL)/share/doxygen/doc/Makefile
+	echo "DOXYDOCS = $(INSTALL)/share/doxygen" >> $(INSTALL)/share/doxygen/doc/Makefile
+	echo "VERSION  = $(VERSION)" >> $(INSTALL)/share/doxygen/doc/Makefile
+	cat doc/Makefile.in >> $(INSTALL)/share/doxygen/doc/Makefile
+	cd $(INSTALL)/share/doxygen/examples ; $(MAKE)
+	cd $(INSTALL)/share/doxygen/doc ; $(MAKE)
 
 docs: FORCE
 	cd examples ; $(MAKE)

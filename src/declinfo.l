@@ -224,7 +224,7 @@ void parseFuncDecl(const QCString &decl,QCString &cl,QCString &ctl,QCString &t,
 
   cl=scope.copy();
   //printf("scope=`%s'\n",scope.data());
-  int il,ir;
+  int il=0,ir=0;
   if ((il=cl.find('<'))!=-1 && (ir=cl.findRev('>'))!=-1) // split up scope and template arguments
   {
     ctl=removeRedundantWhiteSpace(cl.mid(il,ir-il+1));
