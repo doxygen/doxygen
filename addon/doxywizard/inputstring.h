@@ -26,7 +26,6 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QComboBox;
-class PageWidget;
 
 class InputString : public QWidget, public IInput
 {
@@ -39,7 +38,7 @@ class InputString : public QWidget, public IInput
                       StringFixed=3
                     };
 
-    InputString( const QString &text, PageWidget *parent, QCString &s, 
+    InputString( const QString &text, QWidget *parent, QCString &s, 
                  StringMode m=StringFree );
     ~InputString();
     void setEnabled(bool);

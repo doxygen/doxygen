@@ -352,19 +352,4 @@ class TranslatorAdapter_1_2_2 : public TranslatorAdapter_1_2_4
     { return english.trPropertyDocumentation(); }
 };
 
-/*! \brief Translator adapter class for release 1.2.1
- *  
- *  Translator adapter for dealing with translator changes since 
- *  release 1.2.1
- */
-class TranslatorAdapter_1_2_1 : public TranslatorAdapter_1_2_2
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.2.1"); }
-
-    virtual QCString trDCOPMethods()
-    { return english.trDCOPMethods(); }
-};
-
 #endif

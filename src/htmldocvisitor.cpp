@@ -27,6 +27,9 @@
 #include "message.h"
 #include "config.h"
 
+#define PREFRAG_START "<div class=\"fragment\"><pre>"
+#define PREFRAG_END   "</pre></div"
+
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
   QString result;
@@ -189,14 +192,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: // fall though
-      m_t << "<pre><div class=\"fragment\">"; 
+      m_t << PREFRAG_START;
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
-      m_t << "</div></pre>"; 
+      m_t << PREFRAG_END;
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "<pre><div class=\"fragment\">";
+      m_t << PREFRAG_START;
       filter(s->text());
-      m_t << "</div></pre>"; 
+      m_t << PREFRAG_END;
       break;
     case DocVerbatim::HtmlOnly: 
       m_t << s->text(); 
@@ -246,17 +249,17 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   switch(inc->type())
   {
     case DocInclude::Include: 
-      m_t << "<pre><div class=\"fragment\">";
+      m_t << PREFRAG_START;
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
-      m_t << "</div></pre>"; 
+      m_t << PREFRAG_END;
       break;
     case DocInclude::IncWithLines:
       { 
-         m_t << "<pre><div class=\"fragment\">";
+         m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
-         m_t << "</div></pre>"; 
+         m_t << PREFRAG_END;
       }
       break;
     case DocInclude::DontInclude: 
@@ -265,9 +268,9 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       m_t << inc->text(); 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "<pre><div class=\"fragment\">";
+      m_t << PREFRAG_START;
       filter(inc->text());
-      m_t << "</div></pre>"; 
+      m_t << PREFRAG_END;
       break;
   }
 }
@@ -278,7 +281,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    if (!m_hide) m_t << "<pre><div class=\"fragment\">";
+    if (!m_hide) m_t << PREFRAG_START;
     pushEnabled();
     m_hide=TRUE;
   }
@@ -292,7 +295,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     popEnabled();
-    if (!m_hide) m_t << "</div></pre>"; 
+    if (!m_hide) m_t << PREFRAG_END;
   }
   else
   {

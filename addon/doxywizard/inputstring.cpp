@@ -13,8 +13,7 @@
  */
 
 #include "inputstring.h"
-#include "pagewidget.h"
-#include "pixmaps.h"
+//#include "pixmaps.h"
 
 #include <qlabel.h>
 #include <qlayout.h>
@@ -28,8 +27,8 @@
 
 
 InputString::InputString( const QString & label, 
-                          PageWidget *parent, QCString &s, StringMode m )
-  : QWidget( parent->getLayout() ), str(s), sm(m), m_values(0), m_index(0)
+                          QWidget *parent, QCString &s, StringMode m )
+  : QWidget( parent ), str(s), sm(m), m_values(0), m_index(0)
 {
   if (m==StringFixed)
   {
@@ -38,6 +37,7 @@ InputString::InputString( const QString & label,
     lab->setMinimumSize( lab->sizeHint() );
     layout->addWidget( lab );
     com = new QComboBox( this ); 
+    com->setMinimumSize(com->sizeHint());
     layout->addWidget( com );
     layout->addStretch( 1 );
     le=0;
@@ -57,16 +57,21 @@ InputString::InputString( const QString & label,
     layout->addWidget( le,0,1 );
     if (m==StringFile || m==StringDir)
     {
-      QPixmap pixmap = QPixmap(m==StringFile ? 
-                               file_xpm :
-                               folder_xpm );
+      //QPixmap pixmap = QPixmap(m==StringFile ? 
+      //                         file_xpm :
+      //                         folder_xpm );
       br = new QPushButton( this );
-      br->setPixmap(pixmap);
       br->setMinimumSize( br->sizeHint() );  
       if (m==StringFile) 
+      {
+        br->setText("File...");
         QToolTip::add(br,"Browse to a file");
+      }
       else 
+      {
+        br->setText("Folder...");
         QToolTip::add(br,"Browse to a folder");
+      }
       layout->addWidget( br,0,2 );
     }
     else
@@ -83,8 +88,6 @@ InputString::InputString( const QString & label,
   if (br)  connect( br,   SIGNAL(clicked()), this, SLOT(browse()) );
   if (com) connect( com,  SIGNAL(activated(const QString &)), 
                     this, SLOT(textChanged(const QString &)) );
-
-  parent->addWidget(this);
 }
 
 InputString::~InputString()

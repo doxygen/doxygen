@@ -22,14 +22,13 @@
 
 class QLabel;
 class QSpinBox;
-class PageWidget;
 
 class InputInt : public QWidget, public IInput
 {
   Q_OBJECT
 
   public:
-    InputInt( const QString &text, PageWidget *parent, int &val, 
+    InputInt( const QString &text, QWidget *parent, int &val, 
               int minVal, int maxVal );
     ~InputInt(){};
     void setEnabled(bool);

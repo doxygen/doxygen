@@ -18,7 +18,7 @@
 #ifndef TRANSLATOR_NL_H
 #define TRANSLATOR_NL_H
 
-class TranslatorDutch : public TranslatorAdapter_1_3_8
+class TranslatorDutch : public Translator
 {
   public:
     QCString idLanguage()
@@ -1141,6 +1141,17 @@ class TranslatorDutch : public TranslatorAdapter_1_3_8
     virtual QCString trSearchMatches()
     {
       return "Gevonden:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return filename + " Bron Bestand";
     }
 
     

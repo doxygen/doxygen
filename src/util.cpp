@@ -21,6 +21,8 @@
 #include <windows.h>
 #endif
 
+#include <md5.h>
+
 #include "qtbc.h"
 #include <qregexp.h>
 #include <qfileinfo.h>
@@ -58,6 +60,19 @@ extern char **environ;
 #define pclose _pclose
 #endif
 
+//------------------------------------------------------------------------
+
+// selects one of the name to sub-dir mapping algorithms that is used
+// to select a sub directory when CREATE_SUBDIRS is set to YES.
+
+#define ALGO_COUNT 1
+#define ALGO_CRC16 2
+#define ALGO_MD5   3
+    
+//#define MAP_ALGO ALGO_COUNT
+//#define MAP_ALGO ALGO_CRC16
+#define MAP_ALGO ALGO_MD5
+    
 //------------------------------------------------------------------------
 
 struct LookupInfo
@@ -326,24 +341,6 @@ QCString replaceAnonymousScopes(const QCString &s)
 // strip annonymous left hand side part of the scope
 QCString stripAnonymousNamespaceScope(const QCString &s)
 {
-#if 0
-  int oi=0,i=0,p=0;
-  p=s.find('@');
-  if (p==-1) return s;
-  while (s.at(p)=='@' && (i=s.find("::@",p))!=-1 && 
-         Doxygen::namespaceDict[s.left(i)]!=0) { oi=i; p=i+2; }
-  if (oi==0) 
-  {
-    //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.data());
-    return s;
-  }
-  else 
-  {
-    //printf("stripAnonymousNamespaceScope(`%s')=`%s'\n",s.data(),s.right(s.length()-oi-2).data());
-    return s.right(s.length()-oi-2);
-  }
-#endif
-
   int i,p=0,l;
   QCString newScope;
   while ((i=getScopeFragment(s,p,&l))!=-1)
@@ -3639,6 +3636,11 @@ QCString convertNameToFile(const char *name,bool allowDots)
   }
   if (createSubdirs)
   {
+    int l1Dir=0,l2Dir=0;
+
+#if MAP_ALGO==ALGO_COUNT 
+    // old algorithm, has the problem that after regeneration the
+    // output can be located in a different dir.
     if (Doxygen::htmlDirMap==0) 
     {
       Doxygen::htmlDirMap=new QDict<int>(100003);
@@ -3646,20 +3648,31 @@ QCString convertNameToFile(const char *name,bool allowDots)
     }
     static int curDirNum=0;
     int *dirNum = Doxygen::htmlDirMap->find(result);
-    int l1Dir=0,l2Dir=0;
     if (dirNum==0) // new name
     {
       Doxygen::htmlDirMap->insert(result,new int(curDirNum)); 
-      l1Dir = (curDirNum)%10;
-      l2Dir = ((curDirNum)/10)%10;
+      l1Dir = (curDirNum)&0xf;    // bits 0-3
+      l2Dir = (curDirNum>>4)&0xff; // bits 4-11
       curDirNum++;
     }
     else // existing name
     {
-      l1Dir = (*dirNum)%10;
-      l2Dir = ((*dirNum)/10)%10;
+      l1Dir = (*dirNum)&0xf;       // bits 0-3
+      l2Dir = ((*dirNum)>>4)&0xff; // bits 4-11
     }
-    result.prepend(QCString().sprintf("d%d/d%d/",l1Dir,l2Dir));
+#elif MAP_ALGO==ALGO_CRC16
+    // second algorithm based on CRC-16 checksum
+    int dirNum = qChecksum(result,result.length());
+    l1Dir = dirNum&0xf;
+    l2Dir = (dirNum>>4)&0xff;
+#elif MAP_ALGO==ALGO_MD5
+    // third algorithm based on MD5 hash
+    uchar md5_sig[16];
+    MD5Buffer((const unsigned char *)result.data(),result.length(),md5_sig);
+    l1Dir = md5_sig[14]&0xf;
+    l2Dir = md5_sig[15];
+#endif
+    result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
   return result;
 }
@@ -3690,14 +3703,14 @@ void createSubDirs(QDir &d)
 {
   if (Config_getBool("CREATE_SUBDIRS"))
   {
-    // create 100 subdirectories
+    // create 4096 subdirectories
     int l1,l2;
-    for (l1=0;l1<10;l1++)
+    for (l1=0;l1<16;l1++)
     {
-      d.mkdir(QString().sprintf("d%d",l1));
-      for (l2=0;l2<10;l2++)
+      d.mkdir(QString().sprintf("d%x",l1));
+      for (l2=0;l2<256;l2++)
       {
-        d.mkdir(QString().sprintf("d%d/d%d",l1,l2));
+        d.mkdir(QString().sprintf("d%x/d%02x",l1,l2));
       }
     }
   }

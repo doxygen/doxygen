@@ -23,23 +23,21 @@ CONFIG      =	qt warn_on $extraopts
 # header file for the project
 HEADERS     =	doxywizard.h \
                 version.h \
-		pagewidget.h \
                 inputstring.h \
                 inputbool.h \
 		inputstrlist.h \
 		inputint.h \
-	        pixmaps.h \
+                expert.h \ 
                 config.h
 
 # source flle for the project
 SOURCES     =	doxywizard.cpp \
                 version.cpp \
-		pagewidget.cpp \
 		inputstring.cpp \
 		inputbool.cpp \
 		inputstrlist.cpp \
 		inputint.cpp \
-		pixmaps.cpp \
+                expert.cpp \ 
                 config.cpp
 
 # where to put the objects
@@ -52,8 +50,10 @@ MOC_DIR     =   moc
 INCLUDEPATH             += ../../src
 win32:TMAKE_CXXFLAGS    += -DQT_DLL
 win32:INCLUDEPATH       += .
+macosx-c++:LIBS+=-framework CoreFoundation -framework ApplicationServices
 
 # extra link options
-win32:TMAKE_LIBS = $(QTDIR)\lib\qtmain.lib $(QTDIR)\lib\qt-mt230nc.lib user32.lib gdi32.lib comdlg32.lib imm32.lib ole32.lib uuid.lib wsock32.lib 
+win32:TMAKE_LFLAGS = /NODEFAULTLIB:msvcrt.lib
+win32:TMAKE_LIBS = $(QTDIR)\lib\qtmain.lib $(QTDIR)\lib\qt-mt332.lib user32.lib gdi32.lib comdlg32.lib imm32.lib ole32.lib uuid.lib wsock32.lib 
 win32:TMAKE_LIBS_QT = 
 

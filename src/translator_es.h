@@ -25,7 +25,7 @@
 #ifndef TRANSLATOR_ES_H
 #define TRANSLATOR_ES_H
 
-class TranslatorSpanish : public TranslatorAdapter_1_3_3
+class TranslatorSpanish : public TranslatorAdapter_1_3_8
 {
   public:
     virtual QCString idLanguage()

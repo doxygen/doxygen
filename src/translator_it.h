@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2004/06: translated new items used since version 1.3.8
  *  2003/11: translated new items used since version 1.3.3
  *  2003/06: translated new items used since version 1.3.1
  *  2003/04: translated new items used since version 1.3
@@ -70,7 +71,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_3_8
+class TranslatorItalian : public Translator
 {
   public:
 
@@ -1502,6 +1503,17 @@ class TranslatorItalian : public TranslatorAdapter_1_3_8
     virtual QCString trSearchMatches()
     {
       return "Corrispondenze:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return " File sorgente " + filename ;
     }
 
 };

@@ -65,7 +65,7 @@ class DotNode
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     void write(QTextStream &t,GraphType gt,GraphOutputFormat f,
-               bool topDown,bool toChildren,int maxDistance,bool backArrows);
+               bool topDown,bool toChildren,int maxDistance,bool backArrows,bool reNumber);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t,bool isClassGraph);
@@ -76,9 +76,9 @@ class DotNode
   private:
     void colorConnectedNodes(int curColor);
     void writeBox(QTextStream &t,GraphType gt,GraphOutputFormat f,
-                  bool hasNonReachableChildren);
+                  bool hasNonReachableChildren, bool reNumber=FALSE);
     void writeArrow(QTextStream &t,GraphType gt,GraphOutputFormat f,DotNode *cn,
-                    EdgeInfo *ei,bool topDown, bool pointBack=TRUE);
+                    EdgeInfo *ei,bool topDown, bool pointBack=TRUE, bool reNumber=FALSE);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     int              m_number;
     QCString         m_label;     //!< label text
@@ -102,7 +102,7 @@ class DotNode
                       DotNode *root, GraphType gt,
                       GraphOutputFormat f, const QCString &baseName,
                       bool lrRank, bool renderParents,
-                      int distance, bool backArrows
+                      int distance, bool backArrows, bool reNumber
                      );
     friend QCString computeMd5Signature(
                       DotNode *root, GraphType gt,

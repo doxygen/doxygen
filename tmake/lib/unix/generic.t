@@ -47,7 +47,11 @@
 	if ( !((Project("TARGET") eq "qt") && Project("TMAKE_LIB_FLAG")) ) {
 	    Project("TMAKE_LIBDIR_QT") &&
 		Project('TMAKE_LIBS *= -L$$TMAKE_LIBDIR_QT');
-	    Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT');
+            if ( Config("thread") ) {
+	      Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT_MT');
+            } else {
+	      Project('TMAKE_LIBS *= $$TMAKE_LIBS_QT');
+            }
 	}
     }
     if ( Config("opengl") ) {

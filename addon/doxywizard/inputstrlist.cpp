@@ -13,8 +13,7 @@
  */
 
 #include "inputstrlist.h"
-#include "pagewidget.h"
-#include "pixmaps.h"
+//#include "pixmaps.h"
 
 #include <qlabel.h>
 #include <qlayout.h>
@@ -27,8 +26,8 @@
 #include <qtooltip.h>
 
 InputStrList::InputStrList( const QString & label, 
-                            PageWidget *parent, QStrList &sl, ListMode lm)
-  : QWidget(parent->getLayout()), strList(sl)
+                            QWidget *parent, QStrList &sl, ListMode lm)
+  : QWidget(parent), strList(sl)
 {
   QGridLayout *layout = new QGridLayout( this, 2, 2, 5 );
   lab = new QLabel( label, this );
@@ -42,19 +41,22 @@ InputStrList::InputStrList( const QString & label,
   boxlayout->addWidget( le, 1 );
 
   add = new QPushButton( dw );
-  add->setPixmap( QPixmap( add_xpm ));
+  //add->setPixmap( QPixmap( add_xpm ));
+  add->setText( "+" );
   add->setMinimumSize( add->sizeHint() );
   QToolTip::add(add,"Add item");
   boxlayout->addWidget( add );
 
   del = new QPushButton( dw );
-  del->setPixmap( QPixmap( del_xpm ));
+  //del->setPixmap( QPixmap( del_xpm ));
+  del->setText( "-" );
   del->setMinimumSize( del->sizeHint() );
   QToolTip::add(del,"Delete selected item");
   boxlayout->addWidget( del );
 
   upd = new QPushButton( dw ); 
-  upd->setPixmap( QPixmap( update_xpm ));
+  //upd->setPixmap( QPixmap( update_xpm ));
+  upd->setText( "*" );
   upd->setMinimumSize( upd->sizeHint() );
   QToolTip::add(upd,"Update selected item");
   boxlayout->addWidget( upd );
@@ -72,7 +74,8 @@ InputStrList::InputStrList( const QString & label,
     if (lm&ListFile)
     {
       brFile = new QPushButton(dw);
-      brFile->setPixmap( QPixmap(file_xpm) );
+      //brFile->setPixmap( QPixmap(file_xpm) );
+      brFile->setText("Select...");
       brFile->setMinimumSize(brFile->sizeHint());
       QToolTip::add(brFile,"Browse to a file");
       boxlayout->addWidget( brFile );
@@ -80,7 +83,8 @@ InputStrList::InputStrList( const QString & label,
     if (lm&ListDir)
     {
       brDir = new QPushButton(dw);
-      brDir->setPixmap( QPixmap(folder_xpm) );
+      //brDir->setPixmap( QPixmap(folder_xpm) );
+      brDir->setText("Select...");
       brDir->setMinimumSize(brDir->sizeHint());
       QToolTip::add(brDir,"Browse to a folder");
       boxlayout->addWidget( brDir );
@@ -111,10 +115,6 @@ InputStrList::InputStrList( const QString & label,
   }
   connect(lb,   SIGNAL(selected(const QString &)), 
           this, SLOT(selectText(const QString &)));
-
-  parent->addWidget(this);
-
-  strList=sl;
 }
 
 void InputStrList::addString()
