@@ -161,7 +161,9 @@ static DocCmdMap docCmdMap[] =
   { "verbatim",        &handleFormatBlock },
   { "latexonly",       &handleFormatBlock },
   { "htmlonly",        &handleFormatBlock },
+  { "xmlonly",         &handleFormatBlock },
   { "rtfonly",         &handleFormatBlock },
+  { "manonly",         &handleFormatBlock },
   { "dot",             &handleFormatBlock },
   { "code",            &handleFormatBlock },
   { "addindex",        &handleAddIndex },
@@ -316,7 +318,6 @@ static QCString         xrefItemTitle;
 static QCString         xrefListTitle;
 static Protection	protection;
 
-static bool             xrefAppendToPrev;
 static bool             xrefAppendFlag;
 
 //-----------------------------------------------------------------------------
@@ -405,8 +406,8 @@ static void addXRefItem(const char *listName,const char *itemTitle,
 {
   Entry *docEntry = current; // inBody && previous ? previous : current;
   if (listName==0) return;
-
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
+
   ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
@@ -539,17 +540,20 @@ static void addSection()
 // selects the output to write to
 static inline void setOutput(OutputContext ctx)
 {
+  bool xrefAppendToPrev = xrefAppendFlag;
+  // determine append flag for the next item (i.e. the end of this item)
+  xrefAppendFlag = ctx==OutputXRef && newXRefKind==xrefKind &&
+                 (xrefKind!=XRef_Item || newXRefItemKey==xrefItemKey);
+  //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
+  //   	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
+  xrefItemKey = newXRefItemKey;
+
   //printf("setOutput(inContext=%d ctx=%d)\n",inContext,ctx);
   if (inContext==OutputXRef) // end of XRef section => add the item 
   {
     // See if we can append this new xref item to the previous one.
     // We know this at the start of the next item of the same
     // type and need to remember this until the end of that item.
-    xrefAppendToPrev = xrefAppendFlag;
-    xrefAppendFlag = ctx==OutputXRef && newXRefKind==xrefKind &&
-                 (xrefKind!=XRef_Item || newXRefItemKey==xrefItemKey);
-    //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
-    //	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
     switch(xrefKind)
     {
       case XRef_Todo:
@@ -604,7 +608,7 @@ static inline void setOutput(OutputContext ctx)
     case OutputXRef:
       pOutputString = &outputXRef;
       // first item found, so can't append to previous
-      xrefAppendFlag = FALSE;
+      //xrefAppendFlag = FALSE;
       break;
   }
 }
@@ -641,8 +645,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-DETAILEDCMD {CMD}("arg"|"attention"|"author"|"bug"|"code"|"date"|"deprecated"|"dot"|"dotfile"|"example"|"htmlinclude"|"htmlonly"|"image"|"include"|"includelineno"|"internal"|"invariant"|"latexonly"|"li"|"line"|manonly"|"name"|"note"|"par"|"paragraph"|"param"|"post"|"pre"|"remarks"|"relate"[sd]"("also")?|"remarks"|"return"[s]?|"retval"|"sa"|"section"|"see"|"since"|"subsection"|"subsubsection"|"test"|"throw"|"todo"|"until"|"verbatim"|"verbinclude"|"version"|"warning"|"xmlonly"|"xrefitem")
-       /* ("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"dot"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">") */
+DETAILEDCMD {CMD}("arg"|"attention"|"author"|"bug"|"code"|"date"|"deprecated"|"dot"|"dotfile"|"example"|"htmlinclude"|"htmlonly"|"image"|"include"|"includelineno"|"internal"|"invariant"|"latexonly"|"li"|"line"|manonly"|"name"|"note"|"par"|"paragraph"|"param"|"post"|"pre"|"remarks"|"relate"[sd]"("also")?|"remarks"|"return"[s]?|"retval"|"sa"|"section"|"see"|"since"|"subsection"|"subsubsection"|"test"|"throw"|"todo"|"until"|"verbatim"|"verbinclude"|"version"|"warning"|"xrefitem")
 PRE       [pP][rR][eE]
 TABLE	  [tT][aA][bB][lL][eE]
 P	  [pP]
@@ -706,6 +709,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 %x	ReadFormulaLong
 %x	AnchorLabel
 %x      HtmlComment
+%x      SkipLang
 
 %%
 
@@ -720,9 +724,13 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
    *   end of brief description due to some command (@command, or <command>).
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
+   *   language switch (e.g. \~english or \~).
    */
 
 <Comment>{CMD}{CMD}[a-z_A-Z]+{B}*	{ // escaped command
+  					  addOutput(yytext);
+  					}
+<Comment>{CMD}{CMD}"~"[a-z_A-Z]*	{ // escaped command
   					  addOutput(yytext);
   					}
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
@@ -756,6 +764,14 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					}
 <Comment>("\\\\"|"@@")"f"[$\[{]		{ // escaped formula command
   					  addOutput(yytext);
+  					}
+<Comment>{CMD}"~"[a-z_A-Z]*		{ // language switch command
+                                          QCString langId = &yytext[2];
+			       	          if (!langId.isEmpty() &&
+					      stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
+				          { // enable language specific section
+				            BEGIN(SkipLang);
+				          }
   					}
 <Comment>{CMD}"f{"[^}\n]+"}"		{ // start of a formula with custom environment
 					  formulaText="\\begin";
@@ -793,7 +809,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  addOutput(yytext[0]);
   					  addOutput(yytext[2]);
   					}
-<Comment>\n({B}*\n)+			{ // at least one blank line
+<Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
   					  if (inContext)
 					  {
 					    setOutput(OutputDoc);
@@ -1091,7 +1107,6 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <XRefItemParam1>{ID}			{ // first argument
   					  newXRefItemKey=yytext;
                                           setOutput(OutputXRef);
-					  xrefItemKey==yytext;
 					  BEGIN(XRefItemParam2);
 					}
 <XRefItemParam1>{LC}			{ // line continuation
@@ -1274,7 +1289,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode")/{NW} { // possible ends
   					  addOutput(yytext);
 					  if (&yytext[4]==blockName) // found end of the block
 					  {
@@ -1429,6 +1444,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					}
 <NameParam>.				{ // ignore other stuff
 					  nameHeader+=*yytext;
+					  current->name+=*yytext;
   					}
 
   /* ----- handle argument of ingroup command ------- */
@@ -1522,6 +1538,25 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					      );
 					  BEGIN(Comment);
   					}
+
+  /* ----- handle language specific sections ------- */
+
+<SkipLang>[\\@]"~"[a-zA-Z]*        { /* language switch */
+                                     QCString langId = &yytext[2];
+				     if (langId.isEmpty() ||
+					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
+				     { // enable language specific section
+				       BEGIN(Comment);
+				     }
+                                   }
+<SkipLang>[^*@\\\n]*		   { /* any character not a *, @, backslash or new line */
+                                   }
+<SkipLang>{DOCNL}		   { /* new line in verbatim block */
+  		                     if (*yytext=='\n') yyLineNr++;
+                                   }
+<SkipLang>.			   { /* any other character */
+                                   }
+
 
 %%
 

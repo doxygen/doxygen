@@ -54,8 +54,8 @@ TranslatorGreek
 Harry Kalogirou: harkal@rainbow.cs.unipi.gr
 
 TranslatorHungarian
-F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari lost@cyberspace
 &Aacute;kos Kiss: akiss@users.sourceforge.net
+F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari lost@cyberspace
 
 TranslatorItalian 
 Alessandro Falappa: alessandro@falappa.net 

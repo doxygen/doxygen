@@ -57,6 +57,8 @@ static QCString g_fileName;
 static int      g_lineNr;
 static int      g_condCtx;
 static QStack<CondCtx> g_condStack;
+static QCString g_blockName;
+static int      g_lastCommentContext;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -217,6 +219,32 @@ static QCString handleCondCmdInAliases(const QCString &s)
   return result;
 }
 
+/** copies string \a s with length \a len to the output, while 
+ *  replacing any alias commands found in the string.
+ */
+static void replaceAliases(const char *s,int len)
+{
+  static QRegExp cmd("[@\\\\][a-z_A-Z][a-z_A-Z0-9]*");
+  QCString in=s;
+  int p=0,i,l;
+  while ((i=cmd.match(in,p,&l))!=-1)
+  {
+    copyToOutput(s+p,i-p);
+    QCString *pValue=Doxygen::aliasDict[in.mid(i+1,l-1)];
+    if (pValue)
+    {
+      QCString val = handleCondCmdInAliases(*pValue);
+      copyToOutput(val.data(),val.length());
+    }
+    else
+    {
+      copyToOutput(s+i,l);
+    }
+    p=i+l;
+  }
+  copyToOutput(s+p,len-p);
+}
+
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -245,7 +273,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 %x Verbatim
 %x ReadLine
 %x CondLine
-%x SkipLang
 
 %%
 
@@ -271,7 +298,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     }
 				     g_blockHeadCol=g_col;
                                      copyToOutput("/**",3); 
-				     copyToOutput(yytext+i,yyleng-i); 
+				     //copyToOutput(yytext+i,yyleng-i); 
+				     replaceAliases(yytext+i,yyleng-i);
 				     BEGIN(SComment); 
                                    }
 <Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
@@ -279,7 +307,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      int i=17; //=strlen("//##Documentation");
 				     g_blockHeadCol=g_col;
 				     copyToOutput("/**",3);
-				     copyToOutput(yytext+i,yyleng-i);
+				     //copyToOutput(yytext+i,yyleng-i);
+				     replaceAliases(yytext+i,yyleng-i);
 				     BEGIN(SComment);
   				   }
 <Scan>"//"/.*\n		           { /* one line C++ comment */ 
@@ -291,16 +320,21 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<Scan>[\\@]"verbatim"		   { /* start of a verbatim block */
+<CComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code") { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
+				     g_blockName=&yytext[1];
+				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
 <Scan>.                            { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>[\\@]"endverbatim"       { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
-				     BEGIN(Scan);
+				     if (&yytext[4]==g_blockName)
+				     {
+				       BEGIN(g_lastCommentContext);
+				     }
                                    }
 <Verbatim>[^@\\\n]*		   { /* any character not a backslash or new line */
                                      copyToOutput(yytext,yyleng); 
@@ -310,25 +344,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                    }
 <Verbatim>.			   { /* any other character */
                                      copyToOutput(yytext,yyleng); 
-                                   }
-<SkipLang>[\\@]"~"[a-zA-Z]*        { /* end of verbatim block */
-                                     QCString langId = &yytext[2];
-				     if (langId.isEmpty() ||
-					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)==0)
-				     { // enable language specific section
-				       BEGIN(CComment);
-				     }
-                                   }
-<SkipLang>[^*@\\\n]*		   { /* any character not a *, @, backslash or new line */
-                                   }
-<SkipLang>\n			   { /* new line in verbatim block */
-                                     copyToOutput(yytext,yyleng); 
-                                   }
-<SkipLang>"*/"			   { /* end of comment block */
-                                     copyToOutput(yytext,yyleng); 
-				     BEGIN(Scan); 
-  				   }
-<SkipLang>.			   { /* any other character */
                                    }
 <SkipString>\\.                    { /* escaped character in string */
                                      copyToOutput(yytext,yyleng); 
@@ -411,14 +426,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <CComment,ReadLine>("\\\\"|"@@")[~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,yyleng);
   				   }
-<CComment>[@\\]"~"[a-zA-Z]*	   { // language switch
-                                     QCString langId = &yytext[2];
-				     if (!langId.isEmpty() && 
-					 stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
-				     {
-				       BEGIN(SkipLang);
-				     }
-  			           }
 <CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
   				     g_condCtx = YY_START; 
   				     BEGIN(CondLine);
@@ -492,7 +499,7 @@ void replaceComment(int offset)
   }
 }
 
-/*! This function does two things:
+/*! This function does three things:
  *  -# It converts multi-line C++ style comment blocks (that are aligned)
  *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
  *  -# It replaces aliases with their definition (see ALIASES)

@@ -100,6 +100,7 @@ static bool               g_expandOnlyPredef; // from the configuration
 static int                g_commentCount;
 static bool               g_insideComment;
 static bool               g_isImported;
+static QCString           g_blockName;
 
 
 static void setFileName(const char *name)
@@ -1776,13 +1777,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
-<SkipCComment>[\\@]"verbatim"{BN}+	{
+<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,yyleng);
+					  g_blockName=&yytext[1];
 					  BEGIN(SkipVerbatim);
   					}
-<SkipVerbatim>[\\@]"endverbatim"	{
+<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
   					  outputArray(yytext,yyleng);
-					  BEGIN(SkipCComment);
+					  if (&yytext[4]==g_blockName)
+					  {
+					    BEGIN(SkipCComment);
+					  }
   					}
 <SkipCComment,SkipVerbatim>[^*\x06\n\/]+ {
   					  outputArray(yytext,yyleng);

@@ -509,7 +509,11 @@ bool MemberDef::hasExamples()
 QCString MemberDef::getOutputFileBase() const
 {
   QCString baseName;
-  if (m_templateMaster)
+  if (explicitOutputFileBase)
+  {
+    return explicitOutputFileBase;
+  }
+  else if (m_templateMaster)
   {
     return m_templateMaster->getOutputFileBase();
   }
@@ -835,6 +839,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // hide members whose brief section should not be visible
   //if (!isBriefSectionVisible()) return;
 
+  Definition *d=0;
+  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
+  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+
   // write tag file information of this member
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
@@ -875,6 +883,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
     Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
+    Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
     Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
     Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
     writeDocAnchorsToTagFile();
@@ -889,9 +898,6 @@ void MemberDef::writeDeclaration(OutputList &ol,
     Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
   }
 
-  Definition *d=0;
-  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
-  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
   QCString cname  = d->name();
   QCString cfname = getOutputFileBase();
   QCString osname = cname;
@@ -2080,11 +2086,14 @@ void MemberDef::addListReference(Definition *)
   }
   QCString memName = name();
   Definition *pd=getOuterScope();
-  if ((!Config_getBool("HIDE_SCOPE_NAMES") && // there is a scope
+  if (!isRelated() &&
+      (
+       (!Config_getBool("HIDE_SCOPE_NAMES") && // there is a scope
         pd && pd!=Doxygen::globalScope)       // and we can show it
-        ||
-        ((pd=getClassDef()) && !isRelated())  // it's a class so we
+       ||
+       (pd=getClassDef())                     // it's a class so we
                                               // show the scope anyway
+      )
      )
   {
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
@@ -2326,5 +2335,15 @@ QCString MemberDef::qualifiedName()
   {
     return Definition::qualifiedName();
   }  
+}
+
+void MemberDef::setTagInfo(TagInfo *ti)
+{
+  if (ti)
+  {
+    setAnchor(ti->anchor);
+    setReference(ti->tagName);
+    explicitOutputFileBase = stripExtension(ti->fileName);
+  }
 }
 

@@ -653,16 +653,23 @@ static void addClassToContext(Entry *root)
 
   // see if the using statement was found inside a namespace or inside
   // the global file scope.
+  QCString scName;
   if (root->parent->section == Entry::NAMESPACE_SEC)
   {
-     QCString scName=root->parent->name;
+     scName=root->parent->name;
      if (!scName.isEmpty())
      {
         nd = getResolvedNamespace(scName);
      }
   }
   QCString fullName = root->name;
-  ClassDef *cd = getResolvedClass(nd,fd,root->name,0,0,TRUE);
+
+  ClassDef *cd = getResolvedClass( nd,fd,
+            // normally we could use root->name to find the class, but since we did not yet resolve
+            // the class/namespace nesting relations we have to use the fully qualified name here.
+            scName.isEmpty() ? root->name : scName+"::"+root->name,
+            0,0,TRUE);
+
   Debug::print(Debug::Classes,0, "  Found class with name %s (cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), cd);
   
@@ -1501,11 +1508,7 @@ static MemberDef *addVariableToClass(
       root->type,name,root->args,0,
       prot,Normal,root->stat,related,
       mtype,0,0);
-  if (root->tagInfo) 
-  {
-    md->setAnchor(root->tagInfo->anchor);
-    md->setReference(root->tagInfo->tagName);
-  }
+  md->setTagInfo(root->tagInfo);
   md->setMemberClass(cd);
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
@@ -1662,11 +1665,7 @@ static MemberDef *addVariableToFile(
       root->type,name,root->args,0,
       Public, Normal,root->stat,FALSE,
       mtype,0,0);
-  if (root->tagInfo) 
-  {
-    md->setAnchor(root->tagInfo->anchor);
-    md->setReference(root->tagInfo->tagName);
-  }
+  md->setTagInfo(root->tagInfo);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -1774,7 +1773,11 @@ static bool isVarWithConstructor(Entry *root)
   }
   if (root->parent->name) ctx=Doxygen::namespaceSDict.find(root->parent->name);
   type = root->type;
-  if (type.left(6)=="const ") type=type.right(type.length()-6);
+  // remove qualifiers
+  findAndRemoveWord(type,"const");
+  findAndRemoveWord(type,"static");
+  findAndRemoveWord(type,"volatile");
+  //if (type.left(6)=="const ") type=type.right(type.length()-6);
   typeIsClass=getResolvedClass(ctx,fd,type)!=0;
   if (!typeIsClass && (ti=type.find('<'))!=-1)
   {
@@ -2096,11 +2099,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
       root->type,name,root->args,root->exception,
       root->protection,root->virt,root->stat,!root->relates.isEmpty(),
       mtype,root->tArgLists ? root->tArgLists->last() : 0,root->argList);
-  if (root->tagInfo) 
-  {
-    md->setAnchor(root->tagInfo->anchor);
-    md->setReference(root->tagInfo->tagName);
-  }
+  md->setTagInfo(root->tagInfo);
   md->setMemberClass(cd);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
   md->setDocsForDefinition(!root->proto);
@@ -2237,6 +2236,7 @@ static void buildFunctionList(Entry *root)
 
     bool isFriend=root->type.find("friend ")!=-1;
     QCString rname = removeRedundantWhiteSpace(root->name);
+    //printf("rname=%s\n",rname.data());
 
     if (!rname.isEmpty())
     {
@@ -2247,10 +2247,12 @@ static void buildFunctionList(Entry *root)
       //printf("root->parent=`%s' %x cd=%p root->type.find(re,0)=%d\n",
       //    root->parent->name.data(),root->parent->section,getClass(root->parent->name),
       //    root->type.find(re,0));
-      QCString scope=stripAnonymousNamespaceScope(root->parent->name);
+      QCString scope=root->parent->name; //stripAnonymousNamespaceScope(root->parent->name);
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
+      //printf("scope=%s\n",scope.data());
 
       cd=getClass(scope);
+      //printf("cd=%p\n",cd);
       if (cd && scope+"::"==rname.left(scope.length()+2)) // found A::f inside A
       {
         // strip scope from name
@@ -2423,11 +2425,7 @@ static void buildFunctionList(Entry *root)
               MemberDef::Function,tArgList,root->argList);
 
 
-          if (root->tagInfo) 
-          {
-            md->setAnchor(root->tagInfo->anchor);
-            md->setReference(root->tagInfo->tagName);
-          }
+          md->setTagInfo(root->tagInfo);
           //md->setDefFile(root->fileName);
           //md->setDefLine(root->startLine);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -4131,63 +4129,6 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
   ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE);
-#if 0
-  if (tcd==0) // try using declaration
-  {
-    ClassSDict *cl = 0;
-    if (nd)
-    {
-      cl=nd->getUsedClasses();
-    }
-    else if (fd)
-    {
-      cl=fd->getUsedClasses();
-    }
-    if (cl)
-    {
-      ClassSDict::Iterator cli(*cl);
-      ClassDef *cd;
-      for (;(cd=cli.current()) && tcd==0;++cli)
-      {
-        QCString scName = scopeName;
-        int scopeOffset = scName.length();
-        do
-        {
-          QCString scope=scName.left(scopeOffset);
-          //printf("`%s'<->`%s' `%s'\n",cd->name().data(),scope.data(),scopeName);
-          if (rightScopeMatch(cd->name(),scope))
-          {
-            //printf("Trying to find `%s'\n",(cd->name()+scName.right(scName.length()-scopeOffset)).data());
-            tcd = getClass(cd->name()+scName.right(scName.length()-scopeOffset)); 
-          }
-          scopeOffset=scName.findRev("::",scopeOffset-1);
-        } while (scopeOffset>=0 && tcd==0);
-      }
-    }
-  }
-  if (tcd==0) // try using directive
-  {
-    NamespaceSDict *nl = 0;
-    if (nd)
-    {
-      nl=nd->getUsedNamespaces();
-    }
-    else if (fd)
-    {
-      nl=fd->getUsedNamespaces();
-    }
-    if (nl)
-    {
-      NamespaceSDict::Iterator nli(*nl);
-      NamespaceDef *nd;
-      for (;(nd=nli.current()) && tcd==0;++nli)
-      {
-        //printf("Trying with scope=%s\n",nd->name().data());
-        tcd = getClass(nd->name()+"::"+scopeName); 
-      }
-    }
-  }
-#endif
   return tcd;
 }
 
@@ -4708,7 +4649,8 @@ static void findMember(Entry *root,
             if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
             ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
-            //printf("*** cd=%s tcd=%s fd=%s\n",cd->name().data(),tcd->name().data(),fd->name().data());
+            //printf("Looking for %s inside nd=%s result=%p\n",
+            //    scopeName.data(),nd?nd->name().data():"<none>",tcd);
 
             if (cd && tcd==cd) // member's classes match
             {
@@ -4967,7 +4909,7 @@ static void findMember(Entry *root,
               for (mni.toFirst();(md=mni.current());++mni)
               {
                 ClassDef *cd=md->getClassDef();
-                if (cd!=0 && cd->name()==className)
+                if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
                   if (md->templateArguments())
                   {
@@ -4998,11 +4940,7 @@ static void findMember(Entry *root,
               root->protection,root->virt,root->stat,FALSE,
               mtype,tArgList,root->argList);
           //printf("new specialized member %s args=`%s'\n",md->name().data(),funcArgs.data());
-          if (root->tagInfo) 
-          {
-            md->setAnchor(root->tagInfo->anchor);
-            md->setReference(root->tagInfo->tagName);
-          }
+          md->setTagInfo(root->tagInfo);
           md->setMemberClass(cd);
           md->setTemplateSpecialization(TRUE);
           md->setDefinition(funcDecl);
@@ -5063,11 +5001,7 @@ static void findMember(Entry *root,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,tArgList,root->argList);
-          if (root->tagInfo) 
-          {
-            md->setAnchor(root->tagInfo->anchor);
-            md->setReference(root->tagInfo->tagName);
-          }
+          md->setTagInfo(root->tagInfo);
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
@@ -5173,11 +5107,7 @@ static void findMember(Entry *root,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,tArgList,funcArgs.isEmpty() ? 0 : root->argList);
-          if (root->tagInfo) 
-          {
-            md->setAnchor(root->tagInfo->anchor);
-            md->setReference(root->tagInfo->tagName);
-          }
+          md->setTagInfo(root->tagInfo);
           //printf("Related member name=`%s' decl=`%s' bodyLine=`%d'\n",
           //       funcName.data(),funcDecl.data(),root->bodyLine);
 
@@ -5274,11 +5204,7 @@ localObjCMethod:
             funcType,funcName,funcArgs,exceptions,
             root->protection,root->virt,root->stat,FALSE,
             MemberDef::Function,0,root->argList);
-        if (root->tagInfo) 
-        {
-          md->setAnchor(root->tagInfo->anchor);
-          md->setReference(root->tagInfo->tagName);
-        }
+        md->setTagInfo(root->tagInfo);
         md->makeImplementationDetail();
         md->setMemberClass(cd);
         md->setDefinition(funcDecl);
@@ -5559,11 +5485,7 @@ static void findEnums(Entry *root)
           0,name,0,0,
           root->protection,Normal,FALSE,isRelated,MemberDef::Enumeration,
           0,0);
-      if (root->tagInfo) 
-      {
-        md->setAnchor(root->tagInfo->anchor);
-        md->setReference(root->tagInfo->tagName);
-      }
+      md->setTagInfo(root->tagInfo);
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       bool ambig;
@@ -6480,8 +6402,7 @@ static void findDefineDocumentation(Entry *root)
       MemberDef *md=new MemberDef("<tagfile>",1,
                     "#define",root->name,root->args,0,
                     Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
-      md->setAnchor(root->tagInfo->anchor);
-      md->setReference(root->tagInfo->tagName);
+      md->setTagInfo(root->tagInfo);
       bool ambig;
       QCString filePathName = root->parent->fileName;
       FileDef *fd=findFileDef(Doxygen::inputNameDict,filePathName,ambig);
@@ -8610,6 +8531,10 @@ void parseInput()
   buildClassList(root);
   buildClassDocList(root);
   resolveClassNestingRelations();
+  // calling buildClassList may result in cached relations that
+  // become invalid after resolveClassNestingRelation(), that's why
+  // we need to clear the cache here
+  Doxygen::lookupCache.clear();
 
   msg("Searching for members imported via using declarations...\n");
   findUsingDeclImports(root);

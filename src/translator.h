@@ -433,6 +433,12 @@ class Translator
     virtual QCString trDirReference(const char *dirName) = 0;
     virtual QCString trDir(bool first_capital, bool singular) = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trOverloadText() = 0;
+    
 };
 
 #endif

@@ -58,11 +58,15 @@
 //
 // 2004/09/15
 // - Added strings for 1.3.9
+//
+// 2005/02/28
+// - Removed obsolete (unused) methods
+//
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public Translator
+class TranslatorCroatian : public TranslatorAdapter_1_4_1
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -104,10 +108,8 @@ class TranslatorCroatian : public Translator
     { return decode("Dokumentacija typedef èlanova"); }
     QCString trMemberEnumerationDocumentation()
     { return decode("Dokumentacija enumeracijskih èlanova"); }
-    QCString trEnumerationValueDocumentation()
-    { return "Dokumentacija enumeracijskih vrijednosti"; }
     QCString trMemberFunctionDocumentation()
-        { return "Dokumentacija funkcija"; }
+    { return "Dokumentacija funkcija"; }
     QCString trMemberDataDocumentation()
     { return "Documentacija varijabli"; }
     QCString trMore()
@@ -149,8 +151,6 @@ class TranslatorCroatian : public Translator
 	}
     QCString trFileList()
     { return "Popis datoteka"; }
-    QCString trHeaderFiles()
-    { return "Header datoteke"; }
     QCString trCompoundMembers()
 	{
 		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
@@ -217,16 +217,12 @@ class TranslatorCroatian : public Translator
 		  result+="datoteke u kojima se nalaze:";
       return decode(result);
     }
-    QCString trHeaderFilesDescription()
-    { return decode("Popis header datoteka koje èine API :"); }
     QCString trExamplesDescription()
     { return "Popis primjera :"; }
     QCString trRelatedPagesDescription()
     { return "Popis povezanih stranica:"; }
     QCString trModulesDescription()
     { return "Popis svih modula:"; }
-    QCString trNoDescriptionAvailable()
-    { return "Opis nije dostupan"; }
 
     QCString trDocumentation()
     { return "Dokumentacija"; }
@@ -314,14 +310,8 @@ class TranslatorCroatian : public Translator
     }
     QCString trForInternalUseOnly()
     { return decode("Iskljuèivo za internu uporabu."); }
-    QCString trReimplementedForInternalReasons()
-        { return decode("Reimplementirano zbog internih razloga; "
-                                        "Nema utjecaja na API."); 
-    }
     QCString trWarning()
     { return "Upozorenje"; }
-    QCString trBugsAndLimitations()
-    { return decode("Gre¹ke i ogranièenja"); }
     QCString trVersion()
     { return "Verzija"; }
     QCString trDate()
@@ -563,10 +553,6 @@ class TranslatorCroatian : public Translator
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trSources()
-    {
-      return "Izvorne datoteke";
-    }
     QCString trDefinedAtLineInSourceFile()
     {
       return "Definirano u liniji @0 datoteke @1.";
@@ -852,11 +838,6 @@ class TranslatorCroatian : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return decode("Suèelja (interfaces)");
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -881,11 +862,6 @@ class TranslatorCroatian : public Translator
     virtual QCString trPackages()
     {
       return "Paketi";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Dokumentacija paketa";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -996,17 +972,6 @@ class TranslatorCroatian : public Translator
       return decode(result); 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Polj" : "polj"));
-      result+= (singular ? "e" : "a");
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.

@@ -21,7 +21,7 @@
 // translation by Dejan D. M. Milosavljevic <dmilos@email.com>;<dmilosx@ptt.yu>;<office@ddmrm.com>
 // // 10x 2 Ivana Miletic for gramatical consutation.
 
-class TranslatorSerbian : public Translator
+class TranslatorSerbian : public TranslatorAdapter_1_4_1
 {                                
 private:
    QCString decode(const QCString& sInput)

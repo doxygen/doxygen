@@ -133,6 +133,8 @@ static int g_braceCount=0;
 static void saveObjCContext();
 static void restoreObjCContext();
 
+
+
 //-------------------------------------------------------------------
 
 /*! Represents a stack of variable to class mappings as found in the
@@ -252,10 +254,15 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
       addVariable(typeName,name);
     }
   }
-  else // add a dummy entry so the name is hidden to avoid false links
+  else 
   {
-    DBG_CTX((stderr,"** addVariable: dummy context\n"));
-    scope->append(lname,dummyContext);
+    if (m_scopes.count()>0) // for local variables add a dummy entry so the name 
+                            // is hidden to avoid false links to global variables with the same name
+                            // TODO: make this work for namespaces as well!
+    {
+      DBG_CTX((stderr,"** addVariable: dummy context\n"));
+      scope->append(lname,dummyContext);
+    }
   }
 }
 
@@ -281,9 +288,8 @@ ClassDef *VariableContext::findVariable(const QCString &name)
   return result;
 }
 
-const ClassDef *VariableContext::dummyContext = (ClassDef*)0x8;
-
 static VariableContext g_theVarContext;
+const ClassDef *VariableContext::dummyContext = (ClassDef*)0x8;
 
 //-------------------------------------------------------------------
 
@@ -848,6 +854,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
   ClassDef *cd=0,*lcd=0;
   MemberDef *md=0;
+  bool isLocal=FALSE;
 
   //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
@@ -859,7 +866,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
     {
       cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
     }
-    //print("is found as a type %s\n",cd?cd->name().data():"<null>");
+    //printf("is found as a type %s\n",cd?cd->name().data():"<null>");
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
       if (getLink(g_classScope,clName,ol,clName))
@@ -874,7 +881,8 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
     {
       g_theCallContext.setClass(lcd);
     }
-    //fprintf(stderr,"is a local variable!\n");
+    isLocal=TRUE;
+    //fprintf(stderr,"is a local variable cd=%p!\n",cd);
   }
   if (cd && cd->isLinkable()) // is it a linkable class
   {
@@ -907,7 +915,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   else // not a class, maybe a global member
   {
     //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
-    if (md!=0 || (cd==0 && !typeOnly)) // not a class, see if it is a global enum/variable/typedef.
+    if (!isLocal && (md!=0 || (cd==0 && !typeOnly))) // not a class, see if it is a global enum/variable/typedef.
     {
       if (md==0) // not found as a typedef
       {

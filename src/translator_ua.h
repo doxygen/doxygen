@@ -20,7 +20,7 @@
 #ifndef TRANSLATOR_UA_H
 #define TRANSLATOR_UA_H
 
-class TranslatorUkrainian  : public Translator
+class TranslatorUkrainian : public TranslatorAdapter_1_4_1
 {
   private:
     /*! The Decode() inline assumes the source written in the 

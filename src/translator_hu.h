@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_HU_H
 #define TRANSLATOR_HU_H
 
-class TranslatorHungarian : public Translator
+class TranslatorHungarian : public TranslatorAdapter_1_4_1
 {
   private:
     const char * zed(char c)
