@@ -27,7 +27,7 @@ Doxysearch must be run as a CGI binary. This implies the following:
 <li> You must have permission to install and execute a CGI binary on the 
      target.
 </ul>
-Ask you system administrator or provider if you are unsure if this is possible.
+Ask your system administrator or provider if you are unsure if this is possible.
 
 In order to be able to search fast and efficient, doxysearch does not 
 search the generated documentation directly. Instead, it uses an 
@@ -131,8 +131,8 @@ This can be done by carefully following these steps:
 
     \par Note: 
        Doxytag requires quite a large amount of memory to
-       generate the search index (about 30 Mb on my Linux box)!
-       The resulting index file requires about 3 Mb space on your disk.
+       generate the search index (about 30 MB on my Linux box)!
+       The resulting index file requires about 3 MB space on your disk.
 
 <li>Edit the shell script <code>search.cgi</code> with a text editor.
 
@@ -174,7 +174,7 @@ http://blizzard/cgi-bin/search.cgi
 \endverbatim
     in the additional information section of the <code>index.html</code> file.
 <li>Start your favourite web browser and click on the link.
-    If everything is ok, you should get a page where you can enter 
+    If everything is OK, you should get a page where you can enter 
     search terms.
 </ol>
 

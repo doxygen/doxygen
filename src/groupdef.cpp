@@ -642,7 +642,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   GroupDef *fgd=0;
   for (;(g=gli.current());++gli)
   {
-    GroupDef *gd;
+    GroupDef *gd=0;
     if (!g->groupname.isEmpty() &&
         (gd=Doxygen::groupDict[g->groupname]) &&
 	g->pri >= pri)

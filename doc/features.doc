@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-/*! \page features.html
+/*! \page features Features
 
 \section features Features
 
@@ -23,12 +23,12 @@
 <li>Requires very little overhead from the writer of the documentation. 
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
-<li>Supports C++, (Corba, Microsoft, and KDE-DCOP) Java, IDL and C sources.
+<li>Supports C++, Java, (Corba, Microsoft, and KDE-DCOP) Java, IDL and C sources.
 <li>Supports documentation of files, namespaces, classes, structs, unions, 
     templates, variables, functions, typedefs, enums and defines. 
 <li>JavaDoc (1.1), Qt-Doc, and KDOC compatible.
 <li>Automatically generates class diagrams in HTML (as clickable 
-    image maps) and \f$\mbox{\LaTeX}\f$ (as encapsulated postscript images).
+    image maps) and \f$\mbox{\LaTeX}\f$ (as Encapsulated PostScript images).
 <li>Uses the dot tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, and 
     graphical class hierarchy graphs. 
@@ -38,11 +38,11 @@
 <li>Can generate a list of all members of a class (including any inherited
     members) along with their protection level.
 <li>Outputs documentation in on-line format (HTML and UNIX man page) and 
-    off-line format (\f$\mbox{\LaTeX}\f$) and RTF simultaniously 
+    off-line format (\f$\mbox{\LaTeX}\f$ and RTF) simultaneously 
     (any of these can be disabled if desired). All formats are optimized for 
     ease of reading. <br>
     Furthermore, compressed HTML can be generated from HTML output using 
-    Microsoft's HTML help workshop (Windows only) and PDF can be generated 
+    Microsoft's HTML Help Workshop (Windows only) and PDF can be generated 
     from the \f$\mbox{\LaTeX}\f$ output.
 <li>Includes a full C preprocessor to allow proper parsing of conditional 
     code fragments and to allow expansion of all or part of macros definitions.
@@ -57,7 +57,7 @@
 <li>Includes a fast, rank based search engine to search for strings or words 
     in the class and member documentation.
 <li>You can type normal HTML tags in your documentation. Doxygen will convert
-    them to their equivalent \f$\mbox{\LaTeX}\f$ and man-page 
+    them to their equivalent \f$\mbox{\LaTeX}\f$, RTF, and man-page 
     counterparts automatically.
 <li>Allows references to documentation generated for other projects 
     (or another part of the same project) in a location independent way.

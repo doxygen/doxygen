@@ -219,8 +219,9 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDoc,clName,memName,anchor,title); }
     void endMemberDoc() 
     { forall(&OutputGenerator::endMemberDoc); }
-    void startDoxyAnchor(const char *fName,const char *anchor, const char *name)
-    { forall(&OutputGenerator::startDoxyAnchor,fName,anchor,name); }
+    void startDoxyAnchor(const char *fName,const char *manName,
+                         const char *anchor, const char *name)
+    { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name); }
     void endDoxyAnchor(const char *fn,const char *anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
     void startCodeAnchor(const char *label)

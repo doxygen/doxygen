@@ -372,30 +372,17 @@ void ManGenerator::startMemberDoc(const char *,const char *,const char *,const c
   paragraph=FALSE;
 }
 
-void ManGenerator::startDoxyAnchor(const char *fname,const char *,
-                                   const char *name)
+void ManGenerator::startDoxyAnchor(const char *,const char *manName,
+                                   const char *, const char *)
 {
-    const char *basename;
-
     // something to be done?
     if( !Config_getBool("MAN_LINKS") ) 
     {
 	return; // no
     }
 
-    // truncate after an (optional) ::
-    basename = strrchr( name, ':' );
-    if ( !basename ) 
-    {
-	basename = name;
-    } 
-    else 
-    {
-	basename++;
-    }
-
     // only create file when it doesn't exist
-    QCString fileName=dir+"/"+buildFileName( basename );
+    QCString fileName=dir+"/"+buildFileName( manName );
     QFile linkfile( fileName );
     if ( !linkfile.open( IO_ReadOnly ) ) 
     {
@@ -406,7 +393,7 @@ void ManGenerator::startDoxyAnchor(const char *fname,const char *,
 #if QT_VERSION >= 200
 	      linkstream.setEncoding(QTextStream::Latin1);
 #endif
-	      linkstream << ".so man" << getExtension() << "/" << buildFileName( fname ) << endl;
+	      linkstream << ".so man" << getExtension() << "/" << buildFileName( manName ) << endl;
 	}
     }
     linkfile.close();

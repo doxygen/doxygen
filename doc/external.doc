@@ -45,7 +45,7 @@ To generate a tag file for your project, simply put the name of the
 tag file after the \ref cfg_generate_tagfile "GENERATE_TAGFILE" option in 
 the configuration file. 
 
-To combine the output of one or more external projects with you own project 
+To combine the output of one or more external projects with your own project 
 you should specify the name of the tag files after 
 the \ref cfg_tagfiles "TAGFILES" option in the configuration file.
 
@@ -57,7 +57,7 @@ There are two ways to do this:
 <dt>At configuration time:<dd> just assign the location of the output to the
     tag files specified after the \ref cfg_tagfiles "TAGFILES" configuration
     option. If you use a relative path it should be relative with respect to 
-    the directory where the html output of your project is generated.
+    the directory where the HTML output of your project is generated.
 <dt>After compile time:<dd> if you do not assign a location to a tag file,
     doxygen will generate dummy links for all external HTML references. It will
     also generate a perl script called \ref installdox_usage "installdox" in 

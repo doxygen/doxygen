@@ -565,6 +565,10 @@ static void loadStylesheet(const char *name, QDict<StyleData>& dict)
   static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
   QTextStream t(&file);
+#if QT_VERSION >= 200
+  t.setEncoding(QTextStream::Latin1);
+#endif
+
   while (!t.eof())
   {
     QCString s(4096); // string buffer of max line length
@@ -663,6 +667,10 @@ static void loadExtensions(const char *name)
   static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
   QTextStream t(&file);
+#if QT_VERSION >= 200
+  t.setEncoding(QTextStream::Latin1);
+#endif
+
   while (!t.eof())
   {
     QCString s(4096); // string buffer of max line length
@@ -1806,7 +1814,8 @@ void RTFGenerator::endMemberDoc()
   newParagraph();
 }
 
-void RTFGenerator::startDoxyAnchor(const char *,const char *,const char *)
+void RTFGenerator::startDoxyAnchor(const char *,const char *,
+                                   const char *,const char *)
 {
 }
 
@@ -2593,6 +2602,9 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
     return FALSE;
   }
   QTextStream outt(&outf);
+#if QT_VERSION >= 200
+  outt.setEncoding(QTextStream::Latin1);
+#endif
 
   if (!PreProcessFile(thisDir,mainRTFName,outt))
   {

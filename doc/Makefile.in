@@ -12,7 +12,7 @@
 # Documents produced by Doxygen are derivative works derived from the
 # input used in their production; they are not affected by this license.
 
-all: FORCE
+all: language FORCE
 	DOXYGEN_DOCDIR=$(DOXYDOCS); \
 	export DOXYGEN_DOCDIR; \
         VERSION=$(VERSION) ; \
@@ -28,9 +28,11 @@ all: FORCE
 clean: 
 	rm -rf ../html ../latex language.doc
 
-language: language.doc language.tpl translator.pl
+language: language.doc 
 
-language.doc: language.tpl FORCE
+translators: $(wildcard ../src/translator_*.h)
+
+language.doc: translators maintainers.txt language.tpl translator.pl
 	$(PERL) translator.pl
 
 FORCE:

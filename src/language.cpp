@@ -42,6 +42,7 @@
 #include "translator_no.h"
 #include "translator_br.h"
 #include "translator_dk.h"
+#include "translator_sk.h"
 #endif
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -138,6 +139,10 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("danish"))
   {
     theTranslator=new TranslatorDanish;
+  }
+  else if (L_EQUAL("slovak"))
+  {
+    theTranslator=new TranslatorSlovak;
   }
 #endif
   else // use the default language (i.e. english)

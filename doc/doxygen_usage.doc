@@ -44,7 +44,7 @@ doxygen <config_file>
 </ol>
 
 If you have a configuration file generated with an older version of
-doxygen that you can upgrade it to the current version by running doxygen
+doxygen, you can upgrade it to the current version by running doxygen
 with the -u option.
 \verbatim
 doxygen -u <config_file>
@@ -85,7 +85,7 @@ doxygen -w rtf rtfstyle.cfg
      file then you can use the optional \c -s option. This can use be
      used in combination with the \c -u option, to add or strip the
      documentation from an existing configuration file.
-     Please use the \c -s this option if you send me a configuration file 
+     Please use the \c -s option if you send me a configuration file 
      as part of a bug report!
 <li> To make doxygen read/write to standard input/output instead of from/to 
      a file, use \c - for the file name.

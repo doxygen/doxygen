@@ -38,8 +38,8 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c </DFN>  Ends a \c <DFN> section.
 <li>\c <DL>    Starts a description list.
 <li>\c </DL>   Ends a description list.
-<li>\c <DT>    Starts a item title.
-<li>\c </DT>   Does not generate any output.
+<li>\c <DT>    Starts an item title.
+<li>\c </DT>   Ends an item title.
 <li>\c <EM>    Starts a piece of text displayed in an italic font.
 <li>\c </EM>   Ends a \c <EM> section.
 <li>\c <FORM>  Does not generate any output.
@@ -52,35 +52,34 @@ documentation. Note that all attributes of a HTML tag are ignored
 <li>\c <H?>    Where ? is one of {3,4,5,6}, starts an unnumbered subsubsection using \c <H3> in HTML.
 <li>\c </H?>   Where ? is one of {3,4,5,6}, ends an unnumbered subsubsection using \c <H3> in HTML.
 <li>\c <I>     Starts a piece of text displayed in an italic font.
-<li>\c <INPUT> Does not generated any output.
+<li>\c <INPUT> Does not generate any output.
 <li>\c </I>    Ends a \c <I> section.
 <li>\c <IMG>   This command is written with attributes to the HTML output only.
 <li>\c <LI>    Starts a new list item.
-<li>\c </LI>   Does not generate any output.
+<li>\c </LI>   Ends a list item.
 <li>\c <META>  Does not generate any output.
-<li>\c <MULTICOL> ignored by Doxygen.
-<li>\c </MUTLICOL> ignored by Doxygen.
+<li>\c <MULTICOL> ignored by doxygen.
+<li>\c </MUTLICOL> ignored by doxygen.
 <li>\c <OL>    Starts a numbered item list.
 <li>\c </OL>   Ends a numbered item list.
 <li>\c <P>     Starts a new paragraph.
-<li>\c </P>    Does not generate any output.
-<li>\c <PRE> starts a preformatted fragment.
-<li>\c </PRE> ends a preformatted fragment.
-<li>\c <SMALL> starts a section of text displayed in a smaller font.
-<li>\c </SMALL> ends a \c <SMALL> section.
-<li>\c <STRONG> starts a section of bold text.
-<li>\c </STRONG> ends a section of bold text.
+<li>\c </P>    Ends a paragraph.
+<li>\c <PRE>   Starts a preformatted fragment.
+<li>\c </PRE>  Ends a preformatted fragment.
+<li>\c <SMALL> Starts a section of text displayed in a smaller font.
+<li>\c </SMALL> Ends a \c <SMALL> section.
+<li>\c <STRONG> Starts a section of bold text.
+<li>\c </STRONG> Ends a section of bold text.
 <li>\c <SUB>   Starts a piece of text displayed in subscript.
 <li>\c </SUB>  Ends a \c <SUB> section.
 <li>\c <SUP>   Starts a piece of text displayed in superscript.
 <li>\c </SUP>  Ends a \c </SUP> section.
-<li>\c <TABLE> starts a table, the available space of a page is always 
-               divided equally amount the columns. 
-<li>\c </TABLE> ends a table
-<li>\c <TD>    Starts a new table element.
-<li>\c </TD>   Does not generate any output.
+<li>\c <TABLE> starts a table.
+<li>\c </TABLE> ends a table.
+<li>\c <TD>    Starts a new table data element.
+<li>\c </TD>   Ends a table data element.
 <li>\c <TR>    Starts a new table row.
-<li>\c </TR>   Does not generate any output. 
+<li>\c </TR>   Ends a table row.
 <li>\c <TT>    Starts a piece of text displayed in a typewriter font.
 <li>\c </TT>   Ends a \c <TT> section.
 <li>\c <KBD>   Starts a piece of text displayed in a typewriter font.

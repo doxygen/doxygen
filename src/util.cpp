@@ -366,40 +366,49 @@ NamespaceDef *getResolvedNamespace(const char *name)
   }
 }
 
-ClassDef *getResolvedClass(const char *name,bool *pIsTypeDef,QCString *pTemplSpec)
+ClassDef *getResolvedClass(const char *n,bool *pIsTypeDef,QCString *pTemplSpec)
 {
-  if (name==0 || name[0]=='\0') return 0;
-  QCString *subst = Doxygen::typedefDict[name];
+  QCString name = n;
+  if (name.isEmpty()) return 0;
+  int i = name.findRev("::");
+  QCString *subst = 0;
+  if (i!=-1) subst = Doxygen::typedefDict[name.right(name.length()-i-2)];
+  if (subst==0) subst = Doxygen::typedefDict[name],i=-1;
   if (subst) // there is a typedef with this name
   {
     if (pIsTypeDef) *pIsTypeDef=TRUE;
-    //printf("getResolvedClass `%s'->`%s'\n",name,subst->data());
+    //printf("getResolvedClass `%s'->`%s'\n",name.data(),subst->data());
     if (*subst==name) // avoid resolving typedef struct foo foo; 
     {
       return Doxygen::classSDict.find(name);
     }
     int count=0; // recursion detection guard
     QCString *newSubst;
-    while ((newSubst=Doxygen::typedefDict[*subst]) && count<10)
+    QCString typeName = *subst;
+    if (i!=-1) typeName.prepend(name.left(i)+"::");
+    while ((newSubst=Doxygen::typedefDict[typeName]) && count<10)
     {
-      if (*subst==*newSubst) return Doxygen::classSDict.find(subst->data()); // for breaking typedef struct A A; 
+      if (typeName==*newSubst) 
+        return Doxygen::classSDict.find(subst->data()); // for breaking typedef struct A A; 
       subst=newSubst;
+      typeName=*newSubst;
+      if (i!=-1) typeName.prepend(name.left(i)+"::");
       count++;
     }
     if (count==10)
     {
-      warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",name);
+      warn_cont("Warning: possible recursive typedef dependency detected for %s!\n",n);
       return Doxygen::classSDict.find(name);
     }
     else
     {
-      //printf("getClass: subst %s->%s\n",name,subst->data());
+      //printf("getClass: subst %s->%s\n",name.data(),typeName.data());
       int i;
-      ClassDef *cd = Doxygen::classSDict.find(subst->data());
-      if (cd==0 && (i=subst->find('<'))>0) // try unspecialized version as well
+      ClassDef *cd = Doxygen::classSDict.find(typeName);
+      if (cd==0 && (i=typeName.find('<'))>0) // try unspecialized version as well
       {
-        if (pTemplSpec) *pTemplSpec = subst->right(subst->length()-i);
-        return Doxygen::classSDict.find(subst->left(i));
+        if (pTemplSpec) *pTemplSpec = typeName.right(typeName.length()-i);
+        return Doxygen::classSDict.find(typeName.left(i));
       }
       else
       {
@@ -1085,7 +1094,8 @@ void stripIrrelevantConstVolatile(QCString &s)
 static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
-                   NamespaceList *usingList)
+                   NamespaceList *usingNamespaces,
+                   ClassList *usingClasses)
 {
   QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
   QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
@@ -1149,14 +1159,24 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
       srcAType=trimScope(namespaceName,srcAType);
       dstAType=trimScope(namespaceName,dstAType);
     }
-    if (usingList && usingList->count()>0)
+    if (usingNamespaces && usingNamespaces->count()>0)
     {
-      NamespaceListIterator nli(*usingList);
+      NamespaceListIterator nli(*usingNamespaces);
       NamespaceDef *nd;
       for (;(nd=nli.current());++nli)
       {
         srcAType=trimScope(nd->name(),srcAType);
         dstAType=trimScope(nd->name(),dstAType);
+      }
+    }
+    if (usingClasses && usingClasses->count()>0)
+    {
+      ClassListIterator cli(*usingClasses);
+      ClassDef *cd;
+      for (;(cd=cli.current());++cli)
+      {
+        srcAType=trimScope(cd->name(),srcAType);
+        dstAType=trimScope(cd->name(),dstAType);
       }
     }
 
@@ -1276,7 +1296,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
 static void mergeArgument(Argument *srcA,Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
-                   NamespaceList *usingList)
+                   NamespaceList *usingNamespaces,
+                   ClassList *usingClasses)
 {
   QCString srcAType=trimTemplateSpecifiers(className,srcA->type);
   QCString dstAType=trimTemplateSpecifiers(className,dstA->type);
@@ -1319,14 +1340,24 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
       srcAType=trimScope(namespaceName,srcAType);
       dstAType=trimScope(namespaceName,dstAType);
     }
-    if (usingList && usingList->count()>0)
+    if (usingNamespaces && usingNamespaces->count()>0)
     {
-      NamespaceListIterator nli(*usingList);
+      NamespaceListIterator nli(*usingNamespaces);
       NamespaceDef *nd;
       for (;(nd=nli.current());++nli)
       {
         srcAType=trimScope(nd->name(),srcAType);
         dstAType=trimScope(nd->name(),dstAType);
+      }
+    }
+    if (usingClasses && usingClasses->count()>0)
+    {
+      ClassListIterator cli(*usingClasses);
+      ClassDef *cd;
+      for (;(cd=cli.current());++cli)
+      {
+        srcAType=trimScope(cd->name(),srcAType);
+        dstAType=trimScope(cd->name(),dstAType);
       }
     }
 
@@ -1463,7 +1494,8 @@ static void mergeArgument(Argument *srcA,Argument *dstA,
  */
 bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
                     const char *cl,const char *ns,bool checkCV,
-                    NamespaceList *usingList)
+                    NamespaceList *usingNamespaces,
+                    ClassList *usingClasses)
 {
   QCString className=cl;
   QCString namespaceName=ns;
@@ -1475,10 +1507,13 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
     className=className.left(til)+className.right(className.length()-tir-1);
   }
 
-  //printf("matchArguments(%s,%s) className=%s namespaceName=%s checkCV=%d\n",
+  //printf("matchArguments(%s,%s) className=%s namespaceName=%s checkCV=%d usingNamespaces=%d usingClasses=%d\n",
   //    srcAl ? argListToString(srcAl).data() : "",
   //    dstAl ? argListToString(dstAl).data() : "",
-  //    cl,ns,checkCV);
+  //    cl,ns,checkCV,
+  //    usingNamespaces?usingNamespaces->count():0,
+  //    usingClasses?usingClasses->count():0
+  //    );
 
   if (srcAl==0 || dstAl==0)
   {
@@ -1541,7 +1576,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   Argument *srcA,*dstA;
   for (;(srcA=srcAli.current(),dstA=dstAli.current());++srcAli,++dstAli)
   { 
-    if (!matchArgument(srcA,dstA,className,namespaceName,usingList))
+    if (!matchArgument(srcA,dstA,className,namespaceName,
+          usingNamespaces,usingClasses))
     {
       NOMATCH
       return FALSE;
@@ -1553,7 +1589,8 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
        ++srcAli,++dstAli
       )
   { 
-    mergeArgument(srcA,dstA,className,namespaceName,usingList);
+    mergeArgument(srcA,dstA,className,namespaceName,
+                  usingNamespaces,usingClasses);
   }
   MATCH
   return TRUE; // all arguments match 
@@ -1737,7 +1774,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           if (mmd->isLinkable())
           {
-            bool match=args==0 || matchArguments(mmd->argumentList(),argList,className,0,FALSE); 
+            bool match=args==0 || 
+              matchArguments(mmd->argumentList(),argList,className,0,FALSE); 
             //printf("match=%d\n",match);
             if (match)
             {
@@ -1847,7 +1885,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
-              match=matchArguments(mmd->argumentList(),argList,0,namespaceName,FALSE); 
+              match=matchArguments(mmd->argumentList(),argList,0,
+                  namespaceName,FALSE); 
             }
             if (match)
             {

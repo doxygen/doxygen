@@ -31,12 +31,18 @@
 // 2001/01/22
 // - Added strings from 1.2.4
 //
+// 2001/05/25
+// - Added strings and up to and including 1.2.7_20010524
+// - Removed obsolete method trFiles()
+// - Removed obsolete method trAuthor()
+// - Removed obsolete method trAuthor()
+// - Removed obsolete method trVerbatimHeadert()
+// - Method latexBabelPackage() removed, ude latexLanguageSupportCommand
+//
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-#include "translator_adapter.h"
-
-class TranslatorCroatian : public TranslatorAdapter_1_2_6
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -58,8 +64,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
 #else
         { return "iso-8859-2"; }
 #endif
-    QCString latexBabelPackage()
-    { return "croatian"; }
+    QCString latexLanguageSupportCommand()
+    { return "\\usepackage[croatian]{babel}\n"; }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -98,30 +104,42 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     { return decode("enum vrijednost"); }
     QCString trDefinedIn()
     { return decode("definirano u"); }
-    QCString trVerbatimText(const char *f)
-    { return (QCString)"Ovo je citirani tekst iz include datoteke "+f+"."; }
     QCString trModules()
     { return "Moduli"; }
     QCString trClassHierarchy()
     { return "Stablo klasa"; }
     QCString trCompoundList()
-    { return "Sve klase"; }
+	{
+		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+		{
+			return "Sve strukture";
+		}
+		else
+		{
+			return "Sve klase"; 
+		}
+	}
     QCString trFileList()
     { return "Popis datoteka"; }
     QCString trHeaderFiles()
     { return "Header datoteke"; }
     QCString trCompoundMembers()
-    { return decode("Svi èlanovi"); }
+	{
+		if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+			return decode("Svi èlanovi struktura"); 
+		else
+			return decode("Svi èlanovi klasa"); 
+	}
     QCString trFileMembers()
-    { return decode("Èlanovi(memberi) u datoteci"); }
+    { return decode("Èlanovi klasa u datoteci"); }
     QCString trRelatedPages()
-    { return decode("Povezane stranice"); }
+    { return decode("Stranice povezane s ovom"); }
     QCString trExamples()
     { return "Primjeri"; }
     QCString trSearch()
     { return decode("Tra¾i"); }
     QCString trClassHierarchyDescription()
-    { return decode("Stablo naslijeðivanja je poslo¾eno "
+    { return decode("Stablo naslijeðivanja je slo¾eno "
                                         "pribli¾no po abecedi:");
     }
     QCString trFileListDescription(bool extractAll)
@@ -201,8 +219,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     { return "Varijable"; }
     QCString trEnumerationValues()
     { return "Vrijednosti enumeracija"; }
-    QCString trAuthor()
-    { return "autor"; }
     QCString trDefineDocumentation()
     { return "Dokumentacija definicija"; }
     QCString trFunctionPrototypeDocumentation()
@@ -217,8 +233,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     { return "Dokumentacija varijable"; }
     QCString trCompounds()
     { return "Strukture"; }
-    QCString trFiles()
-    { return "Datoteke"; }
     QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result=(QCString)"Generirano "+date;
@@ -248,8 +262,6 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     { return "Verzija"; }
     QCString trDate()
     { return "Datum"; }
-    QCString trAuthors()
-    { return "Autor(i)"; }
     QCString trReturns()
     { return "Povratne vrijednosti"; }
     QCString trSeeAlso()
@@ -266,12 +278,12 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
 //////////////////////////////////////////////////////////////////////////
     
     QCString trNamespaceList()
-    { return "Popis namespace-ova"; }
+    { return "Popis imenika"; }
     QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Popis svih ";
       if (!extractAll) result+="dokumentiranih ";
-      result+="namespace-ova s kratkim opisom:";
+      result+="imenika s kratkim opisom:";
       return decode(result);
     }
     QCString trFriends()
@@ -316,7 +328,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     QCString trNamespaceReference(const char *namespaceName)
       // used as the title of the HTML page of a namespace
     {
-      QCString result ="Opis namespace-a ";
+      QCString result ="Opis imenika ";
           result+=namespaceName;
       
       return decode(result);
@@ -396,23 +408,23 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
 
     QCString trNamespaceMembers()
       // This is put above each page as a link to all members of namespaces.
-    { return decode("Namespace èlanovi"); }
+    { return decode("Èlanovi imenika"); }
     QCString trNamespaceMemberDescription(bool extractAll)
       // This is an introduction to the page with all namespace members
     { 
       QCString result="Lista svih ";
       if (!extractAll) result+="dokumentiranih ";
-      result+="namespace èlanova s linkovima na ";
+      result+="èlanova imenika s linkovima na ";
       if (extractAll) 
-        result+="namespace dokumentaciju svakog èlana:";
+        result+="imenièku dokumentaciju svakog èlana:";
       else 
-        result+="namespace kojima pripadaju:";
+        result+="imenike kojima pripadaju:";
       return decode(result);
     }
     QCString trNamespaceIndex()
       // This is used in LaTeX as the title of the chapter with the 
       // index of all namespaces.
-    { return "Kazalo namespace-a"; }
+    { return "Kazalo imenika"; }
     QCString trNamespaceDocumentation()
       // This is used in LaTeX as the title of the chapter containing
       // the documentation of all namespaces.
@@ -427,7 +439,7 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
      */
     QCString trNamespaces()
     {
-      return "Namespaces";
+      return "Imenici";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -450,9 +462,8 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
         case ClassDef::Interface:  result+="suèelja (interface)"; break;
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
       }
-      result+=" je generirana iz datotek";
-      if (single) result+="e :"; else result+="a :";
-      return decode(result);
+      result+=" je generirana iz " + trFile(false, single) + ": ";
+	  return decode(result);
     }
 
     /*! This is in the (quick) index as a link to the alphabetical compound
@@ -814,10 +825,10 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
       return "Vrijednost:";
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.2.5
-    //////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -829,10 +840,9 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
       return decode("Popis gre¹aka");
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // new since 1.2.6
-    //////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6
+//////////////////////////////////////////////////////////////////////////
     /*! Used as ansicpg for RTF file */
     virtual QCString trRTFansicp()
     {
@@ -843,6 +853,120 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_6
     {
       return "238";
     }
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return decode("Sadr¾aj");
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Klas" : "klas"));
+      result+= (singular ? "a" : "e");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Datotek" : "datotek"));
+      result+= (singular ? "a" : "e");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+		QCString result;
+		if (singular)
+			result = ((first_capital ? "Imenik" : "imenik"));
+		else
+			result = ((first_capital ? "Imenici" : "imenici"));
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Grup" : "grup"));
+      result+= (singular ? "a" : "e");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Stranic" : "stranic"));
+      result+= (singular ? "a" : "e");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Èlan" : "èlan"));
+      if (!singular)  result+="ovi";
+      return decode(result); 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Polj" : "polj"));
+      result+= (singular ? "e" : "a");
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "G" : "g"));
+	  if( singular )
+		  result += "lobalna varijabla";
+	  else
+		  result += "lobalne varijable";
+
+	  return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Autor" : "autor"));
+      if (!singular)  result+="i";
+      return result; 
+    }
+
 };
 
 #endif

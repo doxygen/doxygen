@@ -290,8 +290,18 @@ static void computeTemplateInstance(
         QCString templSpec;
         while (extractClassNameFromType(actualArg,pos,name,templSpec))
         {
+          Definition *scopeDef = cd->getOuterScope();
+          QCString scopeName;
+          if (scopeDef) scopeName = scopeDef->qualifiedName();
           //printf("name=%s templSpec=%s\n",name.data(),templSpec.data());
-          ClassDef *acd=getResolvedClass(name);
+          ClassDef *acd=0;
+         
+          // try with scope.
+          if (!scopeName.isEmpty()) 
+            acd = getResolvedClass(scopeName+"::"+name);
+          // try without scope.
+          // TODO: try intermediate scopes as well!
+          if (acd==0) acd = getResolvedClass(name);
           if (acd && !templSpec.isEmpty()) 
           {
             // store specific template instance in the class

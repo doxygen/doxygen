@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
-/*! \page config
+/*! \page config Configuration
 
 \section config Configuration
 
@@ -213,7 +213,7 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c OUTPUT_DIRECTORY <dd> 
  \addindex OUTPUT_DIRECTORY
  The \c OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
- path into which the generated HTML and Latex documentation will be written. 
+ path into which the generated documentation will be written. 
  If a relative path is entered, it will be relative to the location 
  where doxygen was started. If left blank the current directory will be used.
 
@@ -254,7 +254,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_hide_undoc_members
 <dt>\c HIDE_UNDOC_MEMBERS <dd>
  \addindex HIDE_UNDOC_MEMBERS
- If the \c HIDE_UNDOC_MEMBERS tag is set to \c YES, Doxygen will hide all
+ If the \c HIDE_UNDOC_MEMBERS tag is set to \c YES, doxygen will hide all
  undocumented members inside documented classes or files. 
  If set to \c NO (the default) these members will be included in the
  various overviews, but no documentation section is generated.
@@ -263,7 +263,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_hide_undoc_classes
 <dt>\c HIDE_UNDOC_CLASSES <dd>
  \addindex HIDE_UNDOC_CLASSES
- If the \c HIDE_UNDOC_CLASSESS tag is set to \c YES, Doxygen will hide all
+ If the \c HIDE_UNDOC_CLASSESS tag is set to \c YES, doxygen will hide all
  undocumented classes.
  If set to \c NO (the default) these classes will be included in the
  various overviews.
@@ -272,7 +272,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
  \addindex BRIEF_MEMBER_DESC
- If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) Doxygen will
+ If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) doxygen will
  include brief member descriptions after the members that are listed in
  the file and class documentation (similar to JavaDoc).
  Set to NO to disable this.
@@ -280,7 +280,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_repeat_brief
 <dt>\c REPEAT_BRIEF <dd>
  \addindex REPEAT_BRIEF
- If the \c REPEAT_BRIEF tag is set to \c YES (the default) Doxygen will 
+ If the \c REPEAT_BRIEF tag is set to \c YES (the default) doxygen will 
  prepend the brief description of a member or function before the detailed 
  description 
 
@@ -292,13 +292,13 @@ followed by the descriptions of the tags grouped by category.
 <dt>\c ALWAYS_DETAILED_SEC <dd>
  \addindex ALWAYS_DETAILED_SEC
  If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
- Doxygen will generate a detailed section even if there is only a brief
+ doxygen will generate a detailed section even if there is only a brief
  description.
 
 \anchor cfg_full_path_names
 <dt>\c FULL_PATH_NAMES <dd>
  \addindex FULL_PATH_NAMES
- If the \c FULL_PATH_NAMES tag is set to \c YES Doxygen will prepend the full
+ If the \c FULL_PATH_NAMES tag is set to \c YES doxygen will prepend the full
  path before files name in the file list and in the header files. If set
  to NO the shortest path that makes the file name unique will be used
 
@@ -321,8 +321,8 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_class_diagrams
 <dt>\c CLASS_DIAGRAMS <dd>
  \addindex CLASS_DIAGRAMS
- If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) Doxygen will
- generate a class diagram (in Html and \f$\mbox{\LaTeX}\f$) for classes with base or
+ If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
+ generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
  super classes. Setting the tag to \c NO turns the diagrams off.
 
 \anchor cfg_source_browser
@@ -347,7 +347,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
  \addindex CASE_SENSE_NAMES
- If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then Doxygen
+ If the \c CASE_SENSE_NAMES tag is set to \c NO (the default) then doxygen
  will only generate file names in lower case letters. If set to
  \c YES upper case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
@@ -363,14 +363,14 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>
  \addindex HIDE_SCOPE_NAMES
- If the \c HIDE_SCOPE_NAMES tag is set to \c NO (the default) then Doxygen 
+ If the \c HIDE_SCOPE_NAMES tag is set to \c NO (the default) then doxygen 
  will show members with their full class and namespace scopes in the
  documentation. If set to \c YES the scope will be hidden. 
 
 \anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>
  \addindex VERBATIM_HEADERS
-  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then Doxygen
+  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
   will generate a verbatim copy of the header file for each class for
   which an include is specified. Set to NO to disable this.
   \sa Section \ref cmdclass "\\class".
@@ -378,14 +378,14 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_show_include_files
 <dt>\c SHOW_INCLUDE_FILES <dd>
  \addindex SHOW_INCLUDE_FILES
- If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen
+ If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
  will put list of the files that are included by a file in the documentation 
  of that file.
 
 \anchor cfg_javadoc_autobrief
 <dt>\c JAVADOC_AUTOBRIEF <dd>
  \addindex JAVADOC_AUTOBRIEF
-  If the \c JAVADOC_AUTOBRIEF is set to \c YES then Doxygen
+  If the \c JAVADOC_AUTOBRIEF is set to \c YES then doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO (the default), the 
   Javadoc-style will behave just like the Qt-style comments.
@@ -665,7 +665,7 @@ followed by the descriptions of the tags grouped by category.
 
 <dt>\c GENERATE_HTML <dd>
  \addindex GENERATE_HTML
- If the \c GENERATE_HTML tag is set to \c YES (the default) Doxygen will
+ If the \c GENERATE_HTML tag is set to \c YES (the default) doxygen will
  generate HTML output
 
 \anchor cfg_html_output
@@ -760,16 +760,16 @@ followed by the descriptions of the tags grouped by category.
  \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
  project file that can be read by 
  <a href="http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download_main.htm">
- Microsoft HTML help workshop</a>
+ Microsoft HTML Help Workshop</a>
  \latexonly
  (see http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download\_main.htm)
  \endlatexonly
  on Windows.
 
- The HTML workshop contains a compiler that can convert all HTML output 
+ The HTML Help Workshop contains a compiler that can convert all HTML output 
  generated by doxygen into a single compressed HTML file (.chm). Compressed
  HTML files are now used as the Windows 98 help format, and will replace
- the old windows help format (.hlp) on all Windows platforms in the future.
+ the old Windows help format (.hlp) on all Windows platforms in the future.
  Compressed HTML files also contain an index, a table of contents,
  and you can search for words in the documentation 
  (which basically renders \c doxysearch obsolete on Windows). 
@@ -792,8 +792,8 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_toc_expand
 <dt>\c TOC_EXPAND <dd>
  \addindex TOC_EXPAND
- The \c TOC_EXPAND flag can be set YES to add extra items for 
- group members to the table of contents of the Html help documentation 
+ The \c TOC_EXPAND flag can be set to YES to add extra items for 
+ group members to the table of contents of the HTML help documentation 
  and to the tree view.
 
 \anchor cfg_disable_index
@@ -834,8 +834,8 @@ followed by the descriptions of the tags grouped by category.
 
 <dt>\c GENERATE_LATEX <dd>
  \addindex GENERATE_LATEX
- If the \c GENERATE_LATEX tag is set to \c YES (the default) Doxygen will
- generate Latex output.
+ If the \c GENERATE_LATEX tag is set to \c YES (the default) doxygen will
+ generate \f$\mbox{\LaTeX}\f$ output.
 
 \anchor cfg_latex_output
 <dt>\c LATEX_OUTPUT <dd>
@@ -848,7 +848,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_compact_latex
 <dt>\c COMPACT_LATEX <dd>
  \addindex COMPACT_LATEX
- If the \c COMPACT_LATEX tag is set to \c YES Doxygen generates more compact
+ If the \c COMPACT_LATEX tag is set to \c YES doxygen generates more compact
  \f$\mbox{\LaTeX}\f$ documents. This may be useful for small projects and may help to
  save some trees in general.
 
@@ -881,8 +881,8 @@ EXTRA_PACKAGES = times
 <dt>\c LATEX_HEADER <dd>
  \addindex LATEX_HEADER
  The \c LATEX_HEADER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ 
- header for the generated latex document. The header should contain everything 
- until the first chapter. 
+ header for the generated \f$\mbox{\LaTeX}\f$ document. 
+ The header should contain everything until the first chapter. 
 
  If it is left blank doxygen will generate a 
  standard header. See section \ref doxygen_usage for information on how to 
@@ -904,10 +904,11 @@ EXTRA_PACKAGES = times
 <dt>\c PDF_HYPERLINKS <dd>
  \addindex PDF_HYPERLINKS
 
- If the \c PDF_HYPERLINKS tag is set to \c YES, the LaTeX that is generated
- is prepared for conversion to pdf (using ps2pdf). The pdf file will
+ If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that 
+ is generated is prepared for conversion to PDF (using ps2pdf). 
+ The PDF file will
  contain links (just like the HTML output) instead of page references
- This makes the output suitable for online browsing using a pdf viewer.
+ This makes the output suitable for online browsing using a PDF viewer.
 
 \anchor cfg_latex_batchmode
 <dt>\c LATEX_BATCHMODE <dd>
@@ -926,7 +927,7 @@ EXTRA_PACKAGES = times
 
 <dt>\c GENERATE_RTF <dd>
  \addindex GENERATE_RTF
- If the \c GENERATE_RTF tag is set to \c YES Doxygen will generate RTF output.
+ If the \c GENERATE_RTF tag is set to \c YES doxygen will generate RTF output.
  The RTF output is optimised for Word 97 and may not look too pretty with
  other readers/editors.
 
@@ -940,7 +941,7 @@ EXTRA_PACKAGES = times
 \anchor cfg_compact_rtf
 <dt>\c COMPACT_RTF <dd>
  \addindex COMPACT_RTF
- If the \c COMPACT_RTF tag is set to \c YES Doxygen generates more compact
+ If the \c COMPACT_RTF tag is set to \c YES doxygen generates more compact
  RTF documents. This may be useful for small projects and may help to
  save some trees in general.
 
@@ -954,7 +955,7 @@ EXTRA_PACKAGES = times
  Word compatible reader that support those fields.
 
  \par note:
-   wordpad (write) and others do not support links.
+   WordPad (write) and others do not support links.
 
 \anchor cfg_rtf_stylesheet_file 
 <dt>\c RTF_STYLESHEET_FILE <dd>
@@ -968,7 +969,7 @@ EXTRA_PACKAGES = times
 
 \anchor cfg_rtf_extensions_file
 <dt>\c RTF_EXTENSIONS_FILE <dd>
- Set optional variables used in the generation of an rtf document.
+ Set optional variables used in the generation of an RTF document.
  Syntax is similar to doxygen's config file. 
  A template extensions file can be generated using 
  <code>doxygen -e rtf extensionFile</code>.
@@ -981,7 +982,7 @@ EXTRA_PACKAGES = times
 
 <dt>\c GENERATE_MAN <dd>
  \addindex GENERATE_MAN
- If the \c GENERATE_MAN tag is set to \c YES (the default) Doxygen will
+ If the \c GENERATE_MAN tag is set to \c YES (the default) doxygen will
  generate man pages for classes and files.
 
 \anchor cfg_man_output
@@ -1002,7 +1003,7 @@ EXTRA_PACKAGES = times
 \anchor cfg_man_links
 <dt>\c MAN_LINKS <dd> 
  \addindex MAN_LINKS
- If the \c MAN_LINKS tag is set to \c YES and Doxygen generates man output, 
+ If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output, 
  then it will generate one additional man file for each entity documented in 
  the real man page(s). These additional files only source the real man page, 
  but without them the man command would be unable to find the correct page. 
@@ -1016,14 +1017,14 @@ EXTRA_PACKAGES = times
 
 <dt>\c ENABLE_PREPROCESSING <dd>
  \addindex ENABLE_PREPROCESSING
- If the \c ENABLE_PREPROCESSING tag is set to \c YES (the default) Doxygen will
+ If the \c ENABLE_PREPROCESSING tag is set to \c YES (the default) doxygen will
  evaluate all C-preprocessor directives found in the sources and include
  files. 
 
 \anchor cfg_macro_expansion
 <dt>\c MACRO_EXPANSION <dd>
  \addindex MACRO_EXPANSION
- If the \c MACRO_EXPANSION tag is set to \c YES Doxygen will expand all macro
+ If the \c MACRO_EXPANSION tag is set to \c YES doxygen will expand all macro
  names in the source code. If set to \c NO (the default) only conditional 
  compilation will be performed. Macro expansion can be done in a controlled
  way by setting \c EXPAND_ONLY_PREDEF to \c YES.
@@ -1039,7 +1040,7 @@ EXTRA_PACKAGES = times
 <dt>\c SEARCH_INCLUDES <dd>
  \addindex SEARCH_INCLUDES 
  If the \c SEARCH_INCLUDES tag is set to \c YES (the default) the includes files
- in the \c INCLUDE_PATH (see below) will be search if a \#include is found.
+ in the \c INCLUDE_PATH (see below) will be searched if a \#include is found.
 
 \anchor cfg_include_path
 <dt>\c INCLUDE_PATH <dd>
@@ -1195,7 +1196,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_generate_legend <dd>
 <dt>\c GENERATE_LEGEND <dd>
  \addindex GENERATE_LEGEND
- If the \c GENERATE_LEGEND tag is set to \c YES (the default) Doxygen will
+ If the \c GENERATE_LEGEND tag is set to \c YES (the default) doxygen will
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
 
@@ -1222,7 +1223,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 <dt>\c CGI_URL <dd>
  \addindex CGI_URL
  The \c CGI_URL tag should be the absolute URL to the directory where the
- cgi binaries are located. See the documentation of your http daemon for 
+ cgi binaries are located. See the documentation of your HTTP daemon for 
  details.
 
 \anchor cfg_doc_url
@@ -1363,7 +1364,7 @@ EXPAND_AS_DEFINED     = Q_OBJECT_FAKE Q_OBJECT ACTIVATE_SIGNAL_WITH_PARAM \
                         Q_VARIANT_AS
 \endverbatim
 
-Here Doxygen's preprocessor is used to substitute some
+Here doxygen's preprocessor is used to substitute some
 macro names that are normally substituted by the C preprocessor,
 but without doing full macro expansion.
 
