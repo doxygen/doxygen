@@ -42,12 +42,11 @@
 #define DBG_HTML(x) 
 
 static const char *defaultStyleSheet = 
-"H1 {\n"
-"	text-align: center;\n"
+"BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {\n"
 "	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "}\n"
-"H2 {\n"
-"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
+"H1 {\n"
+"	text-align: center;\n"
 "}\n"
 "CAPTION { font-weight: bold }\n"
 "DIV.qindex {\n"
@@ -93,10 +92,15 @@ static const char *defaultStyleSheet =
 "A.qindexHL:visited { text-decoration: none; background-color: #6666cc; color: #ffffff }\n"
 "A.el { text-decoration: none; font-weight: bold }\n"
 "A.elRef { font-weight: bold }\n"
-"A.code { text-decoration: none; font-weight: normal; color: #1A419D}\n"
-"A.codeRef { font-weight: normal; color: #1A419D}\n"
+"A.code:link { text-decoration: none; font-weight: normal; color: #0000FF}\n"
+"A.code:visited { text-decoration: none; font-weight: normal; color: #0000FF}\n"
+"A.codeRef:link { font-weight: normal; color: #0000FF}\n"
+"A.codeRef:visited { font-weight: normal; color: #0000FF}\n"
 "A:hover { text-decoration: none; background-color: #f2f2ff }\n"
 "DL.el { margin-left: -1cm }\n"
+".fragment {\n"
+"       font-family: monospace\n"
+"}\n"
 "PRE.fragment {\n"
 "	border: 1px solid #CCCCCC;\n"
 "	background-color: #f5f5f5;\n"
@@ -109,11 +113,12 @@ static const char *defaultStyleSheet =
 "	padding-top: 4px;\n"
 "	padding-bottom: 4px;\n"
 "}\n"
-"DIV.fragment {\n"
-"	border: 1px solid #CCCCCC;\n"
-"	background-color: #f5f5f5;\n"
-"	padding: 6px;\n"
-"}\n"
+//"DIV.fragment {\n"
+//"       font-family: monospace\n"
+//"	border: 1px solid #CCCCCC;\n"
+//"	background-color: #f5f5f5;\n"
+//"	padding: 6px;\n"
+//"}\n"
 "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
 "TD.md { background-color: #F4F4FB; font-weight: bold; }\n"
 "TD.mdname1 { background-color: #F4F4FB; font-weight: bold; color: #602020; }\n"
@@ -123,7 +128,6 @@ static const char *defaultStyleSheet =
 "       margin-top: 12px;\n"
 "       margin-bottom: 6px;\n"
 "       font-weight: bold;\n"
-"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "}\n"
 "DIV.groupText { margin-left: 16px; font-style: italic; font-size: 14px }\n"
 "BODY {\n"
@@ -216,7 +220,6 @@ static const char *defaultStyleSheet =
 "	border-bottom-style: none;\n"
 "	border-left-style: none;\n"
 "	background-color: #FAFAFA;\n"
-"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "	font-size: 12px;\n"
 "}\n"
 ".memItemRight {\n"
@@ -235,7 +238,6 @@ static const char *defaultStyleSheet =
 "	border-bottom-style: none;\n"
 "	border-left-style: none;\n"
 "	background-color: #FAFAFA;\n"
-"	font-family: Geneva, Arial, Helvetica, sans-serif;\n"
 "	font-size: 13px;\n"
 "}\n"
 ".search     { color: #003399;\n"
@@ -1535,7 +1537,7 @@ void HtmlGenerator::writeSearchPage()
       t << "\n";
       t << "function report_matches()\n";
       t << "{\n";
-      t << " return \"" << theTranslator->trSearchMatches() << " \";\n";
+      t << "  return \"" << theTranslator->trSearchMatches() << " \";\n";
       t << "}\n";
       t << "\n";
       t << search_script;

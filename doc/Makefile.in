@@ -26,7 +26,7 @@ all: language FORCE
 	@epstopdf doxygen_logo.eps --outfile=../latex/doxygen_logo.pdf
 
 clean: 
-	rm -rf ../html ../latex *.bak translator_report.txt
+	rm -rf ../html ../latex *.bak 
 
 language: language.doc 
 

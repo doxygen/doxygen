@@ -26,9 +26,8 @@
 #include "dot.h"
 #include "message.h"
 #include "config.h"
+#include "htmlgen.h"
 
-#define PREFRAG_START "<div class=\"fragment\"><pre>"
-#define PREFRAG_END   "</pre></div>"
 
 static QString htmlAttribsToString(const HtmlAttribList &attribs)
 {
@@ -872,7 +871,7 @@ void HtmlDocVisitor::visitPost(DocParamSect *)
 void HtmlDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "    <tr><td>";
+  m_t << "    <tr><td valign=\"top\">";
   if (pl->direction()!=DocParamSect::Unspecified)
   {
     m_t << "<tt>[";
@@ -890,7 +889,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     }
     m_t << "]</tt>&nbsp;";
   }
-  m_t << "</td><td valign=top><em>";
+  m_t << "</td><td valign=\"top\"><em>";
   QStrListIterator li(pl->parameters());
   const char *s;
   bool first=TRUE;

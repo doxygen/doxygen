@@ -363,6 +363,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
       QCString lineStr,anchorStr;
       lineStr.sprintf("%d",m_startBodyLine);
       anchorStr.sprintf("l%05d",m_startBodyLine);
+      ol.newParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
         // write text left from linePos marker
@@ -432,10 +433,6 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     {
       err("Error: translation error: invalid markers in trDefinedInSourceFile()\n");
     }
-
-    ol.disableAllBut(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.enableAll();
   }
   ol.popGeneratorState();
 }

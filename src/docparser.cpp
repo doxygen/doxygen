@@ -441,7 +441,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
   *pDef=0;
-  QString cmdArg=commandName;
+  QString cmdArg=substitute(commandName,"#","::");
   int l=cmdArg.length();
   if (l==0) return FALSE;
 
@@ -1236,7 +1236,7 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word.lower());
+    Doxygen::searchIndex->addWord(word);
   }
 }
 
@@ -1251,7 +1251,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
   {
-    Doxygen::searchIndex->addWord(word.lower());
+    Doxygen::searchIndex->addWord(word);
   }
 }
 
@@ -1517,6 +1517,8 @@ bool DocXRefItem::parse()
       m_file   = refList->listName();
       m_anchor = item->listAnchor;
       m_title  = refList->sectionTitle();
+      //printf("DocXRefItem: file=%s anchor=%s title=%s\n",
+      //    m_file.data(),m_anchor.data(),m_title.data());
 
       if (!item->text.isEmpty())
       {

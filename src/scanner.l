@@ -2589,9 +2589,21 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    {
 					      varEntry->groups->append(new Grouping(*g));
 					    }
+					    if (current->sli) // copy special list items
+					    {
+					      QListIterator<ListItemInfo> li(*current->sli);
+					      ListItemInfo *lii;
+					      for (li.toFirst();(lii=li.current());++li)
+					      {
+						varEntry->addSpecialListItem(lii->type,lii->itemId);
+					      }
+					      //delete current->sli;
+					      //current->sli = 0;
+					    }
 
-					    //printf("Add: type=`%s',name=`%s',args=`%s'\n",
-					    //      varEntry->type.data(),varEntry->name.data(),varEntry->args.data());
+					    //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
+					    //      varEntry->type.data(),varEntry->name.data(),
+					    //      varEntry->args.data(),varEntry->brief.data(),varEntry->doc.data());
 					    current_root->addSubEntry(varEntry);
 					  }
 					  if (*yytext==';')

@@ -2521,7 +2521,9 @@ void Config::create()
                     "are defined before the preprocessor is started (similar to the -D option of \n"
                     "gcc). The argument of the tag is a list of macros of the form: name \n"
                     "or name=definition (no spaces). If the definition and the = are \n"
-                    "omitted =1 is assumed. \n"
+                    "omitted =1 is assumed. To prevent a macro definition from being \n"
+		    "undefined via #undef or recursively expanded use the := operator \n"
+		    "instead of the = operator.\n"
                  );
   cl->addDependency("ENABLE_PREPROCESSING");
   cl = addList(

@@ -460,6 +460,7 @@ void ManDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
   m_indent+=2;
+  if (!m_firstCol) m_t << endl;
   m_t << ".PD 0" << endl;
 }
 
@@ -507,6 +508,7 @@ void ManDocVisitor::visitPre(DocHtmlList *)
 {
   if (m_hide) return;
   m_indent+=2;
+  if (!m_firstCol) m_t << endl;
   m_t << ".PD 0" << endl;
 }
 
@@ -514,6 +516,7 @@ void ManDocVisitor::visitPost(DocHtmlList *)
 {
   if (m_hide) return;
   m_indent-=2;
+  if (!m_firstCol) m_t << endl;
   m_t << ".PP" << endl;
 }
 
@@ -741,6 +744,7 @@ void ManDocVisitor::visitPost(DocSecRefList *)
 {
   if (m_hide) return;
   m_indent-=2;
+  if (!m_firstCol) m_t << endl;
   m_t << ".PP" << endl;
 }
 

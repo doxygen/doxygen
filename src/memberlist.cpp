@@ -286,14 +286,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     {
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
+        md->setFromAnonymousScope(FALSE);
         //printf("anonymous compound members\n");
         if (md->isBriefSectionVisible())
         {
           if (first) ol.startMemberList(),first=FALSE;
-          md->setFromAnonymousScope(FALSE);
           md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
-          md->setFromAnonymousScope(TRUE);
         }
+        md->setFromAnonymousScope(TRUE);
       }
     }
   }

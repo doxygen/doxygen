@@ -194,7 +194,7 @@ static FILE *checkAndOpenFile(const QCString &absName)
     QCString filterName = getFileFilter(absName);
     if (!filterName.isEmpty())
     {
-      QCString cmd = filterName+" "+absName;
+      QCString cmd = filterName+" \""+absName+"\"";
       f=popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
@@ -1486,6 +1486,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  Define *def;
   					  if ((def=isDefined(yytext)) 
 					      /*&& !def->isPredefined*/
+					      && !def->nonRecursive
 					     )
 					  {
 					    //printf("undefining %s\n",yytext);

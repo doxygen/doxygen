@@ -16,6 +16,7 @@
  */
 
 #include <ctype.h>
+#include <qregexp.h>
 #include "qtbc.h"
 #include "groupdef.h"
 #include "classdef.h"
@@ -457,14 +458,20 @@ void GroupDef::writeDocumentation(OutputList &ol)
   //ol.disable(OutputGenerator::Man);
   startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
-  ol.docify(title);
+  ol.parseText(title);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
 
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName().lower());
+    static QRegExp we("[a-zA-Z_][a-zA-Z_0-9]*");
+    int i=0,p=0,l=0;
+    while ((i=we.match(title,p,&l))!=-1) // foreach word in the title
+    {
+      Doxygen::searchIndex->addWord(title.mid(i,l));
+      p=i+l;
+    }
   }
 
   if (Config_getBool("DETAILS_AT_TOP"))

@@ -134,6 +134,7 @@ class MemberDef : public Definition
     bool isWritable() const               { return (memSpec&Entry::Writable)!=0; }
     bool isImplementation() const         { return m_implOnly; }
     bool isExternal() const               { return explExt; }
+    bool isTemplateSpecialization() const { return tspec; }
     bool isObjCMethod() const;
     bool isConstructor() const;
     bool isDestructor() const;
@@ -151,22 +152,23 @@ class MemberDef : public Definition
     bool isDocumentedFriendClass() const;
 
     // set functions
-    void setMemberType(MemberType t)      { mtype=t; }
-    void setDefinition(const char *d)     { def=d; }
-    void setFileDef(FileDef *fd)          { fileDef=fd; }
+    void setMemberType(MemberType t)       { mtype=t; }
+    void setDefinition(const char *d)      { def=d; }
+    void setFileDef(FileDef *fd)           { fileDef=fd; }
     void setAnchor(const char *a);
-    void setProtection(Protection p)      { prot=p; }
-    void setMemberSpecifiers(int s)       { memSpec=s; }
-    void mergeMemberSpecifiers(int s)     { memSpec|=s; }
+    void setProtection(Protection p)       { prot=p; }
+    void setMemberSpecifiers(int s)        { memSpec=s; }
+    void mergeMemberSpecifiers(int s)      { memSpec|=s; }
     void setInitializer(const char *i);
-    void setBitfields(const char *s)      { bitfields = s; }
-    void setMaxInitLines(int lines)       { userInitLines=lines; }
+    void setBitfields(const char *s)       { bitfields = s; }
+    void setMaxInitLines(int lines)        { userInitLines=lines; }
     void setMemberClass(ClassDef *cd);
     void setSectionList(Definition *d,MemberList *sl);
     void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
-    void setExplicitExternal(bool b)      { explExt=b; }
-    void setReadAccessor(const char *r)   { read=r; }
-    void setWriteAccessor(const char *w)  { write=w; }
+    void setExplicitExternal(bool b)       { explExt=b; }
+    void setReadAccessor(const char *r)    { read=r; }
+    void setWriteAccessor(const char *w)   { write=w; }
+    void setTemplateSpecialization(bool b) { tspec=b; }
     
     void makeRelated()                    { related=TRUE; } 
 
@@ -348,6 +350,7 @@ class MemberDef : public Definition
 
     GroupDef *group;          // group in which this member is in
     bool explExt;             // member was explicitly declared external
+    bool tspec;               // member is a template specialization
 
     ClassDef *cachedAnonymousType; // if the member has an anonymous compound
                                    // as its type then this is computed by
