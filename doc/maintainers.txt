@@ -27,10 +27,10 @@ Finnish
 Olli Korhonen: Olli.Korhonen@ccc.fi
 
 French
-Xavier Outhier: xavier.outhier@anfdata.cz
+Xavier Outhier: xouthier@yahoo.fr
 
 German  
-Jens Seidel: jensseidel@users.sourceforge.net
+Jens Seidel: jensseidel@users.sf.net
 Jens Breitenstein: Jens.Breitenstein@tlc.de
 
 Hungarian

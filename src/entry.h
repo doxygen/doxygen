@@ -289,17 +289,10 @@ class Entry
     const char *groupdoccmd() const
     {
 	switch( this->groupdoctype ) {
-	case GROUPDOC_NORMAL:
-	    return "\\defgroup";
-	    break;
-	case GROUPDOC_ADD:
-	    return "\\addgroup";
-	    break;
-	case GROUPDOC_WEAK:
-	    return "\\weakgroup";
-	    break;
-	default:
-	    return "unknown group command";
+	case GROUPDOC_NORMAL: return "\\defgroup"; break;
+	case GROUPDOC_ADD: return "\\addgroup"; break;
+	case GROUPDOC_WEAK: return "\\weakgroup"; break;
+	default: return "unknown group command";
 	}
     }
     Grouping::GroupPri_t groupingpri() const
@@ -308,17 +301,10 @@ class Entry
 	    return Grouping::GROUPING_LOWEST;
 	}
         switch( this->groupdoctype ) {
-	case GROUPDOC_NORMAL:
-	    return Grouping::GROUPING_AUTO_DEF;
-	    break;
-	case GROUPDOC_ADD:
-	    return Grouping::GROUPING_AUTO_ADD;
-	    break;
-	case GROUPDOC_WEAK:
-	    return Grouping::GROUPING_AUTO_WEAK;
-	    break;
-	default:
-	    return Grouping::GROUPING_LOWEST;
+	case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF; break;
+	case GROUPDOC_ADD: return Grouping::GROUPING_AUTO_ADD; break;
+	case GROUPDOC_WEAK: return Grouping::GROUPING_AUTO_WEAK; break;
+	default: return Grouping::GROUPING_LOWEST;
 	}
     }
   private:

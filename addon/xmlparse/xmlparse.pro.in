@@ -1,0 +1,26 @@
+TEMPLATE     =	app.t
+CONFIG       =	console warn_on $extraopt
+HEADERS      =	basehandler.h mainhandler.h \
+                compoundhandler.h sectionhandler.h \
+                memberhandler.h paramhandler.h \
+                dochandler.h 
+SOURCES      =	main.cpp mainhandler.cpp \
+                compoundhandler.cpp sectionhandler.cpp \
+                memberhandler.cpp paramhandler.cpp \
+                dochandler.cpp 
+DEPENDPATH   = ../../src
+unix:LIBS                  += -L../../lib -ldoxycfg -lqtools 
+win32:INCLUDEPATH          += .
+win32-mingw:LIBS           += -L../../lib -ldoxycfg -lqtools 
+win32-msvc:LIBS            += qtools.lib doxycfg.lib shell32.lib 
+win32-msvc:TMAKE_LFLAGS    += /LIBPATH:..\..\lib
+win32-borland:LIBS         += qtools.lib doxycfg.lib shell32.lib
+win32-borland:TMAKE_LFLAGS += -L..\..\lib
+win32:TMAKE_CXXFLAGS       += -DQT_NODLL
+INCLUDEPATH                += ../../qtools ../../src
+DESTDIR                    =  
+TARGET                     =  xmlparse
+unix:TARGETDEPS            =  ../../lib/libdoxycfg.a
+win32:TARGETDEPS           =  ../../lib/doxycfg.lib
+OBJECTS_DIR                =  obj
+

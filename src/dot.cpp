@@ -97,7 +97,8 @@ static bool convertMapFile(QTextStream &t,const char *mapName)
           if ((dest=Doxygen::tagDestinationDict[refPtr])) t << *dest << "/";
         }
         t << urlPtr << "\" shape=\"rect\" coords=\"" 
-          << x1 << "," << y1 << "," << x2 << "," << y2 << "\">" << endl;
+          << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
+          << " alt=\"\">" << endl;
       }
     }
   }

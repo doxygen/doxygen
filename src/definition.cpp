@@ -50,7 +50,7 @@ Definition::Definition(const char *df,int dl,
   m_todoId=0;
   m_testId=0;
   m_bugId=0;
-  m_outerScope=0;
+  m_outerScope=Doxygen::globalScope;
 }
 
 Definition::~Definition()

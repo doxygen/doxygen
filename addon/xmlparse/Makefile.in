@@ -1,0 +1,16 @@
+all clean depend: Makefile.xmlparse 
+	$(MAKE) -f Makefile.xmlparse $@
+
+distclean: clean
+	$(RM) -rf Makefile.xmlparse xmlparse.pro Makefile obj
+
+tmake:
+	$(ENV) $(PERL) $(TMAKE) xmlparse.pro >Makefile.xmlparse
+
+Makefile.xmlparse: xmlparse.pro
+	$(ENV) $(PERL) $(TMAKE) xmlparse.pro >Makefile.xmlparse
+
+install:
+	$(INSTTOOL) -d $(INSTALL)/bin	
+	$(INSTTOOL) -m 755 ../../bin/xmlparse $(INSTALL)/bin	
+

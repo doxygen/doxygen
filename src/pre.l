@@ -859,7 +859,7 @@ void addDefine()
     while ((c=*p++) && (c==' ' || c=='\t')) k++;
     g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
   }
-  md->setInitializer(g_defLitText);
+  md->setInitializer(g_defLitText.stripWhiteSpace());
   
   //md->setDefFile(g_yyFileName);
   //md->setDefLine(g_yyLineNr);

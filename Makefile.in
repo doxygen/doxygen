@@ -1,5 +1,3 @@
-DOCDIR = $(INSTALL)/share/doc/packages/doxygen
-
 #all: src/version.cpp doxywizard 
 #	cd qtools ; $(MAKE)
 #	cd src ; $(MAKE)
@@ -10,16 +8,14 @@ clean: FORCE
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
-	cd addon/xmlread ; $(MAKE) clean
-	cd addon/xmlgen ; $(MAKE) clean
+	cd addon/xmlparse ; $(MAKE) clean
 	-rm -f bin/doxy*
 	-rm -f objects/*.o
 
 distclean: clean
 	cd src ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
-	cd addon/xmlread ; $(MAKE) distclean
-	cd addon/xmlgen ; $(MAKE) distclean
+	cd addon/xmlparse ; $(MAKE) distclean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html
@@ -37,15 +33,9 @@ distclean: clean
 	-rm -f addon/doxywizard/obj/*.o
 	-rm -f addon/doxywizard/moc/moc_*
 	-rm -f addon/doxywizard/config.cpp
-	-rm -f addon/xmlread/xmlread.pro 
-	-rm -f addon/xmlread/Makefile addon/xmlread/Makefile.xmlread
-	-rm -f addon/xmlread/*.o
-	-rm -f addon/xmlgen/xmlgen.pro
-	-rm -f addon/xmlgen/Makefile addon/xmlgen/Makefile.xmlgen
-	-rm -f addon/xmlgen/*.o
 
 
-install: doxywizard_install xmlgen_install
+install: doxywizard_install 
 	$(INSTTOOL) -d $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin

@@ -1092,6 +1092,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
     /*! Used as ansicpg for RTF file 
      * 
      * The following table shows the correlation of Charset name, Charset Value and 
+     * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
@@ -1110,6 +1111,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
      * HANGEUL_CHARSET         129 (x81)             949
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
      * 
      */
     virtual QCString trRTFansicp()

@@ -232,8 +232,12 @@ class HtmlGenerator : public OutputGenerator
     void endMemberDocPrefixItem();
     void startMemberDocName();
     void endMemberDocName();
-    void startParameter(bool first);
-    void endParameter(bool last);
+    void startParameterType(bool first);
+    void endParameterType();
+    void startParameterName();
+    void endParameterName(bool last,bool emptyList);
+    void startParameterList();
+    void endParameterList();
 
     void startFontClass(const char *s) { t << "<font class=\"" << s << "\">"; }
     void endFontClass() { t << "</font>"; }

@@ -41,6 +41,7 @@ class NamespaceList;
 class ClassList;
 class MemberGroupList;
 class MemberGroupDict;
+class Definition;
 
 //--------------------------------------------------------------------
 
@@ -104,7 +105,8 @@ extern QCString substituteClassNames(const QCString &s);
 extern QCString substitute(const char *s,const char *src,const char *dst);
 extern QCString resolveDefines(const char *n);
 extern ClassDef *getClass(const char *key);
-extern ClassDef *getResolvedClass(const char *key,
+extern ClassDef *getResolvedClass(Definition *scope,
+                                  const char *key,
                                   bool *pIsTypeDef=0,
                                   QCString *pTemplSpec=0);
 extern NamespaceDef *getResolvedNamespace(const char *key);
@@ -157,6 +159,7 @@ ArgumentList *copyArgumentList(const ArgumentList *src);
 QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE);
+QCString resolveTypeDef(Definition *d,const QCString &name);
 
 #endif
 

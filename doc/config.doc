@@ -756,11 +756,8 @@ followed by the descriptions of the tags grouped by category.
  doxygen generates three additional HTML index files: 
  \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
  project file that can be read by 
- <a href="http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download_main.htm">
- Microsoft HTML Help Workshop</a>
- \latexonly
- (see http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download\_main.htm)
- \endlatexonly
+ <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">
+ Microsoft's HTML Help Workshop</a>
  on Windows.
 
  The HTML Help Workshop contains a compiler that can convert all HTML output 
@@ -1007,7 +1004,7 @@ EXTRA_PACKAGES = times
 
 \anchor cfg_man_links
 <dt>\c MAN_LINKS <dd> 
- \addindex MAN_LINKs
+ \addindex MAN_LINKS
  If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output, 
  then it will generate one additional man file for each entity documented in 
  the real man page(s). These additional files only source the real man page, 
@@ -1208,7 +1205,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_dot_cleanup
 <dt>\c DOT_CLEANUP <dd>
  \addindex DOT_CLEANUP
- This tag can be used to ?? cleanup any mess DOT left behind?
+ This tag can be used to cleanup any mess DOT left behind.
  If left blank, "NO" is assumed.
 
 </dl>

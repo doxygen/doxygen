@@ -1,7 +1,0 @@
-TEMPLATE	= app
-CONFIG		= console qt warn_on debug
-HEADERS		= saxhandler.h strx.h compounddef.h
-SOURCES		= main.cpp \
-		  saxhandlers.cpp
-LIBS		= -lxerces-c1_2 -L$(XERCESCROOT)/lib
-INCLUDEPATH     = $(XERCESCROOT)/include

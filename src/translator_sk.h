@@ -34,7 +34,7 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_7
     }
 
   public:
-    // --- Language contol methods -------------------
+    // --- Language control methods -------------------
 
     virtual QCString idLanguage()
     { return "slovak"; }

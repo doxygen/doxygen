@@ -49,6 +49,7 @@ class StringDict : public QDict<QCString>
     virtual ~StringDict() {}
 };
 
+
 extern QCString spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
@@ -78,7 +79,7 @@ class Doxygen
     static QTextStream tagFile;
     static SectionDict sectionDict;
     static FileNameList inputNameList;
-    static StringDict typedefDict;
+    //static TypedefDict typedefDict;
     static StringDict namespaceAliasDict;
     static GroupList groupList;
     static GroupDict groupDict;

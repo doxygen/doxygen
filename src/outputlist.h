@@ -399,10 +399,18 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberDocName); }
     void endMemberDocName()
     { forall(&OutputGenerator::endMemberDocName); }
-    void startParameter(bool first)
-    { forall(&OutputGenerator::startParameter,first); }
-    void endParameter(bool last)
-    { forall(&OutputGenerator::endParameter,last); }
+    void startParameterType(bool first)
+    { forall(&OutputGenerator::startParameterType,first); }
+    void endParameterType()
+    { forall(&OutputGenerator::endParameterType); }
+    void startParameterName()
+    { forall(&OutputGenerator::startParameterName); }
+    void endParameterName(bool last,bool emptyList)
+    { forall(&OutputGenerator::endParameterName,last,emptyList); }
+    void startParameterList()
+    { forall(&OutputGenerator::startParameterList); }
+    void endParameterList()
+    { forall(&OutputGenerator::endParameterList); }
 
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }

@@ -147,9 +147,9 @@ Compilation is now done by performing the following steps:
     make pdf
 \endverbatim
 
-    The postscript manual <code>doxygen_manual.ps</code> will be located 
+    The PostScript manual <code>doxygen_manual.ps</code> will be located 
     in the latex directory of the distribution. Just send it to a 
-    postscript printer to print it or use <code>ghostview</code> to view it. 
+    PostScript printer to print it or use <code>ghostview</code> to view it. 
 
 </ol>
 
@@ -165,13 +165,14 @@ Compilation is now done by performing the following steps:
 \endverbatim   
 
     Binaries are installed into the directory <code>\<prefix\>/bin</code>.
-    Use <code>make install_docs DOCDIR=\<path\></code> to install the
-    documentation and examples into the <code>\<path\></code> directory. 
+    Use <code>make install_docs</code> to install the
+    documentation and examples into <code>\<docdir\>/doxygen</code>. 
 
-    <code>\<prefix\></code> defaults to /usr but can be changed with 
+    <code>\<prefix\></code> defaults to <code>/usr</code> but can be changed with 
     the <code>--prefix</code> option of the configure script. 
-    The default <code>DOCDIR</code> directory is 
-    <code>\<prefix\>/share/doc/packages/doxygen</code>
+    The default <code>\<docdir\></code> directory is 
+    <code>\<prefix\>/share/doc/packages</code> and can be changed with
+    the <code>--docdir</code> option of the configure script.
 
     Alternatively, you can also copy the binaries from the <code>bin</code> 
     directory manually to some <code>bin</code> directory in your search path.
@@ -445,7 +446,7 @@ Here is what is required:
     (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
     config file, then you need the Microsoft HTML help workshop. 
     You can download it at: 
-    http://msdn.microsoft.com/library/tools/htmlhelp/wkshp/download_main.htm
+    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp
 
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
@@ -454,6 +455,7 @@ Here is what is required:
 
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.5</a><br>
+    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.
 </ul>

@@ -26,12 +26,14 @@
 #include "classlist.h"
 #include "util.h"
 #include "defargs.h"
+#include "outputgen.h"
+#include "doc.h"
 
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
 
-static void writeXMLString(QTextStream &t,const char *s)
+static inline void writeXMLString(QTextStream &t,const char *s)
 {
   t << convertToXML(s);
 }
@@ -74,6 +76,629 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
   private:
     QTextStream &m_t;
 };
+
+template<class T> class ValStack
+{
+  public:
+    ValStack() : m_values(10), m_sp(0), m_size(10) {}
+    virtual ~ValStack() {}
+    ValStack(const ValStack &s)
+    {
+      m_values=s.m_values.copy();
+      m_sp=s.m_sp;
+      m_size=s.m_size;
+    }
+    ValStack &operator=(const ValStack &s)
+    {
+      m_values=s.m_values.copy();
+      m_sp=s.m_sp;
+      m_size=s.m_size;
+      return *this;
+    }
+    void push(T v)
+    {
+      m_sp++;
+      if (m_sp>=m_size)
+      {
+        m_size+=10;
+        m_values.resize(m_size);
+      }
+      m_values[m_sp]=v;
+    }
+    T pop()
+    {
+      ASSERT(m_sp!=0);
+      return m_values[m_sp--];
+    }
+    T& top()
+    {
+      ASSERT(m_sp!=0);
+      return m_values[m_sp];
+    }
+    bool isEmpty()
+    {
+      return m_sp==0;
+    }
+    
+  private:
+    QArray<T> m_values;
+    int m_sp;
+    int m_size;
+};
+
+/*! This class is used by the documentation parser.
+ *  Its methods are called when some XML text or markup
+ *  needs to be written.
+ */
+class XMLGenerator : public OutputDocInterface
+{
+  public:
+
+    // helper functions
+    
+    void startParMode()
+    {
+      if (!m_inParStack.isEmpty() && !m_inParStack.top())
+      {
+        m_inParStack.top() = TRUE;
+        m_t << "<para>" << endl;
+      }
+      else if (m_inParStack.isEmpty())
+      {
+        m_inParStack.push(TRUE);
+        m_t << "<para>" << endl;
+      }
+    }
+    void endParMode()
+    {
+      if (!m_inParStack.isEmpty() && m_inParStack.top())
+      {
+        m_inParStack.top() = FALSE;
+        m_t << "</para>" << endl;
+      }
+    }
+    void startNestedPar()
+    {
+      m_inParStack.push(FALSE);
+    }
+    void endNestedPar()
+    {
+      if (m_inParStack.pop())
+      {
+        m_t << "</para>" << endl;
+      }
+    }
+  
+    // Standard generator functions to be implemented by all generators
+
+    void docify(const char *s) 
+    {
+      startParMode();
+      writeXMLString(m_t,s);
+    }
+    void writeChar(char c) 
+    {
+      startParMode();
+      char s[2];s[0]=c;s[1]=0;
+      docify(s);
+    }
+    void writeString(const char *text) 
+    {
+      startParMode();
+      m_t << text;
+    }
+    void startItemList()       
+    { 
+      m_t << "<itemizedlist>" << endl;; 
+      m_inListStack.push(TRUE);
+    }
+    void startEnumList()       
+    { 
+      m_t << "<orderedlist>"; 
+      m_inListStack.push(TRUE);
+    }
+    void writeListItem()       
+    { 
+      if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
+      {
+        m_inListStack.top()=FALSE;
+      }
+      else // not first element, end previous element first
+      {
+        endParMode();
+        endNestedPar();
+        m_t << "</listitem>" << endl; 
+      }
+      m_t << "<listitem>"; 
+      startNestedPar();
+    }
+    void endItemList()         
+    {
+      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+      {
+        endParMode(); 
+        endNestedPar();
+        m_t << "</listitem>" << endl; 
+      }
+      m_t << "</itemizedlist>" << endl; 
+    }
+    void endEnumList()         
+    { 
+      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+      {
+        endParMode(); 
+        m_t << "</listitem>" << endl; 
+        endNestedPar(); 
+      }
+      m_t << "</orderedlist>" << endl; 
+    }
+    void newParagraph()        
+    { 
+      endParMode();
+      startParMode();
+    }
+    void startBold()           
+    { 
+      startParMode();
+      m_t << "<bold>"; // non DocBook
+    }
+    void endBold()             
+    { 
+      m_t << "</bold>"; // non DocBook
+    }
+    void startTypewriter()     
+    { 
+      startParMode();
+      m_t << "<computeroutput>";
+    }
+    void endTypewriter()       
+    { 
+      m_t << "</computeroutput>";
+    }
+    void startEmphasis()       
+    { 
+      startParMode();
+      m_t << "<emphasis>";
+    }
+    void endEmphasis()         
+    { 
+      m_t << "</emphasis>";
+    }
+    void startCodeFragment()   
+    { 
+      endParMode();
+      m_t << "<programlisting>";
+    }
+    void endCodeFragment()     
+    { 
+      m_t << "</programlisting>"; 
+    }
+    void startPreFragment()    
+    { 
+      endParMode();
+      m_t << "<programlisting>";
+    }
+    void endPreFragment()      
+    { 
+      m_t << "</programlisting>"; 
+    }
+    void writeRuler()          
+    { 
+      endParMode();
+      m_t << "<hruler/>"; 
+    }
+    void startDescription()    
+    { 
+      m_t << "<variablelist>"; 
+      m_inListStack.push(TRUE);
+    }
+    void endDescription()      
+    { 
+      if (!m_inListStack.isEmpty() && !m_inListStack.pop()) // first element
+      {
+        endNestedPar(); 
+        m_t << "</listitem>" << endl; 
+      }
+      m_t << "</variablelist>"; 
+      if (!m_inListStack.isEmpty()) m_inListStack.pop();
+    }
+    void startDescItem()       
+    { 
+      if (!m_inListStack.isEmpty() && m_inListStack.top()) // first element
+      {
+        m_inListStack.top()=FALSE;
+      }
+      else // not first element, end previous element first
+      {
+        endNestedPar();
+        m_t << "</listitem>"; 
+      }
+      m_t << "<varlistentry><term>"; 
+    }
+    void endDescItem()         
+    { 
+      m_t << "</term></varlistentry><listitem>"; 
+      startNestedPar();
+    }
+    void startDescList()       
+    { 
+      m_t << "<simplesect><title>"; 
+    }
+    void endDescList()         
+    { 
+      endNestedPar();
+      m_t << "</simplesect>";
+    }
+    void startParamList()      
+    { 
+      m_t << "<parameterlist><title>"; // non DocBook
+                                // TODO: what kind of list
+                                // param, retval, exception
+      m_inParamList = TRUE;
+    }
+    void endParamList()        
+    { 
+      m_inParamList = FALSE;
+      m_t << "</parameterlist>";
+    }
+    void endDescTitle()        
+    { 
+      m_t << "</title>"; 
+      if (!m_inParamList) startNestedPar();
+    }
+    void writeDescItem()       { }
+    void startDescTable()      { }
+    void endDescTable()        { }
+    void startDescTableTitle() 
+    { 
+      m_t << "<parametername>"; // non docbook
+    }
+    void endDescTableTitle()   
+    { 
+      m_t << "</parametername>"; // non docbook
+    }
+    void startDescTableData()  
+    { 
+      m_t << "<parameterdescription>"; // non docbook
+      startNestedPar();
+    }
+    void endDescTableData()    
+    { 
+      endNestedPar();
+      m_t << "</parameterdescription>"; // non docbook
+    }
+    void lineBreak()           
+    { 
+      m_t << "<linebreak/>"; // non docbook
+    }
+    void writeNonBreakableSpace(int num) 
+    { 
+      int i;for (i=0;i<num;i++) m_t << "<nonbreakablespace/>";  // non docbook
+    }
+    
+    //// TODO: translate these as well....
+
+    void writeObjectLink(const char *ref,const char *file,
+                         const char *anchor, const char *text) 
+    {
+      if (ref) // TODO: add support for external references
+      {
+        docify(text);
+      }
+      else
+      {
+        writeXMLLink(m_t,file,anchor,text);
+      }
+    }
+    void writeCodeLink(const char *ref,const char *file,
+                               const char *anchor,const char *text) 
+    {
+      if (ref) // TODO: add support for external references
+      {
+        docify(text);
+      }
+      else
+      {
+        writeXMLLink(m_t,file,anchor,text);
+      }
+    }
+    void startHtmlLink(const char *url)
+    {
+      m_t << "<ulink url=\"" << url << "\">";
+    }
+    void endHtmlLink()
+    {
+      m_t << "</ulink>";
+    }
+    void writeMailLink(const char *url) 
+    {
+      m_t << "<email>";
+      docify(url); 
+      m_t << "</email>";
+    }
+    void startSection(const char *id,const char *,bool) 
+    {
+      m_t << "<sect1 id=\"" << id << "\">";
+    }
+    void endSection(const char *,bool)
+    {
+      m_t << "</sect1>";
+    }
+    void startSubsection() 
+    {
+      m_t << "<sect2>";
+    }
+    void endSubsection() 
+    {
+      m_t << "</sect2>";
+    }
+    void startSubsubsection() 
+    {
+      m_t << "<sect3>";
+    }
+    void endSubsubsection() 
+    {
+      m_t << "</sect3>";
+    }
+    void startCenter() 
+    {
+      m_t << "<center>"; // non docbook
+    }
+    void endCenter() 
+    {
+      m_t << "</center>"; // non docbook
+    }
+    void startSmall() 
+    {
+      m_t << "<small>"; // non docbook
+    }
+    void endSmall() 
+    {
+      m_t << "</small>"; // non docbook
+    }
+    void startSubscript() 
+    {
+      m_t << "<subscript>";
+    }
+    void endSubscript() 
+    {
+      m_t << "</subscript>";
+    }
+    void startSuperscript() 
+    {
+      m_t << "<superscript>";
+    }
+    void endSuperscript() 
+    {
+      m_t << "</superscript>";
+    }
+    void startTable(int cols) 
+    {
+      m_t << "<table><tgroup cols=\"" << cols << "\"><tbody>\n";
+    }
+    void endTable() 
+    {
+      m_t << "</row>\n</tbody></tgroup></table>";
+    }
+    void nextTableRow() 
+    {
+      m_t << "<row><entry>";
+    }
+    void endTableRow() 
+    {
+      m_t << "</row>" << endl;
+    }
+    void nextTableColumn() 
+    {
+      m_t << "<entry>";
+    }
+    void endTableColumn() 
+    {
+      m_t << "</entry>";
+    }
+
+    void writeQuote()         { m_t << "\""; }
+    void writeCopyright()     { m_t << "&copy;"; }
+    void writeUmlaut(char c)  { m_t << "&" << c << "uml;"; }
+    void writeAcute(char c)   { m_t << "&" << c << "acute;"; }
+    void writeGrave(char c)   { m_t << "&" << c << "grave;"; }
+    void writeCirc(char c)    { m_t << "&" << c << "circ;"; }
+    void writeTilde(char c)   { m_t << "&" << c << "tilde;"; }
+    void writeRing(char c)    { m_t << "&" << c << "ring;"; }
+    void writeSharpS()        { m_t << "&szlig;"; }
+    void writeCCedil(char c)  { m_t << "&" << c << "cedil;"; }
+
+    void startTitle() 
+    {
+      m_t << "<title>";
+    }
+    void endTitle()   
+    {
+      m_t << "</title>" << endl;
+    }
+    void writeAnchor(const char *id,const char *name) 
+    {
+      m_t << "<anchor id=\"" << id << "_" << name << "\"/>";
+    }
+    void writeSectionRef(const char *,const char *id,
+                         const char *name,const char *text) 
+    {
+      m_t << "<link linkend=\"" << id << "_" << name << "\">";
+      docify(text);
+      m_t << "</link>";
+    }
+    void writeSectionRefItem(const char *,const char *,const char *) 
+    {
+      m_t << "(writeSectionRefItem)";
+    }
+    void addIndexItem(const char *primaryie,const char *secondaryie) 
+    {
+      m_t << "<indexentry><primaryie>";
+      docify(primaryie);
+      m_t << "</primaryie><secondaryie>";
+      docify(secondaryie);
+      m_t << "</secondaryie></indexentry>";
+    }
+    void writeFormula(const char *id,const char *text) 
+    {
+      m_t << "<formula id=\"" << id << "\">"; // non Docbook
+      docify(text);
+      m_t << "</formula>";
+    }
+    void startImage(const char *name,const char *size,bool caption) 
+    {
+      m_t << "<image name=\"" << name << "\" size=\"" << size 
+          << "\" caption=\"" << (caption ? "1" : "0") << "\">"; // non docbook 
+    }
+    void endImage(bool) 
+    {
+      m_t << "</image>";
+    }
+    void startTextLink(const char *name,const char *anchor) 
+    {
+      m_t << "<ulink url=\"" << name << "#" << anchor << "\">";
+    }
+    void endTextLink() 
+    {
+      m_t << "<ulink>";
+    }
+    void startPageRef() 
+    {
+    }
+    void endPageRef(const char *,const char *) 
+    {
+    }
+    void startCodeLine() 
+    {
+      m_t << "<linenumber>"; // non DocBook
+    }
+    void endCodeLine() 
+    {
+      m_t << "</linenumber>"; // non DocBook
+    }
+    void startCodeAnchor(const char *id) 
+    {
+      m_t << "<anchor id=\"" << id << "\">";
+    }
+    void endCodeAnchor() 
+    {
+      m_t << "</anchor>";
+    }
+    void startFontClass(const char *colorClass) 
+    {
+      m_t << "<highlight class=\"" << colorClass << "\""; // non DocBook
+    }
+    void endFontClass()
+    {
+      m_t << "</highlight>"; // non DocBook
+    }
+    void codify(const char *text) 
+    {
+      docify(text);
+    }
+    
+    // Generator specific functions
+    
+    /*! Create a clone of this generator. Uses the copy constructor */
+    OutputDocInterface *clone() 
+    {
+      return new XMLGenerator(this);
+    }
+    /*! Append the output written to generator \a g to this generator */
+    void append(const OutputDocInterface *g) 
+    {
+      const XMLGenerator *xg = (const XMLGenerator *)g;
+
+      //if (m_inPar && !mifgen->m_inParStart)
+      //{
+      //  endParMode();
+      //}
+      //else if (!m_inPar && mifgen->m_inParStart)
+      //{
+      //  startParMode();
+      //}
+      //printf("Appending \n>>>>\n`%s'\n<<<<\n and \n>>>>\n`%s'\n<<<<\n",getContents().data(),mifgen->getContents().data());
+      m_t << xg->getContents();
+      m_inParStack  = xg->m_inParStack;
+      m_inListStack = xg->m_inListStack;
+      m_inParamList = xg->m_inParamList;
+    }
+    /*! constructor. 
+     */
+    XMLGenerator() 
+    {
+      m_b.setBuffer(m_a);
+      m_b.open( IO_WriteOnly );
+      m_t.setDevice(&m_b);
+      m_t.setEncoding(QTextStream::Latin1);
+    }
+    /*! copy constructor */
+    XMLGenerator(const XMLGenerator *xg)
+    {
+      m_b.setBuffer(m_a);
+      m_b.open( IO_WriteOnly );
+      m_t.setDevice(&m_b);
+      m_t.setEncoding(QTextStream::Latin1);
+
+      // copy state variables
+      m_inParStack  = xg->m_inParStack;
+      m_inListStack = xg->m_inListStack;
+      m_inParamList = xg->m_inParamList;
+    } 
+    /*! destructor */
+    virtual ~XMLGenerator()
+    {
+    }
+    /*! Returns the output written to this generator as a string */
+    QCString getContents() const
+    {
+      QCString s;
+      s.resize(m_a.size()+1);
+      memcpy(s.data(),m_a.data(),m_a.size());
+      s.at(m_a.size())='\0';
+      return s;
+    }
+    
+  private:
+    // only one destination stream, so these do not have to be implemented
+    void pushGeneratorState() {}
+    void popGeneratorState() {}
+    void disableAllBut(OutputGenerator::OutputType) {}
+    void enableAll() {}
+    void disableAll() {}
+    void disable(OutputGenerator::OutputType) {}
+    void enable(OutputGenerator::OutputType) {}
+    bool isEnabled(OutputGenerator::OutputType) { return TRUE; }
+
+    QTextStream m_t;  
+    QByteArray m_a;
+    QBuffer m_b;
+    
+    ValStack<bool> m_inParStack;  
+    ValStack<bool> m_inListStack;
+    bool m_inParamList;
+};
+
+void writeXMLDocBlock(QTextStream &t,
+                      const QCString &fileName,
+                      int lineNr,
+                      const QCString &scope,
+                      const QCString &name,
+                      const QCString &text)
+{
+  XMLGenerator *xmlGen = new XMLGenerator;
+  parseDoc(*xmlGen,
+           fileName, // input definition file
+           lineNr,   // input definition line
+           scope,    // scope (which should not be linked to)
+           name,     // member (which should not be linked to)
+           text      // actual text
+          );
+  xmlGen->endParMode();
+  t << xmlGen->getContents();
+  delete xmlGen;
+}
+
 
 
 void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
@@ -235,6 +860,12 @@ void generateXMLForMember(MemberDef *md,QTextStream &t,Definition *def)
       }
     }
   }
+  t << "        <briefdescription>" << endl;
+  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->briefDescription());
+  t << "        </briefdescription>" << endl;
+  t << "        <detaileddescription>" << endl;
+  writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),scopeName,md->name(),md->documentation());
+  t << "        </detaileddescription>" << endl;
   t << "      </memberdef>" << endl;
 }
 
@@ -370,6 +1001,12 @@ void generateXMLForClass(ClassDef *cd,QTextStream &t)
     generateXMLClassSection(cd,t,&cd->related,"related");
     //t << "      </sectionlist>" << endl;
   }
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->briefDescription());
+  t << "    </briefdescription>" << endl;
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,cd->getDefFileName(),cd->getDefLine(),cd->name(),0,cd->documentation());
+  t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
 }
 
@@ -411,6 +1048,12 @@ void generateXMLForFile(FileDef *fd,QTextStream &t)
     generateXMLFileSection(fd,t,&fd->decVarMembers,"var");
     //t << "      </sectionlist>" << endl;
   }
+  t << "    <briefdescription>" << endl;
+  writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->briefDescription());
+  t << "    </briefdescription>" << endl;
+  t << "    <detaileddescription>" << endl;
+  writeXMLDocBlock(t,fd->getDefFileName(),fd->getDefLine(),0,0,fd->documentation());
+  t << "    </detaileddescription>" << endl;
   t << "  </compounddef>" << endl;
 }
 

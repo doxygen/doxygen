@@ -68,13 +68,13 @@ Just follow these steps:
 \endverbatim
     after the <code>if { ... }</code>
 <li>Edit libdoxygen.pro.in and add \c translator_xx.h to 
-    the \c HEADERS line in the file doxygen.pro.
+    the \c HEADERS line.
 <li>Edit <code>translator_xx.h</code>:
    <ul>
    <li>Rename <code>TRANSLATOR_EN_H</code> to <code>TRANSLATOR_XX_H</code> twice.
    <li>Rename TranslatorEnglish to TranslatorYourLanguage 
    <li>In the member <code>idLanguage()</code> change "english" into the 
-     name of the your language (use lower case characters only). Depending
+     name of your language (use lower case characters only). Depending
      on the language you may also wish to change the member functions 
      latexLanguageSupportCommand(), idLanguageCharset() and others
      (you will recognize them when you start the work).

@@ -231,7 +231,7 @@ HtmlHelp *HtmlHelp::theInstance = 0;
  *  The object has to be \link initialize() initialized\endlink before it can 
  *  be used.
  */
-HtmlHelp::HtmlHelp()
+HtmlHelp::HtmlHelp() : indexFileDict(1009)
 {
   /* initial depth */
   dc = 0;
@@ -330,7 +330,7 @@ void HtmlHelp::createProjectFile()
     while (s)
     {
       t << s << endl;
-      s=indexFiles.next();
+      s = indexFiles.next();
     }
     f.close();
   }
@@ -342,7 +342,11 @@ void HtmlHelp::createProjectFile()
 
 void HtmlHelp::addIndexFile(const char *s)
 {
-  indexFiles.append(s);
+  if (indexFileDict.find(s)==0)
+  {
+    indexFiles.append(s);
+    indexFileDict.insert(s,(void *)0x8);
+  }
 }
 
 /*! Finalizes the HTML help. This will finish and close the

@@ -79,7 +79,7 @@ sections.
 The first part forms a user manual:
 <ul>
 <li>Section \ref install discusses how to 
-      <a href="http://www.stack.nl/~dimitri/doxygen/download.html">download</a>, compile and install
+      <a href="http://www.doxygen.org/download.html">download</a>, compile and install
                      doxygen for your platform.
 <li>Section \ref starting tells you how to generate your first piece of 
                      documentation quickly. 
@@ -126,11 +126,11 @@ The second part forms a reference manual:
 
 I have compiled a 
 \htmlonly
-<a href="http://www.stack.nl/~dimitri/doxygen/projects.html">list of projects</a> 
+<a href="http://www.doxygen.org/projects.html">list of projects</a> 
 that use doxygen.
 \endhtmlonly
 \latexonly
-list of projects that use doxygen (see {\tt http://www.stack.nl/$\sim$dimitri/doxygen/projects.html}).
+list of projects that use doxygen (see {\tt http://www.doxygen.org/projects.html}).
 \endlatexonly
 If you know other projects, let me know and I'll add them. 
 
@@ -138,10 +138,10 @@ If you know other projects, let me know and I'll add them.
 Although doxygen is used successfully by a lot of people already, 
 there is always room for improvement. Therefore, I have compiled a 
 \htmlonly
-<a href="http://www.stack.nl/~dimitri/doxygen/todo.html">todo/wish list</a>
+<a href="http://www.doxygen.org/todo.html">todo/wish list</a>
 \endhtmlonly 
 \latexonly
-todo/wish list (see {\tt http://www.stack.nl/$\sim$dimitri/doxygen/todo.html})
+todo/wish list (see {\tt http://www.doxygen.org/todo.html})
 \endlatexonly
 of possible and/or requested enhancements. 
 

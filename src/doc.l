@@ -2050,10 +2050,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocScan>"</"{TR}{ATTR}">"			
 <DocScan>"<"{TD}{ATTR}">"		{ if (curTable) curTable->newElem(); }
 <DocScan>"</"{TD}{ATTR}">"
-<DocScan>"<"{OL}{ATTR}">"		{ outDoc->startEnumList(); 
+<DocScan>"<"{OL}{ATTR}">"{BN}*		{ outDoc->startEnumList(); 
   					  currentListIndent.push("O");
 					}
-<DocScan>"</"{OL}{ATTR}">"		{ 
+<DocScan>"</"{OL}{ATTR}">"{BN}*		{ 
 					  if (currentListIndent.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
@@ -2072,10 +2072,10 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					    currentListIndent.pop();
 					  }
 					}
-<DocScan>"<"{UL}{ATTR}">"		{ outDoc->startItemList(); 
+<DocScan>"<"{UL}{ATTR}">"{BN}*		{ outDoc->startItemList(); 
 					  currentListIndent.push("U");
 					}
-<DocScan>"</"{UL}{ATTR}">"		{ 
+<DocScan>"</"{UL}{ATTR}">"{BN}*		{ 
 					  if (currentListIndent.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
