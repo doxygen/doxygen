@@ -36,7 +36,7 @@ class OutputList;
 class NamespaceList;
 class MemberGroupList;
 class MemberGroupDict;
-class MemberNameInfoDict;
+class MemberNameInfoSDict;
 class PageSDict;
 class PageInfo;
 
@@ -64,11 +64,11 @@ class GroupDef : public Definition
     int countMembers() const;
     bool isLinkableInProject() const
     {
-      return hasDocumentation() && !isReference();
+      return !isReference();
     }
     bool isLinkable() const
     {
-      return isLinkableInProject() || isReference();
+      return TRUE;
     }
     bool isASubGroup() const;
     void computeAnchors();
@@ -97,7 +97,7 @@ class GroupDef : public Definition
     PageSDict *exampleDict;             // list of examples in the group
 
     MemberList *allMemberList;
-    MemberNameInfoDict *allMemberNameInfoDict;
+    MemberNameInfoSDict *allMemberNameInfoSDict;
     
     // members in the declaration part of the documentation
     MemberList decDefineMembers;

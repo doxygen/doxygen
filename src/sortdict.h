@@ -130,6 +130,12 @@ class SDict
       }
 #endif
     }
+    /*! Remove an item from the dictionary */
+    bool remove(const char *key)
+    {
+      T *item = m_dict->take(key);
+      return item ? m_list->remove(item) : FALSE;
+    }
     /*! Sorts the members of the dictionary. First appending a number
      *  of members and then sorting them is faster (O(NlogN) than using 
      *  inSort() for each member (O(N^2)).
@@ -170,7 +176,7 @@ class SDict
     }
 
     /*! Equavalent to find(). */
-    T *operator[](const char *key)
+    T *operator[](const char *key) const
     {
       return m_dict->find(key);
     }

@@ -370,14 +370,14 @@ QCString resolveTypeDef(Definition *d,const QCString &name)
   MemberDef *md=0;
   while (mContext && md==0)
   {
-    MemberNameDict *mnd=0;
+    MemberNameSDict *mnd=0;
     if (mContext->definitionType()==Definition::TypeClass)
     {
-      mnd=&Doxygen::memberNameDict;
+      mnd=&Doxygen::memberNameSDict;
     }
     else
     {
-      mnd=&Doxygen::functionNameDict;
+      mnd=&Doxygen::functionNameSDict;
     }
     MemberName *mn=mnd->find(name);
     if (mn)
@@ -1080,7 +1080,7 @@ static QCString trimTemplateSpecifiers(
   QCString result=s;
 
   int i=className.length()-1;
-  if (className.at(i)=='>') // template specialization
+  if (i>=0 && className.at(i)=='>') // template specialization
   {
     // replace unspecialized occurrences in s, with their specialized versions.
     int count=1;
@@ -2046,7 +2046,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
-  MemberName *mn = Doxygen::memberNameDict[mName];
+  MemberName *mn = Doxygen::memberNameSDict[mName];
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name found\n");
@@ -2157,7 +2157,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  if ((mn=Doxygen::functionNameDict[mName])) // name is known
+  if ((mn=Doxygen::functionNameSDict[mName])) // name is known
   {
     //printf("  >function name found\n");
     NamespaceDef *fnd=0;
@@ -2239,8 +2239,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             gd=md->getGroupDef();
             //printf("md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
             //    md->name().data(),args,fd,gd);
-            if ((fd && fd->isLinkable()) || 
-                (gd && gd->isLinkable())
+            if (
+                (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
                )
             {
               //printf("fd=%p gd=%p inGroup=`%d' args=`%s'\n",fd,gd,inGroup,args);
@@ -2274,8 +2274,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
               //printf("member is linkable md->name()=`%s'\n",md->name().data());
               fd=md->getFileDef();
               gd=md->getGroupDef();
-              if ((fd && fd->isLinkable()) ||
-                  (gd && gd->isLinkable())
+              if (
+                  (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
                  )
               {
                 members.append(md);
@@ -2309,6 +2309,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           fd=md->getFileDef();
           gd=md->getGroupDef();
+          //printf("fd=%p gd=%p gd->isLinkable()=%d\n",fd,gd,gd->isLinkable());
           if (gd && gd->isLinkable()) fd=0; else gd=0;
           return TRUE;
         }

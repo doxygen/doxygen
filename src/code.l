@@ -21,7 +21,6 @@
  *	includes
  */
 #include <stdio.h>
-//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 #include <qregexp.h>
@@ -33,6 +32,7 @@
 #include "message.h"
 #include "outputlist.h"
 #include "util.h"
+#include "membername.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -450,7 +450,7 @@ static void generateClassLink(OutputDocInterface &ol,char *clName,int *clNameLen
   else
   {
     MemberName *mn;
-    if (cd==0 && (mn=Doxygen::functionNameDict[clName]))
+    if (cd==0 && (mn=Doxygen::functionNameSDict[clName]))
     {
       if (mn->count()==1)
       {
@@ -557,8 +557,8 @@ static bool getLink(const char *className,
 
 static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const char *memName)
 {
-  //printf("generateClassMemberLink(%s,%s)\n",mcd->name().data(),memName);
-  MemberName *mmn=Doxygen::memberNameDict[memName];
+  //printf("generateClassMemberLink(class=%s,member=%s)\n",mcd->name().data(),memName);
+  MemberName *mmn=Doxygen::memberNameSDict[memName];
   if (mmn)
   {
     MemberNameIterator mmni(*mmn);
@@ -581,6 +581,7 @@ static bool generateClassMemberLink(OutputDocInterface &ol,ClassDef *mcd,const c
       // extract class definition of the return type in order to resolve
       // a->b()->c() like call chains
       g_classVar = stripClassName(xmd->typeString());
+      //printf("g_classVar=%s->%p\n",xmd->typeString(),g_classVar);
 
       // add usage reference
       if (g_currentDefinition && g_currentMemberDef &&
@@ -665,7 +666,7 @@ static void generateMemberLink(OutputDocInterface &ol,const char *varName,
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName);
-      MemberName *vmn=Doxygen::memberNameDict[varName];
+      MemberName *vmn=Doxygen::memberNameSDict[varName];
       if (vmn==0)
       {
 	int vi;
@@ -675,7 +676,7 @@ static void generateMemberLink(OutputDocInterface &ol,const char *varName,
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
-	  vmn=Doxygen::memberNameDict[vn];
+	  vmn=Doxygen::memberNameSDict[vn];
 	  //printf("Trying name `%s' scope=%s\n",vn.data(),scope.data());
 	  if (vmn)
 	  {
@@ -1159,6 +1160,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
   					  BEGIN( MemberCall ); 
 					}
 <MemberCall>{SCOPETNAME}/{B}*"(" 	{
+                                          //printf("g_name=`%s' g_classVar=`%s'\n",g_name.data(),g_classVar?g_classVar->name().data():"<none>");
   					  if (!g_name.isEmpty())
 					  {
 					    generateMemberLink(*g_code,g_name,yytext);
@@ -1190,6 +1192,7 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					  }
   					}
 <MemberCall>{SCOPENAME}/{B}*		{
+                                          //printf("g_name=`%s' g_classVar=`%s'\n",g_name.data(),g_classVar?g_classVar->name().data():"<none>");
   					  if (!g_name.isEmpty())
 					  {
 					    generateMemberLink(*g_code,g_name,yytext);

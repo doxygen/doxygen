@@ -71,6 +71,8 @@ MemberNameIterator::MemberNameIterator(const MemberName &mnlist) :
 {
 }
 
+#if 0
+
 MemberNameList::MemberNameList() : QList<MemberName>()
 {
 }
@@ -89,5 +91,14 @@ int MemberNameList::compareItems(GCI item1, GCI item2)
 MemberNameListIterator::MemberNameListIterator(const MemberNameList &mnlist) :
   QListIterator<MemberName>(mnlist)
 {
+}
+
+#endif
+
+int MemberNameSDict::compareItems(GCI item1, GCI item2)
+{
+  MemberName *n1=(MemberName *)item1;
+  MemberName *n2=(MemberName *)item2;
+  return stricmp(n1->memberName(),n2->memberName());
 }
 

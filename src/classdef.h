@@ -100,6 +100,7 @@ class ClassDef : public Definition
     MemberNameInfoSDict *memberNameInfoSDict() { return m_allMemberNameInfoSDict; }
 
     void writeDocumentation(OutputList &ol);
+    void writeDocumentationForInnerClasses(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
 

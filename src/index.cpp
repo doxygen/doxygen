@@ -323,7 +323,7 @@ void endFile(OutputList &ol,bool external)
 
 //----------------------------------------------------------------------------
 
-void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
+void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
@@ -347,7 +347,16 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
     {
       if (!started)
       {
-        ol.startItemList();
+        {
+          // UGLY HACK!
+          ol.pushGeneratorState();
+          ol.disableAllBut(OutputGenerator::Latex);
+          if (level<6) ol.startIndexList();
+          ol.enableAll();
+          ol.disable(OutputGenerator::Latex);
+          ol.startItemList();
+          ol.popGeneratorState();
+        }
         if (hasHtmlHelp) htmlHelp->incContentsDepth();
         if (hasFtvHelp)  ftvHelp->incContentsDepth();
         started=TRUE;
@@ -390,13 +399,22 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
         bool wasVisited=cd->visited;
         cd->visited=TRUE;
-        writeClassTree(ol,cd->subClasses(),wasVisited);
+        writeClassTree(ol,cd->subClasses(),wasVisited,level+1);
       }
     }
   }
   if (started) 
   {
-    ol.endItemList(); 
+    {
+      // UGLY HACK!
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Latex);
+      if (level<6) ol.endIndexList();
+      ol.enableAll();
+      ol.disable(OutputGenerator::Latex);
+      ol.endItemList();
+      ol.popGeneratorState();
+    }
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -406,7 +424,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-void writeClassTree(BaseClassList *cl)
+void writeClassTree(BaseClassList *cl,int level)
 {
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
@@ -448,7 +466,7 @@ void writeClassTree(BaseClassList *cl)
       }
       if (hasChildren)
       {
-        writeClassTree(cd->subClasses());
+        writeClassTree(cd->subClasses(),level+1);
       }
       cd->visited=TRUE;
     }
@@ -463,7 +481,7 @@ void writeClassTree(BaseClassList *cl)
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &started)
+void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &started,int level)
 {
     if (cd->isVisibleInHierarchy() && !cd->visited)
     {
@@ -485,13 +503,13 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
       }
       if (hasChildren)
       {
-        writeClassTree(cd->subClasses());
+        writeClassTree(cd->subClasses(),level+1);
       }
       cd->visited=TRUE;
     }
 }
 
-void writeClassTree(ClassList *cl)
+void writeClassTree(ClassList *cl,int level)
 {
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -500,11 +518,11 @@ void writeClassTree(ClassList *cl)
   bool started=FALSE;
   for ( ; cli.current() ; ++cli)
   {
-    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started);
+    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
   }
 }
 
-void writeClassTree(ClassSDict *d)
+void writeClassTree(ClassSDict *d,int level)
 {
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
@@ -513,7 +531,7 @@ void writeClassTree(ClassSDict *d)
   bool started=FALSE;
   for ( ; cli.current() ; ++cli)
   {
-    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started);
+    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
   }
 }
 
@@ -550,7 +568,16 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
       {
         if (!started)
         {
-          ol.startItemList();
+          {
+            // UGLY HACK!
+            ol.pushGeneratorState();
+            ol.disableAllBut(OutputGenerator::Latex);
+            ol.startIndexList();
+            ol.enableAll();
+            ol.disable(OutputGenerator::Latex);
+            ol.startItemList();
+            ol.popGeneratorState();
+          }
           if (hasHtmlHelp) htmlHelp->incContentsDepth();
           if (hasFtvHelp)  ftvHelp->incContentsDepth();
           started=TRUE;
@@ -589,7 +616,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
         }
         if (hasChildren) 
         {
-          writeClassTree(ol,cd->subClasses(),cd->visited);
+          writeClassTree(ol,cd->subClasses(),cd->visited,1);
           cd->visited=TRUE;
         }
       }
@@ -621,7 +648,16 @@ void writeClassHierarchy(OutputList &ol)
   writeClassTreeForList(ol,&Doxygen::hiddenClasses,started);
   if (started) 
   {
-    ol.endItemList();
+    {
+      // UGLY HACK!
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Latex);
+      ol.endIndexList();
+      ol.enableAll();
+      ol.disable(OutputGenerator::Latex);
+      ol.endItemList();
+      ol.popGeneratorState();
+    }
     if (hasHtmlHelp) htmlHelp->decContentsDepth();
     if (hasFtvHelp)  ftvHelp->decContentsDepth();
   }
@@ -1476,8 +1512,10 @@ void writeMemberList(OutputList &ol,bool useSections)
 {
   bool first = TRUE;
   char lastChar = 0;
-  MemberName *mn=Doxygen::memberNameList.first();
-  while (mn)
+
+  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -1549,7 +1587,6 @@ void writeMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=Doxygen::memberNameList.next();
   }
   ol.endItemList();
 }
@@ -1560,8 +1597,9 @@ int countClassMembers()
 {
   int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=Doxygen::memberNameList.first();
-  while (mn)
+  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -1584,7 +1622,6 @@ int countClassMembers()
       if (!n.isEmpty()) g_memberIndexLetterUsed[tolower(n.at(0))]=TRUE;
       count++;
     }
-    mn=Doxygen::memberNameList.next();
   }
   return count;
 }
@@ -1661,8 +1698,9 @@ void writeFileMemberList(OutputList &ol,bool useSections)
 {
   char lastChar=0;
   bool first=TRUE;
-  MemberName *mn=Doxygen::functionNameList.first();
-  while (mn)
+  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -1732,7 +1770,6 @@ void writeFileMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=Doxygen::functionNameList.next();
   }
   ol.endItemList();
 }
@@ -1743,8 +1780,9 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
 {
   char lastChar=0;
   bool first=TRUE;
-  MemberName *mn=Doxygen::functionNameList.first();
-  while (mn)
+  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -1807,7 +1845,6 @@ void writeNamespaceMemberList(OutputList &ol,bool useSections)
         md=mn->prev();
       }
     }
-    mn=Doxygen::functionNameList.next();
   }
   if (!first) ol.endItemList();
 }
@@ -1818,8 +1855,9 @@ int countNamespaceMembers()
 {
   int i=0;for (i=0;i<256;i++) g_namespaceIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=Doxygen::functionNameList.first();
-  while (mn)
+  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     bool found=FALSE;
@@ -1836,7 +1874,6 @@ int countNamespaceMembers()
         md=mn->next();
     }
     if (found) count++;
-    mn=Doxygen::functionNameList.next();
   }
   return count;
 }
@@ -1847,8 +1884,9 @@ int countFileMembers()
 {
   int i=0;for (i=0;i<256;i++) g_fileIndexLetterUsed[i]=FALSE;
   int count=0;
-  MemberName *mn=Doxygen::functionNameList.first();
-  while (mn)
+  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberName *mn=0;
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
     MemberDef *md=mn->first();
     FileDef *fd;
@@ -1868,7 +1906,6 @@ int countFileMembers()
         md=mn->next();
     }
     if (found) count++;
-    mn=Doxygen::functionNameList.next();
   }
   return count;
 }
@@ -2398,7 +2435,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,bool subLevel)
           ftvHelp->incContentsDepth();
         }
 
-        writeClassTree(gd->classSDict);
+        writeClassTree(gd->classSDict,1);
         if(htmlHelp) htmlHelp->decContentsDepth();
         if(ftvHelp)  ftvHelp->decContentsDepth();
       }

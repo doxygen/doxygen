@@ -150,6 +150,8 @@ static bool             needsSemi;
 
 static int              depthIf;
 static int  	        initializerSharpCount;
+static QCString         memberGroupRelates;
+static QCString         memberGroupInside;
 
 
 //-----------------------------------------------------------------------------
@@ -166,6 +168,8 @@ static void initParser()
   roundCount = 0;
   curlyCount = 0;
   memberGroupId = NOGROUP;
+  memberGroupRelates.resize(0);
+  memberGroupInside.resize(0);
   mtype = Method;
   gstat = FALSE;
   virt = Normal;
@@ -185,6 +189,8 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->mGrpId     = memberGroupId;
+  current->relates    = memberGroupRelates.copy();
+  current->inside     = memberGroupInside.copy();
   if (!autoGroupStack.isEmpty())
   {
     current->groups->append(new Grouping(*autoGroupStack.top()));
@@ -1320,7 +1326,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  startGroup();
 					  tmpDocType=-1;
 					  if (current_root->section & Entry::SCOPE_MASK)
+                                          {
 					      current->inside = current_root->name+"::";
+                                              if (current->mGrpId!=NOGROUP)
+                                              {
+                                                memberGroupInside = current->inside.copy();
+                                              }
+                                          }
 					  if (yytext[1]=='/') // C++ style comment
 					  {
   					    current->brief.resize(0);
@@ -2589,14 +2601,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    current->doc.resize(0);
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
+                                          {
 					    current->inside = current_root->name+"::";
+                                            if (current->mGrpId!=NOGROUP)
+                                            {
+                                              memberGroupInside = current->inside.copy();
+                                            }
+                                          }
 					  BEGIN( Doc );
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
+                                          {
 					    current->inside = current_root->name+"::";
+                                            if (current->mGrpId!=NOGROUP)
+                                            {
+                                              memberGroupInside = current->inside.copy();
+                                            }
+                                          }
 					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
 					  {
 					    tmpDocType=-1;
@@ -2629,7 +2653,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
+                                          {
 					    current->inside = current_root->name+"::";
+                                            if (current->mGrpId!=NOGROUP)
+                                            {
+                                              memberGroupInside = current->inside.copy();
+                                            }
+                                          }
 					  BEGIN( LineDoc );
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
@@ -2637,7 +2667,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
+                                          {
 					    current->inside = current_root->name+"::";
+                                            if (current->mGrpId!=NOGROUP)
+                                            {
+                                              memberGroupInside = current->inside.copy();
+                                            }
+                                          }
 					  BEGIN( LineDoc );
 					}
 <FindMembers>"extern"{BN}+"\"C"("++")?"\""{BN}*("{")?  {
@@ -2997,6 +3033,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <ClassDocRelates>({ID}"::")*{ID}	{ 
   					  current->relates = yytext;
+                                          if (current->mGrpId!=NOGROUP) 
+                                          {
+                                            memberGroupRelates = yytext;
+                                          }
 					  BEGIN( lastDocRelContext );
 					}
 <NameSpaceDocArg1>{SCOPENAME}		{
@@ -3332,6 +3372,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 							  else if (current->section == Entry::MEMBERGRP_SEC)
 							  {
 					                    memberGroupId = newMemberGroupId();
+                                                            memberGroupRelates = current->relates.copy();
+                                                            memberGroupInside = current->inside.copy();
 					                    current->mGrpId = memberGroupId;
 					                    lastMemberGroupLine = yyLineNr;
 							  }
@@ -3943,6 +3985,8 @@ static void startGroup()
       memberGroupHeader="[NOHEADER]";
     }
     memberGroupId = newMemberGroupId();
+    memberGroupRelates = current->relates.copy();
+    memberGroupInside = current->inside.copy();
     current->mGrpId = memberGroupId;
     lastMemberGroupLine = yyLineNr;
   }
@@ -3964,9 +4008,12 @@ static void endGroup()
 	new QCString(memberGroupDocs)
 			);
     memberGroupId=NOGROUP;
+    memberGroupRelates.resize(0);
+    memberGroupInside.resize(0);
     if (YY_START!=ReadInitializer) 
     {
       current->mGrpId=NOGROUP;
+      current->relates.resize(0);
     }
     memberGroupHeader.resize(0);
     memberGroupDocs.resize(0);
@@ -4056,6 +4103,8 @@ static void parseCompounds(Entry *rt)
       //printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
 
       memberGroupId = NOGROUP;
+      memberGroupRelates.resize(0);
+      memberGroupInside.resize(0);
       
       scanYYlex() ;
       delete current; current=0;
