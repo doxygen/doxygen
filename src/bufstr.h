@@ -31,7 +31,7 @@ class BufStr : public QCString
     {
       if (offset>=size()) 
       {
-        resize(size()+spareRoom);
+        QCString::resize(size()+spareRoom);
       }
       data()[offset++]=c;
     }
@@ -39,7 +39,7 @@ class BufStr : public QCString
     {
       if (offset+len>=size()) 
       {
-        resize(size()+len+spareRoom);
+        QCString::resize(size()+len+spareRoom);
       }
       memcpy(data()+offset,a,len);
       offset+=len;
@@ -49,16 +49,21 @@ class BufStr : public QCString
     {
       if (offset+s>=size()) 
       {
-        resize(size()+s+spareRoom);
+        QCString::resize(size()+s+spareRoom);
       }
       offset+=s;
     }
     void resize( uint newlen )
     {
-      QCString::resize(newlen);
-      if (offset>newlen)
+      //QCString::resize(newlen);
+      //if (offset>newlen)
+      //{
+      //  offset=newlen;
+      //}
+      offset=newlen;
+      if (offset>=size()) 
       {
-        offset=newlen;
+        QCString::resize(size()+spareRoom);
       }
     }
   private:

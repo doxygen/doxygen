@@ -83,8 +83,9 @@ class Doxygen
     static StringDict namespaceAliasDict;
     static GroupList groupList;
     static GroupDict groupDict;
-    static NamespaceList namespaceList;
-    static NamespaceDict namespaceDict;
+    //static NamespaceList namespaceList;
+    //static NamespaceDict namespaceDict;
+    static NamespaceSDict namespaceSDict;
     static FormulaList formulaList;
     static FormulaDict formulaDict;
     static FormulaDict formulaNameDict;

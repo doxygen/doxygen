@@ -520,9 +520,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=Doxygen::namespaceList.first();
+        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceDef *nd;
         bool found=FALSE;
-        while (nd && !found)
+        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
           if (nd->isLinkableInProject())
           {
@@ -530,7 +531,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
             t << "{"; // Namespace Documentation}\n":
             found=TRUE;
           }
-          nd=Doxygen::namespaceList.next();
         } 
       }
       break;
@@ -683,25 +683,25 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceDef *nd=Doxygen::namespaceList.first();
+        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceDef *nd;
         bool found=FALSE;
-        while (nd && !found)
+        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
           if (nd->isLinkableInProject())
           {
             t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
             found=TRUE;
           }
-          nd=Doxygen::namespaceList.next();
         }
-        while (nd)
+        while ((nd=nli.current()))
         {
           if (nd->isLinkableInProject())
           {
             if (compactLatex) t << "\\input"; else t << "\\include";
             t << "{" << nd->getOutputFileBase() << "}\n";
           }
-          nd=Doxygen::namespaceList.next();
+          ++nli;
         }
       }
       break;
@@ -916,14 +916,15 @@ void LatexGenerator::endIndexKey()
 {
 }
 
-void LatexGenerator::startIndexValue()
+void LatexGenerator::startIndexValue(bool hasBrief)
 {
-  t << " (";
+  t << " ";
+  if (hasBrief) t << "(";
 }
 
-void LatexGenerator::endIndexValue(const char *name)
+void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
 {
-  t << ")";
+  if (hasBrief) t << ")";
   t << "}{\\pageref{" << name << "}}{}" << endl;
 }
 

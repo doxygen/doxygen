@@ -231,7 +231,7 @@ static void startCodeLine()
 static void endFontClass();
 static void endCodeLine()
 {
-  endFontClass();
+  if (g_currentFontClass) { g_code->endFontClass(); }
   g_code->endCodeLine();
 }
 

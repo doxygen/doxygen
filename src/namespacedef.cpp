@@ -32,9 +32,9 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
    Definition(df,dl,name)
 {
   fileName=(QCString)"namespace"+name;
-  classSDict = new ClassSDict(257);
-  namespaceSDict = new NamespaceSDict(257);
-  m_innerCompounds = new SDict<Definition>(257);
+  classSDict = new ClassSDict(17);
+  namespaceSDict = new NamespaceSDict(17);
+  m_innerCompounds = new SDict<Definition>(17);
   usingDirList = 0;
   usingDeclList = 0;
   setReference(lref);

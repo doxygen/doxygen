@@ -70,8 +70,9 @@ static QDict<Entry> classEntries(1009);
 ClassSDict     Doxygen::classSDict(1009);         
 ClassSDict     Doxygen::hiddenClasses(257);
 
-NamespaceList  Doxygen::namespaceList;           // all namespaces
-NamespaceDict  Doxygen::namespaceDict(257);      
+//NamespaceList  Doxygen::namespaceList;           // all namespaces
+//NamespaceDict  Doxygen::namespaceDict(257);      
+NamespaceSDict  Doxygen::namespaceSDict(17);      
 
 MemberNameList Doxygen::memberNameList;          // class member + related functions
 MemberNameDict Doxygen::memberNameDict(10007);   
@@ -123,7 +124,7 @@ void clearAll()
   delete outputList; outputList=0;
 
   Doxygen::classSDict.clear();       
-  Doxygen::namespaceList.clear();   
+  Doxygen::namespaceSDict.clear();   
   Doxygen::pageSDict->clear();         
   Doxygen::exampleSDict->clear();      
   Doxygen::memberNameList.clear();  
@@ -132,7 +133,6 @@ void clearAll()
   Doxygen::groupList.clear();       
   Doxygen::formulaList.clear();     
   Doxygen::classSDict.clear();        
-  Doxygen::namespaceDict.clear();     
   Doxygen::memberNameDict.clear();  
   Doxygen::functionNameDict.clear();
   Doxygen::sectionDict.clear();       
@@ -161,8 +161,6 @@ void statistics()
   Doxygen::imageNameDict->statistics();
   fprintf(stderr,"--- dotFileNameDict stats ----\n");
   Doxygen::dotFileNameDict->statistics();
-  fprintf(stderr,"--- namespaceDict stats ----\n");
-  Doxygen::namespaceDict.statistics();
   fprintf(stderr,"--- memberNameDict stats ----\n");
   Doxygen::memberNameDict.statistics();
   fprintf(stderr,"--- functionNameDict stats ----\n");
@@ -713,7 +711,7 @@ ArgumentList *getTemplateArgumentsFromName(
   int i,p=0;
   while ((i=name.find("::",p))!=-1)
   {
-    NamespaceDef *nd = Doxygen::namespaceDict[name.left(i)];
+    NamespaceDef *nd = Doxygen::namespaceSDict[name.left(i)];
     if (nd==0)
     {
       ClassDef *cd = getClass(name.left(i));
@@ -982,7 +980,7 @@ static void buildNamespaceList(Entry *root)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDef *nd;
-      if ((nd=Doxygen::namespaceDict[fullName])) // existing namespace
+      if ((nd=Doxygen::namespaceSDict[fullName])) // existing namespace
       {
         if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
@@ -1051,8 +1049,7 @@ static void buildNamespaceList(Entry *root)
         nd->setBodySegment(root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
         // add class to the list
-        Doxygen::namespaceList.inSort(nd);
-        Doxygen::namespaceDict.insert(fullName,nd);
+        Doxygen::namespaceSDict.inSort(fullName,nd);
 
         // also add namespace to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
@@ -1177,8 +1174,7 @@ static void findUsingDirectives(Entry *root)
         nd->setBriefDescription(root->brief);
         nd->insertUsedFile(root->fileName);
         // add class to the list
-        Doxygen::namespaceList.inSort(nd);
-        Doxygen::namespaceDict.insert(root->name,nd);
+        Doxygen::namespaceSDict.inSort(root->name,nd);
         nd->setRefItems(root->todoId,root->testId,root->bugId);
       }
     }
@@ -3225,11 +3221,11 @@ static void computeMemberReferences()
     }
     fn=Doxygen::inputNameList.next();
   }
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
   {
     nd->computeAnchors();
-    nd=Doxygen::namespaceList.next();
   }
   GroupDef *gd=Doxygen::groupList.first();
   while (gd)
@@ -3355,14 +3351,14 @@ static void addTodoTestBugReferences()
     }
     fn=Doxygen::inputNameList.next();
   }
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
   {
     addRefItem(nd->todoId(),nd->testId(),nd->bugId(),
                theTranslator->trNamespace(TRUE,TRUE),
                nd->getOutputFileBase(),nd->name());
     addFileMemberTodoTestBugReferences(nd);
-    nd=Doxygen::namespaceList.next();
   }
   GroupDef *gd=Doxygen::groupList.first();
   while (gd)
@@ -5081,7 +5077,7 @@ static void addSourceReferences()
     }
   }
   // add source references for namespace definitions
-  NamespaceListIterator nli(Doxygen::namespaceList);
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
@@ -5251,11 +5247,11 @@ static void addMembersToMemberGroup()
     fn=Doxygen::inputNameList.next();
   }
   // for each namespace
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for ( ; (nd=nli.current()) ; ++nli )
   {
     nd->addMembersToMemberGroup();
-    nd=Doxygen::namespaceList.next();
   }
   // for each group
   GroupDef *gd=Doxygen::groupList.first();
@@ -5290,11 +5286,11 @@ static void distributeMemberGroupDocumentation()
     fn=Doxygen::inputNameList.next();
   }
   // for each namespace
-  NamespaceDef *nd=Doxygen::namespaceList.first();
-  while (nd)
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceDef *nd;
+  for ( ; (nd=nli.current()) ; ++nli )
   {
     nd->distributeMemberGroupDocumentation();
-    nd=Doxygen::namespaceList.next();
   }
   // for each group
   GroupDef *gd=Doxygen::groupList.first();
@@ -5770,7 +5766,7 @@ static void generateNamespaceDocs()
 {
   writeNamespaceIndex(*outputList);
   
-  NamespaceListIterator nli(Doxygen::namespaceList);
+  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
@@ -6083,6 +6079,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   // try to open file
   int size=0;
   uint oldPos = dest.curPos();
+  //printf(".......oldPos=%d\n",oldPos);
 
   QFileInfo fi(fileName);
   if (!fi.exists()) return;
@@ -6136,7 +6133,8 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {
-    dest.resize(newSize); // resize the array
+    dest.resize(oldPos+newSize); // resize the array
+    //printf(".......resizing from %d to %d\n",oldPos+size,oldPos+newSize);
   }
 }
 

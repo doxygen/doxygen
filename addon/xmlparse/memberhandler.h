@@ -36,6 +36,7 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     virtual void endName();
     virtual void startBriefDesc(const QXmlAttributes& attrib);
     virtual void startDetailedDesc(const QXmlAttributes& attrib);
+    virtual void startLocation(const QXmlAttributes& attrib);
 
     MemberHandler(IBaseHandler *parent);
     virtual ~MemberHandler();
@@ -60,6 +61,8 @@ class MemberHandler : public IMember, public BaseHandler<MemberHandler>
     DocHandler  *m_brief;
     DocHandler  *m_detailed;
     QList<IParam> m_params;
+    QString m_defFile;
+    int m_defLine;
 };
 
 #endif
