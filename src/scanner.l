@@ -159,6 +159,9 @@ static QCString         xrefItemTitle;
 static QCString         xrefListTitle;
 
 static QCString         g_skipBlockName;
+static QCString         oldStyleArgType;
+static QCString         docBackup;
+static QCString         briefBackup;
 
 //-----------------------------------------------------------------------------
 
@@ -475,6 +478,58 @@ static void prependScope()
   }
 }
 
+/*! Returns TRUE iff the current entry could be a K&R style C function */
+static bool checkForKnRstyleC()
+{
+  if (((QCString)yyFileName).right(2)!=".c") return FALSE; // must be a C file
+  if (!current->argList) return FALSE;
+  ArgumentListIterator ali(*current->argList);
+  Argument *a;
+  for (ali.toFirst();(a=ali.current());++ali)
+  {
+    // in K&R style argument do not have a type, but doxygen expects a type
+    // so it will think the argument has no name
+    if (a->type.isEmpty() || !a->name.isEmpty()) return FALSE;
+  }
+  return TRUE;
+}
+
+/*! Update the argument \a name with additional \a type info. For K&R style
+ *  function the type is found \e after the argument list, so this routine
+ *  in needed to fix up.
+ */
+void addKnRArgInfo(const QCString &type,const QCString &name,
+                   const QCString &brief,const QCString &docs)
+{
+  if (current->argList==0) return;
+  ArgumentListIterator ali(*current->argList);
+  Argument *a;
+  for (ali.toFirst();(a=ali.current());++ali)
+  {
+    if (a->type==name)
+    {
+      a->type=type.stripWhiteSpace();
+      if (a->type.left(9)=="register ") // strip keyword
+      {
+	a->type=a->type.mid(9);
+      }
+      a->name=name.stripWhiteSpace();
+      if (!brief.isEmpty() && !docs.isEmpty())
+      {
+        a->docs=brief+"\n\n"+docs;
+      }
+      else if (!brief.isEmpty())
+      {
+        a->docs=brief;
+      }
+      else
+      {
+	a->docs=docs;
+      }
+    }
+  }
+}
+
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -662,6 +717,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	PreLineCtrl
 %x	DefinePHP
 %x	DefinePHPEnd
+%x	OldStyleArgs
 
 %%
 
@@ -1510,7 +1566,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <FindMembers>[*&]+			{ current->name += yytext ; 
   					  addType( current );
 					}
-<FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  if (current->bodyLine==-1)
 					    current->bodyLine=yyLineNr;
@@ -1540,7 +1596,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  afterDocTerminator = ',';
@@ -1568,7 +1624,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN(AfterDoc);
 					  }
   					}
-<DefineEnd,FindFields,FindFieldArg,ReadInitializer>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<DefineEnd,FindFields,FindFieldArg,ReadInitializer,OldStyleArgs>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
 					  lastAfterDocContext = YY_START;
 					  if (YY_START==DefineEnd)
@@ -2351,6 +2407,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
 					  stringToArgumentList(fullArgString,current->argList);
+
+					  /* remember the current documentation block, since
+					     we could overwrite it with the documentation of
+					     a function argument, which we then have to correct later
+					     on
+					   */
+					  docBackup = current->doc.copy();
+					  briefBackup = current->brief.copy();
+
 					  BEGIN( currentArgumentContext );
 					}
 	/* a special comment */
@@ -2536,7 +2601,9 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
   */
 <FuncQual>[{:;,]                        {
-                                          if ( strcmp(yytext,";")==0 && insidePHP && current->type.left(8) != "function" )
+                                          if ( strcmp(yytext,";")==0 && 
+					       insidePHP && 
+					       current->type.left(8) != "function" )
                                           {
                                             current->reset();
                                             initEntry();
@@ -2547,17 +2614,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                             unput(*yytext); BEGIN( Function );
                                           }
                                         }
-<FuncQual>{BN}*"const"{BN}*       	{ 
+<FuncQual>{BN}*"const"{BN}*       	{ // const member function
   					  lineCount() ; 
   					  current->args += " const "; 
 					  current->argList->constSpecifier=TRUE;
 					}
-<FuncQual>{BN}*"volatile"{BN}*    	{ 
+<FuncQual>{BN}*"volatile"{BN}*    	{ // volatile member function
   					  lineCount() ; 
   					  current->args += " volatile "; 
 					  current->argList->volatileSpecifier=TRUE;
 					}
-<FuncQual>{BN}*"="{BN}*"0"{BN}*  	{ 
+<FuncQual>{BN}*"="{BN}*"0"{BN}*  	{ // pure virtual member function
   					  lineCount() ; 
 					  current->args += " = 0"; 
 					  current->virt = Pure; 
@@ -2576,6 +2643,82 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}	
+<FuncQual>"="				{ // typically a initialized function pointer
+                                          current->args += *yytext; 
+  					}
+<FuncQual>{ID}				{ // typically a K&R style C function
+					  if (checkForKnRstyleC())
+					  {
+					    fprintf(stderr,"===> got a K&R style function\n");
+                                            current->args = yytext; 
+					    oldStyleArgType.resize(0);
+					    BEGIN(OldStyleArgs);
+					  }
+					  else
+					  {
+                                            current->args += yytext; 
+					  }
+  					}
+<OldStyleArgs>[,;]			{
+  					  QCString oldStyleArgPtr;
+  					  QCString oldStyleArgName;
+  					  if (oldStyleArgType.isEmpty())
+					  {
+					    int l=current->args.length(),i=l-1,j;
+					    char c;
+					    while (i>=0 && isId(current->args.at(i))) i--;
+					    j=i+1;
+					    while (i>=0 && ((c=current->args.at(i))=='*' || isspace(c))) i--;
+					    i++;
+					    if (i!=l)
+					    {
+					      oldStyleArgType=current->args.left(i);
+					      oldStyleArgPtr=current->args.mid(i,j-i);
+					      oldStyleArgName=current->args.mid(j).stripWhiteSpace();
+					    }
+					    else
+					    {
+					      oldStyleArgName=current->args.copy().stripWhiteSpace();
+					    }
+					  }
+					  else
+					  {
+					    int l=current->args.length(),j=0;
+					    char c;
+					    while (j<l && ((c=current->args.at(j))=='*' || isspace(c))) j++;
+					    if (j>0)
+					    {
+					      oldStyleArgPtr=current->args.left(j);
+					      oldStyleArgName=current->args.mid(j).stripWhiteSpace();
+					    }
+					    else
+					    {
+					      oldStyleArgName=current->args.copy().stripWhiteSpace();
+					    }
+					  }
+					  fprintf(stderr,"type=%s ptr=%s name=%s\n",oldStyleArgType.data(),oldStyleArgPtr.data(),oldStyleArgName.data());
+					  QCString doc,brief;
+					  if (current->doc!=docBackup)
+					  {
+                                            doc=current->doc.copy();
+					    current->doc=docBackup;
+					  }
+					  if (current->brief!=briefBackup)
+					  {
+                                            brief=current->brief.copy();
+					    current->brief=briefBackup;
+					  }
+					  addKnRArgInfo(oldStyleArgType+oldStyleArgPtr,oldStyleArgName,brief,doc);
+					  current->args.resize(0);
+					  if (*yytext==';') oldStyleArgType.resize(0);
+  					}
+<OldStyleArgs>{ID} 			{ current->args += yytext; }
+<OldStyleArgs>"{"			{
+  					  current->args = argListToString(current->argList);
+  					  unput('{');
+					  BEGIN(FuncQual);
+  					}
+<OldStyleArgs>.	 			{ current->args += *yytext; }
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
 <FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
 					  insideTryBlock=TRUE;
@@ -3140,7 +3283,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <Comment>.				{ current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/*!" { 
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/*!" { 
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
@@ -3161,7 +3304,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           }
 					  BEGIN( Doc );
 					}
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
 					  //printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
@@ -3212,7 +3355,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    }
 					  }
   					}
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases>"//!" { 
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" { 
                                           if (YY_START!=SkipCurly)
 					  {
   					    current->brief.resize(0);
@@ -3231,7 +3374,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
                                           }
 					  BEGIN( LineDoc );
 					}
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases>"///"/[^/] { 
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] { 
                                           if (YY_START!=SkipCurly)
 					  {
   					    current->brief.resize(0);
@@ -4367,13 +4510,15 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  }
   					}
 <SkipSection>"*/"			{
-  					  unput('/');unput('*');
-					  BEGIN( lastIfContext );
+					  BEGIN( SkipSection );
+  					}
+<SkipSection>"/*!"			{
+					  BEGIN( SkipSection );
   					}
 <SkipSection>\n				{
   					  yyLineNr++;
   					}
-<SkipSection>"//"|"*/"			  					
+<SkipSection>"//"|"*/"
 <ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc,ExampleDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
                                           // previous section enabled => skip now
   					  depthIf=1;

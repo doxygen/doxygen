@@ -249,12 +249,12 @@ void LatexDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Code: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
     case DocVerbatim::Verbatim: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       m_t << s->text();
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
@@ -310,7 +310,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
     case DocInclude::Include: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
     case DocInclude::DontInclude: 
       break;
@@ -319,7 +319,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
     case DocInclude::VerbInclude: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
       m_t << inc->text();
-      m_t << "\\end{verbatim}\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
   }
 }
@@ -344,7 +344,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     popEnabled();
-    if (!m_hide) m_t << "\\end{verbatim}\\normalsize" << endl; 
+    if (!m_hide) m_t << "\\end{verbatim}\n\\normalsize" << endl; 
   }
   else
   {

@@ -1011,11 +1011,11 @@ void writeFileIndex(OutputList &ol)
           ol.endBold();
           if (hasHtmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE,fd->name(),0);
+            htmlHelp->addContentsItem(FALSE,fullName,0);
           }
           if (hasFtvHelp)
           {
-            ftvHelp->addContentsItem(FALSE,0,0,0,fd->name());
+            ftvHelp->addContentsItem(FALSE,0,0,0,fullName);
           }
         }
         if (src)

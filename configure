@@ -427,7 +427,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libpng/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libpng/Makefile.in libmd5/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -445,6 +445,7 @@ EOF
        echo "all: src/version.cpp " >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
        echo "	\$(MAKE) -C libpng" >> $DST
+       echo "	\$(MAKE) -C libmd5" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard" >> $DST
@@ -460,7 +461,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libpng/libpng.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libpng/libpng.pro.in libmd5/libmd5.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

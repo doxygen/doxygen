@@ -186,6 +186,7 @@ win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools
 INCLUDEPATH                += ../libpng
+INCLUDEPATH                += ../libmd5
 win32:INCLUDEPATH          += .
 win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12
 DESTDIR                    =  ../lib
