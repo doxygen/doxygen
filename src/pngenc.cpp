@@ -24,7 +24,8 @@
 #  define png_jmpbuf(png_ptr) ((png_ptr)->jmpbuf)
 #endif
 
-#include <png.h>
+#define ALL_STATIC
+#include <../libpng/png.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

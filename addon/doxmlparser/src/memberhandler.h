@@ -38,11 +38,19 @@ class MemberReference : public IMemberReference
   public:
     virtual ~MemberReference() {}
     virtual IMember *member() const;
-    virtual const IString *memberName() const { return &m_name; }
+    virtual const IString *name() const { return &m_name; }
+    virtual const IString *scope() const { return &m_scope; }
+    virtual const IString *protection() const { return &m_protection; }
+    virtual const IString *virtualness() const { return &m_virtualness; }
+    virtual const IString *ambiguityScope() const { return &m_ambiguityScope; }
     void initialize(MainHandler *m);
 
     QString      m_memId;
     StringImpl   m_name;
+    StringImpl   m_scope;
+    StringImpl   m_virtualness;
+    StringImpl   m_protection;
+    StringImpl   m_ambiguityScope;
     MainHandler *m_mainHandler;
 };
 

@@ -625,6 +625,9 @@ void FTVHelp::generateTreeView()
   else
   {
     QTextStream t(&f);
+#if QT_VERSION >= 200
+    t.setEncoding(QTextStream::Latin1);
+#endif
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
     t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=\""

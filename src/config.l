@@ -1979,7 +1979,9 @@ void Config::create()
                     "The HTML_STYLESHEET tag can be used to specify a user-defined cascading \n"
                     "style sheet that is used by each HTML page. It can be used to \n"
                     "fine-tune the look of the HTML output. If the tag is left blank doxygen \n"
-                    "will generate a default style sheet \n"
+                    "will generate a default style sheet. Note that doxygen will try to copy \n"
+		    "the style sheet file to the HTML output directory, so don't put your own \n"
+		    "stylesheet in the HTML output directory as well, or it will be erased! \n"
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");

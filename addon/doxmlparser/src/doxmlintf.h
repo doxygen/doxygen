@@ -111,7 +111,11 @@ class IMemberReference
 {
   public:
     virtual IMember *member() const = 0;
-    virtual const IString * memberName() const = 0;
+    virtual const IString * name() const = 0;
+    virtual const IString * scope() const = 0;
+    virtual const IString * protection() const = 0;
+    virtual const IString * virtualness() const = 0;
+    virtual const IString * ambiguityScope() const = 0;
 };
 
 class IMemberReferenceIterator 
@@ -695,6 +699,11 @@ class ISection
       ProSlots,            //!< Protected slots
       ProStatFuncs,        //!< Protected static member functions
       ProStatAttribs,      //!< Protected static member attributes
+      PacTypes,            //!< Package member typedefs
+      PacFuncs,            //!< Package member functions
+      PacAttribs,          //!< Package member attributes
+      PacStatFuncs,        //!< Package static member functions
+      PacStatAttribs,      //!< Package static member attributes
       PriTypes,            //!< Private member typedefs
       PriFuncs,            //!< Private member functions
       PriAttribs,          //!< Private member attributes

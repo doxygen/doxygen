@@ -17,7 +17,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
 #endif
 
@@ -43,7 +43,7 @@
 #include "reflist.h"
 #include "pagedef.h"
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -94,7 +94,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 {
   QTime time;
   time.start();
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__CYGWIN__)
   isBatchFile=isBatchFile;
   /*! taken from the system() manpage on my Linux box */
   int pid,status=0;
@@ -167,7 +167,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   }
 #endif // _OS_SOLARIS
 
-#else
+#else // Win32 specific
   if (isBatchFile)
   {
     QCString fullCmd = command;
@@ -2697,6 +2697,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           }
           if (bmd) md=bmd;
         }
+        if (md && !md->isLinkable()) md=0; // ignore things we cannot link to
         if (md) // found a matching global member
         {
           fd=md->getFileDef();
@@ -2963,18 +2964,19 @@ bool generateRef(OutputDocInterface &od,const char *scName,
 
   if (resolveRef(scName,name,inSeeBlock,&compound,&md))
   {
-    if (md) // link to member
+    if (md && md->isLinkable()) // link to member
     {
       od.writeObjectLink(md->getReference(),
                          md->getOutputFileBase(),
                          md->anchor(),linkText);
       // generate the page reference (for LaTeX)
-      if (md->isLinkableInProject())
+      if (!md->isReference())
       {
         writePageRef(od,md->getOutputFileBase(),md->anchor());
       }
+      return TRUE;
     }
-    else // link to compound
+    else if (compound && compound->isLinkable()) // link to compound
     {
       if (rt==0 && compound->definitionType()==Definition::TypeGroup)
       {
@@ -2991,14 +2993,11 @@ bool generateRef(OutputDocInterface &od,const char *scName,
       {
         writePageRef(od,compound->getOutputFileBase(),0);
       }
+      return TRUE;
     }
-    return TRUE;
   }
-  else // no link possible
-  {
-    od.docify(linkText);
-    return FALSE;
-  }
+  od.docify(linkText);
+  return FALSE;
 }
 
 bool resolveLink(/* in */ const char *scName,

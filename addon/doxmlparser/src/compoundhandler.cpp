@@ -167,30 +167,23 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("compoundname");
   addEndHandler("compoundname",this,&CompoundHandler::endCompoundName);
 
-  addStartHandler("derivedcompoundref",this,&CompoundHandler::addSubClass);
-  addEndHandler("derivedcompoundref");
+  addStartHandler("title",this,&CompoundHandler::startTitle);
 
   addStartHandler("basecompoundref",this,&CompoundHandler::addSuperClass);
   addEndHandler("basecompoundref");
 
-  addStartHandler("briefdescription",this,&CompoundHandler::startBriefDesc);
+  addStartHandler("derivedcompoundref",this,&CompoundHandler::addSubClass);
+  addEndHandler("derivedcompoundref");
 
-  addStartHandler("detaileddescription",this,&CompoundHandler::startDetailedDesc);
+  // includes
+  // includedby
   
-  addStartHandler("sectiondef",this,&CompoundHandler::startSection);
-  
-  addStartHandler("location",this,&CompoundHandler::startLocation);
-  addEndHandler("location");
-
-  addStartHandler("programlisting",this,&CompoundHandler::startProgramListing);
-
-  addStartHandler("inheritancegraph",this,&CompoundHandler::startInheritanceGraph);
-
-  addStartHandler("collaborationgraph",this,&CompoundHandler::startCollaborationGraph);
-
   addStartHandler("incdepgraph",this,&CompoundHandler::startIncludeDependencyGraph);
 
   addStartHandler("invincdepgraph",this,&CompoundHandler::startIncludedByDependencyGraph);
+
+  addStartHandler("innerfile",this,&CompoundHandler::startInnerFile);
+  addEndHandler("innerfile");
 
   addStartHandler("innerclass",this,&CompoundHandler::startInnerClass);
   addEndHandler("innerclass");
@@ -198,15 +191,27 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
   addStartHandler("innernamespace",this,&CompoundHandler::startInnerNamespace);
   addEndHandler("innernamespace");
 
-  addStartHandler("innerfile",this,&CompoundHandler::startInnerFile);
-  addEndHandler("innerfile");
-
+  // innerpage
+  
   addStartHandler("innergroup",this,&CompoundHandler::startInnerGroup);
   addEndHandler("innergroup");
 
   addStartHandler("templateparamlist",this,&CompoundHandler::startTemplateParamList);
 
-  addStartHandler("title",this,&CompoundHandler::startTitle);
+  addStartHandler("sectiondef",this,&CompoundHandler::startSection);
+
+  addStartHandler("briefdescription",this,&CompoundHandler::startBriefDesc);
+
+  addStartHandler("detaileddescription",this,&CompoundHandler::startDetailedDesc);
+  
+  addStartHandler("inheritancegraph",this,&CompoundHandler::startInheritanceGraph);
+  
+  addStartHandler("collaborationgraph",this,&CompoundHandler::startCollaborationGraph);
+
+  addStartHandler("programlisting",this,&CompoundHandler::startProgramListing);
+
+  addStartHandler("location",this,&CompoundHandler::startLocation);
+  addEndHandler("location");
 
   addStartHandler("listofallmembers",this,&CompoundHandler::startListOfAllMembers);
 }
@@ -259,6 +264,7 @@ void CompoundHandler::startCompound(const QXmlAttributes& attrib)
   m_id = attrib.value("id");
   m_kindString = attrib.value("kind");
   m_kind = s_typeMap->map(m_kindString);
+  m_protection = attrib.value("prot");
   debug(2,"startCompound(id=`%s' type=`%s')\n",m_id.data(),m_kindString.data());
 }
 
@@ -317,9 +323,14 @@ void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
 {
   IRelatedCompound::Protection prot = IRelatedCompound::Public;
   QString protString = attrib.value("prot");
-  if (protString=="protected") prot = IRelatedCompound::Protected;
-  else if (protString=="private") prot = IRelatedCompound::Private;
-
+  if (protString=="protected") 
+  {
+    prot = IRelatedCompound::Protected;
+  }
+  else if (protString=="private") 
+  {
+    prot = IRelatedCompound::Private;
+  }
   IRelatedCompound::Kind kind = IRelatedCompound::Normal;
   QString kindString = attrib.value("virt");
   if (kindString=="virtual") kind = IRelatedCompound::Virtual;
