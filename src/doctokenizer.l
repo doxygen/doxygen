@@ -487,7 +487,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
   		           return TK_NEWPARA;
 			 }
                        }
-<St_Code>{CMD}"endcode" {
+<St_Code>{WS}*{CMD}"endcode" {
                          return RetVal_OK;
                        }
 <St_Code>[^\\@\n]+     |
@@ -603,11 +603,12 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
   			 return 0;
                        }
 
-<St_Ref>({ID}[.-])*{ID} {
+<St_Ref>("#"|"::")?({ID}[.#:-])*{ID} {
   			 g_token->name=yytext;
 			 return TK_WORD;
   		       }
 <St_Ref>{BLANK}+       { 
+  			 unput(' ');
   			 return 0;
                        }
 <St_Ref>{BLANK}+"\""   {

@@ -1763,7 +1763,7 @@ ALIASES  = "english=\if english" \
   to documented entities. 
 
 <hr>
-\section cmdlt \\<
+\section cmdlt \<
 
   \addindex \\\<
   This command writes the \< character to the HTML and 
@@ -1771,7 +1771,7 @@ ALIASES  = "english=\if english" \
   character has to be escaped because it has a special meaning in HTML.
 
 <hr>
-\section cmdgt \\>
+\section cmdgt \>
 
   \addindex \\\>
   This command writes the \> character to the HTML and 

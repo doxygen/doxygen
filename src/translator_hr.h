@@ -46,32 +46,43 @@
 //
 // 2001/11/13
 // - Added strings for 1.2.13
+//
+// 2003/02/26
+// - Added strings for 1.2.18
 
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_2_18
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
         inline QCString decode(const QCString& sInput)
         { 
-#ifdef _WIN32
-                return ISO88592ToWin1250(sInput);
-#else
-                return sInput;
-#endif
+          if (Config_getBool("USE_WINDOWS_ENCODING"))
+          {
+            return ISO88592ToWin1250(sInput);
+          }
+          else
+          {
+            return sInput;
+          }
         }
   
   public:
     QCString idLanguage()
     { return "croatian"; }
     QCString idLanguageCharset()
-#ifdef _WIN32
-        { return "windows-1250"; }
-#else
-        { return "iso-8859-2"; }
-#endif
+    {
+      if (Config_getBool("USE_WINDOWS_ENCODING"))
+      {
+        return "windows-1250"; 
+      }
+      else
+      {
+        return "iso-8859-2";
+      }
+    }
     QCString latexLanguageSupportCommand()
     { return "\\usepackage[croatian]{babel}\n"; }
     QCString trRelatedFunctions()
@@ -1061,6 +1072,22 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_18
     virtual QCString trDeprecatedList()
     {
       return "Popis zastarjelih metoda";
+    }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in 
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return decode("Dogaðaji");
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return decode("Dokumentacija dogaðaja");
     }
 };
 

@@ -2208,7 +2208,7 @@ void writePageIndex(OutputList &ol)
       }
       ol.writeString("\n");
       if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pageTitle,pageName);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,0,pageName,0,pageTitle);
+      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pi->getReference(),pi->getOutputFileBase(),0,pageTitle);
     }
   }
   endIndexHierarchy(ol,0);

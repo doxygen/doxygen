@@ -460,6 +460,7 @@ void LatexGenerator::startProjectNumber()
 void LatexGenerator::startIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
+  bool &hideIndex = Config_getBool("LATEX_HIDE_INDICES");
   QCString &latexHeader = Config_getString("LATEX_HEADER");
   switch (is)
   {
@@ -491,44 +492,47 @@ void LatexGenerator::startIndexSection(IndexSections is)
     //  t << "{"; //Package Index}\n"
     //  break;
     case isModuleIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Module Index}\n"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Module Index}\n"
+      }
       break;
     case isNamespaceIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Namespace Index}\"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Namespace Index}\"
+      }
       break;
     case isClassHierarchyIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Hierarchical Index}\n"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Hierarchical Index}\n"
+      }
       break;
     case isCompoundIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Annotated Compound Index}\n"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Annotated Compound Index}\n"
+      }
       break;
     case isFileIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Annotated File Index}\n"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Annotated File Index}\n"
+      }
       break;
     case isPageIndex:
-      if (compactLatex) t << "\\section"; else t << "\\chapter";
-      t << "{"; //Annotated Page Index}\n"
+      if (!hideIndex)
+      {
+        if (compactLatex) t << "\\section"; else t << "\\chapter";
+        t << "{"; //Annotated Page Index}\n"
+      }
       break;
-//    case isPackageDocumentation:
-//      {
-//        PackageSDict::Iterator pdi(Doxygen::packageDict);
-//        PackageDef *pd=pdi.toFirst();
-//        bool found=FALSE;
-//        while (pd && !found)
-//        {
-//          if (compactLatex) t << "\\section"; else t << "\\chapter";
-//          t << "{"; 
-//          found=TRUE;
-//          ++pdi;
-//          pd=pdi.current();
-//        }
-//      }
-//      break;
     case isModuleDocumentation:
       {
         GroupSDict::Iterator gli(Doxygen::groupSDict);
@@ -622,6 +626,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
 void LatexGenerator::endIndexSection(IndexSections is)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
+  bool &hideIndex = Config_getBool("LATEX_HIDE_INDICES");
   QCString &latexHeader = Config_getString("LATEX_HEADER");
   switch (is)
   {
@@ -642,48 +647,24 @@ void LatexGenerator::endIndexSection(IndexSections is)
         t << "\\input{" << indexName << "}\n";
       }
       break;
-    //case isPackageIndex:
-    //  t << "}\n\\input{packages}\n";
-    //  break;
     case isModuleIndex:
-      t << "}\n\\input{modules}\n";
+      if (!hideIndex) t << "}\n\\input{modules}\n";
       break;
     case isNamespaceIndex:
-      t << "}\n\\input{namespaces}\n";
+      if (!hideIndex) t << "}\n\\input{namespaces}\n";
       break;
     case isClassHierarchyIndex:
-      t << "}\n\\input{hierarchy}\n";
+      if (!hideIndex) t << "}\n\\input{hierarchy}\n";
       break;
     case isCompoundIndex:
-      t << "}\n\\input{annotated}\n";
+      if (!hideIndex) t << "}\n\\input{annotated}\n";
       break;
     case isFileIndex:
-      t << "}\n\\input{files}\n";
+      if (!hideIndex) t << "}\n\\input{files}\n";
       break;
     case isPageIndex:
-      t << "}\n\\input{pages}\n";
+      if (!hideIndex) t << "}\n\\input{pages}\n";
       break;
-    //case isPackageDocumentation:
-    //  {
-    //    PackageSDict::Iterator pdi(Doxygen::packageDict);
-    //    PackageDef *pd=pdi.toFirst();
-    //    bool found=FALSE;
-    //    while (pd && !found)
-    //    {
-    //      t << "}\n\\input{" << pd->getOutputFileBase() << "}\n";
-    //      found=TRUE;
-    //      ++pdi;
-    //      pd=pdi.current();
-    //    }
-    //    while (pd)
-    //    {
-    //       if (compactLatex) t << "\\input"; else t << "\\include";
-    //     t << "{" << pd->getOutputFileBase() << "}\n";
-    //      ++pdi;
-    //      pd=pdi.current();
-    //    }
-    //  }
-    //  break;
     case isModuleDocumentation:
       {
         GroupSDict::Iterator gli(Doxygen::groupSDict);

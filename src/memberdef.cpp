@@ -981,7 +981,7 @@ bool MemberDef::isDetailedSectionLinkable() const
          ) ||
          // has a multi-line initialization block
          //(initLines>0 && initLines<maxInitLines) || 
-         hasMultiLineInitializer() ||
+         (hasMultiLineInitializer() && !Config_getBool("HIDE_UNDOC_MEMBERS")) ||
          // has one or more documented arguments
          (defArgList!=0 && defArgList->hasDocumentation()); 
          

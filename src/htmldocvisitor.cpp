@@ -753,7 +753,7 @@ void HtmlDocVisitor::visitPost(DocRef *)
 {
   if (m_hide) return;
   endLink();
-  m_t << " ";
+  //m_t << " ";
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)

@@ -174,11 +174,14 @@ class TranslatorCzech : public Translator
      */
     inline QCString decode(const QCString & sInput)
     { 
-#ifdef _WIN32
-      return sInput;
-#else
-      return Win1250ToISO88592(sInput);
-#endif
+      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      {
+        return sInput;
+      }
+      else
+      {
+        return Win1250ToISO88592(sInput);
+      }
     }
     
   public:
@@ -193,11 +196,14 @@ class TranslatorCzech : public Translator
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-#ifdef _WIN32
+      if (Config_getBool("USE_WINDOWS_ENCONDING"))
+      {
         return "windows-1250";
-#else
+      }
+      else
+      {
         return "iso-8859-2";
-#endif
+      }
     }
 
     // --- Language translation methods -------------------

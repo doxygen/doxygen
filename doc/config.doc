@@ -146,6 +146,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_latex_batchmode LATEX_BATCHMODE
 \refitem cfg_latex_cmd_name LATEX_CMD_NAME
 \refitem cfg_latex_header LATEX_HEADER
+\refitem cfg_latex_hide_indices LATEX_HIDE_INDICES
 \refitem cfg_latex_output LATEX_OUTPUT
 \refitem cfg_macro_expansion MACRO_EXPANSION
 \refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
@@ -193,6 +194,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_template_relations TEMPLATE_RELATIONS
 \refitem cfg_toc_expand TOC_EXPAND
 \refitem cfg_treeview_width TREEVIEW_WIDTH
+\refitem cfg_use_windows_encoding USE_WINDOWS_ENCODING
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
 \refitem cfg_warn_if_doc_error WARN_IF_DOC_ERROR
@@ -239,6 +241,17 @@ followed by the descriptions of the tags grouped by category.
  Brazilian, Chinese, Croatian, Czech, Danish, Dutch, Finnish, French,
  German, Greek, Hungarian, Italian, Japanese, Korean, Norwegian, Polish,
  Portuguese, Romanian, Russian, Serbian, Slovak, Slovene, Spanish and Swedish.
+
+\anchor cfg_use_windows_encoding
+<dt>\c USE_WINDOWS_ENCODING <dd>
+ \addindex USE_WINDOWS_ENCODING
+ This tag can be used to specify the encoding used in the generated output. 
+ The encoding is not always determined by the language that is chosen, 
+ but also whether or not the output is meant for Windows or non-Windows users.
+ In case there is a difference, setting the \c USE_WINDOWS_ENCODING tag to \c YES
+ forces the Windows enconding, (this is the default for the Windows binary),
+ whereas setting the tag to \c NO uses a Unix-style encoding (the default for the 
+ all platforms other than Windows).
 
 \anchor cfg_extract_all
 <dt>\c EXTRACT_ALL <dd>
@@ -953,8 +966,8 @@ function's detailed documentation block.
  If the \c GENERATE_TREEVIEW tag is set to YES, a side pannel will be
  generated containing a tree-like index structure (just like the one that
  is generated for HTML Help). For this to work a browser that supports
- JavaScript and frames is required (for instance Netscape 4.0+
- or Internet explorer 4.0+).
+ JavaScript and frames is required (for instance Mozilla 1.0+, Netscape 6.0+
+ or Internet explorer 5.0+ or Konqueror).
 
 \anchor cfg_treeview_width
 <dt>\c TREEVIEW_WIDTH <dd>
@@ -1076,6 +1089,14 @@ EXTRA_PACKAGES = times
  instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of 
  asking the user for help. This option is also used when generating formulas 
  in HTML.
+
+\anchor cfg_latex_hide_indices
+<dt>\c LATEX_HIDE_INDICES <dd>
+ \addindex LATEX_HIDE_INDICES
+
+ If \c LATEX_HIDE_INDICES is set to \c YES then doxygen will not
+ include the index chapters (such as File Index, Compound Index, etc.) 
+ in the output. 
 
 </dl>
 \section rtf_output RTF related options

@@ -235,81 +235,108 @@ static void addRelatedPage(Entry *root)
 }
 
 
-static void buildGroupList(Entry *root)
+static void buildGroupListFiltered(Entry *root,bool additional)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
   {
-    //printf("Found group %s title=`%s'\n",root->name.data(),root->type.data());
+    //printf("Found group %s title=`%s type=%d'\n",
+    //    root->name.data(),root->type.data(),root->groupDocType);
     
-    GroupDef *gd;
-    
-    if ((gd=Doxygen::groupSDict[root->name]))
+    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
+        (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
     {
-      if ( root->groupDocType==Entry::GROUPDOC_NORMAL )
+      GroupDef *gd;
+
+      if ((gd=Doxygen::groupSDict[root->name]))
       {
-        warn(root->fileName,root->startLine,
-             "Warning: group %s already documented. "
-             "Skipping documentation.",
-             root->name.data());
+        if ( root->groupDocType==Entry::GROUPDOC_NORMAL )
+        {
+          warn(root->fileName,root->startLine,
+              "Warning: group %s already documented. "
+              "Skipping documentation.",
+              root->name.data());
+        }
+        else
+        {
+          if ( !gd->hasGroupTitle() )
+            gd->setGroupTitle( root->type );
+          else if ( root->type.length() > 0 && root->name != root->type && gd->groupTitle() != root->type )
+            warn( root->fileName,root->startLine,
+                "group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
+                root->name.data(), root->type.data(), gd->groupTitle() );
+          if ( gd->briefDescription().isEmpty() )
+            gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          if ( !root->doc.stripWhiteSpace().isEmpty() )
+            gd->setDocumentation( gd->documentation().isEmpty() ? root->doc :
+                gd->documentation() + "\n\n" + root->doc,
+                root->docFile, root->docLine );
+          gd->addSectionsToDefinition(root->anchors);
+          gd->setRefItems(root->sli);
+          //addGroupToGroups(root,gd);
+        }
       }
       else
       {
-	if ( !gd->hasGroupTitle() )
-          gd->setGroupTitle( root->type );
-        else if ( root->type.length() > 0 && root->name != root->type && gd->groupTitle() != root->type )
-          warn( root->fileName,root->startLine,
-		"group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
-		root->name.data(), root->type.data(), gd->groupTitle() );
-        if ( gd->briefDescription().isEmpty() )
-	  gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        if ( !root->doc.stripWhiteSpace().isEmpty() )
-	  gd->setDocumentation( gd->documentation().isEmpty() ? root->doc :
-				gd->documentation() + "\n\n" + root->doc,
-                                root->docFile, root->docLine );
+        gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
+        if (root->tagInfo)
+        {
+          gd->setReference(root->tagInfo->tagName);
+        }
+        gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+        gd->setDocumentation(root->doc,root->docFile,root->docLine);
         gd->addSectionsToDefinition(root->anchors);
+        Doxygen::groupSDict.append(root->name,gd);
         gd->setRefItems(root->sli);
-        addGroupToGroups(root,gd);
       }
-    }
-    else
-    {
-      gd = new GroupDef(root->fileName,root->startLine,root->name,root->type);
-      if (root->tagInfo)
-      {
-        gd->setReference(root->tagInfo->tagName);
-      }
-      gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-      gd->setDocumentation(root->doc,root->docFile,root->docLine);
-      gd->addSectionsToDefinition(root->anchors);
-      Doxygen::groupSDict.append(root->name,gd);
-      gd->setRefItems(root->sli);
     }
   }
   EntryListIterator eli(*root->sublist);
   Entry *e;
   for (;(e=eli.current());++eli)
   {
-    buildGroupList(e);
+    buildGroupListFiltered(e,additional);
+  }
+}
+
+static void buildGroupList(Entry *root)
+{
+  // first process the @defgroups blocks
+  buildGroupListFiltered(root,FALSE);
+  // then process the @addtogroup, @weakgroup blocks
+  buildGroupListFiltered(root,TRUE);
+}
+
+static void organizeSubGroupsFiltered(Entry *root,bool additional)
+{
+  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
+  {
+    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
+        (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
+    {
+      GroupDef *gd;
+      if ((gd=Doxygen::groupSDict[root->name]))
+      {
+        //printf("adding %s to group %s\n",root->name.data(),gd->name().data());
+        addGroupToGroups(root,gd);
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    organizeSubGroupsFiltered(e,additional);
   }
 }
 
 static void organizeSubGroups(Entry *root)
 {
-  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
-  {
-    GroupDef *gd;
-
-    if ((gd=Doxygen::groupSDict[root->name]))
-    {
-      addGroupToGroups(root,gd);
-    }
-  }
-  EntryListIterator eli(*root->sublist);
-  Entry *e;
-  for (;(e=eli.current());++eli)
-  {
-    organizeSubGroups(e);
-  }
+  //printf("Defining groups\n");
+  // first process the @defgroups blocks
+  organizeSubGroupsFiltered(root,FALSE);
+  //printf("Additional groups\n");
+  // then process the @addtogroup, @weakgroup blocks
+  organizeSubGroupsFiltered(root,TRUE);
 }
 
 //----------------------------------------------------------------------
@@ -1599,6 +1626,7 @@ static bool isVarWithConstructor(Entry *root)
   static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
   bool result=FALSE;
   bool typeIsClass;
+  QCString type;
   Definition *ctx = 0;
   FileDef *fd = 0;
   bool ambig;
@@ -1620,7 +1648,9 @@ static bool isVarWithConstructor(Entry *root)
     goto done;
   }
   if (root->parent->name) ctx=Doxygen::namespaceSDict.find(root->parent->name);
-  typeIsClass=getResolvedClass(ctx,root->type)!=0;
+  type = root->type;
+  if (type.left(6)=="const ") type=type.right(type.length()-6);
+  typeIsClass=getResolvedClass(ctx,type)!=0;
   if (typeIsClass) // now we still have to check if the arguments are 
                    // types or values. Since we do not have complete type info
                    // we need to rely on heuristics :-(
