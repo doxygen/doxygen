@@ -131,6 +131,7 @@ followed by the descriptions of the tags grouped by category.
 <li> \refitem cfg_repeat_brief REPEAT_BRIEF
 <li> \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
 <li> \refitem cfg_rtf_output RTF_OUTPUT
+<li> \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
 <li> \refitem cfg_search_includes SEARCH_INCLUDES
 <li> \refitem cfg_searchengine SEARCHENGINE
 <li> \refitem cfg_show_include_files SHOW_INCLUDE_FILES
@@ -194,7 +195,7 @@ followed by the descriptions of the tags grouped by category.
  \addindex DISABLE_INDEX
  If you want full control over the layout of the generated HTML pages it
  might be necessary to disable the index and replace it with your own.
- The DISABLE_INDEX tag can be used to turn on/off the condensed index at
+ The \c DISABLE_INDEX tag can be used to turn on/off the condensed index at
  top of each page. A value of NO (the default) enables the index and the
  value YES disables it.
 
@@ -311,7 +312,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_strip_code_comments
 <dt>\c STRIP_CODE_COMMENTS <dd>
  \addindex STRIP_CODE_COMMENTS
- Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct
+ Setting the \c STRIP_CODE_COMMENTS tag to \c YES (the default) will instruct
  doxygen to hide any special comment blocks from generated source code
  fragments. Normal C and C++ comments will always remain visible.
 
@@ -327,9 +328,9 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_hide_scope_names
 <dt>\c HIDE_SCOPE_NAMES <dd>
  \addindex HIDE_SCOPE_NAMES
- If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen 
+ If the \c HIDE_SCOPE_NAMES tag is set to \c NO (the default) then Doxygen 
  will show members with their full class and namespace scopes in the
- documentation. If set to YES the scope will be hidden. 
+ documentation. If set to \c YES the scope will be hidden. 
 
 \anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>
@@ -370,9 +371,9 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_sort_member_docs
 <dt>\c SORT_MEMBER_DOCS <dd>
  \addindex SORT_MEMBER_DOCS
- If the SORT_MEMBER_DOCS tag is set to YES (the default) then doxygen
+ If the \c SORT_MEMBER_DOCS tag is set to \c YES (the default) then doxygen
  will sort the (detailed) documentation of file and class members
- alphabetically by member name. If set to NO the members will appear in
+ alphabetically by member name. If set to \c NO the members will appear in
  declaration order.
 
 \anchor cfg_tab_size
@@ -413,8 +414,8 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_warn_if_undocumented
 <dt>\c WARN_IF_UNDOCUMENTED <dd>
  \addindex WARN_IF_UNDOCUMENTED
- If WARN_IF_UNDOCUMENTED is set to YES, then doxygen will generate warnings
- for undocumented members. If EXTRACT_ALL is set to YES then this flag will
+ If \c WARN_IF_UNDOCUMENTED is set to \c YES, then doxygen will generate warnings
+ for undocumented members. If \c EXTRACT_ALL is set to \c YES then this flag will
  automatically be disabled.
 
 \anchor cfg_warn_format
@@ -467,7 +468,7 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_exclude_patterns
 <dt>\c EXCLUDE_PATTERNS <dd>
  \addindex EXCLUDE_PATTERNS
- If the value of the INPUT tag contains directories, you can use the
+ If the value of the \c INPUT tag contains directories, you can use the
  \c EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
  certain files from those directories.
 
@@ -575,8 +576,8 @@ followed by the descriptions of the tags grouped by category.
  <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, only the current date,
- the version number of doxygen, the project name (see PROJECT_NAME), or the
- project number (see PROJECT_NUMBER).
+ the version number of doxygen, the project name (see \c PROJECT_NAME), or the
+ project number (see \c PROJECT_NUMBER).
    
 \anchor cfg_html_footer
 <dt>\c HTML_FOOTER <dd>
@@ -596,8 +597,8 @@ followed by the descriptions of the tags grouped by category.
  <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, only the current date,
- the version number of doxygen, the project name (see PROJECT_NAME), or the
- project number (see PROJECT_NUMBER).
+ the version number of doxygen, the project name (see \c PROJECT_NAME), or the
+ project number (see \c PROJECT_NUMBER).
    
 
 \anchor cfg_html_stylesheet
@@ -638,10 +639,10 @@ FONT.charliteral   { color: #008080 }
  \addindex HTML_ALIGN_MEMBERS
  If the \c HTML_ALIGN_MEMBERS tag is set to \c YES, the members of classes,
  files or namespaces will be aligned in HTML using tables. If set to
- NO a bullet list will be used. 
+ \c NO a bullet list will be used. 
 
  <b>Note:</b>
- Setting this tag to NO will become obsolete in the future, since I only
+ Setting this tag to \c NO will become obsolete in the future, since I only
  intent to support and test the aligned representation.
 
 \anchor cfg_generate_htmlhelp
@@ -695,7 +696,7 @@ FONT.charliteral   { color: #008080 }
 \anchor cfg_paper_type
 <dt>\c PAPER_TYPE <dd>
  \addindex PAPER_TYPE
- The PAPER_TYPE tag can be used to set the paper type that is used
+ The \c PAPER_TYPE tag can be used to set the paper type that is used
  by the printer. Possible values are: 
  <ul>
  <li><code>a4</code> (210 x 297 mm).
@@ -758,8 +759,8 @@ EXTRA_PACKAGES = times
  <code>\$projectnumber</code>. 
  Doxygen will replace them by respectively 
  the title of the page, the current date and time, only the current date,
- the version number of doxygen, the project name (see PROJECT_NAME), or the
- project number (see PROJECT_NUMBER).
+ the version number of doxygen, the project name (see \c PROJECT_NAME), or the
+ project number (see \c PROJECT_NUMBER).
    
 \anchor cfg_pdf_hyperlinks
 <dt>\c PDF_HYPERLINKS <dd>
@@ -796,7 +797,7 @@ EXTRA_PACKAGES = times
 <dt>\c RTF_OUTPUT <dd>
  \addindex RTF_OUTPUT
  The \c RTF_OUTPUT tag is used to specify where the RTF docs will be put.
- If a relative path is entered the value of OUTPUT_DIRECTORY will be
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
  put in front of it. If left blank \c rtf will be used as the default path.
  
 \anchor cfg_compact_rtf
@@ -817,6 +818,90 @@ EXTRA_PACKAGES = times
 
  \par note:
    wordpad (write) and others do not support links.
+
+\anchor cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
+<dt>\c RTF_STYLESHEET_FILE <dd>
+ \addindex RTF_STYLESHEET_FILE
+ Load stylesheet definitions from file. Syntax is similar to doxygen's
+ config file, i.e. a series of assigments. You only have to provide
+ replacements, missing definitions are set to their default value.
+
+\htmlonly
+Here are the default settings:
+<font size=2><pre>Reset         = \\pard\\plain 
+Heading1      = \\s1\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs36\\kerning36\\cgrid 
+Heading2      = \\s2\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs28\\kerning28\\cgrid 
+Heading3      = \\s3\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\cgrid 
+Heading4      = \\s4\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid 
+Title         = \\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid 
+SubTitle      = \\s16\\qc\\sa60\\widctlpar\\outlinelevel1\\adjustright \\f1\\cgrid 
+BodyText      = \\s17\\sa60\\sb30\\widctlpar\\qj \\fs22\\cgrid 
+DenseText     = \\s18\\widctlpar\\fs22\\cgrid 
+Header        = \\s28\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\adjustright \\fs20\\cgrid 
+Footer        = \\s29\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\qr\\adjustright \\fs20\\cgrid 
+GroupHeader   = \\s30\\li360\\sa60\\sb120\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid 
+CodeExample0  = \\s40\\li0\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample1  = \\s41\\li360\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample2  = \\s42\\li720\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample3  = \\s43\\li1080\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample4  = \\s44\\li1440\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample5  = \\s45\\li1800\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample6  = \\s46\\li2160\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample7  = \\s47\\li2520\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample8  = \\s48\\li2880\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+CodeExample9  = \\s49\\li3240\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid 
+ListContinue0 = \\s50\\li0\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue1 = \\s51\\li360\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue2 = \\s52\\li720\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue3 = \\s53\\li1080\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue4 = \\s54\\li1440\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue5 = \\s55\\li1800\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue6 = \\s56\\li2160\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue7 = \\s57\\li2520\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue8 = \\s58\\li2880\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+ListContinue9 = \\s59\\li3240\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid 
+DescContinue0 = \\s60\\li0\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue1 = \\s61\\li360\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue2 = \\s62\\li720\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue3 = \\s63\\li1080\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue4 = \\s64\\li1440\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue5 = \\s65\\li1800\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue6 = \\s66\\li2160\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue7 = \\s67\\li2520\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue8 = \\s68\\li2880\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+DescContinue9 = \\s69\\li3240\\widctlpar\\ql\\adjustright \\fs20\\cgrid 
+LatexTOC0     = \\s70\\li0\\sa30\\sb30\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC1     = \\s71\\li360\\sa27\\sb27\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC2     = \\s72\\li720\\sa24\\sb24\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC3     = \\s73\\li1080\\sa21\\sb21\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC4     = \\s74\\li1440\\sa18\\sb18\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC5     = \\s75\\li1800\\sa15\\sb15\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC6     = \\s76\\li2160\\sa12\\sb12\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC7     = \\s77\\li2520\\sa9\\sb9\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC8     = \\s78\\li2880\\sa6\\sb6\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+LatexTOC9     = \\s79\\li3240\\sa3\\sb3\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid 
+ListBullet0   = \\s80\\fi-360\\li360\\widctlpar\\jclisttab\\tx360{\\*\\pn \\pnlvlbody\\ilvl0\\ls1\\pnrnot0\\pndec }\\ls1\\adjustright \\fs20\\cgrid 
+ListBullet1   = \\s81\\fi-360\\li720\\widctlpar\\jclisttab\\tx720{\\*\\pn \\pnlvlbody\\ilvl0\\ls2\\pnrnot0\\pndec }\\ls2\\adjustright \\fs20\\cgrid 
+ListBullet2   = \\s82\\fi-360\\li1080\\widctlpar\\jclisttab\\tx1080{\\*\\pn \\pnlvlbody\\ilvl0\\ls3\\pnrnot0\\pndec }\\ls3\\adjustright \\fs20\\cgrid 
+ListBullet3   = \\s83\\fi-360\\li1440\\widctlpar\\jclisttab\\tx1440{\\*\\pn \\pnlvlbody\\ilvl0\\ls4\\pnrnot0\\pndec }\\ls4\\adjustright \\fs20\\cgrid 
+ListBullet4   = \\s84\\fi-360\\li1800\\widctlpar\\jclisttab\\tx1800{\\*\\pn \\pnlvlbody\\ilvl0\\ls5\\pnrnot0\\pndec }\\ls5\\adjustright \\fs20\\cgrid 
+ListBullet5   = \\s85\\fi-360\\li2160\\widctlpar\\jclisttab\\tx2160{\\*\\pn \\pnlvlbody\\ilvl0\\ls6\\pnrnot0\\pndec }\\ls6\\adjustright \\fs20\\cgrid 
+ListBullet6   = \\s86\\fi-360\\li2520\\widctlpar\\jclisttab\\tx2520{\\*\\pn \\pnlvlbody\\ilvl0\\ls7\\pnrnot0\\pndec }\\ls7\\adjustright \\fs20\\cgrid 
+ListBullet7   = \\s87\\fi-360\\li2880\\widctlpar\\jclisttab\\tx2880{\\*\\pn \\pnlvlbody\\ilvl0\\ls8\\pnrnot0\\pndec }\\ls8\\adjustright \\fs20\\cgrid 
+ListBullet8   = \\s88\\fi-360\\li3240\\widctlpar\\jclisttab\\tx3240{\\*\\pn \\pnlvlbody\\ilvl0\\ls9\\pnrnot0\\pndec }\\ls9\\adjustright \\fs20\\cgrid 
+ListBullet9   = \\s89\\fi-360\\li3600\\widctlpar\\jclisttab\\tx3600{\\*\\pn \\pnlvlbody\\ilvl0\\ls10\\pnrnot0\\pndec }\\ls10\\adjustright \\fs20\\cgrid 
+ListEnum0     = \\s90\\fi-360\\li360\\widctlpar\\fs20\\cgrid 
+ListEnum1     = \\s91\\fi-360\\li720\\widctlpar\\fs20\\cgrid 
+ListEnum2     = \\s92\\fi-360\\li1080\\widctlpar\\fs20\\cgrid 
+ListEnum3     = \\s93\\fi-360\\li1440\\widctlpar\\fs20\\cgrid 
+ListEnum4     = \\s94\\fi-360\\li1800\\widctlpar\\fs20\\cgrid 
+ListEnum4     = \\s95\\fi-360\\li2160\\widctlpar\\fs20\\cgrid 
+ListEnum5     = \\s96\\fi-360\\li2520\\widctlpar\\fs20\\cgrid 
+ListEnum6     = \\s97\\fi-360\\li2880\\widctlpar\\fs20\\cgrid 
+ListEnum7     = \\s98\\fi-360\\li3240\\widctlpar\\fs20\\cgrid 
+ListEnum8     = \\s99\\fi-360\\li3600\\widctlpar\\fs20\\cgrid 
+</pre></font>
+\endhtmlonly
 
 </dl>
 
@@ -860,7 +945,15 @@ EXTRA_PACKAGES = times
  \addindex MACRO_EXPANSION
  If the \c MACRO_EXPANSION tag is set to \c YES Doxygen will expand all macro
  names in the source code. If set to \c NO (the default) only conditional 
- compilation will be performed.
+ compilation will be performed. Macro expansion can be done in a controlled
+ way by setting \c EXPAND_ONLY_PREDEF to \c YES.
+
+\anchor cfg_expand_only_predef
+<dt>\c EXPAND_ONLY_PREDEF <dd>
+ \addindex EXPAND_ONLY_PREDEF
+ If the \c EXPAND_ONLY_PREDEF and \c MACRO_EXPANSION tags are both set to YES
+ then the macro expansion is limited to the macros specified with the
+ \c PREDEFINED and \c EXPAND_AS_PREDEFINED tags.
 
 \anchor cfg_search_includes
 <dt>\c SEARCH_INCLUDES <dd>
@@ -884,12 +977,13 @@ EXTRA_PACKAGES = times
  <code>name</code> or <code>name=definition</code> (no spaces). 
  If the definition and the = are omitted =1 is assumed.
 
-\anchor cfg_expand_only_predef
-<dt>\c EXPAND_ONLY_PREDEF <dd>
- \addindex EXPAND_ONLY_PREDEF
- If the \c EXPAND_ONLY_PREDEF and \c MACRO_EXPANSION tags are both set to YES
- then the macro expansion is limited to the macros specified with the
- \c PREDEFINED tag.
+\anchor cfg_expand_as_defined
+<dt>\c EXPAND_AS_DEFINED <dd>
+ \addindex EXPAND_AS_DEFINED
+ If the \c MACRO_EXPANSION and \c EXPAND_PREDEF_ONLY tags are set to \c YES then
+ this tag can be used to specify a list of macro names that should be expanded.
+ The macro definition that is found in the sources will be used.
+ Use the \c PREDEFINED tag if you want to use a different macro definition.
 
 </dl>
 \subsection config_extref External reference options

@@ -203,7 +203,7 @@ QCString unhtmlify(const char *str)
 <Start>^"<h1 align=center>"	   { // Qt variant
   				     BEGIN( ReadClassName );
 			           }
-<Start>^"<h1>"	   		   { // Doxygen variant
+<Start>^("<hr>")?"<h1>"	  	   { // Doxygen variant
   				     BEGIN( ReadClassName );
 			           }
 <Start>^"Inherits "		   {
@@ -223,7 +223,7 @@ QCString unhtmlify(const char *str)
   				     BEGIN( SkipHTMLTag ); 
 				   }
 <Start>"&"[a-zA-Z]+";"
-<Start>[a-z_A-Z][a-z_A-Z0-9]*	   {
+<Start,SkipPreformated>[a-z_A-Z][a-z_A-Z0-9]*	   {
   				     //printf("tag: %s#%s ref: %s word: `%s'\n",
 				     // docBaseLink.data(),docAnchor.data(),
 				     // docRefName.data(),yytext);
@@ -235,7 +235,7 @@ QCString unhtmlify(const char *str)
 <SkipPreformated>"</pre>"	   {
   				     BEGIN( Start );
   				   }
-<SkipPreformated>[^\<]+		   
+<SkipPreformated>[^\<\n]+		   
 <CheckConstructor>[a-z_A-Z0-9~:]+  {
   				     QCString s=yytext;
 				     if (s.find("::")!=-1)

@@ -33,34 +33,8 @@
 class TranslatorItalian : public Translator
 {
   public:
-    //--------------------------------------------------------------------
-    // NOTICE:
-    // the following functions are now obsolete: these are no longer used and
-    // will disappear in future versions. You do not have to translate them!
-    QCString trInherits()
-    { return "Inherits"; }
-    QCString trAnd()
-    { return "and"; }
-    QCString trInheritedBy()
-    { return "Inherited By"; }
-    QCString trReference()
-    { return "Reference"; }
-    QCString trReimplementedFrom()
-    { return "Reimplemented from"; }
-    QCString trReimplementedIn()
-    { return "Reimplemented in"; }
-    QCString trIncludeFile()
-    { return "Include File"; }
-    QCString trGeneratedFrom(const char *s,bool single)
-    {
-      QCString result=(QCString)"The documentation for this"+s+
-                     " was generated from the following file";
-      if (single) result+=":"; else result+="s:";
-      return result;
-    }
-    // end of obsolete functions
-    //--------------------------------------------------------------------
-
+    QCString idLanguage()
+    { return "italian"; }
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
     { return "italian"; }

@@ -96,15 +96,17 @@ struct Config
   static QCString rtfOutputDir; // the directory to put the RTF files
   static bool     compactRTFFlag; // generate more compact RTF
   static bool     rtfHyperFlag; // generate hyper links in RTF
+  static QCString rtfStylesheetFile; // file to load stylesheet definitions from
   static bool     generateMan; // generate Man pages
   static QCString manOutputDir; // the directory to put the man pages
   static QCString manExtension; // extension the man page files
   static bool     preprocessingFlag; // enable preprocessing
   static bool     macroExpansionFlag; // expand macros in the source.
+  static bool     onlyPredefinedFlag; // expand only predefined macros
   static bool     searchIncludeFlag; // search for included files
   static QStrList includePath; // list of include paths
   static QStrList predefined; // list of predefined macro names.
-  static bool     onlyPredefinedFlag; // expand only predefined macros
+  static QStrList expandAsDefinedList; // list of defines to expand
   static QStrList tagFileList; // list of tag files
   static QCString genTagFile; // the tag file to generate
   static bool     allExtFlag; // include all external classes flag

@@ -996,7 +996,8 @@ static void findMaximalDotGraph(DotNode *root,
     readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
     width  = width *96/72; // 96 pixels/inch, 72 points/inch
     height = height*96/72; // 96 pixels/inch, 72 points/inch
-    //printf("Found bounding box (%d,%d)\n",width,height);
+    //printf("Found bounding box (%d,%d) max (%d,%d)\n",width,height,
+    //    Config::maxDotGraphWidth,Config::maxDotGraphHeight);
     
     lastFit=(width<Config::maxDotGraphWidth && height<Config::maxDotGraphHeight);
     if (lastFit) // image is small enough

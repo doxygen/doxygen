@@ -547,7 +547,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject()) count++;
+    if (nd->isLinkableInProject() && nd->countMembers()>0) count++;
   }
   return count;
 }
@@ -583,7 +583,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd=namespaceList.first();
   while (nd)
   {
-    if (nd->isLinkableInProject())
+    if (nd->isLinkableInProject() && nd->countMembers()>0)
     {
       ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.docify(" (");
@@ -1456,7 +1456,6 @@ int countGroups()
   for (;(gd=gli.current());++gli)
   {
     if (gd->countMembers()>0) count++;
-    gd=groupList.next();
   }
   return count;
 }
@@ -1513,7 +1512,6 @@ void writeGroupIndex(OutputList &ol)
     htmlHelp->incContentsDepth();
   }
   parseText(ol,theTranslator->trModulesDescription());
-  //ol.newParagraph();
   ol.endTextBlock();
   writeGroupList(ol);
   if (hasHtmlHelp)
@@ -1521,7 +1519,6 @@ void writeGroupIndex(OutputList &ol)
     htmlHelp->decContentsDepth();
   }
   endFile(ol);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 

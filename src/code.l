@@ -118,6 +118,7 @@ static const char *  g_currentFontClass;
 static bool          g_searchingForBody;
 static bool          g_insideBody;
 static int           g_bodyCurlyCount;
+static ClassDef *    g_classVar;
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef
  * is TRUE. If a definition starts at the current line, then the line
@@ -341,6 +342,34 @@ static void generateClassLink(OutputList &ol,char *clName,int *clNameLen=0)
   }
 }
 
+static ClassDef *stripClassName(const char *s)
+{
+  QCString tmp=s;
+  if (tmp.isEmpty()) return 0;
+  static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
+  int p=0,i,l;
+  while ((i=re.match(tmp,p,&l))!=-1)
+  {
+    ClassDef *cd=0;
+    QCString clName = tmp.mid(i,l);
+    //printf("g_classScope=`%s' clName=`%s'\n",g_classScope.data(),clName.data());
+    if (!g_classScope.isEmpty())
+    {
+      cd=getResolvedClass(g_classScope+"::"+clName);
+    }
+    if (cd==0)
+    {
+      cd=getResolvedClass(clName);
+    }
+    if (cd) 
+    {
+      return cd;
+    }
+    p=i+l;
+  }
+  return 0;
+}
+
 static bool getLink(const char *className,
                     const char *memberName,OutputList &result,
 		    const char *text=0)
@@ -375,10 +404,11 @@ static bool getLink(const char *className,
       }
     }
     Definition *d=0;
-    if (cd) d=cd; else if (cd) d=nd; else if (fd) d=fd; else d=gd;
+    if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
     if (d && d->isLinkable())
     {
+      g_classVar = stripClassName(md->typeString());
       if (g_currentDefinition && g_currentMemberDef &&
 	  md!=g_currentMemberDef && g_insideBody)
       {
@@ -393,32 +423,47 @@ static bool getLink(const char *className,
   return FALSE;
 }
 
-static ClassDef *stripClassName(const char *s)
+static bool generateClassMemberLink(OutputList &ol,ClassDef *mcd,const char *memName)
 {
-  QCString tmp=s;
-  if (tmp.isEmpty()) return 0;
-  static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
-  int p=0,i,l;
-  while ((i=re.match(tmp,p,&l))!=-1)
+  //printf("generateClassMemberLink(%s,%s)\n",mcd->name().data(),memName);
+  MemberName *mmn=memberNameDict[memName];
+  if (mmn)
   {
-    ClassDef *cd=0;
-    QCString clName = tmp.mid(i,l);
-    //printf("g_classScope=`%s' clName=`%s'\n",g_classScope.data(),clName.data());
-    if (!g_classScope.isEmpty())
+    MemberNameIterator mmni(*mmn);
+    MemberDef *mmd,*xmd=0;
+    ClassDef *xcd=0;
+    const int maxInheritanceDepth = 100000;
+    int mdist=maxInheritanceDepth;
+    for (;(mmd=mmni.current());++mmni)
     {
-      cd=getResolvedClass(g_classScope+"::"+clName);
+      int m=minClassDistance(mcd,mmd->memberClass());
+      if (m<mdist && mmd->memberClass()->isLinkable())
+      {
+	mdist=m;
+	xcd=mmd->memberClass();
+	xmd=mmd;
+      }
     }
-    if (cd==0)
+    if (mdist!=maxInheritanceDepth)
     {
-      cd=getResolvedClass(clName);
+      // extract class definition of the return type in order to resolve
+      // a->b()->c() like call chains
+      g_classVar = stripClassName(xmd->typeString());
+
+      // add usage reference
+      if (g_currentDefinition && g_currentMemberDef &&
+	  xmd!=g_currentMemberDef && g_insideBody)
+      {
+	xmd->addSourceReference(g_currentMemberDef);
+      }
+
+      // write the actual link
+      writeMultiLineCodeLink(ol,xcd->getReference(),
+	  xcd->getOutputFileBase(),xmd->anchor(),memName);
+      return TRUE;
     }
-    if (cd) 
-    {
-      return cd;
-    }
-    p=i+l;
   }
-  return 0;
+  return FALSE;
 }
 
 static void generateMemberLink(OutputList &ol,const char *varName,
@@ -493,6 +538,8 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 	    ClassDef *mcd=stripClassName(vmd->typeString());
 	    if (mcd && mcd->isLinkable())
 	    {
+	      if (generateClassMemberLink(ol,mcd,memName)) return;
+#if 0
 	      //printf("Found class `%s'\n",mcd->name().data());
 	      MemberName *mmn=memberNameDict[memName];
 	      if (mmn)
@@ -524,6 +571,7 @@ static void generateMemberLink(OutputList &ol,const char *varName,
 		  return;
 		}
 	      }
+#endif
 	    }
 	  }
 	}
@@ -925,9 +973,21 @@ TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"
 					}
 <MemberCall>{SCOPENAME}/{B}*"(" 	{
   					  if (!g_name.isEmpty())
+					  {
 					    generateMemberLink(*g_code,g_name,yytext);
+					  }
+					  else if (g_classVar)
+					  {
+					    if (!generateClassMemberLink(*g_code,g_classVar,yytext))
+					    {
+					      g_code->codify(yytext);
+					    }
+					    g_classVar=0;
+					  }
 					  else
+					  {
   					    g_code->codify(yytext);
+					  }
   					  g_name.resize(0);g_type.resize(0);
 					  g_bracketCount=0;
 					  BEGIN(FuncCall);
@@ -1350,6 +1410,7 @@ void parseCode(OutputList &ol,const char *className,const QCString &s,
   g_bodyCurlyCount    = 0;
   g_bracketCount  = 0;
   g_sharpCount    = 0;
+  g_classVar      = 0;
   g_classScope    = className;
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;

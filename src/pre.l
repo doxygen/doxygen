@@ -758,6 +758,10 @@ Define *newDefine()
   def->fileName = g_yyFileName; 
   def->lineNr = g_yyLineNr;
   def->varArgs = g_defVarArgs;
+  if (!def->name.isEmpty() && expandAsDefinedDict[def->name])
+  {
+    def->isPredefined=TRUE;
+  }
   return def;
 }
 
@@ -1505,7 +1509,8 @@ BN	[ \t\r\n]
 					  {
 					    addDefine();
 					  }
-					  if (/*!Config::onlyPredefinedFlag &&*/ (def=g_fileDefineDict->find(g_defName))==0)
+					  def=g_fileDefineDict->find(g_defName);
+					  if (def==0) // new define
 					  {
 					    g_fileDefineDict->insert(g_defName,newDefine());
 					  }

@@ -38,7 +38,7 @@ bool writeNumber(QFile &f,int num)
          (f.putch(num&0xff)==-1);
 }
 
-bool writeEncodedNumber(QFile &f,uint number)
+static bool writeEncodedNumber(QFile &f,uint number)
 {
   bool error=FALSE;
   uint n=number;
@@ -52,7 +52,7 @@ bool writeEncodedNumber(QFile &f,uint number)
   return error; 
 }
 
-int encodedNumberSize(uint number)
+static int encodedNumberSize(uint number)
 {
   uint n=number;
   int size=1;

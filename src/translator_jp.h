@@ -23,33 +23,8 @@
 class TranslatorJapanese : public Translator
 {
   public:
-    //--------------------------------------------------------------------
-    // NOTICE:
-    // the following functions are now obsolete: these are no longer used and 
-    // will disappear in future versions. You do not have to translate them!
-    QCString trInherits()
-    { return "継承"; }
-    QCString trAnd()
-    { return "と"; }
-    QCString trInheritedBy()
-    { return "次に継承されています。"; }
-    QCString trReference()
-    { return "リファレンス"; }
-    QCString trReimplementedFrom()
-    { return "次を再定義"; }
-    QCString trReimplementedIn()
-    { return "次で再定義"; }
-    QCString trIncludeFile()
-    { return "インクルードファイル"; }
-    QCString trGeneratedFrom(const char *s,bool)
-    { 
-      QCString result=(QCString)"この"+s+
-	           "に対するドキュメントは以下のファイルから生成されました。";
-      return result;
-    }
-    // end of obsolete functions 
-    //--------------------------------------------------------------------
-
+    QCString idLanguage()
+    { return "japanese"; }
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
     { return "a4j"; }

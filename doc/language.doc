@@ -59,7 +59,7 @@ Here is a list of the languages and their current maintainers:
       </TD>
       <TD>
         <a href="mailto:bordeux@NOSPAM.lig.di.epfl.ch">
-                          bordeux@NOSPAM.lig.di.epfl.ch</a>
+                        bordeux@NOSPAM.lig.di.epfl.ch</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -72,9 +72,9 @@ Here is a list of the languages and their current maintainers:
       </TD>
       <TD>
         <a href="mailto:sahag96@NOSPAM.nts.mh.se">
-	          sahag96@NOSPAM.nts.mh.se</a><br>
+	                sahag96@NOSPAM.nts.mh.se</a><br>
         <a href="mailto:xet@NOSPAM.hem.passagen.se">
-		  xet@NOSPAM.hem.passagen.se</a>
+		        xet@NOSPAM.hem.passagen.se</a>
       </TD>
   </TR>
   <TR BGCOLOR="#ffffff">
@@ -82,9 +82,12 @@ Here is a list of the languages and their current maintainers:
         Czech
       </TD>   
       <TD>
+        Petr Prikryl<BR>
         Vlastimil Havran
       </TD>
       <TD>
+        <a href="mailto:prikrylp@NOSPAM.skil.cz">
+                        prikrylp@NOSPAM.skil.cz</a>
         <a href="mailto:havran@NOSPAM.fel.cvut.cz">
                         havran@NOSPAM.fel.cvut.cz</a>
       </TD>
@@ -206,7 +209,8 @@ Here is a list of the languages and their current maintainers:
   Swedish & Samuel H\"agglund & {\tt sahag96@nts.mh.se} \\
           & XeT Erixon      & {\tt xet@hem.passagen.se} \\
   \hline
-  Czech   & Vlastimil Havran & {\tt havran@fel.cvut.cz} \\
+  Czech   & Petr Prikryl     & {\tt prikrylp@skil.cz}   \\
+          & Vlastimil Havran & {\tt havran@fel.cvut.cz} \\
   \hline
   Romanian & Ionutz Borcoman & {\tt borco@borco-ei.eng.hokudai.ac.jp} \\
   \hline

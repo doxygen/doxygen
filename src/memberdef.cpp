@@ -445,8 +445,9 @@ void MemberDef::setMemberDefTemplateArguments(ArgumentList *tal)
 void MemberDef::writeLink(OutputList &ol,ClassDef *cd,NamespaceDef *nd,
                       FileDef *fd,GroupDef *gd)
 {
-  Definition *d;
+  Definition *d=0;
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else if (gd) d=gd;
+  if (d==0) return;
   ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),anchor(),name());
 }
 

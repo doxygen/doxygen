@@ -25,37 +25,32 @@
 class Translator
 {
   public:
-    //--------------------------------------------------------------------
-    // NOTICE:
-    // the following functions are now obsolete: these are no longer used and 
-    // will disappear in future versions. You do not have to translate them!
-    virtual QCString trInherits() 
-    { return "Inherits"; }
-    virtual QCString trAnd() 
-    { return "and"; }
-    virtual QCString trInheritedBy() 
-    { return "Inherited By"; }
-    virtual QCString trReference() 
-    { return "Reference"; }
-    virtual QCString trReimplementedFrom()
-    { return "Reimplemented from"; }
-    virtual QCString trReimplementedIn()
-    { return "Reimplemented in"; }
-    virtual QCString trIncludeFile()
-    { return "Include File"; }
-    virtual QCString trGeneratedFrom(const char *s,bool single)
-    { 
-      QCString result=(QCString)"The documentation for this"+s+
-                     " was generated from the following file";
-      if (single) result+=":"; else result+="s:";
-      return result;
-    }
-    // end of obsolete functions 
-    //--------------------------------------------------------------------
 
+    // --- Language contol methods -------------------
+    
+    /*! Used for identification of the language. May resemble 
+     * the string returned by latexBabelPackage(), but it is not used
+     * for the same purpose. The identification should not be translated.
+     * It should be replaced by the name of the language in English
+     * (e.g. Czech, Japanese, Russian, etc.). It should be equal to 
+     * the identification in language.h.
+     */
+    virtual QCString idLanguage()
+    { return "english"; }
+    /*! Used to get the command(s) for the language support. This method
+     *  was designed for languages which do not prefer babel package.
+     *  If this methods returns empty string, then the latexBabelPackage()
+     *  method is used to generate the command for using the babel package.
+     */
+    virtual QCString latexLanguageSupportCommand()
+    {
+      return "";
+    }
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString latexBabelPackage() 
     { return ""; }
+
+    // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()

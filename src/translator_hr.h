@@ -23,6 +23,8 @@
 class TranslatorCroatian : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "croatian"; }
     QCString latexBabelPackage()
     { return "croatian"; }
     QCString trRelatedFunctions()

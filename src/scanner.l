@@ -1758,12 +1758,11 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    {
 					      //outDoc->writeSectionRefAnchor(sec->fileName,sec->label,text);
 					      outDoc->writeObjectLink(0,sec->fileName,sec->label,text);
-					      //printf("Writing page ref `%s'\n",sec->label.data());
 					      writePageRef(*outDoc,sec->label,0);
 					    }
 					    else
 					    {
-					      //printf("  ref sec=%p sec->fileName=%s\n",sec,sec->fileName.data());
+					      //printf("  ref sec=%p sec->fileName=%s text=%s\n",sec,sec->fileName.data(),text.data());
 					      outDoc->writeSectionRef(sec->fileName,sec->label,text);
 					    }
 					  }
@@ -3246,7 +3245,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <MemberSpec>([*&]*{BN}*)*{ID}("["[a-z_A-Z0-9]*"]")* { // the [] part could be improved.
   					  lineCount();
   					  int i=0,l=yyleng,j;
-					  while (i<l && (!isalpha(yytext[i]))) i++;
+					  while (i<l && (!isId(yytext[i]))) i++;
 					  msName = yytext; 
 					  msName = msName.right(msName.length()-i);
 					  j=msName.find("[");
@@ -3300,7 +3299,14 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    //    current->parent->section & Entry::COMPOUND_MASK)
 					    //  varEntry->type+=current->parent->name+"::";
 					    if (isTypedef)
+					    {
 					      varEntry->type.prepend("typedef ");
+					      //printf("current->name = %s %s\n",current->name.data(),msName.data());
+					      if (!current->name.isEmpty() && current->name.at(0)!='@')
+					      {
+						typedefDict.insert(msName,new QCString(current->name));
+					      }
+					    }
 					    varEntry->type+=current->name+msType;
 					    varEntry->fileName = yyFileName;
 					    varEntry->startLine = yyLineNr;
@@ -4671,12 +4677,12 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc>("\\\\"|"@@")"f"[$\[\]] {
 							  current->doc += &yytext[1]; 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc>{CMD}"f$"	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f$"	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="$"; 
 							  BEGIN(ReadFormulaShort); 
 							}
-<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc>{CMD}"f["	{ 
+<Doc,JavaDoc,LineDoc,ExampleDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>{CMD}"f["	{ 
   							  lastFormulaContext = YY_START;
   							  formulaText="\\["; 
 							  BEGIN(ReadFormulaLong); 
@@ -4685,7 +4691,9 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   							  formulaText+="$";
 							  if (lastFormulaContext==ClassDocBrief || 
 							      lastFormulaContext==LineDoc || 
-							      lastFormulaContext==JavaDoc
+							      lastFormulaContext==JavaDoc || 
+							      lastFormulaContext==AfterDocBrief ||
+							      lastFormulaContext==AfterDocLine
 							     )
 							    current->brief += addFormula();
 							  else
@@ -4696,7 +4704,9 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 							  formulaText+="\\]";
 							  if (lastFormulaContext==ClassDocBrief ||
 							      lastFormulaContext==LineDoc ||
-							      lastFormulaContext==JavaDoc
+							      lastFormulaContext==JavaDoc ||
+							      lastFormulaContext==AfterDocBrief ||
+							      lastFormulaContext==AfterDocLine
 							     )
 							    current->brief += addFormula();
 							  else

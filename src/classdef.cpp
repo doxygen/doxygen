@@ -1605,8 +1605,14 @@ void ClassDef::determineImplUsageRelation()
               int brCount=1;
               while (te<typeLen && brCount!=0)
               {
-                if (type.at(te)=='<') brCount++;
-                if (type.at(te)=='>') brCount--;
+                if (type.at(te)=='<') 
+                {
+                  if (te<typeLen-1 && type.at(te+1)=='<') te++; else brCount++;
+                }
+                if (type.at(te)=='>') 
+                {
+                  if (te<typeLen-1 && type.at(te+1)=='>') te++; else brCount--;
+                }
                 te++;
               }
             }
@@ -1614,6 +1620,7 @@ void ClassDef::determineImplUsageRelation()
             if (te>ts) templSpec = type.mid(ts,te-ts);
             ClassDef *cd=getResolvedClass(name()+"::"+type.mid(i,l));
             if (cd==0) cd=getResolvedClass(type.mid(i,l)); // TODO: also try inbetween scopes!
+            //printf("Search for class %s result=%p\n",type.mid(i,l).data(),cd);
             if (cd) // class exists 
             {
               found=TRUE;

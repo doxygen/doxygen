@@ -4,6 +4,8 @@
  *
  * Copyright (C) 1997-2000 by Parker Waechter & Dimitri van Heesch.
  *
+ * Style sheet additions by Alexander Bartolich
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
  * granted. No representations are made about the suitability of this software 
@@ -19,7 +21,7 @@
 
 #include "qtbc.h"
 #include <qdir.h>
-#include <qstack.h>
+#include <qregexp.h>
 
 #include "rtfgen.h"
 #include "config.h"
@@ -112,6 +114,277 @@ OutputGenerator *RTFGenerator::copy()
   return result;
 }
 
+static const struct
+{
+  const char *name;
+  const char *value;
+} Rtf_Style_Default[] =
+{
+  { "Reset",
+    "\\pard\\plain "
+  },
+  { "Heading1",
+    "\\s1\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs36\\kerning36\\cgrid "
+  },
+  { "Heading2",
+    "\\s2\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs28\\kerning28\\cgrid "
+  },
+  { "Heading3",
+    "\\s3\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\cgrid "
+  },
+  { "Heading4",
+    "\\s4\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid "
+  },
+  { "Title",
+    "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid "
+  },
+  { "SubTitle",
+    "\\s16\\qc\\sa60\\widctlpar\\outlinelevel1\\adjustright \\f1\\cgrid "
+  },
+  { "BodyText",
+    "\\s17\\sa60\\sb30\\widctlpar\\qj \\fs22\\cgrid "
+  },
+  { "DenseText",
+    "\\s18\\widctlpar\\fs22\\cgrid "
+  },
+  { "Header",
+    "\\s28\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "Footer",
+    "\\s29\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\qr\\adjustright \\fs20\\cgrid "
+  },
+  { "GroupHeader",
+    "\\s30\\li360\\sa60\\sb120\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid "
+  },
+  { "CodeExample0",  
+    "\\s40\\li0\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample1",  
+    "\\s41\\li360\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample2",    
+    "\\s42\\li720\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample3",  
+    "\\s43\\li1080\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample4",  
+    "\\s44\\li1440\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample5",    
+    "\\s45\\li1800\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample6",     
+    "\\s46\\li2160\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample7",    
+    "\\s47\\li2520\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample8",    
+    "\\s48\\li2880\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "CodeExample9",
+    "\\s49\\li3240\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
+  },
+  { "ListContinue0",
+    "\\s50\\li0\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue1",  
+    "\\s51\\li360\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue2",  
+    "\\s52\\li720\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue3",  
+    "\\s53\\li1080\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue4",  
+    "\\s54\\li1440\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue5",  
+    "\\s55\\li1800\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue6",  
+    "\\s56\\li2160\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue7",  
+    "\\s57\\li2520\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue8",  
+    "\\s58\\li2880\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "ListContinue9",  
+    "\\s59\\li3240\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue0",
+    "\\s60\\li0\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue1",  
+    "\\s61\\li360\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue2",
+    "\\s62\\li720\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue3",
+    "\\s63\\li1080\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue4",
+    "\\s64\\li1440\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue5",
+    "\\s65\\li1800\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue6",
+    "\\s66\\li2160\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue7",
+    "\\s67\\li2520\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue8",
+    "\\s68\\li2880\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "DescContinue9",
+    "\\s69\\li3240\\widctlpar\\ql\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC0",
+    "\\s70\\li0\\sa30\\sb30\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC1",
+    "\\s71\\li360\\sa27\\sb27\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC2",
+    "\\s72\\li720\\sa24\\sb24\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC3",
+    "\\s73\\li1080\\sa21\\sb21\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC4",
+    "\\s74\\li1440\\sa18\\sb18\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC5",
+    "\\s75\\li1800\\sa15\\sb15\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC6",
+    "\\s76\\li2160\\sa12\\sb12\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC7",
+    "\\s77\\li2520\\sa9\\sb9\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC8",
+    "\\s78\\li2880\\sa6\\sb6\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "LatexTOC9",
+    "\\s79\\li3240\\sa3\\sb3\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet0",
+    "\\s80\\fi-360\\li360\\widctlpar\\jclisttab\\tx360{\\*\\pn \\pnlvlbody\\ilvl0\\ls1\\pnrnot0\\pndec }\\ls1\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet1",    
+    "\\s81\\fi-360\\li720\\widctlpar\\jclisttab\\tx720{\\*\\pn \\pnlvlbody\\ilvl0\\ls2\\pnrnot0\\pndec }\\ls2\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet2",
+    "\\s82\\fi-360\\li1080\\widctlpar\\jclisttab\\tx1080{\\*\\pn \\pnlvlbody\\ilvl0\\ls3\\pnrnot0\\pndec }\\ls3\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet3",
+    "\\s83\\fi-360\\li1440\\widctlpar\\jclisttab\\tx1440{\\*\\pn \\pnlvlbody\\ilvl0\\ls4\\pnrnot0\\pndec }\\ls4\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet4",
+    "\\s84\\fi-360\\li1800\\widctlpar\\jclisttab\\tx1800{\\*\\pn \\pnlvlbody\\ilvl0\\ls5\\pnrnot0\\pndec }\\ls5\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet5",
+    "\\s85\\fi-360\\li2160\\widctlpar\\jclisttab\\tx2160{\\*\\pn \\pnlvlbody\\ilvl0\\ls6\\pnrnot0\\pndec }\\ls6\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet6",
+    "\\s86\\fi-360\\li2520\\widctlpar\\jclisttab\\tx2520{\\*\\pn \\pnlvlbody\\ilvl0\\ls7\\pnrnot0\\pndec }\\ls7\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet7",
+    "\\s87\\fi-360\\li2880\\widctlpar\\jclisttab\\tx2880{\\*\\pn \\pnlvlbody\\ilvl0\\ls8\\pnrnot0\\pndec }\\ls8\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet8",
+    "\\s88\\fi-360\\li3240\\widctlpar\\jclisttab\\tx3240{\\*\\pn \\pnlvlbody\\ilvl0\\ls9\\pnrnot0\\pndec }\\ls9\\adjustright \\fs20\\cgrid "
+  },
+  { "ListBullet9",
+    "\\s89\\fi-360\\li3600\\widctlpar\\jclisttab\\tx3600{\\*\\pn \\pnlvlbody\\ilvl0\\ls10\\pnrnot0\\pndec }\\ls10\\adjustright \\fs20\\cgrid "
+  },
+  { "ListEnum0",
+    "\\s90\\fi-360\\li360\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum1",
+    "\\s91\\fi-360\\li720\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum2",
+    "\\s92\\fi-360\\li1080\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum3",
+    "\\s93\\fi-360\\li1440\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum4",
+    "\\s94\\fi-360\\li1800\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum4",
+    "\\s95\\fi-360\\li2160\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum5",
+    "\\s96\\fi-360\\li2520\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum6",
+    "\\s97\\fi-360\\li2880\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum7",
+    "\\s98\\fi-360\\li3240\\widctlpar\\fs20\\cgrid "
+  },
+  { "ListEnum8",
+    "\\s99\\fi-360\\li3600\\widctlpar\\fs20\\cgrid "
+  },
+  { 0,
+    0 
+  }
+};
+
+static QDict<char> Rtf_Style(257);
+
+static void loadStylesheet(const char *name)
+{
+  QFile file(name);
+  if (!file.open(IO_ReadOnly))
+  {
+    err("Can't open RTF style sheet file %s. Using defaults.\n",name);
+    return;
+  }
+  msg("Loading RTF style sheet %s...\n",name);
+
+  static const QRegExp separator("[ \t]*=[ \t]*");
+  uint lineNr=1;
+  QTextStream t(&file);
+  while (!t.eof())
+  {
+    QCString s(4096); // string buffer of max line length
+    s = t.readLine().stripWhiteSpace();
+    if (s.length()==0 || s.at(0)=='#') continue; // skip blanks & comments
+    int sepLength;
+    int sepStart = separator.match(s,0,&sepLength);
+    if (sepStart<=0) // no valid assignment statement
+    {
+      warn(name,lineNr,"Assignment of style sheet name expected!\n"); 
+      continue;
+    }
+    QCString key=s.left(sepStart);
+    if (Rtf_Style[key]==0) // not a valid style sheet name
+    {
+      warn(name,lineNr,"Invalid style sheet name %s ignored.\n",key.data());
+      continue;
+    }
+    s+=" "; // add command separator
+    Rtf_Style.remove(key); // remove old key
+    int l = strlen(s.data()+sepStart+sepLength);
+    char *value = new char[l+1];
+    strcpy(value,s.data()+sepStart+sepLength);
+    Rtf_Style.insert(key,value); // insert new key 
+    lineNr++;
+  }
+}
+
+
 void RTFGenerator::init()
 {
   QCString dir=Config::rtfOutputDir;
@@ -121,98 +394,31 @@ void RTFGenerator::init()
     err("Could not create output directory %s\n",dir.data());
     exit(1);
   }
+  
+  Rtf_Style.setAutoDelete(TRUE);
+  int i=0;
+  while (Rtf_Style_Default[i].name!=0)
+  {
+    int l = strlen(Rtf_Style_Default[i].value);
+    char *value = new char[l+1];
+    strcpy(value,Rtf_Style_Default[i].value);
+    Rtf_Style.insert(Rtf_Style_Default[i].name,value);
+    i++;
+  }
+
+  if (!Config::rtfStylesheetFile.isEmpty())
+  {
+    loadStylesheet(Config::rtfStylesheetFile);
+  }
 }
 
-const char *Rtf_Style_Reset     = "\\pard\\plain ";
-const char *Rtf_Style_Heading1  = "\\s1\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs36\\kerning36\\cgrid ";
-const char *Rtf_Style_Heading2  = "\\s2\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs28\\kerning28\\cgrid ";
-const char *Rtf_Style_Heading3  = "\\s3\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\cgrid ";
-const char *Rtf_Style_Heading4  = "\\s4\\sb240\\sa60\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ";
-const char *Rtf_Style_Title     = "\\s15\\qc\\sb240\\sa60\\widctlpar\\outlinelevel0\\adjustright \\b\\f1\\fs32\\kerning28\\cgrid ";
-const char *Rtf_Style_SubTitle  = "\\s16\\qc\\sa60\\widctlpar\\outlinelevel1\\adjustright \\f1\\cgrid ";
-const char *Rtf_Style_BodyText  = "\\s17\\sa60\\sb30\\widctlpar\\qj \\fs22\\cgrid ";
-const char *Rtf_Style_DenseText = "\\s18\\widctlpar\\fs22\\cgrid ";
-const char *Rtf_Style_Header    = "\\s28\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\adjustright \\fs20\\cgrid ";
-const char *Rtf_Style_Footer    = "\\s29\\widctlpar\\tqc\\tx4320\\tqr\\tx8640\\qr\\adjustright \\fs20\\cgrid ";
-const char *Rtf_Style_GroupHeader = "\\s30\\li360\\sa60\\sb120\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ";
-const char *Rtf_Style_CodeExample[]  = 
+
+static QCString makeIndexName(const char *s,int i)
 {
-  "\\s40\\li0\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s41\\li360\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s42\\li720\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s43\\li1080\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s44\\li1440\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s45\\li1800\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s46\\li2160\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s47\\li2520\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s48\\li2880\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-  "\\s49\\li3240\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid "
-};
-const char *Rtf_Style_ListContinue[] = 
-{
-  "\\s50\\li0\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s51\\li360\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s52\\li720\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s53\\li1080\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s54\\li1440\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s55\\li1800\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s56\\li2160\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s57\\li2520\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s58\\li2880\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s59\\li3240\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
-};
-const char *Rtf_Style_DescContinue[] = 
-{
-  "\\s60\\li0\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s61\\li360\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s62\\li720\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s63\\li1080\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s64\\li1440\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s65\\li1800\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s66\\li2160\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s67\\li2520\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s68\\li2880\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-  "\\s69\\li3240\\widctlpar\\qj\\adjustright \\fs20\\cgrid "
-};
-const char *Rtf_Style_LatexTOC[] = 
-{
-  "\\s70\\li0\\sa30\\sb30\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s71\\li360\\sa27\\sb27\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s72\\li720\\sa24\\sb24\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s73\\li1080\\sa21\\sb21\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s74\\li1440\\sa18\\sb18\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s75\\li1800\\sa15\\sb15\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s76\\li2160\\sa12\\sb12\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s77\\li2520\\sa9\\sb9\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s78\\li2880\\sa6\\sb6\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-  "\\s79\\li3240\\sa3\\sb3\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid "
-};
-const char *Rtf_Style_ListBullet[] = 
-{
-  "\\s80\\fi-360\\li360\\widctlpar\\jclisttab\\tx360{\\*\\pn \\pnlvlbody\\ilvl0\\ls1\\pnrnot0\\pndec }\\ls1\\adjustright \\fs20\\cgrid ",
-  "\\s81\\fi-360\\li720\\widctlpar\\jclisttab\\tx720{\\*\\pn \\pnlvlbody\\ilvl0\\ls2\\pnrnot0\\pndec }\\ls2\\adjustright \\fs20\\cgrid ",
-  "\\s82\\fi-360\\li1080\\widctlpar\\jclisttab\\tx1080{\\*\\pn \\pnlvlbody\\ilvl0\\ls3\\pnrnot0\\pndec }\\ls3\\adjustright \\fs20\\cgrid ",
-  "\\s83\\fi-360\\li1440\\widctlpar\\jclisttab\\tx1440{\\*\\pn \\pnlvlbody\\ilvl0\\ls4\\pnrnot0\\pndec }\\ls4\\adjustright \\fs20\\cgrid ",
-  "\\s84\\fi-360\\li1800\\widctlpar\\jclisttab\\tx1800{\\*\\pn \\pnlvlbody\\ilvl0\\ls5\\pnrnot0\\pndec }\\ls5\\adjustright \\fs20\\cgrid ",
-  "\\s85\\fi-360\\li2160\\widctlpar\\jclisttab\\tx2160{\\*\\pn \\pnlvlbody\\ilvl0\\ls6\\pnrnot0\\pndec }\\ls6\\adjustright \\fs20\\cgrid ",
-  "\\s86\\fi-360\\li2520\\widctlpar\\jclisttab\\tx2520{\\*\\pn \\pnlvlbody\\ilvl0\\ls7\\pnrnot0\\pndec }\\ls7\\adjustright \\fs20\\cgrid ",
-  "\\s87\\fi-360\\li2880\\widctlpar\\jclisttab\\tx2880{\\*\\pn \\pnlvlbody\\ilvl0\\ls8\\pnrnot0\\pndec }\\ls8\\adjustright \\fs20\\cgrid ",
-  "\\s88\\fi-360\\li3240\\widctlpar\\jclisttab\\tx3240{\\*\\pn \\pnlvlbody\\ilvl0\\ls9\\pnrnot0\\pndec }\\ls9\\adjustright \\fs20\\cgrid ",
-  "\\s89\\fi-360\\li3600\\widctlpar\\jclisttab\\tx3600{\\*\\pn \\pnlvlbody\\ilvl0\\ls10\\pnrnot0\\pndec }\\ls10\\adjustright \\fs20\\cgrid "
-};
-const char *Rtf_Style_ListEnum[] = 
-{
-  "\\s90\\fi-360\\li360\\widctlpar\\fs20\\cgrid ",
-  "\\s91\\fi-360\\li720\\widctlpar\\fs20\\cgrid ",
-  "\\s92\\fi-360\\li1080\\widctlpar\\fs20\\cgrid ",
-  "\\s93\\fi-360\\li1440\\widctlpar\\fs20\\cgrid ",
-  "\\s94\\fi-360\\li1800\\widctlpar\\fs20\\cgrid ",
-  "\\s95\\fi-360\\li2160\\widctlpar\\fs20\\cgrid ",
-  "\\s96\\fi-360\\li2520\\widctlpar\\fs20\\cgrid ",
-  "\\s97\\fi-360\\li2880\\widctlpar\\fs20\\cgrid ",
-  "\\s98\\fi-360\\li3240\\widctlpar\\fs20\\cgrid ",
-  "\\s99\\fi-360\\li3600\\widctlpar\\fs20\\cgrid "
-};
+  QCString result=s;
+  result+=(char)(i+'0');
+  return result;
+}
 
 void RTFGenerator::beginRTFDocument()
 {
@@ -251,47 +457,53 @@ void RTFGenerator::beginRTFDocument()
   t <<"{\\comment Begining style list}\n";
   t <<"{\\stylesheet\n";
   t <<"{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
-  t <<"{" << Rtf_Style_Heading1 <<"\\sbasedon0 \\snext0 heading 1;}\n";
-  t <<"{" << Rtf_Style_Heading2 <<"\\sbasedon0 \\snext0 heading 2;}\n";
-  t <<"{" << Rtf_Style_Heading3 <<"\\sbasedon0 \\snext0 heading 3;}\n";
-  t <<"{" << Rtf_Style_Heading4 <<"\\sbasedon0 \\snext0 heading 4;}\n";
+  t <<"{" << Rtf_Style["Heading1"] <<"\\sbasedon0 \\snext0 heading 1;}\n";
+  t <<"{" << Rtf_Style["Heading2"] <<"\\sbasedon0 \\snext0 heading 2;}\n";
+  t <<"{" << Rtf_Style["Heading3"] <<"\\sbasedon0 \\snext0 heading 3;}\n";
+  t <<"{" << Rtf_Style["Heading4"] <<"\\sbasedon0 \\snext0 heading 4;}\n";
   t <<"{\\*\\cs10 \\additive Default Paragraph Font;}\n";
-  t <<"{" << Rtf_Style_Title << "\\sbasedon0 \\snext15 Title;}\n";
-  t <<"{" << Rtf_Style_SubTitle << "\\sbasedon0 \\snext16 Subtitle;}\n";
-  t <<"{" << Rtf_Style_BodyText << "\\sbasedon0 \\snext17 BodyText;}\n";
-  t <<"{" << Rtf_Style_DenseText << "\\sbasedon0 \\snext18 DenseText;}\n";
-  t <<"{" << Rtf_Style_Header << "\\sbasedon0 \\snext28 header;}\n";
-  t <<"{" << Rtf_Style_Footer << "\\sbasedon0 \\snext29 footer;}\n";
-  t <<"{" << Rtf_Style_GroupHeader << "\\sbasedon0 \\snext30 GroupHeader}\n";
+  t <<"{" << Rtf_Style["Title"] << "\\sbasedon0 \\snext15 Title;}\n";
+  t <<"{" << Rtf_Style["SubTitle"] << "\\sbasedon0 \\snext16 Subtitle;}\n";
+  t <<"{" << Rtf_Style["BodyText"] << "\\sbasedon0 \\snext17 BodyText;}\n";
+  t <<"{" << Rtf_Style["DenseText"] << "\\sbasedon0 \\snext18 DenseText;}\n";
+  t <<"{" << Rtf_Style["Header"] << "\\sbasedon0 \\snext28 header;}\n";
+  t <<"{" << Rtf_Style["Footer"] << "\\sbasedon0 \\snext29 footer;}\n";
+  t <<"{" << Rtf_Style["GroupHeader"] << "\\sbasedon0 \\snext30 GroupHeader}\n";
 
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_CodeExample[i] <<"\\sbasedon0 \\snext4" 
+    QCString n=makeIndexName("CodeExample",i);
+    t <<"{" << Rtf_Style[n] <<"\\sbasedon0 \\snext4" 
       << (QMIN(i+1,indentLevels-1)) << " Code Example " << i << ";}\n";
   }
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_ListContinue[i] << "\\sbasedon0 \\snext5" 
+    QCString n=makeIndexName("ListContinue",i);
+    t <<"{" << Rtf_Style[n] << "\\sbasedon0 \\snext5" 
       << (QMIN(i+1,indentLevels-1)) << " List Continue " << i << ";}\n";
   }
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_DescContinue[i] << "\\sbasedon0 \\snext6" 
+    QCString n=makeIndexName("DescContinue",i);
+    t <<"{" << Rtf_Style[n] << "\\sbasedon0 \\snext6" 
       << (QMIN(i+1,indentLevels-1)) << " DescContinue " << i << ";}\n";
   }
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_LatexTOC[i] << "\\sbasedon50 \\snext7" 
+    QCString n=makeIndexName("LatexTOC",i);
+    t <<"{" << Rtf_Style[n] << "\\sbasedon50 \\snext7" 
       << (QMIN(i+1,indentLevels-1)) << " LatexTOC " << i << ";}\n";
   }
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_ListBullet[i] << "\\sbasedon0 \\snext8" 
+    QCString n=makeIndexName("ListBullet",i);
+    t <<"{" << Rtf_Style[n] << "\\sbasedon0 \\snext8" 
       << (QMIN(i+1,indentLevels-1)) << " \\sautoupd List Bullet " << i << ";}\n";
   }
   for (i=0;i<indentLevels;i++)
   {
-    t <<"{" << Rtf_Style_ListEnum[i] << "\\sbasedon0 \\snext9" 
+    QCString n=makeIndexName("ListEnum",i);
+    t <<"{" << Rtf_Style[n] << "\\sbasedon0 \\snext9" 
       << (QMIN(i+1,indentLevels-1)) << " \\sautoupd List Enum " << i << ";}\n";
   }
   t <<"}" << endl;
@@ -301,7 +513,7 @@ void RTFGenerator::beginRTFDocument()
 
 void RTFGenerator::beginRTFChapter()
 {
-  t <<"\n{\\comment Begin Chapter}\n" << Rtf_Style_Reset;
+  t <<"\n{\\comment Begin Chapter}\n" << Rtf_Style["Reset"];
 
   // if we are compact, no extra page breaks...
   if (Config::compactRTFFlag)
@@ -314,12 +526,12 @@ void RTFGenerator::beginRTFChapter()
     t <<"\\sect\\sbkpage\n";
   //t <<"\\sect\\sectd\\sbkpage\n";
 
-  t << Rtf_Style_Heading1 << "\n";
+  t << Rtf_Style["Heading1"] << "\n";
 }
 
 void RTFGenerator::beginRTFSection()
 {
-  t <<"\n{\\comment Begin Section}\n" << Rtf_Style_Reset;
+  t <<"\n{\\comment Begin Section}\n" << Rtf_Style["Reset"];
 
   // if we are compact, no extra page breaks...
   if (Config::compactRTFFlag)
@@ -332,7 +544,7 @@ void RTFGenerator::beginRTFSection()
     t <<"\\sect\\sbkpage\n";
   //t <<"\\sect\\sectd\\sbkpage\n";
 
-  t << Rtf_Style_Heading2 << "\n";
+  t << Rtf_Style["Heading2"] << "\n";
 }
 
 void RTFGenerator::startFile(const char *name,const char *, bool )
@@ -509,14 +721,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
           "}{\\comment end of infoblock}\n";
 
         // setup for this section
-        t << Rtf_Style_Reset <<"\n";
+        t << Rtf_Style["Reset"] <<"\n";
         t <<"\\sectd\\pgnlcrm\n";
-        t <<"{\\footer "<<Rtf_Style_Footer << "{\\chpgn}}\n";
+        t <<"{\\footer "<<Rtf_Style["Footer"] << "{\\chpgn}}\n";
         // the title entry
         t << "{\\comment begin title page}\n";
-        t << Rtf_Style_Reset << Rtf_Style_Title << endl; // set to title style
+        t << Rtf_Style["Reset"] << Rtf_Style["Title"] << endl; // set to title style
         t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt TITLE}}\\par" << endl;
-        t << Rtf_Style_Reset << Rtf_Style_SubTitle << endl; // set to subtitle style
+        t << Rtf_Style["Reset"] << Rtf_Style["SubTitle"] << endl; // set to subtitle style
         t << "{\\field\\fldedit {\\*\\fldinst AUTHOR \\\\*MERGEFORMAT}{\\fldrslt AUTHOR}}\\par" << endl;
         t << "{\\field\\fldedit {\\*\\fldinst CREATEDATE \\\\*MERGEFORMAT}"
           "{\\fldrslt CREATEDATE}}\\par"<<endl;
@@ -524,44 +736,44 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
         // table of contents section
         t << "{\\comment Table of contents}\n";
-        t << Rtf_Style_Reset << endl;
+        t << Rtf_Style["Reset"] << endl;
         t << "{\\field\\fldedit {\\*\\fldinst TOC \\\\f \\\\*MERGEFORMAT}{\\fldrslt Table of contents}}\\par\n";
-        t << Rtf_Style_Reset << endl;
+        t << Rtf_Style["Reset"] << endl;
 
       }
       break;
     case isMainPage:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"index.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isModuleIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trModuleIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"modules.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isNamespaceIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isClassHierarchyIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trHierarchicalIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"hierarchy.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isCompoundIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trCompoundIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"annotated.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isFileIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trFileIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"files.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isPageIndex:
-      t << "\\par " << Rtf_Style_Reset  << endl;
+      t << "\\par " << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v " << theTranslator->trPageIndex() << "}"<< endl;
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"pages.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
@@ -572,9 +784,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         while (gd && !found)
         {
-          if (gd->isLinkableInProject() || gd->countMembers()>0)
+          if (gd->countMembers()>0)
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << gd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -585,9 +797,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         while (gd)
         {
-          if (gd->isLinkableInProject() || gd->countMembers()>0)
+          if (gd->countMembers()>0)
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             beginRTFSection();
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << gd->getOutputFileBase();
@@ -605,7 +817,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (nd->isLinkableInProject() || nd->countMembers()>0)
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << nd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -617,7 +829,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (nd->isLinkableInProject() || nd->countMembers()>0)
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             beginRTFSection();
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << nd->getOutputFileBase();
@@ -637,7 +849,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject())
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << cd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -649,7 +861,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject())
           {
-            t << "\\par " << Rtf_Style_Reset  << endl;
+            t << "\\par " << Rtf_Style["Reset"] << endl;
             beginRTFSection();
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << cd->getOutputFileBase();
@@ -674,7 +886,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                t << "\\par " << Rtf_Style_Reset  << endl;
+                t << "\\par " << Rtf_Style["Reset"] << endl;
                 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
                 t << fd->getOutputFileBase();
                 t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -682,7 +894,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
               }
               else
               {
-                t << "\\par " << Rtf_Style_Reset  << endl;
+                t << "\\par " << Rtf_Style["Reset"] << endl;
                 beginRTFSection();
                 t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
                 t << fd->getOutputFileBase();
@@ -702,7 +914,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
         if (pi)
         {
-          t << "\\par " << Rtf_Style_Reset  << endl;
+          t << "\\par " << Rtf_Style["Reset"] << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << convertSlashes(pi->name,TRUE);
           t << "-example.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -710,7 +922,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         while (pi)
         {
-          t << "\\par " << Rtf_Style_Reset  << endl;
+          t << "\\par " << Rtf_Style["Reset"] << endl;
           beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << convertSlashes(pi->name,TRUE);
@@ -730,7 +942,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             pageName=pi->name.copy();
           else
             pageName=pi->name.lower();
-          t << "\\par " << Rtf_Style_Reset  << endl;
+          t << "\\par " << Rtf_Style["Reset"] << endl;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << pageName;
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -743,7 +955,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             pageName=pi->name.copy();
           else
             pageName=pi->name.lower();
-          //t << "\\par " << Rtf_Style_Reset  << endl;
+          //t << "\\par " << Rtf_Style["Reset"] << endl;
           //beginRTFSection();
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << pageName;
@@ -754,9 +966,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isEndIndex:
       beginRTFChapter();				  
-      t << Rtf_Style_Heading1;
+      t << Rtf_Style["Heading1"];
       t << "Index\\par "<< endl;
-      t << Rtf_Style_Reset<< endl;
+      t << Rtf_Style["Reset"] << endl;
       t << "{\\tc \\v Index}" << endl;
       t << "{\\field\\fldedit {\\*\\fldinst INDEX \\\\c2 \\\\*MERGEFORMAT}{\\fldrslt INDEX}}\n";
 
@@ -772,8 +984,8 @@ void RTFGenerator::lastIndexPage()
   t <<"\\sect \\sectd \\sbknone \\pgndec\n";
 
   // set footer
-  t <<"{\\footer "<< Rtf_Style_Footer << "{\\chpgn}}\n";
-  //t << Rtf_Style_Heading1 << "\n";
+  t <<"{\\footer "<< Rtf_Style["Footer"] << "{\\chpgn}}\n";
+  //t << Rtf_Style["Heading1"] << "\n";
 
 }
 
@@ -798,7 +1010,7 @@ void RTFGenerator::startIndexList()
   t << "{\\comment (startIndexList)}" << endl;
   t << "{" << endl;
   incrementIndentLevel();
-  t << Rtf_Style_Reset << Rtf_LCList_DepthStyle() << endl;
+  t << Rtf_Style["Reset"] << Rtf_LCList_DepthStyle() << endl;
   newParagraph();
   m_omitParagraph=TRUE;
 }
@@ -819,7 +1031,7 @@ void RTFGenerator::startItemList()
   t << "{";
   incrementIndentLevel();
   listItemInfo[m_listLevel].isEnum = FALSE;
-  //t << Rtf_Style_Reset << Rtf_BList_DepthStyle();
+  //t << Rtf_Style["Reset"] << Rtf_BList_DepthStyle();
 }
 
 /*! end bullet list */
@@ -830,7 +1042,7 @@ void RTFGenerator::endItemList()
   t << "}";
   decrementIndentLevel();
   m_omitParagraph=TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
+  //t << Rtf_Style["Reset"] << styleStack.top() << endl;
   //printf("RTFGenerator::endItemList() `%s'\n",styleStack.top());
   //newParagraph();
 }
@@ -843,7 +1055,7 @@ void RTFGenerator::startEnumList()  // starts an enumeration list
   incrementIndentLevel();
   listItemInfo[m_listLevel].isEnum = TRUE;
   listItemInfo[m_listLevel].number = 1;
-  //t << Rtf_Style_Reset << Rtf_EList_DepthStyle() << endl;
+  //t << Rtf_Style["Reset"] << Rtf_EList_DepthStyle() << endl;
   //newParagraph();
   //m_omitParagraph=TRUE;
 
@@ -864,7 +1076,7 @@ void RTFGenerator::writeListItem()
 {
   t << "{\\comment (writeListItem)}" << endl;
   newParagraph();
-  t << Rtf_Style_Reset;
+  t << Rtf_Style["Reset"];
   if (listItemInfo[m_listLevel].isEnum)
   {
     t << Rtf_EList_DepthStyle() << endl;
@@ -980,14 +1192,14 @@ void RTFGenerator::writeEndAnnoItem(const char *name)
 void RTFGenerator::startSubsection() 
 { 
   //beginRTFSubSection();
-  t <<"\n{\\comment Begin SubSection}\n" << Rtf_Style_Reset;
-  t << Rtf_Style_Heading3 << "\n";
+  t <<"\n{\\comment Begin SubSection}\n" << Rtf_Style["Reset"];
+  t << Rtf_Style["Heading3"] << "\n";
 }
 
 void RTFGenerator::endSubsection() 
 {
   newParagraph();
-  t << Rtf_Style_Reset << endl;
+  t << Rtf_Style["Reset"] << endl;
 }
 
 void RTFGenerator::startSubsubsection() 
@@ -995,7 +1207,7 @@ void RTFGenerator::startSubsubsection()
   //beginRTFSubSubSection();
   t << "\n{\\comment Begin SubSubSection}\n";
   t << "{" << endl;
-  t << Rtf_Style_Reset << Rtf_Style_Heading4 << "\n";
+  t << Rtf_Style["Reset"] << Rtf_Style["Heading4"] << "\n";
 }
 
 void RTFGenerator::endSubsubsection() 
@@ -1135,13 +1347,13 @@ void RTFGenerator::startTitleHead(const char *)
   t <<"{\\comment startTitleHead}" << endl;
 
   //	beginRTFSection();
-  t << Rtf_Style_Reset << Rtf_Style_Heading2 << endl;
+  t << Rtf_Style["Reset"] << Rtf_Style["Heading2"] << endl;
 }
 
 void RTFGenerator::endTitleHead(const char *fileName,const char *name)
 {
   t <<"{\\comment endTitleHead}" << endl;
-  t << "\\par " << Rtf_Style_Reset << endl;
+  t << "\\par " << Rtf_Style["Reset"] << endl;
   if (name)
   {
     // make table of contents entry
@@ -1177,8 +1389,8 @@ void RTFGenerator::startGroupHeader()
 {
   t <<"{\\comment startGroupHeader}" << endl;
   newParagraph();
-  t << Rtf_Style_Reset;
-  t << Rtf_Style_Heading3; 
+  t << Rtf_Style["Reset"];
+  t << Rtf_Style["Heading3"]; 
   t << endl;
 }
 
@@ -1186,7 +1398,7 @@ void RTFGenerator::endGroupHeader()
 {
   t <<"{\\comment endGroupHeader}" << endl;
   newParagraph();
-  t << Rtf_Style_Reset << endl;
+  t << Rtf_Style["Reset"] << endl;
 }
 
 void RTFGenerator::startMemberDoc(const char *clname,
@@ -1200,11 +1412,10 @@ void RTFGenerator::startMemberDoc(const char *clname,
     addToIndex(memname,clname);
     addToIndex(clname,memname);
   }
-  //t << Rtf_Style_Reset << Rtf_Style_ListBullet1;
-  t << Rtf_Style_Reset << Rtf_Style_Heading4;
+  t << Rtf_Style["Reset"] << Rtf_Style["Heading4"];
   //styleStack.push(Rtf_Style_Heading4);
   t << "{" << endl;
-  //printf("RTFGenerator::startMemberDoc() `%s'\n",Rtf_Style_Heading4);
+  //printf("RTFGenerator::startMemberDoc() `%s'\n",Rtf_Style["Heading4"]);
   startBold();
   t << endl;
 }
@@ -1215,7 +1426,7 @@ void RTFGenerator::endMemberDoc()
   t << "}" << endl;
   //const char *style = styleStack.pop();
   //printf("RTFGenerator::endMemberDoc() `%s'\n",style);
-  //ASSERT(style==Rtf_Style_Heading4);
+  //ASSERT(style==Rtf_Style["Heading4"]);
   endBold();
   newParagraph();
 }
@@ -1295,7 +1506,7 @@ void RTFGenerator::startIndent()
   incrementIndentLevel();
   t << "{\\comment (startIndent) }" << endl;
   t << "{" << endl;
-  t << Rtf_Style_Reset << Rtf_CList_DepthStyle() << endl;
+  t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle() << endl;
   //styleStack.push(style);
 }
 
@@ -1311,7 +1522,7 @@ void RTFGenerator::startDescription()
 { 
   t << "{\\comment (startDescription)}"    << endl; 
   t << "{" << endl;
-  t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+  t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle();
 }
 
 void RTFGenerator::endDescription()   
@@ -1340,7 +1551,7 @@ void RTFGenerator::startMemberDescription()
   t << "{\\comment (startMemberDescription)}"    << endl;
   t << "{" << endl;
   incrementIndentLevel();
-  t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+  t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle();
   startEmphasis();
 }
 
@@ -1364,16 +1575,16 @@ void RTFGenerator::endDescTitle()
 { 
   t << "{\\comment (endDescTitle) }"    << endl; 
   newParagraph();
-  //t << Rtf_Style_Reset << styleStack.top();
+  //t << Rtf_Style["Reset"] << styleStack.top();
   incrementIndentLevel();
-  t << Rtf_Style_Reset << Rtf_DList_DepthStyle();
+  t << Rtf_Style["Reset"] << Rtf_DList_DepthStyle();
 }
 
 void RTFGenerator::writeDescItem()
 {
   t << "{\\comment (writeDescItem) }"    << endl;
   //	incrementIndentLevel();
-  //t << Rtf_Style_Reset << Rtf_CList_DepthStyle(); 
+  //t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle(); 
 }
 
 void RTFGenerator::endDescList()       
@@ -1383,18 +1594,18 @@ void RTFGenerator::endDescList()
   t << "}";
   decrementIndentLevel();
   m_omitParagraph = TRUE;
-  //t << Rtf_Style_Reset << styleStack.top() << endl;
+  //t << Rtf_Style["Reset"] << styleStack.top() << endl;
 }
 
 void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
 {
   t << "{\\comment (writeSection)}"    << endl; 
   t << "{";
-  t<< Rtf_Style_Reset;
+  t<< Rtf_Style["Reset"];
   if (sub)
   {
     // set style
-    t << Rtf_Style_Heading3; 
+    t << Rtf_Style["Heading3"]; 
     // make table of contents entry
     t << "{\\tc\\tcl3 \\v ";
     docify(title);
@@ -1403,7 +1614,7 @@ void RTFGenerator::writeSection(const char *lab,const char *title,bool sub)
   else
   {
     // set style
-    t << Rtf_Style_Heading2; 
+    t << Rtf_Style["Heading2"]; 
     // make table of contents entry
     t << "{\\tc\\tcl2 \\v ";
     docify(title);
@@ -1530,7 +1741,7 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
 
   // display the file
   t << "{" << endl;
-  t << Rtf_Style_Reset << endl;
+  t << Rtf_Style["Reset"] << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << fileName << ".gif";
   t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
@@ -1545,7 +1756,7 @@ void RTFGenerator::writeFormula(const char *,const char *text)
 void RTFGenerator::startMemberItem(int) 
 { 
   t <<"{\\comment startMemberItem }" << endl;
-  t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl; // set style to apropriate depth
+  t << Rtf_Style["Reset"] << Rtf_BList_DepthStyle() << endl; // set style to apropriate depth
 }
 
 void RTFGenerator::endMemberItem(bool) 
@@ -1575,7 +1786,7 @@ void RTFGenerator::startCodeFragment()
 { 
   t << "{" << endl;
   newParagraph();
-  t << Rtf_Style_Reset << Rtf_Code_DepthStyle();
+  t << Rtf_Style["Reset"] << Rtf_Code_DepthStyle();
   //styleStack.push(Rtf_Style_CodeExample);
 }
 
@@ -1584,7 +1795,7 @@ void RTFGenerator::endCodeFragment()
   newParagraph();
   //styleStack.pop();
   //printf("RTFGenerator::endCodeFrament() top=%s\n",styleStack.top());
-  //t << Rtf_Style_Reset << styleStack.top() << endl; 
+  //t << Rtf_Style["Reset"] << styleStack.top() << endl; 
   t << "}" << endl;
   m_omitParagraph = TRUE;
 }
@@ -1633,7 +1844,7 @@ void RTFGenerator::startDescTable()
   t << "{\\comment (startDescTable) }"    << endl; 
   t << "{" << endl;
   //incrementIndentLevel();
-  //t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+  //t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle();
 }
 
 void RTFGenerator::endDescTable()    
@@ -1641,7 +1852,7 @@ void RTFGenerator::endDescTable()
   //decrementIndentLevel();
   t << "{\\comment (endDescTable)}"      << endl; 
   t << "}" << endl;
-  //t << Rtf_Style_Reset << styleStack.top();
+  //t << Rtf_Style["Reset"] << styleStack.top();
 }
 
 void RTFGenerator::startDescTableTitle()
@@ -1694,49 +1905,55 @@ void RTFGenerator::decrementIndentLevel()
 // a style for list formatted with "list continue" style
 const char * RTFGenerator::Rtf_CList_DepthStyle()
 {
-  return Rtf_Style_ListContinue[m_listLevel];
+  QCString n=makeIndexName("ListContinue",m_listLevel);
+  return Rtf_Style[n];
 }
 
 // a style for list formatted as a "latext style" table of contents
 const char * RTFGenerator::Rtf_LCList_DepthStyle()
 {
-  return Rtf_Style_LatexTOC[m_listLevel];
+  QCString n=makeIndexName("LatexTOC",m_listLevel);
+  return Rtf_Style[n];
 }
 
 // a style for list formatted as a "bullet" style 
 const char * RTFGenerator::Rtf_BList_DepthStyle()
 {
-  return Rtf_Style_ListBullet[m_listLevel];
+  QCString n=makeIndexName("ListBullet",m_listLevel);
+  return Rtf_Style[n];
 }
 
 // a style for list formatted as a "enumeration" style 
 const char * RTFGenerator::Rtf_EList_DepthStyle()
 {
-  return Rtf_Style_ListEnum[m_listLevel];
+  QCString n=makeIndexName("ListEnum",m_listLevel);
+  return Rtf_Style[n];
 }
 
 const char * RTFGenerator::Rtf_DList_DepthStyle()
 {
-  return Rtf_Style_DescContinue[m_listLevel];
+  QCString n=makeIndexName("DescContinue",m_listLevel);
+  return Rtf_Style[n];
 }
 
 const char * RTFGenerator::Rtf_Code_DepthStyle()
 {
-  return Rtf_Style_CodeExample[m_listLevel];
+  QCString n=makeIndexName("CodeExample",m_listLevel);
+  return Rtf_Style[n];
 }
 
 void RTFGenerator::startTextBlock(bool dense)
 {
   t << "{\\comment Start TextBlock}" << endl;
   t << "{" << endl;
-  t << Rtf_Style_Reset;
+  t << Rtf_Style["Reset"];
   if (dense) // no spacing between "paragraphs"
   {
-    t << Rtf_Style_DenseText;
+    t << Rtf_Style["DenseText"];
   }
   else // some spacing
   {
-    t << Rtf_Style_BodyText;
+    t << Rtf_Style["BodyText"];
   }
 }
 
@@ -1757,7 +1974,7 @@ void RTFGenerator::newParagraph()
 void RTFGenerator::startMemberSubtitle()
 {
   t << "{" << endl;
-  t << Rtf_Style_Reset << Rtf_CList_DepthStyle() << endl;
+  t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle() << endl;
 }
 
 void RTFGenerator::endMemberSubtitle()
@@ -1953,7 +2170,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
 
   // display the file
   t << "{" << endl;
-  t << Rtf_Style_Reset << endl;
+  t << Rtf_Style["Reset"] << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << g.diskName() << ".gif";
   t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
@@ -1977,7 +2194,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 
   // display the file
   t << "{" << endl;
-  t << Rtf_Style_Reset << endl;
+  t << Rtf_Style["Reset"] << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << g.diskName() << ".gif";
   t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
@@ -2037,14 +2254,14 @@ void RTFGenerator::startMemberGroupHeader(bool hasHeader)
   t << "{\\comment startMemberGroupHeader}" << endl;
   t << "{" << endl;
   if (hasHeader) incrementIndentLevel();
-  t << Rtf_Style_Reset << Rtf_Style_GroupHeader;
+  t << Rtf_Style["Reset"] << Rtf_Style["GroupHeader"];
 }
 
 void RTFGenerator::endMemberGroupHeader()
 {
   t << "{\\comment endMemberGroupHeader}" << endl;
   newParagraph();
-  t << Rtf_Style_Reset << Rtf_CList_DepthStyle();
+  t << Rtf_Style["Reset"] << Rtf_CList_DepthStyle();
 }
 
 void RTFGenerator::startMemberGroupDocs()
@@ -2063,7 +2280,7 @@ void RTFGenerator::endMemberGroupDocs()
 void RTFGenerator::startMemberGroup()
 {
   t << "{\\comment startMemberGroup}" << endl;
-  t << Rtf_Style_Reset << Rtf_BList_DepthStyle() << endl;
+  t << Rtf_Style["Reset"] << Rtf_BList_DepthStyle() << endl;
 }
 
 void RTFGenerator::endMemberGroup(bool hasHeader)

@@ -353,6 +353,8 @@ if test "$f_shared" = NO; then
   cat >> .tmakeconfig <<EOF
     TMAKE_LFLAGS = -non_shared
 EOF
+  elif test "$f_platform" = "solaris-cc"; then
+    TMAKE_LFLAGS = -Bstatic
   else
   cat >> .tmakeconfig <<EOF
     TMAKE_LFLAGS = -static

@@ -67,6 +67,8 @@ Problem!
 class TranslatorSwedish : public Translator
 {
   public:
+    QCString idLanguage()
+    { return "swedish"; }
     QCString latexBabelPackage()
     { return "swedish"; }
 

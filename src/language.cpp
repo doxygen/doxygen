@@ -15,6 +15,7 @@
  *
  */
 
+#include "message.h"
 #include "language.h"
 #if !defined(ENGLISH_ONLY)
 #include "translator_nl.h"
@@ -51,6 +52,10 @@ bool setTranslator(const char *langName)
   }
   else if (L_EQUAL("czech"))
   {
+#ifndef _WIN32
+    err("Warning: The Czech translation uses the windows code page 1250 encoding.\n"
+        "Please convert translator_cz.h to ISO Latin-2 to use it under UNIX.\n");
+#endif
     theTranslator=new TranslatorCzech;
   }
   else if (L_EQUAL("french"))
