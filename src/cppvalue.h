@@ -24,13 +24,9 @@
 
 class CPPValue
 {
-  friend CPPValue parseOctal();
-  friend CPPValue parseDecimal();
-  friend CPPValue parseHexadecimal();
-  friend CPPValue parseCharacter();
-  friend CPPValue parseFloat();
-  
   public:
+  
+  
     enum Type { Int, Float };
   
     CPPValue(long val=0) : type(Int) { v.l = val; }
@@ -56,5 +52,11 @@ class CPPValue
       long l;
     } v;
 };
+
+extern CPPValue parseOctal();
+extern CPPValue parseDecimal();
+extern CPPValue parseHexadecimal();
+extern CPPValue parseCharacter();
+extern CPPValue parseFloat();
 
 #endif

@@ -27,6 +27,7 @@ print FILE "TMAKE     = $pwd\\tmake\\bin\\tmake\n";
 print FILE "MAKE      = $make\n";
 print FILE "PERL      = perl\n";
 print FILE "RM        = del /s /q\n";
+print FILE "CP        = copy\n";
 print FILE "VERSION   = ";
 
 # copy contents of VERSION file to FILE

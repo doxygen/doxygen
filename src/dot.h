@@ -24,6 +24,7 @@ class ClassDef;
 class FileDef;
 class QTextStream;
 class DotNodeList;
+class ClassSDict;
 
 enum GraphOutputFormat { GIF , EPS };
 
@@ -105,6 +106,7 @@ class DotGfxHierarchyTable
   
   private:
     void addHierarchy(DotNode *n,ClassDef *cd,bool hide);
+    void addClassList(ClassSDict *cl);
 
     QList<DotNode> *m_rootNodes; 
     QDict<DotNode> *m_usedNodes; 

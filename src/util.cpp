@@ -715,7 +715,7 @@ QCString argListToString(ArgumentList *al)
   result+=")";
   if (al->constSpecifier) result+=" const";
   if (al->volatileSpecifier) result+=" volatile";
-  return result;
+  return removeRedundantWhiteSpace(result);
 }
 
 QCString tempArgListToString(ArgumentList *al)
@@ -743,7 +743,7 @@ QCString tempArgListToString(ArgumentList *al)
     if (a) result+=", ";
   }
   result+=">";
-  return result;
+  return removeRedundantWhiteSpace(result);
 }
 
 
@@ -2804,8 +2804,7 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
  *  could form a class. When TRUE is returned the result is the 
  *  class \a name and a template argument list \a templSpec.
  */
-bool extractClassNameFromType(const QCString &type,int &pos,
-            QCString &name,QCString &templSpec)
+bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec)
 {
   static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   name.resize(0);
@@ -2818,7 +2817,8 @@ bool extractClassNameFromType(const QCString &type,int &pos,
     {
       int ts=i+l;
       int te=ts;
-      while (type.at(ts)==' ' && ts<typeLen) ts++; // skip any whitespace
+      int tl=0;
+      while (type.at(ts)==' ' && ts<typeLen) ts++,tl++; // skip any whitespace
       if (type.at(ts)=='<') // assume template instance
       {
         // locate end of template
@@ -2837,12 +2837,68 @@ bool extractClassNameFromType(const QCString &type,int &pos,
           te++;
         }
       }
-      if (te>ts) templSpec = type.mid(ts,te-ts);
+      if (te>ts) templSpec = type.mid(ts,te-ts),tl+=te-ts;
       name = type.mid(i,l);
-      pos=i+l;
+      pos=i+l+tl;
+      //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE\n",
+      //    type.data(),pos,name.data(),templSpec.data());
       return TRUE;
     }
   }
+  //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
+  //       type.data(),pos,name.data(),templSpec.data());
   return FALSE;
 }
+
+/*! Substitutes any occurrence of a formal argument from argument list
+ *  \a formalArgs in \a name by the corresponding actual argument in
+ *  argument list \a actualArgs. The result after substitution
+ *  is returned as a string.
+ */
+QCString substituteTemplateArgumentsInString(
+       const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs)
+{
+  if (formalArgs==0) return name;
+  QCString result;
+  static QRegExp re("[a-z_A-Z][:a-z_A-Z0-9]*");
+  int p=0,l,i;
+  // for each identifier in the base class name (e.g. B<T> -> B and T)
+  while ((i=re.match(name,p,&l))!=-1)
+  {
+    result += name.mid(p,i-p);
+    QCString n = name.mid(i,l);
+    ArgumentListIterator formAli(*formalArgs);
+    Argument *formArg;
+    Argument *actArg=actualArgs->first();
+
+    // if n is a template argument, then we substitute it
+    // for its template instance argument.
+    bool found=FALSE;
+    for (formAli.toFirst();
+        (formArg=formAli.current()) && !found;
+        ++formAli,actArg=actualArgs->next()
+        )
+    {
+      if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
+      {
+        // replace formal argument with the actual argument of the instance
+        result += actArg->type; 
+        found=TRUE;
+      }
+      else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty())
+      {
+        result += formArg->defval;
+        found=TRUE;
+      }
+    }
+    if (!found) result += n;
+    p=i+l;
+  }
+  result+=name.right(name.length()-p);
+  //printf("      Inheritance relation %s -> %s\n",
+  //    name.data(),result.data());
+  return result;
+}
+
+
 

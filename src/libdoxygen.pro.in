@@ -139,6 +139,7 @@ SOURCES      =	ce_lex.cpp \
 		searchindex.cpp \
 		suffixtree.cpp \
 		tagreader.cpp \
+		translator.cpp \
 		util.cpp \
 		version.cpp
 

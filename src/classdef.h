@@ -26,6 +26,7 @@
 #include "entry.h"
 #include "memberlist.h"
 #include "definition.h"
+#include "sortdict.h"
 
 class MemberDict;
 class ClassList;
@@ -67,8 +68,10 @@ class ClassDef : public Definition
                       };
     DefType definitionType() { return TypeClass; }
     QCString getOutputFileBase() const; 
+    QCString getInstanceOutputFileBase() const; 
     QCString getFileBase() const;
     QCString getSourceFileBase() const; 
+    QCString getReference() const;
 
     bool hasDocumentation() const;
 
@@ -106,12 +109,12 @@ class ClassDef : public Definition
 
     /*! returns TRUE iff a link is possible to an item within this project.
      */
-    bool isLinkableInProject();
+    bool isLinkableInProject() const;
 
     /*! return TRUE iff a link to this class is possible (either within 
      *  this project, or as a cross-reference to another project).
      */
-    bool isLinkable()
+    bool isLinkable() const
     {
       return isLinkableInProject() || isReference();
     }
@@ -156,6 +159,15 @@ class ClassDef : public Definition
      */
     int isTemplateBaseClass() const { return m_isTemplBaseClass; }
 
+    /*! Returns a sorted dictionary with all template instances found for
+     *  this template class. Returns 0 if not a template or no instances.
+     */
+    QDict<ClassDef> *getTemplateInstances() const { return m_templateInstances; }
+    /*! Returns the template master of which this class is an instance.
+     *  Returns 0 if not applicable.
+     */
+    ClassDef *templateMaster() const { return m_templateMaster; } 
+
     UsesClassDict *usedImplementationClasses() const 
     { 
       return m_usesImplClassDict; 
@@ -166,7 +178,12 @@ class ClassDef : public Definition
       return m_usesIntfClassDict;
     }
 
+    /*! Returns the definition of a nested compound if
+     *  available, or 0 otherwise.
+     *  @param name The name of the nested compound
+     */
     virtual Definition *findInnerCompound(const char *name);
+
 
     /* member lists by protection */
     MemberList pubMembers;
@@ -224,16 +241,24 @@ class ClassDef : public Definition
     void setTemplateArguments(ArgumentList *al);
     void mergeMembers();
     void setFileDef(FileDef *fd) { m_fileDef=fd; }
-    void determineImplUsageRelation();
-    void determineIntfUsageRelation();
+    //void determineImplUsageRelation();
+    //void determineIntfUsageRelation();
     void setSubGrouping(bool enabled) { m_subGrouping = enabled; }
     void setProtection(Protection p) { m_prot=p; }
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
     void setIsTemplateBaseClass(int num) { m_isTemplBaseClass = num; }
-    void initTemplateMapping();
-    void setTemplateArgumentMapping(const char *formal,const char *actual);
-    QCString getTemplateArgumentMapping(const char *formal) const;
+    void addUsedClass(ClassDef *cd,const char *accessName);
+    //void initTemplateMapping();
+    //void setTemplateArgumentMapping(const char *formal,const char *actual);
+    //QCString getTemplateArgumentMapping(const char *formal) const;
+    ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
+                                const QCString &templSpec,bool &freshInstance);
+    void setTemplateBaseClassNames(QDict<int> *templateNames);
+    QDict<int> *getTemplateBaseClassNames() const;
+    void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
+    void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
+    void setClassIsArtificial() { m_artificial = TRUE; }
 
     /*! Creates a new compound definition.
      *  \param outerScope class, file or namespace in which this class is
@@ -351,11 +376,22 @@ class ClassDef : public Definition
      */
     int m_isTemplBaseClass;
 
-    /*! A mapping used by template classes, which maps formal
-     *  template arguments to their actual instantiations. 
-     *  This is used while generating inheritance graphs.
+    /*! Template instances that exists of this class, the key in the
+     *  dictionary is the template argument list.
+     */ 
+    QDict<ClassDef> *m_templateInstances;
+
+    QDict<int> *m_templBaseClassNames;
+
+    /*! The class this class is an instance of. */
+    ClassDef *m_templateMaster;
+
+    /*! Indicated whether this class exists because it is used by
+     *  some other class only (TRUE) or if some class inherits from
+     *  it (FALSE). This is need to remove used-only classes from
+     *  the inheritance tree.
      */
-    StringDict *m_templateMapping;
+    bool m_artificial;
 };
 
 /*! \brief Class that contains information about a usage relation. 

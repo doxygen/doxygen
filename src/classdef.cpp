@@ -33,7 +33,8 @@
 #include "example.h"
 #include "outputlist.h"
 #include "dot.h"
-//#include "xml.h"
+#include "defargs.h"
+#include "debug.h"
 
 static QCString stripExtension(const char *fName)
 {
@@ -98,8 +99,10 @@ ClassDef::ClassDef(
   }
   m_subGrouping=TRUE;
   m_isTemplBaseClass=-1;
-  m_templateMapping = new StringDict;
-  m_templateMapping->setAutoDelete(TRUE);
+  m_templateInstances = 0;
+  m_templateMaster =0;
+  m_templBaseClassNames = 0;
+  m_artificial = FALSE;
 }
 
 // destroy the class definition
@@ -115,19 +118,26 @@ ClassDef::~ClassDef()
   delete m_memberGroupList;
   delete m_memberGroupDict;
   delete m_innerClasses;
-  delete m_templateMapping;
+  delete m_templateInstances;
+  delete m_templBaseClassNames;
 }
 
 QCString ClassDef::displayName() const
 {
+  QCString n;
   if (Config_getBool("HIDE_SCOPE_NAMES"))
   {
-    return stripScope(name());
+    n=stripScope(name());
   }
   else
   {
-    return name();
+    n=name();
   }
+  if (m_tempArgs)
+  {
+    n+=tempArgListToString(m_tempArgs);
+  }
+  return n;
 }
 
 // inserts a base class in the inheritance list
@@ -527,6 +537,15 @@ void ClassDef::distributeMemberGroupDocumentation()
 void ClassDef::insertUsedFile(const char *f)
 {
   if (m_files.find(f)==-1) m_files.append(f);
+  if (m_templateInstances)
+  {
+    QDictIterator<ClassDef> qdi(*m_templateInstances);
+    ClassDef *cd;
+    for (qdi.toFirst();(cd=qdi.current());++qdi)
+    {
+      cd->insertUsedFile(f);
+    }
+  }
 }
 
 static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
@@ -566,6 +585,7 @@ void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
   }
 }
 
+// TODO: fix this: a nested template class can have multiple outer templates
 ArgumentList *ClassDef::outerTemplateArguments() const
 {
   int ti;
@@ -700,6 +720,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << ".html</filename>" << endl;
+    if (m_tempArgs)
+    {
+      ArgumentListIterator ali(*m_tempArgs);
+      Argument *a;
+      for (;(a=ali.current());++ali)
+      {
+        Doxygen::tagFile << "    <templarg>" << convertToXML(a->name) << "</templarg>" << endl;
+      }
+    }
   }
 
   
@@ -1145,15 +1174,16 @@ void ClassDef::writeMemberList(OutputList &ol)
       ClassDef  *cd=md->getClassDef();
       
       // compute the protection level for this member
-      Protection prot=md->protection();
-      if (mi->prot==Protected) // inherited protection: Protected
-      {
-        if (prot==Public) prot=Protected;
-      }
-      else if (mi->prot==Private) // inherited protection: Private
-      {
-        prot=Private;
-      }
+      //Protection prot=md->protection();
+      //if (mi->prot==Protected) // inherited protection: Protected
+      //{
+      //  if (prot==Public) prot=Protected;
+      //}
+      //else if (mi->prot==Private) // inherited protection: Private
+      //{
+      //  prot=Private;
+      //}
+      Protection prot = mi->prot;
       
       //printf("%s: Member %s of class %s md->protection()=%d mi->prot=%d prot=%d inherited=%d\n",
       //    name().data(),md->name().data(),cd->name().data(),md->protection(),mi->prot,prot,mi->inherited);
@@ -1166,13 +1196,15 @@ void ClassDef::writeMemberList(OutputList &ol)
         rmd  = rmd->reimplements();
       }
 
-      if (cd && !md->name().isEmpty() && md->name()[0]!='@' && 
-          (
-           md->isFriend() || 
-           (/*mi->prot!=Private &&*/ 
-            (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
-           )
-          )
+      if (cd && !md->name().isEmpty() && md->name()[0]!='@' 
+          // && 
+          //(
+          // md->isFriend() 
+           // || 
+           //(/*mi->prot!=Private &&*/ 
+           // (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
+           //)
+          //)
          )
       {
         bool memberWritten=FALSE;
@@ -1416,7 +1448,7 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 }
 
 /*! a link to this class is possible within this project */
-bool ClassDef::isLinkableInProject() 
+bool ClassDef::isLinkableInProject() const
 { 
   return !name().isEmpty() &&    /* no name */
          m_isTemplBaseClass==-1 &&  /* template base class */
@@ -1432,8 +1464,10 @@ bool ClassDef::isVisibleInHierarchy()
     (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
     // and not an annonymous compound
     name().find('@')==-1 &&
+    // not an artifically introduced class
+    !m_artificial &&
     // and not an inherited template argument
-    m_isTemplBaseClass==-1 && 
+    //m_isTemplBaseClass==-1 && 
     // and not privately inherited
     (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
     // documented or show anyway or documentation is external 
@@ -1642,6 +1676,7 @@ void ClassDef::mergeMembers()
             Specifier virt=mi->virt;
             if (mi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
             
+            //printf("Adding!\n");
             MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
             newMi->scopePath=bClass->name()+"::"+mi->scopePath;
             newMi->ambigClass=mi->ambigClass;
@@ -1660,6 +1695,22 @@ void ClassDef::mergeMembers()
 
 //----------------------------------------------------------------------------
 
+void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
+{
+  if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(17); 
+  UsesClassDef *ucd=m_usesImplClassDict->find(cd->name());
+  if (ucd==0 /*|| ucd->templSpecifiers!=templSpec*/)
+  {
+     ucd = new UsesClassDef(cd);
+     m_usesImplClassDict->insert(cd->name(),ucd);
+     //ucd->templSpecifiers = templSpec;
+     //printf("Adding used class %s to class %s\n",
+     //    cd->name().data(),name().data());
+  }
+  ucd->addAccessor(accessName);
+}
+
+#if 0
 /*! Builds up a dictionary of all classes that are used by the state of this 
  *  class (the "implementation"). 
  *  Must be called before mergeMembers() is called!
@@ -1772,7 +1823,6 @@ void ClassDef::determineImplUsageRelation()
 
 //----------------------------------------------------------------------------
 
-#if 0
 // I have disabled this code because the graphs it renders quickly become
 // too large to be of practical use.
 
@@ -1873,6 +1923,22 @@ QCString ClassDef::compoundTypeString() const
 
 QCString ClassDef::getOutputFileBase() const 
 { 
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getOutputFileBase();
+  }
+  else if (isReference())
+  {
+    return m_fileName;
+  }
+  else
+  {
+    return convertNameToFile(m_fileName); 
+  }
+}
+
+QCString ClassDef::getInstanceOutputFileBase() const 
+{ 
   if (isReference())
   {
     return m_fileName;
@@ -1885,12 +1951,26 @@ QCString ClassDef::getOutputFileBase() const
 
 QCString ClassDef::getFileBase() const 
 { 
-  return m_fileName; 
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getFileBase();
+  }
+  else
+  {
+    return m_fileName; 
+  }
 }
 
 QCString ClassDef::getSourceFileBase() const 
 { 
-  return convertNameToFile(m_fileName+"-source"); 
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getSourceFileBase();
+  }
+  else
+  {
+    return convertNameToFile(m_fileName+"-source"); 
+  }
 }
 
 void ClassDef::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs)
@@ -1925,44 +2005,147 @@ Definition *ClassDef::findInnerCompound(const char *name)
   return m_innerClasses->find(name);
 }
 
-void ClassDef::initTemplateMapping()
+//void ClassDef::initTemplateMapping()
+//{
+//  m_templateMapping->clear();
+//  ArgumentList *al = templateArguments();
+//  if (al)
+//  {
+//    ArgumentListIterator ali(*al);
+//    Argument *arg;
+//    for (ali.toFirst();(arg=ali.current());++ali)
+//    {
+//      setTemplateArgumentMapping(arg->name,arg->defval);
+//    }
+//  }
+//}
+//void ClassDef::setTemplateArgumentMapping(const char *formal,const char *actual)
+//{
+//  //printf("ClassDef::setTemplateArgumentMapping(%s,%s)\n",formal,actual);
+//  if (m_templateMapping && formal)
+//  {
+//    if (m_templateMapping->find(formal))
+//    {
+//      m_templateMapping->remove(formal);
+//    }
+//    m_templateMapping->insert(formal,new QCString(actual));
+//  }
+//}
+//
+//QCString ClassDef::getTemplateArgumentMapping(const char *formal) const
+//{
+//  if (m_templateMapping && formal)
+//  {
+//    QCString *s = m_templateMapping->find(formal);
+//    if (s)
+//    {
+//      return *s;
+//    }
+//  }
+//  return "";
+//}
+
+ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
+    int startLine, const QCString &templSpec,bool &freshInstance)
 {
-  m_templateMapping->clear();
-  ArgumentList *al = templateArguments();
-  if (al)
+  freshInstance = FALSE;
+  if (m_templateInstances==0) 
   {
-    ArgumentListIterator ali(*al);
-    Argument *arg;
-    for (ali.toFirst();(arg=ali.current());++ali)
+    m_templateInstances = new QDict<ClassDef>(17);
+  }
+  ClassDef *templateClass=m_templateInstances->find(templSpec);
+  if (templateClass==0)
+  {
+    Debug::print(Debug::Classes,0,"  New template instance class %s%s\n",name().data(),templSpec.data());
+    templateClass = new ClassDef(
+        fileName,startLine,name()+templSpec,ClassDef::Class);
+    //templateClass->setBriefDescription(briefDescription());
+    //templateClass->setDocumentation(documentation());
+    templateClass->setTemplateMaster(this);
+    m_templateInstances->insert(templSpec,templateClass);
+    freshInstance=TRUE;
+  }
+  return templateClass;
+}
+
+void ClassDef::setTemplateBaseClassNames(QDict<int> *templateNames)
+{
+  if (templateNames==0) return;
+  if (m_templBaseClassNames==0)
+  {
+    m_templBaseClassNames = new QDict<int>(17);
+    m_templBaseClassNames->setAutoDelete(TRUE);
+  }
+  // make a deep copy of the dictionary.
+  QDictIterator<int> qdi(*templateNames);
+  for (;qdi.current();++qdi)
+  {
+    if (m_templBaseClassNames->find(qdi.currentKey())==0)
     {
-      setTemplateArgumentMapping(arg->name,arg->defval);
+      m_templBaseClassNames->insert(qdi.currentKey(),new int(*qdi.current()));
     }
   }
 }
 
-void ClassDef::setTemplateArgumentMapping(const char *formal,const char *actual)
+QDict<int> *ClassDef::getTemplateBaseClassNames() const
 {
-  //printf("ClassDef::setTemplateArgumentMapping(%s,%s)\n",formal,actual);
-  if (m_templateMapping && formal)
+  return m_templBaseClassNames;
+}
+
+void ClassDef::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
+{
+  //printf("%s::addMembersToTemplateInstance(%s,%s)\n",name().data(),cd->name().data(),templSpec);
+  MemberNameInfoSDict::Iterator mnili(*cd->m_allMemberNameInfoSDict);
+  MemberNameInfo *mni;
+  for (;(mni=mnili.current());++mnili)
   {
-    if (m_templateMapping->find(formal))
+    MemberNameInfoIterator mnii(*mni);
+    MemberInfo *mi;
+    for (mnii.toFirst();(mi=mnii.current());++mnii)
     {
-      m_templateMapping->remove(formal);
+      ArgumentList *actualArguments = new ArgumentList;
+      stringToArgumentList(templSpec,actualArguments);
+      MemberDef *md = mi->memberDef;
+      MemberDef *imd = md->createTemplateInstanceMember(
+                          cd->templateArguments(),actualArguments);
+      delete actualArguments;
+      //printf("%s->setMemberClass(%p)\n",imd->name().data(),this);
+      imd->setMemberClass(this);
+      imd->setTemplateMaster(md);
+      //imd->setDocumentation(md->documentation());
+      //imd->setBriefDescription(md->briefDescription());
+      imd->setMemberSpecifiers(md->getMemberSpecifiers());
+      insertMember(imd);
+      //printf("Adding member=%s%s to class %s\n",imd->name().data(),imd->argsString(),imd->getClassDef()->name().data());
+      // insert imd in the list of all members
+      //printf("Adding member=%s class=%s\n",imd->name().data(),name().data());
+#if 0
+      MemberName *mn;
+      if ((mn=Doxygen::memberNameDict[imd->name()]))
+      {
+        mn->append(md);
+      }
+      else
+      {
+        mn = new MemberName(imd->name());
+        mn->append(md);
+        Doxygen::memberNameDict.insert(imd->name(),mn);
+        Doxygen::memberNameList.append(mn);
+      }
+#endif
     }
-    m_templateMapping->insert(formal,new QCString(actual));
   }
 }
 
-QCString ClassDef::getTemplateArgumentMapping(const char *formal) const
+QCString ClassDef::getReference() const
 {
-  if (m_templateMapping && formal)
+  if (m_templateMaster)
   {
-    QCString *s = m_templateMapping->find(formal);
-    if (s)
-    {
-      return *s;
-    }
+    return m_templateMaster->getReference();
   }
-  return "";
+  else
+  {
+    return Definition::getReference();
+  }
 }
 

@@ -50,4 +50,6 @@ MOC_DIR     =   moc
 
 # extra C++ compiler options
 TMAKE_CXXFLAGS += -DDOXYWIZARD
+win32:TMAKE_CXXFLAGS += -I. -DQT_DLL
+win32:TMAKE_LIBS = $(QTDIR)\lib\qtmain.lib $(QTDIR)\lib\qt-mt230nc.lib user32.lib gdi32.lib comdlg32.lib imm32.lib ole32.lib uuid.lib wsock32.lib
 

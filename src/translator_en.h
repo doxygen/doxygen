@@ -397,7 +397,16 @@ class TranslatorEnglish : public Translator
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { return "Class Documentation"; }
+    { 
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Data Structure Documentation"; 
+      }
+      else
+      {
+        return "Class Documentation"; 
+      }
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
@@ -1024,7 +1033,9 @@ class TranslatorEnglish : public Translator
     {
       return "Graph Legend";
     }
-    /*! page explaining how the dot graph's should be interpreted */
+    /*! page explaining how the dot graph's should be interpreted 
+     *  The %A in the text below are to prevent link to classes called "A".
+     */
     virtual QCString trLegendDocs()
     {
       return 
@@ -1062,21 +1073,21 @@ class TranslatorEnglish : public Translator
         "<p>\n"
         "The boxes in the above graph have the following meaning:\n"
         "<ul>\n"
-        "<li>A filled black box represents the struct or class for which the "
+        "<li>%A filled black box represents the struct or class for which the "
         "graph is generated.\n"
-        "<li>A box with a black border denotes a documented struct or class.\n"
-        "<li>A box with a grey border denotes an undocumented struct or class.\n"
-        "<li>A box with a red border denotes a documented struct or class for\n"
-        "which not all inheritance/containment relations are shown. A graph is "
+        "<li>%A box with a black border denotes a documented struct or class.\n"
+        "<li>%A box with a grey border denotes an undocumented struct or class.\n"
+        "<li>%A box with a red border denotes a documented struct or class for\n"
+        "which not all inheritance/containment relations are shown. %A graph is "
         "truncated if it does not fit within the specified boundaries."
         "</ul>\n"
         "The arrows have the following meaning:\n"
         "<ul>\n"
-        "<li>A dark blue arrow is used to visualize a public inheritance "
+        "<li>%A dark blue arrow is used to visualize a public inheritance "
         "relation between two classes.\n"
-        "<li>A dark green arrow is used for protected inheritance.\n"
-        "<li>A dark red arrow is used for private inheritance.\n"
-        "<li>A purple dashed arrow is used if a class is contained or used "
+        "<li>%A dark green arrow is used for protected inheritance.\n"
+        "<li>%A dark red arrow is used for private inheritance.\n"
+        "<li>%A purple dashed arrow is used if a class is contained or used "
         "by another class. The arrow is labeled with the variable(s) "
         "through which the pointed class or struct is accessible. \n"
         "</ul>\n";

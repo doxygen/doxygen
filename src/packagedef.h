@@ -38,11 +38,11 @@ class PackageDef : public Definition
     QCString getOutputFileBase() const ;
     void addClass(const ClassDef *def);
     void writeDocumentation(OutputList &ol);
-    bool isLinkableInProject()
+    bool isLinkableInProject() const
     {
       return hasDocumentation() && !isReference();
     }
-    bool isLinkable()
+    bool isLinkable() const
     {
       return isLinkableInProject() || isReference();
     }

@@ -59,7 +59,7 @@ class Doxygen
 {
   public:
     static ClassSDict classSDict;
-    static ClassList  hiddenClasses;
+    static ClassSDict hiddenClasses;
     static PageSDict *exampleSDict;
     static PageSDict *pageSDict;
     static PageInfo  *mainPage;

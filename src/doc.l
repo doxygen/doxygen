@@ -22,7 +22,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
+//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -828,7 +828,7 @@ ID        [a-z_A-Z][a-z_A-Z0-9]*
 SCOPENAME (({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEMASK {ID}?(("::"|"#")?(~)?{ID})+
 URLMASK   [a-z_A-Z0-9\~\:\?\@\&\%\#\.\-\+\/\=]+
-NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9]
+NONTERM   [\{\}\[\]\`\~\@\|\-\+\#\$\/\\\!\%\^\&\*()a-z_A-Z<>0-9\x80-\xff]
 WORD      ({NONTERM}+([^\n\t ]*{NONTERM}+)?)|("\""[^\n\"]"\"")
 ATTR      ({B}+[^>\n]*)?
 A         [aA]

@@ -18,13 +18,12 @@
 
 \subsection config_format Format
 
-A configuration file is a free-form ASCII text file with a structure that
-is similar to that of a Makefile. It is parsed by \c doxygen.
-The file may contain tabs and newlines for formatting purposes.
-The statements in the file are case-sensitive.
+A configuration file is a free-form ASCII text file with a structure
+that is similar to that of a Makefile, default name \c Doxyfile. It is
+parsed by \c doxygen.  The file may contain tabs and newlines for
+formatting purposes.  The statements in the file are case-sensitive.
 Comments may be placed anywhere within the file (except within quotes).
-Comments begin with the \# character and end at the end of the 
-line.
+Comments begin with the \# character and end at the end of the line.
 
 The file essentially consists of a list of assignment statements.
 Each statement consists of a \c TAG_NAME written in capitals,
@@ -905,8 +904,16 @@ EXTRA_PACKAGES = times
  If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that 
  is generated is prepared for conversion to PDF (using ps2pdf). 
  The PDF file will
- contain links (just like the HTML output) instead of page references
+ contain links (just like the HTML output) instead of page references.
  This makes the output suitable for online browsing using a PDF viewer.
+
+\anchor cfg_latex_pdflatex
+<dt>\c USE_PDFLATEX <dd>
+ \addindex LATEX_PDFLATEX
+
+ If the \c LATEX_PDFLATEX tag is set to \c YES, doxygen will use
+ pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
+ files.
 
 \anchor cfg_latex_batchmode
 <dt>\c LATEX_BATCHMODE <dd>
@@ -1000,7 +1007,7 @@ EXTRA_PACKAGES = times
 
 \anchor cfg_man_links
 <dt>\c MAN_LINKS <dd> 
- \addindex MAN_LINKS
+ \addindex MAN_LINKs
  If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output, 
  then it will generate one additional man file for each entity documented in 
  the real man page(s). These additional files only source the real man page, 
@@ -1054,7 +1061,7 @@ EXTRA_PACKAGES = times
  are defined before the preprocessor is started (similar to the -D option of
  gcc). The argument of the tag is a list of macros of the form:
  <code>name</code> or <code>name=definition</code> (no spaces). 
- If the definition and the = are omitted =1 is assumed.
+ If the definition and the "=" are omitted,  "=1" is assumed.
 
 \anchor cfg_expand_as_defined
 <dt>\c EXPAND_AS_DEFINED <dd>
@@ -1125,7 +1132,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex HAVE_DOT
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
  available from the path. This tool is part of 
- <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
+ <a href="http://www.graphviz.org/">Graphviz</a>, a graph 
  visualization toolkit from AT&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
  
@@ -1197,6 +1204,12 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  If the \c GENERATE_LEGEND tag is set to \c YES (the default) doxygen will
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
+
+\anchor cfg_dot_cleanup
+<dt>\c DOT_CLEANUP <dd>
+ \addindex DOT_CLEANUP
+ This tag can be used to ?? cleanup any mess DOT left behind?
+ If left blank, "NO" is assumed.
 
 </dl>
 \subsection config_search Search engine options
@@ -1333,7 +1346,7 @@ INCLUDE_PATH         = $(QTDIR)/include
 RECURSIVE            = YES
 \endverbatim
 
-For the Qt-2.1 sources I recommand to use the following settings:
+For the Qt-2.1 sources I recommend to use the following settings:
 \verbatim
 PROJECT_NAME          = Qt
 PROJECT_NUMBER        = 2.1

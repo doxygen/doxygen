@@ -1127,7 +1127,9 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isMainPage:
       t << "\\par " << Rtf_Style_Reset << endl;
       t << "{\\tc \\v " << theTranslator->trMainPage() << "}"<< endl;
-      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"index.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+      if (Config_getBool("GENERATE_TREEVIEW")) t << "main"; else t << "index";
+      t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isPackageIndex:
       t << "\\par " << Rtf_Style_Reset << endl;

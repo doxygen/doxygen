@@ -25,11 +25,13 @@
 #define YY_NO_UNPUT
 #define YY_NEVER_INTERACTIVE 1
   
-QCString strToken;  
+QCString    g_strToken;  
+CPPValue    g_resultValue;
+int         g_constExpLineNr;
+QCString    g_constExpFileName;
 
-static const char *inputString;
-static int         inputPosition;
-CPPValue resultValue;
+static const char *g_inputString;
+static int         g_inputPosition;
 
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -37,9 +39,9 @@ CPPValue resultValue;
 static int yyread(char *buf,int max_size)
 {
   int c=0;
-  while( c < max_size && inputString[inputPosition] )
+  while( c < max_size && g_inputString[g_inputPosition] )
   {
-    *buf = inputString[inputPosition++] ;
+    *buf = g_inputString[g_inputPosition++] ;
     c++; buf++;
   }
   return c;
@@ -74,36 +76,38 @@ static int yyread(char *buf,int max_size)
 "("             		   { return TOK_LPAREN; }
 ")"             		   { return TOK_RPAREN; }
 "'"(([^\'\n\r\\]+)|(\\(([ntvbrfa\\?'\"])|([0-9]+)|([xX][0-9a-fA-F]+))))"'"   { 
-                                     strToken=yytext;  
+                                     g_strToken=yytext;  
 				     return TOK_CHARACTER; 
 				   }
-0[0-7]*[uUlL]*                     { strToken=yytext; 
+0[0-7]*[uUlL]*                     { g_strToken=yytext; 
   				     return TOK_OCTALINT; 
 				   }
-[1-9][0-9]*[uUlL]*                 { strToken=yytext; 
+[1-9][0-9]*[uUlL]*                 { g_strToken=yytext; 
   				     return TOK_DECIMALINT; 
 				   }
-(0x|0X)[0-9a-fA-F]+[uUlL]*         { strToken=yytext; return TOK_HEXADECIMALINT; }
+(0x|0X)[0-9a-fA-F]+[uUlL]*         { g_strToken=yytext; return TOK_HEXADECIMALINT; }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
-                                     strToken=yytext; return TOK_FLOAT; 
+                                     g_strToken=yytext; return TOK_FLOAT; 
                                    }
 ([0-9]+[eE])([\-\+])?[0-9]+([fFlL])? { 
-                                     strToken=yytext; return TOK_FLOAT; 
+                                     g_strToken=yytext; return TOK_FLOAT; 
 			           }
 .				   
 \n
 
 %%
 
-bool parseCppExpression(const QCString &s)
+bool parseCppExpression(const char *fileName,int lineNr,const QCString &s)
 {
   //printf("Expression: `%s'\n",s.data());
-  inputString = s;
-  inputPosition = 0;
+  g_constExpFileName = fileName;
+  g_constExpLineNr = lineNr;
+  g_inputString = s;
+  g_inputPosition = 0;
   cppExpYYrestart( cppExpYYin );
   cppExpYYparse();
   //printf("Result: %ld\n",(long)resultValue);
-  return (long)resultValue!=0;
+  return (long)g_resultValue!=0;
 }
 
 extern "C" {

@@ -24,7 +24,7 @@
 CPPValue parseOctal()
 {
   long val = 0;
-  for (const char *p = strToken.data(); *p != 0; p++)
+  for (const char *p = g_strToken.data(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '7') val = val * 8 + *p - '0';
   }
@@ -34,7 +34,7 @@ CPPValue parseOctal()
 CPPValue parseDecimal()
 {
   long val = 0;
-  for (const char *p = strToken.data(); *p != 0; p++)
+  for (const char *p = g_strToken.data(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '9') val = val * 10 + *p - '0';
   }
@@ -44,7 +44,7 @@ CPPValue parseDecimal()
 CPPValue parseHexadecimal()
 {
   long val = 0;
-  for (const char *p = strToken.data(); *p != 0; p++)
+  for (const char *p = g_strToken.data(); *p != 0; p++)
   {
     if      (*p >= '0' && *p <= '9') val = val * 16 + *p - '0';
     else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
@@ -55,9 +55,9 @@ CPPValue parseHexadecimal()
 
 CPPValue parseCharacter() // does not work for '\n' and the alike 
 {
-  if (strToken[1]=='\\')
+  if (g_strToken[1]=='\\')
   {
-    switch(strToken[2])
+    switch(g_strToken[2])
     {
       case 'n':  return CPPValue((long)'\n');
       case 't':  return CPPValue((long)'\t');
@@ -73,14 +73,14 @@ CPPValue parseCharacter() // does not work for '\n' and the alike
       case '0':  return parseOctal();
       case 'x': 
       case 'X':  return parseHexadecimal();
-      default:   printf("Invalid escape sequence %s found!\n",strToken.data()); 
+      default:   printf("Invalid escape sequence %s found!\n",g_strToken.data()); 
                  return CPPValue(0L); 
     }
   }
-  return CPPValue((long)strToken[1]);
+  return CPPValue((long)g_strToken[1]);
 }
 
 CPPValue parseFloat()
 {
-  return CPPValue(atof(strToken));
+  return CPPValue(atof(g_strToken));
 }

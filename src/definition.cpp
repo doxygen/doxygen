@@ -452,7 +452,11 @@ void Definition::addInnerCompound(Definition *)
 QCString Definition::qualifiedName() const
 {
   //printf("start Definition::qualifiedName()\n");
-  if (m_outerScope==0) return m_localName; // TODO: remove this check
+  if (m_outerScope==0) 
+  {
+    if (m_localName=="<globalScope>") return "";
+    else return m_localName; 
+  }
 
   QCString qualifiedName;
   if (m_outerScope->name()=="<globalScope>")

@@ -15,18 +15,37 @@
  *
  * The translation into French was provided by
  *   Christophe Bordeux (bordeux@lig.di.epfl.ch)
+ *   and after version 1.2.0 by Xavier Outhier (xouthier@yahoo.fr)
+ *   member of of the non for profit association D2SET (http://www.d2set.org,
+ *   d2set@d2set.org).
  */
 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
 
-#include "translator_adapter.h"
-
-class TranslatorFrench : public TranslatorAdapter_1_2_0
+class TranslatorFrench : public Translator
 {
   public:
     QCString idLanguage()
     { return "french"; }
+    /*! Used to get the LaTeX command(s) for the language support. 
+     *  This method should return string with commands that switch
+     *  LaTeX to the desired language.  For example 
+     *  <pre>"\\usepackage[german]{babel}\n"
+     *  </pre>
+     *  or
+     *  <pre>"\\usepackage{polski}\n"
+     *  "\\usepackage[latin2]{inputenc}\n"
+     *  "\\usepackage[T1]{fontenc}\n"
+     *  </pre>
+     * 
+     * The Dutch LaTeX does not use such commands.  Because of this
+     * the empty string is returned in this implementation.
+     */
+    QCString latexLanguageSupportCommand()
+    {
+      return "\\usepackage[french]{babel}\n";
+    }
     /*! returns the name of the package that is included by LaTeX */
     QCString latexBabelPackage()
     { return "french"; }
@@ -851,7 +870,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_0
     /*! Used as a marker that is put before a todo item */
     virtual QCString trTodo()
     {
-      return "A Faire";
+      return "À Faire";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
@@ -947,7 +966,7 @@ class TranslatorFrench : public TranslatorAdapter_1_2_0
 		"entre deux classes.\n"
         "<li>Une flèche vert foncé est utilisée pour une relation d'héritage protégé.\n"
         "<li>Une flèche rouge foncé est utilisée pour une relation d'héritage privé.\n"
-		"<li>Une fléche violette en pointillés est utilisée si une classe est contenue ou "
+		"<li>Une flèche violette en pointillés est utilisée si une classe est contenue ou "
 		"utilisée par une autre classe. La flèche est étiquetée avec la ou les variable(s) "
 		"qui permettent d'acceder à la classe ou structure pointée. \n"
         "</ul>\n";
@@ -957,6 +976,262 @@ class TranslatorFrench : public TranslatorAdapter_1_2_0
     {
       return "Légende";
     }
-};
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.0
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a test item */
+    virtual QCString trTest()
+    {
+      return "Test";
+    }
+    /*! Used as the header of the test list */
+    virtual QCString trTestList()
+    {
+      return "Liste des tests";
+    }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for KDE-2 IDL methods */
+    virtual QCString trDCOPMethods()
+    {
+      return "Méthodes DCOP";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.2
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a section header for IDL properties */
+    virtual QCString trProperties()
+    {
+      return "Propriétés";
+    }
+    /*! Used as a section header for IDL property documentation */
+    virtual QCString trPropertyDocumentation()
+    {
+      return "Documentation des propriétés";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.4
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used for Java interfaces in the summary section of Java packages */
+    virtual QCString trInterfaces()
+    {
+      return "Interfaces";
+    }
+    /*! Used for Java classes in the summary section of Java packages */
+    virtual QCString trClasses()
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Structures de données";
+      }
+      else
+      {
+        return "Classes";
+      }
+    }
+    /*! Used as the title of a Java package */
+    virtual QCString trPackage(const char *name)
+    {
+      return (QCString)"Paquetage "+name;
+    }
+    /*! Title of the package index page */
+    virtual QCString trPackageList()
+    {
+      return "Liste des paquetages";
+    }
+    /*! The description of the package index page */
+    virtual QCString trPackageListDescription()
+    {
+      return "Liste des paquetages avec une brève description (si disponible):";
+    }
+    /*! The link name in the Quick links header for each page */
+    virtual QCString trPackages()
+    {
+      return "Paquetages";
+    }
+    /*! Used as a chapter title for Latex & RTF output */
+    virtual QCString trPackageDocumentation()
+    {
+      return "Documentation des paquetages";
+    }
+    /*! Text shown before a multi-line define */
+    virtual QCString trDefineValue()
+    {
+      return "Valeur:";
+    }
+    
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.5
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! Used as a marker that is put before a \\bug item */
+    virtual QCString trBug()
+    {
+      return "Bogue";
+    }
+    /*! Used as the header of the bug list */
+    virtual QCString trBugList()
+    {
+      return "Liste des bogues";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as ansicpg for RTF file 
+     * 
+     * The following table shows the correlation of Charset name, Charset Value and 
+     * <pre>
+     * Codepage number:
+     * Charset Name       Charset Value(hex)  Codepage number
+     * ------------------------------------------------------
+     * DEFAULT_CHARSET           1 (x01)
+     * SYMBOL_CHARSET            2 (x02)
+     * OEM_CHARSET             255 (xFF)
+     * ANSI_CHARSET              0 (x00)            1252
+     * RUSSIAN_CHARSET         204 (xCC)            1251
+     * EE_CHARSET              238 (xEE)            1250
+     * GREEK_CHARSET           161 (xA1)            1253
+     * TURKISH_CHARSET         162 (xA2)            1254
+     * BALTIC_CHARSET          186 (xBA)            1257
+     * HEBREW_CHARSET          177 (xB1)            1255
+     * ARABIC _CHARSET         178 (xB2)            1256
+     * SHIFTJIS_CHARSET        128 (x80)             932
+     * HANGEUL_CHARSET         129 (x81)             949
+     * GB2313_CHARSET          134 (x86)             936
+     * CHINESEBIG5_CHARSET     136 (x88)             950
+     * </pre>
+     * 
+     */
+    virtual QCString trRTFansicp()
+    {
+      return "1252";
+    }
+    
+
+    /*! Used as ansicpg for RTF fcharset 
+     *  \see trRTFansicp() for a table of possible values.
+     */
+    virtual QCString trRTFCharSet()
+    {
+      return "0";
+    }
+
+    /*! Used as header RTF general index */
+    virtual QCString trRTFGeneralIndex()
+    {
+      return "Index";
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trClass(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Classe" : "classe"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trFile(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Fichier" : "fichier"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trNamespace(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Namespace" : "namespace"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGroup(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Groupe" : "groupe"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trPage(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Page" : "page"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trMember(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Membre" : "membre"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+   
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Champ" : "champ"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trGlobal(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Global(e)" : "global(e)"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.7
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is generated when the \\author command is used and
+     *  for the author section in man pages. */
+    virtual QCString trAuthor(bool first_capital, bool singular)
+    {                                                                         
+      QCString result((first_capital ? "Auteur" : "auteur"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+};
 #endif

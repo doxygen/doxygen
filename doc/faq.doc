@@ -197,6 +197,22 @@ converted it into an empty file (with >16K of newlines). Another case
 where this might happen is if you have lines in your code with more than
 16K characters.
 
+<li><b>How did doxygen get it's name?</b>
+
+Doxygen got its name from playing with the words 
+documentation and generator.
+
+\verbatim
+documentation -> docs -> dox
+generator -> gen
+\endverbatim
+
+At the time I was looking into lex and yacc, where a lot of things start with
+"yy", so the "y" slipped in and made things pronouncable.
+
+I realized later that doxygen could also be read as Dimitri's oxygen,
+which could be seen as something I need to live :-)
+
 </ol>
 
 \htmlonly

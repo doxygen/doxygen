@@ -69,13 +69,13 @@ Here is the above example with HTML commands:
    */
 \endverbatim
 
-\note The the indent here is not important.
+\note The indentation here is not important.
 
 <b>Using \\arg or \@li</b>
 
 For compatibility with the Troll Tech's internal documentation tool and
 with KDoc, doxygen has two commands that can be used to create simple
-not nested lists. 
+unnested lists. 
 
 See \ref cmdarg "\arg" and \ref cmdli "\li" for more info.
 

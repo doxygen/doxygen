@@ -150,6 +150,8 @@ void addMembersToMemberGroup(MemberList *ml,MemberGroupDict *memberGroupDict,
                              MemberGroupList *memberGroupList);
 bool extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec);
+QCString substituteTemplateArgumentsInString(
+       const QCString &name,ArgumentList *formalArgs,ArgumentList *actualArgs);
 
 #endif
 

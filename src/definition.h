@@ -76,12 +76,12 @@ class Definition
     void setBriefDescription(const char *b);
     /*! Returns TRUE iff the definition is documented */
     virtual bool hasDocumentation() const;
-    virtual bool isLinkableInProject() = 0;
-    virtual bool isLinkable() = 0;
+    virtual bool isLinkableInProject() const = 0;
+    virtual bool isLinkable() const = 0;
+    virtual QCString getReference() const { return m_ref; }
 
     bool isReference() const { return !m_ref.isEmpty(); }
     void setReference(const char *r) { m_ref=r; }
-    QCString getReference() const { return m_ref; }
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.

@@ -16,16 +16,18 @@ if "%2"=="debug" SET MODE=debug
 REM use perl to create the config file
 perl wintools\make.pl %CC%
 
-type makeconfig                 > Makefile
-type Makefile.win_%MAKE%.in     >>Makefile
-type makeconfig                 > qtools\Makefile
-type qtools\Makefile.in         >>qtools\Makefile
-type makeconfig                 > src\Makefile
-type src\Makefile.in            >>src\Makefile
-type makeconfig                 > examples\Makefile
-type examples\Makefile.win.in   >>examples\Makefile
-type makeconfig                 > doc\Makefile
-type doc\Makefile.win_%MAKE%.in >>doc\Makefile
+type makeconfig                   > Makefile
+type Makefile.win_%MAKE%.in       >>Makefile
+type makeconfig                   > qtools\Makefile
+type qtools\Makefile.in           >>qtools\Makefile
+type makeconfig                   > src\Makefile
+type src\Makefile.in              >>src\Makefile
+type makeconfig                   > examples\Makefile
+type examples\Makefile.win.in     >>examples\Makefile
+type makeconfig                   > doc\Makefile
+type doc\Makefile.win_%MAKE%.in   >>doc\Makefile
+type makeconfig                   > addon\doxywizard\Makefile
+type addon\doxywizard\Makefile.win_%MAKE%.in >>addon\doxywizard\Makefile
 
 REM build in release or debug mode 
 REM sed is used to replace $extraopts by either debug or release while copying
@@ -35,6 +37,7 @@ sed "s/\$extraopts/%MODE%/g" src\libdoxycfg.pro.in >src\libdoxycfg.pro
 sed "s/\$extraopts/%MODE%/g" src\doxygen.pro.in >src\doxygen.pro
 sed "s/\$extraopts/%MODE%/g" src\doxytag.pro.in >src\doxytag.pro
 sed "s/\$extraopts/%MODE%/g" src\doxysearch.pro.in >src\doxysearch.pro
+sed "s/\$extraopts/%MODE%/g" addon\doxywizard\doxywizard.pro.in >addon\doxywizard\doxywizard.pro
 
 REM run make
 %MAKE%.exe
