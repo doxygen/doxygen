@@ -2006,20 +2006,25 @@ IDocIterator *ParagraphHandler::contents() const
 //----------------------------------------------------------------------
 
 DocSectionHandler::DocSectionHandler(IBaseHandler *parent,int level)
-  : m_parent(parent), m_level(level)
+  : m_parent(parent), m_internal(0), m_level(level), m_title(0)
 {
-  m_children.setAutoDelete(TRUE);
-  m_markupHandler = new MarkupHandler(m_children,m_curString);
-  setFallBackHandler(m_markupHandler);
-  addStartHandler("ref",this,&DocSectionHandler::startRef);
   QString sectionKey;
+  m_paragraphs.setAutoDelete(TRUE);
+  m_subsections.setAutoDelete(TRUE);
+  addStartHandler("title",this,&DocSectionHandler::startTitle);
+  addStartHandler("para",this,&DocSectionHandler::startParagraph);
+  if (level<6) 
+  {
+    sectionKey.sprintf("sect%d",level+1);
+    addStartHandler(sectionKey,this,&DocSectionHandler::startSubSection);
+  }
+  addStartHandler("internal",this,&DocSectionHandler::startInternal);
   sectionKey.sprintf("sect%d",level);
   addEndHandler(sectionKey,this,&DocSectionHandler::endDocSection);
 }
 
 DocSectionHandler::~DocSectionHandler()
 {
-  delete m_markupHandler;
 }
 
 void DocSectionHandler::startDocSection(const QXmlAttributes& attrib)
@@ -2027,43 +2032,111 @@ void DocSectionHandler::startDocSection(const QXmlAttributes& attrib)
   m_parent->setDelegate(this);
   debug(2,"Start docsection\n");
   m_id = attrib.value("id");
-  m_curString="";
 }
 
 void DocSectionHandler::endDocSection()
 {
-  addTextNode();
   m_parent->setDelegate(0);
   debug(2,"End docsection\n");
 }
 
-void DocSectionHandler::addTextNode()
+void DocSectionHandler::startSubSection(const QXmlAttributes& attrib)
 {
-  if (!m_curString.isEmpty())
-  {
-    m_children.append(
-                      new TextNode(m_curString,
-                                   m_markupHandler->markup(),
-                                   m_markupHandler->headingLevel()
-                                  )
-                     );
-    debug(2,"addTextNode() text=\"%s\" markup=%x headingLevel=%d\n",
-        m_curString.data(),m_markupHandler->markup(),m_markupHandler->headingLevel());
-    m_curString="";
-  }
+  DocSectionHandler *secHandler = new DocSectionHandler(this,m_level+1);
+  secHandler->startDocSection(attrib);
+  m_subsections.append(secHandler);
 }
 
-void DocSectionHandler::startRef(const QXmlAttributes& attrib)
+void DocSectionHandler::startParagraph(const QXmlAttributes& attrib)
 {
-  RefHandler *ref = new RefHandler(this);
-  ref->startRef(attrib);
-  m_children.append(ref);
+  ParagraphHandler *parHandler = new ParagraphHandler(this);
+  parHandler->startParagraph(attrib);
+  m_paragraphs.append(parHandler);
 }
 
-IDocIterator *DocSectionHandler::title() const
+void DocSectionHandler::startInternal(const QXmlAttributes& attrib)
 {
-  return new DocSectionIterator(*this);
+  m_internal = new DocInternalHandler(this,m_level);
+  m_internal->startInternal(attrib);
 }
+
+void DocSectionHandler::startTitle(const QXmlAttributes& attrib)
+{
+  m_title = new TitleHandler(this);
+  m_title->startTitle(attrib);
+}
+
+IDocIterator *DocSectionHandler::paragraphs() const
+{
+  return new DocSectionParaIterator(*this);
+}
+
+IDocIterator *DocSectionHandler::subSections() const
+{
+  return new DocSectionSubIterator(*this);
+}
+
+IDocInternal *DocSectionHandler::internal() const 
+{ 
+  return m_internal; 
+}
+
+//----------------------------------------------------------------------
+// DocInternal
+//----------------------------------------------------------------------
+
+DocInternalHandler::DocInternalHandler(IBaseHandler *parent,int level)
+  : m_parent(parent), m_level(level)
+{
+  m_paragraphs.setAutoDelete(TRUE);
+  m_subsections.setAutoDelete(TRUE);
+  addStartHandler("para",this,&DocInternalHandler::startParagraph);
+  QString sectionKey;
+  sectionKey.sprintf("sect%d",level+1);
+  addStartHandler(sectionKey,this,&DocInternalHandler::startSubSection);
+  addEndHandler("internal",this,&DocInternalHandler::endInternal);
+}
+
+DocInternalHandler::~DocInternalHandler()
+{
+}
+
+void DocInternalHandler::startInternal(const QXmlAttributes&)
+{
+  m_parent->setDelegate(this);
+  debug(2,"Start internal\n");
+}
+
+void DocInternalHandler::endInternal()
+{
+  m_parent->setDelegate(0);
+  debug(2,"End internal\n");
+}
+
+void DocInternalHandler::startSubSection(const QXmlAttributes& attrib)
+{
+  DocSectionHandler *secHandler = new DocSectionHandler(this,m_level+1);
+  secHandler->startDocSection(attrib);
+  m_subsections.append(secHandler);
+}
+
+void DocInternalHandler::startParagraph(const QXmlAttributes& attrib)
+{
+  ParagraphHandler *parHandler = new ParagraphHandler(this);
+  parHandler->startParagraph(attrib);
+  m_paragraphs.append(parHandler);
+}
+
+IDocIterator *DocInternalHandler::paragraphs() const
+{
+  return new DocInternalParaIterator(*this);
+}
+
+IDocIterator *DocInternalHandler::subSections() const
+{
+  return new DocInternalSubIterator(*this);
+}
+
 
 //----------------------------------------------------------------------
 // DocHandler
@@ -2079,11 +2152,6 @@ DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
 
   addStartHandler("para",this,&DocHandler::startParagraph);
   addStartHandler("sect1",this,&DocHandler::startSect1);
-  addStartHandler("sect2",this,&DocHandler::startSect2);
-  addStartHandler("sect3",this,&DocHandler::startSect3);
-  addStartHandler("sect4",this,&DocHandler::startSect4);
-  addStartHandler("sect5",this,&DocHandler::startSect5);
-  addStartHandler("sect6",this,&DocHandler::startSect6);
   addStartHandler("title",this,&DocHandler::startTitle);
   addStartHandler("internal");
 }
@@ -2114,41 +2182,6 @@ void DocHandler::startParagraph(const QXmlAttributes& attrib)
 void DocHandler::startSect1(const QXmlAttributes& attrib)
 {
   DocSectionHandler *secHandler = new DocSectionHandler(this,1);
-  secHandler->startDocSection(attrib);
-  m_children.append(secHandler);
-}
-
-void DocHandler::startSect2(const QXmlAttributes& attrib)
-{
-  DocSectionHandler *secHandler = new DocSectionHandler(this,2);
-  secHandler->startDocSection(attrib);
-  m_children.append(secHandler);
-}
-
-void DocHandler::startSect3(const QXmlAttributes& attrib)
-{
-  DocSectionHandler *secHandler = new DocSectionHandler(this,3);
-  secHandler->startDocSection(attrib);
-  m_children.append(secHandler);
-}
-
-void DocHandler::startSect4(const QXmlAttributes& attrib)
-{
-  DocSectionHandler *secHandler = new DocSectionHandler(this,4);
-  secHandler->startDocSection(attrib);
-  m_children.append(secHandler);
-}
-
-void DocHandler::startSect5(const QXmlAttributes& attrib)
-{
-  DocSectionHandler *secHandler = new DocSectionHandler(this,5);
-  secHandler->startDocSection(attrib);
-  m_children.append(secHandler);
-}
-
-void DocHandler::startSect6(const QXmlAttributes& attrib)
-{
-  DocSectionHandler *secHandler = new DocSectionHandler(this,6);
   secHandler->startDocSection(attrib);
   m_children.append(secHandler);
 }

@@ -27,7 +27,7 @@
 #include "message.h"
 
 ManDocVisitor::ManDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
+  : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
     m_indent(0)
 {
 }

@@ -376,9 +376,21 @@ perl script in <code>wintools/make.pl</code> a bit.
 Let me know what you had to change if you got Doxygen working with another 
 compiler. 
 
+If you have Visual C++ 6.0, and the source distribution, you can easily
+build doxygen using the project files in the \c wintools directory. If
+you want to build the CVS sources, or want to build from the command line,
+or with another compiler, you have to follow the steps below.
+
+Thomas Baust reported that if you have Visual Studio.NET (2003) then 
+you should be aware that there is a problem with the _popen() and _pclose() 
+implementation, which currently leaks handles, so if you build doxygen with 
+it and use the INPUT_FILTER, you will run to risk of crashing Windows! 
+The problem is reported to and confirmed by Microsoft so maybe it will 
+fixed in the next service pack.
+
 Since Windows comes without all the nice tools that Unix users are
-used to, you need to install a number of these tools before you can compile 
-doxygen for Windows.
+used to, you'll need to install a number of these tools before you can compile 
+doxygen for Windows from the command-line.
 
 Here is what is required:
 <ul>

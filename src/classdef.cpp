@@ -134,6 +134,10 @@ QCString ClassDef::displayName() const
   {
     n=qualifiedNameWithTemplateParameters();
   }
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    n=substitute(n,"::",".");
+  }
   return n;
 }
 
@@ -1117,7 +1121,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
   // write link to list of all members (HTML only)
   if (m_allMemberNameInfoSDict->count()>0 && 
       !Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
-      /* && !Config_getBool("INLINE_INHERITED_MEMB") */
      )
   {
     ol.pushGeneratorState();
@@ -2587,14 +2590,6 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
 QCString ClassDef::className() const
 {
-  //QCString className=m_localName;
-  //Definition *p=getOuterScope();
-  //while (p && p->definitionType()==TypeClass)
-  //{
-  //  className.prepend(p->localName()+"::");
-  //  p=p->getOuterScope();
-  //}
-  //return className;
   return m_className;
 };
 

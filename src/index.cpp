@@ -1485,6 +1485,15 @@ void writeAlphabeticalClassList(OutputList &ol)
         //if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
         //QCString cname=cd->className();
         extractNamespaceName(cd->name(),cname,namesp);
+        QCString nsDispName;
+        if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+        {
+          nsDispName=substitute(namesp,"::",".");
+        }
+        else
+        {
+          nsDispName=namesp.copy();
+        }
 
         ol.writeObjectLink(cd->getReference(),
                            cd->getOutputFileBase(),0,cname);
@@ -1495,11 +1504,11 @@ void writeAlphabeticalClassList(OutputList &ol)
           if (nd && nd->isLinkable())
           {
             ol.writeObjectLink(nd->getReference(),
-                           nd->getOutputFileBase(),0,namesp);
+                           nd->getOutputFileBase(),0,nsDispName);
           }
           else
           {
-            ol.docify(namesp);
+            ol.docify(nsDispName);
           }
           ol.docify(")");
         }

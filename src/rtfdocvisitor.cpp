@@ -28,7 +28,7 @@
 #include "message.h"
 
 RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(1) 
+  : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_indentLevel(1) 
 {
 }
 

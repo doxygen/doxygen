@@ -43,7 +43,7 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
 {
 }
 

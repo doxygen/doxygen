@@ -26,6 +26,7 @@
 #include "baseiterator.h"
 
 class ParagraphHandler;
+class DocInternalHandler;
 class LinkedTextImpl;
 class LinkedTextHandler;
 
@@ -72,6 +73,7 @@ DEFINE_CLS_IMPL(DocTocList);
 DEFINE_CLS_IMPL(DocTocItem);
 DEFINE_CLS_IMPL(DocAnchor);
 DEFINE_CLS_IMPL(DocSymbol);
+DEFINE_CLS_IMPL(DocInternal);
 DEFINE_CLS_IMPL(DocRoot);
 
 //-----------------------------------------------------------------------------
@@ -1186,41 +1188,94 @@ class SymbolHandler : public DocSymbolImpl, public BaseHandler<SymbolHandler>
 /*! \brief Node representing a section.
  *
  */
-// children: text, ref
-// children handled by MarkupHandler: 
-//           bold, computeroutput, emphasis, center,
-//           small, subscript, superscript. 
+// children: title, para, sect(n+1)
 class DocSectionHandler : public DocSectionImpl, public BaseHandler<DocSectionHandler>
 {
-    friend class DocSectionIterator;
+    friend class DocSectionParaIterator;
+    friend class DocSectionSubIterator;
   public:
     DocSectionHandler(IBaseHandler *parent,int level);
     virtual ~DocSectionHandler();
     virtual void startDocSection(const QXmlAttributes& attrib);
     virtual void endDocSection();
-    virtual void startRef(const QXmlAttributes& attrib);
-    void addTextNode();
+    virtual void startTitle(const QXmlAttributes& attrib);
+    virtual void startSubSection(const QXmlAttributes& attrib);
+    virtual void startParagraph(const QXmlAttributes& attrib);
+    virtual void startInternal(const QXmlAttributes& attrib);
 
     // IDocSection
     virtual Kind kind() const { return DocImpl::Section; }
     virtual const IString *id() const { return &m_id; }
     virtual int level() const { return m_level; }
-    virtual IDocIterator *title() const;
+    virtual IDocTitle *title() const { return m_title; }
+    virtual IDocIterator *paragraphs() const;
+    virtual IDocIterator *subSections() const;
+    virtual IDocInternal *internal() const;
 
   private:
-    IBaseHandler   *m_parent;
-    QList<DocImpl>  m_children;
-    MarkupHandler  *m_markupHandler;
-    StringImpl      m_id;
-    int             m_level;
+    IBaseHandler    *m_parent;
+    QList<DocImpl>   m_paragraphs;
+    QList<DocImpl>   m_subsections;
+    DocInternalHandler *m_internal;
+    StringImpl       m_id;
+    int              m_level;
+    TitleHandler    *m_title;
 };
 
-class DocSectionIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+class DocSectionParaIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
 {
   public:
-    DocSectionIterator(const DocSectionHandler &handler) : 
-      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
+    DocSectionParaIterator(const DocSectionHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_paragraphs) {}
 };
+
+class DocSectionSubIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+{
+  public:
+    DocSectionSubIterator(const DocSectionHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_subsections) {}
+};
+
+//-----------------------------------------------------------------------------
+
+class DocInternalHandler : public DocInternalImpl, public BaseHandler<DocInternalHandler>
+{
+  public:
+    friend class DocInternalParaIterator;
+    friend class DocInternalSubIterator;
+    DocInternalHandler(IBaseHandler *parent,int level);
+    virtual ~DocInternalHandler();
+    virtual void startInternal(const QXmlAttributes& attrib);
+    virtual void endInternal();
+    virtual void startSubSection(const QXmlAttributes& attrib);
+    virtual void startParagraph(const QXmlAttributes& attrib);
+
+    // IDocInternal
+    virtual Kind kind() const { return DocImpl::Internal; }
+    virtual IDocIterator *paragraphs() const;
+    virtual IDocIterator *subSections() const;
+
+  private:
+    IBaseHandler    *m_parent;
+    QList<DocImpl>   m_paragraphs;
+    QList<DocImpl>   m_subsections;
+    int              m_level;
+};
+
+class DocInternalParaIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+{
+  public:
+    DocInternalParaIterator(const DocInternalHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_paragraphs) {}
+};
+
+class DocInternalSubIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>
+{
+  public:
+    DocInternalSubIterator(const DocInternalHandler &handler) : 
+      BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_subsections) {}
+};
+
 
 //-----------------------------------------------------------------------------
 
@@ -1236,11 +1291,6 @@ class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
     virtual void endDoc();
     virtual void startParagraph(const QXmlAttributes& attrib);
     virtual void startSect1(const QXmlAttributes& attrib);
-    virtual void startSect2(const QXmlAttributes& attrib);
-    virtual void startSect3(const QXmlAttributes& attrib);
-    virtual void startSect4(const QXmlAttributes& attrib);
-    virtual void startSect5(const QXmlAttributes& attrib);
-    virtual void startSect6(const QXmlAttributes& attrib);
     virtual void startTitle(const QXmlAttributes& attrib);
 
     DocHandler(IBaseHandler *parent);

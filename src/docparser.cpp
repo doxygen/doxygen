@@ -2143,7 +2143,7 @@ endhref:
 
 //---------------------------------------------------------------------------
 
-int DocInternal::parse()
+int DocInternal::parse(int level)
 {
   int retval=RetVal_OK;
   g_nodeStack.push(this);
@@ -2170,25 +2170,24 @@ int DocInternal::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Invalid list item found",doctokenizerYYlineno);
     }
-  } while (retval!=0 && retval!=RetVal_Section);
+  } while (retval!=0 && 
+           retval!=RetVal_Section &&
+           retval!=RetVal_Subsection &&
+           retval!=RetVal_Subsubsection &&
+           retval!=RetVal_Paragraph
+          );
   if (lastPar) lastPar->markLast();
 
-  // then parse any number of level1 sections
-  while (retval==RetVal_Section)
+  // then parse any number of level-n sections
+  while ((level==1 && retval==RetVal_Section) || 
+         (level==2 && retval==RetVal_Subsection) ||
+         (level==3 && retval==RetVal_Subsubsection) ||
+         (level==4 && retval==RetVal_Paragraph)
+        )
   {
-    //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-    //int secLev = sec->type==SectionInfo::Subsection ? 2 : 1;
-    //if (secLev!=1) // wrong level
-    //{
-    //  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Expected level 1 section, found a section with level %d.",secLev);
-    //  break;
-    //}
-    //else
-    //{
-      DocSection *s=new DocSection(this,1,g_token->sectionId);
-      m_children.append(s);
-      retval = s->parse();
-    //}
+    DocSection *s=new DocSection(this,level,g_token->sectionId);
+    m_children.append(s);
+    retval = s->parse();
   }
 
   if (retval==RetVal_Internal)
@@ -2501,6 +2500,32 @@ getrow:
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval==RetVal_EndTable ? RetVal_OK : retval;
+}
+
+uint DocHtmlTable::numCols() const
+{
+  uint cols=0;
+  QListIterator<DocNode> cli(m_children);
+  DocNode *n;
+  for (cli.toFirst();(n=cli.current());++cli)
+  {
+    ASSERT(n->kind()==DocNode::Kind_HtmlRow);
+    cols=QMAX(cols,((DocHtmlRow *)n)->numCells());
+  }
+  return cols;
+}
+
+void DocHtmlTable::accept(DocVisitor *v) 
+{ 
+  v->visitPre(this); 
+  // for HTML output we put the caption first
+  if (m_caption && v->id()==DocVisitor_Html) m_caption->accept(v);
+  QListIterator<DocNode> cli(m_children);
+  DocNode *n;
+  for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
+  // for other output formats we put the caption last
+  if (m_caption && v->id()!=DocVisitor_Html) m_caption->accept(v);
+  v->visitPost(this); 
 }
 
 //---------------------------------------------------------------------------
@@ -4496,6 +4521,12 @@ int DocSection::parse()
     retval=0; // stop parsing
             
   }
+  else if (retval==RetVal_Internal)
+  {
+    DocInternal *in = new DocInternal(this);
+    m_children.append(in);
+    retval = in->parse(m_level+1);
+  }
   else
   {
   }
@@ -4659,7 +4690,7 @@ void DocRoot::parse()
   {
     DocInternal *in = new DocInternal(this);
     m_children.append(in);
-    retval = in->parse();
+    retval = in->parse(1);
   }
 
 

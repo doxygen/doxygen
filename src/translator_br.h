@@ -16,6 +16,8 @@
  *   Version: 1.3 (2003/05/01)
  *
  * History:
+ *   1.3.2:
+ *      - Updated to Doxygen 1.3.2
  *   1.3:
  *      - Updated to Doxygen 1.3.x.
  *   1.2.19:
@@ -27,7 +29,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian: public TranslatorAdapter_1_3_1
+class TranslatorBrazilian: public Translator
 {
   public:
 
@@ -1458,6 +1460,23 @@ class TranslatorBrazilian: public TranslatorAdapter_1_3_1
     virtual QCString trStaticPackageAttribs()
     {
       return "Atributos Estáticos do Pacote";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page 
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Todos";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Este é o grafo de chamadas para esta função:";
     }
 
 };

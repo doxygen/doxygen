@@ -32,6 +32,7 @@ class IDocIterator;
 class ICompound;
 class ISection;
 class INode;
+class IDocInternal;
 
 /*! \brief Read only interface to a string. 
  */
@@ -165,7 +166,8 @@ class IDoc
       TocItem,            // 33 -> IDocTocItem
       Anchor,             // 34 -> IDocAnchor
       Symbol,             // 35 -> IDocSymbol
-      Root                // 36 -> IDocRoot
+      Internal,           // 36 -> IDocInternal
+      Root                // 37 -> IDocRoot
     };
     virtual Kind kind() const = 0;
 };
@@ -397,7 +399,17 @@ class IDocSection : public IDoc
   public:
     virtual const IString * id() const = 0; 
     virtual int level() const = 0;
-    virtual IDocIterator *title() const = 0;
+    virtual IDocTitle *title() const = 0;
+    virtual IDocIterator *paragraphs() const = 0;
+    virtual IDocIterator *subSections() const = 0;
+    virtual IDocInternal *internal() const = 0;
+};
+
+class IDocInternal : public IDoc
+{
+  public:
+    virtual IDocIterator *paragraphs() const = 0;
+    virtual IDocIterator *subSections() const = 0;
 };
 
 class IDocTocList : public IDoc

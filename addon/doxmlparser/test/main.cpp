@@ -372,13 +372,43 @@ void DumpDoc(IDoc *doc,int level)
         ASSERT(sec!=0);
         InPrint(("<section id=`%s' level=%d>\n",
             sec->id()->latin1(),sec->level()));
-        IDocIterator *di = sec->title();
+        DumpDoc(sec->title(),level+1);
+        IDocIterator *di = sec->paragraphs();
         IDoc *pdoc;
         for (di->toFirst();(pdoc=di->current());di->toNext())
         {
           DumpDoc(pdoc,level+1);
         }
+        di=sec->subSections();
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        IDocInternal *intern = sec->internal();
+        if (intern)
+        {
+          DumpDoc(intern,level+1);
+        }
         InPrint(("</section>\n"));
+      }
+      break;
+    case IDoc::Internal:
+      {
+        IDocInternal *intern = dynamic_cast<IDocInternal*>(doc);
+        ASSERT(intern!=0);
+        InPrint(("<internal>\n"));
+        IDocIterator *di = intern->paragraphs();
+        IDoc *pdoc;
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        di=intern->subSections();
+        for (di->toFirst();(pdoc=di->current());di->toNext())
+        {
+          DumpDoc(pdoc,level+1);
+        }
+        InPrint(("</internal>\n"));
       }
       break;
     case IDoc::Copy:

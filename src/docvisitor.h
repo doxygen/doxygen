@@ -19,6 +19,14 @@
 #ifndef _DOCVISITOR_H
 #define _DOCVISITOR_H
 
+// ids
+const int DocVisitor_Html  = 0;
+const int DocVisitor_Latex = 1;
+const int DocVisitor_XML   = 2;
+const int DocVisitor_RTF   = 3;
+const int DocVisitor_Man   = 4;
+const int DocVisitor_Other = 5;
+
 // forward declarations
 class DocWord;
 class DocWhiteSpace;
@@ -38,7 +46,6 @@ class DocVerbatim;
 class DocXRefItem;
 class DocHtmlList;
 class DocHtmlListItem;
-//class DocHtmlPre;
 class DocHtmlDescList;
 class DocHtmlDescTitle;
 class DocHtmlDescData;
@@ -74,8 +81,12 @@ class DocText;
  */
 class DocVisitor
 {
+    int m_id;
   public:
+    DocVisitor(int id) : m_id(id) {}
     virtual ~DocVisitor() {}
+    int id() const { return m_id; }
+
     /*! @name Visitor functions for leaf nodes 
      *  @{
      */
@@ -120,8 +131,6 @@ class DocVisitor
     virtual void visitPost(DocHtmlListItem *) = 0;
     virtual void visitPre(DocHtmlListItem *) = 0;
     virtual void visitPost(DocHtmlList *) = 0;
-    //virtual void visitPre(DocHtmlPre *) = 0;
-    //virtual void visitPost(DocHtmlPre *) = 0;
     virtual void visitPre(DocHtmlDescList *) = 0;
     virtual void visitPost(DocHtmlDescList *) = 0;
     virtual void visitPre(DocHtmlDescTitle *) = 0;

@@ -285,7 +285,7 @@ void MemberHandler::startLocation(const QXmlAttributes& attrib)
 void MemberHandler::startReferences(const QXmlAttributes& attrib)
 {
   MemberReference *mr = new MemberReference;
-  mr->m_memId = attrib.value("id");
+  mr->m_memId = attrib.value("refid");
   m_references.append(mr);
   m_curString="";
 }
@@ -298,7 +298,7 @@ void MemberHandler::endReferences()
 void MemberHandler::startReferencedBy(const QXmlAttributes& attrib)
 {
   MemberReference *mr = new MemberReference;
-  mr->m_memId = attrib.value("id");
+  mr->m_memId = attrib.value("refid");
   m_referencedBy.append(mr);
   m_curString="";
 }
@@ -311,7 +311,7 @@ void MemberHandler::endReferencedBy()
 void MemberHandler::startReimplements(const QXmlAttributes& attrib)
 {
   m_reimplements = new MemberReference;
-  m_reimplements->m_memId = attrib.value("id");
+  m_reimplements->m_memId = attrib.value("refid");
   m_curString="";
 }
 
@@ -323,7 +323,7 @@ void MemberHandler::endReimplements()
 void MemberHandler::startReimplementedBy(const QXmlAttributes& attrib)
 {
   MemberReference *mr = new MemberReference;
-  mr->m_memId = attrib.value("id");
+  mr->m_memId = attrib.value("refid");
   m_reimplementedBy.append(mr);
   m_curString="";
 }
