@@ -56,6 +56,12 @@ class PackageSDict : public SDict<PackageDef>
 {
   public:
     PackageSDict(int size) : SDict<PackageDef>(size) {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return stricmp(((PackageDef *)item1)->name(),
+                    ((PackageDef *)item2)->name()
+                   );
+    }
 };
 
 #endif
