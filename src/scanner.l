@@ -753,15 +753,32 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindMembers>{B}*"package"{BN}+ 	{ // Java package
   					  lineCount();
 					  BEGIN(PackageName);
+
   					}
 <PackageName>{ID}("."{ID})*		{
-  					  current->name = yytext;
-                                          current->fileName = yyFileName; 
-                                          current->startLine = yyLineNr; 
-  					  current->section=Entry::PACKAGE_SEC;
+  					  //current->name = yytext;
+                                          //current->fileName = yyFileName; 
+                                          //current->startLine = yyLineNr; 
+  					  //current->section=Entry::PACKAGE_SEC;
+					  //current_root->addSubEntry(current);
+					  //current = new Entry ;
+					  //initEntry();
+
+  					  isTypedef=FALSE;
+					  current->name = yytext;
+					  current->name = substitute(current->name,".","::");
+					  current->section = Entry::NAMESPACE_SEC;
+					  current->type = "namespace" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount();
+					  curlyCount=0;
 					  current_root->addSubEntry(current);
-					  current = new Entry ;
+                                          current_root = current ;
+					  current             = new Entry ;
 					  initEntry();
+					  BEGIN( FindMembers ) ;
   					}
 <PackageName>";"			{
   					  BEGIN(FindMembers);
@@ -2222,6 +2239,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
 <FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
 					  insideTryBlock=TRUE;
+					  lineCount();
 					}
 <FuncQual>{BN}*"throw"{BN}*"("		{ // C++ style throw clause
   					  current->exception = " throw (" ;
@@ -2255,8 +2273,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ExcpList>"{"				{
   					  unput('{'); BEGIN( FuncQual );
   					}
+<ExcpList>";"				{
+  					  unput(';'); BEGIN( FuncQual );
+  					}
 <ExcpList>"\n"				{
   					  current->exception += ' ';
+					  yyLineNr++;
   					}
 <ExcpList>.				{
   					  current->exception += *yytext;
@@ -2579,7 +2601,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  BEGIN( FindMembers );
     					}
-<CompoundName,ClassVar>{B}*"{"{B}*	{ current->fileName = yyFileName ;
+<CompoundName,ClassVar>{B}*"{"{B}*	{ 
+                                          current->fileName = yyFileName ;
 					  current->startLine = yyLineNr ;
 					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
@@ -4244,7 +4267,10 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-        current->protection = protection = Private ;
+	if (ce->fileName.right(5)==".java")
+          current->protection = protection = Public ; // Actually this should be package scope!
+	else
+          current->protection = protection = Private ;
       }
       else if (ce->section == Entry::ENUM_SEC ) // enum
       {

@@ -190,13 +190,13 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   parseText(ol,theTranslator->trMainPage());
   ol.endQuickIndexItem();
 
-  if (documentedPackages>0)
-  {
-    if (!compact) ol.writeListItem();
-    ol.startQuickIndexItem(extLink,"packages"+htmlFileExtension);
-    parseText(ol,theTranslator->trPackages());
-    ol.endQuickIndexItem();
-  }
+  //if (documentedPackages>0)
+  //{
+  //  if (!compact) ol.writeListItem();
+  //  ol.startQuickIndexItem(extLink,"packages"+htmlFileExtension);
+  //  parseText(ol,theTranslator->trPackages());
+  //  ol.endQuickIndexItem();
+  //}
   if (documentedGroups>0)
   {
     if (!compact) ol.writeListItem();
@@ -208,7 +208,14 @@ void writeQuickLinks(OutputList &ol,bool compact ,bool ext=FALSE)
   {
     if (!compact) ol.writeListItem();
     ol.startQuickIndexItem(extLink,"namespaces"+htmlFileExtension);
-    parseText(ol,theTranslator->trNamespaceList());
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      parseText(ol,theTranslator->trPackages());
+    }
+    else
+    {
+      parseText(ol,theTranslator->trNamespaceList());
+    }
     ol.endQuickIndexItem();
   }
   if (hierarchyClasses>0)
@@ -1054,9 +1061,18 @@ void writeNamespaceIndex(OutputList &ol)
   if (documentedNamespaces==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"namespaces",0,"Namespace Index");
+  QCString title;
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    startFile(ol,"namespaces",0,"Package Index");
+    title = theTranslator->trPackageList();
+  }
+  else
+  {
+    startFile(ol,"namespaces",0,"Namespace Index");
+    title = theTranslator->trNamespaceList();
+  }
   startTitle(ol,0);
-  QCString title = theTranslator->trNamespaceList();
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -1081,7 +1097,14 @@ void writeNamespaceIndex(OutputList &ol)
     ftvHelp->incContentsDepth();
   }
   //ol.newParagraph();
-  parseText(ol,theTranslator->trNamespaceListDescription(Config_getBool("EXTRACT_ALL")));
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    parseText(ol,theTranslator->trPackageListDescription());
+  }
+  else
+  {
+    parseText(ol,theTranslator->trNamespaceListDescription(Config_getBool("EXTRACT_ALL")));
+  }
   //ol.newParagraph();
   ol.endTextBlock();
 
@@ -1100,7 +1123,7 @@ void writeNamespaceIndex(OutputList &ol)
       }
       //ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
       ol.startIndexKey();
-      ol.writeObjectLink(0,nd->getOutputFileBase(),0,nd->name());
+      ol.writeObjectLink(0,nd->getOutputFileBase(),0,nd->displayName());
       ol.endIndexKey();
       bool hasBrief = !nd->briefDescription().isEmpty();
       ol.startIndexValue(hasBrief);
@@ -1110,7 +1133,7 @@ void writeNamespaceIndex(OutputList &ol)
         parseDoc(ol,
                  nd->getDefFileName(),nd->getDefLine(),
                  nd->name(),0,
-                 abbreviate(nd->briefDescription(),nd->name()));
+                 abbreviate(nd->briefDescription(),nd->displayName()));
         //ol.docify(")");
       }
       ol.endIndexValue(nd->getOutputFileBase(),hasBrief);
@@ -1206,6 +1229,7 @@ void writeAnnotatedClassList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+// OBSOLETE
 void writePackageList(OutputList &ol)
 {
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;

@@ -176,9 +176,16 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
   //ol.docify(pageTitle);
-  parseText(ol,theTranslator->trNamespaceReference(name()));
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    parseText(ol,theTranslator->trPackage(displayName()));
+  }
+  else
+  {
+    parseText(ol,theTranslator->trNamespaceReference(displayName()));
+  }
   addGroupListToTitle(ol,this);
-  endTitle(ol,getOutputFileBase(),name());
+  endTitle(ol,getOutputFileBase(),displayName());
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
@@ -327,10 +334,10 @@ QCString NamespaceDef::getOutputFileBase() const
   return convertNameToFile(fileName); 
 }
 
-Definition *NamespaceDef::findInnerCompound(const char *name)
+Definition *NamespaceDef::findInnerCompound(const char *n)
 {
-  if (name==0) return 0;
-  return m_innerCompounds->find(name);
+  if (n==0) return 0;
+  return m_innerCompounds->find(n);
 }
 
 void NamespaceDef::addInnerCompound(Definition *d)
@@ -356,5 +363,15 @@ void NamespaceDef::addListReferences()
   docEnumMembers.addListReferences(this);
   docFuncMembers.addListReferences(this);
   docVarMembers.addListReferences(this);
+}
+
+QCString NamespaceDef::displayName() const
+{
+  QCString result=name();
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+  {
+    result = substitute(result,"::",".");
+  }
+  return result; 
 }
 

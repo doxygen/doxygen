@@ -55,6 +55,7 @@ class NamespaceDef : public Definition
     NamespaceList *getUsedNamespaces() const { return usingDirList; }
     void addUsingDeclaration(ClassDef *cd);
     ClassList *getUsedClasses() const { return usingDeclList; }
+    QCString displayName() const;
     
     bool isLinkableInProject() const
     {

@@ -700,7 +700,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (outerTempArgList) pageTitle.prepend(" Template");
   startFile(ol,getOutputFileBase(),name(),pageTitle);
   startTitle(ol,getOutputFileBase());
-  parseText(ol,theTranslator->trCompoundReference(name(),m_compType,outerTempArgList!=0));
+  parseText(ol,theTranslator->trCompoundReference(displayName(),m_compType,outerTempArgList!=0));
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
 
@@ -844,11 +844,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
             }
             Doxygen::tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
           }
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name()+bcd->templSpecifiers);
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName()+bcd->templSpecifiers);
         }
         else
         {
-          ol.docify(cd->name());
+          ol.docify(cd->displayName());
         }
       }
       else
@@ -879,11 +879,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ClassDef *cd=bcd->classDef;
         if (cd->isLinkable())
         {
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
         }
         else
         {
-          ol.docify(cd->name());
+          ol.docify(cd->displayName());
         }
         writeInheritanceSpecifier(ol,bcd);
       }
@@ -945,9 +945,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ClassDiagram diagram(this); // create a diagram of this class.
     ol.startClassDiagram();
     ol.disable(OutputGenerator::Man);
-    parseText(ol,theTranslator->trClassDiagram(name()));
+    parseText(ol,theTranslator->trClassDiagram(displayName()));
     ol.enable(OutputGenerator::Man);
-    ol.endClassDiagram(diagram,getOutputFileBase(),name());
+    ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
   } 
 
   if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
@@ -958,7 +958,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
       ol.startDotGraph();
-      parseText(ol,theTranslator->trCollaborationDiagram(name()));
+      parseText(ol,theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
       if (Config_getBool("GENERATE_LEGEND"))
       {
@@ -1251,10 +1251,10 @@ void ClassDef::writeMemberList(OutputList &ol)
   startFile(ol,m_memListFileName,m_memListFileName,
             theTranslator->trMemberList());
   startTitle(ol,0);
-  parseText(ol,name()+" "+theTranslator->trMemberList());
+  parseText(ol,displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
   parseText(ol,theTranslator->trThisIsTheListOfAllMembers());
-  ol.writeObjectLink(getReference(),getOutputFileBase(),0,name());
+  ol.writeObjectLink(getReference(),getOutputFileBase(),0,displayName());
   parseText(ol,theTranslator->trIncludingInheritedMembers());
   
   //ol.startItemList();
@@ -1328,12 +1328,12 @@ void ClassDef::writeMemberList(OutputList &ol)
           parseText(ol,theTranslator->trDefinedIn()+" ");
           if (cd->isLinkable())
           {
-            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
+            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
           }
           else
           {
             ol.startBold();
-            ol.docify(cd->name());
+            ol.docify(cd->displayName());
             ol.endBold();
           }
           ol.writeString(")");
@@ -1344,7 +1344,7 @@ void ClassDef::writeMemberList(OutputList &ol)
         {
           ol.writeString("<td>");
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-                             0,cd->name());
+                             0,cd->displayName());
           ol.writeString("</td>");
           ol.writeString("<td>");
         }
@@ -2383,7 +2383,14 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
       scName = d->qualifiedName();
     }
   }
-  if (!scName.isEmpty()) scName+="::";
+
+  QCString scopeSeparator;
+  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA")) 
+    scopeSeparator=".";
+  else
+    scopeSeparator="::";
+
+  if (!scName.isEmpty()) scName+=scopeSeparator;
   scName+=localName();
   ArgumentList *al=0;
   bool isSpecialization = localName().find('<')!=-1;

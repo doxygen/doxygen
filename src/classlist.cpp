@@ -104,13 +104,13 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.writeObjectLink(cd->getReference(),
                 cd->getOutputFileBase(),
                 0,
-                cd->name()
+                cd->localName()
                );
           }
           else 
           {
             ol.startBold();
-            ol.docify(cd->name());
+            ol.docify(cd->localName());
             ol.endBold();
           }
           ol.endMemberItem(FALSE);

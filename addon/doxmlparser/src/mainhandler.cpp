@@ -17,6 +17,7 @@
 #include "mainhandler.h"
 #include "compoundhandler.h"
 #include "sectionhandler.h"
+#include "graphhandler.h"
 #include "debug.h"
 
 class ErrorHandler : public QXmlErrorHandler
@@ -256,6 +257,7 @@ IDoxygen *createObjectModel()
   sectionhandler_init();
   memberhandler_init();
   dochandler_init();
+  graphhandler_init();
   return new MainHandler;
 }
 
@@ -267,6 +269,7 @@ void MainHandler::release()
   {
     debug(1,"Compound %s not released\n",ch->name().data());
   }
+  graphhandler_exit();
   dochandler_exit();
   memberhandler_exit();
   sectionhandler_exit();

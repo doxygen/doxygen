@@ -291,7 +291,7 @@ void FileDef::writeDocumentation(OutputList &ol)
           ol.writeObjectLink(nd->getReference(),
               nd->getOutputFileBase(),
               0,
-              nd->name()
+              nd->displayName()
           );
           if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
           {
@@ -301,7 +301,7 @@ void FileDef::writeDocumentation(OutputList &ol)
         else
         {
           ol.startBold();
-          ol.docify(nd->name());
+          ol.docify(nd->displayName());
           ol.endBold();
         }
         ol.endMemberItem(FALSE);

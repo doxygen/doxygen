@@ -167,7 +167,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     }
     t << cd->getOutputFileBase() << htmlFileExtension << "\" ";
-    t << "alt=\"" << cd->name(); 
+    t << "alt=\"" << cd->displayName(); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
     t << (x+w) << "," << (y+h) << "\">" << endl;
   }
@@ -199,11 +199,11 @@ QCString DiagramItem::label() const
   QCString result;
   if (!templSpec.isEmpty())
   {
-    result=insertTemplateSpecifierInScope(classDef->name(),templSpec);
+    result=insertTemplateSpecifierInScope(classDef->displayName(),templSpec);
   }
   else
   {
-    result=classDef->name();
+    result=classDef->displayName();
   }
   if (Config_getBool("HIDE_SCOPE_NAMES")) result=stripScope(result);
   return result;

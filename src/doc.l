@@ -2485,7 +2485,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->startEmphasis();
 					  if (!insideHtmlLink)
 					  {
-  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,TRUE);
 					  }
 					  else
 					  {
@@ -2524,7 +2524,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->startBold();
 					  if (!insideHtmlLink)
 					  {
-  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,TRUE);
 					  }
 					  else
 					  {
@@ -2563,7 +2563,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					  outDoc->startTypewriter();
 					  if (!insideHtmlLink)
 					  {
-  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,FALSE);
+  					    linkifyText(TextGeneratorOLImpl(*outDoc),className,0,yytext,FALSE,TRUE);
 					  }
 					  else
 					  {

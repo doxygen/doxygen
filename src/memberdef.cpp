@@ -1343,7 +1343,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             Definition *bd=bmd->group;
             if (bd==0) bd=bcd;
             ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
-                bmd->anchor(),bcd->name());
+                bmd->anchor(),bcd->displayName());
 
             //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
             //    bmd->anchor(),bcd->name());
@@ -1355,7 +1355,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           else
           {
             ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-                0,bcd->name());
+                0,bcd->displayName());
             if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ )
             {
               writePageRef(ol,bcd->getOutputFileBase(),0);
@@ -1437,7 +1437,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
             if (bmd->group) bd=bmd->group; else bd=bcd;
             
             ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
-                bmd->anchor(),bcd->name());
+                bmd->anchor(),bcd->displayName());
                 
             if (bd->isLinkableInProject() ) 
             {
@@ -1569,8 +1569,8 @@ bool MemberDef::visibleMemberGroup(bool hideNoHeader)
 QCString MemberDef::getScopeString() const
 {
   QCString result;
-  if (getClassDef()) result=getClassDef()->name();
-  else if (getNamespaceDef()) result=getNamespaceDef()->name();
+  if (getClassDef()) result=getClassDef()->displayName();
+  else if (getNamespaceDef()) result=getNamespaceDef()->displayName();
   return result;
 }
 

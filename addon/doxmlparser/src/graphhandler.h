@@ -22,6 +22,7 @@
 
 class NodeHandler;
 class ChildNodeHandler;
+class EdgeLabelHandler;
 
 class GraphHandler : public IGraph, public BaseHandler<GraphHandler>
 {
@@ -57,12 +58,13 @@ class NodeHandler : public INode, public BaseHandler<NodeHandler>
     void endLabel();
     void startLink(const QXmlAttributes &attrib);
     void endLink();
+    void startChildNode(const QXmlAttributes &attrib);
 
     // INode
     virtual QString id() const { return m_id; }
     virtual QString label() const { return m_label; }
     virtual QString linkId() const { return m_link; }
-    virtual IChildNodeIterator *children() const { return 0; } // TODO: implement
+    virtual IChildNodeIterator *children() const;
 
   private:
     IBaseHandler *m_parent;
@@ -83,19 +85,27 @@ class NodeIterator : public BaseIterator<INodeIterator,INode,NodeHandler>
 
 class ChildNodeHandler : public IChildNode, public BaseHandler<ChildNodeHandler>
 {
+    friend class EdgeLabelIterator;
   public:
     ChildNodeHandler(IBaseHandler *parent);
     virtual ~ChildNodeHandler();
 
     void startChildNode(const QXmlAttributes &attrib);
     void endChildNode();
+    void startEdgeLabel(const QXmlAttributes &attrib);
 
     // IChildNode
     virtual QString id() const { return m_id; }
+    virtual NodeRelation relation() const { return m_relation; }
+    virtual QString relationString() const { return m_relationString; }
+    virtual IEdgeLabelIterator *edgeLabels() const;
 
   private:
     IBaseHandler *m_parent;
-    QString m_id;
+    QString       m_id;
+    NodeRelation  m_relation;
+    QString       m_relationString;
+    QList<EdgeLabelHandler> m_edgeLabels;
 };
 
 class ChildNodeIterator : public BaseIterator<IChildNodeIterator,IChildNode,ChildNodeHandler>
@@ -105,6 +115,35 @@ class ChildNodeIterator : public BaseIterator<IChildNodeIterator,IChildNode,Chil
       BaseIterator<IChildNodeIterator,IChildNode,ChildNodeHandler>(handler.m_children) {}
 };
 
+//----------------------------------------------------------------------
+
+class EdgeLabelHandler : public IEdgeLabel, public BaseHandler<EdgeLabelHandler>
+{
+    friend class EdgeLabelIterator;
+  public:
+    EdgeLabelHandler(IBaseHandler *parent);
+    virtual ~EdgeLabelHandler();
+
+    void startEdgeLabel(const QXmlAttributes &attrib);
+    void endEdgeLabel();
+
+    // IEdgeLabel
+    virtual QString label() const { return m_label; }
+
+  private:
+    IBaseHandler *m_parent;
+    QString       m_label;
+};
+
+class EdgeLabelIterator : public BaseIterator<IEdgeLabelIterator,IEdgeLabel,EdgeLabelHandler>
+{
+  public:
+    EdgeLabelIterator(const ChildNodeHandler &handler) :
+      BaseIterator<IEdgeLabelIterator,IEdgeLabel,EdgeLabelHandler>(handler.m_edgeLabels) {}
+};
+
+void graphhandler_init();
+void graphhandler_exit();
 
 #endif
 
