@@ -1726,10 +1726,6 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         }
       }
     }
-    else
-    {
-      printf("something else!\n");
-    }
   }
   MATCH
   return TRUE;
