@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2002 by Dimitri van Heesch.
@@ -2229,7 +2229,7 @@ static void transferFunctionDocumentation()
             {
               decA->docs = defA->docs.copy();
             }
-            else if (!defA->docs.isEmpty() && defA->docs.isEmpty())
+            else if (defA->docs.isEmpty() && !decA->docs.isEmpty())
             {
               defA->docs = decA->docs.copy();
             }
