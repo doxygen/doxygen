@@ -1085,7 +1085,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         if (logoFilename)
         {
           t << "{\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE " << logoFilename;
-          t << " \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
+          t << " \\\\d \\\\*MERGEFORMAT} {\\fldrslt IMAGE }}\\par\\par\n";
         }
         if (company)
         {
@@ -2110,7 +2110,7 @@ void RTFGenerator::endClassDiagram(ClassDiagram &d,
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << fileName << ".gif";
-  t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
 
@@ -2200,7 +2200,7 @@ void RTFGenerator::startImage(const char *name,const char *,bool)
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << name;
-  t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
 
@@ -2551,7 +2551,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << fileName << ".gif";
-  t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
 
@@ -2570,7 +2570,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
   t << fileName << ".gif";
-  t << " \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
 

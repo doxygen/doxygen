@@ -101,7 +101,6 @@ class MemberDef : public Definition
     Specifier virtualness() const         { return virt; }
     MemberType memberType() const         { return mtype; }
 
-
     // convenience methods
     bool isSignal() const                 { return mtype==Signal;      }
     bool isSlot() const                   { return mtype==Slot;        }
@@ -197,10 +196,13 @@ class MemberDef : public Definition
       argList = al;
     }
     ArgumentList *templateArguments() const { return tArgList; }
-    void setScopeDefTemplateArguments(ArgumentList *t);
-    ArgumentList *scopeDefTemplateArguments() const { return scopeTAL; }
-    void setMemberDefTemplateArguments(ArgumentList *t);
-    ArgumentList *memberDefTemplateArguments() const { return membTAL; }
+    //void setScopeDefTemplateArguments(ArgumentList *t);
+    //ArgumentList *scopeDefTemplateArguments() const { return scopeTAL; }
+    //void setMemberDefTemplateArguments(ArgumentList *t);
+    //ArgumentList *memberDefTemplateArguments() const { return membTAL; }
+    void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
+    QList<ArgumentList> *definitionTemplateParameterLists() const 
+    { return m_defTmpArgLists; }
     
     // namespace related members
     void setNamespace(NamespaceDef *nd);
@@ -275,8 +277,9 @@ class MemberDef : public Definition
     MemberDef  *annMemb;
     ArgumentList *argList;    // argument list of this member
     ArgumentList *tArgList;   // template argument list of function template
-    ArgumentList *scopeTAL;   // template argument list of class template
-    ArgumentList *membTAL;    // template argument list of class template
+    //ArgumentList *scopeTAL;   // template argument list of class template
+    //ArgumentList *membTAL;    // template argument list of class template
+    QList<ArgumentList> *m_defTmpArgLists;
     int grpId;                // group id
     MemberGroup *memberGroup; // group's member definition
 

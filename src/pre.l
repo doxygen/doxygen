@@ -1519,8 +1519,9 @@ BN	[ \t\r\n]
   					  g_defVarArgs = yytext[yyleng-1]=='.';
 					  if (g_defVarArgs) // strip ellipsis
 					  {
-					    argName=argName.left(argName.length()-3).stripWhiteSpace();
+					    argName=argName.left(argName.length()-3);
 					  }
+					  argName = argName.stripWhiteSpace();
                                           g_defArgsStr+=yytext;
 					  g_argDict->insert(argName,new int(g_defArgs)); 
 					  g_defArgs++;

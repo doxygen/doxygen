@@ -22,7 +22,7 @@
 Doxygen has built-in support for multiple languages. This means 
 that the text fragments that doxygen generates can be produced in
 languages other than English (the default) at configuration time.
-<p>
+
 Currently (version $version), $numlang languages 
 are supported (sorted alphabetically): 
 $languages.
@@ -31,17 +31,16 @@ The table of information related to the supported languages follows.
 It is sorted by language alphabetically.  The <b>Status</b> column
 was generated from sources and shows approximately the last version
 when the translator was updated.
-<p>
 
 $information_table
-<p>
 
 Most people on the list have indicated that they were also busy
 doing other things, so if you want to help to speed things up please 
 let them (or me) know.
 
 If you want to add support for a language that is not yet listed 
-please see the next section.
+please read the next section.
+
 
 <h3>Adding a new language to doxygen</h3>
 
@@ -85,9 +84,9 @@ Just follow these steps:
      To enter special characters (with accents) you can:
      <ul>
      <li>  Enter them directly if your keyboard supports that and you are 
-           using a Latin-1 font.
-           Doxygen will translate the characters to proper LateX and
-           leave the Html and man output for what it is (which is fine, if
+           using a Latin-1 font. Doxygen will translate the
+           characters to proper \f$\mbox{\LaTeX}\f$ and leave the
+           HTML and man output for what it is (which is fine, if
            idLanguageCharset() is set correctly).
      <li>  Use html codes like \&auml; for an a with an umlaut (i.e. &auml;).
            See the HTML specification for the codes.
@@ -230,17 +229,22 @@ the minimal number of translator adapter classes.
 <b>To simplify the maintenance of the language translator classes</b>
 for the supported languages, the \c translator.pl perl
 script was developed (located in \c doxygen/doc directory). 
-It is able to extract the important information about obsolete and
-new methods from the source files for each of the languages -- see
-the reference to the <em>translator report</em> ASCII file below 
-the table of supported languages shown earlier. Looking at the base
-class of the language translator, the script guesses also the status
-of the translator -- see the last column of the mentioned table.  
-The \c translator.pl is called automatically when the doxygen
-documentation is generated.  You can also run the script manualy
-whenever you feel that it can help you.  Of course, you are not
-forced to use the results of the script.  You can find the same
-information by looking at the adapter class and its base classes.
+It extracts the important information about obsolete and
+new methods from the source files for each of the languages.  
+The information is stored in the <em>translator report</em> ASCII file
+($translator_report_file_name). \htmlonly If you compiled this documentation
+from sources and if you have also doxygen sources available the
+link $translator_report_link should be valid.\endhtmlonly 
+
+Looking at the base class of the language translator, the script
+guesses also the status of the translator -- see the last column of
+the table with languages above.  The \c translator.pl is called
+automatically when the doxygen documentation is generated.  You can
+also run the script manualy whenever you feel that it can help you.
+Of course, you are not forced to use the results of the script.  You
+can find the same information by looking at the adapter class and
+its base classes.
+
 
 <b>How should I update my language translator?</b> Firstly, you
 should be the language maintainer, or you should let him/her know

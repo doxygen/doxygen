@@ -26,7 +26,7 @@
 #    class for "almost up-to-date" translators.
 #  - $doxygenrootdir and other global variables for storing 
 #    directories determined from DOXYGEN_DOCDIR environment 
-#    variable. The change was done because the DOXYGEN_DOCDIR 
+#    variable. The change was done because the DOXYGEN_DOCDIR
 #    was already used before.
 #  - $version mark can be used in the language.tpl template.
 #
@@ -41,9 +41,23 @@
 # 2001/06/11
 #  - Character entity &ccaron; recognized in maintainers.txt.
 #
+# 2001/07/17
+#  - Perl version checking is less confusing now. The script stops
+#    immediately after the first command below when your perl
+#    is older that required.
+#  - The information below the table of languages is not produced
+#    with the table. Another symbol replacement is done, so language.tpl
+#    can be updated so that the generated language.doc does not contain
+#    the link to the translator_report.txt.
+#
+# Todo:
+# -----
+# - Something changed. The environment variables like VERSION,
+#   DOXYGEN_DOCDIR are not set now when make is run.
+#
 ################################################################
 
-require 5.005;
+use 5.005;
 use strict;
 use Carp;
 
@@ -561,9 +575,9 @@ xxxTABLE_FOOTxxx
     ##}}}
     
     # Finish the tables, and substitute the mark in the doc
-    # template by the contatenation of the tables and the notice
-    # about $ftranslatortxt.  Add NOSPAM to email addresses in the
-    # HTML table.  Replace the special character sequences. #{{{
+    # template by the contatenation of the tables.  Add NOSPAM to
+    # email addresses in the HTML table.  Replace the special
+    # character sequences. #{{{
     #
     $tableHTML .= $htmlTableFoot;
     $tableLATEX .= $latexTableFoot;
@@ -580,14 +594,21 @@ xxxTABLE_FOOTxxx
     $tableLATEX =~ s/&rcaron;/\\v{r}/sg;
     $tableLATEX =~ s/_/\\_/sg;
     
-    my $notice = "\nHave a look at <a href=\"../doc/$ftranslatortxt\"\n>"
-               . "<code>doxygen/doc/$ftranslatortxt</code></a> "
-               . "for more details.";
+    $output =~ s{\$information_table}{$tableHTML$tableLATEX};
 
-    $output =~ s{\$information_table}{$tableHTML$tableLATEX$notice};
+    ##}}}
 
+    # Replace the other symbols in the template by the expected
+    # information. ##{{{
+    #
     $output =~ s{\$version}{$doxversion};
 
+    $output =~ s{\$translator_report_file_name}
+                {<code>doxygen/doc/$ftranslatortxt</code>}x;
+
+    $output =~ s{\$translator_report_link}
+                {<a href=\"../doc/$ftranslatortxt\">
+                 <code>doxygen/doc/$ftranslatortxt</code></a>}x;
     ##}}}
 
     # Replace the introduction notice in the output. #{{{
@@ -624,6 +645,13 @@ xxxTABLE_FOOTxxx
 
     $srcdir = "$doxygenrootdir/src";
 
+=pod
+# Show the environment variables (for debugging only). 
+#
+foreach (sort keys %ENV) { print STDERR "$_=$ENV{$_}\n"; }
+print STDERR "\n\n"; 
+=cut
+    
     $doxversion = (defined $ENV{'VERSION'}) ? $ENV{'VERSION'} : 'unknown';
 
     ##}}}

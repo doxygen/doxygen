@@ -44,6 +44,7 @@ static const char *defaultStyleSheet =
       "A.elRef { font-weight: bold }\n"
       "A.code { text-decoration: none; font-weight: normal; color: #4444ee }\n"
       "A.codeRef { font-weight: normal; color: #4444ee }\n"
+      "A:hover { text-decoration: none; background-color: #f2f2ff }\n"
       "DL.el { margin-left: -1cm }\n"
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
       "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"

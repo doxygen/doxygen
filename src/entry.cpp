@@ -16,6 +16,7 @@
  */
 
 #include "entry.h"
+#include "util.h"
 
 int Entry::num=0;
 
@@ -36,8 +37,8 @@ Entry::Entry()
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
-  tArgList = 0;
-  mtArgList = 0;
+  tArgLists = 0;
+  //mtArgList = 0;
   mGrpId = -1;
   tagInfo = 0;
   groupdoctype = GROUPDOC_NORMAL;
@@ -90,8 +91,8 @@ Entry::Entry(const Entry &e)
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry(copy) tArgList=0\n");
-  tArgList = 0;
-  mtArgList = 0;
+  tArgLists = 0;
+  //mtArgList = 0;
   groupdoctype = e.groupdoctype;
 
   // deep copy of the child entry list
@@ -136,33 +137,25 @@ Entry::Entry(const Entry &e)
   argList->volatileSpecifier = e.argList->volatileSpecifier;
   argList->pureSpecifier     = e.argList->pureSpecifier;
   
-  // deep copy template argument list
-  if (e.tArgList)
+  // deep copy template argument lists
+  if (e.tArgLists)
   {
-    tArgList = new ArgumentList;
-    tArgList->setAutoDelete(TRUE);
-    //printf("Entry::Entry(copy) new tArgList=%p\n",tArgList);
-    QListIterator<Argument> tali(*e.tArgList);
-    for (;(a=tali.current());++tali)
-    {
-      tArgList->append(new Argument(*a));
-      //printf("appending argument %s %s\n",a->type.data(),a->name.data());
-    }
+    tArgLists = copyArgumentLists(e.tArgLists);
   }
 
   // deep copy template argument list
-  if (e.mtArgList)
-  {
-    mtArgList = new ArgumentList;
-    mtArgList->setAutoDelete(TRUE);
-    //printf("Entry::Entry(copy) new tArgList=%p\n",tArgList);
-    QListIterator<Argument> mtali(*e.mtArgList);
-    for (;(a=mtali.current());++mtali)
-    {
-      mtArgList->append(new Argument(*a));
-      //printf("appending argument %s %s\n",a->type.data(),a->name.data());
-    }
-  }
+  //if (e.mtArgList)
+  //{
+  //  mtArgList = new ArgumentList;
+  //  mtArgList->setAutoDelete(TRUE);
+  //  //printf("Entry::Entry(copy) new tArgList=%p\n",tArgList);
+  //  QListIterator<Argument> mtali(*e.mtArgList);
+  //  for (;(a=mtali.current());++mtali)
+  //  {
+  //    mtArgList->append(new Argument(*a));
+  //    //printf("appending argument %s %s\n",a->type.data(),a->name.data());
+  //  }
+  //}
 
 }
 
@@ -175,8 +168,8 @@ Entry::~Entry()
   delete groups;
   delete anchors;
   delete argList;
-  delete tArgList;
-  delete mtArgList;
+  delete tArgLists;
+  //delete mtArgList;
   delete tagInfo;
   num--;
 }
@@ -244,8 +237,8 @@ void Entry::reset()
   anchors->clear();
   argList->clear();
   if (tagInfo) { delete tagInfo; tagInfo=0; }
-  if (tArgList) { delete tArgList; tArgList=0; }
-  if (mtArgList) { delete mtArgList; mtArgList=0; }
+  if (tArgLists) { delete tArgLists; tArgLists=0; }
+  //if (mtArgList) { delete mtArgList; mtArgList=0; }
 }
 
 
@@ -296,7 +289,7 @@ int Entry::getSize()
     e=sublist->next();
   }
   Argument *a=argList->first();
-  while (e)
+  while (a)
   {
     size+=sizeof(Argument);
     size+=a->type.length()+1
@@ -304,30 +297,36 @@ int Entry::getSize()
          +a->defval.length()+1;
     a=argList->next();
   }
-  if (tArgList)
+  if (tArgLists)
   {
-    a=tArgList->first();
-    while (e)
+    ArgumentList *al=tArgLists->first();
+    while (al)
     {
-      size+=sizeof(Argument);
-      size+=a->type.length()+1
-        +a->name.length()+1
-        +a->defval.length()+1;
-      a=tArgList->next();
+      size+=sizeof(ArgumentList);
+      a=al->first();
+      while (a)
+      {
+        size+=sizeof(Argument);
+        size+=a->type.length()+1
+          +a->name.length()+1
+          +a->defval.length()+1;
+        a=al->next();
+      }
+      al=tArgLists->next();
     }
   }
-  if (mtArgList)
-  {
-    a=mtArgList->first();
-    while (e)
-    {
-      size+=sizeof(Argument);
-      size+=a->type.length()+1
-        +a->name.length()+1
-        +a->defval.length()+1;
-      a=mtArgList->next();
-    }
-  }
+  //if (mtArgList)
+  //{
+  //  a=mtArgList->first();
+  //  while (e)
+  //  {
+  //    size+=sizeof(Argument);
+  //    size+=a->type.length()+1
+  //      +a->name.length()+1
+  //      +a->defval.length()+1;
+  //    a=mtArgList->next();
+  //  }
+  //}
   return size;
 }
 

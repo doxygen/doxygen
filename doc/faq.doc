@@ -210,9 +210,6 @@ generator -> gen
 At the time I was looking into lex and yacc, where a lot of things start with
 "yy", so the "y" slipped in and made things pronouncable.
 
-I realized later that doxygen could also be read as Dimitri's oxygen,
-which could be seen as something I need to live :-)
-
 </ol>
 
 \htmlonly

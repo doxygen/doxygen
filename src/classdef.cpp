@@ -127,15 +127,11 @@ QCString ClassDef::displayName() const
   QCString n;
   if (Config_getBool("HIDE_SCOPE_NAMES"))
   {
-    n=stripScope(name());
+    n=localName();
   }
   else
   {
-    n=name();
-  }
-  if (m_tempArgs)
-  {
-    n+=tempArgListToString(m_tempArgs);
+    n=qualifiedNameWithTemplateParameters();
   }
   return n;
 }
@@ -603,32 +599,70 @@ ArgumentList *ClassDef::outerTemplateArguments() const
   return 0;
 }
 
-
-static void writeTemplateSpec(OutputList &ol,ArgumentList *al,
-            const QCString &pageType,const QCString &name)
+static void searchTemplateSpecs(/*in*/  Definition *d,
+                                /*out*/ QList<ArgumentList> &result,
+                                /*out*/ QCString &name)
 {
-  if (al) // class is a template
+  if (d->definitionType()==Definition::TypeClass)
+  {
+    if (d->getOuterScope())
+    {
+      searchTemplateSpecs(d->getOuterScope(),result,name);
+    }
+    ClassDef *cd=(ClassDef *)d;
+    if (!name.isEmpty()) name+="::";
+    name+=d->localName();
+    bool isSpecialization = d->localName().find('<')!=-1;
+    if (cd->templateArguments()) 
+    {
+      result.append(cd->templateArguments());
+      if (!isSpecialization)
+      {
+        name+=tempArgListToString(cd->templateArguments());
+      }
+    }
+  }
+  else
+  {
+    name+=d->qualifiedName();
+  }
+}
+
+static void writeTemplateSpec(OutputList &ol,Definition *d,
+            const QCString &type)
+{
+  QList<ArgumentList> specs;
+  QCString name;
+  searchTemplateSpecs(d,specs,name);
+  if (specs.count()>0) // class has template scope specifiers
   {
     ol.startSubsubsection(); 
-    ol.docify("template<");
-    Argument *a=al->first();
-    while (a)
+    QListIterator<ArgumentList> spi(specs);
+    ArgumentList *al;
+    for (spi.toFirst();(al=spi.current());++spi)
     {
-      ol.docify(a->type);
-      if (!a->name.isEmpty())
+      ol.docify("template<");
+      Argument *a=al->first();
+      while (a)
       {
-        ol.docify(" ");
-        ol.docify(a->name);
+        ol.docify(a->type);
+        if (!a->name.isEmpty())
+        {
+          ol.docify(" ");
+          ol.docify(a->name);
+        }
+        if (a->defval.length()!=0)
+        {
+          ol.docify(" = ");
+          ol.docify(a->defval);
+        } 
+        a=al->next();
+        if (a) ol.docify(", ");
       }
-      if (a->defval.length()!=0)
-      {
-        ol.docify(" = ");
-        ol.docify(a->defval);
-      } 
-      a=al->next();
-      if (a) ol.docify(", ");
+      ol.docify(">");
+      ol.lineBreak();
     }
-    ol.docify("> "+pageType.lower()+" "+name);
+    ol.docify(type.lower()+" "+name);
     ol.endSubsubsection();
     ol.writeString("\n");
   }
@@ -735,7 +769,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("CLASS_DIAGRAMS")) ol.disableAllBut(OutputGenerator::Man);
 
   
-  // write subclasses
+  // write super classes
   int count;
   if ((count=m_inherits->count())>0)
   {
@@ -1005,7 +1039,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.endGroupHeader();
     ol.startTextBlock();
     
-    writeTemplateSpec(ol,outerTempArgList,pageType,name());
+    writeTemplateSpec(ol,this,pageType);
     
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
@@ -1046,8 +1080,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
   else
   {
-    writeTemplateSpec(ol,outerTempArgList,pageType,name());
+    writeTemplateSpec(ol,this,pageType);
   }
+
+  
   
   typedefMembers.writeDocumentation(ol,name(),this,
                          theTranslator->trMemberTypedefDocumentation());
@@ -1140,6 +1176,20 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
  
   endFile(ol);
+
+
+  // write inner classes after the parent, so the tag files contain
+  // the definition in proper order!
+  if (m_innerClasses)
+  {
+    ClassSDict::Iterator cli(*m_innerClasses);
+    ClassDef *innerCd;
+    for (cli.toFirst();(innerCd=cli.current());++cli)
+    {
+      msg("Generating docs for nested compound %s...\n",innerCd->name().data());
+      innerCd->writeDocumentation(ol);
+    }
+  }
 }
 
 // write the list of all (inherited) members for this class
@@ -2062,6 +2112,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
     //templateClass->setBriefDescription(briefDescription());
     //templateClass->setDocumentation(documentation());
     templateClass->setTemplateMaster(this);
+    templateClass->setOuterScope(getOuterScope());
     m_templateInstances->insert(templSpec,templateClass);
     freshInstance=TRUE;
   }
@@ -2148,4 +2199,65 @@ QCString ClassDef::getReference() const
     return Definition::getReference();
   }
 }
+
+void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
+{
+  Definition *d=getOuterScope();
+  if (d)
+  {
+    if (d->definitionType()==Definition::TypeClass)
+    {
+      ClassDef *cd=(ClassDef *)d;
+      cd->getTemplateParameterLists(lists);
+    }
+  }
+  if (templateArguments())
+  {
+    lists.append(templateArguments());
+  }
+}
+
+QCString ClassDef::qualifiedNameWithTemplateParameters(
+    QList<ArgumentList> *actualParams) const
+{
+  QCString scName;
+  Definition *d=getOuterScope();
+  if (d)
+  {
+    if (d->definitionType()==Definition::TypeClass)
+    {
+      ClassDef *cd=(ClassDef *)d;
+      scName = cd->qualifiedNameWithTemplateParameters(actualParams);
+    }
+    else
+    {
+      scName = d->qualifiedName();
+    }
+  }
+  if (!scName.isEmpty()) scName+="::";
+  scName+=localName();
+  ArgumentList *al=0;
+  bool isSpecialization = localName().find('<')!=-1;
+  if (templateArguments())
+  {
+    if (actualParams && (al=actualParams->current()))
+    {
+      if (!isSpecialization)
+      {
+        scName+=tempArgListToString(al);
+      }
+      actualParams->next();
+    }
+    else
+    {
+      if (!isSpecialization)
+      {
+        scName+=tempArgListToString(templateArguments());
+      }
+    }
+  }
+  //printf("scope=%s qualifiedName=%s\n",name().data(),scName.data());
+  return scName;
+}
+
 

@@ -146,7 +146,8 @@ class TagFileParser : public QXmlDefaultHandler
                  InGroup,
                  InPage,
                  InMember,
-                 InPackage
+                 InPackage,
+                 InTempArgList
                };
     class StartElementHandler
     {
@@ -290,6 +291,7 @@ class TagFileParser : public QXmlDefaultHandler
       m_stateStack.push(new State(m_state));
       m_state = InMember;
     }
+
     void endMember()
     {
       m_state = *m_stateStack.pop();
@@ -303,6 +305,8 @@ class TagFileParser : public QXmlDefaultHandler
         default:   err("Error: Unexpected tag `member' found\n"); break; 
       }
     }
+
+    
     void endDocAnchor()
     {
       switch(m_state)
@@ -531,24 +535,24 @@ class TagFileParser : public QXmlDefaultHandler
       m_tagFilePages.setAutoDelete(TRUE);
       m_tagFilePackages.setAutoDelete(TRUE);
 
-      m_startElementHandlers.insert("compound",  new StartElementHandler(this,&TagFileParser::startCompound));
-      m_startElementHandlers.insert("member",    new StartElementHandler(this,&TagFileParser::startMember));
-      m_startElementHandlers.insert("name",      new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("base",      new StartElementHandler(this,&TagFileParser::startBase));
-      m_startElementHandlers.insert("filename",  new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("path",      new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("anchor",    new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("arglist",   new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("title",     new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("subgroup",  new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("class",     new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("namespace", new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("file",      new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("page",      new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("docanchor", new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("tagfile",   new StartElementHandler(this,&TagFileParser::startIgnoreElement));
-      m_startElementHandlers.insert("templarg",  new StartElementHandler(this,&TagFileParser::startStringValue));
-      m_startElementHandlers.insert("type",      new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("compound",    new StartElementHandler(this,&TagFileParser::startCompound));
+      m_startElementHandlers.insert("member",      new StartElementHandler(this,&TagFileParser::startMember));
+      m_startElementHandlers.insert("name",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("base",        new StartElementHandler(this,&TagFileParser::startBase));
+      m_startElementHandlers.insert("filename",    new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("path",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("anchor",      new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("arglist",     new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("title",       new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("subgroup",    new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("class",       new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("namespace",   new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("file",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("page",        new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("docanchor",   new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("tagfile",     new StartElementHandler(this,&TagFileParser::startIgnoreElement));
+      m_startElementHandlers.insert("templarg",    new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("type",        new StartElementHandler(this,&TagFileParser::startStringValue));
 
       m_endElementHandlers.insert("compound",    new EndElementHandler(this,&TagFileParser::endCompound));
       m_endElementHandlers.insert("member",      new EndElementHandler(this,&TagFileParser::endMember));
@@ -663,22 +667,22 @@ class TagFileErrorHandler : public QXmlErrorHandler
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
 {
-  printf("Result:\n");
+  msg("Result:\n");
   QListIterator<TagClassInfo> lci(m_tagFileClasses);
 
   //============== CLASSES
   TagClassInfo *cd;
   for (;(cd=lci.current());++lci)
   {
-    printf("class `%s'\n",cd->name.data());
-    printf("  filename `%s'\n",cd->filename.data());
+    msg("class `%s'\n",cd->name.data());
+    msg("  filename `%s'\n",cd->filename.data());
     if (cd->bases)
     {
       QListIterator<BaseInfo> bii(*cd->bases);
       BaseInfo *bi;
       for ( bii.toFirst() ; (bi=bii.current()) ; ++bii) 
       {
-        printf( "  base: %s \n", bi->name.data() );
+        msg( "  base: %s \n", bi->name.data() );
       }
     }
 
@@ -686,11 +690,11 @@ void TagFileParser::dump()
     TagMemberInfo *md;
     for (;(md=mci.current());++mci)
     {
-      printf("  member:\n");
-      printf("    kind: `%s'\n",md->kind.data());
-      printf("    name: `%s'\n",md->name.data());
-      printf("    anchor: `%s'\n",md->anchor.data());
-      printf("    arglist: `%s'\n",md->arglist.data());
+      msg("  member:\n");
+      msg("    kind: `%s'\n",md->kind.data());
+      msg("    name: `%s'\n",md->name.data());
+      msg("    anchor: `%s'\n",md->anchor.data());
+      msg("    arglist: `%s'\n",md->arglist.data());
     }
   }
   //============== NAMESPACES
@@ -698,24 +702,24 @@ void TagFileParser::dump()
   TagNamespaceInfo *nd;
   for (;(nd=lni.current());++lni)
   {
-    printf("namespace `%s'\n",nd->name.data());
-    printf("  filename `%s'\n",nd->filename.data());
+    msg("namespace `%s'\n",nd->name.data());
+    msg("  filename `%s'\n",nd->filename.data());
     QStringList::Iterator it;
     for ( it = nd->classList.begin(); 
         it != nd->classList.end(); ++it ) 
     {
-      printf( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).latin1() );
     }
 
     QListIterator<TagMemberInfo> mci(nd->members);
     TagMemberInfo *md;
     for (;(md=mci.current());++mci)
     {
-      printf("  member:\n");
-      printf("    kind: `%s'\n",md->kind.data());
-      printf("    name: `%s'\n",md->name.data());
-      printf("    anchor: `%s'\n",md->anchor.data());
-      printf("    arglist: `%s'\n",md->arglist.data());
+      msg("  member:\n");
+      msg("    kind: `%s'\n",md->kind.data());
+      msg("    name: `%s'\n",md->name.data());
+      msg("    anchor: `%s'\n",md->anchor.data());
+      msg("    arglist: `%s'\n",md->arglist.data());
     }
   }
   //============== FILES
@@ -723,29 +727,29 @@ void TagFileParser::dump()
   TagFileInfo *fd;
   for (;(fd=lfi.current());++lfi)
   {
-    printf("file `%s'\n",fd->name.data());
-    printf("  filename `%s'\n",fd->filename.data());
+    msg("file `%s'\n",fd->name.data());
+    msg("  filename `%s'\n",fd->filename.data());
     QStringList::Iterator it;
     for ( it = fd->namespaceList.begin(); 
         it != fd->namespaceList.end(); ++it ) 
     {
-      printf( "  namespace: %s \n", (*it).latin1() );
+      msg( "  namespace: %s \n", (*it).latin1() );
     }
     for ( it = fd->classList.begin(); 
         it != fd->classList.end(); ++it ) 
     {
-      printf( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).latin1() );
     }
 
     QListIterator<TagMemberInfo> mci(fd->members);
     TagMemberInfo *md;
     for (;(md=mci.current());++mci)
     {
-      printf("  member:\n");
-      printf("    kind: `%s'\n",md->kind.data());
-      printf("    name: `%s'\n",md->name.data());
-      printf("    anchor: `%s'\n",md->anchor.data());
-      printf("    arglist: `%s'\n",md->arglist.data());
+      msg("  member:\n");
+      msg("    kind: `%s'\n",md->kind.data());
+      msg("    name: `%s'\n",md->name.data());
+      msg("    anchor: `%s'\n",md->anchor.data());
+      msg("    arglist: `%s'\n",md->arglist.data());
     }
   }
 
@@ -754,44 +758,44 @@ void TagFileParser::dump()
   TagGroupInfo *gd;
   for (;(gd=lgi.current());++lgi)
   {
-    printf("group `%s'\n",gd->name.data());
-    printf("  filename `%s'\n",gd->filename.data());
+    msg("group `%s'\n",gd->name.data());
+    msg("  filename `%s'\n",gd->filename.data());
     QStringList::Iterator it;
     for ( it = gd->namespaceList.begin(); 
         it != gd->namespaceList.end(); ++it ) 
     {
-      printf( "  namespace: %s \n", (*it).latin1() );
+      msg( "  namespace: %s \n", (*it).latin1() );
     }
     for ( it = gd->classList.begin(); 
         it != gd->classList.end(); ++it ) 
     {
-      printf( "  class: %s \n", (*it).latin1() );
+      msg( "  class: %s \n", (*it).latin1() );
     }
     for ( it = gd->fileList.begin(); 
         it != gd->fileList.end(); ++it ) 
     {
-      printf( "  file: %s \n", (*it).latin1() );
+      msg( "  file: %s \n", (*it).latin1() );
     }
     for ( it = gd->subgroupList.begin(); 
         it != gd->subgroupList.end(); ++it ) 
     {
-      printf( "  subgroup: %s \n", (*it).latin1() );
+      msg( "  subgroup: %s \n", (*it).latin1() );
     }
     for ( it = gd->pageList.begin(); 
         it != gd->pageList.end(); ++it ) 
     {
-      printf( "  page: %s \n", (*it).latin1() );
+      msg( "  page: %s \n", (*it).latin1() );
     }
 
     QListIterator<TagMemberInfo> mci(gd->members);
     TagMemberInfo *md;
     for (;(md=mci.current());++mci)
     {
-      printf("  member:\n");
-      printf("    kind: `%s'\n",md->kind.data());
-      printf("    name: `%s'\n",md->name.data());
-      printf("    anchor: `%s'\n",md->anchor.data());
-      printf("    arglist: `%s'\n",md->arglist.data());
+      msg("  member:\n");
+      msg("    kind: `%s'\n",md->kind.data());
+      msg("    name: `%s'\n",md->name.data());
+      msg("    anchor: `%s'\n",md->anchor.data());
+      msg("    arglist: `%s'\n",md->arglist.data());
     }
   }
   //============== PAGES
@@ -799,9 +803,9 @@ void TagFileParser::dump()
   TagPageInfo *pd;
   for (;(pd=lpi.current());++lpi)
   {
-    printf("page `%s'\n",pd->name.data());
-    printf("  title `%s'\n",pd->title.data());
-    printf("  filename `%s'\n",pd->filename.data());
+    msg("page `%s'\n",pd->name.data());
+    msg("  title `%s'\n",pd->title.data());
+    msg("  filename `%s'\n",pd->filename.data());
   }
 }
 
@@ -973,14 +977,17 @@ void TagFileParser::buildLists(Entry *root)
     }
     if (tci->templateArguments)
     {
-      if (ce->tArgList==0) ce->tArgList = new ArgumentList;
+      if (ce->tArgLists==0) ce->tArgLists = new QList<ArgumentList>;
+      ArgumentList *al = new ArgumentList;
+      ce->tArgLists->append(al);
+      
       QListIterator<QString> sli(*tci->templateArguments);
       QString *argName;
       for (;(argName=sli.current());++sli)
       {
         Argument *a = new Argument;
         a->name = *argName;
-        ce->tArgList->append(a);
+        al->append(a);
       }
     }
 

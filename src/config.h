@@ -307,6 +307,7 @@ class ConfigBool : public ConfigOption
     QCString m_valueString;
 };
 
+// some convenience macros
 #define Config_getString(val)  Config::instance()->getString(__FILE__,__LINE__,val)
 #define Config_getInt(val)     Config::instance()->getInt(__FILE__,__LINE__,val)
 #define Config_getList(val)    Config::instance()->getList(__FILE__,__LINE__,val)
@@ -319,6 +320,10 @@ class ConfigBool : public ConfigOption
  *  read from a user-supplied configuration file.
  *  The static member instance() can be used to get
  *  a pointer to the one and only instance.
+ *  
+ *  Set all variables to their default values by
+ *  calling Config::instance()->init()
+ *
  */
 class Config
 {
@@ -479,11 +484,34 @@ class Config
     // internal API
     /////////////////////////////
 
+    /*! Converts the string values read from the configuration file
+     *  to real values for non-string type options (like int, and bools)
+     */
     void convertStrToVal();
+
+    /*! Replaces references to environment variable by the actual value
+     *  of the environment variable.
+     */
     void substituteEnvironmentVars();
+
+    /*! Checks if the values of the variable are correct, adjusts them
+     *  if needed, and report any errors.
+     */
     void check();
+
+    /*! Initialize config variables to their default value */
     void init();
-    void parse(const QCString &config,const char *fn);
+
+    /*! Parse a configuration file with name \a fn.
+     *  \returns TRUE if successful, FALSE if the file could not be 
+     *  opened or read.
+     */ 
+    bool parse(const char *fn);
+
+    /*! Called from the constructor, will add doxygen's default options
+     *  to the configuration object 
+     */
+    void create();
   protected:
     Config()
     { 
@@ -498,7 +526,6 @@ class Config
       delete m_options;
       delete m_dict;
     }
-    void create();
 
   private:
     QList<ConfigOption> *m_options;

@@ -91,7 +91,8 @@ HEADERS      =	bufstr.h \
 		treeview.h \
 		unistd.h \
 		util.h \
-		version.h
+		version.h \
+                xmlgen.h
 SOURCES      =	ce_lex.cpp \
                 ce_parse.cpp \
 		classdef.cpp \
@@ -141,9 +142,11 @@ SOURCES      =	ce_lex.cpp \
 		tagreader.cpp \
 		translator.cpp \
 		util.cpp \
-		version.cpp
+		version.cpp \
+                xmlgen.cpp
 
-win32:TMAKE_CXXFLAGS       += -DQT_NODLL -Zm200
+win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
+win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 INCLUDEPATH                += ../qtools
 win32:INCLUDEPATH          += .
 DESTDIR                    =  ../lib

@@ -1235,10 +1235,11 @@ void LatexGenerator::writeSectionRefItem(const char *,const char *lab,
 //void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
-  static bool isCzech    = theTranslator->idLanguage()=="czech";
-  static bool isJapanese = theTranslator->idLanguage()=="japanese";
-  static bool isKorean   = theTranslator->idLanguage()=="korean";
-  static bool isRussian  = theTranslator->idLanguage()=="russian";
+  static bool isCzech     = theTranslator->idLanguage()=="czech";
+  static bool isJapanese  = theTranslator->idLanguage()=="japanese";
+  static bool isKorean    = theTranslator->idLanguage()=="korean";
+  static bool isRussian   = theTranslator->idLanguage()=="russian";
+  static bool isUkrainian = theTranslator->idLanguage()=="ukrainian";
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -1321,7 +1322,7 @@ void LatexGenerator::docify(const char *str)
                  t << (char)c;    
                } 
              }
-             else if (isCzech || isRussian)
+             else if (isCzech || isRussian || isUkrainian)
              {
                if (c>=128)
                {
