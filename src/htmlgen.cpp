@@ -207,6 +207,9 @@ void HtmlGenerator::writeStyleInfo(int part)
       t << "TD.md { background-color: #f2f2ff }" << endl;
       t << "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }" << endl;
       t << "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }" << endl;
+      t << "FONT.keyword      { color: #008000 }" << endl;
+      t << "FONT.comment      { color: #800000 }" << endl;
+      t << "FONT.preprocessor { color: #806020 }" << endl;
       //t << "TD.groupLine { background-color: #3080ff }" << endl;
       t << endl;
       endPlainFile();

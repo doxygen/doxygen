@@ -48,9 +48,12 @@ class Definition
     /*! sets a new \a name for the definition */
     void setName(const char *name) { n=name; }
     /*! sets the documentation of this definition to \a d. */
-    void setDocumentation(const char *d) 
+    void setDocumentation(const char *d,bool stripWhiteSpace=TRUE) 
       { 
-        doc=((QCString)d).stripWhiteSpace();
+        if (stripWhiteSpace)
+          doc=((QCString)d).stripWhiteSpace();
+        else
+          doc=d;
       }
     /*! sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.

@@ -258,7 +258,10 @@ void buildFileList(Entry *root)
       }
       else
       {
-        fd->setDocumentation(root->doc);
+        // using FALSE in setDocumentation is small hack to make sure a file 
+        // is documented even if a \file command is used without further 
+        // documentation
+        fd->setDocumentation(root->doc,FALSE);
         fd->setBriefDescription(root->brief); 
         fd->addSectionsToDefinition(root->anchors);
         QListIterator<QCString> sli(*root->groups);
@@ -1729,12 +1732,13 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
       if (baseClassName!=root->name) // check for base class with the same name, 
         // look in the outer scope for a match
       {
-        //printf("baseClass %s of %s found (%s and %s)\n",
-        //    baseClassName.data(),
-        //    root->name.data(),
-        //    (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
-        //    (bi->virt==Normal)?"normal":"virtual"
-        //   );
+        Debug::print(
+            Debug::Classes,0,"baseClass %s of %s found (%s and %s)\n",
+            baseClassName.data(),
+            root->name.data(),
+            (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
+            (bi->virt==Normal)?"normal":"virtual"
+           );
 
         int i;
         QCString templSpec;
@@ -1743,11 +1747,15 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         {
           // TODO: here we should try to find the correct template specialization
           // but for now, we only look for the unspecializated base class.
-          templSpec=baseClassName.right(baseClassName.length()-i);
-          baseClassName=baseClassName.left(i);
-          baseClass=getResolvedClass(baseClassName);
-          //printf("baseClass=%p baseClass=%s templSpec=%s\n",
-          //        baseClass,baseClassName.data(),templSpec.data());
+          int e = baseClassName.find('>');
+          if (e!=-1)
+          {
+            templSpec=baseClassName.mid(i,e-i+1);
+            baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e-1);
+            baseClass=getResolvedClass(baseClassName);
+            //printf("baseClass=%p baseClass=%s templSpec=%s\n",
+            //      baseClass,baseClassName.data(),templSpec.data());
+          }
         }
 
         bool found=baseClass!=0 && baseClass!=cd;
@@ -1819,7 +1827,6 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         }
         else
         {
-          //printf(">>> base class %s not found!\n",bi->name.data());
           Debug::print(Debug::Classes,0,"    Base class `%s' not found\n",bi->name.data());
         }
       }
@@ -2061,33 +2068,6 @@ void addMemberDocs(Entry *root,MemberDef *md, const char *funcDecl,
       }
     }
   }
-}
-
-//----------------------------------------------------------------------
-
-static QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ)
-{
-  QCString result=scope.copy();
-  if (!templ.isEmpty() && scope.find('<')==-1)
-  {
-    int si,pi=0;
-    while ((si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ)
-      && !getClass(scope.left(si))) 
-       { //printf("Tried `%s'\n",(scope.left(si)+templ).data()); 
-         pi=si+2; 
-       }
-    if (si==-1) // not nested => append template specifier
-    {
-      result+=templ; 
-    }
-    else // nested => insert template specifier before after first class name
-    {
-      result=scope.left(si) + templ + scope.right(scope.length()-si);
-    }
-  }
-  //printf("insertTemplateSpecifierInScope(`%s',`%s')=%s\n",
-  //    scope.data(),templ.data(),result.data());
-  return result;
 }
 
 //----------------------------------------------------------------------
@@ -2573,9 +2553,6 @@ void findMember(Entry *root,QCString funcDecl,QCString related,bool overloaded,
   QCString fullFuncDecl=funcDecl.copy();
   if (isFunc) fullFuncDecl+=argListToString(root->argList);
   
-  //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
-  //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
-
   // destructor => do backward class name substitution if needed
   //if (!funcName.isEmpty() && funcName[0]=='~') 
   //  funcName="~"+resolveDefines(className);
@@ -3681,12 +3658,6 @@ void generateClassDocs()
   msg("Generating hierarchical class index...\n");
   writeHierarchicalIndex(*outputList);
 
-  //if (documentedIncludeFiles>0)
-  //{
-  //  msg("Generating header index...\n");
-  //  writeHeaderIndex(*outputList);
-  //}
-
   msg("Generating member index...\n");
   writeMemberIndex(*outputList);
 
@@ -3706,11 +3677,6 @@ void generateClassDocs()
       
       cd->writeDocumentation(*outputList);
       cd->writeMemberList(*outputList);
-
-      //DotGfxUsageGraph usageIntfGraph(cd,FALSE,1);
-      //usageIntfGraph.writeGraph(Config::htmlOutputDir,FALSE);
-
-      //if (Config::verbatimHeaderFlag) cd->writeIncludeFile(*outputList);
     }
   }
 }
@@ -4262,12 +4228,13 @@ void generateSearchIndex()
       err("Error: Cannot open file %s for writing\n",fileName.data());
     }
     //outputList->generateExternalIndex();
+    outputList->pushGeneratorState();
     outputList->disableAllBut(OutputGenerator::Html);
     startFile(*outputList,"header.html","Search Engine",TRUE);
     outputList->endPlainFile();
     outputList->startPlainFile("footer.html");
     endFile(*outputList,TRUE);
-    outputList->enableAll();
+    outputList->popGeneratorState();
   }
 }
 
@@ -5161,9 +5128,6 @@ int main(int argc,char **argv)
   msg("Generating group documentation...\n");
   generateGroupDocs();
 
-  //msg("Generating member group documentation...\n");
-  //generateMemberGroupDocs();
-
   msg("Generating namespace index...\n");
   generateNamespaceDocs();
   
@@ -5186,6 +5150,7 @@ int main(int argc,char **argv)
   generateSearchIndex();
   
   msg("Generating style sheet...\n");
+  //outputList->enable(OutputGenerator::Latex);
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
   parseText(*outputList,

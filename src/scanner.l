@@ -3773,16 +3773,17 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 <BasesProt>"private"                    { baseProt = Private; }
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
-<Bases>("::")*{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
+<Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
   					  //current->extends->append(
 					  //  new BaseInfo(yytext,baseProt,baseVirt)
 					  //) ;
-  					  if (*yytext != ':')
+  					  bool globalScope = *yytext==':' && baseName.isEmpty();
+  					  if (!globalScope)
   					    baseName += yytext;
 					  else
 					    baseName += (yytext+2);
 					  current->args += ' ';
-					  if (*yytext != ':')
+					  if (!globalScope)
 					    current->args += yytext;
 					  else
 					    current->args += (yytext+2);
@@ -4492,7 +4493,7 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					  );
 					}
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
-<ClassDocBrief>{BS}{BL}			{ 
+<ClassDocBrief>{BS}({BL}|"\\n\\n")	{ 
   					  current->brief=current->brief.stripWhiteSpace();
 					  if (!current->doc.isEmpty()) current->doc+="<p>";
   					  yyLineNr++; 
@@ -4659,13 +4660,26 @@ DOCPARAM  ([a-z_A-Z0-9:\.\-]+)|("\"".*"\"")
 					    unput(afterDocTerminator);
 					  BEGIN(lastAfterDocContext);
   					}
-<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,FileDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
+<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs,GroupName>"*/" {
 					  current->doc += "\n\n";
 					  err("Warning: unexpected end of "
 				              "documentation block found in "
 					      "file %s at line %d\n",yyFileName,yyLineNr);
 					  BEGIN( lastDocContext );
 					}
+<FileDocArg1>"*/"			{
+  					  current->name = yyFileName;
+  					  current->doc += "\n\n";
+					  current_root->addSubEntry(current);
+					  current = new Entry ;
+					  current->protection = protection ;
+				          current->sig = sig;
+					  current->virt = virt;
+					  current->stat = gstat;
+					  current->slot = slot;
+					  current->mGrpId = memberGroupId;
+					  BEGIN( FindMembers );
+  					}
 <Doc>"*/"				{ 
   				          checkDocs();
   					  current->doc += "\n\n";

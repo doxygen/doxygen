@@ -248,7 +248,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
 	(i!=0 && i!=s.length()-1 && isId(s.at(i-1)) && isId(s.at(i+1)))
        )
     {
-      if ((c=='*' || c=='&') && 
+      if ((c=='*' || c=='&' || c=='@') && 
 	  !result.isEmpty() && isId(result.at(result.length()-1))
 	 ) result+=' ';
       result+=c;
@@ -535,7 +535,7 @@ void writeQuickLinks(OutputList &ol,bool compact,bool ext)
   //bool texEnabled = ol.isEnabled(OutputGenerator::Latex);
   ol.disableAllBut(OutputGenerator::Html);
   QCString extLink,absPath;
-  if (ext) { extLink="_doc:"; absPath="/"; }
+  if (ext) { extLink="_doc"; absPath="/"; }
   //if (manEnabled) ol.disable(OutputGenerator::Man);
   //if (texEnabled) ol.disable(OutputGenerator::Latex);
   if (compact) ol.startCenter(); else ol.startItemList();
@@ -2217,3 +2217,27 @@ void extractNamespaceName(const QCString &scopeName,
   return;
 }
 
+QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ)
+{
+  QCString result=scope.copy();
+  if (!templ.isEmpty() && scope.find('<')==-1)
+  {
+    int si,pi=0;
+    while ((si=scope.find("::",pi))!=-1 && !getClass(scope.left(si)+templ)
+      && !getClass(scope.left(si))) 
+       { //printf("Tried `%s'\n",(scope.left(si)+templ).data()); 
+         pi=si+2; 
+       }
+    if (si==-1) // not nested => append template specifier
+    {
+      result+=templ; 
+    }
+    else // nested => insert template specifier before after first class name
+    {
+      result=scope.left(si) + templ + scope.right(scope.length()-si);
+    }
+  }
+  //printf("insertTemplateSpecifierInScope(`%s',`%s')=%s\n",
+  //    scope.data(),templ.data(),result.data());
+  return result;
+}

@@ -48,7 +48,7 @@ class TranslatorGerman : public Translator
 
     QCString latexBabelPackage()
       // returns the name of the package that is included by LaTeX
-    { return "deutsch"; }
+    { return "german"; }
 
     QCString trRelatedFunctions()
       // used in the compound documentation before a list of related functions.

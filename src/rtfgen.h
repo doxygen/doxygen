@@ -211,6 +211,9 @@ class RTFGenerator : public OutputGenerator
     void startParameter(bool) {}
     void endParameter(bool) {}
 
+    void startFontClass(const char *) {}
+    void endFontClass() {}
+
     static bool preProcessFileInplace(const char *path,const char *name);
     
   private:

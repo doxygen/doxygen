@@ -56,7 +56,7 @@ static void addType()
   //printf("addType() type=`%s' scope=`%s' name=`%s'\n",
   //       type.data(),scope.data(),name.data());
   if (name.isEmpty() && scope.isEmpty()) return;
-  if (!type.isEmpty()) type+=' ';
+  if (!type.isEmpty()) type+=" ";
   if (!scope.isEmpty()) type+=scope+"::";
   type+=name;
   scope.resize(0);

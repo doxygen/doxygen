@@ -213,6 +213,9 @@ class OutputGenerator
     virtual void startParameter(bool) = 0;
     virtual void endParameter(bool) = 0;
 
+    virtual void startFontClass(const char *) = 0;
+    virtual void endFontClass() = 0;
+
     
     void clear() { b.close(); a.resize(0); b.setBuffer(a); 
                    b.open(IO_WriteOnly); t.setDevice(&b); }

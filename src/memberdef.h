@@ -124,15 +124,17 @@ class MemberDef : public Definition
     
     // enumeration specific members
     void insertEnumField(MemberDef *md);
-    void setEnumScope(MemberDef *md) { enumScope=md; }
-    MemberDef *getEnumScope() const { return enumScope; }
+    void setEnumScope(MemberDef *md)         { enumScope=md; }
+    MemberDef *getEnumScope() const          { return enumScope; }
     void setEnumDecl(OutputList &ed);
-    void setEnumUsed() { eUsed=TRUE; }
-    bool enumUsed() const        { return eUsed; }
-    OutputList *enumDecl() const { return enumDeclList; }
-    MemberList *enumFieldList()  { return enumFields; }
+    void setEnumUsed()                       { eUsed=TRUE; }
+    bool enumUsed() const                    { return eUsed; }
+    OutputList *enumDecl() const             { return enumDeclList; }
+    MemberList *enumFieldList()              { return enumFields; }
     void setDocumentedEnumValues(bool value) { docEnumValues=value; }
-    bool hasDocumentedEnumValues() const { return docEnumValues; }
+    bool hasDocumentedEnumValues() const     { return docEnumValues; }
+    void setAnonymousEnumType(MemberDef *md) { annEnumType = md; }
+    MemberDef *getAnonymousEnumType()        { return annEnumType; }
     
     // example related members
     bool addExample(const char *anchor,const char *name,const char *file);
@@ -199,6 +201,7 @@ class MemberDef : public Definition
     FileDef    *fileDec;      // member of file declaration
     MemberDef  *redefines;    // the member that is redefined by this one
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field
+    MemberDef  *annEnumType;  // the annonymous enum that is the type of this member
     MemberList *redefinedBy;  // the list of members that redefine this one
     MemberDef  *memDef;       // member definition for this declaration
     MemberDef  *memDec;       // member declaration for this definition

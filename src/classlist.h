@@ -30,6 +30,7 @@ class ClassList : public QList<ClassDef>
    ~ClassList();
    
    int compareItems(GCI item1,GCI item2);
+   void writeDeclaration(OutputList &ol);
 };
 
 class ClassListIterator : public QListIterator<ClassDef>

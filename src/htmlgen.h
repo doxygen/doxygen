@@ -227,6 +227,9 @@ class HtmlGenerator : public OutputGenerator
     void startParameter(bool first);
     void endParameter(bool last);
 
+    void startFontClass(const char *s) { t << "<font class=\"" << s << "\">"; }
+    void endFontClass() { t << "</font>"; }
+
   private:
     QCString header;
     QCString footer;

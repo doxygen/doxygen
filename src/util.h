@@ -93,5 +93,6 @@ int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
 QCString convertNameToFile(const char *name);
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName);
+QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &templ);
 
 #endif

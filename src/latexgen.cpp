@@ -195,7 +195,11 @@ void LatexGenerator::startIndexSection(IndexSections is)
           {
             if (theTranslator->latexBabelPackage()=="russian")
             {
-              t << "\\usepackage{inputenc}\n";
+#if defined(_WIN32)
+              t << "\\usepackage[cp1251]{inputenc}\n";
+#else
+              t << "\\usepackage[koi8-r]{inputenc}\n";
+#endif
             }
             t << "\\usepackage[" << theTranslator->latexBabelPackage() << "]{babel}\n";
           }

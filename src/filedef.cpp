@@ -247,53 +247,8 @@ void FileDef::writeDocumentation(OutputList &ol)
     }
     if (found) ol.endMemberList();
   }
-  if (classList->count()>0)
-  {
-    ClassDef *cd=classList->first();
-    bool found=FALSE;
-    while (cd)
-    {
-      if (cd->name().find('@')==-1)
-      {
-        if (!found)
-        {
-          ol.startMemberHeader();
-          parseText(ol,theTranslator->trCompounds());
-          ol.endMemberHeader();
-          ol.startMemberList();
-          found=TRUE;
-        }
-        ol.startMemberItem(FALSE);
-        switch (cd->compoundType())
-        {
-          case ClassDef::Class:  ol.writeString("class");  break;
-          case ClassDef::Struct: ol.writeString("struct"); break;
-          case ClassDef::Union:  ol.writeString("union");  break;
-          case ClassDef::Interface:  ol.writeString("interface");  break;
-          case ClassDef::Exception:  ol.writeString("exception");  break;
-        }
-        ol.writeString(" ");
-        ol.insertMemberAlign();
-        if (cd->isLinkable()) 
-        {
-          ol.writeObjectLink(cd->getReference(),
-              cd->getOutputFileBase(),
-              0,
-              cd->name()
-                            );
-        }
-        else
-        {
-          ol.startBold();
-          ol.docify(cd->name());
-          ol.endBold();
-        }
-        ol.endMemberItem(FALSE);
-      }
-      cd=classList->next();
-    }
-    if (found) ol.endMemberList();
-  }
+
+  classList->writeDeclaration(ol);
   
   /* write user defined member groups */
   MemberGroupListIterator mgli(*memberGroupList);
@@ -309,8 +264,10 @@ void FileDef::writeDocumentation(OutputList &ol)
   //doc=doc.stripWhiteSpace();
   //int bl=brief.length();
   //int dl=doc.length();
-  if (!briefDescription().isEmpty() || !documentation().isEmpty() || 
-      startBodyLine!=-1)
+  if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 
+      !documentation().isEmpty() 
+      /* || startBodyLine!=-1 */
+     )
   {
     ol.writeRuler();
     ol.pushGeneratorState();
@@ -395,15 +352,15 @@ void FileDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name());
   }
 
-  enumValMembers.countDocMembers();
-  if (enumValMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationValueDocumentation());
-    ol.endGroupHeader();
-    enumValMembers.writeDocumentation(ol,name());
-  }
+  //enumValMembers.countDocMembers();
+  //if (enumValMembers.totalCount()>0 )
+  //{
+  //  ol.writeRuler();
+  //  ol.startGroupHeader();
+  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
+  //  ol.endGroupHeader();
+  //  enumValMembers.writeDocumentation(ol,name());
+  //}
 
   funcMembers.countDocMembers();
   if (funcMembers.totalCount()>0 )

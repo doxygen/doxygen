@@ -188,45 +188,9 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
     ol.endMemberList();
   }
-  if (classList->count()>0)
-  {
-    ClassDef *cd=classList->first();
-    bool found=FALSE;
-    while (cd)
-    {
-      if (!found)
-      {
-        ol.startMemberHeader();
-        parseText(ol,theTranslator->trCompounds());
-        ol.endMemberHeader();
-        ol.startMemberList();
-        found=TRUE;
-      }
-      QCString type;
-      switch (cd->compoundType())
-      {
-        case ClassDef::Class:      type="class";  break;
-        case ClassDef::Struct:     type="struct"; break;
-        case ClassDef::Union:      type="union";  break;
-        case ClassDef::Interface:  type="interface";  break;
-        case ClassDef::Exception:  type="exception";  break;
-      }
-      ol.startMemberItem(0);
-      ol.docify(type);
-      ol.insertMemberAlign();
-      ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->name());
-      ol.endMemberItem(FALSE);
-      if (!cd->briefDescription().isEmpty() && Config::briefMemDescFlag)
-      {
-        ol.startMemberDescription();
-        parseDoc(ol,0,0,cd->briefDescription());
-        ol.endMemberDescription();
-        ol.newParagraph();
-      }
-      cd=classList->next();
-    }
-    if (found) ol.endMemberList();
-  }
+
+  classList->writeDeclaration(ol);
+
   if (allMemberList->count()>0)
   {
     /* write user defined member groups */
@@ -306,15 +270,15 @@ void GroupDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name());
   }
 
-  enumValMembers.countDocMembers();
-  if (enumValMembers.totalCount()>0 )
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationValueDocumentation());
-    ol.endGroupHeader();
-    enumValMembers.writeDocumentation(ol,name());
-  }
+  //enumValMembers.countDocMembers();
+  //if (enumValMembers.totalCount()>0 )
+  //{
+  //  ol.writeRuler();
+  //  ol.startGroupHeader();
+  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
+  //  ol.endGroupHeader();
+  //  enumValMembers.writeDocumentation(ol,name());
+  //}
 
   funcMembers.countDocMembers();
   if (funcMembers.totalCount()>0 )

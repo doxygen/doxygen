@@ -774,9 +774,9 @@ void ClassDef::writeDocumentation(OutputList &ol)
     
   // write detailed description
   bool exampleFlag=hasExamples();
-  if (!briefDescription().isEmpty() || 
+  if ((!briefDescription().isEmpty() && Config::repeatBriefFlag) || 
       !documentation().isEmpty() || 
-      (startBodyLine!=-1 && bodyDef) ||
+      /*(Config::sourceBrowseFlag && startBodyLine!=-1 && bodyDef) ||*/
       exampleFlag)
   {
     ol.writeRuler();
@@ -884,15 +884,15 @@ void ClassDef::writeDocumentation(OutputList &ol)
     enumMembers.writeDocumentation(ol,name());
   }
   
-  enumValMembers.countDocMembers();
-  if (enumValMembers.totalCount()>0)
-  {
-    ol.writeRuler();
-    ol.startGroupHeader();
-    parseText(ol,theTranslator->trEnumerationValueDocumentation());
-    ol.endGroupHeader();
-    enumValMembers.writeDocumentation(ol,name());
-  }
+  //enumValMembers.countDocMembers();
+  //if (enumValMembers.totalCount()>0)
+  //{
+  //  ol.writeRuler();
+  //  ol.startGroupHeader();
+  //  parseText(ol,theTranslator->trEnumerationValueDocumentation());
+  //  ol.endGroupHeader();
+  //  enumValMembers.writeDocumentation(ol,name());
+  //}
 
   constructors.countDocMembers();
   if (constructors.totalCount()>0) 
