@@ -1482,8 +1482,17 @@ static bool isVarWithConstructor(Entry *root)
   bool result=FALSE;
   bool typeIsClass;
   Definition *ctx = 0;
+  FileDef *fd = 0;
+  bool ambig;
   if (root->parent && root->parent->section&Entry::COMPOUND_MASK)
   { // inside a class
+    result=FALSE;
+    goto done;
+  }
+  else if ((fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig)) &&
+       fd->name().right(2)==".c"
+     )
+  { // inside a .c file
     result=FALSE;
     goto done;
   }
@@ -1534,7 +1543,7 @@ static bool isVarWithConstructor(Entry *root)
         //printf("resType=%s\n",resType.data());
         if (resType=="int"    || resType=="long" || resType=="float" || 
             resType=="double" || resType=="char" || resType=="signed" || 
-            resType=="const"  || resType=="unsigned") 
+            resType=="const"  || resType=="unsigned" || resType=="void") 
         {
           result=FALSE; // type keyword -> function prototype
           goto done;
@@ -3450,9 +3459,11 @@ static void computeClassRelations()
     if ((cd==0 || (!cd->hasDocumentation() && !cd->isReference())) && 
         bName.right(2)!="::")
     {
-      if (!root->name.isEmpty() && root->name[0]!='@' &&
-          (guessSection(root->fileName)==Entry::HEADER_SEC || Config_getBool("EXTRACT_LOCAL_CLASSES")) &&
-          (root->protection!=Private || Config_getBool("EXTRACT_PRIVATE"))
+      if (!root->name.isEmpty() && root->name[0]!='@' && // normal name
+          (guessSection(root->fileName)==Entry::HEADER_SEC || 
+           Config_getBool("EXTRACT_LOCAL_CLASSES")) && // not defined in source file
+          (root->protection!=Private || Config_getBool("EXTRACT_PRIVATE")) && // hidden by protection
+          !Config_getBool("HIDE_UNDOC_CLASSES") // undocumented class are visible
          )
         warn_undoc(
                    root->fileName,root->startLine,
@@ -7174,6 +7185,10 @@ void readConfiguration(int argc, char **argv)
 
   /* Set the global html file extension. */ 
   Doxygen::htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
+
+  /* Perlmod wants to know the path to the config file.*/
+  QFileInfo configFileInfo(configName);
+  setPerlModDoxyfile(configFileInfo.absFilePath());
 
   /* init the special lists */
   Doxygen::specialLists->setAutoDelete(TRUE);

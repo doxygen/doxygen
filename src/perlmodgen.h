@@ -15,6 +15,9 @@
 #ifndef PERLMODGEN_H
 #define PERLMODGEN_H
 
-void generatePerlMod();
+class QString;
+
+extern void setPerlModDoxyfile(const QString &);
+extern void generatePerlMod();
 
 #endif

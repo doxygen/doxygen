@@ -138,7 +138,7 @@ class TranslatorSpanish : public TranslatorAdapter_1_2_7
     // quick reference sections
 
     /*! This is put above each page as a link to the list of all groups of 
-     *  compounds or files (see the \group command).
+     *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Módulos"; }

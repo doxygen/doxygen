@@ -27,7 +27,7 @@ Version: $(VERSION)
 
 <h2>Introduction</h2>
 Doxygen is a documentation system for C++, C, Java, IDL 
-(Corba, Microsoft, and KDE-DCOP flavors) and to some extent PHP. 
+(Corba, Microsoft, and KDE-DCOP flavors) and to some extent PHP and C#. 
 
 It can help you in three ways:
 <ol>
@@ -105,6 +105,7 @@ The third part provides information for developers:
 <ul>
 <li>Section \ref arch gives a global overview of how doxygen is internally
     structured.
+<li>Section \ref perlmod shows how to use the PerlMod output.
 <li>Section \ref langhowto explains how to add support for new
               output languages.
 </ul>

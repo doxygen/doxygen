@@ -34,6 +34,7 @@ class SectionHandler;
 class ParamHandler;
 class TemplateParamListHandler;
 class TitleHandler;
+class ListOfAllMembersHandler;
 
 class RelatedCompound : public IRelatedCompound
 {
@@ -97,9 +98,9 @@ class CompoundHandler : public IClass,
     virtual void startInnerNamespace(const QXmlAttributes& attrib);
     virtual void startInnerFile(const QXmlAttributes& attrib);
     virtual void startInnerGroup(const QXmlAttributes& attrib);
-    virtual void startParam(const QXmlAttributes& attrib);
     virtual void startTitle(const QXmlAttributes& attrib);
     virtual void startTemplateParamList(const QXmlAttributes& attrib);
+    virtual void startListOfAllMembers(const QXmlAttributes& attrib);
     virtual void addref() { m_refCount++; }
 
     CompoundHandler(const QString &dirName);
@@ -133,6 +134,7 @@ class CompoundHandler : public IClass,
     int locationLine() const { return m_defLine; }
     int locationBodyStartLine() const { return m_defBodyStart; }
     int locationBodyEndLine() const { return m_defBodyEnd; }
+    IMemberReferenceIterator *members() const;
 
     // IFile implementation
     IGraph *includeDependencyGraph() const; 
@@ -171,6 +173,7 @@ class CompoundHandler : public IClass,
     ProgramListingHandler*         m_source;
     TemplateParamListHandler*      m_templateParamList;
     TitleHandler*                  m_titleHandler;
+    ListOfAllMembersHandler*       m_members;
 };
 
 void compoundhandler_init();

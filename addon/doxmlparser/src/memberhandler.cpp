@@ -39,6 +39,7 @@ class MemberTypeMap
       m_map.insert("friend",new int(IMember::Friend));
       m_map.insert("dcop",new int(IMember::DCOP));
       m_map.insert("slot",new int(IMember::Slot));
+      m_map.insert("enumvalue",new int(IMember::EnumValue));
     }
     IMember::MemberKind map(const QString &s)
     {
@@ -82,19 +83,28 @@ IMember *MemberReference::member() const
 //------------------------------------------------------------------------------
 
 
-EnumValueHandler::EnumValueHandler(IBaseHandler *parent) : m_parent(parent), m_brief(0), m_detailed(0)
+#if 0
+EnumValueHandler::EnumValueHandler(IBaseHandler *parent) : 
+  m_parent(parent), m_brief(0), m_detailed(0), m_linkedTextHandler(0)
 {
   addEndHandler("enumvalue",this,&EnumValueHandler::endEnumValue);
 
   addStartHandler("name",this,&EnumValueHandler::startName);
   addEndHandler("name",this,&EnumValueHandler::endName);
   addStartHandler("initializer",this,&EnumValueHandler::startInitializer);
-  addEndHandler("initializer",this,&EnumValueHandler::endInitializer);
 
   addStartHandler("briefdescription",this,&EnumValueHandler::startBriefDesc);
 
   addStartHandler("detaileddescription",this,&EnumValueHandler::startDetailedDesc);
 
+  m_initializer.setAutoDelete(TRUE);
+}
+
+EnumValueHandler::~EnumValueHandler()
+{
+  delete m_brief;
+  delete m_detailed;
+  delete m_linkedTextHandler;
 }
 
 void EnumValueHandler::startEnumValue(const QXmlAttributes& /*attrib*/)
@@ -119,12 +129,9 @@ void EnumValueHandler::endName()
 
 void EnumValueHandler::startInitializer(const QXmlAttributes& /*attrib*/)
 {
-  m_curString="";
-}
-
-void EnumValueHandler::endInitializer()
-{
-  m_initializer = m_curString;
+  delete m_linkedTextHandler;
+  m_linkedTextHandler = new LinkedTextHandler(this,m_initializer);
+  m_linkedTextHandler->start("initializer");
 }
 
 void EnumValueHandler::startBriefDesc(const QXmlAttributes& attrib)
@@ -140,7 +147,7 @@ void EnumValueHandler::startDetailedDesc(const QXmlAttributes& attrib)
   docHandler->startDoc(attrib);
   m_detailed = docHandler;
 }
-
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -149,13 +156,14 @@ MemberHandler::MemberHandler(IBaseHandler *parent)
 {
   //printf("MemberHandler::MemberHandler() %p\n",this);
   addEndHandler("memberdef",this,&MemberHandler::endMember);
+  addEndHandler("enumvalue",this,&MemberHandler::endMember);
 
   addStartHandler("type",this,&MemberHandler::startType);
   addStartHandler("initializer",this,&MemberHandler::startInitializer);
   addStartHandler("exception",this,&MemberHandler::startException);
-  addStartHandler("enumvalue",this,&MemberHandler::startEnumValue);
+  addStartHandler("enumvalue",this,&MemberHandler::startEnumValue2);
 
-  addStartHandler("name");
+  addStartHandler("name",this,&MemberHandler::startName);
   addEndHandler("name",this,&MemberHandler::endName);
 
   addStartHandler("param",this,&MemberHandler::startParam);
@@ -212,6 +220,7 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
 {
   m_parent->setDelegate(this);
   m_kindString = attrib.value("kind");
+  printf("startMember kindString=`%s'\n",m_kindString.data());
   m_kind = s_typeMap->map(m_kindString);
   m_id = attrib.value("id");
   m_virtualness = attrib.value("virt");
@@ -221,6 +230,29 @@ void MemberHandler::startMember(const QXmlAttributes& attrib)
   debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
       m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
 }
+
+void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
+{
+  m_parent->setDelegate(this);
+  m_kindString = "enumvalue";
+  printf("startEnumValue kindString=`%s'\n",m_kindString.data());
+  m_kind = s_typeMap->map(m_kindString);
+  m_id = attrib.value("id");
+  m_virtualness = "non-virtual";
+  m_protection = attrib.value("prot");
+  m_isConst = FALSE;
+  m_isVolatile = FALSE;
+  debug(2,"member kind=`%s' id=`%s' prot=`%s' virt=`%s'\n",
+      m_kindString.data(),m_id.data(),m_protection.data(),m_virtualness.data());
+}
+
+void MemberHandler::startEnumValue2(const QXmlAttributes& attrib)
+{
+  MemberHandler *mh = new MemberHandler(this);
+  mh->startEnumValue(attrib);
+  m_enumValues.append(mh);
+}
+
 
 void MemberHandler::startBriefDesc(const QXmlAttributes& attrib)
 {
@@ -328,6 +360,11 @@ void MemberHandler::startException(const QXmlAttributes &)
   m_linkedTextHandler->start("exception");
 }
 
+void MemberHandler::startName(const QXmlAttributes &)
+{
+  m_curString="";
+}
+
 void MemberHandler::endName()
 {
   m_name = m_curString.stripWhiteSpace();
@@ -346,13 +383,6 @@ void MemberHandler::startParam(const QXmlAttributes& attrib)
   {
     m_params.append(paramHandler);
   }
-}
-
-void MemberHandler::startEnumValue(const QXmlAttributes& attrib)
-{
-  EnumValueHandler *evh = new EnumValueHandler(this);
-  evh->startEnumValue(attrib);
-  m_enumValues.append(evh);
 }
 
 void MemberHandler::startTemplateParamList(const QXmlAttributes&)
@@ -414,6 +444,11 @@ void MemberHandler::setSectionHandler(SectionHandler *c)
 ISection *MemberHandler::section() const
 {
   return m_section;
+}
+
+IMemberIterator *MemberHandler::enumValues() const
+{ 
+  return new MemberIterator(m_enumValues); 
 }
 
 

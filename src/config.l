@@ -1580,7 +1580,7 @@ void Config::create()
   cb = addBool(
                     "GENERATE_DEPRECATEDLIST",
                     "The GENERATE_DEPRECATEDLIST tag can be used to enable (YES) or \n"
-                    "disable (NO) the deprecated list. This list is created by putting "
+                    "disable (NO) the deprecated list. This list is created by putting \n"
 		    "\\deprecated commands in the documentation.\n",
                     TRUE
 	         );
@@ -1986,7 +1986,7 @@ void Config::create()
   cs->addDependency("GENERATE_LATEX");
   cs = addString(
                     "LATEX_CMD_NAME",
-                    "The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be "
+                    "The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be \n"
                     "invoked. If left blank `latex' will be used as the default command name. \n"
                    );
   cs->setDefaultValue("latex");
@@ -2202,6 +2202,15 @@ void Config::create()
 		    "moment. \n",
 		    FALSE
                  );
+  cb = addBool(  
+                    "PERLMOD_LATEX",
+                    "If the PERLMOD_LATEX tag is set to YES Doxygen will generate \n"
+                    "the necessary Makefile rules, Perl scripts and LaTeX code to be able \n"
+		    "to generate PDF and DVI output from the Perl module output.\n",
+		    FALSE
+                 );
+  cb->addDependency("GENERATE_PERLMOD");
+
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Preprocessor","Configuration options related to the preprocessor   ");
   //-----------------------------------------------------------------------------------------------
@@ -2263,7 +2272,7 @@ void Config::create()
   cl->addDependency("ENABLE_PREPROCESSING");
   cl = addList(
                     "EXPAND_AS_DEFINED",
-                    "If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then \n"
+                    "If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then \n"
                     "this tag can be used to specify a list of macro names that should be expanded. \n"
                     "The macro definition that is found in the sources will be used. \n"
                     "Use the PREDEFINED tag if you want to use a different macro definition. \n" 

@@ -46,6 +46,8 @@
 
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+
 // global variables during a call to validatingParseDoc
 static bool        g_hasParamCommand;
 static MemberDef * g_memberDef;
@@ -111,6 +113,104 @@ static void docParserPopContext()
 }
 
 //---------------------------------------------------------------------------
+
+/*! search for an image in the imageNameDict and if found
+ * copies the image to the output directory (which is the
+ * html directory if type==0 or the latex directory if type==1)
+ */
+static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
+{
+  QCString result;
+  bool ambig;
+  FileDef *fd;
+  //printf("Search for %s\n",fileName);
+  if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)))
+  {
+    QFile inImage(QString(fd->absFilePath().data()));
+    if (inImage.open(IO_ReadOnly))
+    {
+      result = fileName;
+      int i;
+      if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
+      {
+	result.right(result.length()-i-1);
+      }
+      QCString outputDir;
+      switch(type)
+      {
+        case DocImage::Html: 
+	  if (!Config_getBool("GENERATE_HTML")) return result;
+	  outputDir = Config_getString("HTML_OUTPUT");
+	  break;
+        case DocImage::Latex: 
+	  if (!Config_getBool("GENERATE_LATEX")) return result;
+	  outputDir = Config_getString("LATEX_OUTPUT");
+	  break;
+        case DocImage::Rtf:
+	  if (!Config_getBool("GENERATE_RTF")) return result;
+	  outputDir = Config_getString("RTF_OUTPUT");
+	  break;
+      }
+      QCString outputFile = outputDir+"/"+result;
+      QFile outImage(QString(outputFile.data()));
+      if (outImage.open(IO_WriteOnly)) // copy the image
+      {
+	char *buffer = new char[inImage.size()];
+	inImage.readBlock(buffer,inImage.size());
+	outImage.writeBlock(buffer,inImage.size());
+	outImage.flush();
+	delete buffer;
+      }
+      else
+      {
+	warn(g_fileName,doctokenizerYYlineno,
+	    "Warning: could not write output image %s",outputFile.data());
+      }
+    }
+    else
+    {
+      warn(g_fileName,doctokenizerYYlineno,
+	  "Warning: could not open image %s",fileName);
+    }
+
+    if (type==DocImage::Latex && Config_getBool("USE_PDFLATEX") && 
+	fd->name().right(4)==".eps"
+       )
+    { // we have an .eps image in pdflatex mode => convert it to a pdf.
+      QCString outputDir = Config_getString("LATEX_OUTPUT");
+      QCString baseName  = fd->name().left(fd->name().length()-4);
+      QCString epstopdfArgs(4096);
+      epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
+                           outputDir.data(), baseName.data(),
+			   outputDir.data(), baseName.data());
+      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      {
+	err("Error: Problems running epstopdf. Check your TeX installation!\n");
+      }
+      return baseName;
+    }
+  }
+  else if (ambig)
+  {
+    QCString text;
+    text.sprintf("Warning: image file name %s is ambigious.\n",fileName);
+    text+="Possible candidates:\n";
+    text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
+    warn(g_fileName,doctokenizerYYlineno,text);
+  }
+  else
+  {
+    result=fileName;
+    if (result.left(5)!="http:" && result.left(6)!="https:")
+    {
+      warn(g_fileName,doctokenizerYYlineno,
+           "Warning: image file %s is not found in IMAGE_PATH: "  
+	   "assuming external image.",fileName
+          );
+    }
+  }
+  return result;
+}
 
 static void checkArgumentName(const QString &name,bool isParam)
 {                
@@ -583,6 +683,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
             int retval=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+            children.append(new DocWhiteSpace(parent," "));
             if (retval==TK_NEWPARA) goto handlepara;
           }
           break;
@@ -591,6 +692,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
             int retval=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+            children.append(new DocWhiteSpace(parent," "));
             if (retval==TK_NEWPARA) goto handlepara;
           }
           break;
@@ -599,6 +701,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,TRUE));
             int retval=handleStyleArgument(parent,children,tokenName);
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+            children.append(new DocWhiteSpace(parent," "));
             if (retval==TK_NEWPARA) goto handlepara;
           }
           break;
@@ -1406,6 +1509,10 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
+    else
+    {
+      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
+    }
   }
   else // oops, bogus target
   {
@@ -1456,6 +1563,11 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
   Definition *compound;
   PageInfo *page;
   QCString anchor;
+  m_refText = target;
+  if (!m_refText.isEmpty() && m_refText.at(0)=='#')
+  {
+    m_refText = m_refText.right(m_refText.length()-1);
+  }
   if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
                   &compound,&page,anchor))
   {
@@ -1547,6 +1659,14 @@ QString DocLink::parse(bool isJavaLink)
            " link command\n"); 
   }
 endlink:
+
+  if (isJavaLink)
+  {
+    if (m_children.isEmpty()) // no link text
+    {
+      m_children.append(new DocWord(this,m_refText));
+    }
+  }
 
   handlePendingStyleCommands(this,m_children);
   DBG(("DocLink::parse() end\n"));
@@ -2671,7 +2791,7 @@ int DocParamList::parse(const QString &cmdName)
     }
     else if (m_type==DocParamSect::RetVal)
     {
-      g_hasParamCommand=TRUE;
+      //g_hasParamCommand=TRUE;
       checkArgumentName(g_token->name,FALSE);
     }
     m_params.append(g_token->name);
@@ -2876,7 +2996,7 @@ void DocPara::handleImage(const QString &cmdName)
     return;
   }
   doctokenizerYYsetStatePara();
-  DocImage *img = new DocImage(this,g_token->name,t);
+  DocImage *img = new DocImage(this,findAndCopyImage(g_token->name,t),t);
   m_children.append(img);
   img->parse();
 }
@@ -3043,16 +3163,19 @@ int DocPara::handleCommand(const QString &cmdName)
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+      m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BOLD:
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+      m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_CODE:
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName); 
       m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,FALSE));
+      m_children.append(new DocWhiteSpace(this," "));
       break;
     case CMD_BSLASH:
       m_children.append(new DocSymbol(this,DocSymbol::BSlash));

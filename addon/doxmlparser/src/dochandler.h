@@ -65,6 +65,7 @@ DEFINE_CLS_IMPL(DocRow);
 DEFINE_CLS_IMPL(DocEntry);
 DEFINE_CLS_IMPL(DocSection);
 DEFINE_CLS_IMPL(DocPreformatted);
+DEFINE_CLS_IMPL(DocVerbatim);
 DEFINE_CLS_IMPL(DocSymbol);
 DEFINE_CLS_IMPL(DocRoot);
 
@@ -190,6 +191,7 @@ class ParagraphHandler : public DocParaImpl,
     virtual void startIndexEntry(const QXmlAttributes& attrib);
     virtual void startTable(const QXmlAttributes& attrib);
     virtual void startPreformatted(const QXmlAttributes& attrib);
+    virtual void startVerbatim(const QXmlAttributes& attrib);
     virtual void startUmlaut(const QXmlAttributes& attrib);
     virtual void startAcute(const QXmlAttributes& attrib);
     virtual void startGrave(const QXmlAttributes& attrib);
@@ -1016,6 +1018,30 @@ class PreformattedIterator :
     PreformattedIterator(const PreformattedHandler &handler) : 
       BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>(handler.m_children) {}
 };
+
+//-----------------------------------------------------------------------------
+
+/*! \brief Node representing an preformatted section
+ */
+class VerbatimHandler : public DocVerbatimImpl, 
+                        public BaseHandler<VerbatimHandler>
+{
+    friend class VerbatimIterator;
+  public:
+    VerbatimHandler(IBaseHandler *parent);
+    virtual ~VerbatimHandler();
+    void startVerbatim(const QXmlAttributes& attrib);
+    void endVerbatim();
+
+    // IDocVerbatim
+    virtual Kind kind() const { return DocImpl::Verbatim; }
+    virtual const IString *text() const { return &m_text; }
+
+  private:
+    IBaseHandler   *m_parent;
+    StringImpl      m_text;
+};
+
 
 //-----------------------------------------------------------------------------
 

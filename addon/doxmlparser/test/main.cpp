@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <doxmlintf.h>
+#include <qstring.h>
 
 /*! Dumps the contents of a hyperlinked text fragment as plain text to the
  *  output.
@@ -390,6 +391,15 @@ void DumpDoc(IDoc *doc,int level)
         InPrint(("<preformatted/>\n"));
       }
       break;
+    case IDoc::Verbatim:
+      {
+        InPrint(("<verbatim>\n"));
+        IDocVerbatim *vt = dynamic_cast<IDocVerbatim*>(doc);
+        ASSERT(vt!=0);
+        InPrint(("%s",vt->text()->latin1()));
+        InPrint(("<verbatim/>\n"));
+      }
+      break;
     case IDoc::Symbol:
       {
         IDocSymbol *sym = dynamic_cast<IDocSymbol*>(doc);
@@ -540,14 +550,22 @@ int main(int argc,char **argv)
         }
         mri->release();
 
-        IEnumValueIterator *evi = mem->enumValues();
-        IEnumValue *ev;
-        for (evi->toFirst();(ev=evi->current());evi->toNext())
+        if (mem->kind()==IMember::Enum) // we have found an enum
         {
-          printf("      Enum value `%s' init=`%s'\n",
-              ev->name()->latin1(),ev->initializer()->latin1());
+          IEnum *e = dynamic_cast<IEnum*>(mem);
+          IMemberIterator *evi = e->enumValues(); // get the enum values
+          IMember *mev;
+          for (evi->toFirst();(mev=evi->current());evi->toNext())
+          {
+            IEnumValue *ev = dynamic_cast<IEnumValue*>(mev);
+            ILinkedTextIterator *lti = ev->initializer();
+            QString init = linkedTextToString(lti);
+            lti->release();
+            printf("      Enum value `%s' init=`%s'\n",
+                ev->name()->latin1(),init.latin1());
+          }
+          evi->release();
         }
-        evi->release();
 
         pli = mem->templateParameters();
         if (pli)

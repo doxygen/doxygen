@@ -1,9 +1,20 @@
 The files Doxygen.dsw and Doxygen.dsp can
 be used to build doxygen from within 
-Microsoft's Developer Studio 6.0.
+Microsoft's Developer Studio 6.0, and
+converted for use with DevStudio .NET.
 
-These files are created and maintained by 
-Simon Goodwin <simon.goodwin@atd.co.uk>. 
-Please contact him in case of question or
-problems with these files. 
+The project has been compartmentalised
+in the course of development of Doxygen
+1.2.19 so that there are separate project
+files for the Doxysearch and Doxytag tools
+and for the three libraries zlib, libpng
+and qtools. Credit for this update is due
+to Jorge Ramos for the original idea, and
+Johan Eriksson <johan.eriksson@uab.ericsson.se>
+for the current implementation. 
+
+These files are maintained by Simon Goodwin
+<simon.goodwin@atd.co.uk>. Please contact him
+in the event of questions or problems with
+these files. 
 

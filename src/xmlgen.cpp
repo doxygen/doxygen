@@ -573,6 +573,13 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
           linkifyText(TextGeneratorXMLImpl(t),scopeName,md->name(),a->defval);
           t << "</defval>" << endl;
         }
+        if (defArg && defArg->hasDocumentation())
+        {
+          t << "          <briefdescription>";
+          writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),
+                           scopeName,md,defArg->docs);
+          t << "</briefdescription>" << endl;
+        }
         t << "        </param>" << endl;
         if (defArg) ++defAli;
       }
@@ -610,7 +617,19 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
-        t << "        <enumvalue>" << endl;
+        ti << "    <member refid=\"" << emd->getOutputFileBase() 
+           << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>" 
+           << convertToXML(emd->name()) << "</name></member>" << endl;
+
+        t << "        <enumvalue id=\"" << emd->getOutputFileBase() << "_1" 
+          << emd->anchor() << "\" prot=\"";
+        switch (emd->protection())
+        {
+          case Public:    t << "public";    break;
+          case Protected: t << "protected"; break;
+          case Private:   t << "private";   break;
+        }
+        t << "\">" << endl;
         t << "          <name>";
         writeXMLString(t,emd->name());
         t << "</name>" << endl;

@@ -24,7 +24,7 @@ CFG=Doxygen - Win32 Debug
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName "Doxygen"
-# PROP Scc_LocalPath ".."
+# PROP Scc_LocalPath "."
 CPP=xicl6.exe
 RSC=rc.exe
 
@@ -42,15 +42,16 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "..\qtools" /I "..\src" /I "..\libpng" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "NDEBUG" /D "QT_NO_CODECS" /FR /YX /FD /Zm200 /c
-# ADD BASE RSC /l 0x809 /d "NDEBUG"
-# ADD RSC /l 0x809 /d "NDEBUG" /d "QT_NO_CODECS"
+# ADD CPP /nologo /W3 /GX /O2 /I "..\src" /I "..\qtools" /I "..\libpng" /D "ENGLISH_ONLY" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /FD /c
+# SUBTRACT CPP /YX
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=snBsc.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 qtools.lib libpng.lib zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386 /libpath:"Release"
 
 !ELSEIF  "$(CFG)" == "Doxygen - Win32 Debug"
 
@@ -66,15 +67,17 @@ LINK32=xilink6.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\qtools" /I "..\src" /I "..\libpng" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "QT_NO_CODECS" /FR /YX /FD /Zm200 /GZ /c
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG" /d "QT_NO_CODECS"
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\src" /I "..\qtools" /I "..\libpng" /D "ENGLISH_ONLY" /D "_CONSOLE" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FD /GZ /c
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+# SUBTRACT RSC /x
 BSC32=snBsc.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 qtools.lib libpng.lib zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"Debug"
+# SUBTRACT LINK32 /nodefaultlib
 
 !ENDIF 
 
@@ -85,10 +88,6 @@ LINK32=xilink6.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Source File
-
-SOURCE=..\libpng\adler32.c
-# End Source File
 # Begin Source File
 
 SOURCE=..\src\ce_lex.cpp
@@ -107,6 +106,10 @@ SOURCE=..\src\classlist.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\cmdmapper.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\code.cpp
 # End Source File
 # Begin Source File
@@ -115,19 +118,11 @@ SOURCE=..\src\commentcnv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\compress.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\config.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\src\cppvalue.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\crc32.c
 # End Source File
 # Begin Source File
 
@@ -155,15 +150,15 @@ SOURCE=..\src\definition.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\deflate.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\diagram.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\doc.cpp
+SOURCE=..\src\docparser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\doctokenizer.cpp
 # End Source File
 # Begin Source File
 
@@ -199,7 +194,7 @@ SOURCE=..\src\groupdef.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\gzio.c
+SOURCE=..\src\htmldocvisitor.cpp
 # End Source File
 # Begin Source File
 
@@ -219,35 +214,15 @@ SOURCE=..\src\index.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\infblock.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\infcodes.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inffast.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inflate.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inftrees.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\infutil.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\instdox.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\src\language.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\latexdocvisitor.cpp
 # End Source File
 # Begin Source File
 
@@ -260,6 +235,10 @@ SOURCE=..\src\logos.cpp
 # Begin Source File
 
 SOURCE=..\src\main.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\mandocvisitor.cpp
 # End Source File
 # Begin Source File
 
@@ -303,7 +282,7 @@ SOURCE=..\src\packagedef.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\png.c
+SOURCE=..\src\perlmodgen.cpp
 # End Source File
 # Begin Source File
 
@@ -311,167 +290,7 @@ SOURCE=..\src\pngenc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\pngerror.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pnggccrd.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngget.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngmem.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngpread.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngread.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngrio.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngrtran.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngrutil.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngset.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngtrans.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngvcrd.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngwio.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngwrite.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngwtran.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngwutil.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\pre.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qbuffer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qcollection.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qcstring.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdatastream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdatetime.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdir.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdir_win32.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfile.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfile_win32.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfileinfo.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfileinfo_win32.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgarray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgdict.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qglist.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qglobal.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgvector.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qiodevice.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qmap.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qregexp.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstring.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstringlist.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qtextcodec.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qtextstream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qxml.cpp
 # End Source File
 # Begin Source File
 
@@ -479,19 +298,19 @@ SOURCE=..\src\reflist.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\rtfdocvisitor.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\rtfgen.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\rtfstyle.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\scanner.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\searchindex.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\suffixtree.cpp
 # End Source File
 # Begin Source File
 
@@ -503,14 +322,6 @@ SOURCE=..\src\translator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\trees.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\uncompr.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\util.cpp
 # End Source File
 # Begin Source File
@@ -519,11 +330,11 @@ SOURCE=..\src\version.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\xmlgen.cpp
+SOURCE=..\src\xmldocvisitor.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\zutil.c
+SOURCE=..\src\xmlgen.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -544,6 +355,10 @@ SOURCE=..\src\classdef.h
 # Begin Source File
 
 SOURCE=..\src\classlist.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\cmdmapper.h
 # End Source File
 # Begin Source File
 
@@ -591,15 +406,15 @@ SOURCE=..\src\definition.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\deflate.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\diagram.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\doc.h
+SOURCE=..\src\docparser.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\doctokenizer.h
 # End Source File
 # Begin Source File
 
@@ -643,6 +458,10 @@ SOURCE=..\src\groupdef.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\htmldocvisitor.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\htmlgen.h
 # End Source File
 # Begin Source File
@@ -659,30 +478,6 @@ SOURCE=..\src\index.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\infblock.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\infcodes.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inffast.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inffixed.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\inftrees.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\infutil.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\instdox.h
 # End Source File
 # Begin Source File
@@ -695,11 +490,19 @@ SOURCE=..\src\language.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\latexdocvisitor.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\latexgen.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\src\logos.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\mandocvisitor.h
 # End Source File
 # Begin Source File
 
@@ -747,15 +550,7 @@ SOURCE=..\src\page.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\libpng\png.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngasmrd.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\pngconf.h
+SOURCE=..\src\perlmodgen.h
 # End Source File
 # Begin Source File
 
@@ -771,175 +566,7 @@ SOURCE=..\src\printdocvisitor.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\qtools\qarray.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qasciidict.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qbuffer.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qcollection.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qconfig.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qcstring.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdatastream.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdatetime.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdict.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qdir.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfeatures.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfile.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfiledefs_p.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qfileinfo.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgarray.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgdict.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgeneric.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qglist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qglobal.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgvector.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qintdict.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qiodevice.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qmap.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qmodules.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qptrdict.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qqueue.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qregexp.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qshared.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qsortedlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstack.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstring.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstringlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstrlist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qstrvec.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\qtbc.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qtextcodec.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qtextstream.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qtl.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qvaluelist.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qvaluestack.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qvector.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qxml.h
 # End Source File
 # Begin Source File
 
@@ -947,15 +574,19 @@ SOURCE=..\src\reflist.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\rtfdocvisitor.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\rtfgen.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\scanner.h
+SOURCE=..\src\rtfstyle.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\searchindex.h
+SOURCE=..\src\scanner.h
 # End Source File
 # Begin Source File
 
@@ -967,10 +598,6 @@ SOURCE=..\src\sortdict.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\suffixtree.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\tagreader.h
 # End Source File
 # Begin Source File
@@ -979,119 +606,7 @@ SOURCE=..\src\translator.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\translator_adapter.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_br.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_cn.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_cz.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_de.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_dk.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\translator_en.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_es.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_fi.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_fr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_gr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_hr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_hu.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_it.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_jp.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_kr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_nl.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_no.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_pl.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_pt.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_ro.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_ru.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_se.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_si.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_sk.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_std.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_tw.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\translator_ua.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\trees.h
 # End Source File
 # Begin Source File
 
@@ -1100,6 +615,42 @@ SOURCE=..\src\treeview.h
 # Begin Source File
 
 SOURCE=..\src\unistd.h
+
+!IF  "$(CFG)" == "Doxygen - Win32 Release"
+
+USERDEP__UNIST="..\src\ce_lex.cpp"	"..\src\code.cpp"	"..\src\commentcnv.cpp"	"..\src\config.cpp"	"..\src\declinfo.cpp"	"..\src\defargs.cpp"	"..\src\doctokenizer.cpp"	"..\src\formula.cpp"	"..\src\pre.cpp"	"..\src\scanner.cpp"	"..\src\util.cpp"	
+# Begin Custom Build
+InputPath=..\src\unistd.h
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	echo /* this is a dummy file, that is needed for compiling files that are > $(InputPath) 
+	echo  * generated with flex under Windows 95/NT. >> $(InputPath) 
+	echo  */ >> $(InputPath) 
+	echo #if defined(_MSC_VER) >> $(InputPath) 
+	echo #include ^<io.h^> >> $(InputPath) 
+	echo #endif >> $(InputPath) 
+	
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Doxygen - Win32 Debug"
+
+# PROP Ignore_Default_Tool 1
+USERDEP__UNIST="..\src\ce_lex.cpp"	"..\src\code.cpp"	"..\src\commentcnv.cpp"	"..\src\config.cpp"	"..\src\declinfo.cpp"	"..\src\defargs.cpp"	"..\src\doctokenizer.cpp"	"..\src\formula.cpp"	"..\src\pre.cpp"	"..\src\scanner.cpp"	"..\src\util.cpp"	
+# Begin Custom Build
+InputPath=..\src\unistd.h
+
+"$(InputPath)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	echo /* this is a dummy file, that is needed for compiling files that are > $(InputPath) 
+	echo  * generated with flex under Windows 95/NT. >> $(InputPath) 
+	echo  */ >> $(InputPath) 
+	echo #if defined(_MSC_VER) >> $(InputPath) 
+	echo #include ^<io.h^> >> $(InputPath) 
+	echo #endif >> $(InputPath) 
+	
+# End Custom Build
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1111,24 +662,12 @@ SOURCE=..\src\version.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\xmldocvisitor.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\xmlgen.h
 # End Source File
-# Begin Source File
-
-SOURCE=..\libpng\zconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\zlib.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\libpng\zutil.h
-# End Source File
-# End Group
-# Begin Group "Resource Files"
-
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
 # End Target
 # End Project

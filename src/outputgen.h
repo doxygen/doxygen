@@ -90,17 +90,17 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
                           const QCString &,bool)  {} 
     virtual void parseText(const QCString &)  {}
     
-    /*! Start of a bullet list: e.g. \c <ul> in html. writeListItem() is
+    /*! Start of a bullet list: e.g. \c \<ul\> in html. writeListItem() is
      *  Used for the bullet items.
      */
     virtual void startItemList()  = 0;
 
     /*! Writes a list item for a bullet or enumerated 
-     *  list: e.g. \c <li> in html 
+     *  list: e.g. \c \<li\> in html 
      */
     virtual void writeListItem()  = 0;
 
-    /*! Ends a bullet list: e.g. \c </ul> in html */
+    /*! Ends a bullet list: e.g. \c \</ul\> in html */
     virtual void endItemList()    = 0;
 
     /*! Writes an ASCII string to the output. Converts characters that have
@@ -184,19 +184,19 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
     /*! Writes a horizontal ruler to the output */
     virtual void writeRuler() = 0;
     
-    /*! Starts a description list: e.g. \c <dl> in HTML 
+    /*! Starts a description list: e.g. \c \<dl\> in HTML 
      *  Items are surrounded by startDescItem() and endDescItem()
      */
     virtual void startDescription() = 0;
 
-    /*! Ends a description list: e.g. \c </dl> in HTML */
+    /*! Ends a description list: e.g. \c \</dl\> in HTML */
     virtual void endDescription() = 0;
 
-    /*! Starts an item of a description list: e.g. \c <dt> in HTML. */
+    /*! Starts an item of a description list: e.g. \c \<dt\> in HTML. */
     virtual void startDescItem() = 0;
 
     /*! Ends an item of a description list and starts the 
-     *  description itself: e.g. \c <dd> in HTML. 
+     *  description itself: e.g. \c \<dd\> in HTML. 
      */
     virtual void endDescItem() = 0;
 
