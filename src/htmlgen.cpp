@@ -46,10 +46,10 @@ static const char *defaultStyleSheet =
       "A.codeRef { font-weight: normal; color: #4444ee }\n"
       "DL.el { margin-left: -1cm }\n"
       "DIV.fragment { width: 100%; border: none; background-color: #eeeeee }\n"
-      "DIV.ah { background-color: black; margin-bottom: 3; margin-top: 3 }\n"
+      "DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }\n"
       "TD.md { background-color: #f2f2ff }\n"
-      "DIV.groupHeader { margin-left: 16; margin-top: 12; margin-bottom: 6; font-weight: bold }\n"
-      "DIV.groupText { margin-left: 16; font-style: italic; font-size: smaller }\n"
+      "DIV.groupHeader { margin-left: 16px; margin-top: 12px; margin-bottom: 6px; font-weight: bold }\n"
+      "DIV.groupText { margin-left: 16px; font-style: italic; font-size: smaller }\n"
       "FONT.keyword       { color: #008000 }\n"
       "FONT.keywordtype   { color: #604020 }\n"
       "FONT.keywordflow   { color: #e08000 }\n"
@@ -80,13 +80,14 @@ void HtmlGenerator::append(const OutputGenerator *g)
 
 void HtmlGenerator::init()
 {
-  QDir d(Config_getString("HTML_OUTPUT"));
-  if (!d.exists() && !d.mkdir(Config_getString("HTML_OUTPUT")))
+  QCString dname=Config_getString("HTML_OUTPUT");
+  QDir d(dname);
+  if (!d.exists() && !d.mkdir(dname))
   {
-    err("Could not create output directory %s\n",Config_getString("HTML_OUTPUT").data());
+    err("Could not create output directory %s\n",dname.data());
     exit(1);
   }
-  writeLogo(Config_getString("HTML_OUTPUT"));
+  writeLogo(dname);
   if (!Config_getString("HTML_HEADER").isEmpty()) g_header=fileToString(Config_getString("HTML_HEADER"));
   if (!Config_getString("HTML_FOOTER").isEmpty()) g_footer=fileToString(Config_getString("HTML_FOOTER"));
 }
@@ -117,7 +118,8 @@ static void writeDefaultHeaderFile(QTextStream &t,const char *title,
   }
   else
   {
-    QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
+    QCString cssname=Config_getString("HTML_STYLESHEET");
+    QFileInfo cssfi(cssname);
     if (!cssfi.exists())
     {
       err("Error: user specified HTML style sheet file does not exist!\n");
@@ -278,7 +280,8 @@ void HtmlGenerator::writeStyleInfo(int part)
     }
     else // write user defined style sheet
     {
-      QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
+      QCString cssname=Config_getString("HTML_STYLESHEET");
+      QFileInfo cssfi(cssname);
       if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
       {
         err("Error: style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
@@ -286,7 +289,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       else
       {
         startPlainFile(cssfi.fileName());
-        t << fileToString(Config_getString("HTML_STYLESHEET"));
+        t << fileToString(cssname);
         endPlainFile();
       }
     }
@@ -813,7 +816,7 @@ void HtmlGenerator::endIndexList()
 
 void HtmlGenerator::startAlphabeticalIndexList()
 {
-  t << "<table align=center width=\"95%\" border=0 cellspacing=0 cellpadding=0>" << endl;
+  t << "<table align=center width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">" << endl;
 }
 
 void HtmlGenerator::endAlphabeticalIndexList()
@@ -823,8 +826,8 @@ void HtmlGenerator::endAlphabeticalIndexList()
 
 void HtmlGenerator::writeIndexHeading(const char *s)
 {
-  t << "<div class=\"ah\"><font color=\"white\"><b>&nbsp;&nbsp;" << s 
-    << "&nbsp;&nbsp;</b></font></div>";
+  t << "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><div class=\"ah\">&nbsp;&nbsp;" << s 
+    << "&nbsp;&nbsp;</td</tr></table>";
 }
 
 void HtmlGenerator::startImage(const char *name,const char *,bool hasCaption)

@@ -356,6 +356,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper)
       bool hasChildren = !cd->visited && !hideSuper && cd->subClasses()->count()>0;
       if (cd->isLinkable())
       {
+        //printf("Writing class %s\n",cd->displayName().data());
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
         if (cd->isReference()) 
         { 
@@ -518,10 +519,8 @@ void writeClassTree(ClassSDict *d)
 
 //----------------------------------------------------------------------------
 
-void writeClassHierarchy(OutputList &ol)
+static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
 {
-  initClassHierarchy(&Doxygen::classSDict);
-
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
@@ -536,8 +535,7 @@ void writeClassHierarchy(OutputList &ol)
     ftvHelp = FTVHelp::getInstance();
   }
 
-  bool started=FALSE;
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*cl);
   for (;cli.current(); ++cli)
   {
     ClassDef *cd=cli.current();
@@ -560,7 +558,7 @@ void writeClassHierarchy(OutputList &ol)
         bool hasChildren = !cd->visited && cd->subClasses()->count()>0; 
         if (cd->isLinkable())
         {
-          //printf("Writing class %s\n",cd->name().data());
+          //printf("Writing class %s\n",cd->displayName().data());
           ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
           if (cd->isReference()) 
           {
@@ -597,6 +595,30 @@ void writeClassHierarchy(OutputList &ol)
       }
     }
   }
+}
+
+void writeClassHierarchy(OutputList &ol)
+{
+  HtmlHelp *htmlHelp=0;
+  FTVHelp  *ftvHelp=0;
+  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
+  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
+  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
+  if (hasHtmlHelp)
+  {
+    htmlHelp = HtmlHelp::getInstance();
+  }
+  if (hasFtvHelp)
+  {
+    ftvHelp = FTVHelp::getInstance();
+  }
+
+  initClassHierarchy(&Doxygen::classSDict);
+  initClassHierarchy(&Doxygen::hiddenClasses);
+
+  bool started=FALSE;
+  writeClassTreeForList(ol,&Doxygen::classSDict,started);
+  writeClassTreeForList(ol,&Doxygen::hiddenClasses,started);
   if (started) 
   {
     ol.endIndexList();
@@ -1062,7 +1084,7 @@ int countAnnotatedClasses()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject()) 
+    if (cd->isLinkableInProject() && cd->templateMaster()==0) 
     { 
       //printf("Annotated class %s\n",cd->name().data()); 
       count++; 
@@ -1085,7 +1107,7 @@ void writeAnnotatedClassList(OutputList &ol)
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       QCString type=cd->compoundTypeString();
       ol.writeStartAnnoItem(type,cd->getOutputFileBase(),0,cd->displayName());
@@ -1168,7 +1190,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   int headerItems=0;
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->name());
       if (toupper(cd->name().at(index))!=startLetter) // new begin letter => new header
@@ -1201,7 +1223,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   startLetter=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->name());
       if (toupper(cd->name().at(index))!=startLetter)
@@ -1443,7 +1465,7 @@ void writeMemberList(OutputList &ol,bool useSections)
       if (
            md->isLinkableInProject() &&
            (cd=md->getClassDef()) &&
-           cd->isLinkableInProject()
+           cd->isLinkableInProject() && cd->templateMaster()==0
          ) 
       { 
         found=TRUE; 
@@ -1489,7 +1511,7 @@ void writeMemberList(OutputList &ol,bool useSections)
         if (
             md->isLinkableInProject() &&
             prevName!=cd->displayName() && 
-            cd->isLinkableInProject()
+            cd->isLinkableInProject() && cd->templateMaster()==0
            )
         {
           if (count==0) 
@@ -2632,6 +2654,26 @@ void writeIndex(OutputList &ol)
   if (Doxygen::mainPage)
   {
     parseDoc(ol,defFileName,defLine,0,0,Doxygen::mainPage->doc);
+
+    if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+    {
+       Doxygen::tagFile << "  <compound kind=\"page\">" << endl
+                        << "    <filename>"
+                        << convertToXML(Doxygen::mainPage->fileName)
+                        << "</filename>"
+                        << endl
+                        << "    <title>"
+                        << convertToXML(Doxygen::mainPage->title)
+                        << "</title>"
+                        << endl
+                        << "    <name>"
+                        << convertToXML(Doxygen::mainPage->name)
+                        << "</name>"
+                        << endl;
+
+       Doxygen::mainPage->writeDocAnchorsToTagFile();
+       Doxygen::tagFile << "  </compound>" << endl;
+    }
   }
   
   endFile(ol);

@@ -62,7 +62,7 @@ Russian
 Alexandr Chelpanov: cav@cryptopro.ru
 
 Slovak
-Stanislav Kudlac: qwerty1@pobox.sk
+Stanislav Kudl&aacute;&ccaron;: qwerty1@pobox.sk
 
 Slovene
 Matjaz Ostroversnik: matjaz.ostroversnik@zrs-tk.si

@@ -309,6 +309,7 @@ MemberDef::MemberDef(const char *df,int dl,
   {
     argList=0;
   }
+  m_templateMaster=0;
 }
 
 /*! Destroys the member definition. */
@@ -361,7 +362,11 @@ bool MemberDef::hasExamples()
 
 QCString MemberDef::getOutputFileBase() const
 {
-  if (classDef)
+  if (m_templateMaster)
+  {
+    return m_templateMaster->getOutputFileBase();
+  }
+  else if (classDef)
   {
     return classDef->getOutputFileBase();
   }
@@ -570,6 +575,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       Doxygen::tagFile << "\" static=\"yes";
     }
     Doxygen::tagFile << "\">" << endl;
+    Doxygen::tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
     Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
     Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
@@ -963,7 +969,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         linkifyText(TextGeneratorOLImpl(ol),scopeName,name(),ldef.right(ldef.length()-ei));
       }
     }
-    else
+    else // not an enum value
     {
       ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
       ol.startMemberDoc(cname,name(),anchor(),name());
@@ -998,7 +1004,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if (cd)
         {
           QCString cName=cd->name();
-          //printf("cName=%s\n",cName.data());
           int il=cName.find('<');
           int ir=cName.findRev('>');
           if (il!=-1 && ir!=-1 && ir>il)
@@ -1273,11 +1278,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           parseText(ol,reimplFromLine.left(markerPos)); //text left from marker
           if (bmd->isLinkable()) // replace marker with link
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+            Definition *bd=bmd->group;
+            if (bd==0) bd=bcd;
+            ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if ( bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ ) 
+            
+            //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+            //    bmd->anchor(),bcd->name());
+            if ( bd->isLinkableInProject() ) 
             {
-              writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
+              writePageRef(ol,bd->getOutputFileBase(),bmd->anchor());
             }
           }
           else
@@ -1348,11 +1358,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
           if (ok && bcd && bmd) // write link for marker
           {
-            ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+            //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+            //    bmd->anchor(),bcd->name());
+            Definition* bd;
+            if (bmd->group) bd=bmd->group; else bd=bcd;
+            
+            ol.writeObjectLink(bd->getReference(),bd->getOutputFileBase(),
                 bmd->anchor(),bcd->name());
-            if (bcd->isLinkableInProject()/* && !Config_getBool("PDF_HYPERLINKS")*/ ) 
+                
+            if (bd->isLinkableInProject() ) 
             {
-              writePageRef(ol,bcd->getOutputFileBase(),bmd->anchor());
+              writePageRef(ol,bd->getOutputFileBase(),bmd->anchor());
             }
           }
           ++mli;
@@ -1415,7 +1431,7 @@ void MemberDef::warnIfUndocumented()
 }
 
 
-bool MemberDef::isLinkableInProject()
+bool MemberDef::isLinkableInProject() const
 {
   return !name().isEmpty() && name().at(0)!='@' &&
          ((hasDocumentation() && !isReference())  
@@ -1424,7 +1440,7 @@ bool MemberDef::isLinkableInProject()
          (classDef!=0 || Config_getBool("EXTRACT_STATIC") || !isStatic()); // not a static file/namespace member
 }
 
-bool MemberDef::isLinkable()
+bool MemberDef::isLinkable() const
 {
   return isLinkableInProject() || isReference();
 }
@@ -1513,5 +1529,37 @@ void MemberDef::setNamespace(NamespaceDef *nd)
 { 
   nspace=nd; 
   setOuterScope(nd); 
+}
+
+MemberDef *MemberDef::createTemplateInstanceMember(
+        ArgumentList *formalArgs,ArgumentList *actualArgs)
+{
+  //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
+  ArgumentList *actualArgList = 0;
+  if (argList)
+  {
+    actualArgList = new ArgumentList;
+    ArgumentListIterator ali(*argList);
+    Argument *arg;
+    for (;(arg=ali.current());++ali)
+    {
+      Argument *actArg = new Argument(*arg);
+      actArg->type = substituteTemplateArgumentsInString(actArg->type,formalArgs,actualArgs);
+      actualArgList->append(actArg);
+    }
+  }
+
+  MemberDef *imd = new MemberDef(
+                       getDefFileName(),getDefLine(),
+                       substituteTemplateArgumentsInString(type,formalArgs,actualArgs), 
+                       name(), 
+                       substituteTemplateArgumentsInString(args,formalArgs,actualArgs), 
+                       exception, prot,
+                       virt, stat, related, mtype, 0, 0
+                   );
+  imd->argList = actualArgList;
+  imd->def = substituteTemplateArgumentsInString(def,formalArgs,actualArgs);
+  // TODO: init other member variables.
+  return imd; 
 }
 

@@ -18,8 +18,8 @@
 
 \addindex installation
 First go to the 
-<a href="http://www.stack.nl/~dimitri/doxygen/download.html">download</a> page
-\latexonly({\tt http://www.stack.nl/$\sim$dimitri/doxygen/download.html})\endlatexonly
+<a href="http://www.doxygen.org/download.html">download</a> page
+\latexonly({\tt http://www.doxygen.org/download.html})\endlatexonly
 to get the latest distribution, if you did not have it already.
 
 This section is divided into the following subsections:
@@ -37,14 +37,14 @@ This section is divided into the following subsections:
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
 <ul>
-<li>The <a href="ftp://prep.ai.mit.edu/pub/gnu">GNU</a> tools 
+<li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools 
     flex, bison and make
     \addindex flex
     \addindex bison
     \addindex make
 <li>In order to generate a Makefile for your platform, you need 
-    <a href="http://www.perl.com>perl</a>
-    \latexonly(see {\tt http://www.perl.com})\endlatexonly.
+    <a href="http://www.perl.com/>perl</a>
+    \latexonly(see {\tt http://www.perl.com/})\endlatexonly.
     \addindex perl
 </ul>
 
@@ -58,10 +58,12 @@ tools should be installed.
     \addindex Qt
     This is needed to build the GUI front-end. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
-    <a href="http://www.tug.org">teTeX 1.0</a>.<br>
+    <a href="http://www.tug.org/">teTeX 1.0</a>.<br>
+    \latexonly(see {\tt http://www.tug.org/})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
-<li><a href="http://www.research.att.com/sw/tools/graphviz/">
+<li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.5</a><br>
+    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
 <li>The ghostscript interpreter.
@@ -231,7 +233,7 @@ If you are compiling for HP-UX with aCC and you get this error:
 \endverbatim
 
   If that does not help, try removing <code>ce_parse.cpp</code> and let 
-  bison rebuilt it (this worked for me).
+  bison rebuild it (this worked for me).
 
 If you are compiling for Digital Unix, the same problem can be solved
 (according to Barnard Schmallhof) by replacing the following in 
@@ -239,7 +241,8 @@ ce_parse.cpp:
    
 \verbatim
     #else /* not GNU C.  */
-    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
+    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
+        || defined (__sparc) || defined (__sgi)
     #include <alloca.h>
 \endverbatim
 
@@ -247,7 +250,8 @@ ce_parse.cpp:
 
 \verbatim
     #else /* not GNU C.  */
-    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || defined (__osf__)
+    #if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
+        || defined (__sparc) || defined (__sgi) || defined (__osf__)
     #include <alloca.h>
 \endverbatim
 
@@ -261,8 +265,10 @@ ce_parse.cpp:
  #ifdef __GNUC__
  #define alloca __builtin_alloca
  #else /* not GNU C.  */
--#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
-+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || defined (__alpha)
+-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
+     || defined (__sparc) || defined (__sgi)
++#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) \
+     || defined (__sparc) || defined (__sgi) || defined (__alpha)
  #include <alloca.h>
  #else /* not sparc */
  #if defined (MSDOS) && !defined (__TURBOC__)
@@ -283,8 +289,10 @@ Compiling the \c doxygen binary went ok, but while linking <code>doxytag</code> 
 lot of link errors, like these:
 
 \verbatim
-QList<PageInfo>::__vtbl   /home/dimitri/doxygen/objects/SunWS_cache/CC_obj_6/6c3eO4IogMT2vrlGCQUQ.o
-[Hint: try checking whether the first non-inlined, non-pure virtual function of class QList<PageInfo> is defined]
+QList<PageInfo>::__vtbl   /home/dimitri/doxygen/
+objects/SunWS_cache/CC_obj_6/6c3eO4IogMT2vrlGCQUQ.o
+[Hint: try checking whether the first non-inlined, non-pure 
+virtual function of class QList<PageInfo> is defined]
 \endverbatim
 
 These are generated because the compiler is confused about the object sharing
@@ -326,6 +334,11 @@ the compiler will fail to compile some of the translator_xx.h files.
 A workaround, if you are planning to use the English translation only, 
 is to configure doxygen with the <code>--english-only</code> option.  
 
+On some platforms (such as OpenBSD) using some versions of gcc with
+-O2 can lead to eating all memory during the compilation of files 
+such as config.cpp. As a workaround use --debug as a configure option 
+or omit the -O2 for the particular files in the Makefile.
+
 \subsection install_src_windows Compiling from source on Windows
 
 Currently, I have only compiled doxygen for Windows using Microsoft's 
@@ -353,7 +366,7 @@ Here is what is required:
     variables (if you did not select to do this automatically during 
     installation). 
 
-    Borland C++ or MINGW (see http://www.mingw.org) are also supported. 
+    Borland C++ or MINGW (see http://www.mingw.org/) are also supported. 
 
 <li>Perl 5.0 or higher for Windows. This can be downloaded from:
     http://www.ActiveState.com/Products/ActivePerl/
@@ -439,7 +452,7 @@ Here is what is required:
     <code>objects</code> and <code>bin</code> manually in the root of the 
     distribution before compiling.
 
-<li><a href="http://www.research.att.com/sw/tools/graphviz/">
+<li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.5</a><br>
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.

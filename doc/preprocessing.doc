@@ -17,7 +17,7 @@
 /*! \page preprocessing Preprocessing
 
 Source files that are used as input to doxygen can be parsed by doxygen's
-build-in C-preprocessor.
+built-in C-preprocessor.
 
 By default doxygen does only partial preprocessing. That is, it 
 evaluates conditional compilation statements (like \#if) and 

@@ -110,12 +110,12 @@ class FileDef : public Definition
     /*! Returns the absolute path of this file. */ 
     QCString getPath() const { return path; }
     
-    bool isLinkableInProject()
+    bool isLinkableInProject() const
     {
       return hasDocumentation() && !isReference();
     }
 
-    bool isLinkable()
+    bool isLinkable() const
     {
       return isLinkableInProject() || isReference();
     }

@@ -35,6 +35,7 @@ class ExampleSDict;
 class OutputList;
 class GroupDef;
 class QTextStream;
+class ArgumentList;
 
 struct SourceReference
 {
@@ -121,8 +122,8 @@ class MemberDef : public Definition
     bool isExternal() const               { return explExt; }
 
     // output info
-    bool isLinkableInProject();
-    bool isLinkable();
+    bool isLinkableInProject() const;
+    bool isLinkable() const;
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup=FALSE) const;
@@ -219,10 +220,15 @@ class MemberDef : public Definition
     int  indentDepth() { return indDepth; }
 
     bool visibleMemberGroup(bool hideNoHeader);
+    MemberDef *templateMaster() const { return m_templateMaster; } 
 
     QCString getScopeString() const;
     
     ClassDef *getClassDefOfAnonymousType();
+    MemberDef *createTemplateInstanceMember(ArgumentList *formalArgs,
+               ArgumentList *actualArgs);
+    void setTemplateMaster(MemberDef *mt) { m_templateMaster=mt; }
+        
     
   private:
     ClassDef   *classDef;     // member of or related to 
@@ -285,7 +291,7 @@ class MemberDef : public Definition
     QCString groupFileName;   // file where this grouping was defined
     int groupStartLine;       // line  "      "      "     "     "
     bool groupHasDocs;        // true if the entry that caused the grouping was documented
-
+    MemberDef *m_templateMaster;
 
 
     // disable copying of member defs

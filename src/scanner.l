@@ -22,7 +22,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
+//#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
 
@@ -727,9 +727,11 @@ TITLE     [tT][iI][tT][lL][eE]
 <FindMembers>{B}*"explicit"{BN}+	{ current->memSpec|=Entry::Explicit;
                                           lineCount(); 
                                         }
+  /*
 <FindMembers>{B}*"import"{BN}+		{ // IDL import keyword
   					  BEGIN( NextSemi );
   					}
+  */
 <FindMembers>{B}*"typename"{BN}+	{ lineCount(); }
 <FindMembers>{B}*"namespace"{BN}*/[^a-z_A-Z0-9]	{ 
   					  isTypedef=FALSE;
@@ -1035,7 +1037,9 @@ TITLE     [tT][iI][tT][lL][eE]
 					}
 <FindMembers,FindMemberName>{SCOPENAME}	{ 
   					  // correct for misinterpreting return type as scope name: example: A<T> func()
-  					  if (YY_START==FindMembers && current->tArgList && current->mtArgList==0)
+                                          //printf("YY_START=%d current->tArgList=%p current->mtArgList=%p\n",
+					  //       YY_START,current->tArgList,current->mtArgList);
+  					  if (YY_START==FindMembers /*&& current->tArgList*/ && current->mtArgList==0)
 					  {
 					    current->mtArgList=current->tArgList;
 					    current->tArgList=0;
@@ -1045,6 +1049,10 @@ TITLE     [tT][iI][tT][lL][eE]
                                           if (insideIDL && yyleng==9 && strcmp(yytext,"cpp_quote")==0)
 					  {
 					    BEGIN(CppQuote);
+					  }
+					  else if (insideIDL && yyleng==6 && strcmp(yytext,"import")==0)
+					  {
+					    BEGIN(NextSemi);
 					  }
 					  else if (insideIDL && strcmp(yytext,"case")==0)
 					  {
@@ -3400,7 +3408,7 @@ TITLE     [tT][iI][tT][lL][eE]
 <DocBaseClass>{ID}			{
 					  //printf("Adding base class %s\n",yytext);
 					  current->extends->append(
-					    new BaseInfo(yytext,Public,Normal)
+					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
 					  );
 					}
 <DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }

@@ -176,6 +176,7 @@ static bool isLeaf(ClassDef *cd)
   return TRUE;
 }
 
+#if 0
 /*! Builds a mapping from formal arguments of class \a tcd to the
  *  actual arguments stored in templSpec. To properly initialize
  *  the mapping with the default template values 
@@ -320,6 +321,7 @@ static void computeTemplateInstance(
   actualArg.resize(0);
   result = 0;
 }
+#endif
 
 //--------------------------------------------------------------------
 
@@ -693,20 +695,24 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
 
   QListIterator<DotNode> dnli(*m_rootSubgraphs);
   DotNode *n;
+  int count=0;
   for (dnli.toFirst();(n=dnli.current());++dnli)
   {
-    QCString baseName="inherit_graph_";
-    QCString diskName=n->m_url.copy();
-    int i=diskName.find('$'); 
-    if (i!=-1)
-    {
-      diskName=diskName.right(diskName.length()-i-1);
-    }
-    else /* take the label name as the file name (and strip any template stuff) */
-    {
-      diskName=n->m_label;
-    }
-    baseName = convertNameToFile(baseName+diskName);
+    QCString baseName;
+    baseName.sprintf("inherit_graph_%d",count++);
+    //="inherit_graph_";
+    //QCString diskName=n->m_url.copy();
+    //int i=diskName.find('$'); 
+    //if (i!=-1)
+    //{
+    //  diskName=diskName.right(diskName.length()-i-1);
+    //}
+    //else /* take the label name as the file name (and strip any template stuff) */
+    //{
+    //  diskName=n->m_label;
+    //}
+    //baseName = convertNameToFile(baseName+diskName);
+    baseName = convertNameToFile(baseName);
     QCString dotName=baseName+".dot";
     QCString gifName=baseName+".gif";
     QCString mapName=baseName+".map";
@@ -817,18 +823,9 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable()
+void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
 {
-  m_curNodeNumber=0;
-  m_rootNodes = new QList<DotNode>;
-  //m_rootNodes->setAutoDelete(TRUE);    // rootNodes owns the nodes
-  m_usedNodes = new QDict<DotNode>(1009); // virtualNodes only aliases nodes
-  m_rootSubgraphs = new DotNodeList;
-  
-  // build a graph with each class as a node and the inheritance relations
-  // as edges
-  initClassHierarchy(&Doxygen::classSDict);
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*cl);
   ClassDef *cd;
   for (cli.toLast();(cd=cli.current());--cli)
   {
@@ -857,6 +854,22 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
       }
     }
   }
+}
+
+DotGfxHierarchyTable::DotGfxHierarchyTable()
+{
+  m_curNodeNumber=0;
+  m_rootNodes = new QList<DotNode>;
+  //m_rootNodes->setAutoDelete(TRUE);    // rootNodes owns the nodes
+  m_usedNodes = new QDict<DotNode>(1009); // virtualNodes only aliases nodes
+  m_rootSubgraphs = new DotNodeList;
+  
+  // build a graph with each class as a node and the inheritance relations
+  // as edges
+  initClassHierarchy(&Doxygen::classSDict);
+  initClassHierarchy(&Doxygen::hiddenClasses);
+  addClassList(&Doxygen::classSDict);
+  addClassList(&Doxygen::hiddenClasses);
   // m_usedNodes now contains all nodes in the graph
  
   // color the graph into a set of independent subgraphs
@@ -918,8 +931,6 @@ int DotClassGraph::m_curNodeNumber;
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     const char *label,int distance,const char *usedName,const char *templSpec,bool base)
 {
-  //printf("DoxClassGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d,usedName=%s,templSpec=%s,base=%d)\n",
-  //                                 cd->name().data(),n->m_label.data(),prot,label,distance,usedName,templSpec,base);
   int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   if (usedName) // name is a typedef
@@ -932,8 +943,10 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   }
   else // just a normal name
   {
-    className=cd->name();
+    className=cd->displayName();
   }
+  //printf("DotClassGraph::addClass(class=`%s',parent=%s,prot=%d,label=%s,dist=%d,usedName=%s,templSpec=%s,base=%d)\n",
+  //                                 className.data(),n->m_label.data(),prot,label,distance,usedName,templSpec,base);
   DotNode *bn = m_usedNodes->find(className);
   if (bn) // class already inserted
   {
@@ -955,7 +968,10 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     QCString displayName=className;
     if (Config_getBool("HIDE_SCOPE_NAMES")) displayName=stripScope(displayName);
     QCString tmp_url;
-    if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+    if (cd->isLinkable()) 
+    {
+      tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+    }
     bn = new DotNode(m_curNodeNumber++,
         displayName,
         tmp_url.data(),
@@ -973,7 +989,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
       n->addParent(bn);
     }
     m_usedNodes->insert(className,bn);
-    //printf(" add used node %s of %s\n",cd->name().data(),n->m_label.data());
+    //printf(" add new child node `%s' to %s\n",className.data(),n->m_label.data());
     if (distance<m_recDepth) buildGraph(cd,bn,distance+1,base);
   }
 }
@@ -986,23 +1002,25 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   {
     //printf("-------- inheritance relation %s->%s templ=`%s'\n",
     //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-    QCString templSpec; 
-    if (base) templSpec = substituteTemplateSpec(
-                             cd,bcd->templSpecifiers);
-    ClassDef *acd=0;
-    QCString actualArg;
-    computeTemplateInstance(cd,bcd->classDef,templSpec,acd,actualArg);
+    //QCString templSpec; 
+    //if (base) templSpec = substituteTemplateSpec(
+    //                         cd,bcd->templSpecifiers);
+    //ClassDef *acd=0;
+    //QCString actualArg;
+    //computeTemplateInstance(cd,bcd->classDef,templSpec,acd,actualArg);
     //printf("acd=%p actualArg=%s\n",acd,actualArg.data());
-    if (acd)
-    {
-      addClass(acd,n,bcd->prot,0,distance,actualArg, 
-               templSpec,base); 
-    }
-    else
-    {
-      addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
-               templSpec,base); 
-    }
+    //if (acd)
+    //{
+    //  addClass(acd,n,bcd->prot,0,distance,actualArg, 
+    //           templSpec,base); 
+    //}
+    //else
+    //{
+    //  addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+    //           templSpec,base); 
+    //}
+    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+               bcd->templSpecifiers,base); 
   }
   if (m_graphType != Inheritance)
   {
@@ -1031,25 +1049,27 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
             label+=QCString("\\n")+s;
           }
         }
-        QCString actualArg;
-        ClassDef *acd=0;
+        //QCString actualArg;
+        //ClassDef *acd=0;
         //printf("-------- usage relation %s->%s templ=`%s'\n",
         //    cd->name().data(),ucd->classDef->name().data(),
         //    ucd->templSpecifiers.data());
-        QCString templSpec = substituteTemplateSpec(
-                                     cd,ucd->templSpecifiers);
-        computeTemplateInstance(cd,ucd->classDef, templSpec, acd,actualArg);
-        if (acd)
-        {
-          addClass(acd,n,EdgeInfo::Black,label,distance,actualArg,
-                   templSpec,base); 
-        }
-        else
-        {
-          //printf("Found label=`%s'\n",label.data());
-          addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,
-                   templSpec,base);
-        }
+        //QCString templSpec = substituteTemplateSpec(
+        //                             cd,ucd->templSpecifiers);
+        //computeTemplateInstance(cd,ucd->classDef, templSpec, acd,actualArg);
+        //if (acd)
+        //{
+        //  addClass(acd,n,EdgeInfo::Black,label,distance,actualArg,
+        //           templSpec,base); 
+        //}
+        //else
+        //{
+        //  //printf("Found label=`%s'\n",label.data());
+        //  addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,
+        //           templSpec,base);
+        //}
+        addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,
+                 ucd->templSpecifiers,base);
       }
     }
   }
@@ -1057,17 +1077,17 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
 
 DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
 {
-  //printf("DotGfxUsage::DotGfxUsage %s\n",cd->name().data());
+  //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
   m_graphType = t;
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
   QCString tmp_url="";
   if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
   QCString className = cd->displayName();
-  if (cd->templateArguments())
-  {
-    className+=tempArgListToString(cd->templateArguments());
-  }
+  //if (cd->templateArguments())
+  //{
+  //  className+=tempArgListToString(cd->templateArguments());
+  //}
   m_startNode = new DotNode(m_curNodeNumber++,
                             className,
                             tmp_url.data(),
@@ -1075,11 +1095,11 @@ DotClassGraph::DotClassGraph(ClassDef *cd,GraphType t,int maxRecursionDepth)
                             TRUE                       // is a root node
                            );
   m_usedNodes = new QDict<DotNode>(1009);
-  m_usedNodes->insert(cd->name(),m_startNode);
+  m_usedNodes->insert(className,m_startNode);
 
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  ClassDef *icd;
-  for (cli.toFirst();(icd=cli.current());++cli) icd->initTemplateMapping();
+  //ClassSDict::Iterator cli(Doxygen::classSDict);
+  //ClassDef *icd;
+  //for (cli.toFirst();(icd=cli.current());++cli) icd->initTemplateMapping();
 
   //printf("Root node %s\n",cd->name().data());
   if (m_recDepth>0) 

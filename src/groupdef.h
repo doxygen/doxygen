@@ -62,11 +62,11 @@ class GroupDef : public Definition
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
     void writeDocumentation(OutputList &ol);
     int countMembers() const;
-    bool isLinkableInProject()
+    bool isLinkableInProject() const
     {
       return hasDocumentation() && !isReference();
     }
-    bool isLinkable()
+    bool isLinkable() const
     {
       return isLinkableInProject() || isReference();
     }

@@ -311,13 +311,14 @@ static void generateFolderTreeViewData()
     QTextStream t(&f);
     t << "<html><head>" << endl;
     t << "<link rel=\"stylesheet\" href=\"";
-    if (Config_getString("HTML_STYLESHEET").isEmpty())
+    QCString cssname=Config_getString("HTML_STYLESHEET");
+    if (cssname.isEmpty())
     {
       t << "doxygen.css";
     }
     else
     {
-      QFileInfo cssfi(Config_getString("HTML_STYLESHEET"));
+      QFileInfo cssfi(cssname);
       if (!cssfi.exists())
       {
         err("Error: user specified HTML style sheet file does not exist!\n");

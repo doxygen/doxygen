@@ -39,6 +39,7 @@ class TagMemberInfo
 {
   public:
     TagMemberInfo() : prot(Public), virt(Normal), isStatic(FALSE) {}
+    QString type;
     QString name;
     QString anchor;
     QString arglist;
@@ -54,13 +55,14 @@ class TagClassInfo
 {
   public:
     enum Kind { Class, Struct, Union, Interface, Exception };
-    TagClassInfo() { bases=0, members.setAutoDelete(TRUE); }
-   ~TagClassInfo() { delete bases; }
+    TagClassInfo() { bases=0, templateArguments=0; members.setAutoDelete(TRUE); }
+   ~TagClassInfo() { delete bases; delete templateArguments; }
     QString name;
     QString filename;
     QStrList docAnchors;
     QList<BaseInfo> *bases;
     QList<TagMemberInfo> members;
+    QList<QString> *templateArguments;
     Kind kind;
 };
 
@@ -168,7 +170,11 @@ class TagFileParser : public QXmlDefaultHandler
     };
 
   public:
-    TagFileParser(const char *tagName) : m_tagName(tagName) {}
+    TagFileParser(const char *tagName) : m_startElementHandlers(17),
+                                         m_endElementHandlers(17),
+                                         m_tagName(tagName)
+    {
+    }
 
     void startCompound( const QXmlAttributes& attrib )
     {
@@ -351,6 +357,17 @@ class TagFileParser : public QXmlDefaultHandler
     {
       m_curString = "";
     }
+    void endType()
+    {
+      if (m_state==InMember)
+      {
+        m_curMember->type = m_curString; 
+      }
+      else
+      {
+        err("Error: Unexpected tag `type' found\n");
+      }
+    }
     void endName()
     {
       switch (m_state)
@@ -386,7 +403,11 @@ class TagFileParser : public QXmlDefaultHandler
         {
           virt = Virtual;
         }
-        if (m_curClass->bases==0) m_curClass->bases = new QList<BaseInfo>;
+        if (m_curClass->bases==0) 
+        {
+          m_curClass->bases = new QList<BaseInfo>;
+          m_curClass->bases->setAutoDelete(TRUE);
+        }
         m_curClass->bases->append(new BaseInfo(m_curString,prot,virt));
       }
       else
@@ -403,6 +424,22 @@ class TagFileParser : public QXmlDefaultHandler
       else
       {
         err("Error: Unexpected tag `base' found\n");
+      }
+    }
+    void endTemplateArg()
+    {
+      if (m_state==InClass && m_curClass)
+      {
+        if (m_curClass->templateArguments==0) 
+        {
+          m_curClass->templateArguments = new QList<QString>;
+          m_curClass->templateArguments->setAutoDelete(TRUE);
+        }
+        m_curClass->templateArguments->append(new QString(m_curString));
+      }
+      else
+      {
+        err("Error: Unexpected tag `templarg' found\n");
       }
     }
     void endFilename()
@@ -510,6 +547,8 @@ class TagFileParser : public QXmlDefaultHandler
       m_startElementHandlers.insert("page",      new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("docanchor", new StartElementHandler(this,&TagFileParser::startStringValue));
       m_startElementHandlers.insert("tagfile",   new StartElementHandler(this,&TagFileParser::startIgnoreElement));
+      m_startElementHandlers.insert("templarg",  new StartElementHandler(this,&TagFileParser::startStringValue));
+      m_startElementHandlers.insert("type",      new StartElementHandler(this,&TagFileParser::startStringValue));
 
       m_endElementHandlers.insert("compound",    new EndElementHandler(this,&TagFileParser::endCompound));
       m_endElementHandlers.insert("member",      new EndElementHandler(this,&TagFileParser::endMember));
@@ -527,6 +566,8 @@ class TagFileParser : public QXmlDefaultHandler
       m_endElementHandlers.insert("page",        new EndElementHandler(this,&TagFileParser::endPage));
       m_endElementHandlers.insert("docanchor",   new EndElementHandler(this,&TagFileParser::endDocAnchor));
       m_endElementHandlers.insert("tagfile",     new EndElementHandler(this,&TagFileParser::endIgnoreElement));
+      m_endElementHandlers.insert("templarg",    new EndElementHandler(this,&TagFileParser::endTemplateArg));
+      m_endElementHandlers.insert("type",        new EndElementHandler(this,&TagFileParser::endType));
 
       return TRUE;
     }
@@ -811,6 +852,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
   for (;(tmi=mii.current());++mii)
   {
     Entry *me      = new Entry;
+    me->type       = tmi->type;
     me->name       = tmi->name;
     me->args       = tmi->arglist;
     me->protection = tmi->prot;
@@ -928,6 +970,18 @@ void TagFileParser::buildLists(Entry *root)
     if (tci->bases)
     {
       ce->extends = tci->bases; tci->bases = 0;
+    }
+    if (tci->templateArguments)
+    {
+      if (ce->tArgList==0) ce->tArgList = new ArgumentList;
+      QListIterator<QString> sli(*tci->templateArguments);
+      QString *argName;
+      for (;(argName=sli.current());++sli)
+      {
+        Argument *a = new Argument;
+        a->name = *argName;
+        ce->tArgList->append(a);
+      }
     }
 
     buildMemberList(ce,tci->members);

@@ -20,6 +20,7 @@
 
 #include "cppvalue.h"
 #include "constexp.h"
+#include "message.h"
 
 #if defined(_MSC_VER)
 #define MSDOS
@@ -32,7 +33,8 @@
 
 int cppExpYYerror(const char *s)
 {
-  printf("Error in constant expression evaluation: %s\n",s);
+  warn(g_constExpFileName,g_constExpLineNr,
+       "Problem during constant expression evaluation: %s",s);
   return 0;
 }
 
@@ -73,7 +75,7 @@ int cppExpYYlex();
 %%
 
 start: constant_expression
-       { resultValue = $1; return 0; }
+       { g_resultValue = $1; return 0; }
 ;
 
 constant_expression: logical_or_expression

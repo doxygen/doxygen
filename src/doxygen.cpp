@@ -65,8 +65,10 @@
 #define pclose _pclose
 #endif
 
+static QDict<Entry> classEntries(1009);
+
 ClassSDict     Doxygen::classSDict(1009);         
-ClassList      Doxygen::hiddenClasses;
+ClassSDict     Doxygen::hiddenClasses(257);
 
 NamespaceList  Doxygen::namespaceList;           // all namespaces
 NamespaceDict  Doxygen::namespaceDict(257);      
@@ -209,7 +211,7 @@ static void addRelatedPage(const char *name,const QCString &ptitle,
                           )
 {
   PageInfo *pi=0;
-  if ((pi=Doxygen::pageSDict->find(name)))
+  if ((pi=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
     // append documentation block to the page.
     pi->doc+="\n\n"+doc;
@@ -392,7 +394,8 @@ static void addRefItem(int todoId,int testId,int bugId,const char *prefix,
 
 static void buildGroupList(Entry *root)
 {
-  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
+  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() &&
+      (Config_getBool("EXTRACT_ALL") || root->tagInfo))
   {
     //printf("Found group %s title=`%s'\n",root->name.data(),root->type.data());
     
@@ -883,7 +886,6 @@ static void buildClassList(Entry *root)
         cd->setBriefDescription(root->brief);
         cd->insertUsedFile(root->fileName);
 
-        
         // add class to the list
         //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
         Doxygen::classSDict.inSort(fullName,cd);
@@ -1336,6 +1338,7 @@ static MemberDef *addVariableToClass(
   bool ambig;
   md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
 
+  //printf("Adding member=%s\n",md->name().data());
   // add the member to the global list
   if (mn)
   {
@@ -1510,6 +1513,7 @@ static MemberDef *addVariableToFile(
     }
   }
 
+  //printf("Adding member=%s\n",md->name().data());
   // add member definition to the list of globals 
   if (mn)
   {
@@ -1911,6 +1915,7 @@ static void buildMemberList(Entry *root)
                     );
 
         // add member to the global list of all members
+        //printf("Adding member=%s class=%s\n",md->name().data(),cd->name().data());
         MemberName *mn;
         if ((mn=Doxygen::memberNameDict[name]))
         {
@@ -1920,7 +1925,6 @@ static void buildMemberList(Entry *root)
         {
           mn = new MemberName(name);
           mn->append(md);
-          //printf("Adding memberName=%s\n",mn->memberName());
           Doxygen::memberNameDict.insert(name,mn);
           Doxygen::memberNameList.append(mn);
         }
@@ -2109,6 +2113,7 @@ static void buildMemberList(Entry *root)
           }
 
           // add member to the list of file members
+          //printf("Adding member=%s\n",md->name().data());
           MemberName *mn;
           if ((mn=Doxygen::functionNameDict[name]))
           {
@@ -2343,15 +2348,332 @@ static void replaceNamespaceAliases(QCString &scope,int i)
   //printf("replaceNamespaceAliases() result=%s\n",scope.data());
 }
 
+static QCString resolveTypeDef(const QCString &name)
+{
+  QCString typeName;
+  if (!name.isEmpty()) 
+  {
+    QCString *subst = Doxygen::typedefDict[name];
+    if (subst)
+    {
+      int count=0;
+      typeName=*subst;
+      QCString *newSubst;
+      while ((newSubst=Doxygen::typedefDict[typeName]) && count<10)
+      {
+        if (typeName==*newSubst) break; // prevent lock-up
+        typeName=*newSubst;
+        count++;
+      }
+    }
+  }
+  return typeName;
+}
 
-static bool findBaseClassRelation(
+/*! make a dictionary of all template arguments of class cd
+ * that are part of the base class name. 
+ * Example: A template class A with template arguments <R,S,T> 
+ * that inherits from B<T,T,S> will have T and S in the dictionary.
+ */
+static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,const QCString &name)
+{
+  QDict<int> *templateNames = new QDict<int>(17);
+  templateNames->setAutoDelete(TRUE);
+  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+  if (templateArguments)
+  {
+    ArgumentListIterator ali(*templateArguments);
+    Argument *arg;
+    int count=0;
+    for (ali.toFirst();(arg=ali.current());++ali,count++)
+    {
+      int i,p=0,l;
+      while ((i=re.match(name,p,&l))!=-1)
+      {
+        QCString n = name.mid(i,l);
+        if (n==arg->name)
+        {
+          if (templateNames->find(n)==0)
+          {
+            templateNames->insert(n,new int(count));
+          }
+        }
+        p=i+l;
+      }
+    }
+  }
+  return templateNames;
+}
+
+
+enum FindBaseClassRelation_Mode 
+{ 
+  TemplateInstances, 
+  DocumentedOnly, 
+  Undocumented 
+};
+
+static bool findClassRelation(
                            Entry *root,
                            ClassDef *cd,
                            BaseInfo *bi,
-                           int isTemplBaseClass,
-                           bool insertUndocumented
+                           QDict<int> *templateNames,
+                           /*bool insertUndocumented*/
+                           FindBaseClassRelation_Mode mode,
+                           bool isArtificial
+                          );
+
+
+static void findUsedClassesForClass(Entry *root,
+                           ClassDef *masterCd,
+                           ClassDef *instanceCd,
+                           bool isArtificial,
+                           ArgumentList *actualArgs=0,
+                           QDict<int> *templateNames=0
+                           )
+{
+  //if (masterCd->visited) return;
+  masterCd->visited=TRUE;
+  ArgumentList *formalArgs = masterCd->templateArguments();
+  MemberNameInfoSDict::Iterator mnili(*masterCd->memberNameInfoSDict());
+  MemberNameInfo *mni;
+  for (;(mni=mnili.current());++mnili)
+  {
+    MemberNameInfoIterator mnii(*mni);
+    MemberInfo *mi;
+    for (mnii.toFirst();(mi=mnii.current());++mnii)
+    {
+      MemberDef *md=mi->memberDef;
+      if (md->isVariable()) // for each member variable in this class
+      {
+        QCString type=removeRedundantWhiteSpace(md->typeString());
+        int pos=0;
+        QCString usedClassName;
+        QCString templSpec;
+        bool found=FALSE;
+        if (actualArgs)
+        {
+          type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
+        }
+        //printf("extractClassNameFromType(%s)\n",type.data());
+        while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
+        {
+          QCString typeName = resolveTypeDef(usedClassName);
+          QCString usedName = usedClassName+templSpec;
+          if (!typeName.isEmpty())
+          {
+            usedName=typeName;
+          }
+          //printf("usedName=`%s'\n",usedName.data());
+
+          bool delTempNames=FALSE;
+          if (templateNames==0)
+          {
+            templateNames = getTemplateArgumentsInName(formalArgs,usedName);
+            delTempNames=TRUE;
+          }
+          BaseInfo bi(usedName,Public,Normal);
+          findClassRelation(root,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
+
+          if (masterCd->templateArguments())
+          {
+            ArgumentListIterator ali(*masterCd->templateArguments());
+            Argument *arg;
+            int count=0;
+            for (ali.toFirst();(arg=ali.current());++ali,++count)
+            {
+              if (arg->name==usedName) // type is a template argument
+              {
+                found=TRUE;
+                Debug::print(Debug::Classes,0,"  New used class `%s'\n", usedName.data());
+                
+                ClassDef *usedCd = Doxygen::hiddenClasses.find(usedName);
+                if (usedCd==0)
+                {
+                  usedCd = new ClassDef(
+                     masterCd->getDefFileName(),masterCd->getDefLine(),
+                     usedName,ClassDef::Class);
+                  usedCd->setIsTemplateBaseClass(count);
+                  Doxygen::hiddenClasses.inSort(usedName,usedCd);
+                }
+                if (isArtificial) usedCd->setClassIsArtificial();
+                instanceCd->addUsedClass(usedCd,md->name());
+
+                //if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(257); 
+                //UsesClassDef *ucd = new UsesClassDef(cd);
+                //m_usesImplClassDict->insert(cd->name(),ucd);
+                //ucd->templSpecifiers = templSpec;
+                //ucd->addAccessor(md->name());
+              }
+            }
+          }
+
+          if (!found)
+          {
+            Definition *scope=masterCd->getOuterScope();
+            ClassDef *usedCd=0;
+            do
+            {
+              QCString scopeName = scope ? scope->qualifiedName().data() : 0;
+              if (!scopeName.isEmpty())
+              {
+                usedCd=getResolvedClass(scopeName+"::"+usedName,0,&templSpec);
+                if (usedCd==0) usedCd=getResolvedClass(scopeName+"::"+usedClassName,0,&templSpec);
+                //printf("Search for class %s result=%p\n",(scopeName+"::"+usedName).data(),usedCd);
+              }
+              else
+              {
+                usedCd=getResolvedClass(usedName,0,&templSpec);
+                if (usedCd==0) usedCd=getResolvedClass(usedClassName,0,&templSpec);
+                //printf("Search for class %s result=%p\n",usedName.data(),usedCd);
+              }
+              if (scope) scope=scope->getOuterScope();
+            } while (scope && usedCd==0);
+
+            if (usedCd) 
+            {
+              found=TRUE;
+              instanceCd->addUsedClass(usedCd,md->name()); // class exists 
+            }
+          }
+          if (delTempNames)
+          {
+            delete templateNames;
+            templateNames=0;
+          }
+        }
+      }
+    }
+  }
+}
+
+static void findBaseClassesForClass(
+      Entry *root,
+      ClassDef *masterCd,
+      ClassDef *instanceCd,
+      FindBaseClassRelation_Mode mode,
+      bool isArtificial,
+      ArgumentList *actualArgs=0,
+      QDict<int> *templateNames=0
+    )
+{
+  //if (masterCd->visited) return;
+  masterCd->visited=TRUE;
+  // The base class could ofcouse also be a non-nested class
+  ArgumentList *formalArgs = masterCd->templateArguments();
+  QListIterator<BaseInfo> bii(*root->extends);
+  BaseInfo *bi=0;
+  for (bii.toFirst();(bi=bii.current());++bii)
+  {
+    bool delTempNames=FALSE;
+    if (templateNames==0)
+    {
+      templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
+      delTempNames=TRUE;
+    }
+    BaseInfo tbi(bi->name,bi->prot,bi->virt);
+    if (actualArgs) // substitute the formal template arguments of the base class
+    {
+      tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
+    }
+
+    if (mode==DocumentedOnly)
+    {
+      // find a documented base class in the correct scope
+      if (!findClassRelation(root,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+      {
+        // no documented base class -> try to find an undocumented one
+        findClassRelation(root,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
+      }
+    }
+    else if (mode==TemplateInstances)
+    {
+      findClassRelation(root,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
+    }
+    if (delTempNames)
+    {
+      delete templateNames;
+      templateNames=0;
+    }  
+  }
+}
+
+//----------------------------------------------------------------------
+
+static bool findTemplateInstanceRelation(Entry *root,
+            ClassDef *templateClass,const QCString &templSpec,
+            QDict<int> *templateNames,
+            bool isArtificial)
+{
+  Debug::print(Debug::Classes,0,"    derived from template %s with parameters %s\n",
+         templateClass->name().data(),templSpec.data());
+  //printf("findTemplateInstanceRelation(base=%s templSpec=%s templateNames=",
+  //    templateClass->name().data(),templSpec.data());
+  //if (templateNames)
+  //{
+  //  QDictIterator<int> qdi(*templateNames);
+  //  int *tempArgIndex;
+  //  for (;(tempArgIndex=qdi.current());++qdi)
+  //  {
+  //    printf("(%s->%d) ",qdi.currentKey().data(),*tempArgIndex);
+  //  }
+  //}
+  //printf("\n");
+  
+  bool existingClass = (templSpec==tempArgListToString(templateClass->templateArguments()));
+  if (existingClass) return TRUE;
+
+  bool freshInstance=FALSE;
+  ClassDef *instanceClass = templateClass->insertTemplateInstance(
+                     root->fileName,root->startLine,templSpec,freshInstance);
+  if (isArtificial) instanceClass->setClassIsArtificial();
+
+  if (freshInstance)
+  {
+    Doxygen::classSDict.inSort(instanceClass->name(),instanceClass);
+    instanceClass->setTemplateBaseClassNames(templateNames);
+
+    // search for new template instances caused by base classes of 
+    // instanceClass 
+    Entry *templateRoot = classEntries.find(templateClass->name());
+
+    ArgumentList *templArgs = new ArgumentList;
+    stringToArgumentList(templSpec,templArgs);
+    findBaseClassesForClass(templateRoot,templateClass,instanceClass,
+        TemplateInstances,isArtificial,templArgs,templateNames);
+
+    findUsedClassesForClass(templateRoot,templateClass,instanceClass,
+        isArtificial,templArgs,templateNames);
+
+    //Debug::print(Debug::Classes,0,"    Template instance %s : \n",instanceClass->name().data());
+    //ArgumentList *tl = templateClass->templateArguments();
+  }
+  return TRUE;
+}
+
+static bool findClassRelation(
+                           Entry *root,
+                           ClassDef *cd,
+                           BaseInfo *bi,
+                           QDict<int> *templateNames,
+                           FindBaseClassRelation_Mode mode,
+                           bool isArtificial
                           )
 {
+  //printf("findClassRelation(class=%s base=%s templateNames=",
+  //    cd->name().data(),bi->name.data());
+  //if (templateNames)
+  //{
+  //  QDictIterator<int> qdi(*templateNames);
+  //  int *tempArgIndex;
+  //  for (;(tempArgIndex=qdi.current());++qdi)
+  //  {
+  //    printf("(%s->%d) ",qdi.currentKey().data(),*tempArgIndex);
+  //  }
+  //}
+  //printf("\n");
+
+
   Entry *parentNode=root->parent;
   bool lastParent=FALSE;
   do // for each parent scope, starting with the largest scope 
@@ -2377,8 +2699,9 @@ static bool findBaseClassRelation(
       //                     baseClass?baseClass->name().data():"<none>",
       //                     templSpec.data()
       //      );
-      if (baseClassName!=root->name) // check for base class with the same name, 
-        // look in the outer scope for a match
+      if (baseClassName!=root->name) // Check for base class with the same name.
+                                     // If found then look in the outer scope for a match
+                                     // and prevent recursion.
       {
         Debug::print(
             Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",
@@ -2420,7 +2743,7 @@ static bool findBaseClassRelation(
           }
         }
 
-        bool found=baseClass!=0 && baseClass!=cd;
+        bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
         NamespaceDef *nd=cd->getNamespaceDef();
         if (!found && (i=baseClassName.findRev("::"))!=-1)
         {
@@ -2520,25 +2843,60 @@ static bool findBaseClassRelation(
             }
           }
         }
-        if (isTemplBaseClass==-1 && found)
+        bool isATemplateArgument = templateNames!=0 && templateNames->find(bi->name)!=0;
+        if (!isATemplateArgument && found)
         {
           Debug::print(Debug::Classes,0,"    Documented base class `%s' templSpec=%s\n",bi->name.data(),templSpec.data());
           // add base class to this class
-          QCString usedName;
-          if (baseClassIsTypeDef) usedName=bi->name;
-          cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
-          // add this class as super class to the base class
-          baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+
+          // if templSpec is not empty then we should "instantiate"
+          // the template baseClass. A new ClassDef should be created
+          // to represent the instance. To be able to add the (instantiated)
+          // members and documentation of a template class 
+          // (inserted in that template class at a later stage), 
+          // the template should know about its instances. 
+          // the instantiation process, should be done in a recursive way, 
+          // since instantiating a template may introduce new inheritance 
+          // relations.
+          if (!templSpec.isEmpty() && mode==TemplateInstances)
+          {
+            findTemplateInstanceRelation(root,baseClass,templSpec,templateNames,isArtificial);
+          }
+          else if (mode==DocumentedOnly)
+          {
+            QCString usedName;
+            if (baseClassIsTypeDef) usedName=bi->name;
+            cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
+            // add this class as super class to the base class
+            baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+          }
           return TRUE;
         }
-        else if ((scopeOffset==0 && insertUndocumented) || isTemplBaseClass!=-1)
+        else if (mode==Undocumented && (scopeOffset==0 || isATemplateArgument))
         {
           Debug::print(Debug::Classes,0,
-                       "    Undocumented base class `%s' baseClassName=%s\n",
+                       "    New undocumented base class `%s' baseClassName=%s\n",
                        bi->name.data(),baseClassName.data()
                       );
-          baseClass=new ClassDef(root->fileName,root->startLine,
+          baseClass=0;
+          if (isATemplateArgument)
+          {
+            baseClass=Doxygen::hiddenClasses.find(baseClassName);
+            if (baseClass==0)
+            {
+              baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
+              Doxygen::hiddenClasses.inSort(baseClassName,baseClass);
+              if (isArtificial) baseClass->setClassIsArtificial();
+            }
+          }
+          else
+          {
+            baseClass=new ClassDef(root->fileName,root->startLine,
+                                 baseClassName,ClassDef::Class);
+            Doxygen::classSDict.inSort(baseClassName,baseClass);
+            if (isArtificial) baseClass->setClassIsArtificial();
+          }
           // add base class to this class
           cd->insertBaseClass(baseClass,bi->name,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
@@ -2547,15 +2905,16 @@ static bool findBaseClassRelation(
           baseClass->insertUsedFile(root->fileName);
           // is this an inherited template argument?
           //printf("%s->setIsTemplateBaseClass(%d)\n",baseClass->name().data(),isTemplBaseClass);
-          baseClass->setIsTemplateBaseClass(isTemplBaseClass);
-          // add class to the list
-          if (isTemplBaseClass==-1)
+          if (isATemplateArgument)
           {
-            Doxygen::classSDict.inSort(baseClassName,baseClass);
+            baseClass->setIsTemplateBaseClass(*templateNames->find(bi->name));
+          }
+          // add class to the list
+          if (!isATemplateArgument)
+          {
           }
           else
           {
-            Doxygen::hiddenClasses.append(baseClass);
           }
           return TRUE;
         }
@@ -2591,23 +2950,54 @@ static bool findBaseClassRelation(
 //----------------------------------------------------------------------
 // Computes the base and super classes for each class in the tree
 
-static void computeClassRelations(Entry *root)
+static bool isClassSection(Entry *root)
 {
-  if (
+  return 
+    (
       (
-       (
-        // is it a compound (class, struct, union, interface ...)
-        root->section & Entry::COMPOUND_MASK 
-       ) 
-       || 
-       (
-        // is it a documentation block with inheritance info.
-        (root->section & Entry::COMPOUNDDOC_MASK) && root->extends->count()>0 
-       )
+        (
+          // is it a compound (class, struct, union, interface ...)
+          root->section & Entry::COMPOUND_MASK 
+        ) 
+        || 
+        (
+         // is it a documentation block with inheritance info.
+         (root->section & Entry::COMPOUNDDOC_MASK) && root->extends->count()>0 
+        )
       )
-      &&
-       !root->name.isEmpty() // sanity check
-     )
+      && !root->name.isEmpty() // sanity check
+   );
+}
+
+
+/*! Builds a dictionary of all entry nodes in the tree starting with \a root
+ */
+static void findClassEntries(Entry *root)
+{
+  if (isClassSection(root))
+  {
+    classEntries.insert(root->name,root);
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    findClassEntries(e);
+  }
+}
+
+/*! Using the dictionary build by findClassEntries(), this 
+ *  function will look for additional template specialization that
+ *  exists as inheritance relations only. These instances will be
+ *  added to the template they are derived from.
+ */
+static void findInheritedTemplateInstances()
+{
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  QDictIterator<Entry> edi(classEntries);
+  Entry *root;
+  for (;(root=edi.current());++edi)
   {
     ClassDef *cd;
     // strip any annonymous scopes first 
@@ -2616,44 +3006,45 @@ static void computeClassRelations(Entry *root)
     if ((cd=getClass(bName)))
     {
       //printf("Class %s %d\n",cd->name().data(),root->extends->count());
-      if (!cd->visited) // check integrity of the tree
-      {
-        cd->visited=TRUE; // mark class as used 
-        if (root->extends->count()>0) // there are base classes
-        {
-          
-          // The base class could ofcouse also be a non-nested class
-          QList<BaseInfo> *baseList=root->extends;
-          BaseInfo *bi=baseList->first();
-          while (bi) // for each base class
-          {
-            // check if the base class is a template argument
-            int isTemplBaseClass = -1;
-            ArgumentList *tl = cd->templateArguments();
-            if (tl)
-            {
-              ArgumentListIterator ali(*tl);
-              Argument *arg;
-              int count=0;
-              for (ali.toFirst();(arg=ali.current());++ali,++count)
-              {
-                if (arg->name==bi->name) // base class is a template argument
-                {
-                  isTemplBaseClass = count;
-                  break;
-                }
-              }
-            }
-            // find a documented base class in the correct scope
-            if (!findBaseClassRelation(root,cd,bi,isTemplBaseClass,FALSE))
-            {
-              // no documented base class -> try to find an undocumented one
-              findBaseClassRelation(root,cd,bi,isTemplBaseClass,TRUE);
-            }
-            bi=baseList->next();
-          }
-        } // class has no base classes
-      } // else class is already found
+      findBaseClassesForClass(root,cd,cd,TemplateInstances,FALSE);
+    }
+  }
+}
+
+static void findUsedTemplateInstances()
+{
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  QDictIterator<Entry> edi(classEntries);
+  Entry *root;
+  for (;(root=edi.current());++edi)
+  {
+    ClassDef *cd;
+    // strip any annonymous scopes first 
+    QCString bName=stripAnonymousNamespaceScope(root->name);
+    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
+    if ((cd=getClass(bName)))
+    {
+      findUsedClassesForClass(root,cd,cd,TRUE);
+    }
+  }
+}
+
+static void computeClassRelations()
+{
+  ClassSDict::Iterator cli(Doxygen::classSDict);
+  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
+  QDictIterator<Entry> edi(classEntries);
+  Entry *root;
+  for (;(root=edi.current());++edi)
+  {
+    ClassDef *cd;
+    // strip any annonymous scopes first 
+    QCString bName=stripAnonymousNamespaceScope(root->name);
+    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
+    if ((cd=getClass(bName)))
+    {
+      findBaseClassesForClass(root,cd,cd,DocumentedOnly,FALSE);
     }
     else if (bName.right(2)!="::")
     {
@@ -2665,11 +3056,82 @@ static void computeClassRelations(Entry *root)
              );
     }
   }
-  EntryListIterator eli(*root->sublist);
-  Entry *e;
-  for (;(e=eli.current());++eli)
+}
+
+static void computeTemplateClassRelations()
+{
+  QDictIterator<Entry> edi(classEntries);
+  Entry *root;
+  for (;(root=edi.current());++edi)
   {
-    computeClassRelations(e);
+    QCString bName=stripAnonymousNamespaceScope(root->name);
+    ClassDef *cd=getClass(bName);
+    // strip any annonymous scopes first 
+    QDict<ClassDef> *templInstances = 0;
+    if (cd && (templInstances=cd->getTemplateInstances()))
+    {
+      Debug::print(Debug::Classes,0,"  Template class %s : \n",cd->name().data());
+      QDictIterator<ClassDef> tdi(*templInstances);
+      ClassDef *tcd;
+      for (tdi.toFirst();(tcd=tdi.current());++tdi) // for each template instance
+      {
+        Debug::print(Debug::Classes,0,"    Template instance %s : \n",tcd->name().data());
+        //QCString templName = tcd->name();
+        //int index = templName.find('<');
+        //ASSERT(index!=-1);
+        //  templName.right(templName.length()-index);
+        QCString templSpec = tdi.currentKey().data();
+        ArgumentList *templArgs = new ArgumentList;
+        stringToArgumentList(templSpec,templArgs);
+        QList<BaseInfo> *baseList=root->extends;
+        BaseInfo *bi=baseList->first();
+        while (bi) // for each base class of the template
+        {
+          // check if the base class is a template argument
+          BaseInfo tbi(bi->name,bi->prot,bi->virt);
+          ArgumentList *tl = cd->templateArguments();
+          if (tl)
+          {
+            QDict<int> *baseClassNames = tcd->getTemplateBaseClassNames();
+            QDict<int> *templateNames = getTemplateArgumentsInName(tl,bi->name);
+            // for each template name that we inherit from we need to
+            // substitute the formal with the actual arguments
+            QDict<int> *actualTemplateNames = new QDict<int>(17);
+            actualTemplateNames->setAutoDelete(TRUE);
+            QDictIterator<int> qdi(*templateNames);
+            for (qdi.toFirst();qdi.current();++qdi)
+            {
+              int templIndex = *qdi.current();
+              Argument *actArg = 0;
+              if (templIndex<(int)templArgs->count()) 
+              {
+                actArg=templArgs->at(templIndex);
+              }
+              if (actArg!=0 &&
+                  baseClassNames!=0 &&
+                  baseClassNames->find(actArg->type)!=0 &&
+                  actualTemplateNames->find(actArg->type)==0
+                 )
+              {
+                actualTemplateNames->insert(actArg->type,new int(templIndex));
+              }
+            }
+            delete templateNames;
+            
+            tbi.name = substituteTemplateArgumentsInString(bi->name,tl,templArgs);
+            // find a documented base class in the correct scope
+            if (!findClassRelation(root,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
+            {
+              // no documented base class -> try to find an undocumented one
+              findClassRelation(root,tcd,&tbi,actualTemplateNames,Undocumented,FALSE);
+            }
+            delete actualTemplateNames;
+          }
+          bi=baseList->next();
+        }
+        delete templArgs;
+      } // class has no base classes
+    }
   }
 }
 
@@ -2800,7 +3262,6 @@ static void addTodoTestBugReferences()
       if (d) scopeName=d->name();
       if (d==0) d=md->getGroupDef();
       if (d==0) d=md->getFileDef();
-      // TODO: i18n this
       QCString memLabel;
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
       {
@@ -2994,7 +3455,7 @@ static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
     {
       cl=nd->getUsedClasses();
     }
-    else
+    else if (fd)
     {
       cl=fd->getUsedClasses();
     }
@@ -3629,7 +4090,7 @@ static void findMember(Entry *root,
     if (!isRelated && mn) // function name already found
     {
       Debug::print(Debug::FindMembers,0,
-                   "2. member name exists \n");
+                   "2. member name exists (%d members with this name)\n",mn->count());
       if (!className.isEmpty()) // class name is valid
       {
         int count=0;
@@ -3637,9 +4098,11 @@ static void findMember(Entry *root,
         MemberDef *md;
         for (mni.toFirst();(md=mni.current());++mni)
         {
-          Debug::print(Debug::FindMembers,0,
-                 "3. member definition found scopeName=`%s'\n",scopeName.data());
           ClassDef *cd=md->getClassDef();
+          Debug::print(Debug::FindMembers,0,
+                 "3. member definition found scope needed=`%s' scope=`%s' args=`%s'\n",
+                 scopeName.data(),cd ? cd->name().data() : "<none>",
+                 md->argsString());
           //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
           ClassDef *tcd=0;
           
@@ -3773,6 +4236,7 @@ static void findMember(Entry *root,
               //         root->inLine,md->isInline());
               addMemberDocs(root,md,funcDecl,0,overloaded,nl);
               count++;
+              break;
             }
           } 
         } 
@@ -3985,9 +4449,9 @@ static void findMember(Entry *root,
           cd->insertUsedFile(root->fileName);
           md->setRefItems(root->todoId,root->testId,root->bugId);
           addMemberToGroups(root,md);
+          //printf("Adding member=%s\n",md->name().data());
           if (newMemberName)
           {
-            //printf("Adding memberName=%s\n",mn->memberName());
             Doxygen::memberNameList.append(mn);
             Doxygen::memberNameDict.insert(funcName,mn);
           }
@@ -4077,14 +4541,7 @@ static void findMemberDocumentation(Entry *root)
       compoundKeywordDict.find(root->type)==0 // that is not a keyword 
                                               // (to skip forward declaration of class etc.)
       )
-     ) /*
-        && (!root->stat && !root->parent)  // not static & global: TODO: fix this hack!
-        && (
-       !root->doc.isEmpty() ||          // has detailed docs
-        !root->brief.isEmpty() ||        // has brief docs
-        (root->memSpec&Entry::Inline) || // is inline
-        root->mGrpId!=-1 ||              // is part of a group
-     ) */
+     ) 
     )
   {
     //printf("Documentation for member `%s' found args=`%s' excp=`%s'\n",
@@ -4261,6 +4718,7 @@ static void findEnums(Entry *root)
       md->setDocumentation(root->doc);
       md->setBriefDescription(root->brief);
 
+      //printf("Adding member=%s\n",md->name().data());
       MemberName *mn;
       if ((mn=(*mnd)[name]))
       {
@@ -4545,13 +5003,37 @@ static void computeMemberRelations()
 
 
 //----------------------------------------------------------------------------
-static void computeClassImplUsageRelations()
+//static void computeClassImplUsageRelations()
+//{
+//  ClassDef *cd;
+//  ClassSDict::Iterator cli(Doxygen::classSDict);
+//  for (;(cd=cli.current());++cli)
+//  {
+//    cd->determineImplUsageRelation();
+//  }
+//}
+
+//----------------------------------------------------------------------------
+
+static void createTemplateInstanceMembers()
 {
-  ClassDef *cd;
   ClassSDict::Iterator cli(Doxygen::classSDict);
-  for (;(cd=cli.current());++cli)
+  ClassDef *cd;
+  // for each class
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    cd->determineImplUsageRelation();
+    // that is a template
+    QDict<ClassDef> *templInstances = cd->getTemplateInstances();
+    if (templInstances)
+    {
+      QDictIterator<ClassDef> qdi(*templInstances);
+      ClassDef *tcd=0;
+      // for each instance of the template
+      for (qdi.toFirst();(tcd=qdi.current());++qdi)
+      {
+        tcd->addMembersToTemplateInstance(cd,qdi.currentKey().data());
+      }
+    }
   }
 }
 
@@ -4747,8 +5229,8 @@ static void generateClassDocs()
   for ( ; cli.current() ; ++cli )
   {
     ClassDef *cd=cli.current();
-    if ( cd->isLinkableInProject() ) 
-         // skip external references and anonymous compounds
+    if ( cd->isLinkableInProject() && cd->templateMaster()==0 ) 
+         // skip external references, anonymous compounds and template instances
     {
       msg("Generating docs for compound %s...\n",cd->name().data());
       
@@ -4892,6 +5374,7 @@ static void findDefineDocumentation(Entry *root)
       FileDef *fd=findFileDef(Doxygen::inputNameDict,filePathName,ambig);
       //printf("Searching for `%s' fd=%p\n",filePathName.data(),fd);
       md->setFileDef(fd);
+      //printf("Adding member=%s\n",md->name().data());
       MemberName *mn;
       if ((mn=Doxygen::functionNameDict[root->name]))
       {
@@ -6592,8 +7075,24 @@ void parseInput()
   msg("Searching for documented defines...\n");
   findDefineDocumentation(root); 
   
-  msg("Computing class relations...\n");
-  computeClassRelations(root);
+  msg("Computing template instances...");
+  findClassEntries(root);         
+  findInheritedTemplateInstances();       
+  findUsedTemplateInstances();       
+
+  msg("Creating members for template instances...\n");
+  createTemplateInstanceMembers();
+
+  //if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
+  //{
+  //  msg("Computing class implementation usage relations...\n");
+  //  computeClassImplUsageRelations();
+  //}
+
+  msg("Computing class relations...");
+  computeTemplateClassRelations(); 
+  computeClassRelations();        
+  classEntries.clear();          
 
   msg("Searching for enumerations...\n");
   findEnums(root);
@@ -6630,12 +7129,6 @@ void parseInput()
 
   msg("Adding classes to their packages...\n");
   addClassesToPackages();
-
-  if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
-  {
-    msg("Computing class implementation usage relations...\n");
-    computeClassImplUsageRelations();
-  }
 
   msg("Adding members to member groups.\n");
   addMembersToMemberGroup();

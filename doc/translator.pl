@@ -38,6 +38,9 @@
 #    argument list does not contain argument identifiers 
 #    (i.e., when it contains type information only).
 #
+# 2001/06/11
+#  - Character entity &ccaron; recognized in maintainers.txt.
+#
 ################################################################
 
 require 5.005;
@@ -566,13 +569,15 @@ xxxTABLE_FOOTxxx
     $tableLATEX .= $latexTableFoot;
 
     $tableHTML =~ s{@}{\@NOSPAM.}sg; 
+    $tableHTML =~ s{&ccaron;}{&#x010d;}sg; 
     $tableHTML =~ s{&rcaron;}{&#x0159;}sg; 
     
-    $tableLATEX =~ s/&rcaron;/\\v{r}/sg;
     $tableLATEX =~ s/&aacute;/\\'{a}/sg;
     $tableLATEX =~ s/&auml;/\\"{a}/sg;
     $tableLATEX =~ s/&ouml;/\\"{o}/sg;
     $tableLATEX =~ s/&oslash;/\\o{}/sg;
+    $tableLATEX =~ s/&ccaron;/\\v{c}/sg;
+    $tableLATEX =~ s/&rcaron;/\\v{r}/sg;
     $tableLATEX =~ s/_/\\_/sg;
     
     my $notice = "\nHave a look at <a href=\"../doc/$ftranslatortxt\"\n>"

@@ -125,7 +125,7 @@ a browser that supports cascading style sheets (CSS) should be used
 \addindex LaTeX
 
 The generated \f$\mbox{\LaTeX}\f$ documentation must first be compiled by 
-a \f$\mbox{\LaTeX}\f$ compiler. (I use teTeX distribution version 0.9
+a \f$\mbox{\LaTeX}\f$ compiler (I use teTeX distribution version 0.9
 that contains \f$\mbox{\TeX}\f$ version 3.14159). To simplify the process 
 of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory. 

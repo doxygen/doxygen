@@ -57,14 +57,14 @@ class NamespaceDef : public Definition
     void addUsingDeclaration(ClassDef *cd);
     ClassList *getUsedClasses() const { return usingDeclList; }
     
-    bool isLinkableInProject()
+    bool isLinkableInProject() const
     {
       int i = name().findRev("::");
       if (i==-1) i=0; else i+=2;
       return !name().isEmpty() && name().at(i)!='@' &&
               hasDocumentation() && !isReference();
     }
-    bool isLinkable()
+    bool isLinkable() const
     {
       return isLinkableInProject() || isReference();
     }

@@ -22,10 +22,12 @@
 #include "qtbc.h"
 #include "cppvalue.h"
 
-extern bool parseCppExpression(const QCString &s);
+extern bool parseCppExpression(const char *fileName,int line,const QCString &s);
 extern int cppExpYYparse();
 extern int cppExpYYdebug;
-extern QCString strToken;
-extern CPPValue resultValue;
+extern QCString g_strToken;
+extern CPPValue g_resultValue;
+extern QCString g_constExpFileName;
+extern int      g_constExpLineNr;
 
 #endif
