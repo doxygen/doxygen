@@ -2183,7 +2183,8 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
-      ClassDef *baseClass=getResolvedClass(baseClassName);
+      bool baseClassIsTypeDef;
+      ClassDef *baseClass=getResolvedClass(baseClassName,&baseClassIsTypeDef);
       //printf("baseClassName=`%s' baseClass=%p\n",baseClassName.data(),baseClass);
       if (baseClassName!=root->name) // check for base class with the same name, 
         // look in the outer scope for a match
@@ -2333,7 +2334,9 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
         {
           Debug::print(Debug::Classes,0,"    Documented base class `%s'\n",bi->name.data());
           // add base class to this class
-          cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
+          QCString usedName;
+          if (baseClassIsTypeDef) usedName=bi->name;
+          cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
           baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
           return TRUE;
@@ -2347,7 +2350,7 @@ static bool findBaseClassRelation(Entry *root,ClassDef *cd,
           baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
           // add base class to this class
-          cd->insertBaseClass(baseClass,bi->prot,bi->virt,templSpec);
+          cd->insertBaseClass(baseClass,bi->name,bi->prot,bi->virt,templSpec);
           // add this class as super class to the base class
           baseClass->insertSuperClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
@@ -2544,9 +2547,12 @@ static void addTodoTestReferences()
       if (d) scopeName=d->name();
       if (d==0) d=md->getFileDef();
       if (d==0) d=md->getGroupDef();
+      // TODO: i18n this
+      QCString memLabel="member";
+      if (Config::optimizeForCFlag) memLabel="field";
       if (d)
       {
-        addRefItem(md->todoId(),md->testId(),"member",d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
+        addRefItem(md->todoId(),md->testId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
       }
     }
   }
@@ -2562,9 +2568,12 @@ static void addTodoTestReferences()
       if (d) scopeName=d->name();
       if (d==0) d=md->getBodyDef();
       if (d==0) d=md->getGroupDef();
+      // TODO: i18n this
+      QCString memLabel="member";
+      if (Config::optimizeForCFlag) memLabel="global";
       if (d)
       {
-        addRefItem(md->todoId(),md->testId(),"member",d->getOutputFileBase()+":"+md->anchor(),scopeName+"::"+md->name(),md->argsString());
+        addRefItem(md->todoId(),md->testId(),memLabel,d->getOutputFileBase()+":"+md->anchor(),md->name(),md->argsString());
       }  
     }
   }
@@ -4278,7 +4287,7 @@ static void generateFileSources()
       {
         if (fd->generateSourceFile())
         {
-          msg("Generating code for file %s...\n",fd->name().data());
+          msg("Generating code for file %s...\n",fd->docName().data());
           fd->writeSource(*outputList);
         }
       }
@@ -4305,10 +4314,9 @@ static void generateFileDocs()
         bool doc = fd->isLinkableInProject();
         if (doc)
         {
-          msg("Generating docs for file %s...\n",fd->name().data());
+          msg("Generating docs for file %s...\n",fd->docName().data());
           fd->writeDocumentation(*outputList);
         }
-
       }
     }
   }
@@ -4607,6 +4615,7 @@ static void findDefineDocumentation(Entry *root)
             md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
             md->addSectionsToDefinition(root->anchors);
             md->setMaxInitLines(root->initLines);
+            md->setRefItems(root->todoId,root->testId);
             if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
             addMemberToGroups(root,md);
           }
@@ -4639,6 +4648,7 @@ static void findDefineDocumentation(Entry *root)
               bool ambig;
               md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
               md->addSectionsToDefinition(root->anchors);
+              md->setRefItems(root->todoId,root->testId);
               if (root->mGrpId!=-1) md->setMemberGroupId(root->mGrpId);
               addMemberToGroups(root,md);
             }

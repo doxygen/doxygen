@@ -821,6 +821,21 @@ void addDefine()
     md->setArgumentList(argList);
   }
   //printf("Setting initializer for `%s' to `%s'\n",g_defName.data(),g_defText.data());
+  int l=g_defLitText.find('\n');
+  if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
+  {
+    // strip first line if it only contains a slash 
+    g_defLitText = g_defLitText.right(g_defLitText.length()-l-1);
+  }
+  else if (l>0) 
+  {
+    // align the items on the first line with the items on the second line
+    int k=l+1;
+    const char *p=g_defLitText.data()+k;
+    char c;
+    while ((c=*p++) && (c==' ' || c=='\t')) k++;
+    g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
+  }
   md->setInitializer(g_defLitText);
   
   //md->setDefFile(g_yyFileName);

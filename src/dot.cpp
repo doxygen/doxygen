@@ -782,16 +782,24 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 int DotClassGraph::m_curNodeNumber;
 
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
-    const char *label,int distance,const char *templSpec,bool base)
+    const char *label,int distance,const char *usedName,const char *templSpec,bool base)
 {
   //printf(":: DoxGfxUsageGraph::addClass(class=%s,parent=%s,prot=%d,label=%s,dist=%d)\n",
   //                                 cd->name().data(),n->m_label.data(),prot,label,distance);
   int edgeStyle = label ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
-  if (templSpec)
+  if (usedName) // name is a typedef
+  {
+    className=usedName;
+  }
+  else if (templSpec) // name has a template part
+  {
     className=insertTemplateSpecifierInScope(cd->name(),templSpec);
-  else
-    className=cd->name().copy();
+  }
+  else // just a normal name
+  {
+    className=cd->name();
+  }
   DotNode *bn = m_usedNodes->find(className);
   if (bn) // class already inserted
   {
@@ -810,7 +818,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
   }
   else // new class
   {
-    QCString displayName=className.copy();
+    QCString displayName=className;
     if (Config::hideScopeNames) displayName=stripScope(displayName);
     QCString tmp_url;
     if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
@@ -846,7 +854,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
     //                                     cd->name().data(),bcd->templSpecifiers.data());
     QCString templSpec;
     if (base) templSpec = bcd->templSpecifiers;
-    addClass(bcd->classDef,n,bcd->prot,0,distance,templSpec,base); 
+    addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,templSpec,base); 
   }
   if (m_graphType != Inheritance)
   {
@@ -876,7 +884,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
           }
         }
         //printf("Found label=`%s'\n",label.data());
-        addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,ucd->templSpecifiers,base);
+        addClass(ucd->classDef,n,EdgeInfo::Black,label,distance,0,ucd->templSpecifiers,base);
       }
     }
   }

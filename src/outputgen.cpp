@@ -94,5 +94,6 @@ void OutputGenerator::popGeneratorState()
   ASSERT(lb!=0);
   if (lb==0) return; // for some robustness against superfluous \endhtmlonly commands.
   if (*lb) enable(); else disable();
+  delete lb;
 }
 

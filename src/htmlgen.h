@@ -27,7 +27,7 @@ class HtmlGenerator : public OutputGenerator
 {
   public:
     HtmlGenerator();
-   ~HtmlGenerator();
+    virtual ~HtmlGenerator();
     static void init();
     static void writeStyleSheetFile(QFile &f);
     static void writeHeaderFile(QFile &f);
@@ -187,7 +187,7 @@ class HtmlGenerator : public OutputGenerator
     void writeSectionRef(const char *,const char *,const char *,const char *);
     void writeSectionRefItem(const char *,const char *,const char *);
     //void writeSectionRefAnchor(const char *,const char *,const char *);
-    void addIndexItem(const char *,const char *) {}
+    void addIndexItem(const char *,const char *);
     void startIndent();
     void endIndent();
     void writeSynopsis() {}
@@ -239,8 +239,6 @@ class HtmlGenerator : public OutputGenerator
     void endFontClass() { t << "</font>"; }
 
   private:
-    QCString header;
-    QCString footer;
     QCString lastTitle;
     QCString lastFile;
 

@@ -306,6 +306,8 @@ void HtmlHelp::createProjectFile()
          "Default Window=main\n"
          "Default topic=" << indexName << "\n"
          "Index file=index.hhk\n"
+         "Binary TOC=YES\n"
+         "Create CHI file=YES\n"
          "Title=" << Config::projectName << endl << endl;
     
     t << "[WINDOWS]" << endl;

@@ -126,7 +126,8 @@ class DotClassGraph
   private:
     void buildGraph(ClassDef *cd,DotNode *n,int level,bool base);
     void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
-                  int level,const char *templSpec,bool base);
+                  int level,const char *usedName,const char *templSpec,
+                  bool base);
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
     static int      m_curNodeNumber;
