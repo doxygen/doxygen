@@ -580,9 +580,10 @@ static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
   }
 }
 
-void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
+void ClassDef::setIncludeFile(FileDef *fd,
+             const char *includeName,bool local, bool force)
 {
-  //printf("ClassDef::setInclude(%p,%s,%d)\n",fd,includeName,local);
+  //printf("ClassDef::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
   if (!m_incInfo) m_incInfo=new IncludeInfo;
   if ((includeName && m_incInfo->includeName.isEmpty()) ||
       (fd!=0 && m_incInfo->fileDef==0)
@@ -593,6 +594,7 @@ void ClassDef::setIncludeFile(FileDef *fd,const char *includeName,bool local)
     m_incInfo->includeName = includeName;
     m_incInfo->local       = local;
   }
+  if (force && includeName) m_incInfo->includeName = includeName;
 }
 
 // TODO: fix this: a nested template class can have multiple outer templates

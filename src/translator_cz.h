@@ -138,6 +138,9 @@
 // 2002/03/05
 //  - ... forgot to replace TranslatorAdapter... base class by Translator.
 //
+// 2002/07/08 (my birthday! ;)
+//  - The new trRTFTableOfContents() implemented.
+//
 // Todo
 // ----
 //  - The trReimplementedFromList() should pass the kind of the 
@@ -157,7 +160,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public TranslatorAdapter_1_2_16
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1502,7 +1505,19 @@ class TranslatorCzech : public TranslatorAdapter_1_2_16
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Implementováno v "+trWriteList(numEntries)+".";
+      return decode("Implementováno v "+trWriteList(numEntries)+".");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Obsah";
     }
 
 };

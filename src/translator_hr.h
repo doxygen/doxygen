@@ -50,7 +50,7 @@
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_2_16
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1040,6 +1040,18 @@ class TranslatorCroatian : public TranslatorAdapter_1_2_16
     {
       return "Implementirano u "+trWriteList(numEntries)+".";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return decode("Sadr¾aj");
+    }
+
 };
 
 #endif

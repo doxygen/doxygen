@@ -60,37 +60,42 @@ static QCString documentType;
 static QCString documentId;
 static QCString keywords;
 
-// it is undocumented as far as I know, but
-// "."'s in a bookmarkname are converted to "_"'s
-// when an RTF file is read in...
+static QCString g_nextTag( "AAAAAAAAAA" );
+static QDict<QCString> g_tagDict( 5003 );
+
 static QCString formatBmkStr(const char *name)
 {
-  QCString result=name;
-  if (!result.isEmpty())
+  // To overcome the 40-character tag limitation, we
+  // substitute a short arbitrary string for the name
+  // supplied, and keep track of the correspondence
+  // between names and strings.
+  QCString key( name );
+  QCString* tag = g_tagDict.find( key );
+  if ( !tag )
   {
-    char c;
-    char *p=result.data();
-    while ((c=*p))
-    {
-      switch(c)
-      {
-        case '.':
-          // fall through
-        case ':':
-          *p='_';
-          break;
-        default:
-          break;
-      }
-      p++;
-    }
-    // Word doesn't like bookmarks that do not start with a alphabetical char
-    if (!isalpha(result.at(0)))
-    {
-      result.prepend("BM");
-    }
+     // This particular name has not yet been added
+     // to the list. Add it, associating it with the
+     // next tag value, and increment the next tag.
+     tag = new QCString( g_nextTag.copy() ); // Make sure to use a deep copy!
+     g_tagDict.insert( key, tag );
+
+     // This is the increment part
+     char* nxtTag = g_nextTag.data() + g_nextTag.length() - 1;
+     for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
+     {
+         if ( ( ++(*nxtTag) ) > 'Z' )
+         {
+            (*nxtTag) = 'A';
+         }
+         else
+         {
+            // Since there was no carry, we can stop now
+            break;
+         }
+     }
   }
-  return result;
+  
+  return *tag;
 }
 
 static QCString dateToRTFDateString()
@@ -722,6 +727,8 @@ void RTFGenerator::init()
     exit(1);
   }
   Rtf_Style.setAutoDelete(TRUE);
+
+  g_tagDict.setAutoDelete(TRUE);
 
   // first duplicate strings of Rtf_Style_Default
   const struct Rtf_Style_Default* def = Rtf_Style_Default;
@@ -1413,6 +1420,7 @@ void RTFGenerator::startIndexList()
   incrementIndentLevel();
   t << Rtf_Style_Reset << Rtf_LCList_DepthStyle() << endl;
   newParagraph();
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::endIndexList()
@@ -1421,6 +1429,7 @@ void RTFGenerator::endIndexList()
   newParagraph();
   t << "}";
   decrementIndentLevel();
+  m_omitParagraph = TRUE;
 }
 
 /*! start bullet list */
@@ -1439,6 +1448,7 @@ void RTFGenerator::endItemList()
   DBG_RTF(t << "{\\comment (endItemList level=" << m_listLevel << ")}" << endl)
   t << "}";
   decrementIndentLevel();
+  m_omitParagraph = TRUE;
 }
 
 /*! start enumeration list */
@@ -1458,6 +1468,7 @@ void RTFGenerator::endEnumList()
   DBG_RTF(t << "{\\comment (endEnumList)}" << endl)
   t << "}";
   decrementIndentLevel();
+  m_omitParagraph = TRUE;
 }
 
 /*! write bullet or enum item */
@@ -1476,6 +1487,7 @@ void RTFGenerator::writeListItem()
   {
     t << Rtf_BList_DepthStyle() << endl;
   }
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
@@ -1495,6 +1507,7 @@ void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
     t << endl;
   }
   newParagraph();
+  m_omitParagraph = TRUE;
 }
 
 //void RTFGenerator::writeIndexFileItem(const char *,const char *text)
@@ -2052,6 +2065,7 @@ void RTFGenerator::endDescList()
   DBG_RTF(t << "{\\comment (endDescList)}"    << endl)
   newParagraph();
   decrementIndentLevel();
+  m_omitParagraph = TRUE;
   t << "}";
 }
 
@@ -2271,13 +2285,23 @@ void RTFGenerator::endMemberItem(bool)
 
 void RTFGenerator::writeAnchor(const char *fileName,const char *name)
 {
-  DBG_RTF(t <<"{\\comment writeAncheor }" << endl)
-  t << "{\\bkmkstart ";
-  if (fileName) t << formatBmkStr(fileName);
-  if (fileName && name) t << "_";
-  if (name) t << formatBmkStr(name);
-  t << "}" << endl;
-  t << "{\\bkmkend " << formatBmkStr(name) << "}" << endl;
+  QCString anchor;
+  if (fileName)
+  {
+    anchor+=fileName;
+  }
+  if (fileName && name)
+  {
+    anchor+='_';
+  }
+  if (name)
+  {
+    anchor+=name;
+  }
+
+  DBG_RTF(t <<"{\\comment writeAncheor (" << anchor << ")}" << endl)
+  t << "{\\bkmkstart " << formatBmkStr(anchor) << "}" << endl;
+  t << "{\\bkmkend " << formatBmkStr(anchor) << "}" << endl;
 }
 
 void RTFGenerator::WriteRTFReference(const char *label)
@@ -2303,6 +2327,7 @@ void RTFGenerator::endCodeFragment()
   //t << Rtf_Style_Reset << styleStack.top() << endl;
   DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
   t << "}" << endl;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::writeNonBreakableSpace(int)
@@ -2356,19 +2381,13 @@ void RTFGenerator::startDotFile(const char *name,bool)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  QCString outName = Config_getString("RTF_OUTPUT")+
-#ifdef _WIN32
-    "\\"
-#else
-    "/"
-#endif
-    +baseName;
-  writeDotGraphFromFile(name,outName,BITMAP);
+  QCString outDir = Config_getString("RTF_OUTPUT");
+  writeDotGraphFromFile(name,outDir,baseName,BITMAP);
   newParagraph();
   t << "{" << endl;
   t << Rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  t << outName;
+  t << outDir << "\\" << baseName;
   t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
 }
@@ -2413,13 +2432,14 @@ void RTFGenerator::endDescTableTitle()
 void RTFGenerator::startDescTableData()
 {
   DBG_RTF(t << "{\\comment (startDescTableData) }"    << endl)
-  m_omitParagraph=FALSE;
+  m_omitParagraph = FALSE;
 }
 
 void RTFGenerator::endDescTableData()
 {
   DBG_RTF(t << "{\\comment (endDescTableData) }"    << endl)
   newParagraph();
+  m_omitParagraph = TRUE;
 }
 
 // a style for list formatted as a "bulleted list"
@@ -2504,14 +2524,14 @@ void RTFGenerator::endTextBlock()
   newParagraph();
   DBG_RTF(t << "{\\comment endTextBlock}" << endl)
   t << "}" << endl;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::newParagraph()
 {
   DBG_RTF(t << "{\\comment (newParagraph)}"    << endl)
   if (!m_omitParagraph) t << "\\par" << endl;
-  // Suppress multiple paragraphs in a row
-  m_omitParagraph = TRUE;
+  m_omitParagraph = FALSE;
 }
 
 void RTFGenerator::startMemberSubtitle()
@@ -2938,6 +2958,7 @@ void RTFGenerator::endParamList()
   DBG_RTF(t << "{\\comment (endParamList)}"    << endl)
   newParagraph();
   decrementIndentLevel();
+  m_omitParagraph = TRUE;
   t << "}";
 }
 

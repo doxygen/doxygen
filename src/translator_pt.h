@@ -19,6 +19,8 @@
  *
  * VERSION HISTORY
  * ---------------
+ * 005 10 july 2002
+ *   ! Updated for doxygen v1.2.16
  * 004 03 march 2002
  *   ! Updated for doxygen v1.2.14
  * 003 23 november 2001
@@ -34,7 +36,7 @@
 #ifndef TRANSLATOR_PT_H
 #define TRANSLATOR_PT_H
 
-class TranslatorPortuguese : public TranslatorAdapter_1_2_16
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -1366,6 +1368,18 @@ class TranslatorPortuguese : public TranslatorAdapter_1_2_16
     virtual QCString trImplementedInList(int numEntries)
     {
       return "Implementado em "+trWriteList(numEntries)+".";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Índice";
     }
 
 };

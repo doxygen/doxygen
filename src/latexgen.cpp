@@ -1795,14 +1795,8 @@ void LatexGenerator::startDotFile(const char *name,bool hasCaption)
   {
     baseName=baseName.right(baseName.length()-i-1); 
   }
-  QCString outName = Config_getString("LATEX_OUTPUT")+
-#ifdef _WIN32
-    "\\"
-#else
-    "/"
-#endif
-    +baseName;
-  writeDotGraphFromFile(name,outName,EPS);
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  writeDotGraphFromFile(name,outDir,baseName,EPS);
   if (hasCaption)
   {
     t << "\\begin{figure}[H]" << endl;

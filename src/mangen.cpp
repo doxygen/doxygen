@@ -118,6 +118,7 @@ static QCString buildFileName(const char *name)
       case '~':
       case '%':
       case '+':
+      case '/':
         fileName+="_";
         break;
       default:

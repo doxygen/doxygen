@@ -363,7 +363,7 @@ int guessSection(const char *name)
 QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
                         Definition **typedefContext)
 {
-  //printf("resolveTypeDef(%s,%s)\n",
+  //printf("<<resolveTypeDef(%s,%s)\n",
   //          context ? context->name().data() : "<none>",qualifiedName.data());
   QCString result;
   if (qualifiedName.isEmpty()) return result;
@@ -399,7 +399,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
       while ((is=getScopeFragment(resScopeName,ps,&l))!=-1)
       {
         QCString qualScopePart = resScopeName.mid(is,l);
-        QCString tmp = resolveTypeDef(context,qualScopePart);
+        QCString tmp = resolveTypeDef(mContext,qualScopePart);
         if (!tmp.isEmpty()) qualScopePart=tmp;
         resScope = resScope->findInnerCompound(qualScopePart);
         //printf("qualScopePart=`%s' resScope=%p\n",qualScopePart.data(),resScope);
@@ -444,7 +444,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   // step 3: get the member's type
   if (md)
   {
-    //printf("Found typedef name `%s' in scope `%s' value=`%s'\n",
+    //printf(">>resolveTypeDef: Found typedef name `%s' in scope `%s' value=`%s'\n",
     //    qualifiedName.data(),context->name().data(),md->typeString()
     //    );
     result=md->typeString();
@@ -452,12 +452,13 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   }
   else
   {
-    //printf("Typedef `%s' not found in scope `%s'!\n",
+    //printf(">>resolveTypeDef: Typedef `%s' not found in scope `%s'!\n",
     //    qualifiedName.data(),context ? context->name().data() : "<global>");
   }
   return result;
   
 }
+
 
 /*! Get a class definition given its name. 
  *  Returns 0 if the class is not found.
@@ -517,6 +518,7 @@ ClassDef *getResolvedClass(
     {
       //printf("  typedef value=%s typedefScope=%s\n",subst.data(),
       //          typedefScope?typedefScope->qualifiedName().data():0);
+     
       // strip * and & from n
       int ip=subst.length()-1;
       while (ip>=0 && (subst.at(ip)=='*' || subst.at(ip)=='&' || subst.at(ip)==' ')) ip--;
@@ -533,11 +535,12 @@ ClassDef *getResolvedClass(
         int count=0; // recursion detection guard
         QCString newSubst;
         QCString typeName = subst;
+        //printf( "---> subst=%s\n",subst.data());
 
-        //if (index!=-1) typeName.prepend(name.left(index)+"::");
         while (!(newSubst=resolveTypeDef(typedefScope,typeName)).isEmpty() 
             && count<10)
         {
+          //printf( "---> newSubst=%s\n",newSubst.data());
           if (typeName==newSubst) 
           {
             cd = Doxygen::classSDict.find(subst); // for breaking typedef struct A A; 
@@ -649,7 +652,10 @@ QCString removeRedundantWhiteSpace(const QCString &s)
     {
       result+=", ";
     }
-    else if (i>0 && isId(s.at(i)) && s.at(i-1)==')')
+    else if (i>0 && 
+              (isId(s.at(i)) && s.at(i-1)==')') || 
+              (s.at(i)=='\''  && s.at(i-1)==' ')
+            )
     {
       result+=' ';
       result+=s.at(i);
@@ -1103,6 +1109,14 @@ QCString dateToString(bool includeTime)
   //dtString.sprintf("%02d:%02d, %04d/%02d/%02d",
   //    time.hour(),time.minute(),date.year(),date.month(),date.day());
   //return dtString;
+}
+
+QCString yearToString()
+{
+  const QDate &d=QDate::currentDate();
+  QCString result;
+  result.sprintf("%d", d.year());
+  return result;
 }
 
 
@@ -2719,6 +2733,7 @@ QCString substituteKeywords(const QCString &s,const char *title)
   if (title) result = substitute(result,"$title",title);
   result = substitute(result,"$datetime",dateToString(TRUE));
   result = substitute(result,"$date",dateToString(FALSE));
+  result = substitute(result,"$year",yearToString());
   result = substitute(result,"$doxygenversion",versionString);
   result = substitute(result,"$projectname",Config_getString("PROJECT_NAME"));
   result = substitute(result,"$projectnumber",Config_getString("PROJECT_NUMBER"));

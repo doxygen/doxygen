@@ -1745,9 +1745,32 @@ void generateGraphLegend(const char *path)
 }
   
 
-void writeDotGraphFromFile(const char *inFile,const char *outFile,
-                      GraphOutputFormat format)
+void writeDotGraphFromFile(const char *inFile,const char *outDir,
+                           const char *outFile,GraphOutputFormat format)
 {
+  QCString absOutFile = outDir;
+#ifdef _WIN32
+  absOutFile+='\\';
+#else
+  absOutFile+='/';
+#endif
+  absOutFile+=outFile;
+
+  // chdir to the output dir, so dot can find the font file.
+  QCString oldDir = convertToQCString(QDir::currentDirPath());
+  // go to the html output directory (i.e. path)
+  QDir::setCurrent(outDir);
+
+  //{ // copy input file to output dir.
+  //  QFile inf(inFile,IO_ReadOnly);
+  //  QFileInfo infinfo(inf);
+  //  uint s = infinfo.size();
+  //  QByteArray a(s);
+  //  inf.readBlock(a.data(),s);
+  //  QFile outf(outDir,IO_WriteOnly);
+  //  outf.writeBlock(a.data(),s);
+  //}
+  
   QCString dotArgs(4096);
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
@@ -1779,5 +1802,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outFile,
   }
 
   if (format==BITMAP) checkDotResult(imgName);
+
+  QDir::setCurrent(oldDir);
 }
 

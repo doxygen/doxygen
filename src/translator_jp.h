@@ -61,7 +61,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     }
 };
 
-class TranslatorJapanese : public TranslatorAdapter_1_2_16
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -1364,7 +1364,17 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_16
     {
       return trWriteList(numEntries)+decode("を実装しています")+".";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
 
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return decode("目次");
+    }
 };
 
 #endif
