@@ -1,21 +1,12 @@
 /******************************************************************************
  *
+ * 
+ *
  * Copyright (C) 1997-2000 by Dimitri van Heesch.
  *
- * Initial Italian Translation by Ahmed Aldo Faisal
- * Revised and completed by Alessandro Falappa  (June 1999)
- * Updates:
- *		2000/08: translated new items used since version 1.1.3, 1.1.4, 1.1.5 and 1.2.0
- *		2000/03: translated new items used since version 1.0 and 1.1.0
- *		1999/19: entirely rewritten the translation to correct small variations due
- *				 to feature additions and to conform to the layout of the latest
- *				 commented translator.h for the english language
- *		1999/09: corrected some small typos in the "new since 0.49-990425" section
- *				 added the "new since 0.49-990728" section
- *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby
- * granted. No representations are made about the suitability of this software
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -24,460 +15,476 @@
  *
  */
 
-#ifndef TRANSLATOR_IT_H
-#define TRANSLATOR_IT_H
+#ifndef TRANSLATOR_HU_H
+#define TRANSLATOR_HU_H
 
 #include "translator.h"
 
-class TranslatorItalian : public Translator
+class TranslatorHungarian : public Translator
 {
   public:
+
+    // --- Language contol methods -------------------
     QCString idLanguage()
-    { return "italian"; }
+    { return "hungarian"; }
+    /*! Used to get the command(s) for the language support. This method
+     *  was designed for languages which do not prefer babel package.
+     *  If this methods returns empty string, then the latexBabelPackage()
+     *  method is used to generate the command for using the babel package.
+     */
+    QCString latexLanguageSupportCommand()
+    {
+      return "";
+    }
     /*! returns the name of the package that is included by LaTeX */
-    QCString latexBabelPackage()
-    { return "italian"; }
+    QCString latexBabelPackage() 
+    { return ""; }
+
+    /*! return the language charset. This will be used for the HTML output */
+    QCString idLanguageCharset()
+    {
+      return "iso-8859-2";
+    }
+
+    // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     QCString trRelatedFunctions()
-    { return "Funzioni collegate"; }
+    { return "Kapcsolódó függvények"; }
 
     /*! subscript for the related functions. */
     QCString trRelatedSubscript()
-    { return "(Si noti che queste non sono funzioni membro.)"; }
+    { return "(Figyelem! Ezek a függvények nem tagjai az osztálynak!)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     QCString trDetailedDescription()
-    { return "Descrizione Dettagliata"; }
+    { return "Részletes leírás"; }
 
     /*! header that is put before the list of typedefs. */
     QCString trMemberTypedefDocumentation()
-    { return "Documentazione delle ridefinizioni dei tipi (typedef)"; }
-
+    { return "Osztálytag típusdefiníciók dokumentációja"; }
+    
     /*! header that is put before the list of enumerations. */
     QCString trMemberEnumerationDocumentation()
-    { return "Documentazione dei tipi enumerati (enum)"; }
-
+    { return "Osztálytag enumerációk dokumentációja"; }
+    
     /*! header that is put before the list of member functions. */
     QCString trMemberFunctionDocumentation()
-    { return "Documentazione delle funzioni membro"; }
-
+    { return "Osztálytag függvények (metódusok) dokumentációja"; }
+    
     /*! header that is put before the list of member attributes. */
     QCString trMemberDataDocumentation()
-    { return "Documentazione dei dati membri"; }
+    { return "Osztálytag adatok dokumentációja"; }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore()
-    { return "Continua..."; }
+    QCString trMore() 
+    { return "Részletek..."; }
 
     /*! put in the class documentation */
     QCString trListOfAllMembers()
-    { return "Lista di tutti i membri."; }
+    { return "Osztálytagok listája."; }
 
     /*! used as the title of the "list of all members" page of a class */
     QCString trMemberList()
-    { return "Lista dei membri"; }
+    { return "Osztálytagok listája"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     QCString trThisIsTheListOfAllMembers()
-    { return "Questa è la lista completa di tutti i membri di "; }
+    { return "A(z) "; }
 
     /*! this is the remainder of the sentence after the class name */
     QCString trIncludingInheritedMembers()
-    { return ", inclusi tutti i membri ereditati."; }
-
+    { return " osztály tagjainak teljes listája, az örökölt tagokkal együtt."; }
+    
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     QCString trGeneratedAutomatically(const char *s)
-    {
-	  QCString result="Generato automaticamente da Doxygen";
-      if (s) result+=(QCString)" per "+s;
-      result+=" a partire dal codice sorgente.";
+    { QCString result="Ezt a dokumentációt a Doxygen készítette";
+      if (s) result+=(QCString)" a(z) "+s+(QCString)" projekthez";
+      result+=" a forráskódból."; 
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     QCString trEnumName()
-    { return "nome di tipo enumerato"; }
-
+    { return "enumeráció neve"; }
+    
     /*! put after an enum value in the list of all members */
     QCString trEnumValue()
-    { return "valore di tipo enumerato"; }
-
+    { return "enumeráció értéke"; }
+    
     /*! put after an undocumented member in the list of all members */
     QCString trDefinedIn()
-    { return "definito in"; }
+    { return "definiálva itt:"; }
 
     /*! put as in introduction in the verbatim header file of a class.
      *  parameter f is the name of the include file.
      */
     QCString trVerbatimText(const char *f)
-    { return (QCString)"Questo è il contenuto integrale del file include "+f+"."; }
-
+    { return (QCString)"Ez a(z) "+f+" definíciós fájl pontos tartalma."; }
+    
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of
+    /*! This is put above each page as a link to the list of all groups of 
      *  compounds or files (see the \group command).
      */
     QCString trModules()
-    { return "Moduli"; }
-
+    { return "Modulok"; }
+    
     /*! This is put above each page as a link to the class hierarchy */
     QCString trClassHierarchy()
-    { return "Gerarchia delle classi"; }
-
+    { return "Osztályhierarchia"; }
+    
     /*! This is put above each page as a link to the list of annotated classes */
     QCString trCompoundList()
-    { return "Lista dei composti"; }
-
+    { return "Összetevõk listája"; }
+    
     /*! This is put above each page as a link to the list of documented files */
     QCString trFileList()
-    { return "Lista dei files"; }
+    { return "Fájlok listája"; }
 
     /*! This is put above each page as a link to the list of all verbatim headers */
     QCString trHeaderFiles()
-    { return "Lista dei file header"; }
+    { return "Definíciós fájlok"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     QCString trCompoundMembers()
-    { return "Membri dei composti"; }
+    { return "Osztályok összetevõi"; }
 
     /*! This is put above each page as a link to all members of files. */
     QCString trFileMembers()
-    { return "Membri dei files"; }
+    { return "Fájlok elemei"; }
 
     /*! This is put above each page as a link to all related pages. */
     QCString trRelatedPages()
-    { return "Pagine collegate"; }
+    { return "Kapcsolódó lapok"; }
 
     /*! This is put above each page as a link to all examples. */
     QCString trExamples()
-    { return "Esempi"; }
+    { return "Példák"; }
 
     /*! This is put above each page as a link to the search engine. */
     QCString trSearch()
-    { return "Cerca"; }
+    { return "Keresés"; }
 
     /*! This is an introduction to the class hierarchy. */
     QCString trClassHierarchyDescription()
-    {
-		return "Questa lista di ereditarietà è ordinata "
-		"approssimativamente, ma non completamente, in ordine alfabetico:";
+    { return "Ez a leszármaztatási lista hozzávetõleg, "
+             "de nem szigorúan véve, ábécé sorrendbe rendezett:";
     }
 
     /*! This is an introduction to the list with all files. */
     QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei files documentati ";
-	  else result+="di tutti i files ";
-      result+="con una loro breve descrizione:";
+      QCString result="Ez az összes ";
+      if (!extractAll) result+="doumentált ";
+      result+="fájl listája rövid leírásokkal:";
       return result;
     }
 
     /*! This is an introduction to the annotated compound list. */
     QCString trCompoundListDescription()
-    { return "Queste sono le classi, structs, unions e interfacce con una loro breve descrizione:";
+    { return "Ez az osztályok, struktúrák, uniók és interfészek "
+             "listája rövid leírásokkal:"; 
     }
 
     /*! This is an introduction to the page with all class members. */
     QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei membri documentati, ";
-	  else result+="di tutti i membri ";
-      result+="con collegamenti ";
-      if (extractAll) result+="alla documentazione della classe di ciascun membro:";
-      else result+="alla documentazione delle classi a cui appartengono:";
+      QCString result="Ez az összes ";
+      if (!extractAll) result+="dokumentált ";
+      result+="osztály összetevõ listája ";
+      if (extractAll) 
+        result+="hivatkozással a hozzájuk tartózó osztály dokumentációra:";
+      else 
+        result+="az õket tartalmazó osztály megjelölésével:";
       return result;
     }
 
     /*! This is an introduction to the page with all file members. */
     QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Questa è una lista ";
-      if (!extractAll) result+="dei membri dei files documentati, ";
-	  else result+="di tutti i membri dei files ";
-      result+="con collegamenti ";
-      if (extractAll) result+="alla documentazione del file di ciascun membro:";
-      else result+="alla documentazione dei files a cui appartengono:";
+      QCString result="Ez az összes ";
+      if (!extractAll) result+="dokumentált ";
+      result+="fájl elem listája ";
+      if (extractAll) 
+        result+="hivatkozással a hozzájuk tartózó fájl dokumentációra:";
+      else 
+        result+="az õket tartalmazó fájl megjelölésével:";
       return result;
     }
 
     /*! This is an introduction to the page with the list of all header files. */
     QCString trHeaderFilesDescription()
-    { return "Questi sono gli header files che compongono l'API:"; }
+    { return "Ezek a Programozói Interfészt (API) alkotó definíciós fájlok:"; }
 
     /*! This is an introduction to the page with the list of all examples */
     QCString trExamplesDescription()
-    { return "Questa è la lista di tutti gli esempi:"; }
+    { return "Ez a példák listája:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     QCString trRelatedPagesDescription()
-    { return "Questa è la lista di tutte le pagine di documentazione collegate fra loro:"; }
+    { return "Ez a kapcsolódó dokumentációk listája:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     QCString trModulesDescription()
-    { return "Questa è la lista di tutti i moduli:"; }
+    { return "Ez a modulok listája:"; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
+     * description is given. 
      */
     QCString trNoDescriptionAvailable()
-    { return "Descrizione non disponibile"; }
-
-    // index titles (the project name is prepended for these)
+    { return "Nincs hozzá leírás"; }
+    
+    // index titles (the project name is prepended for these) 
 
 
     /*! This is used in HTML as the title of index.html. */
     QCString trDocumentation()
-    { return "Documentazione"; }
+    { return "Dokumentáció"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the
+    /*! This is used in LaTeX as the title of the chapter with the 
      * index of all groups.
      */
     QCString trModuleIndex()
-    { return "Indice dei moduli"; }
+    { return "Modul index"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the
+    /*! This is used in LaTeX as the title of the chapter with the 
      * class hierarchy.
      */
     QCString trHierarchicalIndex()
-    { return "Indice della gerarchia"; }
+    { return "Hierarchikus index"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the
+    /*! This is used in LaTeX as the title of the chapter with the 
      * annotated compound index.
      */
     QCString trCompoundIndex()
-    { return "Indice dei composti"; }
+    { return "Összetevõk indexe"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex()
-    { return "Indice dei files"; }
+    QCString trFileIndex() 
+    { return "Fájl index"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     QCString trModuleDocumentation()
-    { return "Documentazione dei moduli"; }
+    { return "Modul documentáció"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
     QCString trClassDocumentation()
-    { return "Documentazione delle classi"; }
+    { return "Osztály documentatáció"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
     QCString trFileDocumentation()
-    { return "Documentazione dei files"; }
+    { return "Fájl documentatáció"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     QCString trExampleDocumentation()
-    { return "Documentazione degli esempi"; }
+    { return "Példák documentatációja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     QCString trPageDocumentation()
-    { return "Documentazione delle pagine collegate fra loro"; }
+    { return "Kapcsolódó lapok documentációja"; }
 
     /*! This is used in LaTeX as the title of the document */
     QCString trReferenceManual()
-    { return "Manuale di riferimento"; }
-
-    /*! This is used in the documentation of a file as a header before the
+    { return "Referencia kézikönyv"; }
+    
+    /*! This is used in the documentation of a file as a header before the 
      *  list of defines
      */
     QCString trDefines()
-    { return "Definizioni"; }
+    { return "Definíciók"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of function prototypes
      */
     QCString trFuncProtos()
-    { return "Prototipi delle funzioni"; }
+    { return "Függvény prototípusok"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of typedefs
      */
     QCString trTypedefs()
-    { return "Ridefinizioni di tipo (typedefs)"; }
+    { return "Típusdefiníciók"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
      */
     QCString trEnumerations()
-    { return "Tipi enumerati (enum)"; }
+    { return "Enumerációk"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of (global) functions
      */
     QCString trFunctions()
-    { return "Funzioni"; }
+    { return "Függvények"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     QCString trVariables()
-    { return "Variabili"; }
+    { return "Változók"; }
 
-    /*! This is used in the documentation of a file as a header before the
+    /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
     QCString trEnumerationValues()
-    { return "Valori dei tipi enumerati"; }
-
+    { return "Enumeráció értékek"; }
+    
     /*! This is used in man pages as the author section. */
     QCString trAuthor()
-    { return "Autore"; }
+    { return "Szerzõ"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     QCString trDefineDocumentation()
-    { return "Documentazione delle definizioni"; }
+    { return "Definíciók dokumentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
      */
     QCString trFunctionPrototypeDocumentation()
-    { return "Documentazione dei prototipi delle funzioni"; }
+    { return "Függvény prototípusok documentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for typedefs
      */
     QCString trTypedefDocumentation()
-    { return "Documentazione delle ridefinizioni di tipo (typedefs)"; }
+    { return "Típusdefiníciók documentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
      */
     QCString trEnumerationTypeDocumentation()
-    { return "Documentazione dei tipi enumerati"; }
+    { return "Enumerációk documentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
     QCString trEnumerationValueDocumentation()
-    { return "Documentazione dei valori dei tipi enumerati"; }
+    { return "Enumeráció értékek documentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     QCString trFunctionDocumentation()
-    { return "Documentazione delle funzioni"; }
+    { return "Függvények dokumentációja"; }
 
-    /*! This is used in the documentation of a file/namespace before the list
+    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for variables
      */
     QCString trVariableDocumentation()
-    { return "Documentazione delle variabili"; }
+    { return "Változók documentációja"; }
 
-    /*! This is used in the documentation of a file/namespace/group before
+    /*! This is used in the documentation of a file/namespace/group before 
      *  the list of links to documented compounds
      */
     QCString trCompounds()
-    { return "Composti"; }
+    { return "Összetevõk"; }
 
-    /*! This is used in the documentation of a group before the list of
+    /*! This is used in the documentation of a group before the list of 
      *  links to documented files
      */
     QCString trFiles()
-    { return "Files"; }
+    { return "Fájlok"; }
 
-    /*! This is used in the standard footer of each page and indicates when
-     *  the page was generated
+    /*! This is used in the standard footer of each page and indicates when 
+     *  the page was generated 
      */
     QCString trGeneratedAt(const char *date,const char *projName)
-    {
-      QCString result=(QCString)"Generato il "+date;
-      if (projName) result+=(QCString)" per "+projName;
-      result+=(QCString)" da";
+    { 
+      QCString result=(QCString)"";
+      if (projName) result+=(QCString)"Projekt: "+projName;
+      result+=(QCString)" Készült: "+date+" Készítette: ";
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     QCString trWrittenBy()
     {
-      return "scritto da";
+      return " melyet írt ";
     }
 
     /*! this text is put before a class diagram */
     QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Diagramma delle classi per "+clName;
+      return clName+(QCString)" osztály származtatási diagramja";
     }
-
+    
     /*! this text is generated when the \internal command is used. */
     QCString trForInternalUseOnly()
-    { return "Solo per uso interno."; }
+    { return "CSAK BELSÕ HASZNÁLATRA!"; }
 
     /*! this text is generated when the \reimp command is used. */
     QCString trReimplementedForInternalReasons()
-    { return "Reimplementato per motivi interni; l'API non è stata modificata.";}
+    { return "Belsõ okok miatt újraimplementálva, az API-t nem érinti."; }
 
     /*! this text is generated when the \warning command is used. */
     QCString trWarning()
-    { return "Avvertimento"; }
+    { return "Figyelmeztetés"; }
 
     /*! this text is generated when the \bug command is used. */
     QCString trBugsAndLimitations()
-    { return "Bugs e limitazioni"; }
+    { return "Hibák és korlátozások"; }
 
     /*! this text is generated when the \version command is used. */
     QCString trVersion()
-    { return "Versione"; }
+    { return "Verzió"; }
 
     /*! this text is generated when the \date command is used. */
     QCString trDate()
-    { return "Data"; }
+    { return "Dátum"; }
 
     /*! this text is generated when the \author command is used. */
     QCString trAuthors()
-    { return "Autore(i)"; }
+    { return "Szerzõ(k)"; }
 
     /*! this text is generated when the \return command is used. */
     QCString trReturns()
-    { return "Restituisce"; }
+    { return "Visszaadott érték"; }
 
     /*! this text is generated when the \sa command is used. */
     QCString trSeeAlso()
-    { return "Vedi anche"; }
+    { return "Lásd még"; }
 
     /*! this text is generated when the \param command is used. */
     QCString trParameters()
-    { return "Parametri"; }
+    { return "Paraméterek"; }
 
     /*! this text is generated when the \exception command is used. */
     QCString trExceptions()
-    { return "Eccezioni"; }
-
+    { return "Kivételek"; }
+    
     /*! this text is used in the title page of a LaTeX document. */
     QCString trGeneratedBy()
-    { return "Generato da"; }
+    { return "Készítette"; }
 
-//////////////////////////////////////////////////////////////////////////
-// new since 0.49-990307
-//////////////////////////////////////////////////////////////////////////
-
+    // new since 0.49-990307
+    
     /*! used as the title of page containing all the index of all namespaces. */
     QCString trNamespaceList()
-    { return "Lista dei namespaces"; }
+    { return "Névtér lista"; }
 
     /*! used as an introduction to the namespace list */
     QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Questa è la lista ";
-      if (!extractAll) result+="dei namespaces documentati, ";
-	  else result+="di tutti i namespaces ";
-      result+="con una loro breve descrizione:";
+      QCString result="Ez az összes ";
+      if (!extractAll) result+="dokumentált ";
+      result+="névtér listája rövid leírásokkal:";
       return result;
     }
 
@@ -485,82 +492,82 @@ class TranslatorItalian : public Translator
      *  friends of a class
      */
     QCString trFriends()
-    { return "Friends"; }
-
+    { return "Barátok"; }
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-
+    
     /*! used in the class documentation as a header before the list of all
-     * related classes
+     * related classes 
      */
     QCString trRelatedFunctionDocumentation()
-    { return "Documentazione dei friends e delle funzioni collegate"; }
-
+    { return "Barát és kapcsolódó függvények dokumentációja"; }
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
     QCString trCompoundReference(const char *clName,
-                                 ClassDef::CompoundType compType,
-                                 bool /* isTemplate */)
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
     {
-      QCString result="Riferimenti per ";
+      QCString result=(QCString)clName;
       switch(compType)
       {
-        case ClassDef::Class:  result+="la classe "; break;
-        case ClassDef::Struct: result+="la struct "; break;
-        case ClassDef::Union:  result+="la union "; break;
-        case ClassDef::Interface:  result+="l'interfaccia "; break;
-        case ClassDef::Exception:  result+="exception "; break;
+        case ClassDef::Class:      result+=" osztály"; break;
+        case ClassDef::Struct:     result+=" struktúra"; break;
+        case ClassDef::Union:      result+=" unió"; break;
+        case ClassDef::Interface:  result+=" interfész"; break;
+        case ClassDef::Exception:  result+=" kivétel"; break;
       }
-      result+=(QCString)clName;
+      if (isTemplate) result+=" sablon";
+      result+=" referencia";
       return result;
-
     }
 
     /*! used as the title of the HTML page of a file */
     QCString trFileReference(const char *fileName)
     {
-      QCString result="Riferimenti per il file ";
-      result+=(QCString)fileName;
+      QCString result=fileName;
+      result+=" fájl referencia"; 
       return result;
     }
 
     /*! used as the title of the HTML page of a namespace */
     QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result="Riferimenti per il namespace ";
-      result+=(QCString)namespaceName;
+      QCString result=namespaceName;
+      result+=" névtér reference";
       return result;
     }
-
+    
     /*! \mgroup Class sections
-     *  these are for the member sections of a class, struct or union
+     *  these are for the member sections of a class, struct or union 
      */
     QCString trPublicMembers()
-    { return "Membri pubblici"; }
+    { return "Publikus metódusok"; }
     QCString trPublicSlots()
-    { return "Slots pubblici"; }
+    { return "Publikus adatok"; }
     QCString trSignals()
-    { return "Signals"; }
+    { return "Szignálok"; }
     QCString trStaticPublicMembers()
-    { return "Membri pubblici statici"; }
+    { return "Statikus publikus metódusok"; }
     QCString trProtectedMembers()
-    { return "Membri protetti"; }
+    { return "Védett metódusok"; }
     QCString trProtectedSlots()
-    { return "Slots protetti"; }
+    { return "Védett adatok"; }
     QCString trStaticProtectedMembers()
-    { return "Membri protetti statici"; }
+    { return "Statikus védett metódusok"; }
     QCString trPrivateMembers()
-    { return "Membri privati"; }
+    { return "Privát metódusok"; }
     QCString trPrivateSlots()
-    { return "Slots privati"; }
+    { return "Privát adatok"; }
     QCString trStaticPrivateMembers()
-    { return "Membri privati statici"; }
-    /*! \endmgroup */
-
+    { return "Statikus privát metódusok"; }
+    /*! \endmgroup */ 
+    
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -569,29 +576,29 @@ class TranslatorItalian : public Translator
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++)
+      for (i=0;i<numEntries;i++) 
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list
+        result+=generateMarker(i); // generate marker for entry i in the list 
                                    // (order is left to right)
-
+        
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry
+          if (i<numEntries-2) // not the fore last entry 
             result+=", ";
           else                // the fore last entry
-            result+=", e ";
+            result+=" és ";
         }
       }
-      return result;
+      return result; 
     }
-
+    
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
     QCString trInheritsList(int numEntries)
     {
-      return "Eredita da "+trWriteList(numEntries)+".";
+      return "Szülõk osztályok: "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -599,15 +606,15 @@ class TranslatorItalian : public Translator
      */
     QCString trInheritedByList(int numEntries)
     {
-      return "Base per "+trWriteList(numEntries)+".";
+      return "Származtatott osztályok: "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of
+    /*! used in member documentation blocks to produce a list of 
      *  members that are hidden by this one.
      */
     QCString trReimplementedFromList(int numEntries)
     {
-      return "Reimplementa "+trWriteList(numEntries)+".";
+      return "Újra implementálva ebbõl az osztályból: "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -615,37 +622,36 @@ class TranslatorItalian : public Translator
      */
     QCString trReimplementedInList(int numEntries)
     {
-      return "Reimplementata in "+trWriteList(numEntries)+".";
+      return "Újra implementálva ebben az osztályban: "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     QCString trNamespaceMembers()
-    { return "Membri dei namespaces"; }
+    { return "Névtér tagjai"; }
 
     /*! This is an introduction to the page with all namespace members */
     QCString trNamespaceMemberDescription(bool extractAll)
-    {
-      QCString result="Questa è la lista ";
-      if (!extractAll) result+="dei membri dei namespaces documentati, ";
- 	  else result+="di tutti i membri dei namespaces ";
-      result+="con collegamenti ";
-      if (extractAll)
-        result+="alla documentazione del namespace per ciascun membro:";
-      else
-        result+="ai namespaces a cui appartengono:";
+    { 
+      QCString result="Ez az összes ";
+      if (!extractAll) result+="dokumentált ";
+      result+="névtér tagjainak listája ";
+      if (extractAll) 
+        result+="a hozzájuk tartozó dokumentációra való hivatkozással:";
+      else 
+        result+="az öket tartalmazó névtérrel:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the
+    /*! This is used in LaTeX as the title of the chapter with the 
      *  index of all namespaces.
      */
     QCString trNamespaceIndex()
-    { return "Indice dei namespaces"; }
+    { return "Névtér index"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     QCString trNamespaceDocumentation()
-    { return "Documentazione dei namespaces"; }
+    { return "Névtér documentáció"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -655,7 +661,7 @@ class TranslatorItalian : public Translator
      *  namespaces in a file.
      */
     QCString trNamespaces()
-    { return "Namespaces"; }
+    { return "Névterek"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -668,18 +674,18 @@ class TranslatorItalian : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"La documentazione per questa ";
+      QCString result=(QCString)"Ez a dokumentáció ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="classe"; break;
-        case ClassDef::Struct:     result+="struct"; break;
-        case ClassDef::Union:      result+="union"; break;
-        case ClassDef::Interface:  result+="interfaccia"; break;
-        case ClassDef::Exception:  result+="exception"; break;
+        case ClassDef::Class:      result+="az osztályról"; break;
+        case ClassDef::Struct:     result+="a struktúráról"; break;
+        case ClassDef::Union:      result+="az unióról"; break;
+        case ClassDef::Interface:  result+="az interfészrõl"; break;
+        case ClassDef::Exception:  result+="a kivételrõl"; break;
       }
-      result+=" è stata generata a partire ";
-      if (single) result+="dal seguente file:";
-	  else result+="dai seguenti files:";
+      result+=" a következõ fájl";
+      if (!single) result+="ok";
+      result+=" alapján készült:";
       return result;
     }
 
@@ -687,7 +693,7 @@ class TranslatorItalian : public Translator
      * list.
      */
     QCString trAlphabeticalList()
-     { return "Lista in ordine alfabetico";}
+    { return "Ábécé rendes lista"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -695,18 +701,18 @@ class TranslatorItalian : public Translator
 
     /*! This is used as the heading text for the retval command. */
     QCString trReturnValues()
-    { return "Valori di ritorno"; }
+    { return "Visszaadott értékek"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     QCString trMainPage()
-    { return "Pagina Principale"; }
+    { return "Kezdõ lap"; }
 
-    /*! This is used in references to page that are put in the LaTeX
+    /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
      */
     QCString trPageAbbreviation()
-    { return "pag."; }
+    { return "o."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
@@ -714,15 +720,15 @@ class TranslatorItalian : public Translator
 
     QCString trSources()
     {
-      return "Sorgenti";
+      return "Források";
     }
     QCString trDefinedAtLineInSourceFile()
     {
-      return "Definizione alla linea @0 del file @1.";
+      return "Definíció a(z) @1 fájl @0. sorában.";
     }
     QCString trDefinedInSourceFile()
     {
-      return "Definizione nel file @0.";
+      return "Definíció a(z) @0 fájlban.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -731,7 +737,7 @@ class TranslatorItalian : public Translator
 
     QCString trDeprecated()
     {
-      return "Deprecato";
+      return "Ellenjavallt";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -741,113 +747,113 @@ class TranslatorItalian : public Translator
     /*! this text is put before a collaboration diagram */
     QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Diagramma di interrelazione per "+clName+":";
+      return (QCString)"Együttmûködési diagram "+clName+" osztályhoz:";
     }
     /*! this text is put before an include dependency graph */
     QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Grafo delle dipendenze di inclusione per "+fName+":";
+      return (QCString)"Definíciós fájl függési ábra "+fName+" fájlhoz:";
     }
     /*! header that is put before the list of constructor/destructors. */
     QCString trConstructorDocumentation()
     {
-      return "Documentazione dei costruttori e dei distruttori";
+      return "Konstruktor és destruktor dokumentáció"; 
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     QCString trGotoSourceCode()
     {
-      return "Vai al codice sorgente di questo file.";
+      return "Ugrás a fájl forrásához.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     QCString trGotoDocumentation()
     {
-      return "Vai alla documentazione di questo file.";
+      return "Ugrás a fájl dokumentációjához.";
     }
     /*! Text for the \pre command */
     QCString trPrecondition()
     {
-      return "Precondizione";
+      return "Elõfeltétel";
     }
     /*! Text for the \post command */
     QCString trPostcondition()
     {
-      return "Postcondizione";
+      return "Utófeltétel";
     }
     /*! Text for the \invariant command */
     QCString trInvariant()
     {
-      return "Invariante";
+      return "Invariáns";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     QCString trInitialValue()
     {
-      return "Valore iniziale:";
+      return "Kezdõ érték:";
     }
     /*! Text used the source code in the file index */
     QCString trCode()
     {
-      return "codice";
+      return "forráskód";
     }
     QCString trGraphicalHierarchy()
     {
-      return "Grafico della gerarchia delle classi";
+      return "Osztály-hierarchia grafikon";
     }
     QCString trGotoGraphicalHierarchy()
     {
-      return "Vai al grafico della gerarchia delle classi";
+      return "Ugrás az osztály-hierarchia grafikonhoz";
     }
     QCString trGotoTextualHierarchy()
     {
-      return "Vai alla gerarchia delle classi (testuale)";
+      return "Ugrás az osztály-hierarchia leíráshoz";
     }
     QCString trPageIndex()
     {
-      return "Indice delle pagine";
+      return "Oldal index";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-
+    
     QCString trNote()
     {
-      return "Nota";
+      return "Megjegyzés";
     }
     QCString trPublicTypes()
     {
-      return "Tipi pubblici";
+      return "Publikus típusok";
     }
     QCString trPublicAttribs()
     {
-      return "Attributi pubblici";
+      return "Publikus attribútumok";
     }
     QCString trStaticPublicAttribs()
     {
-      return "Attributi pubblici statici";
+      return "Statikus publikus attribútumok";
     }
     QCString trProtectedTypes()
     {
-      return "Tipi protetti";
+      return "Védett típusok";
     }
     QCString trProtectedAttribs()
     {
-      return "Attributi protetti";
+      return "Védett attribútumok";
     }
     QCString trStaticProtectedAttribs()
     {
-      return "Attributi protetti statici";
+      return "Statikus védett attribútumok";
     }
     QCString trPrivateTypes()
     {
-      return "Tipi privati";
+      return "Privát típusok";
     }
     QCString trPrivateAttribs()
     {
-      return "Attributi privati";
+      return "Privát attribútumok";
     }
     QCString trStaticPrivateAttribs()
     {
-      return "Attributi privati statici";
+      return "Statikus privát attribútumok";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -855,72 +861,73 @@ class TranslatorItalian : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    virtual QCString trTodo()
+    QCString trTodo()
     {
-      return "Da Fare";
+      return "Tennivaló";
     }
     /*! Used as the header of the todo list */
-    virtual QCString trTodoList()
+    QCString trTodoList()
     {
-      return "Lista di cose da fare";
+      return "Tennivalók listája";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trReferencedBy()
+    QCString trReferencedBy()
     {
-      return "Referenziato da";
+      return "hivatkozás innen:";
     }
-    virtual QCString trRemarks()
+    QCString trRemarks()
     {
-      return "Osservazioni";
+      return "Megjegyzések";
     }
-    virtual QCString trAttention()
+    QCString trAttention()
     {
-      return "Attenzione";
+      return "Figyelem";
     }
-    virtual QCString trInclByDepGraph()
+    QCString trInclByDepGraph()
     {
-      return "Queato grafo mostra quali files includono direttamente o indirettamente questo file:";
+      return "Ez az ábra azt mutatja, hogy mely fájlok ágyazzák be "
+             "közvetve vagy közvetlenül ezt a fájlt:";
     }
-    virtual QCString trSince()
+    QCString trSince()
     {
-      return "A partire da";
+      return "Elõször bevezetve";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    virtual QCString trLegendTitle()
+    QCString trLegendTitle()
     {
-      return "Legenda del grafo";
+      return "Jelmagyarázat";
     }
     /*! page explaining how the dot graph's should be interpreted */
-    virtual QCString trLegendDocs()
+    QCString trLegendDocs()
     {
-      return
-        "Questa pagina spiega come interpretare i grafi generati da doxygen.<p>\n"
-        "Considerate l'esempio seguente:\n"
+      return 
+        "Hogyan értelmezzük a DopxyGen által készített ábrákat?<p>\n"
+        "Vegyük a következõ példát:\n"
         "\\code\n"
-        "/*! Invisible class because of truncation */\n"
+        "/*! Nem látható osztály, nem fér ki, vágásra kerül */\n"
         "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
+        "/*! Származtatás rejtett */\n"
         "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
+        "/* Nem dokumentált osztály */\n"
         "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
+        "/*! Publikus származtatásal levezetett osztály */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
+        "/*! Védett származtatásal levezetett osztály */\n"
         "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
+        "/*! Privát származtatásal levezetett osztály */\n"
         "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
+        "/*! Osztály, melyet a származtatott osztály használ */\n"
         "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
+        "/*! Osztály, mely több másiknak leszármazottja */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -930,46 +937,51 @@ class TranslatorItalian : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Se il tag \\c MAX_DOT_GRAPH_HEIGHT nel file di configurazione "
-        "è impostato a 200 verrà prodotto il grafo seguente:"
+        "Ha a konfigurációs fájl \\c MAX_DOT_GRAPH_HEIGHT elemének értékét "
+        "200-ra állítjuk, az eredmény a következõ ábra lesz:"
         "<p><center><img src=\"graph_legend.gif\"></center>\n"
         "<p>\n"
-        "I riquadri nel grafo qui sopra hanno il seguente significato:\n"
+        "Az ábrán levõ dobozok jelentése:\n"
         "<ul>\n"
-        "<li>Il riquadro nero pieno rappresenta la struct o la classe per la quale il grafo è stato generato.\n"
-        "<li>Un riquadro con un bordo nero denota una struct o una classe documentata.\n"
-        "<li>Un riquadro con un bordo grigio indica una struct o una classe non documentata.\n"
-        "<li>Un riquadro con un bordo rosso indica una struct o una classe per la quale non sono mostrate tutte le relazioni di ereditarietà/contenimento (un grafo viene troncato se non rientra nei limiti prestabiliti)."
+        "<li>Kitöltött fekete doboz jelzi azt az osztályt vagy struktúrát,"
+        "amelyrõl az ábra szól.\n"
+        "<li>Fekete keret jelszi a dokumentált osztályokat vagy struktúrákat.\n"
+        "<li>Szürke keret jelzi a nem dokumentált osztályokat vagy struktúrákat.\n"
+        "<li>Piros keret jelzi azokat az osztályokat vagy struktúrákat, amelyeknél vágás miatt nem látható "
+        "az összes leszármaztatási kapcsolat. Egy ábra vágásra kerül, ha nem fér bele "
+        "a megadott tartományba."
         "</ul>\n"
-        "Le frecce hanno il seguente significato:\n"
+        "A nyilak jelentése:\n"
         "<ul>\n"
-        "<li>Una freccia blu scuro indica una relazione di ereditarietà pubblica tra due classi.\n"
-        "<li>Una freccia verde indica un'ereditarietà protetta.\n"
-        "<li>Una freccia rossa indica un'ereditarietà privata.\n"
-        "<li>Una freccia viola tratteggiata indica che una classe è contenuta o usata da un'altra classe."
-        " La freccia viene etichettata con la o le variabili attraverso cui la struct o la classe puntata dalla freccia è accessibile.\n"
+        "<li>Sötétkék nyíl jelzi a publikus származtatást.\n"
+        "<li>Sötétzöld nyíl jelzi a védett származtatást.\n"
+        "<li>Sötétvörös nyíl jelzi a privát származtatást.\n"
+        "<li>Lila szaggatott nyíl jelzi, ha az osztály egy másikat használ vagy tartalmaz. "
+        "A nyíl felirata jelzi a változók nevét, amelyeken keresztül a másik osztály kapcsolódik.\n"
         "</ul>\n";
+
     }
     /*! text for the link to the legend page */
-    virtual QCString trLegend()
+    QCString trLegend()
     {
-      return "legenda";
+      return "Jelmagyarázat";
     }
-
+    
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-
+    
     /*! Used as a marker that is put before a test item */
-    virtual QCString trTest()
+    QCString trTest()
     {
-      return "Test";
+      return "Teszt";
     }
     /*! Used as the header of the test list */
-    virtual QCString trTestList()
+    QCString trTestList()
     {
-      return "Lista dei test";
+      return "Teszt lista";
     }
+
 };
 
 #endif

@@ -111,7 +111,7 @@
     special <code>//!</code> C++ line comments.
 <li>Unrelated members can now be documented. A page containing a
     list of these members is generated.
-<li>Added an <code>\include</code> command to insert blocks of source code
+<li>Added an <code>\\include</code> command to insert blocks of source code
     into the documentation.
 <li>Warnings are generated for members that are undocumented.
 <li>You can now specify your own HTML headers and footers for the

@@ -897,6 +897,94 @@ class TranslatorPolish : public Translator
     {
       return "Od";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    QCString trLegendTitle()
+    {
+      return "Legenda Wykresu";
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    QCString trLegendDocs()
+    {
+      return 
+        "Ta strona wyja¶nia jak interpretowaæ wykresy, które s± wygenerowane "
+        "przez doxygen.<p>\n"
+        "Rozwa¿ nastêpuj±cy przyk³ad:\n"
+        "\\code\n"
+        "/*! Klasa Niewidzialna z powodu okrojenia */\n"
+        "class Niewidzialna { };\n\n"
+        "/*! Klasa Okrojona, relacja dziedziczenia jest ukryta */\n"
+        "class Okrojona : public Niewidzialna { };\n\n"
+        "/* Klasa nie udokumentowana komentarzami doxygen */\n"
+        "class Nieudokumentowana { };\n\n"
+        "/*! Klasa, która jest dziedziczona publicznie */\n"
+        "class PublicznaBaza : public Okrojona { };\n\n"
+        "/*! Klasa, która jest dziedziczona przy u¿yciu dziedziczenia chronionego */\n"
+        "class ChronionaBaza { };\n\n"
+        "/*! Klasa, która jest dziedziczona prywatnie */\n"
+        "class PrywatnaBaza { };\n\n"
+        "/*! Klasa, która jest u¿yta przez klasê Dziedziczona */\n"
+        "class Uzyta { };\n\n"
+        "/*! Superklasa, która dziedziczy kilka innych klas */\n"
+        "class Dziedziczona : public PublicznaBaza,\n"
+        "                     protected ChronionaBaza,\n"
+        "                     private PrywatnaBaza,\n"
+        "                     public Nieudokumentowana\n"
+        "{\n"
+        "  private:\n"
+        "    Uzyta *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "Je¶li znacznik \\c MAX_DOT_GRAPH_HEIGHT w pliku konfiguracji "
+        "jest ustawiony na 200, odniesie to rezultat w nastêpuj±cym wykresie:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "Pude³ka w powy¿szym wykresie maj± nastêpuj±ce znaczenie:\n"
+        "<ul>\n"
+        "<li>Wype³nione czarne pude³ko reprezentuje strukturê lub klasê dla "
+        "której zosta³ wygenerowany wykres.\n"
+        "<li>Pude³ko z czarn± obwolut± oznacza udokumentowan± strukturê lub klasê.\n"
+        "<li>Pude³ko z szar± obwolut± oznacza nieudokumentowan± strukturê lub klasê.\n"
+        "<li>Pude³ko z czerwon± obwolut± oznacza udokumentowan± strukturê lub klasê dla\n"
+        "której nie s± pokazane wszystkie relacje dziedziczenia/zawierania. Wykres jest "
+        "okrojony, je¶li nie mie¶ci siê w okre¶lonych brzegach."
+        "</ul>\n"
+        "Strza³ki maj± nastêpuj±ce znaczenie:\n"
+        "<ul>\n"
+        "<li>Ciemno niebieska strza³ka jest u¿ywana do wizualizacji relacji "
+        "dziedziczenia publicznego pomiêdzy dwiema klasami.\n"
+        "<li>Ciemno zielona strza³ka jest u¿ywana dla dziedziczenia chronionego.\n"
+        "<li>Ciemno czerwona strza³ka jest u¿ywana dla dziedziczenia prywatnego.\n"
+        "<li>Fioletowa przerywana strza³ka jest u¿ywana je¶li klasa jest zawarta "
+        "lub u¿yta przez inn± klasê. Strza³ka jest podpisana zmienn±(ymi) "
+        "przez które wskazywana klasa lub struktura jest dostêpna. \n"
+        "</ul>\n";
+    }
+    /*! text for the link to the legend page */
+    QCString trLegend()
+    {
+      return "legenda";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a marker that is put before a test item */
+    QCString trTest()
+    {
+      return "Test";
+    }
+    /*! Used as the header of the test list */
+    QCString trTestList()
+    {
+      return "Lista Testu";
+    }
+
 };
 
 #endif

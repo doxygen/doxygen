@@ -90,6 +90,7 @@ static bool             inAttentionBlock;
 static bool             inParBlock;
 static QCString         sectionRef;
 static bool             insideVerbatim = FALSE;
+static bool             insidePre = FALSE;
 static int              depthIf;
 //static int              currentListIndentLevel;
 static QStack<char>	currentListIndent;
@@ -486,9 +487,14 @@ static void addListItemMarker(const char *marker,int dashPos,bool enumerated)
   int indent=0;
   for (i=0;i<dashPos;i++)
   {
+    //printf("Parsed[%d]=%d\n",i,marker[i]);
     if (marker[i]=='\t')
     {
       indent+=Config::tabSize - (indent%Config::tabSize);
+    }
+    else if (marker[i]=='\n')
+    {
+      indent=0;
     }
     else
     {
@@ -599,6 +605,7 @@ static QCString findAndCopyImage(const char *fileName,ImageTypes type)
   QCString result;
   bool ambig;
   FileDef *fd;
+  //printf("Search for %s\n",fileName);
   if ((fd=findFileDef(imageNameDict,fileName,ambig)))
   {
     QFile inImage(QString(fd->absFilePath().data()));
@@ -944,7 +951,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <DocScan>{CMD}"endlink"/[^a-z_A-Z0-9]   { warn(yyFileName,yyLineNr,
                                                "Warning: \\endlink without \\link "
-    					       "in documentation."
+    					       "in documentation of this entity."
                                               ); 
 					}
 <DocScan>{CMD}"addindex"{B}+		{
@@ -1460,10 +1467,10 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->writeObjectLink(0,internalRefFile,internalRefAnchor,text);
 					  BEGIN(DocScan);
   					}
-<DocScan>{CMD}"ref"			{
+<DocScan>{CMD}"ref"/{BN}		{
   					  BEGIN(DocRefName);
   					}
-<DocScan>{CMD}"refitem"			{
+<DocScan>{CMD}"refitem"/{BN}		{
   					  BEGIN(DocRefItem);
   					}
 <DocScan>{CMD}"if"/{BN}			{
@@ -1476,7 +1483,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  {
 					    warn(yyFileName,yyLineNr,
                                                  "Warning: documentation block contains \\endif without "
-						 "matching \\if found in documentation."
+						 "matching \\if found in documentation of this entity."
                                                 );
 					  }
 					  else
@@ -1515,7 +1522,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else if (!generateLink(*outDoc,className,yytext,TRUE,0))
 					  {
-					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",yytext);
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",yytext);
 					    //outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
@@ -1548,7 +1555,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else if (!generateLink(*outDoc,className,sectionRef,TRUE,text))
 					  {
-					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",sectionRef.data());
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",sectionRef.data());
 					    outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
@@ -1566,7 +1573,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  }
 					  else
 					  {
-					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s!",sectionRef.data());
+					    warn(yyFileName,yyLineNr,"Warning: reference to unknown section %s in the documentation of this entity!",sectionRef.data());
 					    outDoc->writeBoldString(" unknown reference! ");
 					  }
 					  BEGIN(DocScan);
@@ -1623,10 +1630,10 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  BEGIN(DocScan);
   					}
 <DocImage>[a-z_A-Z0-9\.\-]+		{
-					  warn(yyFileName,yyLineNr,"Warning: %s is an unsupported output format for \\image",yytext);
+					  warn(yyFileName,yyLineNr,"Warning: %s is an unsupported output format for \\image in the documentation of the entity",yytext);
   					}
 <DocImage,DocHtmlImageName,DocLatexImageName>\n {
-  					  warn(yyFileName,yyLineNr,"Warning: invalid \\image command found!");
+  					  warn(yyFileName,yyLineNr,"Warning: invalid \\image command found in the documentation of this entity!");
 					  outDoc->enableAll();
 					  BEGIN(DocScan);
   					}
@@ -1637,7 +1644,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					}
 <DocScan>{CMD}"endcode"/[^a-z_A-Z0-9] 	{ 
   					  warn(yyFileName,yyLineNr,"Warning: \\endcode without \\code "
-    					       "in the documentation."); 
+    					       "in the documentation of this entity."); 
 					}
 					
 <DocScan,DocRefName>{ID}"<"[^>\ \t\n]*">"("::"{ID})+"("?[a-z_A-Z0-9,:\<\> \t\*\&]*")"?	{
@@ -1775,8 +1782,18 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
                                           /*restoreOutputListState();*/
 					  outDoc->popGeneratorState();
 					}
-<DocScan>"<"{PRE}{ATTR}">"		{ outDoc->startPreFragment(); }
-<DocScan>"</"{PRE}{ATTR}">"	        { outDoc->endPreFragment(); }
+<DocScan>"<"{PRE}{ATTR}">"		{ 
+  					  if (insidePre)
+					  {
+					    warn(yyFileName,yyLineNr,"Warning in the documentation of this entity:\nNested <pre> found in the documentation of this entity!");
+					  }
+  					  outDoc->startPreFragment(); 
+					  insidePre=TRUE;
+					}
+<DocScan>"</"{PRE}{ATTR}">"	        { 
+  					  outDoc->endPreFragment(); 
+					  insidePre=FALSE;
+					}
 <DocScan>"<"{SUB}{ATTR}">"		{ outDoc->startSubscript(); }
 <DocScan>"</"{SUB}{ATTR}">"		{ outDoc->endSubscript(); }
 <DocScan>"<"{SUP}{ATTR}">"		{ outDoc->startSuperscript(); }
@@ -1792,13 +1809,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if (currentListIndent.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-                                                 "Warning: more </ol> tags than <ol> tags in the documentation."
+                                                 "Warning in the documentation of this entity:\nMore </ol> tags than <ol> tags in the documentation of this entity."
                                                 );
 					  }
 					  else if (currentListIndent.top()!="O")
 					  {
 					    warn(yyFileName,yyLineNr,
-						 "Warning: </ol> tag does not end a <ol> tag in the documentation."
+						 "Warning in the documentation of this entity:\nThe </ol> tag does not end a <ol> tag."
 						);
 					  }
 					  else
@@ -1814,13 +1831,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if (currentListIndent.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-                                                 "Warning: more </ul> tags than <ul> tags in the documentation."
+                                                 "Warning in the documentation of this entity:\nMore </ul> tags than <ul> tags."
                                                 );
 					  }
 					  else if (currentListIndent.top()!="U")
 					  {
 					    warn(yyFileName,yyLineNr,
-						 "Warning: </ul> tag does not end a <ul> tag in the documentation."
+						 "Warning in the documentation of this entity:\nThe </ul> tag does not end a <ul> tag."
 						);
 					  }
 					  else
@@ -1834,7 +1851,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      currentListIndent.top()=="D")
 					  {
  					    warn(yyFileName,yyLineNr,
-					         "Warning: The <li> tag can only be used inside a <ul> ... </ul> or a <ol> ... </ol> block."
+					         "Warning in the documentation of this entity:\nThe <li> tag can only be used inside a <ul> ... </ul> or a <ol> ... </ol> block."
 					        );
 					  }
 					  else
@@ -1855,13 +1872,13 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  if (currentListIndent.isEmpty())
 					  {
 					    warn(yyFileName,yyLineNr,
-                                                 "Warning: more </dl> tags than <dl> tags in the documentation."
+                                                 "Warning in the documentation of this entity:\nMore </dl> tags than <dl> tags in the documentation."
                                                 );
 					  }
 					  else if (currentListIndent.top()!="D")
 					  {
 					    warn(yyFileName,yyLineNr,
-						 "Warning: </dl> tag does not end a <dl> tag in the documentation."
+						 "Warning in the documentation of this entity:\nThe </dl> tag does not end a <dl> tag in the documentation."
 						);
 					  }
 					  else
@@ -1875,7 +1892,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      currentListIndent.top()!="D")
 					  {
  					    warn(yyFileName,yyLineNr,
-					         "Warning: The <dt> tag can only be used inside a <dl> ... </dl> block."
+					         "Warning in the documentation of this entity:\nThe <dt> tag can only be used inside a <dl> ... </dl> block."
 					        );
 					  }
 					  else
@@ -1889,7 +1906,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					      currentListIndent.top()!="D")
 					  {
  					    warn(yyFileName,yyLineNr,
-					         "Warning: The <dd> tag can only be used inside a <dl> ... </dl> block."
+					         "Warning in the documentation of this entity:\nThe <dd> tag can only be used inside a <dl> ... </dl> block."
 					        );
 					  }
 					  else
@@ -1935,7 +1952,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 <DocScan>{CMD}("\\"|"@"|"<"|">"|"&"|"$"|"#"|"%") {
   					  outDoc->docify(&yytext[1]);
   					}
-<DocScan>"%"[a-zA-Z_0-9\-]+		{
+<DocScan,DocEmphasis,DocBold,DocCode>"%"[a-zA-Z_0-9\-]+		{
   					  outDoc->docify(yytext+1);
   					}
 <DocEmphasis>[a-z_A-Z][a-z_A-Z:0-9<>&\-=^%~!\[\]()|\*/]*"("[a-z_A-Z0-9,:\<\> \t\*\&]*")" {
@@ -2012,7 +2029,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					    outDoc->newParagraph(); 
 					  }
 					  if (inBlock()) endBlock();
-  					  addListItemMarker(strrchr(yytext,'\n')+1,dashPos,isEnumerated);
+  					  addListItemMarker(yytext,dashPos+1,isEnumerated);
 					}
 <DocScan>({B}*"\n"){2,}{B}*		{ // new paragraph
   					  if (insideArgumentList)
@@ -2034,7 +2051,32 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
   					  outDoc->writeChar(' '); 
 					}
 <DocScan>\n?{B}*			{
-  					  outDoc->writeChar(' '); 
+  					  if (insidePre)
+					  {
+					    outDoc->docify(yytext);
+					  }
+					  else
+					  {
+  					    outDoc->writeChar(' '); 
+					  }
+  					}
+<DocScan>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
+  					  outDoc->docify(yytext);
+  					}
+<DocScan>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+  					  QCString *pValue=aliasDict[yytext+1];
+					  if (pValue)
+					  {
+					    int i,l=pValue->length();
+					    for (i=l-1;i>=0;i--)
+					    {
+					      unput(pValue->at(i));
+					    }
+					  }
+					  else
+					  {
+  					    warn(yyFileName,yyLineNr,"Warning in the documentation of this entity:\nUnknown command `%s' found.",yytext);
+					  }
   					}
 <DocCode,DocEmphasis,DocBold,DocScan,Text>[a-z_A-Z0-9]+ { 
 					  outDoc->docify(yytext);

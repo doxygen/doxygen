@@ -812,6 +812,20 @@ void checkConfig()
 #endif
     s=Config::includePath.next();
   }
+
+  // check aliases
+  s=Config::aliasList.first();
+  while (s)
+  {
+    QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");
+    QCString alias=s;
+    alias=alias.stripWhiteSpace();
+    if (alias.find(re)!=0)
+    {
+      err("Illegal alias format `%s'. Use \"name=value\"\n",alias.data());
+    }
+    s=Config::aliasList.next();
+  }
   
   // check dot path
   if (!Config::dotPath.isEmpty())

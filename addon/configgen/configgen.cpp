@@ -1014,6 +1014,18 @@ void init()
                     "disable (NO) the test list. This list is created by putting \\test \n"
                     "commands in the documentation.\n"
                  );
+  ConfigList::add(  "aliasList",
+                    "ALIASES",
+                    "",
+                    "list of aliases",
+                    "This tag can be used to specify a number of aliases that acts \n"
+                    "as commands in the documentation. An alias has the form \"\\name=value\". \n"
+                    "For example adding \"sideeffect=\\par Side Effects:\\n\" will allow you to \n"
+                    "put the command \\sideeffect (or @sideeffect) in the documentation, which \n"
+                    "will result in a user defined paragraph with heading \"Side Effects:\". \n"
+                    "You can put \\n's in the value part of an alias to insert newlines. \n" 
+                    "Predefined commands cannot be overwritten using aliases. \n" 
+                 );
   //-----------------------------------------------------------------------------------------------
   ConfigInfo::add(  "Messages","configuration options related to warning and progress messages");
   //-----------------------------------------------------------------------------------------------
