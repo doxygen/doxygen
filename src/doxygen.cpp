@@ -2213,6 +2213,28 @@ static void transferFunctionDocumentation()
         }
         mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
         mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
+        
+        ArgumentList *decAl = mdec->argumentList();
+        ArgumentList *defAl = mdef->argumentList();
+        if (decAl && defAl)
+        {
+          ArgumentListIterator decAli(*decAl);
+          ArgumentListIterator defAli(*defAl);
+          Argument *decA,*defA;
+          for (decAli.toFirst(),defAli.toFirst();
+              (decA=decAli.current()) && (defA=defAli.current());
+              ++decAli,++defAli)
+          {
+            if (decA->docs.isEmpty() && !defA->docs.isEmpty())
+            {
+              decA->docs = defA->docs.copy();
+            }
+            else if (!defA->docs.isEmpty() && defA->docs.isEmpty())
+            {
+              defA->docs = decA->docs.copy();
+            }
+          }
+        }
 
         // copy group info.
         //if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)
@@ -2686,6 +2708,18 @@ static bool findTemplateInstanceRelation(Entry *root,
   return TRUE;
 }
 
+static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
+{
+  QCString n=name;
+  int index=n.find('<');
+  if (index!=-1)
+  {
+    n=n.left(index);
+  }
+  bool result = rightScopeMatch(scope,n);
+  return result;
+}
+
 static bool findClassRelation(
                            Entry *root,
                            ClassDef *cd,
@@ -2732,16 +2766,18 @@ static bool findClassRelation(
       QCString templSpec;
       ClassDef *baseClass=getResolvedClass(cd,baseClassName,&baseClassIsTypeDef,&templSpec);
       //printf("baseClassName=%s baseClass=%p cd=%p\n",baseClassName.data(),baseClass,cd);
-      //printf("    baseClassName=`%s' baseClass=%s templSpec=%s\n",
+      //printf("    root->name=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
+      //                    root->name.data(),
       //                    baseClassName.data(),
-      //                     baseClass?baseClass->name().data():"<none>",
-      //                     templSpec.data()
+      //                    baseClass?baseClass->name().data():"<none>",
+      //                    templSpec.data()
       //      );
-      if (baseClassName.left(root->name.length())!=root->name ||
-          baseClassName.at(root->name.length())!='<'
-         ) // Check for base class with the same name.
-           // If found then look in the outer scope for a match
-           // and prevent recursion.
+      //if (baseClassName.left(root->name.length())!=root->name ||
+      //    baseClassName.at(root->name.length())!='<'
+      //   ) // Check for base class with the same name.
+      //     // If found then look in the outer scope for a match
+      //     // and prevent recursion.
+      if (!isRecursiveBaseClass(root->name,baseClassName))
       {
         Debug::print(
             Debug::Classes,0,"    class relation %s inherited by %s found (%s and %s)\n",

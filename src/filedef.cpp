@@ -89,6 +89,7 @@ void FileDef::computeAnchors()
 
 void FileDef::distributeMemberGroupDocumentation()
 {
+  //printf("FileDef::distributeMemberGroupDocumentation()\n");
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

@@ -586,6 +586,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	NSAliasArg
 %x	PackageName
 %x	GetCallType
+%x	JavaImport
 
 %%
 
@@ -992,6 +993,29 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
   					}
+<JavaImport>({ID}{BN}*"."{BN}*)+"*"	{ // package import => add as a using directive
+  					  lineCount();
+  					  QCString scope=yytext;
+					  current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-2),".","::"));
+                                          current->fileName = yyFileName; 
+  					  current->section=Entry::USINGDIR_SEC;
+					  current_root->addSubEntry(current);
+					  current = new Entry ;
+					  initEntry();
+					  BEGIN(Using);
+  					}
+<JavaImport>({ID}{BN}*"."{BN}*)+{ID}	{ // class import => add as a using declaration
+                                          lineCount();
+  					  QCString scope=yytext;
+					  current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
+					  printf("import name = %s -> %s\n",yytext,current->name.data());
+                                          current->fileName = yyFileName; 
+  					  current->section=Entry::USINGDECL_SEC;
+					  current_root->addSubEntry(current);
+					  current = new Entry ;
+					  initEntry();
+					  BEGIN(Using);
+  					}
 <FindMembers>"using"{BN}+		{ 
 					  current->startLine=yyLineNr; 
                                           lineCount(); 
@@ -999,6 +1023,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                         }
 <Using>"namespace"{BN}+			{ lineCount(); BEGIN(UsingDirective); }
 <Using>{ID}{BN}*"::"{BN}*{ID}({BN}*"::"{BN}*{ID})*	{
+                                          lineCount();
   					  current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDECL_SEC;
@@ -1109,7 +1134,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else if ((insideIDL || insideJava) && yyleng==6 && strcmp(yytext,"import")==0)
 					  {
-					    BEGIN(NextSemi);
+					    if (insideIDL)
+					      BEGIN(NextSemi);
+					    else // insideJava
+					      BEGIN(JavaImport);
 					  }
 					  else if (insideIDL && strcmp(yytext,"case")==0)
 					  {
@@ -2108,7 +2136,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
   					}
 <CopyArgComment>^{B}*"*"+/{BN}+		
-<CopyArgComment>[^\n\*]+		{ fullArgString+=yytext; }
+<CopyArgComment>[^\n\\\@\*]+		{ fullArgString+=yytext; }
 <CopyArgComment>"*/"			{ fullArgString+=yytext; 
   					  if (lastCopyArgChar!=0)
 					    unput(lastCopyArgChar); 
@@ -2120,7 +2148,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    unput(lastCopyArgChar);
 					  BEGIN( ReadFuncArgType );
   					}
-<CopyArgCommentLine>[^\n]+		{ fullArgString+=yytext; }
+<CopyArgCommentLine>[^\\\@\n]+		{ fullArgString+=yytext; }
 <CopyArgComment>\n			{ fullArgString+=*yytext; yyLineNr++; }
 <CopyArgComment>.			{ fullArgString+=*yytext; }
 <ReadTempArgs>"<"			{
@@ -4092,7 +4120,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {
@@ -4104,13 +4132,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-  					    current->doc+=yytext;
+					    if (YY_START==CopyArgComment)
+					      fullArgString+=yytext;
+					    else
+  					      current->doc+=yytext;
 					  }
   					}
 <JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->brief+=yytext;
   					}
-<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {
@@ -4122,7 +4153,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  else
 					  {
-  					    current->brief+=yytext;
+					    if (YY_START==CopyArgCommentLine)
+					      fullArgString+=yytext;
+					    else
+  					      current->brief+=yytext;
 					  }
   					}
 <DefLineDoc,LineDoc,ClassDoc,PageDoc,ExampleDoc,Doc>"/*"|"//"   { current->doc += yytext; }
