@@ -501,6 +501,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     case Public:    t << "public";     break;
     case Protected: t << "protected";  break;
     case Private:   t << "private";    break;
+    case Package:   t << "package";    break;
   }
   t << "\" static=\"";
   if (md->isStatic()) t << "yes"; else t << "no";
@@ -685,6 +686,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
           case Public:    t << "public";    break;
           case Protected: t << "protected"; break;
           case Private:   t << "private";   break;
+          case Package:   t << "package";   break;
         }
         t << "\">" << endl;
         t << "          <name>";
@@ -791,6 +793,7 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
         case Public:    t << "public";    break;
         case Protected: t << "protected"; break;
         case Private:   t << "private";   break;
+        case Package:   t << "package";   break;
       }
       t << "\" virt=\"";
       switch(virt)
@@ -869,6 +872,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Public:    t << "public";    break;
         case Protected: t << "protected"; break;
         case Private:   t << "private";   break;
+        case Package: ASSERT(0); break;
       }
       t << "\" virt=\"";
       switch(bcd->virt)
@@ -895,6 +899,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
         case Public:    t << "public";    break;
         case Protected: t << "protected"; break;
         case Private:   t << "private";   break;
+        case Package: ASSERT(0); break;
       }
       t << "\" virt=\"";
       switch(bcd->virt)

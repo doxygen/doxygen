@@ -1361,15 +1361,23 @@ void DocCopy::parse()
 void DocXRefItem::parse()
 {
   QString listName;
-  switch(m_type)
-  {
-    case Bug:        listName="bug"; break; 
-    case Test:       listName="test"; break; 
-    case Todo:       listName="todo"; break; 
-    case Deprecated: listName="deprecated"; break; 
-  }
-  RefList *refList = Doxygen::specialLists->find(listName); 
-  if (Config_getBool(refList->optionName())) // list is enabled
+  //switch(m_type)
+  //{
+  //  case Bug:        listName="bug"; break; 
+  //  case Test:       listName="test"; break; 
+  //  case Todo:       listName="todo"; break; 
+  //  case Deprecated: listName="deprecated"; break; 
+  //}
+  RefList *refList = Doxygen::xrefLists->find(m_key); 
+  if (refList && 
+      (
+       // either not a built-in list or the list is enabled
+       (m_key!="todo"       || Config_getBool("GENERATE_TODOLIST")) && 
+       (m_key!="test"       || Config_getBool("GENERATE_TESTLIST")) && 
+       (m_key!="bug"        || Config_getBool("GENERATE_BUGLIST"))  && 
+       (m_key!="deprecated" || Config_getBool("GENERATE_DEPRECATEDLIST"))
+      ) 
+     )
   {
     RefItem *item = refList->getRefItem(m_id);
     ASSERT(item!=0);
@@ -3116,15 +3124,15 @@ int DocPara::handleParamSection(const QString &cmdName,DocParamSect::Type t)
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-int DocPara::handleXRefItem(DocXRefItem::Type t)
+int DocPara::handleXRefItem()
 {
   int retval=doctokenizerYYlex();
   ASSERT(retval==TK_WHITESPACE);
   doctokenizerYYsetStateXRefItem();
   retval=doctokenizerYYlex();
-  if (retval!=0)
+  if (retval==RetVal_OK)
   {
-    DocXRefItem *ref = new DocXRefItem(this,g_token->id,t);
+    DocXRefItem *ref = new DocXRefItem(this,g_token->id,g_token->name);
     m_children.append(ref);
     ref->parse();
   }
@@ -3601,17 +3609,8 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_EXCEPTION:
       retval = handleParamSection(cmdName,DocParamSect::Exception);
       break;
-    case CMD_BUG:
-      retval = handleXRefItem(DocXRefItem::Bug);
-      break;
-    case CMD_TODO:
-      retval = handleXRefItem(DocXRefItem::Todo);
-      break;
-    case CMD_TEST:
-      retval = handleXRefItem(DocXRefItem::Test);
-      break;
-    case CMD_DEPRECATED:
-      retval = handleXRefItem(DocXRefItem::Deprecated);
+    case CMD_XREFITEM:
+      retval = handleXRefItem();
       break;
     case CMD_LINEBREAK:
       {
@@ -3800,6 +3799,12 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case HTML_EMPHASIS:
       handleStyleEnter(this,m_children,DocStyleChange::Italic,&g_token->attribs);
+      break;
+    case HTML_DIV:
+      handleStyleEnter(this,m_children,DocStyleChange::Div,&g_token->attribs);
+      break;
+    case HTML_SPAN:
+      handleStyleEnter(this,m_children,DocStyleChange::Span,&g_token->attribs);
       break;
     case HTML_SUB:
       handleStyleEnter(this,m_children,DocStyleChange::Subscript,&g_token->attribs);
@@ -4028,6 +4033,12 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       break;
     case HTML_EMPHASIS:
       handleStyleLeave(this,m_children,DocStyleChange::Italic,"em");
+      break;
+    case HTML_DIV:
+      handleStyleLeave(this,m_children,DocStyleChange::Div,"div");
+      break;
+    case HTML_SPAN:
+      handleStyleLeave(this,m_children,DocStyleChange::Span,"span");
       break;
     case HTML_SUB:
       handleStyleLeave(this,m_children,DocStyleChange::Subscript,"sub");

@@ -78,11 +78,11 @@ class BaseOutputDocInterface : public BaseCodeDocInterface
 {
   public:
     enum ParamListTypes { Param, RetVal, Exception };
-    enum SectionTypes { See, Return, Author, Version, 
+    enum SectionTypes { /*See, Return, Author, Version, 
                         Since, Date, Bug, Note,
                         Warning, Par, Deprecated, Pre, 
                         Post, Invar, Remark, Attention, 
-                        Todo, Test, RCS, EnumValues, 
+                        Todo, Test, RCS, */ EnumValues, 
                         Examples 
                       };
 

@@ -272,6 +272,11 @@ void HtmlDocVisitor::visit(DocFormula *f)
   m_t << "\"middle\"";  // assume Windows users use IE or HtmlHelp which on
   // displays formulas nicely with align == "middle" 
 #endif
+  m_t << " alt=\"";
+  filterQuotedCdataAttr(f->text());
+  m_t << "\"";
+  /// @todo cache image dimensions on formula generation and give height/width
+  /// for faster preloading and better rendering of the page
   m_t << " src=\"" << f->name() << ".png\">";
   if (f->text().at(0)=='\\') 
     m_t << endl << "</center><p>" << endl;
@@ -916,6 +921,43 @@ void HtmlDocVisitor::filter(const char *str)
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
+      default:   m_t << c;
+    }
+  }
+}
+
+/// Escape basic entities to produce a valid CDATA attribute value,
+/// assume that the outer quoting will be using the double quote &quot;
+void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
+{
+  if (str==0) return;
+  const char *p=str;
+  char c;
+  while (*p)
+  {
+    c=*p++;
+    switch(c)
+    {
+      case '&':  m_t << "&amp;"; break;
+      case '"':  m_t << "&quot;"; break;
+       // For SGML compliance, and given the SGML declaration for HTML syntax,
+       // it's enough to replace these two, provided that the declaration
+       // for the HTML version we generate (and as supported by the browser)
+       // specifies that all the other symbols used in rawVal are
+       // within the right charachter class (i.e., they're not
+       // some multinational weird charachters not in the BASESET).
+       // We assume that 1) the browser will support whatever is remaining
+       // in the formula and 2) the TeX formulae are generally governed
+       // by even stricter charachter restrictions so it should be enough.
+       //
+       // On some incompliant browsers, additional translation of
+       // '>' and '<' into "&gt;" and "&lt;", respectively, might be needed;
+       // but I'm unaware of particular modern (last 4 years) versions
+       // with such problems, so let's not do it for performance.
+       // Also, some brousers will (wrongly) not process the entity references
+       // inside the attribute value and show the &...; form instead,  
+       // so we won't create entites unless necessary to minimize clutter there.
+       // --vassilii 
       default:   m_t << c;
     }
   }

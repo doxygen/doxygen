@@ -121,6 +121,7 @@ void generateDEFForMember(MemberDef *md,
     case Public:    t << "public;"    << endl; break;
     case Protected: t << "protected;" << endl; break;
     case Private:   t << "private;"   << endl; break;
+    case Package:   t << "package;"   << endl; break;
   }
 
   if (md->memberType()!=MemberDef::Define &&
@@ -365,6 +366,7 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
       switch (bcd->prot)
       {
         case Public:    t << "public;"    << endl; break;
+        case Package: // package scope is not possible
         case Protected: t << "protected;" << endl; break;
         case Private:   t << "private;"   << endl; break;
       }
@@ -392,6 +394,7 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
       switch (bcd->prot)
       {
         case Public:    t << "public;"    << endl; break;
+        case Package: // packet scope is not possible!
         case Protected: t << "protected;" << endl; break;
         case Private:   t << "private;"   << endl; break;
       }

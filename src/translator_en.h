@@ -1433,6 +1433,46 @@ class TranslatorEnglish : public Translator
       return "Event Documentation";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    { 
+      return "Package Types";
+    }
+    /*! Used as a heading for a list of Java class functions with package 
+     * scope. 
+     */
+    virtual QCString trPackageMembers()
+    { 
+      return "Package Functions";
+    }
+    /*! Used as a heading for a list of static Java class functions with 
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    { 
+      return "Static Package Functions";
+    }
+    /*! Used as a heading for a list of Java class variables with package 
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    { 
+      return "Package Attributes";
+    }
+    /*! Used as a heading for a list of static Java class variables with 
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    { 
+      return "Static Package Attributes";
+    }
+    
+
 };
 
 #endif

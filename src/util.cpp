@@ -2934,7 +2934,7 @@ QCString substituteKeywords(const QCString &s,const char *title)
  */ 
 int getPrefixIndex(const QCString &name)
 {
-  //printf("getPrefixIndex(%s) ni=%d\n",name.data(),ni);
+  if (name.isEmpty()) return 0;
   QStrList &sl = Config_getList("IGNORE_PREFIX");
   char *s = sl.first();
   while (s)
@@ -3624,16 +3624,16 @@ PageInfo *addRelatedPage(const char *name,const QCString &ptitle,
 
     if (sli)
     {
-      if (pi->specialListItems==0)
+      if (pi->xrefListItems==0)
       {
-        pi->specialListItems=new QList<ListItemInfo>;
-        pi->specialListItems->setAutoDelete(TRUE);
+        pi->xrefListItems=new QList<ListItemInfo>;
+        pi->xrefListItems->setAutoDelete(TRUE);
       }
       QListIterator<ListItemInfo> slii(*sli);
       ListItemInfo *lii;
       for (slii.toFirst();(lii=slii.current());++slii)
       {
-        pi->specialListItems->append(new ListItemInfo(*lii));
+        pi->xrefListItems->append(new ListItemInfo(*lii));
       } 
     }
 
@@ -3700,10 +3700,16 @@ void addRefItem(const QList<ListItemInfo> *sli,
     ListItemInfo *lii;
     for (slii.toFirst();(lii=slii.current());++slii)
     {
-      RefList *refList = Doxygen::specialLists->find(lii->type);
-      ASSERT(refList!=0);
-
-      if (Config_getBool(refList->optionName()))
+      RefList *refList = Doxygen::xrefLists->find(lii->type);
+      if (refList && 
+          (
+           // either not a built-in list or the list is enabled
+           (lii->type!="todo"       || Config_getBool("GENERATE_TODOLIST")) && 
+           (lii->type!="test"       || Config_getBool("GENERATE_TESTLIST")) && 
+           (lii->type!="bug"        || Config_getBool("GENERATE_BUGLIST"))  && 
+           (lii->type!="deprecated" || Config_getBool("GENERATE_DEPRECATEDLIST"))
+          ) 
+         )
       {
         RefItem *item = refList->getRefItem(lii->itemId);
         ASSERT(item!=0);

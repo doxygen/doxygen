@@ -153,6 +153,9 @@ static int              depthIf;
 static int  	        initializerSharpCount;
 static QCString         memberGroupRelates;
 static QCString         memberGroupInside;
+static QCString         xrefItemKey;
+static QCString         xrefItemTitle;
+static QCString         xrefListTitle;
 
 
 //-----------------------------------------------------------------------------
@@ -185,6 +188,7 @@ static void initParser()
 
 static void initEntry()
 {
+  if (insideJava) protection = Package;
   current->protection = protection ;
   current->mtype      = mtype;
   current->virt       = virt;
@@ -281,39 +285,17 @@ static void newDocState();
 
 //-----------------------------------------------------------------
 
-#if 0
-static void addSection()
+static void addXRefItem(const char *listName,const char *itemTitle,const char *listTitle)
 {
-  //printf("New section pageName=%s label=%s title=%s\n",
-  //    current->name.data(),sectionLabel.data(),sectionTitle.data());
-  if (current->name.isEmpty() /*|| current->section != Entry::PAGEDOC_SEC */)
-  {
-    //warn(yyFileName,yyLineNr,"Warning: found section or anchor with label `%s' "
-    //                     "outside of \\page context!\n",sectionLabel.data());
-    return;
-  }
-  if (sectionLabel.isEmpty()) return;
-  if (Doxygen::sectionDict.find(sectionLabel)==0)
-  {
-    SectionInfo *si=new SectionInfo(current->name,sectionLabel,sectionTitle,sectionType);
-    //printf("Adding section addr=%p label=`%s' sectionTitle=`%s' fileName=%s\n",si,sectionLabel.data(),sectionTitle.data(),si->fileName.data());
-    Doxygen::sectionDict.insert(sectionLabel,si);
-    current->anchors->append(new QCString(sectionLabel));
-  }
-  else
-  {
-    warn(yyFileName,yyLineNr,
-         "Warning: Duplicate label %s found!",sectionLabel.data());
-  }
-  sectionTitle.resize(0);
-}
-#endif
+  if (listName==0) return;
 
-static void addSpecialItem(const char *listName)
-{
   ListItemInfo *lii=0;
-  RefList *refList = Doxygen::specialLists->find(listName);
-  ASSERT(refList!=0);
+  RefList *refList = Doxygen::xrefLists->find(listName);
+  if (refList==0) // new list
+  {
+    refList = new RefList(listName,listTitle,itemTitle);
+    Doxygen::xrefLists->insert(listName,refList);
+  }
   if (current->sli)
   {
     QListIterator<ListItemInfo> slii(*current->sli);
@@ -341,22 +323,12 @@ static void addSpecialItem(const char *listName)
     item->listAnchor = anchorLabel;
     current->addSpecialListItem(listName,itemId);
     QCString cmdString;
-    cmdString.sprintf("\\%s %d\n",listName,itemId);
+    cmdString.sprintf("\\xrefitem %s %d\n",listName,itemId);
     current->doc += cmdString;
-    //current->doc += (QCString)"\\anchor "+anchorLabel+"\n";
-    
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
     current->anchors->append(new QCString(anchorLabel));
-
-    //QCString tmpName = current->name;
-    //current->name = listName;
-    //sectionType=SectionInfo::Anchor;
-    //sectionLabel=anchorLabel;
-    //addSection();
-    //current->name = tmpName;
-    //printf("%s: text `%s' doc %s\n",listName,item->text.data(),cmdString.data());
   }
   current->brief  = slString.copy(); // restore orginial brief desc.
 }
@@ -512,7 +484,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"latexonly"|"htmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -563,6 +535,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x	Operator
 %x	Array
 %x	ReadBody
+%x	ReadNSBody
 %x	Using
 %x	UsingDirective
 %x	NameSpaceDocArg1
@@ -642,6 +615,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 %x      TestParam
 %x      BugParam
 %x      DeprecatedParam
+%x      XRefItemParam1
+%x      XRefItemParam2
+%x      XRefItemParam3
+%x      XRefItemParam4
 %x	SectionLabel
 %x	SectionTitle
 %x	SkipTemplate
@@ -1126,15 +1103,17 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <NSAliasArg>({ID}"::")*{ID}		{
   					  //printf("Inserting namespace alias %s::%s->%s\n",current_root->name.data(),aliasName.data(),yytext);
-					  if (current_root->name.isEmpty())
-					  {
+					  //if (current_root->name.isEmpty())
+					  //{
+                                          // TODO: namespace aliases are now treated as global entities
+                                          // while they should be aware of the scope they are in
                                             Doxygen::namespaceAliasDict.insert(aliasName,new QCString(yytext));
-					  }
-					  else
-					  {
-                                            Doxygen::namespaceAliasDict.insert(current_root->name+"::"+aliasName,
-						new QCString(current_root->name+"::"+yytext));
-					  }
+					  //}
+					  //else
+					  //{
+                                          //  Doxygen::namespaceAliasDict.insert(current_root->name+"::"+aliasName,
+					  //	new QCString(current_root->name+"::"+yytext));
+					  //}
   					}
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
@@ -1386,7 +1365,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
   					}
-<FindMembers,ReadBody>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
+<FindMembers,ReadBody,ReadNSBody>{B}*"#"{B}+[0-9]+{B}+/"\""	{ /* line control directive */
                                           yyLineNr = atoi(&yytext[1]);
 					  //printf("setting line number to %d\n",yyLineNr);
 					  lastPreLineCtrlContext = YY_START;
@@ -1905,31 +1884,31 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
-<ReadBody>[^\r\n\#{}"'/]*		{ current->program += yytext ; }
-<ReadBody>"//".*			{ current->program += yytext ; }
-<ReadBody>"#".*				{ if (! insidePHP)
+<ReadBody,ReadNSBody>[^\r\n\#{}"'/]*		{ current->program += yytext ; }
+<ReadBody,ReadNSBody>"//".*			{ current->program += yytext ; }
+<ReadBody,ReadNSBody>"#".*				{ if (! insidePHP)
 					    REJECT;
 					  current->program += yytext ;
 					}
-<ReadBody>\"				{ current->program += yytext ; 
+<ReadBody,ReadNSBody>\"				{ current->program += yytext ; 
                                           pCopyQuotedString = &current->program;
                                           lastStringContext=YY_START;
                                           BEGIN( CopyString );
 					}
-<ReadBody>"/*"{B}*			{ current->program += yytext ;
+<ReadBody,ReadNSBody>"/*"{B}*			{ current->program += yytext ;
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody>"/*"{BL}				{ current->program += yytext ;
+<ReadBody,ReadNSBody>"/*"{BL}				{ current->program += yytext ;
 					  ++yyLineNr ;
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
-<ReadBody>{CHARLIT}                     { current->program += yytext; }
-<ReadBody>"{"				{ current->program += yytext ;
+<ReadBody,ReadNSBody>{CHARLIT}                     { current->program += yytext; }
+<ReadBody,ReadNSBody>"{"				{ current->program += yytext ;
 					  ++curlyCount ;
 					}
-<ReadBody>"}"				{ //err("ReadBody count=%d\n",curlyCount);
+<ReadBody,ReadNSBody>"}"		{ //err("ReadBody count=%d\n",curlyCount);
   					  if ( curlyCount>0 )
 					  {
 					    current->program += yytext ;
@@ -1966,7 +1945,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					      current = new Entry(*current);
 					      if (current->section==Entry::NAMESPACE_SEC || 
 						  current->section==Entry::INTERFACE_SEC ||
-						  insideJava || insidePHP
+						  insideJava || insidePHP || insideCS
 						 )
 					      { // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						current->reset();
@@ -2143,10 +2122,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   */
 <MemberSpecSkip>","			{ BEGIN(MemberSpec); }
 <MemberSpecSkip>";"		        { unput(';'); BEGIN(MemberSpec); }
-<ReadBody>{BN}+				{ current->program += yytext ;
+<ReadBody,ReadNSBody>{BN}+				{ current->program += yytext ;
 					  lineCount() ;
 					}
-<ReadBody>.				{ current->program += yytext ; }
+<ReadBody,ReadNSBody>.				{ current->program += yytext ; }
 
 <FindMembers>"("/({BN}*{ID}{BN}*"::")*{ID}{BN}*")"{BN}*"(" | /* typedef void (A::func_t)(args...) */
 <FindMembers>("("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
@@ -2975,7 +2954,14 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    current->name.sprintf("@%d",anonCount++);
 					  }
 					  curlyCount=0;
-					  BEGIN( ReadBody ) ;
+					  if (current->section==Entry::NAMESPACE_SEC)
+					  {
+					    BEGIN( ReadNSBody );
+					  }
+					  else
+					  {
+					    BEGIN( ReadBody ) ;
+					  }
 					}
 <BasesProt>"virtual"                    { baseVirt = Virtual; }
 <BasesProt>"public"                     { baseProt = Public; }
@@ -3473,10 +3459,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					}
 <SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
 <SkipHtmlComment>.
-<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated")/[^a-z_A-Z0-9] {
+<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated"|"xrefitem")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					}
-<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated")/[^a-z_A-Z0-9]	{
+<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated"|"xrefitem")/[^a-z_A-Z0-9]	{
   					  current->brief+=yytext;
   					}
 <AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
@@ -3507,11 +3493,18 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->brief.resize(0);
 					  BEGIN(ClassDocBrief);
   					}
+<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"xrefitem"/[^a-z_A-Z0-9]	{
+  					  slStartContext = YY_START;
+					  lastBriefContext = XRefItemParam4; // this is where we will continue at the end of the argument
+					  slString = current->brief.copy(); // these will be swapped later on.
+					  current->brief.resize(0);
+					  BEGIN(XRefItemParam1);
+  					}
 <TodoParam>\n                           |
 <TodoParam>"//"                         |
 <TodoParam>"/*"                         |
 <TodoParam>.				{
-                                          addSpecialItem("todo");
+                                          addXRefItem("todo",theTranslator->trTodo(),theTranslator->trTodoList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -3519,7 +3512,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <TestParam>"//"                         |
 <TestParam>"/*"                         |
 <TestParam>.				{
-                                          addSpecialItem("test");
+                                          addXRefItem("test",theTranslator->trTest(),theTranslator->trTestList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -3527,7 +3520,7 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <BugParam>"//"                          |
 <BugParam>"/*"                          |
 <BugParam>.				{
-                                          addSpecialItem("bug");
+                                          addXRefItem("bug",theTranslator->trBug(),theTranslator->trBugList());
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -3535,7 +3528,46 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <DeprecatedParam>"//"                   |
 <DeprecatedParam>"/*"                   |
 <DeprecatedParam>.		        {
-                                          addSpecialItem("deprecated");
+                                          addXRefItem("deprecated",theTranslator->trDeprecated(),theTranslator->trDeprecatedList());
+					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
+					  BEGIN(slStartContext);
+  					}
+<XRefItemParam1>{ID}			{
+  					  xrefItemKey=yytext;
+					  BEGIN(XRefItemParam2);
+					}
+<XRefItemParam1>{B}*	                
+<XRefItemParam1>.			{
+  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the first argument of \\xrefitem\n",yytext);
+					  unput(*yytext);
+					  BEGIN(slStartContext);
+  					}
+<XRefItemParam2>"\""[^\n\"]*"\""	{
+  					  xrefItemTitle = stripQuotes(yytext);
+					  BEGIN(XRefItemParam3);
+  					}
+<XRefItemParam2>{B}*
+<XRefItemParam2>.			{
+  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the second argument of \\xrefitem\n",yytext);
+					  unput(*yytext);
+					  BEGIN(slStartContext);
+  					}
+<XRefItemParam3>{B}*
+<XRefItemParam3>"\""[^\n\"]*"\""	{
+  					  xrefListTitle = stripQuotes(yytext);
+					  BEGIN(ClassDocBrief);
+  					}
+<XRefItemParam3>.			{
+  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the third argument of \\xrefitem\n",yytext);
+					  unput(*yytext);
+					  BEGIN(slStartContext);
+  					}
+<XRefItemParam4>{B}*
+<XRefItemParam4>\n                      |
+<XRefItemParam4>"//"                    |
+<XRefItemParam4>"/*"                    |
+<XRefItemParam4>.		        {
+                                          addXRefItem(xrefItemKey,xrefItemTitle,xrefListTitle);
 					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
 					  BEGIN(slStartContext);
   					}
@@ -4066,6 +4098,12 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					    BEGIN( DeprecatedParam );
 					  }
 					  else if (YY_START==ClassDocBrief &&
+					      lastBriefContext==XRefItemParam4)
+					  {
+					    unput('/');unput('*'); // make sure we have something to read
+					    BEGIN( XRefItemParam4 );
+					  }
+					  else if (YY_START==ClassDocBrief &&
 					      lastBriefContext==Doc)
 					  {
   					    current->doc += "\n\n";
@@ -4238,7 +4276,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  if (lastBriefContext==TodoParam || 
 					      lastBriefContext==TestParam || 
 					      lastBriefContext==BugParam ||
-					      lastBriefContext==DeprecatedParam
+					      lastBriefContext==DeprecatedParam ||
+					      lastBriefContext==XRefItemParam4
 					     )
 					  {
 					    unput('\n');
@@ -4290,6 +4329,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  {
 					    unput('\n'); // make sure we have something to read
 					    BEGIN( DeprecatedParam );
+					  }
+					  else if
+					     (lastBriefContext==XRefItemParam4 &&
+					      (slStartContext==LineDoc ||
+					       slStartContext==AfterDocLine
+					      )
+					     )
+					  {
+					    unput('\n'); // make sure we have something to read
+					    BEGIN( XRefItemParam4 );
 					  }
 					  else
 					  {
@@ -4350,15 +4399,16 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  copyArgString = &current->args;
 					  BEGIN( ReadFuncArgType ) ;
   					}
-<ClassDocFunc>"("({ID}"::")*({B}*"*")+		{
-  					  current->name+=yytext;
+<ClassDocFunc>"("({ID}"::")*({B}*"*")+	{
+  					  current->type+=current->name+yytext;
+					  current->name.resize(0);
   					  BEGIN( ClassDocFuncPtr );
   					}
 <ClassDocFuncPtr>{SCOPENAME}		{
   					  current->name+=yytext;
   					}
 <ClassDocFuncPtr>")"			{
-  					  current->name+=')';
+  					  current->type+=')';
   					  BEGIN( ClassDocFunc );
   					}
 <ClassDocFuncQual>"{"			{
@@ -4872,11 +4922,13 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-	if (ce->fileName.right(5)==".java" || 
+	if (
 	    ce->fileName.right(4)==".php" ||
 	    ce->fileName.right(4)==".inc"
 	   )
-          current->protection = protection = Public ; // Actually this should be package scope!
+          current->protection = protection = Public ; 
+	else if (ce->fileName.right(5)==".java")
+          current->protection = protection = Package ; 
 	else
           current->protection = protection = Private ;
       }

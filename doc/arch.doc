@@ -139,12 +139,13 @@ strings and executes the commands it finds in it (this is the second pass
 in parsing the documentation). It writes the result directly to the output 
 generators.
 
-The parser is written using \c flex and can be found in \c src/doc.l
+The parser is written in C++ and can be found in src/docparser.cpp. The
+tokens that are eaten by the parser come from src/doctokenizer.l.
 Code fragments found in the comment blocks are passed on to the source parser.
 
-The main entry point for the documentation parser is \c parseDoc()
-declared in \c src/doc.h.  For simple texts with special 
-commands \c parseText() is used.
+The main entry point for the documentation parser is \c validatingParseDoc()
+declared in \c src/docparser.h.  For simple texts with special 
+commands \c validatingParseText() is used.
 
 <h3>Source parser</h3>
 

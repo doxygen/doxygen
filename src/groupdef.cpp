@@ -783,7 +783,7 @@ QCString GroupDef::getOutputFileBase() const
 
 void GroupDef::addListReferences()
 {
-  addRefItem(specialListItems(),
+  addRefItem(xrefListItems(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name()
             );

@@ -62,6 +62,7 @@ static uint protToMask(Protection p)
   switch(p)
   {
     case Public:    return 0xffffffff;
+    case Package: // package is not possible!
     case Protected: return 0xcccccccc;
     case Private:   return 0xaaaaaaaa;
   }
@@ -73,6 +74,7 @@ static uint protToColor(Protection p)
   switch(p)
   {
     case Public:    return 6;
+    case Package: // package is not possible!
     case Protected: return 5;
     case Private:   return 4;
   }
@@ -84,6 +86,7 @@ static QCString protToString(Protection p)
   switch(p)
   {
     case Public:    return "solid";
+    case Package: // package is not possible!
     case Protected: return "dashed";
     case Private:   return "dotted";
   }

@@ -166,7 +166,7 @@
 // probably slightly faster.
 
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_3
 {
   private:
     /*! The decode() inline assumes the source written in the 

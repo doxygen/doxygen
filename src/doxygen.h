@@ -91,7 +91,7 @@ class Doxygen
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
     static QDict<void>               expandAsDefinedDict;
     static NamespaceDef             *globalScope;
-    static QDict<RefList>           *specialLists; // array of special lists: todo, test, bug, deprecated ...
+    static QDict<RefList>           *xrefLists; // array of xref lists: todo, test, bug, deprecated ...
     static QCString                  htmlFileExtension;
 };
 
