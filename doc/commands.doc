@@ -56,12 +56,14 @@ documentation:
 \refitem cmddefgroup \\defgroup
 \refitem cmddeprecated \\deprecated
 \refitem cmddontinclude \\dontinclude
+\refitem cmddot \\dot
 \refitem cmddotfile \\dotfile
 \refitem cmde \\e
 \refitem cmdelse \\else
 \refitem cmdelseif \\elseif
 \refitem cmdem \\em
 \refitem cmdendcode \\endcode
+\refitem cmdenddot \\enddot
 \refitem cmdendhtmlonly \\endhtmlonly
 \refitem cmdendif \\endif
 \refitem cmdendlatexonly \\endlatexonly
@@ -1509,6 +1511,40 @@ ALIASES  = "english=\if english" \
   relation will be broken and flagged as an error.
 
 <hr>
+\section cmddot \dot
+
+  \addindex \\dot
+  Starts a text fragment which should contain a valid description of a
+  dot graph. The text fragment ends with \ref cmdenddot "\\enddot". 
+  Doxygen will pass the text on to dot and include the resulting 
+  image (and image map) into the output.
+  The nodes of a graph can be made clickable by using the URL attribute.
+  By using the command \\ref inside the URL value you can conveniently 
+  link to an item inside doxygen. Here is an example:
+\code
+/*! class B */
+class B {};
+
+/*! class C */
+class C {};
+
+/*! \mainpage
+ *
+ *  Class relations expressed via an inline dot graph:
+ *  \dot
+ *  digraph example {
+ *      node [shape=record, fontname=Helvetica, fontsize=10];
+ *      b [ label="class B" URL="\ref B"];
+ *      c [ label="class C" URL="\ref C"];
+ *      b -> c [ arrowhead="open", style="dashed" ];
+ *  }
+ *  \enddot
+ *  Note that the classes in the above graph are clickable 
+ *  (in the HTML output).
+ */
+\endcode
+  
+<hr>
 \section cmddotfile \dotfile <file> ["caption"] 
 
   \addindex \\dotfile
@@ -1568,6 +1604,12 @@ ALIASES  = "english=\if english" \
   Ends a block of code.
   \sa section \ref cmdcode "\\code"
  
+<hr>
+\section cmdenddot \enddot
+
+  \addindex \\enddot
+  Ends a blocks that was started with \ref cmddot "\\dot".
+
 <hr>
 \section cmdendhtmlonly \endhtmlonly
 

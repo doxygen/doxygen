@@ -16,6 +16,7 @@
  *
  */
 
+#include <qdir.h>
 #include "htmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -180,6 +181,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
   }
 }
 
+
 void HtmlDocVisitor::visit(DocVerbatim *s)
 {
   if (m_hide) return;
@@ -201,6 +203,31 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::XmlOnly: 
       /* nothing */ 
+      break;
+     
+    case DocVerbatim::Dot:
+      {
+        static int dotindex = 1;
+        QCString fileName(4096);
+
+        fileName.sprintf("%s%d", 
+            (Config_getString("HTML_OUTPUT")+"/inline_dotgraph_").data(), 
+            dotindex++
+           );
+        QFile file(fileName);
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s for writing\n",fileName.data());
+        }
+        file.writeBlock( s->text(), s->text().length() );
+        file.close();
+
+        m_t << "<div align=\"center\">" << endl;
+        writeDotFile(fileName);
+        m_t << "</div>" << endl;
+
+        file.remove();
+      }
       break;
   }
 }
@@ -701,22 +728,8 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  QString baseName=df->file();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  } 
-  QString outDir = Config_getString("HTML_OUTPUT");
-  writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
+  writeDotFile(df->file());
   m_t << "<div align=\"center\">" << endl;
-  QString mapName = baseName+".map";
-  QString mapFile = df->file()+".map";
-  m_t << "<img src=\"" << baseName << "." 
-    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getDotImageMapFromFile(df->file(),outDir);
-  m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
   if (df->hasCaption())
   { 
     m_t << "<p><strong>";
@@ -998,5 +1011,24 @@ void HtmlDocVisitor::popEnabled()
   ASSERT(v!=0);
   m_hide = *v;
   delete v;
+}
+
+void HtmlDocVisitor::writeDotFile(const QString &fileName)
+{
+  QString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  QString outDir = Config_getString("HTML_OUTPUT");
+  writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
+  QString mapName = baseName+".map";
+  QString mapFile = fileName+".map";
+  m_t << "<img src=\"" << baseName << "." 
+    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
+    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+  QString imap = getDotImageMapFromFile(fileName,outDir);
+  m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 

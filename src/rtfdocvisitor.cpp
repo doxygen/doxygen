@@ -315,6 +315,28 @@ void RTFDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::XmlOnly: 
       /* nothing */
       break;
+    case DocVerbatim::Dot: 
+      {
+        static int dotindex = 1;
+        QCString fileName(4096);
+
+        fileName.sprintf("%s%d", 
+            (Config_getString("RTF_OUTPUT")+"/inline_dotgraph_").data(), 
+            dotindex++
+           );
+        QFile file(fileName);
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s for writing\n",fileName.data());
+        }
+        file.writeBlock( s->text(), s->text().length() );
+        file.close();
+        m_t << "\\par{\\qc "; // center picture
+        writeDotFile(fileName);
+        m_t << "} ";
+        file.remove();
+      }
+      break;
   }
 }
 
@@ -865,21 +887,7 @@ void RTFDocVisitor::visitPost(DocImage *)
 
 void RTFDocVisitor::visitPre(DocDotFile *df)
 {
-  QString baseName=df->file();
-  int i;
-  if ((i=baseName.findRev('/'))!=-1)
-  {
-    baseName=baseName.right(baseName.length()-i-1);
-  } 
-  QString outDir = Config_getString("RTF_OUTPUT");
-  writeDotGraphFromFile(df->file(),outDir,baseName,BITMAP);
-  m_t << "\\par" << endl;
-  m_t << "{" << endl;
-  m_t << rtf_Style_Reset << endl;
-  m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
-  m_t << outDir << "\\" << baseName;
-  m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
-  m_t << "}" << endl;
+  writeDotFile(df->file());
 
   // hide caption since it is not supported at the moment
   pushEnabled();
@@ -1197,5 +1205,24 @@ void RTFDocVisitor::popEnabled()
   ASSERT(v!=0);
   m_hide = *v;
   delete v;
+}
+
+void RTFDocVisitor::writeDotFile(const QString &fileName)
+{
+  QString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  QString outDir = Config_getString("RTF_OUTPUT");
+  writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
+  m_t << "\\par" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset << endl;
+  m_t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE ";
+  m_t << outDir << "\\" << baseName;
+  m_t << " \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "}" << endl;
 }
 

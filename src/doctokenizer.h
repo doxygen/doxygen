@@ -123,6 +123,7 @@ void doctokenizerYYsetStateHtmlOnly();
 void doctokenizerYYsetStateLatexOnly();
 void doctokenizerYYsetStateXmlOnly();
 void doctokenizerYYsetStateVerbatim();
+void doctokenizerYYsetStateDot();
 void doctokenizerYYsetStateParam();
 void doctokenizerYYsetStateXRefItem();
 void doctokenizerYYsetStateFile();

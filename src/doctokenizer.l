@@ -327,6 +327,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 %x St_LatexOnly
 %x St_XmlOnly
 %x St_Verbatim
+%x St_Dot
 %x St_Param
 %x St_XRefItem
 %x St_XRefItem2
@@ -523,6 +524,14 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_Verbatim>[^\\@\n]+     |
 <St_Verbatim>\n            |
 <St_Verbatim>.             { /* Verbatim text */
+  			 g_token->verb+=yytext;
+  		       }
+<St_Dot>{CMD}"enddot" {
+                         return RetVal_OK;
+                       }
+<St_Dot>[^\\@\n]+     |
+<St_Dot>\n            |
+<St_Dot>.             { /* dot text */
   			 g_token->verb+=yytext;
   		       }
 <St_Title>"\""	       { // quoted title
@@ -746,6 +755,10 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                                       g_endMarker="endverbatim";
 				      BEGIN(St_SecSkip);
   				    }
+<St_Sections>{CMD}"dot"	    {
+                                      g_endMarker="enddot";
+				      BEGIN(St_SecSkip);
+  				    }
 <St_Sections>{CMD}"htmlonly"	    {
                                       g_endMarker="endhtmlonly";
 				      BEGIN(St_SecSkip);
@@ -883,6 +896,12 @@ void doctokenizerYYsetStateVerbatim()
 {
   g_token->verb="";
   BEGIN(St_Verbatim);
+}
+
+void doctokenizerYYsetStateDot()
+{
+  g_token->verb="";
+  BEGIN(St_Dot);
 }
 
 void doctokenizerYYsetStateParam()

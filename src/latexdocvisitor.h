@@ -138,6 +138,9 @@ class LatexDocVisitor : public DocVisitor
     void endLink(const QString &ref,const QString &file,
                  const QString &anchor);
     QString escapeMakeIndexChars(const char *s);
+    void startDotFile(const QString &fileName,const QString &width,
+                      const QString &height, bool hasCaption);
+    void endDotFile(bool hasCaption);
 
     void pushEnabled();
     void popEnabled();

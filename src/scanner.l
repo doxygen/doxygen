@@ -495,7 +495,7 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
+SECTIONCMD {CMD}("image"|"author"|"internal"|"version"|"date"|"deprecated"|"param"|"exception"|"return"[s]?|"retval"|"bug"|"warning"|"par"|"sa"|"see"|"pre"|"post"|"invariant"|"note"|"remark"[s]?|"todo"|"test"|"xrefitem"|"ingroup"|"callgraph"|"latexonly"|"htmlonly"|"xmlonly"|"{"|"verbatim"|"dotfile"|"dot"|"defgroup"|"addtogroup"|"weakgroup"|"class"|"namespace"|"union"|"struct"|"fn"|"var"|"details"|"typedef"|"def"|"overload")|("<"{PRE}">")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
@@ -2571,6 +2571,11 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lineCount() ; 
 					  current->args += ' ' ; 
 					}
+<Function,FuncQual,FuncRound,FuncFunc>"#" { if (insidePHP)
+  					    REJECT;
+  					  lastCPPContext = YY_START;
+  					  BEGIN(SkipCPP);
+					}	
 <FuncQual,FuncRound,FuncFunc>.		{ current->args += *yytext; }
 <FuncQual>{BN}*"try"{BN}+		{ /* try-function-block */ 
 					  insideTryBlock=TRUE;
@@ -2624,11 +2629,6 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  roundCount=0;
 					  BEGIN( FuncRound ) ;
 					}
-<Function>"#"				{ if (insidePHP)
-  					    REJECT;
-  					  lastCPPContext = YY_START;
-  					  BEGIN(SkipCPP);
-					}	
 <Function>":"				{
   					  if (!insidePHP) BEGIN(SkipInits);
   					}
@@ -3836,22 +3836,22 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 <PageDoc>{CMD}"refitem".*"\n"		{
   					  current->doc+=yytext;
   					}
-<PageDoc>{CMD}"section"{B}+		{
+<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"section"{B}+		{
   					  //sectionType=SectionInfo::Section;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<PageDoc>{CMD}"subsection"{B}+		{
+<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsection"{B}+		{
   					  //sectionType=SectionInfo::Subsection;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<PageDoc>{CMD}"subsubsection"{B}+	{
+<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsubsection"{B}+	{
   					  //sectionType=SectionInfo::Subsubsection;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
   					}
-<PageDoc>{CMD}"paragraph"{B}+		{
+<ExampleDoc,ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"paragraph"{B}+		{
   					  //sectionType=SectionInfo::Paragraph;
 					  current->doc+=yytext;
   					  BEGIN(SectionLabel);
@@ -3898,10 +3898,10 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 					  current->doc+=yytext;
 					  BEGIN(AnchorLabel);
   					}
-<Doc,PageDoc,ClassDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
+<Doc,PageDoc,ClassDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly"|"dot")/[^a-z_A-Z0-9] {
 					  current->doc+=yytext;
 					}
-<JavaDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly")/[^a-z_A-Z0-9] {
+<JavaDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly"|"dot")/[^a-z_A-Z0-9] {
 					  current->brief+=yytext;
 					}
 <Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
@@ -3956,27 +3956,51 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					  lastCodeState=YY_START;
 					  current->doc+="\\code";
 					  pSkipDoc=&current->doc;
+					  g_skipBlockName="code";
 					  BEGIN(SkipCode);
 					}
 <JavaDoc>{CMD}"code"/[^a-z_A-Z0-9] 	{
   					  lastCodeState=YY_START;
 					  current->brief+="\\code";
 					  pSkipDoc=&current->brief;
+					  g_skipBlockName="code";
 					  BEGIN(SkipCode);
 					}
+<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"dot"/[^a-z_A-Z0-9] {
+  					  current->doc+="\\\\dot";
+  					}
+<JavaDoc>("\\\\"|"@@")"dot"/[^a-z_A-Z0-9] {
+  					  current->brief+="\\\\dot";
+  					}
+<Doc,PageDoc,ClassDoc>{CMD}"dot"/[^a-z_A-Z0-9] {
+					  lastCodeState=YY_START;
+					  current->doc+="\\dot";
+					  pSkipDoc=&current->doc;
+					  g_skipBlockName="dot";
+  					  BEGIN(SkipCode);
+  					}
+<JavaDoc>{CMD}"dot"/[^a-z_A-Z0-9] 	{
+					  lastCodeState=YY_START;
+					  current->brief+="\\dot";
+					  pSkipDoc=&current->brief;
+					  g_skipBlockName="dot";
+  					  BEGIN(SkipCode);
+  					}
 <Doc,PageDoc,ClassDoc>"<"{PRE}{ATTR}">" {
   					  lastCodeState=YY_START;
 					  current->doc+="<PRE>";
 					  pSkipDoc=&current->doc;
+					  g_skipBlockName="pre";
 					  BEGIN(SkipCode);
   					}
 <JavaDoc>"<"{PRE}{ATTR}">" 		{
   					  lastCodeState=YY_START;
 					  current->brief+="<PRE>";
 					  pSkipDoc=&current->brief;
+					  g_skipBlockName="pre";
 					  BEGIN(SkipCode);
   					}
-<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly")/[^a-z_A-Z0-9] {
+<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot")/[^a-z_A-Z0-9] {
   					  current->doc+=yytext;
   					  BEGIN(lastVerbState);
   					}
@@ -4012,11 +4036,24 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipCode>{CMD}"endcode"/[^a-z_A-Z0-9]	{
   					  *pSkipDoc+="\\endcode";
-					  BEGIN(lastCodeState);
+					  if (g_skipBlockName=="code")
+					  {
+					    BEGIN(lastCodeState);
+					  }
   					}
 <SkipCode>"</"{PRE}{ATTR}">"		{
   					  *pSkipDoc+="</PRE>";
-					  BEGIN(lastCodeState);
+					  if (g_skipBlockName=="pre")
+					  {
+					    BEGIN(lastCodeState);
+					  }
+  					}
+<SkipCode>{CMD}"enddot"/[^a-z_A-Z0-9]	{
+  					  *pSkipDoc+="\\enddot";
+					  if (g_skipBlockName=="dot")
+					  {
+					    BEGIN(lastCodeState);
+					  }
   					}
 <SkipCode>^"//"({B}*"*"+)?		{
   					  if (!removeSlashes)
@@ -4041,7 +4078,8 @@ PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
   					}
 <SkipCode><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-                                               "Warning: reached end of file while inside a @code block; check for missing @endcode!"
+                                               "Warning: reached end of file while inside a %s block; check for missing end tag!",
+					       g_skipBlockName.data()
                                               );
 					  yyterminate();
   					}
