@@ -124,6 +124,7 @@ ClassDef::~ClassDef()
   delete m_innerClasses;
   delete m_templateInstances;
   delete m_templBaseClassNames;
+  delete m_tempArgs;
 }
 
 QCString ClassDef::displayName() const
@@ -1525,7 +1526,6 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
   if (al==0) return;
   if (!m_tempArgs) delete m_tempArgs; // delete old list if needed
   m_tempArgs=new ArgumentList; 
-  m_tempArgs->setAutoDelete(TRUE);
   ArgumentListIterator ali(*al);
   Argument *a;
   for (;(a=ali.current());++ali)
@@ -1981,7 +1981,11 @@ void ClassDef::mergeMembers()
 
 void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
 {
-  if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(17); 
+  if (m_usesImplClassDict==0) 
+  {
+    m_usesImplClassDict = new UsesClassDict(17); 
+    m_usesImplClassDict->setAutoDelete(TRUE);
+  }
   UsesClassDef *ucd=m_usesImplClassDict->find(cd->name());
   if (ucd==0 /*|| ucd->templSpecifiers!=templSpec*/)
   {
@@ -2065,7 +2069,11 @@ void ClassDef::determineImplUsageRelation()
             if (cd) // class exists 
             {
               found=TRUE;
-              if (m_usesImplClassDict==0) m_usesImplClassDict = new UsesClassDict(257); 
+              if (m_usesImplClassDict==0) 
+              {
+                m_usesImplClassDict = new UsesClassDict(257); 
+                m_usesImplClassDict->setAutoDelete(TRUE);
+              }
               UsesClassDef *ucd=m_usesImplClassDict->find(cd->name());
               if (ucd==0 || ucd->templSpecifiers!=templSpec)
               {

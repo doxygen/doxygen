@@ -103,13 +103,20 @@ function propagateChangesInState(folder)
  
 function hideFolder() 
 { 
-  if (browserVersion == 1 || browserVersion == 3) { 
+  if (browserVersion == 1 || browserVersion == 3) 
+  { 
     if (this.navObj.style.display == "none") 
-      return 
+    {
+      return
+    }
     this.navObj.style.display = "none" 
-  } else { 
+  } 
+  else 
+  { 
     if (this.navObj.visibility == "hidden") 
+    {
       return 
+    }
     this.navObj.visibility = "hidden" 
   } 
    
@@ -118,11 +125,11 @@ function hideFolder()
  
 function initializeFolder(level, lastNode, leftSide) 
 { 
-var j=0 
-var i=0 
-var numberOfFolders 
-var numberOfDocs 
-var nc 
+  var j=0 
+  var i=0 
+  var numberOfFolders 
+  var numberOfDocs 
+  var nc 
       
   nc = this.nChildren 
    
@@ -166,9 +173,12 @@ var nc
  
 function drawFolder(leftSide) 
 { 
-  if (browserVersion == 2) { 
-    if (!doc.yPos) 
+  if (browserVersion == 2) 
+  { 
+    if (!doc.yPos)
+    {
       doc.yPos=8 
+    }
     doc.write("<layer id='folder" + this.id + "' top=" + doc.yPos + " visibility=hidden>") 
   } 
   if (browserVersion == 3) 
@@ -178,7 +188,9 @@ function drawFolder(leftSide)
    
   doc.write("\n<table ") 
   if (browserVersion == 1) 
+  {
     doc.write(" id='folder" + this.id + "' style='position:block;' ") 
+  }
   doc.write(" border=0 cellspacing=0 cellpadding=0>") 
   doc.write("\n<tr><td>") 
   doc.write(leftSide) 
@@ -192,7 +204,9 @@ function drawFolder(leftSide)
     doc.write(this.desc + "</a>") 
   } 
   else 
+  {
     doc.write(this.desc) 
+  }
   if (this.tagName!="")
   {
     doc.write(" [external]")
@@ -200,23 +214,30 @@ function drawFolder(leftSide)
   doc.write("</td>")  
   doc.write("\n</table>\n") 
    
-  if (browserVersion == 2) { 
+  if (browserVersion == 2) 
+  { 
     doc.write("</layer>") 
   } 
-  if (browserVersion == 3) { 
+  if (browserVersion == 3) 
+  { 
     doc.write("</div>") 
   } 
  
-  if (browserVersion == 1) { 
+  if (browserVersion == 1) 
+  { 
     this.navObj = doc.all["folder"+this.id] 
     this.iconImg = doc.all["folderIcon"+this.id] 
     this.nodeImg = doc.all["nodeIcon"+this.id] 
-  } else if (browserVersion == 2) { 
+  } 
+  else if (browserVersion == 2) 
+  { 
     this.navObj = doc.layers["folder"+this.id] 
     this.iconImg = this.navObj.document.images["folderIcon"+this.id] 
     this.nodeImg = this.navObj.document.images["nodeIcon"+this.id] 
     doc.yPos=doc.yPos+this.navObj.clip.height 
-  } else if (browserVersion == 3) {
+  } 
+  else if (browserVersion == 3) 
+  {
     this.navObj = doc.getElementById("folder"+this.id)
     this.iconImg = doc.images.namedItem("folderIcon"+this.id)
     this.nodeImg = doc.images.namedItem("nodeIcon"+this.id)
@@ -303,6 +324,7 @@ function initializeItem(level, lastNode, leftSide)
   this.createIndex() 
  
   if (level>0) 
+  {
     if (lastNode) //the last 'brother' in the children array 
     { 
       this.renderOb(leftSide + "<img src='ftv2lastnode.png' width=16 height=22>") 
@@ -313,20 +335,29 @@ function initializeItem(level, lastNode, leftSide)
       this.renderOb(leftSide + "<img src='ftv2node.png' width=16 height=22>") 
       leftSide = leftSide + "<img src='ftv2vertline.png' width=16 height=22>" 
     } 
+  }
   else 
+  {
     this.renderOb("")   
+  }
 } 
  
 function drawItem(leftSide) 
 { 
-  if (browserVersion == 2) 
-    doc.write("<layer id='item" + this.id + "' top=" + doc.yPos + " visibility=hidden>") 
-  if (browserVersion == 3) 
-    doc.write("<div id='item" + this.id + "' style='display:block;'>") 
+  if (browserVersion == 2)
+  {
+    doc.write("<layer id='item" + this.id + "' top=" + doc.yPos + " visibility=hidden>")
+  }
+  else if (browserVersion == 3)
+  {
+    doc.write("<div id='item" + this.id + "' style='display:block;'>")
+  }
      
   doc.write("\n<table ") 
-  if (browserVersion == 1) 
-    doc.write(" id='item" + this.id + "' style='position:block;' ") 
+  if (browserVersion == 1)
+  {
+    doc.write(" id='item" + this.id + "' style='position:block;' ")
+  }
   doc.write(" border=0 cellspacing=0 cellpadding=0>\n") 
   doc.write("<tr><td>") 
   doc.write(leftSide) 
@@ -342,9 +373,13 @@ function drawItem(leftSide)
   } 
   doc.write("</td>\n<td valign=middle nowrap>") 
   if (USETEXTLINKS && this.link!="") 
+  {
     doc.write("<a href=" + this.link + ">" + this.desc + "</a>") 
+  }
   else 
+  {
     doc.write(this.desc) 
+  }
   if (this.tagName!="")
   {
     doc.write(" [external]");
@@ -352,18 +387,27 @@ function drawItem(leftSide)
   doc.write("\n</table>\n") 
    
   if (browserVersion == 2) 
+  {
     doc.write("</layer>") 
-  if (browserVersion == 3) 
+  }
+  else if (browserVersion == 3) 
+  {
     doc.write("</div>")
+  }
  
-  if (browserVersion == 1) { 
+  if (browserVersion == 1) 
+  { 
     this.navObj = doc.all["item"+this.id] 
     this.iconImg = doc.all["itemIcon"+this.id] 
-  } else if (browserVersion == 2) { 
+  } 
+  else if (browserVersion == 2) 
+  { 
     this.navObj = doc.layers["item"+this.id] 
     this.iconImg = this.navObj.document.images["itemIcon"+this.id] 
     doc.yPos=doc.yPos+this.navObj.clip.height 
-  } else if (browserVersion == 3) {
+  } 
+  else if (browserVersion == 3) 
+  {
     this.navObj = doc.getElementById("item"+this.id)
     this.iconImg = doc.images.namedItem("itemIcon"+this.id)
   }
@@ -376,9 +420,13 @@ function drawItem(leftSide)
 function display() 
 { 
   if (browserVersion == 1 || browserVersion == 3) 
+  {
     this.navObj.style.display = "block" 
+  }
   else 
-    this.navObj.visibility = "show" 
+  {
+    this.navObj.visibility = "show"
+  }
 } 
  
 function createEntryIndex() 
@@ -429,18 +477,49 @@ function clickOnNode(folderId)
   clickedFolder.setState(!state) //open<->close  
 } 
  
+function preLoadIcons() 
+{
+  var auxImg
+  auxImg = new Image();
+  auxImg.src = "ftv2blank.png";
+  auxImg.src = "ftv2doc.png";
+  auxImg.src = "ftv2folderclosed.png";
+  auxImg.src = "ftv2folderopen.png";
+  auxImg.src = "ftv2lastnode.png";
+  auxImg.src = "ftv2link.png";
+  auxImg.src = "ftv2mlastnode.png";
+  auxImg.src = "ftv2mnode.png";
+  auxImg.src = "ftv2node.png";
+  auxImg.src = "ftv2plastnode.png";
+  auxImg.src = "ftv2pnode.png";
+  auxImg.src = "ftv2vertline.png";
+}
+
 function initializeDocument() 
 { 
-  doc = document;
-  if (doc.all) 
-    browserVersion = 1 //IE4   
-  else 
-    if (doc.layers) 
-      browserVersion = 2 //NS4 
-    else if(navigator.userAgent.toLowerCase().indexOf('gecko') != -1)
-        browserVersion = 3 //mozilla
-      else 
-        browserVersion = 0 //other 
+  preLoadIcons()
+
+  var ua = window.navigator.userAgent.toLowerCase();
+  if ((ua.indexOf('msie')!=-1) && (navigator.version>=4))
+  {
+    browserVersion = 1  // IE >= 4.x
+  }
+  else if (ua.indexOf('opera')!=-1)
+  {
+    browserVersion = 3; // Opera
+  }
+  else if (ua.indexOf('gecko')!=-1)
+  {
+    browserVersion = 3; // NS6 or Mozilla
+  }
+  else if (ua.indexOf('mozilla')!=-1)
+  {
+    browserVersion = 2; // NS4
+  }
+  else
+  {
+    browserVersion = 0; // unknown or old browser
+  }
 
   foldersTree.initialize(0, 1, "") 
   foldersTree.display()
@@ -459,6 +538,7 @@ function initializeDocument()
  
 // Auxiliary Functions for Folder-Treee backward compatibility 
 // ********************************************************* 
+ 
  
 function gFld(description, tagName, hreference) 
 { 
@@ -492,9 +572,10 @@ function insDoc(parentFolder, document)
 // Global variables 
 // **************** 
  
-USETEXTLINKS = 1
-indexOfEntries = new Array 
-nEntries = 0 
-doc = document 
-browserVersion = 0 
-selectedFolder=0
+var USETEXTLINKS = 1
+var indexOfEntries = new Array 
+var nEntries = 0 
+var doc = document 
+var browserVersion = 0 
+var selectedFolder=0
+

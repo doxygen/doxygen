@@ -363,13 +363,6 @@ function's detailed documentation block.
  to \c NO (the default) then the documentation will be excluded.
  Set it to \c YES to include the internal documentation.
 
-\anchor cfg_strip_code_comments
-<dt>\c STRIP_CODE_COMMENTS <dd>
- \addindex STRIP_CODE_COMMENTS
- Setting the \c STRIP_CODE_COMMENTS tag to \c YES (the default) will instruct
- doxygen to hide any special comment blocks from generated source code
- fragments. Normal C and C++ comments will always remain visible.
-
 \anchor cfg_case_sense_names
 <dt>\c CASE_SENSE_NAMES <dd>
  \addindex CASE_SENSE_NAMES
@@ -729,6 +722,13 @@ function's detailed documentation block.
  \addindex INLINE_SOURCES
  Setting the \c INLINE_SOURCES tag to \c YES will include the body
  of functions, classes and enums directly into the documentation.
+
+\anchor cfg_strip_code_comments
+<dt>\c STRIP_CODE_COMMENTS <dd>
+ \addindex STRIP_CODE_COMMENTS
+ Setting the \c STRIP_CODE_COMMENTS tag to \c YES (the default) will instruct
+ doxygen to hide any special comment blocks from generated source code
+ fragments. Normal C and C++ comments will always remain visible.
 
 \anchor cfg_referenced_by_relation
 <dt>\c REFERENCED_BY_RELATION <dd>

@@ -2733,6 +2733,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  lastCContext = YY_START;
 					  BEGIN(SkipCxxComment);
   					}
+<SkipInits>;	                        {
+  					  warn(yyFileName,yyLineNr,
+					      "Warning: Found ';' while parsing initializer list! "
+					      "(doxygen could be confused by a macro call without semicolon)"
+					     );
+					  BEGIN( FindMembers );
+  					}
 <SkipInits,SkipCurly,SkipCurlyCpp>.	{
   				          //addToBody(yytext);
   					}

@@ -127,7 +127,7 @@ void writeInstallScript()
     t << "}\n";
     t << "\n";
     t << "if ( ! @files ) {\n";
-    t << "  print STDERR \"Warning: No input files given and non found!\\n\";\n";
+    t << "  print STDERR \"Warning: No input files given and none found!\\n\";\n";
     t << "}\n";
     t << "\n";
     t << "foreach $f (@files)\n";

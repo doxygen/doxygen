@@ -222,6 +222,42 @@ should send me a code fragment that triggers the message. The workaround
 the problem put some line-breaks into your file, split it up into smaller 
 parts, or exclude it from the input using EXCLUDE.
 
+<li><b>Why are dependencies via STL classes not shown in the dot graphs?</b>
+
+Doxygen is unware of the STL classes, so it does not know that class A relates
+to class B in the following example
+
+\code
+#include <vector>
+
+using namespace std;
+
+class B {};
+
+class A 
+{
+  public:
+    vector<B> m_bvec;
+};
+\endcode
+
+To overcome this problem you could provide the definition of the vector 
+class to doxygen (by including the file that defines it at the INPUT tag 
+in the config file). Since STL header files are often messy, a 
+(possibly) better approach is to include a dummy definition of a vector 
+class to the input. Here is an example of a dummy STL file for the vector 
+class:
+
+\code
+namespace std {
+  /*! STL vector class */
+  template<class T> class vector { public: T element; };
+}
+\endcode
+
+I'm still looking for someone who can provide me with definitions
+for all (relevant) STL classes.
+
 <li><b>How did doxygen get its name?</b>
 
 Doxygen got its name from playing with the words 

@@ -186,6 +186,8 @@ class TagFileParser : public QXmlDefaultHandler
                                          m_endElementHandlers(17),
                                          m_tagName(tagName)
     {
+      m_startElementHandlers.setAutoDelete(TRUE);
+      m_endElementHandlers.setAutoDelete(TRUE);
     }
 
     void startCompound( const QXmlAttributes& attrib )
@@ -305,7 +307,8 @@ class TagFileParser : public QXmlDefaultHandler
 
     void endMember()
     {
-      m_state = *m_stateStack.pop();
+      m_state = *m_stateStack.top();
+      m_stateStack.remove();
       switch(m_state)
       {
         case InClass:     m_curClass->members.append(m_curMember); break;
@@ -884,6 +887,7 @@ void TagFileParser::buildMemberList(Entry *ce,QList<TagMemberInfo> &members)
     me->args       = tmi->arglist;
     if (!me->args.isEmpty())
     {
+      delete me->argList;
       me->argList = new ArgumentList;
       stringToArgumentList(me->args,me->argList);
     }
@@ -1006,11 +1010,16 @@ void TagFileParser::buildLists(Entry *root)
     // transfer base class list
     if (tci->bases)
     {
+      delete ce->extends;
       ce->extends = tci->bases; tci->bases = 0;
     }
     if (tci->templateArguments)
     {
-      if (ce->tArgLists==0) ce->tArgLists = new QList<ArgumentList>;
+      if (ce->tArgLists==0) 
+      {
+        ce->tArgLists = new QList<ArgumentList>;
+        ce->tArgLists->setAutoDelete(TRUE);
+      }
       ArgumentList *al = new ArgumentList;
       ce->tArgLists->append(al);
       

@@ -60,40 +60,38 @@ extern QCString spaces;
 class Doxygen
 {
   public:
-    static ClassSDict classSDict;
-    static ClassSDict hiddenClasses;
-    static PageSDict *exampleSDict;
-    static PageSDict *pageSDict;
-    static PageInfo  *mainPage;
-    static FileNameDict *includeNameDict;
-    static FileNameDict *exampleNameDict;
-    static FileNameDict *inputNameDict;
-    static FileNameList inputNameList;
-    static FileNameDict *imageNameDict;
-    static FileNameDict *dotFileNameDict;
-    static QStrList tagfileList;
-    static MemberNameSDict memberNameSDict;
-    static MemberNameSDict functionNameSDict;
-    static FileList fileList;
-    static FileDict fileDict;
-    static ClassDef unrelatedClass; 
-    static QTextStream tagFile;
-    static SectionDict sectionDict;
-    static StringDict namespaceAliasDict;
-    static GroupSDict groupSDict;
-    static NamespaceSDict namespaceSDict;
-    static FormulaList formulaList;
-    static FormulaDict formulaDict;
-    static FormulaDict formulaNameDict;
-    static StringDict tagDestinationDict; 
-    static StringDict aliasDict; 
+    static ClassSDict                classSDict;
+    static ClassSDict                hiddenClasses;
+    static PageSDict                *exampleSDict;
+    static PageSDict                *pageSDict;
+    static PageInfo                 *mainPage;
+    static FileNameDict             *includeNameDict;
+    static FileNameDict             *exampleNameDict;
+    static FileNameDict             *inputNameDict;
+    static FileNameList              inputNameList;
+    static FileNameDict             *imageNameDict;
+    static FileNameDict             *dotFileNameDict;
+    static QStrList                  tagfileList;
+    static MemberNameSDict           memberNameSDict;
+    static MemberNameSDict           functionNameSDict;
+    static FileList                  fileList;
+    static FileDict                  fileDict;
+    static ClassDef                  unrelatedClass; 
+    static QTextStream               tagFile;
+    static SectionDict               sectionDict;
+    static StringDict                namespaceAliasDict;
+    static GroupSDict                groupSDict;
+    static NamespaceSDict            namespaceSDict;
+    static FormulaList               formulaList;
+    static FormulaDict               formulaDict;
+    static FormulaDict               formulaNameDict;
+    static StringDict                tagDestinationDict; 
+    static StringDict                aliasDict; 
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
-    //static QIntDict<QCString> memberHeaderDict; // dictionary of the member groups heading
-    //static QIntDict<QCString> memberDocDict;    // dictionary of the member groups heading
-    static QDict<void> expandAsDefinedDict;
-    static NamespaceDef *globalScope;
-    static QDict<RefList> *specialLists; // array of special lists: todo, test, bug, deprecated ...
-    static QCString htmlFileExtension;
+    static QDict<void>               expandAsDefinedDict;
+    static NamespaceDef             *globalScope;
+    static QDict<RefList>           *specialLists; // array of special lists: todo, test, bug, deprecated ...
+    static QCString                  htmlFileExtension;
 };
 
 void initDoxygen();

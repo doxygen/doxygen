@@ -103,7 +103,7 @@ class ArgumentList : public QList<Argument>
     ArgumentList() : QList<Argument>(), 
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
-                     pureSpecifier(FALSE) {}
+                     pureSpecifier(FALSE) { setAutoDelete(TRUE); }
     /*! Destroys the argument list */
    ~ArgumentList() {}
     bool hasDocumentation() const;

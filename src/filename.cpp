@@ -20,6 +20,7 @@
 
 FileName::FileName(const char *fn,const char *n) : FileList()
 {
+  setAutoDelete(TRUE);
   fName=fn;
   name=n;
 }

@@ -128,8 +128,8 @@ static void docParserPopContext()
 //---------------------------------------------------------------------------
 
 /*! search for an image in the imageNameDict and if found
- * copies the image to the output directory (which is the
- * html directory if type==0 or the latex directory if type==1)
+ * copies the image to the output directory (which depends on the \a type
+ * parameter).
  */
 static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
 {
@@ -225,14 +225,20 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
   return result;
 }
 
+/*! Collects the parameters found with @param or @retval commands
+ *  in a global list g_paramsFound. If \a isParam is set to TRUE
+ *  and the parameter is not an actual parameter of the current
+ *  member g_memberDef, than a warning is raised (unless warnings
+ *  are disabled altogether).
+ */
 static void checkArgumentName(const QString &name,bool isParam)
 {                
+  if (!Config_getBool("WARN_IF_DOC_ERROR")) return;
   if (g_memberDef==0) return; // not a member
   ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
 		   g_memberDef->argumentList() :
                    g_memberDef->declArgumentList();
   if (al==0) return; // no argument list
-  if (!Config_getBool("WARN_IF_DOC_ERROR")) return;
 
   static QRegExp re("[a-zA-Z0-9_]+\\.*");
   int p=0,i=0,l;
@@ -270,6 +276,11 @@ static void checkArgumentName(const QString &name,bool isParam)
   }
 }
 
+/*! Checks if the parameters that have been specified using @param are
+ *  indeed all paramters.
+ *  Must be called after checkArgumentName() has been called for each
+ *  argument.
+ */
 static void checkUndocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool("WARN_IF_DOC_ERROR"))
@@ -317,6 +328,7 @@ static void checkUndocumentedParams()
 
 //---------------------------------------------------------------------------
 
+/*! Strips know html and tex extensions from \a text. */
 static QString stripKnownExtensions(const char *text)
 {
   QString result=text;
@@ -414,6 +426,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
                                  QString *pDoc,
                                  Definition **pDef)
 {
+  //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
   *pDef=0;
   QString cmdArg=commandName;
@@ -422,10 +435,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 
   int funcStart=cmdArg.find('(');
   if (funcStart==-1) funcStart=l;
-  //int lastScopeStart=cmdArg.findRev("::",funcStart);
-  //int lastScopeEnd = lastScopeStart==-1 ? 0 : lastScopeStart+2;
-  //QString scope=cmdArg.left(QMAX(lastScopeStart,0));
-  //QString name=cmdArg.mid(lastScopeEnd,funcStart-lastScopeEnd);
+
   QString name=cmdArg.left(funcStart);
   QString args=cmdArg.right(l-funcStart);
 
@@ -441,6 +451,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       name.latin1(),
       args.isEmpty()?0:args.latin1(),
       md,cd,fd,nd,gd,FALSE,0,TRUE);
+  //printf("found=%d context=%s name=%s\n",found,g_context.data(),name.data());
   if (found && md)
   {
     *pDoc=md->documentation();
@@ -1289,7 +1300,14 @@ void DocCopy::parse()
     if (g_copyStack.findRef(def)==-1) // definition not parsed earlier
     {
       docParserPushContext();
-      g_context=def->name();
+      if (def->definitionType()==Definition::TypeMember && def->getOuterScope())
+      {
+        g_context=def->getOuterScope()->name();
+      }
+      else
+      {
+        g_context=def->name();
+      }
       g_styleStack.clear();
       g_nodeStack.clear();
       g_copyStack.append(def);
@@ -3728,13 +3746,6 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         retval=RetVal_ListItem;
       }
       break;
-    //case HTML_PRE:
-    //  {
-    //    DocHtmlPre *pre = new DocHtmlPre(this,tagHtmlAttribs);
-    //    m_children.append(pre);
-    //    retval=pre->parse();
-    //  }
-    //  break;
     case HTML_BOLD:
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
@@ -3836,7 +3847,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
             g_insideHtmlLink=FALSE;
             break;
           }
-          else // unsupport option for tag a
+          else // unsupported option for tag a
           {
           }
         }
@@ -4054,6 +4065,7 @@ int DocPara::parse()
 {
   DBG(("DocPara::parse() start\n"));
   g_nodeStack.push(this);
+  // handle style commands "inherited" from the previous paragraph
   handleInitialStyleCommands(this,m_children);
   int tok;
   int retval=0;
@@ -4083,7 +4095,7 @@ reparsetoken:
         {
           // prevent leading whitespace and collapse multiple whitespace areas
           DocNode::Kind k; 
-          if (insidePRE(this) || // all whitespace is relavant
+          if (insidePRE(this) || // all whitespace is relevant
               (                
                // remove leading whitespace 
                !m_children.isEmpty()  && 
@@ -4197,12 +4209,7 @@ reparsetoken:
           }
 	  if (cmd&SIMPLESECT_BIT)
 	  {
-	    if (n  // already in a simple section
-	        //|| // no section or root as parent
-		//  (parent()->kind()!=DocNode::Kind_Root &&
-	  	//   parent()->kind()!=DocNode::Kind_Section
-	        //  )
-	       )
+	    if (n)  // already in a simple section
 	    {
 	      // simple section cannot start in this paragraph, need
 	      // to unwind the stack and remember the command.

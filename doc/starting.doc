@@ -32,6 +32,12 @@ engine. See section \ref doxysearch_usage for more detailed usage information.
 Optionally, the executable \c doxywizard is a GUI front-end for editing 
 the configuration files that are used by doxygen.
 
+The following figure shows the relation between the tools and the flow
+of information between them:
+
+\image html infoflow.gif "Doxygen information flow" 
+\image latex infoflow.eps "Doxygen information flow" width=14cm
+
 \section step1 Step 1: Creating a configuration file
 
 Doxygen uses a configuration file to determine all of its settings.

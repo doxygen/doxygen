@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <qtextcodec.h>
 
 #include "version.h"
 #include "doxygen.h"
@@ -61,6 +62,7 @@
 //#include "packagedef.h"
 #include "bufstr.h"
 #include "commentcnv.h"
+#include "cmdmapper.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -104,8 +106,6 @@ StringDict     Doxygen::tagDestinationDict(257); // all tag locations
 QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
 
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
-//QIntDict<QCString> Doxygen::memberHeaderDict(1009); // dictionary of the member groups heading
-//QIntDict<QCString> Doxygen::memberDocDict(1009);    // dictionary of the member groups heading
 
 PageInfo      *Doxygen::mainPage = 0;           
 QTextStream    Doxygen::tagFile;
@@ -3095,6 +3095,7 @@ static bool findTemplateInstanceRelation(Entry *root,
 
       findUsedClassesForClass(templateRoot,templateClass,instanceClass,
           isArtificial,templArgs,templateNames);
+      delete templArgs;
     }
     else
     {
@@ -4468,7 +4469,6 @@ static void findMember(Entry *root,
                * of the function definition before matching.
                */
               argList = new ArgumentList;
-              argList->setAutoDelete(TRUE);
               substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
                                            md->argumentList(),argList);
 
@@ -7048,6 +7048,37 @@ void initDoxygen()
   initPreprocessor();
 
   Doxygen::sectionDict.setAutoDelete(TRUE);
+  Doxygen::inputNameList.setAutoDelete(TRUE);
+  Doxygen::memberNameSDict.setAutoDelete(TRUE);
+  Doxygen::functionNameSDict.setAutoDelete(TRUE);
+  Doxygen::hiddenClasses.setAutoDelete(TRUE);
+  Doxygen::classSDict.setAutoDelete(TRUE);
+  Doxygen::pageSDict->setAutoDelete(TRUE);
+  Doxygen::exampleSDict->setAutoDelete(TRUE);
+  excludeNameDict.setAutoDelete(TRUE);
+  Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
+  Doxygen::tagDestinationDict.setAutoDelete(TRUE);
+}
+
+void cleanUpDoxygen()
+{
+  delete Doxygen::inputNameDict;
+  delete Doxygen::includeNameDict;
+  delete Doxygen::exampleNameDict;
+  delete Doxygen::imageNameDict;
+  delete Doxygen::dotFileNameDict;
+  delete Doxygen::mainPage;
+  delete Doxygen::pageSDict;  
+  delete Doxygen::exampleSDict;
+  delete Doxygen::globalScope;
+  delete Doxygen::specialLists;
+  cleanUpPreprocessor();
+  Config::deleteInstance();
+  QTextCodec::deleteAllCodecs();
+  delete theTranslator;
+  delete outputList;
+  CmdMapper::freeInstance();
+  HtmlTagMapper::freeInstance();
 }
 
 void readConfiguration(int argc, char **argv)
@@ -7093,6 +7124,7 @@ void readConfiguration(int argc, char **argv)
         if (!formatName)
         {
           err("Error:option -e is missing format specifier rtf.\n");
+          cleanUpDoxygen();
           exit(1);
         }
         if (stricmp(formatName,"rtf")==0)
@@ -7100,6 +7132,7 @@ void readConfiguration(int argc, char **argv)
           if (optind+1>=argc)
           {
             err("Error: option \"-e rtf\" is missing an extensions file name\n");
+            cleanUpDoxygen();
             exit(1);
           }
           QFile f;
@@ -7107,9 +7140,11 @@ void readConfiguration(int argc, char **argv)
           {
             RTFGenerator::writeExtensionsFile(f);
           }
+          cleanUpDoxygen();
           exit(1);
         }
         err("Error: option \"-e\" has invalid format specifier.\n");
+        cleanUpDoxygen();
         exit(1);
         break; 
       case 'w':
@@ -7117,6 +7152,7 @@ void readConfiguration(int argc, char **argv)
         if (!formatName)
         {
           err("Error: option -w is missing format specifier rtf, html or latex\n");
+          cleanUpDoxygen();
           exit(1);
         } 
         if (stricmp(formatName,"rtf")==0)
@@ -7124,6 +7160,7 @@ void readConfiguration(int argc, char **argv)
           if (optind+1>=argc)
           {
             err("Error: option \"-w rtf\" is missing a style sheet file name\n");
+            cleanUpDoxygen();
             exit(1);
           }
           QFile f;
@@ -7131,6 +7168,7 @@ void readConfiguration(int argc, char **argv)
           {
             RTFGenerator::writeStyleSheetFile(f);
           }
+          cleanUpDoxygen();
           exit(1);
         }
         else if (stricmp(formatName,"html")==0)
@@ -7140,6 +7178,7 @@ void readConfiguration(int argc, char **argv)
             if (!Config::instance()->parse(argv[optind+4]))
             {
               err("Error opening or reading configuration file %s!\n",argv[optind+4]);
+              cleanUpDoxygen();
               exit(1);
             }
             Config::instance()->substituteEnvironmentVars();
@@ -7153,6 +7192,7 @@ void readConfiguration(int argc, char **argv)
           if (optind+3>=argc)
           {
             err("Error: option \"-w html\" does not have enough arguments\n");
+            cleanUpDoxygen();
             exit(1);
           }
 
@@ -7176,7 +7216,8 @@ void readConfiguration(int argc, char **argv)
           if (openOutputFile(argv[optind+3],f))
           {
             HtmlGenerator::writeStyleSheetFile(f);
-          }
+          } 
+          cleanUpDoxygen();
           exit(0);
         }
         else if (stricmp(formatName,"latex")==0)
@@ -7199,6 +7240,7 @@ void readConfiguration(int argc, char **argv)
           if (optind+2>=argc)
           {
             err("Error: option \"-w latex\" does not have enough arguments\n");
+            cleanUpDoxygen();
             exit(1);
           }
 
@@ -7218,11 +7260,13 @@ void readConfiguration(int argc, char **argv)
           {
             LatexGenerator::writeStyleSheetFile(f);
           }
+          cleanUpDoxygen();
           exit(0);
         }
         else 
         {
           err("Error: Illegal format specifier %s: should be one of rtf, html, or latex\n",formatName);
+          cleanUpDoxygen();
           exit(1);
         }
         break;
@@ -7234,6 +7278,7 @@ void readConfiguration(int argc, char **argv)
         else if (strcmp(&argv[optind][2],"version")==0)
         {
           msg("%s\n",versionString); 
+          cleanUpDoxygen();
           exit(0);
         }
         break;
@@ -7257,6 +7302,7 @@ void readConfiguration(int argc, char **argv)
   if (genConfig)
   {
     generateConfigFile(configName,shortList);
+    cleanUpDoxygen();
     exit(0);
   }
 
@@ -7295,12 +7341,14 @@ void readConfiguration(int argc, char **argv)
   if (!Config::instance()->parse(configName))
   {
     err("Error: could not open or read configuration file %s!\n",configName);
+    cleanUpDoxygen();
     exit(1);
   }
 
   if (updateConfig)
   {
     generateConfigFile(configName,shortList,TRUE);
+    cleanUpDoxygen();
     exit(0);
   }
   
@@ -7370,8 +7418,6 @@ void readConfiguration(int argc, char **argv)
 void parseInput()
 {
 
-  Doxygen::classSDict.setAutoDelete(TRUE);
-  
   Doxygen::inputNameDict     = new FileNameDict(10007);
   Doxygen::includeNameDict   = new FileNameDict(10007);
   Doxygen::exampleNameDict   = new FileNameDict(1009);
@@ -7602,6 +7648,8 @@ void parseInput()
   if (input.isEmpty())
   {
     err("No input read, no output generated!\n");
+    delete root;
+    cleanUpDoxygen();
     exit(1);
   }
   else
@@ -7628,6 +7676,8 @@ void parseInput()
       {
         err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
 	    "exist and cannot be created\n",outputDirectory.data());
+        delete root;
+        cleanUpDoxygen();
         exit(1);
       }
       else if (!Config_getBool("QUIET"))
@@ -7654,6 +7704,8 @@ void parseInput()
   if (generateHtml && !htmlDir.exists() && !htmlDir.mkdir(htmlOutput))
   {
     err("Could not create output directory %s\n",htmlOutput.data());
+    delete root;
+    cleanUpDoxygen();
     exit(1);
   }
   
@@ -7671,6 +7723,8 @@ void parseInput()
   if (generateLatex && !latexDir.exists() && !latexDir.mkdir(latexOutput))
   {
     err("Could not create output directory %s\n",latexOutput.data());
+    delete root;
+    cleanUpDoxygen();
     exit(1);
   }
   
@@ -7688,6 +7742,8 @@ void parseInput()
   if (generateRtf && !rtfDir.exists() && !rtfDir.mkdir(rtfOutput))
   {
     err("Could not create output directory %s\n",rtfOutput.data());
+    delete root;
+    cleanUpDoxygen();
     exit(1);
   }
 
@@ -7705,6 +7761,8 @@ void parseInput()
   if (generateMan && !manDir.exists() && !manDir.mkdir(manOutput))
   {
     err("Could not create output directory %s\n",manOutput.data());
+    delete root;
+    cleanUpDoxygen();
     exit(1);
   }
 
@@ -7855,6 +7913,7 @@ void generateOutput()
    *            Initialize output generators                                *
    **************************************************************************/
 
+  
   outputList = new OutputList(TRUE);
   if (Config_getBool("GENERATE_HTML"))  
   {
@@ -7894,6 +7953,7 @@ void generateOutput()
       err("Error: cannot open tag file %s for writing\n",
           generateTagFile.data()
          );
+      cleanUpDoxygen();
       exit(1);
     }
     Doxygen::tagFile.setDevice(tag);
@@ -8069,5 +8129,6 @@ void generateOutput()
     }
     QDir::setCurrent(oldDir);
   }
+  cleanUpDoxygen();
 }
 
