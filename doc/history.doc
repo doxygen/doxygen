@@ -38,7 +38,7 @@
     parser and GUI front-end from source templates. 
 <li>Better support for the using keyword.
 <li>New transparent mini logo that is put in the footer of all HTML pages.
-<li>Internationalization support for the Polish and Croatian language.
+<li>Internationalization support for the Polish, Portuguese and Croatian language.
 <li>Todo list support.
 <li>If the source browser is enabled, for a function, a list of function whose
     implementation calls that function, is generated.

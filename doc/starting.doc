@@ -29,6 +29,9 @@ information.
 The executable \c doxysearch is only needed if you want to use the search 
 engine. See section \ref doxysearch_usage for more detailed usage information.
 
+Optionally, the executable \c doxywizard is a GUI front-end for editing 
+the configuration files that are used by doxygen.
+
 \subsection step1 Step 1: Creating a configuration file
 
 Doxygen uses a configuration file to determine all of its settings.
@@ -129,14 +132,16 @@ documentation, \c doxygen writes a \c Makefile into the \c latex directory.
 By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
 <code>make</code> ofcourse). This file can then be viewed using \c xdvi or 
-converted into a postscript file \c refman.ps by typing <code>make ps</code> 
-(this requires <code>dvips</code>).  The Postscript file can be send to a postscript
+converted into a postscript file \c refman.ps by 
+typing <code>make ps</code> (this requires <code>dvips</code>).  
+To put 2 pages on one physical page use <code>make ps_2on1</code> instead.
+The resulting Postscript file can be send to a postscript
 printer. If you do not have a postscript printer, you can try to use 
 ghostscript to convert postscript into something your printer understands.
 Conversion to PDF is also possible if you have installed the ghostscript
-interpreter; just type <code>make pdf</code>. To get the best results for 
-PDF output you should set the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" 
-tag to \c YES.
+interpreter; just type <code>make pdf</code> (or <code>make pdf_2on1</code>). 
+To get the best results for PDF output you should set 
+the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" tag to \c YES.
 
 The generated man pages can be viewed using the \c man program. You do need
 to make sure the man directory is in the man path (see the \c MANPATH

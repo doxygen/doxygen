@@ -31,6 +31,8 @@ class HtmlGenerator : public OutputGenerator
    ~HtmlGenerator();
     static void init();
     static void writeStyleSheetFile(QFile &f);
+    static void writeHeaderFile(QFile &f);
+    static void writeFooterFile(QFile &f);
    
     OutputGenerator *copy() { return new HtmlGenerator; }
     //OutputGenerator *clone() { return new HtmlGenerator(*this); }

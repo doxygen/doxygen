@@ -947,7 +947,7 @@ void writeMemberList(OutputList &ol)
           //!md->isReference() && md->hasDocumentation() &&
           // md->name()[0]!='@' && 
            md->isLinkableInProject() &&
-           (cd=md->memberClass()) &&
+           (cd=md->getClassDef()) &&
            cd->isLinkableInProject()
          ) 
       { 
@@ -968,7 +968,7 @@ void writeMemberList(OutputList &ol)
       QCString prevName;
       while (md)
       {
-        ClassDef *cd=md->memberClass();
+        ClassDef *cd=md->getClassDef();
         if (//cd && (md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
             //!md->isReference() && md->hasDocumentation() && 
             md->isLinkableInProject() &&
@@ -1009,10 +1009,10 @@ int countClassMembers()
     {
       if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
           //!md->isReference() && !md->isRelated() && md->hasDocumentation() &&
-          //md->name()[0]!='@' && (cd=md->memberClass()) && cd->isLinkable()) 
+          //md->name()[0]!='@' && (cd=md->getClassDef()) && cd->isLinkable()) 
           md->isLinkableInProject() && 
           !md->isRelated() &&
-          (cd=md->memberClass()) && 
+          (cd=md->getClassDef()) && 
           cd->isLinkableInProject()
          )
       {
@@ -1025,10 +1025,10 @@ int countClassMembers()
       //  otherMd=md;
       //if (//(md->isFriend() || md->protection()!=Private || Config::extractPrivateFlag) && 
       //    //!md->isReference() && md->isRelated() && md->hasDocumentation() &&
-      //    //md->name()[0]!='@' && (cd=md->memberClass()) && cd->isLinkable()
+      //    //md->name()[0]!='@' && (cd=md->getClassDef()) && cd->isLinkable()
       //    md->isLinkableInProject() &&
       //    md->isRelated() &&
-      //    (cd=md->memberClass()) &&
+      //    (cd=md->getClassDef()) &&
       //    cd->isLinkableInProject()
       //   )
       //  found=TRUE;
@@ -1073,10 +1073,9 @@ void writeFileMemberList(OutputList &ol)
     bool found=FALSE;
     while (md && !found)
     {
-      FileDef *fd=md->getFileDef() ? md->getFileDef() : md->getFileDec();
-      bool hasDocs = 
-         (md->getFileDef() && md->getFileDef()->isLinkableInProject()) ||
-         (md->getFileDec() && md->getFileDec()->isLinkableInProject());
+      FileDef *fd=md->getFileDef();
+      bool hasDocs = md->getFileDef() && 
+                     md->getFileDef()->isLinkableInProject();
       
       if (fd && hasDocs && 
           md->isLinkableInProject()
@@ -1099,10 +1098,9 @@ void writeFileMemberList(OutputList &ol)
       QCString prevName;
       while (md)
       {
-        FileDef *fd=md->getFileDef() ? md->getFileDef() : md->getFileDec();
-        bool hasDocs = 
-         (md->getFileDef() && md->getFileDef()->isLinkableInProject()) ||
-         (md->getFileDec() && md->getFileDec()->isLinkableInProject());
+        FileDef *fd=md->getFileDef();
+        bool hasDocs = md->getFileDef() && 
+                       md->getFileDef()->isLinkableInProject();
         if (fd && hasDocs && 
             md->isLinkableInProject() &&
             //!md->isReference() && 
@@ -1143,7 +1141,7 @@ void writeNamespaceMemberList(OutputList &ol)
     bool found=FALSE;
     while (md && !found)
     {
-      NamespaceDef *nd=md->getNamespace();
+      NamespaceDef *nd=md->getNamespaceDef();
       if (nd && nd->isLinkableInProject() && md->isLinkableInProject()) 
         found=TRUE;
       else
@@ -1161,7 +1159,7 @@ void writeNamespaceMemberList(OutputList &ol)
       QCString prevName;
       while (md)
       {
-        NamespaceDef *nd=md->getNamespace();
+        NamespaceDef *nd=md->getNamespaceDef();
         if (nd && nd->isLinkableInProject() && md->isLinkableInProject() &&
             prevName!=nd->name()
            )
@@ -1195,7 +1193,7 @@ int countNamespaceMembers()
     bool found=FALSE;
     while (md && !found)
     {
-      NamespaceDef *nd=md->getNamespace();
+      NamespaceDef *nd=md->getNamespaceDef();
       if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
         found=TRUE;
       else
@@ -1220,11 +1218,9 @@ int countFileMembers()
     bool found=FALSE;
     while (md && !found)
     {
-      if (md->isLinkableInProject() &&
-          (((fd=md->getFileDef()) && fd->isLinkableInProject())
-            || 
-           ((fd=md->getFileDec()) && fd->isLinkableInProject())
-          )
+      if (md->isLinkableInProject() && 
+          (fd=md->getFileDef()) && 
+          fd->isLinkableInProject()
          ) 
         found=TRUE;
       else
@@ -1243,8 +1239,6 @@ void writeFileMemberIndex(OutputList &ol)
   if (documentedFunctions==0) return;
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  //ol.disable(OutputGenerator::Man);
-  //ol.disable(OutputGenerator::Latex);
   startFile(ol,"globals","File Member Index");
   startTitle(ol,0);
   parseText(ol,Config::projectName+" "+theTranslator->trFileMembers());
@@ -1252,8 +1246,6 @@ void writeFileMemberIndex(OutputList &ol)
   parseText(ol,theTranslator->trFileMembersDescription(Config::extractAllFlag));
   writeFileMemberList(ol);
   endFile(ol);
-  //ol.enable(OutputGenerator::Latex);
-  //ol.enable(OutputGenerator::Man);
   ol.popGeneratorState();
 }
 

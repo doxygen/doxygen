@@ -78,17 +78,26 @@ void GroupDef::distributeMemberGroupDocumentation()
 
 void GroupDef::addFile(const FileDef *def)
 {
-  fileList->append(def);
+  if (Config::sortMembersFlag)
+    fileList->inSort(def);
+  else
+    fileList->append(def);
 }
 
 void GroupDef::addClass(const ClassDef *def)
 {
-  classList->append(def);
+  if (Config::sortMembersFlag)
+    classList->inSort(def);
+  else
+    classList->append(def);
 }
 
 void GroupDef::addNamespace(const NamespaceDef *def)
 {
-  namespaceList->append(def);
+  if (Config::sortMembersFlag)
+    namespaceList->inSort(def);  
+  else
+    namespaceList->append(def);
 }
 
 void GroupDef::addMemberListToGroup(MemberList *ml,
@@ -142,15 +151,50 @@ void GroupDef::insertMember(MemberDef *md)
     allMemberDict->insert(funcDecl,md);
     switch(md->memberType())
     {
-      case MemberDef::Variable:     varMembers.inSort(md); break;
-      case MemberDef::Function:     funcMembers.inSort(md); break;
-      case MemberDef::Typedef:      typedefMembers.inSort(md); break;
-      case MemberDef::Enumeration:  enumMembers.inSort(md); break;
-      case MemberDef::EnumValue:    enumValMembers.inSort(md); break;
-      case MemberDef::Prototype:    protoMembers.inSort(md); break;
-      case MemberDef::Define:       defineMembers.inSort(md); break;
+      case MemberDef::Variable:     
+        if (Config::sortMembersFlag)
+          varMembers.inSort(md); 
+        else
+          varMembers.append(md);
+        break;
+      case MemberDef::Function: 
+        if (Config::sortMembersFlag)    
+          funcMembers.inSort(md); 
+        else
+          funcMembers.append(md);
+        break;
+      case MemberDef::Typedef:      
+        if (Config::sortMembersFlag)
+          typedefMembers.inSort(md); 
+        else
+          typedefMembers.append(md);
+        break;
+      case MemberDef::Enumeration:  
+        if (Config::sortMembersFlag)
+          enumMembers.inSort(md); 
+        else
+          enumMembers.append(md);
+        break;
+      case MemberDef::EnumValue:    
+        if (Config::sortMembersFlag)
+          enumValMembers.inSort(md); 
+        else
+          enumValMembers.append(md);
+        break;
+      case MemberDef::Prototype:    
+        if (Config::sortMembersFlag)
+          protoMembers.inSort(md); 
+        else
+          protoMembers.append(md);
+        break;
+      case MemberDef::Define:       
+        if (Config::sortMembersFlag)
+          defineMembers.inSort(md); 
+        else
+          defineMembers.append(md);
+        break;
       default:
-         err("FileDef::insertMembers(): unexpected member insert in file!\n");
+        err("FileDef::insertMembers(): unexpected member insert in file!\n");
     }
     //addMemberToGroup(md,groupId);
   }
@@ -158,7 +202,10 @@ void GroupDef::insertMember(MemberDef *md)
 
 void GroupDef::addGroup(const GroupDef *def)
 {
-  groupList->append(def);
+  if (Config::sortMembersFlag)
+    groupList->inSort(def);
+  else
+    groupList->append(def);
 }
 
 int GroupDef::countMembers() const
@@ -450,7 +497,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
     GroupDef *gd=0;
     if (!s->isEmpty() && (gd=groupDict[*s]))
     {
-      GroupDef *mgd = md->groupDef();
+      GroupDef *mgd = md->getGroupDef();
       if (mgd==0)
       {
         gd->insertMember(md);

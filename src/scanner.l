@@ -2449,7 +2449,7 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  lineCount();
   					  BEGIN( CompoundName ); 
 					}
-<FindMembers>{B}*("disp")?"interface"{BN}+ 	{ // M$/Corba IDL interface
+<FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
   					  isTypedef=FALSE;
 					  current->section = Entry::INTERFACE_SEC;
 					  addType( current ) ;
@@ -3157,24 +3157,31 @@ DOCPARAM  ([a-z_A-Z0-9:\<\>\=\.\-]+)|("\"".*"\"")
 					  //printf("adding `%s' `%s' `%s' to enum `%s' (mGrpId=%d)\n",
 					  //     current->type.data(), current->name.data(),
 					  //     current->args.data(), current_root->name.data(),current->mGrpId);
-					  current->fileName   = yyFileName;
-					  current->startLine  = yyLineNr;
-					  current->type       = "@"; // enum marker
-  					  current->args       = current->args.simplifyWhiteSpace();
-  					  current->name       = current->name.stripWhiteSpace();
-					  current->section    = Entry::VARIABLE_SEC;
-					  // add to the scope of the enum
-					  current_root->addSubEntry(current);
-					  current             = new Entry(*current);
-					  // add to the scope surrounding the enum (copy!)
-					  current_root->parent->addSubEntry(current);
-					  current             = new Entry ;
-					  current->protection = protection ;
-				          current->sig        = sig;
-					  current->virt       = virt;
-					  current->stat       = gstat;
-					  current->slot       = slot;
-					  current->mGrpId     = memberGroupId;
+  					  if (!current->name.isEmpty())
+					  {
+					    current->fileName   = yyFileName;
+					    current->startLine  = yyLineNr;
+					    current->type       = "@"; // enum marker
+  					    current->args       = current->args.simplifyWhiteSpace();
+  					    current->name       = current->name.stripWhiteSpace();
+					    current->section    = Entry::VARIABLE_SEC;
+					    // add to the scope of the enum
+					    current_root->addSubEntry(current);
+					    current             = new Entry(*current);
+					    // add to the scope surrounding the enum (copy!)
+					    current_root->parent->addSubEntry(current);
+					    current             = new Entry ;
+					    current->protection = protection ;
+				            current->sig        = sig;
+					    current->virt       = virt;
+					    current->stat       = gstat;
+					    current->slot       = slot;
+					    current->mGrpId     = memberGroupId;
+					  }
+					  else // probably a redundant , 
+					  {
+				     	    current->reset();
+					  }
   					}
   /*
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }

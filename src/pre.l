@@ -51,8 +51,6 @@
 
 #define YY_NEVER_INTERACTIVE 1
   
-#define DUMP_OUTPUT 1   // set this to one to see what the preprocessor 
-                        // produces.
 #define SHOW_INCLUDES 0 // set this to one to list all parsed include files
 
 struct FileState
@@ -590,10 +588,10 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
       if (g_expandedDict->find(macroName)==0) // expand macro
       {
 	Define *def=isDefined(macroName);
-	//printf("name is not an expanded macro def=%s\n",def ? def->name.data() : 0);
 	if (def && def->nargs==-1) // simple macro
 	{
 	  // substitute the definition of the macro
+	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
 	  expMacro=def->definition.stripWhiteSpace();
 	  replaced=TRUE;
 	  len=l;
@@ -774,6 +772,7 @@ Define *newDefine()
   def->fileName = g_yyFileName; 
   def->lineNr = g_yyLineNr;
   def->varArgs = g_defVarArgs;
+  //printf("newDefine: `%s'->`%s'\n",def->name.data(),def->definition.data());
   if (!def->name.isEmpty() && expandAsDefinedDict[def->name])
   {
     def->isPredefined=TRUE;
@@ -1520,7 +1519,7 @@ BN	[ \t\r\n]
 					  g_defLitText+=yytext;
   					  outputChar('\n');
   					  Define *def=0;
-					  //printf("Define name=`%s' text=`%s'\n",g_defName.data(),g_defText.data());
+					  //printf("Define name=`%s' text=`%s' litTexti=`%s'\n",g_defName.data(),g_defText.data(),g_defLitText.data());
 					  if (g_includeStack.isEmpty()) 
 					  {
 					    addDefine();
@@ -1528,10 +1527,12 @@ BN	[ \t\r\n]
 					  def=g_fileDefineDict->find(g_defName);
 					  if (def==0) // new define
 					  {
+					    //printf("new define!\n");
 					    g_fileDefineDict->insert(g_defName,newDefine());
 					  }
 					  else if (def)// name already exists
 					  {
+					    //printf("existing define!\n");
 					    //printf("define found\n");
 					    if (def->undef) // undefined name
 					    {
@@ -1860,23 +1861,21 @@ void preprocessFile(const char *fileName,BufStr &output)
   else
     pclose(preYYin);
   
-//#if DUMP_OUTPUT  
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     char *orgPos=output.data()+orgOffset;
     char *newPos=output.data()+output.curPos();
-    printf("Preprocessor output (size: %d bytes):\n",newPos-orgPos);
+    msg("Preprocessor output (size: %d bytes):\n",newPos-orgPos);
     int line=1;
-    printf("---------\n00001 ");
+    msg("---------\n00001 ");
     while (orgPos<newPos) 
     {
       putchar(*orgPos);
       if (*orgPos=='\n') printf("%05d ",++line);
       orgPos++;
     }
-    printf("\n---------\n");
+    msg("\n---------\n");
   }
-//#endif
 }
 
 extern "C" { // some bogus code to keep the compiler happy

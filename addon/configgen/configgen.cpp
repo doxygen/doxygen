@@ -768,7 +768,7 @@ void init()
                     "information to generate all constant output in the proper language. \n"
                     "The default language is English, other supported languages are: \n"
                     "Dutch, French, Italian, Czech, Swedish, German, Finnish, Japanese, \n"
-                    "Spanish, Russian, Croatian and Polish.\n"
+                    "Spanish, Russian, Croatian, Polish, and Portuguese.\n"
                    );
   ConfigString::addFixedValue("outputLanguage","English");
   ConfigString::addFixedValue("outputLanguage","Dutch");
@@ -783,6 +783,7 @@ void init()
   ConfigString::addFixedValue("outputLanguage","Russian");
   ConfigString::addFixedValue("outputLanguage","Croatian");
   ConfigString::addFixedValue("outputLanguage","Polish");
+  ConfigString::addFixedValue("outputLanguage","Portuguese");
   ConfigBool::add(  "noIndexFlag",
                     "DISABLE_INDEX",
                     "FALSE",
@@ -1310,9 +1311,8 @@ void init()
                     "TRUE",
                     "generate RTF flag",
                     "If the GENERATE_RTF tag is set to YES Doxygen will generate RTF output \n"
-                    "For now this is experimental and is disabled by default. The RTF output \n"
-                    "is optimised for Word 97 and may not look too pretty with other readers \n"
-                    "or editors.\n"
+                    "The RTF output is optimised for Word 97 and may not look very pretty with \n"
+                    "other RTF readers or editors.\n"
                  );
   ConfigString::add("rtfOutputDir",
                     "RTF_OUTPUT",

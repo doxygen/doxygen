@@ -508,25 +508,46 @@ void FileDef::insertMember(MemberDef *md)
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      varMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        varMembers.inSort(md); 
+      else
+        varMembers.append(md);
       break;
-    case MemberDef::Function:     
-      funcMembers.inSort(md); 
+    case MemberDef::Function: 
+      if (Config::sortMembersFlag)    
+        funcMembers.inSort(md); 
+      else
+        funcMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      typedefMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        typedefMembers.inSort(md); 
+      else
+        typedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      enumMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        enumMembers.inSort(md); 
+      else
+        enumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
-      enumValMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        enumValMembers.inSort(md); 
+      else
+        enumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
-      protoMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        protoMembers.inSort(md); 
+      else
+        protoMembers.append(md);
       break;
     case MemberDef::Define:       
-      defineMembers.inSort(md); 
+      if (Config::sortMembersFlag)
+        defineMembers.inSort(md); 
+      else
+        defineMembers.append(md);
       break;
     default:
        err("FileDef::insertMembers(): unexpected member insert in file!\n");
@@ -537,7 +558,10 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
-  classList->inSort(cd);
+  if (Config::sortMembersFlag)
+    classList->inSort(cd);
+  else
+    classList->append(cd);
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
@@ -545,7 +569,10 @@ void FileDef::insertNamespace(NamespaceDef *nd)
 {
   if (!nd->name().isEmpty() && namespaceDict->find(nd->name())==0)
   {
-    namespaceList->inSort(nd);
+    if (Config::sortMembersFlag)
+      namespaceList->inSort(nd);
+    else
+      namespaceList->append(nd);
     namespaceDict->insert(nd->name(),nd);
   }
 }

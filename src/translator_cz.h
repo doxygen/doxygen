@@ -27,74 +27,43 @@
 //
 // havran@fel.cvut.cz, 1999/04/11
 //
-// The first version of Czech strings with diacritics was implemented by
-// Petr Prikryl (prikrylp@skil.cz). Vlastimil Havran is still
-// the maintainer. The translation was based on translator.h
-// of Doxygen versison 1.1.4 (from scratch) and updated for 1.1.5
-// (including important updates of the up-to-1.1.4 strings).
-// 
-// The Czech strings in this file were first written in Windows 1250
-// encoding. The conditional compilation ensures or the neutral
-// functionality of the macro DECODE, or calling the WinToISO()
-// method for on-line encoding conversion. If you want to maintain
-// the source in the ISO Latin-2, do convert the source, change the
-// conditional definition of the DECODE macro using the method
-// ISOToWin() -- for conversion of strings for the Windows version.
-// The version which does not call the function is slightly faster.
+// Updates:
+// --------
+// 2000/06/20 
+//  - The prototype version of Czech strings with diacritics implemented by
+//    Petr Prikryl (prikrylp@skil.cz).  (Vlastimil Havran is still
+//    the maintainer.)  The translation was based on translator.h
+//    of Doxygen versison 1.1.4 (from scratch).
 //
-// Notice: Only one of the following tables is necessary for
-// the support as well as the only one conversion private method
-// of the TranslatorCzech class. However, the prototype was created
-// under WindowsNT thus using Windows 1250 encoding. The second
-// table and the method are here to switch to the ISO Latin-2 
-// smoothly. And also, there is not a big loose of space when both
-// tables and methods are supported.
-
-/*! Translation tables for characters >127. They should work, 
- * but I would not put my hand into fire for that.
- */
-static const char WinToISOTab[] = {
-    '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
-    '\x88', '\x89', '\xA9', '\x8B', '\xA6', '\xAB', '\xAE', '\xAC',
-    '\x90', '\x91', '\x92', '\x93', '\x94', '\x2E', '\x96', '\x97',
-    '\x98', '\x99', '\xB9', '\x9B', '\xB6', '\xBB', '\xBE', '\xBC',
-    '\xA0', '\x20', '\x20', '\xA3', '\xA4', '\xA1', '\xA6', '\xA7',
-    '\x22', '\xA9', '\xAA', '\x3C', '\xAC', '\x2D', '\xAE', '\xAF',
-    '\x2E', '\x2B', '\x20', '\xB3', '\x27', '\x75', '\xB6', '\xB7',
-    '\x20', '\xB1', '\xBA', '\x3E', '\xA5', '\x22', '\xB5', '\xBF',
-    '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
-    '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
-    '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
-    '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
-    '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
-    '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
-    '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\x2D',
-    '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
-    '\0'
-};
-
-static const char ISOToWinTab[] = {
-    '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
-    '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F',
-    '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97',
-    '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F',
-    '\xA0', '\xA5', '\xA2', '\xA3', '\xA4', '\xBC', '\x8C', '\xA7',
-    '\xA8', '\x8A', '\xAA', '\x8D', '\x8F', '\xAD', '\x8E', '\xAF',
-    '\xB0', '\xB9', '\xB2', '\xB3', '\xB4', '\xBE', '\x9C', '\xB7',
-    '\xB8', '\x9A', '\xBA', '\x9D', '\x9F', '\xBD', '\x9E', '\xBF',
-    '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
-    '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
-    '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
-    '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
-    '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
-    '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
-    '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7',
-    '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
-    '\0'
-};
+// 2000/07/10 (Petr Prikryl)
+//  - Updated version based on 1.1.5 sources (including important updates
+//    of the up-to-1.1.4 strings). Czech strings this file were written
+//    in windows-1250 encoding. On-line decoding into iso-8859-2 ensured
+//    via conditional compilation if the sources are compiled under UNIX.
+//
+// 2000/07/19 (Petr Prikryl)
+//  - Encoding conversion tables moved to the methods that use them.
+//  - Updates for "new since 1.1.5".
+//
+// Notices:
+// -------- 
+// The conditional compilation ensures or the neutral functionality
+// of the macro DECODE, or calling the WinToISO() method for
+// on-line encoding conversion. If you want to maintain the source
+// in the iso-8859-2, do convert the source, change the conditional
+// definition of the DECODE macro using the method ISOToWin() --
+// for conversion of strings for the Windows version. The version
+// which does not call the function is slightly faster.
+//
+// Only one of the private method WinToISO() and ISOToWin() is
+// necessary depending on whether this source is maintained in
+// windows-1250 or iso-8859-2 encoding.  However, there is not a
+// big loose of space when both methods with the conversion tables
+// are supported. The other (not used now) may be handy in future.
+// Do not erase it.
 
 
-// Here the DECODE macro assumes the source written in Win1250 encoding.
+// Here the DECODE macro assumes the source written in Windows encoding.
 //
 #ifdef _WIN32
   #define DECODE(sInput) sInput
@@ -103,13 +72,34 @@ static const char ISOToWinTab[] = {
 #endif
 
 
-
 class TranslatorCzech : public Translator
 {
   private:
-    /*! returns the string converted from Win1250 to ISO Latin-2 */
+    /*! returns the string converted from windows-1250 to iso-8859-2 */
     QCString WinToISO(const QCString sInput)
     {
+      // The conversion table for characters >127
+      // 
+      static const char WinToISOTab[] = {
+        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
+        '\x88', '\x89', '\xA9', '\x8B', '\xA6', '\xAB', '\xAE', '\xAC',
+        '\x90', '\x91', '\x92', '\x93', '\x94', '\x2E', '\x96', '\x97',
+        '\x98', '\x99', '\xB9', '\x9B', '\xB6', '\xBB', '\xBE', '\xBC',
+        '\xA0', '\x20', '\x20', '\xA3', '\xA4', '\xA1', '\xA6', '\xA7',
+        '\x22', '\xA9', '\xAA', '\x3C', '\xAC', '\x2D', '\xAE', '\xAF',
+        '\x2E', '\x2B', '\x20', '\xB3', '\x27', '\x75', '\xB6', '\xB7',
+        '\x20', '\xB1', '\xBA', '\x3E', '\xA5', '\x22', '\xB5', '\xBF',
+        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
+        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
+        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
+        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\x2D',
+        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        '\0'
+      };
+      
       QCString result;
       int len = sInput.length();
 
@@ -121,9 +111,30 @@ class TranslatorCzech : public Translator
       return result;
     }
     
-    /*! returns the string converted from ISO Latin-2 to Win1250 */
+    /*! returns the string converted from iso-8859-2 to windows-1250 */
     QCString ISOToWin(const QCString sInput)
     {
+      // The conversion table for characters >127
+      // 
+      static const char ISOToWinTab[] = {
+        '\x80', '\x81', '\x82', '\x83', '\x84', '\x85', '\x86', '\x87',
+        '\x88', '\x89', '\x8A', '\x8B', '\x8C', '\x8D', '\x8E', '\x8F',
+        '\x90', '\x91', '\x92', '\x93', '\x94', '\x95', '\x96', '\x97',
+        '\x98', '\x99', '\x9A', '\x9B', '\x9C', '\x9D', '\x9E', '\x9F',
+        '\xA0', '\xA5', '\xA2', '\xA3', '\xA4', '\xBC', '\x8C', '\xA7',
+        '\xA8', '\x8A', '\xAA', '\x8D', '\x8F', '\xAD', '\x8E', '\xAF',
+        '\xB0', '\xB9', '\xB2', '\xB3', '\xB4', '\xBE', '\x9C', '\xB7',
+        '\xB8', '\x9A', '\xBA', '\x9D', '\x9F', '\xBD', '\x9E', '\xBF',
+        '\xC0', '\xC1', '\xC2', '\xC3', '\xC4', '\xC5', '\xC6', '\xC7',
+        '\xC8', '\xC9', '\xCA', '\xCB', '\xCC', '\xCD', '\xCE', '\xCF',
+        '\xD0', '\xD1', '\xD2', '\xD3', '\xD4', '\xD5', '\xD6', '\xD7',
+        '\xD8', '\xD9', '\xDA', '\xDB', '\xDC', '\xDD', '\xDE', '\xDF',
+        '\xE0', '\xE1', '\xE2', '\xE3', '\xE4', '\xE5', '\xE6', '\xE7',
+        '\xE8', '\xE9', '\xEA', '\xEB', '\xEC', '\xED', '\xEE', '\xEF',
+        '\xF0', '\xF1', '\xF2', '\xF3', '\xF4', '\xF5', '\xF6', '\xF7',
+        '\xF8', '\xF9', '\xFA', '\xFB', '\xFC', '\xFD', '\xFE', '\xFF',
+        '\0'
+      };
       QCString result;
       int len = sInput.length();
 
@@ -136,6 +147,8 @@ class TranslatorCzech : public Translator
     }
     
   public:
+    // --- Language contol methods -------------------
+
     virtual QCString idLanguage()
     { return "czech"; }
 
@@ -145,6 +158,18 @@ class TranslatorCzech : public Translator
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString latexBabelPackage() 
     { return ""; }
+
+    /*! return the language charset. This will be used for the HTML output */
+    virtual QCString idLanguageCharset()
+    {
+#ifdef _WIN32
+        return "windows-1250";
+#else
+        return "iso-8859-2";
+#endif
+    }
+
+    // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
@@ -567,7 +592,7 @@ class TranslatorCzech : public Translator
 
     /*! this text is generated when the \return command is used. */
     virtual QCString trReturns()
-    { return DECODE("Vrací"); }
+    { return DECODE("Návratová hodnota"); }
 
     /*! this text is generated when the \sa command is used. */
     virtual QCString trSeeAlso()
@@ -642,7 +667,7 @@ class TranslatorCzech : public Translator
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result="Dokumentace souboru ";
+      QCString result("Dokumentace souboru ");
       result+=fileName; 
       return DECODE(result);
     }
@@ -650,7 +675,7 @@ class TranslatorCzech : public Translator
     /*! used as the title of the HTML page of a namespace */
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
-      QCString result("Dokumentace prostroru jmen ");
+      QCString result("Dokumentace prostoru jmen ");
       result+=namespaceName;
       return DECODE(result);
     }
@@ -718,7 +743,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return DECODE("Zdìdìna tøídami "+trWriteList(numEntries)+".");
+      QCString result("Zdìdìna ");
+      result += (numEntries == 1) ? "tøídou " : "tøídami ";
+      result += trWriteList(numEntries)+".";
+      return DECODE(result);
     }
 
     /*! used in member documentation blocks to produce a list of 
@@ -726,7 +754,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return DECODE("Reimplementace metody tøídy "+trWriteList(numEntries)+".");
+      QCString result("Reimplementuje ");
+      result += (numEntries == 1) ? "metodu tøídy " : "metody tøíd ";
+      result += trWriteList(numEntries)+".";
+      return DECODE(result);
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -734,7 +765,10 @@ class TranslatorCzech : public Translator
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return DECODE("Reimplementováno v "+trWriteList(numEntries)+".");
+      QCString result("Reimplementováno ");
+      result += (numEntries == 1) ? "tøídou " : "tøídami ";
+      result += trWriteList(numEntries)+".";
+      return DECODE(result);
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -1009,6 +1043,90 @@ class TranslatorCzech : public Translator
     virtual QCString trSince()
     {
       return DECODE("Od"); // ??? not checked in a context
+    }
+
+////////////////////////////////////////////////////////////////////////////
+// new since 1.1.5
+//////////////////////////////////////////////////////////////////////////
+
+    /*! title of the graph legend page */
+    virtual QCString trLegendTitle()
+    {
+      return DECODE("Vysvìtlivky ke grafu");
+    }
+    /*! page explaining how the dot graph's should be interpreted */
+    virtual QCString trLegendDocs()
+    {
+      QCString result(  
+        "Zde naleznete vysvìtlení, jak mají být interpretovány grafy, "
+        "které byly generovány programem doxygen.<p>\n"
+        "Uvažujte následující pøíklad:\n"
+        "\\code\n"
+        "/*! Neviditelná tøída, která se v grafu nezobrazuje, protože "
+        "došlo k oøezání grafu. */\n"
+        "class Invisible { };\n\n"
+        "/*! Tøída, u které došlo k oøezání grafu. Vztah dìdiènosti "
+        "je skryt. */\n"
+        "class Truncated : public Invisible { };\n\n"
+        "/* Tøída, která není dokumentována komentáøi programu doxygen. */\n"
+        "class Undocumented { };\n\n"
+        "/*! Odvozená tøída s veøejným (public) dìdìním bázové tøídy. */\n"
+        "class PublicBase : public Truncated { };\n\n"
+        "/*! Odvozená tøída s chránìným (protected) dìdìním bázové tøídy. */\n"
+        "class ProtectedBase { };\n\n"
+        "/*! Odvozená tøída s privátním dìdìním bázové tøídy. */\n"
+        "class PrivateBase { };\n\n"
+        "/*! Tøída, která je využívána tøídou Inherited. */\n"
+        "class Used { };\n\n"
+        "/*! Odvozená tøída, která rùzným zpùsobem dìdí z více bázových "
+        "tøíd. */\n"
+        "class Inherited : public PublicBase,\n"
+        "                  protected ProtectedBase,\n"
+        "                  private PrivateBase,\n"
+        "                  public Undocumented\n"
+        "{\n"
+        "  private:\n"
+        "    Used *m_usedClass;\n"
+        "};\n"
+        "\\endcode\n"
+        "Pokud je položka \\c MAX_DOT_GRAPH_HEIGHT konfiguraèního souboru "
+        "nastavena na hodnotu 200, bude vygenerován následující graf:"
+        "<p><center><img src=\"graph_legend.gif\"></center>\n"
+        "<p>\n"
+        "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
+        "<ul>\n"
+        "<li>Èernì vyplnìný obdélník reprezentuje strukturu nebo tøídu, "
+            "pro kterou byl graf generován.\n"
+        "<li>Obdélník s èerným obrysem oznaèuje dokumentovanou "
+            "strukturu nebo tøídu.\n"
+        "<li>Obdélník s šedým obrysem oznaèuje nedokumentovanou "
+            "strukturu nebo tøídu.\n"
+        "<li>Obdélník s èerveným obrysem oznaèuje dokumentovanou "
+            "strukturu nebo tøídu, pro kterou\n"
+            "nejsou zobrazeny všechny vztahy dìdiènosti nebo obsažení. "
+            "Graf je oøezán v pøípadì, kdy jej\n"
+            "není možné umístit do vymezených hranic.\n"
+        "</ul>\n"
+        "Šipky (tj. hrany grafu) mají následující význam:\n"
+        "<ul>\n"
+        "<li>Tmavì modrá šipka se používá pro oznaèení vztahu veøejné "
+            "dìdiènosti mezi dvìma tøídami.\n"
+        "<li>Tmavì zelená šipka oznaèuje vztah chránìné dìdiènosti "
+            "(protected).\n"
+        "<li>Tmavì èervená šipka oznaèuje vztah privátní dìdiènosti.\n"
+        "<li>Purpurová šipka kreslená èárkovanì se používá v pøípadì, "
+            "kdy je tøída obsažena v jiné tøídì,\n"
+            "nebo kdy je používána jinou tøídou. Je oznaèena identifikátorem "
+            "jedné nebo více promìných, pøes které\n"
+            "je tøída nebo struktura zpøístupnìna.\n"
+        "</ul>\n");
+        
+        return DECODE(result);
+    }
+    /*! text for the link to the legend page */
+    virtual QCString trLegend()
+    {
+      return DECODE("vysvìtlivky");
     }
 };
 

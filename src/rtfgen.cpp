@@ -650,7 +650,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (gd && !found)
         {
-          if (gd->isLinkableInProject() || gd->countMembers()>0)
+          if (gd->countMembers()>0)
           {
             beginRTFChapter();
             found=TRUE;
@@ -666,7 +666,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && nd->countMembers()>0)
           {
             beginRTFChapter();
             found=TRUE;
@@ -840,7 +840,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         while (nd && !found)
         {
-          if (nd->isLinkableInProject() || nd->countMembers()>0)
+          if (nd->isLinkableInProject() && nd->countMembers()>0)
           {
             t << "\\par " << Rtf_Style["Reset"] << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -852,7 +852,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         while (nd)
         {
-          if (nd->isLinkableInProject() || nd->countMembers()>0)
+          if (nd->isLinkableInProject() && nd->countMembers()>0)
           {
             t << "\\par " << Rtf_Style["Reset"] << endl;
             beginRTFSection();

@@ -357,6 +357,10 @@ EOF
   cat >> .tmakeconfig <<EOF
     TMAKE_LFLAGS = -Bstatic
 EOF
+  elif test "$f_platform" = "hpux-cc"; then
+  cat >> .tmakeconfig <<EOF
+    TMAKE_LFLAGS = -noshared
+EOF
   else
   cat >> .tmakeconfig <<EOF
     TMAKE_LFLAGS = -static
