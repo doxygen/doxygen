@@ -101,9 +101,14 @@ Always try to include the following information in your bug report:
   actual bug!).
 
 If you send only a (vague) description of a bug, you are usually not very 
-helpful and will costs me much more time to figure out what you mean. 
+helpful and it will cost me much more time to figure out what you mean. 
 In the worst-case your bug report may even be completely ignored by me! 
 
 My e-mail address: dimitri@stack.nl 
+
+Note that you can also post bug report to the developers mailing list
+or use the bug tracker at sourceforge (though I do not really like the
+latter because of its web interface).
+
 */
 

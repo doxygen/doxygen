@@ -61,7 +61,7 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     }
 };
 
-class TranslatorJapanese : public TranslatorAdapter_1_2_17
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -1375,6 +1375,17 @@ class TranslatorJapanese : public TranslatorAdapter_1_2_17
     {
       return decode("目次");
     }
-};
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been 
+     *  flagged deprecated 
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "非推奨一覧";
+    }
+};
 #endif

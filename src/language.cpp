@@ -279,6 +279,12 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorSerbian;
   }
 #endif
+#ifdef LANG_CA
+  else if (L_EQUAL("catalan"))
+  {
+    theTranslator=new TranslatorCatalan;
+  }
+#endif
 //  else if (L_EQUAL("japanese-sjis"))
 //  {
 //    theTranslator=new TranslatorJapaneseSjis;
