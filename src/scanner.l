@@ -581,6 +581,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	NSAliasName
 %x	NSAliasArg
 %x	PackageName
+%x	GetCallType
 
 %%
 
@@ -1628,9 +1629,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindFieldArg>","			{ unput(*yytext); BEGIN(FindFields); }
   */
 <ReadBody>[^\r\n{}"'/]*			{ current->program += yytext ; }
-<ReadBody>"//".*				{ current->program += yytext ; }
-<ReadBody>\"[^\r\n"]*\"			{ current->program += yytext ; }
-<ReadBody>"/*"{B}*				{ current->program += yytext ;
+<ReadBody>"//".*			{ current->program += yytext ; }
+<ReadBody>\"				{ current->program += yytext ; 
+                                          pCopyQuotedString = &current->program;
+                                          lastStringContext=YY_START;
+                                          BEGIN( CopyString );
+					}
+<ReadBody>"/*"{B}*			{ current->program += yytext ;
 					  lastContext = ReadBody ;
 					  BEGIN( Comment ) ;
 					}
@@ -1918,6 +1923,32 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FuncFuncType>{BN}+			{ lineCount() ; current->type += ' ' ; }
 <FuncFuncType>.				{
   					  current->type += *yytext;
+  					}
+<FindMembers>"("/{BN}*{ID}{BN}*"*"	{ // for catching typedef void (__stdcall *f)() like definitions
+                                          if (current->type.left(7)=="typedef" && current->bodyLine==-1) 
+					    // the bodyLine check is to prevent this guard to be true more than once
+					  {
+  					    current->bodyLine = yyLineNr;
+					    BEGIN( GetCallType );
+					  }
+					  else if (!current->name.isEmpty()) // normal function
+					  {
+					    current->args = yytext;
+					    current->bodyLine = yyLineNr;
+					    currentArgumentContext = FuncQual;
+					    fullArgString=current->args.copy();
+					    copyArgString=&current->args;
+					    BEGIN( ReadFuncArgType ) ;
+					    //printf(">>> Read function arguments!\n");
+					  }
+					}
+<GetCallType>{BN}*{ID}{BN}*"*"		{
+  					  lineCount();
+  					  addType(current);
+					  funcPtrType="(";
+					  funcPtrType+=yytext;
+					  roundCount=0;
+					  BEGIN( FuncPtr );
   					}
 <FindMembers>"("			{ 
                                           if (!current->name.isEmpty())
@@ -3905,7 +3936,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
   					  current->doc+=yytext;
   					}
-<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc,SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
+<Doc,ClassDoc,PageDoc,ExampleDoc,AfterDoc>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
   					  QCString *pValue=Doxygen::aliasDict[yytext+1];
 					  if (pValue)
 					  {

@@ -145,6 +145,8 @@ class ClassDef : public Definition
     /*! Returns the Java package this class is in or 0 if not applicable. 
      */ 
     PackageDef   *packageDef() const;
+
+    MemberDef    *getMemberByName(const QCString &);
     
     /*! Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recusively traverse all branches of the
@@ -244,9 +246,9 @@ class ClassDef : public Definition
     void insertMember(MemberDef *);
     void insertUsedFile(const char *);
     void computeAnchors();
-    void computeMemberGroups();
-    void setAnchor(MemberDef *);
-    void dumpMembers();
+    //void computeMemberGroups();
+    //void setAnchor(MemberDef *);
+    //void dumpMembers();
     bool addExample(const char *anchor,const char *name, const char *file);
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();

@@ -61,9 +61,9 @@ tools should be installed.
     <a href="http://www.tug.org/">teTeX 1.0</a>.<br>
     \latexonly(see {\tt http://www.tug.org/})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
-<li><a href="http://www.graphviz.org/">
+<li><a href="http://www.research.att.com/sw/tools/graphviz/">
     the Graph visualization toolkit version 1.5</a><br>
-    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
+    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
 <li>The ghostscript interpreter.
@@ -450,9 +450,9 @@ Here is what is required:
     <code>objects</code> and <code>bin</code> manually in the root of the 
     distribution before compiling.
 
-<li><a href="http://www.graphviz.org/">
+<li><a href="http://www.research.att.com/sw/tools/graphviz/">
     the Graph visualization toolkit version 1.5</a><br>
-    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
+    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.
 </ul>

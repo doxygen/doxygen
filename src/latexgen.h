@@ -258,6 +258,7 @@ class LatexGenerator : public OutputGenerator
     void endFontClass() {}
     
   private:
+    void latin2ToLatex(unsigned char);
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
     int col;

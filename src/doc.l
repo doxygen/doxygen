@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
@@ -632,7 +632,9 @@ static void forceEndItemList()
 	  endBlock(); 
 	}
 	else 
+	{
 	  outDoc->endDescription(); 
+	}
 	break;
     }
   }
@@ -1154,9 +1156,9 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    insideArgumentList=TRUE;
 					  }
 					}
-<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"par"{B}*			{
+<DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"par"{B}*	{
  					  QCString t=yytext;
-  					  if (t.contains('\n')>1 && insideItemList)
+  					  if (/*t.contains('\n')>1 &&*/ insideItemList)
 					  {
 					    forceEndItemList();
 					  }
@@ -1496,7 +1498,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"param"{BSEP}	{
 					  QCString t=yytext;
-  					  if (t.contains('\n')>1 && insideItemList)
+  					  if (/*t.contains('\n')>1 &&*/ insideItemList)
 					  {
 					    forceEndItemList();
 					  }
@@ -1520,7 +1522,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}"retval"{BSEP}	{
 					  QCString t=yytext;
-  					  if (t.contains('\n')>1 && insideItemList)
+  					  if (/*t.contains('\n')>1 &&*/ insideItemList)
 					  {
 					    forceEndItemList();
 					  }
@@ -1544,7 +1546,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
   					}
 <DocScan>(({B}*"\n"){2,}{B}*)?{CMD}("exception"|"throw")s?{BSEP}	{
 					  QCString t=yytext;
-  					  if (t.contains('\n')>1 && insideItemList)
+  					  if (/*t.contains('\n')>1 &&*/ insideItemList)
 					  {
 					    forceEndItemList();
 					  }
@@ -1766,7 +1768,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 <DocImage>[rR][tT][fF]			{
   					  BEGIN(DocRtfImageName);
   					}
-<DocHtmlImageName>{FILE}|{URLMASK}      {
+<DocHtmlImageName>[^ \t\n]+             {
   					  curImageName = findAndCopyImage(stripQuotes(yytext),IT_Html);
 					  curImageCaption.resize(0);
 					  if (curImageName.isEmpty())
@@ -2390,6 +2392,7 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					  {
 					    insideArgumentList=FALSE;
 					    outDoc->endItemList();
+					    if (ib) endBlock();
 					  }
 					  else if (insideItemList)
 					  {
@@ -2405,8 +2408,8 @@ OPMASK    ({B}*{OPNORM}({OPARG}?))|({OPCAST}{OPARG})
 					    {
 					      outDoc->newParagraph(); 
 					    }
+					    if (ib) endBlock();
 					  }
-					  if (ib) endBlock();
 					}
 <DocScan>{BN}+/\n			{ 
   					  outDoc->writeChar(' '); 
@@ -2472,6 +2475,7 @@ void scanDoc(const char *s)
 
 void internalParseDocument(const char *s)
 {
+  if (s==0) return;
   const char *oldInputString = inputString;
   int oldInputPosition = inputPosition;
   int oldRule = YY_START;

@@ -20,6 +20,8 @@
 
 #include <qlist.h>
 #include "memberdef.h"
+#include "sortdict.h"
+
 class GroupDef;
 class MemberGroup;
 class MemberGroupList;
@@ -69,13 +71,22 @@ class MemberListIterator : public QListIterator<MemberDef>
 {
   public:
     MemberListIterator(const QList<MemberDef> &list);
+    virtual ~MemberListIterator() {}
 };
 
 class MemberDict : public QDict<MemberDef>
 {
   public:
     MemberDict(int size) : QDict<MemberDef>(size) {}
-   ~MemberDict() {}
+    virtual ~MemberDict() {}
+};
+
+class MemberSDict : public SDict<MemberDef>
+{
+  public:
+    MemberSDict(int size=17) : SDict<MemberDef>(size) {}
+    virtual ~MemberSDict() {}
+    int compareItems(GCI item1,GCI item2);
 };
 
 

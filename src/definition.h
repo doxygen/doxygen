@@ -24,8 +24,9 @@
 class FileDef;
 class OutputList;
 class SectionDict;
-class MemberList;
-class MemberDict;
+//class MemberList;
+//class MemberDict;
+class MemberSDict;
 class MemberDef;
 
 /*! The common base class of all entity definitions found in the sources. */
@@ -90,11 +91,7 @@ class Definition
     void writeDocAnchorsToTagFile();
 
     // source references
-    void setBodySegment(int bls,int ble) 
-    {
-      m_startBodyLine=bls; 
-      m_endBodyLine=ble; 
-    }
+    void setBodySegment(int bls,int ble);
     void setBodyDef(FileDef *fd)         { m_bodyDef=fd; }
     int getStartBodyLine() const         { return m_startBodyLine; }
     int getEndBodyLine() const           { return m_endBodyLine; }
@@ -102,7 +99,9 @@ class Definition
     void writeSourceDef(OutputList &ol,const char *scopeName);
     void writeInlineCode(OutputList &ol,const char *scopeName);
     void writeSourceRefs(OutputList &ol,const char *scopeName);
-    void addSourceReference(MemberDef *d);
+    void writeSourceReffedBy(OutputList &ol,const char *scopeName);
+    void addSourceReferencedBy(MemberDef *d);
+    void addSourceReferences(MemberDef *d);
 
     void setRefItems(int todoId,int testId,int bugId) 
     { 
@@ -141,14 +140,18 @@ class Definition
                                // in the future m_name should become m_localName
 
   private: 
+    void writeSourceRefList(OutputList &ol,const char *scopeName,
+                       const QCString &text,MemberSDict *members);
     //QCString m_qualifiedName;  // name of the definition
     QCString m_brief; // brief description
     QCString m_doc;   // detailed description
     QCString m_ref;   // reference to external documentation
     SectionDict *m_sectionDict;  // dictionary of all sections
-    MemberList  *m_sourceRefList;  // list of entities that refer to this
-                                 // entity in their definition 
-    MemberDict *m_sourceRefDict;
+    //MemberList  *m_sourceRefList;  // list of entities that refer to this
+    //                             // entity in their definition 
+    //MemberDict *m_sourceRefDict;
+    MemberSDict *m_sourceRefByDict;
+    MemberSDict *m_sourceRefsDict;
     int m_testId;     // id for test list item
     int m_todoId;     // id for todo list item
     int m_bugId;      // id for bug list item

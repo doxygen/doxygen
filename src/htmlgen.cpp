@@ -637,13 +637,13 @@ void HtmlGenerator::writeFormula(const char *n,const char *text)
 {
   if (text && text[0]=='\\') t << "<p><center>" << endl;
   t << "<img align=";
-#if !defined(_WIN32)
-  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
-                             // not seem to support align == "middle" :-((
-#else
+//#if !defined(_WIN32)
+//  t << "\"top\"";            // assume Unix users use Netscape 4.x which does
+//                             // not seem to support align == "middle" :-((
+//#else
   t << "\"middle\"";         // assume Windows users use IE or HtmlHelp which only
                              // displays formulas nicely with align == "middle" 
-#endif
+//#endif
   t << " src=\"" << n << "\">" << endl;
   if (text && text[0]=='\\') t << "</center><p>" << endl;
 }
