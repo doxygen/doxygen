@@ -22,27 +22,26 @@
                                
   History:
   --------
-  2002/05/21
-   - This was the last Perl version. 
-  2003/05/16
-   - If the script is given list of languages, only the translator report
-     is generated and only for those languages.
-  2004/01/24
-   - Total reimplementation just started: classes TrManager, and Transl.
-  2004/02/05
-   - First version that produces translator report. The documentation 
-     in the language.doc is not generated yet.
-  2004/02/10
-   - First fully functional version that generates both the translator
-     report and the documentation. It is a bit slower than the Perl version,
-     but is much less tricky and much more flexible. It also solves some
-     problems that were not solved by the Perl version. The translator report
-     content should be more useful for developers.
+  2002/05/21 - This was the last Perl version. 
+  2003/05/16 - List of language marks can be passed as arguments.
+  2004/01/24 - Total reimplementation started: classes TrManager, and Transl.
+  2004/02/05 - First version that produces translator report. No language.doc yet.
+  2004/02/10 - First fully functional version that generates both the translator
+               report and the documentation. It is a bit slower than the
+               Perl version, but is much less tricky and much more flexible.
+               It also solves some problems that were not solved by the Perl
+               version. The translator report content should be more useful
+               for developers.
   2004/02/11 - Some tuning-up to provide more useful information.
   2004/04/16 - Added new tokens to the tokenizer (to remove some warnings).
   2004/05/25 - Added from __future__ import generators not to force Python 2.3.
   2004/06/03 - Removed dependency on textwrap module.
   2004/07/07 - Fixed the bug in the fill() function.
+  2004/07/21 - Better e-mail mangling for HTML part of language.doc.
+             - Plural not used for reporting a single missing method.
+             - Removal of not used translator adapters is suggested only
+               when the report is not restricted to selected languages
+               explicitly via script arguments
   """                               
 
 from __future__ import generators
@@ -1115,8 +1114,12 @@ class Transl:
         fout.write('\n\n\n')
         fout.write(self.classId + '   (' + self.baseClassId + ')')
         if self.missingMethods:
-            fout.write('  %d' % len(self.missingMethods))
-            fout.write(' methods to implement')
+            num = len(self.missingMethods)
+            fout.write('  %d' % num)
+            fout.write(' method')
+            if num > 1:
+                fout.write('s')
+            fout.write(' to implement')
         fout.write('\n' + '-' * len(self.classId))
         
         # Write the info about the implemented required methods.
@@ -1420,7 +1423,10 @@ class TrManager:
                 obj = self.__translDic[x]
                 f.write('  %-30s' % obj.classId)
                 f.write('  %-6s' % obj.readableStatus)
-                f.write('\t%2d methods to implement' % len(obj.missingMethods))
+                numimpl = len(obj.missingMethods)
+                pluralS = ''
+                if numimpl > 1: pluralS = 's'
+                f.write('\t%2d method%s to implement' % (numimpl, pluralS))
                 if obj.note:
                     f.write('\n\tNote: ' + obj.note + '\n')
                 f.write('\n')
@@ -1430,11 +1436,14 @@ class TrManager:
                     adaptMinVersion = obj.status
                 
             # Set the note if some old translator adapters are not needed 
-            # any more.
-            for version, adaptClassId in self.adaptMethodsDic.values():
-                if version < adaptMinVersion:
-                    f.write('\nNote: The %s class ' % adaptClassId)
-                    f.write('is not used and can be removed.\n')
+            # any more. Do it only when the script is called without arguments,
+            # i.e. all languages were checked against the needed translator 
+            # adapters. 
+            if not self.script_argLst:
+                for version, adaptClassId in self.adaptMethodsDic.values():
+                    if version < adaptMinVersion:
+                        f.write('\nNote: The %s class ' % adaptClassId)
+                        f.write('is not used and can be removed.\n')
                 
         # Write the list of the English-based classes.
         if self.EnBasedIdLst:
@@ -1583,7 +1592,7 @@ class TrManager:
               <td ><b><font size=+1 color="#ffffff"> Language </font></b></td>
               <td ><b><font size=+1 color="#ffffff"> Maintainer </font></b></td>
               <td ><b><font size=+1 color="#ffffff"> Contact address </font>
-                      <font size=-2 color="#ffffff">(remove the NOSPAM.)</font></b></td>
+                      <font size=-2 color="#ffffff">(replace the at and dot)</font></b></td>
               <td ><b><font size=+1 color="#ffffff"> Status </font></b></td>
               </tr>
               <!-- table content begin -->
@@ -1628,11 +1637,21 @@ class TrManager:
                 ee = '<br>'.join(le)
             
             # Mangle the e-mail and replace the entity references.
-            if ee:
-                ee = ee.replace('@', '@NOSPAM.')
+            if ee and ee != '&nbsp;':
+                # More than one maintainer address separated by <br> can be used.
+                emails = ee.split('<br>')
+                mangled_list = []
+                for email in emails:
+                    name, domain = email.split('@')
+                    domain = domain.replace('.', ' dot ')
+                    mangled_list.append(name + ' at ' + domain)
+                ee = '<br>'.join(mangled_list)
+                
             if mm:
                 mm = mm.replace('&ccaron;', '&#x010d;')
                 mm = mm.replace('&rcaron;', '&#x0159;')
+                mm = mm.replace('&scaron;', '&#x0161;')
+                mm = mm.replace('&zcaron;', '&#x017e;')
             
             # Append the maintainer and e-mail elements.
             lst.append(htmlTdTpl % mm)
@@ -1717,6 +1736,8 @@ class TrManager:
         latexTable = latexTable.replace('&oslash;', '\\o{}')
         latexTable = latexTable.replace('&ccaron;', '\\v{c}')
         latexTable = latexTable.replace('&rcaron;', '\\v{r}')
+        latexTable = latexTable.replace('&scaron;', '\\v{s}')
+        latexTable = latexTable.replace('&zcaron;', '\\v{z}')
         latexTable = latexTable.replace('_',        '\\_')
         
         # Put the HTML and LaTeX parts together and define the dic item.

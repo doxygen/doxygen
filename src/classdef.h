@@ -161,6 +161,8 @@ class ClassDef : public Definition
      */
     ClassDef *templateMaster() const { return m_templateMaster; } 
 
+    bool isTemplate() const { return m_tempArgs!=0; }
+
     IncludeInfo *includeInfo() const { return m_incInfo; }
     
     UsesClassDict *usedImplementationClasses() const 
