@@ -353,6 +353,7 @@ void HtmlHelp::initialize()
   s_languageDict.insert("japanese-en", new QCString("0x411 Japanese"));
   s_languageDict.insert("korean",      new QCString("0x412 Korean"));
   s_languageDict.insert("chinese",     new QCString("0x804 Chinese (PRC)"));
+  s_languageDict.insert("chinese-traditional", new QCString("0x404 Chinese (Taiwan)"));
 }
 
 

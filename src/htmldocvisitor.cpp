@@ -908,7 +908,7 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
 {
   if (m_hide) return;
   m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
-    << x->file() << Doxygen::htmlFileExtension << "#" << x->anchor() << "\">";
+      << x->relPath() << x->file() << Doxygen::htmlFileExtension << "#" << x->anchor() << "\">";
   filter(x->title());
   m_t << ":</a></b></dt><dd>";
 }

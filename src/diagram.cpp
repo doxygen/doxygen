@@ -151,7 +151,8 @@ static void writeVectorBox(QTextStream &t,DiagramItem *di,
   if (di->virtualness()==Virtual) t << "solid\n";
 }
 
-static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
+static void writeMapArea(QTextStream &t,ClassDef *cd,QCString relPath,
+                         int x,int y,int w,int h)
 {
   if (cd->isLinkable())
   {
@@ -168,6 +169,10 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,int x,int y,int w,int h)
     if (!ref.isEmpty())
     {
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+    }
+    else
+    {
+      t << relPath;
     }
     t << cd->getOutputFileBase() << Doxygen::htmlFileExtension << "\" ";
     t << "alt=\"" << cd->displayName(); 
@@ -479,6 +484,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
                             bool doBase,bool bitmap,
                             uint baseRows,uint superRows,
                             uint cellWidth,uint cellHeight,
+                            QCString relPath,
                             bool generateMap)
 {
   DiagramRow *dr=first();
@@ -548,7 +554,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,
               hasDocs,di->getChildren()->count()>0); 
           if (!firstRow && generateMap) 
-            writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
+            writeMapArea(t,di->getClassDef(),relPath,x,y,cellWidth,cellHeight);
         }
         else
         {
@@ -581,7 +587,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
           bool hasDocs=di->getClassDef()->isLinkable();
           writeBitmapBox(di,image,x,y,cellWidth,cellHeight,firstRow,hasDocs); 
           if (!firstRow && generateMap) 
-            writeMapArea(t,di->getClassDef(),x,y,cellWidth,cellHeight);
+            writeMapArea(t,di->getClassDef(),relPath,x,y,cellWidth,cellHeight);
         }
         else
         {
@@ -1252,7 +1258,8 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 
 
 void ClassDiagram::writeImage(QTextStream &t,const char *path,
-                              const char *fileName, bool generateMap)
+                              const char *relPath,const char *fileName, 
+                              bool generateMap)
 {
   uint baseRows=base->computeRows();
   uint superRows=super->computeRows();
@@ -1272,8 +1279,8 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
 
   Image image(imageWidth,imageHeight);
 
-  base->drawBoxes(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight,generateMap);
-  super->drawBoxes(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight,generateMap);
+  base->drawBoxes(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
+  super->drawBoxes(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight,relPath,generateMap);
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 

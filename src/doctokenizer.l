@@ -585,6 +585,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 			 BEGIN(St_TitleN);
                        }
 <St_Title>\n	       {
+                         unput(*yytext);
   			 return 0;
   		       }
 <St_TitleN>"&"{ID}";"  { /* symbol */
@@ -680,7 +681,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                          unput(*yytext);
   			 return 0;
   		       }
-<St_IntRef>[A-Z_a-z0-9.:#\-\+]+ {
+<St_IntRef>[A-Z_a-z0-9.:/#\-\+]+ {
                          g_token->name = yytext;
 			 return TK_WORD;
   		       }
@@ -710,7 +711,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 <St_Ref2>"\""|\n       { /* " or \n => end of title */
   			 return 0;
                        }
-<St_XRefItem>{ID}      {
+<St_XRefItem>{ID}   {
                          g_token->name=yytext;
                        }
 <St_XRefItem>" "       {
@@ -793,27 +794,27 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
                                       g_secType = SectionInfo::Paragraph; 
                                       BEGIN(St_SecLabel2); 
                                     }
-<St_Sections>{CMD}"verbatim"	    {
+<St_Sections>{CMD}"verbatim"{BLANK}+  {
                                       g_endMarker="endverbatim";
 				      BEGIN(St_SecSkip);
   				    }
-<St_Sections>{CMD}"dot"	    {
+<St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
                                       g_endMarker="enddot";
 				      BEGIN(St_SecSkip);
   				    }
-<St_Sections>{CMD}"htmlonly"	    {
+<St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endhtmlonly";
 				      BEGIN(St_SecSkip);
                                     }
-<St_Sections>{CMD}"latexonly"	    {
+<St_Sections>{CMD}"latexonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endlatexonly";
 				      BEGIN(St_SecSkip);
                                     }
-<St_Sections>{CMD}"xmlonly"	    {
+<St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endxmlonly";
 				      BEGIN(St_SecSkip);
                                     }
-<St_Sections>{CMD}"code"	    {
+<St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
                                       g_endMarker="endcode";
 				      BEGIN(St_SecSkip);
   				    }

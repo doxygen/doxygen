@@ -541,16 +541,15 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
 {
   public:
     //enum Type { Bug, Test, Todo, Deprecated };
-    DocXRefItem(DocNode *parent,int id,const char *key) : 
-      m_parent(parent), m_id(id), m_key(key) /*, m_type(t)*/ {}
+    DocXRefItem(DocNode *parent,int id,const char *key);
     Kind kind() const          { return Kind_XRefItem; }
-    //Type type() const          { return m_type; }
     QString file() const       { return m_file; }
     QString anchor() const     { return m_anchor; }
     QString title() const      { return m_title; }
     DocNode *parent() const    { return m_parent; }
+    QString relPath() const    { return m_relPath; }
     void accept(DocVisitor *v) { CompAccept<DocXRefItem>::accept(this,v); }
-    void parse();
+    bool parse();
 
   private:
     DocNode *m_parent;
@@ -559,6 +558,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
     QString  m_file;
     QString  m_anchor;
     QString  m_title;
+    QString  m_relPath;
 };
 
 /*! @brief Node representing an image */
