@@ -54,6 +54,8 @@ class MemberList : public QList<MemberDef>
                const char *title,const char *subtitle);
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container,const char *title);
+    void writeDocumentationPage(OutputList &ol,
+               const char *scopeName, Definition *container);
     void addMemberGroup(MemberGroup *mg);
     void setInGroup(bool group) { m_inGroup=group; }
     void addListReferences(Definition *def);

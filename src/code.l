@@ -752,117 +752,6 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 
 }
 
-static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
-                                      bool typeOnly=FALSE)
-{
-  int i=0;
-  if (*clName=='~') // correct for matching negated values i.s.o. destructors.
-  {
-    g_code->codify("~");
-    clName++;
-  }
-  QCString className=clName;
-  if (className.isEmpty()) return;
-  if (g_insideProtocolList)
-  {
-    className+="-p";
-  }
-  ClassDef *cd=0,*lcd=0;
-  MemberDef *md=0;
-
-  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
-  if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
-  {
-    Definition *d = g_currentDefinition;
-    //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
-    cd = getResolvedClass(d,g_sourceFileDef,className,&md);
-    if (cd==0 && md==0 && (i=className.find('<'))!=-1)
-    {
-      cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
-    }
-    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
-  }
-  else
-  {
-    if (lcd!=VariableContext::dummyContext) 
-    {
-      g_theCallContext.setClass(lcd);
-    }
-    //fprintf(stderr,"is a local variable!\n");
-  }
-  if (cd && cd->isLinkable()) // is it a linkable class
-  {
-    //fprintf(stderr,"is linkable class %s\n",clName);
-    if (g_exampleBlock)
-    {
-      QCString anchor;
-      anchor.sprintf("_a%d",g_anchorCount);
-      //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
-      //                                   g_exampleFile.data());
-      if (cd->addExample(anchor,g_exampleName,g_exampleFile))
-      {
-	ol.writeCodeAnchor(anchor);
-	g_anchorCount++;
-      }
-    }
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
-    addToSearchIndex(className);
-    if (md)
-    {
-      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
-                      md->getBodyDef() : md->getOuterScope();
-      if (md->getGroupDef()) d = md->getGroupDef();
-      if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
-      {
-        addDocCrossReference(g_currentMemberDef,md);
-      }
-    }
-  }
-  else // not a class, maybe a global member
-  {
-    //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
-    if (md!=0 || (cd==0 && !typeOnly)) // not a class, see if it is a global enum/variable/typedef.
-    {
-      if (md==0) // not found as a typedef
-      {
-	//printf("setCallContextForVar(%s)\n",clName);
-	md = setCallContextForVar(clName);
-	if (md && g_currentDefinition)
-	{
-	  //fprintf(stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
-	  //    md->name().data(),g_currentDefinition->name().data(),
-	  //    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
-	  //    md->getOuterScope()->name().data());
-	}
-	     
-        if (md && g_currentDefinition && 
-	    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
-	{
-	  md=0; // variable not accessible
-	}
-      }
-      if (md)
-      {
-        //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
-	if (md->isLinkable())
-	{
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
-          addToSearchIndex(clName);
-	  if (g_currentMemberDef)
-	  {
-	    addDocCrossReference(g_currentMemberDef,md);
-	  }
-	  return;
-	}
-      }
-    }
-    
-    // nothing found, just write out the word
-    codifyLines(clName);
-    addToSearchIndex(clName);
-  }
-}
-
 static bool getLinkInScope(const QCString &c,  // scope
                            const QCString &m,  // member
 			   const char *memberText, // exact text
@@ -940,6 +829,124 @@ static bool getLink(const char *className,
     return FALSE;
   }
   return TRUE;
+}
+
+static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
+                                      bool typeOnly=FALSE)
+{
+  int i=0;
+  if (*clName=='~') // correct for matching negated values i.s.o. destructors.
+  {
+    g_code->codify("~");
+    clName++;
+  }
+  QCString className=clName;
+  if (className.isEmpty()) return;
+  if (g_insideProtocolList)
+  {
+    className+="-p";
+  }
+  ClassDef *cd=0,*lcd=0;
+  MemberDef *md=0;
+
+  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
+  if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
+  {
+    Definition *d = g_currentDefinition;
+    //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
+    cd = getResolvedClass(d,g_sourceFileDef,className,&md);
+    if (cd==0 && md==0 && (i=className.find('<'))!=-1)
+    {
+      cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
+    }
+    //print("is found as a type %s\n",cd?cd->name().data():"<null>");
+    if (cd==0 && md==0) // also see if it is variable or enum or enum value
+    {
+      if (getLink(g_classScope,clName,ol,clName))
+      {
+	return;
+      }
+    }
+  }
+  else
+  {
+    if (lcd!=VariableContext::dummyContext) 
+    {
+      g_theCallContext.setClass(lcd);
+    }
+    //fprintf(stderr,"is a local variable!\n");
+  }
+  if (cd && cd->isLinkable()) // is it a linkable class
+  {
+    //fprintf(stderr,"is linkable class %s\n",clName);
+    if (g_exampleBlock)
+    {
+      QCString anchor;
+      anchor.sprintf("_a%d",g_anchorCount);
+      //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+      //                                   g_exampleFile.data());
+      if (cd->addExample(anchor,g_exampleName,g_exampleFile))
+      {
+	ol.writeCodeAnchor(anchor);
+	g_anchorCount++;
+      }
+    }
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
+    addToSearchIndex(className);
+    if (md)
+    {
+      Definition *d = md->getOuterScope()==Doxygen::globalScope ?
+                      md->getBodyDef() : md->getOuterScope();
+      if (md->getGroupDef()) d = md->getGroupDef();
+      if (d && d->isLinkable() && md->isLinkable() && g_currentMemberDef)
+      {
+        addDocCrossReference(g_currentMemberDef,md);
+      }
+    }
+  }
+  else // not a class, maybe a global member
+  {
+    //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
+    if (md!=0 || (cd==0 && !typeOnly)) // not a class, see if it is a global enum/variable/typedef.
+    {
+      if (md==0) // not found as a typedef
+      {
+	md = setCallContextForVar(clName);
+	//printf("setCallContextForVar(%s) md=%p g_currentDefinition=%p\n",clName,md,g_currentDefinition);
+	if (md && g_currentDefinition)
+	{
+	  //fprintf(stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
+	  //    md->name().data(),g_currentDefinition->name().data(),
+	  //    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md),
+	  //    md->getOuterScope()->name().data());
+	}
+	     
+        if (md && g_currentDefinition && 
+	    isAccessibleFrom(g_currentDefinition,g_sourceFileDef,md)==-1)
+	{
+	  md=0; // variable not accessible
+	}
+      }
+      if (md)
+      {
+        //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
+	if (md->isLinkable())
+	{
+	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
+          addToSearchIndex(clName);
+	  if (g_currentMemberDef)
+	  {
+	    addDocCrossReference(g_currentMemberDef,md);
+	  }
+	  return;
+	}
+      }
+    }
+    
+    // nothing found, just write out the word
+    codifyLines(clName);
+    addToSearchIndex(clName);
+  }
 }
 
 static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const char *memName)
@@ -2404,8 +2411,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
 					}
 <MemberCall2,FuncCall>{OPERATOR}        { // operator
+  					  if (strcmp(yytext,"*") && strcmp(yytext,"&")) // typically a pointer or reference
+					  {
+					    g_parmType.resize(0);g_parmName.resize(0);
+					  }
   					  g_code->codify(yytext);
-					  g_parmType.resize(0);g_parmName.resize(0);
   					}
 <MemberCall,MemberCall2,FuncCall>")"	{ 
 					  g_theVarContext.addVariable(g_parmType,g_parmName);

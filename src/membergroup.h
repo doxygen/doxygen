@@ -50,6 +50,8 @@ class MemberGroup
 
     void writeDocumentation(OutputList &ol,const char *scopeName,
                Definition *container);
+    void writeDocumentationPage(OutputList &ol,const char *scopeName,
+               Definition *container);
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();

@@ -785,7 +785,14 @@ void Definition::writePathFragment(OutputList &ol) const
   }
   if (isLinkable())
   {
-    ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_localName);
+    if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
+    {
+      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const GroupDef*)this)->groupTitle());
+    }
+    else
+    {
+      ol.writeObjectLink(getReference(),getOutputFileBase(),0,m_localName);
+    }
   }
   else
   {

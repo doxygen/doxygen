@@ -825,7 +825,19 @@ static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
                       MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
 {
-  if (ml->count()==0) return; // empty list
+  MemberListIterator mli(*ml);
+  MemberDef *md;
+  int count=0;
+  for (mli.toFirst();(md=mli.current());++mli)
+  {
+    // namespace members are also inserted in the file scope, but 
+    // to prevent this duplication in the XML output, we filter those here.
+    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    {
+      count++;
+    }
+  }
+  if (count==0) return; // empty list
 
   t << "      <sectiondef kind=\"" << kind << "\">" << endl;
   if (header)
@@ -838,11 +850,14 @@ static void generateXMLSection(Definition *d,QTextStream &ti,QTextStream &t,
     writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
     t << "</description>" << endl;
   }
-  MemberListIterator mli(*ml);
-  MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    generateXMLForMember(md,ti,t,d);
+    // namespace members are also inserted in the file scope, but 
+    // to prevent this duplication in the XML output, we filter those here.
+    if (d->definitionType()!=Definition::TypeFile || md->getNamespaceDef()==0)
+    {
+      generateXMLForMember(md,ti,t,d);
+    }
   }
   t << "      </sectiondef>" << endl;
 }

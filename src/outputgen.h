@@ -372,11 +372,11 @@ class OutputGenerator : public BaseOutputDocInterface
     QFile *file;
     QCString dir;
     bool active;
+    QStack<bool> *genStack;
 
   private:
     OutputGenerator(const OutputGenerator &o);
     OutputGenerator &operator=(const OutputGenerator &o);
-    QStack<bool> *genStack;
 };
 
 /*! \brief Interface used for generating documentation.

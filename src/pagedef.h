@@ -23,7 +23,7 @@ class PageDef : public Definition
   public:
     PageDef(const char *f,int l,const char *n,const char *d,const char *t);
    ~PageDef();
-    DefType definitionType() { return TypePage; }
+    DefType definitionType() const { return TypePage; }
     bool isLinkableInProject() const 
     { 
       return hasDocumentation() && !isReference();

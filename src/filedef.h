@@ -69,7 +69,7 @@ class FileDef : public Definition
 
     FileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
    ~FileDef();
-    DefType definitionType() { return TypeFile; }
+    DefType definitionType() const { return TypeFile; }
 
     /*! Returns the unique file name (this may include part of the path). */
     QCString name() const 
@@ -126,6 +126,10 @@ class FileDef : public Definition
 
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
+    void writeMemberDocumentation(OutputList &ol);
+    void writeMemberPages(OutputList &ol);
+    void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
+
     void writeSource(OutputList &ol);
     void parseSource();
     friend void generatedFileNames();

@@ -387,6 +387,47 @@ void MemberList::writeDocumentation(OutputList &ol,
   }
 }
 
+void MemberList::writeDocumentationPage(OutputList &ol,
+                     const char *scopeName, Definition *container)
+{
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()) ; ++mli)
+  {
+    QCString diskName=md->getOutputFileBase();
+    QCString title=md->qualifiedName();
+    startFile(ol,diskName,md->name(),title);
+    container->writeNavigationPath(ol);
+
+    ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
+                   "  <tr>\n"
+                   "   <td valign=\"top\">\n");
+
+    container->writeQuickMemberLinks(ol,md);
+
+    ol.writeString("   </td>\n");
+    ol.writeString("   <td valign=\"top\">\n");
+    
+    md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+
+    ol.writeString("    </td>\n");
+    ol.writeString("  </tr>\n");
+    ol.writeString("</table>\n");
+    
+    endFile(ol);
+  }
+  if (memberGroupList)
+  {
+    //printf("MemberList::writeDocumentation()  --  member groups\n");
+    MemberGroupListIterator mgli(*memberGroupList);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->writeDocumentationPage(ol,scopeName,container);
+    }
+  }
+}
+
 void MemberList::addMemberGroup(MemberGroup *mg)
 {
   if (memberGroupList==0)

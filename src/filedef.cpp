@@ -501,6 +501,38 @@ void FileDef::writeDocumentation(OutputList &ol)
     writeDetailedDocumentation(ol);
   }
 
+  writeMemberDocumentation(ol);
+  
+  // write Author section (Man only)
+  ol.disableAllBut(OutputGenerator::Man);
+  ol.startGroupHeader();
+  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.endGroupHeader();
+  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  ol.enableAll();
+
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  {
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
+  }
+
+  endFile(ol);
+
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    allMemberList.sort();
+    writeMemberPages(ol);
+  }
+}
+
+void FileDef::writeMemberDocumentation(OutputList &ol)
+{
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    ol.disable(OutputGenerator::Html);
+  }
+  
   docDefineMembers.writeDocumentation(ol,name(),this,
                             theTranslator->trDefineDocumentation());
   
@@ -518,22 +550,62 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   docVarMembers.writeDocumentation(ol,name(),this,
                             theTranslator->trVariableDocumentation());
-  
-  // write Author section (Man only)
-  ol.disableAllBut(OutputGenerator::Man);
-  ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
-  ol.endGroupHeader();
-  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
-  ol.enableAll();
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
+    ol.enable(OutputGenerator::Html);
+  }
+}
+
+void FileDef::writeMemberPages(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  
+  docDefineMembers.writeDocumentationPage(ol,name(),this);
+  docProtoMembers.writeDocumentationPage(ol,name(),this);
+  docTypedefMembers.writeDocumentationPage(ol,name(),this);
+  docEnumMembers.writeDocumentationPage(ol,name(),this);
+  docFuncMembers.writeDocumentationPage(ol,name(),this);
+  docVarMembers.writeDocumentationPage(ol,name(),this);
+
+  ol.popGeneratorState();
+}
+
+void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
+{
+  ol.writeString("      <div class=\"navtab\">\n");
+  ol.writeString("        <table>\n");
+
+  MemberListIterator mli(allMemberList);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
+  {
+    if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable())
+    {
+      ol.writeString("          <tr><td class=\"navtab\">");
+      if (md->isLinkableInProject())
+      {
+        if (md==currentMd) // selected item => highlight
+        {
+          ol.writeString("<a class=\"qindexHL\" ");
+        }
+        else
+        {
+          ol.writeString("<a class=\"qindex\" ");
+        }
+        ol.writeString("href=\"");
+        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+        ol.writeString("\">");
+        ol.writeString(md->localName());
+        ol.writeString("</a>");
+      }
+      ol.writeString("</td></tr>\n");
+    }
   }
 
-  endFile(ol);
+  ol.writeString("        </table>\n");
+  ol.writeString("      </div>\n");
 }
 
 /*! Write a source listing of this file to the output */

@@ -186,6 +186,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
 \refitem cfg_search_includes SEARCH_INCLUDES
 \refitem cfg_searchengine SEARCHENGINE
+\refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
@@ -409,6 +410,13 @@ followed by the descriptions of the tags grouped by category.
  tag is set to YES, then doxygen will reuse the documentation of the first
  member in the group (if any) for the other members of the group. By default
  all members of a group must be documented explicitly.
+
+\anchor cfg_separate_member_pages
+<dt>\c SEPARATE_MEMBER_PAGES <dd>
+ \addindex SEPARATE_MEMBER_PAGES
+ If the \c SEPARATE_MEMBER_PAGES tag is set to \c YES, then doxygen will produce
+ a new page for each member. If set to \c NO, the documentation of a member will
+ be part of the file/class/namespace that contains it.
 
 \anchor cfg_tab_size
 <dt>\c TAB_SIZE <dd>

@@ -112,6 +112,7 @@ struct DocCmdMap
   DocCmdFunc handler;
 };
 
+// map of command to handler function
 static DocCmdMap docCmdMap[] =
 {
   { "brief",           &handleBrief },
@@ -246,7 +247,8 @@ enum XRefKind
   XRef_Todo,
   XRef_Test,
   XRef_Bug,
-  XRef_Deprecated
+  XRef_Deprecated,
+  XRef_None
 };
 
 enum OutputContext
@@ -294,6 +296,7 @@ static QCString        *pOutputString;       // pointer to string to which the o
 static QCString         outputXRef;          // temp argument of todo/test/../xrefitem commands
 static QCString         blockName;           // preformatted block name (e.g. verbatim, latexonly,...)
 static XRefKind         xrefKind;            // kind of cross-reference command
+static XRefKind         newXRefKind;         // 
 static GuardType        guardType;           // kind of guard for conditional section
 static QCString         nameHeader;          // heading of the @name command
 static QCString         functionProto;       // function prototype
@@ -308,9 +311,13 @@ static bool             needNewEntry;
 static QCString         sectionLabel;
 static QCString		sectionTitle;
 static QCString         xrefItemKey;
+static QCString         newXRefItemKey;
 static QCString         xrefItemTitle;
 static QCString         xrefListTitle;
 static Protection	protection;
+
+static bool             xrefAppendToPrev;
+static bool             xrefAppendFlag;
 
 //-----------------------------------------------------------------------------
 
@@ -323,12 +330,53 @@ static void initParser()
 
 //-----------------------------------------------------------------------------
 
+static QCString getDocSectionName(int s)
+{
+  switch(s)
+  {
+    case Entry::CLASSDOC_SEC:       return "@class";
+    case Entry::STRUCTDOC_SEC:      return "@struct";
+    case Entry::UNIONDOC_SEC:       return "@union";
+    case Entry::EXCEPTIONDOC_SEC:   return "@exception";
+    case Entry::NAMESPACEDOC_SEC:   return "@namespace";
+    case Entry::PROTOCOLDOC_SEC:    return "@protocol";
+    case Entry::CATEGORYDOC_SEC:    return "@category";
+    case Entry::ENUMDOC_SEC:        return "@enum";
+    case Entry::PAGEDOC_SEC:        return "@page";
+    case Entry::MEMBERDOC_SEC:      return "@fn";
+    case Entry::OVERLOADDOC_SEC:    return "@overload";
+    case Entry::FILEDOC_SEC:        return "@file";
+    case Entry::DEFINEDOC_SEC:      return "@def";
+    case Entry::GROUPDOC_SEC:       return "@defgroup";
+    case Entry::MAINPAGEDOC_SEC:    return "@mainpage";
+    case Entry::PACKAGEDOC_SEC:     return "@package";
+    case Entry::DIRDOC_SEC:         return "@dir";
+    case Entry::EXAMPLE_SEC:        return "@example";
+    case Entry::MEMBERGRP_SEC:      return "@name";
+    default: return "";
+  }
+}
+
+//-----------------------------------------------------------------------------
+
 static void makeStructuralIndicator(Entry::Sections s)
 {
-  needNewEntry = TRUE;
-  current->section = s;
-  current->fileName = yyFileName;
-  current->startLine = yyLineNr;
+  if (!getDocSectionName(current->section).isEmpty())
+  {
+    warn(yyFileName,yyLineNr,
+	    "Warning: found a structural command %s for a section already "
+	    "marked with structural command %s. Ignoring the latter command.",
+	     getDocSectionName(s).data(),
+             getDocSectionName(current->section).data()
+	);
+  }
+  else
+  {
+    needNewEntry = TRUE;
+    current->section = s;
+    current->fileName = yyFileName;
+    current->startLine = yyLineNr;
+  }
 }
 
 static void lineCount()
@@ -352,13 +400,13 @@ static QCString stripQuotes(const char *s)
 
 //-----------------------------------------------------------------
 
-static void addXRefItem(const char *listName,const char *itemTitle,const char *listTitle)
+static void addXRefItem(const char *listName,const char *itemTitle,
+                        const char *listTitle,bool append)
 {
   Entry *docEntry = current; // inBody && previous ? previous : current;
-  //printf("docEntry=%p\n",docEntry);
   if (listName==0) return;
 
-  //printf("addXRefItem(%s,%s,%s)\n",listName,itemTitle,listTitle);
+  //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
   ListItemInfo *lii=0;
   RefList *refList = Doxygen::xrefLists->find(listName);
   if (refList==0) // new list
@@ -379,9 +427,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
       }
     }
   }
-#if 0 // with this code multiple @todo items can be put under the same
-      // heading, I removed it because it changes the text flow.
-  if (lii) // already found item of same type before
+  if (lii && append) // already found item of same type just before this one
   {
     //printf("listName=%s item id = %d existing\n",listName,lii->itemId);
     RefItem *item = refList->getRefItem(lii->itemId);
@@ -391,7 +437,6 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
-#endif
   {
     int itemId  = refList->addRefItem();
     //printf("listName=%s item id = %d new current=%p\n",listName,itemId,current);
@@ -412,9 +457,8 @@ static void addXRefItem(const char *listName,const char *itemTitle,const char *l
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
     docEntry->anchors->append(si);
-    outputXRef.resize(0);
   }
-  //current->brief  = slString; // restore orginial brief desc.
+  outputXRef.resize(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -492,27 +536,59 @@ static void addSection()
 
 //-----------------------------------------------------------------------------
 
-// determines the string to write to
+// selects the output to write to
 static inline void setOutput(OutputContext ctx)
 {
+  //printf("setOutput(inContext=%d ctx=%d)\n",inContext,ctx);
   if (inContext==OutputXRef) // end of XRef section => add the item 
   {
+    // See if we can append this new xref item to the previous one.
+    // We know this at the start of the next item of the same
+    // type and need to remember this until the end of that item.
+    xrefAppendToPrev = xrefAppendFlag;
+    xrefAppendFlag = ctx==OutputXRef && newXRefKind==xrefKind &&
+                 (xrefKind!=XRef_Item || newXRefItemKey==xrefItemKey);
+    //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
+    //	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
     switch(xrefKind)
     {
       case XRef_Todo:
-	addXRefItem("todo",theTranslator->trTodo(),theTranslator->trTodoList());
+	addXRefItem("todo",
+	            theTranslator->trTodo(),
+	            theTranslator->trTodoList(),
+		    xrefAppendToPrev
+		   );
 	break;
       case XRef_Test:
-	addXRefItem("test",theTranslator->trTest(),theTranslator->trTestList());
+	addXRefItem("test",
+	            theTranslator->trTest(),
+		    theTranslator->trTestList(),
+		    xrefAppendToPrev
+		   );
 	break;
       case XRef_Bug:
-	addXRefItem("bug",theTranslator->trBug(),theTranslator->trBugList());
+	addXRefItem("bug",
+	            theTranslator->trBug(),
+		    theTranslator->trBugList(),
+		    xrefAppendToPrev
+		   );
 	break;
       case XRef_Deprecated:
-	addXRefItem("deprecated",theTranslator->trDeprecated(),theTranslator->trDeprecatedList());
+	addXRefItem("deprecated",
+	            theTranslator->trDeprecated(),
+		    theTranslator->trDeprecatedList(),
+		    xrefAppendToPrev
+		   );
 	break;
-      case XRef_Item:
-	addXRefItem(xrefItemKey,xrefItemTitle,xrefListTitle);
+      case XRef_Item:  // user defined list
+	addXRefItem(xrefItemKey,
+	            xrefItemTitle,
+		    xrefListTitle,
+		    xrefAppendToPrev
+		   );
+	break;
+      case XRef_None:
+	ASSERT(0);
 	break;
     }
   }
@@ -527,6 +603,8 @@ static inline void setOutput(OutputContext ctx)
       break;
     case OutputXRef:
       pOutputString = &outputXRef;
+      // first item found, so can't append to previous
+      xrefAppendFlag = FALSE;
       break;
   }
 }
@@ -638,8 +716,8 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
    *   directories (e.g. \doxygen\src\)
    *   autolist end. (e.g. a dot on an otherwise empty line)
    *   newlines.
-   *   end of brief due to blank line.
-   *   end of brief due to some command (@command, or <command>).
+   *   end of brief description due to blank line.
+   *   end of brief description due to some command (@command, or <command>).
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
    */
@@ -651,7 +729,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  addOutput(yytext);
   					}
 <Comment>{DETAILEDCMD}/[^a-z_A-Z]	{ // command that can end a brief description
-					  setOutput(OutputDoc);
+					  if (inContext!=OutputXRef) setOutput(OutputDoc);
 					  // continue with the same input
                                           REJECT;
 					}
@@ -668,7 +746,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  DocCmdFunc *funcPtr = DocCmdMapper::map(cmdName);
 					  if (funcPtr) // special action is required
 					  {
-					    //printf("Special command %s\n",yytext);
+					    //printf("Special command '%s'\n",yytext);
 					    (*funcPtr)(cmdName);
 					  }
 					  else // command not relevant
@@ -1001,7 +1079,6 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  addOutput('\n');
                                         }
 <FileDocArg1>{DOCNL}			{ // no file name specfied
-  					  current->name = yyFileName;
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
 					  BEGIN( Comment );
@@ -1012,7 +1089,9 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   /* --------- handle arguments of the xrefitem command ------------ */
 
 <XRefItemParam1>{ID}			{ // first argument
-  					  xrefItemKey=yytext;
+  					  newXRefItemKey=yytext;
+                                          setOutput(OutputXRef);
+					  xrefItemKey==yytext;
 					  BEGIN(XRefItemParam2);
 					}
 <XRefItemParam1>{LC}			{ // line continuation
@@ -1053,6 +1132,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 
 <XRefItemParam3>"\""[^\n\"]*"\""	{ // third argument
   					  xrefListTitle = stripQuotes(yytext);
+                                          xrefKind = XRef_Item;
 					  BEGIN( Comment );
   					}
 <XRefItemParam2>{LC}			{ // line continuation
@@ -1570,18 +1650,21 @@ static void handleMainpage(const QCString &)
 static void handleFile(const QCString &)
 {
   makeStructuralIndicator(Entry::FILEDOC_SEC);
+  current->name = yyFileName;
   BEGIN( FileDocArg1 );
 }
 
 static void handleDir(const QCString &)
 {
   makeStructuralIndicator(Entry::DIRDOC_SEC);
+  current->name = yyFileName;
   BEGIN( FileDocArg1 );
 }
 
 static void handleExample(const QCString &)
 {
   makeStructuralIndicator(Entry::EXAMPLE_SEC);
+  current->name = yyFileName;
   BEGIN( FileDocArg1 );
 }
 
@@ -1599,32 +1682,34 @@ static void handleName(const QCString &)
 
 static void handleTodo(const QCString &)
 {
-  xrefKind = XRef_Todo;
+  newXRefKind = XRef_Todo;
   setOutput(OutputXRef);
+  xrefKind = XRef_Todo;
 }
 
 static void handleTest(const QCString &)
 {
-  xrefKind = XRef_Test;
+  newXRefKind = XRef_Test;
   setOutput(OutputXRef);
+  xrefKind = XRef_Test;
 }
 
 static void handleBug(const QCString &)
 {
-  xrefKind = XRef_Bug;
+  newXRefKind = XRef_Bug;
   setOutput(OutputXRef);
+  xrefKind = XRef_Bug;
 }
 
 static void handleDeprecated(const QCString &)
 {
-  xrefKind = XRef_Deprecated;
+  newXRefKind = XRef_Deprecated;
   setOutput(OutputXRef);
+  xrefKind = XRef_Deprecated;
 }
 
 static void handleXRefItem(const QCString &)
 {
-  xrefKind = XRef_Item;
-  setOutput(OutputXRef);
   BEGIN(XRefItemParam1);
 }
 
@@ -1846,6 +1931,8 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
   //inBody         = foundInBody;
   protection     = prot;
   needNewEntry   = FALSE;
+  xrefKind       = XRef_None;
+  xrefAppendFlag = FALSE;
   outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;

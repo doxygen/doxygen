@@ -687,6 +687,32 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
+  writeMemberDocumentation(ol);
+
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  {
+    writeDocAnchorsToTagFile();
+    Doxygen::tagFile << "  </compound>" << endl;
+  }
+
+  endFile(ol); 
+  ol.popGeneratorState();
+
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    allMemberList->sort();
+    writeMemberPages(ol);
+  }
+
+}
+
+void GroupDef::writeMemberDocumentation(OutputList &ol)
+{
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    ol.disable(OutputGenerator::Html);
+  }
+  
   docDefineMembers.writeDocumentation(ol,name(),this,
                              theTranslator->trDefineDocumentation());
   
@@ -705,15 +731,64 @@ void GroupDef::writeDocumentation(OutputList &ol)
   docVarMembers.writeDocumentation(ol,name(),this,
                              theTranslator->trVariableDocumentation());
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    writeDocAnchorsToTagFile();
-    Doxygen::tagFile << "  </compound>" << endl;
+    ol.enable(OutputGenerator::Html);
   }
+}
 
-  endFile(ol); 
+void GroupDef::writeMemberPages(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  
+  docDefineMembers.writeDocumentationPage(ol,name(),this);
+  docProtoMembers.writeDocumentationPage(ol,name(),this);
+  docTypedefMembers.writeDocumentationPage(ol,name(),this);
+  docEnumMembers.writeDocumentationPage(ol,name(),this);
+  docFuncMembers.writeDocumentationPage(ol,name(),this);
+  docVarMembers.writeDocumentationPage(ol,name(),this);
+
   ol.popGeneratorState();
 }
+
+void GroupDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
+{
+  ol.writeString("      <div class=\"navtab\">\n");
+  ol.writeString("        <table>\n");
+
+  MemberListIterator mli(*allMemberList);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
+  {
+    if (md->getGroupDef()==this && md->isLinkable())
+    {
+      ol.writeString("          <tr><td class=\"navtab\">");
+      if (md->isLinkableInProject())
+      {
+        if (md==currentMd) // selected item => highlight
+        {
+          ol.writeString("<a class=\"qindexHL\" ");
+        }
+        else
+        {
+          ol.writeString("<a class=\"qindex\" ");
+        }
+        ol.writeString("href=\"");
+        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+        ol.writeString("\">");
+        ol.writeString(md->localName());
+        ol.writeString("</a>");
+      }
+      ol.writeString("</td></tr>\n");
+    }
+  }
+
+  ol.writeString("        </table>\n");
+  ol.writeString("      </div>\n");
+}
+
+
 
 //---- helper functions ------------------------------------------------------
 

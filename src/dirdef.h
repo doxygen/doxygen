@@ -49,7 +49,7 @@ class DirDef : public Definition
     virtual ~DirDef();
 
     // accessors
-    virtual DefType definitionType() { return TypeDir; }
+    virtual DefType definitionType() const { return TypeDir; }
     virtual QCString getOutputFileBase() const;
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;

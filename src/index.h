@@ -97,9 +97,9 @@ enum ClassMemberHighlight
   CMHL_Typedefs,
   CMHL_Enums,
   CMHL_EnumValues,
-  CMHL_Related,
   CMHL_Properties,
   CMHL_Events,
+  CMHL_Related,
   CMHL_Total = CMHL_Events+1
 };
 

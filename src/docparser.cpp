@@ -3457,7 +3457,7 @@ int DocPara::handleXRefItem()
     {
       m_children.append(ref);
     }
-    else
+    else 
     {
       delete ref;
     }
