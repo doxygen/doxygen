@@ -31,6 +31,7 @@
 #include "doxywizard.h"
 #include "expert.h"
 #include "config.h"
+#include "version.h"
 
 const int messageTimeout = 5000; //!< status bar message timeout in millisec.
 
@@ -1310,9 +1311,9 @@ void MainWidget::about()
 {
   QString msg;
   QTextStream t(&msg,IO_WriteOnly);
-  t << "<qt><center>A tool to configure and run doxygen "
-       "on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2004</center><p>"
+  t << QString("<qt><center>A tool to configure and run doxygen version ")+versionString+
+       " on your source files.</center><p><br>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2005</center><p>"
        "</qt>";
   QMessageBox::about(this,"Doxygen GUI",msg);
 }

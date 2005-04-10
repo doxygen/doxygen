@@ -141,7 +141,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   }
   fullCmd += " ";
   fullCmd += args;
-  Debug::print(Debug::ExtCmd,0,"Executing external command \"%s\"\n",fullCmd.data());
+  Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",fullCmd.data());
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
   isBatchFile=isBatchFile;
@@ -3354,6 +3354,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
 static bool isLowerCase(QCString &s)
 {
   char *p=s.data();
+  if (p==0) return TRUE;
   int c;
   while ((c=*p++)) if (!islower(c)) return FALSE;
   return TRUE; 

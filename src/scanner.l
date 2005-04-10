@@ -34,61 +34,40 @@
   
 #include "scanner.h"
 #include "entry.h"
-#include "doxygen.h"
 #include "message.h"
 #include "config.h"
+#include "doxygen.h"
 #include "util.h"
-#include "index.h"
 #include "defargs.h"
 #include "language.h"
-#include "outputlist.h"
-#include "membergroup.h"
-#include "reflist.h"
-#include "code.h"
 #include "commentscan.h"
 
-#define COMMENTSCAN
-  
 #define YY_NEVER_INTERACTIVE 1
 
 /* -----------------------------------------------------------------
  *
  *	statics
  */
+static ParserInterface *g_thisParser;
 static const char *     inputString;
 static int		inputPosition;
 static QFile            inputFile;
 static int		lastContext;
 static int		lastCContext;
 static int              lastDocContext;
-static int              lastDocRelContext;
-static int              lastDocRelAlsoContext;
 static int              lastCPPContext;
 static int              lastSkipSharpContext;
 static int              lastSkipRoundContext;
-static int              lastBriefContext;
-static int              lastVerbState;
 static int              lastStringContext;
 static int              lastCurlyContext;
 static int              lastRoundContext;
 static int              lastSquareContext;
-static int              lastCodeState;
-static int              lastAfterDocContext;
-static int              lastGroupContext;
-static int              lastFormulaContext;
-static int              lastAnchorContext;
+//static int              lastAfterDocContext;
 static int              lastInitializerContext;
 static int              lastClassTemplSpecContext;
-static int              lastSkipHtmlCommentContext;
-static int              lastIfContext;
-static int              lastInternalDocContext;
 static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
-static int              lastFileDocContext;
-static int              lastSectionContext;
-static int              nextDefContext;
-static int              overloadContext;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -96,7 +75,6 @@ static int		roundCount   = 0 ;
 static int		curlyCount   = 0 ;
 static int		squareCount  = 0 ;
 static int              padCount     = 0 ;
-static int              slStartContext = 0;
 static QCString         slString;
 static Entry*		current_root = 0 ;
 static Entry*		global_root  = 0 ;
@@ -105,7 +83,7 @@ static Entry*		previous     = 0 ;
 static Entry*		tempEntry    = 0 ;
 static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
-static char		yyFileName[4096] ;
+static QCString		yyFileName;
 static int              lastMemberGroupLine;
 static MethodTypes 	mtype;
 static bool    		gstat;
@@ -117,7 +95,7 @@ static int              memberGroupId = DOX_NOGROUP;
 static QCString         memberGroupHeader;
 static QCString         memberGroupDocs;
 static bool             isTypedef;
-static char             afterDocTerminator;
+//static char             afterDocTerminator;
 static int              tmpDocType;
 static QCString         sectionLabel;
 static QCString		sectionTitle;
@@ -154,7 +132,6 @@ static char             lastCopyArgChar;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
-static QCString         *pSkipDoc;
 static QCString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
 static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
@@ -188,6 +165,12 @@ static char             docBlockTerm;
 
 //-----------------------------------------------------------------------------
 
+// forward declarations
+static void handleGroupStartCommand(const char *header);
+static void handleGroupEndCommand();
+
+//-----------------------------------------------------------------------------
+
 static void initParser()
 {
   sectionLabel.resize(0);
@@ -218,7 +201,10 @@ static void initParser()
 
 static void initEntry()
 {
-  if (insideJava) protection = Package;
+  if (insideJava) 
+  {
+    protection = current_root->section==Entry::INTERFACE_SEC ? Public : Package;
+  }
   current->protection = protection ;
   current->mtype      = mtype;
   current->virt       = virt;
@@ -268,9 +254,6 @@ static int newMemberGroupId()
 }
 
 // forward declarations
-#ifndef COMMENTSCAN
-static void startGroup();
-#endif
 static void startGroupInDoc();
 static void endGroup();
 
@@ -314,8 +297,6 @@ static QCString stripQuotes(const char *s)
   return name;
 }
 
-static void newDocState();
-
 //-----------------------------------------------------------------
 
 static void addMemberGroupDocs()
@@ -343,96 +324,6 @@ static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 //-----------------------------------------------------------------
 
-static void addXRefItem(bool inBody,const char *listName,const char *itemTitle,const char *listTitle)
-{
-  Entry *docEntry = inBody && previous ? previous : current;
-  //printf("docEntry=%p\n",docEntry);
-  if (listName==0) return;
-
-  //printf("addXRefItem(%s,%s,%s)\n",listName,itemTitle,listTitle);
-  ListItemInfo *lii=0;
-  RefList *refList = Doxygen::xrefLists->find(listName);
-  if (refList==0) // new list
-  {
-    refList = new RefList(listName,listTitle,itemTitle);
-    Doxygen::xrefLists->insert(listName,refList);
-    //printf("new list!\n");
-  }
-  if (docEntry->sli)
-  {
-    QListIterator<ListItemInfo> slii(*docEntry->sli);
-    for (slii.toFirst();(lii=slii.current());++slii)
-    {
-      if (strcmp(lii->type,listName)==0) 
-      {
-	//printf("found %s lii->type=%s\n",listName,lii->type);
-	break;
-      }
-    }
-  }
-#if 0 // with this code multiple @todo items can be put under the same
-      // heading, I removed it because it changes the text flow.
-  if (lii) // already found item of same type before
-  {
-    //printf("listName=%s item id = %d existing\n",listName,lii->itemId);
-    RefItem *item = refList->getRefItem(lii->itemId);
-    ASSERT(item!=0);
-    item->text += " <p>";
-    item->text += current->brief;
-    //printf("%s: text +=%s\n",listName,item->text.data());
-  }
-  else // new item
-#endif
-  {
-    int itemId  = refList->addRefItem();
-    //printf("listName=%s item id = %d new current=%p\n",listName,itemId,current);
-
-    // if we have already an item from the same list type (e.g. a second @todo)
-    // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
-    char anchorLabel[1024];
-    sprintf(anchorLabel,"_%s%06d",listName,lii ? lii->itemId : itemId);
-    RefItem *item = refList->getRefItem(itemId);
-    ASSERT(item!=0);
-    item->text = current->brief;
-    item->listAnchor = anchorLabel;
-    docEntry->addSpecialListItem(listName,itemId);
-    QCString cmdString;
-    cmdString.sprintf("\\xrefitem %s %d\n",listName,itemId);
-    docEntry->doc += cmdString;
-    SectionInfo *si=new SectionInfo(listName,anchorLabel,
-	                            sectionTitle,SectionInfo::Anchor);
-    Doxygen::sectionDict.insert(anchorLabel,si);
-    docEntry->anchors->append(si);
-  }
-  current->brief  = slString; // restore orginial brief desc.
-}
-
-//-----------------------------------------------------------------------------
-
-// Adds a formula text to the list/dictionary of formulas if it was
-// not already added. Returns the label of the formula.
-static QCString addFormula()
-{
-  QCString formLabel;
-  QCString fText=formulaText.simplifyWhiteSpace();
-  Formula *f=0;
-  if ((f=Doxygen::formulaDict[fText])==0)
-  {
-    f = new Formula(fText);
-    Doxygen::formulaList.append(f);
-    Doxygen::formulaDict.insert(fText,f);
-    formLabel.sprintf("\\form#%d",f->getId());
-    Doxygen::formulaNameDict.insert(formLabel,f);
-  }
-  else
-  {
-    formLabel.sprintf("\\form#%d",f->getId());
-  }
-  return formLabel;
-}
-
-//-----------------------------------------------------------------------------
-
 static bool nameIsOperator(QCString &name)
 {
   int i=name.find("operator");
@@ -440,32 +331,6 @@ static bool nameIsOperator(QCString &name)
   if (i==0 && !isId(name.at(8))) return TRUE; // case operator ::X
   if (i>0 && !isId(name.at(i-1)) && !isId(name.at(i+8))) return TRUE; // case X::operator
   return FALSE; // case TEXToperatorTEXT
-}
-
-//-----------------------------------------------------------------------------
-
-static void checkFormula()
-{
-  if (insideFormula)
-  {
-    warn(yyFileName,yyLineNr,"Warning: End of comment block while inside formula.");
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-static void checkDocs()
-{
-  checkFormula();
-  if ((current->brief.length()>2 && 
-       current->brief.at(0)=='<' && current->brief.at(1)==' ') ||
-      (current->doc.length()>2 && 
-       current->doc.at(0)=='<' && current->doc.at(1)==' ')
-     )
-  {
-    warn(yyFileName,yyLineNr,"Warning: Found lonely '<' symbol at the start of the documentation.");
-	 
-  }
 }
 
 //-----------------------------------------------------------------------------
@@ -486,7 +351,10 @@ static void setContext()
   {
     useOverrideCommands = TRUE;
   }
-  //printf("setContext(%s) insideIDL=%d\n",yyFileName,insideIDL);
+  //printf("setContext(%s) insideIDL=%d insideJava=%d insideCS=%d "
+  //       "insideD=%d insidePHP=%d insideObjC=%d\n",
+  //       yyFileName.data(),insideIDL,insideJava,insideCS,insideD,insidePHP,insideObjC
+  //	);
 }
 
 //-----------------------------------------------------------------------------
@@ -663,14 +531,12 @@ static void addKnRArgInfo(const QCString &type,const QCString &name,
 static int yyread(char *buf,int max_size)
 {
     int c=0;
-#ifdef USE_TMP_FILE
     if (g_inputFromFile)
     {
        c = inputFile.readBlock(buf,max_size);
        if (c==-1) yy_fatal_error("input in flex scanner failed");
     }
     else
-#endif
     {
       while( c < max_size && inputString[inputPosition] )
       {
@@ -717,6 +583,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %option noyywrap
 
   /* language parsing states */
+
 %x	Define
 %x	DefineEnd
 %x	CompoundName
@@ -806,88 +673,20 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	FuncFunc
 %x	FuncFuncEnd
 %x	FuncFuncType
-
-
-  /* comment parsing states.
-   * What can happen in while parsing a comment block:
-   *   commands (e.g. @page, or \page)
-   *   escaped commands (e.g. @@page or \\page).
-   *   directories (e.g. \doxygen\src\)
-   *   HTML commands (e.g. <PRE>...</PRE>)
-   *   autolists.
-   *   newlines.
-   *   words and whitespace and other characters (#,?!, etc).
-   */
-  /*   start states. TODO: reduce to one state */
-%x      Doc
-%x	JavaDoc
-%x      LineDoc
-%x	AfterDoc
-%x	AfterDocBrief
-%x	AfterDocLine
-  /*   internal states */
-  /*     page related */
-%x      PageDoc
-%x      PageDocTitle
-%x      PageDocArg1
-%x      PageDocArg2
-%x	ExampleDocArg1
-
-%x      ClassDoc
-%x      DefLineDoc
-%x	SkipSection
-%x	IfGuard
-%x	IfNotGuard
-%x	NameSpaceDocArg1
-%x	PackageDocArg1
-%x	SkipCode
-%x      ClassDocArg1
-%x      CategoryDocArg1
-%x      ClassDocArg2
-%x      ClassDocArg3
-%x      ClassDocFunc
-%x      ClassDocFuncPtr
-%x      ClassDocFuncQual
-%x      ClassDocFuncSkipLine
-%x      ClassDocFuncExc
-%x	ClassDocDefine
-%x      ClassDocRelates
-%x      ClassDocRelatesAlso
-%x      ClassDocBrief
-%x      ClassDocOverload
-%x	ClassDefineArgs
-%x	DocInternal
-%x	DocInternalLine
-%x	DocBaseClass
-%x	GroupDocArg1
-%x	GroupDocArg2
-%x	GroupName
-%x	GroupHeader
-%x	StoreGroupDocs
-%x      FileDocArg1
-%x      FileDocArg2
-%x	EnumDocArg1
-%x	SkipVerbatim
-%x      TodoParam
-%x      TestParam
-%x      BugParam
-%x      DeprecatedParam
-%x      XRefItemParam1
-%x      XRefItemParam2
-%x      XRefItemParam3
-%x      XRefItemParam4
-%x	SectionLabel
-%x	SectionTitle
 %x      CopyArgString
 %x      CopyArgPHPString
 %x	CopyArgRound
 %x	CopyArgSharp
 %x	CopyArgComment
 %x	CopyArgCommentLine
-%x      SkipHtmlComment
-%x      ReadFormulaShort
-%x	ReadFormulaLong
-%x	AnchorLabel
+
+ /** Prototype scanner states */
+
+%x      Prototype
+%x      PrototypePtr
+%x      PrototypeQual
+%x      PrototypeExc
+%x      PrototypeSkipLine
 
  /** new comment parsing states */
 
@@ -897,43 +696,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
 %%
 
-<*>\x06[^\x06]*\x06			{ // new file
-  					  if (YY_START==Comment)
-    					  {
-   					     warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
-  					  }
-  					  if (memberGroupId!=DOX_NOGROUP)
-					  {
-					    warn(yyFileName,yyLineNr,"Warning: Missing //@}");
-					    memberGroupId=DOX_NOGROUP;
-					  }
-  					  yyLineNr= 0 ; // there is always an extra newline at the start of the file
-					  int i; 
-					  for( i = 0 ; yytext[i+1] != 6 ; i++ )
-					    yyFileName[i] = yytext[i+1] ;
-					  yyFileName[i] = 0 ;
-					  setContext();
-					  msg("Parsing file %s...\n",yyFileName);
-					  current_root  = global_root ;
-					  initParser();
-					  current->reset();
-					  int sec=guessSection(yyFileName);
-					  if (sec)
-					  {
-					    current->name    = yyFileName;
-					    current->section = sec;
-					    current_root->addSubEntry(current);
-					    current          = new Entry;
-					  }
-					  if ( insidePHP )
-					  {
-					    BEGIN( FindMembersPHP );
-					  }
-					  else
-					  {
-					    BEGIN( FindMembers );
-					  }
-                                        }
 <NextSemi>"{"				{
   					  curlyCount=0;
 					  needsSemi = TRUE;
@@ -1224,7 +986,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  unput(';');
   					  BEGIN( Function );
   					}
-<ObjCMethod,ObjCParams>"{"		{ // start of a method body
+<ObjCMethod,ObjCParams>(";"{BN}+)?"{"	{ // start of a method body
+  					  lineCount();
                                           //printf("Type=%s Name=%s args=%s\n",
 					  //    current->type.data(),current->name.data(),argListToString(current->argList).data()
 					  //    );
@@ -1618,7 +1381,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  initEntry();
 					  BEGIN(Using);
   					}
-<UsingDirective>{SCOPENAME}		{ current->name=yytext;
+<UsingDirective>{SCOPENAME}		{ current->name=removeRedundantWhiteSpace(yytext);
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
 					  current_root->addSubEntry(current);
@@ -1915,7 +1678,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  BEGIN( PreLineCtrl );
   					}
 <PreLineCtrl>"\""[^\n\"]*"\""		{
-				          strncpy(yyFileName,stripQuotes(yytext),4096);	
+				          yyFileName = stripQuotes(yytext);
   					}
 <PreLineCtrl>.				{}
 <PreLineCtrl>\n				{
@@ -2018,7 +1781,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  {
 					    current->bodyLine=yyLineNr;
 					  }
-#ifdef COMMENTSCAN
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
 					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
@@ -2034,37 +1796,9 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    startCommentBlock(FALSE);
 					    BEGIN( DocBlock );
 					  }
-#else
-					  lastAfterDocContext = YY_START;
-					  afterDocTerminator = ';';
-					  if (yytext[yyleng-3]=='/')
-					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyFileName;
-					    BEGIN(AfterDocLine);
-					  }
-					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
-					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyLineNr;
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    BEGIN(AfterDocBrief);
-					  }
-					  else
-					  {
-					    current->doc.resize(0);
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    BEGIN(AfterDoc);
-					  }
-#endif
   					}
 <MemberSpec,FindFields,FindMembers,NextSemi,BitFields,ReadInitializer,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
-#ifdef COMMENTSCAN
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
 					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
@@ -2080,69 +1814,31 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    startCommentBlock(FALSE);
 					    BEGIN( DocBlock );
 					  }
-#else
-					  lastAfterDocContext = YY_START;
-					  afterDocTerminator = ',';
-					  if (yytext[yyleng-3]=='/')
-					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyLineNr;
-					    BEGIN(AfterDocLine);
-					  }
-					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
-					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyLineNr;
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    BEGIN(AfterDocBrief);
-					  }
-					  else
-					  {
-					    current->doc.resize(0);
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    BEGIN(AfterDoc);
-					  }
-#endif
   					}
 <DefineEnd,FindFields,FindFieldArg,ReadInitializer,OldStyleArgs>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
   					  lineCount();
-					  lastAfterDocContext = YY_START;
-					  if (YY_START==DefineEnd)
+					  if (current->bodyLine==-1)
 					  {
-					    afterDocTerminator = '\n';
-					    yyLineNr--;
+					    current->bodyLine=yyLineNr;
 					  }
-					  else
-					    afterDocTerminator = 0;
+					  docBlockContext   = YY_START;
+					  docBlockInBody    = FALSE;
+					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlock.resize(0);
+					  docBlockTerm = 0;
 					  if (yytext[yyleng-3]=='/')
 					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyFileName;
-					    BEGIN(AfterDocLine);
-					  }
-					  else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
-					  {
-					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyFileName;
-					    BEGIN(AfterDocBrief);
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
 					  }
 					  else
 					  {
-					    current->doc.resize(0);
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    BEGIN(AfterDoc);
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
 					  }
   					}
    
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
-#ifdef COMMENTSCAN
   					  Entry *tmp = current;
 					  if (previous)
 					  {
@@ -2151,50 +1847,9 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  handleGroupStartCommand(current->name);
 					  current = tmp;
 					  initEntry();
-
-#else
-  					  startGroup();
-					  tmpDocType=-1;
-					  if (current_root->section & Entry::SCOPE_MASK)
-                                          {
-					      current->inside = current_root->name+"::";
-                                              if (current->mGrpId!=DOX_NOGROUP)
-                                              {
-                                                memberGroupInside = current->inside.copy();
-                                              }
-                                          }
-					  if (yytext[1]=='/') // C++ style comment
-					  {
-  					    current->brief.resize(0);
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyFileName;
-					    lastDocContext = YY_START;
-					    BEGIN( LineDoc );
-					  }
-					  else // C style comment 
-					  {
-					    current->doc.resize(0);
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    lastDocContext = YY_START;
-					    removeSlashes=FALSE;
-					    BEGIN( Doc );
-					  }
-#endif
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
-#ifdef COMMENTSCAN
 					  handleGroupEndCommand();
-#else
-                                          if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
-                                          {
-                                            warn(yyFileName,yyLineNr,
-	                                        "Warning: end of group without matching begin.");
-                                          }
-                                          //printf("end of member group marker ends group %d\n",memberGroupId);
-  					  endGroup();
-                                          memberGroupHeader.resize(0);
-#endif
   					}
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
@@ -3631,31 +3286,24 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  {
 					    current->endBodyLine=yyLineNr;
 					    lineCount();
+
 					    tempEntry = current; // temporarily switch to the previous entry
 					    current = previous;
-					    current->doc.resize(0);
-					    current->brief.resize(0);
-					    lastAfterDocContext = SkipCurlyEndDoc;
-					    afterDocTerminator = '}';
+
+					    docBlockContext   = SkipCurlyEndDoc;
+					    docBlockInBody    = FALSE;
+					    docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					    docBlock.resize(0);
+					    docBlockTerm = '}';
 					    if (yytext[yyleng-3]=='/')
 					    {
-					      current->briefLine = yyLineNr;
-					      current->briefFile = yyFileName;
-					      BEGIN(AfterDocLine);
-					    }
-					    else if (yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF"))
-					    {
-					      current->briefLine = yyLineNr;
-					      current->briefFile = yyFileName;
-					      current->docLine = yyLineNr;
-					      current->docFile = yyFileName;
-					      BEGIN(AfterDocBrief);
+					      startCommentBlock(TRUE);
+					      BEGIN( DocLine );
 					    }
 					    else
 					    {
-					      current->docLine = yyLineNr;
-					      current->docFile = yyFileName;
-					      BEGIN(AfterDoc);
+					      startCommentBlock(FALSE);
+					      BEGIN( DocBlock );
 					    }
 					  }
 					}
@@ -4183,16 +3831,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
-#ifdef COMMENTSCAN
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
-#else
-					  BEGIN( Doc );
-#endif
 					}
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
@@ -4206,7 +3850,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
-#ifdef COMMENTSCAN
 					  current->docLine = yyLineNr;
 					  current->docFile = yyFileName;
 					  docBlockContext = YY_START;
@@ -4228,46 +3871,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
-#else
-					  if (!Config_getBool("JAVADOC_AUTOBRIEF")) // use the Qt style
-					  {
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    tmpDocType=-1;
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
-						YY_START==SkipCurly) // inside body
-					    {
-					      current->doc+="\n\n";
-					    }
-					    else
-					    {
-  					      current->doc.resize(0);
-					    }
-					    BEGIN( Doc );
-					  }
-					  else // Use the javadoc style
-					  {
-					    current->docLine = yyLineNr;
-					    current->docFile = yyFileName;
-					    current->briefLine = yyLineNr;
-					    current->briefFile = yyFileName;
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS") &&
-						YY_START==SkipCurly) // inside body
-					    {
-					      tmpDocType=-1;
-					      current->doc+="\n\n";
-					      lastDocContext = SkipCurly;
-					      BEGIN( Doc );
-					    }
-					    else
-					    {  
-					      tmpDocType=Doc;
-					      current->doc.resize(0);
-					      current->brief.resize(0);
-					      BEGIN( JavaDoc );
-					    }
-					  }
-#endif
   					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" { 
                                           if (YY_START!=SkipCurly)
@@ -4286,16 +3889,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
-#ifdef COMMENTSCAN
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
 					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
-#else
-					  BEGIN( LineDoc );
-#endif
 					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] { 
                                           if (YY_START!=SkipCurly)
@@ -4314,16 +3913,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                               memberGroupInside = current->inside.copy();
                                             }
                                           }
-#ifdef COMMENTSCAN
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockJavaStyle = FALSE;
 					  docBlock.resize(0);
 					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
-#else
-					  BEGIN( LineDoc );
-#endif
 					}
 <FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
 					  lineCount();
@@ -4413,7 +4008,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   				          handleCommentBlock(docBlock,FALSE);
 					  BEGIN(docBlockContext);
   					}
-<DocBlock>^{B}*"*"+/[^//]		{ // start of a comment line
+<DocBlock>^{B}*("//")?{B}*"*"+/[^//]	{ // start of a comment line
+  					}
+<DocBlock>^{B}*("//"){B}*		{ // strip embedded C++ comments if at the start of a line
+  					}
+<DocBlock>"//"				{ // slashes in the middle of a comment block
+  					  docBlock+=yytext;
   					}
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
@@ -4423,7 +4023,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  docBlockName=&yytext[1];
   					  BEGIN(DocCopyBlock);
   					}
-<DocBlock>[^@*\\\n]+			{ // any character that isn't special
+<DocBlock>[^@*\/\\\n]+			{ // any character that isn't special
   					  docBlock+=yytext;
   					}
 <DocBlock>\n				{ // newline
@@ -4470,1682 +4070,65 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 
 
+    /* ------------- Prototype parser -------------- */
 
-
-
-   /*************************************************************************/
-   /***           The next part is obsolete and will be removed           ***/
-
-
-<JavaDoc>{CMD}("brief"|"short"){B}+	{
-  					  lastBriefContext=tmpDocType;
-  					  BEGIN( ClassDocBrief ); 
-					}
-<JavaDoc>^(({B}*"*"+)?){BL}		{
-					  lineCount();
-					  if (!current->brief.stripWhiteSpace().isEmpty())
-					  {
-					    BEGIN( tmpDocType );
-					  }
- 					} 
-
-
-  /*
-<JavaDoc>"@"				{
-  					  unput(*yytext);
-					  BEGIN(ClassDoc);
-  					}
-  */
-<JavaDoc>^{B}*"*"+/[^/]			{
-  					  //printf("---> removing %s\n",yytext);
-  					}
-  /*
-<JavaDoc>[^\n\@\*\.\\]+			{
-  					  current->brief+=yytext;
-  					}
-  */
-<JavaDoc>.				{
-  				          //printf("---> copy %c\n",*yytext);
-  					  current->brief+=*yytext;
-  					}
-<JavaDoc>\n				{
-  					  current->brief+=' ';
-					  lineCount();
-  					}
-<JavaDoc,AfterDocBrief>".\\"/[ \t\r\n]		{
-					  current->brief+=".";
-					}
-<JavaDoc>"."[ \t\r\n]			{
-  					  lineCount();
-					  current->brief+=".";
-					  BEGIN( tmpDocType );
-					}
-<JavaDoc>{B}*/{SECTIONCMD}		{ 
-  					  current->doc+=yytext;
-					  BEGIN( tmpDocType );
-  					}
-<JavaDoc>"<"({TABLE}|{UL}|{OL}|{DL}|{P}){ATTR}">"	{  // end brief upon encountering any of these
-					  int i;
-					  for (i=yyleng-1;i>=0;i--)
-					  {
-					    unput(yytext[i]);
-					  }
-					  BEGIN( tmpDocType );
-  					}
-<Doc,JavaDoc>{B}*{CMD}("fn"|"var"|"typedef"|"property"){B}+	{
-					  current->section = Entry::MEMBERDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-  					  BEGIN( ClassDocFunc ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"def"{B}+	{
-  					  nextDefContext = YY_START==LineDoc ? DefLineDoc : ClassDoc;
-  					  current->section = Entry::DEFINEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-  					  BEGIN( ClassDocDefine );
-  					}
-<LineDoc,Doc,JavaDoc>{B}*{CMD}"overload"{B}* { 
-  					  overloadContext = YY_START;
-  					  BEGIN( ClassDocOverload ); 
-					}
-<ClassDocOverload>{B}*/"\n"	        {
-					  QCString orgDoc = current->doc;
-					  current->doc = getOverloadDocs();
-					  current->doc += "\n\n";
-					  current->doc += orgDoc;
-  					  BEGIN( overloadContext  );
-  				        }
-<ClassDocOverload>{B}*/"*/"		{
-					  QCString orgDoc = current->doc;
-					  current->doc = getOverloadDocs();
-					  current->doc += "\n\n";
-					  current->doc += orgDoc;
-  					  BEGIN( overloadContext );
-  					}
-<ClassDocOverload>.                     { unput(*yytext);
-  					  current->section = Entry::OVERLOADDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocFunc ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"enum"{B}+	{
-  					  current->section = Entry::ENUMDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( EnumDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"defgroup"{B}+ {
-  					  current->section = Entry::GROUPDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->groupDocType = Entry::GROUPDOC_NORMAL;
-					  BEGIN( GroupDocArg1 );
-  					}
-<Doc,PageDoc,JavaDoc>{B}*{CMD}"addtogroup"{B}+ {
-  					  current->section = Entry::GROUPDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->groupDocType = Entry::GROUPDOC_ADD;
-					  BEGIN( GroupDocArg1 );
-  					}
-<Doc,PageDoc,JavaDoc>{B}*{CMD}"weakgroup"{B}+ {
-  					  current->section = Entry::GROUPDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->groupDocType = Entry::GROUPDOC_WEAK;
-					  BEGIN( GroupDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"namespace"{B}+	{
-  					  current->section = Entry::NAMESPACEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-  					  BEGIN( NameSpaceDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"package"{B}+	{
-  					  current->section = Entry::PACKAGEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-  					  BEGIN( PackageDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"class"{B}+  	{
-  					  current->section = Entry::CLASSDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"protocol"{B}+  	{ // ObjC protocol
-  					  current->section = Entry::PROTOCOLDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"category"{B}+  	{ // ObjC category
-  					  current->section = Entry::CATEGORYDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( CategoryDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"union"{B}+  	{
-  					  current->section = Entry::UNIONDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"struct"{B}+ 	{
-  					  current->section = Entry::STRUCTDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"interface"{B}+ 	{
-  					  current->section = Entry::INTERFACEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"idlexcept"{B}+ 	{
-  					  current->section = Entry::EXCEPTIONDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( ClassDocArg1 ); 
-					}
-<Doc,JavaDoc>{B}*{CMD}"page"{B}+   	{
-  					  current->section = Entry::PAGEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( PageDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"mainpage"{B}* 	{
-  					  current->section = Entry::MAINPAGEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  current->name = "mainpage";
-					  BEGIN( PageDocArg2 );
-  					}
-<Doc,LineDoc,JavaDoc>{B}*{CMD}"file"{B}*	{
-  					  current->section = Entry::FILEDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  lastFileDocContext = YY_START;
-					  BEGIN( FileDocArg1 );
-  					}
-<Doc,LineDoc,JavaDoc>{B}*{CMD}"dir"{B}*	{
-  					  current->section = Entry::DIRDOC_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  BEGIN( FileDocArg1 );
-  					}
-<Doc,JavaDoc>{B}*{CMD}"example"{B}+ 	{
- 					  current->section = Entry::EXAMPLE_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
- 					  BEGIN( ExampleDocArg1 );
-					}
-<ClassDoc,PageDoc,Doc,JavaDoc>{B}*{CMD}"details"{B}+	{ /* nop */
-					}
-<LineDoc>{CMD}"name"[^\n]*\n		{
-  					  lastDefGroup.groupname.resize(0);
-  					  memberGroupHeader=&yytext[5];
-					  memberGroupHeader=memberGroupHeader.stripWhiteSpace(); 
-					  current->section = Entry::MEMBERGRP_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  yyLineNr++;  
-					  startGroupInDoc();
-					  BEGIN( lastDocContext );
-  					}
-<Doc,JavaDoc>{CMD}"name"{B}+ 		{
-  					  lastDefGroup.groupname.resize(0);
-					  current->section = Entry::MEMBERGRP_SEC;
-					  current->fileName = yyFileName;
-					  current->startLine = yyLineNr;
-					  memberGroupHeader.resize(0);
-					  memberGroupDocs.resize(0);
-					  BEGIN(GroupHeader);
-  					}
-<LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>"<!--"	{ 
-					  lastSkipHtmlCommentContext = YY_START;
-					  BEGIN(SkipHtmlComment); 
-					}
-<SkipHtmlComment>"--"[!]?">"		{ BEGIN(lastSkipHtmlCommentContext); }
-<SkipHtmlComment>.
-<AfterDoc,Doc,ClassDoc,PageDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated"|"xrefitem")/[^a-z_A-Z0-9] {
-  					  current->doc+=yytext;
-  					}
-<AfterDocLine,LineDoc,JavaDoc>("\\\\"|"@@")("todo"|"test"|"bug"|"deprecated"|"xrefitem")/[^a-z_A-Z0-9]	{
-  					  current->brief+=yytext;
-  					}
-<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"todo"/[^a-z_A-Z0-9]	{
-  					  slStartContext = YY_START;
-					  lastBriefContext = TodoParam; // this is where we will continue at the end of the argument
-					  slString = current->brief.copy(); // these will be swapped later on.
-					  current->brief.resize(0);
-					  BEGIN(ClassDocBrief);
-  					}
-<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"test"/[^a-z_A-Z0-9]	{
-  					  slStartContext = YY_START;
-					  lastBriefContext = TestParam; // this is where we will continue at the end of the argument
-					  slString = current->brief.copy(); // these will be swapped later on.
-					  current->brief.resize(0);
-					  BEGIN(ClassDocBrief);
-  					}
-<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"bug"/[^a-z_A-Z0-9]	{
-  					  slStartContext = YY_START;
-					  lastBriefContext = BugParam; // this is where we will continue at the end of the argument
-					  slString = current->brief.copy(); // these will be swapped later on.
-					  current->brief.resize(0);
-					  BEGIN(ClassDocBrief);
-  					}
-<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"deprecated"/[^a-z_A-Z0-9]	{
-  					  slStartContext = YY_START;
-					  lastBriefContext = DeprecatedParam; // this is where we will continue at the end of the argument
-					  slString = current->brief.copy(); // these will be swapped later on.
-					  current->brief.resize(0);
-					  BEGIN(ClassDocBrief);
-  					}
-<AfterDoc,AfterDocLine,LineDoc,Doc,JavaDoc,ClassDoc,PageDoc>{CMD}"xrefitem"/[^a-z_A-Z0-9]	{
-  					  slStartContext = YY_START;
-					  lastBriefContext = XRefItemParam4; // this is where we will continue at the end of the argument
-					  slString = current->brief.copy(); // these will be swapped later on.
-					  current->brief.resize(0);
-					  BEGIN(XRefItemParam1);
-  					}
-<TodoParam>\n                           |
-<TodoParam>"//"                         |
-<TodoParam>"/*"                         |
-<TodoParam>.				{
-                                          addXRefItem(lastDocContext==SkipCurly,
-                                              "todo",theTranslator->trTodo(),theTranslator->trTodoList());
-					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
-					  BEGIN(slStartContext);
-  					}
-<TestParam>\n                           |
-<TestParam>"//"                         |
-<TestParam>"/*"                         |
-<TestParam>.				{
-                                          addXRefItem(lastDocContext==SkipCurly,
-                                              "test",theTranslator->trTest(),theTranslator->trTestList());
-					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
-					  BEGIN(slStartContext);
-  					}
-<BugParam>\n                            |
-<BugParam>"//"                          |
-<BugParam>"/*"                          |
-<BugParam>.				{
-                                          addXRefItem(lastDocContext==SkipCurly,
-                                              "bug",theTranslator->trBug(),theTranslator->trBugList());
-					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
-					  BEGIN(slStartContext);
-  					}
-<DeprecatedParam>\n                     |
-<DeprecatedParam>"//"                   |
-<DeprecatedParam>"/*"                   |
-<DeprecatedParam>.		        {
-                                          addXRefItem(lastDocContext==SkipCurly,
-                                              "deprecated",theTranslator->trDeprecated(),theTranslator->trDeprecatedList());
-					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
-					  BEGIN(slStartContext);
-  					}
-<XRefItemParam1>{ID}			{
-  					  xrefItemKey=yytext;
-					  BEGIN(XRefItemParam2);
-					}
-<XRefItemParam1>{B}*	                
-<XRefItemParam1>.			{
-  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the first argument of \\xrefitem\n",yytext);
-					  unput(*yytext);
-					  BEGIN(slStartContext);
-  					}
-<XRefItemParam2>"\""[^\n\"]*"\""	{
-  					  xrefItemTitle = stripQuotes(yytext);
-					  BEGIN(XRefItemParam3);
-  					}
-<XRefItemParam2>{B}*
-<XRefItemParam2>.			{
-  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the second argument of \\xrefitem\n",yytext);
-					  unput(*yytext);
-					  BEGIN(slStartContext);
-  					}
-<XRefItemParam3>{B}*
-<XRefItemParam3>"\""[^\n\"]*"\""	{
-  					  xrefListTitle = stripQuotes(yytext);
-					  BEGIN(ClassDocBrief);
-  					}
-<XRefItemParam3>.			{
-  					  warn(yyFileName,yyLineNr,"Found unexpected character %s while parsing the third argument of \\xrefitem\n",yytext);
-					  unput(*yytext);
-					  BEGIN(slStartContext);
-  					}
-<XRefItemParam4>{B}*
-<XRefItemParam4>\n                      |
-<XRefItemParam4>"//"                    |
-<XRefItemParam4>"/*"                    |
-<XRefItemParam4>.		        {
-                                          addXRefItem(lastDocContext==SkipCurly,
-                                              xrefItemKey,xrefItemTitle,xrefListTitle);
-					  int i;for (i=yyleng-1;i>=0;i--) unput(yytext[i]);
-					  BEGIN(slStartContext);
-  					}
-<ExampleDocArg1>{FILE}			{
-				          current->name = stripQuotes(yytext);	
-					  BEGIN( PageDoc );
-					}
-<ClassDoc,Doc,JavaDoc>{B}*{CMD}"relate"[sd]{B}*    { 
-  					  lastDocRelContext = YY_START;
-  					  BEGIN( ClassDocRelates ); 
-					}
-<ClassDocRelates>({ID}"::")*{ID}	{ 
-  					  current->relates = yytext;
-                                          if (current->mGrpId!=DOX_NOGROUP) 
-                                          {
-                                            memberGroupRelates = yytext;
-                                          }
-					  BEGIN( lastDocRelContext );
-					}
-<ClassDoc,Doc,JavaDoc>{B}*{CMD}"relate"[sd]"also"{B}*    { 
-                                          lastDocRelAlsoContext = YY_START;
-                                           BEGIN( ClassDocRelatesAlso ); 
-                                        }
-<ClassDocRelatesAlso>({ID}"::")*{ID}    { 
-  					  current->relatesDup = TRUE;
-					  current->relates = yytext;
-					  if (current->mGrpId!=DOX_NOGROUP) 
-					  {
-					    memberGroupRelates = yytext;
-					  }
-					  BEGIN( lastDocRelAlsoContext );
-                                        }
-<NameSpaceDocArg1>{SCOPENAME}		{
-  					  current->name = yytext;
-					  newDocState();
-  					}
-<NameSpaceDocArg1>"\\"{B}*"\n"		{ 
-                                          yyLineNr++; 
-                                        }
-<NameSpaceDocArg1>"\n"			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after "
-					       "\\namespace."
-                                              );
-  					  yyLineNr++;
-  					}
-<PackageDocArg1>{ID}("."{ID})*		{
-  					  current->name = yytext;
-					  newDocState();
-  					}
-<PackageDocArg1>"\\"{B}*"\n"		{ 
-                                          yyLineNr++; 
-                                        }
-<PackageDocArg1>"\n"			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after "
-					       "\\package."
-                                              );
-  					  yyLineNr++;
-  					}
-<CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
-					  current->name = yytext;
-					  prependScope();
-					  BEGIN( ClassDocArg2 );
-   					}
-<ClassDocArg1>{SCOPENAME}/"<"		{
-					  current->name = yytext;
-					  // prepend outer scope name 
-					  prependScope();
-					  lastClassTemplSpecContext = ClassDocArg2;
-					  BEGIN( ClassTemplSpec );
-  					}
-<ClassDocArg1>{SCOPENAME}		{
-					  current->name = yytext;
-					  if (current->section==Entry::PROTOCOLDOC_SEC)
-					  {
-					    current->name+="-p";
-					  }
-					  // prepend outer scope name 
-					  prependScope();
-					  BEGIN( ClassDocArg2 );
-					}
-<ClassDocArg1,CategoryDocArg1>"\\"{B}*"\n"		{ 
-                                          yyLineNr++; 
-                                        }
-<ClassDocArg1>"\n"			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after "
-					       "\\class."
-                                              );
-  					  yyLineNr++;
-					  
-  					}
-<CategoryDocArg1>"\n"			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after "
-					       "\\category."
-                                              );
-  					  yyLineNr++;
-					  
-  					}
-<GroupDocArg1>{ID}(".html"?)		{ 
-  					  current->name = yytext;
-					  lastDefGroup.groupname = yytext;
-					  lastDefGroup.pri = current->groupingPri();
-  					  // the .html stuff is for Qt compatibility
-					  if (current->name.right(5)==".html") 
-					    current->name=current->name.left(current->name.length()-5);
-					  BEGIN(GroupDocArg2);
-  					}
-<GroupDocArg1>"\\"{B}*"\n"		{ yyLineNr++; 
-                                        }
-<GroupDocArg1>"\n"			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing group name after %s",
-					       current->groupDocCmd()
-                                              );
-					  yyLineNr++;
-					  BEGIN( Doc );
-  					}
-<GroupDocArg2>{B}*"*/"			{
-                                          // fake input for end of title rule
-                                          yyLineNr--;
-  					  unput('/');unput('*');unput('\n');
-  					}
-<GroupDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
-                                        }
-<GroupDocArg2>[^\n\\\*]+		{
-					  current->type += yytext;
-					  current->type = current->type.stripWhiteSpace();
-  					}
-<GroupDocArg2>"\\_linebr"|"\n"		{
-                                          if( current->groupDocType == Entry::GROUPDOC_NORMAL &&
-                                              current->type.length() == 0 )
-  					    warn(yyFileName,yyLineNr,
-                                                 "Warning: missing title after "
-					         "\\defgroup %s", current->name.data()
-                                                );
-  					  if (*yytext=='\n') yyLineNr++; 
- 					  newDocState();
-  					}
-<ClassDocArg2>{FILE}			{
-  					  //printf("ClassDocArg2=%s\n",yytext);
-					  current->includeFile = stripQuotes(yytext);
-					  BEGIN( ClassDocArg3 );
-					}
-<ClassDocArg2>"\\"{B}*"\n"		{ yyLineNr++; 
-                                        }
-<ClassDocArg2>"\\_linebr"		{ 
-					  newDocState();
-					}
-<ClassDocArg2>"\n"			{ yyLineNr++; 
-					  newDocState();
-					}
-<ClassDocArg2>{B}*"*/"			{
-					  newDocState();
-  					  unput('/');unput('*');
-  					}
-<ClassDocArg3>[<]?{FILE}[>]?		{
-  					  //printf("ClassDocArg3=%s\n",yytext);
- 					  current->includeName = yytext;
-  					  newDocState();
-					}
-<ClassDocArg3>"\\"{B}*"\n"		{ yyLineNr++;
-                                        }
-<ClassDocArg3>"\n"|"\\linebr"		{ yyLineNr++; 
-  					  newDocState();
-					}
-<ClassDocArg3>{B}*"*/"			{
-					  newDocState();
-  					  unput('/');unput('*');
-  					}
-<FileDocArg1>{FILE}			{
-  					  current->name = stripQuotes(yytext);
-					  newDocState();
-  				        }
-<FileDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
-                                        }
-<FileDocArg1>"\n"|"\\_linebr"		{
-  					  current->name = yyFileName;
-  					  if (*yytext=='\n') yyLineNr++;
-					  newDocState();
-					  if (lastFileDocContext==LineDoc)
-					  {
-  					    current->doc += "\n\n";
-					    current_root->addSubEntry(current);
-					    current = new Entry ;
-					    initEntry();
-					    BEGIN( FindMembers );
-					  }
-  					}
-<PageDocArg1>{FILE}			{
-					  current->name = stripQuotes(yytext);
-					  BEGIN( PageDocArg2 ); 
-					}
-<PageDocArg1>"\\"{B}*"\n"		{ yyLineNr++; 
-					  current->doc+="\n";
-                                        }
-<PageDocArg1>"\n"|"\\_linebr"		{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after "
-					       "\\page."
-                                              );
-					  current->doc+="\n";
-  					  if (*yytext=='\n') yyLineNr++;
-					  BEGIN( Doc );
-  					}
-<PageDocArg2>.*"\n"			{
-  				          yyLineNr++;
-					  current->args = yytext;
-					  current->doc+="\n";
-					  BEGIN( PageDoc );
-					}
-<EnumDocArg1>{SCOPEID}			{
-  					  current->name = yytext;
-					  prependScope();
-  					  newDocState();
-  					}
-<EnumDocArg1>"\\"{B}*"\n"		{ yyLineNr++;
-					  current->doc+="\n";
-                                        }
-<EnumDocArg1>"\n"|"\\_linebr"		{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: missing argument after \\enum."
-                                              );
-					  current->doc+="\n";
-  					  if (*yytext=='\n') yyLineNr++;
-					  BEGIN( Doc );
-  					}
-<PageDoc>{CMD}"refitem".*"\n"		{
-  					  current->doc+=yytext;
-  					}
-<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"section"{B}+		{
-  					  //sectionType=SectionInfo::Section;
-					  current->doc+=yytext;
-					  lastSectionContext=YY_START;
-  					  BEGIN(SectionLabel);
-  					}
-<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsection"{B}+		{
-  					  //sectionType=SectionInfo::Subsection;
-					  current->doc+=yytext;
-					  lastSectionContext=YY_START;
-  					  BEGIN(SectionLabel);
-  					}
-<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"subsubsection"{B}+	{
-  					  //sectionType=SectionInfo::Subsubsection;
-					  current->doc+=yytext;
-					  lastSectionContext=YY_START;
-  					  BEGIN(SectionLabel);
-  					}
-<ClassDoc,PageDoc,Doc,JavaDoc>{CMD}"paragraph"{B}+		{
-  					  //sectionType=SectionInfo::Paragraph;
-					  current->doc+=yytext;
-					  lastSectionContext=YY_START;
-  					  BEGIN(SectionLabel);
-  					}
-<GroupHeader>.				{ memberGroupHeader+=*yytext; }
-<GroupHeader>"*/"			{
-  					  unput('/');unput('*');
-					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
-					  startGroupInDoc();
-					  newDocState();
-  					}
-<GroupHeader>\n|"\\_linebr"		{
-  					  if (*yytext=='\n') yyLineNr++;
-					  current->doc+="\n";
-					  //printf("Found memberGroup=`%s'\n",memberGroupHeader.data());
-					  startGroupInDoc();
-					  newDocState();
-  					}
-<StoreGroupDocs>"$"			{
-  					  //printf("StoreGroupDocs memberGroupId=%d brief=`%s' doc=`%s'!\n",memberGroupId,current->brief.data(),current->doc.data());
-					  memberGroupDocs=current->brief.stripWhiteSpace();
-					  current->doc = current->doc.stripWhiteSpace();
-					  if (!memberGroupDocs.isEmpty() && !current->doc.isEmpty())
-					  {
-					    memberGroupDocs+="\n\n";
-					  }
-					  memberGroupDocs+=current->doc;
-					  //Doxygen::memberDocDict.insert(memberGroupId,
-					  //    new QCString(memberGroupDocs)
-					  //    );
-					  MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
-					  if (info) 
-					  {
-					    info->doc = memberGroupDocs;
-					    info->docFile = yyFileName;
-					  }
-					  current->doc.resize(0);
-					  current->brief.resize(0);
-					  BEGIN(lastDocContext);
-  					}
-<Doc,PageDoc,JavaDoc,ClassDoc>{CMD}"anchor"{B}+ {
-  					  lastAnchorContext = YY_START;
-  					  //sectionType=SectionInfo::Anchor;
-					  current->doc+=yytext;
-					  BEGIN(AnchorLabel);
-  					}
-<Doc,PageDoc,ClassDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly"|"dot")/[^a-z_A-Z0-9] {
-					  current->doc+=yytext;
-					}
-<JavaDoc>("\\\\"|"@@")("verbatim"|"latexonly"|"htmlonly"|"dot")/[^a-z_A-Z0-9] {
-					  current->brief+=yytext;
-					}
-<Doc,PageDoc,ClassDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] {
-					  lastVerbState=YY_START;
-					  current->doc+="\\verbatim";
-					  g_skipBlockName="verbatim";
-  					  BEGIN(SkipVerbatim);
-  					}
-<JavaDoc>{CMD}"verbatim"/[^a-z_A-Z0-9] 	{
-					  lastVerbState=YY_START;
-					  current->brief+="\\verbatim";
-					  g_skipBlockName="verbatim";
-  					  BEGIN(SkipVerbatim);
-  					}
-<Doc,PageDoc,ClassDoc>{CMD}"latexonly"/[^a-z_A-Z0-9] {
-					  lastVerbState=YY_START;
-					  current->doc+="\\latexonly";
-					  g_skipBlockName="latexonly";
-  					  BEGIN(SkipVerbatim);
-  					}
-<JavaDoc>{CMD}"latexonly"/[^a-z_A-Z0-9]	{
-					  lastVerbState=YY_START;
-					  current->brief+="\\latexonly";
-					  g_skipBlockName="latexonly";
-  					  BEGIN(SkipVerbatim);
-  					}
-<Doc,PageDoc,ClassDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
-					  lastVerbState=YY_START;
-					  current->doc+="\\htmlonly";
-					  g_skipBlockName="htmlonly";
-  					  BEGIN(SkipVerbatim);
-  					}
-<JavaDoc>{CMD}"htmlonly"/[^a-z_A-Z0-9] 	{
-					  lastVerbState=YY_START;
-					  current->brief+="\\htmlonly";
-					  g_skipBlockName="htmlonly";
-  					  BEGIN(SkipVerbatim);
-  					}
-<Doc,PageDoc,ClassDoc>{CMD}"addindex"{B}+[^\n]+ {
-  					  current->doc+=yytext;
-  					}
-<JavaDoc>{CMD}"addindex"{B}+[^\n]+ 	{
-  					  current->brief+=yytext;
-  					}
-<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
-  					  current->doc+="\\\\code";
-  					}
-<JavaDoc>("\\\\"|"@@")"code"/[^a-z_A-Z0-9] {
-  					  current->brief+="\\\\code";
-  					}
-<Doc,PageDoc,ClassDoc>{CMD}"code"/[^a-z_A-Z0-9] {
-  					  lastCodeState=YY_START;
-					  current->doc+="\\code";
-					  pSkipDoc=&current->doc;
-					  g_skipBlockName="code";
-					  BEGIN(SkipCode);
-					}
-<JavaDoc>{CMD}"code"/[^a-z_A-Z0-9] 	{
-  					  lastCodeState=YY_START;
-					  current->brief+="\\code";
-					  pSkipDoc=&current->brief;
-					  g_skipBlockName="code";
-					  BEGIN(SkipCode);
-					}
-<Doc,PageDoc,ClassDoc>("\\\\"|"@@")"dot"/[^a-z_A-Z0-9] {
-  					  current->doc+="\\\\dot";
-  					}
-<JavaDoc>("\\\\"|"@@")"dot"/[^a-z_A-Z0-9] {
-  					  current->brief+="\\\\dot";
-  					}
-<Doc,PageDoc,ClassDoc>{CMD}"dot"/[^a-z_A-Z0-9] {
-					  lastCodeState=YY_START;
-					  current->doc+="\\dot";
-					  pSkipDoc=&current->doc;
-					  g_skipBlockName="dot";
-  					  BEGIN(SkipCode);
-  					}
-<JavaDoc>{CMD}"dot"/[^a-z_A-Z0-9] 	{
-					  lastCodeState=YY_START;
-					  current->brief+="\\dot";
-					  pSkipDoc=&current->brief;
-					  g_skipBlockName="dot";
-  					  BEGIN(SkipCode);
-  					}
-<Doc,PageDoc,ClassDoc>"<"{PRE}{ATTR}">" {
-  					  lastCodeState=YY_START;
-					  current->doc+="<PRE>";
-					  pSkipDoc=&current->doc;
-					  g_skipBlockName="pre";
-					  BEGIN(SkipCode);
-  					}
-<JavaDoc>"<"{PRE}{ATTR}">" 		{
-  					  lastCodeState=YY_START;
-					  current->brief+="<PRE>";
-					  pSkipDoc=&current->brief;
-					  g_skipBlockName="pre";
-					  BEGIN(SkipCode);
-  					}
-<SkipVerbatim>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot")/[^a-z_A-Z0-9] {
-  					  current->doc+=yytext;
-  					  BEGIN(lastVerbState);
-  					}
-<SkipVerbatim>[^ \t\/\@\\\n]*		{
-  					  current->doc+=yytext;
-  					}
-<SkipVerbatim>^"//"			{
-  					  if (!removeSlashes)
-					    current->doc+=yytext;
-  					}
-  /*
-<SkipVerbatim>^"//"({B}*"*"+)?		{
-  					  if (!removeSlashes)
-					    current->doc+=yytext;
-  					}
-<SkipVerbatim>^{B}*"*"+			
-  */
-<SkipVerbatim>"//"|"/*"			{ 
-  					  current->doc+=yytext; 
-  					}
-<SkipVerbatim>"\n"			{
-  					  yyLineNr++;
-					  current->doc+=*yytext;
-  					}
-<SkipVerbatim>.				{
-  					  current->doc+=*yytext;
-  					}
-<SkipVerbatim><<EOF>>			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s tag!",g_skipBlockName.data(),g_skipBlockName.data()
-                                              );
-					  yyterminate();
-  					}
-<SkipCode>{CMD}"endcode"/[^a-z_A-Z0-9]	{
-  					  *pSkipDoc+="\\endcode";
-					  if (g_skipBlockName=="code")
-					  {
-					    BEGIN(lastCodeState);
-					  }
-  					}
-<SkipCode>"</"{PRE}{ATTR}">"		{
-  					  *pSkipDoc+="</PRE>";
-					  if (g_skipBlockName=="pre")
-					  {
-					    BEGIN(lastCodeState);
-					  }
-  					}
-<SkipCode>{CMD}"enddot"/[^a-z_A-Z0-9]	{
-  					  *pSkipDoc+="\\enddot";
-					  if (g_skipBlockName=="dot")
-					  {
-					    BEGIN(lastCodeState);
-					  }
-  					}
-<SkipCode>^"//"({B}*"*"+)?		{
-  					  if (!removeSlashes)
-					    *pSkipDoc+=yytext;
-  					}
-<SkipCode>^{B}*"*"+/{BN}+		
-<SkipCode>"//"				{
-  					  *pSkipDoc+=yytext;
-  					}
-<SkipCode>"/*"|"*/"			{
-  					  *pSkipDoc+=yytext;
-  					}
-<SkipCode>[^ \<\*\t\/\\\n]+		{
-  					  *pSkipDoc+=yytext;
-  					}
-<SkipCode>\n				{
-  					  yyLineNr++;
-					  *pSkipDoc+=*yytext;
-  					}
-<SkipCode>.				{
-  					  *pSkipDoc+=*yytext;
-  					}
-<SkipCode><<EOF>>			{
-  					  warn(yyFileName,yyLineNr,
-                                               "Warning: reached end of file while inside a @%s block; check for missing @end%s tag!",
-					       g_skipBlockName.data(),
-					       g_skipBlockName.data()
-                                              );
-					  yyterminate();
-  					}
-<AnchorLabel>{LABELID}			{
-                                          SectionInfo  *si = new SectionInfo(yyFileName,yytext,0,SectionInfo::Anchor);
-					  printf("New anchor file=%s label=%s\n",yyFileName,yytext);
-                                          Doxygen::sectionDict.insert(yytext,si);
-  					  current->anchors->append(si);
-                                          current->doc+=yytext;
-					  BEGIN(lastAnchorContext);
-  					}
-<SectionLabel>{LABELID}			{
-  					  sectionLabel=yytext;
-					  sectionTitle.resize(0);
-                                          current->doc+=yytext;
-					  BEGIN(SectionTitle);
-  					}
-<SectionTitle>[^\n*]*/"\n"              {
-					  sectionTitle+=yytext;
-					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 
-  					  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
-  					  current->anchors->append(si);
-                                          Doxygen::sectionDict.insert(yytext,si);
-                                          current->doc+=yytext;
-					  BEGIN(lastSectionContext);
-  					}
-<SectionTitle>[^\n*]*/"\\_linebr"       {
-					  sectionTitle+=yytext;
-					  sectionTitle=sectionTitle.stripWhiteSpace();
-					  //printf("Adding new section file=%s label=%s title=%s\n",yyFileName,sectionLabel.data(),sectionTitle.data()); 
-  					  SectionInfo *si = new SectionInfo(yyFileName,sectionLabel,sectionTitle,SectionInfo::Anchor);
-  					  current->anchors->append(si);
-                                          Doxygen::sectionDict.insert(yytext,si);
-                                          current->doc+=yytext;
-					  BEGIN(lastSectionContext);
-  					}
-<SectionTitle>[^\n*]*			{
-  					  sectionTitle+=yytext;
-                                          current->doc+=yytext;
-  					}
-<SectionTitle>"*"			{
-  					  sectionTitle+=yytext;
-                                          current->doc+=yytext;
-  					}
-<PageDoc,ClassDoc>"\n"			{ yyLineNr++ ; current->doc+=yytext; }
-<PageDoc,ClassDoc>[a-z_A-Z0-9 \t]+		{ current->doc += yytext; }
-<PageDoc>{CMD}"ingroup"{B}+			{
-  							  lastGroupContext = YY_START;
-							  lineCount();
-							  BEGIN( GroupName );
-  							}
-<ClassDoc,Doc,JavaDoc>{CMD}"{"				{
-                                                          if (memberGroupId==DOX_NOGROUP && current->section==Entry::GROUPDOC_SEC)
-							  {
-							    startGroupInDoc();
-							  }
-  							}
-<ClassDoc,Doc,JavaDoc>{CMD}"}"				{
-                                                          if (memberGroupId==DOX_NOGROUP && autoGroupStack.isEmpty())
-                                                          {
-                                                             warn(yyFileName,yyLineNr,
-	                                                          "Warning: end of group without matching begin.");
-                                                          }
-                                                          //printf("end of member group marker ends group %d\n",memberGroupId);
-  							  endGroup();
-                                                          memberGroupHeader.resize(0);
-  							}
-<PageDoc,ClassDoc>.    	 	        { current->doc += yytext; }
-<Doc,JavaDoc,LineDoc,PageDoc,ClassDoc>^{B}*"//" 
-<Doc,PageDoc,ClassDoc>"//"  			{ current->doc += yytext; }
-<LineDoc,JavaDoc,ClassDocBrief>"//"			{ current->brief += yytext; }
-<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief>("\\\\"|"@@")"f"[$\[\]] {
-							  current->doc += yytext; 
-							}
-<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f$"	{ 
-  							  lastFormulaContext = YY_START;
-  							  formulaText="$"; 
-							  insideFormula=TRUE;
-							  BEGIN(ReadFormulaShort); 
-							}
-<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f["	{ 
-  							  lastFormulaContext = YY_START;
-  							  formulaText="\\["; 
-							  insideFormula=TRUE;
-							  BEGIN(ReadFormulaLong); 
-							}
-<Doc,JavaDoc,LineDoc,ClassDocBrief,PageDoc,ClassDoc,AfterDoc,AfterDocLine,AfterDocBrief,CopyArgComment,CopyArgCommentLine>{CMD}"f{"[^}\n]+"}"	{ 
-  							  lastFormulaContext = YY_START;
-							  formulaText="\\begin";
-							  formulaEnd=&yytext[2];
-							  formulaText+=formulaEnd;
-							  insideFormula=TRUE;
-							  BEGIN(ReadFormulaLong); 
-  							}
-<ReadFormulaShort>{CMD}"f$"				{
-  							  formulaText+="$";
-							  if (lastFormulaContext==ClassDocBrief || 
-							      lastFormulaContext==LineDoc || 
-							      lastFormulaContext==JavaDoc || 
-							      lastFormulaContext==AfterDocBrief ||
-							      lastFormulaContext==AfterDocLine
-							     )
-							  {
-							    current->brief += addFormula();
-							  }
-							  else if (lastFormulaContext==CopyArgComment ||
-							           lastFormulaContext==CopyArgCommentLine)
-							  {
-							    fullArgString += addFormula();
-							  }
-							  else
-							  {
-							    current->doc += addFormula();
-							  }
-							  insideFormula=FALSE;
-							  BEGIN(lastFormulaContext);
-  							}
-<ReadFormulaShort>\n					{
-  							  formulaText+=" ";
-							  yyLineNr++;
-							  if (lastFormulaContext==LineDoc || 
-							      lastFormulaContext==AfterDocLine
-							     )
-							  {
-							    checkFormula();
-							    insideFormula=FALSE;
-							    BEGIN(lastFormulaContext);
-							  }
-  							}
-<ReadFormulaLong>{CMD}"f"[\}\]]				{
-  							  if (yytext[2]==']')
-							  {
-							    formulaText+="\\]";
-							  }
-							  else
-							  {
-							    formulaText+="\\end";
-							    formulaText+=formulaEnd;
-							  }
-							  if (lastFormulaContext==ClassDocBrief ||
-							      lastFormulaContext==LineDoc ||
-							      lastFormulaContext==JavaDoc ||
-							      lastFormulaContext==AfterDocBrief ||
-							      lastFormulaContext==AfterDocLine
-							     )
-							  {
-							    current->brief += addFormula();
-							  }
-							  else if (lastFormulaContext==CopyArgComment ||
-							           lastFormulaContext==CopyArgCommentLine)
-							  {
-							    fullArgString += addFormula();
-							  }
-							  else
-							  {
-							    current->doc += addFormula();
-							  }
-							  insideFormula=FALSE;
-							  BEGIN(lastFormulaContext);
-  							}
-<ReadFormulaLong>\n					{ formulaText+=*yytext; yyLineNr++; }
-<ReadFormulaLong,ReadFormulaShort>.                     { formulaText+=*yytext; }
-<PageDoc,ClassDocBrief,ClassDoc,ReadFormulaShort,ReadFormulaLong>{B}*"*/"  	{
-  					  checkDocs();
-					  //printf("current->section=%x\n",current->section);
-					  if (YY_START==SkipCode) // premature end of code block
-					  {
-					    err("Error: comment block ended inside \\code ... \\endcode block at line %d in %s!\n",
-						yyLineNr,yyFileName);
-					    *pSkipDoc += "\\endcode\n\n";
-					    BEGIN( lastDocContext );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==TodoParam)
-					  {
-					    unput('/');unput('*'); // make sure we have something to read
-					    BEGIN( TodoParam );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==TestParam)
-					  {
-					    unput('/');unput('*'); // make sure we have something to read
-					    BEGIN( TestParam );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==BugParam)
-					  {
-					    unput('/');unput('*'); // make sure we have something to read
-					    BEGIN( BugParam );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==DeprecatedParam)
-					  {
-					    unput('/');unput('*'); // make sure we have something to read
-					    BEGIN( DeprecatedParam );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==XRefItemParam4)
-					  {
-					    unput('/');unput('*'); // make sure we have something to read
-					    BEGIN( XRefItemParam4 );
-					  }
-					  else if (YY_START==ClassDocBrief &&
-					      lastBriefContext==Doc)
-					  {
-					    //printf("Add docs %s\n",current->doc.data());
-  					    current->doc += "\n\n";
-  					    BEGIN( lastDocContext ); 
-					  }
-					  else if (current->section==Entry::MEMBERGRP_SEC)
-					  {
-					    unput('$');
-					    BEGIN( StoreGroupDocs );
-					  }
-					  else
-					  {
-  					    current->doc += "\n\n";
-					    //printf("Add docs for %s\n",current->name.data());
-					    current_root->addSubEntry(current);
-					    current = new Entry ;
-					    initEntry();
-					    BEGIN( lastDocContext );
-					  }
-					}
-<PageDoc>"<"{TITLE}">"			{ 
-  					  current->args.resize(0); 
-					  current->argList->clear();
-  					  BEGIN( PageDocTitle); 
-					}
-<PageDocTitle>\n			{ yyLineNr++; current->args+=" "; }
-<PageDocTitle>[^\n\<]			{ current->args+=yytext; }
-<PageDocTitle>"</"{TITLE}">"		{ BEGIN( PageDoc ); }
-
-  /* escaped versions of the conditional commands (for putting them in the docs) */
-<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->doc+=yytext; }
-<ClassDoc,Doc,AfterDoc,PageDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->doc+=yytext; }
-<LineDoc,JavaDoc>{CMD}{CMD}"if"/[^a-z_A-Z0-9]     { current->brief+=yytext; }
-<LineDoc,JavaDoc>{CMD}{CMD}"ifnot"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
-<LineDoc,JavaDoc>{CMD}{CMD}"elseif"/[^a-z_A-Z0-9] { current->brief+=yytext; }
-<LineDoc,JavaDoc>{CMD}{CMD}"else"/[^a-z_A-Z0-9]   { current->brief+=yytext; }
-<LineDoc,JavaDoc>{CMD}{CMD}"endif"/[^a-z_A-Z0-9]  { current->brief+=yytext; }
-
-  /* conditional commands */
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"if"{B}+ {
-                                          lastIfContext = YY_START;
-					  BEGIN(IfGuard);
-  					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"ifnot"{B}+ {
-                                          lastIfContext = YY_START;
-					  BEGIN(IfNotGuard);
-  					}
-<ClassDoc,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"if"(\r?)\n |
-<IfGuard>\n				{
-  					  warn(yyFileName,yyLineNr,"Missing guard for if statement!");
-					  yyLineNr++;
-					}  
-<IfGuard>[^\n\t ]+			{
-  					  if (Config_getList("ENABLED_SECTIONS").find(yytext)==-1) // not enabled
-					  {
-					    BEGIN(SkipSection);
-  					    depthIf=1;
-					  }
-					  else // section enabled
-					  {
-					    BEGIN(lastIfContext);
-					  }
-  					}
-<IfNotGuard>\n				{
-  					  warn(yyFileName,yyLineNr,"Missing guard for ifnot statement!");
-					  yyLineNr++;
-					}  
-<IfNotGuard>[^\n\t ]+			{
-  					  if (Config_getList("ENABLED_SECTIONS").find(yytext)==-1) // not enabled
-					  {
-					    BEGIN(lastIfContext);
-					  }
-					  else // section enabled
-					  {
-  					    depthIf=1;
-					    BEGIN(SkipSection);
-					  }
-  					}
-<SkipSection>{CMD}"if"/[^a-z_A-Z0-9]	{
-  					  depthIf++;
-  					}
-<SkipSection>{CMD}"endif"/[^a-z_A-Z0-9]	{
-  					  if (--depthIf<=0)
-					  {
-					    BEGIN(lastIfContext);
-					  }
-  					}
-<SkipSection>{CMD}"else"/[^a-z_A-Z0-9]	{
-  					  if (depthIf==1)
-					  {
-					    depthIf=0;
-					    BEGIN(lastIfContext);
-					  }
-  					}
-<SkipSection>{CMD}"elseif"/[^a-z_A-Z0-9] {
-  					  if (depthIf==1)
-					  {
-					    BEGIN(IfGuard);
-					  }
-  					}
-<SkipSection>"*/"			{
-					  BEGIN( SkipSection );
-  					}
-<SkipSection>"/*!"			{
-					  BEGIN( SkipSection );
-  					}
-<SkipSection>\n				{
-  					  yyLineNr++;
-  					}
-<SkipSection>"//"|"*/"
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"elseif"/[^a-z_A-Z0-9] {
-                                          // previous section enabled => skip now
-  					  depthIf=1;
-  					  BEGIN(SkipSection);
-  					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"else"/[^a-z_A-Z0-9] {
-                                          // section was enabled => skip now
-  					  depthIf=1;
-  					  BEGIN(SkipSection);
-  					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc,PageDoc>{CMD}"endif"/[^a-z_A-Z0-9] {
-                                          // section enabled => absorb endif
-  					}
-
-
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"ingroup"{B}+   { 
-  					  lastGroupContext = YY_START;
-  					  lineCount();
-  					  BEGIN( GroupName ); 
-					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"nosubgrouping"/[^a-z_A-Z0-9] {
-                                          current->subGrouping = FALSE; 
-                                        }
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"showinitializer"/[^a-z_A-Z0-9] {
-					  current->initLines = 100000; // ON
-  					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"hideinitializer"/[^a-z_A-Z0-9] {
-					  current->initLines = 0; // OFF
-  					}
-<ClassDoc,ClassDocBrief,LineDoc,AfterDocLine,AfterDocBrief,Doc,JavaDoc,AfterDoc>{CMD}"callgraph"/[^a-z_A-Z0-9] {
-					  current->callGraph = TRUE; // ON
-  					}
-<GroupName>{ID}				{
-  					  current->groups->append(
-					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
-					  );
-  					}
-<GroupName>"\\_linebr"			{
-					  BEGIN( lastGroupContext );
-  					}
-<GroupName>"\n"				{
-  					  yyLineNr++; 
-					  BEGIN( lastGroupContext );
-  					}
-<GroupName>"*/"				{
-  					  unput('/');unput('*');
-					  BEGIN( lastGroupContext );
-  					}
-<ClassDoc,Doc>{B}*{CMD}("brief"|"short")	{ 
-  					  lastBriefContext=YY_START;
-					  current->briefFile = yyFileName;
-					  current->briefLine = yyLineNr;
-  					  BEGIN( ClassDocBrief ); 
-					}
-<ClassDoc>{B}*"\\inherit"{B}+	        { BEGIN( DocBaseClass ); }
-<DocBaseClass>{ID}			{
-					  //printf("Adding base class %s\n",yytext);
-					  current->extends->append(
-					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
-					  );
-					}
-<DocBaseClass>\n			{ yyLineNr++; BEGIN( ClassDoc ); }
-<ClassDocBrief>{BS}({BL}|"\\n\\n")      |
-<ClassDocBrief>("\\_linebr \\_linebr")  { 
-					  //if (!current->doc.isEmpty()) current->doc+=" <p>";
-					  if (lastBriefContext==TodoParam || 
-					      lastBriefContext==TestParam || 
-					      lastBriefContext==BugParam ||
-					      lastBriefContext==DeprecatedParam ||
-					      lastBriefContext==XRefItemParam4
-					     )
-					  {
-					    unput('\n');
-					  }
-					  else
-					  {
-  					    current->brief=current->brief.stripWhiteSpace();
-					    if (yytext[yyleng-1]=='\n') yyLineNr++;
-					  }
-					  BEGIN( lastBriefContext );
-					}
-<ClassDocBrief>"\n"			{ 
-					  // allow \todo in brief description
-					  if (lastBriefContext==TodoParam &&
-					      (slStartContext==LineDoc ||
-					       slStartContext==AfterDocLine
-					      )
-					     )
-					  {
-					    unput('\n'); // make sure we have something to read
-					    BEGIN( TodoParam );
-					  }
-					  else if
-					     (lastBriefContext==TestParam &&
-					      (slStartContext==LineDoc ||
-					       slStartContext==AfterDocLine
-					      )
-					     )
-					  {
-					    unput('\n'); // make sure we have something to read
-					    BEGIN( TestParam );
-					  }
-					  else if
-					     (lastBriefContext==BugParam &&
-					      (slStartContext==LineDoc ||
-					       slStartContext==AfterDocLine
-					      )
-					     )
-					  {
-					    unput('\n'); // make sure we have something to read
-					    BEGIN( BugParam );
-					  }
-					  else if
-					     (lastBriefContext==DeprecatedParam &&
-					      (slStartContext==LineDoc ||
-					       slStartContext==AfterDocLine
-					      )
-					     )
-					  {
-					    unput('\n'); // make sure we have something to read
-					    BEGIN( DeprecatedParam );
-					  }
-					  else if
-					     (lastBriefContext==XRefItemParam4 &&
-					      (slStartContext==LineDoc ||
-					       slStartContext==AfterDocLine
-					      )
-					     )
-					  {
-					    unput('\n'); // make sure we have something to read
-					    BEGIN( XRefItemParam4 );
-					  }
-					  else
-					  {
-					    current->brief += "\n"; 
-					    if (!current->doc.stripWhiteSpace().isEmpty())
-					    {
-					      current->doc += "<p>";
-					    }
-  					    yyLineNr++ ; 
-					  }
-					}
-<ClassDocBrief>"<"{BR}{ATTR}">"
-<ClassDocBrief>{BS}/{SECTIONCMD}	|
-<ClassDocBrief>{B}*/{SECTIONCMD}	{ 
-  					  current->brief=current->brief.stripWhiteSpace();
-                                          BEGIN( lastBriefContext ); 
-                                        }
-<ClassDocBrief>{BS}{CMD}("brief"|"short"){BN}+ {
-  					  //lastBriefContext=YY_START;
-					}
-<ClassDocBrief>{ID}			{ current->brief += yytext; }
-<ClassDocBrief>.			{ current->brief += *yytext; }
-<ClassDocDefine>{ID}/"("		{
-  					  current->name = yytext;
-					  BEGIN( ClassDefineArgs );
-  					}
-<ClassDocDefine>{ID}			{
-  					  current->name = yytext;
-					  if (nextDefContext==ClassDoc)
-					    newDocState();
-					  else 
-					    BEGIN( nextDefContext );
-  					}
-<ClassDefineArgs>")"			{
-  					  current->args+=")";
-					  if (nextDefContext==ClassDoc)
-					    newDocState();
-					  else
-					    BEGIN( nextDefContext );
-  					}
-<ClassDefineArgs>.			{
-  					  current->args+= yytext;
-  					}
-<ClassDocFunc>"\\"{B}*"\n"		{ yyLineNr++; }
-<ClassDocFunc>"\n"			{ 
-  					  yyLineNr++; 
-					  current->name = current->name.stripWhiteSpace();
-					  if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
-					    current->section = Entry::VARIABLEDOC_SEC;
-					  newDocState();
-					}
-<ClassDocFunc>"operator"{B}*"("{B}*")"	{
+<Prototype>"operator"{B}*"("{B}*")"	{
   					  current->name+=yytext;
   					}
-<ClassDocFunc>"("			{
+<Prototype>"("			{
   					  current->args+=*yytext;
-					  currentArgumentContext = ClassDocFuncQual;
+					  currentArgumentContext = PrototypeQual;
 					  fullArgString = current->args.copy();
 					  copyArgString = &current->args;
 					  BEGIN( ReadFuncArgType ) ;
   					}
-<ClassDocFunc>"("({ID}"::")*({B}*"*")+	{
+<Prototype>"("({ID}"::")*({B}*"*")+	{
   					  current->type+=current->name+yytext;
 					  current->name.resize(0);
-  					  BEGIN( ClassDocFuncPtr );
+  					  BEGIN( PrototypePtr );
   					}
-<ClassDocFuncPtr>{SCOPENAME}		{
+<PrototypePtr>{SCOPENAME}		{
   					  current->name+=yytext;
   					}
-<ClassDocFuncPtr>")"			{
+<PrototypePtr>")"			{
   					  current->type+=')';
-  					  BEGIN( ClassDocFunc );
+  					  BEGIN( Prototype );
   					}
-<ClassDocFuncQual>"{"			{
-  					  BEGIN( ClassDocFuncSkipLine);
+<PrototypeQual>"{"			{
+  					  BEGIN( PrototypeSkipLine);
   					}
-<ClassDocFuncQual>{B}*"const"{B}*    	{ 
+<PrototypeQual>{B}*"const"{B}*    	{ 
   					  current->args += " const "; 
 					  current->argList->constSpecifier=TRUE;
 					}
-<ClassDocFuncQual>{B}*"volatile"{B}* 	{ 
+<PrototypeQual>{B}*"volatile"{B}* 	{ 
   					  current->args += " volatile "; 
 					  current->argList->volatileSpecifier=TRUE;
 					}
-<ClassDocFuncQual>{B}*"="{B}*"0"{B}*	{ 
+<PrototypeQual>{B}*"="{B}*"0"{B}*	{ 
 					  current->args += " = 0"; 
 					  current->virt = Pure; 
 					  current->argList->pureSpecifier=TRUE;
 					}
-<ClassDocFuncQual>"throw"{B}*"("	{
+<PrototypeQual>"throw"{B}*"("	{
   					  current->exception = "throw(";
-					  BEGIN(ClassDocFuncExc);
+					  BEGIN(PrototypeExc);
   					}
-<ClassDocFuncExc>")"			{
+<PrototypeExc>")"			{
   					  current->exception += ')';
-					  BEGIN(ClassDocFuncQual);
+					  BEGIN(PrototypeQual);
   					}
-<ClassDocFuncExc>.			{
+<PrototypeExc>.			{
   					  current->exception += *yytext;
   					}
-<ClassDocFunc,ClassDocFuncQual>.	{
+<Prototype,PrototypeQual>.	{
   					  current->name += *yytext;
   					}
-<ClassDocFuncQual,ClassDocFuncSkipLine>"\n"	{
-  					  yyLineNr++; 
-					  current->name = current->name.stripWhiteSpace();
-					  newDocState();
-  					}
-<DefLineDoc,LineDoc,AfterDocLine>{SECTIONCMD}	{
-  					  warn(yyFileName,yyLineNr,"Command %s not allowed in single-line C++ comment! Ignoring.",yytext);
-  					}
-<Doc>[a-z_A-Z0-9]+			{ current->doc += yytext; }
-<Doc,PageDoc,AfterDoc,LineDoc,ClassDoc>("\\\\"|"@@")	{ current->doc += yytext; }
-<Doc>.					{ current->doc += *yytext; }
-<DefLineDoc,LineDoc>.			{ current->brief += *yytext; }
-<Doc>\n					{ yyLineNr++; current->doc += *yytext; }
-<LineDoc>[\n\r]+{B}*"//"[!/]		{ lineCount(); }
-<LineDoc>\n				{ 
-					  yyLineNr++;  
-					  if (lastDocContext==SkipCurly) // inside body
-					  {
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS"))
-					    {
-					      if (!previous->doc.isEmpty())
-					      {
-						previous->doc+="<p>";
-					      }
-					      previous->doc += current->brief;
-					    }
-					    current->brief.resize(0);
-					  }
-					  BEGIN( lastDocContext );
-					}
-<DefLineDoc>\n				{
-  					  yyLineNr++; 
-					  unput('/');unput('*');
-					  BEGIN( ClassDoc );
+<PrototypeSkipLine>.			{
   					}
 
-<AfterDocLine>"/*"|"//"			{ current->brief+=yytext; }
-<AfterDocLine>\n			{
-  					  yyLineNr++;
-                                          if (afterDocTerminator!=0)
-					    unput(afterDocTerminator);
-					  BEGIN(lastAfterDocContext);
-  					}
-<AfterDocLine>\n{B}*("//!<"|"///<") 	{ 
-  					  yyLineNr++;
-  					  BEGIN(AfterDocLine);
-  					}
-<AfterDocLine>\n{B}*("/*!<"|"/**<") 	{ 
-  					  yyLineNr++;
-  					  BEGIN(AfterDoc);
-  					}
-<AfterDocLine>{ID}			{ current->brief+=yytext; }
-<AfterDocLine>.				{ current->brief+=yytext; }
-<AfterDocBrief>{BS}({BL}|"\\n\\n")	{ 
-  					  current->brief=current->brief.stripWhiteSpace();
-					  yyLineNr++;
-					  BEGIN( AfterDoc );
-					}
-<AfterDocBrief>"/*"|"//"		{ current->brief+=yytext; }
-<AfterDocBrief>{B}*/{SECTIONCMD}	{
-  					  current->brief=current->brief.stripWhiteSpace();
-  					  BEGIN( AfterDoc );
-  					}
-<AfterDocBrief>\n			{ current->brief+=yytext; yyLineNr++; }
-<AfterDocBrief>.			{ current->brief+=*yytext; }
 
-  /*
-<AfterDocBrief>"<"{BR}{ATTR}">"
-<AfterDocBrief>{BS}/{CMD}"ingroup"	{
-  					  current->brief=current->brief.stripWhiteSpace();
-					  BEGIN( lastBriefContext ); 
-  					}
-<AfterDocBrief>{BS}/{SECTIONCMD}	{ 
-                                          BEGIN( lastBriefContext ); 
-                                        }
-<AfterDocBrief>{BS}/[^/\n]{BL}		{ yyLineNr++; 
-  					  if (!current->brief.stripWhiteSpace().isEmpty())
-					    BEGIN(AfterDoc); 
-					}
-  */
-<AfterDocBrief>"*/"			{
-                                          if (afterDocTerminator!=0)
-					    unput(afterDocTerminator);
-					  BEGIN(lastAfterDocContext);
-  					}
-<AfterDocBrief>"."/{BN}			{ BEGIN(AfterDoc); }
-<LineDoc,AfterDocLine>{CMD}"internal"	{ 
-                                          if (!Config_getBool("INTERNAL_DOCS"))
-                                          {
-					    lastInternalDocContext = YY_START;
-                                            BEGIN( DocInternalLine );
-                                          }
-                                          else
-                                          {
-                                            current->doc+="\\internal"; 
-					  }
-					}
-<Doc,JavaDoc,PageDoc,ClassDoc,AfterDoc>{CMD}"internal"		{ 
-                                          if (!Config_getBool("INTERNAL_DOCS"))
-                                          {
-					    lastInternalDocContext = YY_START;
-                                            BEGIN( DocInternal );
-                                          }
-                                          else
-                                          { 
-					    current->doc+="\\internal"; 
-					  }
-					}
-<DocInternal>.				
-<DocInternal>\n				{ yyLineNr++; }
-<DocInternal>"/*"|"//"			
-<DocInternal>"*/"			{
-					  unput('/');
-					  unput('*');
-  					  BEGIN( lastInternalDocContext );
-  					}
-<DocInternalLine>.				
-<DocInternalLine>\n			{
-  					  yyLineNr++;
-					  unput('\n');
-  					  BEGIN( lastInternalDocContext );
-  					}
-<AfterDoc>{CMD}"brief"			{ current->brief.resize(0); BEGIN(AfterDocBrief); }
-<AfterDoc>"/*"|"//"			{ current->doc+=yytext; }
-<AfterDoc>^{B}*"*"+/[^/]			
-<AfterDoc>\n				{ current->doc+=yytext; yyLineNr++; }
-<AfterDoc>.				{ current->doc+=*yytext; }
-<AfterDoc>"*/"				{
-                                          if (afterDocTerminator!=0)
-					    unput(afterDocTerminator);
-					  BEGIN(lastAfterDocContext);
-  					}
-<ClassDocRelates,ClassDocFunc,ClassDocDefine,GroupDocArg1,CategoryDocArg1,ClassDocArg1,SectionTitle,EnumDocArg1,PageDocArg1,ExampleDocArg1,ClassDefineArgs>"*/" {
-                                          // defer "*/" to a later time
-  					  unput('/');
-  					  unput('*');
-					  // insert \n and decrement the line number to compensate for the artifical newline
-					  unput('\n');
-					  yyLineNr--;
-					  BEGIN( Doc );
-					}
-<FileDocArg1>"*/"			{
-  					  current->name = yyFileName;
-  					  current->doc += "\n\n";
-					  current_root->addSubEntry(current);
-					  current = new Entry ;
-					  initEntry();
-					  BEGIN( FindMembers );
-  					}
-<Doc>"*/"				{ 
-  				          checkDocs();
-					  //printf("End of docs at line %d: %s\n",yyLineNr,current->doc.data());
-					  if (lastDocContext==SkipCurly)
-					  {
-					    if (!Config_getBool("HIDE_IN_BODY_DOCS"))
-					    {
-					      if (!previous->doc.isEmpty())
-					      {
-						previous->doc+="<p>";
-					      }
-					      previous->doc += current->doc;
-					    }
-					    current->doc.resize(0);
-					  }
-					  else
-					  {
-  					    current->doc += "\n\n";
-					  }
-					  if (current->section==Entry::GROUPDOC_SEC)
-					  {
-					    current_root->addSubEntry(current);
-					    current = new Entry ;
-					    initEntry();
-					  }
-  					  BEGIN( lastDocContext ); 
-					}
-<JavaDoc>"*/"				{ 
-					  unput('/');unput('*');
-					  BEGIN( tmpDocType );
-					}
-<Doc,JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine,ClassDoc,PageDoc,AfterDoc,CopyArgComment,DocInternal,DocInternalLine>"\\_linebr " { 
-                                          // used to compensate for misalignments due to \n's inside ALIASES
-					  current->doc += '\n';
-  					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
-  				          current->doc += yytext; 
-					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,AfterDoc>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
-  				          current->doc += yytext; 
-					  yyLineNr++;
-					}
-<ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"-"("#")?{B}+ { 
-  				          current->brief += "-"; 
-					}
-<ClassDocBrief,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+[ \t]*"."{B}*\n { 
-  				          current->brief += "."; yyLineNr++; 
-					}
-<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+/[^/]
-<Doc,JavaDoc,ClassDoc,PageDoc,ReadFormulaShort,ReadFormulaLong,ClassDocBrief,AfterDoc,AfterDocBrief>^{B}*(("//"{B}*)?)"*"+{B}+ { 
-					  current->doc+=' '; 
-					}
-
-<Doc,ClassDoc,PageDoc,AfterDoc>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
-  					  current->doc+=yytext;
-  					}
-  /*
-<SkipSection>{CMD}[a-z_A-Z][a-z_A-Z0-9]*  {
-  					    QCString *pValue=Doxygen::aliasDict[yytext+1];
-					    if (pValue)
-					    {
-					      int i,l=pValue->length();
-					      for (i=l-1;i>=0;i--)
-					      {
-					        unput(pValue->at(i));
-					      }
-					    }
-                                          }
-  */
-<Doc,ClassDoc,PageDoc,AfterDoc,CopyArgComment>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
-					    if (YY_START==CopyArgComment)
-					      fullArgString+=yytext;
-					    else
-  					      current->doc+=yytext;
-                                          }
-<Doc,ClassDoc,PageDoc,AfterDoc,CopyArgComment>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-                                          bool handled=FALSE;
-                                          if ( useOverrideCommands)
-                                          {
-					      if ( strcmp(yytext+1,"static")==0 )
-					      {
-  					        current->stat = TRUE; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"pure")==0 )
-					      {
-						current->virt = Pure; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"private")==0 )
-					      {
-						current->protection = Private; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"privatesection")==0 )
-					      {
-						current->protection = protection = Private; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"protected")==0 )
-					      {
-						current->protection = Protected; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"protectedsection")==0 )
-					      {
-						current->protection = protection = Protected ; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"public")==0 )
-					      {
-						current->protection = Public; handled = TRUE;
-					      }
-					      else if ( strcmp(yytext+1,"publicsection")==0 )
-					      {
-						current->protection = protection = Public; handled = TRUE;
-					      }
-					  }
-                                          if (!handled)
-                                          {
-					    if (YY_START==CopyArgComment)
-					      fullArgString+=yytext;
-					   else
-  					      current->doc+=yytext;
-                                          }
-  					}
-<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine>"\\"[a-z_A-Z][a-z_A-Z0-9]*[\\] { // directory type of text
-  					  current->brief+=yytext;
-  					}
-<LineDoc,AfterDocLine,CopyArgCommentLine>{CMD}("brief"|"short") {}
-<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{ /* escaped command */
-					  if (YY_START==CopyArgCommentLine)
-					    fullArgString+=yytext;
-					  else
-  					    current->brief+=yytext;
-                                        }
-<JavaDoc,LineDoc,ClassDocBrief,AfterDocBrief,AfterDocLine,CopyArgCommentLine>{CMD}[a-z_A-Z][a-z_A-Z0-9]* 	{
-					    if (YY_START==CopyArgCommentLine)
-					      fullArgString+=yytext;
-					    else
-  					      current->brief+=yytext;
-  					}
-<DefLineDoc,LineDoc,ClassDoc,PageDoc,Doc>"/*"|"//"   { current->doc += yytext; }
-
-  /***                  End of obsolete part                           ***/
-  /***********************************************************************/
+  /* ------------ Generic rules -------------- */
 
 
 <SkipCxxComment>.*/\n			{ 
@@ -6207,6 +4190,8 @@ static void startCommentBlock(bool brief)
   }
 }
   
+//----------------------------------------------------------------------------
+
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
   if (docBlockInBody)
@@ -6222,6 +4207,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     }
   }
   if (parseCommentBlock(
+	g_thisParser,
 	docBlockInBody ? previous : current,
 	doc,     // text
 	yyFileName, // file
@@ -6249,44 +4235,7 @@ exit:
   }
 }
 
-#ifndef COMMENTSCAN
-static void startGroup()
-{
-  if (!lastDefGroup.groupname.isEmpty())
-  {
-    setCurrentGroup( &lastDefGroup.groupname, lastDefGroup.pri );   
-    autoGroupStack.push(new Grouping(lastDefGroup));
-    lastDefGroup.groupname.resize(0);
-  }
-  else 
-  {
-    //if (memberGroupId!=DOX_NOGROUP)
-    //{
-    //  //warn(yyFileName,yyLineNr,"Warning: ignoring nested member group. "
-    //  //	"Previous command was found at line %d.",lastMemberGroupLine);
-    //  printf("startGroup ends group %d\n",memberGroupId);
-    //  endGroup();
-    //}
-    if (memberGroupHeader.isEmpty())
-    {
-      // warn( yyFileName, yyLineNr, "Warning: member group does not have a header" );
-      memberGroupHeader="[NOHEADER]";
-    }
-    memberGroupId = newMemberGroupId();
-    MemberGroupInfo *info = new MemberGroupInfo;
-    info->header = memberGroupHeader.stripWhiteSpace();
-    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
-    //Doxygen::memberHeaderDict.insert(memberGroupId,
-    //	new QCString(memberGroupHeader.stripWhiteSpace())
-    //			   );
-    
-    memberGroupRelates = current->relates.copy();
-    memberGroupInside = current->inside.copy();
-    current->mGrpId = memberGroupId;
-    lastMemberGroupLine = yyLineNr;
-  }
-}
-#endif
+//----------------------------------------------------------------------------
 
 static void startGroupInDoc()
 {
@@ -6296,30 +4245,28 @@ static void startGroupInDoc()
 	  current->groupingPri()
 	  ));
   }
-  else if (current->section == Entry::MEMBERGRP_SEC) /* scope for a member group: @name */
+  else /* if (current->section == Entry::MEMBERGRP_SEC) scope for a member group: @name */
   {
-    //if (memberGroupId!=DOX_NOGROUP)
-    //{
-    //  printf("startGroupInDoc ends group %d\n",memberGroupId);
-    //  endGroup();
-    //}
+    if (memberGroupId!=DOX_NOGROUP)
+    {
+      warn(yyFileName,yyLineNr,"Warning: member groups cannot be nested. Ending current group!\n");
+      endGroup();
+    }
     memberGroupId = newMemberGroupId();
     MemberGroupInfo *info = new MemberGroupInfo;
-    info->header = memberGroupHeader.stripWhiteSpace();
+    if (current->section == Entry::MEMBERGRP_SEC)
+    {
+      info->header = memberGroupHeader.stripWhiteSpace();
+    }
     Doxygen::memGrpInfoDict.insert(memberGroupId,info);
-    //Doxygen::memberHeaderDict.insert(memberGroupId,
-    //	new QCString(memberGroupHeader.stripWhiteSpace())
-    //			   );
     memberGroupRelates = current->relates.copy();
     memberGroupInside = current->inside.copy();
     current->mGrpId = memberGroupId;
     lastMemberGroupLine = yyLineNr;
   }
-  else
-  {
-    warn(yyFileName,yyLineNr,"Warning: @{ may only be used in a group block!\n");
-  }
 }
+
+//----------------------------------------------------------------------------
 
 static void endGroup()
 {
@@ -6357,27 +4304,14 @@ static void endGroup()
   }
 }
 
+//----------------------------------------------------------------------------
+
 static void forceEndGroup()
 {
   while (memberGroupId!=DOX_NOGROUP || !autoGroupStack.isEmpty()) 
   {
     //printf("forceEndGroup ends group %d\n",memberGroupId);
     endGroup();
-  }
-}
-
-//----------------------------------------------------------------------------
-
-static void newDocState()
-{
-  if (tmpDocType!=-1)
-  {
-    tmpDocType=ClassDoc;
-    BEGIN(JavaDoc);
-  }
-  else
-  {
-    BEGIN(ClassDoc);
   }
 }
 
@@ -6407,7 +4341,7 @@ static void parseCompounds(Entry *rt)
       else
 	BEGIN( FindMembers ) ;
       current_root = ce ;
-      strcpy( yyFileName, ce->fileName ) ;
+      yyFileName = ce->fileName;
       setContext();
       yyLineNr = ce->startLine ;
       insideObjC = ce->objc;
@@ -6482,12 +4416,16 @@ static void parseCompounds(Entry *rt)
 }
 
 //----------------------------------------------------------------------------
-#ifdef USE_TMP_FILE
 
-void parseMain(Entry *rt,const char *fileName)
+static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 {
   initParser();
-  g_inputFromFile = TRUE;
+  //g_inputFromFile = TRUE;
+
+  inputString = fileBuf;
+  inputPosition = 0;
+  g_inputFromFile = FALSE;
+
   anonCount     = 0;
   depthIf       = 0;
   protection    = Public;
@@ -6499,11 +4437,35 @@ void parseMain(Entry *rt,const char *fileName)
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
+    yyLineNr= 1 ; 
+    yyFileName = fileName;
+    setContext();
+    msg("Parsing file %s...\n",yyFileName.data());
+
+    current_root  = rt ;
+    initParser();
     current       = new Entry;
-    inputPosition = 0;
+    int sec=guessSection(yyFileName);
+    if (sec)
+    {
+      current->name    = yyFileName;
+      current->section = sec;
+      current_root->addSubEntry(current);
+      current          = new Entry;
+    }
+    current->reset();
     scanYYrestart( scanYYin );
-    BEGIN( FindMembers );
+    if ( insidePHP )
+    {
+      BEGIN( FindMembersPHP );
+    }
+    else
+    {
+      BEGIN( FindMembers );
+    }
+
     scanYYlex();
+
     if (YY_START==Comment)
     {
       warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
@@ -6525,46 +4487,9 @@ void parseMain(Entry *rt,const char *fileName)
   }
 }
 
-#else
+//----------------------------------------------------------------------------
 
-void parseMain(Entry *rt)
-{
-  initParser();
-  g_inputFromFile = FALSE;
-  anonCount     = 0;
-  depthIf       = 0;
-  protection    = Public;
-  mtype         = Method;
-  gstat         = FALSE;
-  virt          = Normal;
-  current_root  = rt;
-  global_root   = rt;
-  current       = new Entry;
-  inputString   = rt->program;
-  inputPosition = 0;
-  scanYYrestart( scanYYin );
-  BEGIN( FindMembers );
-  scanYYlex();
-  if (YY_START==Comment)
-  {
-    warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
-  }
-
-  forceEndGroup();
-
-  if (depthIf>0)
-  {
-    warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
-  }
-
-  rt->program.resize(0);
-  delete current; current=0;
-  parseCompounds(rt);
-}
-
-#endif
-
-void parsePrototype(const QCString &text)
+static void parsePrototype(const QCString &text)
 {
   //printf("**** parsePrototype(%s) begin\n",text.data());
 
@@ -6585,8 +4510,12 @@ void parsePrototype(const QCString &text)
   inputPosition = 0;
   g_inputFromFile = FALSE;
   scanYYrestart( scanYYin );
-  BEGIN(ClassDocFunc);
+  BEGIN(Prototype);
   scanYYlex();
+
+  current->name = current->name.stripWhiteSpace();
+  if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
+    current->section = Entry::VARIABLEDOC_SEC;
 
   // restore original scanner state
   yy_switch_to_buffer(orgState);
@@ -6597,39 +4526,40 @@ void parsePrototype(const QCString &text)
   //printf("**** parsePrototype end\n");
 }
 
-Entry *startNewEntry()
-{
-    // make copy of documentation up till now
-    QCString doc = current->doc;
-    QCString brief = current->brief;
-    current->doc.resize(0);
-    current->brief.resize(0);
-
-    // create new entry
-    current_root->addSubEntry(current);
-    previous = current;
-    current = new Entry ;
-    initEntry();
-
-    // move documentation to this entry
-    current->doc = doc;
-    current->brief = brief;
-    
-    return current;
-}
-
-void handleGroupStartCommand(const char *header)
+static void handleGroupStartCommand(const char *header)
 {
   memberGroupHeader=header;
   startGroupInDoc();
 }
 
-void handleGroupEndCommand()
+static void handleGroupEndCommand()
 {
   endGroup();
   previous=0;
 }
 
+//----------------------------------------------------------------------------
+
+void CLanguageScanner::parse(const char *fileName,const char *fileBuf,Entry *root)
+{
+  g_thisParser = this;
+  ::parseMain(fileName,fileBuf,root);
+}
+
+void CLanguageScanner::parsePrototype(const char *text)
+{
+  ::parsePrototype(text);
+}
+
+void CLanguageScanner::handleGroupStartCommand(const char *header)
+{
+  ::handleGroupStartCommand(header);
+}
+
+void CLanguageScanner::handleGroupEndCommand()
+{
+  ::handleGroupEndCommand();
+}
 
 //----------------------------------------------------------------------------
 

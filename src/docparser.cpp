@@ -864,7 +864,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
       resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
   {
     //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member ? member->isLinkable() : FALSE);
-    if (member) // member link
+    if (member && member->isLinkable()) // member link
     {
       children.append(new 
           DocLinkedWord(parent,name,
@@ -874,7 +874,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
                        )
                      );
     }
-    else // compound link
+    else if (compound->isLinkable()) // compound link
     {
       if (compound->definitionType()==Definition::TypeFile)
       {
@@ -892,8 +892,12 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
                        )
                      );
     }
+    else // not linkable
+    {
+      children.append(new DocWord(parent,name));
+    }
   }
-  else if (!g_insideHtmlLink && g_token->name.at(len-1)==':')
+  else if (!g_insideHtmlLink && len>1 && g_token->name.at(len-1)==':')
   {
     // special case, where matching Foo: fails to be an Obj-C reference, 
     // but Foo itself might be linkable.

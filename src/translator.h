@@ -29,8 +29,8 @@ class Translator
     /* Tables for encoding conversions. */
     static const char Win1250ToISO88592Tab[];
     static const char ISO88592ToWin1250Tab[];
-    static Q_UINT16 Koi8RToWindows1251Tab[128];
-    static Q_UINT16 Windows1251ToKoi8RTab[128];
+    static const unsigned char Koi8RToWindows1251Tab[128];
+    static const unsigned char Windows1251ToKoi8RTab[128];
 
   protected:
     /*! Returns the string converted from windows-1250 to iso-8859-2. */

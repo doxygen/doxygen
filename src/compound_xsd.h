@@ -253,6 +253,7 @@
 "  <xsd:complexType name=\"locationType\">\n"
 "    <xsd:attribute name=\"file\" type=\"xsd:string\" />\n"
 "    <xsd:attribute name=\"line\" type=\"xsd:integer\" />\n"
+"    <xsd:attribute name=\"bodyfile\" type=\"xsd:string\" />\n"
 "    <xsd:attribute name=\"bodystart\" type=\"xsd:integer\" />\n"
 "    <xsd:attribute name=\"bodyend\" type=\"xsd:integer\" />\n"
 "  </xsd:complexType>\n"

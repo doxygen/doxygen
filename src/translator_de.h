@@ -99,6 +99,10 @@
 //   2005/03/20 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - Updated for "new since 1.4.1" version
 //    
+//   2005/04/09 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Changed Todo list translation as suggested in
+//      http://bugzilla.gnome.org/show_bug.cgi?id=172818
+//    
 //   Todo:
 //    - see FIXME
 
@@ -1074,7 +1078,7 @@ class TranslatorGerman : public Translator
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return "Liste der zu erledigenden Dinge";
+      return "Ausstehende Aufgaben";
     }
 
 //////////////////////////////////////////////////////////////////////////

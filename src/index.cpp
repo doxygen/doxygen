@@ -2704,7 +2704,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           MemberDef *md=members->first();
           while (md)
           {
-            if (md->isDetailedSectionVisible(TRUE))
+            if (md->isDetailedSectionVisible(TRUE,FALSE))
             {
               if (first)
               {

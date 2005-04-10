@@ -195,7 +195,7 @@ static FILE *checkAndOpenFile(const QCString &absName)
     QCString filterName = getFileFilter(absName);
     if (!filterName.isEmpty())
     {
-      QCString cmd = filterName+" \""+absName+"\"";
+      QCString cmd = "\"" + filterName+"\" \""+absName+"\"";
       f=popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
@@ -1779,7 +1779,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,yyleng);
-					  g_blockName=&yytext[1];
+					  g_blockName=QCString(&yytext[1]).stripWhiteSpace();
 					  BEGIN(SkipVerbatim);
   					}
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
@@ -1789,7 +1789,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCComment);
 					  }
   					}
-<SkipCComment,SkipVerbatim>[^*\x06\n\/]+ {
+<SkipCComment,SkipVerbatim>[^*\\@\x06\n\/]+ {
   					  outputArray(yytext,yyleng);
   					}
 <SkipCComment,SkipVerbatim>\n		{ 
@@ -2235,7 +2235,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   }
   else
   {
-    QCString cmd = inputFilter+" \""+fileName+"\"";
+    QCString cmd = "\"" + inputFilter+"\" \""+fileName+"\"";
     preYYin = popen(cmd,"r");
     if (!preYYin)
     {

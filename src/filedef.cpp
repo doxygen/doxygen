@@ -97,6 +97,15 @@ FileDef::FileDef(const char *p,const char *nm,
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
   acquireFileVersion();
+
+  // members in the detailed part of the documentation
+  docDefineMembers.setInFile(TRUE);
+  docProtoMembers.setInFile(TRUE);
+  docTypedefMembers.setInFile(TRUE);
+  docEnumMembers.setInFile(TRUE);
+  docFuncMembers.setInFile(TRUE);
+  docVarMembers.setInFile(TRUE);
+
 }
 
 /*! destroy the file definition */
@@ -675,6 +684,8 @@ void FileDef::addMembersToMemberGroup()
 void FileDef::insertMember(MemberDef *md)
 {
   //printf("%s:FileDef::insertMember(%s)\n",name().data(),md->name().data());
+  if (allMemberList.find(md)!=-1) return;
+
   allMemberList.append(md); 
   bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
@@ -1220,7 +1231,7 @@ void FileDef::acquireFileVersion()
   if (!vercmd.isEmpty()) 
   {
     msg("Version of %s : ",filepath.data());
-    FILE *f=popen(vercmd+" "+filepath,"r");
+    FILE *f=popen("\""+vercmd+"\" \""+filepath+"\"","r");
     if (!f)
     {
       err("Error: could not execute %s\n",vercmd.data());

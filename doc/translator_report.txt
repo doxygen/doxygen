@@ -1,14 +1,14 @@
-(1.4.1-20050315)
+(1.4.2)
 
-Doxygen supports the following 30 languages (sorted alphabetically):
+Doxygen supports the following 31 languages (sorted alphabetically):
 
 Afrikaans, Brazilian Portuguese, Catalan, Chinese, Chinese
 Traditional, Croatian, Czech, Danish, Dutch, English, Finnish, French,
-German, Greek, Hungarian, Italian, Japanese (+En), Korean (+En),
-Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian,
-Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
+(+En), Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian,
+Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 9 translators are up-to-date, 21 translators are based on
+Of them, 10 translators are up-to-date, 21 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -23,6 +23,7 @@ still may be some details listed even for them:
   TranslatorDutch -- Remove the obsolete methods (never used).
   TranslatorEnglish -- Remove the obsolete methods (never used).
   TranslatorGerman -- Remove the obsolete methods (never used).
+  TranslatorIndonesian -- Remove the obsolete methods (never used).
   TranslatorItalian
   TranslatorRussian
   TranslatorSwedish
@@ -474,6 +475,25 @@ TranslatorHungarian   (TranslatorAdapter_1_4_1)  1 method to implement
     QCString trBugsAndLimitations()
     QCString trEnumerationValueDocumentation()
     QCString trNoDescriptionAvailable()
+
+
+TranslatorIndonesian   (Translator)
+--------------------
+
+  Implements 192 of the required methods.
+
+  Obsolete methods (should be removed, never used):
+
+    virtual QCString trHeaderFilesDescription()
+    virtual QCString trField(bool first_capital, bool singular)
+    virtual QCString trPackageDocumentation()
+    virtual QCString trSources()
+    virtual QCString trReimplementedForInternalReasons()
+    virtual QCString trInterfaces()
+    virtual QCString trHeaderFiles()
+    virtual QCString trBugsAndLimitations()
+    virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trNoDescriptionAvailable()
 
 
 TranslatorJapanese   (TranslatorAdapter_1_3_9)  7 methods to implement

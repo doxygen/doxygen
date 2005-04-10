@@ -805,6 +805,11 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       << md->getDefLine() << "\"";
     if (md->getStartBodyLine()!=-1)
     {
+      FileDef *bodyDef = md->getBodyDef();
+      if (bodyDef)
+      {
+        t << " bodyfile=\"" << bodyDef->absFilePath() << "\"";
+      }
       t << " bodystart=\"" << md->getStartBodyLine() << "\" bodyend=\"" 
         << md->getEndBodyLine() << "\"";
     }
@@ -1220,6 +1225,11 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     << cd->getDefLine() << "\"";
     if (cd->getStartBodyLine()!=-1)
     {
+      FileDef *bodyDef = cd->getBodyDef();
+      if (bodyDef)
+      {
+        t << " bodyfile=\"" << bodyDef->absFilePath() << "\"";
+      }
       t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\"" 
         << cd->getEndBodyLine() << "\"";
     }
@@ -1564,7 +1574,8 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
   t << "\" kind=\"" << kindName << "\">" << endl;
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
-  SectionInfo *si = Doxygen::sectionDict.find(pd->name());
+
+  SectionInfo *si = Doxygen::sectionDict.find(pageName);
   if (si)
   {
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;

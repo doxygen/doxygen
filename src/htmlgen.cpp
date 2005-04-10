@@ -1368,7 +1368,9 @@ void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
   }
   else
   {
+    startCodeAnchor(lineAnchor);
     codify(lineNumber);
+    endCodeAnchor();
   }
   codify(" ");
 }

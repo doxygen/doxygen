@@ -28,7 +28,7 @@ f_insttool=NO
 f_english=NO
 f_wizard=NO
 f_thread=NO
-f_langs=nl,se,cz,fr,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za
+f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za
 
 while test -n "$1";  do
   case $1 in
@@ -145,12 +145,18 @@ if test -z "$f_platform"; then
       ;;
     Darwin:*)
       f_platform=macosx-c++
+      if test "$f_insttool" = NO; then
+        f_insttool=/usr/bin/install
+      fi
       ;;
     FreeBSD:*)
       f_platform=freebsd-g++
       ;;
     HP-UX:*)
       f_platform=hpux-g++
+      if test "$f_insttool" = NO; then
+        f_insttool=/usr/bin/install
+      fi
       ;;
     IRIX64:*)
       f_platform=irix-64
@@ -181,6 +187,9 @@ if test -z "$f_platform"; then
       ;;
     SunOS:5*)
       f_platform=solaris-g++
+      if test "$f_insttool" = NO; then
+        f_insttool=/usr/bin/install
+      fi
       ;;
     ULTRIX:*)
       f_platform=ultrix-g++
@@ -523,7 +532,7 @@ fi
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(split(/,/,"NL,SE,CZ,FR,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA"));
+	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA"));
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

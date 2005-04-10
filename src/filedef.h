@@ -178,7 +178,7 @@ class FileDef : public Definition
     MemberList decFuncMembers;
     MemberList decVarMembers;
 
-    // members in the documentation part of the documentation
+    // members in the detailed part of the documentation
     MemberList docDefineMembers;
     MemberList docProtoMembers;
     MemberList docTypedefMembers;
