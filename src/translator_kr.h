@@ -59,10 +59,10 @@
 //  - 해석이 잘못된 부분이 꾀나 있어 보임.. 
 //
 // 2005.02.11 (SooYoung Jung: jung5000 at gmail.com)
-//  - 실수로 추가되었던 decode 함수 수정
+//  - 실수로 추가되었던 decode 함수 삭제
 //
 // 2005.03.11 (SooYoung Jung: jung5000 at gmail.com)
-//  - Adapting 1.4.1
+//  - Adapting 1.4.1 and checked using translator.py
 //  - 일부 번역안된 부분 수정 (Translated little bit of untranslated part)
 //  - Removed following
 //    Obsolete methods (should be removed, never used):
@@ -76,24 +76,13 @@
 //    virtual QCString trBugsAndLimitations()
 //    virtual QCString trEnumerationValueDocumentation()
 //    virtual QCString trNoDescriptionAvailable()
+//  - Changed the base class to Translator from Translator_1_4_1
 //
  
 
-class TranslatorKorean : public TranslatorAdapter_1_4_1
+class TranslatorKorean : public Translator
 {
  private:
-  // guess, unnecessary for Korean language
-  inline QCString decode(const QCString & sInput)
-  {
-    if (Config_getBool("USE_WINDOWS_ENCODING"))
-    {
-      return sInput;
-    }
-    else
-    {
-      return sInput;
-    }
-  }
   	
   public:
 
@@ -232,50 +221,25 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-        {
-            //Alternate text: "혼합 목록", "합성(집합) 명단(리스트)"
-            return "복합구조(클래스, 구조체, 공용체)";
-        }
-        else
-        {
-            return "복합구조(클래스, 구조체, 공용체)";
-        }
+        //Alternate text: "혼합 목록", "합성(집합) 명단(리스트)"
+        return "복합구조(클래스, 구조체, 공용체)";
     }
     
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "파일 목록"; } //"파일 목록", "파일 리스트"
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    // virtual QCString trHeaderFiles()
-    // { return "헤더 파일"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-        {
-            return "복합구조(클래스, 구조체, 공용체) 멤버";
-        }
-        else
-        {
-            // Alternate text: "합성(집합) 명단(멤버들)"
-            return "복합구조(클래스, 구조체, 공용체) 멤버";
-        }
+      // Alternate text: "합성(집합) 명단(멤버들)"
+      return "복합구조(클래스, 구조체, 공용체) 멤버";
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
     {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-        {
-            return "파일 멤버";
-        }
-        else
-        {
-            return "파일 멤버";
-        }
+      return "파일 멤버";
     }
 
     /*! This is put above each page as a link to all related pages. */
@@ -306,16 +270,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
     {
-        if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-        {
-            return "다음은 간략한 설명을 가진 클래스, "
-                "구조체, 공용체, 인터페이스의 목록입니다.";
-        }
-        else
-        {
-            return "다음은 간략한 설명을 가진 클래스, "
-                "구조체, 공용체, 인터페이스의 목록입니다.";
-        }
+      return "다음은 간략한 설명을 가진 클래스, "
+	"구조체, 공용체, 인터페이스의 목록입니다.";
     }
 
     /*! This is an introduction to the page with all class members. */
@@ -326,14 +282,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
       {
           result+="문서화된 ";
       }
-      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      {
-          result+="링크 된 클래스 멤버는 ";
-      }
-      else
-      {
-          result+="링크 된 클래스 멤버는 ";
-      }
+      
+      result+="링크 된 클래스 멤버는 ";
 
       if (extractAll)
           result+="그 멤버에 대한 클래스 문서화로 갑니다.";
@@ -355,10 +305,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    // virtual QCString trHeaderFilesDescription()
-    // { return "다음은 API를 구성하는 헤더 파일입니다."; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "다음은 모든 예제의 목록입니다."; }
@@ -371,14 +317,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     virtual QCString trModulesDescription()
     { return "다음은 모든 모듈의 목록입니다."; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    // virtual QCString trNoDescriptionAvailable()
-    // { return "유용한 설명이 없습니다."; }
-
     // index titles (the project name is prepended for these)
-
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
@@ -509,12 +448,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     { return "열거형 타입 문서화"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    // virtual QCString trEnumerationValueDocumentation()
-    // { return "열거형 값 문서화"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -548,14 +481,14 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
       QCString result="";
       if (projName) result+=(QCString)projName+" 문서화. ";
-      result += "생성일시 : " +(QCString)date+" by";
+      result += "생성일시 : " +(QCString)date;
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
     {
-      return "written by";
+      return "작성자: ";
     }
 
     /*! this text is put before a class diagram */
@@ -568,17 +501,9 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     virtual QCString trForInternalUseOnly()
     { return "내부 사용만을 위해"; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    // virtual QCString trReimplementedForInternalReasons()
-    // { return "내부적 이유로 인해 재구현된: API가 영향을 받지않았다."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "경고"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    // virtual QCString trBugsAndLimitations()
-    // { return "버그와 한계"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -818,8 +743,8 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
         case ClassDef::Struct:     result+="구조체"; break;
         case ClassDef::Union:      result+="공용체"; break;
         case ClassDef::Interface:  result+="인터페이스"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="프로토콜"; break;
+        case ClassDef::Category:   result+="카테고리"; break;
         case ClassDef::Exception:  result+="예외"; break;
       }
       result+="을 위한 문서화는 다음의 파일";
@@ -857,10 +782,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    // virtual QCString trSources()
-    // {
-    //   return "출처";
-    // }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "@1 파일의 @0 번째 라인에서 정의";
@@ -966,7 +887,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-          return "Data 필드";
+          return "데이타 필드";
       }
       else
       {
@@ -1059,85 +980,85 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
         // TODO: Need to be translated. -ryk11/22/01.
         return
-		"Doxygen에 의해 생성된 도표를 보기위한 설명입니다.<p>\n"
-        //"This page explains how to interpret the graphs that are generated "
-        //"by doxygen.<p>\n"
-		"다음의 예제를 참고하세요.\n"
-        //"Consider the following example:\n"
-        "\\code\n"
-        "/*! Invisible class because of truncation */\n"
-        "class Invisible { };\n\n"
-        "/*! Truncated class, inheritance relation is hidden */\n"
-        "class Truncated : public Invisible { };\n\n"
-        "/* Class not documented with doxygen comments */\n"
-        "class Undocumented { };\n\n"
-        "/*! Class that is inherited using public inheritance */\n"
-        "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
-        "template<class T> class Templ { };\n\n"
-        "/*! Class that is inherited using protected inheritance */\n"
-        "class ProtectedBase { };\n\n"
-        "/*! Class that is inherited using private inheritance */\n"
-        "class PrivateBase { };\n\n"
-        "/*! Class that is used by the Inherited class */\n"
-        "class Used { };\n\n"
-        "/*! Super class that inherits a number of other classes */\n"
-        "class Inherited : public PublicBase,\n"
-        "                  protected ProtectedBase,\n"
-        "                  private PrivateBase,\n"
-        "                  public Undocumented\n"
-        "                  public Templ<int>\n"
-        "{\n"
-        "  private:\n"
-        "    Used *m_usedClass;\n"
-        "};\n"
-        "\\endcode\n"
-		"설정 파일의 MAX_DOT_GRAPH_HEIGHT 플래그가 240으로 설정되었다면 다음의 그래프가 나올 것이다."
-        //"If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
-        //"is set to 240 this will result in the following graph:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
-        "<p>\n"
-		"상자들은 다음을 뜻한다.\n"
-        //"The boxes in the above graph have the following meaning:\n"
-        "<ul>\n"
-		"<li>%검은 상자는 그래프를 산출한 구조체나 클래스를 말한다.\n"
-        //"<li>%A filled black box represents the struct or class for which the "
-        //"graph is generated.\n"
-		"<li>%검은선으로된 상자는 문서화된 구조체나 클래스를 표시한다.\n"
-        //"<li>%A box with a black border denotes a documented struct or class.\n"
-		"<li>%회색선으로된 상자는 문서화되지 않은 구조체나 클래스를 표시한다.\n"
-        //"<li>%A box with a grey border denotes an undocumented struct or class.\n"
-		"<li>%빨간선으로된 상자는 모든 상속/containment 관계를 보이지 않은 문서화된 구조체나 클래스를 나타낸다. "
-		"지정된 경계안에 들어가지 않으면 그래프는 짤려진다.\n"
-        //"<li>%A box with a red border denotes a documented struct or class for"
-        //"which not all inheritance/containment relations are shown. %A graph is "
-        //"truncated if it does not fit within the specified boundaries.\n"
-        "</ul>\n"
-		"화살표는 다음을 뜻한다.\n"
-        //"The arrows have the following meaning:\n"
-        "<ul>\n"
-		"<li>%어두운 파란 화살표는 두 클래스간의 public 상속관계를 나타낸다.\n"
-        //"<li>%A dark blue arrow is used to visualize a public inheritance "
-        //"relation between two classes.\n"
-		"<li>%어두운 녹색 화살표는 protected 상속관계를 나타낸다.\n"
-        //"<li>%A dark green arrow is used for protected inheritance.\n"
-		"<li>%어두운 빨강 화살표는 private 상속관계를 나타낸다.\n"
-        //"<li>%A dark red arrow is used for private inheritance.\n"
-		"<li>%밝은 자주색 화살표는 클래스에 의해 포함되더나 사용된 클래스를 나타낸다. "
-		"이 화살표의 라벨은 접근 가능한 변수명을 나타낸다.\n"
-        //"<li>%A purple dashed arrow is used if a class is contained or used "
-        //"by another class. The arrow is labeled with the variable(s) "
-        //"through which the pointed class or struct is accessible.\n"
-		"<li>%밝은 노랑색 화살표는 템플릿 인스턴스와 템플릿 클래스를 나타낸다. "
-		"이 화살표의 라벨은 그 인스턴스의 템플릿 매개변수를 나타낸다.\n"
-        //"<li>%A yellow dashed arrow denotes a relation between a template instance and "
-        //"the template class it was instantiated from. The arrow is labeled with "
-        //"the template parameters of the instance.\n"
-        "</ul>\n";
+	  "Doxygen에 의해 생성된 도표를 보기위한 설명입니다.<p>\n"
+	  //"This page explains how to interpret the graphs that are generated "
+	  //"by doxygen.<p>\n"
+	  "다음의 예제를 참고하세요.\n"
+	  //"Consider the following example:\n"
+	  "\\code\n"
+	  "/*! Invisible class because of truncation */\n"
+	  "class Invisible { };\n\n"
+	  "/*! Truncated class, inheritance relation is hidden */\n"
+	  "class Truncated : public Invisible { };\n\n"
+	  "/* Class not documented with doxygen comments */\n"
+	  "class Undocumented { };\n\n"
+	  "/*! Class that is inherited using public inheritance */\n"
+	  "class PublicBase : public Truncated { };\n\n"
+	  "/*! A template class */\n"
+	  "template<class T> class Templ { };\n\n"
+	  "/*! Class that is inherited using protected inheritance */\n"
+	  "class ProtectedBase { };\n\n"
+	  "/*! Class that is inherited using private inheritance */\n"
+	  "class PrivateBase { };\n\n"
+	  "/*! Class that is used by the Inherited class */\n"
+	  "class Used { };\n\n"
+	  "/*! Super class that inherits a number of other classes */\n"
+	  "class Inherited : public PublicBase,\n"
+	  "                  protected ProtectedBase,\n"
+	  "                  private PrivateBase,\n"
+	  "                  public Undocumented\n"
+	  "                  public Templ<int>\n"
+	  "{\n"
+	  "  private:\n"
+	  "    Used *m_usedClass;\n"
+	  "};\n"
+	  "\\endcode\n"
+	  "설정 파일의 MAX_DOT_GRAPH_HEIGHT 플래그가 240으로 설정되었다면 다음의 그래프가 나올 것이다."
+	  //"If the \\c MAX_DOT_GRAPH_HEIGHT tag in the configuration file "
+	  //"is set to 240 this will result in the following graph:"
+	  "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+	  "<p>\n"
+	  "상자들은 다음을 뜻한다.\n"
+	  //"The boxes in the above graph have the following meaning:\n"
+	  "<ul>\n"
+	  "<li>%검은 상자는 그래프를 산출한 구조체나 클래스를 말한다.\n"
+	  //"<li>%A filled black box represents the struct or class for which the "
+	  //"graph is generated.\n"
+	  "<li>%검은선으로된 상자는 문서화된 구조체나 클래스를 표시한다.\n"
+	  //"<li>%A box with a black border denotes a documented struct or class.\n"
+	  "<li>%회색선으로된 상자는 문서화되지 않은 구조체나 클래스를 표시한다.\n"
+	  //"<li>%A box with a grey border denotes an undocumented struct or class.\n"
+	  "<li>%빨간선으로된 상자는 모든 상속/containment 관계를 보이지 않은 문서화된 구조체나 클래스를 나타낸다. "
+	  "지정된 경계안에 들어가지 않으면 그래프는 짤려진다.\n"
+	  //"<li>%A box with a red border denotes a documented struct or class for"
+	  //"which not all inheritance/containment relations are shown. %A graph is "
+	  //"truncated if it does not fit within the specified boundaries.\n"
+	  "</ul>\n"
+	  "화살표는 다음을 뜻한다.\n"
+	  //"The arrows have the following meaning:\n"
+	  "<ul>\n"
+	  "<li>%어두운 파란 화살표는 두 클래스간의 public 상속관계를 나타낸다.\n"
+	  //"<li>%A dark blue arrow is used to visualize a public inheritance "
+	  //"relation between two classes.\n"
+	  "<li>%어두운 녹색 화살표는 protected 상속관계를 나타낸다.\n"
+	  //"<li>%A dark green arrow is used for protected inheritance.\n"
+	  "<li>%어두운 빨강 화살표는 private 상속관계를 나타낸다.\n"
+	  //"<li>%A dark red arrow is used for private inheritance.\n"
+	  "<li>%밝은 자주색 화살표는 클래스에 의해 포함되더나 사용된 클래스를 나타낸다. "
+	  "이 화살표의 라벨은 접근 가능한 변수명을 나타낸다.\n"
+	  //"<li>%A purple dashed arrow is used if a class is contained or used "
+	  //"by another class. The arrow is labeled with the variable(s) "
+	  //"through which the pointed class or struct is accessible.\n"
+	  "<li>%밝은 노랑색 화살표는 템플릿 인스턴스와 템플릿 클래스를 나타낸다. "
+	  "이 화살표의 라벨은 그 인스턴스의 템플릿 매개변수를 나타낸다.\n"
+	  //"<li>%A yellow dashed arrow denotes a relation between a template instance and "
+	  //"the template class it was instantiated from. The arrow is labeled with "
+	  //"the template parameters of the instance.\n"
+	  "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
-    {
+      {
         return "범례";
     }
     
@@ -1185,11 +1106,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    // virtual QCString trInterfaces()
-    // {
-    //     return "인터페이스";
-    // }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1222,11 +1138,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
         return "패키지";
     }
-    /*! Used as a chapter title for Latex & RTF output */
-    // virtual QCString trPackageDocumentation()
-    // {
-    //     return "패키지 문서화";
-    // }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
@@ -1294,29 +1205,29 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-        return "인덱스"; // TODO: Need to be translated. -ryk11/22/01.
+        return "인덱스";
     }
    
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
-    virtual QCString trClass(bool first_capital, bool singular)
+    virtual QCString trClass(bool, bool singular)
     {
-      QCString result((first_capital ? "클래스" : "클래스"));
+      QCString result("클래스");
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
-    virtual QCString trFile(bool first_capital, bool singular)
+    virtual QCString trFile(bool, bool singular)
     {
-      QCString result((first_capital ? "파일" : "파일"));
+      QCString result("파일");
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1334,22 +1245,22 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
-    virtual QCString trGroup(bool first_capital, bool singular)
+    virtual QCString trGroup(bool, bool singular)
     {
-      QCString result((first_capital ? "그룹" : "그룹"));
+      QCString result("그룹");
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
      */
-    virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trPage(bool, bool singular)
     {
-      QCString result((first_capital ? "페이지" : "페이지"));
+      QCString result("페이지");
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1360,20 +1271,9 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
       QCString result((first_capital ? "멤버" : "멤버"));
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    // virtual QCString trField(bool first_capital, bool singular)
-    // {
-    //   QCString result((first_capital ? "필드" : "필드"));
-    //   if (!singular)  result+="들";
-    //   return result;  // TODO: Need to be translated. -ryk11/22/01.
-    // }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1382,7 +1282,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     { 
       QCString result((first_capital ? "Global" : "global"));
       if (!singular)  result+="s";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1391,11 +1291,11 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
 
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
-    virtual QCString trAuthor(bool first_capital, bool singular)
+    virtual QCString trAuthor(bool, bool singular)
     {
-      QCString result((first_capital ? "작성자" : "작성자"));
+      QCString result("작성자");
       if (!singular)  result+="들";
-      return result;  // TODO: Need to be translated. -ryk11/22/01.
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1406,7 +1306,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      */
     virtual QCString trReferences()
     {
-        return "참조"; // TODO: Need to be translated. -ryk11/22/01.
+        return "참조";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1418,8 +1318,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      //return "Implements "+trWriteList(numEntries)+".";
-	  return trWriteList(numEntries)+" 구현.";
+      return trWriteList(numEntries)+" 구현.";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1427,8 +1326,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      //return "Implemented in "+trWriteList(numEntries)+".";
-	  return trWriteList(numEntries)+"에 구현되었다.";
+      return trWriteList(numEntries)+"에 구현되었다.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1480,35 +1378,35 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      */
     virtual QCString trPackageTypes()
     {
-        return "패키지 타입들"; //"Package Types";
+      return "패키지 타입들";
     }
     /*! Used as a heading for a list of Java class functions with package 
      * scope. 
      */
     virtual QCString trPackageMembers()
     {
-        return "패키지 함수들"; //"Package Functions";
+      return "패키지 함수들";
     }
     /*! Used as a heading for a list of static Java class functions with 
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     {
-        return "정적 패키지 함수들"; //"Static Package Functions";
+      return "정적 패키지 함수들";
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
      */
     virtual QCString trPackageAttribs()
     {
-        return "패키지 속성들"; //"Package Attributes";
+      return "패키지 속성들";
     }
     /*! Used as a heading for a list of static Java class variables with 
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     {
-        return "정적 패키지 속성들"; //"Static Package Attributes";
+      return "정적 패키지 속성들";
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1526,7 +1424,6 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     virtual QCString trCallGraph()
     {
         return "다음은 이 함수에 대한 호출 그래프입니다:";
-        //"Here is the call graph for this function:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1560,20 +1457,20 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
     {
         if (numDocuments==0)
         {
-            //return "Sorry, no documents matching your query.";
-            return "죄송합니다. 질의와 일치하는 문서가 없습니다.";
+	  //return "Sorry, no documents matching your query.";
+	  return "죄송합니다. 질의와 일치하는 문서가 없습니다.";
         }
         else if (numDocuments==1)
         {
-            //return "Found <b>1</b> document matching your query.";
-            return "질의와 일치하는 <b>1</b>개의 문서를 찾았습니다.";
+	  //return "Found <b>1</b> document matching your query.";
+	  return "질의와 일치하는 <b>1</b>개의 문서를 찾았습니다.";
         }
         else
         {
-            //return "Found <b>$num</b> documents matching your query. "
-            //    "Showing best matches first.";
-            return "질의와 일치하는 <b>$num</b>개의 문서들을 찾았습니다. "
-                "처음에 나오는 것이 가장 일치하는 문서입니다.";
+	  //return "Found <b>$num</b> documents matching your query. "
+	  //    "Showing best matches first.";
+	  return "질의와 일치하는 <b>$num</b>개의 문서들을 찾았습니다. "
+	    "처음에 나오는 것이 가장 일치하는 문서입니다.";
         }
     }
     /*! This string is put before the list of matched words, for each search 
@@ -1637,13 +1534,27 @@ class TranslatorKorean : public TranslatorAdapter_1_4_1
      */
     virtual QCString trDir(bool /*first_capital*/, bool /*singular*/)
     { 
-      // QCString result((first_capital ? "Director" : "director"));
-      // if (singular) result+="y"; else result+="ies";
-      
-      // return result; 
       return "디렉터";
     }
+
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+      return "이것은 편리를 위해 제공되는 오버로드 멤버 함수이다, "
+	"어떤 아규먼트(argument)가 그것을 수용할때 위 함수는 다르다.";
+
+    }
+
 
 };
 
 #endif
+
+

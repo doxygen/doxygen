@@ -32,6 +32,7 @@ MemberList::MemberList() : QList<MemberDef>()
   m_numDecMembers=-1; // special value indicating that computation is needed
   m_numDocMembers=-1; // special value indicating that computation is needed
   m_inGroup=FALSE;
+  m_inFile=FALSE;
 }
 
 MemberList::~MemberList()
@@ -124,7 +125,7 @@ void MemberList::countDocMembers()
   MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
-    if (md->isDetailedSectionVisible(m_inGroup)) 
+    if (md->isDetailedSectionVisible(m_inGroup,m_inFile)) 
     {
       // do not count enum values, since they do not produce entries of their own
       if (md->memberType()!=MemberDef::EnumValue) m_numDocMembers++;

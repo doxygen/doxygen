@@ -676,13 +676,22 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 }
 
 void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
-                      FileDef *,GroupDef *gd)
+                      FileDef *fd,GroupDef *gd,bool onlyText)
 {
   QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
   QCString n = name();
   if (classDef && gd) n.prepend(classDef->name()+sep);
-  else if (nspace && gd) n.prepend(nspace->name()+sep);
-  ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
+  else if (nspace && (gd || fd)) n.prepend(nspace->name()+sep);
+  if (!onlyText) // write link
+  {
+    ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
+  }
+  else // write only text
+  {
+    ol.startBold();
+    ol.docify(n);
+    ol.endBold();
+  }
 }
 
 /*! If this member has an anonymous class/struct/union as its type, then
@@ -901,10 +910,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
   QCString cname  = d->name();
   QCString cfname = getOutputFileBase();
-  QCString osname = cname;
+  //QCString osname = cname;
   // in case of class members that are put in a group the name of the outerscope
   // differs from the cname.
-  if (getOuterScope()) osname=getOuterScope()->name();
+  //if (getOuterScope()) osname=getOuterScope()->name();
 
   HtmlHelp *htmlHelp=0;
   bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
@@ -942,6 +951,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     }
   }
 
+  // *** write template lists
   if (tArgList)
   {
     if (!isAnonymous) ol.startMemberTemplateParams();
@@ -949,10 +959,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
     if (!isAnonymous) ol.endMemberTemplateParams();
   }
 
+  // *** write type
   QCString ltype(type);
   if (mtype==Typedef) ltype.prepend("typedef ");
-  // strip `static' keyword from ltype
-  //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip `friend' keyword from ltype
   if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
   static QRegExp r("@[0-9]+");
@@ -1034,7 +1043,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.insertMemberAlign(tArgList!=0);
   }
 
-  // write name
+  // *** write name
   if (!name().isEmpty() && name().at(0)!='@') // hide annonymous stuff 
   {
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable());
@@ -1074,12 +1083,13 @@ void MemberDef::writeDeclaration(OutputList &ol,
       // descriptions are enabled or there is no detailed description.
     {
       if (annMemb) annMemb->annUsed=annUsed=TRUE;
-      ol.startBold();
-      ol.docify(name());
-      ol.endBold();
+      ClassDef *rcd = cd;
+      if (isReference() && classDef) rcd = classDef; 
+      writeLink(ol,rcd,nd,fd,gd,TRUE);
     }
   }
 
+  // *** write arguments
   if (argsString() && !isObjCMethod()) 
   {
     if (!isDefine()) ol.writeString(" ");
@@ -1087,12 +1097,14 @@ void MemberDef::writeDeclaration(OutputList &ol,
     linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),argsString()); 
   }
 
+  // *** write exceptions
   if (excpString())
   {
     ol.writeString(" ");
     ol.docify(excpString());
   }
 
+  // *** write bitfields
   if (!bitfields.isEmpty()) // add bitfields
   {
     linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),bitfields.simplifyWhiteSpace());
@@ -1113,6 +1125,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),init);
     }
   }
+
   if (isObjCMethod() && isImplementation())
   {
     ol.startTypewriter();
@@ -1217,11 +1230,13 @@ bool MemberDef::isDetailedSectionLinkable() const
   return ((docFilter && staticFilter && privateFilter && friendCompoundFilter) /*|| inAnonymousScope*/);
 }
 
-bool MemberDef::isDetailedSectionVisible(bool inGroup) const          
+bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const          
 { 
   bool groupFilter = getGroupDef()==0 || inGroup; 
+  bool fileFilter  = getNamespaceDef()==0 || !inFile;
 
-  bool visible = isDetailedSectionLinkable() && groupFilter && !isReference();
+  bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter && 
+                 !isReference();
   //printf("MemberDef::isDetailedSectionVisible() %d\n",visible);
   return visible;
 }
@@ -1237,7 +1252,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 {
   // if this member is in a group find the real scope name.
   bool hasParameterList = FALSE;
-  bool hasDocs = isDetailedSectionVisible(inGroup);
+  bool inFile = container->definitionType()==Definition::TypeFile;
+  bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
@@ -1287,6 +1303,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   int i=0,l;
   static QRegExp r("@[0-9]+");
 
+  //----------------------------------------
 
   ol.pushGeneratorState();
 
@@ -1398,6 +1415,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         }
       }
     }
+
     ol.startMemberDocName(isObjCMethod());
     if (cd && cd->isObjectiveC())
     {
@@ -1431,7 +1449,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //printf("end   >%s< i=%d\n",ldef.data(),i);
       if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
     }
+
     linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
+
     hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
     if (hasOneLineInitializer()) // add initializer
     {
@@ -1864,6 +1884,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   // enable LaTeX again
   //if (Config_getBool("EXTRACT_ALL") && !hasDocs) ol.enable(OutputGenerator::Latex); 
   ol.popGeneratorState();
+
+  //------------------------------------------------
 
   if (!Config_getBool("EXTRACT_ALL") &&
       Config_getBool("WARN_IF_UNDOCUMENTED") &&

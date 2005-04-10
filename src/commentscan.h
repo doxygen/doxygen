@@ -19,7 +19,10 @@
 #include "qtbc.h"
 #include "entry.h"
 
-bool parseCommentBlock(/* in,out */ Entry *curEntry,
+class ParserInterface;
+
+bool parseCommentBlock(/* in */     ParserInterface *parser,
+                       /* in,out */ Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,
 		       /* in */     int lineNr,

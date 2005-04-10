@@ -19,6 +19,7 @@
 #include "searchindex.h"
 #include "config.h"
 #include <qfile.h>
+#include <ctype.h>
 
 
 // file format: (all multi-byte values are stored in big endian format)
@@ -75,15 +76,24 @@ void SearchIndex::setCurrentDoc(const char *name,const char *baseName,const char
   m_urls.insert(m_urlIndex,new URL(name,url));
 }
 
-
 static int charsToIndex(const char *word)
 {
   if (word==0) return -1;
-  uint c1=word[0];
-  if (c1==0) return -1;
-  uint c2=word[1];
-  if (c2==0) return -1;
-  return c1*256+c2;
+
+  register ushort h=0;
+  const char *k = word;
+  ushort mask=0xfc00;
+  while ( *k ) 
+  {
+    h = (h&mask)^(h<<6)^(*k++);
+  }
+
+  //uint c1=word[0];
+  //if (c1==0) return -1;
+  //uint c2=word[1];
+  //if (c2==0) return -1;
+  //return c1*256+c2;
+  return h;
 }
 
 void SearchIndex::addWord(const char *word,bool hiPriority)
@@ -91,6 +101,7 @@ void SearchIndex::addWord(const char *word,bool hiPriority)
   //printf("SearchIndex::addWord(%s,%d)\n",word,hiPriority);
   //QString wStr=QString(word).lower();
   QString wStr(word);
+  wStr=wStr.lower();
   if (wStr.isEmpty()) return;
   IndexWord *w = m_words[wStr];
   if (w==0)

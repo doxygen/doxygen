@@ -57,7 +57,8 @@ class MemberList : public QList<MemberDef>
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
     void addMemberGroup(MemberGroup *mg);
-    void setInGroup(bool group) { m_inGroup=group; }
+    void setInGroup(bool inGroup) { m_inGroup=inGroup; }
+    void setInFile(bool inFile) { m_inFile=inFile; }
     void addListReferences(Definition *def);
     void findSectionsInDocumentation();
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
@@ -68,7 +69,8 @@ class MemberList : public QList<MemberDef>
     int m_numDecMembers; // number of members in the brief part of the memberlist
     int m_numDocMembers; // number of members in the detailed part of the memberlist
     MemberGroupList *memberGroupList;
-    bool m_inGroup; // is this list part of a group
+    bool m_inGroup; // is this list part of a group definition
+    bool m_inFile;  // is this list part of a file definition
 };
 
 class MemberListIterator : public QListIterator<MemberDef>

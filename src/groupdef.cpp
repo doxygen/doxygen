@@ -327,8 +327,8 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
       break;
     default:
       err("GroupDef::insertMembers(): "
-           "member `%s' with class scope `%s' inserted in group scope `%s'!\n",
-           md->name().data(),
+           "member `%s' (typeid=%d) with scope `%s' inserted in group scope `%s'!\n",
+           md->name().data(),md->memberType(),
            md->getClassDef() ? md->getClassDef()->name().data() : "",
            name().data());
   }

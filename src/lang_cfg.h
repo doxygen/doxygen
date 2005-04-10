@@ -2,6 +2,7 @@
 #define LANG_SE
 #define LANG_CZ
 #define LANG_FR
+#define LANG_ID
 #define LANG_IT
 #define LANG_DE
 #define LANG_JP

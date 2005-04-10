@@ -320,7 +320,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<CComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code") { /* start of a verbatim block */
+<CComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code")/[ \r\t\n] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     g_blockName=&yytext[1];
 				     g_lastCommentContext = YY_START;
@@ -423,7 +423,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   				     copyToOutput(yytext,yyleng);
                                      BEGIN(g_readLineCtx);
   				   }
-<CComment,ReadLine>("\\\\"|"@@")[~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
+<CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yytext,yyleng);
   				   }
 <CComment,ReadLine>[\\@]"cond"[ \t]+	   { // conditional section
@@ -507,6 +507,7 @@ void replaceComment(int offset)
  */
 void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 {
+  //printf("convertCppComments(%s)\n",fileName);
   g_inBuf    = inBuf;
   g_outBuf   = outBuf;
   g_inBufPos = 0;

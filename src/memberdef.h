@@ -153,7 +153,7 @@ class MemberDef : public Definition
     bool isLinkable() const;
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
     bool isBriefSectionVisible() const;
-    bool isDetailedSectionVisible(bool inGroup=FALSE) const;
+    bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
     bool isDetailedSectionLinkable() const;
     bool isDocumentedFriendClass() const;
 
@@ -185,8 +185,6 @@ class MemberDef : public Definition
     void setTagInfo(TagInfo *i);
 
     // output generation
-    void writeLink(OutputList &ol,
-                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd);
     void writeDeclaration(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                    bool inGroup); 
@@ -308,6 +306,10 @@ class MemberDef : public Definition
     bool visited;
     
   private:
+    void writeLink(OutputList &ol,
+                   ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+                   bool onlyText=FALSE);
+
     ClassDef   *classDef;     // member of or related to 
     FileDef    *fileDef;      // member of file definition 
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field

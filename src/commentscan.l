@@ -44,6 +44,7 @@
 #include "reflist.h"
 #include "code.h"
 #include "debug.h"
+#include "parserintf.h"
 
 // forward declarations
 static void handleBrief(const QCString &);
@@ -288,6 +289,7 @@ class GuardedSection
  *	statics
  */
 
+static ParserInterface *langParser;          // the language parser that is calling us
 static const char *     inputString;         // input string
 static int		inputPosition;       // read pointer
 static QCString		yyFileName;          // file name that is read from
@@ -322,6 +324,7 @@ static QCString         xrefListTitle;
 static Protection	protection;
 
 static bool             xrefAppendFlag;
+static bool             inGroupParamFound;
 
 //-----------------------------------------------------------------------------
 
@@ -812,10 +815,11 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  BEGIN(ReadFormulaLong);
   					}
 <Comment>{CMD}"{"                       { // begin of a group
-                                          handleGroupStartCommand(nameHeader);
+                                          langParser->handleGroupStartCommand(nameHeader);
                                         }
 <Comment>{CMD}"}"                       { // end of a group
-                                          handleGroupEndCommand();
+                                          langParser->handleGroupEndCommand();
+                                          nameHeader.resize(0);
                                         }
 <Comment>{CMD}[$@\\&~<>#%]		{ // escaped character
   					  addOutput(yytext);
@@ -1507,12 +1511,15 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  current->groups->append(
 					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );
-					  BEGIN( Comment );
+					  inGroupParamFound=TRUE;
   					}
 <InGroupParam>{DOCNL}			{ // missing argument
-  					  warn(yyFileName,yyLineNr,
-					      "Warning: Missing group name for \\ingroup command"
-					      );
+  					  if (!inGroupParamFound)
+					  {
+  					    warn(yyFileName,yyLineNr,
+					        "Warning: Missing group name for \\ingroup command"
+					        );
+					  }
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
 					  BEGIN( Comment );
@@ -1530,7 +1537,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 <FnParam>{DOCNL}			{ // end of argument
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
-					  parsePrototype(functionProto);
+					  langParser->parsePrototype(functionProto);
 					  BEGIN( Comment );
   					}
 <FnParam>{LC}				{ // line continuation
@@ -1558,7 +1565,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  else // overload declaration
 					  {
                                             makeStructuralIndicator(Entry::OVERLOADDOC_SEC);
-					    parsePrototype(functionProto);
+					    langParser->parsePrototype(functionProto);
 					  }
 					  BEGIN( Comment );
   					}
@@ -1913,6 +1920,7 @@ static void handleEndIf(const QCString &)
 
 static void handleIngroup(const QCString &)
 {
+  inGroupParamFound=FALSE;
   BEGIN( InGroupParam );
 }
 
@@ -2010,7 +2018,8 @@ static void checkFormula()
 
 //----------------------------------------------------------------------------
 
-bool parseCommentBlock(/* in,out */ Entry *curEntry,
+bool parseCommentBlock(/* in */     ParserInterface *parser,
+                       /* in,out */ Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,
 		       /* in */     int lineNr,
@@ -2025,6 +2034,7 @@ bool parseCommentBlock(/* in,out */ Entry *curEntry,
   initParser();
   guards.setAutoDelete(TRUE);
   guards.clear();
+  langParser     = parser;
   current        = curEntry;
   inputString    = comment;
   if (inputString==0) return FALSE; // avoid empty strings

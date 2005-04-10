@@ -65,6 +65,7 @@
 #include "commentcnv.h"
 #include "cmdmapper.h"
 #include "searchindex.h"
+#include "parserintf.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -214,7 +215,16 @@ static void addRelatedPage(Entry *root)
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",root->name.data(),gd);
-  PageDef *pd = addRelatedPage(root->name,root->args,root->doc,root->anchors,
+  QCString doc;
+  if (root->brief.isEmpty())
+  {
+    doc=root->doc;
+  }
+  else
+  {
+    doc=root->brief+"\n\n"+root->doc;
+  }
+  PageDef *pd = addRelatedPage(root->name,root->args,doc,root->anchors,
       root->fileName,root->startLine,
       root->sli,
       gd,root->tagInfo
@@ -2261,16 +2271,23 @@ static void buildFunctionList(Entry *root)
         rname=rname.right(rname.length()-root->parent->name.length()-2); 
       }
 
+      NamespaceDef *nd = 0;
       bool isMember=FALSE;
-      int memIndex=rname.find("::");
+      int memIndex=rname.findRev("::");
       if (memIndex!=-1)
       {
         int ts=rname.find('<');
         int te=rname.find('>');
         if (ts==-1 || te==-1)
         {
-          NamespaceDef *nd = Doxygen::namespaceSDict.find(rname.left(memIndex));
-          isMember=nd==0;
+          nd = Doxygen::namespaceSDict.find(rname.left(memIndex));
+          isMember = nd==0;
+          if (nd)
+          {
+            // strip namespace scope from name
+            scope=rname.left(memIndex);
+            rname=rname.right(rname.length()-memIndex-2);
+          }
         }
         else
         {
@@ -2288,7 +2305,7 @@ static void buildFunctionList(Entry *root)
           )
          )
       {
-        Debug::print(Debug::Functions,0,"--> member %s of class %s!\n",
+        Debug::print(Debug::Functions,0,"  --> member %s of class %s!\n",
             rname.data(),cd->name().data());
         addMethodToClass(root,cd,rname,isFriend);
       }
@@ -2308,26 +2325,25 @@ static void buildFunctionList(Entry *root)
          */
         bool found=FALSE;
         MemberName *mn;
-        //MemberDef *fmd;
+        MemberDef *md=0;
         if ((mn=Doxygen::functionNameSDict[rname]))
         {
-          Debug::print(Debug::Functions,0,"--> function %s already found!\n",rname.data());
+          Debug::print(Debug::Functions,0,"  --> function %s already found!\n",rname.data());
           MemberNameIterator mni(*mn);
-          MemberDef *md;
-          for (mni.toFirst();((md=mni.current()) && !found);++mni)
+          for (mni.toFirst();(!found && (md=mni.current()));++mni)
           {
-            NamespaceDef *nd = md->getNamespaceDef();
+            NamespaceDef *mnd = md->getNamespaceDef();
             NamespaceDef *rnd = 0;
             if (!root->parent->name.isEmpty())
             {
               rnd = getResolvedNamespace(root->parent->name);
             }
-            FileDef *fd = md->getFileDef();
+            FileDef *mfd = md->getFileDef();
             QCString nsName,rnsName;
-            if (nd)  nsName  = nd->name().copy();
+            if (mnd)  nsName = mnd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
-            NamespaceSDict    *unl = fd ? fd->getUsedNamespaces() : 0;
-            SDict<Definition> *ucl = fd ? fd->getUsedClasses() : 0;
+            NamespaceSDict    *unl = mfd ? mfd->getUsedNamespaces() : 0;
+            SDict<Definition> *ucl = mfd ? mfd->getUsedClasses() : 0;
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             if ( 
@@ -2341,9 +2357,9 @@ static void buildFunctionList(Entry *root)
               }
               //printf("match!\n");
               // see if we need to create a new member
-              found=(nd && rnd && nsName==rnsName) ||   // members are in the same namespace
-                    ((nd==0 && rnd==0 && fd!=0 &&       // no external reference and
-                      fd->absFilePath()==root->fileName // prototype in the same file
+              found=(mnd && rnd && nsName==rnsName) ||   // members are in the same namespace
+                    ((mnd==0 && rnd==0 && mfd!=0 &&       // no external reference and
+                      mfd->absFilePath()==root->fileName // prototype in the same file
                      ) 
                     ); 
               // otherwise, allow a duplicate global member with the same argument list
@@ -2378,7 +2394,7 @@ static void buildFunctionList(Entry *root)
                     md->setArgumentList(argList);
                   }
                 }
-                else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && nd==rnd)
+                else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && mnd==rnd)
                 {
                   warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
                 }
@@ -2387,7 +2403,7 @@ static void buildFunctionList(Entry *root)
                 {
                   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
                 }
-                else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && nd==rnd)
+                else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && mnd==rnd)
                 {
                   warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
                 }
@@ -2416,18 +2432,18 @@ static void buildFunctionList(Entry *root)
         }
         if (!found) /* global function is unique with respect to the file */
         {
+          Debug::print(Debug::Functions,0,"  --> new function %s found!\n",rname.data());
           //printf("New function type=`%s' name=`%s' args=`%s' bodyLine=%d\n",
           //       root->type.data(),rname.data(),root->args.data(),root->bodyLine);
           
           // new global function
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->last() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
-          MemberDef *md=new MemberDef(
+          md=new MemberDef(
               root->fileName,root->startLine,
               root->type,name,root->args,root->exception,
               root->protection,root->virt,root->stat,FALSE,
               MemberDef::Function,tArgList,root->argList);
-
 
           md->setTagInfo(root->tagInfo);
           //md->setDefFile(root->fileName);
@@ -2446,27 +2462,26 @@ static void buildFunctionList(Entry *root)
           md->setMemberSpecifiers(root->memSpec);
           md->setMemberGroupId(root->mGrpId);
 
-          // see if the function is inside a namespace
-          NamespaceDef *nd = 0;
-          QCString scope;
-          if (root->parent->section == Entry::NAMESPACE_SEC )
+          // see if the function is inside a namespace that was not part of
+          // the name already (in that case nd should be non-zero already)
+          if (nd==0 && root->parent->section == Entry::NAMESPACE_SEC )
           {
             QCString nscope=removeAnonymousScopes(root->parent->name);
             if (!nscope.isEmpty())
             {
               nd = getResolvedNamespace(nscope);
-              if (nd) 
-              {
-                scope+=nd->name();
-                if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-                {
-                  scope+=".";
-                }
-                else
-                {
-                  scope+="::";
-                }
-              }
+            }
+          }
+
+          if (!scope.isEmpty())
+          {
+            if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+            {
+              scope = substitute(scope,"::",".")+".";
+            }
+            else
+            {
+              scope+="::";
             }
           }
 
@@ -2518,7 +2533,6 @@ static void buildFunctionList(Entry *root)
             nd->insertMember(md); 
             md->setNamespace(nd);
           }
-
           if (fd)
           {
             // add member to the file (we do this even if we have already
@@ -2551,7 +2565,14 @@ static void buildFunctionList(Entry *root)
         }
         else
         {
-          //printf("Function already found!\n");
+          bool ambig;
+          FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+          if (fd)
+          {
+            // add member to the file (we do this even if we have already
+            // inserted it into the namespace)
+            fd->insertMember(md);
+          }
         }
 
         //printf("unrelated function %d `%s' `%s' `%s'\n",
@@ -4215,7 +4236,7 @@ static bool findGlobalMember(Entry *root,
         }
       }
     } 
-    if (!found) // no match
+    if (!found && !root->relatesDup) // no match
     {
       QCString fullFuncDecl=decl;
       if (root->argList) fullFuncDecl+=argListToString(root->argList);
@@ -5297,6 +5318,15 @@ static void findMemberDocumentation(Entry *root)
           root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
          );
   bool isFunc=TRUE;
+
+  if (root->relatesDup && !root->relates.isEmpty())
+  {
+     QCString tmp = root->relates;
+     root->relates.resize(0);
+     findMemberDocumentation(root);
+     root->relates = tmp;
+  }
+  
   if ( // detect func variable/typedef to func ptr
       (i=findFunctionPtr(root->type,&l))!=-1 
      )
@@ -5669,27 +5699,30 @@ static void findEnumDocumentation(Entry *root)
       && root->name[0]!='@'        // skip anonymous enums
      )
   {
-    //printf("Found docs for enum with name `%s'\n",root->name.data());
+    //printf("Found docs for enum with name `%s' in context %s\n",
+    //    root->name.data(),root->parent->name.data());
     int i;
-    ClassDef *cd=0;
     QCString name;
-    if ((i=root->name.findRev("::"))!=-1) // scope is specified
+    QCString scope;
+    if ((i=root->name.findRev("::"))!=-1) // scope is specified as part of the name
     {
-      QCString scope=root->name.left(i); // extract scope
       name=root->name.right(root->name.length()-i-2); // extract name
-      cd=getClass(scope);
+      scope=root->name.left(i); // extract scope
       //printf("Scope=`%s' Name=`%s'\n",scope.data(),name.data());
     }
-    else // no scope, check the scope in which the docs where found
+    else // just the name
     {
-      if (( root->parent->section & Entry::COMPOUND_MASK )
-          && !root->parent->name.isEmpty()
-         ) // found enum docs inside a compound
-      {
-        cd=getClass(root->parent->name);
-      }
-      name=root->name.copy();
+      name=root->name;
     }
+    if (( root->parent->section & Entry::SCOPE_MASK )
+        && !root->parent->name.isEmpty()
+       ) // found enum docs inside a compound
+    {
+      if (!scope.isEmpty()) scope.prepend("::");
+      scope.prepend(root->parent->name);
+    }
+    ClassDef *cd=getClass(scope);
+
     if (!name.isEmpty())
     {
       bool found=FALSE;
@@ -7270,7 +7303,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    QCString cmd=filterName+" \""+fileName+"\"";
+    QCString cmd="\""+filterName+"\" \""+fileName+"\"";
     FILE *f=popen(cmd,"r");
     if (!f)
     {
@@ -7339,8 +7372,7 @@ static void copyStyleSheet()
   }
 }
 
-#ifdef USE_TMP_FILE
-
+#if 0
 static void readFiles(const QCString &tmpFile)
 {
   QFile outFile(tmpFile);
@@ -7386,36 +7418,27 @@ static void readFiles(const QCString &tmpFile)
     }
   }
 }
+#endif
 
-#else
-//----------------------------------------------------------------------------
-// Reads a file to a string.
-// The name of the file is written in front of the file's contents and
-// between 0x06 markers
-
-static void readFiles(BufStr &output)
+static void parseFiles(Entry *root)
 {
+  ParserInterface *defaultParser = new CLanguageScanner;
+  ParserManager *parserManager = new ParserManager(defaultParser);
+
+  // register any additional parsers here...
+  
   QCString *s=inputFiles.first();
   while (s)
   {
     QCString fileName=*s;
+    QCString extension;
+    int ei = fileName.findRev('.');
+    if (ei!=-1) extension=fileName.right(fileName.length()-ei);
 
-    int fileNameSize=fileName.length();
+    QFileInfo fi(fileName);
+    BufStr preBuf(fi.size()+4096);
+    BufStr *bufPtr = &preBuf;
 
-    //bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
-
-    BufStr tempBuf(20000);
-    //BufStr *bufPtr = multiLineIsBrief ? &output : &tempBuf;
-    BufStr *bufPtr = &tempBuf;
-
-    // add begin filename marker
-    bufPtr->addChar(0x06);
-    // copy filename
-    bufPtr->addArray(fileName.data(),fileNameSize);
-    
-    // add end filename marker
-    bufPtr->addChar(0x06);
-    bufPtr->addChar('\n');
     if (Config_getBool("ENABLE_PREPROCESSING"))
     {
       msg("Preprocessing %s...\n",s->data());
@@ -7429,14 +7452,18 @@ static void readFiles(BufStr &output)
 
     bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
 
-    convertCppComments(&tempBuf,&output,fileName);
+    BufStr convBuf(bufPtr->curPos()+1024);
+
+    convertCppComments(&preBuf,&convBuf,fileName);
+
+    convBuf.addChar('\0');
+
+    ParserInterface *parser = parserManager->getParser(extension);
+    parser->parse(fileName,convBuf.data(),root);
 
     s=inputFiles.next();
-    //printf("-------> adding new line\n");
   }
-  output.addChar(0);
 }
-#endif
 
 //----------------------------------------------------------------------------
 // Read all files matching at least one pattern in `patList' in the 
@@ -8285,14 +8312,15 @@ void parseInput()
     // strip trailing slashes
     if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
 
-    inputSize+=readFileOrDirectory(path,&Doxygen::inputNameList,
+    inputSize+=readFileOrDirectory(
+        path,&Doxygen::inputNameList,
         Doxygen::inputNameDict,&excludeNameDict,
-                                   &Config_getList("FILE_PATTERNS"),
-                                   &Config_getList("EXCLUDE_PATTERNS"),
-                                   &inputFiles,0,
-                                   alwaysRecursive,
-                                   TRUE,
-                                   killDict);
+        &Config_getList("FILE_PATTERNS"),
+        &Config_getList("EXCLUDE_PATTERNS"),
+        &inputFiles,0,
+        alwaysRecursive,
+        TRUE,
+        killDict);
     s=inputList.next();
   }
   delete killDict;
@@ -8466,8 +8494,7 @@ void parseInput()
    *             Read Input Files                                           *
    **************************************************************************/
   
-#ifdef USE_TMP_FILE
-
+#if 0
   QCString tmpName = Config_getString("OUTPUT_DIRECTORY")+
                      "/doxygen_scratchfile.tmp";
 
@@ -8493,36 +8520,9 @@ void parseInput()
 
   // remove temp file
   QDir().remove(tmpName);
-
-#else // use memory to store intermediate results
-
-  BufStr input(inputSize+1); // Add one byte extra for \0 termination
-
-  // read and preprocess all input files
-  readFiles(input);
-
-  if (input.isEmpty())
-  {
-    err("No input read, no output generated!\n");
-    delete root;
-    cleanUpDoxygen();
-    exit(1);
-  }
-  else
-  {
-    msg("Read %d bytes\n",input.curPos());
-  }
-
-  root->program=input;
-
-  msg("Parsing input...\n");
-  parseMain(root);            // build a tree of entries
-
-  msg("Freeing input...\n");
-  input.resize(0);
-
 #endif
-  
+  parseFiles(root);
+
   /**************************************************************************
    *             Gather information                                         * 
    **************************************************************************/
