@@ -117,6 +117,10 @@ SOURCE=..\src\commentcnv.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\commentscan.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\config.cpp
 # End Source File
 # Begin Source File
@@ -570,6 +574,10 @@ SOURCE=..\src\pagedef.h
 # Begin Source File
 
 SOURCE=..\src\perlmodgen.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\parserintf.h
 # End Source File
 # Begin Source File
 

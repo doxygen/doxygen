@@ -267,7 +267,8 @@ enum OutputContext
 enum GuardType
 {
   Guard_If,
-  Guard_IfNot
+  Guard_IfNot,
+  Guard_Skip
 };
 
 class GuardedSection
@@ -305,6 +306,7 @@ static QCString         blockName;           // preformatted block name (e.g. ve
 static XRefKind         xrefKind;            // kind of cross-reference command
 static XRefKind         newXRefKind;         // 
 static GuardType        guardType;           // kind of guard for conditional section
+static bool             enabledSectionFound;
 static QCString         nameHeader;          // heading of the @name command
 static QCString         functionProto;       // function prototype
 static QStack<GuardedSection> guards;        // tracks nested conditional sections (if,ifnot,..)
@@ -548,8 +550,10 @@ static inline void setOutput(OutputContext ctx)
 {
   bool xrefAppendToPrev = xrefAppendFlag;
   // determine append flag for the next item (i.e. the end of this item)
-  xrefAppendFlag = ctx==OutputXRef && newXRefKind==xrefKind &&
-                 (xrefKind!=XRef_Item || newXRefItemKey==xrefItemKey);
+  xrefAppendFlag = inContext==OutputXRef && ctx==OutputXRef && // two consecutive xref items
+                   newXRefKind==xrefKind &&                    // of the same kind
+                   (xrefKind!=XRef_Item || 
+		    newXRefItemKey==xrefItemKey);              // with the same key if \xrefitem
   //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
   //   	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
   xrefItemKey = newXRefItemKey;
@@ -1386,11 +1390,15 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					       ) // section is visible
 					    {
 					      guards.push(new GuardedSection(TRUE,TRUE));
+					      enabledSectionFound=TRUE;
 					      BEGIN( Comment );
 					    }
 					    else // section is invisible
 					    {
-					      guards.push(new GuardedSection(FALSE,TRUE));
+					      if (guardType!=Guard_Skip)
+					      {
+					      	guards.push(new GuardedSection(FALSE,TRUE));
+					      }
 					      BEGIN( SkipGuardedSection );
 					    }
 					  }
@@ -1443,10 +1451,11 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  }
 					  else
 					  {
-					    if (guards.top()->parentVisible())
+					    if (!enabledSectionFound && guards.top()->parentVisible())
 					    {
 					      delete guards.pop();
 					      guards.push(new GuardedSection(TRUE,TRUE));
+					      enabledSectionFound=TRUE;
 					      BEGIN( Comment );
 					    }
 					  }
@@ -1459,7 +1468,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  }
 					  else
 					  {
-					    if (guards.top()->parentVisible())
+					    if (!enabledSectionFound && guards.top()->parentVisible())
 					    {
 					      delete guards.pop();
 					      BEGIN( GuardParam );
@@ -1828,6 +1837,7 @@ static void handleRefItem(const QCString &)
 
 static void handleSection(const QCString &s)
 {
+  setOutput(OutputDoc);
   addOutput("@"+s+" ");
   BEGIN(SectionLabel);
 }
@@ -1868,12 +1878,14 @@ static void handleAddIndex(const QCString &)
 
 static void handleIf(const QCString &)
 {
+  enabledSectionFound=FALSE;
   guardType = Guard_If;
   BEGIN(GuardParam);
 }
 
 static void handleIfNot(const QCString &)
 {
+  enabledSectionFound=FALSE;
   guardType = Guard_IfNot;
   BEGIN(GuardParam);
 }
@@ -1887,7 +1899,7 @@ static void handleElseIf(const QCString &)
   }
   else
   {
-    guardType = Guard_If;
+    guardType = enabledSectionFound ? Guard_Skip : Guard_If;
     BEGIN(GuardParam);
   }
 }
@@ -1916,6 +1928,7 @@ static void handleEndIf(const QCString &)
   {
     delete guards.pop();
   }
+  enabledSectionFound=FALSE;
 }
 
 static void handleIngroup(const QCString &)
@@ -2058,8 +2071,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
   }
 
-  // strip any leading/trailing whitespace
-  current->doc=current->doc.stripWhiteSpace();
+  current->doc=stripLeadingAndTrailingEmptyLines(current->doc);
 
   if (current->section==Entry::FILEDOC_SEC && current->doc.isEmpty())
   {

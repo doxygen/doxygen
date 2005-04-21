@@ -92,16 +92,17 @@ int QGDict::hashKeyString( const QString &key )
     int i;
     register uint h=0;
     uint g;
+    int len = key.length();
     const QChar *p = key.unicode();
     if ( cases ) {				// case sensitive
-	for ( i=0; i<(int)key.length(); i++ ) {
+	for ( i=0; i<len; i++ ) {
 	    h = (h<<4) + p[i].cell();
 	    if ( (g = h & 0xf0000000) )
 		h ^= g >> 24;
 	    h &= ~g;
 	}
     } else {					// case insensitive
-	for ( i=0; i<(int)key.length(); i++ ) {
+	for ( i=0; i<len; i++ ) {
 	    h = (h<<4) + p[i].lower().cell();
 	    if ( (g = h & 0xf0000000) )
 		h ^= g >> 24;
@@ -123,7 +124,10 @@ int QGDict::hashKeyAscii( const char *key )
 {
 #if defined(CHECK_NULL)
     if ( key == 0 )
+    {
 	qWarning( "QGDict::hashAsciiKey: Invalid null key" );
+        return 0;
+    }
 #endif
     register const char *k = key;
     register uint h=0;

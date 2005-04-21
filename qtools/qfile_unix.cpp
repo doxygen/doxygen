@@ -175,7 +175,11 @@ bool QFile::open( int m )
 	}
 #if defined(HAS_TEXT_FILEMODE)
 	if ( isTranslated() )
+#ifdef __CYGWIN__
+          /* Do nothing, allowing the Cygwin mount mode to take effect. */;
+#else
 	    oflags |= OPEN_TEXT;
+#endif
 	else
 	    oflags |= OPEN_BINARY;
 #endif
@@ -214,7 +218,11 @@ bool QFile::open( int m )
 	qstrcpy( perm2, perm );
 #if defined(HAS_TEXT_FILEMODE)
 	if ( isTranslated() )
+#ifdef __CYGWIN__
+            /* Do nothing, allowing the Cygwin mount mode to take effect. */;
+#else
 	    strcat( perm2, "t" );
+#endif
 	else
 	    strcat( perm2, "b" );
 #endif

@@ -724,29 +724,10 @@ static void addClassToContext(Entry *root)
       if (root->bodyLine!=-1 && cd->getStartBodyLine()==-1)
       {
         cd->setBodySegment(root->bodyLine,root->endBodyLine);
-        cd->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
+        cd->setBodyDef(fd);
       }
-      cd->addSectionsToDefinition(root->anchors);
       //cd->setName(fullName); // change name to match docs
     }
-    cd->setFileDef(fd);
-    if (cd->hasDocumentation())
-    {
-      addIncludeFile(cd,fd,root);
-    }
-    //addNamespace(root,cd);
-    if (fd && (root->section & Entry::COMPOUND_MASK)) 
-    {
-      //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
-      //    cd->name().data(),
-      //    fd->name().data(),
-      //    root->fileName.data()
-      //   );
-      fd->insertClass(cd);
-    }
-    addClassToGroups(root,cd);
-    cd->setRefItems(root->sli);
-    if (!root->subGrouping) cd->setSubGrouping(FALSE);
 
     if (cd->templateArguments()==0) 
     {
@@ -804,7 +785,7 @@ static void addClassToContext(Entry *root)
       tagName     = root->tagInfo->tagName;
       refFileName = root->tagInfo->fileName;
     }
-    ClassDef *cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
+    cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
         tagName,refFileName);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -817,51 +798,15 @@ static void addClassToContext(Entry *root)
     //    tArgList ? tempArgListToString(tArgList).data() : "<none>");
     cd->setTemplateArguments(tArgList);
     cd->setProtection(root->protection);
-    cd->addSectionsToDefinition(root->anchors);
     cd->setIsStatic(root->stat);
 
     // file definition containing the class cd
     cd->setBodySegment(root->bodyLine,root->endBodyLine);
     cd->setBodyDef(fd);
-    if (!root->subGrouping) cd->setSubGrouping(FALSE);
-
-    addClassToGroups(root,cd);
-    cd->setRefItems(root->sli);
 
     // see if the class is found inside a namespace 
     //bool found=addNamespace(root,cd);
 
-    cd->setFileDef(fd);
-    if (cd->hasDocumentation())
-    {
-      addIncludeFile(cd,fd,root);
-    }
-
-#if 0
-    // namespace is part of the class name
-    if (!found && !namespaceName.isEmpty())
-    {
-      NamespaceDef *nd = getResolvedNamespace(namespaceName);
-      if (nd)
-      {
-        cd->setNamespace(nd);
-        nd->insertClass(cd);
-        found=TRUE;
-      }
-    }
-
-    // add the class to the file (we do this even if we have already inserted
-    // it into the namespace)
-    if (fd && (root->section & Entry::COMPOUND_MASK)) 
-    {
-      //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
-      //    cd->name().data(),
-      //    fd->name().data(),
-      //    root->fileName.data()
-      //   );
-      fd->insertClass(cd);
-    }
-#endif
 
     // the empty string test is needed for extract all case
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -873,6 +818,25 @@ static void addClassToContext(Entry *root)
     Doxygen::classSDict.append(fullName,cd);
 
   }
+
+  cd->addSectionsToDefinition(root->anchors);
+  if (!root->subGrouping) cd->setSubGrouping(FALSE);
+  if (cd->hasDocumentation())
+  {
+    addIncludeFile(cd,fd,root);
+  }
+  if (fd && (root->section & Entry::COMPOUND_MASK)) 
+  {
+    //printf(">> Inserting class `%s' in file `%s' (root->fileName=`%s')\n",
+    //    cd->name().data(),
+    //    fd->name().data(),
+    //    root->fileName.data()
+    //   );
+    cd->setFileDef(fd);
+    fd->insertClass(cd);
+  }
+  addClassToGroups(root,cd);
+  cd->setRefItems(root->sli);
 }
             
 //----------------------------------------------------------------------
@@ -3828,7 +3792,7 @@ static void computeTemplateClassRelations()
       for (tdi.toFirst();(tcd=tdi.current());++tdi) // for each template instance
       {
         Debug::print(Debug::Classes,0,"    Template instance %s : \n",tcd->name().data());
-        QCString templSpec = tdi.currentKey().data();
+        QCString templSpec = tdi.currentKey();
         ArgumentList *templArgs = new ArgumentList;
         stringToArgumentList(templSpec,templArgs);
         QList<BaseInfo> *baseList=root->extends;
@@ -5938,7 +5902,7 @@ static void createTemplateInstanceMembers()
       // for each instance of the template
       for (qdi.toFirst();(tcd=qdi.current());++qdi)
       {
-        tcd->addMembersToTemplateInstance(cd,qdi.currentKey().data());
+        tcd->addMembersToTemplateInstance(cd,qdi.currentKey());
       }
     }
   }

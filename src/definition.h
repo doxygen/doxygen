@@ -79,7 +79,7 @@ class Definition
     virtual QCString getOutputFileBase() const = 0;
 
     /*! Returns the name of the source listing of this file. */
-    const QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
+    virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
 
     /*! Returns the detailed description of this definition */
     const QCString& documentation() const { return m_doc; }

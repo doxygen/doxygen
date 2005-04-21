@@ -42,6 +42,9 @@
 #include "qgcache.h"
 #endif // QT_H
 
+#define USE_ASCII_STRING
+
+#ifndef USE_ASCII_STRING
 
 template<class type> class Q_EXPORT QCache : public QGCache
 {
@@ -74,6 +77,43 @@ private:
     void  deleteItem( Item d )	      { if ( del_item ) delete (type *)d; }
 };
 
+#else
+
+
+template<class type> class Q_EXPORT QCache : public QGCache
+{
+public:
+    QCache( const QCache<type> &c ) : QGCache(c) {}
+    QCache( int maxCost=100, int size=17, bool caseSensitive=TRUE )
+	: QGCache( maxCost, size, AsciiKey, caseSensitive, TRUE ) {}
+   ~QCache()				{ clear(); }
+    QCache<type> &operator=( const QCache<type> &c )
+			{ return (QCache<type>&)QGCache::operator=(c); }
+    int	  maxCost()   const		{ return QGCache::maxCost(); }
+    int	  totalCost() const		{ return QGCache::totalCost(); }
+    void  setMaxCost( int m )		{ QGCache::setMaxCost(m); }
+    uint  count()     const		{ return QGCache::count(); }
+    uint  size()      const		{ return QGCache::size(); }
+    bool  isEmpty()   const		{ return QGCache::count() == 0; }
+    void  clear()			{ QGCache::clear(); }
+    bool  insert( const char *k, const type *d, int c=1, int p=0 )
+			{ return QGCache::insert_other(k,(Item)d,c,p);}
+    bool  remove( const char *k )
+			{ return QGCache::remove_other(k); }
+    type *take( const char *k )
+			{ return (type *)QGCache::take_ascii(k); }
+    type *find( const char *k, bool ref=TRUE ) const
+			{ return (type *)QGCache::find_other(k,ref);}
+    type *operator[]( const char *k ) const
+			{ return (type *)QGCache::find_other(k);}
+    void  statistics() const	      { QGCache::statistics(); }
+private:
+    void  deleteItem( Item d )	      { if ( del_item ) delete (type *)d; }
+};
+
+
+#endif
+
 
 
 template<class type> class Q_EXPORT QCacheIterator : public QGCacheIterator
@@ -92,7 +132,11 @@ public:
     type *toLast()	      { return (type *)QGCacheIterator::toLast(); }
     operator type *() const   { return (type *)QGCacheIterator::get(); }
     type *current()   const   { return (type *)QGCacheIterator::get(); }
+#ifndef USE_ASCII_STRING
     QString currentKey() const{ return QGCacheIterator::getKeyString(); }
+#else
+    const char *currentKey() const{ return QGCacheIterator::getKeyAscii(); }
+#endif
     type *operator()()	      { return (type *)QGCacheIterator::operator()();}
     type *operator++()	      { return (type *)QGCacheIterator::operator++(); }
     type *operator+=(uint j)  { return (type *)QGCacheIterator::operator+=(j);}

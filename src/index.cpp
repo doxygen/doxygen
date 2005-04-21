@@ -1514,6 +1514,7 @@ void writeMemberList(OutputList &ol,bool useSections,
 {
   bool first = TRUE;
   char lastChar = 0;
+  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
 
   MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
   MemberName *mn=0;
@@ -1527,7 +1528,7 @@ void writeMemberList(OutputList &ol,bool useSections,
       while (md && !found)
       {
         ClassDef *cd;
-        bool isFriendToHide = Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+        bool isFriendToHide = hideFriendCompounds &&
           (QCString(md->typeString())=="friend class" || 
            QCString(md->typeString())=="friend struct" ||
            QCString(md->typeString())=="friend union");
@@ -1615,6 +1616,7 @@ void writeMemberList(OutputList &ol,bool useSections,
 
 int countClassMembers(int filter)
 {
+  static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
   int i=0;for (i=0;i<256;i++) g_memberIndexLetterUsed[filter][i]=FALSE;
   int count=0;
   MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
@@ -1626,7 +1628,7 @@ int countClassMembers(int filter)
     ClassDef *cd;
     while (md && !found)
     {
-      bool isFriendToHide = Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+      bool isFriendToHide = hideFriendCompounds &&
                             (QCString(md->typeString())=="friend class" || 
                              QCString(md->typeString())=="friend struct" ||
                              QCString(md->typeString())=="friend union");

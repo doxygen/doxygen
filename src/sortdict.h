@@ -208,6 +208,14 @@ class SDict
     {
       return m_dict->find(key);
     }
+    T *find(const QCString &key)
+    {
+      return m_dict->find(key);
+    }
+    T *find(const QString &key)
+    {
+      return m_dict->find(key);
+    }
 
     /*! Equavalent to find(). */
     T *operator[](const char *key) const

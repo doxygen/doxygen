@@ -1046,25 +1046,47 @@ ClassDef *getResolvedClassRec(Definition *scope,
     return 0;
   }
 
+  bool hasUsingStatements = 
+      (fileScope && ((fileScope->getUsedNamespaces() && 
+                     fileScope->getUsedNamespaces()->count()>0) ||
+                    (fileScope->getUsedClasses() && 
+                     fileScope->getUsedClasses()->count()>0)) 
+      );
   // Since it is often the case that the same name is searched in the same
   // scope over an over again (especially for the linked source code generation)
   // we use a cache to collect previous results. This is possible since the
   // result of a lookup is deterministic. As the key we use the concatenated
   // scope, the name to search for and the explicit scope prefix. The speedup
   // achieved by this simple cache can be enormous.
-  QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
+  int scopeNameLen = scope->name().length()+1;
+  int nameLen = name.length()+1;
+  int explicitPartLen = explicitScopePart.length();
+  int fileScopeLen = hasUsingStatements ? 1+fileScope->name().length() : 0;
+
+  // below is a more efficient coding of
+  // QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
+  QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+1);
+  char *p=key.data();
+  qstrcpy(p,scope->name()); *(p+scopeNameLen-1)='+';
+  p+=scopeNameLen;
+  qstrcpy(p,name); *(p+nameLen-1)='+';
+  p+=nameLen;
+  qstrcpy(p,explicitScopePart);
+  p+=explicitPartLen;
+  
   // if a file scope is given and it contains using statements we should
   // also use the file part in the key (as a class name can be in
   // two different namespaces and a using statement in a file can select 
   // one of them).
-  if (fileScope && ((fileScope->getUsedNamespaces() && 
-                     fileScope->getUsedNamespaces()->count()>0) ||
-                    (fileScope->getUsedClasses() && 
-                     fileScope->getUsedClasses()->count()>0)) 
-     )
+  if (hasUsingStatements)
   {
-    key+="+"+fileScope->name();
+    // below is a more efficient coding of
+    // key+="+"+fileScope->name();
+    *p++='+';
+    qstrcpy(p,fileScope->name());
+    p+=fileScopeLen-1;
   }
+  *p='\0';
       
   LookupInfo *pval=Doxygen::lookupCache.find(key);
   //printf("Searching for %s result=%p\n",key.data(),pval);
@@ -3490,6 +3512,7 @@ bool resolveRef(/* in */  const char *scName,
 
 QCString linkToText(const char *link,bool isFileName)
 {
+  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   QCString result=link;
   if (!result.isEmpty())
   {
@@ -3502,7 +3525,7 @@ QCString linkToText(const char *link,bool isFileName)
     {
       result=result.right(result.length()-2);
     }
-    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    if (optimizeOutputJava)
     {
       result=substitute(result,"::",".");
     }
@@ -3769,21 +3792,49 @@ QCString substitute(const char *s,const char *src,const char *dst)
 
 //----------------------------------------------------------------------
 
+struct FindFileCacheElem
+{
+  FindFileCacheElem(FileDef *fd,bool ambig) : fileDef(fd), isAmbig(ambig) {}
+  FileDef *fileDef;
+  bool isAmbig;
+};
+
+static QCache<FindFileCacheElem> g_findFileDefCache(5000);
+
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
 {
   ambig=FALSE;
+  if (n==0) return 0;
+
+  QCString key;
+  key.sprintf("%p:",fnDict);
+  key+=n;
+
+  g_findFileDefCache.setAutoDelete(TRUE);
+  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key);
+  if (cachedResult)
+  {
+    ambig = cachedResult->isAmbig;
+    return cachedResult->fileDef;
+  }
+  else
+  {
+    cachedResult = new FindFileCacheElem(0,FALSE);
+  }
+  
   QCString name=convertToQCString(QDir::cleanDirPath(n));
   QCString path;
-  if (name.isEmpty()) return 0;
-  int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
+  int slashPos;
+  FileName *fn;
+  if (name.isEmpty()) goto exit;
+  slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1); 
   }
   //printf("findFileDef path=`%s' name=`%s'\n",path.data(),name.data());
-  if (name.isEmpty()) return 0;
-  FileName *fn;
+  if (name.isEmpty()) goto exit;
   if ((fn=(*fnDict)[name]))
   {
     if (fn->count()==1)
@@ -3791,6 +3842,8 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       FileDef *fd = fn->getFirst();
       if (path.isEmpty() || fd->getPath().right(path.length())==path)
       {
+        cachedResult->fileDef = fd;
+        g_findFileDefCache.insert(key,cachedResult);
         return fd;
       }
     }
@@ -3809,9 +3862,14 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
         }
       }
       ambig=(count>1);
+      cachedResult->isAmbig = ambig;
+      cachedResult->fileDef = lastMatch;
+      g_findFileDefCache.insert(key,cachedResult);
       return lastMatch;
     }
   }
+exit:
+  g_findFileDefCache.insert(key,cachedResult);
   return 0;
 }
 
@@ -5275,4 +5333,45 @@ bool findAndRemoveWord(QCString &s,const QCString &word)
   }
   return FALSE;
 }
+
+/** Special version of QCString::stripWhiteSpace() that only strips
+ *  empty lines.
+ */
+QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
+{
+  const char *p = s.data();
+  if (p==0) return 0;
+
+  // search for leading empty lines
+  int i=0,li=-1,l=s.length();
+  char c;
+  while ((c=*p++))
+  {
+    if (c==' ' || c=='\t' || c=='\r') i++;
+    else if (c=='\n') i++,li=i;
+    else break;
+  }
+
+  // search for trailing empty lines
+  int b=l-1,bi=-1;
+  p=s.data()+b;
+  while (b>=0)
+  {
+    c=*--p;
+    if (c==' ' || c=='\t' || c=='\r') b--;
+    else if (c=='\n') bi=b,b--;
+    else break;
+  }
+
+  // return whole string if no leading or trailing lines where found
+  if (li==-1 && bi==-1) return s;
+
+  // return substring
+  if (bi==-1) bi=l;
+  if (li==-1) li=0;
+  if (bi<=li) return 0; // only empty lines
+  return s.mid(li,bi-li);
+}
+
+
 

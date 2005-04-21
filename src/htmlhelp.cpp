@@ -551,14 +551,16 @@ void HtmlHelp::addContentsItem(bool isDir,
 /*! Add an list item to the index file.
  *  \param level1 the main index of the item.
  *  \param level2 the sub index of the item.
- *  \param ref  the URL of to the item.
+ *  \param contRef the output file refering to the container.
+ *  \param memRef  the output file containing to the member documentation.
  *  \param anchor  the anchor of the item.
  *  \sa HtmlHelpIndex
  */
 void HtmlHelp::addIndexItem(const char *level1, const char *level2,
-                            const char *ref, const char *anchor)
+                            const char *contRef, const char *memRef, 
+                            const char *anchor)
 {
-  index->addItem(level1,level2,ref,anchor,TRUE,FALSE);
-  index->addItem(level2,level1,ref,anchor,TRUE,TRUE);
+  index->addItem(level1,level2,contRef,anchor,TRUE,FALSE);
+  index->addItem(level2,level1,memRef,anchor,TRUE,TRUE);
 }
 

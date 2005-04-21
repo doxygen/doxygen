@@ -177,9 +177,10 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
 { 
   if (d==0) return;
   //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
-  QCString doc;
+  QCString doc = d;
   if (stripWhiteSpace)
   {
+#if 0
     // strip leading empty lines in front of the text, but not the 
     // leading spaces in front of the first line, so list items are 
     // parsed with the correct indent
@@ -201,6 +202,8 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
       doc.at(e)='\0';
       e--;
     }
+#endif
+    doc = stripLeadingAndTrailingEmptyLines(doc);
   }
   else // don't strip whitespace
   {
