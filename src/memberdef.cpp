@@ -509,6 +509,7 @@ bool MemberDef::hasExamples()
 
 QCString MemberDef::getOutputFileBase() const
 {
+  static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
   QCString baseName;
   if (explicitOutputFileBase)
   {
@@ -543,7 +544,7 @@ QCString MemberDef::getOutputFileBase() const
       );
     return "dummy";
   }
-  else if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  else if (separateMemberPages)
   {
     if (getEnumScope()) // enum value, which is part of enum's documentation
     {
@@ -604,6 +605,8 @@ QCString MemberDef::anchor() const
 
 bool MemberDef::isLinkableInProject() const
 {
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
   //printf("MemberDef::isLinkableInProject(name=%s)\n",name().data());
   if (m_templateMaster)
   {
@@ -639,12 +642,12 @@ bool MemberDef::isLinkableInProject() const
     //printf("in a file but file not linkable!\n");
     return FALSE; // in file (and not in namespace) but file not linkable
   }
-  if (prot==Private && !Config_getBool("EXTRACT_PRIVATE") && mtype!=Friend) 
+  if (prot==Private && !extractPrivate && mtype!=Friend) 
   {
     //printf("private and invisible!\n");
     return FALSE; // hidden due to protection
   }
-  if (isStatic() && classDef==0 && !Config_getBool("EXTRACT_STATIC")) 
+  if (isStatic() && classDef==0 && !extractStatic) 
   {
     //printf("static and invisible!\n");
     return FALSE; // hidden due to staticness
@@ -754,6 +757,13 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
  */
 bool MemberDef::isBriefSectionVisible() const
 {
+    static bool extractStatic       = Config_getBool("EXTRACT_STATIC");
+    static bool hideUndocMembers    = Config_getBool("HIDE_UNDOC_MEMBERS");
+    static bool briefMemberDesc     = Config_getBool("BRIEF_MEMBER_DESC");
+    static bool repeatBrief         = Config_getBool("REPEAT_BRIEF");
+    static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
+    static bool extractPrivate      = Config_getBool("EXTRACT_PRIVATE");
+
     //printf("Member %s grpId=%d docs=%s file=%s args=%s\n",
     //    name().data(),
     //    0,"", //grpId,grpId==-1?"<none>":Doxygen::memberDocDict[grpId]->data(),
@@ -770,26 +780,26 @@ bool MemberDef::isBriefSectionVisible() const
     // explicitly enabled in the config file
     bool visibleIfStatic = !(getClassDef()==0 && 
                              isStatic() && 
-                             !Config_getBool("EXTRACT_STATIC")
+                             !extractStatic
                             );
 
     // only include members is the are documented or 
     // HIDE_UNDOC_MEMBERS is NO in the config file
-    bool visibleIfDocumented = (!Config_getBool("HIDE_UNDOC_MEMBERS") || 
+    bool visibleIfDocumented = (!hideUndocMembers || 
                                 hasDocs || 
                                 isDocumentedFriendClass()
                                );
 
     // hide members with no detailed description and brief descriptions 
     // explicitly disabled.
-    bool visibleIfEnabled = !(Config_getBool("HIDE_UNDOC_MEMBERS") && 
+    bool visibleIfEnabled = !(hideUndocMembers && 
                               documentation().isEmpty() &&
-                              !Config_getBool("BRIEF_MEMBER_DESC") && 
-                              !Config_getBool("REPEAT_BRIEF")
+                              !briefMemberDesc && 
+                              !repeatBrief
                              );
 
     // Hide friend (class|struct|union) declarations if HIDE_FRIEND_COMPOUNDS is true
-    bool visibleIfFriendCompound = !(Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
+    bool visibleIfFriendCompound = !(hideFriendCompounds &&
                                      isFriend() &&
                                      (type=="friend class" || 
                                       type=="friend struct" ||
@@ -800,7 +810,7 @@ bool MemberDef::isBriefSectionVisible() const
     // only include members that are non-private unless EXTRACT_PRIVATE is
     // set to YES or the member is part of a group
     bool visibleIfPrivate = (protection()!=Private || 
-                             Config_getBool("EXTRACT_PRIVATE") ||
+                             extractPrivate ||
                              mtype==Friend
                             );
     
@@ -1177,10 +1187,18 @@ void MemberDef::writeDeclaration(OutputList &ol,
 
 bool MemberDef::isDetailedSectionLinkable() const          
 { 
+  static bool extractAll        = Config_getBool("EXTRACT_ALL");
+  static bool alwaysDetailedSec = Config_getBool("ALWAYS_DETAILED_SEC");
+  static bool repeatBrief       = Config_getBool("REPEAT_BRIEF");
+  static bool briefMemberDesc   = Config_getBool("BRIEF_MEMBER_DESC");
+  static bool hideUndocMembers  = Config_getBool("HIDE_UNDOC_MEMBERS");
+  static bool extractStatic     = Config_getBool("EXTRACT_STATIC");
+  static bool extractPrivate    = Config_getBool("EXTRACT_PRIVATE");
+
   // the member has details documentation for any of the following reasons
   bool docFilter = 
          // treat everything as documented
-         Config_getBool("EXTRACT_ALL") ||          
+         extractAll ||          
          // has detailed docs
          !documentation().isEmpty() ||             
          // has inbody docs
@@ -1191,24 +1209,23 @@ bool MemberDef::isDetailedSectionLinkable() const
          (mtype==EnumValue && !briefDescription().isEmpty()) || 
          // has brief description that is part of the detailed description
          (!briefDescription().isEmpty() &&           // has brief docs
-          (Config_getBool("ALWAYS_DETAILED_SEC") &&  // they or visible in
-           Config_getBool("REPEAT_BRIEF") ||         // detailed section or
-           !Config_getBool("BRIEF_MEMBER_DESC")      // they are explicitly not
+          (alwaysDetailedSec &&  // they or visible in
+           repeatBrief ||        // detailed section or
+           !briefMemberDesc      // they are explicitly not
           )                                          // shown in brief section
          ) ||
          // has a multi-line initialization block
          //(initLines>0 && initLines<maxInitLines) || 
-         (hasMultiLineInitializer() && !Config_getBool("HIDE_UNDOC_MEMBERS")) ||
+         (hasMultiLineInitializer() && !hideUndocMembers) ||
          // has one or more documented arguments
          (defArgList!=0 && defArgList->hasDocumentation()); 
          
   // this is not a global static or global statics should be extracted
-  bool staticFilter = getClassDef()!=0 || !isStatic() || Config_getBool("EXTRACT_STATIC"); 
+  bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic; 
          
   // only include members that are non-private unless EXTRACT_PRIVATE is
   // set to YES or the member is part of a group
-  bool privateFilter = (protection()!=Private || 
-                           Config_getBool("EXTRACT_PRIVATE") ||
+  bool privateFilter = (protection()!=Private || extractPrivate ||
                            mtype==Friend
                           );
 
@@ -1261,11 +1278,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
+  QCString ciname = container->name();
   if (container->definitionType()==TypeGroup)
   {
     if (getClassDef())          scopeName=getClassDef()->name();
     else if (getNamespaceDef()) scopeName=getNamespaceDef()->name();
     else if (getFileDef())      scopeName=getFileDef()->name();
+    ciname = ((GroupDef *)container)->groupTitle();
   }
   else if (container->definitionType()==TypeFile && getNamespaceDef())
   { // member is in a namespace, but is written as part of the file documentation
@@ -1274,12 +1293,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
 
   QCString cname  = container->name();
-  QCString cfname = getOutputFileBase();  
+  QCString cfname = getOutputFileBase();
+  QCString cfiname = container->getOutputFileBase();
 
-  if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
+  bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
+  HtmlHelp *htmlHelp = 0;
+  if (hasHtmlHelp)
   {
-    HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
+    htmlHelp = HtmlHelp::getInstance();
+    htmlHelp->addIndexItem(ciname,name(),cfiname,cfname,memAnchor);
   }
 
   // get member name
@@ -1307,9 +1329,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   ol.pushGeneratorState();
 
-  bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  HtmlHelp *htmlHelp = 0;
-  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
@@ -1323,10 +1342,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
         ol.startMemberDoc(cname,name(),memAnchor,name());
-        if (hasHtmlHelp)
-        {
-          htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
-        }
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.right(ldef.length()-i-l));
@@ -1339,10 +1354,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       //printf("Anonymous compound `%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
       ol.startMemberDoc(cname,name(),memAnchor,name());
-      if (hasHtmlHelp)
-      {
-        htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
-      }
       // strip anonymous compound names from definition
       int si=ldef.find(' '),pi,ei=i+l;
       if (si==-1) si=0;
@@ -1361,10 +1372,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   {
     ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
     ol.startMemberDoc(cname,name(),memAnchor,name());
-    if (hasHtmlHelp)
-    {
-      htmlHelp->addIndexItem(cname,name(),cfname,memAnchor);
-    }
 
     ClassDef *cd=getClassDef();
     if (!Config_getBool("HIDE_SCOPE_NAMES"))
@@ -1665,9 +1672,9 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.addIndexItem(fmd->name(),cname);
           ol.addIndexItem(cname,fmd->name());
 
-          if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))
+          if (hasHtmlHelp)
           {
-            HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfname,fmd->anchor());
+            HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfiname,cfname,fmd->anchor());
           }
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
@@ -2096,10 +2103,13 @@ void MemberDef::setInitializer(const char *initializer)
 
 void MemberDef::addListReference(Definition *)
 {
+  static bool optimizeOutputForC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
+  static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
+  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   visited=TRUE;
   if (!isLinkableInProject()) return;
   QCString memLabel;
-  if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) 
+  if (optimizeOutputForC) 
   {
     memLabel=theTranslator->trGlobal(TRUE,TRUE);
   }
@@ -2111,7 +2121,7 @@ void MemberDef::addListReference(Definition *)
   Definition *pd=getOuterScope();
   if (!isRelated() &&
       (
-       (!Config_getBool("HIDE_SCOPE_NAMES") && // there is a scope
+       (!hideScopeNames && // there is a scope
         pd && pd!=Doxygen::globalScope)       // and we can show it
        ||
        (pd=getClassDef())                     // it's a class so we
@@ -2119,7 +2129,7 @@ void MemberDef::addListReference(Definition *)
       )
      )
   {
-    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    if (optimizeOutputJava)
     {
       memName.prepend(pd->name()+".");
     }

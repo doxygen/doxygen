@@ -42,6 +42,15 @@
 #include "qgdict.h"
 #endif // QT_H
 
+#define USE_ASCII_STRING
+
+#ifdef USE_ASCII_STRING
+
+#define QAsciiDict QDict
+#define QAsciiDictIterator QDictIterator
+#include "qasciidict.h"
+
+#else
 
 template<class type> class Q_EXPORT QDict : public QGDict
 {
@@ -102,5 +111,6 @@ public:
     type *operator+=(uint j)  { return (type *)QGDictIterator::operator+=(j);}
 };
 
+#endif // USE_ASCII_STRING
 
 #endif // QDICT_H

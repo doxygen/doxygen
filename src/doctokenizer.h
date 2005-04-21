@@ -122,6 +122,7 @@ bool doctokenizerYYpopContext();
 int  doctokenizerYYlex();
 void doctokenizerYYsetStatePara();
 void doctokenizerYYsetStateTitle();
+void doctokenizerYYsetStateTitleAttrValue();
 void doctokenizerYYsetStateCode();
 void doctokenizerYYsetStateHtmlOnly();
 void doctokenizerYYsetStateManOnly();

@@ -886,9 +886,21 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
       }
       children.append(new 
           DocLinkedWord(parent,name,
-            compound->getReference(),
-            compound->getOutputFileBase(),
-            ""
+                        compound->getReference(),
+                        compound->getOutputFileBase(),
+                        ""
+                       )
+                     );
+    }
+    else if (compound->definitionType()==Definition::TypeFile &&
+             ((FileDef*)compound)->generateSourceFile()
+            ) // undocumented file that has source code we can link to
+    {
+      children.append(new 
+          DocLinkedWord(parent,g_token->name,
+                         compound->getReference(),
+                         compound->getSourceFileBase(),
+                         ""
                        )
                      );
     }
@@ -1915,15 +1927,16 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
     m_refToSection = sec->type!=SectionInfo::Anchor;
     //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d\n",
     //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor);
+    return;
   }
-  else if (resolveLink(g_context,target,TRUE,&compound,/*&pageInfo,*/anchor))
+  else if (resolveLink(g_context,target,TRUE,&compound,anchor))
   {
     bool isFile = compound ? 
                  (compound->definitionType()==Definition::TypeFile ? TRUE : FALSE) : 
                  FALSE;
     m_text = linkToText(target,isFile);
     m_anchor = anchor;
-    if (compound) // ref to compound
+    if (compound && compound->isLinkable()) // ref to compound
     {
       if (anchor.isEmpty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
@@ -1935,18 +1948,20 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
 
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
+      return;
     }
-    else
+    else if (compound->definitionType()==Definition::TypeFile && 
+             ((FileDef*)compound)->generateSourceFile()
+            ) // undocumented file that has source code we can link to
     {
-      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
+      m_file = compound->getSourceFileBase();
+      m_ref  = compound->getReference();
+      return;
     }
   }
-  else // oops, bogus target
-  {
-    m_text = linkToText(target,FALSE);
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unable to resolve reference to `%s' for \\ref command",
+  m_text = linkToText(target,FALSE);
+  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unable to resolve reference to `%s' for \\ref command",
            target.data()); 
-  }
 }
 
 void DocRef::parse()
@@ -1998,25 +2013,27 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
     m_refText = m_refText.right(m_refText.length()-1);
   }
   if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
-                  &compound,/*&page,*/anchor))
+                  &compound,anchor))
   {
     m_anchor = anchor;
-    if (compound)
+    if (compound && compound->isLinkable())
     {
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
     }
-    //else if (page)
-    //{
-    //  m_file = page->getOutputFileBase();
-    //  m_ref  = page->getReference();
-    //}
+    else if (compound->definitionType()==Definition::TypeFile && 
+             ((FileDef*)compound)->generateSourceFile()
+            ) // undocumented file that has source code we can link to
+    {
+      m_file = compound->getSourceFileBase();
+      m_ref  = compound->getReference();
+    }
+    return;
   }
-  else // oops, bogus target
-  {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unable to resolve link to `%s' for \\link command",
-           target.data()); 
-  }
+
+  // bogus link target
+  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unable to resolve link to `%s' for \\link command",
+         target.data()); 
 }
 
 
@@ -2205,6 +2222,14 @@ void DocImage::parse()
   int tok;
   while ((tok=doctokenizerYYlex()))
   {
+    if (tok==TK_WORD && (g_token->name=="width=" || g_token->name=="height="))
+    {
+      // special case: no title, but we do have a size indicator
+      doctokenizerYYsetStateTitleAttrValue();
+      // strip =
+      g_token->name=g_token->name.left(g_token->name.length()-1);
+      break;
+    } 
     if (!defaultHandleToken(this,tok,m_children))
     {
       switch (tok)

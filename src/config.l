@@ -1734,6 +1734,7 @@ void Config::create()
 		   "provided by doxygen. Whatever the progam writes to standard output \n"
 		   "is used as the file version. See the manual for examples. \n"
               );
+  cs->setWidgetType(ConfigString::File);
   
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Messages","configuration options related to warning and progress messages");
@@ -1791,6 +1792,7 @@ void Config::create()
                     "and error messages should be written. If left blank the output is written \n"
                     "to stderr. \n"
                    );
+  cs->setWidgetType(ConfigString::File);
   //-----------------------------------------------------------------------------------------------
   addInfo(  "Input","configuration options related to the input files");
   //-----------------------------------------------------------------------------------------------
@@ -1877,6 +1879,7 @@ void Config::create()
                     "to standard output.  If FILTER_PATTERNS is specified, this tag will be \n"
                     "ignored. \n"
                    );
+  cs->setWidgetType(ConfigString::File);
   cl = addList(
                     "FILTER_PATTERNS",
                     "The FILTER_PATTERNS tag can be used to specify filters on a per file pattern \n"
@@ -2041,6 +2044,7 @@ void Config::create()
 		    "can add a path in front of the file if the result should not be \n"
 		    "written to the html output directory. \n"
                    );
+  cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
   cs = addString(
                     "HHC_LOCATION",
@@ -2049,6 +2053,7 @@ void Config::create()
 		    "the HTML help compiler (hhc.exe). If non-empty doxygen will try to run \n"
 		    "the HTML help compiler on the generated index.hhp.\n"
                    );
+  cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
   cb = addBool(
                     "GENERATE_CHI",

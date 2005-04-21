@@ -302,7 +302,7 @@ static QCString stripQuotes(const char *s)
 static void addMemberGroupDocs()
 {
   memberGroupDocs=current->brief.stripWhiteSpace();
-  current->doc = current->doc.stripWhiteSpace();
+  current->doc = stripLeadingAndTrailingEmptyLines(current->doc);
   if (!memberGroupDocs.isEmpty() && !current->doc.isEmpty())
   {
     memberGroupDocs+="\n\n";
@@ -4492,6 +4492,11 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 static void parsePrototype(const QCString &text)
 {
   //printf("**** parsePrototype(%s) begin\n",text.data());
+  if (text.isEmpty()) 
+  {
+    warn(yyFileName,yyLineNr,"Empty prototype found!");
+    return;
+  }
 
   const char *orgInputString;
   int orgInputPosition;

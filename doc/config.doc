@@ -857,8 +857,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <dt>\c FILTER_SOURCE_FILES <dd>
  \addindex FILTER_SOURCE_FILES
  If the \c FILTER_SOURCE_FILES tag is set to \c YES, the input filter (if set using
- \c INPUT_FILTER ) will be used to filter the input files when producing source 
- files to browse.
+ \ref cfg_input_filter "INPUT_FILTER" ) will also be used to filter the input
+ files that are used for producing the source files to browse 
+ (i.e. when SOURCE_BROWSER is set to YES).
 
 </dl>
 

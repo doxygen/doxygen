@@ -101,6 +101,10 @@ static int                g_commentCount;
 static bool               g_insideComment;
 static bool               g_isImported;
 static QCString           g_blockName;
+static int                g_condCtx;
+static bool               g_skip;
+static QStack<bool>       g_condStack;
+
 
 
 static void setFileName(const char *name)
@@ -973,6 +977,9 @@ Define *newDefine()
 
 void addDefine()
 {
+  if (g_skip) return; // do not add this define as it is inside a 
+                      // conditional section (@cond command) that is disabled.
+
   //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
   //stringToArgumentList(g_defArgsStr,al);
@@ -1129,7 +1136,32 @@ static void readIncludeFile(const QCString &inc)
 
 /* ----------------------------------------------------------------- */
 
-#undef YY_INPUT
+static void startCondSection(const char *sectId)
+{
+  g_condStack.push(new bool(g_skip));
+  if (Config_getList("ENABLED_SECTIONS").find(sectId)==-1)
+  {
+    g_skip=TRUE;
+  }
+}
+
+static void endCondSection()
+{
+  if (g_condStack.isEmpty())
+  {
+    g_skip=FALSE;
+  }
+  else
+  {
+    bool *ctx = g_condStack.pop();
+    g_skip=*ctx;
+  }
+}
+
+
+/* ----------------------------------------------------------------- */
+
+#undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
 static int yyread(char *buf,int max_size)
@@ -1183,6 +1215,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	IgnoreLine
 %x	FindDefineArgs
 %x	ReadString
+%x	CondLine
 
 %%
 
@@ -1777,10 +1810,33 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
+<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
+  					  outputArray(yytext,yyleng);
+  					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,yyleng);
 					  g_blockName=QCString(&yytext[1]).stripWhiteSpace();
 					  BEGIN(SkipVerbatim);
+  					}
+<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
+  					  g_condCtx = YY_START;
+  					  outputArray(yytext,yyleng);
+  					  BEGIN(CondLine);
+  					}
+<CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]*	{
+  				          startCondSection(yytext);
+  					  outputArray(yytext,yyleng);
+  					  BEGIN(g_condCtx);
+  					}
+<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+\n  |
+<CondLine>.				{
+  					  outputArray(yytext,yyleng);
+  					  startCondSection(" ");
+					  if (YY_START==CondLine) BEGIN(g_condCtx);
+  					}
+<SkipCComment,SkipCPPComment>[\\@]"endcond"/[^a-z_A-Z0-9] {
+  					  outputArray(yytext,yyleng);
+  					  endCondSection();
   					}
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
   					  outputArray(yytext,yyleng);
@@ -1823,6 +1879,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n			{ g_yyLineNr++; outputChar('\n'); }
 <RemoveCComment>.			
+<SkipCPPComment>[^\n\/\\@]+		{
+  					  outputArray(yytext,yyleng);
+  					}
 <SkipCPPComment,RemoveCPPComment>\n	{
   					  unput(*yytext);
   					  BEGIN(g_lastCPPContext);
@@ -2129,6 +2188,8 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_fileDefineDict->clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
+  g_condStack.clear();
+  g_condStack.setAutoDelete(TRUE);
   
   // add predefined macros
   char *defStr;

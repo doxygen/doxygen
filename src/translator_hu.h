@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_HU_H
 #define TRANSLATOR_HU_H
 
-class TranslatorHungarian : public TranslatorAdapter_1_4_1
+class TranslatorHungarian : public Translator
 {
   private:
     const char * zed(char c)
@@ -47,20 +47,20 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
   public:
 
     // --- Language control methods -------------------
-    QCString idLanguage()
+    virtual QCString idLanguage()
     { return "hungarian"; }
     /*! Used to get the command(s) for the language support. This method
      *  was designed for languages which do not prefer babel package.
      *  If this methods returns empty string, then the latexBabelPackage()
      *  method is used to generate the command for using the babel package.
      */
-    QCString latexLanguageSupportCommand()
+    virtual QCString latexLanguageSupportCommand()
     {
       return "";
     }
 
     /*! return the language charset. This will be used for the HTML output */
-    QCString idLanguageCharset()
+    virtual QCString idLanguageCharset()
     {
       return "iso-8859-2";
     }
@@ -68,31 +68,31 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
-    QCString trRelatedFunctions()
+    virtual QCString trRelatedFunctions()
     { return "Kapcsolódó függvények"; }
 
     /*! subscript for the related functions. */
-    QCString trRelatedSubscript()
+    virtual QCString trRelatedSubscript()
     { return "(Figyelem! Ezek a függvények nem tagjai az osztálynak!)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
-    QCString trDetailedDescription()
+    virtual QCString trDetailedDescription()
     { return "Részletes leírás"; }
 
     /*! header that is put before the list of typedefs. */
-    QCString trMemberTypedefDocumentation()
+    virtual QCString trMemberTypedefDocumentation()
     { return "Típusdefiníció-tagok dokumentációja"; }
     
     /*! header that is put before the list of enumerations. */
-    QCString trMemberEnumerationDocumentation()
+    virtual QCString trMemberEnumerationDocumentation()
     { return "Enumeráció-tagok dokumentációja"; }
     
     /*! header that is put before the list of member functions. */
-    QCString trMemberFunctionDocumentation()
+    virtual QCString trMemberFunctionDocumentation()
     { return "Tagfüggvények dokumentációja"; }
     
     /*! header that is put before the list of member attributes. */
-    QCString trMemberDataDocumentation()
+    virtual QCString trMemberDataDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -105,26 +105,26 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    QCString trMore() 
+    virtual QCString trMore()
     { return "Részletek..."; }
 
     /*! put in the class documentation */
-    QCString trListOfAllMembers()
+    virtual QCString trListOfAllMembers()
     { return "A tagok teljes listája."; }
 
     /*! used as the title of the "list of all members" page of a class */
-    QCString trMemberList()
+    virtual QCString trMemberList()
     { return "Taglista"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    QCString trThisIsTheListOfAllMembers()
+    virtual QCString trThisIsTheListOfAllMembers()
     { return "A(z) "; }
 
     /*! this is the remainder of the sentence after the class name */
-    QCString trIncludingInheritedMembers()
+    virtual QCString trIncludingInheritedMembers()
     { return " osztály tagjainak teljes listája, az örökölt tagokkal együtt."; }
     
-    QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Ezt a dokumentációt a Doxygen készítette ";
       if (s) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
       result+=" a forráskódból."; 
@@ -132,15 +132,15 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! put after an enum name in the list of all members */
-    QCString trEnumName()
+    virtual QCString trEnumName()
     { return "enum"; }
     
     /*! put after an enum value in the list of all members */
-    QCString trEnumValue()
+    virtual QCString trEnumValue()
     { return "enum-érték"; }
     
     /*! put after an undocumented member in the list of all members */
-    QCString trDefinedIn()
+    virtual QCString trDefinedIn()
     { return "definiálja:"; }
 
     // quick reference sections
@@ -148,15 +148,15 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is put above each page as a link to the list of all groups of 
      *  compounds or files (see the \\group command).
      */
-    QCString trModules()
+    virtual QCString trModules()
     { return "Modulok"; }
     
     /*! This is put above each page as a link to the class hierarchy */
-    QCString trClassHierarchy()
+    virtual QCString trClassHierarchy()
     { return "Osztályhierarchia"; }
     
     /*! This is put above each page as a link to the list of annotated classes */
-    QCString trCompoundList()
+    virtual QCString trCompoundList()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -169,15 +169,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
     
     /*! This is put above each page as a link to the list of documented files */
-    QCString trFileList()
+    virtual QCString trFileList()
     { return "Fájllista"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    QCString trHeaderFiles()
-    { return "Definíciós fájlok"; }
-
     /*! This is put above each page as a link to all members of compounds. */
-    QCString trCompoundMembers()
+    virtual QCString trCompoundMembers()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -190,7 +186,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! This is put above each page as a link to all members of files. */
-    QCString trFileMembers()
+    virtual QCString trFileMembers()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -203,25 +199,25 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! This is put above each page as a link to all related pages. */
-    QCString trRelatedPages()
+    virtual QCString trRelatedPages()
     { return "Kapcsolódó lapok"; }
 
     /*! This is put above each page as a link to all examples. */
-    QCString trExamples()
+    virtual QCString trExamples()
     { return "Példák"; }
 
     /*! This is put above each page as a link to the search engine. */
-    QCString trSearch()
+    virtual QCString trSearch()
     { return "Keresés"; }
 
     /*! This is an introduction to the class hierarchy. */
-    QCString trClassHierarchyDescription()
+    virtual QCString trClassHierarchyDescription()
     { return "Majdnem (de nem teljesen) betûrendbe szedett "
              "leszármazási lista:";
     }
 
     /*! This is an introduction to the list with all files. */
-    QCString trFileListDescription(bool extractAll)
+    virtual QCString trFileListDescription(bool extractAll)
     {
       QCString result="Az összes ";
       if (!extractAll) result+="dokumentált ";
@@ -230,7 +226,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! This is an introduction to the annotated compound list. */
-    QCString trCompoundListDescription()
+    virtual QCString trCompoundListDescription()
     { 
       
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
@@ -245,7 +241,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! This is an introduction to the page with all class members. */
-    QCString trCompoundMembersDescription(bool extractAll)
+    virtual QCString trCompoundMembersDescription(bool extractAll)
     {
       QCString result="Az összes ";
       if (!extractAll)
@@ -287,7 +283,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! This is an introduction to the page with all file members. */
-    QCString trFileMembersDescription(bool extractAll)
+    virtual QCString trFileMembersDescription(bool extractAll)
     {
       QCString result="Az összes ";
       if (!extractAll) result+="dokumentált ";
@@ -308,51 +304,41 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    QCString trHeaderFilesDescription()
-    { return "A Programozói Interfészt (API) alkotó definíciós fájlok listája:"; }
-
     /*! This is an introduction to the page with the list of all examples */
-    QCString trExamplesDescription()
+    virtual QCString trExamplesDescription()
     { return "A példák listája:"; }
 
     /*! This is an introduction to the page with the list of related pages */
-    QCString trRelatedPagesDescription()
+    virtual QCString trRelatedPagesDescription()
     { return "A kapcsolódó dokumentációk listája:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
-    QCString trModulesDescription()
+    virtual QCString trModulesDescription()
     { return "A modulok listája:"; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    QCString trNoDescriptionAvailable()
-    { return "Nincs leírás"; }
-    
     // index titles (the project name is prepended for these) 
 
 
     /*! This is used in HTML as the title of index.html. */
-    QCString trDocumentation()
+    virtual QCString trDocumentation()
     { return "Dokumentáció"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * index of all groups.
      */
-    QCString trModuleIndex()
+    virtual QCString trModuleIndex()
     { return "Modulmutató"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * class hierarchy.
      */
-    QCString trHierarchicalIndex()
+    virtual QCString trHierarchicalIndex()
     { return "Hierarchikus mutató"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * annotated compound index.
      */
-    QCString trCompoundIndex()
+    virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
@@ -367,131 +353,134 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "Fájlmutató"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
-    QCString trModuleDocumentation()
+    virtual QCString trModuleDocumentation()
     { return "Modulok dokumentációja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
      */
-    QCString trClassDocumentation()
-    { return "Osztályok dokumentációja"; }
+    virtual QCString trClassDocumentation()
+    {
+      if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
+      {
+        return "Adatszerkezetek dokumentációja";
+      }
+      else
+      {
+        return "Osztályok dokumentációja";
+      }
+    }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all files.
      */
-    QCString trFileDocumentation()
+    virtual QCString trFileDocumentation()
     { return "Fájlok dokumentációja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
-    QCString trExampleDocumentation()
+    virtual QCString trExampleDocumentation()
     { return "Példák dokumentációja"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
-    QCString trPageDocumentation()
+    virtual QCString trPageDocumentation()
     { return "Kapcsolódó dokumentációk"; }
 
     /*! This is used in LaTeX as the title of the document */
-    QCString trReferenceManual()
+    virtual QCString trReferenceManual()
     { return "Referencia kézikönyv"; }
     
     /*! This is used in the documentation of a file as a header before the 
      *  list of defines
      */
-    QCString trDefines()
+    virtual QCString trDefines()
     { return "Makródefiníciók"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of function prototypes
      */
-    QCString trFuncProtos()
+    virtual QCString trFuncProtos()
     { return "Függvény-prototípusok"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of typedefs
      */
-    QCString trTypedefs()
+    virtual QCString trTypedefs()
     { return "Típusdefiníciók"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
      */
-    QCString trEnumerations()
+    virtual QCString trEnumerations()
     { return "Enumerációk"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) functions
      */
-    QCString trFunctions()
+    virtual QCString trFunctions()
     { return "Függvények"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
-    QCString trVariables()
+    virtual QCString trVariables()
     { return "Változók"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of (global) variables
      */
-    QCString trEnumerationValues()
+    virtual QCString trEnumerationValues()
     { return "Enumeráció-értékek"; }
     
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
-    QCString trDefineDocumentation()
+    virtual QCString trDefineDocumentation()
     { return "Makródefiníciók dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for function prototypes
      */
-    QCString trFunctionPrototypeDocumentation()
+    virtual QCString trFunctionPrototypeDocumentation()
     { return "Függvény-prototípusok dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for typedefs
      */
-    QCString trTypedefDocumentation()
+    virtual QCString trTypedefDocumentation()
     { return "Típusdefiníciók dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
      */
-    QCString trEnumerationTypeDocumentation()
+    virtual QCString trEnumerationTypeDocumentation()
     { return "Enumerációk dokumentációja"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    QCString trEnumerationValueDocumentation()
-    { return "Enumeráció-értékek dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
-    QCString trFunctionDocumentation()
+    virtual QCString trFunctionDocumentation()
     { return "Függvények dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for variables
      */
-    QCString trVariableDocumentation()
+    virtual QCString trVariableDocumentation()
     { return "Változók dokumentációja"; }
 
     /*! This is used in the documentation of a file/namespace/group before 
      *  the list of links to documented compounds
      */
-    QCString trCompounds()
+    virtual QCString trCompounds()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -506,7 +495,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is used in the standard footer of each page and indicates when 
      *  the page was generated 
      */
-    QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const char *date,const char *projName)
     { 
       QCString result=(QCString)"";
       if (projName) result+=(QCString)"Projekt: "+projName;
@@ -515,59 +504,51 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
-    QCString trWrittenBy()
+    virtual QCString trWrittenBy()
     {
       return " melyet írt ";
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const char *clName)
     {
       return (QCString)"A"+zed(clName[0])+clName+" osztály származási diagramja:";
     }
     
     /*! this text is generated when the \\internal command is used. */
-    QCString trForInternalUseOnly()
+    virtual QCString trForInternalUseOnly()
     { return "CSAK BELSÕ HASZNÁLATRA!"; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    QCString trReimplementedForInternalReasons()
-    { return "Belsõ okok miatt újraimplementálva; az API-t nem érinti."; }
-
     /*! this text is generated when the \\warning command is used. */
-    QCString trWarning()
+    virtual QCString trWarning()
     { return "Figyelmeztetés"; }
 
-    /*! this text is generated when the \\bug command is used. */
-    QCString trBugsAndLimitations()
-    { return "Hibák és korlátozások"; }
-
     /*! this text is generated when the \\version command is used. */
-    QCString trVersion()
+    virtual QCString trVersion()
     { return "Verzió"; }
 
     /*! this text is generated when the \\date command is used. */
-    QCString trDate()
+    virtual QCString trDate()
     { return "Dátum"; }
 
     /*! this text is generated when the \\return command is used. */
-    QCString trReturns()
+    virtual QCString trReturns()
     { return "Visszatérési érték"; }
 
     /*! this text is generated when the \\sa command is used. */
-    QCString trSeeAlso()
+    virtual QCString trSeeAlso()
     { return "Lásd még"; }
 
     /*! this text is generated when the \\param command is used. */
-    QCString trParameters()
+    virtual QCString trParameters()
     { return "Paraméterek"; }
 
     /*! this text is generated when the \\exception command is used. */
-    QCString trExceptions()
+    virtual QCString trExceptions()
     { return "Kivételek"; }
     
     /*! this text is used in the title page of a LaTeX document. */
-    QCString trGeneratedBy()
+    virtual QCString trGeneratedBy()
     { return "Készítette"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -575,11 +556,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
     
     /*! used as the title of page containing all the index of all namespaces. */
-    QCString trNamespaceList()
+    virtual QCString trNamespaceList()
     { return "Névtérlista"; }
 
     /*! used as an introduction to the namespace list */
-    QCString trNamespaceListDescription(bool extractAll)
+    virtual QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Az összes ";
       if (!extractAll) result+="dokumentált ";
@@ -590,7 +571,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in the class documentation as a header before the list of all
      *  friends of a class
      */
-    QCString trFriends()
+    virtual QCString trFriends()
     { return "Barátok"; }
     
 //////////////////////////////////////////////////////////////////////////
@@ -600,7 +581,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in the class documentation as a header before the list of all
      * related classes 
      */
-    QCString trRelatedFunctionDocumentation()
+    virtual QCString trRelatedFunctionDocumentation()
     { return "Barát és kapcsolódó függvények dokumentációja"; }
     
 //////////////////////////////////////////////////////////////////////////
@@ -608,7 +589,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const char *clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -629,7 +610,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
       result+=" fájlreferencia"; 
@@ -637,38 +618,38 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
       result+=" névtér-referencia";
       return result;
     }
     
-    QCString trPublicMembers()
+    virtual QCString trPublicMembers()
     { return "Publikus tagfüggvények"; }
-    QCString trPublicSlots()
+    virtual QCString trPublicSlots()
     { return "Publikus rések"; }
-    QCString trSignals()
+    virtual QCString trSignals()
     { return "Szignálok"; }
-    QCString trStaticPublicMembers()
+    virtual QCString trStaticPublicMembers()
     { return "Statikus publikus tagfüggvények"; }
-    QCString trProtectedMembers()
+    virtual QCString trProtectedMembers()
     { return "Védett tagfüggvények"; }
-    QCString trProtectedSlots()
+    virtual QCString trProtectedSlots()
     { return "Védett rések"; }
-    QCString trStaticProtectedMembers()
+    virtual QCString trStaticProtectedMembers()
     { return "Statikus védett tagfüggvények"; }
-    QCString trPrivateMembers()
+    virtual QCString trPrivateMembers()
     { return "Privát tagfüggvények"; }
-    QCString trPrivateSlots()
+    virtual QCString trPrivateSlots()
     { return "Privát rések"; }
-    QCString trStaticPrivateMembers()
+    virtual QCString trStaticPrivateMembers()
     { return "Statikus privát tagfüggvények"; }
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
-    QCString trWriteList(int numEntries)
+    virtual QCString trWriteList(int numEntries)
     {
       QCString result;
       int i;
@@ -693,7 +674,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritsList(int numEntries)
+    virtual QCString trInheritsList(int numEntries)
     {
       return "Õsök: "+trWriteList(numEntries)+".";
     }
@@ -701,7 +682,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in class documentation to produce a list of super classes,
      *  if class diagrams are disabled.
      */
-    QCString trInheritedByList(int numEntries)
+    virtual QCString trInheritedByList(int numEntries)
     {
       return "Leszármazottak: "+trWriteList(numEntries)+".";
     }
@@ -709,7 +690,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in member documentation blocks to produce a list of 
      *  members that are hidden by this one.
      */
-    QCString trReimplementedFromList(int numEntries)
+    virtual QCString trReimplementedFromList(int numEntries)
     {
       return "Újraimplementált õsök: "+trWriteList(numEntries)+".";
     }
@@ -717,17 +698,17 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! used in member documentation blocks to produce a list of
      *  all member that overwrite the implementation of this member.
      */
-    QCString trReimplementedInList(int numEntries)
+    virtual QCString trReimplementedInList(int numEntries)
     {
       return "Újraimplementáló leszármazottak: "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
-    QCString trNamespaceMembers()
+    virtual QCString trNamespaceMembers()
     { return "Névtértagok"; }
 
     /*! This is an introduction to the page with all namespace members */
-    QCString trNamespaceMemberDescription(bool extractAll)
+    virtual QCString trNamespaceMemberDescription(bool extractAll)
     { 
       QCString result="Az összes ";
       if (!extractAll) result+="dokumentált ";
@@ -741,13 +722,13 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is used in LaTeX as the title of the chapter with the 
      *  index of all namespaces.
      */
-    QCString trNamespaceIndex()
+    virtual QCString trNamespaceIndex()
     { return "Névtérmutató"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
-    QCString trNamespaceDocumentation()
+    virtual QCString trNamespaceDocumentation()
     { return "Névterek dokumentációja"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -757,7 +738,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is used in the documentation before the list of all
      *  namespaces in a file.
      */
-    QCString trNamespaces()
+    virtual QCString trNamespaces()
     { return "Névterek"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -767,7 +748,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is put at the bottom of a class documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
-    QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
+    virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
@@ -791,7 +772,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     /*! This is in the (quick) index as a link to the alphabetical compound
      * list.
      */
-    QCString trAlphabeticalList()
+    virtual QCString trAlphabeticalList()
     { return "Betûrendes lista"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -799,33 +780,29 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! This is used as the heading text for the retval command. */
-    QCString trReturnValues()
+    virtual QCString trReturnValues()
     { return "Visszatérési értékek"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
-    QCString trMainPage()
+    virtual QCString trMainPage()
     { return "Fõoldal"; }
 
     /*! This is used in references to page that are put in the LaTeX 
      *  documentation. It should be an abbreviation of the word page.
      */
-    QCString trPageAbbreviation()
+    virtual QCString trPageAbbreviation()
     { return "o."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trSources()
-    {
-      return "Források";
-    }
-    QCString trDefinedAtLineInSourceFile()
+    virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definíció a(z) @1 fájl @0. sorában.";
     }
-    QCString trDefinedInSourceFile()
+    virtual QCString trDefinedInSourceFile()
     {
       return "Definíció a(z) @0 fájlban.";
     }
@@ -834,7 +811,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 // new since 0.49-991205
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trDeprecated()
+    virtual QCString trDeprecated()
     {
       return "Ellenjavallt";
     }
@@ -844,68 +821,68 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const char *clName)
     {
       return (QCString)"A"+zed(clName[0])+clName+" osztály együttmûködési diagramja:";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const char *fName)
     {
       return (QCString)"A"+zed(fName[0])+fName+" definíciós fájl függési gráfja:";
     }
     /*! header that is put before the list of constructor/destructors. */
-    QCString trConstructorDocumentation()
+    virtual QCString trConstructorDocumentation()
     {
       return "Konstruktorok és destruktorok dokumentációja"; 
     }
     /*! Used in the file documentation to point to the corresponding sources. */
-    QCString trGotoSourceCode()
+    virtual QCString trGotoSourceCode()
     {
       return "Ugrás a fájl forráskódjához.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
-    QCString trGotoDocumentation()
+    virtual QCString trGotoDocumentation()
     {
       return "Ugrás a fájl dokumentációjához.";
     }
     /*! Text for the \\pre command */
-    QCString trPrecondition()
+    virtual QCString trPrecondition()
     {
       return "Elõfeltétel";
     }
     /*! Text for the \\post command */
-    QCString trPostcondition()
+    virtual QCString trPostcondition()
     {
       return "Utófeltétel";
     }
     /*! Text for the \\invariant command */
-    QCString trInvariant()
+    virtual QCString trInvariant()
     {
       return "Invariáns";
     }
     /*! Text shown before a multi-line variable/enum initialization */
-    QCString trInitialValue()
+    virtual QCString trInitialValue()
     {
       return "Kezdõ érték:";
     }
     /*! Text used the source code in the file index */
-    QCString trCode()
+    virtual QCString trCode()
     {
       return "forráskód";
     }
-    QCString trGraphicalHierarchy()
+    virtual QCString trGraphicalHierarchy()
     {
       return "Osztályhierarchia-ábra";
     }
-    QCString trGotoGraphicalHierarchy()
+    virtual QCString trGotoGraphicalHierarchy()
     {
       return "Ugrás az osztályhierarchia-ábrához";
     }
-    QCString trGotoTextualHierarchy()
+    virtual QCString trGotoTextualHierarchy()
     {
       return "Ugrás az szöveges osztályhierarchiához";
     }
-    QCString trPageIndex()
+    virtual QCString trPageIndex()
     {
       return "Oldalmutató";
     }
@@ -914,15 +891,15 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
     
-    QCString trNote()
+    virtual QCString trNote()
     {
       return "Megjegyzés";
     }
-    QCString trPublicTypes()
+    virtual QCString trPublicTypes()
     {
       return "Publikus típusok";
     }
-    QCString trPublicAttribs()
+    virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
@@ -933,31 +910,31 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
         return "Publikus attribútumok";
       }
     }
-    QCString trStaticPublicAttribs()
+    virtual QCString trStaticPublicAttribs()
     {
       return "Statikus publikus attribútumok";
     }
-    QCString trProtectedTypes()
+    virtual QCString trProtectedTypes()
     {
       return "Védett típusok";
     }
-    QCString trProtectedAttribs()
+    virtual QCString trProtectedAttribs()
     {
       return "Védett attribútumok";
     }
-    QCString trStaticProtectedAttribs()
+    virtual QCString trStaticProtectedAttribs()
     {
       return "Statikus védett attribútumok";
     }
-    QCString trPrivateTypes()
+    virtual QCString trPrivateTypes()
     {
       return "Privát típusok";
     }
-    QCString trPrivateAttribs()
+    virtual QCString trPrivateAttribs()
     {
       return "Privát attribútumok";
     }
-    QCString trStaticPrivateAttribs()
+    virtual QCString trStaticPrivateAttribs()
     {
       return "Statikus privát attribútumok";
     }
@@ -967,12 +944,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! Used as a marker that is put before a todo item */
-    QCString trTodo()
+    virtual QCString trTodo()
     {
       return "Tennivaló";
     }
     /*! Used as the header of the todo list */
-    QCString trTodoList()
+    virtual QCString trTodoList()
     {
       return "Tennivalók listája";
     }
@@ -981,24 +958,24 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 // new since 1.1.4
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trReferencedBy()
+    virtual QCString trReferencedBy()
     {
       return "Hivatkozások:";
     }
-    QCString trRemarks()
+    virtual QCString trRemarks()
     {
       return "Megjegyzések";
     }
-    QCString trAttention()
+    virtual QCString trAttention()
     {
       return "Figyelem";
     }
-    QCString trInclByDepGraph()
+    virtual QCString trInclByDepGraph()
     {
       return "Ez az ábra azt mutatja, hogy mely fájlok ágyazzák be "
              "közvetve vagy közvetlenül ezt a fájlt:";
     }
-    QCString trSince()
+    virtual QCString trSince()
     {
       return "Elõször bevezetve";
     }
@@ -1008,12 +985,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
 
     /*! title of the graph legend page */
-    QCString trLegendTitle()
+    virtual QCString trLegendTitle()
     {
       return "Jelmagyarázat";
     }
     /*! page explaining how the dot graph's should be interpreted */
-    QCString trLegendDocs()
+    virtual QCString trLegendDocs()
     {
       return 
         "Ez az oldal elmagyarázza hogyan kell értelmezni a "
@@ -1074,7 +1051,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 
     }
     /*! text for the link to the legend page */
-    QCString trLegend()
+    virtual QCString trLegend()
     {
       return "Jelmagyarázat";
     }
@@ -1084,12 +1061,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 //////////////////////////////////////////////////////////////////////////
     
     /*! Used as a marker that is put before a test item */
-    QCString trTest()
+    virtual QCString trTest()
     {
       return "Teszt";
     }
     /*! Used as the header of the test list */
-    QCString trTestList()
+    virtual QCString trTestList()
     {
       return "Tesztlista";
     }
@@ -1123,11 +1100,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfészek";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1159,11 +1131,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
     virtual QCString trPackages()
     {
       return "Csomagok";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Csomagok dokumentációja";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1301,17 +1268,6 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
       return result; 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool /*singular*/)
-    { 
-      QCString result((first_capital ? "Mezõ" : "mezõ"));
-      //if (!singular)  result+="s";
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1572,6 +1528,18 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_1
       return result; 
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Ez egy túlterhelt tagfüggvény."
+              "A fenti függvénytõl csak argumentumaiban különbözik.";
+    }
 };
 
 #endif

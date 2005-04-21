@@ -931,6 +931,11 @@ void doctokenizerYYsetStateTitle()
   BEGIN(St_Title);
 }
 
+void doctokenizerYYsetStateTitleAttrValue()
+{
+  BEGIN(St_TitleV);
+}
+
 void doctokenizerYYsetStateCode()
 {
   g_token->verb="";

@@ -74,7 +74,8 @@ class HtmlHelp
                          const char *ref = 0, 
                          const char *anchor = 0);
     void addIndexItem(const char *level1, const char *level2, 
-                      const char *ref, const char *anchor);
+                      const char *contRef, const char *memRef,
+                      const char *anchor);
     void addIndexFile(const char *name);
 
 

@@ -320,9 +320,9 @@ class Entry
     {
       switch( groupDocType ) 
       {
-        case GROUPDOC_NORMAL: return "\\defgroup"; break;
-        case GROUPDOC_ADD: return "\\addgroup"; break;
-        case GROUPDOC_WEAK: return "\\weakgroup"; break;
+        case GROUPDOC_NORMAL: return "\\defgroup";
+        case GROUPDOC_ADD: return "\\addgroup";
+        case GROUPDOC_WEAK: return "\\weakgroup";
         default: return "unknown group command";
       }
     }
@@ -334,9 +334,9 @@ class Entry
       }
       switch( groupDocType ) 
       {
-        case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF;  break;
-        case GROUPDOC_ADD:    return Grouping::GROUPING_AUTO_ADD;  break;
-        case GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK; break;
+        case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF;
+        case GROUPDOC_ADD:    return Grouping::GROUPING_AUTO_ADD;
+        case GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK;
         default: return Grouping::GROUPING_LOWEST;
       }
     }

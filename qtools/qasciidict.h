@@ -71,8 +71,19 @@ public:
     void  resize( uint n )		{ QGDict::resize(n); }
     void  statistics() const		{ QGDict::statistics(); }
 private:
-    void  deleteItem( Item d )		{ if ( del_item ) delete (type *)d; }
+    void  deleteItem( Item d );
 };
+
+#if defined(Q_DELETING_VOID_UNDEFINED)
+template<> inline void QAsciiDict<void>::deleteItem( Item )
+{
+}
+#endif
+
+template<class type> inline void QAsciiDict<type>::deleteItem( QCollection::Item d )
+{
+    if ( del_item ) delete (type *)d;
+}
 
 
 template<class type> class Q_EXPORT QAsciiDictIterator : public QGDictIterator

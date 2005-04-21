@@ -523,8 +523,10 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   while (!g_condStack.isEmpty())
   {
     CondCtx *ctx = g_condStack.pop();
-    warn(g_fileName,ctx->lineNr,"Conditional section with %s does not have "
-	"a corresponding \\endcond command within this file.",ctx->sectionId.data());
+    QCString sectionInfo = " ";
+    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label %s ",ctx->sectionId.data()); 
+    warn(g_fileName,ctx->lineNr,"Conditional section%sdoes not have "
+	"a corresponding \\endcond command within this file.",sectionInfo.data());
   }
   if (Debug::isFlagSet(Debug::CommentCnv))
   {

@@ -713,7 +713,7 @@ void DotNode::writeArrow(QTextStream &t,
     << "\",fontsize=10,style=\"" << edgeStyleMap[ei->m_style] << "\"";
   if (!ei->m_label.isEmpty())
   {
-    t << ",label=\"" << ei->m_label << "\"";
+    t << ",label=\"" << convertLabel(ei->m_label) << "\"";
   }
   if (Config_getBool("UML_LOOK") &&
       arrowStyle[ei->m_color] && 
@@ -3217,7 +3217,7 @@ void DotGroupCollaboration::Edge::write( QTextStream &t, int& )
     for( lli.toFirst(); (link=lli.current()); ++lli)
     {
       if (first) first=FALSE; else t << "\\n"; 
-      t << link->label;
+      t << convertLabel(link->label);
     }
     t << "\"";
 

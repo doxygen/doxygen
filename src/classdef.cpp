@@ -1856,8 +1856,11 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
  */
 bool ClassDef::hasNonReferenceSuperClass()
 {
-  bool found=!isReference(); 
-  if (found) return TRUE; // we're done if this class is not a reference
+  bool found=!isReference() && isLinkableInProject(); 
+  if (found) 
+  {
+    return TRUE; // we're done if this class is not a reference
+  }
   BaseClassListIterator bcli(*m_inheritedBy);
   for ( ; bcli.current() && !found ; ++bcli ) // for each super class
   {
@@ -2879,6 +2882,7 @@ void ClassDef::getTemplateParameterLists(QList<ArgumentList> &lists) const
 QCString ClassDef::qualifiedNameWithTemplateParameters(
     QList<ArgumentList> *actualParams) const
 {
+  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
   QCString scName;
   Definition *d=getOuterScope();
@@ -2896,7 +2900,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   }
 
   QCString scopeSeparator;
-  if (Config_getBool("OPTIMIZE_OUTPUT_JAVA")) 
+  if (optimizeOutputJava)
     scopeSeparator=".";
   else
     scopeSeparator="::";
