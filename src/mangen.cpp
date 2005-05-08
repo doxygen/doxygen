@@ -372,7 +372,8 @@ void ManGenerator::startMemberDoc(const char *,const char *,const char *,const c
 }
 
 void ManGenerator::startDoxyAnchor(const char *,const char *manName,
-                                   const char *, const char *name)
+                                   const char *, const char *name,
+                                   const char *)
 {
     // something to be done?
     if( !Config_getBool("MAN_LINKS") ) 

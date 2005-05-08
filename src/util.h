@@ -231,6 +231,9 @@ QCString stripPath(const char *s);
 bool containsWord(const QCString &s,const QCString &word);
 bool findAndRemoveWord(QCString &s,const QCString &word);
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s);
+void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
+                         const QCString &str, bool priority=FALSE,
+                         const QCString &anchor="");
 
 #endif
 

@@ -332,6 +332,12 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorLithuanian;
   }
 #endif
+#ifdef LANG_ZA
+  else if (L_EQUAL("afrikaans"))
+  {
+    theTranslator=new TranslatorAfrikaans;
+  }
+#endif
 #endif // ENGLISH_ONLY
   else // use the default language (i.e. english)
   {

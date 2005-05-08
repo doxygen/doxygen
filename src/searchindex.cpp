@@ -80,20 +80,22 @@ static int charsToIndex(const char *word)
 {
   if (word==0) return -1;
 
-  register ushort h=0;
-  const char *k = word;
-  ushort mask=0xfc00;
-  while ( *k ) 
-  {
-    h = (h&mask)^(h<<6)^(*k++);
-  }
+  // Fast string hashing algorithm
+  //register ushort h=0;
+  //const char *k = word;
+  //ushort mask=0xfc00;
+  //while ( *k ) 
+  //{
+  //  h = (h&mask)^(h<<6)^(*k++);
+  //}
+  //return h;
 
-  //uint c1=word[0];
-  //if (c1==0) return -1;
-  //uint c2=word[1];
-  //if (c2==0) return -1;
-  //return c1*256+c2;
-  return h;
+  // Simple hashing that allows for substring searching
+  uint c1=word[0];
+  if (c1==0) return -1;
+  uint c2=word[1];
+  if (c2==0) return -1;
+  return c1*256+c2;
 }
 
 void SearchIndex::addWord(const char *word,bool hiPriority)

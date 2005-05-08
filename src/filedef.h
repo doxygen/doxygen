@@ -86,12 +86,10 @@ class FileDef : public Definition
     QCString getFileBase() const
     { return diskname; }
 
-    QCString getSourceFileBase() const
-    { return convertNameToFile(diskname+"-source"); }
+    QCString getSourceFileBase() const;
     
     /*! Returns the name of the verbatim copy of this file (if any). */
-    QCString includeName() const 
-    { return convertNameToFile(diskname+"-source"); }
+    QCString includeName() const;
     
     /*! Returns the absolute path including the file name. */
     QCString absFilePath() const { return filepath; }

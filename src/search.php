@@ -21,24 +21,26 @@ function readHeader($file)
 
 function computeIndex($word)
 {
-  $lword = strtolower($word);
-  $l = strlen($lword);
-  for ($i=0;$i<$l;$i++)
-  {
-    $c = ord($lword{$i});
-    $v = (($v & 0xfc00) ^ ($v << 6) ^ $c) & 0xffff;
-  }
-  return $v;
+  // Fast string hashing
+  //$lword = strtolower($word);
+  //$l = strlen($lword);
+  //for ($i=0;$i<$l;$i++)
+  //{
+  //  $c = ord($lword{$i});
+  //  $v = (($v & 0xfc00) ^ ($v << 6) ^ $c) & 0xffff;
+  //}
+  //return $v;
 
-  //if (strlen($word)<2) return -1;
+  // Simple hashing that allows for substring search
+  if (strlen($word)<2) return -1;
   // high char of the index
-  //$hi = ord($word{0});
-  //if ($hi==0) return -1;
+  $hi = ord($word{0});
+  if ($hi==0) return -1;
   // low char of the index
-  //$lo = ord($word{1});
-  //if ($lo==0) return -1;
+  $lo = ord($word{1});
+  if ($lo==0) return -1;
   // return index
-  //return $hi*256+$lo;
+  return $hi*256+$lo;
 }
 
 function search($file,$word,&$statsList)
@@ -48,7 +50,7 @@ function search($file,$word,&$statsList)
   {
     fseek($file,$index*4+4); // 4 bytes per entry, skip header
     $index = readInt($file);
-    if ($index) // found words matching first two characters
+    if ($index) // found words matching the hash key
     {
       $start=sizeof($statsList);
       $count=$start;

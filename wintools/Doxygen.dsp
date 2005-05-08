@@ -201,6 +201,10 @@ SOURCE=..\src\groupdef.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\htags.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\htmldocvisitor.cpp
 # End Source File
 # Begin Source File

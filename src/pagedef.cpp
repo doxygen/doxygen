@@ -5,6 +5,7 @@
 #include "util.h"
 #include "outputlist.h"
 #include "doxygen.h"
+#include "language.h"
 
 
 PageDef::PageDef(const char *f,int l,const char *n,
@@ -77,6 +78,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     ol.startSection(si->label,si->title,si->type);
     ol.docify(si->title);
+    stringToSearchIndex(getOutputFileBase(),
+                        theTranslator->trPage(TRUE,TRUE)+" "+si->title,
+                        si->title);
     ol.endSection(si->label,si->type);
   }
   ol.startTextBlock();
@@ -115,6 +119,31 @@ void PageDef::writeDocumentation(OutputList &ol)
       Doxygen::tagFile << "  </compound>" << endl;
     }
   }
+}
+
+bool PageDef::visibleInIndex() const
+{
+   return // not part of a group
+          !getGroupDef() && 
+          // not an externally defined page
+          (!isReference() || Config_getBool("ALLEXTERNALS")) &&
+          // not a subpage
+          (getOuterScope()==0 || 
+           getOuterScope()->definitionType()!=Definition::TypePage
+          );
+}
+
+bool PageDef::documentedPage() const
+{
+   return // not part of a group
+          !getGroupDef() && 
+          // not an externally defined page
+          !isReference();
+}
+
+bool PageDef::hasSubPages() const
+{
+  return subPageDict->count()>0;
 }
 
 

@@ -434,6 +434,8 @@ void NamespaceDef::writeMemberPages(OutputList &ol)
 
 void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 {
+  static bool createSubDirs=Config_getBool("CREATE_SUBDIRS");
+
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
@@ -455,6 +457,7 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
           ol.writeString("<a class=\"qindex\" ");
         }
         ol.writeString("href=\"");
+        if (createSubDirs) ol.writeString("../../");
         ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(md->localName());

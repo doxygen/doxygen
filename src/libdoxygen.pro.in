@@ -47,6 +47,7 @@ HEADERS      =	bufstr.h \
 		formula.h \
 		ftvhelp.h \
 		groupdef.h \
+		htags.h \
 		htmlattrib.h \
                 htmldocvisitor.h \
 		htmlgen.h \
@@ -150,6 +151,7 @@ SOURCES      =	ce_lex.cpp \
 		formula.cpp \
 		ftvhelp.cpp \
 		groupdef.cpp \
+		htags.cpp \
                 htmldocvisitor.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \

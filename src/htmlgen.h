@@ -136,7 +136,8 @@ class HtmlGenerator : public OutputGenerator
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(bool); 
     void startDoxyAnchor(const char *fName,const char *manName,
-                         const char *anchor,const char *name);
+                         const char *anchor,const char *name,
+                         const char *args);
     void endDoxyAnchor(const char *fName,const char *anchor);
     void startCodeAnchor(const char *label) { t << "<a name=\"" << label << "\"></a>"; }
     void endCodeAnchor() { }

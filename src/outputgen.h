@@ -323,7 +323,8 @@ class OutputGenerator : public BaseOutputDocInterface
                                 const char *,const char *) = 0;
     virtual void endMemberDoc(bool) = 0;
     virtual void startDoxyAnchor(const char *fName,const char *manName,
-                                 const char *anchor,const char *name) = 0;
+                                 const char *anchor,const char *name,
+                                 const char *args) = 0;
     virtual void endDoxyAnchor(const char *fileName,const char *anchor) = 0;
     virtual void writeLatexSpacing() = 0;
     virtual void writeStartAnnoItem(const char *type,const char *file,

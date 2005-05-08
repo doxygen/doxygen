@@ -1133,7 +1133,8 @@ void LatexGenerator::endMemberDoc(bool)
 }
 
 void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
-                                     const char *anchor, const char *)
+                                     const char *anchor, const char *,
+                                     const char *)
 {
   if (Config_getBool("PDF_HYPERLINKS"))
   {

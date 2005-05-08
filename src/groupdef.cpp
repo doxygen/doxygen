@@ -218,7 +218,14 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
             md->getOuterScope()->definitionType()==Definition::TypeFile); 
       
       if (srcMd->isFunction() && md->isFunction() && 
+#ifdef NEWMATCH
+          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->argumentList(),
+                          md->getOuterScope(),md->getFileDef(),md->argumentList(),
+                          TRUE
+                         ) &&
+#else
           matchArguments(srcMd->argumentList(),md->argumentList()) &&
+#endif
           sameScope
          )
       {
@@ -754,6 +761,8 @@ void GroupDef::writeMemberPages(OutputList &ol)
 
 void GroupDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 {
+  static bool createSubDirs=Config_getBool("CREATE_SUBDIRS");
+
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
@@ -775,6 +784,7 @@ void GroupDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
           ol.writeString("<a class=\"qindex\" ");
         }
         ol.writeString("href=\"");
+        if (createSubDirs) ol.writeString("../../");
         ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(md->localName());
@@ -878,7 +888,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
         (gd=Doxygen::groupSDict[g->groupname]) &&
 	g->pri >= pri)
     {
-      if (fgd && g->pri==pri) 
+      if (fgd && gd!=fgd && g->pri==pri) 
       {
          warn(root->fileName.data(), root->startLine,
            "Warning: Member %s found in multiple %s groups! "

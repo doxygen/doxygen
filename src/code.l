@@ -461,6 +461,11 @@ static void startCodeLine()
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
+      g_type.resize(0);
+      g_name.resize(0);
+      g_args.resize(0);
+      g_parmType.resize(0);
+      g_parmName.resize(0);
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       QCString lineAnchor;
@@ -2260,6 +2265,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					      g_theCallContext.pushScope();
 					    }
 					    g_args.resize(0);
+                                            g_parmType.resize(0);
+                                            g_parmName.resize(0);
 					  }
   					}
   /*
@@ -2427,6 +2434,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <MemberCall2,FuncCall>{OPERATOR}        { // operator
   					  if (strcmp(yytext,"*") && strcmp(yytext,"&")) // typically a pointer or reference
 					  {
+					    // not a * or &
 					    g_parmType.resize(0);g_parmName.resize(0);
 					  }
   					  g_code->codify(yytext);

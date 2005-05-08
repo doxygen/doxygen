@@ -123,4 +123,6 @@ void readConfiguration(int argc, char **argv);
 void parseInput();
 void generateOutput();
 
+#define NEWMATCH
+
 #endif

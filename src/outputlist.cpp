@@ -258,6 +258,18 @@ void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4),a1,a2,a3,a4) 
   }                                                                             \
 }                     
 
+// five arguments
+#define FORALL5(a1,a2,a3,a4,a5,p1,p2,p3,p4,p5)                                        \
+void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5),a1,a2,a3,a4,a5) \
+{                                                                                     \
+  OutputGenerator *og=outputs->first();                                               \
+  while (og)                                                                          \
+  {                                                                                   \
+    if (og->isEnabled()) (og->*func)(p1,p2,p3,p4,p5);                                 \
+    og=outputs->next();                                                               \
+  }                                                                                   \
+}                     
+
 // now instantiate only the ones we need.
 
 FORALL1(const char *a1,a1)
@@ -293,6 +305,7 @@ FORALL3(uchar a1,uchar a2,uchar a3,a1,a2,a3)
 FORALL4(SectionTypes a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
 FORALL4(const char *a1,const char *a2,const char *a3,const char *a4,a1,a2,a3,a4)
 FORALL4(const char *a1,const char *a2,const char *a3,int a4,a1,a2,a3,a4)
+FORALL5(const char *a1,const char *a2,const char *a3,const char *a4,const char *a5,a1,a2,a3,a4,a5)
 
 
 //--------------------------------------------------------------------------

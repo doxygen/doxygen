@@ -866,6 +866,11 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
     {
+      if (member->isObjCMethod()) 
+      {
+        bool localLink = g_memberDef ? member->getClassDef()==g_memberDef->getClassDef() : FALSE;
+        name = member->objCMethodName(localLink,g_inSeeBlock);
+      }
       children.append(new 
           DocLinkedWord(parent,name,
             member->getReference(),
@@ -929,7 +934,11 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   }
   else // normal non-linkable word
   {
-    children.append(new DocWord(parent,g_token->name));
+    if (g_token->name.at(0)=='#')
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: explicit link request to '%s' could not be resolved",name.data());
+    }
+    children.append(new DocWord(parent,name));
   }
 }
 
@@ -1914,7 +1923,6 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict[target];
-  //printf("DocRef::DocRef(target=%s) sec=%p\n",target.data(),sec);
   if (sec) // ref to section or anchor
   {
     m_text         = sec->title;
@@ -1943,7 +1951,15 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
           ((GroupDef *)compound)->groupTitle()                 /* with title */
          )
       {
-        m_text=((GroupDef *)compound)->groupTitle(); // use group's title as l
+        m_text=((GroupDef *)compound)->groupTitle(); // use group's title as link
+      }
+      else if (compound->definitionType()==Definition::TypeMember &&
+          ((MemberDef*)compound)->isObjCMethod())
+      {
+        // Objective C Method
+        MemberDef *member = (MemberDef*)compound;
+        bool localLink = g_memberDef ? member->getClassDef()==g_memberDef->getClassDef() : FALSE;
+        m_text = member->objCMethodName(localLink,g_inSeeBlock);
       }
 
       m_file = compound->getOutputFileBase();

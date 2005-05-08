@@ -471,7 +471,7 @@ class TranslatorEnglish : public Translator
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return "Enumeration values"; }
+    { return "Enumerator"; }
     
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
@@ -501,7 +501,7 @@ class TranslatorEnglish : public Translator
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Enumeration Value Documentation"; }
+    { return "Enumerator Documentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions

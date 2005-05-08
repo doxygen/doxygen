@@ -46,6 +46,9 @@ class PageDef : public Definition
     PageSDict * getSubPages() const { return subPageDict; }
     void setFileName(const char *name) { m_fileName = name; }
     void addInnerCompound(Definition *d);
+    bool visibleInIndex() const;
+    bool documentedPage() const;
+    bool hasSubPages() const;
 
   private:
     QCString m_fileName;

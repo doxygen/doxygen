@@ -91,6 +91,7 @@ static QCString  memberRef;
 static QCString  memberName;
 static QCString  memberArgs;
 static QCString  className;
+static QCString  baseName;
 static QCString  docBaseLink;
 static QCString  docAnchor;
 static QCString  docRefName;
@@ -119,6 +120,7 @@ static void addClass(const char *clName)
 {
   if (classDict[clName]==0)
   {
+    //printf("addClass(%s)\n",clName);
     ClassDef *cd=new ClassDef;
     cd->name=clName;
     cd->fileName=yyFileName;
@@ -149,13 +151,22 @@ static void addBases(const char *clName)
 
 static void addMember(const char *memName,const char *memRef,const char *memArgs)
 {
+  //printf("addMember(%s,%s,%s)\n",memName,memRef,memArgs);
   ClassDef *cd=classList.last();
-  MemberDef *md;
-  md=new MemberDef;
-  md->name=memName;
-  md->anchor=memRef; 
-  md->args=memArgs;
-  cd->memberList.append(md);
+  if (cd)
+  {
+    MemberDef *md;
+    md=new MemberDef;
+    md->name=memName;
+    md->anchor=memRef; 
+    md->args=memArgs;
+    cd->memberList.append(md);
+  }
+  else
+  {
+    //printf("Warning: found member %s %s but not class was found to insert it!\n",
+    //	memName,memArgs);
+  }
 }
 
 static void addReference()
@@ -214,12 +225,25 @@ QCString unhtmlify(const char *str)
 %x CheckConstructor
 %x SkipPreformated
 
+%x Qt3ReadType
+%x Qt3ReadAnchor
+%x Qt3ReadName
+%x Qt3ReadOperator
+%x Qt3ReadArgs
+
+%x DoxReadAnchor
+%x DoxReadName
+%x DoxReadArgs
+%x DoxClassName
+%x DoxClassBase
+
 %%
 
 <Start>^"<li>"  		   { 
 				     BEGIN( SearchClassFile );
 				   } 
-<Start>^"<td"[^\n]*"<h1 align=center>" | // Qt-3.x.x+
+<Start>^"<td"[^\n]*"<h1 align=center>" | // Qt-3.x.x
+<Start>"</table><h1 align=\"center\">" | // Qt-4
 <Start>^"<h1 align=center>"	   { // Qt variant
   				     BEGIN( ReadClassName );
 			           }
@@ -233,6 +257,207 @@ QCString unhtmlify(const char *str)
 <Start>^"<h3 class=\"fn\">"/[a-z_A-Z0-9] { // needed due to inconsistency in the Qt docs
   				     BEGIN( CheckConstructor );
 				   }
+
+  /* --------------------------------------------------- */
+  /*               Qt member extraction rules            */
+
+<Start>^"<h3 class=fn>"		   {
+  				     BEGIN( Qt3ReadType );
+  				   }
+<Start>^"<h3 class=fn><a name=\""   { // Qt-3.3+ html file
+  				     BEGIN( Qt3ReadAnchor );
+  				   }
+<Start>^"<h3 class=\"fn\"><a name=\""   { // Qt-4 html file
+  				     BEGIN( Qt3ReadAnchor );
+  				   }
+<Qt3ReadType>"<a name=\""	   {
+  				     BEGIN( Qt3ReadAnchor );
+  				   }
+<Qt3ReadType>.
+<Qt3ReadAnchor>[~a-z_A-Z0-9\-\[\]*+%\^&|!]+	   { 
+  				     memberRef = yytext;
+  				   }
+<Qt3ReadAnchor>"\"></a>"	   {
+  				     BEGIN( Qt3ReadName );
+  				   }
+<Qt3ReadAnchor>.		   {
+  				     BEGIN( Start );
+  				   }
+<Qt3ReadName>[a-z_A-Z0-9]+"::operator"  {
+  				     memberName="operator";
+				     BEGIN(Qt3ReadOperator);
+				   }
+<Qt3ReadOperator>[+\-*/%\^&|~!=\[\]]+ { memberName+=yytext; } 
+<Qt3ReadOperator>"&lt;"		      { memberName+="<"; }
+<Qt3ReadOperator>"&gt;"		      { memberName+=">"; }
+<Qt3ReadOperator>"new"		      { memberName+=" new"; }
+<Qt3ReadOperator>"delete"	      { memberName+=" delete"; }
+<Qt3ReadOperator>"()"                 { memberName+="()"; BEGIN( Qt3ReadArgs ); }
+<Qt3ReadOperator>.                    { unput(*yytext); BEGIN( Qt3ReadArgs ); }
+<Qt3ReadName>[a-z_A-Z0-9]+"::"[~a-z_A-Z0-9]+  {
+				     memberName=yytext;
+				     memberName=memberName.mid(memberName.find("::")+2);
+				     BEGIN(Qt3ReadArgs);
+  				   }
+<Qt3ReadName>.
+<Qt3ReadArgs>[ \t]*"("		   {
+  				     memberArgs+="(";
+  				   }
+<Qt3ReadArgs>"&amp;"		   { memberArgs+="&"; }
+<Qt3ReadArgs>"&lt;"		   { memberArgs+="<"; }
+<Qt3ReadArgs>"&gt;"		   { memberArgs+=">"; }
+<Qt3ReadArgs>"&nbsp;"		   { memberArgs+=" "; }
+<Qt3ReadArgs>"</h3>"		   { 
+                                     addMember(memberName,memberRef,memberArgs);
+                                     memberName.resize(0);
+                                     memberRef.resize(0);
+                                     memberArgs.resize(0);
+  				     BEGIN(Start);
+                                   }
+<Qt3ReadArgs>"<"[^>]+">"
+<Qt3ReadArgs>")"		   {
+  				     memberArgs+=")";
+				     addMember(memberName,memberRef,memberArgs);
+                                     memberName.resize(0);
+                                     memberRef.resize(0);
+                                     memberArgs.resize(0);
+				     BEGIN(Start);
+                                   }
+<Qt3ReadArgs>[a-z_A-Z0-9]+	   { memberArgs+=yytext; }
+<Qt3ReadArgs>.			   { memberArgs+=*yytext; }
+
+  /* --------------------------------------------------- */
+  /*          Doxygen class extraction rules             */
+
+<Start>"<!-- doxytag: class=<"	   {
+  				     className.resize(0);
+  				     BEGIN(DoxClassName);
+  				   }
+<DoxClassName>[^&>]+		   {
+  				     className=yytext;
+				     addClass(className);
+  				   }
+<DoxClassName>"&lt;"		   {
+  				     className+="<";
+  				   }
+<DoxClassName>"&gt;"		   {
+  				     className+=">";
+  				   }
+<DoxClassName>"&amp;"		   {
+  				     className+="&";
+  				   }
+<DoxClassName>.			   {
+  				     className+=*yytext;
+				   }
+<DoxClassName>"> -->"		   {
+  				     BEGIN(Start);
+  				   }
+
+  /* --------------------------------------------------- */
+  /*          Doxygen inheritance extraction rules       */
+
+<Start>"<!-- doxytag: inherits=<"  {
+                                     bases.clear();
+				     baseName.resize(0);
+				     BEGIN(DoxClassBase);
+                                   }
+<DoxClassBase>[^&,>]+		   {
+  				     baseName+=yytext;
+  				   }
+<DoxClassBase>","		   {
+  				     bases.append(baseName);
+				     baseName.resize(0);
+  				   }
+<DoxClassBase>"&lt;"		   {
+  				     baseName+="<";
+  				   }
+<DoxClassBase>"&gt;"		   {
+  				     baseName+=">";
+  				   }
+<DoxClassBase>"&amp;"		   {
+  				     baseName+="&";
+  				   }
+<DoxClassBase>.			   {
+  				     baseName+=*yytext;
+				   }
+<DoxClassBase>"> -->"		   {
+  				     bases.append(baseName);
+				     baseName.resize(0);
+				     addBases(className);
+  				     BEGIN(Start);
+  				   }
+
+  /* --------------------------------------------------- */
+  /*          Doxygen member extraction rules            */
+
+<Start>"<!-- doxytag: member=<"    {
+  				     memberName.resize(0);
+  				     BEGIN(DoxReadName);
+  				   }
+<DoxReadName>[^&>]+		   {
+  				     memberName+=yytext;
+  				   }
+<DoxReadName>"&lt;"		   {
+  				     memberName+="<";
+  				   }
+<DoxReadName>"&gt;"		   {
+  				     memberName+=">";
+  				   }
+<DoxReadName>"&amp;"		   {
+  				     memberName+="&";
+  				   }
+<DoxReadName>.		   	   {
+  				     memberName+=*yytext;
+  				   }
+<DoxReadName>"> ref=<"		   {
+				     memberName=memberName.mid(memberName.find("::")+2);
+				     memberRef.resize(0);
+  				     BEGIN(DoxReadAnchor);
+  				   }
+<DoxReadAnchor>[^&>]+	   	   {
+  				     memberRef+=yytext;
+  				   }
+<DoxReadAnchor>"&lt;"		   {
+  				     memberRef+="<";
+  				   }
+<DoxReadAnchor>"&gt;"		   {
+  				     memberRef+=">";
+  				   }
+<DoxReadAnchor>"&amp;"		   {
+  				     memberRef+="&";
+  				   }
+<DoxReadAnchor>.		   {
+  				     memberRef+=*yytext;
+  				   }
+<DoxReadAnchor>"> args=<"	   {
+  				     memberArgs.resize(0);
+  				     BEGIN(DoxReadArgs);
+  				   }
+<DoxReadArgs>[^&>]+		   {
+  				     memberArgs+=yytext;
+  				   }
+<DoxReadArgs>"&lt;"		   {
+  				     memberArgs+="<";
+  				   }
+<DoxReadArgs>"&gt;"		   {
+  				     memberArgs+=">";
+  				   }
+<DoxReadArgs>"&amp;"		   {
+  				     memberArgs+="&";
+  				   }
+<DoxReadArgs>.                     {
+  				     memberArgs+=*yytext;
+  				   }
+<DoxReadArgs>"> -->"		   {
+                                     addMember(memberName,memberRef,memberArgs);
+                                     memberName.resize(0);
+                                     memberRef.resize(0);
+                                     memberArgs.resize(0);
+  				     BEGIN(Start);
+                                   }
+
+  /** --------------------------------------------------- */
+
 <Start>"<pre>"			   { 
   				     BEGIN( SkipPreformated );
 				   }
@@ -353,7 +578,8 @@ QCString unhtmlify(const char *str)
 				     {
 				       classFile=yyFileName;
 				     }
-				     BEGIN( ReadMemberRef );
+				     //BEGIN( ReadMemberRef );
+				     BEGIN( Start );
 				   }
 <ReadMemberRef>[a-z_A-Z0-9]+	   {
 				     memberRef=yytext;
@@ -410,7 +636,9 @@ QCString unhtmlify(const char *str)
 				     //  addClass(className);
 				     //}
 				     addMember(memberName,memberRef,memberArgs);
-				     memberArgs.resize(0);
+                                     memberName.resize(0);
+                                     memberRef.resize(0);
+                                     memberArgs.resize(0);
 				     if (*yytext=='<')
 				       BEGIN( SkipHTMLTag);
 				     else
@@ -446,7 +674,7 @@ void parse(QCString &s)
 
 void parseFile(QFileInfo &fi)
 {
-  fprintf(stderr,"Parsing file %s...\n",fi.fileName().data());
+  printf("Parsing file %s...\n",fi.fileName().data());
   QFile f;
   f.setName(fi.absFilePath());
   if (f.open(IO_ReadOnly))
@@ -651,7 +879,14 @@ int main(int argc,char **argv)
 	MemberDef *md=cd->memberList.first();
 	while (md)
 	{
-	  t << "    <member kind=\"function\">" << endl;
+	  if (md->anchor.right(5)=="-enum")
+	  {
+	    t << "    <member kind=\"enum\">" << endl;
+	  }
+	  else
+	  {
+	    t << "    <member kind=\"function\">" << endl;
+	  }
 	  t << "      <name>" << convertToXML(md->name) << "</name>" << endl;
 	  t << "      <anchor>" << convertToXML(md->anchor) << "</anchor>" << endl;
 	  t << "      <arglist>" << convertToXML(md->args) << "</arglist>" << endl;

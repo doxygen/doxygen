@@ -101,7 +101,7 @@ public:
     bool  remove( const char *k )
 			{ return QGCache::remove_other(k); }
     type *take( const char *k )
-			{ return (type *)QGCache::take_ascii(k); }
+			{ return (type *)QGCache::take_other(k); }
     type *find( const char *k, bool ref=TRUE ) const
 			{ return (type *)QGCache::find_other(k,ref);}
     type *operator[]( const char *k ) const

@@ -31,6 +31,8 @@
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3),arg1,arg2,arg3)
 #define FORALLPROTO4(arg1,arg2,arg3,arg4) \
   void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4),arg1,arg2,arg3,arg4)
+#define FORALLPROTO5(arg1,arg2,arg3,arg4,arg5) \
+  void forall(void (OutputGenerator::*func)(arg1,arg2,arg3,arg4,arg5),arg1,arg2,arg3,arg4,arg5)
   
 class ClassDiagram;
 class DotClassGraph;
@@ -217,8 +219,9 @@ class OutputList : public OutputDocInterface
     void endMemberDoc(bool hasArgs) 
     { forall(&OutputGenerator::endMemberDoc,hasArgs); }
     void startDoxyAnchor(const char *fName,const char *manName,
-                         const char *anchor, const char *name)
-    { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name); }
+                         const char *anchor, const char *name,
+                         const char *args)
+    { forall(&OutputGenerator::startDoxyAnchor,fName,manName,anchor,name,args); }
     void endDoxyAnchor(const char *fn,const char *anchor)
     { forall(&OutputGenerator::endDoxyAnchor,fn,anchor); }
     void startCodeAnchor(const char *label)
@@ -423,6 +426,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);
+    FORALLPROTO5(const char *,const char *,const char *,const char *,const char *);
   
     OutputList(const OutputList &ol);
     QList<OutputGenerator> *outputs;

@@ -31,6 +31,7 @@
 #include "groupdef.h"
 #include "pagedef.h"
 #include "section.h"
+#include "htags.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -368,7 +369,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     {
       QCString lineStr,anchorStr;
       lineStr.sprintf("%d",m_startBodyLine);
-      anchorStr.sprintf("l%05d",m_startBodyLine);
+      anchorStr.sprintf(Htags::useHtags ? "%d" : "l%05d",m_startBodyLine);
       ol.newParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
@@ -584,9 +585,11 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 bool Definition::hasDocumentation() const
 { 
   static bool extractAll = Config_getBool("EXTRACT_ALL"); 
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
   return !m_doc.isEmpty() ||             // has detailed docs
          !m_brief.isEmpty() ||           // has brief description
-         extractAll;                     // extract everything
+         extractAll ||                   // extract everything
+         (sourceBrowser && m_startBodyLine!=-1 && m_bodyDef); // link to definition
 }
 
 void Definition::addSourceReferencedBy(MemberDef *md)
@@ -783,7 +786,7 @@ void Definition::writePathFragment(OutputList &ol) const
     else
     {
       ol.writeString("&nbsp;");
-      ol.writeString("/");
+      ol.writeString("&raquo");
       ol.writeString("&nbsp;");
     }
   }
