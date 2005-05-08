@@ -56,7 +56,7 @@ tools should be installed.
     <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
     \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
     \addindex Qt
-    version 2 or higher.
+    version 3.2 or higher.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>

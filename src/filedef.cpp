@@ -32,7 +32,7 @@
 #include "docparser.h"
 #include "ftvhelp.h"
 #include "searchindex.h"
-//#include "xml.h"
+#include "htags.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -583,6 +583,8 @@ void FileDef::writeMemberPages(OutputList &ol)
 
 void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 {
+  static bool createSubDirs=Config_getBool("CREATE_SUBDIRS");
+
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
@@ -604,6 +606,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
           ol.writeString("<a class=\"qindex\" ");
         }
         ol.writeString("href=\"");
+        if (createSubDirs) ol.writeString("../../");
         ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(md->localName());
@@ -1253,4 +1256,29 @@ void FileDef::acquireFileVersion()
   }
 }
 
+
+QCString FileDef::getSourceFileBase() const
+{ 
+  if (Htags::useHtags)
+  {
+    return Htags::path2URL(filepath);
+  }
+  else
+  {
+    return convertNameToFile(diskname+"-source"); 
+  }
+}
+
+/*! Returns the name of the verbatim copy of this file (if any). */
+QCString FileDef::includeName() const 
+{ 
+  if (Htags::useHtags)
+  {
+    return Htags::path2URL(filepath);
+  }
+  else
+  {
+    return convertNameToFile(diskname+"-source"); 
+  }
+}
 

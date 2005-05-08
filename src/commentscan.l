@@ -545,6 +545,19 @@ static void addSection()
 
 //-----------------------------------------------------------------------------
 
+// strip trailing whitespace (excluding newlines) from string s
+static void stripTrailingWhiteSpace(QCString &s)
+{
+  uint len = s.length();
+  int i = (int)len-1;
+  char c;
+  while (i>=0 && ((c = s.at(i))==' ' || c=='\t' || c=='\r')) i--;
+  if (i!=(int)len-1) 
+  {
+    s.resize(i+2); // string upto and including char at pos i and \0 terminator
+  }
+}
+
 // selects the output to write to
 static inline void setOutput(OutputContext ctx)
 {
@@ -610,6 +623,7 @@ static inline void setOutput(OutputContext ctx)
   switch(inContext)
   {
     case OutputDoc:
+      stripTrailingWhiteSpace(current->doc);
       if (current->docFile.isEmpty())
       {
         current->docFile = yyFileName;
@@ -842,7 +856,7 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  addOutput(yytext[2]);
   					}
 <Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
-  					  if (inContext)
+  					  if (inContext==OutputBrief)
 					  {
 					    setOutput(OutputDoc);
 					  }

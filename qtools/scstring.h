@@ -64,6 +64,7 @@ public:
     int		contains( char c, bool cs=TRUE ) const;
     int		contains( const char *str, bool cs=TRUE ) const;
     int		contains( const QRegExp & ) const;
+    bool        stripPrefix(const char *prefix);
 
     SCString	left( uint len )  const;
     SCString	right( uint len ) const;

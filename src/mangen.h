@@ -139,7 +139,7 @@ class ManGenerator : public OutputGenerator
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(bool);
-    void startDoxyAnchor(const char *,const char *,const char *,const char *);
+    void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *) {}
     void startCodeAnchor(const char *) {}
     void endCodeAnchor() {}

@@ -106,6 +106,7 @@ class MemberDef : public Definition
     int getGroupStartLine() const            { return groupStartLine; }
     bool getGroupHasDocs() const             { return groupHasDocs; }
     QCString qualifiedName();
+    QCString objCMethodName(bool localLink,bool showStatic) const; 
 
     // direct kind info 
     Protection protection() const         { return prot; }

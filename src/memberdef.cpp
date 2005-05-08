@@ -333,10 +333,10 @@ MemberDef::MemberDef(const char *df,int dl,
   m_hasCallGraph = FALSE;
   initLines=0;
   type=t;
-  if (mt==Typedef && type.left(8)=="typedef ") type=type.mid(8);
-  if (type.left(7)=="struct ") type=type.right(type.length()-7);
-  if (type.left(6)=="class " ) type=type.right(type.length()-6);
-  if (type.left(6)=="union " ) type=type.right(type.length()-6);
+  if (mt==Typedef) type.stripPrefix("typedef ");
+  type.stripPrefix("struct ");
+  type.stripPrefix("class " );
+  type.stripPrefix("union " );
   type=removeRedundantWhiteSpace(type);
 
   args=a;
@@ -637,7 +637,7 @@ bool MemberDef::isLinkableInProject() const
     //printf("in a namespace but namespace not linkable!\n");
     return FALSE; // in namespace but namespace not linkable
   }
-  if (!group && !nspace && !related && fileDef && !fileDef->isLinkableInProject()) 
+  if (!group && !nspace && !related && !classDef && fileDef && !fileDef->isLinkableInProject()) 
   {
     //printf("in a file but file not linkable!\n");
     return FALSE; // in file (and not in namespace) but file not linkable
@@ -685,6 +685,10 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
   QCString n = name();
   if (classDef && gd) n.prepend(classDef->name()+sep);
   else if (nspace && (gd || fd)) n.prepend(nspace->name()+sep);
+  if (isObjCMethod())
+  {
+    if (isStatic()) ol.docify("+ "); else ol.docify("- ");
+  }
   if (!onlyText) // write link
   {
     ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
@@ -717,7 +721,7 @@ ClassDef *MemberDef::getClassDefOfAnonymousType()
   // strip `static' keyword from ltype
   //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip `friend' keyword from ltype
-  if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
+  ltype.stripPrefix("friend ");
   static QRegExp r("@[0-9]+");
   int l,i=r.match(ltype,0,&l);
   //printf("ltype=`%s' i=%d\n",ltype.data(),i);
@@ -943,7 +947,8 @@ void MemberDef::writeDeclaration(OutputList &ol,
   {
     QCString doxyName=name().copy();
     if (!cname.isEmpty()) doxyName.prepend(cname+"::");
-    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName);
+    QCString doxyArgs=argsString();
+    ol.startDoxyAnchor(cfname,cname,anchor(),doxyName,doxyArgs);
 
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Man);
@@ -973,7 +978,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   QCString ltype(type);
   if (mtype==Typedef) ltype.prepend("typedef ");
   // strip `friend' keyword from ltype
-  if (ltype.left(7)=="friend ") ltype=ltype.right(ltype.length()-7);
+  ltype.stripPrefix("friend ");
   static QRegExp r("@[0-9]+");
 
   bool endAnonScopeNeeded=FALSE;
@@ -1308,6 +1313,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString doxyName=name().copy();
   // prepend scope if there is any. TODO: make this optional for C only docs
   if (scopeName) doxyName.prepend((QCString)scopeName+"::");
+  QCString doxyArgs=argsString();
 
   QCString ldef = definition();
   //printf("member `%s' def=`%s'\n",name().data(),ldef.data());
@@ -1340,7 +1346,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
-        ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+        ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(cname,name(),memAnchor,name());
         linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef.left(i));
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
@@ -1352,7 +1358,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     if (!found) // anonymous compound
     {
       //printf("Anonymous compound `%s'\n",cname.data());
-      ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+      ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
       ol.startMemberDoc(cname,name(),memAnchor,name());
       // strip anonymous compound names from definition
       int si=ldef.find(' '),pi,ei=i+l;
@@ -1370,7 +1376,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
   else // not an enum value
   {
-    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName);
+    ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
     ol.startMemberDoc(cname,name(),memAnchor,name());
 
     ClassDef *cd=getClassDef();
@@ -1678,7 +1684,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           }
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
-          ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name());
+          ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
           first=FALSE;
           //ol.startEmphasis();
           ol.docify(fmd->name());
@@ -2394,5 +2400,22 @@ void MemberDef::setTagInfo(TagInfo *ti)
     setReference(ti->tagName);
     explicitOutputFileBase = stripExtension(ti->fileName);
   }
+}
+
+QCString MemberDef::objCMethodName(bool localLink,bool showStatic) const
+{
+  QCString qm;
+  if (showStatic)
+  {
+    if (isStatic()) qm="+ "; else qm="- ";
+  }
+  qm+=name();
+  if (!localLink) // link to method of same class
+  {
+    qm+=" (";
+    qm+=classDef->name();
+    qm+=")";
+  }
+  return qm;
 }
 

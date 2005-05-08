@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_ZA_H
 #define TRANSLATOR_ZA_H
 
-class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
+class TranslatorAfrikaans : public Translator
 {
   public:
 
@@ -178,10 +178,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     virtual QCString trFileList()
     { return "Le&euml;r Lys"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Kop Le&euml;r"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -314,10 +310,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Die kop leers waaruit die API bestaan:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "'n Lys van alle voorbeelde:"; }
@@ -329,15 +321,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "'n Lys van alle modules:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Geen beskrywings beskikbaar"; }
-    
-    // index titles (the project name is prepended for these) 
-
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
@@ -486,12 +469,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     { return "Enumeration Type Dokumentasie"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Enumeration Waarde Dokumentasie"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -545,17 +522,9 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     virtual QCString trForInternalUseOnly()
     { return "Slegs vir interne gebruik."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Hergeimplimenteer vir interne redes; die API word nie beinvloed nie."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Waarskuwing"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Bugs and beperkings"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -794,8 +763,8 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="intervlak"; break;
         case ClassDef::Protocol:   result+="protokol"; break;
-        case ClassDef::Category:   result+="category"; break;
-        case ClassDef::Exception:  result+="exception"; break;
+        case ClassDef::Category:   result+="kategorie"; break;
+        case ClassDef::Exception:  result+="eksepsie"; break;
       }
       result+=" is gegenereer vanaf die volgende le&euml;r";
       if (single) result+=":"; else result+="s:";
@@ -831,10 +800,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Bronne";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Gedefinie&euml;r by lyn @0 van le&euml;r @1.";
@@ -1141,11 +1106,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Intervlake";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1177,11 +1137,6 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     virtual QCString trPackages()
     {
       return "Pakkette";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Pakket Dokumentasie";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1313,20 +1268,9 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Lid" : "lid"));
       if (!singular)  result = (first_capital ? "Lede" : "lede");
-      return result; 
-    }
-   
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Veld" : "veld"));
-      if (!singular)  result+="e";
       return result; 
     }
 
@@ -1521,8 +1465,8 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
       }
       else 
       {
-        return "Die soektog het <b>$num</b> documente gevind na gelang van jou navraag. "
-               "Begin met beste resultate.";
+        return "Die soektog het <b>$num</b> dokumente gevind na gelang van jou navraag. "
+               "Beste resultate eerste.";
       }
     }
     /*! This string is put before the list of matched words, for each search 
@@ -1543,6 +1487,67 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_3_9
     {
       return filename + " Bron kode Le&euml;r";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Directory Hi&euml;rargie"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Directory Documentasie"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Directories"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Hierdie directory hi&euml;rargie is min of meer alfabeties "
+             "gesorteer:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=" Directory Verwysing"; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Director" : "director"));
+      if (singular) result+="y"; else result+="ies";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Hierdie is 'n oorlaaide lede funksie, "
+              "vertoon vir volledigheid. Dit verskil slegs van die bogegewe "
+              "funksie in die argument(e) wat dit aanvaar.";
+    }
+
 
 };
 

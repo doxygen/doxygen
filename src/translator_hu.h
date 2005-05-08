@@ -56,7 +56,7 @@ class TranslatorHungarian : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      return "\\usepackage{t1enc}\n\\usepackage[latin2]{inputenc}\n\\usepackage[magyar]{babel}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */

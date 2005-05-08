@@ -46,6 +46,7 @@
 #include "reflist.h"
 #include "pagedef.h"
 #include "debug.h"
+#include "searchindex.h"
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
@@ -622,18 +623,9 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
     ip--;
   }
   type=type.left(ip+1);
-  if (type.left(6)=="const ") // strip leading "const"
-  {
-    type=type.mid(6);
-  }
-  if (type.left(7)=="struct ") // strip leading "struct"
-  {
-    type=type.mid(7);
-  }
-  else if (type.left(6)=="union ") // or strip leading "union"
-  {
-    type=type.mid(6);
-  }
+  type.stripPrefix("const ");  // strip leading "const"
+  type.stripPrefix("struct "); // strip leading "struct"
+  type.stripPrefix("union ");  // strip leading "union"
   type=type.stripWhiteSpace(); // strip leading and trailing whitespace
   MemberDef *memTypeDef = 0;
   ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
@@ -1243,7 +1235,12 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     scope=Doxygen::globalScope;
   }
-  //printf("getResolvedClass(%s,%s)\n",scope?scope->name().data():"<global>",n);
+  //printf("getResolvedClass(scope=%s,file=%s,name=%s,mayUnlinkable=%d)\n",
+  //    scope?scope->name().data():"<global>",
+  //    fileScope?fileScope->name().data():"<none>",
+  //    n,
+  //    mayBeUnlinkable
+  //   );
   ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
@@ -1251,7 +1248,6 @@ ClassDef *getResolvedClass(Definition *scope,
   }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");
-   
   return result;
 }
 
@@ -2281,8 +2277,8 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   QCString dstAType=trimTemplateSpecifiers(namespaceName,className,dstA->type);
   QCString srcAName=srcA->name.stripWhiteSpace();
   QCString dstAName=dstA->name.stripWhiteSpace();
-  if (srcAType.left(6)=="class ") srcAType=srcAType.right(srcAType.length()-6);
-  if (dstAType.left(6)=="class ") dstAType=dstAType.right(dstAType.length()-6);
+  srcAType.stripPrefix("class ");
+  dstAType.stripPrefix("class ");
   
   // allow distingishing "const A" from "const B" even though 
   // from a syntactic point of view they would be two names of the same 
@@ -2651,14 +2647,13 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   stripIrrelevantConstVolatile(type);
   
   // strip leading keywords
-  if (type.left(6)=="class ")         type=type.right(type.length()-6);
-  else if (type.left(7)=="struct ")   type=type.right(type.length()-7);
-  else if (type.left(6)=="union ")    type=type.right(type.length()-6);
-  else if (type.left(5)=="enum ")     type=type.right(type.length()-5);
-  else if (type.left(9)=="typename ") type=type.right(type.length()-9);
+  type.stripPrefix("class ");
+  type.stripPrefix("struct ");
+  type.stripPrefix("union ");
+  type.stripPrefix("enum ");
+  type.stripPrefix("typename ");
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
-
   
   QCString canType;
   int i,p=0,l;
@@ -2666,7 +2661,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   {
     canType += type.mid(p,i-p);
     QCString word = type.mid(i,l);
-    ClassDef *cd = getResolvedClass(d,fs,word);
+    ClassDef *cd = getResolvedClass(d,fs,word,0,0,TRUE);
     //printf("word %s => %s\n",word.data(),cd?cd->qualifiedName().data():"<none>");
     if (cd)
     {
@@ -2677,7 +2672,16 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
       QCString resolvedType = resolveTypeDef(d,word);
       if (resolvedType.isEmpty())
       {
-        canType+=word;
+        int i=word.findRev("::");
+        if (i!=-1) // strip scope if it cannot be resolved anyway
+                   // TODO is this robust enough?
+        {
+          canType+=word.mid(i+2);
+        }
+        else
+        {
+          canType+=word;
+        }
       }
       else
       {
@@ -2687,7 +2691,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     p=i+l;
   }
   canType += type.right(type.length()-p);
-  //printf("result = %s\n",canType.data());
+  //printf("result = %s->%s\n",type.data(),canType.data());
  
   return removeRedundantWhiteSpace(canType);
 }
@@ -2697,11 +2701,11 @@ static bool matchArgument2(
                    Definition *dstScope,FileDef *dstFileScope,const Argument *dstA
                   )
 {
-  //printf("match argument start `%s|%s' <-> `%s|%s' using nsp=%p class=%p\n",
-  //    srcA->type.data(),srcA->name.data(),
-  //    dstA->type.data(),dstA->name.data(),
-  //    usingNamespaces,
-  //    usingClasses);
+  //printf(">> match argument: %s::`%s|%s' (%s) <-> %s::`%s|%s' (%s)\n",
+  //    srcScope ? srcScope->name().data() : "",
+  //    srcA->type.data(),srcA->name.data(),srcA->canType.data(),
+  //    dstScope ? dstScope->name().data() : "",
+  //    dstA->type.data(),dstA->name.data(),dstA->canType.data());
 
   if (srcA->array!=dstA->array) // nomatch for char[] against char
   {
@@ -2709,16 +2713,28 @@ static bool matchArgument2(
     return FALSE;
   }
 
-  QCString canonicalSrcType = extractCanonicalType(srcScope,srcFileScope,srcA);
-  QCString canonicalDstType = extractCanonicalType(dstScope,dstFileScope,dstA);
+  if (srcA->canType.isEmpty())
+  {
+    Argument *thatSrcA = (Argument*)srcA; // since canType is a cached value 
+                                          // of type we do not really change the argument, but the 
+                                          // compiler does know that.
+    thatSrcA->canType = extractCanonicalType(srcScope,srcFileScope,srcA);
+  }
+  if (dstA->canType.isEmpty())
+  {
+    Argument *thatDstA = (Argument*)dstA;
+    thatDstA->canType = extractCanonicalType(dstScope,dstFileScope,dstA);
+  }
   
-  if (canonicalSrcType==canonicalDstType)
+  if (srcA->canType==dstA->canType)
   {
     MATCH
     return TRUE;
   }
   else
   {
+    //printf("   Canonical types do not match [%s]<->[%s]\n",
+    //    srcA->canType.data(),dstA->canType.data());
     NOMATCH
     return FALSE;
   }
@@ -3545,11 +3561,11 @@ QCString linkToText(const char *link,bool isFileName)
  *    3) "memberName(...)" a specific (overloaded) function or define 
  *                         with name memberName
  *    4) "::name           a global variable or define
- *    4) "#memberName      member variable, global variable or define
+ *    4) "\#memberName     member variable, global variable or define
  *    5) ("ScopeName::")+"memberName()" 
  *    6) ("ScopeName::")+"memberName(...)" 
  *    7) ("ScopeName::")+"memberName" 
- * instead of :: the # symbol may also be used.
+ * instead of :: the \# symbol may also be used.
  */
 
 bool generateRef(OutputDocInterface &od,const char *scName,
@@ -5373,5 +5389,20 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
   return s.mid(li,bi-li);
 }
 
-
+void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
+                 const QCString &str,bool priority,const QCString &anchor)
+{
+  static bool searchEngine = Config_getBool("SEARCHENGINE");
+  if (searchEngine)
+  {
+    Doxygen::searchIndex->setCurrentDoc(title,docBaseUrl,anchor);
+    static QRegExp wordPattern("[a-z_A-Z][a-z_A-Z0-9]*");
+    int i,p=0,l;
+    while ((i=wordPattern.match(str,p,&l))!=-1)
+    {
+      Doxygen::searchIndex->addWord(str.mid(i,l),priority);
+      p=i+l;
+    }
+  }
+}
 

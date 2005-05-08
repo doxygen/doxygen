@@ -66,6 +66,7 @@
 #include "cmdmapper.h"
 #include "searchindex.h"
 #include "parserintf.h"
+#include "htags.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -231,6 +232,7 @@ static void addRelatedPage(Entry *root)
      );
   if (pd)
   {
+#if 0
     Definition *ctx = 0;
 
     // find the page's context
@@ -255,6 +257,7 @@ static void addRelatedPage(Entry *root)
       ctx=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
     }
     pd->setOuterScope(ctx);
+#endif
     pd->addSectionsToDefinition(root->anchors);
     //pi->context = ctx;
   }
@@ -1454,7 +1457,7 @@ static MemberDef *addVariableToClass(
       def=qualScope+scopeSeparator+name+root->args;
     }
   }
-  if (def.left(7)=="static ") def=def.right(def.length()-7);
+  def.stripPrefix("static ");
 
   // see if the member is already found in the same scope
   // (this may be the case for a static member that is initialized
@@ -1600,7 +1603,7 @@ static MemberDef *addVariableToFile(
       def=name+root->args;
     }
   }
-  if (def.left(7)=="static ") def=def.right(def.length()-7);
+  def.stripPrefix("static ");
 
   MemberName *mn=Doxygen::functionNameSDict[name];
   if (mn)
@@ -2085,7 +2088,9 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   md->setMemberSpecifiers(root->memSpec);
   md->setMemberGroupId(root->mGrpId);
   bool ambig;
-  md->setBodyDef(findFileDef(Doxygen::inputNameDict,root->fileName,ambig));
+  FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+  md->setBodyDef(fd);
+  md->setFileDef(fd);
   //md->setScopeTemplateArguments(root->tArgList);
   md->addSectionsToDefinition(root->anchors);
   QCString def;
@@ -2306,12 +2311,23 @@ static void buildFunctionList(Entry *root)
             QCString nsName,rnsName;
             if (mnd)  nsName = mnd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
+#ifdef NEWMATCH
+            bool ambig;
+            FileDef *rfd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+#else
             NamespaceSDict    *unl = mfd ? mfd->getUsedNamespaces() : 0;
             SDict<Definition> *ucl = mfd ? mfd->getUsedClasses() : 0;
+#endif
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             if ( 
+#ifdef NEWMATCH
+                matchArguments2(md->getOuterScope(),mfd,md->argumentList(),
+                                rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
+                                FALSE)
+#else
                 matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,unl,ucl)
+#endif
                )
             {
               GroupDef *gd=0;
@@ -2361,6 +2377,7 @@ static void buildFunctionList(Entry *root)
                 else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && mnd==rnd)
                 {
                   warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
+                  //printf("md->docs=[%s] root->docs=[%s]\n",md->documentation().data(),root->doc.data());
                 }
 
                 if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
@@ -2583,13 +2600,23 @@ static void findFriends()
           //printf("Checking for matching arguments 
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
+#ifndef NEWMATCH
           NamespaceDef *nd=mmd->getNamespaceDef();
+#endif
           if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
+#ifdef NEWMATCH
+              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmd->argumentList(),
+                              fmd->getOuterScope(), fmd->getFileDef(), fmd->argumentList(),
+                              TRUE
+                             )
+                             
+#else
               matchArguments(mmd->argumentList(),
                              fmd->argumentList(),
                              mmd->getClassDef()->name(),
                              nd ? nd->name().data() : 0
                             )
+#endif
              ) // if the member is related and the arguments match then the 
                // function is actually a friend.
           {
@@ -2702,7 +2729,14 @@ static void transferFunctionDocumentation()
             //    mdef, mdef ? mdef->name().data() : "",
             //    mdec, mdec ? mdec->name().data() : "");
             if (mdef && mdec && 
+#ifdef NEWMATCH
+                matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
+                                mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
+                                TRUE
+                               )
+#else
                 matchArguments(mdef->argumentList(),mdec->argumentList())
+#endif
                ) /* match found */
             {
               //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
@@ -2837,7 +2871,14 @@ static void transferFunctionReferences()
         mdef=md;
     }
     if (mdef && mdec && 
+#ifdef NEWMATCH
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
+                        mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
+                        TRUE
+                       )
+#else
         matchArguments(mdef->argumentList(),mdec->argumentList())
+#endif
        ) /* match found */
     {
       MemberSDict *defDict = mdef->getReferencesMembers();
@@ -2923,7 +2964,14 @@ static void transferRelatedFunctionDocumentation()
         {
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
           if (rmd->isRelated() && // related function
+#ifdef NEWMATCH
+              matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
+                              rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+                              TRUE
+                             )
+#else
               matchArguments(md->argumentList(),rmd->argumentList()) // match argument lists
+#endif
              )
           {
             //printf("  Found related member `%s'\n",md->name().data());
@@ -3962,23 +4010,37 @@ static void addMemberDocs(Entry *root,
                    MemberDef *md, const char *funcDecl,
                    ArgumentList *al,
                    bool over_load,
-                   NamespaceSDict *nl
+                   NamespaceSDict *
+#ifndef NEWMATCH
+                   nl
+#endif
                   )
 {
   //printf("addMemberDocs: `%s'::`%s' `%s' funcDecl=`%s' memSpec=%d\n",
   //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,root->memSpec);
   QCString fDecl=funcDecl;
   // strip extern specifier
-  if (fDecl.left(7)=="extern ") fDecl=fDecl.right(fDecl.length()-7);
+  fDecl.stripPrefix("extern ");
   md->setDefinition(fDecl);
   md->enableCallGraph(root->callGraph);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
-  if (cd) fullName = cd->name();
-  else if (nd) fullName = nd->name();
+  if (cd) 
+    fullName = cd->name();
+  else if (nd) 
+    fullName = nd->name();
+
   if (!fullName.isEmpty()) fullName+="::";
   fullName+=md->name();
+  bool ambig;
+  FileDef *rfd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+
+#ifdef NEWMATCH
+  // TODO determine scope based on root not md
+  Definition *rscope = md->getOuterScope();
+#endif
+  
   if (al)
   {
     //printf("merging arguments (1)\n");
@@ -3986,12 +4048,20 @@ static void addMemberDocs(Entry *root,
   }
   else
   {
-    if (matchArguments(md->argumentList(),root->argList,
-          cd ? cd->name().data() : 0,
-          nd ? nd->name().data() : 0,
-          TRUE,
-          nl
-                      )
+    if (
+#ifdef NEWMATCH
+          matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
+                           rscope,rfd,root->argList,
+                           TRUE
+                         )
+#else
+          matchArguments(md->argumentList(),root->argList,
+                         cd ? cd->name().data() : 0,
+                         nd ? nd->name().data() : 0,
+                         TRUE,
+                         nl
+                        )
+#endif
        ) 
     {
       //printf("merging arguments (2)\n");
@@ -4064,16 +4134,14 @@ static void addMemberDocs(Entry *root,
   //{
   //  md->setBody(root->body);
   //}
-  bool ambig;
-  FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-  if (fd)
+  if (rfd)
   {
 
     if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) || 
         (md->isVariable() && !root->explicitExternal))
     {
       md->setBodySegment(root->bodyLine,root->endBodyLine);
-      md->setBodyDef(fd);
+      md->setBodyDef(rfd);
     }
 
     md->setRefItems(root->sli);
@@ -4176,10 +4244,22 @@ static bool findGlobalMember(Entry *root,
         Debug::print(Debug::FindMembers,0,"4. Try to add member `%s' to scope `%s'\n",
             md->name().data(),namespaceName.data());
         QCString nsName = nd ? nd->name().data() : "";
+
+#ifdef NEW_MATCH
+        NamespaceDef *rnd = 0;
+        if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict[namespaceName];
+#endif
+        
         bool matching=
           (md->argumentList()==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
+#ifdef NEW_MATCH
+          matchArguments2(md->getOuterScope(),md->getFileDef(),md->argumentList(),
+                          rnd ? rnd : Doxygen::globalScope,fd,root->argList,
+                          FALSE);
+#else
           matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,nl,cl);
+#endif
 
         // for static members we also check if the comment block was found in 
         // the same file. This is needed because static members with the same
@@ -4709,7 +4789,6 @@ static void findMember(Entry *root,
                   className.data(),namespaceName.data()
                   );
 
-//#define NEWMATCH
 #ifdef NEWMATCH
               
               bool matching=
@@ -5054,6 +5133,10 @@ static void findMember(Entry *root,
             }
           }
         }
+
+        bool ambig;
+        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+
         if ((mn=Doxygen::memberNameSDict[funcName])==0)
         {
           mn=new MemberName(funcName);
@@ -5064,8 +5147,15 @@ static void findMember(Entry *root,
           MemberDef *rmd=mn->first();
           while (rmd && newMember) // see if we got another member with matching arguments
           {
+
             newMember=newMember && 
+#ifdef NEWMATCH
+              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+                               cd,fd,root->argList,
+                               TRUE);
+#else
               !matchArguments(rmd->argumentList(),root->argList,className,namespaceName);
+#endif
             if (newMember) rmd=mn->next();
           }
           if (!newMember && rmd) // member already exists as rmd -> add docs
@@ -5117,10 +5207,17 @@ static void findMember(Entry *root,
               while (rmd && !found) // see if we got another member with matching arguments
               {
                 // check for matching argument lists
-                if (matchArguments(rmd->argumentList(),
+                if (
+#ifdef NEWMATCH
+                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+                                    cd,fd,root->argList,
+                                    TRUE)
+#else
+                    matchArguments(rmd->argumentList(),
                       root->argList,
                       className,
                       namespaceName)
+#endif
                    )
                 {
                   found=TRUE;
@@ -5139,8 +5236,6 @@ static void findMember(Entry *root,
                       // entry
           {
             md->setBodySegment(root->bodyLine,root->endBodyLine);
-            bool ambig;
-            FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
             md->setBodyDef(fd);
           }
 
@@ -5729,6 +5824,13 @@ static void findEnumDocumentation(Entry *root)
               }
               
               md->addSectionsToDefinition(root->anchors);
+
+              GroupDef *gd=md->getGroupDef();
+              if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is
+              {
+                addMemberToGroups(root,md);
+              }
+
               found=TRUE;
             }
           }
@@ -5740,6 +5842,7 @@ static void findEnumDocumentation(Entry *root)
       }
       else // enum outside class 
       {
+        //printf("Enum outside class: %s grpId=%d\n",name.data(),root->mGrpId);
         MemberDef  *md;
         MemberName *mn=Doxygen::functionNameSDict[name];
         if (mn && (md=mn->getFirst()))
@@ -5750,6 +5853,13 @@ static void findEnumDocumentation(Entry *root)
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberGroupId(root->mGrpId);
+          
+          GroupDef *gd=md->getGroupDef();
+          if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is
+          {
+            addMemberToGroups(root,md);
+          }
+          
           found=TRUE;
         }
       } 
@@ -5845,7 +5955,16 @@ static void computeMemberRelations()
           //        argListToString(bmd->argumentList()).data(),
           //        argListToString(md->argumentList()).data()
           //      );
-          if ( matchArguments(bmd->argumentList(),md->argumentList()) )
+          if ( 
+#ifdef NEWMATCH
+              matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->argumentList(),
+                               md->getOuterScope(), md->getFileDef(), md->argumentList(),
+                              TRUE
+                             ) 
+#else
+              matchArguments(bmd->argumentList(),md->argumentList()) 
+#endif
+             )
           {
             //printf("  match found!\n");
             if (mcd && bmcd && 
@@ -8704,6 +8823,16 @@ void generateOutput()
     outputList->add(new RTFGenerator);
     RTFGenerator::init();
   }
+
+  if (Config_getBool("USE_HTAGS"))
+  {
+    Htags::useHtags = TRUE;
+    QCString htmldir = Config_getString("HTML_OUTPUT");
+    if (!Htags::execute(htmldir))
+       err("Error: USE_HTAGS is YES but htags(1) failed. \n");
+    if (!Htags::loadFilemap(htmldir))
+       err("Error: htags(1) ended normally but failed to load the filemap. \n");
+  }
   
   /**************************************************************************
    *                        Generate documentation                          *
@@ -8777,7 +8906,10 @@ void generateOutput()
   generateExampleDocs();
 
   msg("Generating file sources...\n");
-  generateFileSources();
+  if (!Htags::useHtags)
+  {
+    generateFileSources();
+  }
   transferFunctionReferences();
 
   msg("Generating file documentation...\n");

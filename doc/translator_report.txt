@@ -1,4 +1,4 @@
-(1.4.2-20050410)
+(1.4.2-20050508)
 
 Doxygen supports the following 31 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian,
 Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 12 translators are up-to-date, 19 translators are based on
+Of them, 13 translators are up-to-date, 18 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,6 +17,7 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 192 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorAfrikaans
   TranslatorBrazilian -- Remove the obsolete methods (never used).
   TranslatorCroatian
   TranslatorCzech
@@ -46,7 +47,6 @@ must be implemented to become up-to-date:
   TranslatorNorwegian             1.3.9 	 7 methods to implement
   TranslatorJapanese              1.3.9 	 7 methods to implement
   TranslatorDanish                1.3.9 	 7 methods to implement
-  TranslatorAfrikaans             1.3.9 	 7 methods to implement
   TranslatorSpanish               1.3.8 	 8 methods to implement
   TranslatorLithuanian            1.3.8 	 8 methods to implement
   TranslatorChinesetraditional    1.3.8 	 8 methods to implement
@@ -68,35 +68,6 @@ version of the translator for the language:
 ======================================================================
 Details for translators (classes sorted alphabetically):
 
-
-
-TranslatorAfrikaans   (TranslatorAdapter_1_3_9)  7 methods to implement
--------------------
-
-  Implements 185 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trNoDescriptionAvailable()
 
 
 TranslatorBrazilian   (Translator)

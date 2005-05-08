@@ -599,9 +599,13 @@ void HtmlGenerator::writeStyleInfo(int part)
 }
 
 void HtmlGenerator::startDoxyAnchor(const char *,const char *,
-                                    const char *anchor, const char *name)
+                                    const char *anchor, const char *name,
+                                    const char *args)
 {
-  t << "<a class=\"anchor\" name=\"" << anchor << "\" doxytag=\"" << name << "\"></a>";
+  t << "<a class=\"anchor\" name=\"" << anchor << "\"></a>";
+  t << "<!-- doxytag: member=<" << name << "> ref=<" << anchor << "> args=<";
+  docify(args);
+  t << "> -->";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)

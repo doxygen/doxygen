@@ -95,12 +95,9 @@ static int              memberGroupId = DOX_NOGROUP;
 static QCString         memberGroupHeader;
 static QCString         memberGroupDocs;
 static bool             isTypedef;
-//static char             afterDocTerminator;
 static int              tmpDocType;
 static QCString         sectionLabel;
 static QCString		sectionTitle;
-//static SectionInfo::SectionType      
-//                        sectionType;
 static QCString         funcPtrType;
 static QCString         templateStr;
 static QCString         aliasName;
@@ -127,7 +124,6 @@ static QCString         *copyArgString;
 static QCString         fullArgString;
 
 static ArgumentList     *currentArgumentList;
-//static QCString         *currentTemplateSpec;
 static char             lastCopyArgChar;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
@@ -688,7 +684,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x      PrototypeExc
 %x      PrototypeSkipLine
 
- /** new comment parsing states */
+ /** comment parsing states */
 
 %x	DocLine
 %x	DocBlock

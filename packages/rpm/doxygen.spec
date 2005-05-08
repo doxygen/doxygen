@@ -1,16 +1,14 @@
 Summary: A documentation system for C/C++.
 Name: doxygen
-Version: 1.4.2_20050421
+Version: 1.4.2
 Release: 1
 Epoch: 1
 Source0: ftp://ftp.stack.nl/pub/users/dimitri/%{name}-%{version}.src.tar.gz
-Patch: doxygen-1.2.7-redhat.patch
-Patch1: doxygen-1.2.12-qt2.patch
 Group: Development/Tools
 License: GPL
 Url: http://www.stack.nl/~dimitri/doxygen/index.html
 Prefix: %{_prefix}
-BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl
+BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -24,20 +22,18 @@ source files.
 Summary: A GUI for creating and editing configuration files.
 Group: User Interface/X
 Requires: %{name} = %{version}
-BuildPrereq: qt-devel => 2.3.0
+BuildPrereq: qt3-devel => 2.3.0, flex
 Requires: qt >= 2.3.0
-
+	
 %description doxywizard
 Doxywizard is a GUI for creating and editing configuration files that
 are used by doxygen.
 
 %prep
 %setup -q
-%patch -p1 -b .redhat
-%patch1 -p1 -b .qt2
 
 %build
-QTDIR="" && . /etc/profile.d/qt.sh
+QTDIR="" && . /etc/profile.d/qt*.sh
 export OLD_PO_FILE_INPUT=yes
 
 ./configure --prefix %{_prefix} --shared --release --with-doxywizard
@@ -57,6 +53,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc LANGUAGE.HOWTO README examples html
 %{_bindir}/doxygen
 %{_bindir}/doxytag
+%doc /usr/man/man1/*
 
 %files doxywizard
 %defattr(-,root,root)

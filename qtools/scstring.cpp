@@ -643,6 +643,21 @@ void SCString::msg_index( uint index )
 #endif
 }
 
+bool SCString::stripPrefix(const char *prefix)
+{
+  if (prefix==0) return FALSE;
+  uint plen   = qstrlen(prefix);
+  if (m_data && qstrncmp(prefix,m_data,plen)==0) // prefix matches
+  {
+    uint len    = qstrlen(m_data);
+    uint newlen = len-plen+1;
+    qmemmove(m_data,m_data+plen,newlen);
+    resize(newlen);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 //---------------------------------------------------------------------------
 
 void *qmemmove( void *dst, const void *src, uint len )
