@@ -640,6 +640,40 @@ ArgumentList *getTemplateArgumentsFromName(
   return ali.current();
 }
 
+static ClassDef::CompoundType convertToCompoundType(int section)
+{
+    ClassDef::CompoundType sec=ClassDef::Class; 
+    switch(section)
+    {
+      case Entry::UNION_SEC: 
+      case Entry::UNIONDOC_SEC: 
+        sec=ClassDef::Union; 
+        break;
+      case Entry::STRUCT_SEC:
+      case Entry::STRUCTDOC_SEC: 
+        sec=ClassDef::Struct; 
+        break;
+      case Entry::INTERFACE_SEC:
+      case Entry::INTERFACEDOC_SEC:
+        sec=ClassDef::Interface; 
+        break;
+      case Entry::PROTOCOL_SEC:
+      case Entry::PROTOCOLDOC_SEC:
+        sec=ClassDef::Protocol; 
+        break;
+      case Entry::CATEGORY_SEC:
+      case Entry::CATEGORYDOC_SEC:
+        sec=ClassDef::Category; 
+        break;
+      case Entry::EXCEPTION_SEC:
+      case Entry::EXCEPTIONDOC_SEC:
+        sec=ClassDef::Exception; 
+        break;
+    }
+    return sec;
+}
+
+
 static void addClassToContext(Entry *root)
 {
 //  QCString fullName=removeRedundantWhiteSpace(root->name);
@@ -667,13 +701,9 @@ static void addClassToContext(Entry *root)
   // see if the using statement was found inside a namespace or inside
   // the global file scope.
   QCString scName;
-  if (root->parent->section == Entry::NAMESPACE_SEC)
+  if (root->parent->section&Entry::SCOPE_MASK)
   {
      scName=root->parent->name;
- //    if (!scName.isEmpty())
- //    {
- //       nd = getResolvedNamespace(scName);
- //    }
   }
   QCString fullName = root->name;
 
@@ -681,8 +711,8 @@ static void addClassToContext(Entry *root)
   
   ClassDef *cd = getClass(qualifiedName);
 
-  Debug::print(Debug::Classes,0, "  Found class with name %s (cd=%p)\n",
-      cd ? cd->name().data() : root->name.data(), cd);
+  Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
+      cd ? cd->name().data() : root->name.data(), qualifiedName.data(),cd);
   
   if (cd) 
   {
@@ -740,38 +770,12 @@ static void addClassToContext(Entry *root)
         getTemplateArgumentsFromName(cd->name(),root->tArgLists);
       cd->setTemplateArguments(tArgList);
     }
+
+    cd->setCompoundType(convertToCompoundType(root->section));
   }
   else // new class
   {
-
-    ClassDef::CompoundType sec=ClassDef::Class; 
-    switch(root->section)
-    {
-      case Entry::UNION_SEC: 
-      case Entry::UNIONDOC_SEC: 
-        sec=ClassDef::Union; 
-        break;
-      case Entry::STRUCT_SEC:
-      case Entry::STRUCTDOC_SEC: 
-        sec=ClassDef::Struct; 
-        break;
-      case Entry::INTERFACE_SEC:
-      case Entry::INTERFACEDOC_SEC:
-        sec=ClassDef::Interface; 
-        break;
-      case Entry::PROTOCOL_SEC:
-      case Entry::PROTOCOLDOC_SEC:
-        sec=ClassDef::Protocol; 
-        break;
-      case Entry::CATEGORY_SEC:
-      case Entry::CATEGORYDOC_SEC:
-        sec=ClassDef::Category; 
-        break;
-      case Entry::EXCEPTION_SEC:
-      case Entry::EXCEPTIONDOC_SEC:
-        sec=ClassDef::Exception; 
-        break;
-    }
+    ClassDef::CompoundType sec = convertToCompoundType(root->section);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
     QCString className;
@@ -3194,7 +3198,7 @@ static void findUsedClassesForClass(Entry *root,
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
         //printf("  template substitution gives=%s\n",type.data());
-        while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec))
+        while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1)
         {
           //printf("  found used class %s\n",usedClassName.data());
           // the name could be a type definition, resolve it
@@ -3326,47 +3330,42 @@ static void findBaseClassesForClass(
   BaseInfo *bi=0;
   for (bii.toFirst();(bi=bii.current());++bii)
   {
-    //printf("masterCd=%s bi->name=%s\n",masterCd->localName().data(),bi->name.data());
-    //if ( masterCd->localName()!=bi->name.left(masterCd->localName().length()) 
-    //     || bi->name.at(masterCd->localName().length())!='<'
-    //   ) // to avoid recursive lock-up in cases like 
-    //     // template<typename T> class A : public A<typename T::B>
-    //{
-      bool delTempNames=FALSE;
-      if (templateNames==0)
-      {
-        templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
-        delTempNames=TRUE;
-      }
-      BaseInfo tbi(bi->name,bi->prot,bi->virt);
-      if (actualArgs) // substitute the formal template arguments of the base class
-      {
-        tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
-      }
-      //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
+    //printf("masterCd=%s bi->name=%s #actualArgs=%d\n",
+    //    masterCd->localName().data(),bi->name.data(),actualArgs?(int)actualArgs->count():-1);
+    bool delTempNames=FALSE;
+    if (templateNames==0)
+    {
+      templateNames = getTemplateArgumentsInName(formalArgs,bi->name);
+      delTempNames=TRUE;
+    }
+    BaseInfo tbi(bi->name,bi->prot,bi->virt);
+    if (actualArgs) // substitute the formal template arguments of the base class
+    {
+      tbi.name = substituteTemplateArgumentsInString(bi->name,formalArgs,actualArgs);
+    }
+    //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
-      if (mode==DocumentedOnly)
+    if (mode==DocumentedOnly)
+    {
+      // find a documented base class in the correct scope
+      if (!findClassRelation(root,context,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
       {
-        // find a documented base class in the correct scope
-        if (!findClassRelation(root,context,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+        if (!Config_getBool("HIDE_UNDOC_RELATIONS"))
         {
-          if (!Config_getBool("HIDE_UNDOC_RELATIONS"))
-          {
-            // no documented base class -> try to find an undocumented one
-            findClassRelation(root,context,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
-          }
+          // no documented base class -> try to find an undocumented one
+          findClassRelation(root,context,instanceCd,&tbi,templateNames,Undocumented,isArtificial);
         }
       }
-      else if (mode==TemplateInstances)
-      {
-        findClassRelation(root,context,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
-      }
-      if (delTempNames)
-      {
-        delete templateNames;
-        templateNames=0;
-      }  
-    //}
+    }
+    else if (mode==TemplateInstances)
+    {
+      findClassRelation(root,context,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
+    }
+    if (delTempNames)
+    {
+      delete templateNames;
+      templateNames=0;
+    }  
   }
 }
 
@@ -3413,7 +3412,8 @@ static bool findTemplateInstanceRelation(Entry *root,
     Entry *templateRoot = classEntries.find(templateClass->name());
     if (templateRoot)
     {
-      Debug::print(Debug::Classes,0,"        template root found %s!\n",templateRoot->name.data());
+      Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
+          templateRoot->name.data(),templSpec.data());
       ArgumentList *templArgs = new ArgumentList;
       stringToArgumentList(templSpec,templArgs);
       findBaseClassesForClass(templateRoot,context,templateClass,instanceClass,
@@ -3644,10 +3644,14 @@ static bool findClassRelation(
           }
           else
           {
-            baseClass=new ClassDef(root->fileName,root->startLine,
-                                 baseClassName,ClassDef::Class);
-            Doxygen::classSDict.append(baseClassName,baseClass);
-            if (isArtificial) baseClass->setClassIsArtificial();
+            baseClass=Doxygen::classSDict.find(baseClassName);
+            if (baseClass==0)
+            {
+              baseClass=new ClassDef(root->fileName,root->startLine,
+                  baseClassName,ClassDef::Class);
+              Doxygen::classSDict.append(baseClassName,baseClass);
+              if (isArtificial) baseClass->setClassIsArtificial();
+            }
           }
           // add base class to this class
           cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
@@ -4432,33 +4436,28 @@ static void findMember(Entry *root,
   do
   {
     done=TRUE;
-    if (funcDecl.left(7)=="friend ") // treat friends as related members
+    if (funcDecl.stripPrefix("friend ")) // treat friends as related members
     {
-      funcDecl=funcDecl.right(funcDecl.length()-7);
       isFriend=TRUE;
       done=FALSE;
     }
-    if (funcDecl.left(7)=="inline ")
+    if (funcDecl.stripPrefix("inline "))
     {
-      funcDecl=funcDecl.right(funcDecl.length()-7);
       root->memSpec|=Entry::Inline;
       done=FALSE;
     }
-    if (funcDecl.left(9)=="explicit ")
+    if (funcDecl.stripPrefix("explicit "))
     {
-      funcDecl=funcDecl.right(funcDecl.length()-9);
       root->memSpec|=Entry::Explicit;
       done=FALSE;
     }
-    if (funcDecl.left(8)=="mutable ")
+    if (funcDecl.stripPrefix("mutable "))
     {
-      funcDecl=funcDecl.right(funcDecl.length()-8);
       root->memSpec|=Entry::Mutable;
       done=FALSE;
     }
-    if (funcDecl.left(8)=="virtual ")
+    if (funcDecl.stripPrefix("virtual "))
     {
-      funcDecl=funcDecl.right(funcDecl.length()-7);
       done=FALSE;
     }
   } while (!done);
@@ -4521,7 +4520,8 @@ static void findMember(Entry *root,
 
   if (root->relates.isEmpty() && root->parent && 
       (root->parent->section&Entry::SCOPE_MASK) &&
-      !root->parent->name.isEmpty())
+      !root->parent->name.isEmpty()) // see if we can combine scopeName 
+                                     // with the scope in which it was found
   {
     QCString joinedName = root->parent->name+"::"+scopeName;
     if (!scopeName.isEmpty() && 
@@ -4533,6 +4533,30 @@ static void findMember(Entry *root,
     {
       scopeName = mergeScopes(root->parent->name,scopeName);
     }
+  }
+  else // see if we can prefix a namespace or class that is used from the file
+  {
+     bool ambig;
+     FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
+     if (fd)
+     {
+       NamespaceSDict *fnl = fd->getUsedNamespaces();
+       if (fnl)
+       {
+         QCString joinedName;
+         NamespaceDef *fnd;
+         NamespaceSDict::Iterator nsdi(*fnl);
+         for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
+         {
+           joinedName = fnd->name()+"::"+scopeName;
+           if (Doxygen::namespaceSDict[joinedName])
+           {
+             scopeName=joinedName;
+             break;
+           }
+         }
+       }
+     }
   }
   scopeName=stripTemplateSpecifiersFromScope(
       removeRedundantWhiteSpace(scopeName),FALSE,&funcSpec); 

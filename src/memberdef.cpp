@@ -1943,7 +1943,7 @@ void MemberDef::warnIfUndocumented()
   //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
   //       name().data(),prot);
   if (!isLinkable() && 
-      !isDocumentedFriendClass() && 
+      !isFriendClass() && 
       name().find('@')==-1 && d->name().find('@')==-1 &&
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
      )
@@ -1960,13 +1960,21 @@ void MemberDef::warnIfUndocumented()
 //  *enumDeclList+=ed;
 //}
 
+bool MemberDef::isFriendClass() const
+{
+  return (isFriend() && 
+         (type=="friend class" || type=="friend struct" || 
+          type=="friend union"));
+}
+
 bool MemberDef::isDocumentedFriendClass() const
 {
   ClassDef *fcd=0;
-  return (isFriend() && 
-         (type=="friend class" || type=="friend struct" || 
-          type=="friend union") &&
-         (fcd=getClass(name())) && fcd->isLinkable()); 
+  QCString baseName=name();
+  int i=baseName.find('<');
+  if (i!=-1) baseName=baseName.left(i);
+  return (isFriendClass() &&
+         (fcd=getClass(baseName)) && fcd->isLinkable()); 
 }
 
 bool MemberDef::hasDocumentation() const
@@ -2125,6 +2133,7 @@ void MemberDef::addListReference(Definition *)
   }
   QCString memName = name();
   Definition *pd=getOuterScope();
+  QCString memArgs;
   if (!isRelated() &&
       (
        (!hideScopeNames && // there is a scope
@@ -2135,19 +2144,25 @@ void MemberDef::addListReference(Definition *)
       )
      )
   {
-    if (optimizeOutputJava)
+    if (isObjCMethod())
+    {
+      memName = "[" + pd->name() + " " + name() + "]";
+    }
+    else if (optimizeOutputJava)
     {
       memName.prepend(pd->name()+".");
+      memArgs = argsString();
     }
     else
     {
       memName.prepend(pd->name()+"::");
+      memArgs = argsString();
     }
   }
   if (xrefListItems())
   {
     addRefItem(xrefListItems(),memLabel,
-        getOutputFileBase()+"#"+anchor(),memName,argsString());
+        getOutputFileBase()+"#"+anchor(),memName,memArgs);
   }
   else 
   {

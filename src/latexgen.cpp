@@ -229,9 +229,12 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{alltt}\n"
     //"\\usepackage{ae,aecompl,aeguill}\n"
     ;
-  if (Config_getBool("PDF_HYPERLINKS")) 
+  if (Config_getBool("USE_PDFLATEX"))
   {
     t << "\\usepackage{times}" << endl;
+  }
+  if (Config_getBool("PDF_HYPERLINKS")) 
+  {
     t << "\\ifx\\pdfoutput\\undefined" << endl
       << "\\usepackage[ps2pdf," << endl
       << "            pagebackref=true," << endl

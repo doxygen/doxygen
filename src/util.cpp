@@ -2256,6 +2256,7 @@ void stripIrrelevantConstVolatile(QCString &s)
 //#define MATCH printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
 
+
 static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
@@ -2627,6 +2628,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   return TRUE; // all arguments match 
 }
 
+
 static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *arg)
 {
   QCString type = arg->type;
@@ -2655,42 +2657,51 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
   
-  QCString canType;
-  int i,p=0,l;
-  while ((i=id.match(type,p,&l))!=-1) // foreach identifier in the type
+  QCString canType,templSpec,word;
+  int i,p=0,pp=0;
+  while ((i=extractClassNameFromType(type,p,word,templSpec))!=-1)
+                               // foreach identifier in the type
   {
-    canType += type.mid(p,i-p);
-    QCString word = type.mid(i,l);
-    ClassDef *cd = getResolvedClass(d,fs,word,0,0,TRUE);
-    //printf("word %s => %s\n",word.data(),cd?cd->qualifiedName().data():"<none>");
+    //printf("     i=%d p=%d\n",i,p);
+    canType += type.mid(pp,i-pp);
+    ClassDef *cd = 0;
+    if (!templSpec.isEmpty())
+    {
+      cd = getResolvedClass(d,fs,word+templSpec,0,0,TRUE);
+    }
+    if (cd==0)
+    {
+      cd = getResolvedClass(d,fs,word,0,0,TRUE);
+    }
+    //printf(">>>> word '%s' => '%s'\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>");
     if (cd)
     {
-      canType+=cd->qualifiedName();
+      canType+=cd->qualifiedNameWithTemplateParameters();
     }
     else
     {
       QCString resolvedType = resolveTypeDef(d,word);
       if (resolvedType.isEmpty())
       {
-        int i=word.findRev("::");
-        if (i!=-1) // strip scope if it cannot be resolved anyway
-                   // TODO is this robust enough?
-        {
-          canType+=word.mid(i+2);
-        }
-        else
-        {
-          canType+=word;
-        }
+        //int i=word.findRev("::");
+        //if (i!=-1) // strip scope if it cannot be resolved anyway
+        //           // TODO is this robust enough?
+        //{
+        //  canType+=word.mid(i+2);
+        //}
+        //else
+        //{
+          canType+=word+templSpec;
+        //}
       }
       else
       {
         canType+=resolvedType;
       }
     }
-    p=i+l;
+    pp=p;
   }
-  canType += type.right(type.length()-p);
+  canType += type.right(type.length()-pp);
   //printf("result = %s->%s\n",type.data(),canType.data());
  
   return removeRedundantWhiteSpace(canType);
@@ -3062,7 +3073,14 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //if (mmd->isLinkable())
           //{
             bool match=args==0 || 
+#ifdef NEW_MATCH
+              matchArguments2(mmd->getOuterScope(),md->getFileDef(),md->argumentList(),
+                              fcd,fcd->getFileDef(),argList,
+                              checkCV
+                             );  
+#else
               matchArguments(mmd->argumentList(),argList,className,0,checkCV); 
+#endif
             //printf("match=%d\n",match);
             if (match)
             {
@@ -3175,8 +3193,15 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
+#ifdef NEW_MATCH
+              match=matchArguments2(
+                  mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
+                  fnd,mmd->getFileDef(),argList,
+                  checkCV); 
+#else
               match=matchArguments(mmd->argumentList(),argList,0,
                   namespaceName,checkCV); 
+#endif
             }
             if (match)
             {
@@ -3255,7 +3280,14 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
+#ifdef NEW_MATCH
+              match=matchArguments2(
+                  md->getOuterScope(),fd,md->argumentList(),
+                  Doxygen::globalScope,fd,argList,
+                  checkCV); 
+#else
               match=matchArguments(md->argumentList(),argList,0,0,checkCV); 
+#endif
               delete argList; argList=0;
             }
             if (match) 
@@ -4417,10 +4449,11 @@ void addMembersToMemberGroup(MemberList *ml,
 }
 
 /*! Extracts a (sub-)string from \a type starting at \a pos that
- *  could form a class. When TRUE is returned the result is the 
- *  class \a name and a template argument list \a templSpec.
+ *  could form a class. The index of the match is returned and the found
+ *  class \a name and a template argument list \a templSpec. If -1 is returned
+ *  there are no more matches.
  */
-bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec)
+int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec)
 {
   static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   name.resize(0);
@@ -4453,17 +4486,25 @@ bool extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStr
           te++;
         }
       }
-      if (te>ts) templSpec = type.mid(ts,te-ts),tl+=te-ts;
       name = type.mid(i,l);
-      pos=i+l+tl;
+      if (te>ts) 
+      {
+        templSpec = type.mid(ts,te-ts),tl+=te-ts;
+        pos=i+l+tl;
+      }
+      else // no template part
+      {
+        pos=i+l;
+      }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE\n",
       //    type.data(),pos,name.data(),templSpec.data());
-      return TRUE;
+      return i;
     }
   }
+  pos = typeLen;
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
   //       type.data(),pos,name.data(),templSpec.data());
-  return FALSE;
+  return -1;
 }
 
 /*! Substitutes any occurrence of a formal argument from argument list
@@ -4500,9 +4541,10 @@ QCString substituteTemplateArgumentsInString(
         ++formAli,actArg=actualArgs->next()
         )
     {
-      if (formArg->type=="class" || formArg->type=="typename")
+      //printf("formArg->type=%s\n",formArg->type.data());
+      if (formArg->type=="class" || formArg->type=="typename" || formArg->type.left(8)=="template")
       {
-        //printf("n=%s formArg->type=%s formArg->name=%si formArg->defval=%s\n",
+        //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
@@ -4525,6 +4567,13 @@ QCString substituteTemplateArgumentsInString(
           result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs)+" ";
           found=TRUE;
         }
+      }
+      else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&
+               formArg->defval!=name /* to prevent recursion */
+              )
+      {
+        result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs)+" ";
+        found=TRUE;
       }
     }
     if (!found) result += n;

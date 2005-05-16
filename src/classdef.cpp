@@ -876,7 +876,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
       !documentation().isEmpty() || 
-      /*(Config_getBool("SOURCE_BROWSER") && startBodyLine!=-1 && bodyDef) ||*/
+      (Config_getBool("SOURCE_BROWSER") && getStartBodyLine()!=-1 && getBodyDef()) ||
       exampleFlag)
   {
     ol.writeRuler();
@@ -2455,7 +2455,7 @@ void ClassDef::determineImplUsageRelation()
         QCString usedClassName;
         QCString templSpec;
         bool found=FALSE;
-        while (extractClassNameFromType(type,pos,usedClassName,templSpec) && !found)
+        while (extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1 && !found)
         {
           //printf("usedClassName=`%s' templSpec=%s\n",usedClassName.data(),templSpec.data());
           // check if usedClassName is a template argument of its class

@@ -66,7 +66,7 @@ bool Htags::execute(const QCString &htmldir)
   /*
    * Construct command line for htags(1).
    */
-  QCString commandLine = " -g -s -a -n";
+  QCString commandLine = " -g -s -a -n ";
   if (!quiet)   commandLine += "-v ";
   if (warnings) commandLine += "-w ";
   if (!htagsOptions.isEmpty()) 

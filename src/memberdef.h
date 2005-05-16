@@ -156,6 +156,7 @@ class MemberDef : public Definition
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
     bool isDetailedSectionLinkable() const;
+    bool isFriendClass() const;
     bool isDocumentedFriendClass() const;
 
     // set functions

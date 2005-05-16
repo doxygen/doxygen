@@ -627,7 +627,7 @@ static ClassDef *stripClassName(const char *s)
   QCString type = s;
   QCString className;
   QCString templSpec;
-  while (extractClassNameFromType(type,pos,className,templSpec))
+  while (extractClassNameFromType(type,pos,className,templSpec)!=-1)
   {
     QCString clName=className+templSpec;
     ClassDef *cd=0;

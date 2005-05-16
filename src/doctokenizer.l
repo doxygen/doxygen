@@ -701,7 +701,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
                          unput(*yytext);
   			 return 0;
   		       }
-<St_IntRef>[A-Z_a-z0-9.:/#\-\+]+ {
+<St_IntRef>[A-Z_a-z0-9.:/#\-\+\(\)]+ {
                          g_token->name = yytext;
 			 return TK_WORD;
   		       }

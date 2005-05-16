@@ -2358,6 +2358,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					}
 <ReadBody>"}"{BN}+"typedef"{BN}+	{ //err("ReadBody count=%d\n",curlyCount);
+					  lineCount();
   					  if ( curlyCount>0 )
 					  {
 					    current->program += yytext ;
@@ -2365,7 +2366,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					  else
 					  {
-					    lineCount();
 					    isTypedef = TRUE;
 					    current->endBodyLine = yyLineNr;
 					    QCString &cn = current->name;
