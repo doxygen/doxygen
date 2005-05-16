@@ -20,7 +20,7 @@
 #ifndef TRANSLATOR_PL_H
 #define TRANSLATOR_PL_H
 
-class TranslatorPolish : public TranslatorAdapter_1_4_1
+class TranslatorPolish : public Translator
 {
   private:
     /*! to avoid macro redefinition from translator_pl.h */
@@ -1537,9 +1537,10 @@ class TranslatorPolish : public TranslatorAdapter_1_4_1
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { return "Ta struktura katalogów jest posortowana jest z grubsza, "
+    { 
+      return "Ta struktura katalogów jest posortowana jest z grubsza, "
              "choæ nie ca³kowicie, alfabetycznie:";
-        }
+    }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
@@ -1555,6 +1556,19 @@ class TranslatorPolish : public TranslatorAdapter_1_4_1
       QCString result((first_capital ? "Katalog" : "katalog"));
       if (! singular) result+="i";
       return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+      return "To jest metoda przeci±¿ona, udostêpniona dla wygody. "
+             "Ró¿ni siê od powy¿szej metody tylko zestawem akceptowanych argumentów.";               
     }
 };
 

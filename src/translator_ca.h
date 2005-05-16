@@ -39,7 +39,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorCatalan : public TranslatorAdapter_1_4_1
+class TranslatorCatalan : public Translator
 {
   public:
 
@@ -189,10 +189,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
     virtual QCString trFileList()
     { return "Llista dels Fitxers"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Fitxers d'encapçalaments"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -324,10 +320,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Aquests són els fitxers d'encapçalament que constitueixen l'API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Aquesta és la llista de tots els exemples:"; }
@@ -339,12 +331,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Aquesta és la llista de mòduls:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "No hi ha cap descripció disponible"; }
     
     // index titles (the project name is prepended for these) 
 
@@ -496,12 +482,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
     { return "Documentació dels Tipus de les Enumeracions"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Documentació dels Valors de les Enumeracions"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -555,17 +535,9 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
     virtual QCString trForInternalUseOnly()
     { return "Tan sols per a ús intern."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplementat per raons internes; l'API no es veu afectada."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Atenció"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Errors i limitacions"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -845,10 +817,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Codi Font";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definició a la línia @0 del fitxer @1.";
@@ -1148,11 +1116,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfícies";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1184,11 +1147,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
     virtual QCString trPackages()
     {
       return "Paquets";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Documentació dels Paquets";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1326,17 +1284,6 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
       return result; 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Camp" : "camp"));
-      if (!singular)  result+="s";
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1595,6 +1542,20 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_1
       QCString result((first_capital ? "Directori" : "directori"));
       if (!singular) result+="s";
       return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Aquesta és una funció membre sobrecarregada, "
+              "proveïda per conveniència. Es diferencia de la funció "
+              "anterior només en els arguments que accepta.";
     }
 };
 

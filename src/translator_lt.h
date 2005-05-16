@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2004 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -21,8 +21,10 @@
  *  if you have any suggestions drop us an email
  *  -------------------------------------------
  *  Project start                  :13.May.2k4
- *  Last Doxygen version covered   : 1.3.6
- *  Last revision                  :
+ *  Last Doxygen version covered   : 1.4.3
+ *  
+ *  Revisions:
+ *  Updated to 1.3.9 25.Oct.2k4
  *
 */
 
@@ -30,7 +32,7 @@
 #define TRANSLATOR_LT_H
 
 
-class TranslatorLithuanian : public TranslatorAdapter_1_3_8
+class TranslatorLithuanian : public Translator
 {
   public:
 
@@ -180,10 +182,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     virtual QCString trFileList()
     { return "Failai"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Antraðèiø Failai"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -316,10 +314,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Antraðèiø failai, kurie sudaro API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Visø pavyzdþiø sàraðas:"; }
@@ -332,15 +326,8 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     virtual QCString trModulesDescription()
     { return "Visø moduliø sàraðas:"; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Apraðymo nëra"; }
-    
     // index titles (the project name is prepended for these) 
-
-
+    
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Dokumentacija"; }
@@ -488,12 +475,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     { return "Iðvardinimo Tipo Dokumentacija"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Iðvardinimo Reikðmiø Dokumentacija"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -547,17 +528,9 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     virtual QCString trForInternalUseOnly()
     { return "Tiktai vidiniam naudojimui."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplemented for internal reasons; the API is not affected."; }/*FIXME*/
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Áspëjimas"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Klaidos ir apribojimai"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -832,10 +805,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Ðaltiniai";/*FIXME cia gali buti ir programos tekstai*/
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Apibrëþimas failo @1 eilutëje @0.";
@@ -1142,11 +1111,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Sàsajos";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1178,11 +1142,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     virtual QCString trPackages()
     {
       return "Paketai";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Paketo Dokumentacija";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1324,18 +1283,6 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
       return result; 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Lauka" : "lauka"));
-      if (!singular)  result+="i";
-      else  result+="s";
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1529,7 +1476,7 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
       }
       else 
       {
-        return "Surasti <b>$num</b> dokumentø, atitinkanèiø Jûsø uþklausà. "
+        return "Surasta <b>$num</b> dokumentø, atitinkanèiø Jûsø uþklausà. "
                "Pirmiausiai rodomi labiausiai tenkinantys uþklausà.";
       }
     }
@@ -1540,6 +1487,75 @@ class TranslatorLithuanian : public TranslatorAdapter_1_3_8
     {
       return "Atitikmenys:";
     }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return filename + " iðeities tekstas";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Direktorijø hierarchija"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Direktorijø dokumentacija"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of a HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Direktorijos"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Ði direktorjø strûktûra grubiai surikiuota abëcëlës tvarka:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=" Directorijos apraðas"; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Direktorij" : "direktorij"));
+      if (singular) result+="a"; else result+="os";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Perkraunamas metodas sukurtas patogumui. "
+              "Jis skiriasi nuo aukðèiau minëto tik argumetais.";
+    }
+
 
 };
 

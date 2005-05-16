@@ -14,6 +14,8 @@
  * input used in their production; they are not affected by this license.
  *
  * The translation into German was provided by
+ *   Jens Seidel (jensseidel@users.sf.net)
+ * based on work from
  *   Jens Breitenstein (Jens.Breitenstein@tlc.de)
  */
 
@@ -103,6 +105,9 @@
 //    - Changed Todo list translation as suggested in
 //      http://bugzilla.gnome.org/show_bug.cgi?id=172818
 //    
+//   2005/05/09 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.4.3" version (removed unused methods)
+//
 //   Todo:
 //    - see FIXME
 
@@ -244,10 +249,6 @@ class TranslatorGerman : public Translator
     virtual QCString trFileList()
     { return "Auflistung der Dateien"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Header-Dateien"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -371,10 +372,6 @@ class TranslatorGerman : public Translator
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Hier folgen die Headerdateien, welche die API definieren:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Hier folgt eine Liste mit allen Beispielen:"; }
@@ -386,12 +383,6 @@ class TranslatorGerman : public Translator
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Hier folgt die Aufzählung aller Module:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Keine Beschreibung verfügbar"; }
 
     // index titles (the project name is prepended for these) 
 
@@ -538,12 +529,6 @@ class TranslatorGerman : public Translator
     { return "Dokumentation der Aufzählungstypen"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Dokumentation des Wertebereiches der Aufzählungstypen"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -598,18 +583,9 @@ class TranslatorGerman : public Translator
     virtual QCString trForInternalUseOnly()
     { return "Nur für den internen Gebrauch."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Aus internen Gründen neu implementiert. "
-             "Das API wird davon nicht berührt."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Warnung"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Fehler und Einschränkungen"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -894,11 +870,6 @@ class TranslatorGerman : public Translator
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trSources()
-    {
-      return "Quellen";
-    }
 
     virtual QCString trDefinedAtLineInSourceFile()
     {
@@ -1243,12 +1214,6 @@ class TranslatorGerman : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Schnittstellen";
-    }
-
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1280,12 +1245,6 @@ class TranslatorGerman : public Translator
     virtual QCString trPackages()
     {
       return "Pakete";
-    }
-
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Paketdokumentation";
     }
 
     /*! Text shown before a multi-line define */
@@ -1404,17 +1363,6 @@ class TranslatorGerman : public Translator
       return result;
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool, bool singular)
-    {
-      QCString result("Feld");
-      if (!singular)  result+="er";
-      return result;
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.

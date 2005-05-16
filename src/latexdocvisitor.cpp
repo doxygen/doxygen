@@ -124,8 +124,9 @@ void LatexDocVisitor::visit(DocSymbol *s)
   {
     case DocSymbol::BSlash:  m_t << "$\\backslash$"; break;
     case DocSymbol::At:      m_t << "@"; break;
-    case DocSymbol::Less:    m_t << "$<$"; break;
-    case DocSymbol::Greater: m_t << "$>$"; break;
+    case DocSymbol::Less:    if (m_insidePre) m_t << "<"; else m_t << "$<$"; 
+                             break;
+    case DocSymbol::Greater: if (m_insidePre) m_t << ">"; else m_t << "$>$"; break;
     case DocSymbol::Amp:     m_t << "\\&"; break;
     case DocSymbol::Dollar:  m_t << "\\$"; break;
     case DocSymbol::Hash:    m_t << "\\#"; break;

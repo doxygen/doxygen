@@ -305,6 +305,7 @@ class ClassDef : public Definition
     void setIsStatic(bool b) { m_isStatic=b; }
     void setIsObjectiveC(bool b) { m_isObjC=b; }
     void addListReferences();
+    void setCompoundType(CompoundType t) { m_compType = t; } 
 
     /*! Creates a new compound definition.
      *  \param fileName  full path and file name in which this compound was

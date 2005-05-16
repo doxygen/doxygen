@@ -501,10 +501,10 @@ static void checkFormula();
 
 static void prependScope()
 {
+#if 0
   Entry *current_root = current->parent;
   if (current_root && current_root->section & Entry::SCOPE_MASK)
   {
-    //printf("--- prependScope %s to %s\n",current_root->name.data(),current->name.data());
     current->name.prepend(current_root->name+"::");
     if (current_root->tArgLists)
     {
@@ -513,7 +513,6 @@ static void prependScope()
 	current->tArgLists = new QList<ArgumentList>;
 	current->tArgLists->setAutoDelete(TRUE);
       }
-      //printf("prependScope #=%d #current=%d\n",current_root->tArgLists->count(),current->tArgLists->count());
       QListIterator<ArgumentList> talsi(*current_root->tArgLists);
       ArgumentList *srcAl=0;
       for (talsi.toLast();(srcAl=talsi.current());--talsi)
@@ -525,12 +524,12 @@ static void prependScope()
         for (;(a=tali.current());++tali)
         {
           dstAl->append(new Argument(*a));
-        //printf("appending argument %s %s\n",a->type.data(),a->name.data());
         }	  
         current->tArgLists->insert(0,dstAl);	
       }
     }
   }
+#endif
 }
 
 static void addSection()

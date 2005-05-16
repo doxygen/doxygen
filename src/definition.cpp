@@ -369,7 +369,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     {
       QCString lineStr,anchorStr;
       lineStr.sprintf("%d",m_startBodyLine);
-      anchorStr.sprintf(Htags::useHtags ? "%d" : "l%05d",m_startBodyLine);
+      anchorStr.sprintf(Htags::useHtags ? "L%d" : "l%05d",m_startBodyLine);
       ol.newParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
@@ -586,10 +586,12 @@ bool Definition::hasDocumentation() const
 { 
   static bool extractAll = Config_getBool("EXTRACT_ALL"); 
   static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
-  return !m_doc.isEmpty() ||             // has detailed docs
+  bool hasDocs = 
+         !m_doc.isEmpty() ||             // has detailed docs
          !m_brief.isEmpty() ||           // has brief description
          extractAll ||                   // extract everything
          (sourceBrowser && m_startBodyLine!=-1 && m_bodyDef); // link to definition
+  return hasDocs;
 }
 
 void Definition::addSourceReferencedBy(MemberDef *md)
