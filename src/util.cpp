@@ -47,6 +47,7 @@
 #include "pagedef.h"
 #include "debug.h"
 #include "searchindex.h"
+#include "doxygen.h"
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
@@ -599,7 +600,8 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
  * 
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
-ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpec)
+static ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
+                                   MemberDef **pMemType,QCString *pTemplSpec)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -631,7 +633,14 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,QCString *pTemplSpe
   ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
                                   fileScope,type,&memTypeDef,0);
   // if type is a typedef than return what it resolves to.
-  if (memTypeDef) return newResolveTypedef(fileScope,memTypeDef,pTemplSpec);
+  if (memTypeDef && memTypeDef->isTypedef()) 
+  {
+    return newResolveTypedef(fileScope,memTypeDef,pMemType,pTemplSpec);
+  }
+  else if (memTypeDef && memTypeDef->isEnumerate() && pMemType)
+  {
+    *pMemType = memTypeDef;
+  }
   
   //printf("type=%s result=%p\n",type.data(),result);
   if (result==0)
@@ -1169,7 +1178,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
             {
               QCString spec;
               minDistance=distance;
-              ClassDef *cd = newResolveTypedef(fileScope,md,&spec);
+              MemberDef *enumType = 0;
+              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec);
               if (cd) // shouldn't be 0, but could in some weird cases
               {
                 //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
@@ -1177,6 +1187,22 @@ ClassDef *getResolvedClassRec(Definition *scope,
                 bestTypedef = md;
                 bestTemplSpec = spec;
               }
+              else if (enumType)
+              {
+                bestMatch = 0;
+                bestTypedef = enumType;
+                bestTemplSpec = "";
+              }
+            }
+          }
+          else if (md->isEnumerate())
+          {
+            if (distance<minDistance)
+            {
+              minDistance=distance;
+              bestMatch = 0;
+              bestTypedef = md;
+              bestTemplSpec = "";
             }
           }
         }
@@ -1592,7 +1618,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
 }
 
 
-QCString argListToString(ArgumentList *al)
+QCString argListToString(ArgumentList *al,bool useCanonicalType)
 {
   QCString result;
   if (al==0) return result;
@@ -1600,7 +1626,9 @@ QCString argListToString(ArgumentList *al)
   result+="(";
   while (a)
   {
-    QCString type1 = a->type, type2;
+    QCString type1 = useCanonicalType && !a->canType.isEmpty() ? 
+                     a->canType : a->type;
+    QCString type2;
     int i=type1.find(")("); // hack to deal with function pointers
     if (i!=-1)
     {
@@ -1940,6 +1968,7 @@ int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
 //  printf(")");
 //}
 
+#ifndef NEWMATCH
 // strip any template specifiers that follow className in string s
 static QCString trimTemplateSpecifiers(
      const QCString &namespaceName,
@@ -2096,6 +2125,7 @@ static QCString trimScope(const QCString &name,const QCString &s)
   //printf("trimScope(name=%s,scope=%s)=%s\n",name.data(),s.data(),result.data());
   return result;
 }
+#endif
 
 void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
 {
@@ -2256,7 +2286,7 @@ void stripIrrelevantConstVolatile(QCString &s)
 //#define MATCH printf("Match at line %d\n",__LINE__);
 //#define NOMATCH printf("Nomatch at line %d\n",__LINE__);
 
-
+#ifndef NEWMATCH
 static bool matchArgument(const Argument *srcA,const Argument *dstA,
                    const QCString &className,
                    const QCString &namespaceName,
@@ -2628,10 +2658,105 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
   return TRUE; // all arguments match 
 }
 
+#endif
+
+static QCString resolveSymbolName(FileDef *fs,Definition *symbol,QCString &templSpec)
+{
+  ASSERT(symbol!=0);
+  if (symbol->definitionType()==Definition::TypeMember && 
+      ((MemberDef*)symbol)->isTypedef()) // if symbol is a typedef then try
+                                         // to resolve it
+  {
+    MemberDef *md = 0;
+    ClassDef *cd = newResolveTypedef(fs,(MemberDef*)symbol,&md,&templSpec);
+    if (cd)
+    {
+      return cd->qualifiedNameWithTemplateParameters();
+    }
+    else if (md)
+    {
+      return md->qualifiedName();
+    }
+  }
+  return symbol->qualifiedName();
+}
+
+static QCString getCanonicalTypeForIdentifier(
+                  Definition *d,FileDef *fs,const QCString &word,
+                  QCString *tSpec)
+{
+  QCString symName,scope,result,templSpec;
+  DefinitionList *defList=0;
+  if (tSpec) templSpec = *tSpec;
+
+  if (word.findRev("::")!=-1 && !(scope=stripScope(word)).isEmpty())
+  {
+    symName=word.mid(scope.length()+2);
+  }
+  else
+  {
+    symName=word;
+  }
+
+  if (!symName.isEmpty() && !templSpec.isEmpty() &&
+      (defList=Doxygen::symbolMap->find(symName+templSpec)) &&
+      defList->count()==1) // word without scope but with template specs
+    // is a unique symbol in the symbol map
+  {
+    QCString ts;
+    result = resolveSymbolName(fs,defList->first(),ts);
+    *tSpec="";
+  }
+  else if (!symName.isEmpty() &&
+      (defList=Doxygen::symbolMap->find(symName)) &&
+      defList->count()==1) // word without scope is a 
+    // unique symbol in the symbol map
+  {
+    QCString ts;
+    result = resolveSymbolName(fs,defList->first(),ts)+templSpec;
+  }
+  else // symbol not unique, try to find the one in the right scope
+  {
+    ClassDef *cd = 0;
+    MemberDef *mType = 0;
+    if (!templSpec.isEmpty())
+    {
+      cd = getResolvedClass(d,fs,word+templSpec,&mType,0,TRUE);
+      if (cd) *tSpec="";
+    }
+    if (cd==0)
+    {
+      cd = getResolvedClass(d,fs,word,&mType,0,TRUE);
+    }
+
+    //printf(">>>> word '%s' => '%s'\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>");
+    if (cd) // known type
+    {
+      result = cd->qualifiedNameWithTemplateParameters();
+    }
+    else if (mType && mType->isEnumerate()) // an enum
+    {
+      result = mType->qualifiedName();
+    }
+    else // not known as a class
+    {
+      QCString resolvedType = resolveTypeDef(d,word);
+      if (resolvedType.isEmpty()) // not known as a typedef either
+      {
+        result = word;
+      }
+      else
+      {
+        result = resolvedType;
+      }
+    }
+  }
+  return result;
+}
 
 static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *arg)
 {
-  QCString type = arg->type;
+  QCString type = arg->type.stripWhiteSpace();
   QCString name = arg->name;
   //printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
   if ((type=="const" || type=="volatile") && !name.isEmpty()) 
@@ -2655,6 +2780,9 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   type.stripPrefix("enum ");
   type.stripPrefix("typename ");
 
+  type = removeRedundantWhiteSpace(type);
+  //printf("extractCanonicalTyp2(type=%s,name=%s)\n",type.data(),name.data());
+
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
   
   QCString canType,templSpec,word;
@@ -2664,41 +2792,24 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   {
     //printf("     i=%d p=%d\n",i,p);
     canType += type.mid(pp,i-pp);
-    ClassDef *cd = 0;
-    if (!templSpec.isEmpty())
+
+    canType += getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
+    if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
+                              // (i.e. type is not a template specialization)
+                              // then resolve any identifiers inside. 
     {
-      cd = getResolvedClass(d,fs,word+templSpec,0,0,TRUE);
-    }
-    if (cd==0)
-    {
-      cd = getResolvedClass(d,fs,word,0,0,TRUE);
-    }
-    //printf(">>>> word '%s' => '%s'\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>");
-    if (cd)
-    {
-      canType+=cd->qualifiedNameWithTemplateParameters();
-    }
-    else
-    {
-      QCString resolvedType = resolveTypeDef(d,word);
-      if (resolvedType.isEmpty())
+      static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+      int p=0,l,i;
+      // for each identifier template specifier
+      while ((i=re.match(templSpec,p,&l))!=-1)
       {
-        //int i=word.findRev("::");
-        //if (i!=-1) // strip scope if it cannot be resolved anyway
-        //           // TODO is this robust enough?
-        //{
-        //  canType+=word.mid(i+2);
-        //}
-        //else
-        //{
-          canType+=word+templSpec;
-        //}
+        canType += templSpec.mid(p,i-p);
+        canType += getCanonicalTypeForIdentifier(d,fs,word,0);
+        p=i+l;
       }
-      else
-      {
-        canType+=resolvedType;
-      }
+      canType+=templSpec.right(templSpec.length()-p);
     }
+    
     pp=p;
   }
   canType += type.right(type.length()-pp);
@@ -3035,6 +3146,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
   
   MemberName *mn = Doxygen::memberNameSDict[mName];
+  //printf("mName=%s mn=%p\n",mName.data(),mn);
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
     //printf("  >member name found\n");
@@ -3073,14 +3185,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           //if (mmd->isLinkable())
           //{
             bool match=args==0 || 
-#ifdef NEW_MATCH
-              matchArguments2(mmd->getOuterScope(),md->getFileDef(),md->argumentList(),
+              matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
                               fcd,fcd->getFileDef(),argList,
                               checkCV
                              );  
-#else
-              matchArguments(mmd->argumentList(),argList,className,0,checkCV); 
-#endif
             //printf("match=%d\n",match);
             if (match)
             {
@@ -3193,15 +3301,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
-#ifdef NEW_MATCH
               match=matchArguments2(
                   mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
                   fnd,mmd->getFileDef(),argList,
                   checkCV); 
-#else
-              match=matchArguments(mmd->argumentList(),argList,0,
-                  namespaceName,checkCV); 
-#endif
             }
             if (match)
             {
@@ -3280,14 +3383,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             {
               argList=new ArgumentList;
               stringToArgumentList(args,argList);
-#ifdef NEW_MATCH
               match=matchArguments2(
                   md->getOuterScope(),fd,md->argumentList(),
                   Doxygen::globalScope,fd,argList,
                   checkCV); 
-#else
-              match=matchArguments(md->argumentList(),argList,0,0,checkCV); 
-#endif
               delete argList; argList=0;
             }
             if (match) 

@@ -297,7 +297,7 @@ FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
-LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"))? 
+LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 SPCMD1    {CMD}[a-z_A-Z0-9]+ 
 SPCMD2    {CMD}[\\@<>&$#%~]
 SPCMD3    {CMD}form#[0-9]+
@@ -316,7 +316,7 @@ OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
 OPCAST    {BLANK}+[^(\r\n.,]+
-OPMASK    ({BLANK}*{OPNORM}{FUNCARG})|({OPCAST}{FUNCARG})
+OPMASK    ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}

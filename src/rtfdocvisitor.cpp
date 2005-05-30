@@ -648,8 +648,8 @@ void RTFDocVisitor::visitPost(DocTitle *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocTitle)}\n");
-  m_t << "}"; // end bold
   m_t << "\\par" << endl;
+  m_t << "}"; // end bold
   incIndentLevel();
   m_t << rtf_Style_Reset << getStyle("DescContinue");
   m_lastIsPara=FALSE;

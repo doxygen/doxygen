@@ -594,9 +594,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 
   if (md->memberType() == MemberDef::Variable)
   {
-    ArgumentList *al = md->argumentList();
-    t << " volatile=\"";
-    if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
+    //ArgumentList *al = md->argumentList();
+    //t << " volatile=\"";
+    //if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
 
     t << "\" mutable=\"";
     if (md->isMutable()) t << "yes"; else t << "no";
@@ -660,7 +660,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
         << convertToXML(rmd->name()) << "</reimplementedby>" << endl;
     }
   }
-  
+
   if (isFunc) //function
   {
     ArgumentList *declAl = md->declArgumentList();
@@ -723,13 +723,21 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     }
   }
   else if (md->memberType()==MemberDef::Define && 
-           md->argsString()!=0) // define
+          md->argsString()) // define
   {
-    ArgumentListIterator ali(*md->argumentList());
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
+    if (md->argumentList()->count()==0) // special case for "foo()" to
+                                        // disguish it from "foo".
     {
-      t << "        <param><defname>" << a->type << "</defname></param>" << endl;
+      t << "        <param></param>" << endl;
+    }
+    else
+    {
+      ArgumentListIterator ali(*md->argumentList());
+      Argument *a;
+      for (ali.toFirst();(a=ali.current());++ali)
+      {
+        t << "        <param><defname>" << a->type << "</defname></param>" << endl;
+      }
     }
   }
   // avoid that extremely large tables are written to the output. 

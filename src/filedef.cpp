@@ -686,13 +686,17 @@ void FileDef::addMembersToMemberGroup()
 /*! Adds member definition \a md to the list of all members of this file */
 void FileDef::insertMember(MemberDef *md)
 {
-  //printf("%s:FileDef::insertMember(%s)\n",name().data(),md->name().data());
-  if (allMemberList.find(md)!=-1) return;
+  //printf("%s:FileDef::insertMember(%s (=%p) list has %d elements)\n",
+  //    name().data(),md->name().data(),md,allMemberList.count());
+  if (allMemberList.findRef(md)!=-1) 
+  { 
+    return;
+  }
 
   allMemberList.append(md); 
   bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
-  switch(md->memberType())
+  switch (md->memberType())
   {
     case MemberDef::Variable:     
     case MemberDef::Property:     
@@ -1129,7 +1133,7 @@ static void addDirsAsGroups(Directory *root,GroupDef *parent,int level)
   GroupDef *gd=0;
   if (root->kind()==DirEntry::Dir)
   {
-    gd = new GroupDef("<generated>",
+    gd = new GroupDef("[generated]",
                       1,
                       root->path(), // name
                       root->name()  // title

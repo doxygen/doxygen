@@ -327,6 +327,7 @@ static Protection	protection;
 
 static bool             xrefAppendFlag;
 static bool             inGroupParamFound;
+static int              braceCount;
 
 //-----------------------------------------------------------------------------
 
@@ -855,14 +856,11 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					  addOutput(yytext[2]);
   					}
 <Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
-  					  if (inContext==OutputBrief)
-					  {
-					    setOutput(OutputDoc);
-					  }
-					  else
+  					  if (inContext!=OutputBrief)
 					  {
   					    addOutput(yytext);
 					  }
+					  setOutput(OutputDoc);
   					  lineCount();
   					}
 <Comment>"."				{ // potential end of a JavaDoc style comment
@@ -1557,18 +1555,30 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   /* ----- handle argument of fn command ------- */
 
 <FnParam>{DOCNL}			{ // end of argument
-  					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
-					  langParser->parsePrototype(functionProto);
-					  BEGIN( Comment );
+  					  if (braceCount==0)
+					  {
+					    if (*yytext=='\n') yyLineNr++;
+					    addOutput('\n');
+					    //printf("functionProto=%s\n",functionProto.data());
+					    langParser->parsePrototype(functionProto);
+					    BEGIN( Comment );
+					  }
   					}
 <FnParam>{LC}				{ // line continuation
                                           yyLineNr++; 
 					  functionProto+=' ';
   					}
-<FnParam>[^@\\\n]+			{ // non-special characters
+<FnParam>[^@\\\n()]+			{ // non-special characters
                                           functionProto+=yytext;
   					}
+<FnParam>"("				{
+                                          functionProto+=yytext;
+					  braceCount++;
+					}
+<FnParam>")"				{
+                                          functionProto+=yytext;
+					  braceCount--;
+					}
 <FnParam>.				{ // add other stuff
                                           functionProto+=*yytext;
   					}
@@ -1655,6 +1665,7 @@ static void handleFn(const QCString &)
 {
   makeStructuralIndicator(Entry::MEMBERDOC_SEC);
   functionProto.resize(0);
+  braceCount=0;
   BEGIN(FnParam);
 }
 
