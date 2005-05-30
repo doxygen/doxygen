@@ -555,7 +555,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   int funcStart=cmdArg.find('(');
   if (funcStart==-1) funcStart=l;
 
-  QString name=cmdArg.left(funcStart);
+  QString name=removeRedundantWhiteSpace(cmdArg.left(funcStart).latin1());
   QString args=cmdArg.right(l-funcStart);
 
   // try if the link is to a member
@@ -2684,6 +2684,18 @@ int DocHtmlCell::parse()
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     m_children.append(par);
     retval=par->parse();
+    if (retval==TK_HTMLTAG)
+    {
+      int tagId=HtmlTagMapper::map(g_token->name);
+      if (tagId==HTML_TD && g_token->endTag) // found </dt> tag
+      {
+        retval=TK_NEWPARA; // ignore the tag
+      }
+      else if (tagId==HTML_TH && g_token->endTag) // found </th> tag
+      {
+        retval=TK_NEWPARA; // ignore the tag
+      }
+    }
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();

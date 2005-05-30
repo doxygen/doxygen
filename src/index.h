@@ -104,7 +104,7 @@ enum ClassMemberHighlight
   CMHL_Properties,
   CMHL_Events,
   CMHL_Related,
-  CMHL_Total = CMHL_Events+1
+  CMHL_Total = CMHL_Related+1
 };
 
 enum FileMemberHighlight

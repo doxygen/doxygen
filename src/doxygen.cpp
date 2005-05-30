@@ -900,7 +900,7 @@ Definition *buildScopeFromQualifiedName(const QCString name,int level)
       // introduce bogus namespace
       //printf("adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
       nd=new NamespaceDef(
-        "<generated>",1,fullScope);
+        "[generated]",1,fullScope);
 
       // add namespace to the list
       Doxygen::namespaceSDict.inSort(fullScope,nd);
@@ -1950,7 +1950,6 @@ static void buildVarList(Entry *root)
     else
       mtype=MemberDef::Variable;
 
-
     QCString classScope=stripAnonymousNamespaceScope(scope);
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
     QCString annScopePrefix=scope.left(scope.length()-classScope.length());
@@ -2315,23 +2314,14 @@ static void buildFunctionList(Entry *root)
             QCString nsName,rnsName;
             if (mnd)  nsName = mnd->name().copy();
             if (rnd) rnsName = rnd->name().copy();
-#ifdef NEWMATCH
             bool ambig;
             FileDef *rfd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
-#else
-            NamespaceSDict    *unl = mfd ? mfd->getUsedNamespaces() : 0;
-            SDict<Definition> *ucl = mfd ? mfd->getUsedClasses() : 0;
-#endif
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             if ( 
-#ifdef NEWMATCH
                 matchArguments2(md->getOuterScope(),mfd,md->argumentList(),
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE)
-#else
-                matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,unl,ucl)
-#endif
                )
             {
               GroupDef *gd=0;
@@ -2604,23 +2594,12 @@ static void findFriends()
           //printf("Checking for matching arguments 
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-#ifndef NEWMATCH
-          NamespaceDef *nd=mmd->getNamespaceDef();
-#endif
           if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
-#ifdef NEWMATCH
               matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmd->argumentList(),
                               fmd->getOuterScope(), fmd->getFileDef(), fmd->argumentList(),
                               TRUE
                              )
                              
-#else
-              matchArguments(mmd->argumentList(),
-                             fmd->argumentList(),
-                             mmd->getClassDef()->name(),
-                             nd ? nd->name().data() : 0
-                            )
-#endif
              ) // if the member is related and the arguments match then the 
                // function is actually a friend.
           {
@@ -2733,14 +2712,10 @@ static void transferFunctionDocumentation()
             //    mdef, mdef ? mdef->name().data() : "",
             //    mdec, mdec ? mdec->name().data() : "");
             if (mdef && mdec && 
-#ifdef NEWMATCH
                 matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
                                 mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
                                 TRUE
                                )
-#else
-                matchArguments(mdef->argumentList(),mdec->argumentList())
-#endif
                ) /* match found */
             {
               //printf("Found member %s: definition in %s (doc=`%s') and declaration in %s (doc=`%s')\n",
@@ -2875,14 +2850,10 @@ static void transferFunctionReferences()
         mdef=md;
     }
     if (mdef && mdec && 
-#ifdef NEWMATCH
         matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
                         mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
                         TRUE
                        )
-#else
-        matchArguments(mdef->argumentList(),mdec->argumentList())
-#endif
        ) /* match found */
     {
       MemberSDict *defDict = mdef->getReferencesMembers();
@@ -2968,14 +2939,10 @@ static void transferRelatedFunctionDocumentation()
         {
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
           if (rmd->isRelated() && // related function
-#ifdef NEWMATCH
               matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
                               rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
                               TRUE
                              )
-#else
-              matchArguments(md->argumentList(),rmd->argumentList()) // match argument lists
-#endif
              )
           {
             //printf("  Found related member `%s'\n",md->name().data());
@@ -4015,9 +3982,6 @@ static void addMemberDocs(Entry *root,
                    ArgumentList *al,
                    bool over_load,
                    NamespaceSDict *
-#ifndef NEWMATCH
-                   nl
-#endif
                   )
 {
   //printf("addMemberDocs: `%s'::`%s' `%s' funcDecl=`%s' memSpec=%d\n",
@@ -4040,10 +4004,8 @@ static void addMemberDocs(Entry *root,
   bool ambig;
   FileDef *rfd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
-#ifdef NEWMATCH
   // TODO determine scope based on root not md
   Definition *rscope = md->getOuterScope();
-#endif
   
   if (al)
   {
@@ -4053,19 +4015,10 @@ static void addMemberDocs(Entry *root,
   else
   {
     if (
-#ifdef NEWMATCH
           matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
                            rscope,rfd,root->argList,
                            TRUE
                          )
-#else
-          matchArguments(md->argumentList(),root->argList,
-                         cd ? cd->name().data() : 0,
-                         nd ? nd->name().data() : 0,
-                         TRUE,
-                         nl
-                        )
-#endif
        ) 
     {
       //printf("merging arguments (2)\n");
@@ -4233,7 +4186,7 @@ static bool findGlobalMember(Entry *root,
       FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceSDict *nl    = fd ? fd->getUsedNamespaces() : 0;
-      SDict<Definition> *cl = fd ? fd->getUsedClasses()    : 0;
+      //SDict<Definition> *cl = fd ? fd->getUsedClasses()    : 0;
       //printf("NamespaceList %p\n",nl);
 
       // search in the list of namespaces that are imported via a 
@@ -4249,21 +4202,15 @@ static bool findGlobalMember(Entry *root,
             md->name().data(),namespaceName.data());
         QCString nsName = nd ? nd->name().data() : "";
 
-#ifdef NEW_MATCH
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict[namespaceName];
-#endif
         
         bool matching=
           (md->argumentList()==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-#ifdef NEW_MATCH
           matchArguments2(md->getOuterScope(),md->getFileDef(),md->argumentList(),
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
                           FALSE);
-#else
-          matchArguments(md->argumentList(),root->argList,0,nsName,FALSE,nl,cl);
-#endif
 
         // for static members we also check if the comment block was found in 
         // the same file. This is needed because static members with the same
@@ -4287,7 +4234,7 @@ static bool findGlobalMember(Entry *root,
     if (!found && !root->relatesDup) // no match
     {
       QCString fullFuncDecl=decl;
-      if (root->argList) fullFuncDecl+=argListToString(root->argList);
+      if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
       warn(root->fileName,root->startLine,
            "Warning: no matching file member found for \n%s",fullFuncDecl.data());   
       if (mn->count()>0)
@@ -4590,9 +4537,13 @@ static void findMember(Entry *root,
     {
       scopeName=namespaceName;
     }
-    else
+    else if (!getClass(className)) // class name only exists in a namespace
     {
       scopeName=namespaceName+"::"+className;
+    }
+    else
+    {
+      scopeName=className;
     }
   }
   else if (!className.isEmpty())
@@ -4671,9 +4622,6 @@ static void findMember(Entry *root,
     }
   }
   
-  QCString fullFuncDecl=funcDecl.copy();
-  if (isFunc) fullFuncDecl+=argListToString(root->argList);
-
   if (funcType=="template class" && !funcTempList.isEmpty())
     return;   // ignore explicit template instantiations
   
@@ -4809,12 +4757,10 @@ static void findMember(Entry *root,
 
               Debug::print(Debug::FindMembers,0,
                   "5. matching `%s'<=>`%s' className=%s namespaceName=%s\n",
-                  argListToString(argList).data(),argListToString(root->argList).data(),
+                  argListToString(argList,TRUE).data(),argListToString(root->argList,TRUE).data(),
                   className.data(),namespaceName.data()
                   );
 
-#ifdef NEWMATCH
-              
               bool matching=
                 md->isVariable() || md->isTypedef() || // needed for function pointers
                 (md->argumentList()==0 && root->argList->count()==0) || 
@@ -4846,113 +4792,6 @@ static void findMember(Entry *root,
                 count++;
                 memFound=TRUE;
               }
-#else // old matching routine
-
-              // TODO: match loop for all possible scopes
-
-              // list of namespaces using in the file/namespace that this 
-              // member definition is part of
-              NamespaceSDict *nl = new NamespaceSDict;
-              if (nd) 
-              {
-                NamespaceSDict *nnl = nd->getUsedNamespaces();
-                if (nnl)
-                {
-                  NamespaceDef *nnd;
-                  NamespaceSDict::Iterator nsdi(*nnl);
-                  for (nsdi.toFirst();(nnd=nsdi.current());++nsdi)
-                  {
-                    Debug::print(Debug::FindMembers,0,"   adding used namespace %s\n",nnd->qualifiedName().data());
-                    nl->append(nnd->qualifiedName(),nnd);
-                  }
-                }
-              }
-              if (fd)
-              {
-                NamespaceSDict *fnl = fd->getUsedNamespaces();
-                if (fnl)
-                {
-                  NamespaceDef *fnd;
-                  NamespaceSDict::Iterator nsdi(*fnl);
-                  for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
-                  {
-                    Debug::print(Debug::FindMembers,0,"   adding used namespace %s\n",fnd->qualifiedName().data());
-                    nl->append(fnd->qualifiedName(),fnd);
-                  }
-                }
-              }
-
-              SDict<Definition> *cl = new SDict<Definition>(17);
-              if (nd) 
-              {
-                SDict<Definition> *ncl = nd->getUsedClasses();
-                if (ncl)
-                {
-                  SDict<Definition>::Iterator csdi(*ncl);
-                  Definition *ncd;
-                  for (csdi.toFirst();(ncd=csdi.current());++csdi)
-                  {
-                    Debug::print(Debug::FindMembers,0,"   adding used class %s\n",ncd->qualifiedName().data());
-                    cl->append(ncd->qualifiedName(),ncd);
-                  }
-                }
-              }
-              if (fd) 
-              {
-                SDict<Definition> *fcl = fd->getUsedClasses();
-                if (fcl)
-                {
-                  SDict<Definition>::Iterator csdi(*fcl);
-                  Definition *fcd;
-                  for (csdi.toFirst();(fcd=csdi.current());++csdi)
-                  {
-                    Debug::print(Debug::FindMembers,0,"   adding used class %s\n",fcd->qualifiedName().data());
-                    cl->append(fcd->qualifiedName(),fcd);
-                  }
-                }
-              }
-
-              bool matching=
-                md->isVariable() || md->isTypedef() || // needed for function pointers
-                (md->argumentList()==0 && root->argList->count()==0) || 
-                matchArguments(argList, root->argList,className,namespaceName,
-                    TRUE,nl,cl);
-
-
-              Debug::print(Debug::FindMembers,0,
-                  "6. match results = %d\n",matching);
-
-              if (substDone) // found a new argument list
-              {
-                //printf("root->tArgList=`%s'\n",argListToString(root->tArgList).data());
-                if (matching) // replace member's argument list
-                {
-                  //printf("Setting scope template argument of member %s to %s\n",
-                  //    md->name().data(), argListToString(root->tArgList).data()
-                  //    );
-                  //printf("Setting member template argument of member %s to %s\n",
-                  //    md->name().data(), argListToString(root->mtArgList).data()
-                  //    );
-
-                  md->setDefinitionTemplateParameterLists(root->tArgLists);
-                  md->setArgumentList(argList);
-                }
-                else // no match -> delete argument list
-                {
-                  delete argList;
-                }
-              }
-              if (matching) 
-              {
-                //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
-                //         root->inLine,md->isInline());
-                addMemberDocs(root,md,funcDecl,0,overloaded,nl);
-                count++;
-                memFound=TRUE;
-              }
-              delete cl;
-              delete nl;
-#endif
             } 
           } 
           if (count==0 && root->parent && root->parent->section==Entry::OBJCIMPL_SEC)
@@ -4998,6 +4837,9 @@ static void findMember(Entry *root,
                 warn_cont("  template %s\n",tempArgListToString(al).data());
               }
             }
+            QCString fullFuncDecl=funcDecl.copy();
+            if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
+
             warn_cont("  %s\n",fullFuncDecl.data());
 
             if (candidates>0)
@@ -5126,6 +4968,8 @@ static void findMember(Entry *root,
       {
         if (!findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
         {
+          QCString fullFuncDecl=funcDecl.copy();
+          if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
           warn(root->fileName,root->startLine,
                "Warning: Cannot determine class for function\n%s",
                fullFuncDecl.data()
@@ -5173,13 +5017,9 @@ static void findMember(Entry *root,
           {
 
             newMember=newMember && 
-#ifdef NEWMATCH
               !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
                                cd,fd,root->argList,
                                TRUE);
-#else
-              !matchArguments(rmd->argumentList(),root->argList,className,namespaceName);
-#endif
             if (newMember) rmd=mn->next();
           }
           if (!newMember && rmd) // member already exists as rmd -> add docs
@@ -5232,16 +5072,9 @@ static void findMember(Entry *root,
               {
                 // check for matching argument lists
                 if (
-#ifdef NEWMATCH
                     matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
                                     cd,fd,root->argList,
                                     TRUE)
-#else
-                    matchArguments(rmd->argumentList(),
-                      root->argList,
-                      className,
-                      namespaceName)
-#endif
                    )
                 {
                   found=TRUE;
@@ -5297,6 +5130,8 @@ static void findMember(Entry *root,
         {
           if (!findGlobalMember(root,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
           {
+            QCString fullFuncDecl=funcDecl.copy();
+            if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
             warn(root->fileName,root->startLine,
                "Warning: Cannot determine file/namespace for relatedalso function\n%s",
                fullFuncDecl.data()
@@ -5980,14 +5815,10 @@ static void computeMemberRelations()
           //        argListToString(md->argumentList()).data()
           //      );
           if ( 
-#ifdef NEWMATCH
               matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->argumentList(),
                                md->getOuterScope(), md->getFileDef(), md->argumentList(),
                               TRUE
                              ) 
-#else
-              matchArguments(bmd->argumentList(),md->argumentList()) 
-#endif
              )
           {
             //printf("  match found!\n");
@@ -7410,7 +7241,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   }
   else
   {
-    QCString cmd="\""+filterName+"\" \""+fileName+"\"";
+    QCString cmd=filterName+" \""+fileName+"\"";
     FILE *f=popen(cmd,"r");
     if (!f)
     {

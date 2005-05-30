@@ -603,9 +603,13 @@ void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *args)
 {
   t << "<a class=\"anchor\" name=\"" << anchor << "\"></a>";
-  t << "<!-- doxytag: member=<" << name << "> ref=<" << anchor << "> args=<";
+  t << "<!-- doxytag: member=\"";
+  docify(name); 
+  t << "\" ref=\""; 
+  docify(anchor); 
+  t << "\" args=\"";
   docify(args);
-  t << "> -->";
+  t << "\" -->";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)
@@ -815,6 +819,7 @@ void HtmlGenerator::docify(const char *str)
         case '<':  t << "&lt;"; break;
         case '>':  t << "&gt;"; break;
         case '&':  t << "&amp;"; break;
+        case '"':  t << "&quot;"; break;
         case '\\':
                    if (*p=='<')
                      { t << "&lt;"; p++; }

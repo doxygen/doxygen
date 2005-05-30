@@ -218,14 +218,10 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
             md->getOuterScope()->definitionType()==Definition::TypeFile); 
       
       if (srcMd->isFunction() && md->isFunction() && 
-#ifdef NEWMATCH
           matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->argumentList(),
                           md->getOuterScope(),md->getFileDef(),md->argumentList(),
                           TRUE
                          ) &&
-#else
-          matchArguments(srcMd->argumentList(),md->argumentList()) &&
-#endif
           sameScope
          )
       {

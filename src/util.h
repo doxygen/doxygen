@@ -129,10 +129,12 @@ void generateFileRef(OutputDocInterface &od,const char *,
                              const char *linkTxt=0);
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
+#if 0
 bool matchArguments(ArgumentList *,ArgumentList *,
                            const char *cl=0,const char *ns=0,bool checkCV=TRUE,
                            NamespaceSDict *usingNamespaces=0,
                            SDict<Definition> *usingClasses=0);
+#endif
 bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *srcAl,
                      Definition *dstScope,FileDef *dstFileScope,ArgumentList *dstAl,
                      bool checkCV
@@ -155,7 +157,7 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
 int guessSection(const char *name);
 bool isId(char c);
 QCString removeRedundantWhiteSpace(const QCString &s);
-QCString argListToString(ArgumentList *al);
+QCString argListToString(ArgumentList *al,bool useCanonicalType=FALSE);
 QCString tempArgListToString(ArgumentList *al);
 QCString generateMarker(int id);
 void writeExample(OutputList &ol,ExampleSDict *el);

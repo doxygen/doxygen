@@ -315,7 +315,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    ol.parseDoc("<generated>",-1,0,0,subtitle,FALSE,FALSE);
+    ol.parseDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE);
     ol.endMemberSubtitle();
   }
 
@@ -339,7 +339,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        ol.parseDoc("<generated>",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
+        ol.parseDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();

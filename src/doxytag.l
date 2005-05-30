@@ -193,9 +193,10 @@ QCString unhtmlify(const char *str)
     if (c!='&') { result+=c; p++; }
     else
     {
-      if (strncmp(p,"&amp;",5)==0)     { result+='&'; p+=5; }	
-      else if (strncmp(p,"&lt;",4)==0) { result+='<'; p+=4; }
-      else if (strncmp(p,"&gt;",4)==0) { result+='>'; p+=4; }
+      if (strncmp(p,"&amp;",5)==0)       { result+='&'; p+=5; }	
+      else if (strncmp(p,"&lt;",4)==0)   { result+='<'; p+=4; }
+      else if (strncmp(p,"&gt;",4)==0)   { result+='>'; p+=4; }
+      else if (strncmp(p,"&quot;",6)==0) { result+='"'; p+=4; }
 	else /* should not happen */     { result+='&'; p++; }
     }
   }
@@ -301,12 +302,13 @@ QCString unhtmlify(const char *str)
   				   }
 <Qt3ReadName>.
 <Qt3ReadArgs>[ \t]*"("		   {
-  				     memberArgs+="(";
+  				     memberArgs+='(';
   				   }
-<Qt3ReadArgs>"&amp;"		   { memberArgs+="&"; }
-<Qt3ReadArgs>"&lt;"		   { memberArgs+="<"; }
-<Qt3ReadArgs>"&gt;"		   { memberArgs+=">"; }
-<Qt3ReadArgs>"&nbsp;"		   { memberArgs+=" "; }
+<Qt3ReadArgs>"&amp;"		   { memberArgs+='&'; }
+<Qt3ReadArgs>"&lt;"		   { memberArgs+='<'; }
+<Qt3ReadArgs>"&gt;"		   { memberArgs+='>'; }
+<Qt3ReadArgs>"&quot;"		   { memberArgs+='"'; }
+<Qt3ReadArgs>"&nbsp;"		   { memberArgs+=' '; }
 <Qt3ReadArgs>"</h3>"		   { 
                                      addMember(memberName,memberRef,memberArgs);
                                      memberName.resize(0);
@@ -316,7 +318,7 @@ QCString unhtmlify(const char *str)
                                    }
 <Qt3ReadArgs>"<"[^>]+">"
 <Qt3ReadArgs>")"		   {
-  				     memberArgs+=")";
+  				     memberArgs+=')';
 				     addMember(memberName,memberRef,memberArgs);
                                      memberName.resize(0);
                                      memberRef.resize(0);
@@ -329,39 +331,42 @@ QCString unhtmlify(const char *str)
   /* --------------------------------------------------- */
   /*          Doxygen class extraction rules             */
 
-<Start>"<!-- doxytag: class=<"	   {
+<Start>"<!-- doxytag: class=\""	   {
   				     className.resize(0);
   				     BEGIN(DoxClassName);
   				   }
-<DoxClassName>[^&>]+		   {
+<DoxClassName>[^&"]+		   {
   				     className=yytext;
 				     addClass(className);
   				   }
 <DoxClassName>"&lt;"		   {
-  				     className+="<";
+  				     className+='<';
   				   }
 <DoxClassName>"&gt;"		   {
-  				     className+=">";
+  				     className+='>';
   				   }
 <DoxClassName>"&amp;"		   {
-  				     className+="&";
+  				     className+='&';
+  				   }
+<DoxClassName>"&quot;"		   {
+  				     className+='"';
   				   }
 <DoxClassName>.			   {
   				     className+=*yytext;
 				   }
-<DoxClassName>"> -->"		   {
+<DoxClassName>"\" -->"		   {
   				     BEGIN(Start);
   				   }
 
   /* --------------------------------------------------- */
   /*          Doxygen inheritance extraction rules       */
 
-<Start>"<!-- doxytag: inherits=<"  {
+<Start>"<!-- doxytag: inherits=\""  {
                                      bases.clear();
 				     baseName.resize(0);
 				     BEGIN(DoxClassBase);
                                    }
-<DoxClassBase>[^&,>]+		   {
+<DoxClassBase>[^&,"]+		   {
   				     baseName+=yytext;
   				   }
 <DoxClassBase>","		   {
@@ -369,18 +374,21 @@ QCString unhtmlify(const char *str)
 				     baseName.resize(0);
   				   }
 <DoxClassBase>"&lt;"		   {
-  				     baseName+="<";
+  				     baseName+='<';
   				   }
 <DoxClassBase>"&gt;"		   {
-  				     baseName+=">";
+  				     baseName+='>';
   				   }
 <DoxClassBase>"&amp;"		   {
-  				     baseName+="&";
+  				     baseName+='&';
+  				   }
+<DoxClassBase>"&quot;"		   {
+  				     baseName+='"';
   				   }
 <DoxClassBase>.			   {
   				     baseName+=*yytext;
 				   }
-<DoxClassBase>"> -->"		   {
+<DoxClassBase>"\" -->"		   {
   				     bases.append(baseName);
 				     baseName.resize(0);
 				     addBases(className);
@@ -390,65 +398,74 @@ QCString unhtmlify(const char *str)
   /* --------------------------------------------------- */
   /*          Doxygen member extraction rules            */
 
-<Start>"<!-- doxytag: member=<"    {
+<Start>"<!-- doxytag: member=\""    {
   				     memberName.resize(0);
   				     BEGIN(DoxReadName);
   				   }
-<DoxReadName>[^&>]+		   {
+<DoxReadName>[^&"]+		   {
   				     memberName+=yytext;
   				   }
 <DoxReadName>"&lt;"		   {
-  				     memberName+="<";
+  				     memberName+='<';
   				   }
 <DoxReadName>"&gt;"		   {
-  				     memberName+=">";
+  				     memberName+='>';
   				   }
 <DoxReadName>"&amp;"		   {
-  				     memberName+="&";
+  				     memberName+='&';
+  				   }
+<DoxReadName>"&quot;"		   {
+  				     memberName+='"';
   				   }
 <DoxReadName>.		   	   {
   				     memberName+=*yytext;
   				   }
-<DoxReadName>"> ref=<"		   {
+<DoxReadName>"\" ref=\""		   {
 				     memberName=memberName.mid(memberName.find("::")+2);
 				     memberRef.resize(0);
   				     BEGIN(DoxReadAnchor);
   				   }
-<DoxReadAnchor>[^&>]+	   	   {
+<DoxReadAnchor>[^&"]+	   	   {
   				     memberRef+=yytext;
   				   }
 <DoxReadAnchor>"&lt;"		   {
-  				     memberRef+="<";
+  				     memberRef+='<';
   				   }
 <DoxReadAnchor>"&gt;"		   {
-  				     memberRef+=">";
+  				     memberRef+='>';
   				   }
 <DoxReadAnchor>"&amp;"		   {
-  				     memberRef+="&";
+  				     memberRef+='&';
+  				   }
+<DoxReadAnchor>"&quot;"		   {
+  				     memberRef+='"';
   				   }
 <DoxReadAnchor>.		   {
   				     memberRef+=*yytext;
   				   }
-<DoxReadAnchor>"> args=<"	   {
+<DoxReadAnchor>"\" args=\""	   {
   				     memberArgs.resize(0);
   				     BEGIN(DoxReadArgs);
   				   }
-<DoxReadArgs>[^&>]+		   {
+<DoxReadArgs>[^&"]+		   {
   				     memberArgs+=yytext;
   				   }
 <DoxReadArgs>"&lt;"		   {
-  				     memberArgs+="<";
+  				     memberArgs+='<';
   				   }
 <DoxReadArgs>"&gt;"		   {
-  				     memberArgs+=">";
+  				     memberArgs+='>';
   				   }
 <DoxReadArgs>"&amp;"		   {
-  				     memberArgs+="&";
+  				     memberArgs+='&';
+  				   }
+<DoxReadArgs>"&quot;"		   {
+  				     memberArgs+='"';
   				   }
 <DoxReadArgs>.                     {
   				     memberArgs+=*yytext;
   				   }
-<DoxReadArgs>"> -->"		   {
+<DoxReadArgs>"\" -->"		   {
                                      addMember(memberName,memberRef,memberArgs);
                                      memberName.resize(0);
                                      memberRef.resize(0);
@@ -613,10 +630,11 @@ QCString unhtmlify(const char *str)
 				     else
 				       BEGIN( Start );
 				   }
-<ReadArgs>"&amp;"		   { memberArgs+="&"; }
-<ReadArgs>"&lt;"		   { memberArgs+="<"; }
-<ReadArgs>"&gt;"		   { memberArgs+=">"; }
-<ReadArgs>"&nbsp;"		   { memberArgs+=" "; }
+<ReadArgs>"&amp;"		   { memberArgs+='&'; }
+<ReadArgs>"&lt;"		   { memberArgs+='<'; }
+<ReadArgs>"&gt;"		   { memberArgs+='>'; }
+<ReadArgs>"&quot;"		   { memberArgs+='"'; }
+<ReadArgs>"&nbsp;"		   { memberArgs+=' '; }
   /*
 <ReadArgs>[{}]			   { // handle enums
   				     memberArgs.resize(0);

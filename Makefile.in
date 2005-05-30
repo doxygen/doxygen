@@ -53,9 +53,9 @@ install: doxywizard_install
 	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
 	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
 	$(INSTTOOL) -d $(INSTALL)/$(MAN1DIR)
-	cat doc/doxygen.1    | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxygen.1 ; \
-	cat doc/doxytag.1    | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxytag.1 ; \
-	cat doc/doxywizard.1 | sed -e "s/DATE/\$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxywizard.1 ;
+	cat doc/doxygen.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxygen.1 ; \
+	cat doc/doxytag.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxytag.1 ; \
+	cat doc/doxywizard.1 | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > $(INSTALL)/$(MAN1DIR)/doxywizard.1 ;
 
 install_docs: 
 	$(INSTTOOL) -d $(DOCDIR)

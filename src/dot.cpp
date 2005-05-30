@@ -566,6 +566,7 @@ static QCString convertLabel(const QCString &l)
     switch(c)
     {
       case '\\': result+="\\\\"; break;
+      case '\n': result+="\\n"; break;
       case '<':  result+="\\<"; break;
       case '>':  result+="\\>"; break;
       case '|':  result+="\\|"; break;
@@ -1126,14 +1127,6 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
         return;
       }
       
-      //QCString dotArgs(maxCmdLine);
-      //dotArgs.sprintf("\"%s\" -T%s -o \"%s\" -Timap -o \"%s\"",
-      //    dotName.data(), imgExt.data(), imgName.data(), mapName.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  return;
-      //}
       checkDotResult(imgName);
       if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
     }
@@ -1446,7 +1439,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
           }
           else
           {
-            label+=QCString("\\n")+s;
+            label+=QCString("\n")+s;
           }
         }
         addClass(ucd->classDef,n,EdgeInfo::Purple,label,distance,0,
@@ -1689,15 +1682,6 @@ static bool findMaximalDotGraph(DotNode *root,
       return FALSE;
     }
     
-    //QCString dotArgs(maxCmdLine);
-    //// create annotated dot file
-    //dotArgs.sprintf("-Tdot \"%s.dot\" -o \"%s_tmp.dot\"",baseName.data(),baseName.data());
-    //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-    // {
-    //  err("Problems running dot. Check your installation!\n");
-    //  return FALSE;
-    //}
-
     // extract bounding box from the result
     readBoundingBoxDot(baseName+"_tmp.dot",&width,&height);
     width  = width *96/72; // 96 pixels/inch, 72 points/inch
@@ -1842,20 +1826,6 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         return baseName;
       }
 
-      //dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
-      //    baseName.data(),imgExt.data(),imgName.data());
-      //if (generateImageMap)
-      //{
-      //  // run dot also to create an image map
-      //  dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
-      //      baseName.data());
-      //}
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Error: Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       checkDotResult(imgName);
     }
     else if (format==EPS) // run dot to create a .eps image
@@ -1868,14 +1838,6 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         return baseName;
       }
       
-      //QCString dotArgs(maxCmdLine);
-      //dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",baseName.data(),baseName.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Error: Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       if (Config_getBool("USE_PDFLATEX"))
       {
         QCString epstopdfArgs(maxCmdLine);
@@ -2122,20 +2084,6 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
-      //    baseName.data(),imgExt.data(),imgName.data());
-      //if (generateImageMap)
-      //{
-      //  // run dot also to create an image map
-      //  dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
-      //      baseName.data());
-      //}
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       checkDotResult(imgName);
     }
     else if (format==EPS)
@@ -2148,15 +2096,6 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //QCString dotArgs(maxCmdLine);
-      //dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
-      //    baseName.data(),baseName.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       if (Config_getBool("USE_PDFLATEX"))
       {
         QCString epstopdfArgs(maxCmdLine);
@@ -2323,20 +2262,6 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
-      //    baseName.data(),imgExt.data(),imgName.data());
-      //if (generateImageMap)
-      //{
-      //  // run dot also to create an image map
-      //  dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
-      //      baseName.data());
-      //}
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       checkDotResult(imgName);
     }
     else if (format==EPS)
@@ -2349,15 +2274,6 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //QCString dotArgs(maxCmdLine);
-      //dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
-      //    baseName.data(),baseName.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       if (Config_getBool("USE_PDFLATEX"))
       {
         QCString epstopdfArgs(maxCmdLine);
@@ -2530,20 +2446,6 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
-      //    baseName.data(),imgExt.data(),imgName.data());
-      //if (generateImageMap)
-      //{
-      //  // run dot also to create an image map
-      //  dotArgs+=QCString(maxCmdLine).sprintf(" -Timap -o \"%s.map\"",
-      //      baseName.data());
-      //}
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       checkDotResult(imgName);
     }
     else if (format==EPS)
@@ -2556,15 +2458,6 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      //QCString dotArgs(maxCmdLine);
-      //dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
-      //    baseName.data(),baseName.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-      //{
-      //  err("Problems running dot. Check your installation!\n");
-      //  QDir::setCurrent(oldDir);
-      //  return baseName;
-      //}
       if (Config_getBool("USE_PDFLATEX"))
       {
         QCString epstopdfArgs(maxCmdLine);
@@ -2690,14 +2583,6 @@ void generateGraphLegend(const char *path)
       QDir::setCurrent(oldDir);
       return;
   }
-  //QCString dotArgs(maxCmdLine);
-  //dotArgs.sprintf("-T%s graph_legend.dot -o %s",imgExt.data(),imgName.data());
-  //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-  //{
-  //    err("Problems running dot. Check your installation!\n");
-  //    QDir::setCurrent(oldDir);
-  //    return;
-  //}
   checkDotResult(imgName);
   QDir::setCurrent(oldDir);
 }
@@ -2743,24 +2628,6 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
     QDir::setCurrent(oldDir);
     return;
   }
-  //QCString dotArgs(maxCmdLine);
-  //if (format==BITMAP)
-  //{
-  //  dotArgs.sprintf("-T%s \"%s\" -o \"%s\"",
-  //      imgExt.data(),
-  //      inFile,
-  //      imgName.data());
-  //}
-  //else // format==EPS
-  //{
-  //  dotArgs.sprintf("-Tps \"%s\" -o \"%s.eps\"",inFile,outFile);
-  //}
-  //QCString dotExe = Config_getString("DOT_PATH")+"dot";
-  ////printf("Running: %s %s\n",dotExe.data(),dotArgs.data());
-  //if (iSystem(dotExe,dotArgs)!=0)
-  //{
-  //  err("Problems running dot. Check your installation!\n");
-  //}
   // Added by Nils Strom
   if ( (format==EPS) && (Config_getBool("USE_PDFLATEX")) )
   {
@@ -2805,16 +2672,6 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
     return "";
   }
   
-  //QCString dotArgs(maxCmdLine);
-  //dotArgs.sprintf("-Timap \"%s\" -o \"%s\"", inFile.data(), outFile.data());
-  //QCString dotExe = Config_getString("DOT_PATH") + "dot";
-  ////printf("Running: %s %s\n",dotExe.data(),dotArgs.data());
-  //if (iSystem(dotExe,dotArgs)!=0)
-  //{
-  //  err("Problems running dot. Check your installation!\n");
-  //  QDir::setCurrent(oldDir);
-  //  return "";
-  //}
   QString result;
   QTextOStream tmpout(&result);
   convertMapFile(tmpout, outFile, relPath ,TRUE);
@@ -3091,21 +2948,6 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       QDir::setCurrent(oldDir);
       return baseName;
     }
-    //dotArgs.sprintf("\"%s.dot\" -T%s -o \"%s\"",
-    //    baseName.data(), imgExt.data(), imgName.data());
-    // 
-    //if (writeImageMap)
-    //{
-    //  // run dot also to create an image map
-    //  dotArgs+=" -Timap -o \""+mapName+"\"";
-    //}
-    //
-    //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-    //{
-    //  err("Error: Problems running dot. Check your installation!\n");
-    //  QDir::setCurrent(oldDir);
-    //  return baseName;
-    //}
 
     if (writeImageMap)
     {
@@ -3128,15 +2970,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       QDir::setCurrent(oldDir);
       return baseName;
     }
-    //QCString dotArgs(maxCmdLine);
-    //dotArgs.sprintf("-Tps \"%s.dot\" -o \"%s.eps\"",
-    //    baseName.data(),baseName.data());
-    //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
-    //{
-    //  err("Error: Problems running dot. Check your installation!\n");
-    //  QDir::setCurrent(oldDir);
-    //  return baseName;
-    //}
+
     if (Config_getBool("USE_PDFLATEX"))
     {
       QCString epstopdfArgs(maxCmdLine);

@@ -1037,13 +1037,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString("<!-- doxytag: class=<");
+    ol.writeString("<!-- doxytag: class=\"");
     ol.docify(name());
-    ol.writeString("> -->");
+    ol.writeString("\" -->");
     if (m_inherits->count()>0)
     {
       BaseClassListIterator bli(*m_inherits);
-      ol.writeString("<!-- doxytag: inherits=<");
+      ol.writeString("<!-- doxytag: inherits=\"");
       BaseClassDef *bcd=0;
       bool first=TRUE;
       for (bli.toFirst();(bcd=bli.current());++bli)
@@ -1052,7 +1052,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
         ol.docify(bcd->classDef->name());
         first=FALSE;
       }
-      ol.writeString("> -->");
+      ol.writeString("\" -->");
     }
     ol.popGeneratorState();
   }
@@ -2168,16 +2168,11 @@ void ClassDef::mergeMembers()
               if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE)) 
                 // member is in the same or a base class
               {
-#ifdef NEWMATCH
                 found=matchArguments2(
                     srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->argumentList(),
                     dstMd->getOuterScope(),dstMd->getFileDef(),dstMd->argumentList(),
                     TRUE
                    );
-#else
-                found=matchArguments(srcMd->argumentList(),
-                                     dstMd->argumentList());
-#endif
                 //printf("  Yes, matching (%s<->%s): %d\n",
                 //    argListToString(srcMd->argumentList()).data(),
                 //    argListToString(dstMd->argumentList()).data(),

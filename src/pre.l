@@ -199,7 +199,7 @@ static FILE *checkAndOpenFile(const QCString &absName)
     QCString filterName = getFileFilter(absName);
     if (!filterName.isEmpty())
     {
-      QCString cmd = "\"" + filterName+"\" \""+absName+"\"";
+      QCString cmd = filterName+" \""+absName+"\"";
       f=popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
@@ -2296,7 +2296,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   }
   else
   {
-    QCString cmd = "\"" + inputFilter+"\" \""+fileName+"\"";
+    QCString cmd = inputFilter+" \""+fileName+"\"";
     preYYin = popen(cmd,"r");
     if (!preYYin)
     {

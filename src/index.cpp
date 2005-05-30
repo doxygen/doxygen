@@ -3101,7 +3101,7 @@ void writeIndex(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
 
   QCString defFileName = 
-    Doxygen::mainPage ? Doxygen::mainPage->getDefFileName().data() : "<generated>";
+    Doxygen::mainPage ? Doxygen::mainPage->getDefFileName().data() : "[generated]";
   int defLine =
     Doxygen::mainPage ? Doxygen::mainPage->getDefLine() : -1;
 

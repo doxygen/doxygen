@@ -3992,8 +3992,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
  /* ---- Single line comments ------ */
 
-<DocLine>[^\n]*"\n"			{ // whole line
-  					  yyLineNr++;
+<DocLine>[^\n]*/"\n"			{ // whole line
 					  handleCommentBlock(yytext,TRUE);
 					  BEGIN( docBlockContext );
   					}
