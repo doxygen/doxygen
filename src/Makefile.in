@@ -47,6 +47,7 @@ clean: Makefile.libdoxygen Makefile.libdoxycfg Makefile.doxygen Makefile.doxytag
 distclean: clean
 	-$(RM) scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp commentscan.cpp \
-	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp
+	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp \
+	       pycode.cpp pyscanner.cpp           
 
 FORCE:

@@ -2483,9 +2483,9 @@ void RTFGenerator::endParamList()
   t << "}";
 }
 
-void RTFGenerator::printDoc(DocNode *n)
+void RTFGenerator::printDoc(DocNode *n,const char *langExt)
 {
-  RTFDocVisitor *visitor = new RTFDocVisitor(t,*this);
+  RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,langExt);
   n->accept(visitor);
   delete visitor; 
 }

@@ -111,67 +111,92 @@ enum CommandType
 
 enum HtmlTagType
 {
-  HTML_UNKNOWN  = 0,
-  HTML_CENTER   = 1,
-  HTML_TABLE    = 2,
-  HTML_CAPTION  = 3,
-  HTML_SMALL    = 4,
-  HTML_CODE     = 5,
-  HTML_IMG      = 6,
-  HTML_PRE      = 7,
-  HTML_SUB      = 8,
-  HTML_SUP      = 9,
-  HTML_TR       = 10,
-  HTML_TD       = 11,
-  HTML_TH       = 12,
-  HTML_OL       = 13,
-  HTML_UL       = 14,
-  HTML_LI       = 15,
-  HTML_EMPHASIS = 16,
-  HTML_HR       = 17,
-  HTML_DL       = 18,
-  HTML_DT       = 19,
-  HTML_DD       = 20,
-  HTML_BR       = 21,
-  HTML_A        = 22,
-  HTML_BOLD     = 23,
-  HTML_P        = 24,
-  HTML_H1       = 25,
-  HTML_H2       = 26,
-  HTML_H3       = 27,
-  HTML_H4       = 28,
-  HTML_H5       = 29,
-  HTML_H6       = 30,
-  HTML_SPAN     = 31,
-  HTML_DIV      = 32
+  HTML_UNKNOWN   = 0,
+  HTML_CENTER    = 1,
+  HTML_TABLE     = 2,
+  HTML_CAPTION   = 3,
+  HTML_SMALL     = 4,
+  HTML_CODE      = 5,
+  HTML_IMG       = 6,
+  HTML_PRE       = 7,
+  HTML_SUB       = 8,
+  HTML_SUP       = 9,
+  HTML_TR        = 10,
+  HTML_TD        = 11,
+  HTML_TH        = 12,
+  HTML_OL        = 13,
+  HTML_UL        = 14,
+  HTML_LI        = 15,
+  HTML_EMPHASIS  = 16,
+  HTML_HR        = 17,
+  HTML_DL        = 18,
+  HTML_DT        = 19,
+  HTML_DD        = 20,
+  HTML_BR        = 21,
+  HTML_A         = 22,
+  HTML_BOLD      = 23,
+  HTML_P         = 24,
+  HTML_H1        = 25,
+  HTML_H2        = 26,
+  HTML_H3        = 27,
+  HTML_H4        = 28,
+  HTML_H5        = 29,
+  HTML_H6        = 30,
+  HTML_SPAN      = 31,
+  HTML_DIV       = 32,
+
+  XML_CmdMask    = 0x100,
+
+  XML_C          = XML_CmdMask + 0,
+  XML_CODE       = XML_CmdMask + 1,
+  XML_DESCRIPTION= XML_CmdMask + 2,
+  XML_EXAMPLE    = XML_CmdMask + 3,
+  XML_EXCEPTION  = XML_CmdMask + 4,
+  XML_INCLUDE    = XML_CmdMask + 5,
+  XML_ITEM       = XML_CmdMask + 6,
+  XML_LIST       = XML_CmdMask + 7,
+  XML_PARA       = XML_CmdMask + 8,
+  XML_PARAM      = XML_CmdMask + 9,
+  XML_PARAMREF   = XML_CmdMask + 10,
+  XML_PERMISSION = XML_CmdMask + 11,
+  XML_REMARKS    = XML_CmdMask + 12,
+  XML_RETURNS    = XML_CmdMask + 13,
+  XML_SEE        = XML_CmdMask + 14,
+  XML_SEEALSO    = XML_CmdMask + 15,
+  XML_SUMMARY    = XML_CmdMask + 16,
+  XML_VALUE      = XML_CmdMask + 17
+
 };
 
-class CmdMapper
+class Mapper
 {
   public:
-    static int map(const char *name);
-    static void freeInstance();
+    int map(const char *n)
+    {
+      QCString name=n;
+      int *result;
+      return !name.isEmpty() && (result=m_map.find(name.lower())) ? *result: 0;
+    }
 
+    Mapper(const CommandMap *cm) : m_map(89)
+    {
+      m_map.setAutoDelete(TRUE);
+      const CommandMap *p = cm;
+      while (p->cmdName)
+      {
+        m_map.insert(p->cmdName,new int(p->cmdId));
+        p++;
+      }
+    }
   private:
-    static CmdMapper *instance();
-    CmdMapper();
-    int find(const char *name);
     QDict<int> m_map;
-    static CmdMapper *m_instance;
 };
 
-class HtmlTagMapper
+struct Mappers
 {
-  public:
-    static int map(const char *name);
-    static void freeInstance();
-
-  private:
-    static HtmlTagMapper *instance();
-    HtmlTagMapper();
-    int find(const char *name);
-    QDict<int> m_map;
-    static HtmlTagMapper *m_instance;
+  static void freeMappers();
+  static Mapper *cmdMapper;
+  static Mapper *htmlTagMapper;
 };
 
 

@@ -43,7 +43,7 @@ class RTFGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==RTF && active); } 
     OutputGenerator *get(OutputType o) { return (o==RTF) ? this : 0; }
 
-    void printDoc(DocNode *);
+    void printDoc(DocNode *,const char *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeFooter() {}

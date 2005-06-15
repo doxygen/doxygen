@@ -57,7 +57,8 @@ enum Tokens
   RetVal_TableHCell     = 0x1000E,
   RetVal_EndTable       = 0x1000F,
   RetVal_Internal       = 0x10010,
-  RetVal_SwitchLang     = 0x10011
+  RetVal_SwitchLang     = 0x10011,
+  RetVal_CloseXml       = 0x10012
 };
 
 struct TokenInfo
@@ -92,6 +93,7 @@ struct TokenInfo
   // html tag
   HtmlAttribList attribs;
   bool endTag;
+  bool emptyTag;
 
   // whitespace
   QString chars;
@@ -124,6 +126,7 @@ void doctokenizerYYsetStatePara();
 void doctokenizerYYsetStateTitle();
 void doctokenizerYYsetStateTitleAttrValue();
 void doctokenizerYYsetStateCode();
+void doctokenizerYYsetStateXmlCode();
 void doctokenizerYYsetStateHtmlOnly();
 void doctokenizerYYsetStateManOnly();
 void doctokenizerYYsetStateLatexOnly();

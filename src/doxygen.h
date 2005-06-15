@@ -42,6 +42,7 @@ class PageSDict;
 class PageDef;
 class SearchIndex;
 class DirDef;
+class ParserManager;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -116,6 +117,7 @@ class Doxygen
     static QCache<LookupInfo>        lookupCache;
     static DirSDict                  directories;
     static SDict<DirRelation>        dirRelations;
+    static ParserManager            *parserManager;
 };
 
 void initDoxygen();

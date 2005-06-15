@@ -92,7 +92,9 @@ EXCLUDE                = src/code.cpp \
                          src/searchindex.cpp \
                          src/searchindex.h \
                          src/commentcnv.cpp \
-                         src/commentscan.cpp
+                         src/commentscan.cpp \
+                         src/pycode.cpp \
+                         src/pyscanner.cpp
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 

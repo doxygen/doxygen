@@ -22,13 +22,13 @@
 #include "doxygen.h"
 #include "outputgen.h"
 #include "xmlgen.h"
-#include "code.h"
 #include "dot.h"
 #include "message.h"
 #include "util.h"
 #include <qfileinfo.h> 
+#include "parserintf.h"
 
-XmlDocVisitor::XmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
+XmlDocVisitor::XmlDocVisitor(QTextStream &t,CodeOutputInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
 {
 }
@@ -169,7 +169,9 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                                        s->isExample(),s->exampleFile());
       m_t << "</programlisting>"; 
       break;
     case DocVerbatim::Verbatim: 
@@ -219,13 +221,21 @@ void XmlDocVisitor::visit(DocInclude *inc)
          m_t << "<programlisting>";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         Doxygen::parserManager->getParser(m_langExt)
+                               ->parseCode(m_ci,inc->context(),
+                                           inc->text().latin1(),
+                                           inc->isExample(),
+                                           inc->exampleFile(), &fd);
          m_t << "</programlisting>"; 
       }
       break;    
     case DocInclude::Include: 
       m_t << "<programlisting>";
-      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,inc->context(),
+                                        inc->text().latin1(),
+                                        inc->isExample(),
+                                        inc->exampleFile());
       m_t << "</programlisting>"; 
       break;
     case DocInclude::DontInclude: 
@@ -259,7 +269,13 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
-    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) 
+    {
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),
+                                        op->text().latin1(),op->isExample(),
+                                        op->exampleFile());
+    }
     pushEnabled();
     m_hide=TRUE;
   }

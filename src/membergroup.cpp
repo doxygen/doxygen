@@ -24,7 +24,6 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "language.h"
-#include "scanner.h"
 #include "groupdef.h"
 #include "doxygen.h"
 #include "docparser.h"

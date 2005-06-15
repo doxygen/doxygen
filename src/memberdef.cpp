@@ -33,6 +33,7 @@
 #include "docparser.h"
 #include "dot.h"
 #include "searchindex.h"
+#include "parserintf.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1577,9 +1578,10 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else
       ol.parseText(theTranslator->trInitialValue());
     ol.endBold();
-    initParseCodeContext();
+    ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
+    pIntf->resetCodeParserState();
     ol.startCodeFragment();
-    parseCode(ol,scopeName,init,FALSE,0);
+    pIntf->parseCode(ol,scopeName,init,FALSE,0);
     ol.endCodeFragment();
   }
 

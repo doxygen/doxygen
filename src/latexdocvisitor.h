@@ -21,16 +21,18 @@
 
 #include "docvisitor.h"
 #include <qstack.h>
+#include <qcstring.h>
 
 class QTextStream;
-class BaseCodeDocInterface;
+class CodeOutputInterface;
 class QString;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci,bool insideTabbing);
+    LatexDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+                    const char *langExt,bool insideTabbing);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -150,12 +152,13 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
 
     QTextStream &m_t;
-    BaseCodeDocInterface &m_ci;
+    CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
     bool m_insideTabbing;
     QStack<bool> m_enabled;
+    QCString m_langExt;
 };
 
 #endif

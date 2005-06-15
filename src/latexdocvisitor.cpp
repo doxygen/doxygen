@@ -21,10 +21,10 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
-#include "code.h"
 #include "dot.h"
 #include "util.h"
 #include "message.h"
+#include "parserintf.h"
 
 static QString escapeLabelName(const char *s)
 {
@@ -79,10 +79,11 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(QTextStream &t,BaseCodeDocInterface &ci,
-                                 bool insideTabbing) 
+LatexDocVisitor::LatexDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+                                 const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-    m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing) 
+    m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
+    m_langExt(langExt)
 {
 }
 
@@ -251,7 +252,9 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                                        s->isExample(),s->exampleFile());
       m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
     case DocVerbatim::Verbatim: 
@@ -316,13 +319,20 @@ void LatexDocVisitor::visit(DocInclude *inc)
          m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         Doxygen::parserManager->getParser(m_langExt)
+                               ->parseCode(m_ci,inc->context(),
+                                           inc->text().latin1(),
+                                           inc->isExample(),
+                                           inc->exampleFile(), &fd);
          m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       }
       break;    
     case DocInclude::Include: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,inc->context(),
+                                        inc->text().latin1(),inc->isExample(),
+                                        inc->exampleFile());
       m_t << "\\end{verbatim}\n\\normalsize" << endl; 
       break;
     case DocInclude::DontInclude: 
@@ -350,7 +360,12 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
-    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) 
+    {
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                                        op->isExample(),op->exampleFile());
+    }
     pushEnabled();
     m_hide=TRUE;
   }

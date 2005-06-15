@@ -36,7 +36,6 @@
 #include "logos.h"
 #include "instdox.h"
 #include "message.h"
-#include "code.h"
 #include "config.h"
 #include "util.h"
 #include "pre.h"
@@ -67,6 +66,7 @@
 #include "searchindex.h"
 #include "parserintf.h"
 #include "htags.h"
+#include "pyscanner.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -125,6 +125,7 @@ QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
 DirSDict       Doxygen::directories(17);
 SDict<DirRelation> Doxygen::dirRelations(257);
+ParserManager *Doxygen::parserManager = 0;
 
 static StringList     inputFiles;         
 static StringDict     excludeNameDict(1009);   // sections
@@ -7310,60 +7311,8 @@ static void copyStyleSheet()
   }
 }
 
-#if 0
-static void readFiles(const QCString &tmpFile)
-{
-  QFile outFile(tmpFile);
-  if (outFile.open(IO_WriteOnly))
-  {
-    QTextStream out(&outFile);
-    QCString *s=inputFiles.first();
-    while (s)
-    {
-      QCString fileName=*s;
-
-      //bool multiLineIsBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
-
-      out << (char)6;
-      out << fileName;
-      out << (char)6;
-      out << '\n';
-      QFileInfo fi(fileName);
-      BufStr preBuf(fi.size()+4096);
-      BufStr *bufPtr = &preBuf;
-
-      if (Config_getBool("ENABLE_PREPROCESSING"))
-      {
-        msg("Preprocessing %s...\n",s->data());
-        preprocessFile(fileName,*bufPtr);
-      }
-      else
-      {
-        msg("Reading %s...\n",s->data());
-        copyAndFilterFile(fileName,*bufPtr);
-      }
-
-      bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
-
-      BufStr convBuf(bufPtr->curPos()+1024);
-
-      convertCppComments(&preBuf,&convBuf,fileName);
-
-      out.writeRawBytes(convBuf.data(),convBuf.curPos());
-      
-      s=inputFiles.next();
-      //printf("-------> adding new line\n");
-    }
-  }
-}
-#endif
-
 static void parseFiles(Entry *root)
 {
-  ParserInterface *defaultParser = new CLanguageScanner;
-  ParserManager *parserManager = new ParserManager(defaultParser);
-
-  // register any additional parsers here...
   
   QCString *s=inputFiles.first();
   while (s)
@@ -7372,12 +7321,14 @@ static void parseFiles(Entry *root)
     QCString extension;
     int ei = fileName.findRev('.');
     if (ei!=-1) extension=fileName.right(fileName.length()-ei);
+    ParserInterface *parser = Doxygen::parserManager->getParser(extension);
 
     QFileInfo fi(fileName);
     BufStr preBuf(fi.size()+4096);
     BufStr *bufPtr = &preBuf;
 
-    if (Config_getBool("ENABLE_PREPROCESSING"))
+    if (Config_getBool("ENABLE_PREPROCESSING") && 
+        parser->needsPreprocessing(extension))
     {
       msg("Preprocessing %s...\n",s->data());
       preprocessFile(fileName,*bufPtr);
@@ -7396,8 +7347,7 @@ static void parseFiles(Entry *root)
 
     convBuf.addChar('\0');
 
-    ParserInterface *parser = parserManager->getParser(extension);
-    parser->parse(fileName,convBuf.data(),root);
+    parser->parseInput(fileName,convBuf.data(),root);
 
     s=inputFiles.next();
   }
@@ -7792,6 +7742,12 @@ void initDoxygen()
   Doxygen::runningTime.start();
   initPreprocessor();
 
+  ParserInterface *defaultParser = new CLanguageScanner;
+  Doxygen::parserManager = new ParserManager(defaultParser);
+  Doxygen::parserManager->registerParser(".py",new PythonLanguageScanner);
+
+  // register any additional parsers here...
+
   Doxygen::sectionDict.setAutoDelete(TRUE);
   Doxygen::inputNameList.setAutoDelete(TRUE);
   Doxygen::memberNameSDict.setAutoDelete(TRUE);
@@ -7820,13 +7776,13 @@ void cleanUpDoxygen()
   delete Doxygen::exampleSDict;
   delete Doxygen::globalScope;
   delete Doxygen::xrefLists;
+  delete Doxygen::parserManager;
   cleanUpPreprocessor();
   Config::deleteInstance();
   QTextCodec::deleteAllCodecs();
   delete theTranslator;
   delete outputList;
-  CmdMapper::freeInstance();
-  HtmlTagMapper::freeInstance();
+  Mappers::freeMappers();
   //delete Doxygen::symbolMap; <- we cannot do this unless all static lists 
   //                              (such as Doxygen::namespaceSDict)
   //                              with objects based on Definition are made

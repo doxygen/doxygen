@@ -28,7 +28,6 @@
 #include "defargs.h"
 #include "outputgen.h"
 #include "dot.h"
-#include "code.h"
 
 #include <qdir.h>
 #include <qfile.h>

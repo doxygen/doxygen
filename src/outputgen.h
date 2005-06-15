@@ -39,7 +39,7 @@ class GroupDef;
 
 /*! \brief Output interface for code parser. 
  */
-class BaseCodeDocInterface
+class CodeOutputInterface
 {
   public:
     /*! Writes an ASCII string to the output. This function should keep 
@@ -78,7 +78,7 @@ class BaseCodeDocInterface
  *  or a list of formats (see OutputList). This interface
  *  contains functions that generate fragments of the output.
  */
-class BaseOutputDocInterface : public BaseCodeDocInterface
+class BaseOutputDocInterface : public CodeOutputInterface
 {
   public:
     enum ParamListTypes { Param, RetVal, Exception };
@@ -272,7 +272,7 @@ class OutputGenerator : public BaseOutputDocInterface
     void pushGeneratorState();
     void popGeneratorState();
 
-    virtual void printDoc(DocNode *) = 0;
+    virtual void printDoc(DocNode *,const char *langExt) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface

@@ -1542,9 +1542,9 @@ void LatexGenerator::endParamList()
 }
 
 
-void LatexGenerator::printDoc(DocNode *n)
+void LatexGenerator::printDoc(DocNode *n,const char *langExt)
 {
-  LatexDocVisitor *visitor = new LatexDocVisitor(t,*this,insideTabbing);
+  LatexDocVisitor *visitor = new LatexDocVisitor(t,*this,langExt,insideTabbing);
   n->accept(visitor);
   delete visitor; 
 }

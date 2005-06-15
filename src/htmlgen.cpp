@@ -1418,9 +1418,9 @@ void HtmlGenerator::endParamList()
   t << "</dl>"; 
 }
 
-void HtmlGenerator::printDoc(DocNode *n)
+void HtmlGenerator::printDoc(DocNode *n,const char *langExt)
 {
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this);
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,*this,langExt);
   n->accept(visitor);
   delete visitor; 
 }
