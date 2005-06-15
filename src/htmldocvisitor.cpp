@@ -22,11 +22,11 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
-#include "code.h"
 #include "dot.h"
 #include "message.h"
 #include "config.h"
 #include "htmlgen.h"
+#include "parserintf.h"
 
 
 static const int NUM_HTML_LIST_TYPES = 4;
@@ -49,8 +49,10 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
-  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
+HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+                               const char *langExt) 
+  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
+                                 m_hide(FALSE), m_langExt(langExt)
 {
 }
 
@@ -196,7 +198,9 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code: // fall though
       m_t << PREFRAG_START;
-      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                                        s->isExample(),s->exampleFile());
       m_t << PREFRAG_END;
       break;
     case DocVerbatim::Verbatim: 
@@ -253,7 +257,9 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << PREFRAG_START;
-      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,inc->context(),inc->text().latin1(),
+                                        inc->isExample(),inc->exampleFile());
       m_t << PREFRAG_END;
       break;
     case DocInclude::IncWithLines:
@@ -261,7 +267,11 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         Doxygen::parserManager->getParser(m_langExt)
+                               ->parseCode(m_ci,inc->context(),
+                                           inc->text().latin1(),
+                                           inc->isExample(),
+                                           inc->exampleFile(), &fd);
          m_t << PREFRAG_END;
       }
       break;
@@ -291,7 +301,13 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
-    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) 
+    {
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),
+                                op->text().latin1(),op->isExample(),
+                                op->exampleFile());
+    }
     pushEnabled();
     m_hide=TRUE;
   }

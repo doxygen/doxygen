@@ -26,10 +26,12 @@
 #include "util.h"
 #include "message.h"
 #include <qfileinfo.h> 
+#include "parserintf.h"
 
-ManDocVisitor::ManDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
+ManDocVisitor::ManDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+                             const char *langExt) 
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
-    m_indent(0)
+    m_indent(0), m_langExt(langExt)
 {
 }
 
@@ -186,7 +188,9 @@ void ManDocVisitor::visit(DocVerbatim *s)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      Doxygen::parserManager->getParser(0/*TODO*/)
+                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                                        s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
       m_t << ".PP" << endl;
@@ -231,7 +235,11 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         Doxygen::parserManager->getParser(0/*TODO*/)
+                               ->parseCode(m_ci,inc->context(),
+                                           inc->text().latin1(),
+                                           inc->isExample(),
+                                           inc->exampleFile(), &fd);
          if (!m_firstCol) m_t << endl;
          m_t << ".fi" << endl;
          m_t << ".PP" << endl;
@@ -242,7 +250,10 @@ void ManDocVisitor::visit(DocInclude *inc)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      Doxygen::parserManager->getParser(0/*TODO*/)
+                            ->parseCode(m_ci,inc->context(),
+                                        inc->text().latin1(),inc->isExample(),
+                                        inc->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
       m_t << ".PP" << endl;
@@ -283,7 +294,12 @@ void ManDocVisitor::visit(DocIncOperator *op)
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
-    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) 
+    {
+      Doxygen::parserManager->getParser(0/*TODO*/)
+                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                                        op->isExample(),op->exampleFile());
+    }
     pushEnabled();
     m_hide=TRUE;
   }

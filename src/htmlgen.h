@@ -45,7 +45,7 @@ class HtmlGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Html && active); } 
     OutputGenerator *get(OutputType o) { return (o==Html) ? this : 0; }
 
-    void printDoc(DocNode *);
+    void printDoc(DocNode *,const char *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeFooter();

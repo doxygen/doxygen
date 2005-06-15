@@ -14,9 +14,14 @@
  * input used in their production; they are not affected by this license.
  *
  */
+/*  This code is based on the work done by the MoxyPyDoxy team
+ *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada), executed
+ *  as part of CS179e (Compiler design project) at the UC Riverside,
+ *  under supervision of Peter H. Fröhlic.
+ */
 
-#ifndef CODE_H
-#define CODE_H
+#ifndef PYCODE_H
+#define PYCODE_H
 
 #include "qtbc.h"
 #include <stdio.h>
@@ -25,10 +30,10 @@ class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 
-extern void parseCCode(CodeOutputInterface &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd=0,
-            int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
-            MemberDef *memberDef=0);
-extern void resetCCodeParserState();
+extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &, 
+             bool ,const char *,FileDef *fd=0,
+	     int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
+             MemberDef *memberDef=0);
+extern void resetPythonCodeParserState();
 
 #endif

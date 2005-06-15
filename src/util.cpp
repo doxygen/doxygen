@@ -2698,6 +2698,8 @@ static QCString getCanonicalTypeForIdentifier(
     symName=word;
   }
 
+  //printf("symName=%s templSpec=%s\n",symName.data(),templSpec.data());
+
   if (!symName.isEmpty() && !templSpec.isEmpty() &&
       (defList=Doxygen::symbolMap->find(symName+templSpec)) &&
       defList->count()==1) // word without scope but with template specs
@@ -2733,6 +2735,10 @@ static QCString getCanonicalTypeForIdentifier(
     if (cd) // known type
     {
       result = cd->qualifiedNameWithTemplateParameters();
+      if (cd->isTemplate())
+      {
+        *tSpec="";
+      }
     }
     else if (mType && mType->isEnumerate()) // an enum
     {
@@ -2799,15 +2805,15 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
                               // then resolve any identifiers inside. 
     {
       static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
-      int p=0,l,i;
+      int tp=0,tl,ti;
       // for each identifier template specifier
-      while ((i=re.match(templSpec,p,&l))!=-1)
+      while ((ti=re.match(templSpec,tp,&tl))!=-1)
       {
-        canType += templSpec.mid(p,i-p);
-        canType += getCanonicalTypeForIdentifier(d,fs,word,0);
-        p=i+l;
+        canType += templSpec.mid(tp,ti-tp);
+        canType += getCanonicalTypeForIdentifier(d,fs,templSpec.mid(ti,tl),0);
+        tp=ti+tl;
       }
-      canType+=templSpec.right(templSpec.length()-p);
+      canType+=templSpec.right(templSpec.length()-tp);
     }
     
     pp=p;

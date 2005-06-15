@@ -28,18 +28,18 @@
 #include "outputlist.h"
 #include "dot.h"
 #include "message.h"
-#include "code.h"
 #include "docparser.h"
 #include "ftvhelp.h"
 #include "searchindex.h"
 #include "htags.h"
+#include "parserintf.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
 #define pclose _pclose
 #endif
 
-class DevNullCodeDocInterface : public BaseCodeDocInterface
+class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
     virtual void codify(const char *) {}
@@ -653,9 +653,10 @@ void FileDef::writeSource(OutputList &ol)
     ol.endTextLink();
   }
 
-  initParseCodeContext();
+  ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
+  pIntf->resetCodeParserState();
   ol.startCodeFragment();
-  parseCode(ol,0,
+  pIntf->parseCode(ol,0,
             fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,0,this
            );
@@ -667,7 +668,10 @@ void FileDef::writeSource(OutputList &ol)
 void FileDef::parseSource()
 {
   DevNullCodeDocInterface devNullIntf;
-  parseCode(devNullIntf,0,
+  ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
+  pIntf->resetCodeParserState();
+  pIntf->parseCode(
+            devNullIntf,0,
             fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
             FALSE,0,this
            );

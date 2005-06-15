@@ -32,6 +32,7 @@
 #include "pagedef.h"
 #include "section.h"
 #include "htags.h"
+#include "parserintf.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -81,6 +82,11 @@ Definition::Definition(const char *df,int dl,
 {
   //QCString ns;
   m_defFileName = df;
+  int lastDot = m_defFileName.findRev('.');
+  if (lastDot!=-1)
+  {
+    m_defFileExt = m_defFileName.mid(lastDot);
+  }
   m_defLine = dl;
   m_name=name; 
   if (m_name!="<globalScope>") 
@@ -459,12 +465,23 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
           actualStart,actualEnd,codeFragment)
        )
     {
-      initParseCodeContext();
+      ParserInterface *pIntf = Doxygen::parserManager->getParser(m_defFileExt);
+      pIntf->resetCodeParserState();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
-      if (definitionType()==TypeMember) setParameterList((MemberDef *)this);
+      MemberDef *thisMd = 0;
+      if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
       ol.startCodeFragment();
-      parseCode(ol,scopeName,codeFragment,FALSE,0,
-          m_bodyDef,actualStart,actualEnd,TRUE);
+      pIntf->parseCode(ol,           // codeOutIntf
+                       scopeName,    // scope
+                       codeFragment, // input
+                       FALSE,        // isExample
+                       0,            // exampleName
+                       m_bodyDef,    // fileDef
+                       actualStart,  // startLine
+                       actualEnd,    // endLine
+                       TRUE,         // inlineFragment
+                       thisMd        // memberDef
+                      );
       ol.endCodeFragment();
       ol.newParagraph();
     }

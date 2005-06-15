@@ -627,9 +627,9 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::printDoc(DocNode *n)
+void ManGenerator::printDoc(DocNode *n,const char *langExt)
 {
-  ManDocVisitor *visitor = new ManDocVisitor(t,*this);
+  ManDocVisitor *visitor = new ManDocVisitor(t,*this,langExt);
   n->accept(visitor);
   delete visitor; 
   firstCol=FALSE;

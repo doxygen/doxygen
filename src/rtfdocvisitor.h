@@ -21,16 +21,17 @@
 
 #include "docvisitor.h"
 #include <qstack.h>
+#include <qcstring.h>
 
 class QTextStream;
-class BaseCodeDocInterface;
+class CodeOutputInterface;
 class QString;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    RTFDocVisitor(QTextStream &t,CodeOutputInterface &ci,const char *langExt);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -149,12 +150,13 @@ class RTFDocVisitor : public DocVisitor
     //--------------------------------------
 
     QTextStream &m_t;
-    BaseCodeDocInterface &m_ci;
+    CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
     int m_indentLevel;
     QStack<bool> m_enabled;
     bool m_lastIsPara;
+    QCString m_langExt;
 };
 
 #endif

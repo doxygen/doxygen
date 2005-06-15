@@ -24,7 +24,6 @@
 #include "util.h"
 #include "config.h"
 #include "language.h"
-#include "scanner.h"
 #include "defargs.h"
 #include "docparser.h"
 #include "debug.h"

@@ -21,16 +21,17 @@
 
 #include "docvisitor.h"
 #include <qstack.h>
+#include <qcstring.h>
 
 class QTextStream;
-class BaseCodeDocInterface;
+class CodeOutputInterface;
 class QString;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    HtmlDocVisitor(QTextStream &t,CodeOutputInterface &ci,const char *langExt);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -77,8 +78,6 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocHtmlList *) ;
     void visitPre(DocHtmlListItem *);
     void visitPost(DocHtmlListItem *);
-    //void visitPre(DocHtmlPre *);
-    //void visitPost(DocHtmlPre *);
     void visitPre(DocHtmlDescList *);
     void visitPost(DocHtmlDescList *);
     void visitPre(DocHtmlDescTitle *);
@@ -111,8 +110,6 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocSecRefItem *);
     void visitPre(DocSecRefList *);
     void visitPost(DocSecRefList *);
-    //void visitPre(DocLanguage *);
-    //void visitPost(DocLanguage *);
     void visitPre(DocParamSect *);
     void visitPost(DocParamSect *);
     void visitPre(DocParamList *);
@@ -147,10 +144,11 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     QTextStream &m_t;
-    BaseCodeDocInterface &m_ci;
+    CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
     QStack<bool> m_enabled;
+    QCString m_langExt;
 };
 
 #endif

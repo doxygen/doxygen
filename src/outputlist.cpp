@@ -26,6 +26,7 @@
 #include "outputgen.h"
 #include "config.h"
 #include "message.h"
+#include "definition.h"
 
 #include "docparser.h"
 
@@ -163,7 +164,9 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   og=outputs->first();
   while (og)
   {
-    if (og->isEnabled()) og->printDoc(root);
+    //printf("og->printDoc(extension=%s)\n",
+    //    ctx?ctx->getDefFileExtension().data():"<null>");
+    if (og->isEnabled()) og->printDoc(root,ctx?ctx->getDefFileExtension():0);
     og=outputs->next();
   }
 
@@ -186,7 +189,7 @@ void OutputList::parseText(const QCString &textStr)
   og=outputs->first();
   while (og)
   {
-    if (og->isEnabled()) og->printDoc(root);
+    if (og->isEnabled()) og->printDoc(root,0);
     og=outputs->next();
   }
 

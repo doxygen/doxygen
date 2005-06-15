@@ -885,6 +885,7 @@ class DocHtmlList : public CompAccept<DocHtmlList>, public DocNode
     void accept(DocVisitor *v) { CompAccept<DocHtmlList>::accept(this,v); }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
+    int parseXml();
 
   private:
     DocNode *     m_parent;
@@ -909,6 +910,8 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     void accept(DocVisitor *v);
     int parse(bool userTitle);
     int parseRcs();
+    int parseXml();
+    void appendLinkWord(const QString &word);
 
   private:
     DocNode *       m_parent;
@@ -930,7 +933,7 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
     };
     DocParamSect(DocNode *parent,Type t) 
       : m_parent(parent), m_type(t) {}
-    int parse(const QString &cmdName,Direction d);
+    int parse(const QString &cmdName,bool xmlContext,Direction d);
     Kind kind() const          { return Kind_ParamSect; }
     Type type() const          { return m_type; }
     DocNode *parent() const    { return m_parent; }
@@ -962,9 +965,10 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     int handleCommand(const QString &cmdName);
     int handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs);
     int handleHtmlEndTag(const QString &tagName);
-    int handleSimpleSection(DocSimpleSect::Type t);
+    int handleSimpleSection(DocSimpleSect::Type t,bool xmlContext=FALSE);
     int handleXRefItem();
     int handleParamSection(const QString &cmdName,DocParamSect::Type t,
+                           bool xmlContext,
                            int direction);
     void handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t);
     void handleImage(const QString &cmdName);
@@ -973,7 +977,9 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleLink(const QString &cmdName,bool isJavaLink);
     void handleRef(const QString &cmdName);
     void handleSection(const QString &cmdName);
+    int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
+    bool injectToken(int tok,const QString &tokText);
     //int handleLanguageSwitch();
 
   private:
@@ -989,11 +995,10 @@ class DocParamList : public DocNode
   public:
     DocParamList(DocNode *parent,DocParamSect::Type t,DocParamSect::Direction d) 
       : m_parent(parent) , m_type(t), m_dir(d), m_isFirst(TRUE), m_isLast(TRUE)
-    { m_paragraph=new DocPara(this); }
-    virtual ~DocParamList()         { delete m_paragraph; }
+    { m_paragraphs.setAutoDelete(TRUE); }
+    virtual ~DocParamList()         { }
     Kind kind() const               { return Kind_ParamList; }
     DocNode *parent() const         { return m_parent; }
-    //const QStrList &parameters()    { return m_params; }
     const QList<DocNode> &parameters()    { return m_params; }
     DocParamSect::Type type() const { return m_type; }
     DocParamSect::Direction direction() const { return m_dir; }
@@ -1004,15 +1009,17 @@ class DocParamList : public DocNode
     void accept(DocVisitor *v)
     { 
       v->visitPre(this); 
-      m_paragraph->accept(v);
+      QListIterator<DocPara> cli(m_paragraphs);
+      DocNode *n;
+      for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
       v->visitPost(this); 
     }
     int parse(const QString &cmdName);
+    int parseXml(const QString &paramName);
 
   private:
     DocNode *               m_parent;
-    DocPara *               m_paragraph;
-    //QStrList                m_params;
+    QList<DocPara>          m_paragraphs;
     QList<DocNode>          m_params;
     DocParamSect::Type      m_type;
     DocParamSect::Direction m_dir;
@@ -1078,6 +1085,7 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
     DocNode *parent() const               { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocHtmlListItem>::accept(this,v); }
     int parse();
+    int parseXml();
 
   private:
     DocNode *      m_parent;

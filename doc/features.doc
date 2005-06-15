@@ -22,11 +22,11 @@
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
 <li>Supports C/C++, Java, (Corba and Microsoft) Java, 
-    IDL, and to some extent C# and PHP sources.
+    IDL, C#, Objective-C and to some extent D and PHP sources.
 <li>Supports documentation of files, namespaces, classes, structs, unions, 
     templates, variables, functions, typedefs, enums and defines. 
-<li>JavaDoc (1.1), Qt-Doc, and KDOC compatible.
-<li>Automatically generates class diagrams in HTML (as clickable 
+<li>JavaDoc (1.1), Qt-Doc, and ECMA-334 (C# spec.) compatible.
+<li>Automatically generates class and collaboration diagrams in HTML (as clickable 
     image maps) and \f$\mbox{\LaTeX}\f$ (as Encapsulated PostScript images).
 <li>Uses the dot tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, and 
@@ -76,8 +76,9 @@
 <li>Can cope with large projects easily.
 </UL>
 
-Although doxygen can be used in any C or C++ project, it was specifically
-designed to be used for projects that make use of Troll Tech's 
+Although doxygen can be used in any C or C++ project, 
+initially it was specifically designed to be used for projects that make 
+use of Troll Tech's 
 <A HREF="http://www.trolltech.com/products/qt.html">Qt toolkit</A>. I have tried to make doxygen 
 `Qt-compatible'. That is: Doxygen can read the documentation contained in 
 the Qt source code and create a class browser that looks very similar to the 

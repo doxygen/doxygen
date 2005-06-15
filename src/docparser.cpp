@@ -688,7 +688,7 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
                g_token->name.data(),cmdName.data());
           break;
         case TK_HTMLTAG:
-          if (insideLI(parent) && HtmlTagMapper::map(g_token->name) && g_token->endTag)
+          if (insideLI(parent) && Mappers::htmlTagMapper->map(g_token->name) && g_token->endTag)
           { // ignore </li> as the end of a style command
             continue; 
           }
@@ -969,7 +969,7 @@ reparsetoken:
   switch (tok)
   {
     case TK_COMMAND: 
-      switch (CmdMapper::map(tokenName))
+      switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
           children.append(new DocSymbol(parent,DocSymbol::BSlash));
@@ -1124,7 +1124,7 @@ reparsetoken:
       break;
     case TK_HTMLTAG:
       {
-        switch (HtmlTagMapper::map(tokenName))
+        switch (Mappers::htmlTagMapper->map(tokenName))
         {
           case HTML_DIV:
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: found <div> tag in heading\n");
@@ -1812,7 +1812,7 @@ void DocSecRefList::parse()
   {
     if (tok==TK_COMMAND)
     {
-      switch (CmdMapper::map(g_token->name))
+      switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_SECREFITEM:
           {
@@ -2067,7 +2067,7 @@ QString DocLink::parse(bool isJavaLink)
       switch (tok)
       {
         case TK_COMMAND: 
-          switch (CmdMapper::map(g_token->name))
+          switch (Mappers::cmdMapper->map(g_token->name))
           {
             case CMD_ENDLINK:
               if (isJavaLink)
@@ -2314,7 +2314,7 @@ int DocHtmlHeader::parse()
           break;
         case TK_HTMLTAG:
           {
-            int tagId=HtmlTagMapper::map(g_token->name);
+            int tagId=Mappers::htmlTagMapper->map(g_token->name);
             if (tagId==HTML_H1 && g_token->endTag) // found </h1> tag
             {
               if (m_level!=1)
@@ -2438,7 +2438,7 @@ int DocHRef::parse()
           break;
         case TK_HTMLTAG:
           {
-            int tagId=HtmlTagMapper::map(g_token->name);
+            int tagId=Mappers::htmlTagMapper->map(g_token->name);
             if (tagId==HTML_A && g_token->endTag) // found </a> tag
             {
               goto endhref;
@@ -2579,7 +2579,7 @@ int DocIndexEntry::parse()
         }
         break;
     case TK_COMMAND: 
-      switch (CmdMapper::map(g_token->name))
+      switch (Mappers::cmdMapper->map(g_token->name))
       {
         case CMD_BSLASH:  m_entry+='\\'; break;
         case CMD_AT:      m_entry+='@';  break;
@@ -2634,7 +2634,7 @@ int DocHtmlCaption::parse()
           break;
         case TK_HTMLTAG:
           {
-            int tagId=HtmlTagMapper::map(g_token->name);
+            int tagId=Mappers::htmlTagMapper->map(g_token->name);
             if (tagId==HTML_CAPTION && g_token->endTag) // found </caption> tag
             {
               retval = RetVal_OK;
@@ -2686,7 +2686,7 @@ int DocHtmlCell::parse()
     retval=par->parse();
     if (retval==TK_HTMLTAG)
     {
-      int tagId=HtmlTagMapper::map(g_token->name);
+      int tagId=Mappers::htmlTagMapper->map(g_token->name);
       if (tagId==HTML_TD && g_token->endTag) // found </dt> tag
       {
         retval=TK_NEWPARA; // ignore the tag
@@ -2725,7 +2725,7 @@ int DocHtmlRow::parse()
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
-    int tagId=HtmlTagMapper::map(g_token->name);
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
     if (tagId==HTML_TD && !g_token->endTag) // found <td> tag
     {
     }
@@ -2789,7 +2789,7 @@ getrow:
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
-    int tagId=HtmlTagMapper::map(g_token->name);
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
     if (tagId==HTML_TR && !g_token->endTag) // found <tr> tag
     {
       // no caption, just rows
@@ -2888,7 +2888,7 @@ int DocHtmlDescTitle::parse()
           {
             QString cmdName=g_token->name;
             bool isJavaLink=FALSE;
-            switch (CmdMapper::map(cmdName))
+            switch (Mappers::cmdMapper->map(cmdName))
             {
               case CMD_REF:
                 {
@@ -2964,7 +2964,7 @@ int DocHtmlDescTitle::parse()
           break;
         case TK_HTMLTAG:
           {
-            int tagId=HtmlTagMapper::map(g_token->name);
+            int tagId=Mappers::htmlTagMapper->map(g_token->name);
             if (tagId==HTML_DD && !g_token->endTag) // found <dd> tag
             {
               retval = RetVal_DescData;
@@ -3054,7 +3054,7 @@ int DocHtmlDescList::parse()
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
-    int tagId=HtmlTagMapper::map(g_token->name);
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
     if (tagId==HTML_DT && !g_token->endTag) // found <dt> tag
     {
       // continue
@@ -3137,6 +3137,40 @@ int DocHtmlListItem::parse()
   return retval;
 }
 
+int DocHtmlListItem::parseXml()
+{
+  DBG(("DocHtmlListItem::parseXml() start\n"));
+  int retval=0;
+  g_nodeStack.push(this);
+
+  // parse one or more paragraphs
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    m_children.append(par);
+    retval=par->parse();
+    if (retval==0) break;
+
+    //printf("new item: retval=%x g_token->name=%s g_token->endTag=%d\n",
+    //    retval,g_token->name.data(),g_token->endTag);
+    if (retval==RetVal_ListItem)
+    {
+      break;
+    }
+  }
+  while (retval!=RetVal_CloseXml);
+
+  if (par) par->markLast();
+
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  DBG(("DocHtmlListItem::parseXml() end retval=%x\n",retval));
+  return retval;
+}
+
 //---------------------------------------------------------------------------
 
 int DocHtmlList::parse()
@@ -3153,7 +3187,7 @@ int DocHtmlList::parse()
   // should find a html tag now
   if (tok==TK_HTMLTAG)
   {
-    int tagId=HtmlTagMapper::map(g_token->name);
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
     if (tagId==HTML_LI && !g_token->endTag) // found <li> tag
     {
       // ok, we can go on.
@@ -3193,6 +3227,68 @@ int DocHtmlList::parse()
 
 endlist:
   DBG(("DocHtmlList::parse() end retval=%x\n",retval));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval==RetVal_EndList ? RetVal_OK : retval;
+}
+
+int DocHtmlList::parseXml()
+{
+  DBG(("DocHtmlList::parseXml() start\n"));
+  int retval=RetVal_OK;
+  int num=1;
+  g_nodeStack.push(this);
+
+  // get next token
+  int tok=doctokenizerYYlex();
+  // skip whitespace and paragraph breaks
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
+  // should find a html tag now
+  if (tok==TK_HTMLTAG)
+  {
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
+    //printf("g_token->name=%s g_token->endTag=%d\n",g_token->name.data(),g_token->endTag);
+    if (tagId==XML_ITEM && !g_token->endTag) // found <item> tag
+    {
+      // ok, we can go on.
+    }
+    else // found some other tag
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <item> tag but "
+          "found <%s> instead!",g_token->name.data());
+      goto endlist;
+    }
+  }
+  else if (tok==0) // premature end of comment
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment while looking"
+        " for a html list item");
+    goto endlist;
+  }
+  else // token other than html token
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <item> tag but found %s token instead!",
+        tokToString(tok));
+    goto endlist;
+  }
+
+  do
+  {
+    DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs,num++);
+    m_children.append(li);
+    retval=li->parseXml();
+    if (retval==0) break;
+    //printf("retval=%x g_token->name=%s\n",retval,g_token->name.data());
+  } while (retval==RetVal_ListItem);
+  
+  if (retval==0)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment while inside <list type=\"%s\"> block",
+        m_type==Unordered ? "bullet" : "number");
+  }
+
+endlist:
+  DBG(("DocHtmlList::parseXml() end retval=%x\n",retval));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval==RetVal_EndList ? RetVal_OK : retval;
@@ -3383,6 +3479,66 @@ int DocSimpleSect::parseRcs()
   return RetVal_OK; 
 }
 
+int DocSimpleSect::parseXml()
+{
+  DBG(("DocSimpleSect::parse() start\n"));
+  g_nodeStack.push(this);
+
+  int retval = RetVal_OK;
+  for (;;) 
+  {
+    // add new paragraph as child
+    DocPara *par = new DocPara(this);
+    if (m_children.isEmpty()) 
+    {
+      par->markFirst();
+    }
+    else
+    {
+      ASSERT(m_children.last()->kind()==DocNode::Kind_Para);
+      ((DocPara *)m_children.last())->markLast(FALSE);
+    }
+    par->markLast();
+    m_children.append(par);
+
+    // parse the contents of the paragraph
+    retval = par->parse();
+    if (retval == 0) break;
+    if (retval == RetVal_CloseXml) 
+    {
+      retval = RetVal_OK;
+      break;
+    }
+  }
+  
+  DBG(("DocSimpleSect::parseXml() end retval=%d\n",retval));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval; 
+}
+
+void DocSimpleSect::appendLinkWord(const QString &word)
+{
+  DocPara *p;
+  if (m_children.isEmpty() || m_children.last()->kind()!=DocNode::Kind_Para)
+  {
+    p = new DocPara(this);
+    m_children.append(p);
+  }
+  else
+  {
+    p = (DocPara *)m_children.last();
+    
+    // Comma-seperate <seealso> links.
+    p->injectToken(TK_WORD,",");
+    p->injectToken(TK_WHITESPACE," ");
+  }
+  
+  g_inSeeBlock=TRUE;
+  p->injectToken(TK_LNKWORD,word);
+  g_inSeeBlock=FALSE;
+}
+
 //--------------------------------------------------------------------------
 
 int DocParamList::parse(const QString &cmdName)
@@ -3390,6 +3546,7 @@ int DocParamList::parse(const QString &cmdName)
   int retval=RetVal_OK;
   DBG(("DocParamList::parse() start\n"));
   g_nodeStack.push(this);
+  DocPara *par=0;
 
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -3425,9 +3582,11 @@ int DocParamList::parse(const QString &cmdName)
   }
   ASSERT(tok==TK_WHITESPACE);
 
-  retval = m_paragraph->parse();
-  m_paragraph->markFirst();
-  m_paragraph->markLast();
+  par = new DocPara(this);
+  m_paragraphs.append(par);
+  retval = par->parse();
+  par->markFirst();
+  par->markLast();
 
 endparamlist:
   DBG(("DocParamList::parse() end retval=%d\n",retval));
@@ -3436,9 +3595,76 @@ endparamlist:
   return retval;
 }
 
+int DocParamList::parseXml(const QString &paramName)
+{
+  int retval=RetVal_OK;
+  DBG(("DocParamList::parseXml() start\n"));
+  g_nodeStack.push(this);
+
+  g_token->name = paramName;
+  if (m_type==DocParamSect::Param)
+  {
+    g_hasParamCommand=TRUE;
+    checkArgumentName(g_token->name,TRUE);
+  }
+  else if (m_type==DocParamSect::RetVal)
+  {
+    g_hasReturnCommand=TRUE;
+    checkArgumentName(g_token->name,FALSE);
+  }
+  
+  handleLinkedWord(this,m_params);
+
+  do
+  {
+    DocPara *par = new DocPara(this);
+    retval = par->parse();
+    if (par->isEmpty()) // avoid adding an empty paragraph for the whitespace
+                        // after </para> and before </param>
+    {
+      delete par;
+      break;
+    }
+    else // append the paragraph to the list
+    {
+      if (m_paragraphs.isEmpty())
+      {
+        par->markFirst();
+      }
+      else
+      {
+        m_paragraphs.last()->markLast(FALSE);
+      }
+      par->markLast();
+      m_paragraphs.append(par);
+    }
+
+    if (retval == 0) break;
+
+  } while (retval==RetVal_CloseXml && 
+           Mappers::htmlTagMapper->map(g_token->name)!=XML_PARAM &&
+           Mappers::htmlTagMapper->map(g_token->name)!=XML_EXCEPTION);
+  
+
+  if (retval==0) /* premature end of comment block */
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unterminated param or exception tag");
+  }
+  else
+  {
+    retval=RetVal_OK;
+  }
+
+
+  DBG(("DocParamList::parse() end retval=%d\n",retval));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval;
+}
+
 //--------------------------------------------------------------------------
 
-int DocParamSect::parse(const QString &cmdName,Direction d)
+int DocParamSect::parse(const QString &cmdName,bool xmlContext, Direction d)
 {
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
@@ -3457,7 +3683,14 @@ int DocParamSect::parse(const QString &cmdName,Direction d)
     pl->markLast();
   }
   m_children.append(pl);
-  retval = pl->parse(cmdName);
+  if (xmlContext)
+  {
+    retval = pl->parseXml(cmdName);
+  }
+  else
+  {
+    retval = pl->parse(cmdName);
+  }
   
   DBG(("DocParamSect::parse() end retval=%d\n",retval));
   DocNode *n=g_nodeStack.pop();
@@ -3467,8 +3700,7 @@ int DocParamSect::parse(const QString &cmdName,Direction d)
 
 //--------------------------------------------------------------------------
 
-
-int DocPara::handleSimpleSection(DocSimpleSect::Type t)
+int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   DocSimpleSect *ss=0;
   if (!m_children.isEmpty() &&                           // previous element
@@ -3484,12 +3716,21 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t)
     ss=new DocSimpleSect(this,t);
     m_children.append(ss);
   }
-  int rv = ss->parse(t==DocSimpleSect::User);
+  int rv = RetVal_OK;
+  if (xmlContext)
+  {
+    return ss->parseXml();
+  }
+  else
+  {
+    rv = ss->parse(t==DocSimpleSect::User);
+  }
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
 int DocPara::handleParamSection(const QString &cmdName,
                                 DocParamSect::Type t,
+                                bool xmlContext=FALSE,
                                 int direction=DocParamSect::Unspecified)
 {
   DocParamSect *ps=0;
@@ -3505,7 +3746,7 @@ int DocPara::handleParamSection(const QString &cmdName,
     ps=new DocParamSect(this,t);
     m_children.append(ps);
   }
-  int rv=ps->parse(cmdName,(DocParamSect::Direction)direction);
+  int rv=ps->parse(cmdName,xmlContext,(DocParamSect::Direction)direction);
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
@@ -3777,11 +4018,36 @@ int DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
   return (retval==RetVal_OK) ? TK_NEWPARA : retval;
 }
 
+// For XML tags whose content is stored in attributes rather than
+// contained within the element, we need a way to inject the attribute
+// text into the current paragraph.
+bool DocPara::injectToken(int tok,const QString &tokText) 
+{
+  g_token->name = tokText;
+  return defaultHandleToken(this,tok,m_children);
+}
+
+int DocPara::handleStartCode()
+{
+  int retval = doctokenizerYYlex();
+  // search for the first non-whitespace line, index is stored in li
+  int i=0,li=0,l=g_token->verb.length();
+  while (i<l && g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n')
+  {
+    if (g_token->verb.at(i)=='\n') li=i+1;
+    i++;
+  }
+  m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName));
+  if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: code section ended without end marker");
+  doctokenizerYYsetStatePara();
+  return retval;
+}
+
 int DocPara::handleCommand(const QString &cmdName)
 {
   DBG(("handleCommand(%s)\n",cmdName.data()));
   int retval = RetVal_OK;
-  switch (CmdMapper::map(cmdName))
+  switch (Mappers::cmdMapper->map(cmdName))
   {
     case CMD_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Found unknown command `\\%s'",cmdName.data());
@@ -3910,17 +4176,7 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_STARTCODE:
       {
         doctokenizerYYsetStateCode();
-        retval = doctokenizerYYlex();
-        // search for the first non-whitespace line, index is stored in li
-        int i=0,li=0,l=g_token->verb.length();
-        while (i<l && g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n')
-        {
-          if (g_token->verb.at(i)=='\n') li=i+1;
-          i++;
-        }
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb.mid(li),DocVerbatim::Code,g_isExample,g_exampleName));
-        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: code section ended without end marker");
-        doctokenizerYYsetStatePara();
+        retval = handleStartCode();
       }
       break;
     case CMD_HTMLONLY:
@@ -3988,7 +4244,7 @@ int DocPara::handleCommand(const QString &cmdName)
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
       break; 
     case CMD_PARAM:
-      retval = handleParamSection(cmdName,DocParamSect::Param,g_token->paramDir);
+      retval = handleParamSection(cmdName,DocParamSect::Param,FALSE,g_token->paramDir);
       break;
     case CMD_RETVAL:
       retval = handleParamSection(cmdName,DocParamSect::RetVal);
@@ -4150,12 +4406,31 @@ int DocPara::handleCommand(const QString &cmdName)
   return retval;
 }
 
+static bool findAttribute(const HtmlAttribList &tagHtmlAttribs, 
+                          const char *attrName, 
+                          QString *result) 
+{
+
+  HtmlAttribListIterator li(tagHtmlAttribs);
+  HtmlAttrib *opt;
+  for (li.toFirst();(opt=li.current());++li)
+  {
+    if (opt->name==attrName) 
+    {
+      *result = opt->value;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
 
 int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs)
 {
   DBG(("handleHtmlStartTag(%s,%d)\n",tagName.data(),tagHtmlAttribs.count()));
   int retval=RetVal_OK;
-  int tagId = HtmlTagMapper::map(tagName);
+  int tagId = Mappers::htmlTagMapper->map(tagName);
+  if (g_token->emptyTag && !(tagId&XML_CmdMask) && tagId!=HTML_UNKNOWN)
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: HTML tags may not use the 'empty tag' XHTML syntax.");
   switch (tagId)
   {
     case HTML_UL: 
@@ -4186,7 +4461,16 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
     case HTML_CODE:
-      handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
+      if (g_fileName.right(3)==".cs") 
+        // for C# code we treat <code> as an XML tag
+      {
+        doctokenizerYYsetStateXmlCode();
+        retval = handleStartCode();
+      }
+      else // normal HTML markup
+      {
+        handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
+      }
       break;
     case HTML_EMPHASIS:
       handleStyleEnter(this,m_children,DocStyleChange::Italic,&g_token->attribs);
@@ -4309,10 +4593,148 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         }
       }
       break;
-    case HTML_UNKNOWN:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag <%s> found", tagName.data());
-      m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
+
+    case XML_SUMMARY:
+    case XML_REMARKS:
+    case XML_VALUE:
+    case XML_PARA:
+      if (!m_children.isEmpty())
+      {
+        retval = TK_NEWPARA;
+      }
       break;
+    case XML_EXAMPLE:
+    case XML_DESCRIPTION:
+      break;
+    case XML_C:
+      handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
+      break;
+    case XML_PARAM:
+      {
+        QString paramName;
+        if (findAttribute(tagHtmlAttribs,"name",&paramName))
+	{
+          retval = handleParamSection(paramName,DocParamSect::Param,TRUE);
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'name' attribute from <param> tag.");
+        }
+      }
+      break;
+    case XML_PARAMREF:
+      {
+        QString paramName;
+        if (findAttribute(tagHtmlAttribs,"name",&paramName))
+        {
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
+          retval=handleStyleArgument(this,m_children,paramName); 
+          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
+          if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'name' attribute from <paramref> tag.");
+        }
+      }
+      break;
+    case XML_EXCEPTION:
+      {
+        QString exceptName;
+        if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
+	{
+          retval = handleParamSection(exceptName,DocParamSect::Exception,TRUE);
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'name' attribute from <exception> tag.");
+        }
+      }
+      break;
+    case XML_ITEM:
+      if (!insideUL(this) && !insideOL(this))
+      {
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: lonely <item> tag found");
+      }
+      else
+      {
+        retval=RetVal_ListItem;
+      }
+      break;
+    case XML_RETURNS:
+      retval = handleSimpleSection(DocSimpleSect::Return,TRUE);
+      g_hasReturnCommand=TRUE;
+      break;
+    case XML_SEE:
+      // I'm not sure if <see> is the same as <seealso> or if it
+      // should you link a member without producing a section. The
+      // C# specification is extremely vague about this (but what else 
+      // can we expect from Microsoft...)
+      {
+        QString cref;
+        if (findAttribute(tagHtmlAttribs,"cref",&cref))
+        {
+          DocRef *ref = new DocRef(this,cref);
+          m_children.append(ref);
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'cref' attribute from <see> tag.");
+        }
+      }
+      break;
+    case XML_SEEALSO:
+      {
+        QString cref;
+        if (findAttribute(tagHtmlAttribs,"cref",&cref))
+	{
+	  // Look for an existing "see" section
+          DocSimpleSect *ss=0;
+          QListIterator<DocNode> cli(m_children);
+          DocNode *n;
+          for (cli.toFirst();(n=cli.current());++cli)
+          {
+            if (n->kind()==Kind_SimpleSect && ((DocSimpleSect *)n)->type()==DocSimpleSect::See)
+            {
+              ss = (DocSimpleSect *)n;
+            }
+          }
+  
+          if (!ss)  // start new section
+          {
+            ss=new DocSimpleSect(this,DocSimpleSect::See);
+            m_children.append(ss);
+          }
+          
+          ss->appendLinkWord(cref);
+	  retval = RetVal_OK;
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'cref' attribute from <seealso> tag.");
+        }
+      }
+      break;
+    case XML_LIST:
+      {
+        QString type;
+        DocHtmlList::Type listType = DocHtmlList::Unordered;
+        if (findAttribute(tagHtmlAttribs,"type",&type) && type=="number")
+        {
+          listType=DocHtmlList::Ordered;
+        }
+        DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,listType);
+        m_children.append(list);
+        retval=list->parseXml();
+      }
+      break;
+    case XML_INCLUDE:
+    case XML_PERMISSION:
+      // These tags are defined in .Net but are currently unsupported
+      break;
+    case HTML_UNKNOWN:
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported xml/html tag <%s> found", tagName.data());
+      m_children.append(new DocWord(this, "<"+tagName+tagHtmlAttribs.toString()+">"));
       break;
     default:
       // we should not get here!
@@ -4325,7 +4747,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
 int DocPara::handleHtmlEndTag(const QString &tagName)
 {
   DBG(("handleHtmlEndTag(%s)\n",tagName.data()));
-  int tagId = HtmlTagMapper::map(tagName);
+  int tagId = Mappers::htmlTagMapper->map(tagName);
   int retval=RetVal_OK;
   switch (tagId)
   {
@@ -4450,8 +4872,31 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       //warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected tag </a> found");
       // ignore </a> tag (can be part of <a name=...></a>
       break;
+
+    case XML_SUMMARY:
+    case XML_REMARKS:
+    case XML_PARA:
+    case XML_VALUE:
+    case XML_LIST:
+    case XML_EXAMPLE:
+    case XML_PARAM:
+    case XML_RETURNS:
+    case XML_SEEALSO:
+    case XML_EXCEPTION:
+      retval = RetVal_CloseXml;
+      break;
+    case XML_C:
+      handleStyleLeave(this,m_children,DocStyleChange::Code,"c");
+      break;
+    case XML_ITEM:
+    case XML_INCLUDE:
+    case XML_PERMISSION:
+    case XML_DESCRIPTION:
+    case XML_PARAMREF:
+      // These tags are defined in .Net but are currently unsupported
+      break;
     case HTML_UNKNOWN:
-      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported html tag </%s> found", tagName.data());
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported xml/html tag </%s> found", tagName.data());
       m_children.append(new DocWord(this,"</"+tagName+">"));
       break;
     default:
@@ -4610,7 +5055,7 @@ reparsetoken:
       case TK_COMMAND:    
 	{
 	  // see if we have to start a simple section
-	  int cmd = CmdMapper::map(g_token->name);
+	  int cmd = Mappers::cmdMapper->map(g_token->name);
 	  DocNode *n=parent();
 	  while (n && 
                  n->kind()!=DocNode::Kind_SimpleSect && 
@@ -4901,7 +5346,7 @@ void DocText::parse()
         }
         break;
       case TK_COMMAND: 
-        switch (CmdMapper::map(g_token->name))
+        switch (Mappers::cmdMapper->map(g_token->name))
         {
           case CMD_BSLASH:
             m_children.append(new DocSymbol(this,DocSymbol::BSlash));
@@ -5173,8 +5618,8 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   // TODO: These should be called at the end of the program.
   //doctokenizerYYcleanup();
-  //CmdMapper::freeInstance();
-  //HtmlTagMapper::freeInstance();
+  //Mappers::cmdMapper->freeInstance();
+  //Mappers::htmlTagMapper->freeInstance();
 
   return root;
 }

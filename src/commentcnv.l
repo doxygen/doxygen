@@ -454,9 +454,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <CondLine>[ \t]*
 <CComment,ReadLine>[\\@]"cond"[ \t]*\n |
 <CondLine>.			   { // forgot section id?
+  				     bool oldSkip=g_skip;
   				     startCondSection(" "); // fake section id causing the section to be hidden unconditionally
+				     if (g_condCtx==CComment && !oldSkip && g_skip) 
+    			             {
+				       //printf("** Adding terminator for comment!\n");
+ 				       ADDCHAR('*');
+     				       ADDCHAR('/');
+    				     }
 				     if (*yytext=='\n') g_lineNr++;
-				     if (YY_START==CondLine) BEGIN(g_condCtx);
+				     BEGIN(g_condCtx);
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
   				      QCString *pValue=Doxygen::aliasDict[yytext+1];

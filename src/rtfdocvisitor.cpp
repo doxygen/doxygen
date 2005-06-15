@@ -21,20 +21,21 @@
 #include "language.h"
 #include "doxygen.h"
 #include "outputgen.h"
-#include "code.h"
 #include "dot.h"
 #include "util.h"
 #include "rtfstyle.h"
 #include "message.h"
 #include <qfileinfo.h> 
+#include "parserintf.h"
 
 
 #define DBG_RTF(x) m_t << x
 //#define DBG_RTF(x) do {} while(0)
 
-RTFDocVisitor::RTFDocVisitor(QTextStream &t,BaseCodeDocInterface &ci) 
+RTFDocVisitor::RTFDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+                             const char *langExt) 
   : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE), 
-    m_hide(FALSE), m_indentLevel(0), m_lastIsPara(FALSE)
+    m_hide(FALSE), m_indentLevel(0), m_lastIsPara(FALSE), m_langExt(langExt)
 {
 }
 
@@ -322,7 +323,9 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,s->context(),s->text().latin1(),s->isExample(),s->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                                        s->isExample(),s->exampleFile());
       //m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -401,7 +404,11 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << rtf_Style_Reset << getStyle("CodeExample");
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile(), &fd);
+         Doxygen::parserManager->getParser(m_langExt)
+                               ->parseCode(m_ci,inc->context(),
+                                           inc->text().latin1(),
+                                           inc->isExample(),
+                                           inc->exampleFile(), &fd);
          m_t << "\\par" << endl; 
          m_t << "}" << endl;
       }
@@ -410,7 +417,10 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      parseCode(m_ci,inc->context(),inc->text().latin1(),inc->isExample(),inc->exampleFile());
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,inc->context(),
+                                        inc->text().latin1(),inc->isExample(),
+                                        inc->exampleFile());
       m_t << "\\par" << endl; 
       m_t << "}" << endl;
       break;
@@ -449,7 +459,12 @@ void RTFDocVisitor::visit(DocIncOperator *op)
   if (op->type()!=DocIncOperator::Skip) 
   {
     popEnabled();
-    if (!m_hide) parseCode(m_ci,op->context(),op->text().latin1(),op->isExample(),op->exampleFile());
+    if (!m_hide) 
+    {
+      Doxygen::parserManager->getParser(m_langExt)
+                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                                        op->isExample(),op->exampleFile());
+    }
     pushEnabled();
     m_hide=TRUE;
   }

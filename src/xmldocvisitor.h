@@ -21,16 +21,17 @@
 
 #include "docvisitor.h"
 #include <qstack.h>
+#include <qcstring.h>
 
 class QTextStream;
-class BaseCodeDocInterface;
+class CodeOutputInterface;
 class QString;
 
 /*! @brief Concrete visitor implementation for XML output. */
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(QTextStream &t,BaseCodeDocInterface &ci);
+    XmlDocVisitor(QTextStream &t,CodeOutputInterface &ci);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -145,10 +146,11 @@ class XmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     QTextStream &m_t;
-    BaseCodeDocInterface &m_ci;
+    CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
     QStack<bool> m_enabled;
+    QCString m_langExt;
 };
 
 #endif

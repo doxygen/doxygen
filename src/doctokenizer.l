@@ -136,72 +136,6 @@ static int computeIndent(const char *str,int length)
   return indent;
 }
 
-/*! converts input string \a opt into a list of Html Attributes. Each
- *  attribute is a name, value pair. The result is stored in g_token->attribs
- */
-static void parseHtmlAttribs(const char *att)
-{
-  //printf("parseHtmlAttribs(%s)\n",att);
-  QCString attribs=att;
-  int len = attribs.length();
-  char c;
-  int i=0,startName,endName,startAttrib,endAttrib;
-  while (i<len)
-  {
-    c=attribs.at(i);
-    // skip spaces
-    while (i<len && c==' ') { c=attribs.at(++i); }
-    startName=i;
-    // search for end of name
-    while (i<len && c!=' ' && c!='=') { c=attribs.at(++i); }
-    endName=i;
-    HtmlAttrib opt;
-    opt.name  = attribs.mid(startName,endName-startName).lower(); 
-    // skip spaces
-    while (i<len && c==' ') { c=attribs.at(++i); } 
-    if (attribs.at(i)=='=') // option has value
-    {
-      c=attribs.at(++i);
-      // skip spaces
-      while (i<len && c==' ') { c=attribs.at(++i); } 
-      if (attribs.at(i)=='\'') // option '...'
-      {
-        c=attribs.at(++i);
-	startAttrib=i;
-	
-	// search for matching quote 
-        while (i<len && c!='\'') { c=attribs.at(++i); } 
-	endAttrib=i;
-        if (i<len) c=attribs.at(++i);
-      }
-      else if (attribs.at(i)=='"') // option "..."
-      {
-        c=attribs.at(++i);
-	startAttrib=i;
-	// search for matching quote 
-        while (i<len && c!='"') { c=attribs.at(++i); } 
-	endAttrib=i;
-        if (i<len) c=attribs.at(++i);
-      }
-      else // value without any quotes
-      {
-	startAttrib=i;
-	// search for separator
-        while (i<len && c!=' ') { c=attribs.at(++i); } 
-	endAttrib=i;
-	if (i<len) c=attribs.at(++i);
-      }
-      opt.value  = attribs.mid(startAttrib,endAttrib-startAttrib); 
-    }
-    else // start next option
-    {
-    }
-    //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    opt.name.data(),opt.value.data());
-    g_token->attribs.append(&opt);
-  }
-}
-
 //--------------------------------------------------------------------------
 
 static void processSection()
@@ -231,27 +165,96 @@ static void processSection()
 
 static void handleHtmlTag()
 {
-  g_token->name = yytext;
+  QCString tagText=yytext;
   g_token->attribs.clear();
+  g_token->endTag = FALSE;
+  g_token->emptyTag = FALSE;
+  
+  // Check for end tag
   int startNamePos=1;
-  if (g_token->name.at(1)=='/') startNamePos++;
-  int attSep=0;
-  while (attSep<yyleng && !isspace(yytext[attSep]))
+  if (tagText.at(1)=='/') 
   {
-    attSep++;
+    g_token->endTag = TRUE;
+    startNamePos++;
   }
-  if (attSep!=yyleng) // tag has one or more options
-  {
-    parseHtmlAttribs(g_token->name.mid(attSep+1,g_token->name.length()-attSep-2));
-    g_token->name=g_token->name.mid(startNamePos,attSep-1).lower();
-  }
-  else // tag without options, strip brackets
-  {
-    g_token->name=g_token->name.mid(startNamePos,g_token->name.length()-startNamePos-1).lower();
-  }
-  g_token->endTag = startNamePos==2;
-}
 
+  // Parse the name portion
+  int i = startNamePos;
+  for (i=startNamePos; i < yyleng; i++)
+  {
+    // Check for valid HTML/XML name chars (including namespaces)
+    char c = tagText.at(i);
+    if (!(isalnum(c) || c=='-' || c=='_' || c==':')) break;
+  }
+  g_token->name = tagText.mid(startNamePos,i-startNamePos);
+
+  // Parse the attributes. Each attribute is a name, value pair
+  // The result is stored in g_token->attribs.
+  int startName,endName,startAttrib,endAttrib;
+  while (i<yyleng)
+  {
+    char c=tagText.at(i);
+    // skip spaces
+    while (i<yyleng && c==' ') { c=tagText.at(++i); }
+    // check for end of the tag
+    if (c == '>') break;
+    // Check for XML style "empty" tag.
+    if (c == '/') 
+    {
+      g_token->emptyTag = TRUE;
+      break;
+    }
+    startName=i;
+    // search for end of name
+    while (i<yyleng && c!=' ' && c!='=') { c=tagText.at(++i); }
+    endName=i;
+    HtmlAttrib opt;
+    opt.name  = tagText.mid(startName,endName-startName).lower(); 
+    // skip spaces
+    while (i<yyleng && c==' ') { c=tagText.at(++i); } 
+    if (tagText.at(i)=='=') // option has value
+    {
+      c=tagText.at(++i);
+      // skip spaces
+      while (i<yyleng && c==' ') { c=tagText.at(++i); } 
+      if (tagText.at(i)=='\'') // option '...'
+      {
+        c=tagText.at(++i);
+	startAttrib=i;
+	
+	// search for matching quote 
+        while (i<yyleng && c!='\'') { c=tagText.at(++i); } 
+	endAttrib=i;
+        if (i<yyleng) c=tagText.at(++i);
+      }
+      else if (tagText.at(i)=='"') // option "..."
+      {
+        c=tagText.at(++i);
+	startAttrib=i;
+	// search for matching quote 
+        while (i<yyleng && c!='"') { c=tagText.at(++i); } 
+	endAttrib=i;
+        if (i<yyleng) c=tagText.at(++i);
+      }
+      else // value without any quotes
+      {
+	startAttrib=i;
+	// search for separator
+        while (i<yyleng && c!=' ') { c=tagText.at(++i); } 
+	endAttrib=i;
+	if (i<yyleng) c=tagText.at(++i);
+      }
+      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
+    }
+    else // start next option
+    {
+    }
+    //printf("=====> Adding option name=<%s> value=<%s>\n",
+    //    opt.name.data(),opt.value.data());
+    g_token->attribs.append(&opt);
+  }
+}
+  
 static QString stripEmptyLines(const char *s)
 {
   int result=0,p=0;
@@ -287,6 +290,7 @@ WS    [ \t\r\n]
 NONWS [^ \t\r\n]
 BLANK [ \t\r]
 ID    [a-z_A-Z][a-z_A-Z0-9]*
+MAILADR  [a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
 ENDLIST  {BLANK}*{OPTSTARS}"."{BLANK}*\n
@@ -326,7 +330,7 @@ WORD1     "%"?{CHARWORD}+|"{"|"}"|("\""[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 WORD1NQ   "%"?{CHARWORDQ}+
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
-HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*">" 
+HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
@@ -344,6 +348,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 %x St_TitleA
 %x St_TitleV
 %x St_Code
+%x St_XmlCode
 %x St_HtmlOnly
 %x St_ManOnly
 %x St_LatexOnly
@@ -445,7 +450,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 			 g_token->isEMailAddr=FALSE;
 			 return TK_URL;
                        }
-<St_Para>[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ { // Mail address
+<St_Para>{MAILADR}     { // Mail address
                          g_token->name=yytext;
 			 g_token->isEMailAddr=TRUE;
 			 return TK_URL;
@@ -539,9 +544,12 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 <St_Code>{WS}*{CMD}"endcode" {
                          return RetVal_OK;
                        }
-<St_Code>[^\\@\n]+     |
-<St_Code>\n            |
-<St_Code>.             {
+<St_XmlCode>{WS}*"</code>" {
+                         return RetVal_OK;
+                       }
+<St_Code,St_XmlCode>[^\\@\n]+  |
+<St_Code,St_XmlCode>\n         |
+<St_Code,St_XmlCode>.          {
   			 g_token->verb+=yytext;
   		       }
 <St_HtmlOnly>{CMD}"endhtmlonly" {
@@ -940,6 +948,12 @@ void doctokenizerYYsetStateCode()
 {
   g_token->verb="";
   BEGIN(St_Code);
+}
+
+void doctokenizerYYsetStateXmlCode()
+{
+  g_token->verb="";
+  BEGIN(St_XmlCode);
 }
 
 void doctokenizerYYsetStateHtmlOnly()

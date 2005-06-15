@@ -51,6 +51,12 @@ sub GenerateDep {
 #$ GenerateDep("code.cpp","code.l");
 	$(LEX) -PcodeYY -t code.l | $(INCBUFSIZE) >code.cpp
 
+#$ GenerateDep("pyscanner.cpp","pyscanner.l");
+	$(LEX) -PpyscanYY -t pyscanner.l | $(INCBUFSIZE) >pyscanner.cpp
+
+#$ GenerateDep("pycode.cpp","pycode.l");
+	$(LEX) -PpycodeYY -t pycode.l | $(INCBUFSIZE) >pycode.cpp
+
 #$ GenerateDep("pre.cpp","pre.l");
 	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
 

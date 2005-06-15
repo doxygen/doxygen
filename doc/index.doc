@@ -97,6 +97,8 @@ The second part forms a reference manual:
               used within the documentation.
 <li>Section \ref htmlcmds shows an overview of the HTML commands that
               can be used within the documentation.
+<li>Section \ref xmlcmds shows an overview of the XML commands that
+              can be used within the documentation.
 </ul>
 
 The third part provides information for developers:
@@ -186,6 +188,7 @@ Thanks go to:
 <li>Tim Mensch for adding the todo command.
 <li>Christian Hammond for redesigning the web-site.
 <li>Ken Wong for providing the HTML tree view code.
+<li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalisation support.
     All language maintainers for providing translations into many languages.
 <li>Gerald Steffens of <a href="http://www.e-trend.de">E-trend</a>

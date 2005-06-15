@@ -100,7 +100,6 @@ CommandMap cmdMap[] =
   { "$",             CMD_DOLLAR },
   { "#",             CMD_HASH },
   { "%",             CMD_PERCENT },
-  //{ "~",             CMD_LANGSWITCH },
   { "_internalref",  CMD_INTERNALREF },
   { "dot",           CMD_DOT },
   { "enddot",        CMD_ENDDOT },
@@ -109,42 +108,6 @@ CommandMap cmdMap[] =
   { "includelineno", CMD_INCWITHLINES },
   { 0,               0 }
 };
-
-//----------------------------------------------------------------------------
-
-int CmdMapper::map(const char *name)
-{
-  return instance()->find(name);
-}
-
-void CmdMapper::freeInstance()
-{
-  delete m_instance; m_instance=0;
-}
-
-CmdMapper *CmdMapper::instance()
-{
-  if (m_instance==0) m_instance = new CmdMapper;
-  return m_instance;
-}
-
-CmdMapper::CmdMapper() : m_map(89)
-{
-  m_map.setAutoDelete(TRUE);
-  CommandMap *p = cmdMap;
-  while (p->cmdName)
-  {
-    m_map.insert(p->cmdName,new int(p->cmdId));
-    p++;
-  }
-}
-int CmdMapper::find(const char *name) 
-{
-  int *result = m_map.find(name);
-  if (result) return *result; else return CMD_UNKNOWN;
-}
-
-CmdMapper *CmdMapper::m_instance=0;
 
 //----------------------------------------------------------------------------
 
@@ -188,43 +151,37 @@ CommandMap htmlTagMap[] =
   { "h6",         HTML_H6 },
   { "span",       HTML_SPAN },
   { "div",        HTML_DIV },
+
+  { "c",          XML_C },
+  // { "code",       XML_CODE },  <= ambigious <code> is also a HTML tag
+  { "description",XML_DESCRIPTION },
+  { "example",    XML_EXAMPLE },
+  { "exception",  XML_EXCEPTION },
+  { "include",    XML_INCLUDE },
+  { "item",       XML_ITEM },
+  { "list",       XML_LIST },
+  { "para",       XML_PARA },
+  { "param",      XML_PARAM },
+  { "paramref",   XML_PARAMREF },
+  { "permission", XML_PERMISSION },
+  { "remarks",    XML_REMARKS },
+  { "returns",    XML_RETURNS },
+  { "see",        XML_SEE },
+  { "seealso",    XML_SEEALSO },
+  { "summary",    XML_SUMMARY },
+  { "value",      XML_VALUE },
   { 0,            0 }
 };
 
 //----------------------------------------------------------------------------
 
-int HtmlTagMapper::map(const char *name)
+Mapper *Mappers::cmdMapper     = new Mapper(cmdMap);
+Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap);
+
+void Mappers::freeMappers()
 {
-  return instance()->find(name);
+  delete cmdMapper;     cmdMapper     = 0;
+  delete htmlTagMapper; htmlTagMapper = 0;
 }
 
-void HtmlTagMapper::freeInstance()
-{
-  delete m_instance; m_instance=0;
-}
 
-HtmlTagMapper *HtmlTagMapper::instance()
-{
-  if (m_instance==0) m_instance = new HtmlTagMapper;
-  return m_instance;
-}
-
-HtmlTagMapper::HtmlTagMapper() : m_map(89)
-{
-  m_map.setAutoDelete(TRUE);
-  CommandMap *p = htmlTagMap;
-  while (p->cmdName)
-  {
-    m_map.insert(p->cmdName,new int(p->cmdId));
-    p++;
-  }
-}
-int HtmlTagMapper::find(const char *name) 
-{
-  int *result = m_map.find(name);
-  if (result) return *result; else return HTML_UNKNOWN;
-}
-
-HtmlTagMapper *HtmlTagMapper::m_instance=0;
-
-//----------------------------------------------------------------------------

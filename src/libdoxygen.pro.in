@@ -75,6 +75,8 @@ HEADERS      =	bufstr.h \
                 pngenc.h \
 		pre.h \
                 printdocvisitor.h \
+                pycode.h \
+                pyscanner.h \
 		qtbc.h \
 		reflist.h \
                 rtfdocvisitor.h \
@@ -176,6 +178,8 @@ SOURCES      =	ce_lex.cpp \
 		perlmodgen.cpp \
                 pngenc.cpp \
 		pre.cpp \
+		pycode.cpp \
+		pyscanner.cpp \    
 		reflist.cpp \
                 rtfdocvisitor.cpp \
 		rtfgen.cpp \

@@ -43,7 +43,7 @@ class LatexGenerator : public OutputGenerator
     bool isEnabled(OutputType o) { return (o==Latex && active); } 
     OutputGenerator *get(OutputType o) { return (o==Latex) ? this : 0; }
 
-    void printDoc(DocNode *);
+    void printDoc(DocNode *,const char *);
 
     void startFile(const char *name,const char *manName,const char *title);
     void writeFooter() {}

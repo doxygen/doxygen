@@ -41,6 +41,7 @@
 #include "defargs.h"
 #include "language.h"
 #include "commentscan.h"
+#include "code.h"
 
 #define YY_NEVER_INTERACTIVE 1
 
@@ -1843,6 +1844,42 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  handleGroupStartCommand(current->name);
 					  current = tmp;
 					  initEntry();
+					  if (yytext[1]=='/')
+					  {
+					    if (yytext[2]=='!' || yytext[2]=='/')
+					    {
+					      docBlockContext   = YY_START;
+					      docBlockInBody    = FALSE;
+					      docBlockJavaStyle = FALSE;
+					      docBlock.resize(0);
+					      docBlockTerm = 0;
+					      startCommentBlock(TRUE);
+					      BEGIN(DocLine);
+					    }
+					    else
+					    {
+					      lastCContext=YY_START;
+					      BEGIN(SkipCxxComment);
+					    }
+					  }
+					  else
+					  {
+					    if (yytext[2]=='!' || yytext[2]=='*')
+					    {
+					      docBlockContext   = YY_START;
+					      docBlockInBody    = FALSE;
+					      docBlock.resize(0);
+					      docBlockJavaStyle = yytext[2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					      docBlockTerm = 0;
+					      startCommentBlock(FALSE);
+					      BEGIN(DocBlock);
+					    }
+					    else
+					    {
+					      lastCContext=YY_START;
+					      BEGIN(SkipComment);
+					    }
+					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
 					  handleGroupEndCommand();
@@ -4540,10 +4577,40 @@ static void handleGroupEndCommand()
 
 //----------------------------------------------------------------------------
 
-void CLanguageScanner::parse(const char *fileName,const char *fileBuf,Entry *root)
+void CLanguageScanner::parseInput(const char *fileName,const char *fileBuf,Entry *root)
 {
   g_thisParser = this;
   ::parseMain(fileName,fileBuf,root);
+}
+
+void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
+                   const char * scopeName,
+                   const QCString & input,
+                   bool isExampleBlock,
+                   const char * exampleName,
+                   FileDef * fileDef,
+                   int startLine,
+                   int endLine,
+                   bool inlineFragment,
+		   MemberDef *memberDef
+                  )
+{
+  ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+               fileDef,startLine,endLine,inlineFragment,memberDef);
+}
+
+bool CLanguageScanner::needsPreprocessing(const QCString &extension)
+{
+  QCString fe=extension.lower();
+  return 
+   !( fe==".java" || fe==".as"  || fe==".cs"    || fe==".d"    || fe==".php" || 
+      fe==".php4" || fe==".inc" || fe==".phtml" || fe==".m"    || fe==".mm"
+    );
+}
+
+void CLanguageScanner::resetCodeParserState()
+{
+  ::resetCCodeParserState();
 }
 
 void CLanguageScanner::parsePrototype(const char *text)

@@ -1722,7 +1722,7 @@ void Config::create()
                     "SHOW_DIRECTORIES",
 		    "If the sources in your project are distributed over multiple directories \n"
 		    "then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy \n"
-		    "in the documentation.\n",
+		    "in the documentation. The default is YES.\n",
 		    TRUE
               );
   cs = addString(  "FILE_VERSION_FILTER",

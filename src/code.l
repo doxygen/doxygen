@@ -27,7 +27,6 @@
 #include <qdir.h>
 
 #include "qtbc.h"
-#include "scanner.h"
 #include "entry.h"
 #include "doxygen.h"
 #include "message.h"
@@ -50,7 +49,7 @@
  *	statics
  */
   
-static BaseCodeDocInterface * g_code;
+static CodeOutputInterface * g_code;
 
 static ClassSDict    g_codeClassSDict(17);
 static QCString      g_curClassName;
@@ -346,11 +345,8 @@ class CallContext
     void clear()
     {
       DBG_CTX((stderr,"** Clear call context\n"));
-      Ctx *ctx = m_classList.getLast();
-      if (ctx)
-      {
-	ctx->cd=0;
-      }
+      m_classList.clear();
+      m_classList.append(new Ctx);
     }
     ClassDef *getClass() const
     {
@@ -549,7 +545,7 @@ static void codifyLines(char *text)
  * line numbers for each line. If \a text contains newlines, the link will be 
  * split into multiple links with the same destination, one for each line.
  */
-static void writeMultiLineCodeLink(BaseCodeDocInterface &ol,
+static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *ref,const char *file,
                   const char *anchor,const char *text)
 {
@@ -600,7 +596,7 @@ static void addParmType()
   g_parmName.resize(0) ;
 }
 
-void setParameterList(MemberDef *md)
+static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
   ArgumentList *al = md->argumentList();
@@ -614,7 +610,7 @@ void setParameterList(MemberDef *md)
     if (i!=-1) g_parmType = g_parmType.left(i);
     i = g_parmType.find('&');
     if (i!=-1) g_parmType = g_parmType.left(i);
-    if (g_parmType.left(6)=="const ") g_parmType = g_parmType.right(g_parmType.length()-6);
+    g_parmType.stripPrefix("const ");
     g_parmType=g_parmType.stripWhiteSpace();
     g_theVarContext.addVariable(g_parmType,g_parmName);
     a = al->next();
@@ -767,7 +763,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 static bool getLinkInScope(const QCString &c,  // scope
                            const QCString &m,  // member
 			   const char *memberText, // exact text
-			   BaseCodeDocInterface &ol,
+			   CodeOutputInterface &ol,
 			   const char *text
 			  )
 {
@@ -825,7 +821,7 @@ static bool getLinkInScope(const QCString &c,  // scope
 
 static bool getLink(const char *className,
                     const char *memberName,
-		    BaseCodeDocInterface &ol,
+		    CodeOutputInterface &ol,
 		    const char *text=0)
 {
   QCString m=removeRedundantWhiteSpace(memberName);
@@ -843,7 +839,7 @@ static bool getLink(const char *className,
   return TRUE;
 }
 
-static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
                                       bool typeOnly=FALSE)
 {
   int i=0;
@@ -963,7 +959,7 @@ static void generateClassOrGlobalLink(BaseCodeDocInterface &ol,char *clName,
   }
 }
 
-static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const char *memName)
+static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const char *memName)
 {
   if (mcd)
   {
@@ -1025,7 +1021,7 @@ static bool generateClassMemberLink(BaseCodeDocInterface &ol,ClassDef *mcd,const
   return FALSE;
 }
 
-static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
+static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
             char *memName)
 {
   //printf("generateMemberLink(object=%s,mem=%s) classScope=%s\n",
@@ -1120,7 +1116,7 @@ static void generateMemberLink(BaseCodeDocInterface &ol,const QCString &varName,
   return;
 }
 
-static void generateFunctionLink(BaseCodeDocInterface &ol,char *funcName)
+static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
 {
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
@@ -2412,7 +2408,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\<\>]*">")? {
+<MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\[\](){}<>]*">")? {
 					  addParmType();
 					  g_parmName=yytext; 
 					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
@@ -2812,7 +2808,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
-                                          if (YY_START==SkipComment) REJECT;
+                                          if (YY_START==SkipComment || YY_START==SkipString) REJECT;
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;
@@ -2863,6 +2859,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
  					  }
 					}
 <*>"/*"[!*]/[^/*]			{ // special C comment block half way a line
+                                          if (YY_START==SkipString) REJECT;
 					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_lastSpecialCContext = YY_START;
@@ -2880,7 +2877,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    BEGIN(SkipComment);
 					  }
 					}
-<*>"/*"("!"?)"*/"			{ if (!Config_getBool("STRIP_CODE_COMMENTS"))
+<*>"/*"("!"?)"*/"			{ 
+                                          if (YY_START==SkipString) REJECT;
+                                          if (!Config_getBool("STRIP_CODE_COMMENTS"))
   					  {
 					    startFontClass("comment");
 					    g_code->codify(yytext);
@@ -2984,7 +2983,7 @@ static void restoreObjCContext()
   }
 }
 
-void initParseCodeContext()
+void resetCCodeParserState()
 {
   //printf("***initParseCodeContext()\n");
   g_theVarContext.clear();
@@ -2994,9 +2993,10 @@ void initParseCodeContext()
   g_anchorCount = 0;
 }
 
-void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s, 
+void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
-		  int startLine,int endLine,bool inlineFragment)
+		  int startLine,int endLine,bool inlineFragment,
+		  MemberDef *memberDef)
 {
   //printf("***parseCode()\n");
   if (s.isEmpty()) return;
@@ -3048,6 +3048,7 @@ void parseCode(BaseCodeDocInterface &od,const char *className,const QCString &s,
   g_args.resize(0);
   g_parmName.resize(0);
   g_parmType.resize(0);
+  if (memberDef) setParameterList(memberDef);
   codeYYrestart( codeYYin );
   BEGIN( Body );
   codeYYlex();

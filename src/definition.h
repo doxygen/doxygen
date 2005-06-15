@@ -117,6 +117,9 @@ class Definition
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return m_defFileName; }
 
+    /*! returns the file in which this definition was found */
+    QCString getDefFileExtension() const { return m_defFileExt; }
+
     /*! returns the line number at which the definition was found */
     int getDefLine() const { return m_defLine; }
 
@@ -207,6 +210,7 @@ class Definition
     // where the item was found
     QCString m_defFileName;
     int      m_defLine;
+    QCString m_defFileExt;
 
     /*! The class, namespace in which this class is located 
      */ 

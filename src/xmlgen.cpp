@@ -28,13 +28,13 @@
 #include "defargs.h"
 #include "outputgen.h"
 #include "dot.h"
-#include "code.h"
 #include "pagedef.h"
 #include "filename.h"
 #include "version.h"
 #include "xmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
+#include "parserintf.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -222,7 +222,7 @@ template<class T> class ValStack
 };
 
 
-class XMLCodeGenerator : public BaseCodeDocInterface
+class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
 
@@ -443,14 +443,15 @@ static void writeXMLDocBlock(QTextStream &t,
 
 void writeXMLCodeBlock(QTextStream &t,FileDef *fd)
 {
-  initParseCodeContext();
+  ParserInterface *pIntf=Doxygen::parserManager->getParser(fd->getDefFileExtension());
+  pIntf->resetCodeParserState();
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  parseCode(*xmlGen,
-            0,
-            fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
-            FALSE,
-            0,
-            fd);
+  pIntf->parseCode(*xmlGen,
+                0,
+                fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+                FALSE,
+                0,
+                fd);
   xmlGen->finish();
   delete xmlGen;
 }
@@ -563,9 +564,10 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     case Private:   t << "private";    break;
     case Package:   t << "package";    break;
   }
-  t << "\" static=\"";
-  if (md->isStatic()) t << "yes"; else t << "no";
+  t << "\"";
 
+  t << " static=\"";
+  if (md->isStatic()) t << "yes"; else t << "no";
   t << "\"";
 
   if (isFunc)
@@ -573,22 +575,24 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     ArgumentList *al = md->argumentList();
     t << " const=\"";
     if (al && al->constSpecifier)    t << "yes"; else t << "no"; 
+    t << "\"";
 
-    t << "\" explicit=\"";
+    t << " explicit=\"";
     if (md->isExplicit()) t << "yes"; else t << "no";
+    t << "\"";
 
-    t << "\" inline=\"";
+    t << " inline=\"";
     if (md->isInline()) t << "yes"; else t << "no";
+    t << "\"";
 
-	t << "\" virt=\"";
-	switch (md->virtualness())
-	{
-	case Normal:  t << "non-virtual";  break;
-	case Virtual: t << "virtual";      break;
-	case Pure:    t << "pure-virtual"; break;
-	default: ASSERT(0);
-	}
-
+    t << " virt=\"";
+    switch (md->virtualness())
+    {
+      case Normal:  t << "non-virtual";  break;
+      case Virtual: t << "virtual";      break;
+      case Pure:    t << "pure-virtual"; break;
+      default: ASSERT(0);
+    }
     t << "\"";
   }
 
@@ -598,15 +602,16 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     //t << " volatile=\"";
     //if (al && al->volatileSpecifier) t << "yes"; else t << "no"; 
 
-    t << "\" mutable=\"";
+    t << " mutable=\"";
     if (md->isMutable()) t << "yes"; else t << "no";
-
     t << "\"";
   }
   else if (md->memberType() == MemberDef::Property)
   {
     t << " readable=\"";
     if (md->isReadable()) t << "yes"; else t << "no";
+    t << "\"";
+
     t << "\" writable=\"";
     if (md->isWritable()) t << "yes"; else t << "no";
     t << "\"";

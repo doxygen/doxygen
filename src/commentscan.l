@@ -42,7 +42,6 @@
 #include "outputlist.h"
 #include "membergroup.h"
 #include "reflist.h"
-#include "code.h"
 #include "debug.h"
 #include "parserintf.h"
 
@@ -715,6 +714,7 @@ ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
 
 %option noyywrap
 
@@ -770,6 +770,9 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
    *   words and whitespace and other characters (#,?!, etc).
    *   grouping commands (e.g. @{ and @})
    *   language switch (e.g. \~english or \~).
+   *   mail adress (e.g. dimitri@stack.nl).
+   *   quoted text, such as "foo@bar"
+   *   XML commands, <summary></summary><remarks></remarks>
    */
 
 <Comment>{CMD}{CMD}[a-z_A-Z]+{B}*	{ // escaped command
@@ -777,6 +780,12 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
   					}
 <Comment>{CMD}{CMD}"~"[a-z_A-Z]*	{ // escaped command
   					  addOutput(yytext);
+  					}
+<Comment>{MAILADR}			{ // mail adress
+  					  addOutput(yytext);
+  					}
+<Comment>"\""[^"\n]*"\""		{ // quoted text
+                                          addOutput(yytext);
   					}
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
@@ -791,6 +800,14 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 					  // continue with the same input
                                           REJECT;
 					}
+<Comment>"<summary>"			{ // start of a .NET XML style brief description
+					  setOutput(OutputBrief);
+  					}
+<Comment>"<remarks>"|"</summary>"	{ // start of a .NET XML style detailed description
+					  setOutput(OutputDoc);
+  					}
+<Comment>"</remarks>"			{ // end of a brief or detailed description
+  					}
 <Comment>"<!--"				{ 
   					  BEGIN(HtmlComment);
 					}
