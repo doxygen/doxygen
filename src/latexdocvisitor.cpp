@@ -170,7 +170,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Szlig:   m_t << "\"s"; break;
     case DocSymbol::Cedil:   m_t << "\\c{" << s->letter() << "}"; break;
     case DocSymbol::Ring:    m_t << "\\" << s->letter() << s->letter(); break;
-    case DocSymbol::Nbsp:    m_t << "\\ "; break;
+    case DocSymbol::Nbsp:    m_t << "~"; break;
     default:
                              err("Error: unknown symbol found\n");
   }

@@ -699,19 +699,22 @@ static void addClassToContext(Entry *root)
   //NamespaceDef *nd = 0;
   FileDef      *fd = findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
 
-  // see if the using statement was found inside a namespace or inside
-  // the global file scope.
   QCString scName;
   if (root->parent->section&Entry::SCOPE_MASK)
   {
      scName=root->parent->name;
   }
+  // name without parent's scope
   QCString fullName = root->name;
 
-  QCString qualifiedName = scName.isEmpty() ? root->name : scName+"::"+root->name;
-  
-  ClassDef *cd = getClass(qualifiedName);
+  // strip off any template parameters (but not those for specializations)
+  fullName=stripTemplateSpecifiersFromScope(fullName);
 
+  // name with scope
+  QCString qualifiedName = scName.isEmpty() ? fullName : scName+"::"+fullName;
+
+  ClassDef *cd = getClass(qualifiedName);
+  
   Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), qualifiedName.data(),cd);
   
@@ -1624,7 +1627,7 @@ static MemberDef *addVariableToFile(
     for (mni.toFirst();(md=mni.current());++mni)
     {
       if (
-          ((nd==0 && md->getFileDef() && 
+          ((nd==0 && md->getNamespaceDef()==0 && md->getFileDef() && 
             root->fileName==md->getFileDef()->absFilePath()
            ) // both variable names in the same file
            || (nd!=0 && md->getNamespaceDef()==nd) // both in same namespace
@@ -1633,12 +1636,16 @@ static MemberDef *addVariableToFile(
          )
         // variable already in the scope
       {
+        Debug::print(Debug::Variables,0,
+           "    variable already found: scope=%s\n",md->getOuterScope()->name().data());
         addMemberDocs(root,md,def,0,FALSE);
         md->setRefItems(root->sli);
         return md;
       }
     } 
   }
+  Debug::print(Debug::Variables,0,
+    "    new variable!\n");
   // new global variable, enum value or typedef
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
@@ -1658,6 +1665,7 @@ static MemberDef *addVariableToFile(
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->setExplicitExternal(root->explicitExternal);
+  md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
     md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -2378,6 +2386,7 @@ static void buildFunctionList(Entry *root)
                 if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
                 {
                   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  md->setArgsString(root->args);
                 }
                 else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && mnd==rnd)
                 {
@@ -3100,16 +3109,20 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
 
   FileDef *fd=cd->getFileDef();
   ClassDef *result=0;
-  if (context)
+  if (context && cd!=context)
   {
     result = getResolvedClass(context,0,name);
-    //printf("** Trying to find %s within context %s result=%s\n",
-    //    name.data(),context->name().data(),result ? result->name().data() : "<none>");
   }
   if (result==0)
   {
     result = getResolvedClass(cd,fd,name);
   }
+  //printf("** Trying to find %s within context %s class %s result=%s\n",
+  //       name.data(),
+  //       context ? context->name().data() : "<none>",
+  //       cd      ? cd->name().data()      : "<none>",
+  //       result  ? result->name().data()  : "<none>"
+  //      );
   return result;
 }
 
@@ -3165,19 +3178,22 @@ static void findUsedClassesForClass(Entry *root,
         {
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
+
+        QCString typeName = resolveTypeDef(masterCd,usedClassName);
+        //printf("*** Found resolved class %s for %s\n",typeName.data(),usedClassName.data());
+
+        if (!typeName.isEmpty()) // if we could resolve the typedef, use
+                                   // the result as the class name.
+        {
+          usedClassName=typeName;
+        }
+
         //printf("  template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1)
         {
           //printf("  found used class %s\n",usedClassName.data());
           // the name could be a type definition, resolve it
-          QCString typeName = resolveTypeDef(masterCd,usedClassName);
-          //printf("*** Found resolved class %s for %s\n",typeName.data(),usedClassName.data());
-
-          if (!typeName.isEmpty()) // if we could resolve the typedef, use
-                                   // the result as the class name.
-          {
-            usedClassName=typeName;
-          }
+          //QCString typeName = resolveTypeDef(masterCd,usedClassName);
           
           int sp=usedClassName.find('<');
           if (sp==-1) sp=0;
@@ -3767,6 +3783,7 @@ static void computeClassRelations()
   for (;(root=edi.current());++edi)
   {
     ClassDef *cd;
+
     // strip any annonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(root->name);
     bName=stripTemplateSpecifiersFromScope(bName);
@@ -4010,12 +4027,15 @@ static void addMemberDocs(Entry *root,
   
   if (al)
   {
-    //printf("merging arguments (1)\n");
-    mergeArguments(md->argumentList(),al,TRUE);
+    //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
+    if (!root->doc.isEmpty())
+    {
+      mergeArguments(md->argumentList(),al,TRUE);
+    }
   }
   else
   {
-    if (
+    if ( !root->doc.isEmpty() &&
           matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
                            rscope,rfd,root->argList,
                            TRUE
@@ -4088,16 +4108,14 @@ static void addMemberDocs(Entry *root,
     md->setMaxInitLines(root->initLines);
   }
 
-  //if (md->bodyCode().isEmpty() && !root->body.isEmpty()) /* no body yet */
-  //{
-  //  md->setBody(root->body);
-  //}
   if (rfd)
   {
 
-    if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) || 
-        (md->isVariable() && !root->explicitExternal))
+    if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) 
+       // || (md->isVariable() && !root->explicitExternal)
+       )
     {
+      //printf("Setting new body segment [%d,%d]\n",root->bodyLine,root->endBodyLine);
       md->setBodySegment(root->bodyLine,root->endBodyLine);
       md->setBodyDef(rfd);
     }
@@ -4107,8 +4125,6 @@ static void addMemberDocs(Entry *root,
 
   md->enableCallGraph(md->hasCallGraph() || root->callGraph);
 
-  //md->setDefFile(root->fileName);
-  //md->setDefLine(root->startLine);
   md->mergeMemberSpecifiers(root->memSpec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
@@ -4182,8 +4198,10 @@ static bool findGlobalMember(Entry *root,
     {
       bool ambig;
       NamespaceDef *nd=md->getNamespaceDef();
+
       //printf("Namespace namespaceName=%s nd=%s\n",
       //    namespaceName.data(),nd ? nd->name().data() : "<none>");
+
       FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       NamespaceSDict *nl    = fd ? fd->getUsedNamespaces() : 0;
@@ -6021,15 +6039,15 @@ static void addSourceReferences()
     for (mni.toFirst();(md=mni.current());++mni)
     {
       //printf("class member %s\n",md->name().data());
-      ClassDef *cd=md->getClassDef();
       FileDef *fd=md->getBodyDef();
-      if (fd && cd && cd->isLinkableInProject() && md->getStartBodyLine()!=-1 &&
-          md->isLinkableInProject())
+      if (fd && 
+          md->getStartBodyLine()!=-1 &&
+          md->isLinkableInProject() &&
+          fd->generateSourceFile())
       {
-        Definition *d=cd;
-        if (d==0) d=md->getNamespaceDef();
-        if (d==0) d=md->getFileDef();
-        fd->addSourceRef(md->getStartBodyLine(),d,md);
+        //printf("Found member `%s' in file `%s' at line `%d' def=%s\n",
+        //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data()); 
+        fd->addSourceRef(md->getStartBodyLine(),md->getOuterScope(),md);
       }
     }
   }
@@ -6040,22 +6058,18 @@ static void addSourceReferences()
     MemberDef *md=0;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      NamespaceDef *nd=md->getNamespaceDef();
       FileDef *fd=md->getBodyDef();
-      GroupDef *gd=md->getGroupDef();
-      //printf("member %s fd=%p nd=%p gd=%p\n",md->name().data(),fd,nd,gd);
-      if (fd && md->getStartBodyLine()!=-1 && md->isLinkableInProject() && 
-          ((nd && nd->isLinkableInProject()) ||
-           (fd->isLinkableInProject()) ||
-           (gd && gd->isLinkableInProject())
-          )
+      //printf("member %s body=[%d,%d] fd=%p\n",md->name().data(),
+      //    md->getStartBodyLine(),md->getEndBodyLine(),fd);
+      if (fd && 
+          md->getStartBodyLine()!=-1 && 
+          md->isLinkableInProject() && 
+          fd->generateSourceFile()
          )
       {
-        //printf("Found member `%s' in file `%s' at line `%d'\n",
-        //    md->name().data(),fd->name().data(),md->getStartBodyLine()); 
-        Definition *d=gd!=0 ? (Definition *)gd : 
-                               (nd!=0 ? (Definition *)nd : (Definition *)fd);
-        fd->addSourceRef(md->getStartBodyLine(),d,md);
+        //printf("Found member `%s' in file `%s' at line `%d' def=%s\n",
+        //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data()); 
+        fd->addSourceRef(md->getStartBodyLine(),md->getOuterScope(),md);
       }  
     }
   }

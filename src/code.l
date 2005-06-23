@@ -448,9 +448,9 @@ static void startCodeLine()
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    //printf("startCodeLine %d d=%p\n",g_yyLineNr,d);
+    //printf("startCodeLine %d d=%s\n", g_yyLineNr,d ? d->name().data() : "<null>");
     //g_code->startLineNumber();
-    if (!g_includeCodeFragment && d && d->isLinkableInProject())
+    if (!g_includeCodeFragment && d)
     {
       g_currentDefinition = d;
       g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
@@ -476,7 +476,7 @@ static void startCodeLine()
 	                        g_sourceFileDef->getSourceFileBase(),
 	                        lineAnchor);
       }
-      else
+      else if (d->isLinkableInProject())
       {
         g_code->writeLineNumber(d->getReference(),
 	                        d->getOutputFileBase(),

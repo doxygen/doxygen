@@ -2685,20 +2685,18 @@ static QCString getCanonicalTypeForIdentifier(
                   Definition *d,FileDef *fs,const QCString &word,
                   QCString *tSpec)
 {
-  QCString symName,scope,result,templSpec;
+  QCString symName,scope,result,templSpec,tmpName;
   DefinitionList *defList=0;
   if (tSpec) templSpec = *tSpec;
 
-  if (word.findRev("::")!=-1 && !(scope=stripScope(word)).isEmpty())
+  if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
-    symName=word.mid(scope.length()+2);
+    symName=tmpName;
   }
   else
   {
     symName=word;
   }
-
-  //printf("symName=%s templSpec=%s\n",symName.data(),templSpec.data());
 
   if (!symName.isEmpty() && !templSpec.isEmpty() &&
       (defList=Doxygen::symbolMap->find(symName+templSpec)) &&
@@ -2715,6 +2713,7 @@ static QCString getCanonicalTypeForIdentifier(
     // unique symbol in the symbol map
   {
     QCString ts;
+    //printf("unique symName=%s\n",symName.data());
     result = resolveSymbolName(fs,defList->first(),ts)+templSpec;
   }
   else // symbol not unique, try to find the one in the right scope
@@ -2730,11 +2729,19 @@ static QCString getCanonicalTypeForIdentifier(
     {
       cd = getResolvedClass(d,fs,word,&mType,0,TRUE);
     }
+    //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
+    //    symName.data(),
+    //    word.data(),
+    //    cd?cd->name().data():"<none>",
+    //    d?d->name().data():"<none>",
+    //    fs?fs->name().data():"<none>"
+    //   );
 
     //printf(">>>> word '%s' => '%s'\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>");
     if (cd) // known type
     {
-      result = cd->qualifiedNameWithTemplateParameters();
+      //result = cd->qualifiedNameWithTemplateParameters();
+      result = removeRedundantWhiteSpace(cd->qualifiedName()+templSpec);
       if (cd->isTemplate())
       {
         *tSpec="";
@@ -2799,6 +2806,8 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     //printf("     i=%d p=%d\n",i,p);
     canType += type.mid(pp,i-pp);
 
+    //printf("word=%s templSpec=%s\n",word.data(),templSpec.data());
+
     canType += getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
     if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
                               // (i.e. type is not a template specialization)
@@ -2825,8 +2834,8 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
 }
 
 static bool matchArgument2(
-                   Definition *srcScope,FileDef *srcFileScope,const Argument *srcA,
-                   Definition *dstScope,FileDef *dstFileScope,const Argument *dstA
+                   Definition *srcScope,FileDef *srcFileScope,Argument *srcA,
+                   Definition *dstScope,FileDef *dstFileScope,Argument *dstA
                   )
 {
   //printf(">> match argument: %s::`%s|%s' (%s) <-> %s::`%s|%s' (%s)\n",
@@ -2840,18 +2849,26 @@ static bool matchArgument2(
     NOMATCH
     return FALSE;
   }
+  QCString sSrcName=" "+srcA->name;
+  QCString sDstName=" "+dstA->name;
+  if (sSrcName==dstA->type.right(sSrcName.length()))
+  { // case "unsigned int" <-> "unsigned int i"
+    srcA->type+=sSrcName;
+    srcA->name="";
+  }
+  else if (sDstName==srcA->type.right(sDstName.length()))
+  { // case "unsigned int i" <-> "unsigned int"
+    dstA->type+=sDstName;
+    dstA->name="";
+  }
 
   if (srcA->canType.isEmpty())
   {
-    Argument *thatSrcA = (Argument*)srcA; // since canType is a cached value 
-                                          // of type we do not really change the argument, but the 
-                                          // compiler does know that.
-    thatSrcA->canType = extractCanonicalType(srcScope,srcFileScope,srcA);
+    srcA->canType = extractCanonicalType(srcScope,srcFileScope,srcA);
   }
   if (dstA->canType.isEmpty())
   {
-    Argument *thatDstA = (Argument*)dstA;
-    thatDstA->canType = extractCanonicalType(dstScope,dstFileScope,dstA);
+    dstA->canType = extractCanonicalType(dstScope,dstFileScope,dstA);
   }
   
   if (srcA->canType==dstA->canType)
@@ -2911,7 +2928,7 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     MATCH
     return TRUE;
   }
-  
+
   if (srcAl->count() != dstAl->count())
   {
     NOMATCH
@@ -3010,19 +3027,20 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
       }
       else if (!srcA->name.isEmpty() && !dstA->name.isEmpty())
       {
+        //printf("srcA->name=%s dstA->name=%s\n",srcA->name.data(),dstA->name.data());
         if (forceNameOverwrite)
         {
-          srcA->name = dstA->name.copy();
+          srcA->name = dstA->name;
         }
         else
         {
           if (srcA->docs.isEmpty() && !dstA->docs.isEmpty())
           {
-            srcA->name = dstA->name.copy();
+            srcA->name = dstA->name;
           }
           else if (!srcA->docs.isEmpty() && dstA->docs.isEmpty())
           {
-            dstA->name = srcA->name.copy();
+            dstA->name = srcA->name;
           }
         }
       }

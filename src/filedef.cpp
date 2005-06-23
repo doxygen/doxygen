@@ -762,6 +762,7 @@ void FileDef::insertNamespace(NamespaceDef *nd)
 
 void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)
 {
+  //printf("FileDef::addSourceDef(%d,%p,%p)\n",line,d,md);
   if (d)
   {
     if (srcDefDict==0)    srcDefDict    = new QIntDict<Definition>(257);
