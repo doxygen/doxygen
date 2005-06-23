@@ -327,6 +327,7 @@ static Protection	protection;
 static bool             xrefAppendFlag;
 static bool             inGroupParamFound;
 static int              braceCount;
+static bool             insidePre;
 
 //-----------------------------------------------------------------------------
 
@@ -618,6 +619,7 @@ static inline void setOutput(OutputContext ctx)
 	break;
     }
   }
+
   inContext = ctx;
   switch(inContext)
   {
@@ -876,8 +878,13 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					  if (inContext!=OutputBrief)
 					  {
   					    addOutput(yytext);
+					    setOutput(OutputDoc);
 					  }
-					  setOutput(OutputDoc);
+					  else
+					  {
+					    setOutput(OutputDoc);
+  					    addOutput(yytext);
+					  }
   					  lineCount();
   					}
 <Comment>"."				{ // potential end of a JavaDoc style comment
@@ -2099,6 +2106,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   needNewEntry   = FALSE;
   xrefKind       = XRef_None;
   xrefAppendFlag = FALSE;
+  insidePre      = FALSE;
   outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;

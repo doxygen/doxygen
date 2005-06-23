@@ -402,6 +402,16 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
 {
   if (al==0) return; 
   if (argsString==0) return;
+
+  g_copyArgValue=0;
+  g_curArgDocs.resize(0);
+  g_curArgAttrib.resize(0);
+  g_curArgArray.resize(0);
+  g_argRoundCount = 0;
+  g_argSharpCount = 0;
+  g_argCurlyCount = 0;
+  g_lastDocChar = 0;
+
   g_inputString   = argsString;
   g_inputPosition = 0;
   g_curArgTypeName.resize(0);

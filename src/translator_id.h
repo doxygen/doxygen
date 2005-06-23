@@ -21,7 +21,6 @@
 /*! 
   Indonesian translator based on Doxygen 1.4.2.
 
-  \version $Id$
   \author Hendy Irawan <ceefour@gauldong.net>
  */
 class TranslatorIndonesian : public Translator

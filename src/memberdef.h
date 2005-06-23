@@ -185,6 +185,7 @@ class MemberDef : public Definition
     void setHasDocumentedReturnType(bool b) { m_hasDocumentedReturnType = b; }
     void setInheritsDocsFrom(MemberDef *md) { m_docProvider = md; }
     void setTagInfo(TagInfo *i);
+    void setArgsString(const char *as)      { args = as; }
 
     // output generation
     void writeDeclaration(OutputList &ol,

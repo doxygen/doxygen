@@ -2175,6 +2175,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    }
 					    current->name.resize(0);
 					    current->args.resize(0);
+					    current->brief.resize(0);
+					    current->doc.resize(0);
 					    current->initializer.resize(0);
 					    current->bitfields.resize(0);
 					    int i=oldType.length(); 
@@ -2709,7 +2711,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    fullArgString=current->args.copy();
 					    copyArgString=&current->args;
 					    BEGIN( ReadFuncArgType ) ;
-					    //printf(">>> Read function arguments!\n");
+					    //printf(">>> Read function arguments current->argList->count()=%d\n",current->argList->count());
 					  }
 					}
   /*
@@ -4045,6 +4047,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <DocBlock>^{B}*("//"){B}*		{ // strip embedded C++ comments if at the start of a line
   					}
 <DocBlock>"//"				{ // slashes in the middle of a comment block
+  					  docBlock+=yytext;
+  					}
+<DocBlock>"/*"				{ // start of a new comment in the 
+                                          // middle of a comment block
   					  docBlock+=yytext;
   					}
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
