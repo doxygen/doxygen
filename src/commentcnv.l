@@ -542,6 +542,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   }
 }
 
+
 //----------------------------------------------------------------------------
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy

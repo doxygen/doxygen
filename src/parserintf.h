@@ -95,17 +95,6 @@ class ParserInterface
      */
     virtual void parsePrototype(const char *text) = 0;
 
-    /** Callback function called by the comment block scanner upon encountering
-     *  a group block start command (@@{). If the group has a header 
-     *  specified via the @@name command, this will be passed via 
-     *  the \a header parameter, if not the \a header parameter will be 0.
-     */
-    virtual void handleGroupStartCommand(const char *header) = 0;
-
-    /** Callback function called by the comment block scanner upon encountering
-     *  a group block end command (@@}). 
-     */
-    virtual void handleGroupEndCommand() = 0;
 };
 
 //-----------------------------------------------------------------------------

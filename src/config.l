@@ -1838,7 +1838,9 @@ void Config::create()
                     "EXCLUDE_PATTERNS",
                     "If the value of the INPUT tag contains directories, you can use the \n"
                     "EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude \n"
-                    "certain files from those directories. \n"
+                    "certain files from those directories. Note that the wildcards are matched \n"
+		    "against the file with absolute path, so to exclude all test directories \n"
+		    "for example use the pattern */test/* \n"
                  );
   cl = addList(
                     "EXAMPLE_PATH",

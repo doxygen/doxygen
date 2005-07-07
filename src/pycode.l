@@ -71,8 +71,8 @@ static QCString      g_name;
 
 static bool          g_doubleStringIsDoc;
 static bool          g_doubleQuote;
-static int           g_lastState;
 static bool          g_noSuiteFound;
+static int           g_stringContext;
 
 static QValueStack<uint> g_indents;  //!< Tracks indentation levels for scoping in python
 
@@ -349,6 +349,7 @@ static void startCodeLine()
       g_insideBody = FALSE;
       g_searchingForBody = TRUE;
       g_realScope = d->name().copy();
+      g_classScope = d->name().copy();
       //printf("Real scope: `%s'\n",g_realScope.data());
       g_bodyCurlyCount = 0;
       QCString lineAnchor;
@@ -709,6 +710,56 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   return;
 }
 
+static void findMemberLink(CodeOutputInterface &ol,const char *symName)
+{
+  //printf("Member reference: %s scope=%s member=%s\n",
+  //    yytext,
+  //    g_currentDefinition?g_currentDefinition->name().data():"<none>",
+  //    g_currentMemberDef?g_currentMemberDef->name().data():"<none>"
+  //    );
+  if (g_currentDefinition)
+  {
+    DefinitionList *dl = Doxygen::symbolMap->find(symName);
+    if (dl)
+    {
+      DefinitionListIterator dli(*dl);
+      Definition *sym;
+      for (dli.toFirst();(sym=dli.current());++dli)
+      {
+	//printf("sym %s outerScope=%s equal=%d\n",
+	//    sym->name().data(),sym->getOuterScope()->name().data(),
+	//    sym->getOuterScope()==g_currentDefinition);
+
+	if (sym->getOuterScope() &&
+	    sym->getOuterScope()->definitionType()==Definition::TypeClass &&
+	    g_currentDefinition->definitionType()==Definition::TypeClass)
+	{
+	  ClassDef *cd = (ClassDef*)sym->getOuterScope();
+	  ClassDef *thisCd = (ClassDef *)g_currentDefinition;
+	  QCString anchor;
+	  if (sym->definitionType()==Definition::TypeMember)
+	  {
+	    anchor=((MemberDef *)sym)->anchor();
+	  }
+
+	  // TODO: find the nearest base class in case cd is a base class of
+	  // thisCd 
+	  if (cd==thisCd) 
+	  {
+	    writeMultiLineCodeLink(ol,sym->getReference(),
+		sym->getOutputFileBase(),
+		anchor,
+		symName);
+	    return;
+	  }
+	}
+      }
+    }
+  }
+  //printf("sym %s not found\n",&yytext[5]);
+  codify(yytext);
+}
+
 static void startFontClass(const char *s)
 {
   endFontClass();
@@ -855,8 +906,6 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 %x Body
 
-%x BlockWord
-
 %x FunctionDec
 %x FunctionParams
 
@@ -871,129 +920,11 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 %x LongString
 
+%x SingleQuoteString
+%x DoubleQuoteString
+%x TripleString
 
 %%
-
-<Body,Suite,SuiteCaptureIndent>{
-    {B}{POUNDCOMMENT}                  {
-                                          // This eats EVERYTHING
-					  // except the newline
-                                          startFontClass("comment");
-					  codifyLines(yytext);
-		                          endFontClass();
-                                       }
-
-    {B}{STRINGPREFIX}?{TRIDOUBLEQUOTE}({LONGSTRINGBLOCK}?) {     
-      					  // Some-what position sensitive;
-					  // must come before NONEMPTY general
-					  // rules.
-
-                                          // Eventually, we should write some intelligent
-					  // code here to figure out if this docstring
-					  // should be deleted.
-                                          g_doubleStringIsDoc = TRUE;
-
-					  if ( g_doubleStringIsDoc ) 
-					  {
-                                            g_yyLineNr+=QCString(yytext).contains('\n');
-                                          }
-					  else 
-					  {
-					    startFontClass("stringliteral");
-					    codifyLines(yytext);
-                                            g_yyLineNr++;
-					  }
-
-                                          g_lastState = YY_START;
-                                          g_doubleQuote = TRUE;
-                                          
-                                          BEGIN( LongString ); 
-                                    }
-
-    {B}{STRINGPREFIX}?{TRISINGLEQUOTE}({LONGSTRINGBLOCK}?) {
-					  //startFontClass("stringliteral");
-					  //codifyLines(yytext);
-
-                                          // Eventually, we should write some intelligent
-					  // code here to figure out if this docstring
-					  // should be deleted.
-                                          g_doubleStringIsDoc = TRUE;
-
-					  if ( g_doubleStringIsDoc ) 
-					  {
-                                            g_yyLineNr+=QCString(yytext).contains('\n');
-                                          }
-					  else 
-					  {
-					    startFontClass("stringliteral");
-					    codifyLines(yytext);
-                                            g_yyLineNr++;
-					  }
-
-                                          g_lastState = YY_START;
-                                          g_doubleQuote = FALSE;
-                                          BEGIN( LongString );
-                                    }
-
-}
-
-<Body,Suite,BlockWord>{
-    {STRINGPREFIX}?({SINGLEQUOTES}|{QUOTES}) {
-					  startFontClass("stringliteral");
-					  codifyLines(yytext);
-					  endFontClass();
-                                    }
-
-    "#".*                             {
-                                          startFontClass("stringliteral");
-                                          codifyLines(yytext);
-                                          endFontClass();
-                                    }
-
-}
-
-<LongString>{
-
-    {LONGSTRINGBLOCK}               {
-                                          if ( g_doubleStringIsDoc ) 
-					  {
-  				            g_yyLineNr+=QCString(yytext).contains('\n');
-					  }
-					  else 
-					  {
-					    codifyLines(yytext);
-                                          }
-                                    }
-
-    {TRIDOUBLEQUOTE}                {
-					if ( ! g_doubleStringIsDoc ) 
-					{
-				          codify(yytext);
-					  endFontClass();
-                                        }
-					
-					if (g_doubleQuote) 
-					{
-					  g_doubleStringIsDoc = FALSE;
-					  BEGIN( g_lastState );
-					}
-                                    }
-
-    {TRISINGLEQUOTE}                {
-					if ( ! g_doubleStringIsDoc ) 
-					{
-				          codify(yytext);
-					  endFontClass();
-                                        }
-
-					if (!g_doubleQuote) 
-					{
-					  g_doubleStringIsDoc = FALSE;
-					  BEGIN( g_lastState );
-					}
-                                    }
-}
-
 
 <Body,Suite>{
       "def"{BB}                     {
@@ -1009,6 +940,15 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					endFontClass();
 					BEGIN( ClassDec );
 		                    }
+      "None"                        {
+				        startFontClass("keywordtype");
+					codify(yytext);
+					endFontClass();
+				    }
+      "self."{IDENTIFIER}           {
+				        codify("self.");
+				        findMemberLink(*g_code,&yytext[5]);
+	                            }
 }
 
 <ClassDec>{IDENTIFIER}              {
@@ -1124,15 +1064,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
                                     }
 }
 
-<Body,Suite>("if"|"while"|"for"|"else"|"elif") {
-					  startFontClass("keywordflow");
-					  codify(yytext);
-					  endFontClass();
-                                          // printf("Entering Blockword on '%s' [%d]\n", yytext, g_yyLineNr);
-
-		                      }
-
-<Body,Suite,BlockWord>{
+<Body,Suite>{
 
     {KEYWORD}                  {
                                  // Position-sensitive rules!
@@ -1150,38 +1082,19 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
   		                 codify(yytext);
 		                 endFontClass();
                                }
+
+    {IDENTIFIER}               {
+  		                 codify(yytext);
+			       }
 }
 
-<BlockWord>{
 
-    ":"                               {
-					  codify(yytext);
-					  // printf("Requires SuiteState for BlockWord [line %d]\n", g_yyLineNr);
-
-					  // Assume this will
-					  // be a one-line suite;
-					  // found counter-example
-					  // in SuiteStart.
-					  g_noSuiteFound = TRUE;
-					  BEGIN( SuiteStart );
-		                      }
-
-    ({BB}+|{NONEMPTY}+|{EXPCHAR})     {  // Position-sensitive! Must come AFTER
-                                         // key-word catching rules, so that syntax
-					 // highlighting takes priority over this.
-
-                                         // Match SPACE, IDENTIFIERS, or EXPchars.
-					  codify(yytext);
-                                      }
-
-}
 
 <SuiteStart>{
 
     {BB}                               {
                                          codify(yytext);
                                        }
-
     {KEYWORD}                          {
                                           startFontClass("keyword");
 					  codifyLines(yytext);
@@ -1199,13 +1112,9 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 					  // No indentation necesary
 					  g_noSuiteFound = FALSE;
                                        }
-
-    ({NONEMPTY}+|{EXPCHAR}+)           {
-					  codifyLines(yytext);
-
-					  // No indentation necesary
-					  g_noSuiteFound = FALSE;
-                                       }
+    {IDENTIFIER}                       {
+                                         codify(yytext);
+				       } 
 
 
     {POUNDCOMMENT}                     {
@@ -1274,33 +1183,134 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 
 
 <Suite>{NEWLINE}               {
-                                    codifyLines(yytext);
-				    BEGIN( SuiteMaintain );
+                                 codifyLines(yytext);
+			         BEGIN( SuiteMaintain );
 		               }
-
-<Body,Suite>({NONEMPTY}+|{EXPCHAR}+|{BB}) {
-  		                 codify(yytext);
+<Body>{IDENTIFIER}	       {
+  			         codify(yytext);
                                }
-
 <Body>{NEWLINE}                {
   		                 codifyLines(yytext);
                                }
 
+<SingleQuoteString>{ // Single quoted string like 'That\'s a """nice""" string!'
+    \\{B}\n                    { // line continuation
+  		                 codifyLines(yytext);
+                               }
+    \\.			       { // espaced char
+  		                 codify(yytext);
+                               }
+    {STRINGPREFIX}?{TRIDOUBLEQUOTE} { // tripple double quotes
+  		                 codify(yytext);
+      			       }
+    "'"			       { // end of the string
+  		                 codify(yytext);
+				 endFontClass();
+      		                 BEGIN(g_stringContext);
+                               }
+    [^"'\n\\]+	               { // normal chars
+  		                 codify(yytext);
+                               }
+    .			       { // normal char
+  		                 codify(yytext);
+                               }
+}
+
+<DoubleQuoteString>{ // Double quoted string like "That's \"a '''nice'''\" string!"
+    \\{B}\n                    { // line continuation
+  		                 codifyLines(yytext);
+                               }
+    \\.			       { // espaced char
+  		                 codify(yytext);
+                               }
+    {STRINGPREFIX}?{TRISINGLEQUOTE} { // tripple single quotes
+  		                 codify(yytext);
+      			       }
+    "\""		       { // end of the string
+  		                 codify(yytext);
+				 endFontClass();
+      		                 BEGIN(g_stringContext);
+                               }
+    [^"'\n\\]+	               { // normal chars
+  		                 codify(yytext);
+                               }
+    .			       { // normal char
+  		                 codify(yytext);
+                               }
+}
+
+<TripleString>{
+    {TRIDOUBLEQUOTE}   | 
+    {TRISINGLEQUOTE}   {
+  		          codify(yytext);
+			  if (g_doubleQuote==(yytext[0]=='"')) 
+			  {
+			    endFontClass();
+			    BEGIN(g_stringContext);
+			  }
+		       }
+    {LONGSTRINGBLOCK}  {
+			 codifyLines(yytext);
+		       }
+    \n		       {
+			 codifyLines(yytext);
+                       }
+    .		       {
+                         codify(yytext);
+                       }
+}
+
+  /*
 <*>({NONEMPTY}|{EXPCHAR}|{BB})           { // This should go one character at a time.
   		                 codify(yytext);
 				 // printf("[pycode] '%s' [ state %d ]  [line %d] no match\n",
 				 //       yytext, YY_START, g_yyLineNr);
 
-				 endFontClass();
+				 //endFontClass();
 				 BEGIN(Body);					
                                }
+   */
 
+<*>{STRINGPREFIX}?{TRISINGLEQUOTE} |
+<*>{STRINGPREFIX}?{TRIDOUBLEQUOTE} {
+  				 startFontClass("stringliteral");
+				 g_stringContext=YY_START;
+				 g_doubleQuote=yytext[yyleng-1]=='"';
+  		                 codify(yytext);
+				 BEGIN(TripleString);
+                               }
+<*>{STRINGPREFIX}?"'"	       { // single quoted string
+  				 startFontClass("stringliteral");
+				 g_stringContext=YY_START;
+  		                 codify(yytext);
+				 BEGIN(SingleQuoteString);
+  			       }
+<*>{STRINGPREFIX}?"\""         { // double quoted string
+  				 startFontClass("stringliteral");
+				 g_stringContext=YY_START;
+  		                 codify(yytext);
+				 BEGIN(DoubleQuoteString);
+                               }
+<*>{POUNDCOMMENT}              {
+  				 if (YY_START==SingleQuoteString || 
+				     YY_START==DoubleQuoteString || 
+				     YY_START==TripleString
+				    )
+				 {
+				   REJECT;
+				 }
+                                 // This eats EVERYTHING
+				 // except the newline
+                                 startFontClass("comment");
+				 codifyLines(yytext);
+		                 endFontClass();
+                               }
 <*>{NEWLINE}                   {
   		                 codifyLines(yytext);
 				 //printf("[pycode] %d NEWLINE [line %d] no match\n",
 				 //       YY_START, g_yyLineNr);
 
-				 endFontClass();
+				 //endFontClass();
 				 BEGIN(Body);
                                }
 
@@ -1309,7 +1319,7 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				 // printf("[pycode] '%s' [ state %d ]  [line %d] no match\n",
 				 //        yytext, YY_START, g_yyLineNr);
 
-				 endFontClass();
+				 //endFontClass();
 				 BEGIN(Body);					
                                }
 

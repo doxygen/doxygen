@@ -49,8 +49,6 @@ class PythonLanguageScanner : public ParserInterface
                   );
     void resetCodeParserState();
     void parsePrototype(const char *text);
-    void handleGroupStartCommand(const char *header);
-    void handleGroupEndCommand();
 };
 
 #endif

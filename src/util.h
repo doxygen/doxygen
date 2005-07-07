@@ -57,6 +57,7 @@ class Definition;
 class TextGeneratorIntf
 {
   public:
+    virtual ~TextGeneratorIntf() {}
     virtual void writeString(const char *,bool) const = 0;
     virtual void writeBreak() const = 0;
     virtual void writeLink(const char *extRef,const char *file,
@@ -67,6 +68,7 @@ class TextGeneratorIntf
 class TextGeneratorOLImpl : public TextGeneratorIntf
 {
   public:
+    virtual ~TextGeneratorOLImpl() {}
     TextGeneratorOLImpl(OutputDocInterface &od);
     void writeString(const char *s,bool keepSpaces) const;
     void writeBreak() const;

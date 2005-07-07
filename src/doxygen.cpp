@@ -1582,19 +1582,24 @@ static MemberDef *addVariableToFile(
     }
   }
   QCString def;
+
   // determine the definition of the global variable
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@' && 
       !Config_getBool("HIDE_SCOPE_NAMES")
      )
     // variable is inside a namespace, so put the scope before the name
   {
+    static bool optimizeForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+    QCString sep="::";
+    if (optimizeForJava) sep=".";
+    
     if (!root->type.isEmpty())
     {
-      def=root->type+" "+nd->name()+"::"+name+root->args;
+      def=root->type+" "+nd->name()+sep+name+root->args;
     }
     else
     {
-      def=nd->name()+"::"+name+root->args;
+      def=nd->name()+sep+name+root->args;
     }
   }
   else
