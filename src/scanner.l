@@ -205,7 +205,7 @@ static void initEntry()
   current->stat       = gstat;
   //current->mGrpId     = memberGroupId;
   //current->relates    = memberGroupRelates;
-  current->inside     = memberGroupInside;
+  //current->inside     = memberGroupInside;
   current->objc       = insideObjC;
   //if (!autoGroupStack.isEmpty())
   //{
@@ -3849,10 +3849,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=DOX_NOGROUP)
-                                            {
-                                              memberGroupInside = current->inside.copy();
-                                            }
+                                            //if (current->mGrpId!=DOX_NOGROUP)
+                                            //{
+                                            //  memberGroupInside = current->inside.copy();
+                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
@@ -3868,10 +3868,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=DOX_NOGROUP)
-                                            {
-                                              memberGroupInside = current->inside.copy();
-                                            }
+                                            //if (current->mGrpId!=DOX_NOGROUP)
+                                            //{
+                                            //  memberGroupInside = current->inside.copy();
+                                            //}
                                           }
 					  current->docLine = yyLineNr;
 					  current->docFile = yyFileName;
@@ -3907,10 +3907,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=DOX_NOGROUP)
-                                            {
-                                              memberGroupInside = current->inside.copy();
-                                            }
+                                            //if (current->mGrpId!=DOX_NOGROUP)
+                                            //{
+                                            //  memberGroupInside = current->inside.copy();
+                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
@@ -3931,10 +3931,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            if (current->mGrpId!=DOX_NOGROUP)
-                                            {
-                                              memberGroupInside = current->inside.copy();
-                                            }
+                                            //if (current->mGrpId!=DOX_NOGROUP)
+                                            //{
+                                            //  memberGroupInside = current->inside.copy();
+                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
