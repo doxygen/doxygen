@@ -240,7 +240,7 @@ if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
     echo -n "  Checking for Qt..."
-    for d in /usr/lib/{qt-3.1,qt3,qt2,qt,qt*}; do
+    for d in /usr/{lib,share,qt}/{qt-3,qt3,qt,qt*,3}; do
       if test -d "$d/lib" -a -d "$d/include" -a -x "$d/bin/moc"; then
         QTDIR=$d
       fi

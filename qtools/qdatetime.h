@@ -52,6 +52,7 @@ class Q_EXPORT QDate
 public:
     QDate()  { jd=0; }				// set null date
     QDate( int y, int m, int d );		// set date
+    virtual ~QDate() {}
 
     bool   isNull()	 const { return jd == 0; }
     bool   isValid()	 const;			// valid date

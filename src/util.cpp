@@ -2705,7 +2705,7 @@ static QCString getCanonicalTypeForIdentifier(
   {
     QCString ts;
     result = resolveSymbolName(fs,defList->first(),ts);
-    *tSpec="";
+    if (tSpec) *tSpec="";
   }
   else if (!symName.isEmpty() &&
       (defList=Doxygen::symbolMap->find(symName)) &&
@@ -2723,7 +2723,7 @@ static QCString getCanonicalTypeForIdentifier(
     if (!templSpec.isEmpty())
     {
       cd = getResolvedClass(d,fs,word+templSpec,&mType,0,TRUE);
-      if (cd) *tSpec="";
+      if (cd && tSpec) *tSpec="";
     }
     if (cd==0)
     {
@@ -2742,7 +2742,7 @@ static QCString getCanonicalTypeForIdentifier(
     {
       //result = cd->qualifiedNameWithTemplateParameters();
       result = removeRedundantWhiteSpace(cd->qualifiedName()+templSpec);
-      if (cd->isTemplate())
+      if (cd->isTemplate() && tSpec)
       {
         *tSpec="";
       }

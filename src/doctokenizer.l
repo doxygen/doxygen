@@ -302,7 +302,8 @@ FILEECHAR [a-z_A-Z0-9\-\+]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
-SPCMD1    {CMD}[a-z_A-Z0-9]+ 
+VERBATIM  "verbatim"{BLANK}*
+SPCMD1    {CMD}([a-z_A-Z0-9]+|{VERBATIM})
 SPCMD2    {CMD}[\\@<>&$#%~]
 SPCMD3    {CMD}form#[0-9]+
 INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
@@ -324,6 +325,7 @@ OPMASK    ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
+LNKWORD3  [0-9a-z_A-Z]+("."[0-9a-z_A-Z]+)+
 CHARWORD  [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,.]
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]
 WORD1     "%"?{CHARWORD}+|"{"|"}"|("\""[^"\n]*"\"")
@@ -416,6 +418,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 <St_Para>{SPCMD1}      |
 <St_Para>{SPCMD2}      { /* special command */
                          g_token->name = yytext+1;
+			 g_token->name = g_token->name.stripWhiteSpace();
 			 g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND;
   		       }
@@ -488,7 +491,8 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
-<St_Para>{LNKWORD2}    {
+<St_Para>{LNKWORD2}                  |
+<St_Para>{LNKWORD3}    {
                          g_token->name = yytext;
                          return TK_LNKWORD;
   		       }

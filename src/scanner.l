@@ -85,16 +85,15 @@ static Entry*		tempEntry    = 0 ;
 static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
 static QCString		yyFileName;
-static int              lastMemberGroupLine;
 static MethodTypes 	mtype;
 static bool    		gstat;
 static bool             removeSlashes;
 static Specifier 	virt;
 static Specifier 	baseVirt;
 static QCString         msType,msName,msArgs;
-static int              memberGroupId = DOX_NOGROUP;
-static QCString         memberGroupHeader;
-static QCString         memberGroupDocs;
+//static int              memberGroupId = DOX_NOGROUP;
+//static QCString         memberGroupHeader;
+//static QCString         memberGroupDocs;
 static bool             isTypedef;
 static int              tmpDocType;
 static QCString         sectionLabel;
@@ -131,7 +130,6 @@ static QCString         *pCopyCurlyString;
 static QCString         *pCopyQuotedString;
 static QCString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
-static Grouping  lastDefGroup( "", Grouping::GROUPING_LOWEST );
 
 static bool             insideFormula;
 static bool  	        insideTryBlock=FALSE;
@@ -163,8 +161,8 @@ static char             docBlockTerm;
 //-----------------------------------------------------------------------------
 
 // forward declarations
-static void handleGroupStartCommand(const char *header);
-static void handleGroupEndCommand();
+//static void handleGroupStartCommand(const char *header);
+//static void handleGroupEndCommand();
 
 //-----------------------------------------------------------------------------
 
@@ -179,9 +177,9 @@ static void initParser()
   sharpCount = 0;
   roundCount = 0;
   curlyCount = 0;
-  memberGroupId = DOX_NOGROUP;
-  memberGroupRelates.resize(0);
-  memberGroupInside.resize(0);
+  //memberGroupId = DOX_NOGROUP;
+  //memberGroupRelates.resize(0);
+  //memberGroupInside.resize(0);
   mtype = Method;
   gstat = FALSE;
   virt = Normal;
@@ -190,7 +188,6 @@ static void initParser()
   autoGroupStack.clear();
   insideTryBlock = FALSE;
   autoGroupStack.setAutoDelete(TRUE);
-  lastDefGroup.groupname.resize(0);
   insideFormula = FALSE;
   insideCode=FALSE;
   previous = 0;
@@ -206,53 +203,54 @@ static void initEntry()
   current->mtype      = mtype;
   current->virt       = virt;
   current->stat       = gstat;
-  current->mGrpId     = memberGroupId;
-  current->relates    = memberGroupRelates.copy();
-  current->inside     = memberGroupInside.copy();
+  //current->mGrpId     = memberGroupId;
+  //current->relates    = memberGroupRelates;
+  current->inside     = memberGroupInside;
   current->objc       = insideObjC;
-  if (!autoGroupStack.isEmpty())
-  {
-    //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
-    current->groups->append(new Grouping(*autoGroupStack.top()));
-  }
+  //if (!autoGroupStack.isEmpty())
+  //{
+  //  //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
+  //  current->groups->append(new Grouping(*autoGroupStack.top()));
+  //}
+  initGroupInfo(current);
 }
 
 
 //-----------------------------------------------------------------------------
 
-/// remove any automatic grouping and add new one (if given)
-static void setCurrentGroup( QCString *newgroup, Grouping::GroupPri_t pri )
-{
-   /* remove auto group name from current entry and discard it */
-   Grouping *g = current->groups->first();
-   int i=0; 
-   while (g)
-   {
-     if (g->pri <= Grouping::GROUPING_AUTO_DEF)
-     {
-       current->groups->remove(i);
-       i--;
-     }
-     g=current->groups->next();
-     i++;
-   }
-
-   /* use new group name instead? */
-   if ( newgroup )
-   {
-      current->groups->append(new Grouping(*newgroup, pri));
-   } 
-}
-
-static int newMemberGroupId()
-{
-  static int curGroupId=0;
-  return curGroupId++;
-}
-
+///// remove any automatic grouping and add new one (if given)
+//static void setCurrentGroup( QCString *newgroup, Grouping::GroupPri_t pri )
+//{
+//   /* remove auto group name from current entry and discard it */
+//   Grouping *g = current->groups->first();
+//   int i=0; 
+//   while (g)
+//   {
+//     if (g->pri <= Grouping::GROUPING_AUTO_DEF)
+//     {
+//       current->groups->remove(i);
+//       i--;
+//     }
+//     g=current->groups->next();
+//     i++;
+//   }
+//
+//   /* use new group name instead? */
+//   if ( newgroup )
+//   {
+//      current->groups->append(new Grouping(*newgroup, pri));
+//   } 
+//}
+//
+//static int newMemberGroupId()
+//{
+//  static int curGroupId=0;
+//  return curGroupId++;
+//}
+//
 // forward declarations
-static void startGroupInDoc();
-static void endGroup();
+//static void startGroupInDoc();
+//static void endGroup();
 
 //-----------------------------------------------------------------------------
 
@@ -292,27 +290,6 @@ static QCString stripQuotes(const char *s)
     name=name.mid(1,name.length()-2);
   }
   return name;
-}
-
-//-----------------------------------------------------------------
-
-static void addMemberGroupDocs()
-{
-  memberGroupDocs=current->brief.stripWhiteSpace();
-  current->doc = stripLeadingAndTrailingEmptyLines(current->doc);
-  if (!memberGroupDocs.isEmpty() && !current->doc.isEmpty())
-  {
-    memberGroupDocs+="\n\n";
-  }
-  memberGroupDocs+=current->doc;
-  MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
-  if (info) 
-  {
-    info->doc = memberGroupDocs;
-    info->docFile = yyFileName;
-  }
-  current->doc.resize(0);
-  current->brief.resize(0);
 }
 
 //-----------------------------------------------------------------
@@ -1836,13 +1813,23 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
    
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
-  					  Entry *tmp = current;
-					  if (previous)
+  					  //Entry *tmp = current;
+					  //if (previous)
+					  //{
+					  //  current = previous;
+					  //}
+  					  //handleGroupStartCommand(current->name);
+                                          if (previous && previous->section==Entry::GROUPDOC_SEC)
 					  {
-					    current = previous;
+					    // link open command to the group defined in the previous entry
+					    openGroup(previous,yyFileName,yyLineNr);
 					  }
-  					  handleGroupStartCommand(current->name);
-					  current = tmp;
+					  else
+					  {
+					    // link open command to the current entry
+					    openGroup(current,yyFileName,yyLineNr);
+					  }
+					  //current = tmp;
 					  initEntry();
 					  if (yytext[1]=='/')
 					  {
@@ -1882,7 +1869,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
-					  handleGroupEndCommand();
+					  //handleGroupEndCommand();
+  					  closeGroup(current,yyFileName,yyLineNr);
   					}
 <FindMembers>"="			{
   					  current->bodyLine = yyLineNr;
@@ -4230,8 +4218,18 @@ static void startCommentBlock(bool brief)
   
 //----------------------------------------------------------------------------
 
+static void newEntry()
+{
+  current_root->addSubEntry(current);
+  previous = current;
+  current = new Entry ;
+  initEntry();
+}
+
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
+  int position=0;
+  bool needsEntry;
   if (docBlockInBody)
   {
     if (previous==0) 
@@ -4244,25 +4242,27 @@ static void handleCommentBlock(const QCString &doc,bool brief)
       previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
     }
   }
-  if (parseCommentBlock(
+  //printf("parseCommentBlock [%s]\n",doc.data());
+  while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody ? previous : current,
-	doc,     // text
+	doc,        // text
 	yyFileName, // file
 	brief ? current->briefLine : current->docLine,   // line of block start
 	docBlockInBody ? FALSE : brief, 
 	docBlockInBody ? FALSE : docBlockJavaStyle,
-	protection)
-     ) // need to start a new entry
+	protection,
+        position,
+        needsEntry
+        )
+     ) 
   {
-    if (current->section==Entry::MEMBERGRP_SEC)
-    {
-      addMemberGroupDocs();
-    }
-    current_root->addSubEntry(current);
-    previous = current;
-    current = new Entry ;
-    initEntry();
+    //printf("parseCommentBlock position=%d [%s]\n",position,doc.data()+position);
+    if (needsEntry) newEntry();
+  }
+  if (needsEntry)
+  {
+    newEntry();
   }
 
 exit:
@@ -4275,83 +4275,82 @@ exit:
 
 //----------------------------------------------------------------------------
 
-static void startGroupInDoc()
-{
-  if (current->section==Entry::GROUPDOC_SEC ) /* scope for a non-member group: @defgroup */
-  {
-    autoGroupStack.push(new Grouping(current->name,
-	  current->groupingPri()
-	  ));
-  }
-  else /* if (current->section == Entry::MEMBERGRP_SEC) scope for a member group: @name */
-  {
-    if (memberGroupId!=DOX_NOGROUP)
-    {
-      warn(yyFileName,yyLineNr,"Warning: member groups cannot be nested. Ending current group!\n");
-      endGroup();
-    }
-    memberGroupId = newMemberGroupId();
-    MemberGroupInfo *info = new MemberGroupInfo;
-    if (current->section == Entry::MEMBERGRP_SEC)
-    {
-      info->header = memberGroupHeader.stripWhiteSpace();
-    }
-    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
-    memberGroupRelates = current->relates.copy();
-    memberGroupInside = current->inside.copy();
-    current->mGrpId = memberGroupId;
-    lastMemberGroupLine = yyLineNr;
-  }
-}
-
-//----------------------------------------------------------------------------
-
-static void endGroup()
-{
-  if (memberGroupId!=DOX_NOGROUP) // end of member group
-  {
-    //Doxygen::memberDocDict.insert(memberGroupId,
-    //	new QCString(memberGroupDocs)
-    //			);
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
-    if (info) 
-    {
-      info->doc = memberGroupDocs;
-      info->docFile = yyFileName;
-    }
-    memberGroupId=DOX_NOGROUP;
-    memberGroupRelates.resize(0);
-    memberGroupInside.resize(0);
-    if (YY_START!=ReadInitializer) 
-    {
-      current->mGrpId=DOX_NOGROUP;
-      current->relates.resize(0);
-    }
-    memberGroupDocs.resize(0);
-  }
-  else if (!autoGroupStack.isEmpty()) // end of group
-  {
-    Grouping *current = autoGroupStack.pop();
-    Grouping *parent = autoGroupStack.top();
-    if( parent ) {
-      setCurrentGroup( &parent->groupname, parent->pri );
-    } else {
-      setCurrentGroup( 0, Grouping::GROUPING_LOWEST );
-    }
-    delete current;
-  }
-}
-
-//----------------------------------------------------------------------------
-
-static void forceEndGroup()
-{
-  while (memberGroupId!=DOX_NOGROUP || !autoGroupStack.isEmpty()) 
-  {
-    //printf("forceEndGroup ends group %d\n",memberGroupId);
-    endGroup();
-  }
-}
+//static void startGroupInDoc()
+//{
+//  if (current->section==Entry::GROUPDOC_SEC ) /* scope for a non-member group: @defgroup */
+//  {
+//    autoGroupStack.push(new Grouping(current->name,
+//	  current->groupingPri()
+//	  ));
+//  }
+//  else /* if (current->section == Entry::MEMBERGRP_SEC) scope for a member group: @name */
+//  {
+//    if (memberGroupId!=DOX_NOGROUP)
+//    {
+//      warn(yyFileName,yyLineNr,"Warning: member groups cannot be nested. Ending current group!\n");
+//      endGroup();
+//    }
+//    memberGroupId = newMemberGroupId();
+//    MemberGroupInfo *info = new MemberGroupInfo;
+//    if (current->section == Entry::MEMBERGRP_SEC)
+//    {
+//      info->header = memberGroupHeader.stripWhiteSpace();
+//    }
+//    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
+//    memberGroupRelates = current->relates;
+//    memberGroupInside = current->inside;
+//    current->mGrpId = memberGroupId;
+//  }
+//}
+//
+////----------------------------------------------------------------------------
+//
+//static void endGroup()
+//{
+//  if (memberGroupId!=DOX_NOGROUP) // end of member group
+//  {
+//    //Doxygen::memberDocDict.insert(memberGroupId,
+//    //	new QCString(memberGroupDocs)
+//    //			);
+//    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
+//    if (info) 
+//    {
+//      info->doc = memberGroupDocs;
+//      info->docFile = yyFileName;
+//    }
+//    memberGroupId=DOX_NOGROUP;
+//    memberGroupRelates.resize(0);
+//    memberGroupInside.resize(0);
+//    if (YY_START!=ReadInitializer) 
+//    {
+//      current->mGrpId=DOX_NOGROUP;
+//      current->relates.resize(0);
+//    }
+//    memberGroupDocs.resize(0);
+//  }
+//  else if (!autoGroupStack.isEmpty()) // end of group
+//  {
+//    Grouping *current = autoGroupStack.pop();
+//    Grouping *parent = autoGroupStack.top();
+//    if( parent ) {
+//      setCurrentGroup( &parent->groupname, parent->pri );
+//    } else {
+//      setCurrentGroup( 0, Grouping::GROUPING_LOWEST );
+//    }
+//    delete current;
+//  }
+//}
+//
+////----------------------------------------------------------------------------
+//
+//static void forceEndGroup()
+//{
+//  while (memberGroupId!=DOX_NOGROUP || !autoGroupStack.isEmpty()) 
+//  {
+//    //printf("forceEndGroup ends group %d\n",memberGroupId);
+//    endGroup();
+//  }
+//}
 
 //----------------------------------------------------------------------------
 
@@ -4371,7 +4370,6 @@ static void parseCompounds(Entry *rt)
       padCount=0;
       depthIf = 0;
       inputString = ce->program;
-      lastDefGroup.groupname.resize(0);
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;
       if (ce->section==Entry::ENUM_SEC)
@@ -4434,12 +4432,16 @@ static void parseCompounds(Entry *rt)
       virt = Normal;
       //printf("name=%s current->stat=%d gstat=%d\n",ce->name.data(),current->stat,gstat);
 
-      memberGroupId = DOX_NOGROUP;
-      memberGroupRelates.resize(0);
-      memberGroupInside.resize(0);
+      //memberGroupId = DOX_NOGROUP;
+      //memberGroupRelates.resize(0);
+      //memberGroupInside.resize(0);
+      groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
       scanYYlex() ;
-      forceEndGroup();
+      //forceEndGroup();
+
+      groupLeaveCompound(yyFileName,yyLineNr,ce->name);
+      
       delete current; current=0;
       ce->program.resize(0);
 
@@ -4482,6 +4484,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     current_root  = rt ;
     initParser();
+    groupEnterFile(yyFileName,yyLineNr);
     current       = new Entry;
     int sec=guessSection(yyFileName);
     if (sec)
@@ -4509,7 +4512,8 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
       warn(yyFileName,yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
     }
 
-    forceEndGroup();
+    //forceEndGroup();
+    groupLeaveFile(yyFileName,yyLineNr);
 
     if (depthIf>0)
     {
@@ -4569,17 +4573,17 @@ static void parsePrototype(const QCString &text)
   //printf("**** parsePrototype end\n");
 }
 
-static void handleGroupStartCommand(const char *header)
-{
-  memberGroupHeader=header;
-  startGroupInDoc();
-}
-
-static void handleGroupEndCommand()
-{
-  endGroup();
-  previous=0;
-}
+//static void handleGroupStartCommand(const char *header)
+//{
+//  memberGroupHeader=header;
+//  startGroupInDoc();
+//}
+//
+//static void handleGroupEndCommand()
+//{
+//  endGroup();
+//  previous=0;
+//}
 
 //----------------------------------------------------------------------------
 
@@ -4624,15 +4628,6 @@ void CLanguageScanner::parsePrototype(const char *text)
   ::parsePrototype(text);
 }
 
-void CLanguageScanner::handleGroupStartCommand(const char *header)
-{
-  ::handleGroupStartCommand(header);
-}
-
-void CLanguageScanner::handleGroupEndCommand()
-{
-  ::handleGroupEndCommand();
-}
 
 //----------------------------------------------------------------------------
 

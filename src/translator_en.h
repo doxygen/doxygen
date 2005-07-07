@@ -42,6 +42,10 @@
 */
 class TranslatorEnglish : public Translator
 {
+  protected:
+    friend class TranslatorAdapterBase;
+    virtual ~TranslatorEnglish() {}
+
   public:
 
     // --- Language control methods -------------------

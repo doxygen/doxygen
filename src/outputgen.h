@@ -42,6 +42,7 @@ class GroupDef;
 class CodeOutputInterface
 {
   public:
+    virtual ~CodeOutputInterface() {}
     /*! Writes an ASCII string to the output. This function should keep 
      *  spaces visible, should break lines at a newline and should convert 
      *  tabs to the right number of spaces.
@@ -81,6 +82,7 @@ class CodeOutputInterface
 class BaseOutputDocInterface : public CodeOutputInterface
 {
   public:
+    virtual ~BaseOutputDocInterface() {}
     enum ParamListTypes { Param, RetVal, Exception };
     enum SectionTypes { /*See, Return, Author, Version, 
                         Since, Date, Bug, Note,

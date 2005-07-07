@@ -292,6 +292,7 @@ function main()
   echo "</span>\n";
   echo "</form>\n";
   echo "</div>\n";
+  echo "<div class=\"searchresults\">\n";
   $results = array();
   $requiredWords = array();
   $forbiddenWords = array();
@@ -318,6 +319,7 @@ function main()
   sort_results($filteredDocs,$sorted);
   // report results to the user
   report_results($sorted);
+  echo "</div>\n";
   fclose($file);
 }
 

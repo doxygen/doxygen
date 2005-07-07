@@ -21,14 +21,25 @@
 
 class ParserInterface;
 
-bool parseCommentBlock(/* in */     ParserInterface *parser,
-                       /* in,out */ Entry *curEntry,
-                       /* in */     const QCString &comment,
-		       /* in */     const QCString &fileName,
-		       /* in */     int lineNr,
-		       /* in */     bool isBrief,
-		       /* in */     bool isJavaDocStyle,
-		       /* in,out */ Protection &prot
-		      );
+int parseCommentBlock(/* in */     ParserInterface *parser,
+                      /* in */     Entry *curEntry,
+                      /* in */     const QCString &comment,
+	              /* in */     const QCString &fileName,
+		      /* in */     int lineNr,
+		      /* in */     bool isBrief,
+		      /* in */     bool isJavaDocStyle,
+		      /* in,out */ Protection &prot,
+                      /* in,out */ int &position,
+                      /* out */    bool &newEntryNeeded
+		     );
+
+void groupEnterFile(const char *file,int line);
+void groupLeaveFile(const char *file,int line);
+void groupLeaveCompound(const char *file,int line,const char *name);
+void groupEnterCompound(const char *file,int line,const char *name);
+void openGroup(Entry *e,const char *file,int line);
+void closeGroup(Entry *,const char *file,int line);
+void initGroupInfo(Entry *e);
+
 
 #endif

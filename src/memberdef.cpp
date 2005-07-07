@@ -2070,10 +2070,16 @@ MemberDef *MemberDef::createTemplateInstanceMember(
     actualArgList->pureSpecifier     = defArgList->pureSpecifier;
   }
 
+  QCString methodName=name();
+  if (methodName.left(9)=="operator ") // conversion operator
+  {
+    methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
+  }
+
   MemberDef *imd = new MemberDef(
                        getDefFileName(),getDefLine(),
                        substituteTemplateArgumentsInString(type,formalArgs,actualArgs), 
-                       name(), 
+                       methodName, 
                        substituteTemplateArgumentsInString(args,formalArgs,actualArgs), 
                        exception, prot,
                        virt, stat, related, mtype, 0, 0

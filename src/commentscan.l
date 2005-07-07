@@ -46,67 +46,67 @@
 #include "parserintf.h"
 
 // forward declarations
-static void handleBrief(const QCString &);
-static void handleFn(const QCString &);
-static void handleDef(const QCString &);
-static void handleOverload(const QCString &);
-static void handleEnum(const QCString &);
-static void handleDefGroup(const QCString &);
-static void handleAddToGroup(const QCString &);
-static void handleWeakGroup(const QCString &);
-static void handleNamespace(const QCString &);
-static void handlePackage(const QCString &);
-static void handleClass(const QCString &);
-static void handleProtocol(const QCString &);
-static void handleCategory(const QCString &);
-static void handleUnion(const QCString &);
-static void handleStruct(const QCString &);
-static void handleInterface(const QCString &);
-static void handleIdlException(const QCString &);
-static void handlePage(const QCString &);
-static void handleMainpage(const QCString &);
-static void handleFile(const QCString &);
-static void handleDir(const QCString &);
-static void handleExample(const QCString &);
-static void handleDetails(const QCString &);
-static void handleName(const QCString &);
-static void handleTodo(const QCString &);
-static void handleTest(const QCString &);
-static void handleBug(const QCString &);
-static void handleSubpage(const QCString &s);
-static void handleDeprecated(const QCString &);
-static void handleXRefItem(const QCString &);
-static void handleRelated(const QCString &);
-static void handleRelatedAlso(const QCString &);
-static void handleRefItem(const QCString &);
-static void handleSection(const QCString &);
-static void handleAnchor(const QCString &);
-static void handleFormatBlock(const QCString &);
-static void handleAddIndex(const QCString &);
-static void handleIf(const QCString &);
-static void handleIfNot(const QCString &);
-static void handleElseIf(const QCString &);
-static void handleElse(const QCString &);
-static void handleEndIf(const QCString &);
-static void handleIngroup(const QCString &);
-static void handleNoSubGrouping(const QCString &);
-static void handleShowInitializer(const QCString &);
-static void handleHideInitializer(const QCString &);
-static void handleCallgraph(const QCString &);
-static void handleInternal(const QCString &);
-static void handleLineBr(const QCString &);
-static void handleStatic(const QCString &);
-static void handlePure(const QCString &);
-static void handlePrivate(const QCString &);
-static void handlePrivateSection(const QCString &);
-static void handleProtected(const QCString &);
-static void handleProtectedSection(const QCString &);
-static void handlePublic(const QCString &s);
-static void handlePublicSection(const QCString &s);
-static void handleInherit(const QCString &);
+static bool handleBrief(const QCString &);
+static bool handleFn(const QCString &);
+static bool handleDef(const QCString &);
+static bool handleOverload(const QCString &);
+static bool handleEnum(const QCString &);
+static bool handleDefGroup(const QCString &);
+static bool handleAddToGroup(const QCString &);
+static bool handleWeakGroup(const QCString &);
+static bool handleNamespace(const QCString &);
+static bool handlePackage(const QCString &);
+static bool handleClass(const QCString &);
+static bool handleProtocol(const QCString &);
+static bool handleCategory(const QCString &);
+static bool handleUnion(const QCString &);
+static bool handleStruct(const QCString &);
+static bool handleInterface(const QCString &);
+static bool handleIdlException(const QCString &);
+static bool handlePage(const QCString &);
+static bool handleMainpage(const QCString &);
+static bool handleFile(const QCString &);
+static bool handleDir(const QCString &);
+static bool handleExample(const QCString &);
+static bool handleDetails(const QCString &);
+static bool handleName(const QCString &);
+static bool handleTodo(const QCString &);
+static bool handleTest(const QCString &);
+static bool handleBug(const QCString &);
+static bool handleSubpage(const QCString &s);
+static bool handleDeprecated(const QCString &);
+static bool handleXRefItem(const QCString &);
+static bool handleRelated(const QCString &);
+static bool handleRelatedAlso(const QCString &);
+static bool handleRefItem(const QCString &);
+static bool handleSection(const QCString &);
+static bool handleAnchor(const QCString &);
+static bool handleFormatBlock(const QCString &);
+static bool handleAddIndex(const QCString &);
+static bool handleIf(const QCString &);
+static bool handleIfNot(const QCString &);
+static bool handleElseIf(const QCString &);
+static bool handleElse(const QCString &);
+static bool handleEndIf(const QCString &);
+static bool handleIngroup(const QCString &);
+static bool handleNoSubGrouping(const QCString &);
+static bool handleShowInitializer(const QCString &);
+static bool handleHideInitializer(const QCString &);
+static bool handleCallgraph(const QCString &);
+static bool handleInternal(const QCString &);
+static bool handleLineBr(const QCString &);
+static bool handleStatic(const QCString &);
+static bool handlePure(const QCString &);
+static bool handlePrivate(const QCString &);
+static bool handlePrivateSection(const QCString &);
+static bool handleProtected(const QCString &);
+static bool handleProtectedSection(const QCString &);
+static bool handlePublic(const QCString &s);
+static bool handlePublicSection(const QCString &s);
+static bool handleInherit(const QCString &);
 
 
-typedef void (*DocCmdFunc)(const QCString &name);
+typedef bool (*DocCmdFunc)(const QCString &name);
   
 struct DocCmdMap
 {
@@ -283,6 +283,9 @@ class GuardedSection
     bool m_parentVisible;
 };
 
+void openGroup(Entry *e,const char *file,int line);
+void closeGroup(Entry *e,const char *file,int line);
+static void groupAddDocs(Entry *e,const char *fileName);
 
 /* -----------------------------------------------------------------
  *
@@ -306,7 +309,6 @@ static XRefKind         xrefKind;            // kind of cross-reference command
 static XRefKind         newXRefKind;         // 
 static GuardType        guardType;           // kind of guard for conditional section
 static bool             enabledSectionFound;
-static QCString         nameHeader;          // heading of the @name command
 static QCString         functionProto;       // function prototype
 static QStack<GuardedSection> guards;        // tracks nested conditional sections (if,ifnot,..)
 static Entry*		current      = 0 ;   // working entry
@@ -328,6 +330,15 @@ static bool             xrefAppendFlag;
 static bool             inGroupParamFound;
 static int              braceCount;
 static bool             insidePre;
+static bool             parseMore;
+
+//-----------------------------------------------------------------------------
+
+static QStack<Grouping> g_autoGroupStack;
+static int              g_memberGroupId = DOX_NOGROUP;
+static QCString         g_memberGroupHeader;
+static QCString         g_memberGroupDocs;
+static QCString         g_memberGroupRelates;
 
 //-----------------------------------------------------------------------------
 
@@ -335,7 +346,7 @@ static void initParser()
 {
   sectionLabel.resize(0);
   sectionTitle.resize(0);
-  nameHeader.resize(0);
+  g_memberGroupHeader.resize(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -369,16 +380,17 @@ static QCString getDocSectionName(int s)
 
 //-----------------------------------------------------------------------------
 
-static void makeStructuralIndicator(Entry::Sections s)
+static bool makeStructuralIndicator(Entry::Sections s)
 {
   if (!getDocSectionName(current->section).isEmpty())
   {
-    warn(yyFileName,yyLineNr,
-	    "Warning: found a structural command %s for a section already "
-	    "marked with structural command %s. Ignoring the latter command.",
-	     getDocSectionName(s).data(),
-             getDocSectionName(current->section).data()
-	);
+    //warn(yyFileName,yyLineNr,
+    //	    "Warning: found a structural command %s for a section already "
+    //	    "marked with structural command %s. Ignoring the latter command.",
+    //	     getDocSectionName(s).data(),
+    //         getDocSectionName(current->section).data()
+    //	);
+    return TRUE;
   }
   else
   {
@@ -386,6 +398,7 @@ static void makeStructuralIndicator(Entry::Sections s)
     current->section = s;
     current->fileName = yyFileName;
     current->startLine = yyLineNr;
+    return FALSE;
   }
 }
 
@@ -664,8 +677,11 @@ static inline void addOutput(char c)
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
+static int prevPosition=0;
+
 static int yyread(char *buf,int max_size)
 {
+    prevPosition=inputPosition;
     int c=0;
     while( c < max_size && inputString[inputPosition] )
     {
@@ -818,8 +834,19 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					  DocCmdFunc *funcPtr = DocCmdMapper::map(cmdName);
 					  if (funcPtr) // special action is required
 					  {
-					    //printf("Special command '%s'\n",yytext);
-					    (*funcPtr)(cmdName);
+					    if ((*funcPtr)(cmdName))
+					    {
+					      // implicit split of the comment block into two
+					      // entries. Restart the next block at the start
+					      // of this command.
+					      parseMore=TRUE;
+
+					      // yuk, this is probably not very portable across lex implementations, 
+					      // but we need to know the position in the input buffer where this 
+					      // rule matched.
+					      inputPosition=prevPosition + yy_bp - yy_current_buffer->yy_ch_buf;
+					      yyterminate();
+					    }
 					  }
 					  else // command not relevant
 					  {
@@ -852,11 +879,13 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					  BEGIN(ReadFormulaLong);
   					}
 <Comment>{CMD}"{"                       { // begin of a group
-                                          langParser->handleGroupStartCommand(nameHeader);
+                                          //langParser->handleGroupStartCommand(g_memberGroupHeader);
+                                          openGroup(current,yyFileName,yyLineNr);
                                         }
 <Comment>{CMD}"}"                       { // end of a group
-                                          langParser->handleGroupEndCommand();
-                                          nameHeader.resize(0);
+                                          //langParser->handleGroupEndCommand();
+                                          closeGroup(current,yyFileName,yyLineNr);
+                                          g_memberGroupHeader.resize(0);
                                         }
 <Comment>{CMD}[$@\\&~<>#%]		{ // escaped character
   					  addOutput(yytext);
@@ -1154,6 +1183,11 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 
   /* --------- handle arguments of the file/dir/example command ------------ */
 
+<FileDocArg1>{DOCNL}			{ // no file name specfied
+  					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+					}
 <FileDocArg1>{FILE}			{ // first argument; name
   					  current->name = stripQuotes(yytext);
 					  BEGIN( Comment );
@@ -1161,11 +1195,6 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 <FileDocArg1>{LC}			{ yyLineNr++; 
 					  addOutput('\n');
                                         }
-<FileDocArg1>{DOCNL}			{ // no file name specfied
-  					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
-					  BEGIN( Comment );
-					}
 <FileDocArg1>.				{ // ignore other stuff
   					}
 
@@ -1542,10 +1571,10 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 <NameParam>{LC}				{ // line continuation
                                           yyLineNr++; 
 					  addOutput('\n');
-					  nameHeader+=' ';
+					  g_memberGroupHeader+=' ';
   					}
 <NameParam>.				{ // ignore other stuff
-					  nameHeader+=*yytext;
+					  g_memberGroupHeader+=*yytext;
 					  current->name+=*yytext;
   					}
 
@@ -1679,218 +1708,251 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 
 //----------------------------------------------------------------------------
 
-static void handleBrief(const QCString &)
+static bool handleBrief(const QCString &)
 {
   //printf("handleBrief\n");
   setOutput(OutputBrief);
+  return FALSE;
 }
 
-static void handleFn(const QCString &)
+static bool handleFn(const QCString &)
 {
-  makeStructuralIndicator(Entry::MEMBERDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::MEMBERDOC_SEC);
   functionProto.resize(0);
   braceCount=0;
   BEGIN(FnParam);
+  return stop;
 }
 
-static void handleDef(const QCString &)
+static bool handleDef(const QCString &)
 {
-  makeStructuralIndicator(Entry::DEFINEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::DEFINEDOC_SEC);
   functionProto.resize(0);
   BEGIN(FnParam);
+  return stop;
 }
 
-static void handleOverload(const QCString &)
+static bool handleOverload(const QCString &)
 {
   functionProto.resize(0);
   BEGIN(OverloadParam);
+  return FALSE;
 }
 
-static void handleEnum(const QCString &)
+static bool handleEnum(const QCString &)
 {
-  makeStructuralIndicator(Entry::ENUMDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::ENUMDOC_SEC);
   BEGIN(EnumDocArg1);
+  return stop;
 }
 
-static void handleDefGroup(const QCString &)
+static bool handleDefGroup(const QCString &)
 {
-  makeStructuralIndicator(Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::GROUPDOC_SEC);
   current->groupDocType = Entry::GROUPDOC_NORMAL;
   BEGIN( GroupDocArg1 );
+  return stop;
 }
 
-static void handleAddToGroup(const QCString &)
+static bool handleAddToGroup(const QCString &)
 {
-  makeStructuralIndicator(Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::GROUPDOC_SEC);
   current->groupDocType = Entry::GROUPDOC_ADD;
   BEGIN( GroupDocArg1 );
+  return stop;
 }
 
-static void handleWeakGroup(const QCString &)
+static bool handleWeakGroup(const QCString &)
 {
-  makeStructuralIndicator(Entry::GROUPDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::GROUPDOC_SEC);
   current->groupDocType = Entry::GROUPDOC_WEAK;
   BEGIN( GroupDocArg1 );
+  return stop;
 }
 
-static void handleNamespace(const QCString &)
+static bool handleNamespace(const QCString &)
 {
-  makeStructuralIndicator(Entry::NAMESPACEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::NAMESPACEDOC_SEC);
   BEGIN( NameSpaceDocArg1 );
+  return stop;
 }
 
-static void handlePackage(const QCString &)
+static bool handlePackage(const QCString &)
 {
-  makeStructuralIndicator(Entry::PACKAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::PACKAGEDOC_SEC);
   BEGIN( PackageDocArg1 );
+  return stop;
 }
 
-static void handleClass(const QCString &)
+static bool handleClass(const QCString &)
 {
-  makeStructuralIndicator(Entry::CLASSDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::CLASSDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handleProtocol(const QCString &)
+static bool handleProtocol(const QCString &)
 { // Obj-C protocol
-  makeStructuralIndicator(Entry::PROTOCOLDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::PROTOCOLDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handleCategory(const QCString &)
+static bool handleCategory(const QCString &)
 { // Obj-C category
-  makeStructuralIndicator(Entry::CATEGORYDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::CATEGORYDOC_SEC);
   BEGIN( CategoryDocArg1 ); 
+  return stop;
 }
 
-static void handleUnion(const QCString &)
+static bool handleUnion(const QCString &)
 {
-  makeStructuralIndicator(Entry::UNIONDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::UNIONDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handleStruct(const QCString &)
+static bool handleStruct(const QCString &)
 {
-  makeStructuralIndicator(Entry::STRUCTDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::STRUCTDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handleInterface(const QCString &)
+static bool handleInterface(const QCString &)
 {
-  makeStructuralIndicator(Entry::INTERFACEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::INTERFACEDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handleIdlException(const QCString &)
+static bool handleIdlException(const QCString &)
 {
-  makeStructuralIndicator(Entry::EXCEPTIONDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::EXCEPTIONDOC_SEC);
   BEGIN( ClassDocArg1 ); 
+  return stop;
 }
 
-static void handlePage(const QCString &)
+static bool handlePage(const QCString &)
 {
-  makeStructuralIndicator(Entry::PAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::PAGEDOC_SEC);
   BEGIN( PageDocArg1 );
+  return stop;
 }
 
-static void handleMainpage(const QCString &)
+static bool handleMainpage(const QCString &)
 {
-  makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
   current->name = "mainpage";
   BEGIN( PageDocArg2 );
+  return stop;
 }
 
-static void handleFile(const QCString &)
+static bool handleFile(const QCString &)
 {
-  makeStructuralIndicator(Entry::FILEDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::FILEDOC_SEC);
   current->name = yyFileName;
   BEGIN( FileDocArg1 );
+  return stop;
 }
 
-static void handleDir(const QCString &)
+static bool handleDir(const QCString &)
 {
-  makeStructuralIndicator(Entry::DIRDOC_SEC);
+  bool stop=makeStructuralIndicator(Entry::DIRDOC_SEC);
   current->name = yyFileName;
   BEGIN( FileDocArg1 );
+  return stop;
 }
 
-static void handleExample(const QCString &)
+static bool handleExample(const QCString &)
 {
-  makeStructuralIndicator(Entry::EXAMPLE_SEC);
+  bool stop=makeStructuralIndicator(Entry::EXAMPLE_SEC);
   current->name = yyFileName;
   BEGIN( FileDocArg1 );
+  return stop;
 }
 
-static void handleDetails(const QCString &)
+static bool handleDetails(const QCString &)
 {
   setOutput(OutputDoc);
+  return FALSE;
 }
 
-static void handleName(const QCString &)
+static bool handleName(const QCString &)
 {
-  makeStructuralIndicator(Entry::MEMBERGRP_SEC);
-  nameHeader.resize(0);
+  bool stop=makeStructuralIndicator(Entry::MEMBERGRP_SEC);
+  g_memberGroupHeader.resize(0);
   BEGIN( NameParam );
+  return stop;
 }
 
-static void handleTodo(const QCString &)
+static bool handleTodo(const QCString &)
 {
   newXRefKind = XRef_Todo;
   setOutput(OutputXRef);
   xrefKind = XRef_Todo;
+  return FALSE;
 }
 
-static void handleTest(const QCString &)
+static bool handleTest(const QCString &)
 {
   newXRefKind = XRef_Test;
   setOutput(OutputXRef);
   xrefKind = XRef_Test;
+  return FALSE;
 }
 
-static void handleBug(const QCString &)
+static bool handleBug(const QCString &)
 {
   newXRefKind = XRef_Bug;
   setOutput(OutputXRef);
   xrefKind = XRef_Bug;
+  return FALSE;
 }
 
-static void handleDeprecated(const QCString &)
+static bool handleDeprecated(const QCString &)
 {
   newXRefKind = XRef_Deprecated;
   setOutput(OutputXRef);
   xrefKind = XRef_Deprecated;
+  return FALSE;
 }
 
-static void handleXRefItem(const QCString &)
+static bool handleXRefItem(const QCString &)
 {
   BEGIN(XRefItemParam1);
+  return FALSE;
 }
 
-static void handleRelated(const QCString &)
+static bool handleRelated(const QCString &)
 {
   BEGIN(RelatesParam1);
+  return FALSE;
 }
 
-static void handleRelatedAlso(const QCString &)
+static bool handleRelatedAlso(const QCString &)
 {
   current->relatesDup = TRUE;
   BEGIN(RelatesParam1);
+  return FALSE;
 }
 
-static void handleRefItem(const QCString &)
+static bool handleRefItem(const QCString &)
 {
   addOutput("@refitem ");
   BEGIN(LineParam);
+  return FALSE;
 }
 
-static void handleSection(const QCString &s)
+static bool handleSection(const QCString &s)
 {
   setOutput(OutputDoc);
   addOutput("@"+s+" ");
   BEGIN(SectionLabel);
+  return FALSE;
 }
 
-static void handleSubpage(const QCString &s)
+static bool handleSubpage(const QCString &s)
 {
   if (current->section!=Entry::EMPTY_SEC && 
       current->section!=Entry::PAGEDOC_SEC &&
@@ -1902,43 +1964,49 @@ static void handleSubpage(const QCString &s)
   }
   addOutput("@"+s+" ");
   BEGIN(SubpageLabel);
+  return FALSE;
 }
 
-static void handleAnchor(const QCString &s)
+static bool handleAnchor(const QCString &s)
 {
   addOutput("@"+s+" ");
   BEGIN(AnchorLabel);
+  return FALSE;
 }
 
-static void handleFormatBlock(const QCString &s)
+static bool handleFormatBlock(const QCString &s)
 {
   addOutput("@"+s+" ");
   //printf("handleFormatBlock(%s)\n",s.data());
   blockName=s;
   BEGIN(FormatBlock);
+  return FALSE;
 }
 
-static void handleAddIndex(const QCString &)
+static bool handleAddIndex(const QCString &)
 {
   addOutput("@addindex ");
   BEGIN(LineParam);
+  return FALSE;
 }
 
-static void handleIf(const QCString &)
+static bool handleIf(const QCString &)
 {
   enabledSectionFound=FALSE;
   guardType = Guard_If;
   BEGIN(GuardParam);
+  return FALSE;
 }
 
-static void handleIfNot(const QCString &)
+static bool handleIfNot(const QCString &)
 {
   enabledSectionFound=FALSE;
   guardType = Guard_IfNot;
   BEGIN(GuardParam);
+  return FALSE;
 }
 
-static void handleElseIf(const QCString &)
+static bool handleElseIf(const QCString &)
 {
   if (guards.isEmpty())
   {
@@ -1950,9 +2018,10 @@ static void handleElseIf(const QCString &)
     guardType = enabledSectionFound ? Guard_Skip : Guard_If;
     BEGIN(GuardParam);
   }
+  return FALSE;
 }
 
-static void handleElse(const QCString &)
+static bool handleElse(const QCString &)
 {
   if (guards.isEmpty())
   {
@@ -1963,9 +2032,10 @@ static void handleElse(const QCString &)
   {
     BEGIN( SkipGuardedSection );
   }
+  return FALSE;
 }
 
-static void handleEndIf(const QCString &)
+static bool handleEndIf(const QCString &)
 {
   if (guards.isEmpty())
   {
@@ -1977,35 +2047,41 @@ static void handleEndIf(const QCString &)
     delete guards.pop();
   }
   enabledSectionFound=FALSE;
+  return FALSE;
 }
 
-static void handleIngroup(const QCString &)
+static bool handleIngroup(const QCString &)
 {
   inGroupParamFound=FALSE;
   BEGIN( InGroupParam );
+  return FALSE;
 }
 
-static void handleNoSubGrouping(const QCString &)
+static bool handleNoSubGrouping(const QCString &)
 {
   current->subGrouping = FALSE; 
+  return FALSE;
 }
 
-static void handleShowInitializer(const QCString &)
+static bool handleShowInitializer(const QCString &)
 {
   current->initLines = 100000; // ON
+  return FALSE;
 }
 
-static void handleHideInitializer(const QCString &)
+static bool handleHideInitializer(const QCString &)
 {
   current->initLines = 0; // OFF
+  return FALSE;
 }
 
-static void handleCallgraph(const QCString &)
+static bool handleCallgraph(const QCString &)
 {
   current->callGraph = TRUE; // ON
+  return FALSE;
 }
 
-static void handleInternal(const QCString &)
+static bool handleInternal(const QCString &)
 {
   if (!Config_getBool("INTERNAL_DOCS"))
   {
@@ -2015,56 +2091,67 @@ static void handleInternal(const QCString &)
   {
     addOutput("\\internal "); 
   }
+  return FALSE;
 }
 
-static void handleLineBr(const QCString &)
+static bool handleLineBr(const QCString &)
 {
   addOutput('\n');
+  return FALSE;
 }
 
-static void handleStatic(const QCString &)
+static bool handleStatic(const QCString &)
 {
   current->stat = TRUE; 
+  return FALSE;
 }
 
-static void handlePure(const QCString &)
+static bool handlePure(const QCString &)
 {
   current->virt = Pure; 
+  return FALSE;
 }
 
-static void handlePrivate(const QCString &)
+static bool handlePrivate(const QCString &)
 {
   current->protection = Private; 
+  return FALSE;
 }
 
-static void handlePrivateSection(const QCString &)
+static bool handlePrivateSection(const QCString &)
 {
   current->protection = protection = Private; 
+  return FALSE;
 }
 
-static void handleProtected(const QCString &)
+static bool handleProtected(const QCString &)
 {
   current->protection = Protected; 
+  return FALSE;
 }
 
-static void handleProtectedSection(const QCString &)
+static bool handleProtectedSection(const QCString &)
 {
   current->protection = protection = Protected ;
+  return FALSE;
 }
 
-static void handlePublic(const QCString &)
+static bool handlePublic(const QCString &)
 {
   current->protection = Public;
+  return FALSE;
 }
 
-static void handlePublicSection(const QCString &)
+static bool handlePublicSection(const QCString &)
 {
   current->protection = protection = Public; 
+  return FALSE;
 }
 
-static void handleInherit(const QCString &)
+static bool handleInherit(const QCString &)
 {
   BEGIN(InheritParam);
+  return FALSE;
 }
 
 //----------------------------------------------------------------------------
@@ -2080,13 +2167,15 @@ static void checkFormula()
 //----------------------------------------------------------------------------
 
 bool parseCommentBlock(/* in */     ParserInterface *parser,
-                       /* in,out */ Entry *curEntry,
+                       /* in */     Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,
 		       /* in */     int lineNr,
 		       /* in */     bool isBrief,
 		       /* in */     bool isJavaDocStyle,
-		       /* in,out */ Protection &prot
+		       /* in,out */ Protection &prot,
+		       /* in,out */ int &position,
+		       /* out */    bool &newEntryNeeded
 		      )
 {
   //fprintf(stderr,"parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
@@ -2099,7 +2188,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   current        = curEntry;
   inputString    = comment;
   if (inputString==0) return FALSE; // avoid empty strings
-  inputPosition  = 0;
+  inputPosition  = position;
   yyLineNr       = lineNr;
   yyFileName     = fileName;
   protection     = prot;
@@ -2107,6 +2196,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   xrefKind       = XRef_None;
   xrefAppendFlag = FALSE;
   insidePre      = FALSE;
+  parseMore      = FALSE;
   outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;
@@ -2136,8 +2226,143 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   
   checkFormula();
   prot = protection;
+  
+  groupAddDocs(curEntry,fileName);
 
-  return needNewEntry;
+  newEntryNeeded = needNewEntry;
+
+  if (parseMore) position=inputPosition; else position=0;
+
+  return parseMore;
+}
+
+//---------------------------------------------------------------------------
+
+void groupEnterFile(const char *,int)
+{
+  g_autoGroupStack.setAutoDelete(TRUE);
+  g_autoGroupStack.clear();
+  g_memberGroupId = DOX_NOGROUP;
+  g_memberGroupDocs.resize(0);
+  g_memberGroupRelates.resize(0);
+}
+
+void groupLeaveFile(const char *fileName,int line)
+{
+  if (g_memberGroupId!=DOX_NOGROUP)
+  {
+    warn(fileName,line,"Warning: end of file while inside a member group\n");
+  }
+  if (!g_autoGroupStack.isEmpty())
+  {
+    warn(fileName,line,"Warning: end of file while inside a group\n");
+  }
+}
+
+void groupEnterCompound(const char *fileName,int line,const char *name)
+{
+  if (g_memberGroupId!=DOX_NOGROUP)
+  {
+    warn(fileName,line,"Warning: try to put compound %s inside a member group\n",name);
+  }
+  g_memberGroupId=DOX_NOGROUP;
+  g_memberGroupRelates.resize(0);
+  g_memberGroupDocs.resize(0);
+}
+
+void groupLeaveCompound(const char *fileName,int line,const char *name)
+{
+  if (g_memberGroupId!=DOX_NOGROUP)
+  {
+    warn(fileName,line,"Warning: end of compound %s while inside a member group\n",name);
+  }
+  g_memberGroupId=DOX_NOGROUP;
+  g_memberGroupRelates.resize(0);
+  g_memberGroupDocs.resize(0);
+}
+
+
+void closeGroup(Entry *e,const char *fileName,int)
+{
+  //printf("%s:%d: closeGroup()\n",fileName,line);
+  if (g_memberGroupId!=DOX_NOGROUP) // end of member group
+  {
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
+    if (info) // know group
+    {
+      info->doc = g_memberGroupDocs;
+      info->docFile = fileName;
+    }
+    g_memberGroupId=DOX_NOGROUP;
+    g_memberGroupRelates.resize(0);
+    g_memberGroupDocs.resize(0);
+    e->mGrpId=DOX_NOGROUP;
+    //printf("new group id=%d\n",g_memberGroupId);
+  }
+  else if (!g_autoGroupStack.isEmpty()) // end of auto group
+  {
+    delete g_autoGroupStack.pop();
+  }
+}
+
+void openGroup(Entry *e,const char *fileName,int line)
+{
+  //printf("%s:%d: openGroup(sec=%x)\n",fileName,line,e->section);
+  if (e->section==Entry::GROUPDOC_SEC) // auto group
+  {
+    g_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
+  }
+  else // start of a member group
+  {
+    if (g_memberGroupId!=DOX_NOGROUP)
+    {
+      warn(fileName,line,"Warning: member groups cannot be nested. Ending current group!\n");
+      closeGroup(e,fileName,line);
+    }
+    static int curGroupId=0;
+    g_memberGroupId = curGroupId++;
+    //printf("new group id=%d header=%s\n",g_memberGroupId,g_memberGroupHeader.data());
+
+    MemberGroupInfo *info = new MemberGroupInfo;
+    info->header = g_memberGroupHeader.stripWhiteSpace();
+    Doxygen::memGrpInfoDict.insert(g_memberGroupId,info);
+
+    g_memberGroupRelates = e->relates;
+    e->mGrpId = g_memberGroupId;
+  }
+}
+
+void initGroupInfo(Entry *e)
+{
+  e->mGrpId     = g_memberGroupId;
+  e->relates    = g_memberGroupRelates;
+  if (!g_autoGroupStack.isEmpty())
+  {
+    //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
+    e->groups->append(new Grouping(*g_autoGroupStack.top()));
+  }
+}
+
+static void groupAddDocs(Entry *e,const char *fileName)
+{
+  if (e->section==Entry::MEMBERGRP_SEC)
+  {
+    g_memberGroupDocs=e->brief.stripWhiteSpace();
+    e->doc = stripLeadingAndTrailingEmptyLines(e->doc);
+    if (!g_memberGroupDocs.isEmpty() && !e->doc.isEmpty())
+    {
+      g_memberGroupDocs+="\n\n";
+    }
+    g_memberGroupDocs+=e->doc;
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
+    if (info) 
+    {
+      info->doc = g_memberGroupDocs;
+      info->docFile = fileName;
+    }
+    e->doc.resize(0);
+    e->brief.resize(0);
+  }
 }
 
 
