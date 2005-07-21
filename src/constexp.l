@@ -48,6 +48,8 @@ static int yyread(char *buf,int max_size)
 
 %}
 
+CONSTSUFFIX ([uU][lL]?[lL]?)|(lL][lL]?[uU]?)
+
 %option nounput
 
 %%
@@ -80,13 +82,13 @@ static int yyread(char *buf,int max_size)
                                      g_strToken=yytext;  
 				     return TOK_CHARACTER; 
 				   }
-0[0-7]*[uUlL]*                     { g_strToken=yytext; 
+0[0-7]*{CONSTSUFFIX}?              { g_strToken=yytext; 
   				     return TOK_OCTALINT; 
 				   }
-[1-9][0-9]*[uUlL]*                 { g_strToken=yytext; 
+[1-9][0-9]*{CONSTSUFFIX}?          { g_strToken=yytext; 
   				     return TOK_DECIMALINT; 
 				   }
-(0x|0X)[0-9a-fA-F]+[uUlL]*         { g_strToken=yytext+2; 
+(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { g_strToken=yytext+2; 
                                      return TOK_HEXADECIMALINT; 
                                    }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 

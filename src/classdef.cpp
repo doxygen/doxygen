@@ -2389,6 +2389,7 @@ void ClassDef::mergeCategory(ClassDef *category)
 
 void ClassDef::addUsedClass(ClassDef *cd,const char *accessName)
 {
+  //printf("%s::addUsedClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
   if (m_usesImplClassDict==0) 
   {
     m_usesImplClassDict = new UsesClassDict(17); 

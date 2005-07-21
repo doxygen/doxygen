@@ -1173,9 +1173,6 @@ static void findUsingDirectives(Entry *root)
             gd->addNamespace(nd);
         }
 
-        bool ambig;
-        // file definition containing the namespace nd
-        FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
         // insert the namespace in the file definition
         if (fd) 
         {
@@ -1492,7 +1489,7 @@ static MemberDef *addVariableToClass(
       prot,Normal,root->stat,related,
       mtype,0,0);
   md->setTagInfo(root->tagInfo);
-  md->setMemberClass(cd);
+  md->setMemberClass(cd); // also sets outer scope (i.e. getOuterScope())
   //md->setDefFile(root->fileName);
   //md->setDefLine(root->startLine);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -1670,7 +1667,7 @@ static MemberDef *addVariableToFile(
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
   md->setExplicitExternal(root->explicitExternal);
-  md->setOuterScope(fd);
+  //md->setOuterScope(fd);
   if (!root->explicitExternal)
   {
     md->setBodySegment(root->bodyLine,root->endBodyLine);
@@ -3184,21 +3181,17 @@ static void findUsedClassesForClass(Entry *root,
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
 
-        QCString typeName = resolveTypeDef(masterCd,usedClassName);
-        //printf("*** Found resolved class %s for %s\n",typeName.data(),usedClassName.data());
-
-        if (!typeName.isEmpty()) // if we could resolve the typedef, use
-                                   // the result as the class name.
-        {
-          usedClassName=typeName;
-        }
-
         //printf("  template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1)
         {
-          //printf("  found used class %s\n",usedClassName.data());
-          // the name could be a type definition, resolve it
-          //QCString typeName = resolveTypeDef(masterCd,usedClassName);
+          // find the type (if any) that matches usedClassName
+          ClassDef *typeCd = getResolvedClass(masterCd,masterCd->getFileDef(),usedClassName);
+          //printf("====>  usedClassName=%s -> typeCd=%s\n",
+          //     usedClassName.data(),typeCd?typeCd->name().data():"<none>");
+          if (typeCd)
+          {
+            usedClassName = typeCd->name();
+          }
           
           int sp=usedClassName.find('<');
           if (sp==-1) sp=0;
@@ -4033,14 +4026,14 @@ static void addMemberDocs(Entry *root,
   if (al)
   {
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    if (!root->doc.isEmpty())
+    if ((!root->doc.isEmpty() || !root->proto))
     {
       mergeArguments(md->argumentList(),al,TRUE);
     }
   }
   else
   {
-    if ( !root->doc.isEmpty() &&
+    if ( (!root->doc.isEmpty() || !root->proto) &&
           matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
                            rscope,rfd,root->argList,
                            TRUE
@@ -4704,9 +4697,10 @@ static void findMember(Entry *root,
             ClassDef *cd=md->getClassDef();
             Debug::print(Debug::FindMembers,0,
                 "3. member definition found, "
-                "scope needed=`%s' scope=`%s' args=`%s'\n",
+                "scope needed=`%s' scope=`%s' args=`%s' fileName=%s\n",
                 scopeName.data(),cd ? cd->name().data() : "<none>",
-                md->argsString());
+                md->argsString(),
+                root->fileName.data());
             //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
             bool ambig;
             FileDef *fd=findFileDef(Doxygen::inputNameDict,root->fileName,ambig);
@@ -7624,6 +7618,9 @@ static void expandAliases()
   for (adi.toFirst();(s=adi.current());++adi)
   {
     aliasesProcessed.clear();
+    // avoid expanding this command recursively
+    aliasesProcessed.insert(adi.currentKey(),(void *)0x8);
+    // expand embedded commands
     *s = expandAliasesRec(*s);
   }
 }

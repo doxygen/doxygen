@@ -561,7 +561,7 @@ void RTFDocVisitor::visitPost(DocPara *p)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocPara)}\n");
   if (!p->isLast() &&            // omit <p> for last paragraph
-      !(p->parent() &&           // and for parameter sections
+      !(p->parent() &&           // and for parameters & sections
         p->parent()->kind()==DocNode::Kind_ParamSect
        )
      ) 
@@ -728,7 +728,7 @@ void RTFDocVisitor::visitPost(DocSection *)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocSection)}\n");
-  m_t << "}" << endl; // end section
+  m_t << "\\par}" << endl; // end section
   m_lastIsPara=TRUE;
 }
 

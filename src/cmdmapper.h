@@ -36,9 +36,9 @@ enum CommandType
   CMD_AMP          = 2,
   CMD_ANCHOR       = 3,  
   CMD_AT           = 4,
-  CMD_ATTENTION    = 5 | SIMPLESECT_BIT,
-  CMD_AUTHOR       = 6 | SIMPLESECT_BIT,
-  CMD_AUTHORS      = 7 | SIMPLESECT_BIT,
+  CMD_ATTENTION    = 5  | SIMPLESECT_BIT,
+  CMD_AUTHOR       = 6  | SIMPLESECT_BIT,
+  CMD_AUTHORS      = 7  | SIMPLESECT_BIT,
   CMD_BOLD         = 8,
   CMD_BSLASH       = 9,
   CMD_CODE         = 10,
@@ -106,7 +106,8 @@ enum CommandType
   CMD_ENDDOT       = 72,
   CMD_MANONLY      = 73,
   CMD_ENDMANONLY   = 74,
-  CMD_INCWITHLINES = 75
+  CMD_INCWITHLINES = 75,
+  CMD_INHERITDOC   = 76
 };
 
 enum HtmlTagType

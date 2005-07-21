@@ -977,10 +977,10 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleLink(const QString &cmdName,bool isJavaLink);
     void handleRef(const QString &cmdName);
     void handleSection(const QString &cmdName);
+    void handleInheritDoc();
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
     bool injectToken(int tok,const QString &tokText);
-    //int handleLanguageSwitch();
 
   private:
     DocNode *m_parent;

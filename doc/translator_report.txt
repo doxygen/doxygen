@@ -1,4 +1,4 @@
-(1.4.3-20050623)
+(1.4.4)
 
 Doxygen supports the following 31 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian,
 Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 16 translators are up-to-date, 15 translators are based on
+Of them, 17 translators are up-to-date, 14 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -24,6 +24,7 @@ still may be some details listed even for them:
   TranslatorCzech
   TranslatorDutch -- Remove the obsolete methods (never used).
   TranslatorEnglish -- Remove the obsolete methods (never used).
+  TranslatorFrench -- Remove the obsolete methods (never used).
   TranslatorGerman
   TranslatorHungarian
   TranslatorIndonesian -- Remove the obsolete methods (never used).
@@ -43,7 +44,6 @@ must be implemented to become up-to-date:
   TranslatorUkrainian             1.4.1 	 1 method to implement
   TranslatorSerbian               1.4.1 	 1 method to implement
   TranslatorRomanian              1.4.1 	 1 method to implement
-  TranslatorFrench                1.4.1 	 1 method to implement
   TranslatorChinese               1.4.1 	 1 method to implement
   TranslatorNorwegian             1.3.9 	 7 methods to implement
   TranslatorJapanese              1.3.9 	 7 methods to implement
@@ -312,14 +312,10 @@ TranslatorFinnish   (TranslatorEnglish)  95 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorFrench   (TranslatorAdapter_1_4_1)  1 method to implement
+TranslatorFrench   (Translator)
 ----------------
 
-  Implements 191 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
+  Implements 192 of the required methods.
 
   Obsolete methods (should be removed, never used):
 

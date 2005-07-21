@@ -1869,7 +1869,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
   					}
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
-					  //handleGroupEndCommand();
   					  closeGroup(current,yyFileName,yyLineNr);
   					}
 <FindMembers>"="			{
@@ -2929,15 +2928,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					}
 <ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>\'     { 
+  					  *copyArgString+=yytext; 
+  					  fullArgString+=yytext; 
 					  if (insidePHP)
 					  {
 					    lastCopyArgStringContext=YY_START;
 					    BEGIN(CopyArgPHPString);
-					  }
-					  else
-					  {
-  					    *copyArgString+=yytext; 
-  					    fullArgString+=yytext; 
 					  }
   					}
 <ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>\n  { 

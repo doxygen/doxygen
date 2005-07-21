@@ -408,6 +408,10 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
   			 g_token->name = "javalink";
 			 return TK_COMMAND;
   		       }
+<St_Para>"{"{BLANK}*"@inheritDoc"{BLANK}*"}" {
+  			 g_token->name = "inheritdoc";
+			 return TK_COMMAND;
+		       }
 <St_Para>{SPCMD3}      {
   			 g_token->name = "form";
 			 bool ok;

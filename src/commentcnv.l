@@ -320,18 +320,29 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<CComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code")/[ \r\t\n] { /* start of a verbatim block */
+<CComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f$"|"f[")/[ \r\t\n] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
-				     g_blockName=&yytext[1];
+				     if (yytext[2]=='[')
+				     {
+				       g_blockName="f]";
+				     }
+				     else
+				     {
+				       g_blockName=&yytext[1];
+				     }
 				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
 <Scan>.                            { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]") { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
-				     if (&yytext[4]==g_blockName)
+				     if (yytext[1]=='f') // end of formula
+				     {
+				       BEGIN(g_lastCommentContext);
+				     }
+				     else if (&yytext[4]==g_blockName)
 				     {
 				       BEGIN(g_lastCommentContext);
 				     }

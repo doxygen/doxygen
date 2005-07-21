@@ -20,3 +20,6 @@ doxytag.cpp
 pre.cpp
 scanner.cpp
 version.cpp
+commentscan.cpp
+pycode.cpp
+pyscanner.cpp

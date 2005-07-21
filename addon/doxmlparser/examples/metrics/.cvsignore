@@ -1,2 +1,4 @@
 Makefile
 metrics.pro
+Makefile.metrics
+obj
