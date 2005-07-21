@@ -1623,7 +1623,7 @@ void DocCopy::parse()
       g_nodeStack.clear();
       g_copyStack.append(def);
       internalValidatingParseDoc(this,m_children,doc);
-      ASSERT(g_copyStack.remove(def));
+      g_copyStack.remove(def);
       ASSERT(g_styleStack.isEmpty());
       ASSERT(g_nodeStack.isEmpty());
       docParserPopContext();
@@ -4043,6 +4043,31 @@ int DocPara::handleStartCode()
   return retval;
 }
 
+void DocPara::handleInheritDoc()
+{
+  if (g_memberDef) // inheriting docs from a member
+  {
+    MemberDef *reMd = g_memberDef->reimplements();
+    if (reMd) // member from which was inherited.
+    {
+      MemberDef *thisMd = g_memberDef;
+      //printf("{InheritDocs:%s=>%s}\n",g_memberDef->qualifiedName().data(),reMd->qualifiedName().data());
+      docParserPushContext();
+      g_context=reMd->getOuterScope()->name();
+      g_memberDef=reMd;
+      g_styleStack.clear();
+      g_nodeStack.clear();
+      g_copyStack.append(reMd);
+      internalValidatingParseDoc(this,m_children,reMd->briefDescription());
+      internalValidatingParseDoc(this,m_children,reMd->documentation());
+      g_copyStack.remove(reMd);
+      docParserPopContext();
+      g_memberDef = thisMd;
+    }
+  }
+}
+
+
 int DocPara::handleCommand(const QString &cmdName)
 {
   DBG(("handleCommand(%s)\n",cmdName.data()));
@@ -4391,6 +4416,9 @@ int DocPara::handleCommand(const QString &cmdName)
     //  break;
     case CMD_INTERNALREF:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
+      break;
+    case CMD_INHERITDOC:
+      handleInheritDoc();
       break;
     default:
       // we should not get here!
@@ -5576,7 +5604,8 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   g_fileName = fileName;
   g_relPath = (!linkFromIndex && ctx) ? 
-               relativePathToRoot(ctx->getOutputFileBase()) : QString("");
+               QString(relativePathToRoot(ctx->getOutputFileBase())) : 
+               QString("");
   //printf("ctx->name=%s relPath=%s\n",ctx->name().data(),g_relPath.data());
   g_memberDef = md;
   g_nodeStack.clear();

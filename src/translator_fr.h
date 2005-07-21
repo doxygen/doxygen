@@ -60,6 +60,8 @@
  *              | - translator_fr.h now conforms exactly to translator_en.h
  *              |   (try: gvim -d translator_en.h translator_fr.h)
  * -------------+------------------------------------------------------------
+ *  2005-07-12  | Update for new since 1.4.1
+ * -------------+------------------------------------------------------------
  */ 
 #ifndef TRANSLATOR_FR_H
 #define TRANSLATOR_FR_H
@@ -85,7 +87,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public TranslatorAdapter_1_4_1
+class TranslatorFrench : public Translator
 {
   public:
 
@@ -1650,6 +1652,20 @@ class TranslatorFrench : public TranslatorAdapter_1_4_1
        return result;
      }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Ceci est une fonction membre surchargée, "
+              "proposée par commodité. Elle diffère de la fonction "
+              "çi-dessus uniquement par le(s) argument(s) qu'elle accepte.";
+    }
 };
 
 #endif
+

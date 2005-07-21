@@ -332,6 +332,8 @@ static int              braceCount;
 static bool             insidePre;
 static bool             parseMore;
 
+static int              g_commentCount;
+
 //-----------------------------------------------------------------------------
 
 static QStack<Grouping> g_autoGroupStack;
@@ -909,8 +911,9 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					    addOutput(yytext);
 					    setOutput(OutputDoc);
 					  }
-					  else
-					  {
+					  else if (!current->brief.stripWhiteSpace().isEmpty())
+					  { // only go to the detailed description if we have
+					    // found some brief description and not just whitespace
 					    setOutput(OutputDoc);
   					    addOutput(yytext);
 					  }
@@ -1422,12 +1425,23 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					    BEGIN(Comment);
 					  }
   					}
-<FormatBlock>[^ \@\\\n]*		{ // some word
+<FormatBlock>[^ \@\*\/\\\n]*		{ // some word
   					  addOutput(yytext);
   					}
 <FormatBlock>{DOCNL}			{ // new line
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
+  					}
+<FormatBlock>"/*"			{ // start of a C-comment
+  					  g_commentCount++;
+  					}
+<FormatBlock>"*/"			{ // end of a C-comment
+  					  g_commentCount--;
+					  if (g_commentCount<0 && blockName!="verbatim")
+					  {
+					    warn(yyFileName,yyLineNr,
+					         "Warning: found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",blockName.data(),blockName.data());
+					  }
   					}
 <FormatBlock>.				{
   					  addOutput(*yytext);
@@ -1883,6 +1897,7 @@ static bool handleName(const QCString &)
   bool stop=makeStructuralIndicator(Entry::MEMBERGRP_SEC);
   g_memberGroupHeader.resize(0);
   BEGIN( NameParam );
+  closeGroup(current,yyFileName,yyLineNr);
   return stop;
 }
 
@@ -1979,6 +1994,7 @@ static bool handleFormatBlock(const QCString &s)
   addOutput("@"+s+" ");
   //printf("handleFormatBlock(%s)\n",s.data());
   blockName=s;
+  g_commentCount=0;
   BEGIN(FormatBlock);
   return FALSE;
 }
@@ -2218,6 +2234,12 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     current->doc="\n\n";
   }
 
+  if (current->section==Entry::MEMBERGRP_SEC &&
+      g_memberGroupId==DOX_NOGROUP) // @name section but no group started yet
+  {
+    openGroup(current,yyFileName,yyLineNr);
+  }
+
   Debug::print(Debug::CommentScan,0,"CommentScanner\n%s:%d\n"
                "input=[%s]\nbrief=[%s]\ndocs=[%s]\n------------\n",
 	       fileName.data(),lineNr,comment.data(),
@@ -2249,10 +2271,13 @@ void groupEnterFile(const char *,int)
 
 void groupLeaveFile(const char *fileName,int line)
 {
-  if (g_memberGroupId!=DOX_NOGROUP)
-  {
-    warn(fileName,line,"Warning: end of file while inside a member group\n");
-  }
+  //if (g_memberGroupId!=DOX_NOGROUP)
+  //{
+  //  warn(fileName,line,"Warning: end of file while inside a member group\n");
+  //}
+  g_memberGroupId=DOX_NOGROUP;
+  g_memberGroupRelates.resize(0);
+  g_memberGroupDocs.resize(0);
   if (!g_autoGroupStack.isEmpty())
   {
     warn(fileName,line,"Warning: end of file while inside a group\n");
@@ -2270,12 +2295,12 @@ void groupEnterCompound(const char *fileName,int line,const char *name)
   g_memberGroupDocs.resize(0);
 }
 
-void groupLeaveCompound(const char *fileName,int line,const char *name)
+void groupLeaveCompound(const char *,int,const char *)
 {
-  if (g_memberGroupId!=DOX_NOGROUP)
-  {
-    warn(fileName,line,"Warning: end of compound %s while inside a member group\n",name);
-  }
+  //if (g_memberGroupId!=DOX_NOGROUP)
+  //{
+  //  warn(fileName,line,"Warning: end of compound %s while inside a member group\n",name);
+  //}
   g_memberGroupId=DOX_NOGROUP;
   g_memberGroupRelates.resize(0);
   g_memberGroupDocs.resize(0);
@@ -2284,7 +2309,8 @@ void groupLeaveCompound(const char *fileName,int line,const char *name)
 
 void closeGroup(Entry *e,const char *fileName,int)
 {
-  //printf("%s:%d: closeGroup()\n",fileName,line);
+  //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
+  //    e->name.data(),e->section,g_autoGroupStack.count());
   if (g_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
@@ -2301,34 +2327,39 @@ void closeGroup(Entry *e,const char *fileName,int)
   }
   else if (!g_autoGroupStack.isEmpty()) // end of auto group
   {
-    delete g_autoGroupStack.pop();
+    Grouping *grp = g_autoGroupStack.pop();
+    e->groups->removeLast();
+    delete grp;
   }
 }
 
-void openGroup(Entry *e,const char *fileName,int line)
+void openGroup(Entry *e,const char *,int)
 {
-  //printf("%s:%d: openGroup(sec=%x)\n",fileName,line,e->section);
+  //printf("==> openGroup(name=%s,sec=%x)\n",e->name.data(),e->section);
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
     g_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
   }
   else // start of a member group
   {
-    if (g_memberGroupId!=DOX_NOGROUP)
+    if (g_memberGroupId==DOX_NOGROUP) // no group started yet
     {
-      warn(fileName,line,"Warning: member groups cannot be nested. Ending current group!\n");
-      closeGroup(e,fileName,line);
+      static int curGroupId=0;
+      g_memberGroupId = curGroupId++;
+      //printf("new group id=%d header=%s\n",g_memberGroupId,g_memberGroupHeader.data());
+
+      MemberGroupInfo *info = new MemberGroupInfo;
+      info->header = g_memberGroupHeader.stripWhiteSpace();
+      Doxygen::memGrpInfoDict.insert(g_memberGroupId,info);
+
+      g_memberGroupRelates = e->relates;
+      e->mGrpId = g_memberGroupId;
     }
-    static int curGroupId=0;
-    g_memberGroupId = curGroupId++;
-    //printf("new group id=%d header=%s\n",g_memberGroupId,g_memberGroupHeader.data());
-
-    MemberGroupInfo *info = new MemberGroupInfo;
-    info->header = g_memberGroupHeader.stripWhiteSpace();
-    Doxygen::memGrpInfoDict.insert(g_memberGroupId,info);
-
-    g_memberGroupRelates = e->relates;
-    e->mGrpId = g_memberGroupId;
+    //else
+    //{
+    //  warn(fileName,line,"Warning: member groups cannot be nested. Ending current group!\n");
+    //  closeGroup(e,fileName,line);
+    //}
   }
 }
 
@@ -2338,7 +2369,7 @@ void initGroupInfo(Entry *e)
   e->relates    = g_memberGroupRelates;
   if (!g_autoGroupStack.isEmpty())
   {
-    //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
+    //printf("Appending group %s to %s\n",g_autoGroupStack.top()->groupname.data(),e->name.data());
     e->groups->append(new Grouping(*g_autoGroupStack.top()));
   }
 }

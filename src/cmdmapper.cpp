@@ -106,6 +106,7 @@ CommandMap cmdMap[] =
   { "manonly",       CMD_MANONLY },
   { "endmanonly",    CMD_ENDMANONLY },
   { "includelineno", CMD_INCWITHLINES },
+  { "inheritdoc",    CMD_INHERITDOC },
   { 0,               0 }
 };
 

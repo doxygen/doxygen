@@ -652,10 +652,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     //       result.data(),expr.mid(pos,len).data());
     return TRUE;
   }
-  else
-  {
-    return FALSE;
-  }
+  return FALSE;
 }
 
 
@@ -2297,6 +2294,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   else
   {
     QCString cmd = inputFilter+" \""+fileName+"\"";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
     preYYin = popen(cmd,"r");
     if (!preYYin)
     {

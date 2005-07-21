@@ -1053,6 +1053,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
                     (fileScope->getUsedClasses() && 
                      fileScope->getUsedClasses()->count()>0)) 
       );
+  //printf("hasUsingStatements=%d\n",hasUsingStatements);
   // Since it is often the case that the same name is searched in the same
   // scope over an over again (especially for the linked source code generation)
   // we use a cache to collect previous results. This is possible since the
@@ -1062,7 +1063,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   int scopeNameLen = scope->name().length()+1;
   int nameLen = name.length()+1;
   int explicitPartLen = explicitScopePart.length();
-  int fileScopeLen = hasUsingStatements ? 1+fileScope->name().length() : 0;
+  int fileScopeLen = hasUsingStatements ? 1+fileScope->absFilePath().length() : 0;
 
   // below is a more efficient coding of
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
@@ -1084,7 +1085,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     // below is a more efficient coding of
     // key+="+"+fileScope->name();
     *p++='+';
-    qstrcpy(p,fileScope->name());
+    qstrcpy(p,fileScope->absFilePath());
     p+=fileScopeLen-1;
   }
   *p='\0';
@@ -1097,7 +1098,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
     if (pTypeDef)   *pTypeDef=pval->typeDef;
     //printf("] cachedMatch=%s\n",
     //    pval->classDef?pval->classDef->name().data():"<none>");
-    //if (pTemplSpec) printf("templSpec=%s\n",pTemplSpec->data());
+    //if (pTemplSpec) 
+    //  printf("templSpec=%s\n",pTemplSpec->data());
     return pval->classDef; 
   }
   else // not found yet; we already add a 0 to avoid the possibility of 
@@ -1235,7 +1237,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
-  //if (pTemplSpec) printf("templSpec=%s\n",pTemplSpec->data());
+  //if (pTemplSpec) 
+  //  printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
 }
 
@@ -2660,6 +2663,7 @@ bool matchArguments(ArgumentList *srcAl,ArgumentList *dstAl,
 
 #endif
 
+#if 0
 static QCString resolveSymbolName(FileDef *fs,Definition *symbol,QCString &templSpec)
 {
   ASSERT(symbol!=0);
@@ -2671,7 +2675,7 @@ static QCString resolveSymbolName(FileDef *fs,Definition *symbol,QCString &templ
     ClassDef *cd = newResolveTypedef(fs,(MemberDef*)symbol,&md,&templSpec);
     if (cd)
     {
-      return cd->qualifiedNameWithTemplateParameters();
+      return cd->qualifiedName()+templSpec;
     }
     else if (md)
     {
@@ -2680,14 +2684,28 @@ static QCString resolveSymbolName(FileDef *fs,Definition *symbol,QCString &templ
   }
   return symbol->qualifiedName();
 }
+#endif
+
+static QCString stripDeclKeywords(const QCString &s)
+{
+  int i=s.find(" class ");
+  if (i!=-1) return s.left(i)+s.mid(i+6);
+  i=s.find(" typename ");
+  if (i!=-1) return s.left(i)+s.mid(i+9);
+  i=s.find(" union ");
+  if (i!=-1) return s.left(i)+s.mid(i+6);
+  i=s.find(" struct ");
+  if (i!=-1) return s.left(i)+s.mid(i+7);
+  return s;
+}
 
 static QCString getCanonicalTypeForIdentifier(
                   Definition *d,FileDef *fs,const QCString &word,
                   QCString *tSpec)
 {
   QCString symName,scope,result,templSpec,tmpName;
-  DefinitionList *defList=0;
-  if (tSpec) templSpec = *tSpec;
+  //DefinitionList *defList=0;
+  if (tSpec) templSpec = stripDeclKeywords(*tSpec);
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
@@ -2698,10 +2716,12 @@ static QCString getCanonicalTypeForIdentifier(
     symName=word;
   }
 
+#if 0 // I've commented this out because it leads to obscure errors
+      // while not gaining much w.r.t. speed.
   if (!symName.isEmpty() && !templSpec.isEmpty() &&
       (defList=Doxygen::symbolMap->find(symName+templSpec)) &&
       defList->count()==1) // word without scope but with template specs
-    // is a unique symbol in the symbol map
+                           // is a unique symbol in the symbol map
   {
     QCString ts;
     result = resolveSymbolName(fs,defList->first(),ts);
@@ -2710,24 +2730,33 @@ static QCString getCanonicalTypeForIdentifier(
   else if (!symName.isEmpty() &&
       (defList=Doxygen::symbolMap->find(symName)) &&
       defList->count()==1) // word without scope is a 
-    // unique symbol in the symbol map
+                           // unique symbol in the symbol map
   {
     QCString ts;
-    //printf("unique symName=%s\n",symName.data());
+    //printf("unique symName=%s templSpec=%s\n",symName.data(),templSpec.data());
     result = resolveSymbolName(fs,defList->first(),ts)+templSpec;
+    //printf("result=%s ts=%s\n",result.data(),ts.data());
+    if (tSpec) *tSpec="";
   }
   else // symbol not unique, try to find the one in the right scope
+#endif
   {
     ClassDef *cd = 0;
     MemberDef *mType = 0;
+    QCString ts;
     if (!templSpec.isEmpty())
     {
-      cd = getResolvedClass(d,fs,word+templSpec,&mType,0,TRUE);
+      cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
       if (cd && tSpec) *tSpec="";
     }
     if (cd==0)
     {
-      cd = getResolvedClass(d,fs,word,&mType,0,TRUE);
+      cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
+    }
+
+    if (!ts.isEmpty() && templSpec.isEmpty())
+    {
+      templSpec = stripDeclKeywords(ts);
     }
     //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
     //    symName.data(),
@@ -2737,7 +2766,7 @@ static QCString getCanonicalTypeForIdentifier(
     //    fs?fs->name().data():"<none>"
     //   );
 
-    //printf(">>>> word '%s' => '%s'\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>");
+    //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",templSpec.data(),ts.data());
     if (cd) // known type
     {
       //result = cd->qualifiedNameWithTemplateParameters();
@@ -2828,7 +2857,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     pp=p;
   }
   canType += type.right(type.length()-pp);
-  //printf("result = %s->%s\n",type.data(),canType.data());
+  //printf("extractCanonicalType = %s->%s\n",type.data(),canType.data());
  
   return removeRedundantWhiteSpace(canType);
 }
@@ -2855,11 +2884,13 @@ static bool matchArgument2(
   { // case "unsigned int" <-> "unsigned int i"
     srcA->type+=sSrcName;
     srcA->name="";
+    srcA->canType=""; // invalidate cached type value
   }
   else if (sDstName==srcA->type.right(sDstName.length()))
   { // case "unsigned int i" <-> "unsigned int"
     dstA->type+=sDstName;
     dstA->name="";
+    dstA->canType=""; // invalidate cached type value
   }
 
   if (srcA->canType.isEmpty())
@@ -3094,11 +3125,9 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
       dstA->docs = srcA->docs.copy();
     }
     //printf("Merge argument `%s|%s' `%s|%s'\n",
-    //    srcA->type.data(),srcA->name.data(),
-    //    dstA->type.data(),dstA->name.data());
+    //  srcA->type.data(),srcA->name.data(),
+    //  dstA->type.data(),dstA->name.data());
   }
-  //printf("result mergeArguments `%s|%s', `%s|%s'\n",
-  //    argListToString(srcAl).data(),argListToString(dstAl).data());
 }
 
 /*!

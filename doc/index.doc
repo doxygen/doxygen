@@ -26,7 +26,7 @@ Version: $(VERSION)
 \endif
 
 <h2>Introduction</h2>
-Doxygen is a documentation system for C++, C, Java, Objective-C, IDL 
+Doxygen is a documentation system for C++, C, Java, Objective-C, Python, IDL 
 (Corba and Microsoft flavors) and to some extent PHP, C#, and D.
 
 It can help you in three ways:

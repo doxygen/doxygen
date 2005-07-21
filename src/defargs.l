@@ -336,6 +336,10 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
   					  g_curArgTypeName+=*yytext;
 					}
+
+<ReadFuncArgDef,CopyArgString>"->"|">="|">>"	{
+  					  g_curArgDefValue+=yytext;
+  					}
 <ReadFuncArgDef,CopyArgString>.		{
 					  g_curArgDefValue+=*yytext;
   					}

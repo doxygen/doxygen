@@ -1641,6 +1641,12 @@ void HtmlGenerator::writeSearchPage()
       { 
         writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
       }
+      else
+      {
+        t << "<div class=\"qindex\">\n";
+        t << "  <form class=\"search\" action=\"search.php\" "
+          << "method=\"get\">\n";
+      }
 
       t << "\n<?php\n\n";
       t << "function search_results()\n";
