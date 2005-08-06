@@ -151,6 +151,7 @@
 "\n"
 "  <xsd:complexType name=\"descriptionType\" mixed=\"true\">\n"
 "    <xsd:sequence>\n"
+"      <xsd:element name=\"title\" type=\"xsd:string\" minOccurs=\"0\"/>	    \n"
 "      <xsd:element name=\"para\" type=\"docParaType\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n"
 "      <xsd:element name=\"sect1\" type=\"docSect1Type\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n"
 "      <xsd:element name=\"internal\" type=\"docInternalType\" minOccurs=\"0\" />\n"

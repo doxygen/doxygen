@@ -56,14 +56,19 @@ class ParamHandler : public IParam, public BaseHandler<ParamHandler>
     virtual IDocRoot *briefDescription() const;
 
   private:
+
+                                          // XML elements:
+                                          // -------------
+    QList<LinkedTextImpl> m_type;         // type
+    StringImpl m_declName;                // declname
+    StringImpl m_defName;                 // defname
+    StringImpl m_array;                   // array
+    QList<LinkedTextImpl> m_defVal;       // defval
+    DocHandler  *m_brief;                 // briefdescription
+
+    StringImpl m_attrib;                  // TODO: not yet in XML output
+
     IBaseHandler *m_parent;
-    DocHandler  *m_brief;
-    QList<LinkedTextImpl> m_type;
-    StringImpl m_declName;
-    StringImpl m_defName;
-    StringImpl m_attrib;
-    StringImpl m_array;
-    QList<LinkedTextImpl> m_defVal;
     LinkedTextHandler *m_linkedTextHandler;
 };
 

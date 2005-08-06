@@ -22,7 +22,7 @@ for each group. These groups are called \ref modules "'modules'" in the document
 The second mechanism works within a member list of some compound entity,
 and is refered to as a \ref memgroup "'member groups'". 
 For \ref cmdpage "pages" there is a third grouping mechanism referred to 
-a \ref subpaging "subpaging".
+as \ref subpaging "subpaging".
 
 \section modules Modules
 
@@ -216,5 +216,10 @@ For a page A the \\subpage command adds a link to another page B and at
 the same time makes page B a subpage of A. This has the effect of making
 two groups GA and GB, where GB is part of GA, page A is put in group GA, 
 and page B is put in group GB.
+
+\htmlonly
+Go to the <a href="formulas.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
 
 */

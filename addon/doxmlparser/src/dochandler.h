@@ -1311,7 +1311,7 @@ class DocInternalSubIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,
 /*! \brief Node representing a documentation block.
  *
  */
-// children: para, title, sect1, sect2, sect3
+// children: para, title, sect1, internal
 class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
 {
     friend class DocIterator;
@@ -1321,6 +1321,7 @@ class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
     virtual void startParagraph(const QXmlAttributes& attrib);
     virtual void startSect1(const QXmlAttributes& attrib);
     virtual void startTitle(const QXmlAttributes& attrib);
+    virtual void startInternal(const QXmlAttributes& attrib);
 
     DocHandler(IBaseHandler *parent);
     virtual ~DocHandler();
@@ -1328,10 +1329,12 @@ class DocHandler : public DocRootImpl, public BaseHandler<DocHandler>
     // IDocRoot
     virtual Kind kind() const { return DocImpl::Root; }
     virtual IDocIterator *contents() const;
+    virtual IDocInternal *internal() const;
 
   private:
     IBaseHandler *m_parent;
     QList<DocImpl> m_children;
+    DocInternalHandler *m_internal;
 };
 
 class DocIterator : public BaseIteratorVia<IDocIterator,IDoc,DocImpl,DocImpl>

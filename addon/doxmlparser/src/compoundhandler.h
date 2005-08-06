@@ -36,7 +36,7 @@ class TemplateParamListHandler;
 class TitleHandler;
 class ListOfAllMembersHandler;
 
-class IncludeHandler : public IInclude, public BaseHandler<IncludeHandler>\
+class IncludeHandler : public IInclude, public BaseHandler<IncludeHandler>
 {
   public:
     IncludeHandler(IBaseHandler *parent,const char *endtag);
@@ -55,9 +55,9 @@ class IncludeHandler : public IInclude, public BaseHandler<IncludeHandler>\
 
   private:
     IBaseHandler *m_parent;
-    StringImpl m_name;
-    StringImpl m_refId;
-    bool m_isLocal;
+    StringImpl m_name;             // element's content
+    StringImpl m_refId;            // refid
+    bool m_isLocal;                // local
 };
 
 class IncludeIterator : public BaseIterator<IIncludeIterator,IInclude,IncludeHandler>
@@ -78,16 +78,19 @@ class RelatedCompound : public IRelatedCompound
                    ) :
       m_parent(parent), m_id(id), m_protection(prot), m_kind(kind) {}
     virtual ~RelatedCompound() {}
+    void setName(const QString &str) { m_name = str; }
 
     virtual ICompound *compound() const;
     virtual Protection protection() const { return m_protection; }
     virtual Kind kind() const { return m_kind; }
+    virtual const IString *name() const { return &m_name; }
     
   private:  
     CompoundHandler *m_parent;
-    QString m_id;
-    Protection m_protection;  
-    Kind m_kind;
+    QString m_id;                  // refid
+    Protection m_protection;       // prot
+    Kind m_kind;                   // virt
+    StringImpl m_name;             // element's content
 };
 
 class RelatedCompoundIterator : public BaseIterator<IRelatedCompoundIterator,IRelatedCompound,RelatedCompound>
@@ -114,8 +117,10 @@ class CompoundHandler : public IClass,
   public:
     virtual void startSection(const QXmlAttributes& attrib);
     virtual void startCompound(const QXmlAttributes& attrib);
-    virtual void addSuperClass(const QXmlAttributes& attrib);
-    virtual void addSubClass(const QXmlAttributes& attrib);
+    virtual void startSuperClass(const QXmlAttributes& attrib);
+    virtual void endSuperClass();
+    virtual void startSubClass(const QXmlAttributes& attrib);
+    virtual void endSubClass();
     virtual void endCompound();
     virtual void endCompoundName();
     virtual void startBriefDesc(const QXmlAttributes& attrib);
@@ -168,6 +173,7 @@ class CompoundHandler : public IClass,
     ICompoundIterator *nestedGroup() const;
     const IString *locationFile() const { return &m_defFile; }
     int locationLine() const { return m_defLine; }
+    const IString *locationBodyFile() const { return &m_defBodyFile; }
     int locationBodyStartLine() const { return m_defBodyStart; }
     int locationBodyEndLine() const { return m_defBodyEnd; }
     IMemberReferenceIterator *members() const;
@@ -183,38 +189,45 @@ class CompoundHandler : public IClass,
     const IDocTitle *title() const;
     
   private:
-    QList<RelatedCompound>         m_superClasses;
-    QList<RelatedCompound>         m_subClasses;
-    QList<SectionHandler>          m_sections;
-    QList<ParamHandler>            m_params;
-    QList<IncludeHandler>          m_includes;
-    QList<IncludeHandler>          m_includedBy;
-    DocHandler*                    m_brief;
-    DocHandler*                    m_detailed;
-    ProgramListingHandler*         m_programListing;
-    StringImpl                     m_id;
-    StringImpl                     m_protection;
-    StringImpl                     m_kindString;
-    CompoundKind                   m_kind;
-    StringImpl                     m_name;
-    StringImpl                     m_defFile;
-    int                            m_defLine;
-    int                            m_defBodyStart;
-    int                            m_defBodyEnd;
-    QString                        m_xmlDir;
-    int                            m_refCount;
-    QDict<MemberHandler>           m_memberDict;
-    QDict<QList<MemberHandler> >   m_memberNameDict;
-    MainHandler*                   m_mainHandler;
-    GraphHandler*                  m_inheritanceGraph;
-    GraphHandler*                  m_collaborationGraph;
-    GraphHandler*                  m_includeDependencyGraph;
-    GraphHandler*                  m_includedByDependencyGraph;
-    QList<QString>                 m_innerCompounds;
-    ProgramListingHandler*         m_source;
-    TemplateParamListHandler*      m_templateParamList;
-    TitleHandler*                  m_titleHandler;
-    ListOfAllMembersHandler*       m_members;
+                                                                // XML elements:
+                                                                // -------------
+    StringImpl                     m_name;                      // compoundname
+    TitleHandler*                  m_titleHandler;              // title
+    QList<RelatedCompound>         m_subClasses;                // basecompoundref
+    QList<RelatedCompound>         m_superClasses;              // derivedcompoundref
+    QList<IncludeHandler>          m_includes;                  // includes
+    QList<IncludeHandler>          m_includedBy;                // includedBy
+    GraphHandler*                  m_includeDependencyGraph;    // incdepgraph
+    GraphHandler*                  m_includedByDependencyGraph; // invincdepgraph
+    QList<QString>                 m_innerCompounds;            // innerdir/innerfile/innerclass/innernamespace/innergroup
+    TemplateParamListHandler*      m_templateParamList;         // templateparamlist
+    QList<SectionHandler>          m_sections;                  // sectiondef
+    DocHandler*                    m_brief;                     // briefdescription
+    DocHandler*                    m_detailed;                  // detaileddescription
+    GraphHandler*                  m_inheritanceGraph;          // inheritancegraph
+    GraphHandler*                  m_collaborationGraph;        // collaborationgraph
+    ProgramListingHandler*         m_programListing;            // programlisting
+                                                                // location
+    StringImpl                     m_defFile;                   // - file
+    int                            m_defLine;                   // - line
+    StringImpl                     m_defBodyFile;               // - bodyfile
+    int                            m_defBodyStart;              // - bodystart 
+    int                            m_defBodyEnd;                // - bodyend
+    ListOfAllMembersHandler*       m_members;                   // listofallmember
+
+                                                                // XML attributes:
+                                                                // ---------------
+    StringImpl                     m_id;                        // id
+    CompoundKind                   m_kind;                      // kind
+    StringImpl                     m_kindString;                // kind as a string
+    StringImpl                     m_protection;                // prot
+
+    // local variables
+    QString                        m_xmlDir;                    // directory where the info is found
+    int                            m_refCount;                  // object reference counter
+    QDict<MemberHandler>           m_memberDict;                // id->member lookup
+    QDict<QList<MemberHandler> >   m_memberNameDict;            // name->memberlist lookup
+    MainHandler*                   m_mainHandler;               // parent object
 };
 
 void compoundhandler_init();

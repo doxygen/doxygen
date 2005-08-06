@@ -221,7 +221,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
          m_t << "<programlisting>";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         Doxygen::parserManager->getParser(m_langExt)
+         Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),
@@ -231,7 +231,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       break;    
     case DocInclude::Include: 
       m_t << "<programlisting>";
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),
                                         inc->isExample(),

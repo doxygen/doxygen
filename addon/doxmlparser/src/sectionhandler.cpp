@@ -17,6 +17,7 @@
 #include "compoundhandler.h"
 #include "sectionhandler.h"
 #include "memberhandler.h"
+#include "dochandler.h"
 #include "debug.h"
 
 class SectionTypeMap
@@ -33,6 +34,7 @@ class SectionTypeMap
       m_map.insert("signal",new int(ISection::Signals));
       m_map.insert("dcop-func",new int(ISection::DCOPFuncs));
       m_map.insert("property",new int(ISection::Properties));
+      m_map.insert("event",new int(ISection::Events));
       m_map.insert("public-static-func",new int(ISection::PubStatFuncs));
       m_map.insert("public-static-attrib",new int(ISection::PubStatAttribs));
       m_map.insert("protected-type",new int(ISection::ProTypes));
@@ -95,6 +97,7 @@ SectionHandler::SectionHandler(IBaseHandler *parent) : m_parent(parent)
   addStartHandler("memberdef",this,&SectionHandler::startMember);
   addStartHandler("header",this,&SectionHandler::startHeader);
   addEndHandler("header",this,&SectionHandler::endHeader);
+  addStartHandler("description",this,&SectionHandler::startDescription);
 }
 
 SectionHandler::~SectionHandler()
@@ -108,6 +111,13 @@ void SectionHandler::startSection(const QXmlAttributes& attrib)
   m_kindString = attrib.value("kind");
   m_kind = s_typeMap->map(m_kindString);
   debug(2,"section kind=`%s'\n",m_kindString.data());
+}
+
+void SectionHandler::startDescription(const QXmlAttributes& attrib)
+{
+  DocHandler *docHandler = new DocHandler(this);
+  docHandler->startDoc(attrib);
+  m_description = docHandler;
 }
 
 void SectionHandler::endSection()
@@ -144,6 +154,11 @@ void SectionHandler::initialize(CompoundHandler *ch)
     ch->insertMember(mh);
     mh->setSectionHandler(this);
   }
+}
+
+IDocRoot *SectionHandler::description() const 
+{ 
+  return m_description; 
 }
 
 IMemberIterator *SectionHandler::members() const 

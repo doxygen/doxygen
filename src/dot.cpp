@@ -287,6 +287,7 @@ static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
   return FALSE;
 }
 
+#if 0
 /*! returns TRUE if class cd is a leaf (i.e. has no visible children)
  */
 static bool isLeaf(ClassDef *cd)
@@ -311,6 +312,7 @@ static bool isLeaf(ClassDef *cd)
   }
   return TRUE;
 }
+#endif
 
 // since dot silently reproduces the input file when it does not
 // support the PNG format, we need to check the result.
@@ -1151,7 +1153,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
   for ( ; (bcd=bcli.current()) ; ++bcli )
   {
     ClassDef *bClass=bcd->classDef; 
-    //printf("  Trying super class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
+    //printf("  Trying sub class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
     if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
       DotNode *bn;
@@ -1178,8 +1180,10 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
       else 
       {
         QCString tmp_url="";
-        if (bClass->isLinkable()) 
+        if (bClass->isLinkable() && !bClass->isHidden())
+        {
           tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+        }
         bn = new DotNode(m_curNodeNumber++,
              bClass->displayName(),
              tmp_url.data()
@@ -1218,8 +1222,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
        ) // root node in the forest
     {
       QCString tmp_url="";
-      if (cd->isLinkable()) 
+      if (cd->isLinkable() && !cd->isHidden()) 
+      {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+      }
       //printf("Inserting root class %s\n",cd->name().data());
       DotNode *n = new DotNode(m_curNodeNumber++,
           cd->displayName(),
@@ -1353,7 +1359,7 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     QCString displayName=className;
     if (Config_getBool("HIDE_SCOPE_NAMES")) displayName=stripScope(displayName);
     QCString tmp_url;
-    if (cd->isLinkable()) 
+    if (cd->isLinkable() && !cd->isHidden()) 
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
     }
@@ -1376,7 +1382,8 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
       n->addParent(bn);
     }
     m_usedNodes->insert(className,bn);
-    //printf(" add new child node `%s' to %s\n",className.data(),n->m_label.data());
+    //printf(" add new child node `%s' to %s hidden=%d url=%s\n",
+    //    className.data(),n->m_label.data(),cd->isHidden(),tmp_url.data());
     
     // we use <=, i.s.o < to cause one more level than intended which is used to 
     // detect truncated nodes
@@ -1492,7 +1499,10 @@ DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t,int maxRecursionD
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
   QCString tmp_url="";
-  if (cd->isLinkable()) tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+  if (cd->isLinkable() && !cd->isHidden()) 
+  {
+    tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
+  }
   QCString className = cd->displayName();
   //if (cd->templateArguments())
   //{
@@ -1948,7 +1958,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
     if (bfd)
     {
       in  = bfd->absFilePath();  
-      doc = bfd->isLinkable();
+      doc = bfd->isLinkable() && bfd->isHidden();
       src = bfd->generateSourceFile();
     }
     if (doc || src || !Config_getBool("HIDE_UNDOC_RELATIONS"))

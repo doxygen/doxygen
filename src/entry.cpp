@@ -42,6 +42,7 @@ Entry::Entry()
   tagInfo = 0;
   sli = 0;
   relatesDup = FALSE;
+  hidden = FALSE;
   groupDocType = GROUPDOC_NORMAL;
   reset();
 }
@@ -90,6 +91,7 @@ Entry::Entry(const Entry &e)
   callGraph   = e.callGraph;
   objc        = e.objc;
   tagInfo     = e.tagInfo;
+  hidden      = e.hidden;
   sublist     = new QList<Entry>;
   sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -231,6 +233,7 @@ void Entry::reset()
   explicitExternal = FALSE;
   memSpec  = 0;
   objc = FALSE;
+  hidden = FALSE;
   subGrouping = TRUE;
   protection = Public;
   groupDocType = GROUPDOC_NORMAL;
@@ -248,74 +251,7 @@ void Entry::reset()
 
 int Entry::getSize()
 {
-  int size=sizeof(Entry);
-  size+=type.length()+1;
-  size+=name.length()+1;
-  size+=args.length()+1;
-  size+=bitfields.length()+1;
-  size+=exception.length()+1;
-  size+=program.length()+1;
-  size+=includeFile.length()+1;
-  size+=includeName.length()+1;
-  size+=doc.length()+1;
-  size+=docFile.length()+1;
-  size+=relates.length()+1;
-  size+=brief.length()+1;
-  size+=briefFile.length()+1;
-  size+=inbodyDocs.length()+1;
-  size+=inbodyFile.length()+1;
-  size+=inside.length()+1;
-  size+=fileName.length()+1;
-  size+=initializer.length()+1;
-  BaseInfo *bi=extends->first();
-  while (bi)
-  {
-    size+=sizeof(QLNode);
-    size+=bi->name.length()+1+sizeof(bi->prot)+sizeof(bi->virt);
-    bi=extends->next(); 
-  }
-  Grouping *g=groups->first();
-  while (g)
-  {
-    size+=sizeof(QLNode);
-    size+=g->groupname.length()+1;
-    size+=sizeof(g->pri);
-    g=groups->next();
-  }
-  Entry *e=sublist->first();
-  while (e)
-  {
-    size+=e->getSize();
-    e=sublist->next();
-  }
-  Argument *a=argList->first();
-  while (a)
-  {
-    size+=sizeof(Argument);
-    size+=a->type.length()+1
-         +a->name.length()+1
-         +a->defval.length()+1;
-    a=argList->next();
-  }
-  if (tArgLists)
-  {
-    ArgumentList *al=tArgLists->first();
-    while (al)
-    {
-      size+=sizeof(ArgumentList);
-      a=al->first();
-      while (a)
-      {
-        size+=sizeof(Argument);
-        size+=a->type.length()+1
-          +a->name.length()+1
-          +a->defval.length()+1;
-        a=al->next();
-      }
-      al=tArgLists->next();
-    }
-  }
-  return size;
+  return sizeof(Entry);
 }
 
 /*! the argument list is documented if one of its

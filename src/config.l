@@ -1472,14 +1472,6 @@ void Config::create()
                     "re-implements. \n",
                     TRUE
                  );
-  cb = addBool(
-                    "DISTRIBUTE_GROUP_DOC",
-                    "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
-                    "tag is set to YES, then doxygen will reuse the documentation of the first \n"
-                    "member in the group (if any) for the other members of the group. By default \n"
-                    "all members of a group must be documented explicitly.\n",
-                    FALSE
-                 );
   cb = addBool(    
                     "SEPARATE_MEMBER_PAGES",
 		    "If the SEPARATE_MEMBER_PAGES tag is set to YES, then doxygen will produce \n"
@@ -1512,10 +1504,28 @@ void Config::create()
                  );
   cb = addBool(
                     "OPTIMIZE_OUTPUT_JAVA",
-                    "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources \n"
-                    "only. Doxygen will then generate output that is more tailored for Java. \n"
+                    "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java \n"
+		    "sources only. Doxygen will then generate output that is more tailored for Java. \n"
                     "For instance, namespaces will be presented as packages, qualified scopes \n"
                     "will look different, etc. \n",
+                    FALSE
+                 );
+  cb = addBool(  
+                    "BUILTIN_STL_SUPPORT",
+		    "If you use STL classes (i.e. std::string, std::vector, etc.) but do not want to \n"
+		    "include (a tag file for) the STL sources as input, then you should \n"
+		    "set this tag to YES in order to let doxygen match functions declarations and \n"
+		    "definitions whose arguments contain STL classes (e.g. func(std::string); v.s. \n"
+		    "func(std::string) {}). This also make the inheritance and collaboration \n"
+		    "diagrams that involve STL classes more complete and accurate. \n",
+		    FALSE
+		 );
+  cb = addBool(
+                    "DISTRIBUTE_GROUP_DOC",
+                    "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
+                    "tag is set to YES, then doxygen will reuse the documentation of the first \n"
+                    "member in the group (if any) for the other members of the group. By default \n"
+                    "all members of a group must be documented explicitly.\n",
                     FALSE
                  );
   cb = addBool(    
@@ -1731,7 +1741,7 @@ void Config::create()
 		   "version control system). Doxygen will invoke the program by executing (via \n"
 		   "popen()) the command <command> <input-file>, where <command> is the value of \n"
 		   "the FILE_VERSION_FILTER tag, and <input-file> is the name of an input file \n"
-		   "provided by doxygen. Whatever the progam writes to standard output \n"
+		   "provided by doxygen. Whatever the program writes to standard output \n"
 		   "is used as the file version. See the manual for examples. \n"
               );
   cs->setWidgetType(ConfigString::File);

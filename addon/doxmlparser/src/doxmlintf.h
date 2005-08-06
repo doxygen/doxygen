@@ -486,6 +486,7 @@ class IDocRoot : public IDoc
 {
   public:
     virtual IDocIterator *contents() const = 0; 
+    virtual IDocInternal *internal() const = 0; 
 };
 
 class IDocIterator 
@@ -601,6 +602,7 @@ class IMember
     virtual ILinkedTextIterator *exceptions() const = 0;
     virtual IMemberReferenceIterator *references() const = 0; 
     virtual IMemberReferenceIterator *referencedBy() const = 0;
+    virtual const IString *bodyFile() const = 0;
     virtual int bodyStart() const = 0;
     virtual int bodyEnd() const = 0;
     virtual const IString * definitionFile() const = 0;
@@ -730,6 +732,7 @@ class ISection
       Signals,             //!< Qt Signals
       DCOPFuncs,           //!< KDE-DCOP interface functions
       Properties,          //!< IDL properties
+      Events,              //!< C# events
       PubStatFuncs,        //!< Public static member functions
       PubStatAttribs,      //!< Public static attributes
       ProTypes,            //!< Protected member typedefs
@@ -764,6 +767,11 @@ class ISection
     
     /*! Returns what kind of section this is */
     virtual SectionKind kind() const = 0;
+
+    /*! Returns the description attached to this section (for user defined
+     *  sections, also known as member groups).
+     */
+    virtual IDocRoot *description() const = 0;
     
     /*! Returns an iterator for the members of this section */
     virtual IMemberIterator *members() const = 0;
@@ -834,9 +842,10 @@ class ICompound
   public:
     /*! Represents the kind of compounds recognised by doxygen. */
     enum CompoundKind { Invalid=0,
-                        Class, Struct, Union, Interface, Exception,
-                        Namespace, File, Group, Page
+                        Class, Struct, Union, Interface, Protocol, Category,
+                        Exception, File, Namespace, Group, Page, Example, Dir
                       };
+
     /*! Returns the name of this compound */
     virtual const IString * name() const = 0;
 
@@ -907,6 +916,7 @@ class IRelatedCompound
     virtual ICompound *compound() const = 0;
     virtual Protection protection() const = 0;
     virtual Kind kind() const = 0;
+    virtual const IString *name() const = 0;
 
 };
 
@@ -934,6 +944,7 @@ class IClass : public ICompound
     virtual IParamIterator *templateParameters() const = 0;
     virtual const IString *locationFile() const = 0;
     virtual int locationLine() const = 0;
+    virtual const IString *locationBodyFile() const = 0;
     virtual int locationBodyStartLine() const = 0;
     virtual int locationBodyEndLine() const = 0;
 

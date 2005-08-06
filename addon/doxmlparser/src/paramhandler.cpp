@@ -50,7 +50,7 @@ void TemplateParamListHandler::endTemplateParamList()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ParamHandler::ParamHandler(IBaseHandler *parent) : m_parent(parent), m_brief(0)
+ParamHandler::ParamHandler(IBaseHandler *parent) : m_brief(0), m_parent(parent)
 {
   addEndHandler("param",this,&ParamHandler::endParam);
 

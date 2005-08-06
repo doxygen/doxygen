@@ -23,8 +23,6 @@
 
 #include "basehandler.h"
 
-class MainHandler;
-
 class SectionIterator : 
      public BaseIterator<ISectionIterator,ISection,SectionHandler>
 {
@@ -40,6 +38,7 @@ class SectionHandler : public IUserDefined, public BaseHandler<SectionHandler>
     virtual void startMember(const QXmlAttributes& attrib);
     virtual void startHeader(const QXmlAttributes& attrib);
     virtual void startSection(const QXmlAttributes& attrib);
+    virtual void startDescription(const QXmlAttributes& attrib);
     virtual void endSection();
     virtual void endHeader();
 
@@ -51,6 +50,7 @@ class SectionHandler : public IUserDefined, public BaseHandler<SectionHandler>
     { return &m_kindString; }
     virtual SectionKind kind() const 
     { return m_kind; }
+    IDocRoot *description() const;
     virtual IMemberIterator *members() const;
     virtual bool isStatic() const
     { 
@@ -83,10 +83,17 @@ class SectionHandler : public IUserDefined, public BaseHandler<SectionHandler>
 
   private:
     IBaseHandler *m_parent;
-    SectionKind m_kind;
-    StringImpl m_kindString;
-    StringImpl m_header;
-    QList<MemberHandler> m_members;
+
+                                               // XML elements:
+                                               // -------------
+    StringImpl m_header;                       // header
+    DocHandler* m_description;                 // description
+    QList<MemberHandler> m_members;            // memberdef
+
+                                               // XML attributes:
+                                               // ---------------
+    SectionKind m_kind;                        // kind
+    StringImpl m_kindString;                   // kind as a string
 };
 
 void sectionhandler_init();

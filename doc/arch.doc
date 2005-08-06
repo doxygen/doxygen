@@ -31,9 +31,9 @@ The following sections explain the steps above in more detail.
 
 The configuration file that controls the settings of a project is parsed
 and the settings are stored in the singleton class \c Config 
-in \c src/config.h. The parser itself is written using \c flex and can be
-found in \c src/config.l. This parser is also used directly by \c doxywizard,
-so it is put in a separate library.
+in <code>src/config.h</code>. The parser itself is written using \c flex 
+and can be found in <code>src/config.l</code>. This parser is also used 
+directly by \c doxywizard, so it is put in a separate library.
 
 Each configuration option has one of 5 possible types: \c String, 
 \c List, \c Enum, \c Int, or \c Bool. The values of these options are

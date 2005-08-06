@@ -319,7 +319,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
          m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         Doxygen::parserManager->getParser(m_langExt)
+         Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),
@@ -329,7 +329,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
       break;    
     case DocInclude::Include: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),inc->isExample(),
                                         inc->exampleFile());

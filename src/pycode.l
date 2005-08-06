@@ -710,7 +710,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   return;
 }
 
-static void findMemberLink(CodeOutputInterface &ol,const char *symName)
+static void findMemberLink(CodeOutputInterface &ol,char *symName)
 {
   //printf("Member reference: %s scope=%s member=%s\n",
   //    yytext,
@@ -757,7 +757,7 @@ static void findMemberLink(CodeOutputInterface &ol,const char *symName)
     }
   }
   //printf("sym %s not found\n",&yytext[5]);
-  codify(yytext);
+  codify(symName);
 }
 
 static void startFontClass(const char *s)

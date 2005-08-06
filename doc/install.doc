@@ -184,7 +184,7 @@ Compilation is now done by performing the following steps:
     This is sufficient to use doxygen.
 
     \note You need the GNU install tool for this to work (it is part of
-    the fileutils package). Other install tools may put the binaries in 
+    the coreutils package). Other install tools may put the binaries in 
     the wrong directory!
 
     If you have a RPM or DEP package, then please follow the 
@@ -549,14 +549,15 @@ features:
     If you want to use MikTeX then you need to select at least the 
     medium size installation. For really old versions of MikTex or minimal 
     installations, you may need to download the fancyhdr package separately. 
-    You can find it at:
-    ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/
+    You can find it in the 
+    <a href="ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/supported/fancyhdr/">
+    contrib/supported</a> directory of the tex archives.
 
 <li>If you want to generate compressed HTML help 
     (see \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the 
     config file, then you need the Microsoft HTML help workshop. 
-    You can download it at: 
-    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp
+    You can download it from 
+    <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">Microsoft</a>.
 
 <li><a href="http://www.research.att.com/sw/tools/graphviz/">
     the Graph visualization toolkit version 1.8.10</a><br>

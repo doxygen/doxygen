@@ -1883,7 +1883,7 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
  */
 bool ClassDef::hasNonReferenceSuperClass()
 {
-  bool found=!isReference() && isLinkableInProject(); 
+  bool found=!isReference() && isLinkableInProject() && !isHidden(); 
   if (found) 
   {
     return TRUE; // we're done if this class is not a reference
@@ -2778,6 +2778,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
         fileName,startLine,name()+templSpec,ClassDef::Class);
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
+    templateClass->setHidden(isHidden());
     m_templateInstances->insert(templSpec,templateClass);
     freshInstance=TRUE;
   }

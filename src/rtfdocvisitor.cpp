@@ -404,7 +404,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << rtf_Style_Reset << getStyle("CodeExample");
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         Doxygen::parserManager->getParser(m_langExt)
+         Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),
@@ -417,7 +417,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),inc->isExample(),
                                         inc->exampleFile());

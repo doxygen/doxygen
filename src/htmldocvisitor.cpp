@@ -257,7 +257,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::Include: 
       m_t << PREFRAG_START;
-      Doxygen::parserManager->getParser(m_langExt)
+      Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),inc->text().latin1(),
                                         inc->isExample(),inc->exampleFile());
       m_t << PREFRAG_END;
@@ -267,7 +267,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          m_t << PREFRAG_START;
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         Doxygen::parserManager->getParser(m_langExt)
+         Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),

@@ -52,7 +52,7 @@ static void addToMap(const char *name,Definition *d)
       dl = new DefinitionList;
       Doxygen::symbolMap->append(symbolName,dl);
     }
-    //printf("******* adding symbol `%s'\n",symbolName.data());
+    //printf("******* adding symbol `%s' (%p)\n",symbolName.data(),d);
     dl->append(d);
     d->setSymbolName(symbolName);
   }
@@ -65,7 +65,7 @@ static void removeFromMap(Definition *d)
   if (index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
-    //printf("******* removing symbol `%s'\n",symbolName.data());
+    //printf("******* removing symbol `%s' (%p)\n",symbolName.data(),d);
     DefinitionList *dl=Doxygen::symbolMap->find(symbolName);
     if (dl)
     {
@@ -81,6 +81,7 @@ Definition::Definition(const char *df,int dl,
                        const char *d,bool isSymbol)
 {
   //QCString ns;
+  //printf("Definition(%s) %p\n",name,this);
   m_defFileName = df;
   int lastDot = m_defFileName.findRev('.');
   if (lastDot!=-1)
@@ -118,6 +119,7 @@ Definition::Definition(const char *df,int dl,
   m_docLine=1;
   m_docFile=(QCString)"<"+name+">";
   m_isSymbol = isSymbol;
+  m_hidden = FALSE;
   if (m_isSymbol) addToMap(name,this);
 }
 

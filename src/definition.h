@@ -167,6 +167,8 @@ class Definition
      */
     void writeDocAnchorsToTagFile();
 
+    bool isHidden() const { return m_hidden; }
+
     // source references
     void setBodySegment(int bls,int ble);
     void setBodyDef(FileDef *fd)         { m_bodyDef=fd; }
@@ -199,6 +201,8 @@ class Definition
     void writePathFragment(OutputList &ol) const;
     void writeNavigationPath(OutputList &ol) const;
     virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
+
+    void setHidden(bool b) { m_hidden = b; }
 
   protected:
     void setLocalName(const QCString name) { m_localName=name; }
@@ -243,6 +247,7 @@ class Definition
     QList<ListItemInfo> *m_xrefListItems;
     QCString m_symbolName;
     bool m_isSymbol;
+    bool m_hidden;
 
     
     QCString m_qualifiedName;

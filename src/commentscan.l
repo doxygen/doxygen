@@ -105,7 +105,6 @@ static bool handlePublic(const QCString &s);
 static bool handlePublicSection(const QCString &s);
 static bool handleInherit(const QCString &);
 
-
 typedef bool (*DocCmdFunc)(const QCString &name);
   
 struct DocCmdMap
@@ -811,7 +810,11 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					  addOutput(yytext);
   					}
 <Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
-					  if (inContext!=OutputXRef) setOutput(OutputDoc);
+					  if (inContext!=OutputXRef) 
+					  {
+					    briefEndsAtDot=FALSE;
+					    setOutput(OutputDoc);
+					  }
 					  // continue with the same input
                                           REJECT;
 					}
@@ -924,6 +927,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					  if (briefEndsAtDot)
 					  {
 					    setOutput(OutputDoc);
+					    briefEndsAtDot=FALSE;
 					  }
   					}
 <Comment>\n				{ // newline
@@ -1434,8 +1438,10 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					}
 <FormatBlock>"/*"			{ // start of a C-comment
   					  g_commentCount++;
+  					  addOutput(yytext);
   					}
 <FormatBlock>"*/"			{ // end of a C-comment
+  					  addOutput(yytext);
   					  g_commentCount--;
 					  if (g_commentCount<0 && blockName!="verbatim")
 					  {

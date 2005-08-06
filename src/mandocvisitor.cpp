@@ -235,7 +235,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          m_t << ".nf" << endl;
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
-         Doxygen::parserManager->getParser(0/*TODO*/)
+         Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),
@@ -250,7 +250,7 @@ void ManDocVisitor::visit(DocInclude *inc)
       if (!m_firstCol) m_t << endl;
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
-      Doxygen::parserManager->getParser(0/*TODO*/)
+      Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),inc->isExample(),
                                         inc->exampleFile());

@@ -61,53 +61,6 @@ class MemberReferenceIterator : public BaseIterator<IMemberReferenceIterator,IMe
       BaseIterator<IMemberReferenceIterator,IMemberReference,MemberReference>(list) {}
 };
 
-
-#if 0
-class EnumValueHandler : public IEnumValue, public BaseHandler<EnumValueHandler>
-{
-  public:
-    virtual void startName(const QXmlAttributes& attrib);
-    virtual void endName();
-    virtual void startInitializer(const QXmlAttributes& attrib);
-    virtual void endInitializer();
-    virtual void startEnumValue(const QXmlAttributes& attrib);
-    virtual void endEnumValue();
-    virtual void startBriefDesc(const QXmlAttributes& attrib);
-    virtual void startDetailedDesc(const QXmlAttributes& attrib);
-
-    // IEnumValue
-    virtual const IString *name() const { return &m_name; }
-    virtual ILinkedTextIterator *initializer() const
-    { return new LinkedTextIterator(m_initializer); }
-
-    void setName(const QString &name) { m_name=name; }
-    
-    virtual ~EnumValueHandler();
-    EnumValueHandler(IBaseHandler *parent);
-
-    virtual IDocRoot *briefDescription() const
-    { return m_brief; }
-    virtual IDocRoot *detailedDescription() const
-    { return m_detailed; }
-
-  private:
-    StringImpl m_name;
-    QList<LinkedTextImpl> m_initializer;
-    IBaseHandler *m_parent;
-    DocHandler  *m_brief;
-    DocHandler  *m_detailed;
-    LinkedTextHandler *m_linkedTextHandler;
-};
-
-class EnumValueIterator : public BaseIterator<IEnumValueIterator,IEnumValue,EnumValueHandler>
-{
-  public:
-    EnumValueIterator(const QList<EnumValueHandler> &list) : 
-      BaseIterator<IEnumValueIterator,IEnumValue,EnumValueHandler>(list) {}
-};
-#endif
-
-
 class MemberHandler : public IDefine,
                       public IProperty, 
                       public IVariable,
@@ -206,6 +159,8 @@ class MemberHandler : public IDefine,
     virtual IMemberReferenceIterator *referencedBy() const;
     virtual ILinkedTextIterator *initializer() const;
     virtual ILinkedTextIterator *exceptions() const;
+    virtual const IString *bodyFile() const
+    { return &m_bodyFile; }
     virtual int bodyStart() const 
     { return m_bodyStart; }
     virtual int bodyEnd() const 
@@ -229,48 +184,56 @@ class MemberHandler : public IDefine,
     void setSectionHandler(SectionHandler *s);
 
   private:
-    IBaseHandler *m_parent;
+                                                     // XML elements:
+                                                     // -----------------
+    QList<ParamHandler> m_templateParams;            // templateparamlist
+    QList<LinkedTextImpl> m_type;                    // type
+    StringImpl m_definition;                         // definition
+    StringImpl m_argsstring;                         // argsstring
+    StringImpl m_name;                               // name
+    StringImpl m_read;                               // read
+    StringImpl m_write;                              // write
+    MemberReference *m_reimplements;                 // reimplements
+    QList<MemberReference> m_reimplementedBy;        // reimplementedby
+    QList<ParamHandler> m_params;                    // param
+    QList<MemberHandler> m_enumValues;               // enumvalue
+    QList<LinkedTextImpl> m_initializer;             // initializer
+    QList<LinkedTextImpl> m_exception;               // exceptions
+    DocHandler  *m_brief;                            // briefdescription
+    DocHandler  *m_detailed;                         // detaileddescription
+    DocHandler  *m_inbody;                           // inbodydescription
+                                                     // location
+    StringImpl m_defFile;                            // - file
+    int m_defLine;                                   // - line
+    StringImpl m_bodyFile;                           // - bodyfile
+    int m_bodyStart;                                 // - bodystart
+    int m_bodyEnd;                                   // - bodyend
+    QList<MemberReference> m_references;             // references
+    QList<MemberReference> m_referencedBy;           // referencedby
+
+                                                     // XML attributes:
+                                                     // ---------------
+    MemberKind m_kind;                               // kind
+    StringImpl m_kindString;                         // kind as a string
+    StringImpl m_id;                                 // id
+    StringImpl m_protection;                         // prot
+    bool m_isStatic;                                 // static
+    bool m_isConst;                                  // const
+    bool m_isExplicit;                               // explicit
+    bool m_isInline;                                 // inline
+    StringImpl m_virtualness;                        // virt
+    bool m_isVolatile;                               // volatile
+    bool m_isMutable;                                // mutable
+    bool m_isReadable;                               // readable
+    bool m_isWritable;                               // writable
+
     CompoundHandler *m_compound;
     SectionHandler *m_section;
-    MemberKind m_kind;
-    StringImpl m_kindString;
-    StringImpl m_id;
-    StringImpl m_protection;
-    StringImpl m_virtualness;
     StringImpl m_typeString;
-    QList<LinkedTextImpl> m_type;
-    QList<LinkedTextImpl> m_initializer;
-    QList<LinkedTextImpl> m_exception;
-    StringImpl m_name;
-    StringImpl m_read;
-    StringImpl m_write;
-    StringImpl m_definition;
-    StringImpl m_argsstring;
-    DocHandler  *m_brief;
-    DocHandler  *m_detailed;
-    DocHandler  *m_inbody;
-    QList<ParamHandler> m_params;
-    QList<ParamHandler> m_templateParams;
-    QList<MemberReference> m_references;
-    QList<MemberReference> m_referencedBy;
-    MemberReference *m_reimplements;
-    QList<MemberReference> m_reimplementedBy;
-    StringImpl m_defFile;
-    int m_defLine;
-    int m_bodyStart;
-    int m_bodyEnd;
-    bool m_isConst;
-    bool m_isVolatile;
     LinkedTextHandler *m_linkedTextHandler;
-    QList<MemberHandler> m_enumValues;
     bool m_insideTemplateParamList;
     bool m_hasTemplateParamList;
-    bool m_isStatic;
-    bool m_isExplicit;
-    bool m_isInline;
-    bool m_isMutable;
-    bool m_isReadable;
-    bool m_isWritable;
+    IBaseHandler *m_parent;
 };
 
 class MemberIterator : public BaseIteratorVia<IMemberIterator,

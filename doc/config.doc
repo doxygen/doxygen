@@ -61,6 +61,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 \refitem cfg_binary_toc BINARY_TOC
+\refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
 \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 \refitem cfg_call_graph CALL_GRAPH
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
@@ -206,6 +207,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_treeview_width TREEVIEW_WIDTH
 \refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_htags USE_HTAGS
+\refitem cfg_use_pdflatex USE_PDFLATEX
 \refitem cfg_use_windows_encoding USE_WINDOWS_ENCODING
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
@@ -343,7 +345,8 @@ followed by the descriptions of the tags grouped by category.
  path to strip.
 
 \anchor cfg_strip_from_inc_path
-<dt>\c STRIP_FROM_INC_PATH
+<dt>\c STRIP_FROM_INC_PATH <dd>
+ \addindex STRIP_FROM_INC_PATH
  The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
  the path mentioned in the documentation of a class, which tells
  the reader which header file to include in order to use a class. 
@@ -378,6 +381,24 @@ followed by the descriptions of the tags grouped by category.
   comment as the brief description. If set to NO (the default), the 
   Javadoc-style will behave just like the Qt-style comments.
 
+\anchor cfg_builtin_stl_support
+<dt>\c BUILTIN_STL_SUPPORT <dd>
+ \addindex BUILTIN_STL_SUPPORT
+ If you use STL classes (i.e. std::string, std::vector, etc.) but do not want to
+ include (a tag file for) the STL sources as input, then you should
+ set this tag to \c YES in order to let doxygen match functions declarations and
+ definitions whose arguments contain STL classes (e.g. func(std::string); v.s.
+ func(std::string) {}). This also make the inheritance and collaboration
+ diagrams that involve STL classes more complete and accurate.
+
+\anchor cfg_distribute_group_doc
+<dt>\c DISTRIBUTE_GROUP_DOC <dd>
+ \addindex DISTRIBUTE_GROUP_DOC
+ If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
+ tag is set to YES, then doxygen will reuse the documentation of the first
+ member in the group (if any) for the other members of the group. By default
+ all members of a group must be documented explicitly.
+
 \anchor cfg_multiline_cpp_is_brief
 <dt>\c MULTILINE_CPP_IS_BRIEF <dd>
  \addindex MULTILINE_CPP_IS_BRIEF
@@ -403,14 +424,6 @@ followed by the descriptions of the tags grouped by category.
  If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
  member inherits the documentation from any documented member that it
  re-implements.
-
-\anchor cfg_distribute_group_doc
-<dt>\c DISTRIBUTE_GROUP_DOC <dd>
- \addindex DISTRIBUTE_GROUP_DOC
- If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
- tag is set to YES, then doxygen will reuse the documentation of the first
- member in the group (if any) for the other members of the group. By default
- all members of a group must be documented explicitly.
 
 \anchor cfg_separate_member_pages
 <dt>\c SEPARATE_MEMBER_PAGES <dd>
@@ -453,10 +466,10 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_optimize_output_java
 <dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
  \addindex OPTIMIZE_OUTPUT_JAVA
- Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java sources 
- only. Doxygen will then generate output that is more tailored for Java.
- For instance, namespaces will be presented as packages, qualified scopes 
- will look different, etc. 
+ Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java or
+ Python sources only. Doxygen will then generate output that is more tailored 
+ for that language. For instance, namespaces will be presented as packages, 
+ qualified scopes will look different, etc. 
 
 \anchor cfg_subgrouping
 <dt>\c SUBGROUPING <dd>
@@ -683,18 +696,20 @@ function's detailed documentation block.
 
 \anchor cfg_warn_if_doc_error
 <dt>\c WARN_IF_DOC_ERROR <dd>
+ \addindex WARN_IF_DOC_ERROR
  If \c WARN_IF_DOC_ERROR is set to \c YES, doxygen will generate warnings for
  potential errors in the documentation, such as not documenting some
  parameters in a documented function, or documenting parameters that
  don't exist or using markup commands wrongly. 
 
 \anchor cfg_warn_no_paramdoc
-<dt>\c WARN_NO_PARAMDOC
-This \c WARN_NO_PARAMDOC option can be abled to get warnings for 
-functions that are documented, but have no documentation for their parameters
-or return value. If set to \c NO (the default) doxygen will only warn about
-wrong or incomplete parameter documentation, but not about the absence of
-documentation.
+<dt>\c WARN_NO_PARAMDOC <dd>
+ \addindex WARN_NO_PARAMDOC
+ This \c WARN_NO_PARAMDOC option can be abled to get warnings for 
+ functions that are documented, but have no documentation for their parameters
+ or return value. If set to \c NO (the default) doxygen will only warn about
+ wrong or incomplete parameter documentation, but not about the absence of
+ documentation.
 
 \anchor cfg_warn_format
 <dt>\c WARN_FORMAT <dd>
@@ -749,7 +764,7 @@ documentation.
  popen()) the command <code>command input-file</code>, where \c command is 
  the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name 
  of an input file provided by doxygen. 
- Whatever the progam writes to standard output is used as the file version. 
+ Whatever the program writes to standard output is used as the file version. 
 
 Example of using a shell script as a filter for Unix:
 \verbatim
@@ -1243,12 +1258,12 @@ EXTRA_PACKAGES = times
  \addindex PDF_HYPERLINKS
 
  If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that 
- is generated is prepared for conversion to PDF (using ps2pdf). 
+ is generated is prepared for conversion to PDF (using ps2pdf or pdflatex). 
  The PDF file will
  contain links (just like the HTML output) instead of page references.
  This makes the output suitable for online browsing using a PDF viewer.
 
-\anchor cfg_latex_pdflatex
+\anchor cfg_use_pdflatex
 <dt>\c USE_PDFLATEX <dd>
  \addindex LATEX_PDFLATEX
 

@@ -2006,9 +2006,36 @@ QCString MemberDef::getScopeString() const
   return result;
 }
 
+static QCString escapeAnchor(const QCString &anchor)
+{
+  QCString result;
+  int l = anchor.length(),i;
+  for (i=0;i<l;i++)
+  {
+    char c = anchor.at(i);
+    if ((c>='a' && c<='z') || (c>='A' && c<='Z'))
+    {
+      result+=c;
+    }
+    else
+    {
+      static char hexStr[]="0123456789ABCDEF";
+      char escChar[]={ '_', 0, 0, 0 };
+      escChar[1]=hexStr[c>>4];
+      escChar[2]=hexStr[c&0xf];
+      result+=escChar;
+    }
+  }
+  return result;
+}
+
 void MemberDef::setAnchor(const char *a)
 {
-  anc=a;
+  //anc=a;
+  a=a;
+  QCString memAnchor = name();
+  if (!args.isEmpty()) memAnchor+=args;
+  anc = escapeAnchor(memAnchor);
 }
 
 void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
