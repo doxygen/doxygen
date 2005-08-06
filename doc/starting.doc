@@ -26,11 +26,14 @@ for which you do not have the sources. See section \ref doxytag_usage
 for more detailed usage information.
 
 Optionally, the executable \c doxywizard can be used, which is a 
-graphical front-end for editing the configuration file that is used by 
-doxygen.
+\ref doxywizard_usage "graphical front-end" for editing the configuration file 
+that is used by doxygen and for running doxygen in a graphical environment.
+For Mac OS X doxywizard will be started by clicking on the Doxygen application
+icon.
 
 The following figure shows the relation between the tools and the flow
-of information between them:
+of information between them (it looks complex but that's only because it
+tries to be complete):
 
 \image html infoflow.gif "Doxygen information flow" 
 \image latex infoflow.eps "Doxygen information flow" width=14cm
@@ -55,7 +58,7 @@ name \<config-file\> already exists, doxygen will rename it to
 \<config-file\>.bak before generating the configuration template.
 If you use <code>-</code> (i.e. the minus sign) as the file name then 
 doxygen will try to read the configuration file from standard 
-input (<code>stdin</code>).
+input (<code>stdin</code>), which can be useful for scripting.
 
 The configuration file has a format that is similar to that of a (simple) 
 Makefile. It contains of a number of assignments (tags) of the form:
@@ -78,8 +81,8 @@ and header files, you can leave
 the current directory. 
 
 If you have a larger project consisting of a source directory or tree 
-you should put the root directory or 
-directories after the \ref cfg_input "INPUT" tag, and add one or more file 
+you should assign the root directory or 
+directories to the \ref cfg_input "INPUT" tag, and add one or more file 
 patterns to the \ref cfg_file_patterns "FILE_PATTERNS" tag 
 (for instance <code>*.cpp *.h</code>). Only files that match one of the 
 patterns will be parsed (if the patterns are omitted a list of 
@@ -92,17 +95,21 @@ To omit all \c test directories from a source tree for instance, one could use:
 \verbatim EXCLUDE_PATTERNS = */test/* 
 \endverbatim
 
-Doxygen normally parses files if they are C or C++ sources. If a file
-has a <code>.idl</code> or <code>.odl</code> extension it is treated as an
-IDL file. If it has a <code>.java</code> extension it is treated as a file
-written in Java. Files ending with <code>.cs</code> are treated as C# files.
-Finally, files with the extensions <code>.php</code>, <code>.php4</code>,
+Doxygen looking at the file's extension to determine how to parse a file.
+If a file has an <code>.idl</code> or <code>.odl</code> extension it is 
+treated as an IDL file. If it has a <code>.java</code> extension it is 
+treated as a file written in Java. Files ending with <code>.cs</code> are 
+treated as C# files and the <code>.py</code> extension selects the 
+Python parser. Finally, files with the extensions <code>.php</code>, <code>.php4</code>,
 <code>.inc</code> or <code>.phtml</code> are treated as PHP sources.
+Any other extension is parsed as if it is a C/C++ file, where files that
+end with <code>.m</code> are treated as Objective-C source files.
 
 \anchor extract_all
 If you start using doxygen for an existing project (thus without any 
 documentation that doxygen is aware of), you can still get an idea of
-what the documented result would be. To do so, you must set 
+what the structure is and how the documented result would look like. 
+To do so, you must set 
 the \ref cfg_extract_all "EXTRACT_ALL" tag in the configuration file 
 to \c YES. Then, doxygen will pretend everything in your sources is documented. 
 Please note that as a consequence warnings about undocumented members 
@@ -124,46 +131,91 @@ To generate the documentation you can now enter:
 doxygen <config-file>
 \endverbatim
 
-Doxygen will create a \c html, \c rtf, \c latex and/or \c man directory inside 
-the output directory. 
+Depending on your settings doxygen will create \c html, \c rtf, 
+\c latex, \c xml and/or \c man directories inside the output directory. 
 As the names suggest these directories contain the
-generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$ and Unix-Man page
-format.
+generated documentation in HTML, RTF, \f$\mbox{\LaTeX}\f$, XML and 
+Unix-Man page format.
 
 The default output directory is the directory in which \c doxygen
-is started. The directory to which the output is written can be changed 
-using the \ref cfg_output_directory "OUTPUT_DIRECTORY", 
+is started. The root directory to which the output is written can be changed 
+using the \ref cfg_output_directory "OUTPUT_DIRECTORY". The format specific
+directory within the output directory can be selected using the
 \ref cfg_html_output "HTML_OUTPUT", \ref cfg_rtf_output "RTF_OUTPUT",
-\ref cfg_latex_output "LATEX_OUTPUT", and \ref cfg_man_output "MAN_OUTPUT" 
+\ref cfg_latex_output "LATEX_OUTPUT", \ref cfg_xml_output "XML_OUTPUT",
+and \ref cfg_man_output "MAN_OUTPUT" 
 tags of the configuration file. If the output directory does not exist, 
-\c doxygen will try to create it for you.
+\c doxygen will try to create it for you (but it will \e not try to create
+a whole path recursively, like <code>mkdir -p</code> does). 
 
+\subsection html_out HTML output
 \addindex browser
 The generated HTML documentation can be viewed by pointing a HTML browser
 to the \c index.html file in the \c html directory. For the best results
 a browser that supports cascading style sheets (CSS) should be used
-(I'm currently using Netscape 4.61 to test the generated output).
-\addindex LaTeX
+(I'm using Mozilla, Safari, Konqueror, and sometimes IE6 to test the 
+generated output). 
 
+Some of the features the HTML section (such as 
+\ref cfg_generate_treeview "GENERATE_TREEVIEW") require a browser that
+supports DHTML and Javascript. 
+
+If you plan to use the search engine (see 
+\ref cfg_searchengine "SEARCHENGINE"), you should view the HTML output 
+via a PHP enable web server (e.g. apache with the PHP module installed).
+
+\subsection latex_out LaTeX output
+\addindex LaTeX
 The generated \f$\mbox{\LaTeX}\f$ documentation must first be compiled by 
-a \f$\mbox{\LaTeX}\f$ compiler (I use teTeX distribution version 0.9
-that contains \f$\mbox{\TeX}\f$ version 3.14159). To simplify the process 
-of compiling the generated
+a \f$\mbox{\LaTeX}\f$ compiler (I use a recent teTeX distribution). 
+To simplify the process of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory. 
 By typing \c make in the \c latex directory the dvi file \c refman.dvi
 will be generated (provided that you have a make tool called 
 <code>make</code> of course). This file can then be viewed using \c xdvi or 
 converted into a PostScript file \c refman.ps by 
 typing <code>make ps</code> (this requires <code>dvips</code>).  
+
 To put 2 pages on one physical page use <code>make ps_2on1</code> instead.
 The resulting PostScript file can be send to a PostScript
 printer. If you do not have a PostScript printer, you can try to use 
 ghostscript to convert PostScript into something your printer understands.
+
 Conversion to PDF is also possible if you have installed the ghostscript
 interpreter; just type <code>make pdf</code> (or <code>make pdf_2on1</code>). 
 To get the best results for PDF output you should set 
-the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" tag to \c YES.
+the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" 
+and \ref cfg_use_pdflatex "USE_PDFLATEX" tags to \c YES.
 
+\subsection rtf_out RTF output
+\addindex RTF
+Doxygen combines the RTF output to a single file called refman.rtf. This
+file is optimized for importing into the Microsoft Word. Certain information
+is encoded using field. To show the actual value you need to 
+select all (Edit - select all) and then toggle fields (right click and select
+the option from the drop down menu).
+
+\subsection xml_out XML output
+\addindex XML
+The XML output consists of a structured "dump" of the information gathered 
+by doxygen. Each compound (class/namespace/file/...) has its own XML file 
+and there is also an index file called index.xml. 
+
+A file called combine.xslt
+XSLT script is also generated and can be used to combine all XML files 
+into a single file. 
+
+Doxygen also generates two XML schema files index.xsd
+(for the index file) and compound.xsd (for the compound files).
+This schema file describes the possible elements, their attributes and 
+how they are structured, i.e. it the describes the grammar of the XML 
+files and can be used for validation or to steer XSLT scripts.
+
+In the addon/doxmlparser directory you can find a parser library for reading
+the XML output produced by doxygen in an incremental way 
+(see addon/doxmlparser/include/doxmlintf.h for the interface of the library)
+
+\subsection man_out Man page output
 The generated man pages can be viewed using the \c man program. You do need
 to make sure the man directory is in the man path (see the \c MANPATH
 environment variable). Note that there are some limitations to the 
@@ -215,7 +267,9 @@ During parsing the following steps take place:
 <li> All resulting blank lines are treated as a paragraph separators.
      This saves you from placing new-paragraph commands yourself 
      in order to make the generated documentation readable.
-<li> Links are created for words corresponding to documented classes. 
+<li> Links are created for words corresponding to documented classes
+     (unless the word is preceded by a \%; then the word will not be linked and
+     the \% sign is removed). 
 <li> Links to members are created when certain patterns are found in the
      text. See section \ref autolink
      for more information on how the automatic link generation works.

@@ -154,7 +154,8 @@ void EnumValueHandler::startDetailedDesc(const QXmlAttributes& attrib)
 //------------------------------------------------------------------------------
 
 MemberHandler::MemberHandler(IBaseHandler *parent)
-  : m_parent(parent), m_compound(0), m_brief(0), m_detailed(0), m_inbody(0)
+  : m_brief(0), m_detailed(0), m_inbody(0), 
+    m_compound(0), m_section(0), m_parent(parent)
 {
   //printf("MemberHandler::MemberHandler() %p\n",this);
   addEndHandler("memberdef",this,&MemberHandler::endMember);
@@ -310,6 +311,7 @@ void MemberHandler::startInbodyDesc(const QXmlAttributes& attrib)
 void MemberHandler::startLocation(const QXmlAttributes& attrib)
 {
   m_defFile = attrib.value("file");
+  m_bodyFile = attrib.value("bodyfile");
   QCString s;
   s = attrib.value("line");
   if (!s.isEmpty()) m_defLine=s.toInt();

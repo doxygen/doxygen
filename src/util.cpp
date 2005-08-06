@@ -1120,8 +1120,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
   int count=0;
   for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
   {
-    //printf("  found type %x name=%s (%d/%d)\n",
-    //       d->definitionType(),d->name().data(),count,dl->count());
+    //printf("  found type %x name=%s (%d/%d) d=%p\n",
+    //       d->definitionType(),d->name().data(),count,dl->count(),d);
 
     // only look at classes and members
     if (d->definitionType()==Definition::TypeClass ||
@@ -1136,6 +1136,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
         // see if we are dealing with a class or a typedef
         if (d->definitionType()==Definition::TypeClass) // d is a class
         {
+          if (!((ClassDef*)d)->isArtificial())
+          {
           if (distance<minDistance) // found a definition that is "closer"
           {
             minDistance=distance;
@@ -1162,6 +1164,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
             bestMatch = (ClassDef *)d; 
             bestTypedef = 0;
             bestTemplSpec.resize(0);
+          }
           }
         }
         else if (d->definitionType()==Definition::TypeMember)
@@ -2766,7 +2769,10 @@ static QCString getCanonicalTypeForIdentifier(
     //    fs?fs->name().data():"<none>"
     //   );
 
-    //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",(word+templSpec).data(),cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",templSpec.data(),ts.data());
+    //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",
+    //    (word+templSpec).data(),
+    //    cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",
+    //    templSpec.data(),ts.data());
     if (cd) // known type
     {
       //result = cd->qualifiedNameWithTemplateParameters();
@@ -5148,7 +5154,7 @@ static void latin1ToLatex(QTextStream &t,unsigned char c)
     case 252: t << "\\\"{u}";       break;
     case 253: t << "\\'{y}";        break;
     case 255: t << "\\\"{y}";       break;           
-    default: t << c;
+    default: t << (char)c;
   }
 }
 
@@ -5161,35 +5167,35 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
   switch (c)
   {
     case 0xA1: t << "\\k{A}";   break;
-    case 0xA2: t << c;          break;
+    case 0xA2: t << (char)c;    break;
     case 0xA3: t << "\\L{}";    break;
-    case 0xA4: t << c;          break;
-    case 0xA5: t << c;          break;
+    case 0xA4: t << (char)c;    break;
+    case 0xA5: t << (char)c;    break;
     case 0xA6: t << "\\'{S}";   break;
-    case 0xA7: t << c;          break;
-    case 0xA8: t << c;          break;
+    case 0xA7: t << (char)c;    break;
+    case 0xA8: t << (char)c;    break;
     case 0xA9: t << "\\v{S}";   break;
     case 0xAA: t << "\\c{S}";   break;
     case 0xAB: t << "\\v{T}";   break;
     case 0xAC: t << "\\'{Z}";   break;
-    case 0xAD: t << c;          break;
+    case 0xAD: t << (char)c;    break;
     case 0xAE: t << "\\v{Z}";   break;
     case 0xAF: t << "\\.{Z}";   break;
 
-    case 0xB0: t << c;          break;
+    case 0xB0: t << (char)c;    break;
     case 0xB1: t << "\\k{a}";   break;
-    case 0xB2: t << c;          break;
+    case 0xB2: t << (char)c;    break;
     case 0xB3: t << "\\l{}";    break;
-    case 0xB4: t << c;          break;
-    case 0xB5: t << c;          break;
+    case 0xB4: t << (char)c;    break;
+    case 0xB5: t << (char)c;    break;
     case 0xB6: t << "\\'{s}";   break;
-    case 0xB7: t << c;          break;
-    case 0xB8: t << c;          break;
+    case 0xB7: t << (char)c;    break;
+    case 0xB8: t << (char)c;    break;
     case 0xB9: t << "\\v{s}";   break;
     case 0xBA: t << "\\c{s}";   break;
     case 0xBB: t << "\\v{t}";   break;
     case 0xBC: t << "\\'{z}";   break;
-    case 0xBD: t << c;          break;
+    case 0xBD: t << (char)c;    break;
     case 0xBE: t << "\\v{z}";   break;
     case 0xBF: t << "\\.{z}";   break;
 
@@ -5217,9 +5223,9 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xD4: t << "\\^{O}";   break;
     case 0xD5: t << "\\H{O}";   break;
     case 0xD6: t << "\\\"{O}";  break;
-    case 0xD7: t << c;          break;
+    case 0xD7: t << (char)c;    break;
     case 0xD8: t << "\\v{R}";   break;
-    case 0xD9: t << c;          break;
+    case 0xD9: t << (char)c;    break;
     case 0xDA: t << "\\'{U}";   break;
     case 0xDB: t << "\\H{U}";   break;
     case 0xDC: t << "\\\"{U}";  break;
@@ -5230,7 +5236,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xE0: t << "\\'{r}";   break;
     case 0xE1: t << "\\'{a}";   break;
     case 0xE2: t << "\\^{a}";   break;
-    case 0xE3: t << c;          break;
+    case 0xE3: t << (char)c;    break;
     case 0xE4: t << "\\\"{a}";  break;
     case 0xE5: t << "\\'{l}";   break;
     case 0xE6: t << "\\'{c}";   break;
@@ -5251,17 +5257,17 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xF4: t << "\\^{o}";   break;
     case 0xF5: t << "\\H{o}";   break;
     case 0xF6: t << "\\\"{o}";  break;
-    case 0xF7: t << c;          break;
+    case 0xF7: t << (char)c;    break;
     case 0xF8: t << "\\v{r}";   break;
-    case 0xF9: t << c;          break;
+    case 0xF9: t << (char)c;    break;
     case 0xFA: t << "\\'{u}";   break;
     case 0xFB: t << "\\H{u}";   break;
     case 0xFC: t << "\\\"{u}";  break;
     case 0xFD: t << "\\'{y}";   break;
-    case 0xFE: t << c;          break;
-    case 0xFF: t << c;          break;
+    case 0xFE: t << (char)c;    break;
+    case 0xFF: t << (char)c;    break;
 
-    default: t << c;
+    default: t << (char)c;
   }
 }
 
@@ -5275,6 +5281,7 @@ void filterLatexString(QTextStream &t,const char *str,
 	  							theTranslator->idLanguage()=="korean-en";
   static bool isRussian       = theTranslator->idLanguage()=="russian";
   static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
+  static bool isSlovene       = theTranslator->idLanguage()=="solvene";
   static bool isChinese       = theTranslator->idLanguage()=="chinese" || 
                                 theTranslator->idLanguage()=="chinese-traditional";
   static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
@@ -5382,7 +5389,7 @@ void filterLatexString(QTextStream &t,const char *str,
                    t << (char)c;    
                  } 
                }
-               else if (isCzech || isRussian || isUkrainian)
+               else if (isCzech || isRussian || isUkrainian || isSlovene)
                {
                  if (c>=128)
                  {

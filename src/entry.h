@@ -310,6 +310,7 @@ class Entry
     TagInfo    *tagInfo;      //!< tag file info
     static int  num;          //!< counts the total number of entries
     bool        objc;         //!< Objective-C construct
+    bool        hidden;       //!< does this represent an entity this is hidden from the output
     enum 
     {
       GROUPDOC_NORMAL,        //!< defgroup

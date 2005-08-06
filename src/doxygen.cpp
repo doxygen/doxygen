@@ -205,6 +205,154 @@ const char idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 QCString spaces;
 QCString Doxygen::htmlFileExtension;
 
+struct STLInfo
+{
+  const char *className;
+  const char *baseClass1;
+  const char *baseClass2;
+  const char *templType1;
+  const char *templName1;
+  const char *templType2;
+  const char *templName2;
+  bool virtualInheritance;
+  bool iterators;
+};
+
+static STLInfo g_stlinfo[] =
+{
+  // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
+  { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE },
+  { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "basic_ios",            "ios_base",                     0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_istream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
+  { "basic_ostream",        "basic_ios<Char>",              0,                     "Char",        0,             0,            0,             TRUE,               FALSE },
+  { "basic_iostream",       "basic_istream<Char>",          "basic_ostream<Char>", "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_ifstream",       "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_ofstream",       "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_fstream",        "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_istringstream",  "basic_istream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_ostringstream",  "basic_ostream<Char>",          0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "basic_stringstream",   "basic_iostream<Char>",         0,                     "Char",        0,             0,            0,             FALSE,              FALSE },
+  { "ios",                  "basic_ios<char>",              0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wios",                 "basic_ios<wchar_t>",           0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "istream",              "basic_istream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wistream",             "basic_istream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "ostream",              "basic_ostream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wostream",             "basic_ostream<wchar_t>",       0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "ifstream",             "basic_ifstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wifstream",            "basic_ifstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "ofstream",             "basic_ofstream<char>",         0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wofstream",            "basic_ofstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "fstream",              "basic_fstream<char>",          0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wfstream",             "basic_wfstream<wchar_t>",      0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "istringstream",        "basic_istringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wistringstream",       "basic_istringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "ostringstream",        "basic_ostringstream<char>",    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wostringstream",       "basic_ostringstream<wchar_t>", 0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "stringstream",         "basic_stringstream<char>",     0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "wstringstream",        "basic_stringstream<wchar_t>",  0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "basic_string",         0,                              0,                     "Char",        0,             0,            0,             FALSE,              TRUE  },
+  { "string",               "basic_string<char>",           0,                     0,             0,             0,            0,             FALSE,              TRUE  },
+  { "wstring",              "basic_string<wchar_t>",        0,                     0,             0,             0,            0,             FALSE,              TRUE  },
+  { "complex",              0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "bitset",               0,                              0,                     "Bits",        0,             0,            0,             FALSE,              FALSE },
+  { "deque",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
+  { "list",                 0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
+  { "map",                  0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
+  { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
+  { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
+  { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
+  { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
+  { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "valarray",             0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
+};
+
+static void addSTLMember(Entry *root,const char *type,const char *name)
+{
+  Entry *memEntry = new Entry;
+  memEntry->name       = name;
+  memEntry->type       = type;
+  memEntry->protection = Private;
+  memEntry->section    = Entry::VARIABLE_SEC;
+  memEntry->brief      = "STL member";
+  memEntry->hidden     = TRUE;
+  root->addSubEntry(memEntry);
+}
+
+static void addSTLClasses(Entry *root)
+{
+  Entry *namespaceEntry = new Entry;
+  namespaceEntry->fileName  = "[STL]";
+  namespaceEntry->startLine = 1;
+  namespaceEntry->parent    = root;
+  namespaceEntry->name      = "std";
+  namespaceEntry->section   = Entry::NAMESPACE_SEC;
+  namespaceEntry->brief     = "STL namespace";
+  namespaceEntry->hidden    = TRUE;
+  root->addSubEntry(namespaceEntry);
+  
+  STLInfo *info = g_stlinfo;
+  while (info->className)
+  {
+    //printf("Adding STL class %s\n",info->className);
+    QCString fullName = info->className;
+    fullName.prepend("std::");
+
+    // add fake Entry for the class
+    Entry *classEntry = new Entry;
+    classEntry->fileName  = "[STL]";
+    classEntry->startLine = 1;
+    classEntry->name      = fullName;
+    classEntry->parent    = namespaceEntry;
+    classEntry->section   = Entry::CLASS_SEC;
+    classEntry->brief     = "STL class";
+    classEntry->hidden    = TRUE;
+    namespaceEntry->addSubEntry(classEntry);
+
+    // add template arguments to class
+    if (info->templType1)
+    {
+      ArgumentList *al = new ArgumentList;
+      Argument *a=new Argument;
+      a->type="typename";
+      a->name=info->templType1;
+      al->append(a);
+      if (info->templType2) // another template argument
+      {
+        a=new Argument;
+        a->type="typename";
+        a->name=info->templType2;
+        al->append(a);
+      }
+      classEntry->tArgLists = new QList<ArgumentList>;
+      classEntry->tArgLists->setAutoDelete(TRUE);
+      classEntry->tArgLists->append(al);
+    }
+    // add member variables
+    if (info->templName1)
+    {
+      addSTLMember(classEntry,info->templType1,info->templName1);
+    }
+    if (info->templName2)
+    {
+      addSTLMember(classEntry,info->templType2,info->templName2);
+    }
+    if (info->baseClass1)
+    {
+      classEntry->extends->append(new BaseInfo(info->baseClass1,Public,info->virtualInheritance?Virtual:Normal));
+    }
+    if (info->baseClass2)
+    {
+      classEntry->extends->append(new BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
+    }
+    info++;
+  }
+}
+
 //----------------------------------------------------------------------------
 
 static void addRelatedPage(Entry *root)
@@ -801,6 +949,7 @@ static void addClassToContext(Entry *root)
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setIsObjectiveC(root->objc);
+    cd->setHidden(root->hidden);
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
 
     ArgumentList *tArgList = 
@@ -822,7 +971,6 @@ static void addClassToContext(Entry *root)
     // the empty string test is needed for extract all case
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->insertUsedFile(root->fileName);
-
 
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
@@ -1045,6 +1193,7 @@ static void buildNamespaceList(Entry *root)
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
+        nd->setHidden(root->hidden);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -1163,6 +1312,7 @@ static void findUsingDirectives(Entry *root)
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
+        nd->setHidden(root->hidden);
 
         QListIterator<Grouping> gli(*root->groups);
         Grouping *g;
@@ -1509,6 +1659,7 @@ static MemberDef *addVariableToClass(
   md->setReadAccessor(root->read);
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
+  md->setHidden(root->hidden);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
@@ -2261,7 +2412,7 @@ static void buildFunctionList(Entry *root)
       {
         int ts=rname.find('<');
         int te=rname.find('>');
-        if (ts==-1 || te==-1)
+        if (memIndex>0 && (ts==-1 || te==-1))
         {
           nd = Doxygen::namespaceSDict.find(rname.left(memIndex));
           isMember = nd==0;
@@ -2360,7 +2511,7 @@ static void buildFunctionList(Entry *root)
               if (found)
               {
                 // merge argument lists
-                //mergeArguments(root->argList,md->argumentList());
+                mergeArguments(md->argumentList(),root->argList,!root->doc.isEmpty());
                 // merge documentation
                 if (md->documentation().isEmpty() && !root->doc.isEmpty())
                 {
@@ -3224,7 +3375,7 @@ static void findUsedClassesForClass(Entry *root,
               if (arg->name==usedName) // type is a template argument
               {
                 found=TRUE;
-                Debug::print(Debug::Classes,0,"  New used class `%s'\n", usedName.data());
+                Debug::print(Debug::Classes,0,"    New used class `%s'\n", usedName.data());
                 
                 ClassDef *usedCd = Doxygen::hiddenClasses.find(usedName);
                 if (usedCd==0)
@@ -3237,7 +3388,7 @@ static void findUsedClassesForClass(Entry *root,
                 if (usedCd)
                 {
                   if (isArtificial) usedCd->setClassIsArtificial();
-                  Debug::print(Debug::Classes,0,"    Adding used class `%s' (1)\n", usedCd->name().data());
+                  Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
                   instanceCd->addUsedClass(usedCd,md->name());
                   usedCd->addUsedByClass(instanceCd,md->name());
                 }
@@ -4026,14 +4177,11 @@ static void addMemberDocs(Entry *root,
   if (al)
   {
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    if ((!root->doc.isEmpty() || !root->proto))
-    {
-      mergeArguments(md->argumentList(),al,TRUE);
-    }
+    mergeArguments(md->argumentList(),al,!root->doc.isEmpty());
   }
   else
   {
-    if ( (!root->doc.isEmpty() || !root->proto) &&
+    if ( 
           matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
                            rscope,rfd,root->argList,
                            TRUE
@@ -4041,7 +4189,7 @@ static void addMemberDocs(Entry *root,
        ) 
     {
       //printf("merging arguments (2)\n");
-      mergeArguments(md->argumentList(),root->argList,TRUE);
+      mergeArguments(md->argumentList(),root->argList,!root->doc.isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -6085,8 +6233,9 @@ static void generateClassList(ClassSDict &classSDict)
     ClassDef *cd=cli.current();
    
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
-    if (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
-        cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+    if ((cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+         cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+        ) && !cd->isHidden()
        ) 
     {
       // skip external references, anonymous compounds and 
@@ -6927,10 +7076,12 @@ static void generateNamespaceDocs()
     for ( ; cli.current() ; ++cli )
     {
       ClassDef *cd=cli.current();
-      if ( cd->isLinkableInProject() && 
-           cd->templateMaster()==0
-         ) // skip external references, anonymous compounds and 
-           // template instances and nested classes
+      if ( ( cd->isLinkableInProject() && 
+             cd->templateMaster()==0
+           ) // skip external references, anonymous compounds and 
+             // template instances and nested classes
+           && !cd->isHidden()
+         )
       {
         msg("Generating docs for compound %s...\n",cd->name().data());
 
@@ -8083,7 +8234,9 @@ void readConfiguration(int argc, char **argv)
   Config::instance()->substituteEnvironmentVars();
   Config::instance()->convertStrToVal();
   Config::instance()->check();
+  
   initWarningFormat();
+
   QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
   if (!setTranslator(outputLanguage))
   {
@@ -8400,37 +8553,6 @@ void parseInput()
     readFormulaRepository();
   }
   
-  /**************************************************************************
-   *             Read Input Files                                           *
-   **************************************************************************/
-  
-#if 0
-  QCString tmpName = Config_getString("OUTPUT_DIRECTORY")+
-                     "/doxygen_scratchfile.tmp";
-
-  // read and preprocess all input files
-  readFiles(tmpName);
-
-  QFileInfo fi(tmpName);
-  if (fi.size()==0)
-  {
-    err("No input read, no output generated!\n");
-    QDir().remove(tmpName);
-    delete root;
-    cleanUpDoxygen();
-    exit(1);
-  }
-  else
-  {
-    msg("Read %d bytes\n",fi.size());
-  }
-  
-  msg("Parsing input...\n");
-  parseMain(root,tmpName);            // build a tree of entries
-
-  // remove temp file
-  QDir().remove(tmpName);
-#endif
   parseFiles(root);
 
   /**************************************************************************
@@ -8445,6 +8567,11 @@ void parseInput()
   buildDirectories();
   findDirDocumentation(root);
   
+  if (Config_getBool("BUILTIN_STL_SUPPORT"))
+  {
+    addSTLClasses(root);
+  }
+
   msg("Building namespace list...\n");
   buildNamespaceList(root);
   findUsingDirectives(root);

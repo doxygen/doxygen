@@ -4040,9 +4040,20 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
   					}
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code"|"f$"|"f["|"f{")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
                                           docBlock+=yytext;
-					  docBlockName=&yytext[1];
+				          if (yytext[2]=='[')
+				          {
+				            docBlockName="f]";
+				          }
+					  else if (yytext[2]=='}')
+					  {
+				            docBlockName="f}";
+					  }
+				          else
+				          {
+				            docBlockName=&yytext[1];
+				          }
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>[^@*\/\\\n]+			{ // any character that isn't special
@@ -4058,8 +4069,12 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
  /* ---- Copy verbatim sections ------ */
 
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
   					  docBlock+=yytext;
+				          if (yytext[1]=='f') // end of formula
+				          {
+				            BEGIN(DocBlock);
+				          }
 					  if (&yytext[4]==docBlockName)
 					  {
   					    BEGIN(DocBlock);
@@ -4561,7 +4576,9 @@ static void parsePrototype(const QCString &text)
     current->section = Entry::VARIABLEDOC_SEC;
 
   // restore original scanner state
+  YY_BUFFER_STATE tmpState = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(orgState);
+  yy_delete_buffer(tmpState);
   inputString = orgInputString; 
   inputPosition = orgInputPosition;
   g_inputFromFile = orgInputFromFile;

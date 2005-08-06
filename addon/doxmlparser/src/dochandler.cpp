@@ -1679,28 +1679,37 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   m_children.setAutoDelete(TRUE);
 
   m_markupHandler = new MarkupHandler(m_children,m_curString);
+
+  // preformatted
   setFallBackHandler(m_markupHandler);
 
   addEndHandler("para",this,&ParagraphHandler::endParagraph);
 
-  addStartHandler("itemizedlist",this,&ParagraphHandler::startItemizedList);
-  addStartHandler("orderedlist",this,&ParagraphHandler::startOrderedList);
-  addStartHandler("parameterlist",this,&ParagraphHandler::startParameterList);
-  addStartHandler("simplesect",this,&ParagraphHandler::startSimpleSect);
-  addStartHandler("ref",this,&ParagraphHandler::startRef);
-  addStartHandler("variablelist",this,&ParagraphHandler::startVariableList);
-  addStartHandler("hruler",this,&ParagraphHandler::startHRuler);
   addStartHandler("linebreak",this,&ParagraphHandler::startLineBreak);
+  addStartHandler("hruler",this,&ParagraphHandler::startHRuler);
+  addStartHandler("programlisting",this,&ParagraphHandler::startProgramListing);
+  addStartHandler("verbatim",this,&ParagraphHandler::startVerbatim);
+  addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
+  addStartHandler("orderedlist",this,&ParagraphHandler::startOrderedList);
+  addStartHandler("itemizedlist",this,&ParagraphHandler::startItemizedList);
+  addStartHandler("simplesect",this,&ParagraphHandler::startSimpleSect);
+  // TODO: title
+  addStartHandler("variablelist",this,&ParagraphHandler::startVariableList);
+  addStartHandler("table",this,&ParagraphHandler::startTable);
+  // TODO: heading
+  addStartHandler("image",this,&ParagraphHandler::startImage);
+  addStartHandler("dotfile",this,&ParagraphHandler::startDotFile);
+  addStartHandler("toclist",this,&ParagraphHandler::startTocList);
+  // TODO: language???
+  addStartHandler("parameterlist",this,&ParagraphHandler::startParameterList);
+  // TODO: xrefsect
+  addStartHandler("copydoc",this,&ParagraphHandler::startCopyDoc);
+
+  addStartHandler("ref",this,&ParagraphHandler::startRef);
   addStartHandler("ulink",this,&ParagraphHandler::startULink);
   addStartHandler("email",this,&ParagraphHandler::startEMail);
   addStartHandler("link",this,&ParagraphHandler::startLink);
-  addStartHandler("programlisting",this,&ParagraphHandler::startProgramListing);
   addStartHandler("formula",this,&ParagraphHandler::startFormula);
-  addStartHandler("image",this,&ParagraphHandler::startImage);
-  addStartHandler("dotfile",this,&ParagraphHandler::startDotFile);
-  addStartHandler("indexentry",this,&ParagraphHandler::startIndexEntry);
-  addStartHandler("table",this,&ParagraphHandler::startTable);
-  addStartHandler("verbatim",this,&ParagraphHandler::startVerbatim);
   addStartHandler("latexonly",this,&ParagraphHandler::startHtmlOnly);
   addStartHandler("htmlonly",this,&ParagraphHandler::startLatexOnly);
   addStartHandler("umlaut",this,&ParagraphHandler::startUmlaut);
@@ -1714,8 +1723,6 @@ ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   addStartHandler("nbsp",this,&ParagraphHandler::startNbsp);
   addStartHandler("copy",this,&ParagraphHandler::startCopy);
   addStartHandler("anchor",this,&ParagraphHandler::startAnchor);
-  addStartHandler("copydoc",this,&ParagraphHandler::startCopyDoc);
-  addStartHandler("toclist",this,&ParagraphHandler::startTocList);
 }
 
 ParagraphHandler::~ParagraphHandler()
@@ -2170,12 +2177,13 @@ DocHandler::DocHandler(IBaseHandler *parent) : m_parent(parent)
   addEndHandler("briefdescription",this,&DocHandler::endDoc);
   addEndHandler("detaileddescription",this,&DocHandler::endDoc);
   addEndHandler("inbodydescription",this,&DocHandler::endDoc);
-  addEndHandler("internal");
+  //addEndHandler("internal"); // TODO: implement this as a section
+  addStartHandler("internal",this,&DocHandler::startInternal);
 
   addStartHandler("para",this,&DocHandler::startParagraph);
   addStartHandler("sect1",this,&DocHandler::startSect1);
   addStartHandler("title",this,&DocHandler::startTitle);
-  addStartHandler("internal");
+  //addStartHandler("internal");
 }
 
 DocHandler::~DocHandler()
@@ -2215,8 +2223,19 @@ void DocHandler::startTitle(const QXmlAttributes& attrib)
   m_children.append(titleHandler);
 }
 
+void DocHandler::startInternal(const QXmlAttributes& attrib)
+{
+  m_internal = new DocInternalHandler(this,1);
+  m_internal->startInternal(attrib);
+}
+
 IDocIterator *DocHandler::contents() const
 {
   return new DocIterator(*this);
+}
+
+IDocInternal *DocHandler::internal() const 
+{ 
+  return m_internal; 
 }
 

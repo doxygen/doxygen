@@ -25,7 +25,7 @@ template<class T> class Test<T *> : public Test<void *,200>
 template<class T,int i> Test<T,i>::Test() {}
 
 /*! The copy constructor */
-template<class T,int i> Test<T,i>::Test(const Test<T,i> &t) {}
+template<class T,int i> Test<T,i>::Test(const Test &t) {}
 
 /*! The constructor of the partial specilization */
 template<class T> Test<T *>::Test() {}

@@ -394,6 +394,12 @@ class DocInclude : public DocNode
       m_isExample(isExample), m_exampleFile(exampleFile) {}
     Kind kind() const           { return Kind_Include; }
     QString file() const        { return m_file; }
+    QString extension() const   { int i=m_file.findRev('.'); 
+                                  if (i!=-1) 
+                                    return m_file.right(m_file.length()-i); 
+                                  else 
+                                    return ""; 
+                                }
     Type type() const           { return m_type; }
     QString text() const        { return m_text; }
     QString context() const     { return m_context; }

@@ -543,10 +543,12 @@ static bool insideOL(DocNode *n)
  */
 static bool findDocsForMemberOrCompound(const char *commandName,
                                  QString *pDoc,
+                                 QString *pBrief,
                                  Definition **pDef)
 {
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
+  *pBrief="";
   *pDef=0;
   QString cmdArg=substitute(commandName,"#","::");
   int l=cmdArg.length();
@@ -574,6 +576,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   if (found && md)
   {
     *pDoc=md->documentation();
+    *pBrief=md->briefDescription();
     *pDef=md;
     return TRUE;
   }
@@ -594,6 +597,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     if (cd) // class 
     {
       *pDoc=cd->documentation();
+      *pBrief=cd->briefDescription();
       *pDef=cd;
       return TRUE;
     }
@@ -601,6 +605,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     if (nd) // namespace
     {
       *pDoc=nd->documentation();
+      *pBrief=nd->briefDescription();
       *pDef=nd;
       return TRUE;
     }
@@ -608,6 +613,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     if (gd) // group
     {
       *pDoc=gd->documentation();
+      *pBrief=gd->briefDescription();
       *pDef=gd;
       return TRUE;
     }
@@ -615,6 +621,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     if (pd) // page
     {
       *pDoc=pd->documentation();
+      *pBrief=pd->briefDescription();
       *pDef=pd;
       return TRUE;
     }
@@ -623,6 +630,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     if (fd && !ambig) // file
     {
       *pDoc=fd->documentation();
+      *pBrief=fd->briefDescription();
       *pDef=fd;
       return TRUE;
     }
@@ -1336,6 +1344,11 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
   // first parse any number of paragraphs
   bool isFirst=TRUE;
   DocPara *lastPar=0;
+  if (!children.isEmpty() && children.last()->kind()==DocNode::Kind_Para)
+  { // last child item was a paragraph
+    lastPar = (DocPara*)children.last();
+    isFirst=FALSE;
+  }
   do
   {
     DocPara *par = new DocPara(parent);
@@ -1344,6 +1357,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
     if (!par->isEmpty()) 
     {
       children.append(par);
+      if (lastPar) lastPar->markLast(FALSE);
       lastPar=par;
     }
     else
@@ -1604,9 +1618,9 @@ void DocIncOperator::parse()
 
 void DocCopy::parse()
 {
-  QString doc;
+  QString doc,brief;
   Definition *def;
-  if (findDocsForMemberOrCompound(m_link,&doc,&def))
+  if (findDocsForMemberOrCompound(m_link,&doc,&brief,&def))
   {
     if (g_copyStack.findRef(def)==-1) // definition not parsed earlier
     {
@@ -1622,6 +1636,7 @@ void DocCopy::parse()
       g_styleStack.clear();
       g_nodeStack.clear();
       g_copyStack.append(def);
+      internalValidatingParseDoc(this,m_children,brief);
       internalValidatingParseDoc(this,m_children,doc);
       g_copyStack.remove(def);
       ASSERT(g_styleStack.isEmpty());

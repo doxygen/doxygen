@@ -166,7 +166,7 @@ void OutputList::parseDoc(const char *fileName,int startLine,
   {
     //printf("og->printDoc(extension=%s)\n",
     //    ctx?ctx->getDefFileExtension().data():"<null>");
-    if (og->isEnabled()) og->printDoc(root,ctx?ctx->getDefFileExtension():0);
+    if (og->isEnabled()) og->printDoc(root,ctx?ctx->getDefFileExtension():QCString(""));
     og=outputs->next();
   }
 

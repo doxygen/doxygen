@@ -21,20 +21,22 @@
 <li>Requires very little overhead from the writer of the documentation. 
     Plain text will do, but for more fancy or structured output HTML tags 
     and/or some of doxygen's special commands can be used.
-<li>Supports C/C++, Java, (Corba and Microsoft) Java, 
+<li>Supports C/C++, Java, (Corba and Microsoft) Java, Python,
     IDL, C#, Objective-C and to some extent D and PHP sources.
-<li>Supports documentation of files, namespaces, classes, structs, unions, 
-    templates, variables, functions, typedefs, enums and defines. 
+<li>Supports documentation of files, namespaces, packages, classes, 
+    structs, unions, templates, variables, functions, typedefs, enums and 
+    defines. 
 <li>JavaDoc (1.1), Qt-Doc, and ECMA-334 (C# spec.) compatible.
 <li>Automatically generates class and collaboration diagrams in HTML (as clickable 
     image maps) and \f$\mbox{\LaTeX}\f$ (as Encapsulated PostScript images).
 <li>Uses the dot tool of the Graphviz tool kit to generate
     include dependency graphs, collaboration diagrams, and 
     graphical class hierarchy graphs. 
-<li>Allows you to put documentation in the header file (before the 
+<li>Flexible comment placement: Allows you to put documentation in the 
+    header file (before the 
     declaration of an entity), source file (before the definition of an entity) 
     or in a separate file.
-<li>Can generate a list of all members of a class (including any inherited
+<li>Generates a list of all members of a class (including any inherited
     members) along with their protection level.
 <li>Outputs documentation in on-line format (HTML and UNIX man page) and 
     off-line format (\f$\mbox{\LaTeX}\f$ and RTF) simultaneously 

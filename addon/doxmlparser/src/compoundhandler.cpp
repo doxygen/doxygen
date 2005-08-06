@@ -130,19 +130,19 @@ class CompoundTypeMap
     CompoundTypeMap()
     {
       m_map.setAutoDelete(TRUE);
-      m_map.insert("class",new int(ICompound::Class));
-      m_map.insert("struct",new int(ICompound::Struct));
-      m_map.insert("union",new int(ICompound::Union));
+      m_map.insert("class",    new int(ICompound::Class));
+      m_map.insert("struct",   new int(ICompound::Struct));
+      m_map.insert("union",    new int(ICompound::Union));
       m_map.insert("interface",new int(ICompound::Interface));
-      m_map.insert("protocol",new int(ICompound::Interface));
-      m_map.insert("category",new int(ICompound::Interface));
+      m_map.insert("protocol", new int(ICompound::Protocol));
+      m_map.insert("category", new int(ICompound::Category));
       m_map.insert("exception",new int(ICompound::Exception));
-      m_map.insert("file",new int(ICompound::File));
+      m_map.insert("file",     new int(ICompound::File));
       m_map.insert("namespace",new int(ICompound::Namespace));
-      m_map.insert("group",new int(ICompound::Group));
-      m_map.insert("page",new int(ICompound::Page));
-      m_map.insert("example",new int(ICompound::Page));
-      m_map.insert("dir",new int(ICompound::Page));
+      m_map.insert("group",    new int(ICompound::Group));
+      m_map.insert("page",     new int(ICompound::Page));
+      m_map.insert("example",  new int(ICompound::Example));
+      m_map.insert("dir",      new int(ICompound::Dir));
     }
     virtual ~CompoundTypeMap()
     {
@@ -176,18 +176,27 @@ void compoundhandler_exit()
 //----------------------------------------------------------------------------
 
 CompoundHandler::CompoundHandler(const QString &xmlDir) 
-  : m_brief(0), m_detailed(0), m_programListing(0),
-    m_xmlDir(xmlDir), m_refCount(1), m_memberDict(257), m_memberNameDict(257),
-    m_mainHandler(0), m_inheritanceGraph(0), m_collaborationGraph(0),
-    m_includeDependencyGraph(0), m_includedByDependencyGraph(0), m_templateParamList(0),
-    m_titleHandler(0), m_members(0)
+  : m_titleHandler(0), 
+    m_includeDependencyGraph(0), 
+    m_includedByDependencyGraph(0), 
+    m_templateParamList(0),
+    m_brief(0), 
+    m_detailed(0), 
+    m_inheritanceGraph(0), 
+    m_collaborationGraph(0),
+    m_programListing(0),
+    m_members(0),
+    m_xmlDir(xmlDir), 
+    m_refCount(1), 
+    m_memberDict(257), 
+    m_memberNameDict(257),
+    m_mainHandler(0)
 {
   m_superClasses.setAutoDelete(TRUE);
   m_subClasses.setAutoDelete(TRUE);
   m_sections.setAutoDelete(TRUE);
   m_memberNameDict.setAutoDelete(TRUE);
   m_innerCompounds.setAutoDelete(TRUE);
-  m_params.setAutoDelete(TRUE);
   m_includes.setAutoDelete(TRUE);
   m_includedBy.setAutoDelete(TRUE);
 
@@ -202,11 +211,11 @@ CompoundHandler::CompoundHandler(const QString &xmlDir)
 
   addStartHandler("title",this,&CompoundHandler::startTitle);
 
-  addStartHandler("basecompoundref",this,&CompoundHandler::addSuperClass);
-  addEndHandler("basecompoundref");
+  addStartHandler("basecompoundref",this,&CompoundHandler::startSuperClass);
+  addEndHandler("basecompoundref",this,&CompoundHandler::endSuperClass);
 
-  addStartHandler("derivedcompoundref",this,&CompoundHandler::addSubClass);
-  addEndHandler("derivedcompoundref");
+  addStartHandler("derivedcompoundref",this,&CompoundHandler::startSubClass);
+  addEndHandler("derivedcompoundref",this,&CompoundHandler::endSubClass);
 
   addStartHandler("includes",this,&CompoundHandler::startIncludes);
   addStartHandler("includedby",this,&CompoundHandler::startIncludedBy);
@@ -312,9 +321,9 @@ void CompoundHandler::startIncludedBy(const QXmlAttributes& attrib)
 
 void CompoundHandler::startCompound(const QXmlAttributes& attrib)
 {
-  m_id = attrib.value("id");
+  m_id         = attrib.value("id");
   m_kindString = attrib.value("kind");
-  m_kind = s_typeMap->map(m_kindString);
+  m_kind       = s_typeMap->map(m_kindString);
   m_protection = attrib.value("prot");
   debug(2,"startCompound(id=`%s' type=`%s')\n",m_id.data(),m_kindString.data());
 }
@@ -326,10 +335,11 @@ void CompoundHandler::endCompound()
 
 void CompoundHandler::startLocation(const QXmlAttributes& attrib)
 {
-  m_defFile = attrib.value("file");
-  m_defLine = attrib.value("line").toInt();
+  m_defFile      = attrib.value("file");
+  m_defLine      = attrib.value("line").toInt();
+  m_defBodyFile  = attrib.value("bodyfile");
   m_defBodyStart = attrib.value("bodystart").toInt();
-  m_defBodyEnd = attrib.value("bodyend").toInt();
+  m_defBodyEnd   = attrib.value("bodyend").toInt();
 }
 
 void CompoundHandler::endCompoundName()
@@ -380,7 +390,7 @@ void CompoundHandler::startListOfAllMembers(const QXmlAttributes& attrib)
   m_members->startListOfAllMembers(attrib);
 }
 
-void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
+void CompoundHandler::startSuperClass(const QXmlAttributes& attrib)
 {
   IRelatedCompound::Protection prot = IRelatedCompound::Public;
   QString protString = attrib.value("prot");
@@ -407,9 +417,15 @@ void CompoundHandler::addSuperClass(const QXmlAttributes& attrib)
       protString.data(),
       kindString.data());
   m_superClasses.append(sc);
+  m_curString = "";
 }
 
-void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
+void CompoundHandler::endSuperClass()
+{
+  m_superClasses.getLast()->setName(m_curString);
+}
+
+void CompoundHandler::startSubClass(const QXmlAttributes& attrib)
 {
   IRelatedCompound::Protection prot = IRelatedCompound::Public;
   QString protString = attrib.value("prot");
@@ -431,6 +447,12 @@ void CompoundHandler::addSubClass(const QXmlAttributes& attrib)
       protString.data(),
       kindString.data());
   m_subClasses.append(sc);
+  m_curString = "";
+}
+
+void CompoundHandler::endSubClass()
+{
+  m_subClasses.getLast()->setName(m_curString);
 }
 
 void CompoundHandler::startTitle(const QXmlAttributes& attrib)

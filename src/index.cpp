@@ -284,7 +284,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
       //printf("Passed...\n");
       bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
       //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
-      if (cd->isLinkable())
+      if (cd->isLinkable() && !cd->isHidden())
       {
         //printf("Writing class %s\n",cd->displayName().data());
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -367,7 +367,7 @@ void writeClassTree(BaseClassList *cl,int level)
       }
       bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
       //printf("tree2: Has children %s: %d\n",cd->name().data(),hasChildren);
-      if (cd->isLinkable())
+      if (cd->isLinkable() && !cd->isHidden())
       {
         if (hasHtmlHelp)
         {
@@ -406,7 +406,7 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
     }
     bool hasChildren = classHasVisibleChildren(cd);
     //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
-    if (cd->isLinkable())
+    if (cd->isLinkable() && !cd->isHidden())
     {
       if (hasHtmlHelp)
       {
@@ -499,7 +499,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
         }
         bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
-        if (cd->isLinkable())
+        if (cd->isLinkable() && !cd->isHidden())
         {
           //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->templateMaster()=%p\n",
           //    cd->displayName().data(),cd->isLinkable(),cd->isLinkableInProject(),cd->templateMaster());
@@ -914,7 +914,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject()) count++;
+    if (nd->isLinkableInProject() && !nd->isHidden()) count++;
   }
   return count;
 }
@@ -979,7 +979,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject())
+    if (nd->isLinkableInProject() && !nd->isHidden())
     {
       if (first)
       {
@@ -1042,7 +1042,7 @@ int countAnnotatedClasses()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0) 
+    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden()) 
     { 
       //printf("Annotated class %s\n",cd->name().data()); 
       count++; 
@@ -1074,7 +1074,7 @@ void writeAnnotatedClassList(OutputList &ol)
   // see which elements are in use
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
     {
       int c = cd->displayName().at(0);
       g_classIndexLetterUsed[CHL_All][c]=TRUE;
@@ -1108,7 +1108,7 @@ void writeAnnotatedClassList(OutputList &ol)
   
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
     {
       QCString type=cd->compoundTypeString();
       ol.startIndexKey();
@@ -1159,7 +1159,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   QCString alphaLinks = "<p><div class=\"qindex\">";
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
     {
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d\n",cd->className().data(),index);
@@ -1201,7 +1201,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   startLetter=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
     {
       int index = getPrefixIndex(cd->className());
       if (toupper(cd->className().at(index))!=startLetter)
@@ -1424,7 +1424,7 @@ void writeMemberList(OutputList &ol,bool useSections,
         if (
             md->isLinkableInProject() &&
             (cd=md->getClassDef()) &&
-            cd->isLinkableInProject() && cd->templateMaster()==0 &&
+            cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden() &&
             ( (filter==CMHL_All        && !(md->isFriend() && isFriendToHide)) ||
               (filter==CMHL_Functions  && (md->isFunction()  || md->isSlot() || md->isSignal()))  ||
               (filter==CMHL_Variables  && md->isVariable())  ||
@@ -1481,7 +1481,7 @@ void writeMemberList(OutputList &ol,bool useSections,
           if (
               md->isLinkableInProject() &&
               prevName!=cd->displayName() &&
-              cd->templateMaster()==0
+              cd->templateMaster()==0 && !cd->isHidden()
              )
           {
             if (count==0) 
@@ -2512,7 +2512,7 @@ void writeGraphInfo(OutputList &ol)
 
 //----------------------------------------------------------------------------
 /*!
- * write groups as hierarchial trees
+ * write groups as hierarchical trees
  * \author KPW
  */
 
@@ -3144,7 +3144,7 @@ void writeIndex(OutputList &ol)
   {
     if (Doxygen::mainPage->title().lower()!="notitle")
     {
-      ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,Doxygen::mainPage->title(),TRUE,FALSE);
+      ol.docify(Doxygen::mainPage->title());
     }
   }
   else

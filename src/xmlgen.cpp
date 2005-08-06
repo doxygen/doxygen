@@ -1588,7 +1588,7 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
   t << "    <compoundname>" << convertToXML(pd->name()) 
     << "</compoundname>" << endl;
 
-  SectionInfo *si = Doxygen::sectionDict.find(pageName);
+  SectionInfo *si = Doxygen::sectionDict.find(pd->name());
   if (si)
   {
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
