@@ -183,6 +183,17 @@ class ClassDef : public Definition
       return m_usesIntfClassDict;
     }
 
+    /** Marks this class as a template argument of some another class */
+    void makeTemplateArgument(bool b=TRUE)
+    {
+      m_isTemplArg = b;
+    }
+
+    bool isTemplateArgument() const
+    {
+      return m_isTemplArg;
+    }
+
     /*! Returns the definition of a nested compound if
      *  available, or 0 otherwise.
      *  @param name The name of the nested compound
@@ -465,6 +476,8 @@ class ClassDef : public Definition
      *  class which is extended.
      */
     ClassDef *m_categoryOf;
+
+    bool m_isTemplArg;
 };
 
 /*! \brief Class that contains information about a usage relation. 

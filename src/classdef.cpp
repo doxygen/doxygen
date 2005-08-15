@@ -1024,7 +1024,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
               m_compType == Interface && m_isObjC ? Class : m_compType,
               m_tempArgs != 0);
   
-  startFile(ol,getOutputFileBase(),name(),pageTitle);  
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible);  
   if (getOuterScope()!=Doxygen::globalScope)
   {
     writeNavigationPath(ol);
@@ -1645,7 +1645,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.disableAllBut(OutputGenerator::Html);
 
   startFile(ol,m_memListFileName,m_memListFileName,
-            theTranslator->trMemberList());
+            theTranslator->trMemberList(),HLI_ClassVisible);
   startTitle(ol,0);
   ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
@@ -2025,7 +2025,7 @@ bool ClassDef::isLinkableInProject() const
   else
   {
     return !name().isEmpty() &&    /* no name */
-      !m_artificial &&
+      !m_artificial && !isHidden() &&
       name().find('@')==-1 && /* anonymous compound */
       (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
       (!m_isLocal || Config_getBool("EXTRACT_LOCAL_CLASSES")) && /* local */

@@ -284,6 +284,7 @@ class GuardedSection
 
 void openGroup(Entry *e,const char *file,int line);
 void closeGroup(Entry *e,const char *file,int line);
+void initGroupInfo(Entry *e);
 static void groupAddDocs(Entry *e,const char *fileName);
 
 /* -----------------------------------------------------------------
@@ -1903,7 +1904,10 @@ static bool handleName(const QCString &)
   bool stop=makeStructuralIndicator(Entry::MEMBERGRP_SEC);
   g_memberGroupHeader.resize(0);
   BEGIN( NameParam );
-  closeGroup(current,yyFileName,yyLineNr);
+  if (g_memberGroupId!=DOX_NOGROUP) // end of previous member group
+  {
+    closeGroup(current,yyFileName,yyLineNr);
+  }
   return stop;
 }
 
@@ -2313,32 +2317,6 @@ void groupLeaveCompound(const char *,int,const char *)
 }
 
 
-void closeGroup(Entry *e,const char *fileName,int)
-{
-  //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-  //    e->name.data(),e->section,g_autoGroupStack.count());
-  if (g_memberGroupId!=DOX_NOGROUP) // end of member group
-  {
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
-    if (info) // know group
-    {
-      info->doc = g_memberGroupDocs;
-      info->docFile = fileName;
-    }
-    g_memberGroupId=DOX_NOGROUP;
-    g_memberGroupRelates.resize(0);
-    g_memberGroupDocs.resize(0);
-    e->mGrpId=DOX_NOGROUP;
-    //printf("new group id=%d\n",g_memberGroupId);
-  }
-  else if (!g_autoGroupStack.isEmpty()) // end of auto group
-  {
-    Grouping *grp = g_autoGroupStack.pop();
-    e->groups->removeLast();
-    delete grp;
-  }
-}
-
 void openGroup(Entry *e,const char *,int)
 {
   //printf("==> openGroup(name=%s,sec=%x)\n",e->name.data(),e->section);
@@ -2369,8 +2347,37 @@ void openGroup(Entry *e,const char *,int)
   }
 }
 
+void closeGroup(Entry *e,const char *fileName,int)
+{
+  //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
+  //    e->name.data(),e->section,g_autoGroupStack.count());
+  if (g_memberGroupId!=DOX_NOGROUP) // end of member group
+  {
+    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
+    if (info) // know group
+    {
+      info->doc = g_memberGroupDocs;
+      info->docFile = fileName;
+    }
+    g_memberGroupId=DOX_NOGROUP;
+    g_memberGroupRelates.resize(0);
+    g_memberGroupDocs.resize(0);
+    e->mGrpId=DOX_NOGROUP;
+    //printf("new group id=%d\n",g_memberGroupId);
+  }
+  else if (!g_autoGroupStack.isEmpty()) // end of auto group
+  {
+    Grouping *grp = g_autoGroupStack.pop();
+    e->groups->removeLast();
+    delete grp;
+    initGroupInfo(e);
+  }
+}
+
 void initGroupInfo(Entry *e)
 {
+  //printf("==> initGroup(id=%d,related=%s)\n",g_memberGroupId,
+  //       g_memberGroupRelates.data());
   e->mGrpId     = g_memberGroupId;
   e->relates    = g_memberGroupRelates;
   if (!g_autoGroupStack.isEmpty())
