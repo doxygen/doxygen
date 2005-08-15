@@ -94,6 +94,7 @@ static QCString      g_saveType;
 static int	     g_bracketCount = 0;
 static int	     g_curlyCount   = 0;
 static int	     g_sharpCount   = 0;
+static bool          g_inFunctionTryBlock = FALSE;
 
 static int	     g_lastSpecialCContext;
 static int           g_lastStringContext;
@@ -193,6 +194,8 @@ class VariableContext
 
     void addVariable(const QCString &type,const QCString &name);
     ClassDef *findVariable(const QCString &name);
+
+    int count() const { return m_scopes.count(); }
     
   private:
     Scope        m_globalScope;
@@ -261,6 +264,10 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     {
       DBG_CTX((stderr,"** addVariable: dummy context\n"));
       scope->append(lname,dummyContext);
+    }
+    else
+    {
+      DBG_CTX((stderr,"** addVariable: not adding variable!\n"));
     }
   }
 }
@@ -596,6 +603,18 @@ static void addParmType()
   g_parmName.resize(0) ;
 }
 
+static void addUsingDirective(const char *name)
+{
+  if (g_exampleBlock && g_sourceFileDef && name)
+  {
+    NamespaceDef *nd = Doxygen::namespaceSDict.find(name);
+    if (nd)
+    {
+      g_sourceFileDef->addUsingDirective(nd);
+    }
+  }
+}
+
 static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
@@ -789,8 +808,6 @@ static bool getLinkInScope(const QCString &c,  // scope
 	g_anchorCount++;
       }
     }
-    //Definition *d=0;
-    //if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
@@ -858,16 +875,24 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   MemberDef *md=0;
   bool isLocal=FALSE;
 
-  //fprintf(stderr,"generateClassOrGlobalLink(className=%s)\n",className.data());
+  //printf("generateClassOrGlobalLink(className=%s)\n",className.data());
   if ((lcd=g_theVarContext.findVariable(className))==0) // not a local variable
   {
     Definition *d = g_currentDefinition;
     //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
     cd = getResolvedClass(d,g_sourceFileDef,className,&md);
+    //printf("non-local variable name=%s context=%d cd=%s md=%s!\n",
+    //	className.data(),g_theVarContext.count(),cd?cd->name().data():"<none>",
+    //	md?md->name().data():"<none>");
     if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
-      cd=getResolvedClass(d,g_sourceFileDef,className.left(i),&md);
+      QCString bareName = stripTemplateSpecifiersFromScope(className);
+      if (bareName!=className)
+      {
+	cd=getResolvedClass(d,g_sourceFileDef,bareName,&md); // try unspecialized version
+      }
     }
+    //printf("md=%s\n",md?md->name().data():"<none>");
     //printf("is found as a type %s\n",cd?cd->name().data():"<null>");
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
@@ -879,8 +904,10 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   else
   {
+    //printf("local variable!\n");
     if (lcd!=VariableContext::dummyContext) 
     {
+      //printf("non-dummy context lcd=%s!\n",lcd->name().data());
       g_theCallContext.setClass(lcd);
     }
     isLocal=TRUE;
@@ -964,7 +991,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const 
   if (mcd)
   {
     MemberDef *xmd = mcd->getMemberByName(memName);
-    //fprintf(stderr,"generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
+    //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
     if (xmd)
     {
       // extract class definition of the return type in order to resolve
@@ -1565,6 +1592,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 %x      ObjCMName
 %x      ObjCSkipStr
 %x      OldStyleArgs
+%x	UsingName
 
 %%
 
@@ -1993,6 +2021,18 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_insideTemplate=TRUE;
 					  g_sharpCount=0;
 					}
+<Body>"using"{BN}+"namespace"{BN}+	{
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					  BEGIN(UsingName);
+  					}
+<UsingName>{ID}("::"{ID})*		{ addUsingDirective(yytext);
+ 					  generateClassOrGlobalLink(*g_code,yytext);
+					  BEGIN(Body);
+                                        }
+<UsingName>\n				{ codifyLines(yytext); BEGIN(Body); }
+<UsingName>.				{ codifyLines(yytext); BEGIN(Body); }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
@@ -2014,17 +2054,21 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
   					}
-<Body>{FLOWKW}/([^a-z_A-Z0-9]) 	{
+<Body>{FLOWKW}/([^a-z_A-Z0-9]) 		{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
+					  if (g_inFunctionTryBlock && strcmp(yytext,"catch")==0)
+					  {
+					    g_inFunctionTryBlock=FALSE;
+					  }
   					}
 <Body>{FLOWKW}/{B}* 			{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<Body>{FLOWKW}/{B}*"(" 		{
+<Body>{FLOWKW}/{B}*"(" 			{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2037,6 +2081,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (*yytext==')')
 					  {
 					    g_theCallContext.popScope();
+					    BEGIN(FuncCall);
 					  }
   					}
 <Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
@@ -2070,19 +2115,19 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    BEGIN(Body);
 					  }
   					}
-<Body>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"/{B}* { // A<T> *pt;
-					  generateClassOrGlobalLink(*g_code,yytext);
+<Body>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
 					  addType();
+					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
-					  generateClassOrGlobalLink(*g_code,yytext/*,TRUE*/);
 					  addType();
+					  generateClassOrGlobalLink(*g_code,yytext/*,TRUE*/);
   					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()
-					  generateClassOrGlobalLink(*g_code,yytext);
 					  addType();
+					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
 <Body>"("{B}*("*"{B}*)+{SCOPENAME}*{B}*")"/{B}*	{  // (*p)->func() but not "if (p) ..."
@@ -2247,6 +2292,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    {
 					      if (g_scopeStack.top()!=CLASSBLOCK)
 					      {
+						//printf("AddVariable: '%s' '%s' context=%d\n",
+						//    g_type.data(),g_name.data(),g_theVarContext.count());
 					        g_theVarContext.addVariable(g_type,g_name);
 					      }
 					      g_name.resize(0);
@@ -2536,6 +2583,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_type.resize(0); g_name.resize(0);
 					  BEGIN( Body );
   					}
+<CallEnd>"try"				{ // function-try-block
+					  startFontClass("keyword");
+  					  g_code->codify(yytext);
+					  endFontClass();
+					  g_inFunctionTryBlock=TRUE;
+                                        }
 <CallEnd>{ID}				{
   					  if (g_insideBody || !g_parmType.isEmpty()) 
 					  {
@@ -2998,13 +3051,14 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
 		  int startLine,int endLine,bool inlineFragment,
 		  MemberDef *memberDef)
 {
-  //printf("***parseCode()\n");
+  //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
+  g_inFunctionTryBlock = FALSE;
   if (endLine!=-1)
     g_inputLines  = endLine+1;
   else
@@ -3026,15 +3080,20 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
-  if (fd) 
+  if (exBlock && fd==0)
   {
-    setCurrentDoc(fd->name(),fd->getSourceFileBase());
-    g_insideObjC = fd->name().lower().right(2)==".m" || 
-                   fd->name().lower().right(3)==".mm"; 
+    // create a dummy filedef for the example
+    g_sourceFileDef = new FileDef("",exName);
+  }
+  if (g_sourceFileDef) 
+  {
+    setCurrentDoc(g_sourceFileDef->name(),g_sourceFileDef->getSourceFileBase());
+    g_insideObjC = g_sourceFileDef->name().lower().right(2)==".m" || 
+                   g_sourceFileDef->name().lower().right(3)==".mm"; 
   }
   g_currentDefinition = 0;
   g_currentMemberDef = 0;
-  g_searchingForBody = FALSE;
+  g_searchingForBody = exBlock;
   g_insideBody = FALSE;
   g_bracketCount = 0;
   if (!g_exampleName.isEmpty())
@@ -3056,6 +3115,12 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   {
     endFontClass();
     g_code->endCodeLine();
+  }
+  if (exBlock && g_sourceFileDef)
+  {
+    // delete the temporary file definition used for this example
+    delete g_sourceFileDef;
+    g_sourceFileDef=0;
   }
   return;
 }

@@ -123,8 +123,15 @@ class Definition
     /*! returns the line number at which the definition was found */
     int getDefLine() const { return m_defLine; }
 
-    /*! Returns TRUE iff the definition is documented */
+    /*! Returns TRUE iff the definition is documented 
+     *  (which could be generated documentation) 
+     *  @see hasUserDocumentation()
+     */
     virtual bool hasDocumentation() const;
+
+    /*! Returns TRUE iff the definition is documented by the user. */
+    virtual bool hasUserDocumentation() const;
+
 
     /*! Returns TRUE iff it is possible to link to this item within this
      *  project. 
@@ -135,6 +142,16 @@ class Definition
      *  be a link to another project imported via a tag file. 
      */
     virtual bool isLinkable() const = 0;
+
+    /*! Returns TRUE iff the name is part of this project and 
+     *  may appear in the output 
+     */
+    virtual bool isVisibleInProject() const 
+    { return m_hidden || isLinkableInProject(); }
+
+    /*! Returns TRUE iff the name may appear in the output */
+    virtual bool isVisible() const
+    { return m_hidden || isLinkable(); }
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be

@@ -618,6 +618,14 @@ bool Definition::hasDocumentation() const
   return hasDocs;
 }
 
+bool Definition::hasUserDocumentation() const
+{
+  bool hasDocs = 
+         !m_doc.isEmpty() ||
+         !m_brief.isEmpty();
+  return hasDocs;
+}
+
 void Definition::addSourceReferencedBy(MemberDef *md)
 {
   if (md)

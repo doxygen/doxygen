@@ -193,7 +193,7 @@ PREDEFINED           = "DECLARE_INTERFACE(name)=class name" \
                        DECLARE_PROTECT_FINAL_CONSTRUCT=// \
                        "DECLARE_AGGREGATABLE(Class)= " \
                        "DECLARE_REGISTRY_RESOURCEID(Id)= " \
-                       DECLARE_MESSAGE_MAP = \
+                       DECLARE_MESSAGE_MAP= \
                        BEGIN_MESSAGE_MAP=/* \
                        END_MESSAGE_MAP=*/// \
                        BEGIN_COM_MAP=/* \
