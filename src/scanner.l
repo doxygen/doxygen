@@ -2142,6 +2142,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
                                           {
                                             current->type = current->type.mid(3);
                                           }
+					  if (isTypedef && current->type.left(8)!="typedef ")
+					  {
+					    current->type.prepend("typedef ");
+					  }
 					  bool needNewCurrent=FALSE;
 					  if (!current->name.isEmpty() && current->section!=Entry::ENUM_SEC)
 					  {

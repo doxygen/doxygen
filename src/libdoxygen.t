@@ -85,12 +85,17 @@ sub GenerateDep {
 	$(YACC) -l -d -p cppExpYY constexp.y -o ce_parse.c 
 	-rm ce_parse.c	
 
+TO_C_CMD=sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g"
+
 index_xsd.h: index.xsd
-	cat index.xsd | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >index_xsd.h 
+	cat index.xsd | $(TO_C_CMD) >index_xsd.h 
 
 compound_xsd.h: compound.xsd
-	cat compound.xsd | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >compound_xsd.h 
+	cat compound.xsd | $(TO_C_CMD) >compound_xsd.h 
 
 search_php.h: search.php
-	cat search.php | sed -e "s/\\\\/\\\\\\\\/g" -e "s/\"/\\\\\"/g" -e "s/^/\"/g" -e "s/$$/\\\\n\"/g" >search_php.h 
+	cat search.php | $(TO_C_CMD) >search_php.h 
+
+doxygen_css.h: doxygen.css
+	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
 

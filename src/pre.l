@@ -2242,13 +2242,17 @@ void preprocessFile(const char *fileName,BufStr &output)
       if (i<(int)tmp.length()) definition+=tmp.mid(i,tmp.length()-i);
       
       // add define definition to the dictionary of defines for this file
-      Define *def = new Define;
-      def->name = ds.left(i_obrace);
-      def->definition = definition; 
-      def->nargs = count;
-      def->isPredefined = TRUE;
-      def->nonRecursive = nonRecursive;
-      g_fileDefineDict->insert(def->name,def);
+      QCString dname = ds.left(i_obrace);
+      if (!dname.isEmpty())
+      {
+	Define *def = new Define;
+	def->name = dname;
+	def->definition = definition; 
+	def->nargs = count;
+	def->isPredefined = TRUE;
+	def->nonRecursive = nonRecursive;
+	g_fileDefineDict->insert(def->name,def);
+      }
 
       //printf("#define `%s' `%s' #nargs=%d\n",
       //  def->name.data(),def->definition.data(),def->nargs);
@@ -2270,10 +2274,17 @@ void preprocessFile(const char *fileName,BufStr &output)
 	def->name = ds.left(ine);
 	def->definition = ds.right(ds.length()-i_equals-1);
       }
-      def->nargs = -1;
-      def->isPredefined = TRUE;
-      def->nonRecursive = nonRecursive;
-      g_fileDefineDict->insert(def->name,def);
+      if (!def->name.isEmpty())
+      {
+	def->nargs = -1;
+	def->isPredefined = TRUE;
+	def->nonRecursive = nonRecursive;
+	g_fileDefineDict->insert(def->name,def);
+      }
+      else
+      {
+	delete def;
+      }
 
       //printf("#define `%s' `%s' #nargs=%d\n",
       //  def->name.data(),def->definition.data(),def->nargs);

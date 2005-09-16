@@ -282,7 +282,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   {
     pageTitle = theTranslator->trNamespaceReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible);
   if (getOuterScope()!=Doxygen::globalScope)
   {
     writeNavigationPath(ol);

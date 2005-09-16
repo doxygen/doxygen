@@ -234,7 +234,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   QCString title = docname+versionTitle;
   QCString pageTitle=theTranslator->trFileReference(docname);
-  startFile(ol,getOutputFileBase(),name(),pageTitle);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible);
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
@@ -630,7 +630,7 @@ void FileDef::writeSource(OutputList &ol)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,getSourceFileBase(),0,pageTitle);
+  startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible);
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {

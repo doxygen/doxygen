@@ -288,11 +288,8 @@ function main()
   {
     $query=$_GET["query"];
   }
-  echo "<input class=\"search\" type=\"text\" name=\"query\" value=\"$query\" size=\"20\" accesskey=\"s\"/>\n";
-  echo "</span>\n";
-  echo "</form>\n";
-  echo "</div>\n";
-  echo "<div class=\"searchresults\">\n";
+  end_form($query);
+  echo "&nbsp;\n<div class=\"searchresults\">\n";
   $results = array();
   $requiredWords = array();
   $forbiddenWords = array();
