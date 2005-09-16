@@ -1939,12 +1939,13 @@ void MemberDef::warnIfUndocumented()
     t="group", d=gd;
   else
     t="file", d=fd;
+  static bool extractAll = Config_getBool("EXTRACT_ALL");
 
   //printf("warnIfUndoc: d->isLinkable()=%d isLinkable()=%d "
   //       "isDocumentedFriendClass()=%d name()=%s prot=%d\n",
   //       d->isLinkable(),isLinkable(),isDocumentedFriendClass(),
   //       name().data(),prot);
-  if (!isLinkable() && 
+  if ((!hasUserDocumentation() && !extractAll) &&
       !isFriendClass() && 
       name().find('@')==-1 && d->name().find('@')==-1 &&
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))

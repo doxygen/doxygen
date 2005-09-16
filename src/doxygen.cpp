@@ -268,6 +268,21 @@ static STLInfo g_stlinfo[] =
   { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "valarray",             0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
+  { "exception",            0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "bad_alloc",            "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "bad_cast",             "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "bad_typeid",           "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "logic_error",          "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "ios_base::failure",    "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "runtime_error",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "bad_exception",        "exception",                    0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "domain_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "invalid_argument",     "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "length_error",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "out_of_range",         "logic_error",                  0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "range_error",          "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "overflow_error",       "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
+  { "underflow_error",      "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
   { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
 };
 
@@ -3162,119 +3177,22 @@ static QDict<int> *getTemplateArgumentsInName(ArgumentList *templateArguments,co
  */
 static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,const QCString &name)
 {
-  
-#if 0
-  ClassDef *result=0;
-
-  FileDef *fd=cd->getFileDef();
-  // try using of namespaces in namespace scope
-  NamespaceDef *nd=cd->getNamespaceDef();
-  if (nd) // class is inside a namespace
-  {
-    QCString fName = nd->name()+"::"+name;
-    result = getResolvedClass(cd,fd,fName); 
-    if (result && result!=cd) 
-    {
-      return result;
-    }
-    NamespaceSDict *nl = nd->getUsedNamespaces();
-    if (nl) // try to prepend any of the using namespace scopes.
-    {
-      NamespaceSDict::Iterator nli(*nl);
-      NamespaceDef *nd;
-      for (nli.toFirst() ; (nd=nli.current()) ; ++nli)
-      {
-        fName = nd->name()+"::"+name;
-        result = getResolvedClass(cd,fd,fName);
-        if (result && result!=cd) return result;
-      }
-    }
-    SDict<Definition> *cl = nd->getUsedClasses();
-    if (cl)
-    {
-      SDict<Definition>::Iterator cli(*cl);
-      Definition *ucd;
-      for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
-      {
-        if (ucd->definitionType()==Definition::TypeClass && 
-            rightScopeMatch(ucd->name(),name))
-        {
-          return (ClassDef *)ucd;
-        }
-      }
-    }
-    // TODO: check any inbetween namespaces as well!
-    if (fd) // and in the global namespace
-    {
-      SDict<Definition> *cl = fd->getUsedClasses();
-      if (cl)
-      {
-        SDict<Definition>::Iterator cli(*cl);
-        Definition *ucd;
-        for (cli.toFirst(); (ucd=cli.current()); ++cli)
-        {
-          if (ucd->definitionType()==Definition::TypeClass && 
-              rightScopeMatch(ucd->name(),name))
-          {
-            return (ClassDef *)ucd;
-          }
-        }
-      }
-    }
-  }
-
-  // try using of namespaces in file scope
-  if (fd)
-  {
-    // look for the using statement in this file in which the
-    // class was found
-    NamespaceSDict *nl = fd->getUsedNamespaces();
-    if (nl) // try to prepend any of the using namespace scopes.
-    {
-      NamespaceSDict::Iterator nli(*nl);
-      NamespaceDef *nd;
-      for (nli.toFirst() ; (nd=nli.current()) ; ++nli)
-      {
-        QCString fName = nd->name()+"::"+name;
-        result=getResolvedClass(cd,fd,fName);
-        if (result && result!=cd)
-        {
-          return result;
-        }
-      }
-    }
-    SDict<Definition> *cl = fd->getUsedClasses();
-    if (cl)
-    {
-      SDict<Definition>::Iterator cli(*cl);
-      Definition *ucd;
-      for (cli.toFirst(); (ucd=cli.current()) ; ++cli)
-      {
-        if (ucd->definitionType()==Definition::TypeClass && 
-           rightScopeMatch(ucd->name(),name))
-        {
-          return (ClassDef *)ucd;
-        }
-      }
-    }
-  }
-#endif
-
   FileDef *fd=cd->getFileDef();
   ClassDef *result=0;
   if (context && cd!=context)
   {
-    result = getResolvedClass(context,0,name);
+    result = getResolvedClass(context,0,name,0,0,FALSE,TRUE);
   }
   if (result==0)
   {
-    result = getResolvedClass(cd,fd,name);
+    result = getResolvedClass(cd,fd,name,0,0,FALSE,TRUE);
   }
-  //printf("** Trying to find %s within context %s class %s result=%s\n",
+  //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
   //       context ? context->name().data() : "<none>",
   //       cd      ? cd->name().data()      : "<none>",
-  //       result  ? result->name().data()  : "<none>"
+  //       result  ? result->name().data()  : "<none>",
+  //       Doxygen::classSDict.find(name)
   //      );
   return result;
 }
@@ -3320,7 +3238,7 @@ static void findUsedClassesForClass(Entry *root,
       MemberDef *md=mi->memberDef;
       if (md->isVariable()) // for each member variable in this class
       {
-        //printf("Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
+        //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
         QCString type=removeRedundantWhiteSpace(md->typeString());
         int pos=0;
         QCString usedClassName;
@@ -3332,11 +3250,16 @@ static void findUsedClassesForClass(Entry *root,
           type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
         }
 
-        //printf("  template substitution gives=%s\n",type.data());
+        //printf("      template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec)!=-1)
         {
           // find the type (if any) that matches usedClassName
-          ClassDef *typeCd = getResolvedClass(masterCd,masterCd->getFileDef(),usedClassName);
+          ClassDef *typeCd = getResolvedClass(masterCd,
+                                              masterCd->getFileDef(),
+                                              usedClassName,
+                                              0,0,
+                                              FALSE,TRUE
+                                             );
           //printf("====>  usedClassName=%s -> typeCd=%s\n",
           //     usedClassName.data(),typeCd?typeCd->name().data():"<none>");
           if (typeCd)
@@ -3383,6 +3306,7 @@ static void findUsedClassesForClass(Entry *root,
                   usedCd = new ClassDef(
                      masterCd->getDefFileName(),masterCd->getDefLine(),
                      usedName,ClassDef::Class);
+                  usedCd->makeTemplateArgument();
                   Doxygen::hiddenClasses.append(usedName,usedCd);
                 }
                 if (usedCd)
@@ -3536,7 +3460,7 @@ static bool findTemplateInstanceRelation(Entry *root,
 
   if (freshInstance)
   {
-    Debug::print(Debug::Classes,0,"      found fresh instance!\n");
+    Debug::print(Debug::Classes,0,"      found fresh instance '%s'!\n",instanceClass->name().data());
     Doxygen::classSDict.append(instanceClass->name(),instanceClass);
     instanceClass->setTemplateBaseClassNames(templateNames);
 
@@ -3638,11 +3562,12 @@ static bool findClassRelation(
       MemberDef *baseClassTypeDef=0;
       QCString templSpec;
       ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,
-                                           cd->getFileDef(), // todo: is this ok?
+                                           cd->getFileDef(), 
                                            baseClassName,
                                            &baseClassTypeDef,
                                            &templSpec,
-                                           mode==Undocumented
+                                           mode==Undocumented,
+                                           TRUE
                                           );
       //printf("baseClassName=%s baseClass=%p cd=%p explicitGlobalScope=%d\n",
       //    baseClassName.data(),baseClass,cd,explicitGlobalScope);
@@ -3695,7 +3620,14 @@ static bool findClassRelation(
           {
             templSpec=baseClassName.mid(i,e-i);
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-            baseClass=getResolvedClass(cd,cd->getFileDef(),baseClassName);
+            baseClass=getResolvedClass(cd,
+                                       cd->getFileDef(),
+                                       baseClassName,
+                                       &baseClassTypeDef,
+                                       0, //&templSpec,
+                                       mode==Undocumented,
+                                       TRUE
+                                      );
             //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
             //      baseClass,baseClassName.data(),templSpec.data());
           }
@@ -3707,7 +3639,14 @@ static bool findClassRelation(
         {
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,si);
-          baseClass=getResolvedClass(cd,cd->getFileDef(),baseClassName);
+          baseClass=getResolvedClass(cd,
+                                     cd->getFileDef(),
+                                     baseClassName,
+                                     &baseClassTypeDef,
+                                     &templSpec,
+                                     mode==Undocumented,
+                                     TRUE
+                                    );
           found=baseClass!=0 && baseClass!=cd;
         }
         
@@ -4305,7 +4244,7 @@ static void addMemberDocs(Entry *root,
 static ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
-  ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE);
+  ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE,TRUE);
   return tcd;
 }
 

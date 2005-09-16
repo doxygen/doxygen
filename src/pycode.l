@@ -15,10 +15,12 @@
  *
  */
 /*  This code is based on the work done by the MoxyPyDoxy team
- *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada), executed
- *  as part of CS179e (Compiler design project) at the UC Riverside,
- *  under supervision of Peter H. Fröhlic
+ *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada)
+ *  in Spring 2005 as part of CS 179E: Compiler Design Project
+ *  at the University of California, Riverside; the course was
+ *  taught by Peter H. Froehlich <phf@acm.org>.
  */
+
 
 %{
 

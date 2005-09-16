@@ -15,10 +15,12 @@
  *
  */
 /*  This code is based on the work done by the MoxyPyDoxy team
- *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada), executed
- *  as part of CS179e (Compiler design project) at the UC Riverside,
- *  under supervision of Peter H. Fröhlic.
+ *  (Linda Leong, Mike Rivera, Kim Truong, and Gabriel Estrada)
+ *  in Spring 2005 as part of CS 179E: Compiler Design Project
+ *  at the University of California, Riverside; the course was
+ *  taught by Peter H. Froehlich <phf@acm.org>.
  */
+
 
 %{
 
@@ -80,6 +82,7 @@ static QCString         docBlockName;
 static bool             docBlockInBody;
 static bool             docBlockJavaStyle;
 static bool             docBrief;
+static bool             docBlockSpecial;
 
 static bool             g_doubleQuote;
 static bool             g_specialBlock;
@@ -322,6 +325,7 @@ static void initTriDoubleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
+  docBlockSpecial   = yytext[3]=='!';
   docBlock.resize(0);
   g_doubleQuote = TRUE;
   startCommentBlock(FALSE);
@@ -332,6 +336,7 @@ static void initTriSingleQuoteBlock()
   docBlockContext   = YY_START;
   docBlockInBody    = FALSE;
   docBlockJavaStyle = TRUE;
+  docBlockSpecial   = yytext[3]=='!';
   docBlock.resize(0);
   g_doubleQuote = FALSE;
   startCommentBlock(FALSE);
@@ -390,8 +395,8 @@ PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*  
 BORDER            ([^A-Za-z0-9])
 
-TRISINGLEQUOTE    "'''"
-TRIDOUBLEQUOTE    "\"\"\""
+TRISINGLEQUOTE    "'''"(!)?
+TRIDOUBLEQUOTE    "\"\"\""(!)?
 LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
@@ -1049,8 +1054,11 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			    if (g_specialBlock || g_expectModuleDocs)
 			    {
 			      QCString actualDoc=docBlock;
-			      actualDoc.prepend("\\verbatim ");
-			      actualDoc.append("\\endverbatim ");
+			      if (!docBlockSpecial) // legacy unformatted docstring
+			      {
+			        actualDoc.prepend("\\verbatim ");
+			        actualDoc.append("\\endverbatim ");
+			      }
 			      if (g_expectModuleDocs)
 			      {
 				actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
@@ -1377,7 +1385,11 @@ static void parsePrototype(const QCString &text)
     current->section = Entry::VARIABLEDOC_SEC;
 
   // restore original scanner state
+
+  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(orgState);
+  yy_delete_buffer(tmpBuf);
+
   inputString = orgInputString; 
   inputPosition = orgInputPosition;
 

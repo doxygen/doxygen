@@ -69,7 +69,7 @@ class NamespaceDef : public Definition
       int i = name().findRev("::");
       if (i==-1) i=0; else i+=2;
       return !name().isEmpty() && name().at(i)!='@' &&
-              hasDocumentation() && !isReference();
+              hasDocumentation() && !isReference() && !isHidden();
     }
     bool isLinkable() const
     {

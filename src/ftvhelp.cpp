@@ -663,30 +663,6 @@ void FTVHelp::generateTreeView()
     t << "    <script type=\"text/javascript\">\n";
     t << "    <!-- // Hide script from old browsers\n";
     t << "    \n";
-    //t << "    function findChildNode(node, name) \n";
-    //t << "    {\n";
-    //t << "      var temp;\n";
-    //t << "      if (node == null) \n";
-    //t << "      {\n";
-    //t << "        return null;\n";
-    //t << "      } \n";
-    //t << "      node = node.firstChild;\n";
-    //t << "      while (node != null) \n";
-    //t << "      {\n";
-    //t << "        if (node.nodeName == name) \n";
-    //t << "        {\n";
-    //t << "          return node;\n";
-    //t << "        }\n";
-    //t << "        temp = findChildNode(node, name);\n";
-    //t << "        if (temp != null) \n";
-    //t << "        {\n";
-    //t << "          return temp;\n";
-    //t << "        }\n";
-    //t << "        node = node.nextSibling;\n";
-    //t << "      }\n";
-    //t << "      return null;\n";
-    //t << "    }\n";
-    //t << "\n";
 
             /* User has clicked on a node (folder or +/-) in the tree */
     t << "    function toggleFolder(id, imageNode) \n";
@@ -702,23 +678,12 @@ void FTVHelp::generateTreeView()
     t << "        imageNode = imageNode.previousSibling;\n";
     t << "        l = imageNode.src.length;\n";
     t << "      }\n";
-    //t << "      var vl = \"" FTV_ICON_FILE(vertline) "\";\n";
-    //t << "      if (imageNode != null && imageNode.nodeName != \"IMG\") \n";
-    //t << "      {\n";
-    //t << "        imageNode = findChildNode(imageNode, \"IMG\");\n";
-    //t << "        if (imageNode!=null) l = imageNode.src.length;\n";
-    //t << "      }\n";
     t << "      if (folder == null) \n";
     t << "      {\n";
     t << "      } \n";
                 /* Node controls a open section, we need to close it */
     t << "      else if (folder.style.display == \"block\") \n";
     t << "      {\n";
-    //t << "        while (imageNode != null && \n";
-    //t << "               imageNode.src.substring(l-vl.length,l) == vl)\n";
-    //t << "        {\n";
-    //t << "          imageNode = imageNode.nextSibling;\n";
-    //t << "        }\n";
     t << "        if (imageNode != null) \n";
     t << "        {\n";
     t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
@@ -735,11 +700,6 @@ void FTVHelp::generateTreeView()
     t << "      } \n";
     t << "      else \n"; /* section is closed, we need to open it */
     t << "      {\n";
-    //t << "        while (imageNode != null && \n";
-    //t << "               imageNode.src.substring(l-vl.length,l) == vl)\n";
-    //t << "        {\n";
-    //t << "          imageNode = imageNode.nextSibling;\n";
-    //t << "        }\n";
     t << "        if (imageNode != null) \n";
     t << "        {\n";
     t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderopen) "\";\n";

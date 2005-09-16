@@ -175,28 +175,69 @@ QCString abbreviate(const char *s,const char *name)
 
 //----------------------------------------------------------------------------
 
-static void startQuickIndexItem(OutputList &ol,const char *l,
-                                bool hl,bool compact,bool &first)
+static void startQuickIndexList(OutputList &ol)
 {
-  if (!first && compact) ol.writeString(" | ");
-  first=FALSE;
-  if (!compact) ol.writeString("<li>");
-  if (hl && compact)
+  bool fancyTabs = TRUE;
+  if (fancyTabs)
   {
-    ol.writeString("<a class=\"qindexHL\" ");
+    ol.writeString("<div class=\"tabs\">\n"); 
+    ol.writeString("  <ul>\n"); 
   }
   else
   {
-    ol.writeString("<a class=\"qindex\" ");
+    ol.writeString("<div class=\"qindex\">"); 
+  }
+}
+
+static void endQuickIndexList(OutputList &ol)
+{
+  bool fancyTabs = TRUE;
+  if (fancyTabs)
+  {
+    ol.writeString("  </ul>\n");
+  }
+  ol.writeString("</div>\n");
+}
+
+static void startQuickIndexItem(OutputList &ol,const char *l,
+                                bool hl,bool compact,bool &first)
+{
+  bool fancyTabs = TRUE;
+  if (!first && compact && !fancyTabs) ol.writeString(" | ");
+  first=FALSE;
+  if (fancyTabs)
+  {
+    ol.writeString("    <li"); 
+    if (hl) ol.writeString(" id=\"current\"");
+    ol.writeString("><a ");
+  }
+  else
+  {
+    if (!compact) ol.writeString("<li>");
+    if (hl && compact)
+    {
+      ol.writeString("<a class=\"qindexHL\" ");
+    }
+    else
+    {
+      ol.writeString("<a class=\"qindex\" ");
+    }
   }
   ol.writeString("href=\""); 
   ol.writeString(l);
   ol.writeString("\">");
+  if (fancyTabs)
+  {
+    ol.writeString("<span>");
+  }
 }
 
 static void endQuickIndexItem(OutputList &ol)
 {
+  bool fancyTabs=TRUE;
+  if (fancyTabs) ol.writeString("</span>");
   ol.writeString("</a>");
+  if (fancyTabs) ol.writeString("</li>\n");
 }
 
 
@@ -284,7 +325,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
       //printf("Passed...\n");
       bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
       //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
-      if (cd->isLinkable() && !cd->isHidden())
+      if (cd->isLinkable())
       {
         //printf("Writing class %s\n",cd->displayName().data());
         ol.writeIndexItem(cd->getReference(),cd->getOutputFileBase(),cd->displayName());
@@ -367,7 +408,7 @@ void writeClassTree(BaseClassList *cl,int level)
       }
       bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
       //printf("tree2: Has children %s: %d\n",cd->name().data(),hasChildren);
-      if (cd->isLinkable() && !cd->isHidden())
+      if (cd->isLinkable())
       {
         if (hasHtmlHelp)
         {
@@ -406,7 +447,7 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
     }
     bool hasChildren = classHasVisibleChildren(cd);
     //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
-    if (cd->isLinkable() && !cd->isHidden())
+    if (cd->isLinkable())
     {
       if (hasHtmlHelp)
       {
@@ -499,7 +540,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
         }
         bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
-        if (cd->isLinkable() && !cd->isHidden())
+        if (cd->isLinkable())
         {
           //printf("Writing class %s isLinkable()=%d isLinkableInProject()=%d cd->templateMaster()=%p\n",
           //    cd->displayName().data(),cd->isLinkable(),cd->isLinkableInProject(),cd->templateMaster());
@@ -594,7 +635,8 @@ void writeHierarchicalIndex(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
-  startFile(ol,"hierarchy",0, theTranslator->trHierarchicalIndex().data(), HLI_Hierarchy);
+  startFile(ol,"hierarchy",0, theTranslator->trHierarchicalIndex().data(), 
+            HLI_Hierarchy);
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
   QCString htmlHelpTitle = title;
@@ -646,7 +688,7 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   if (hierarchyClasses==0) return;
   ol.disableAllBut(OutputGenerator::Html);
   QCString title = theTranslator->trGraphicalHierarchy();
-  startFile(ol,"inherits",0,title.data());
+  startFile(ol,"inherits",0,title.data(),HLI_Hierarchy);
   startTitle(ol,0);
   QCString htmlHelpTitle = title;
   QCString ftvHelpTitle  = title;
@@ -914,7 +956,7 @@ int countNamespaces()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject() && !nd->isHidden()) count++;
+    if (nd->isLinkableInProject()) count++;
   }
   return count;
 }
@@ -979,7 +1021,7 @@ void writeNamespaceIndex(OutputList &ol)
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    if (nd->isLinkableInProject() && !nd->isHidden())
+    if (nd->isLinkableInProject())
     {
       if (first)
       {
@@ -1042,7 +1084,7 @@ int countAnnotatedClasses()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden()) 
+    if (cd->isLinkableInProject() && cd->templateMaster()==0) 
     { 
       //printf("Annotated class %s\n",cd->name().data()); 
       count++; 
@@ -1074,7 +1116,7 @@ void writeAnnotatedClassList(OutputList &ol)
   // see which elements are in use
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int c = cd->displayName().at(0);
       g_classIndexLetterUsed[CHL_All][c]=TRUE;
@@ -1108,7 +1150,7 @@ void writeAnnotatedClassList(OutputList &ol)
   
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       QCString type=cd->compoundTypeString();
       ol.startIndexKey();
@@ -1159,7 +1201,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   QCString alphaLinks = "<p><div class=\"qindex\">";
   for (;(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d\n",cd->className().data(),index);
@@ -1201,7 +1243,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   startLetter=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden())
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
       if (toupper(cd->className().at(index))!=startLetter)
@@ -1424,7 +1466,7 @@ void writeMemberList(OutputList &ol,bool useSections,
         if (
             md->isLinkableInProject() &&
             (cd=md->getClassDef()) &&
-            cd->isLinkableInProject() && cd->templateMaster()==0 && !cd->isHidden() &&
+            cd->isLinkableInProject() && cd->templateMaster()==0 &&
             ( (filter==CMHL_All        && !(md->isFriend() && isFriendToHide)) ||
               (filter==CMHL_Functions  && (md->isFunction()  || md->isSlot() || md->isSignal()))  ||
               (filter==CMHL_Variables  && md->isVariable())  ||
@@ -1481,7 +1523,7 @@ void writeMemberList(OutputList &ol,bool useSections,
           if (
               md->isLinkableInProject() &&
               prevName!=cd->displayName() &&
-              cd->templateMaster()==0 && !cd->isHidden()
+              cd->templateMaster()==0
              )
           {
             if (count==0) 
@@ -1558,7 +1600,7 @@ void writeQuickMemberIndex(OutputList &ol,bool *charUsed,int page,
 {
   bool first=TRUE;
   int i;
-  ol.writeString("<div class=\"qindex\">"); 
+  startQuickIndexList(ol);
   for (i=33;i<127;i++)
   {
     char is[2];is[0]=(char)i;is[1]='\0';
@@ -1578,7 +1620,7 @@ void writeQuickMemberIndex(OutputList &ol,bool *charUsed,int page,
       first=FALSE;
     }
   }
-  ol.writeString("</div>\n");
+  endQuickIndexList(ol);
   ol.newParagraph();
 }
 
@@ -1635,7 +1677,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       
       startFile(ol,fileName+extension,0,title,HLI_Functions);
 
-      ol.writeString("<div class=\"qindex\">"); 
+      startQuickIndexList(ol);
 
       // index item for global member list
       startQuickIndexItem(ol,
@@ -1657,7 +1699,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
         }
       }
 
-      ol.writeString("</div>\n");
+      endQuickIndexList(ol);
 
       // quick alphabetical index
       bool quickIndex = documentedClassMembers[hl]>maxItemsBeforeQuickIndex;
@@ -1669,6 +1711,12 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       if (hl==CMHL_All)
       {
         ol.parseText(theTranslator->trCompoundMembersDescription(Config_getBool("EXTRACT_ALL")));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        ol.writeString("&nbsp;");
       }
       ol.newParagraph();
       writeMemberList(ol,quickIndex,hl,page);
@@ -2032,7 +2080,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
       
       startFile(ol,fileName+extension,0,title.data(),HLI_Globals);
 
-      ol.writeString("<div class=\"qindex\">"); 
+      startQuickIndexList(ol);
 
       // index item for all member lists
       startQuickIndexItem(ol,
@@ -2053,7 +2101,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
         }
       }
 
-      ol.writeString("</div>\n");
+      endQuickIndexList(ol);
 
       bool quickIndex = documentedFileMembers[hl]>maxItemsBeforeQuickIndex;
       if (quickIndex)
@@ -2065,6 +2113,12 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
       if (hl==FMHL_All)
       {
         ol.parseText(theTranslator->trFileMembersDescription(Config_getBool("EXTRACT_ALL")));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        ol.writeString("&nbsp;");
       }
       ol.newParagraph();
       writeFileMemberList(ol,quickIndex,hl,page);
@@ -2155,7 +2209,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       
       startFile(ol,fileName+extension,0,title,HLI_NamespaceMembers);
 
-      ol.writeString("<div class=\"qindex\">"); 
+      startQuickIndexList(ol);
 
       startQuickIndexItem(ol,
           nmhlInfo[0].fname+Doxygen::htmlFileExtension,hl==NMHL_All,TRUE,first);
@@ -2174,7 +2228,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         }
       }
 
-      ol.writeString("</div>\n");
+      endQuickIndexList(ol);
 
       bool quickIndex = documentedNamespaceMembers[hl]>maxItemsBeforeQuickIndex;
       if (quickIndex)
@@ -2185,6 +2239,12 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       if (hl==NMHL_All)
       {
         ol.parseText(theTranslator->trNamespaceMemberDescription(Config_getBool("EXTRACT_ALL")));
+      }
+      else
+      {
+        // hack to work around a mozilla bug, which refuses to switch to
+        // normal lists otherwise
+        ol.writeString("&nbsp;");
       }
       ol.newParagraph();
 

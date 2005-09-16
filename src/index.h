@@ -90,7 +90,11 @@ enum HighlightedItem
   HLI_Globals,
   HLI_Pages,
   HLI_Examples,
-  HLI_Search
+  HLI_Search,
+
+  HLI_ClassVisible,
+  HLI_NamespaceVisible,
+  HLI_FileVisible
 };
 
 enum ClassMemberHighlight

@@ -1136,35 +1136,38 @@ ClassDef *getResolvedClassRec(Definition *scope,
         // see if we are dealing with a class or a typedef
         if (d->definitionType()==Definition::TypeClass) // d is a class
         {
-          if (!((ClassDef*)d)->isArtificial())
+          if (!((ClassDef*)d)->isTemplateArgument()) // skip classes that
+                                                     // are only there to 
+                                                     // represent a template 
+                                                     // argument
           {
-          if (distance<minDistance) // found a definition that is "closer"
-          {
-            minDistance=distance;
-            bestMatch = (ClassDef *)d; 
-            bestTypedef = 0;
-            bestTemplSpec.resize(0);
-          }
-          else if (distance==minDistance &&
-                   fileScope && bestMatch &&
-                   fileScope->getUsedNamespaces() && 
-                   d->getOuterScope()->definitionType()==Definition::TypeNamespace && 
-                   bestMatch->getOuterScope()==Doxygen::globalScope
-                  )
-          {
-            // in case the distance is equal it could be that a class X
-            // is defined in a namespace and in the global scope. When searched
-            // in the global scope the distance is 0 in both cases. We have
-            // to choose one of the definitions: we choose the one in the
-            // namespace if the fileScope imports namespaces and the definition
-            // found was in a namespace while the best match so far isn't.
-            // Just a non-perfect heuristic but it could help in some situations
-            // (kdecore code is an example).
-            minDistance=distance;
-            bestMatch = (ClassDef *)d; 
-            bestTypedef = 0;
-            bestTemplSpec.resize(0);
-          }
+            if (distance<minDistance) // found a definition that is "closer"
+            {
+              minDistance=distance;
+              bestMatch = (ClassDef *)d; 
+              bestTypedef = 0;
+              bestTemplSpec.resize(0);
+            }
+            else if (distance==minDistance &&
+                fileScope && bestMatch &&
+                fileScope->getUsedNamespaces() && 
+                d->getOuterScope()->definitionType()==Definition::TypeNamespace && 
+                bestMatch->getOuterScope()==Doxygen::globalScope
+                )
+            {
+              // in case the distance is equal it could be that a class X
+              // is defined in a namespace and in the global scope. When searched
+              // in the global scope the distance is 0 in both cases. We have
+              // to choose one of the definitions: we choose the one in the
+              // namespace if the fileScope imports namespaces and the definition
+              // found was in a namespace while the best match so far isn't.
+              // Just a non-perfect heuristic but it could help in some situations
+              // (kdecore code is an example).
+              minDistance=distance;
+              bestMatch = (ClassDef *)d; 
+              bestTypedef = 0;
+              bestTemplSpec.resize(0);
+            }
           }
         }
         else if (d->definitionType()==Definition::TypeMember)
@@ -1173,31 +1176,48 @@ ClassDef *getResolvedClassRec(Definition *scope,
           //printf("  member isTypedef()=%d\n",md->isTypedef());
           if (md->isTypedef()) // d is a typedef
           {
-            //printf("    found typedef!\n");
-
-            // we found a symbol at this distance, but if it didn't
-            // resolve to a class, we still have to make sure that
-            // something at a greater distance does not match, since
-            // that symbol is hidden by this one.
-            if (distance<minDistance)
+            QCString args=md->argsString();
+            if (args.isEmpty()) // do not expand "typedef t a[4];"
             {
-              QCString spec;
-              minDistance=distance;
-              MemberDef *enumType = 0;
-              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec);
-              if (cd) // shouldn't be 0, but could in some weird cases
+              //printf("    found typedef!\n");
+
+              // we found a symbol at this distance, but if it didn't
+              // resolve to a class, we still have to make sure that
+              // something at a greater distance does not match, since
+              // that symbol is hidden by this one.
+              if (distance<minDistance)
               {
-                //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
-                bestMatch = cd;
-                bestTypedef = md;
-                bestTemplSpec = spec;
+                QCString spec;
+                minDistance=distance;
+                MemberDef *enumType = 0;
+                ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec);
+                if (cd) // shouldn't be 0, but could in some weird cases
+                {
+                  //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
+                  bestMatch = cd;
+                  bestTypedef = md;
+                  bestTemplSpec = spec;
+                }
+                else if (enumType)
+                {
+                  //printf("      is enum\n");
+                  bestMatch = 0;
+                  bestTypedef = enumType;
+                  bestTemplSpec = "";
+                }
+                else
+                {
+                  //printf("      no match\n");
+                }
               }
-              else if (enumType)
+              else
               {
-                bestMatch = 0;
-                bestTypedef = enumType;
-                bestTemplSpec = "";
+                //printf("      not the best match %d min=%d\n",distance,minDistance);
               }
+            }
+            else
+            {
+              //printf("     not a simple typedef\n")
             }
           }
           else if (md->isEnumerate())
@@ -1255,7 +1275,8 @@ ClassDef *getResolvedClass(Definition *scope,
                            const char *n,
                            MemberDef **pTypeDef,
                            QCString *pTemplSpec,
-                           bool mayBeUnlinkable
+                           bool mayBeUnlinkable,
+                           bool mayBeHidden
                           )
 {
   g_resolvedTypedefs.clear();
@@ -1276,7 +1297,10 @@ ClassDef *getResolvedClass(Definition *scope,
   ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
-    result=0; // don't link to artifical/hidden classes
+    if (!mayBeHidden || !result->isHidden())
+    {
+      result=0; // don't link to artifical/hidden classes unless explicitly allowed
+    }
   }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  n,result?result->name().data():"<none>");

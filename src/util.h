@@ -151,7 +151,8 @@ ClassDef *getResolvedClass(Definition *scope,
                            const char *key,
                            MemberDef **pTypeDef=0,
                            QCString *pTemplSpec=0,
-                           bool mayBeUnlinkable=FALSE);
+                           bool mayBeUnlinkable=FALSE,
+                           bool mayBeHidden=FALSE);
 NamespaceDef *getResolvedNamespace(const char *key);
 FileDef *findFileDef(const FileNameDict *fnDict,const char *n,
                 bool &ambig);
