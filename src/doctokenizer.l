@@ -522,6 +522,11 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"))*({ID}(":")?){FUNCARG}?
 			  */ 
 			 goto find_rule;
                        }
+<St_Para,St_Text>"operator"/{BLANK}*"<"[a-zA-Z_0-9]+">" { // Special case: word "operator" followed by a HTML command
+                                                          // avoid interpretation as "operator <"
+                           g_token->name = yytext;
+                           return TK_WORD;
+                         }
 
   /*******************************************************/
 

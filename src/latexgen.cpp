@@ -133,7 +133,7 @@ void LatexGenerator::init()
   QTextStream t(&file);
   if (!Config_getBool("USE_PDFLATEX")) // use plain old latex
   {
-    t << "all clean: refman.dvi" << endl
+    t << "all: clean refman.dvi" << endl
       << endl
       << "ps: refman.ps" << endl
       << endl
@@ -182,7 +182,7 @@ void LatexGenerator::init()
   }
   else // use pdflatex for higher quality output
   {
-    t << "all clean: refman.pdf" << endl << endl;
+    t << "all: clean refman.pdf" << endl << endl;
     t << "refman.pdf: refman.tex" << endl;
     t << "\tpdflatex refman.tex" << endl;
     t << "\tmakeindex refman.idx" << endl;

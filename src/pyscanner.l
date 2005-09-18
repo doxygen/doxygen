@@ -86,7 +86,7 @@ static bool             docBlockSpecial;
 
 static bool             g_doubleQuote;
 static bool             g_specialBlock;
-static bool             g_expectModuleDocs;
+//static bool             g_expectModuleDocs;
 static int              g_stringContext;
 static QCString *       g_copyString;
 static int              g_indent = 0;
@@ -99,10 +99,12 @@ static char             g_atomStart;
 static char             g_atomEnd;
 static int              g_atomCount;
 
-static bool             g_insideConstructor;
+//static bool             g_insideConstructor;
 
 static QCString         g_moduleScope;
+static QCString         g_packageName;
 
+static bool             g_hideClassDocs;
 //-----------------------------------------------------------------------------
 
 
@@ -312,7 +314,7 @@ static void endOfDef()
   bodyEntry->endBodyLine  = yyLineNr;
   bodyEntry = 0;
   newEntry();
-  g_insideConstructor = FALSE;
+  //g_insideConstructor = FALSE;
 }
 
 static inline void addToString(const char *s)
@@ -453,6 +455,11 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 %x DoubleQuoteString
 %x TripleString
 
+  /* import */
+%x FromMod
+%x FromModItem
+%x Import
+
 %%
 
   /* ------------ Function recognition rules -------------- */
@@ -462,7 +469,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     ^{B}"def"{BB}       |
     "def"{BB}           { // start of a function/method definition
       			  g_indent=computeIndent(yytext);
-                          g_expectModuleDocs = FALSE;
+                          //g_expectModuleDocs = FALSE;
 			  current->fileName  = yyFileName;
 			  current->startLine = yyLineNr;
 			  current->bodyLine  = yyLineNr;
@@ -482,7 +489,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
      ^{B}"class"{BB}	|
      "class"{BB}        {  // start of a class definition
       			  g_indent=computeIndent(yytext);
-                          g_expectModuleDocs = FALSE;
+                          //g_expectModuleDocs = FALSE;
 			  current->section = Entry::CLASS_SEC;
 			  current->argList->clear();
 			  current->type += "class" ;
@@ -491,7 +498,15 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 			  BEGIN( ClassDec ) ;
                        }
+     ^{B}"from"{BB}    |
+     "from"{BB}	       { // start of an from import
+                          BEGIN( FromMod );
+                       }
 
+     ^{B}"import"{BB}  |
+     "import"{BB}      { // start of an import statement
+                          BEGIN( Import );
+                       }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
       			g_indent=computeIndent(yytext);
       			current->section   = Entry::VARIABLE_SEC;
@@ -543,6 +558,83 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			initSpecialBlock();
 			BEGIN(SpecialComment);
                       }
+}
+
+<FromMod>{
+  {IDENTIFIER}({B}"."{B}{IDENTIFIER})* { // from package import 
+                        g_packageName=yytext;
+		      }
+  "import"{B}	      {
+    			BEGIN(FromModItem);
+    		      }
+  \n		      {
+                        yyLineNr++;
+                        BEGIN(Search);
+                      }
+  {B}		      {
+		      }
+  .                   {
+                        unput(*yytext);
+                        BEGIN(Search);
+                      }
+}
+
+<FromModItem>{
+  "*"		{ // import all
+                  QCString item=g_packageName+"."+yytext;
+		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
+		  current->fileName = yyFileName; 
+		  //printf("Adding using directive: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
+		  current->section=Entry::USINGDIR_SEC;
+		  current_root->addSubEntry(current);
+		  current = new Entry ;
+		  initEntry();
+                  BEGIN(Search);
+    		}
+  {IDENTIFIER}  {
+                  QCString item=g_packageName+"."+yytext;
+		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
+		  current->fileName = yyFileName; 
+		  //printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
+		  current->section=Entry::USINGDECL_SEC;
+		  current_root->addSubEntry(current);
+		  current = new Entry ;
+		  initEntry();
+                  BEGIN(Search);
+		}
+  \n		{
+                  yyLineNr++;
+                  BEGIN(Search);
+                }
+  {B}		{
+		}
+  .             {
+                  unput(*yytext);
+                  BEGIN(Search);
+                }
+}
+
+<Import>{
+  {IDENTIFIER}({B}"."{B}{IDENTIFIER})* {
+			current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
+			current->fileName = yyFileName; 
+			//printf("Adding using declaration: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());
+			current->section=Entry::USINGDECL_SEC;
+			current_root->addSubEntry(current);
+			current = new Entry ;
+			initEntry();
+			BEGIN(Search);
+                      }
+  \n		{
+                  yyLineNr++;
+                  BEGIN(Search);
+                }
+  {B}		{
+		}
+  .             {
+                  unput(*yytext);
+                  BEGIN(Search);
+                }
 }
 
 <SearchMemVars>{
@@ -634,9 +726,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			endOfDef();
 			yyterminate();
       		      }
-    ^{BB}\n	      { // skip empty line
+    ^{BB}/\n	      { // skip empty line
       		        current->program+=yytext;
-                        yyLineNr++;
       	              }
     ^{BB}	      { // something at indent >0
       		        current->program+=yytext;
@@ -707,14 +798,14 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      }
 			      current->name = yytext;
 			      current->name = current->name.stripWhiteSpace();
-			      if (!current->name.isEmpty() && current->name.at(0)=='_')
-			      {
-				current->protection = Private;
-			      }
+			      //if (!current->name.isEmpty() && current->name.at(0)=='_')
+			      //{
+			      //	current->protection = Private;
+			      //}
 			      //if ((current_root->section&Entry::SCOPE_MASK) && 
 			      //    current->name=="__init__") // constructor
 			      //{
-				g_insideConstructor = TRUE;
+			      //    g_insideConstructor = TRUE;
 			      // g_constructorEntry = current;
 			      // newEntry();
 			      //}
@@ -766,11 +857,12 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     \n/{IDENTIFIER}{BB}  { // new def at indent 0
                         yyLineNr++;
 			endOfDef();
+			g_hideClassDocs = FALSE;
+			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
-    ^{BB}\n	      { // skip empty line
+    ^{BB}/\n	      { // skip empty line
       		        current->program+=yytext;
-                        yyLineNr++;
       	              }
     <<EOF>>	      {
 			endOfDef();
@@ -786,6 +878,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  g_indent=g_curIndent;
 			  // make sure the next rule matches ^...
 			  YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			  g_hideClassDocs = FALSE;
                           BEGIN(Search);
 			}
 			else
@@ -823,13 +916,13 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       		        current->program+=*yytext;
                       }
     {TRIDOUBLEQUOTE}  { // start of a comment block
-      		        current->program+=yytext;
+      		        if (!g_hideClassDocs) current->program+=yytext;
 			initTriDoubleQuoteBlock();
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
-      		        current->program+=yytext;
+      		        if (!g_hideClassDocs) current->program+=yytext;
 			initTriSingleQuoteBlock();
 			BEGIN(TripleComment);
                       }
@@ -902,6 +995,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 				 bodyEntry = current;
 				 //fprintf(stderr,"setting indent %d\n",g_curIndent);
 				 //printf("current->program=[%s]\n",current->program.data());
+				 g_hideClassDocs = TRUE;
 				 BEGIN( ClassBody );
                                }
 
@@ -1051,7 +1145,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
-			    if (g_specialBlock || g_expectModuleDocs)
+			    if (g_specialBlock /*|| g_expectModuleDocs*/)
 			    {
 			      QCString actualDoc=docBlock;
 			      if (!docBlockSpecial) // legacy unformatted docstring
@@ -1059,19 +1153,20 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			        actualDoc.prepend("\\verbatim ");
 			        actualDoc.append("\\endverbatim ");
 			      }
-			      if (g_expectModuleDocs)
-			      {
-				actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
-			      }
+			      //if (g_expectModuleDocs)
+			      //{
+			      //  actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
+			      //}
 			      handleCommentBlock(actualDoc, FALSE);
 			    }
-		    	    g_expectModuleDocs=FALSE;
-			    if (docBlockContext==ClassBody || 
+		    	    //g_expectModuleDocs=FALSE;
+			    if ((docBlockContext==ClassBody && !g_hideClassDocs) ||
 				docBlockContext==FunctionBody)
 			    {
 			      current->program+=docBlock;
 			      current->program+=yytext;
 			    }
+			    g_hideClassDocs=FALSE;
 			    BEGIN(docBlockContext);
 			  }
                           else 
@@ -1120,11 +1215,11 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       			  docBlock+=yytext;
       			}
     \n			{ // new line that ends the comment
-			  if (g_expectModuleDocs)
-			  {
-			    docBlock.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
-			  }
-		    	  g_expectModuleDocs=FALSE;
+			  //if (g_expectModuleDocs)
+			  //{
+			  //  docBlock.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
+			  //}
+		    	  //g_expectModuleDocs=FALSE;
 			  handleCommentBlock(docBlock, docBrief);
       			  yyLineNr++;
 			  BEGIN(docBlockContext);
@@ -1293,9 +1388,9 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   gstat         = FALSE;
   virt          = Normal;
   current_root  = rt;
-  g_expectModuleDocs = TRUE;
+  //g_expectModuleDocs = TRUE;
   g_specialBlock = FALSE;
-  g_insideConstructor = FALSE;
+  //g_insideConstructor = FALSE;
 
 
   inputFile.setName(fileName);
@@ -1357,9 +1452,9 @@ static void parsePrototype(const QCString &text)
 {
   //printf("**** parsePrototype(%s) begin\n",text.data());
 
-  g_expectModuleDocs = FALSE;
+  //g_expectModuleDocs = FALSE;
   g_specialBlock = FALSE;
-  g_insideConstructor = FALSE;
+  //g_insideConstructor = FALSE;
 
   const char *orgInputString;
   int orgInputPosition;

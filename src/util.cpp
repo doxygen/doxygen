@@ -1000,7 +1000,7 @@ done:
   return result;
 }
 
-int computeQualifiedIndex(const QString &name)
+int computeQualifiedIndex(const QCString &name)
 {
   int i = name.find('<');
   return name.findRev("::",i==-1 ? name.length() : i);
@@ -1136,15 +1136,18 @@ ClassDef *getResolvedClassRec(Definition *scope,
         // see if we are dealing with a class or a typedef
         if (d->definitionType()==Definition::TypeClass) // d is a class
         {
-          if (!((ClassDef*)d)->isTemplateArgument()) // skip classes that
-                                                     // are only there to 
-                                                     // represent a template 
-                                                     // argument
+          ClassDef *cd = (ClassDef *)d;
+          //printf("cd=%s\n",cd->name().data());
+          if (!cd->isTemplateArgument()) // skip classes that
+                                         // are only there to 
+                                         // represent a template 
+                                         // argument
           {
+            //printf("is not a templ arg\n");
             if (distance<minDistance) // found a definition that is "closer"
             {
               minDistance=distance;
-              bestMatch = (ClassDef *)d; 
+              bestMatch = cd; 
               bestTypedef = 0;
               bestTemplSpec.resize(0);
             }
@@ -1164,7 +1167,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
               // Just a non-perfect heuristic but it could help in some situations
               // (kdecore code is an example).
               minDistance=distance;
-              bestMatch = (ClassDef *)d; 
+              bestMatch = cd; 
               bestTypedef = 0;
               bestTemplSpec.resize(0);
             }
@@ -5605,7 +5608,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
   p=s.data()+b;
   while (b>=0)
   {
-    c=*--p;
+    c=*p; p--;
     if (c==' ' || c=='\t' || c=='\r') b--;
     else if (c=='\n') bi=b,b--;
     else break;

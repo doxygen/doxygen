@@ -64,6 +64,7 @@ SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlInd
   int i;
   m_words.setAutoDelete(TRUE);
   m_urls.setAutoDelete(TRUE);
+  m_index.setAutoDelete(TRUE);
   for (i=0;i<numIndexEntries;i++) m_index.insert(i,new QList<IndexWord>);
 }
 
@@ -279,7 +280,7 @@ void SearchIndex::write(const char *fileName)
     }
   }
 
-  delete urlOffsets;
-  delete wordStatOffsets;
+  delete[] urlOffsets;
+  delete[] wordStatOffsets;
 }
 

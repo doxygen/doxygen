@@ -23,6 +23,8 @@ CFG=qtools - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName "qtools"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -92,10 +94,6 @@ SOURCE=..\qtools\qcollection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\qtools\scstring.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\qtools\qdatastream.cpp
 # End Source File
 # Begin Source File
@@ -132,6 +130,10 @@ SOURCE=..\qtools\qgarray.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\qtools\qgcache.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\qtools\qgdict.cpp
 # End Source File
 # Begin Source File
@@ -141,10 +143,6 @@ SOURCE=..\qtools\qglist.cpp
 # Begin Source File
 
 SOURCE=..\qtools\qglobal.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\qtools\qgcache.cpp
 # End Source File
 # Begin Source File
 
@@ -182,6 +180,10 @@ SOURCE=..\qtools\qtextstream.cpp
 
 SOURCE=..\qtools\qxml.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\qtools\scstring.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -197,6 +199,10 @@ SOURCE=..\qtools\qasciidict.h
 # Begin Source File
 
 SOURCE=..\qtools\qbuffer.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\qtools\qcache.h
 # End Source File
 # Begin Source File
 
@@ -245,6 +251,10 @@ SOURCE=..\qtools\qfileinfo.h
 # Begin Source File
 
 SOURCE=..\qtools\qgarray.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\qtools\qgcache.h
 # End Source File
 # Begin Source File
 
@@ -353,6 +363,10 @@ SOURCE=..\qtools\qvector.h
 # Begin Source File
 
 SOURCE=..\qtools\qxml.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\qtools\scstring.h
 # End Source File
 # End Group
 # End Target

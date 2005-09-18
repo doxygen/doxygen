@@ -23,6 +23,8 @@ CFG=Doxytag - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName "Doxytag"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -88,11 +90,11 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\src\doxytag.cpp
+SOURCE=..\src\config.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\logos.cpp
+SOURCE=..\src\doxytag.cpp
 # End Source File
 # Begin Source File
 
@@ -104,15 +106,7 @@ SOURCE=..\src\version.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\src\logos.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\searchindex.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\suffixtree.h
+SOURCE=..\src\config.h
 # End Source File
 # Begin Source File
 

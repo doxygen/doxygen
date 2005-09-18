@@ -135,30 +135,22 @@ static void do_warn(const char *tag, const char *file, int line, const char *fmt
     substitute(
       substitute(
         substitute(
-          substitute( 
-            outputFormat,
-            "$file",fileSubst
+          substitute(
+            substitute( 
+              outputFormat,
+              "$file",fileSubst
+            ),
+            "$text",textSubst
           ),
-          "$text",textSubst
+          "$line",lineSubst
         ),
-        "$line",lineSubst
+        "$version",versionSubst
       ),
-      "$version",versionSubst
+      "%","%%"
     )+'\n';
 
   // print resulting message
   fprintf(warnFile,msgText);
-//  switch(warnFormatOrder)
-//  {
-//    case 1: fprintf(warnFile,outputFormat,file,line,text); break;
-//    case 2: fprintf(warnFile,outputFormat,text,line,file); break;
-//    case 3: fprintf(warnFile,outputFormat,line,text,file); break;
-//    case 4: fprintf(warnFile,outputFormat,file,text,line); break;
-//    case 5: fprintf(warnFile,outputFormat,text,file,line); break;
-//    case 6: fprintf(warnFile,outputFormat,line,file,text); break;
-//     default:
-//       printf("Error: warning format has not been initialized!\n");
-//  }
 }
 
 void warn(const char *file,int line,const char *fmt, ...)

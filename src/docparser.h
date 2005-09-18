@@ -38,6 +38,8 @@ class SectionDict;
 
 /*! Initialize the documentation parser */
 void initDocParser();
+/*! Cleanup the documentation parser */
+void finializeDocParser();
 
 /*! Main entry point for the documentation parser.
  *  @param fileName  File in which the documentation block is found (or the

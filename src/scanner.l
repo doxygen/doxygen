@@ -4044,20 +4044,23 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <DocBlock>("@@"|"\\\\"){ID}/[^a-z_A-Z0-9] { // escaped command
   					  docBlock+=yytext;
   					}
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code"|"f$"|"f["|"f{")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("f$"|"f["|"f{")	        {
                                           docBlock+=yytext;
-				          if (yytext[2]=='[')
-				          {
-				            docBlockName="f]";
-				          }
-					  else if (yytext[2]=='}')
+				          docBlockName=&yytext[1];
+					  if (docBlockName.at(1)=='{')
 					  {
-				            docBlockName="f}";
+				            docBlockName.at(1)='}';
 					  }
-				          else
-				          {
-				            docBlockName=&yytext[1];
-				          }
+  					  BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>"<"{PRE}">"			{
+                                          docBlock+=yytext;
+				          docBlockName="<pre>";
+  					  BEGIN(DocCopyBlock);
+  					}
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
+                                          docBlock+=yytext;
+				          docBlockName=&yytext[1];
   					  BEGIN(DocCopyBlock);
   					}
 <DocBlock>[^@*\/\\\n]+			{ // any character that isn't special
@@ -4073,6 +4076,13 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 
  /* ---- Copy verbatim sections ------ */
 
+<DocCopyBlock>"</"{PRE}">"		{ // end of a <pre> block
+  					  docBlock+=yytext;
+					  if (docBlockName=="<pre>")
+					  {
+  					    BEGIN(DocBlock);
+					  }
+  					}
 <DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
   					  docBlock+=yytext;
 				          if (yytext[1]=='f') // end of formula
