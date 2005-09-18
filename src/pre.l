@@ -891,35 +891,65 @@ QCString removeMarkers(const char *s)
   {
     while ((c=*p))
     {
-      if (c=='@') // replace @@ with @
+      switch(c)
       {
-	if (*(p+1)=='@')
-	{
-	  result+=c; 
-	}
-	p+=2;
-      }
-      else if (c=='/') // skip C comments
-      {
-	result+=c;
-	char pc=c;
-	c=*++p;
-	if (c=='*') // start of C comment
-	{ 
-	  while (*p && !(pc=='*' && c=='/')) // search end of comment
+	case '@': // replace @@ with @
+	  {
+	    if (*(p+1)=='@')
+	    {
+	      result+=c; 
+	    }
+	    p+=2;
+	  }
+	  break;
+	case '/': // skip C comments
 	  {
 	    result+=c;
-	    pc=c;
+	    char pc=c;
 	    c=*++p;
+	    if (c=='*') // start of C comment
+	    { 
+	      while (*p && !(pc=='*' && c=='/')) // search end of comment
+	      {
+		result+=c;
+		pc=c;
+		c=*++p;
+	      }
+	      result+=c;
+	      p++;
+	    }
 	  }
-	  result+=c;
-	  p++;
-	}
-      }
-      else
-      {
-	result+=c;
-	p++;
+	  break;
+	case '"': // skip string literals
+	  {
+	    result+=c;
+	    char pc=c;
+	    c=*++p;
+	    while (*p && (c!='"' || pc=='\\')) // no end quote
+	    {
+	      result+=c;
+	      c=*++p;
+	    }
+	  }
+	  break;
+	case '\'': // skip char literals
+	  {
+	    result+=c;
+	    char pc=c;
+	    c=*++p;
+	    while (*p && (c!='\'' || pc=='\\')) // no end quote
+	    {
+	      result+=c;
+	      c=*++p;
+	    }
+	  }
+	  break;
+	default:
+	  {
+	    result+=c;
+	    p++;
+	  }
+	  break;
       }
     }
   }
@@ -1807,12 +1837,19 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
+<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f{"|"f$"|"f["){BN}+ {
   					  outputArray(yytext,yyleng);
   					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,yyleng);
-					  g_blockName=QCString(&yytext[1]).stripWhiteSpace();
+					  if (yytext[1]=='f')
+					  {
+					    g_blockName="f";
+					  }
+					  else
+					  {
+					    g_blockName=QCString(&yytext[1]).stripWhiteSpace();
+					  }
 					  BEGIN(SkipVerbatim);
   					}
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
@@ -1835,12 +1872,19 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,yyleng);
   					  endCondSection();
   					}
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
   					  outputArray(yytext,yyleng);
-					  if (&yytext[4]==g_blockName)
+					  if (yytext[1]=='f' && g_blockName=="f")
 					  {
 					    BEGIN(SkipCComment);
 					  }
+					  else if (&yytext[4]==g_blockName)
+					  {
+					    BEGIN(SkipCComment);
+					  }
+  					}
+<SkipVerbatim>"*/"|"/*"			{
+  					  outputArray(yytext,yyleng);
   					}
 <SkipCComment,SkipVerbatim>[^*\\@\x06\n\/]+ {
   					  outputArray(yytext,yyleng);

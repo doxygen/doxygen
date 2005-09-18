@@ -23,6 +23,8 @@ CFG=libpng - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName "libpng"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -85,87 +87,70 @@ LIB32=link.exe -lib
 # Begin Source File
 
 SOURCE=..\libpng\png.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngerror.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pnggccrd.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngget.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngmem.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngpread.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngread.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrio.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrtran.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngrutil.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngset.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngtrans.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngvcrd.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwio.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwrite.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwtran.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=..\libpng\pngwutil.c
-
 # End Source File
 # End Group
 # Begin Group "Header Files"

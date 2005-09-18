@@ -3306,6 +3306,7 @@ static void findUsedClassesForClass(Entry *root,
                   usedCd = new ClassDef(
                      masterCd->getDefFileName(),masterCd->getDefLine(),
                      usedName,ClassDef::Class);
+                  //printf("making %s a template argument!!!\n",usedCd->name().data());
                   usedCd->makeTemplateArgument();
                   Doxygen::hiddenClasses.append(usedName,usedCd);
                 }
@@ -8932,5 +8933,6 @@ void generateOutput()
         );
   }
   cleanUpDoxygen();
+  finializeDocParser();
 }
 

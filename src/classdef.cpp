@@ -93,6 +93,7 @@ ClassDef::ClassDef(
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
   m_isObjC = FALSE;
+  m_isTemplArg = FALSE;
   m_membersMerged = FALSE;
   m_categoryOf = 0;
   QCString ns;

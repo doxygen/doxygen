@@ -1115,6 +1115,7 @@ void Config::check()
     filePatternList.append("*.m");
     filePatternList.append("*.mm");
     filePatternList.append("*.dox");
+    filePatternList.append("*.py");
 #if !defined(_WIN32)
     // unix => case sensitive match => also include useful uppercase versions
     filePatternList.append("*.C");
@@ -1130,6 +1131,7 @@ void Config::check()
     filePatternList.append("*.PHP3");
     filePatternList.append("*.M");
     filePatternList.append("*.MM");
+    filePatternList.append("*.PY");
 #endif
   }
 
@@ -1821,7 +1823,7 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx \n"
-		    "*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm\n"
+		    "*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py\n"
                  );
   cb = addBool(
                     "RECURSIVE",

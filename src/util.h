@@ -227,7 +227,7 @@ void replaceNamespaceAliases(QCString &scope,int i);
 int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item);
 int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
-int computeQualifiedIndex(const QString &name);
+int computeQualifiedIndex(const QCString &name);
 void addDirPrefix(QCString &fileName);
 QCString relativePathToRoot(const char *name);
 #define REL_PATH_TO_ROOT "../../"

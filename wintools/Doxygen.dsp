@@ -23,8 +23,8 @@ CFG=Doxygen - Win32 Debug
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName "Doxygen"
+# PROP Scc_LocalPath "."
 CPP=cl.exe
 RSC=rc.exe
 
@@ -309,6 +309,14 @@ SOURCE=..\src\pre.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\pycode.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pyscanner.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\reflist.cpp
 # End Source File
 # Begin Source File
@@ -537,6 +545,14 @@ SOURCE=..\src\mangen.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\libmd5\md5.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\libmd5\md5_loc.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\memberdef.h
 # End Source File
 # Begin Source File
@@ -569,19 +585,15 @@ SOURCE=..\src\outputlist.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\packagedef.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\src\pagedef.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\perlmodgen.h
+SOURCE=..\src\parserintf.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\parserintf.h
+SOURCE=..\src\perlmodgen.h
 # End Source File
 # Begin Source File
 
@@ -594,6 +606,14 @@ SOURCE=..\src\pre.h
 # Begin Source File
 
 SOURCE=..\src\printdocvisitor.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pycode.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\pyscanner.h
 # End Source File
 # Begin Source File
 

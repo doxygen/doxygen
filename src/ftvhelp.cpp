@@ -369,6 +369,8 @@ void FTVHelp::initialize()
 void FTVHelp::finalize()
 {
   generateTreeView();
+  delete m_theInstance;
+  m_theInstance=0;
 }
 
 /*! Increase the level of the contents hierarchy. 

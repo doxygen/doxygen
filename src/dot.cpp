@@ -199,7 +199,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   return TRUE;
 }
 
-static QArray<int> * s_newNumber = new QArray<int>();
+static QArray<int> s_newNumber;
 static int s_max_newNumber=0;
 
 inline int reNumberNode(int number, bool doReNumbering)
@@ -210,7 +210,7 @@ inline int reNumberNode(int number, bool doReNumbering)
   } 
   else 
   {
-    int s = s_newNumber->size();
+    int s = s_newNumber.size();
     if (number>=s) 
     {
       int ns=0;
@@ -219,17 +219,17 @@ inline int reNumberNode(int number, bool doReNumbering)
       {
         ns = number * 3 / 2 + 5;
       }
-      s_newNumber->resize(ns);
+      s_newNumber.resize(ns);
       for (int i=s;i<ns;i++) // clear new part of the array
       {
-        s_newNumber->at(i)=0;
+        s_newNumber.at(i)=0;
       }
     }
-    int i = s_newNumber->at(number);
+    int i = s_newNumber.at(number);
     if (i == 0) // not yet mapped
     {
       i = ++s_max_newNumber; // start from 1
-      s_newNumber->at(number) = i;
+      s_newNumber.at(number) = i;
     }
     return i;
   }
@@ -238,7 +238,7 @@ inline int reNumberNode(int number, bool doReNumbering)
 static void resetReNumbering() 
 {
   s_max_newNumber=0;
-  s_newNumber->resize(s_max_newNumber);
+  s_newNumber.resize(s_max_newNumber);
 }
 
 static bool readBoundingBoxDot(const char *fileName,int *width,int *height)

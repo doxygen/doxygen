@@ -304,9 +304,10 @@ static ClassDef *stripClassName(const char *s)
   QCString type = s;
   QCString className;
   QCString templSpec;
-  while (extractClassNameFromType(type,pos,className,templSpec))
+  while (extractClassNameFromType(type,pos,className,templSpec)!=-1)
   {
     QCString clName=className+templSpec;
+
     ClassDef *cd=0;
     if (!g_classScope.isEmpty())
     {
@@ -316,7 +317,6 @@ static ClassDef *stripClassName(const char *s)
     {
       cd=getResolvedClass(g_currentDefinition,g_sourceFileDef,clName);
     }
-    //printf("stripClass trying `%s' = %p\n",clName.data(),cd);
     if (cd)
     {
       return cd;

@@ -276,20 +276,22 @@ Here is an example of the use of these comment blocks:
 
 \section structuralcommands Documentation at other places
 
-So far we have assumed that the documentation blocks are always located in 
-front of the declaration or definition of a file, class or namespace or in
+So far we have assumed that the documentation blocks are always located \e in 
+\e front of the declaration or definition of a file, class or namespace or in
 front or after one of its members. 
 Although this is often comfortable, there may sometimes be reasons to put the 
 documentation somewhere else. For documenting a file this is even 
 required since there is no such thing as "in front of a file". 
+
 Doxygen allows you to put your documentation blocks practically 
 anywhere (the exception is inside the body of a function or inside a 
 normal C style comment block). 
 
 The price you pay for not putting the
-documentation block before (or after) an item is the need to put a  
+documentation block directly before (or after) an item is the need to put a  
 structural command inside the documentation block, which leads to some
-duplication of information.
+duplication of information. So in practice you should \e avoid the use of
+structural commands \e unless other requirements force you to do so.
 
 Structural commands (like all other commands) start with a backslash 
 (<tt>\\</tt>), or an at-sign (<tt>\@</tt>) if you prefer JavaDoc style, 

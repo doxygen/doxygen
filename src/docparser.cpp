@@ -5736,3 +5736,9 @@ void initDocParser()
     Doxygen::searchIndex = 0;
   }
 }
+
+void finializeDocParser()
+{
+  delete Doxygen::searchIndex;
+}
+
