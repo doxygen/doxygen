@@ -19,7 +19,7 @@ config.h: ../../src/config.h
 config.l: ../../src/config.l
 	$(CP) ../../src/config.l config.l
 
-version.cpp:
+version.cpp: ../../src/version.cpp
 	$(CP) ../../src/version.cpp version.cpp
 
 Makefile.doxywizard: doxywizard.pro 

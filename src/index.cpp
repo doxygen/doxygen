@@ -1188,34 +1188,60 @@ void writeAnnotatedClassList(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
+class PrefixIgnoreClassList : public ClassList
+{
+public:
+  virtual int compareItems(GCI item1, GCI item2)
+  {
+    ClassDef *c1=(ClassDef *)item1;
+    ClassDef *c2=(ClassDef *)item2;
+
+    QCString n1 = c1->className();
+    n1.remove (0, getPrefixIndex(n1));
+    QCString n2 = c2->className();
+    n2.remove (0, getPrefixIndex(n2));
+    
+    return stricmp (n1, n2);
+  }
+};
+
 // write an alphabetical index of all class with a header for each letter
 void writeAlphabeticalClassList(OutputList &ol)
 {
   //ol.startAlphabeticalIndexList(); 
+  // What starting letters are used
+  bool indexLetterUsed[256];
+  memset (indexLetterUsed, 0, sizeof (indexLetterUsed));
 
   // first count the number of headers
   ClassSDict::Iterator cli(Doxygen::classSDict);
   ClassDef *cd;
-  char startLetter=0;
+  uint startLetter=0;
   int headerItems=0;
-  QCString alphaLinks = "<p><div class=\"qindex\">";
   for (;(cd=cli.current());++cli)
   {
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d\n",cd->className().data(),index);
-      if (toupper(cd->className().at(index))!=startLetter) // new begin letter => new header
-      {
-        startLetter=toupper(cd->className().at(index));
-        if (headerItems) alphaLinks += "&nbsp;|&nbsp;";
-        headerItems++;
-	alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
-                      startLetter + "\">" + 
-                      startLetter + "</a>";
-      }
+      startLetter=toupper(cd->className().at(index));
+      indexLetterUsed[startLetter] = true;
     }
   }
+
+  QCString alphaLinks = "<p><div class=\"qindex\">";
+  for (int l = 0; l < 256; l++)
+  {
+    if (indexLetterUsed[l])
+    {
+      if (headerItems) alphaLinks += "&nbsp;|&nbsp;";
+      headerItems++;
+      alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
+                    (char)l + "\">" + 
+                    (char)l + "</a>";
+    }
+  }
+
   alphaLinks += "</div><p>\n";
   ol.writeString(alphaLinks);
 
@@ -1232,6 +1258,26 @@ void writeAlphabeticalClassList(OutputList &ol)
   //printf("headerItems=%d totalItems=%d columns=%d rows=%d itemsInLastRow=%d\n",
   //    headerItems,totalItems,columns,rows,itemsInLastRow);
 
+  // Keep a list of classes for each starting letter
+  PrefixIgnoreClassList classesByLetter[256];
+
+  // fill the columns with the class list (row elements in each column,
+  // expect for the columns with number >= itemsInLastRow, which get on
+  // item less.
+  //int icount=0;
+  startLetter=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    {
+      int index = getPrefixIndex(cd->className());
+      startLetter=toupper(cd->className().at(index));
+      // Do some sorting again, since the classes are sorted by name with 
+      // prefix, which should be ignored really.
+      classesByLetter[startLetter].inSort (cd);
+    }
+  }
+
   // create one class list for each column 
   ClassList *colList = new ClassList[columns];
 
@@ -1241,29 +1287,26 @@ void writeAlphabeticalClassList(OutputList &ol)
   int col=0,row=0;
   //int icount=0;
   startLetter=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (int l = 0; l < 256; l++)
   {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    if (!indexLetterUsed[l]) continue;
+
+    // insert a new header using a dummy class pointer.
+    colList[col].append((ClassDef *)8); // insert dummy for the header
+    row++;
+    if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) 
+    { 
+      // if the header is the last item in the row, we add an extra
+      // row to make it easier to find the text of the header (this
+      // is then contained in the next cell)
+      colList[col].append(classesByLetter[l].at (0)); 
+      col++; 
+      row=0; 
+    }
+    for (uint i = 0; i < classesByLetter[l].count(); i++)
     {
-      int index = getPrefixIndex(cd->className());
-      if (toupper(cd->className().at(index))!=startLetter)
-      {
-        // insert a new header using a dummy class pointer.
-        startLetter=toupper(cd->className().at(index));
-        colList[col].append((ClassDef *)8); // insert dummy for the header
-        row++;
-        if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) 
-        { 
-          // if the header is the last item in the row, we add an extra
-          // row to make it easier to find the text of the header (this
-          // is then contained in the next cell)
-          colList[col].append(cd); 
-          col++; 
-          row=0; 
-        }
-      }
       // add the class definition to the correct column list
-      colList[col].append(cd);
+      colList[col].append (classesByLetter[l].at (i));
       row++;
       if ( row >= rows + ((col<itemsInLastRow) ? 0 : -1)) { col++; row=0; }
     }

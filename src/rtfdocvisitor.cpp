@@ -114,6 +114,12 @@ void RTFDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Reg:     m_t << "(R)"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;
+    case DocSymbol::Lsquo:   m_t << "`"; break;
+    case DocSymbol::Rsquo:   m_t << "'"; break;
+    case DocSymbol::Ldquo:   m_t << "\""; break;
+    case DocSymbol::Rdquo:   m_t << "\""; break;
+    case DocSymbol::Ndash:   m_t << "-"; break;
+    case DocSymbol::Mdash:   m_t << "--"; break;
     case DocSymbol::Uml:     switch(s->letter())
                              {
                                case 'A' : m_t << '\304'; break;

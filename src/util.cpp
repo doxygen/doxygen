@@ -3849,6 +3849,7 @@ bool resolveLink(/* in */ const char *scName,
   GroupDef *gd;
   PageDef  *pd;
   ClassDef *cd;
+  DirDef   *dir;
   NamespaceDef *nd;
   bool ambig;
   if (linkRef.isEmpty()) // no reference name!
@@ -3900,6 +3901,12 @@ bool resolveLink(/* in */ const char *scName,
   else if ((nd=Doxygen::namespaceSDict.find(linkRef)))
   {
     *resContext=nd;
+    return TRUE;
+  }
+  else if ((dir=Doxygen::directories.find(QFileInfo(linkRef).absFilePath()+"/"))
+      && dir->isLinkable()) // TODO: make this location independent like filedefs
+  {
+    *resContext=dir;
     return TRUE;
   }
   else // probably a member reference

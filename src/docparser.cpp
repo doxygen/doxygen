@@ -1285,6 +1285,12 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
   else if (symName=="&amp;")   return DocSymbol::Amp;
   else if (symName=="&apos;")  return DocSymbol::Apos;
   else if (symName=="&quot;")  return DocSymbol::Quot;
+  else if (symName=="&lsquo;") return DocSymbol::Lsquo;
+  else if (symName=="&rsquo;") return DocSymbol::Rsquo;
+  else if (symName=="&ldquo;") return DocSymbol::Ldquo;
+  else if (symName=="&rdquo;") return DocSymbol::Rdquo;
+  else if (symName=="&ndash;") return DocSymbol::Ndash;
+  else if (symName=="&mdash;") return DocSymbol::Mdash;
   else if (symName=="&szlig;") return DocSymbol::Szlig;
   else if (symName=="&nbsp;")  return DocSymbol::Nbsp;
   else if (l==6 && symName.right(4)=="uml;")  
@@ -2587,6 +2593,12 @@ int DocIndexEntry::parse()
             case DocSymbol::Percent: m_entry+='%';  break;
             case DocSymbol::Apos:    m_entry+='\''; break;
             case DocSymbol::Quot:    m_entry+='"';  break;
+            case DocSymbol::Lsquo:   m_entry+='`';  break;
+            case DocSymbol::Rsquo:   m_entry+='\'';  break;
+            case DocSymbol::Ldquo:   m_entry+="``";  break;
+            case DocSymbol::Rdquo:   m_entry+="''";  break;
+            case DocSymbol::Ndash:   m_entry+="--";  break;
+            case DocSymbol::Mdash:   m_entry+="---";  break;
             default:
               warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected symbol found as argument of \\addindex");
               break;

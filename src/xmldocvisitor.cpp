@@ -82,6 +82,12 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Reg:     m_t << "<registered/>"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;
+    case DocSymbol::Lsquo:   m_t << "<lsquo/>"; break;
+    case DocSymbol::Rsquo:   m_t << "<rsquo/>"; break;
+    case DocSymbol::Ldquo:   m_t << "<ldquo/>"; break;
+    case DocSymbol::Rdquo:   m_t << "<rdquo/>"; break;
+    case DocSymbol::Ndash:   m_t << "<ndash/>"; break;
+    case DocSymbol::Mdash:   m_t << "<mdash/>"; break;
     case DocSymbol::Uml:     m_t << "<umlaut char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Acute:   m_t << "<acute char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Grave:   m_t << "<grave char=\"" << s->letter() << "\"/>"; break;

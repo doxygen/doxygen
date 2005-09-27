@@ -68,6 +68,12 @@ class PrintDocVisitor : public DocVisitor
 	case DocSymbol::Copy:    printf("&copy;"); break;
 	case DocSymbol::Apos:    printf("'"); break;
 	case DocSymbol::Quot:    printf("\""); break;
+        case DocSymbol::Lsquo:   printf("&lsquo;"); break;
+        case DocSymbol::Rsquo:   printf("&rsquo;"); break;
+        case DocSymbol::Ldquo:   printf("&ldquo;"); break;
+        case DocSymbol::Rdquo:   printf("&rdquo;"); break;
+        case DocSymbol::Ndash:   printf("&ndash;"); break;
+        case DocSymbol::Mdash:   printf("&mdash;"); break;
 	case DocSymbol::Uml:     printf("&%cuml;",s->letter()); break;
 	case DocSymbol::Acute:   printf("&%cacute;",s->letter()); break;
 	case DocSymbol::Grave:   printf("&%cgrave;",s->letter()); break;

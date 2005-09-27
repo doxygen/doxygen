@@ -661,12 +661,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_9
                                    // (order is left to right)
 
         if (i!=numEntries-1)  // not the last entry, so we need a separator
-        {
-          if (i<numEntries-2) // not the fore last entry
-            result+=decode(", ");
-          else                // the fore last entry
-            result+=decode(", と ");
-        }
+	  result+=decode("・");
       }
       return result;
     }
@@ -1341,7 +1336,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_9
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return trWriteList(numEntries)+decode("を実装しています")+".";
+      return trWriteList(numEntries)+decode("を実装しています。");
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1349,7 +1344,7 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_9
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return trWriteList(numEntries)+decode("で実装されています")+".";
+      return trWriteList(numEntries)+decode("で実装されています。");
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.16
@@ -1508,6 +1503,64 @@ class TranslatorJapanese : public TranslatorAdapter_1_3_9
     virtual QCString trSourceFile(QCString& filename)
     {
       return filename + decode(" ソースファイル");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return decode("ディレクトリ索引"); }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return decode("ディレクトリ構成"); }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of an HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return decode("ディレクトリ"); }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return decode("このディレクトリ一覧はおおまかにはソートされていますが、"
+		    "完全にアルファベット順でソートされてはいません。");
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=dirName; result+=decode(" ディレクトリリファレンス"); return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool, bool)
+    { 
+      return decode("ディレクトリ");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return decode("これはオーバーロードされたメンバ関数です。"
+		     "利便性のために用意されています。"
+		     "元の関数との違いは引き数のみです。");
     }
 };
 #endif

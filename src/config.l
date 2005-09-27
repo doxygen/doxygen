@@ -2449,7 +2449,7 @@ void Config::create()
                     "EXPAND_ONLY_PREDEF",
                     "If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES \n"
                     "then the macro expansion is limited to the macros specified with the \n"
-                    "PREDEFINED and EXPAND_AS_PREDEFINED tags. \n",
+                    "PREDEFINED and EXPAND_AS_DEFINED tags. \n",
                     FALSE
                  );
   cb->addDependency("ENABLE_PREPROCESSING");

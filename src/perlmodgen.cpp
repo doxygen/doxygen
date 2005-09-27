@@ -532,6 +532,12 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   case DocSymbol::Hash:    c = '#'; break;
   case DocSymbol::Percent: c = '%'; break;
   case DocSymbol::Quot:    c = '"'; break;
+  case DocSymbol::Lsquo:   s = "\\\'"; break;
+  case DocSymbol::Rsquo:   s = "\\\'"; break;
+  case DocSymbol::Ldquo:   c = '"'; break;
+  case DocSymbol::Rdquo:   c = '"'; break;
+  case DocSymbol::Ndash:   c = '-'; break;
+  case DocSymbol::Mdash:   s = "--"; break;
   case DocSymbol::Nbsp:    c = ' '; break;
   case DocSymbol::Uml:     accent = "umlaut"; break;
   case DocSymbol::Acute:   accent = "acute"; break;

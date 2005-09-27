@@ -136,7 +136,13 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Tm:      m_t << "\\texttrademark"; break;
     case DocSymbol::Reg:     m_t << "\\textregistered"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
-    case DocSymbol::Quot:    m_t << "''"; break;
+    case DocSymbol::Quot:    m_t << "\""; break;
+    case DocSymbol::Lsquo:   m_t << "`"; break;
+    case DocSymbol::Rsquo:   m_t << "'"; break;
+    case DocSymbol::Ldquo:   m_t << "``"; break;
+    case DocSymbol::Rdquo:   m_t << "''"; break;
+    case DocSymbol::Ndash:   m_t << "--"; break;
+    case DocSymbol::Mdash:   m_t << "---"; break;
     case DocSymbol::Uml:     
                              if (s->letter()=='i') 
                                m_t << "\\\"{\\i}"; 
@@ -167,7 +173,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
                                m_t << s->letter();
                              break;
     case DocSymbol::Tilde:   m_t << "\\~{"  << s->letter() << "}"; break;
-    case DocSymbol::Szlig:   m_t << "\"s"; break;
+    case DocSymbol::Szlig:   m_t << "{\\ss}"; break;
     case DocSymbol::Cedil:   m_t << "\\c{" << s->letter() << "}"; break;
     case DocSymbol::Ring:    m_t << "\\" << s->letter() << s->letter(); break;
     case DocSymbol::Nbsp:    m_t << "~"; break;
