@@ -8302,7 +8302,7 @@ void parseInput()
    *             Determine Input Files                                      *
    **************************************************************************/
 
-  msg("Reading input files...\n");
+  msg("Searching for files to process...\n");
   QDict<void> *killDict = new QDict<void>(10007);
   int inputSize=0;
   QStrList &inputList=Config_getList("INPUT");

@@ -87,7 +87,13 @@ void ManDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Tm:      m_t << "(TM)"; break;
     case DocSymbol::Reg:     m_t << "(R)"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
-    case DocSymbol::Quot:    m_t << "''"; break;
+    case DocSymbol::Quot:    m_t << "\""; break;
+    case DocSymbol::Lsquo:   m_t << "`"; break;
+    case DocSymbol::Rsquo:   m_t << "'"; break;
+    case DocSymbol::Ldquo:   m_t << "``"; break;
+    case DocSymbol::Rdquo:   m_t << "''"; break;
+    case DocSymbol::Ndash:   m_t << "--"; break;
+    case DocSymbol::Mdash:   m_t << "---"; break;
     case DocSymbol::Uml:     m_t << s->letter() << "\\*(4"; break;
     case DocSymbol::Acute:   m_t << s->letter() << "\\*(`"; break;
     case DocSymbol::Grave:   m_t << s->letter() << "\\*:"; break;

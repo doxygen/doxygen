@@ -13,14 +13,17 @@
 all: config.h config.l unistd.h Makefile.doxywizard  
 	$(MAKE) -f Makefile.doxywizard $@
 
-unistd.h:
+unistd.h: ..\..\src\unistd.h
 	$(CP) ..\..\src\unistd.h unistd.h
 
-config.h:
+config.h: ..\..\src\config.l
 	$(CP) ..\..\src\config.h config.h
 
-config.l:
+config.l: ..\..\src\config.l
 	$(CP) ..\..\src\config.l config.l
+
+version.cpp: ..\..\src\version.cpp
+	$(CP) ..\..\src\version.cpp version.cpp
 
 Makefile.doxywizard: doxywizard.pro 
 	$(ENV) $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard

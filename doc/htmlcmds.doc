@@ -102,7 +102,19 @@ The special HTML character entities that are recognized by Doxygen:
 
 <ul>
 <li><tt>\&copy;</tt> the copyright symbol
-<li><tt>\&quot;</tt> a double quote
+<li><tt>\&tm;</tt> the trade mark symbol
+<li><tt>\&reg;</tt> the registered trade mark symbol
+<li><tt>\&lt;</tt> less-than symbol
+<li><tt>\&gt;</tt> greater-than symbol
+<li><tt>\&amp;</tt> ampersand
+<li><tt>\&apos;</tt> single quotation mark (straight)
+<li><tt>\&quot;</tt> double quotation mark (straight)
+<li><tt>\&lsquo;</tt> left single quotation mark
+<li><tt>\&rsquo;</tt> right single quotation mark
+<li><tt>\&ldquo;</tt> left double quotation mark
+<li><tt>\&rdquo;</tt> right double quotation mark
+<li><tt>\&ndash;</tt> n-dash (for numeric ranges, eg. 2&ndash;8)
+<li><tt>\&mdash;</tt> m-dash (for parenthetical punctuation &mdash; like this)
 <li><tt>\&?uml;</tt>   where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y}, 
        writes a character with a diaeresis accent (like &auml;).
 <li><tt>\&?acute;</tt> where ? is one of {A,E,I,O,U,Y,a,e,i,o,u,y},

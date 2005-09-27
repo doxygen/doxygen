@@ -296,6 +296,8 @@ static QCString stripQuotes(const char *s)
 
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
+static void handleParametersCommentBlocks();
+
 //-----------------------------------------------------------------
 
 static bool nameIsOperator(QCString &name)
@@ -2747,14 +2749,15 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
 					  stringToArgumentList(fullArgString,current->argList);
+                                          handleParametersCommentBlocks();
 
 					  /* remember the current documentation block, since
 					     we could overwrite it with the documentation of
 					     a function argument, which we then have to correct later
 					     on
 					   */
-					  docBackup = current->doc.copy();
-					  briefBackup = current->brief.copy();
+					  docBackup = current->doc;
+					  briefBackup = current->brief;
 
 					  BEGIN( currentArgumentContext );
 					}
@@ -2769,9 +2772,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					      unput(yytext[i]);
 					    }
 					    stringToArgumentList(fullArgString,current->argList);
+                                            handleParametersCommentBlocks();
 					    BEGIN( currentArgumentContext );
 					  }
-					  else
+					  else // not a define
 					  {
 					    // for functions we interpret a comment
 					    // as documentation for the argument
@@ -2820,6 +2824,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    *copyArgString+=*yytext;
 					    fullArgString+=*yytext;
 					    stringToArgumentList(fullArgString,current->argList);
+                                            handleParametersCommentBlocks();
 					    BEGIN( currentArgumentContext );
 					  }
 					  else
@@ -4297,6 +4302,62 @@ exit:
     docBlockTerm=0;
   }
 }
+
+static void handleParametersCommentBlocks()
+{
+  //printf(">>>>>>> handleParametersCommentBlocks()\n");
+  ArgumentListIterator ali(*current->argList);
+  Argument *a;
+  for (ali.toFirst();(a=ali.current());++ali)
+  {
+    //printf("    Param %s docs=%s\n",a->name.data(),a->docs.data());
+    if (!a->docs.isEmpty())
+    {
+      int position=0;
+      bool needsEntry;
+
+      // save context
+      QCString orgDoc   = current->doc;
+      QCString orgBrief = current->brief;
+      int orgDocLine    = current->docLine;
+      int orgBriefLine  = current->briefLine;
+
+      current->doc.resize(0);
+      current->brief.resize(0);
+
+      //printf("handleParametersCommentBlock [%s]\n",doc.data());
+      while (parseCommentBlock(
+	     g_thisParser,
+	     current,
+	     a->docs,            // text
+	     yyFileName,         // file
+	     current->docLine,   // line of block start
+	     FALSE, 
+	     FALSE,
+	     protection,
+	     position,
+	     needsEntry
+	    )
+	  ) 
+      {
+	//printf("handleParametersCommentBlock position=%d [%s]\n",position,doc.data()+position);
+	if (needsEntry) newEntry();
+      }
+      if (needsEntry)
+      {
+	newEntry();
+      }
+      a->docs = current->doc;
+
+      // restore context
+      current->doc       = orgDoc;
+      current->brief     = orgBrief;
+      current->docLine   = orgDocLine;
+      current->briefLine = orgBriefLine;
+    }
+  }
+}
+
 
 //----------------------------------------------------------------------------
 

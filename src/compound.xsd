@@ -351,6 +351,12 @@
       <xsd:element name="copy" type="docEmptyType" />
       <xsd:element name="trademark" type="docEmptyType" />
       <xsd:element name="registered" type="docEmptyType" />
+      <xsd:element name="lsquo" type="docEmptyType" />
+      <xsd:element name="rsquo" type="docEmptyType" />
+      <xsd:element name="ldquo" type="docEmptyType" />
+      <xsd:element name="rdquo" type="docEmptyType" />
+      <xsd:element name="ndash" type="docEmptyType" />
+      <xsd:element name="mdash" type="docEmptyType" />
       <xsd:element name="umlaut" type="docCharType" />
       <xsd:element name="acute" type="docCharType" />
       <xsd:element name="grave" type="docCharType" />

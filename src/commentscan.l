@@ -909,6 +909,9 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					  addOutput(yytext[0]);
   					  addOutput(yytext[2]);
   					}
+<Comment>".,"				{ // . with comma such as "e.g.," 
+  					  addOutput(yytext);
+  					}
 <Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
   					  if (inContext!=OutputBrief)
 					  {

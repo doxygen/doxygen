@@ -70,6 +70,7 @@ SearchIndex::SearchIndex() : m_words(328829), m_index(numIndexEntries), m_urlInd
 
 void SearchIndex::setCurrentDoc(const char *name,const char *baseName,const char *anchor)
 {
+  if (name==0 || baseName==0) return;
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
   QCString url=baseName+Config_getString("HTML_FILE_EXTENSION");
   if (anchor) url+=(QCString)"#"+anchor;  
