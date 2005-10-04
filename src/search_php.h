@@ -302,7 +302,7 @@
 "    if (!in_array($word,$foundWords))\n"
 "    {\n"
 "      $foundWords[]=$word;\n"
-"      search($file,$word,$results);\n"
+"      search($file,strtolower($word),$results);\n"
 "    }\n"
 "    $word=strtok(\" \");\n"
 "  }\n"

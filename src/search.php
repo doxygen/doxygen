@@ -302,7 +302,7 @@ function main()
     if (!in_array($word,$foundWords))
     {
       $foundWords[]=$word;
-      search($file,$word,$results);
+      search($file,strtolower($word),$results);
     }
     $word=strtok(" ");
   }

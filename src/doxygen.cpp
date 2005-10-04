@@ -1736,9 +1736,10 @@ static MemberDef *addVariableToFile(
 
   // see if the function is inside a namespace
   NamespaceDef *nd = 0;
+  QCString nscope;
   if (!scope.isEmpty())
   {
-    QCString nscope=removeAnonymousScopes(scope);
+    nscope=removeAnonymousScopes(scope);
     if (!nscope.isEmpty())
     {
       nd = getResolvedNamespace(nscope);
@@ -1784,12 +1785,12 @@ static MemberDef *addVariableToFile(
   MemberName *mn=Doxygen::functionNameSDict[name];
   if (mn)
   {
-    QCString nscope=removeAnonymousScopes(scope);
-    NamespaceDef *nd=0;
-    if (!nscope.isEmpty())
-    {
-      nd = getResolvedNamespace(nscope);
-    }
+    //QCString nscope=removeAnonymousScopes(scope);
+    //NamespaceDef *nd=0;
+    //if (!nscope.isEmpty())
+    //{
+    //  nd = getResolvedNamespace(nscope);
+    //}
     MemberNameIterator mni(*mn);
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
@@ -2141,7 +2142,8 @@ static void buildVarList(Entry *root)
         scope=root->relates.copy();
     }
     
-    if (!scope.isEmpty() && !name.isEmpty() && (cd=getClass(scope)))
+    // note: changed from scope to classScope on 2-10-2005
+    if (!classScope.isEmpty() && !name.isEmpty() && (cd=getClass(classScope)))
     {
       MemberDef *md=0;
 
@@ -4892,8 +4894,6 @@ static void findMember(Entry *root,
               }
               if (matching) 
               {
-                //printf("addMemberDocs root->inLine=%d md->isInline()=%d\n",
-                //         root->inLine,md->isInline());
                 addMemberDocs(root,md,funcDecl,0,overloaded,0/* TODO */);
                 count++;
                 memFound=TRUE;
@@ -5762,7 +5762,7 @@ static void findEnumDocumentation(Entry *root)
           for (mni.toFirst();(md=mni.current()) && !found;++mni)
           {
             ClassDef *cd=md->getClassDef();
-            if (cd && cd->name()==className)
+            if (cd && cd->name()==className && md->isEnumerate())
             {
               // documentation outside a compound overrides the documentation inside it
               if (!md->documentation() || root->parent->name.isEmpty()) 
@@ -5808,24 +5808,31 @@ static void findEnumDocumentation(Entry *root)
       else // enum outside class 
       {
         //printf("Enum outside class: %s grpId=%d\n",name.data(),root->mGrpId);
-        MemberDef  *md;
         MemberName *mn=Doxygen::functionNameSDict[name];
-        if (mn && (md=mn->getFirst()))
+        if (mn)
         {
-          md->setDocumentation(root->doc,root->docFile,root->docLine);
-          md->setDocsForDefinition(!root->proto);
-          md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-          md->addSectionsToDefinition(root->anchors);
-          md->setMemberGroupId(root->mGrpId);
-          
-          GroupDef *gd=md->getGroupDef();
-          if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is
+          MemberNameIterator mni(*mn);
+          MemberDef *md;
+          for (mni.toFirst();(md=mni.current()) && !found;++mni)
           {
-            addMemberToGroups(root,md);
+            if (md->isEnumerate())
+            {
+              md->setDocumentation(root->doc,root->docFile,root->docLine);
+              md->setDocsForDefinition(!root->proto);
+              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+              md->addSectionsToDefinition(root->anchors);
+              md->setMemberGroupId(root->mGrpId);
+
+              GroupDef *gd=md->getGroupDef();
+              if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is
+              {
+                addMemberToGroups(root,md);
+              }
+
+              found=TRUE;
+            }
           }
-          
-          found=TRUE;
         }
       } 
       if (!found)
