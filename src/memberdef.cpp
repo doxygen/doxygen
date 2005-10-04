@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <qregexp.h>
+#include <md5.h>
 #include "memberdef.h"
 #include "membername.h"
 #include "doxygen.h"
@@ -2007,6 +2008,7 @@ QCString MemberDef::getScopeString() const
   return result;
 }
 
+#if 0
 static QCString escapeAnchor(const QCString &anchor)
 {
   QCString result;
@@ -2029,6 +2031,7 @@ static QCString escapeAnchor(const QCString &anchor)
   }
   return result;
 }
+#endif
 
 void MemberDef::setAnchor(const char *a)
 {
@@ -2036,7 +2039,14 @@ void MemberDef::setAnchor(const char *a)
   a=a;
   QCString memAnchor = name();
   if (!args.isEmpty()) memAnchor+=args;
-  anc = escapeAnchor(memAnchor);
+  //anc = escapeAnchor(memAnchor);
+  
+  // convert to md5 hash
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  anc = sigStr;
 }
 
 void MemberDef::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,

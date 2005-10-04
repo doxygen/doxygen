@@ -165,8 +165,9 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       int i;
       if ((i=result.findRev('/'))!=-1 || (i=result.findRev('\\'))!=-1)
       {
-	result.right(result.length()-i-1);
+	result = result.right(result.length()-i-1);
       }
+      //printf("fileName=%s result=%s\n",fileName,result.data());
       QCString outputDir;
       switch(type)
       {

@@ -1105,9 +1105,10 @@ void writeAnnotatedClassList(OutputList &ol)
   ClassDef *cd;
   
   // clear index
-  for (int y=0;y<CHL_Total;y++)
+  int x,y;
+  for (y=0;y<CHL_Total;y++)
   {
-    for (int x=0;x<256;x++)
+    for (x=0;x<256;x++)
     {
       g_classIndexLetterUsed[y][x]=FALSE;
     }
@@ -1230,7 +1231,8 @@ void writeAlphabeticalClassList(OutputList &ol)
   }
 
   QCString alphaLinks = "<p><div class=\"qindex\">";
-  for (int l = 0; l < 256; l++)
+  int l;
+  for (l = 0; l < 256; l++)
   {
     if (indexLetterUsed[l])
     {
@@ -1287,7 +1289,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   int col=0,row=0;
   //int icount=0;
   startLetter=0;
-  for (int l = 0; l < 256; l++)
+  for (l = 0; l < 256; l++)
   {
     if (!indexLetterUsed[l]) continue;
 
@@ -1303,7 +1305,8 @@ void writeAlphabeticalClassList(OutputList &ol)
       col++; 
       row=0; 
     }
-    for (uint i = 0; i < classesByLetter[l].count(); i++)
+    uint i;
+    for (i = 0; i < classesByLetter[l].count(); i++)
     {
       // add the class definition to the correct column list
       colList[col].append (classesByLetter[l].at (i));
