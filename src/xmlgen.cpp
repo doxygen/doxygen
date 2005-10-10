@@ -1112,14 +1112,14 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
       t << "\">";
       if (!bcd->templSpecifiers.isEmpty())
       {
-        convertToXML(
-            insertTemplateSpecifierInScope(
+        t << convertToXML(
+              insertTemplateSpecifierInScope(
               bcd->classDef->displayName(),bcd->templSpecifiers)
            );
       }
       else
       {
-        convertToXML(bcd->classDef->displayName());
+        t << convertToXML(bcd->classDef->displayName());
       }
       t  << "</basecompoundref>" << endl;
     }

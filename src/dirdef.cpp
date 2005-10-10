@@ -1,3 +1,5 @@
+#include <md5.h>
+
 #include "dirdef.h"
 #include "filename.h"
 #include "doxygen.h"
@@ -66,32 +68,42 @@ void DirDef::addFile(FileDef *fd)
   fd->setDirDef(this);
 }
 
-static QCString escapeDirName(const QCString &anchor)
+static QCString encodeDirName(const QCString &anchor)
 {
   QCString result;
-  int l = anchor.length(),i;
-  for (i=0;i<l;i++)
-  {
-    char c = anchor.at(i);
-    if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
-    {
-      result+=c;
-    }
-    else
-    {
-      static char hexStr[]="0123456789ABCDEF";
-      char escChar[]={ '_', 0, 0, 0 };
-      escChar[1]=hexStr[c>>4];
-      escChar[2]=hexStr[c&0xf];
-      result+=escChar;
-    }
-  }
-  return result;
+
+  // convert to md5 hash
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)anchor.data(),anchor.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  return sigStr;
+
+  // old algorithm
+
+//  int l = anchor.length(),i;
+//  for (i=0;i<l;i++)
+//  {
+//    char c = anchor.at(i);
+//    if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9'))
+//    {
+//      result+=c;
+//    }
+//    else
+//    {
+//      static char hexStr[]="0123456789ABCDEF";
+//      char escChar[]={ '_', 0, 0, 0 };
+//      escChar[1]=hexStr[c>>4];
+//      escChar[2]=hexStr[c&0xf];
+//      result+=escChar;
+//    }
+//  }
+//  return result;
 }
 
 QCString DirDef::getOutputFileBase() const
 {
-  return "dir_"+escapeDirName(name());
+  return "dir_"+encodeDirName(name());
   //return QCString().sprintf("dir_%06d",m_dirCount);
 }
 

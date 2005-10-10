@@ -3511,6 +3511,85 @@ static bool isRecursiveBaseClass(const QCString &scope,const QCString &name)
   return result;
 }
 
+/*! Searches for the end of a template in prototype \a s starting from
+ *  character position \a startPos. If the end was found the position
+ *  of the closing \> is returned, otherwise -1 is returned.
+ *
+ *  Handles exotic cases such as 
+ *  \code
+ *    Class<(id<0)>
+ *    Class<bits<<2>
+ *    Class<"<">
+ *    Class<'<'>
+ *    Class<(")<")>
+ *  \endcode
+ */
+static int findEndOfTemplate(const QCString &s,int startPos)
+{
+  // locate end of template
+  int e=startPos;
+  int brCount=1;
+  int roundCount=0;
+  int len = s.length();
+  bool insideString=FALSE;
+  bool insideChar=FALSE;
+  char pc = 0;
+  while (e<len && brCount!=0)
+  {
+    char c=s.at(e);
+    switch(c)
+    {
+      case '<': 
+        if (!insideString && !insideChar)
+        {
+          if (e<len-1 && s.at(e+1)=='<') 
+            e++; 
+          else if (roundCount==0)
+            brCount++;
+        }
+        break;
+      case '>':
+        if (!insideString && !insideChar)
+        {
+          if (e<len-1 && s.at(e+1)=='>') 
+            e++; 
+          else if (roundCount==0)
+            brCount--;
+        }
+        break;
+      case '(':
+        if (!insideString && !insideChar) 
+          roundCount++;
+        break;
+      case ')':
+        if (!insideString && !insideChar) 
+          roundCount--;
+        break;
+      case '"':
+        if (!insideChar)
+        {
+          if (insideString && pc!='\\') 
+            insideString=FALSE;
+          else
+            insideString=TRUE;
+        }
+        break;
+      case '\'':
+        if (!insideString)
+        {
+          if (insideChar && pc!='\\')
+            insideChar=FALSE;
+          else
+            insideChar=TRUE;
+        }
+        break;
+    }
+    pc = c;
+    e++;
+  }
+  return brCount==0 ? e : -1;
+}
+
 static bool findClassRelation(
                            Entry *root,
                            Definition *context,
@@ -3603,23 +3682,8 @@ static bool findClassRelation(
         {
           // TODO: here we should try to find the correct template specialization
           // but for now, we only look for the unspecializated base class.
-          // locate end of template
-          int e=i+1;
-          int brCount=1;
-          int typeLen = baseClassName.length();
-          while (e<typeLen && brCount!=0)
-          {
-            if (baseClassName.at(e)=='<') 
-            {
-              if (e<typeLen-1 && baseClassName.at(e+1)=='<') e++; else brCount++;
-            }
-            if (baseClassName.at(e)=='>') 
-            {
-              if (e<typeLen-1 && baseClassName.at(e+1)=='>') e++; else brCount--;
-            }
-            e++;
-          }
-          if (brCount==0) // end of template was found at e
+          int e=findEndOfTemplate(baseClassName,i+1);
+          if (e!=-1) // end of template was found at e
           {
             templSpec=baseClassName.mid(i,e-i);
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
