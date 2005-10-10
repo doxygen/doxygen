@@ -293,7 +293,7 @@ static void groupAddDocs(Entry *e,const char *fileName);
  */
 
 static ParserInterface *langParser;          // the language parser that is calling us
-static const char *     inputString;         // input string
+static QCString         inputString;         // input string
 static int		inputPosition;       // read pointer
 static QCString		yyFileName;          // file name that is read from
 static int		yyLineNr;            // line number in the input
@@ -2215,8 +2215,9 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   guards.clear();
   langParser     = parser;
   current        = curEntry;
+  if (comment.isEmpty()) return FALSE; // avoid empty strings
   inputString    = comment;
-  if (inputString==0) return FALSE; // avoid empty strings
+  inputString.append(" ");
   inputPosition  = position;
   yyLineNr       = lineNr;
   yyFileName     = fileName;
@@ -2229,6 +2230,12 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;
+
+
+  Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
+               "input=[%s]\n",fileName.data(),lineNr,comment.data()
+              );
+  
   commentScanYYrestart( commentScanYYin );
   BEGIN( Comment );
   commentScanYYlex();
@@ -2253,9 +2260,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
     openGroup(current,yyFileName,yyLineNr);
   }
 
-  Debug::print(Debug::CommentScan,0,"CommentScanner\n%s:%d\n"
-               "input=[%s]\nbrief=[%s]\ndocs=[%s]\n------------\n",
-	       fileName.data(),lineNr,comment.data(),
+  Debug::print(Debug::CommentScan,0,
+               "brief=[%s]\ndocs=[%s]\n===========\n",
 	       current->brief.data(),current->doc.data()
               );
   

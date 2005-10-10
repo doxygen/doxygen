@@ -1958,7 +1958,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
     if (bfd)
     {
       in  = bfd->absFilePath();  
-      doc = bfd->isLinkable() && bfd->isHidden();
+      doc = bfd->isLinkable() && !bfd->isHidden();
       src = bfd->generateSourceFile();
     }
     if (doc || src || !Config_getBool("HIDE_UNDOC_RELATIONS"))
@@ -1967,7 +1967,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
       if (bfd) url=bfd->getOutputFileBase().copy();
       if (!doc && src)
       {
-        url+="-source";
+        url=bfd->getSourceFileBase();
       }
       DotNode *bn  = m_usedNodes->find(in);
       if (bn) // file is already a node in the graph

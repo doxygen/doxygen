@@ -170,9 +170,11 @@ The generated \f$\mbox{\LaTeX}\f$ documentation must first be compiled by
 a \f$\mbox{\LaTeX}\f$ compiler (I use a recent teTeX distribution). 
 To simplify the process of compiling the generated
 documentation, \c doxygen writes a \c Makefile into the \c latex directory. 
-By typing \c make in the \c latex directory the dvi file \c refman.dvi
-will be generated (provided that you have a make tool called 
-<code>make</code> of course). This file can then be viewed using \c xdvi or 
+
+The contents and targets in the \c Makefile depend on the setting of
+\ref cfg_use_pdflatex "USE_PDFLATEX". If it is disabled (set to \c NO), then
+typing \c make in the \c latex directory a dvi file called \c refman.dvi
+will be generated. This file can then be viewed using \c xdvi or 
 converted into a PostScript file \c refman.ps by 
 typing <code>make ps</code> (this requires <code>dvips</code>).  
 
@@ -183,9 +185,12 @@ ghostscript to convert PostScript into something your printer understands.
 
 Conversion to PDF is also possible if you have installed the ghostscript
 interpreter; just type <code>make pdf</code> (or <code>make pdf_2on1</code>). 
+
 To get the best results for PDF output you should set 
 the \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS" 
-and \ref cfg_use_pdflatex "USE_PDFLATEX" tags to \c YES.
+and \ref cfg_use_pdflatex "USE_PDFLATEX" tags to \c YES. 
+In this case the \c Makefile will only contain a target to build 
+\c refman.pdf directly.
 
 \subsection rtf_out RTF output
 \addindex RTF

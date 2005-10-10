@@ -655,6 +655,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	CopyArgSharp
 %x	CopyArgComment
 %x	CopyArgCommentLine
+%x	CopyArgVerbatim
 
  /** Prototype scanner states */
 
@@ -2855,10 +2856,35 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    unput(lastCopyArgChar);
 					  BEGIN( lastCommentInArgContext );
   					}
+<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"dot"|"code")/[^a-z_A-Z0-9]	{ // verbatim command (which could contain nested comments!)
+				          docBlockName=&yytext[1];
+  					  fullArgString+=yytext;
+					  BEGIN(CopyArgVerbatim);
+  					}
+<CopyArgCommentLine>{CMD}("f$"|"f["|"f{")	        {
+				          docBlockName=&yytext[1];
+					  if (docBlockName.at(1)=='{')
+					  {
+				            docBlockName.at(1)='}';
+					  }
+  					  fullArgString+=yytext;
+  					  BEGIN(CopyArgVerbatim);
+                                        }
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
+  					  fullArgString+=yytext;
+				          if (yytext[1]=='f') // end of formula
+				          {
+				            BEGIN(CopyArgCommentLine);
+				          }
+					  if (&yytext[4]==docBlockName)
+					  {
+  					    BEGIN(CopyArgCommentLine);
+					  }
+  					}
 <CopyArgCommentLine>[^\\\@\n]+		{ fullArgString+=yytext; }
 <CopyArgCommentLine>.			{ fullArgString+=*yytext; }
-<CopyArgComment>\n			{ fullArgString+=*yytext; yyLineNr++; }
-<CopyArgComment>.			{ fullArgString+=*yytext; }
+<CopyArgComment,CopyArgVerbatim>\n	{ fullArgString+=*yytext; yyLineNr++; }
+<CopyArgComment,CopyArgVerbatim>.	{ fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
   					  warn(yyFileName,yyLineNr,
 					      "Warning: Ignoring %cbrief command inside argument documentation",*yytext

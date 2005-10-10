@@ -569,7 +569,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   }
   
   t << "\" rel=\"stylesheet\" type=\"text/css\">\n";
-  t << "<link href=\"tabs.css\" rel=\"stylesheet\" type=\"text/css\">\n";
+  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\">\n";
   t << "</head><body>\n";
 }
 
