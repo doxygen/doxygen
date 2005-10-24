@@ -3522,8 +3522,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  {
 					    current->name += "-p";
 					  }
-					  if (current->section == Entry::PROTOCOL_SEC /*|| 
-					      current->section == Entry::OBJCIMPL_SEC*/)
+					  if (current->section == Entry::PROTOCOL_SEC ||
+					      current->section == Entry::OBJCIMPL_SEC)
 					  {
 					    unput('{'); // fake start of body
 					  }

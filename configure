@@ -120,7 +120,7 @@ Options:
   --enable-langs list 	Include support for output languages listed in list.
   			[default: $f_langs]
   --with-doxywizard     Build the GUI frontend for doxygen. This
-                        requires Qt 2.x.x
+                        requires Qt 3.3.x
 
 EOF
   test "$f_error" = y && exit 1

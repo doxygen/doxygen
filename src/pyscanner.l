@@ -105,6 +105,9 @@ static QCString         g_moduleScope;
 static QCString         g_packageName;
 
 static bool             g_hideClassDocs;
+
+static QCString         g_defVal;
+static int              g_braceCount;
 //-----------------------------------------------------------------------------
 
 
@@ -310,9 +313,11 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 
 static void endOfDef()
 {
-  current = bodyEntry;
-  bodyEntry->endBodyLine  = yyLineNr;
-  bodyEntry = 0;
+  if (bodyEntry)
+  {
+    bodyEntry->endBodyLine  = yyLineNr;
+    bodyEntry = 0;
+  }
   newEntry();
   //g_insideConstructor = FALSE;
 }
@@ -436,6 +441,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 %x FunctionDec
 %x FunctionParams
 %x FunctionBody
+%x FunctionParamDefVal
 
   /* Class states */
 
@@ -798,17 +804,6 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      }
 			      current->name = yytext;
 			      current->name = current->name.stripWhiteSpace();
-			      //if (!current->name.isEmpty() && current->name.at(0)=='_')
-			      //{
-			      //	current->protection = Private;
-			      //}
-			      //if ((current_root->section&Entry::SCOPE_MASK) && 
-			      //    current->name=="__init__") // constructor
-			      //{
-			      //    g_insideConstructor = TRUE;
-			      // g_constructorEntry = current;
-			      // newEntry();
-			      //}
                             }
 
     {B}"("                  {
@@ -827,21 +822,19 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  current->argList->getLast()->name = QCString(yytext).stripWhiteSpace();
 			  current->argList->getLast()->type = "";
                         }
-    "="[^,)\n]+		{ // default value
+    "="		        { // default value
                           // TODO: this rule is too simple, need to be able to
                           // match things like =")" as well!
       			  QCString defVal=&yytext[1];
-			  if (current->argList->getLast())
-			  {
-			    current->argList->getLast()->defval=defVal.stripWhiteSpace();
-			  }
+			  g_defVal.resize(0);
+			  g_braceCount=0;
+			  BEGIN(FunctionParamDefVal);
       			}
 
      ")"                { // end of parameter list
                         }
 
      ":"                {
-	  		  lineCount();
 			  g_specialBlock = TRUE; // expecting a docstring
 			  bodyEntry = current;
                           BEGIN( FunctionBody );
@@ -852,9 +845,46 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 }
 
+<FunctionParamDefVal>{
+     "("		{ // internal opening brace
+       			  g_braceCount++;
+			  g_defVal+=*yytext;
+       			}
+     ","		| 
+     ")"		{
+       			  if (g_braceCount==0)  // end of default argument
+			  {
+			    if (current->argList->getLast())
+			    {
+			      current->argList->getLast()->defval=g_defVal.stripWhiteSpace();
+			    }
+       			    BEGIN(FunctionParams);
+			  }
+			  else // continue
+			  {
+			    g_braceCount--;
+			    g_defVal+=*yytext;
+			  }
+       			}
+     .			{
+			    g_defVal+=*yytext;
+       			}
+     \n                 {
+       			    g_defVal+=*yytext;
+			    yyLineNr++;
+       			}
+}
+
 
 <ClassBody>{
     \n/{IDENTIFIER}{BB}  { // new def at indent 0
+                        yyLineNr++;
+			endOfDef();
+			g_hideClassDocs = FALSE;
+			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+                        BEGIN(Search);
+                      }
+    \n/"##"	      {
                         yyLineNr++;
 			endOfDef();
 			g_hideClassDocs = FALSE;
@@ -904,13 +934,13 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       		        current->program+=yytext;
 		        g_specialBlock = FALSE; 
                       }
-    ^{POUNDCOMMENT}   { // normal comment 
-      		        current->program+=yytext;
-      		      }
     {NEWLINE}	      { 
       		        current->program+=*yytext;
 			yyLineNr++; 
 		      }
+    ^{POUNDCOMMENT}   { // normal comment
+      		        current->program+=yytext;
+                      }
     .                 { // any character
 		        g_specialBlock = FALSE; 
       		        current->program+=*yytext;
@@ -926,7 +956,6 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			initTriSingleQuoteBlock();
 			BEGIN(TripleComment);
                       }
-
 }
 
 <ClassDec>{IDENTIFIER} {
@@ -1145,7 +1174,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
-			    if (g_specialBlock /*|| g_expectModuleDocs*/)
+			    if (g_specialBlock)
 			    {
 			      QCString actualDoc=docBlock;
 			      if (!docBlockSpecial) // legacy unformatted docstring
@@ -1157,6 +1186,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      //{
 			      //  actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
 			      //}
+			      //printf("-------> current=%p bodyEntry=%p\n",current,bodyEntry);
 			      handleCommentBlock(actualDoc, FALSE);
 			    }
 		    	    //g_expectModuleDocs=FALSE;
@@ -1190,7 +1220,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			    docBlock += yytext;
 			  }
       			}
-    [^"\n \t]+          {
+    [^"'\n \t]+          {
 			  docBlock += yytext;
                         }
     \n			{
@@ -1422,10 +1452,6 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     current_root  = current ;
     initParser();
     current       = new Entry;
-
-    // Set the python flags
-    //current_root->python = TRUE;
-    //current->python = TRUE;
 
     groupEnterFile(yyFileName,yyLineNr);
     

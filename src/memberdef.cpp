@@ -2248,7 +2248,16 @@ bool MemberDef::isConstructor() const
     }
     else // for other languages
     {
-      return name()==classDef->localName();
+      QCString locName = classDef->localName();
+      int i=locName.find('<');
+      if (i==-1) // not a template class
+      {
+        return name()==locName;
+      }
+      else
+      {
+        return name()==locName.left(i);
+      }
     }
   }
   else

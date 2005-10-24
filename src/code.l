@@ -1226,6 +1226,7 @@ static void startFontClass(const char *s)
 static void writeObjCMethodCall(ObjCCallCtx *ctx)
 {
   if (ctx==0) return;
+  if (ctx->methodName.isEmpty()) return;
   const char *p = ctx->format.data();
   //printf("writeObjCMethodCall(%s) obj=%s method=%s\n",
   //    ctx->format.data(),ctx->objectTypeOrName.data(),ctx->methodName.data());
@@ -2418,6 +2419,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <ObjCCall,ObjCMName,ObjCSkipStr>"$" { g_currentCtx->format+="$$"; }
 <ObjCCall,ObjCMName>"("            { g_currentCtx->format+=*yytext; g_braceCount++; }
 <ObjCCall,ObjCMName>")"            { g_currentCtx->format+=*yytext; g_braceCount--; }
+<ObjCSkipStr>"@"/"\""		   { // needed to prevent matching the global rule (for C#)
+                                     g_currentCtx->format+=yytext;
+                                   }
 <ObjCCall,ObjCMName,ObjCSkipStr>.  { g_currentCtx->format+=*yytext; }
 <ObjCCall,ObjCMName,ObjCSkipStr>\n { g_currentCtx->format+=*yytext; }
 
