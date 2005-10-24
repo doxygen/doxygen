@@ -561,6 +561,7 @@ static QCString convertLabel(const QCString &l)
 {
   QCString result;
   const char *p=l.data();
+  if (p==0) return result;
   char c;
   while ((c=*p++))
   {

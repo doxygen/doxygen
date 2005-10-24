@@ -1636,7 +1636,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					  {
 					    if (*yytext=='\n') yyLineNr++;
 					    addOutput('\n');
-					    //printf("functionProto=%s\n",functionProto.data());
+					    printf("functionProto=%s\n",functionProto.data());
 					    langParser->parsePrototype(functionProto);
 					    BEGIN( Comment );
 					  }

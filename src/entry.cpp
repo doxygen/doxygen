@@ -24,7 +24,6 @@ int Entry::num=0;
 Entry::Entry()
 {
   num++;
-  //printf("New Entry %d\n",num);
   parent=0;
   section = EMPTY_SEC;
   sublist = new QList<Entry>;
@@ -50,7 +49,6 @@ Entry::Entry()
 Entry::Entry(const Entry &e)
 {
   num++;
-  //printf("Copy New Entry %d\n",num);
   section     = e.section;
   protection  = e.protection;
   mtype       = e.mtype;
@@ -171,7 +169,7 @@ Entry::Entry(const Entry &e)
 
 Entry::~Entry()
 {
-  //printf("Deleting entry %d name %s type %x chilren %d\n",
+  //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
   delete sublist;
   delete extends;
@@ -190,7 +188,8 @@ void Entry::addSubEntry(Entry *current)
   //printf("Entry %d with name %s type 0x%x added to %s type 0x%x\n",
   //    current->num,current->name.data(),current->section,
   //    name.data(),section);
-  //printf("Entry::addSubEntry(%s) %p\n",current->name.data(),current->tArgList);
+  //printf("Entry::addSubEntry(%s:%p) to %s\n",current->name.data(),
+  //    current,name.data());
   current->parent=this;
   sublist->append(current);  
 }

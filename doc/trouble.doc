@@ -22,7 +22,7 @@
     read \ref unix_problems "this section" first.
 <li>Doxygen is <em>not</em> a real compiler, it is only a lexical scanner.
     This means that it can and will not detect errors in your source code.
-<li>Since it impossible to test all possible code fragments, it is
+<li>Since it is impossible to test all possible code fragments, it is
     very well possible, that some valid piece of C/C++ code is not handled
     properly. If you find such a piece, please send it to me, so I can
     improve doxygen's parsing capabilities. Try to make the piece of code 
@@ -58,7 +58,7 @@
 
     For a part this is because the code parser isn't smart enough at the
     moment. I'll try to improve this in the future. But even with these
-    improvements not everthing can be properly linked to the corresponding
+    improvements not everything can be properly linked to the corresponding
     documentation, because of possible ambiguities or lack of
     information about the context in which the code fragment is found.  
 <li>It is not possible to insert a non-member function f in a class A 

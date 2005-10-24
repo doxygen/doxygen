@@ -47,6 +47,7 @@ ClassDef::ClassDef(
  : Definition(defFileName,defLine,removeRedundantWhiteSpace(nm),0,0,isSymbol) 
 {
   m_compType=ct;
+  m_isObjC = FALSE;
   QCString compoundName=compoundTypeString();
   if (fName)
   {
@@ -92,7 +93,6 @@ ClassDef::ClassDef(
   m_artificial = FALSE;
   m_isAbstract = FALSE;
   m_isStatic = FALSE;
-  m_isObjC = FALSE;
   m_isTemplArg = FALSE;
   m_membersMerged = FALSE;
   m_categoryOf = 0;
