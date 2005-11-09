@@ -1693,10 +1693,13 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
 
   if (annotatedClasses>0)
   {
-    startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
-        hli==HLI_Hierarchy || hli==HLI_Classes || 
-        hli==HLI_Annotated || hli==HLI_Functions || hli==HLI_ClassVisible,
-        compact,first,relPath);
+    static bool alphaIndex=Config_getBool("ALPHABETICAL_INDEX");
+    {
+      startQuickIndexItem(t,QCString(alphaIndex?"classes":"annotated")+Doxygen::htmlFileExtension,
+          hli==HLI_Hierarchy || hli==HLI_Classes || 
+          hli==HLI_Annotated || hli==HLI_Functions || hli==HLI_ClassVisible,
+          compact,first,relPath);
+    }
     t << fixSpaces(theTranslator->trClasses());
     endQuickIndexItem(t);
   }
@@ -1822,10 +1825,6 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     startQuickIndexList(t,compact);
     if (annotatedClasses>0)
     {
-      startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
-          hli==HLI_Annotated,compact,first,relPath);
-      t << fixSpaces(theTranslator->trCompoundList());
-      endQuickIndexItem(t);
       if (Config_getBool("ALPHABETICAL_INDEX"))
       {
         startQuickIndexItem(t,"classes"+Doxygen::htmlFileExtension,
@@ -1833,6 +1832,10 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
         t << fixSpaces(theTranslator->trAlphabeticalList());
         endQuickIndexItem(t);
       }
+      startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
+          hli==HLI_Annotated,compact,first,relPath);
+      t << fixSpaces(theTranslator->trCompoundList());
+      endQuickIndexItem(t);
     } 
     if (hierarchyClasses>0)
     {
