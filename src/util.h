@@ -240,5 +240,19 @@ void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
                          const QCString &str, bool priority=FALSE,
                          const QCString &anchor="");
 
+enum SrcLangExt
+{
+  SrcLangExt_IDL    = 0x008,
+  SrcLangExt_Java   = 0x010,
+  SrcLangExt_CSharp = 0x020,
+  SrcLangExt_D      = 0x040,
+  SrcLangExt_PHP    = 0x080,
+  SrcLangExt_ObjC   = 0x100,
+  SrcLangExt_Cpp    = 0x200,
+};
+
+SrcLangExt getLanguageFromFileName(const QCString fileName);
+
+
 #endif
 

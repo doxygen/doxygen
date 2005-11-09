@@ -4277,7 +4277,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
   static bool shortNames = Config_getBool("SHORT_NAMES");
   static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
   QCString result;
-  if (shortNames)
+  if (shortNames) // use short names only
   {
     static QDict<void> usedNames(10007);
     static int count=1;
@@ -4298,6 +4298,16 @@ QCString convertNameToFile(const char *name,bool allowDots)
   else // long names
   {
     result=escapeCharsInString(name,allowDots);
+    int resultLen = result.length();
+    if (resultLen>=128) // prevent names that cannot be created!
+    {
+      // third algorithm based on MD5 hash
+      uchar md5_sig[16];
+      QCString sigStr(33);
+      MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
+      MD5SigToString(md5_sig,sigStr.data(),33);
+      result=result.left(128-32)+sigStr; 
+    }
   }
   if (createSubdirs)
   {
@@ -5647,4 +5657,42 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
     }
   }
 }
+
+SrcLangExt getLanguageFromFileName(const QCString fileName)
+{
+  int i = fileName.findRev('.');
+  static bool init=FALSE;
+  static QDict<void> extLookup;
+  if (!init) // one time initialization
+  {
+    extLookup.insert(".idl",   (void*)SrcLangExt_IDL);
+    extLookup.insert(".odl",   (void*)SrcLangExt_IDL);
+    extLookup.insert(".java",  (void*)SrcLangExt_Java);
+    extLookup.insert(".as",    (void*)SrcLangExt_Java);
+    extLookup.insert(".cs",    (void*)SrcLangExt_CSharp);
+    extLookup.insert(".d",     (void*)SrcLangExt_D);
+    extLookup.insert(".php",   (void*)SrcLangExt_PHP);
+    extLookup.insert(".php4",  (void*)SrcLangExt_PHP);
+    extLookup.insert(".inc",   (void*)SrcLangExt_PHP);
+    extLookup.insert(".phtml", (void*)SrcLangExt_PHP);
+    extLookup.insert(".m",     (void*)SrcLangExt_ObjC);
+    extLookup.insert(".M",     (void*)SrcLangExt_ObjC);
+    extLookup.insert(".mm",    (void*)SrcLangExt_ObjC);
+    init=TRUE;
+  }
+  if (i!=-1) // name has an extension
+  {
+    QCString extStr=fileName.right(fileName.length()-i);
+    if (!extStr.isEmpty()) // non-empty extension
+    {
+      void *pVal=extLookup.find(extStr);
+      if (pVal) // listed extension
+      {
+        return *(SrcLangExt*)&pVal; // cast void* address to enum value
+      }
+    }
+  }
+  return SrcLangExt_Cpp; // not listed => assume C-ish language.
+}
+
 

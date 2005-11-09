@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_3_9
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */

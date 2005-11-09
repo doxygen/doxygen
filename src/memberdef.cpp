@@ -2039,7 +2039,10 @@ void MemberDef::setAnchor(const char *a)
   a=a;
   QCString memAnchor = name();
   if (!args.isEmpty()) memAnchor+=args;
-  //anc = escapeAnchor(memAnchor);
+
+  // include definition as well, to distinguish between two template
+  // specializations that only differ in the template parameters.
+  memAnchor.prepend(definition());
   
   // convert to md5 hash
   uchar md5_sig[16];

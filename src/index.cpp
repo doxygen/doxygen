@@ -614,9 +614,28 @@ void writeClassHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-// TODO: let this function return the real number of items in the hierarchy.
+static int countClassesInTreeList(const ClassSDict &cl)
+{
+  int count=0;
+  ClassSDict::Iterator cli(cl);
+  for (;cli.current(); ++cli)
+  {
+    ClassDef *cd=cli.current();
+    if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
+    {
+      if (cd->isVisibleInHierarchy()) // should it be visible
+      {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
 int countClassHierarchy()
 {
+#if 0
+// TODO: let this function return the real number of items in the hierarchy.
   initClassHierarchy(&Doxygen::classSDict);
   int count=0;
   ClassSDict::Iterator cli(Doxygen::classSDict);
@@ -624,6 +643,13 @@ int countClassHierarchy()
   {
     if (cli.current()->subClasses()->count()>0) count++;
   }
+  return count;
+#endif
+  int count=0;
+  initClassHierarchy(&Doxygen::classSDict);
+  initClassHierarchy(&Doxygen::hiddenClasses);
+  count+=countClassesInTreeList(Doxygen::classSDict);
+  count+=countClassesInTreeList(Doxygen::hiddenClasses);
   return count;
 }
 
@@ -2985,7 +3011,11 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
     ftvHelp = FTVHelp::getInstance();
   }
 
-  bool isDir = TRUE;
+  static bool tocExpand = Config_getBool("TOC_EXPAND");
+  bool isDir = dd->subDirs().count()>0 || // there are subdirs
+               (tocExpand &&              // or toc expand and
+                dd->getFiles() && dd->getFiles()->count()>0 // there are files
+               );
   //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
   if (htmlHelp)
   {
@@ -3008,7 +3038,7 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
     ol.endTypewriter();
   }
 
-  // write subgroups
+  // write sub directories
   if (dd->subDirs().count()>0)
   {
     startIndexHierarchy(ol,level+1);
@@ -3021,29 +3051,12 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
     endIndexHierarchy(ol,level+1); 
   }
 
-  if (Config_getBool("TOC_EXPAND"))
+  if (tocExpand)
   {
-    // write file list
+    // write files of this directory
     FileList *fileList=dd->getFiles();
     if (fileList && fileList->count()>0)
     {
-      if (htmlHelp)
-      {
-        htmlHelp->addContentsItem(TRUE, 
-            convertToHtml(theTranslator->trFile(TRUE,FALSE)), 
-            dd->getOutputFileBase(), 0);
-        htmlHelp->incContentsDepth();
-      }
-
-      if (ftvHelp)
-      {
-
-        ftvHelp->addContentsItem(TRUE, dd->getReference(), 
-            dd->getOutputFileBase(), 0, 
-            theTranslator->trFile(TRUE,FALSE));
-        ftvHelp->incContentsDepth();
-      }
-
       FileDef *fd=fileList->first();
       while (fd)
       {
@@ -3053,10 +3066,6 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
           ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
         fd=fileList->next();
       }
-      if (htmlHelp)
-        htmlHelp->decContentsDepth();
-      if (ftvHelp)
-        ftvHelp->decContentsDepth();
     }
   }
 

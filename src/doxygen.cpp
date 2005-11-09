@@ -1805,11 +1805,19 @@ static MemberDef *addVariableToFile(
          )
         // variable already in the scope
       {
-        Debug::print(Debug::Variables,0,
-           "    variable already found: scope=%s\n",md->getOuterScope()->name().data());
-        addMemberDocs(root,md,def,0,FALSE);
-        md->setRefItems(root->sli);
-        return md;
+        if (! // not a php array
+            (getLanguageFromFileName(md->getFileDef()->name())==SrcLangExt_PHP) &&
+            (md->argsString()!=root->args && root->args.find('[')!=-1)
+           ) 
+          // not a php array variable
+        {
+
+          Debug::print(Debug::Variables,0,
+              "    variable already found: scope=%s\n",md->getOuterScope()->name().data());
+          addMemberDocs(root,md,def,0,FALSE);
+          md->setRefItems(root->sli);
+          return md;
+        }
       }
     } 
   }
@@ -6789,7 +6797,7 @@ static void findMainPage(Entry *root)
       QCString title=root->args.stripWhiteSpace();
       QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
       Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
-                              indexName, root->doc,title);
+                              indexName, root->brief+root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setFileName(indexName);
           
@@ -6983,7 +6991,7 @@ static void buildExampleList(Entry *root)
       else
       {
         PageDef *pd=new PageDef(root->fileName,root->startLine,
-                                root->name,root->doc,root->args);
+                                root->name,root->brief+root->doc,root->args);
         pd->setFileName(convertNameToFile(pd->name()+"-example"));
         pd->addSectionsToDefinition(root->anchors);
         //pi->addSections(root->anchors);
@@ -8709,7 +8717,7 @@ void parseInput()
   msg("Adding todo/test/bug list items...\n");
   addListReferences();
 
-  if (Config_getBool("SHOW_DIRECTORIES"))
+  if (Config_getBool("SHOW_DIRECTORIES") && Config_getBool("DIRECTORY_GRAPH"))
   {
     msg("Computing dependencies between directories...\n");
     computeDirDependencies();

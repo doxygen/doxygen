@@ -213,6 +213,7 @@ static void initEntry()
   //  current->groups->append(new Grouping(*autoGroupStack.top()));
   //}
   initGroupInfo(current);
+  isTypedef=FALSE;
 }
 
 
@@ -314,15 +315,13 @@ static bool nameIsOperator(QCString &name)
 static void setContext()
 {
   QCString fileName = yyFileName;
-  insideIDL  = fileName.right(4)==".idl" || fileName.right(5)==".pidl" || 
-               fileName.right(4)==".odl";
-  insideJava = fileName.right(5)==".java" || fileName.right(3)==".as";
-  insideCS   = fileName.right(3)==".cs"; // for normal keywords add colon
-  insideD    = fileName.right(2)==".d"; // for normal keywords add colon
-  insidePHP  = fileName.right(4)==".php" || fileName.right(5)==".php4" || 
-               fileName.right(4)==".inc" || fileName.right(6)==".phtml";
-  insideObjC = fileName.right(2)==".m" || fileName.right(2)==".M" ||
-               fileName.right(3)==".mm";
+  SrcLangExt langExt = getLanguageFromFileName(fileName);
+  insideIDL  = langExt==SrcLangExt_IDL;
+  insideJava = langExt==SrcLangExt_Java;
+  insideCS   = langExt==SrcLangExt_CSharp; 
+  insideD    = langExt==SrcLangExt_D;
+  insidePHP  = langExt==SrcLangExt_PHP;
+  insideObjC = langExt==SrcLangExt_ObjC;
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;

@@ -959,20 +959,17 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 <ReadFormulaShort>{CMD}"f$"		{ // end of inline formula
   					  formulaText+="$";
 					  addOutput(addFormula());
-					  addOutput(' ');
 					  BEGIN(Comment);
   					}
 <ReadFormulaLong>{CMD}"f]"		{ // end of block formula
 					  formulaText+="\\]";
 					  addOutput(addFormula());
-					  addOutput(' ');
 					  BEGIN(Comment);
   					}
 <ReadFormulaLong>{CMD}"f}"		{ // end of custom env formula
 					  formulaText+="\\end";
 					  formulaText+=formulaEnv;
 					  addOutput(addFormula());
-					  addOutput(' ');
 					  BEGIN(Comment);
   					}
 <ReadFormulaLong,ReadFormulaShort>[^\\@\n]+ { // any non-special character
@@ -1636,7 +1633,6 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					  {
 					    if (*yytext=='\n') yyLineNr++;
 					    addOutput('\n');
-					    printf("functionProto=%s\n",functionProto.data());
 					    langParser->parsePrototype(functionProto);
 					    BEGIN( Comment );
 					  }

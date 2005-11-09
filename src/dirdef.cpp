@@ -227,7 +227,13 @@ void DirDef::writeDocumentation(OutputList &ol)
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE);
+        ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
+            FALSE, // indexWords
+            FALSE, // isExample
+            0,     // exampleName
+            FALSE, // single line
+            TRUE   // link from index
+           );
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -280,7 +286,13 @@ void DirDef::writeDocumentation(OutputList &ol)
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
         ol.startMemberDescription();
-        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE);
+        ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
+            FALSE, // indexWords
+            FALSE, // isExample
+            0,     // exampleName
+            FALSE, // single line
+            TRUE   // link from index
+           );
         ol.endMemberDescription();
         ol.newParagraph();
       }
@@ -354,8 +366,12 @@ void DirDef::addUsesDependency(DirDef *dir,FileDef *srcFd,
                                FileDef *dstFd,bool inherited)
 {
   if (this==dir) return; // do not add self-dependencies
-  //printf("  > add dependency %s->%s due to %s\n",shortName().data(),
-  //    dir->shortName().data(),fd->name().data());
+  //static int count=0;
+  //printf("  %d add dependency %s->%s due to %s->%s\n",
+  //    count++,shortName().data(),
+  //    dir->shortName().data(),
+  //    srcFd->name().data(),
+  //    dstFd->name().data());
 
   // levels match => add direct dependency
   bool added=FALSE;
@@ -383,15 +399,18 @@ void DirDef::addUsesDependency(DirDef *dir,FileDef *srcFd,
     m_usedDirs->insert(dir->getOutputFileBase(),usedDir);
     added=TRUE;
   }
-  if (added && dir->parent())
+  if (added)
   {
-    // add relation to parent of used dir
-    addUsesDependency(dir->parent(),srcFd,dstFd,inherited);
-  }
-  if (parent())
-  {
-    // add relation for the parent of this dir as well
-    parent()->addUsesDependency(dir,srcFd,dstFd,TRUE);
+    if (dir->parent())
+    {
+      // add relation to parent of used dir
+      addUsesDependency(dir->parent(),srcFd,dstFd,inherited);
+    }
+    if (parent())
+    {
+      // add relation for the parent of this dir as well
+      parent()->addUsesDependency(dir,srcFd,dstFd,TRUE);
+    }
   }
 }
 
@@ -406,6 +425,7 @@ void DirDef::computeDependencies()
     FileDef *fd;
     for (fli.toFirst();(fd=fli.current());++fli) // foreach file in dir dd
     {
+      //printf("  File %s\n",fd->name().data());
       //printf("** dir=%s file=%s\n",shortName().data(),fd->name().data());
       QList<IncludeInfo> *ifl = fd->includeFileList();
       if (ifl)
@@ -415,12 +435,15 @@ void DirDef::computeDependencies()
         for (ifli.toFirst();(ii=ifli.current());++ifli) // foreach include file
         {
           //printf("  > %s\n",ii->includeName.data());
+          //printf("    #include %s\n",ii->includeName.data());
           if (ii->fileDef && ii->fileDef->isLinkable()) // linkable file
           {
             DirDef *usedDir = ii->fileDef->getDirDef();
             if (usedDir)
             {
               // add dependency: thisDir->usedDir
+              //static int count=0;
+              //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
               addUsesDependency(usedDir,fd,ii->fileDef,FALSE);
             }
           } 
@@ -818,6 +841,7 @@ void computeDirDependencies()
   // compute uses dependencies between directories
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
+    //printf("computeDependencies for %s: #dirs=%d\n",dir->name().data(),Doxygen::directories.count());
     dir->computeDependencies();
   }
 
