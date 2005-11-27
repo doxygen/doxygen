@@ -909,6 +909,10 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     {
       //printf("non-dummy context lcd=%s!\n",lcd->name().data());
       g_theCallContext.setClass(lcd);
+      if (getLink(g_classScope,clName,ol,clName))
+      {
+	return;
+      }
     }
     isLocal=TRUE;
     //fprintf(stderr,"is a local variable cd=%p!\n",cd);
@@ -1014,7 +1018,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const 
 	}
       }
 
-      ClassDef *typeClass = stripClassName(xmd->typeString());
+      ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()));
       //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
       g_theCallContext.setClass(typeClass);
 
@@ -2055,6 +2059,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
   					}
+<Body>{FLOWKW}/{B}*"(" 			{
+  					  startFontClass("keywordflow");
+  					  codifyLines(yytext);
+					  endFontClass();
+  				          g_name.resize(0);g_type.resize(0);
+					  BEGIN(FuncCall);
+  					}
 <Body>{FLOWKW}/([^a-z_A-Z0-9]) 		{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
@@ -2068,13 +2079,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
-  					}
-<Body>{FLOWKW}/{B}*"(" 			{
-  					  startFontClass("keywordflow");
-  					  codifyLines(yytext);
-					  endFontClass();
-  				          g_name.resize(0);g_type.resize(0);
-					  BEGIN(FuncCall);
   					}
 <Body>[\\|\)\+\-\/\%\~\!]		{
   					  g_code->codify(yytext);

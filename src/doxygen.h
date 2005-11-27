@@ -64,7 +64,6 @@ struct LookupInfo
   QCString   templSpec;
 };
 
-
 extern QCString spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.

@@ -105,5 +105,39 @@ src/version.cpp: Makefile
 addon/doxywizard/version.cpp: Makefile
 	echo "char versionString[]=\"$(VERSION)\";" > addon/doxywizard/version.cpp
 
+DISTDIR = doxygen-`echo $(VERSION) | tr - _`
+rpm: dist
+	gzip -df $(DISTDIR).src.tar.gz
+	mkdir $(DISTDIR)
+	mkdir $(DISTDIR)/packages
+	mkdir $(DISTDIR)/packages/rpm
+	cp packages/rpm/doxygen.spec $(DISTDIR)/packages/rpm
+	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
+	rm -rf $(DISTDIR)
+	gzip -9v $(DISTDIR).src.tar
+	rpmbuild -ta $(DISTDIR).src.tar.gz
+
+rpmsrc: dist
+	gzip -df $(DISTDIR).src.tar.gz
+	mkdir $(DISTDIR)
+	mkdir $(DISTDIR)/packages
+	mkdir $(DISTDIR)/packages/rpm
+	cp packages/rpm/doxygen.spec $(DISTDIR)/packages/rpm
+	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
+	rm -rf $(DISTDIR)
+	gzip -9v $(DISTDIR).src.tar
+	rpmbuild -ts $(DISTDIR).src.tar.gz
+
+rpmbinary: dist
+	gzip -df $(DISTDIR).src.tar.gz
+	mkdir $(DISTDIR)
+	mkdir $(DISTDIR)/packages
+	mkdir $(DISTDIR)/packages/rpm
+	cp packages/rpm/doxygen.spec $(DISTDIR)/packages/rpm
+	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
+	rm -rf $(DISTDIR)
+	gzip -9v $(DISTDIR).src.tar
+	rpmbuild -tb $(DISTDIR).src.tar.gz
+
 FORCE:
 
