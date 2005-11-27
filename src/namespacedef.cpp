@@ -516,7 +516,19 @@ QCString NamespaceDef::getOutputFileBase() const
 Definition *NamespaceDef::findInnerCompound(const char *n)
 {
   if (n==0) return 0;
-  return m_innerCompounds->find(n);
+  Definition *d = m_innerCompounds->find(n);
+  if (d==0)
+  {
+    if (usingDirList)
+    {
+      d = usingDirList->find(n);
+    }
+    if (d==0 && usingDeclList)
+    {
+      d = usingDirList->find(n);
+    }
+  }
+  return d;
 }
 
 void NamespaceDef::addListReferences()

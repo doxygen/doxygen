@@ -173,7 +173,7 @@ Compilation is now done by performing the following steps:
     Use <code>make install_docs</code> to install the
     documentation and examples into <code>\<docdir\>/doxygen</code>. 
 
-    <code>\<prefix\></code> defaults to <code>/usr</code> but can be changed with 
+    <code>\<prefix\></code> defaults to <code>/usr/local</code> but can be changed with 
     the <code>--prefix</code> option of the configure script. 
     The default <code>\<docdir\></code> directory is 
     <code>\<prefix\>/share/doc/packages</code> and can be changed with

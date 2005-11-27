@@ -1747,7 +1747,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     {
       t << "    <li>\n";
       t << "      <form action=\"search.php\" method=\"get\">\n";
-      t << "        <table cellspacing=\"0\" callpadding=\"0\" border=\"0\">\n";
+      t << "        <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n";
       t << "          <tr>\n";
       t << "            <td><label>&nbsp;" << searchFor << "&nbsp;</label></td>\n";
       if (hli!=HLI_Search)

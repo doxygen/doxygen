@@ -446,10 +446,10 @@ void HtmlHelp::createProjectFile()
       t << s << endl;
       s = indexFiles.next();
     }
-    t << "tabs.css";
-    t << "tab_b.gif";
-    t << "tab_l.gif";
-    t << "tab_r.gif";
+    t << "tabs.css" << endl;
+    t << "tab_b.gif" << endl;
+    t << "tab_l.gif" << endl;
+    t << "tab_r.gif" << endl;
     f.close();
   }
   else

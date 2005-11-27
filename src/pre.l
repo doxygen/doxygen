@@ -1389,6 +1389,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    outputArray(yytext,yyleng);
 					  }
   					}
+<CopyLine>"\\"\r?/\n			{ // strip line continuation characters
+  					}
 <CopyLine>.				{
   					  outputChar(*yytext);
   					}

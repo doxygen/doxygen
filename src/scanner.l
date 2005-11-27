@@ -82,6 +82,7 @@ static Entry*		global_root  = 0 ;
 static Entry*		current      = 0 ;
 static Entry*		previous     = 0 ;
 static Entry*		tempEntry    = 0 ;
+static Entry*		firstTypedefEntry = 0 ;
 static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
 static QCString		yyFileName;
@@ -1478,7 +1479,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <QtPropType>{B}+			{
   				          current->type+=yytext;
   					}
-<QtPropType>{ID}			{
+<QtPropType>({ID}"::")*{ID}		{
   					  current->type+=yytext;
                                           BEGIN(QtPropName);
   					}
@@ -2343,7 +2344,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    if (!cn.isEmpty() && !rn.isEmpty())
 					    {
 					      prependScope();
-					      //cn.prepend(rn+"::");
 					    }
 					    if (isTypedef && cn.isEmpty())
 					    {
@@ -2420,8 +2420,13 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  current->type = current->type.simplifyWhiteSpace();
 					  //printf("Adding compound %s %s %s\n",current->type.data(),current->name.data(),current->args.data());
 					  current_root->addSubEntry( current ) ;
+					  if (!firstTypedefEntry)
+					  {
+					    firstTypedefEntry = current;
+					  }
 					  current = new Entry;
 					  initEntry();
+					  isTypedef=TRUE; // to undo reset by initEntry()
   					  BEGIN(MemberSpecSkip); 
   					}
 <TypedefName>";"			{ /* typedef of anonymous type */
@@ -2438,7 +2443,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  unput(';');
 					  BEGIN( MemberSpec ) ;
   					}
-<MemberSpec>([*&]*{BN}*)*{ID}("["[^\]\n]*"]")* { // the [] part could be improved.
+<MemberSpec>([*&]*{BN}*)*{ID}{BN}*("["[^\]\n]*"]")* { // the [] part could be improved.
   					  lineCount();
   					  int i=0,l=yyleng,j;
 					  while (i<l && (!isId(yytext[i]))) i++;
@@ -2451,11 +2456,31 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    msName=msName.left(j);
 					  }
 					  msType = yytext; msType=msType.left(i);
+
+					  // handle *pName in: typedef { ... } name, *pName;
+					  if (firstTypedefEntry) 
+					  {
+					    if (firstTypedefEntry->section==Entry::STRUCT_SEC)
+					    {
+					      msType.prepend("struct "+firstTypedefEntry->name);
+					    }
+					    else if (firstTypedefEntry->section==Entry::UNION_SEC)
+					    {
+					      msType.prepend("union "+firstTypedefEntry->name);
+					    }
+					    else if (firstTypedefEntry->section==Entry::ENUM_SEC)
+					    {
+					      msType.prepend("enum "+firstTypedefEntry->name);
+					    }
+					    else
+					    {
+					      msType.prepend(firstTypedefEntry->name);
+					    }
+					  }
 					}
 <MemberSpec>[,;]			{
                                           //printf("current->name=`%s' msName=`%s'\n",current->name.data(),msName.data());
   					  if (msName.isEmpty() && !current->name.isEmpty())
-					   /* && (current->section & Entry::COMPOUND_MASK)) */
 					  { 
 					    // see if the compound does not have a name or is inside another
 					    // annonymous compound. If so we insert a 
@@ -2497,14 +2522,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    if (isTypedef)
 					    {
 					      varEntry->type.prepend("typedef ");
-					    //  //printf("current->name = %s %s\n",current->name.data(),msName.data());
-					    //  if (!current->name.isEmpty() && current->name.at(0)!='@')
-					    //  {
-					    //	//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
-					    //    QCString scope;
-					    //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
-                                            //    Doxygen::typedefDict.insert(msName,new TypedefInfo(current->name,scope));
-					    //  }
+					      //  //printf("current->name = %s %s\n",current->name.data(),msName.data());
+					      //  if (!current->name.isEmpty() && current->name.at(0)!='@')
+					      //  {
+					      //	//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
+					      //    QCString scope;
+					      //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
+					      //    Doxygen::typedefDict.insert(msName,new TypedefInfo(current->name,scope));
+					      //  }
 					    }
 					    varEntry->type+=current->name+msType;
 					    varEntry->fileName = yyFileName;
@@ -2543,6 +2568,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    msName.resize(0);
 					    msArgs.resize(0);
 					    isTypedef=FALSE;
+					    firstTypedefEntry=0;
 					    current->reset();
 					    initEntry();
 					    BEGIN( FindMembers );

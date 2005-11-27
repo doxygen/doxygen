@@ -15,6 +15,13 @@
 # 
 # shell script to configure doxygen
 
+doxygen_version_major=1
+doxygen_version_minor=4
+doxygen_version_revision=5
+
+#NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
+doxygen_version_mmn=20051127
+
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
 f_debug=NO
@@ -397,6 +404,17 @@ echo "using $f_perl";
 
 # -----------------------------------------------------------------------------
 
+#
+# Make VERSION file
+#
+echo "  Creating VERSION file."
+# Output should be something like 1.4.5-20051010
+if test "$doxygen_version_mmn" = NO; then
+  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision" > VERSION
+else
+  echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision-$doxygen_version_mmn" > VERSION
+fi
+
 test -f .makeconfig && rm .makeconfig
 test -f .tmakeconfig && rm .tmakeconfig
 
@@ -434,6 +452,33 @@ EOF
 fi
 
 
+# Make doxygen.spec...
+#
+echo "  Created doxygen.spec file, for rpm generation."
+
+echo "%define version $doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision" > spec.tmp
+if test "$doxygen_version_mmn" = NO; then
+  echo "%define revision 1" >> spec.tmp
+  echo "%define mmn 1"      >> spec.tmp
+else
+  echo "%define revision $doxygen_version_mmn" >> spec.tmp
+  echo "%define mmn $doxygen_version_mmn"      >> spec.tmp
+fi
+
+mkdir -p packages
+mkdir -p packages/rpm
+
+if test "$f_wizard" = YES; then
+  cat spec.tmp ./packages/rpm/doxygen.spec.in > ./packages/rpm/doxygen.spec
+else
+  cat spec.tmp ./packages/rpm/doxygen-nodoxywizard.spec.in > ./packages/rpm/doxygen.spec
+fi
+
+rm -f spec.tmp
+
+
+# make .tmakeconfig
+#
 touch .tmakeconfig
 if test "$f_shared" = NO; then
   if test "$f_platform" = "osf1-cxx" -o "$f_platform" = "irix-n32"; then

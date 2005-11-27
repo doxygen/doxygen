@@ -262,7 +262,7 @@ static void checkArgumentName(const QString &name,bool isParam)
 
   static QRegExp re("[a-zA-Z0-9_]+\\.*");
   int p=0,i=0,l;
-  while ((i=re.match(name,p,&l))!=-1)
+  while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
   {
     QString aName=name.mid(i,l);
     //printf("aName=`%s'\n",aName.data());
