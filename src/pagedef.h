@@ -49,12 +49,15 @@ class PageDef : public Definition
     bool visibleInIndex() const;
     bool documentedPage() const;
     bool hasSubPages() const;
+    void setPageScope(Definition *d){ pageScope = d; }
+    Definition *getPageScope() const { return pageScope; }
 
   private:
     QCString m_fileName;
     QCString m_title;
     GroupDef *m_inGroup;
     PageSDict *subPageDict;                 // list of pages in the group
+    Definition *pageScope;
 };
 
 class PageSDict : public SDict<PageDef>

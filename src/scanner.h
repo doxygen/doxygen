@@ -29,6 +29,7 @@
 class CLanguageScanner : public ParserInterface
 {
   public:
+    virtual ~CLanguageScanner() {}
     void parseInput(const char *fileName,
                     const char *fileBuf,
                     Entry *root);

@@ -698,8 +698,8 @@ static int yyread(char *buf,int max_size)
 
        /* start command character */
 CMD	  ("\\"|"@")
-DCMD1     ("arg"|"attention"|"author"|"bug"|"code")
-DCMD2     ("date"|"deprecated"|"dot"|"dotfile"|"example")
+DCMD1     ("arg"|"attention"|"author"|"code")
+DCMD2     ("date"|"dot"|"dotfile"|"example")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
 DCMD5     ("latexonly"|"li"|"line"|"manonly"|"name") 
@@ -707,9 +707,10 @@ DCMD6     ("note"|"par"|"paragraph"|"param"|"post")
 DCMD7     ("pre"|"remarks"|(("relate"[sd])("also")?))
 DCMD8     ("remarks"|("return"[s]?)|"retval"|"sa"|"section")
 DCMD9     ("see"|"since"|"subsection"|"subsubsection")
-DCMD10    ("test"|"throw"|"todo"|"until"|"verbatim")
-DCMD11    ("verbinclude"|"version"|"warning"|"xrefitem")
+DCMD10    ("throw"|"until"|"verbatim")
+DCMD11    ("verbinclude"|"version"|"warning")
 DETAILEDCMD {CMD}({DCMD1}|{DCMD2}|{DCMD3}|{DCMD4}|{DCMD5}|{DCMD6}|{DCMD7}|{DCMD8}|{DCMD9}|{DCMD10}|{DCMD11})
+XREFCMD   {CMD}("bug"|"deprecated"|"test"|"todo"|"xrefitem")  
 PRE       [pP][rR][eE]
 TABLE	  [tT][aA][bB][lL][eE]
 P	  [pP]
@@ -810,12 +811,18 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
-<Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
+<Comment>{XREFCMD}/[^a-z_A-Z]*		{ // command that can end a brief description
 					  if (inContext!=OutputXRef) 
 					  {
 					    briefEndsAtDot=FALSE;
 					    setOutput(OutputDoc);
 					  }
+					  // continue with the same input
+                                          REJECT;
+					}
+<Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
+				          briefEndsAtDot=FALSE;
+				          setOutput(OutputDoc);
 					  // continue with the same input
                                           REJECT;
 					}

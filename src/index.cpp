@@ -3277,7 +3277,10 @@ void writeIndex(OutputList &ol)
     ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString("PROJECT_NUMBER"),TRUE,FALSE);
     ol.endProjectNumber();
   }
-  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) ol.writeQuickLinks(FALSE,HLI_Main);
+  if (Config_getBool("DISABLE_INDEX") && Doxygen::mainPage==0) 
+  {
+    ol.writeQuickLinks(FALSE,HLI_Main);
+  }
 
   if (Doxygen::mainPage)
   {

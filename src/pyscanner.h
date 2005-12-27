@@ -34,6 +34,7 @@
 class PythonLanguageScanner : public ParserInterface
 {
   public:
+    virtual ~PythonLanguageScanner() {}
     void parseInput(const char * fileName, 
                     const char *fileBuf, 
                     Entry *root);

@@ -525,7 +525,7 @@ Definition *NamespaceDef::findInnerCompound(const char *n)
     }
     if (d==0 && usingDeclList)
     {
-      d = usingDirList->find(n);
+      d = usingDeclList->find(n);
     }
   }
   return d;

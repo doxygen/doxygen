@@ -1839,11 +1839,16 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('/');outputChar('*');
 					  //g_commentCount++;
   					}
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f{"|"f$"|"f["){BN}+ {
+<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
   					  outputArray(yytext,yyleng);
+  					}
+<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+ {
+  					  outputArray(yytext,yyleng);
+  					  g_yyLineNr+=QCString(yytext).contains('\n');
   					}
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"){BN}+	{
   					  outputArray(yytext,yyleng);
+  					  g_yyLineNr+=QCString(yytext).contains('\n');
 					  if (yytext[1]=='f')
 					  {
 					    g_blockName="f";

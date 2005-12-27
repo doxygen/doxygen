@@ -320,7 +320,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f$"|"f["|"f{")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f$"|"f["|"f{"[a-z]*)/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     if (yytext[2]=='[')
 				     {

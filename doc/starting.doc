@@ -61,7 +61,7 @@ doxygen will try to read the configuration file from standard
 input (<code>stdin</code>), which can be useful for scripting.
 
 The configuration file has a format that is similar to that of a (simple) 
-Makefile. It contains of a number of assignments (tags) of the form:
+Makefile. It consists of a number of assignments (tags) of the form:
 
 <tt>TAGNAME = VALUE</tt> or <br>
 <tt>TAGNAME = VALUE1 VALUE2 ... </tt><br>
@@ -95,7 +95,7 @@ To omit all \c test directories from a source tree for instance, one could use:
 \verbatim EXCLUDE_PATTERNS = */test/* 
 \endverbatim
 
-Doxygen looking at the file's extension to determine how to parse a file.
+Doxygen looks at the file's extension to determine how to parse a file.
 If a file has an <code>.idl</code> or <code>.odl</code> extension it is 
 treated as an IDL file. If it has a <code>.java</code> extension it is 
 treated as a file written in Java. Files ending with <code>.cs</code> are 
@@ -162,7 +162,7 @@ supports DHTML and Javascript.
 
 If you plan to use the search engine (see 
 \ref cfg_searchengine "SEARCHENGINE"), you should view the HTML output 
-via a PHP enable web server (e.g. apache with the PHP module installed).
+via a PHP-enabled web server (e.g. apache with the PHP module installed).
 
 \subsection latex_out LaTeX output
 \addindex LaTeX
@@ -229,7 +229,7 @@ capabilities of the man page format, so some information
 
 \section step3 Step 3: Documenting the sources
 
-Although documenting the source is presented as step 3, in a new project 
+Although documenting the sources is presented as step 3, in a new project 
 this should of course be step 1. Here I assume
 you already have some code and you want doxygen to generate a nice document 
 describing the API and maybe the internals as well.

@@ -374,7 +374,7 @@ static void prependScope()
 static bool checkForKnRstyleC()
 {
   if (((QCString)yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
-  if (!current->argList) return FALSE;
+  if (!current->argList) return FALSE; // must have arguments
   ArgumentListIterator ali(*current->argList);
   Argument *a;
   for (ali.toFirst();(a=ali.current());++ali)
@@ -2447,15 +2447,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  lineCount();
   					  int i=0,l=yyleng,j;
 					  while (i<l && (!isId(yytext[i]))) i++;
-					  msName = yytext; 
-					  msName = msName.right(msName.length()-i);
+					  msName = QCString(yytext).right(l-i).stripWhiteSpace();
 					  j=msName.find("[");
 					  if (j!=-1) 
 					  {
 					    msArgs=msName.right(msName.length()-j);
 					    msName=msName.left(j);
 					  }
-					  msType = yytext; msType=msType.left(i);
+					  msType=QCString(yytext).left(i);
 
 					  // handle *pName in: typedef { ... } name, *pName;
 					  if (firstTypedefEntry) 
@@ -2505,7 +2504,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					      p=p->parent;
 					    }
 					  }
-					  if (!msName.isEmpty())
+					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
+					  if (!msName.isEmpty() && msName!=current->name) // skip typedef T {} T;
 					  {
   					    Entry *varEntry=new Entry;
 					    varEntry->protection = current->protection ;
@@ -3243,7 +3243,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					  else // a global function prototype or function variable
 					  {
-					    static QRegExp re("([^)]*)");
+					    static QRegExp re("([^)]*\\*[^)]*)"); // (...*...)
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
 					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
@@ -3356,6 +3356,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  }
 					}
 <SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { 
+					  lineCount();
   					  if ( curlyCount )
 					  {
 					    //addToBody(yytext);
@@ -3364,7 +3365,6 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  else
 					  {
 					    current->endBodyLine=yyLineNr;
-					    lineCount();
 
 					    tempEntry = current; // temporarily switch to the previous entry
 					    current = previous;
@@ -4310,7 +4310,7 @@ static void newEntry()
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
   int position=0;
-  bool needsEntry;
+  bool needsEntry=FALSE;
   if (docBlockInBody)
   {
     if (previous==0) 

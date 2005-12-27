@@ -23,6 +23,7 @@
 #include "util.h"
 #include "config.h"
 
+
 class Translator
 {
   private:
@@ -438,6 +439,8 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trOverloadText() = 0;
+
+    virtual ~Translator() {}
     
 };
 
