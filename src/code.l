@@ -98,12 +98,14 @@ static bool          g_inFunctionTryBlock = FALSE;
 
 static int	     g_lastSpecialCContext;
 static int           g_lastStringContext;
+static int           g_lastSkipCppContext;
 static int           g_lastVerbStringContext;
 static int           g_memCallContext;
 static int	     g_lastCContext;
 
 static bool          g_insideObjC;
 static bool          g_insideProtocolList;
+
 
 // context for an Objective-C method call
 struct ObjCCallCtx
@@ -881,19 +883,20 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     Definition *d = g_currentDefinition;
     //printf("d=%p g_sourceFileDef=%p\n",d,g_currentDefinition);
     cd = getResolvedClass(d,g_sourceFileDef,className,&md);
-    //printf("non-local variable name=%s context=%d cd=%s md=%s!\n",
+    //fprintf(stderr,"non-local variable name=%s context=%d cd=%s md=%s!\n",
     //	className.data(),g_theVarContext.count(),cd?cd->name().data():"<none>",
     //	md?md->name().data():"<none>");
     if (cd==0 && md==0 && (i=className.find('<'))!=-1)
     {
-      QCString bareName = stripTemplateSpecifiersFromScope(className);
+      QCString bareName = className.left(i); //stripTemplateSpecifiersFromScope(className);
+      //fprintf(stderr,"bareName=%s\n",bareName.data());
       if (bareName!=className)
       {
 	cd=getResolvedClass(d,g_sourceFileDef,bareName,&md); // try unspecialized version
       }
     }
     //printf("md=%s\n",md?md->name().data():"<none>");
-    //printf("is found as a type %s\n",cd?cd->name().data():"<null>");
+    //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
       if (getLink(g_classScope,clName,ol,clName))
@@ -1756,6 +1759,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					}
 <Body>^[ \t]*"#"			{ 
   					  startFontClass("preprocessor");
+					  g_lastSkipCppContext = YY_START;
   					  g_code->codify(yytext);
   					  BEGIN( SkipCPP ) ; 
 					}
@@ -1768,7 +1772,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipCPP>\n/.*\n			{ 
   					  codifyLines(yytext);
 					  endFontClass();
-					  BEGIN( Body ) ;
+					  BEGIN( g_lastSkipCppContext ) ;
 					}
 <SkipCPP>"//"				{ 
   					  g_code->codify(yytext);
@@ -2053,13 +2057,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<Body>{KEYWORD}/{B}*"(" 		{
+<Body>{KEYWORD}/{BN}*"(" 		{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
   					}
-<Body>{FLOWKW}/{B}*"(" 			{
+<Body>{FLOWKW}/{BN}*"(" 			{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2125,7 +2129,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
-<Body>{SCOPENAME}/{B}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
+<Body>{SCOPENAME}/{BN}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
 					  addType();
 					  generateClassOrGlobalLink(*g_code,yytext/*,TRUE*/);
   					  g_name+=yytext; 
@@ -2143,7 +2147,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  addType();
   					  g_name=varname; 
 					}
-<Body>{SCOPETNAME}/{B}*"("		{ // a() or c::a() or t<A,B>::a()
+<Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
 					  //g_theVarContext.addVariable(g_type,yytext);
@@ -2221,7 +2225,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_memCallContext = YY_START;
   					  BEGIN( MemberCall ); 
 					}
-<MemberCall>{SCOPETNAME}/{B}*"(" 	{
+<MemberCall>{SCOPETNAME}/{BN}*"(" 	{
 					  if (g_theCallContext.getClass())
 					  {
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
@@ -2463,11 +2467,15 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<MemberCall2,FuncCall>[a-z_A-Z][:a-z_A-Z0-9]*({B}*"<"[^\n\[\](){}<>]*">")? {
+<MemberCall2,FuncCall>{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
 					  addParmType();
 					  g_parmName=yytext; 
 					  generateClassOrGlobalLink(*g_code,yytext,!g_insideBody);
 					}
+<FuncCall>";"				{ // probably a cast, not a function call
+  					  g_code->codify(yytext);
+					  BEGIN( Body );
+  					}
 <MemberCall2,FuncCall>,			{
   					  g_code->codify(yytext);
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
@@ -2618,6 +2626,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  if (*yytext==';') g_parmType.resize(0);
 					  g_parmName.resize(0);
+  					}
+<CallEnd,OldStyleArgs>"#"		{
+  					  startFontClass("preprocessor");
+					  g_lastSkipCppContext = Body;
+  					  g_code->codify(yytext);
+					  BEGIN( SkipCPP );
   					}
 <CallEnd>.				{
   					  unput(*yytext);

@@ -20,7 +20,7 @@ doxygen_version_minor=4
 doxygen_version_revision=5
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20051127
+doxygen_version_mmn=20051227
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -243,6 +243,7 @@ fi
 
 #- check for qt --------------------------------------------------------------
  
+LIBDIR=lib
 if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
@@ -264,8 +265,11 @@ if test "$f_wizard" = YES; then
     exit 2
   else
     if test ! -d "$QTDIR/lib"; then
-      echo "QTDIR is set to $QTDIR, but library directory $QTDIR/lib does not exist!"
-      exit 2
+      if test ! -d "$QTDIR/lib64"; then
+        echo "QTDIR is set to $QTDIR, but library directory $QTDIR/lib does not exist!"
+        exit 2
+      fi
+      LIBDIR=lib64
     fi
     if test ! -d "$QTDIR/include"; then
       echo "QTDIR is set to $QTDIR, but include directory $QTDIR/include does not exist!"
@@ -276,8 +280,8 @@ if test "$f_wizard" = YES; then
       exit 2
     fi
     echo " headers $QTDIR/include,"
-    echo "                     libraries $QTDIR/lib"  
-    if test -n "`ls $QTDIR/lib/* | grep qt-mt`"; then
+    echo "                     libraries $QTDIR/$LIBDIR"  
+    if test -n "`ls $QTDIR/$LIBDIR/* | grep qt-mt`"; then
       f_thread=YES
     fi
   fi
@@ -571,7 +575,7 @@ done
 
 # - generating src/lang_cfg.h 
 
-if test -e "src/lang_cfg.h"; then
+if test -f "src/lang_cfg.h"; then
     chmod u+w src/lang_cfg.h   # make sure file can be overwritten
 fi
 echo -n "  Generating src/lang_cfg.h..."

@@ -122,6 +122,7 @@
       <xsd:element name="name" />
       <xsd:element name="read" minOccurs="0" />
       <xsd:element name="write" minOccurs="0" />
+      <xsd:element name="bitfield" minOccurs="0" />
       <xsd:element name="reimplements" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="reimplementedby" type="reimplementType" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded" />

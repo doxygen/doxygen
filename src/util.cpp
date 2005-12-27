@@ -76,6 +76,8 @@ extern char **environ;
 //#define MAP_ALGO ALGO_CRC16
 #define MAP_ALGO ALGO_MD5
 
+#define REL_PATH_TO_ROOT "../../"
+
 //------------------------------------------------------------------------
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
@@ -809,6 +811,12 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   //fprintf(stderr,"<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
+  QCString key;
+  key.sprintf("%p:%p:%p",scope,fileScope,item);
+  static QDict<void> visitedDict;
+  if (visitedDict.find(key)) return -1; // already looked at this
+  visitedDict.insert(key,(void *)0x8);
+
   int result=0; // assume we found it
   int i;
 
@@ -862,6 +870,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     result= (i==-1) ? -1 : i+1;
   }
 done:
+  visitedDict.remove(key);
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
@@ -871,14 +880,21 @@ done:
  * if item in not in this scope. The explicitScopePart limits the search
  * to scopes that match \a scope plus the explicit part.
  */
-int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
-                     const QCString &explicitScopePart)
+int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
+                     Definition *item,const QCString &explicitScopePart)
 {
   if (explicitScopePart.isEmpty())
   {
     // handle degenerate case where there is no explicit scope.
     return isAccessibleFrom(scope,fileScope,item);
   }
+
+  QCString key;
+  key.sprintf("%p:%p:%p:%s",scope,fileScope,item,explicitScopePart.data());
+  static QDict<void> visitedDict;
+  if (visitedDict.find(key)) return -1; // already looked at this
+  visitedDict.insert(key,(void *)0x8);
+  
   //printf("<isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
   //                                      item?item->name().data():"<none>",
   //                                      explicitScopePart.data());
@@ -996,6 +1012,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
     }
   }
 done:
+  visitedDict.remove(key);
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
@@ -2264,6 +2281,7 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
   if (target==str) { target.resize(0); return; }
   int i,p=0;
   int l=str.length();
+  bool changed=FALSE;
   while ((i=target.find(str,p))!=-1)
   {
     bool isMatch = (i==0 || !isId(target.at(i-1))) && // not a character before str
@@ -2276,17 +2294,20 @@ static void stripIrrelevantString(QCString &target,const QCString &str)
       {
         // strip str from target at index i
         target=target.left(i)+target.right(target.length()-i-l); 
+        changed=TRUE;
         i-=l;
       }
       else if ((i1!=-1 && i<i1) || (i2!=-1 && i<i2)) // str before * or &
       {
         // move str to front
         target=str+" "+target.left(i)+target.right(target.length()-i-l);
+        changed=TRUE;
         i++;
       }
     }
     p = i+l;
   }
+  if (changed) target=target.stripWhiteSpace();
 }
 
 /*! According to the C++ spec and Ivan Vecerina:
@@ -2739,91 +2760,65 @@ static QCString getCanonicalTypeForIdentifier(
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
-    symName=tmpName;
+    symName=tmpName; // name without scope
   }
   else
   {
     symName=word;
   }
 
-#if 0 // I've commented this out because it leads to obscure errors
-      // while not gaining much w.r.t. speed.
-  if (!symName.isEmpty() && !templSpec.isEmpty() &&
-      (defList=Doxygen::symbolMap->find(symName+templSpec)) &&
-      defList->count()==1) // word without scope but with template specs
-                           // is a unique symbol in the symbol map
+  ClassDef *cd = 0;
+  MemberDef *mType = 0;
+  QCString ts;
+  if (!templSpec.isEmpty())
   {
-    QCString ts;
-    result = resolveSymbolName(fs,defList->first(),ts);
-    if (tSpec) *tSpec="";
+    cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
+    if (cd && tSpec) *tSpec="";
   }
-  else if (!symName.isEmpty() &&
-      (defList=Doxygen::symbolMap->find(symName)) &&
-      defList->count()==1) // word without scope is a 
-                           // unique symbol in the symbol map
+  if (cd==0)
   {
-    QCString ts;
-    //printf("unique symName=%s templSpec=%s\n",symName.data(),templSpec.data());
-    result = resolveSymbolName(fs,defList->first(),ts)+templSpec;
-    //printf("result=%s ts=%s\n",result.data(),ts.data());
-    if (tSpec) *tSpec="";
+    cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
   }
-  else // symbol not unique, try to find the one in the right scope
-#endif
+
+  if (!ts.isEmpty() && templSpec.isEmpty())
   {
-    ClassDef *cd = 0;
-    MemberDef *mType = 0;
-    QCString ts;
-    if (!templSpec.isEmpty())
-    {
-      cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
-      if (cd && tSpec) *tSpec="";
-    }
-    if (cd==0)
-    {
-      cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
-    }
+    templSpec = stripDeclKeywords(ts);
+  }
+  //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
+  //    symName.data(),
+  //    word.data(),
+  //    cd?cd->name().data():"<none>",
+  //    d?d->name().data():"<none>",
+  //    fs?fs->name().data():"<none>"
+  //   );
 
-    if (!ts.isEmpty() && templSpec.isEmpty())
+  //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",
+  //    (word+templSpec).data(),
+  //    cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",
+  //    templSpec.data(),ts.data());
+  if (cd) // known type
+  {
+    //result = cd->qualifiedNameWithTemplateParameters();
+    result = removeRedundantWhiteSpace(cd->qualifiedName()+templSpec);
+    if (cd->isTemplate() && tSpec)
     {
-      templSpec = stripDeclKeywords(ts);
+      *tSpec="";
     }
-    //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
-    //    symName.data(),
-    //    word.data(),
-    //    cd?cd->name().data():"<none>",
-    //    d?d->name().data():"<none>",
-    //    fs?fs->name().data():"<none>"
-    //   );
-
-    //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",
-    //    (word+templSpec).data(),
-    //    cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",
-    //    templSpec.data(),ts.data());
-    if (cd) // known type
+  }
+  else if (mType && mType->isEnumerate()) // an enum
+  {
+    result = mType->qualifiedName();
+  }
+  else // not known as a class
+  {
+    QCString resolvedType = resolveTypeDef(d,word);
+    if (resolvedType.isEmpty()) // not known as a typedef either
     {
-      //result = cd->qualifiedNameWithTemplateParameters();
-      result = removeRedundantWhiteSpace(cd->qualifiedName()+templSpec);
-      if (cd->isTemplate() && tSpec)
-      {
-        *tSpec="";
-      }
+      result = word;
     }
-    else if (mType && mType->isEnumerate()) // an enum
+    else
     {
-      result = mType->qualifiedName();
-    }
-    else // not known as a class
-    {
-      QCString resolvedType = resolveTypeDef(d,word);
-      if (resolvedType.isEmpty()) // not known as a typedef either
-      {
-        result = word;
-      }
-      else
-      {
-        result = resolvedType;
-      }
+      result = resolvedType;
     }
   }
   return result;
@@ -2845,7 +2840,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
     type+=name;
   }
 
-  // strip const and volatile keywords that are not relatevant for the type
+  // strip const and volatile keywords that are not relevant for the type
   stripIrrelevantConstVolatile(type);
   
   // strip leading keywords
@@ -2911,15 +2906,21 @@ static bool matchArgument2(
     NOMATCH
     return FALSE;
   }
-  QCString sSrcName=" "+srcA->name;
-  QCString sDstName=" "+dstA->name;
-  if (sSrcName==dstA->type.right(sSrcName.length()))
+  QCString sSrcName = " "+srcA->name;
+  QCString sDstName = " "+dstA->name;
+  QCString srcType  = srcA->type;
+  QCString dstType  = dstA->type;
+  stripIrrelevantConstVolatile(srcType);
+  stripIrrelevantConstVolatile(dstType);
+  //printf("'%s'<->'%s'\n",sSrcName.data(),dstType.right(sSrcName.length()).data());
+  //printf("'%s'<->'%s'\n",sDstName.data(),srcType.right(sDstName.length()).data());
+  if (sSrcName==dstType.right(sSrcName.length()))
   { // case "unsigned int" <-> "unsigned int i"
     srcA->type+=sSrcName;
     srcA->name="";
     srcA->canType=""; // invalidate cached type value
   }
-  else if (sDstName==srcA->type.right(sDstName.length()))
+  else if (sDstName==srcType.right(sDstName.length()))
   { // case "unsigned int i" <-> "unsigned int"
     dstA->type+=sDstName;
     dstA->name="";
@@ -5695,4 +5696,57 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
   return SrcLangExt_Cpp; // not listed => assume C-ish language.
 }
 
+/*! Returns true iff the given name string appears to be a typedef in scope. */
+bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
+{
+  if (scope==0 ||
+      (scope->definitionType()!=Definition::TypeClass &&
+       scope->definitionType()!=Definition::TypeNamespace
+      )
+     )
+  {
+    scope=Doxygen::globalScope;
+  }
 
+  QCString name = n;
+  if (name.isEmpty())
+    return FALSE; // no name was given
+
+  DefinitionList *dl = Doxygen::symbolMap->find(name);
+  if (dl==0)
+    return FALSE; // could not find any matching symbols
+
+  // mostly copied from getResolvedClassRec()
+  QCString explicitScopePart;
+  int qualifierIndex = computeQualifiedIndex(name);
+  if (qualifierIndex!=-1)
+  {
+    explicitScopePart = name.left(qualifierIndex);
+    replaceNamespaceAliases(explicitScopePart,explicitScopePart.length());
+    name = name.mid(qualifierIndex+2);
+  }
+
+  // find the closest closest matching definition
+  DefinitionListIterator dli(*dl);
+  Definition *d;
+  int minDistance = 10000;
+  MemberDef *bestMatch = 0;
+  for (dli.toFirst();(d=dli.current());++dli)
+  {
+    if (d->definitionType()==Definition::TypeMember)
+    {
+      g_visitedNamespaces.clear();
+      int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
+      if (distance!=-1 && distance<minDistance)
+      {
+        minDistance = distance;
+        bestMatch = (MemberDef *)d;
+      }
+    }
+  }
+
+  if (bestMatch && bestMatch->isTypedef())
+    return TRUE; // closest matching symbol is a typedef
+  else
+    return FALSE;
+}

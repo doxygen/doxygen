@@ -34,6 +34,7 @@ class MemberDef;
 class ParserInterface
 {
   public:
+    virtual ~ParserInterface() {}
     /** Parses a single input file with the goal to build an Entry tree. 
      *  @param[in] fileName    The full name of the file.
      *  @param[in] fileBuf     The contents of the file (zero terminated).
@@ -113,7 +114,7 @@ class ParserManager
      *                       a given input file.
      */
     ParserManager(ParserInterface *defaultParser)
-      : m_defaultParser(defaultParser) {}
+      : m_defaultParser(defaultParser) { m_parsers.setAutoDelete(TRUE); }
 
     /** Registers an additional parser.
      *  @param[in] extension The file extension that will trigger

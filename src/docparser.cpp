@@ -868,9 +868,13 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   QString name = linkToText(g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
-  //printf("handleLinkedWord(%s)\n",name.data());
+  //printf("handleLinkedWord(%s) g_context=%s\n",name.data(),g_context.data());
   if (!g_insideHtmlLink && 
-      resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member))
+      (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member)
+       || (!g_context.isEmpty() &&  // also try with global scope
+           resolveRef("",g_token->name,g_inSeeBlock,&compound,&member))
+      )
+     )
   {
     //printf("resolveRef %s = %p (linkable?=%d)\n",g_token->name.data(),member,member ? member->isLinkable() : FALSE);
     if (member && member->isLinkable()) // member link
@@ -2144,12 +2148,9 @@ QString DocLink::parse(bool isJavaLink)
   }
 endlink:
 
-  if (isJavaLink)
+  if (m_children.isEmpty()) // no link text
   {
-    if (m_children.isEmpty()) // no link text
-    {
-      m_children.append(new DocWord(this,m_refText));
-    }
+    m_children.append(new DocWord(this,m_refText));
   }
 
   handlePendingStyleCommands(this,m_children);
@@ -5551,7 +5552,13 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   }
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
-    g_context = ctx->getOuterScope()->name();
+    Definition *scope = ((PageDef*)ctx)->getPageScope();
+    if (scope) g_context = scope->name();
+  }
+  else if (ctx && ctx->definitionType()==Definition::TypeGroup)
+  {
+    Definition *scope = ((GroupDef*)ctx)->getGroupScope();
+    if (scope) g_context = scope->name();
   }
   else
   {

@@ -372,6 +372,28 @@ static void addSTLClasses(Entry *root)
 
 //----------------------------------------------------------------------------
 
+static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
+                                              FileDef *fileScope=0);
+
+static void addPageToContext(PageDef *pd,Entry *root)
+{
+  if (root->parent) // add the page to it's scope
+  {
+    QCString scope = root->parent->name;
+    if (root->parent->section==Entry::PACKAGEDOC_SEC)
+    {
+      scope=substitute(scope,".","::");
+    }
+    scope = stripAnonymousNamespaceScope(scope);
+    scope+="::"+pd->name();
+    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope);
+    if (d) 
+    {
+      pd->setPageScope(d);
+    }
+  }
+}
+
 static void addRelatedPage(Entry *root)
 {
   GroupDef *gd=0;
@@ -399,7 +421,7 @@ static void addRelatedPage(Entry *root)
   if (pd)
   {
     pd->addSectionsToDefinition(root->anchors);
-    //pi->context = ctx;
+    addPageToContext(pd,root);
   }
 }
 
@@ -476,6 +498,36 @@ static void buildGroupList(Entry *root)
   buildGroupListFiltered(root,FALSE);
   // then process the @addtogroup, @weakgroup blocks
   buildGroupListFiltered(root,TRUE);
+}
+
+static void findGroupScope(Entry *root)
+{
+  if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty() && 
+      root->parent && !root->parent->name.isEmpty())
+  {
+    GroupDef *gd;
+    if ((gd=Doxygen::groupSDict[root->name]))
+    {
+      QCString scope = root->parent->name;
+      if (root->parent->section==Entry::PACKAGEDOC_SEC)
+      {
+        scope=substitute(scope,".","::");
+      }
+      scope = stripAnonymousNamespaceScope(scope);
+      scope+="::"+gd->name();
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope);
+      if (d) 
+      {
+        gd->setGroupScope(d);
+      }
+    }
+  }
+  EntryListIterator eli(*root->sublist);
+  Entry *e;
+  for (;(e=eli.current());++eli)
+  {
+    findGroupScope(e);
+  }
 }
 
 static void organizeSubGroupsFiltered(Entry *root,bool additional)
@@ -773,7 +825,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
 }
 
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
-                                              FileDef *fileScope=0)
+                                              FileDef *fileScope)
 {
   //printf("findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
   Definition *resultScope=startScope;
@@ -781,13 +833,18 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
   QCString scope=stripTemplateSpecifiersFromScope(n,FALSE);
   int l1=0,i1;
   i1=getScopeFragment(scope,0,&l1);
-  if (i1==-1) return resultScope;
+  if (i1==-1) 
+  {
+    //printf("no fragments!\n");
+    return resultScope;
+  }
   int p=i1+l1,l2=0,i2;
   while ((i2=getScopeFragment(scope,p,&l2))!=-1)
   {
     QCString nestedNameSpecifier = scope.mid(i1,l1);
     Definition *orgScope = resultScope;
     resultScope = resultScope->findInnerCompound(nestedNameSpecifier);
+    //printf("resultScope=%p\n",resultScope);
     if (resultScope==0) 
     {
       if (orgScope==Doxygen::globalScope && fileScope) 
@@ -839,7 +896,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
     l1=l2;
     p=i2+l2;
   }
-  //printf("scope %s\n",resultScope->name().data());
+  //printf("findScopeFromQualifiedName scope %s\n",resultScope->name().data());
   return resultScope;
 }
 
@@ -1935,10 +1992,10 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]*)");
+  static const QRegExp re("([^)]*\\*[^)]*)");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
-      (i=re.match(type,0,&l))!=-1 &&     // contains a (*
+      (i=re.match(type,0,&l))!=-1 && // contains (...*...)
       type.find("operator")==-1 &&   // not an operator
       type.find(")(")==-1            // not a function pointer return type
      )
@@ -2027,6 +2084,19 @@ static bool isVarWithConstructor(Entry *root)
       if (a->type.isEmpty() || getResolvedClass(ctx,fd,a->type)!=0) 
       {
         result=FALSE; // arg type is a known type
+        goto done;
+      }
+      if (checkIfTypedef(ctx,fd,a->type))
+      {
+         //printf("%s:%d: false (arg is typedef)\n",__FILE__,__LINE__);
+         result=FALSE; // argument is a typedef
+         goto done;
+      }
+      if (a->type.at(a->type.length()-1)=='*' ||
+          a->type.at(a->type.length()-1)=='&')  
+                     // type ends with * or & => pointer or reference
+      {
+        result=FALSE;
         goto done;
       }
       if (a->type.find(initChars)==0) 
@@ -2280,7 +2350,7 @@ nextMember:
 // If found they are stored in their class or in the global list.
 
 static void addMethodToClass(Entry *root,ClassDef *cd,
-                  const QCString &rname,/*const QCString &scope,*/bool isFriend)
+                  const QCString &rname,bool isFriend)
 {
   int l,i;
   static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
@@ -4491,9 +4561,27 @@ static bool findGlobalMember(Entry *root,
   return TRUE;
 }
 
+static bool isSpecialization(
+                  const QList<ArgumentList> &srcTempArgLists,
+                  const QList<ArgumentList> &dstTempArgLists
+    )
+{
+    QListIterator<ArgumentList> srclali(srcTempArgLists);
+    QListIterator<ArgumentList> dstlali(dstTempArgLists);
+    for (;srclali.current();++srclali,++dstlali)
+    {
+      ArgumentList *sal = srclali.current();
+      ArgumentList *dal = dstlali.current();
+      if (!(sal && dal && sal->count()==dal->count())) return TRUE;
+    }
+    return FALSE;
+}
+
+
 static QCString substituteTemplatesInString(
     const QList<ArgumentList> &srcTempArgLists,
     const QList<ArgumentList> &dstTempArgLists,
+    ArgumentList *funcTempArgList, // can be used to match template specializations
     const QCString &src
     )
 {
@@ -4514,17 +4602,32 @@ static QCString substituteTemplatesInString(
     {
       ArgumentListIterator tsali(*srclali.current());
       ArgumentListIterator tdali(*dstlali.current());
-      Argument *tsa =0,*tda=0;
+      Argument *tsa =0,*tda=0, *fa=0;
+      if (funcTempArgList)
+      {
+        fa=funcTempArgList->first();
+      }
 
       for (tsali.toFirst();(tsa=tsali.current()) && !found;++tsali)
       {
         tda = tdali.current();
-        if (tda && name==tsa->name)
+        if (name==tsa->name)
         {
-          name=tda->name; // substitute
-          found=TRUE;
+          if (tda)
+          {
+            name=tda->name; // substitute
+            found=TRUE;
+          }
+          else if (fa)
+          {
+            name=fa->type;
+            found=TRUE;
+          }
         }
-        if (tda) ++tdali;
+        if (tda) 
+          ++tdali; 
+        else if (fa) 
+          fa=funcTempArgList->next();
       }
     }
     dst+=name; 
@@ -4538,7 +4641,9 @@ static void substituteTemplatesInArgList(
                   const QList<ArgumentList> &srcTempArgLists,
                   const QList<ArgumentList> &dstTempArgLists,
                   ArgumentList *src,
-                  ArgumentList *dst)
+                  ArgumentList *dst,
+                  ArgumentList *funcTempArgs = 0
+                 )
 {
   ArgumentListIterator sali(*src);
   Argument *sa=0;
@@ -4547,9 +4652,11 @@ static void substituteTemplatesInArgList(
   for (sali.toFirst();(sa=sali.current());++sali) // for each member argument
   {
     QCString dstType = substituteTemplatesInString(
-                                  srcTempArgLists,dstTempArgLists,sa->type);
+                                  srcTempArgLists,dstTempArgLists,funcTempArgs,
+                                  sa->type);
     QCString dstArray = substituteTemplatesInString(
-                                  srcTempArgLists,dstTempArgLists,sa->array);
+                                  srcTempArgLists,dstTempArgLists,funcTempArgs,
+                                  sa->array);
     if (da==0)
     {
       da=new Argument(*sa);
@@ -4933,18 +5040,6 @@ static void findMember(Entry *root,
             {
               Debug::print(Debug::FindMembers,0,
                   "4. class definition %s found\n",cd->name().data());
-              //int ci;
-              //ArgumentList *classTemplArgs = cd->templateArguments();
-              //ArgumentList *funcTemplArgs  = md->memberDefTemplateArguments();
-              //if ((ci=cd->name().find("::"))!=-1) // nested class
-              //{
-              //  ClassDef *parentClass = getClass(cd->name().left(ci));
-              //  if (parentClass) 
-              //    classTemplArgs = parentClass->templateArguments();
-              //}
-              ////printf("cd->name=%s classTemplArgs=%s\n",cd->name().data(),
-              ////     argListToString(classTemplArgs).data());
-
 
               // get the template parameter lists found at the member declaration
               QList<ArgumentList> declTemplArgs;
@@ -5008,10 +5103,22 @@ static void findMember(Entry *root,
                 if (matching) // replace member's argument list
                 {
                   md->setDefinitionTemplateParameterLists(root->tArgLists);
-                  md->setArgumentList(argList);
+                  md->setArgumentList(argList); // new owner of the list => no delete
                 }
-                else // no match -> delete argument list
+                else // no match 
                 {
+                  if (!funcTempList.isEmpty() && 
+                      isSpecialization(declTemplArgs,*defTemplArgs))
+                  {
+                    // check if we are dealing with a partial template
+                    // specialization. In this case we add it to the class
+                    // even though the member arguments do not match.
+                    
+                    // TODO: copy other aspects?
+                    root->protection=md->protection(); // copy protection level
+                    addMethodToClass(root,cd,md->name(),isFriend);
+                    return;
+                  }
                   delete argList;
                 }
               }
@@ -5041,11 +5148,8 @@ static void findMember(Entry *root,
                 {
                   if (root->tArgLists && md->templateArguments() &&
                       root->tArgLists->getLast()->count()<=md->templateArguments()->count())
-                  { // assume we have found a template specialization
-                    // for which there is only a definition, no declaration in
-                    // the class. TODO: we should actually check whether
-                    // the arguments match!
-                    addMethodToClass(root,cd,md->name(),/*cd->name(),*/isFriend);
+                  { 
+                    addMethodToClass(root,cd,md->name(),isFriend);
                     return;
                   }
                   candidates++;
@@ -6738,10 +6842,22 @@ static void findDefineDocumentation(Entry *root)
     }
     else if (!root->doc.isEmpty() || !root->brief.isEmpty()) // define not found
     {
-      warn(root->fileName,root->startLine,
-           "Warning: documentation for unknown define %s found.\n",
-           root->name.data()
-          );
+      static bool preEnabled = Config_getBool("ENABLE_PREPROCESSING");
+      if (preEnabled)
+      {
+        warn(root->fileName,root->startLine,
+             "Warning: documentation for unknown define %s found.\n",
+             root->name.data()
+            );
+      }
+      else
+      {
+        warn(root->fileName,root->startLine,
+             "Warning: found documented #define but ignoring it because "
+             "ENABLE_PREPROCESSING is NO.\n",
+             root->name.data()
+            );
+      }
     }
   }
   EntryListIterator eli(*root->sublist);
@@ -6851,6 +6967,7 @@ static void findMainPage(Entry *root)
                               indexName, root->brief+root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setFileName(indexName);
+      addPageToContext(Doxygen::mainPage,root);
           
       // a page name is a label as well!
       SectionInfo *si=new SectionInfo(
@@ -8727,6 +8844,9 @@ void parseInput()
   msg("Computing page relations...\n");
   computePageRelations(root);
   checkPageRelations();
+
+  msg("Determining the scope of groups...\n");
+  findGroupScope(root);
 
   msg("Sorting lists...\n");
   Doxygen::memberNameSDict.sort();

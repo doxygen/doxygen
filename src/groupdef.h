@@ -89,6 +89,9 @@ class GroupDef : public Definition
     friend void writeGroupTreeNode(OutputList&, GroupDef*, int);      
                     // make accessible for writing tree view of group in index.cpp - KPW
 
+    void setGroupScope(Definition *d) { groupScope = d; }
+    Definition *getGroupScope() const { return groupScope; }
+
     // members in the declaration part of the documentation
     MemberList decDefineMembers;
     MemberList decProtoMembers;
@@ -135,6 +138,7 @@ class GroupDef : public Definition
     MemberList *allMemberList;
     MemberNameInfoSDict *allMemberNameInfoSDict;
     
+    Definition *groupScope;
 
 };
 

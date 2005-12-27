@@ -605,6 +605,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << " mutable=\"";
     if (md->isMutable()) t << "yes"; else t << "no";
     t << "\"";
+    
   }
   else if (md->memberType() == MemberDef::Property)
   {
@@ -645,6 +646,12 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>" << endl;
     if (md->isWritable())
       t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>" << endl;
+  }
+  if (md->memberType()==MemberDef::Variable && md->bitfieldString())
+  {
+    QCString bitfield = md->bitfieldString();
+    if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
+    t << "        <bitfield>" << bitfield << "</bitfield>" << endl;
   }
   
   MemberDef *rmd = md->reimplements();

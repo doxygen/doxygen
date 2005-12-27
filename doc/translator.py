@@ -585,6 +585,8 @@ class Transl:
                     prototype += ' ' + tokenStr
                     uniPrototype = tokenStr  # start collecting the unified prototype
                     status = 4
+		elif tokenId == 'tilde':
+                    status = 4
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
                     

@@ -1243,7 +1243,7 @@ void FileDef::acquireFileVersion()
   if (!vercmd.isEmpty()) 
   {
     msg("Version of %s : ",filepath.data());
-    FILE *f=popen("\""+vercmd+"\" \""+filepath+"\"","r");
+    FILE *f=popen(vercmd+" \""+filepath+"\"","r");
     if (!f)
     {
       err("Error: could not execute %s\n",vercmd.data());

@@ -14,6 +14,7 @@ PageDef::PageDef(const char *f,int l,const char *n,
 {
   setDocumentation(d,f,l);
   subPageDict = new PageSDict(7);
+  pageScope = 0;
 }
 
 PageDef::~PageDef()

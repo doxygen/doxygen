@@ -1788,7 +1788,9 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   //-------------------------------------------------------------------------
   // write sub indices
 
-  if ((hli==HLI_Namespaces || hli==HLI_NamespaceMembers || hli==HLI_NamespaceVisible) && 
+  if ((hli==HLI_Namespaces || hli==HLI_NamespaceMembers || 
+       hli==HLI_NamespaceVisible
+      ) && 
       documentedNamespaces>0 &&
       documentedNamespaceMembers[NMHL_All]>0)
   {

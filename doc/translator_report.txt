@@ -1,4 +1,4 @@
-(1.4.5)
+(1.4.5-20051109)
 
 Doxygen supports the following 31 languages (sorted alphabetically):
 
@@ -30,7 +30,7 @@ still may be some details listed even for them:
   TranslatorHungarian
   TranslatorIndonesian -- Remove the obsolete methods (never used).
   TranslatorItalian
-  TranslatorJapanese -- Change the base class to Translator.
+  TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorKorean
   TranslatorLithuanian
   TranslatorPolish -- Remove the obsolete methods (never used).
@@ -387,7 +387,7 @@ TranslatorIndonesian   (Translator)
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorJapanese   (TranslatorAdapter_1_3_9)
+TranslatorJapanese   (Translator)
 ------------------
 
   Implements 192 of the required methods.

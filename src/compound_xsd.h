@@ -122,6 +122,7 @@
 "      <xsd:element name=\"name\" />\n"
 "      <xsd:element name=\"read\" minOccurs=\"0\" />\n"
 "      <xsd:element name=\"write\" minOccurs=\"0\" />\n"
+"      <xsd:element name=\"bitfield\" minOccurs=\"0\" />\n"
 "      <xsd:element name=\"reimplements\" type=\"reimplementType\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n"
 "      <xsd:element name=\"reimplementedby\" type=\"reimplementType\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n"
 "      <xsd:element name=\"param\" type=\"paramType\" minOccurs=\"0\" maxOccurs=\"unbounded\" />\n"

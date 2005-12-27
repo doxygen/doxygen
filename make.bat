@@ -14,6 +14,7 @@ SET MODE=release
 if "%2"=="debug" SET MODE=debug
 
 REM use perl to create the config file
+perl wintools\version.pl >VERSION
 perl wintools\make.pl %CC%
 
 type makeconfig                   > Makefile

@@ -6,7 +6,7 @@
 PROJECT_NAME           = Doxygen
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = doxygen_docs
-CREATE_SUBDIRS         = YES
+CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = NO
 BRIEF_MEMBER_DESC      = YES
@@ -76,7 +76,6 @@ FILE_PATTERNS          = *.h \
                          *.cpp
 RECURSIVE              = NO
 EXCLUDE                = src/code.cpp \
-                         src/config.cpp \
                          src/ce_lex.cpp \
                          src/ce_parse.cpp \
                          src/declinfo.cpp \
@@ -94,7 +93,9 @@ EXCLUDE                = src/code.cpp \
                          src/commentcnv.cpp \
                          src/commentscan.cpp \
                          src/pycode.cpp \
-                         src/pyscanner.cpp
+                         src/config.cpp \
+                         src/pyscanner.cpp \
+			 
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = 
 EXAMPLE_PATH           = 
