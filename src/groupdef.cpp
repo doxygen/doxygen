@@ -75,6 +75,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   docVarMembers.setInGroup(TRUE);
 
   visited = 0;
+  groupScope = 0;
 }
 
 GroupDef::~GroupDef()
