@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
@@ -811,7 +811,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   //fprintf(stderr,"<isAccesibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
-  QCString key;
+  QCString key(40);
   key.sprintf("%p:%p:%p",scope,fileScope,item);
   static QDict<void> visitedDict;
   if (visitedDict.find(key)) return -1; // already looked at this
@@ -889,7 +889,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
     return isAccessibleFrom(scope,fileScope,item);
   }
 
-  QCString key;
+  QCString key(40+explicitScopePart.length());
   key.sprintf("%p:%p:%p:%s",scope,fileScope,item,explicitScopePart.data());
   static QDict<void> visitedDict;
   if (visitedDict.find(key)) return -1; // already looked at this
