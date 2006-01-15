@@ -59,6 +59,7 @@ static int      g_condCtx;
 static QStack<CondCtx> g_condStack;
 static QCString g_blockName;
 static int      g_lastCommentContext;
+static bool     g_inSpecialComment;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -271,6 +272,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 %x SComment
 %x CComment
 %x Verbatim
+%x VerbatimCode
 %x ReadLine
 %x CondLine
 
@@ -300,6 +302,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput("/**",3); 
 				     //copyToOutput(yytext+i,yyleng-i); 
 				     replaceAliases(yytext+i,yyleng-i);
+				     g_inSpecialComment=TRUE;
 				     BEGIN(SComment); 
                                    }
 <Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
@@ -311,7 +314,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     replaceAliases(yytext+i,yyleng-i);
 				     BEGIN(SComment);
   				   }
-<Scan>"//"/.*\n		           { /* one line C++ comment */ 
+<Scan>"//"/.*\n	                   { /* one line C++ comment */ 
   				     copyToOutput(yytext,yyleng); 
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
@@ -320,7 +323,13 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"dot"|"code"|"f$"|"f["|"f{"[a-z]*)/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("dot"|"code")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+                                     copyToOutput(yytext,yyleng); 
+				     g_lastCommentContext = YY_START;
+				     g_blockName=&yytext[1];
+                                     BEGIN(VerbatimCode);
+  				   }
+<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"f$"|"f["|"f{"[a-z]*)/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     if (yytext[2]=='[')
 				     {
@@ -351,13 +360,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				       BEGIN(g_lastCommentContext);
 				     }
                                    }
-<Verbatim>[^@\\\n]*		   { /* any character not a backslash or new line */
+<VerbatimCode>[\\@]("enddot"|"endcode") { /* end of verbatim block */
+                                     copyToOutput(yytext,yyleng);
+				     if (&yytext[4]==g_blockName)
+				     {
+				       BEGIN(g_lastCommentContext);
+				     }
+                                   }
+<VerbatimCode>^"//"[\!\/]?	   { /* skip leading comments */
+  				     if (!g_inSpecialComment)
+				     {
+                                       copyToOutput(yytext,yyleng); 
+				     }
+  				   }
+<Verbatim,VerbatimCode>[^@\/\\\n]* { /* any character not a backslash or new line */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>\n			   { /* new line in verbatim block */
+<Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>.			   { /* any other character */
+<Verbatim,VerbatimCode>.	   { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <SkipString>\\.                    { /* escaped character in string */
@@ -432,6 +454,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 
 				     copyToOutput(yytext,yyleng); 
+				     g_inSpecialComment=FALSE;
 				     BEGIN(Scan); 
                                    }
 <ReadLine>[^\\@\n]*/\n		   {

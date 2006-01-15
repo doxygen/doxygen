@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
@@ -5674,6 +5674,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".d",     (void*)SrcLangExt_D);
     extLookup.insert(".php",   (void*)SrcLangExt_PHP);
     extLookup.insert(".php4",  (void*)SrcLangExt_PHP);
+    extLookup.insert(".php5",  (void*)SrcLangExt_PHP);
     extLookup.insert(".inc",   (void*)SrcLangExt_PHP);
     extLookup.insert(".phtml", (void*)SrcLangExt_PHP);
     extLookup.insert(".m",     (void*)SrcLangExt_ObjC);

@@ -702,9 +702,18 @@ QCString Definition::qualifiedName()
   {
     m_qualifiedName = m_outerScope->qualifiedName()+"::"+m_localName;
   }
-  //printf("end Definition::qualifiedName()=%s\n",qualifiedName.data());
+  //printf("end Definition::qualifiedName()=%s\n",m_qualifiedName.data());
   return m_qualifiedName;
 };
+
+void Definition::setOuterScope(Definition *d) 
+{
+  if (m_outerScope!=d)
+  { 
+    m_qualifiedName.resize(0); // flush cached scope name
+    m_outerScope = d; 
+  }
+}
 
 QCString Definition::localName() const
 {

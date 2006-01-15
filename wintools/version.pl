@@ -11,7 +11,7 @@ while (<FILE>) {
     $minor=$1
   } elsif (/doxygen_version_revision=(\d+)/) {
     $revision=$1
-  } elsif (/doxygen_version_mmn=(\w+)/) {
+  } elsif (/doxygen_version_mmn=(\w+)/ && ($1 ne "NO")) {
     $mmn=$1
   }
 }

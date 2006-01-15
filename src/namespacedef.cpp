@@ -151,44 +151,45 @@ void NamespaceDef::insertMember(MemberDef *md)
 {
   //memList->append(md);
   allMemberList.append(md); 
+  static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
   {
     case MemberDef::Variable:     
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decVarMembers.inSort(md);
       else
         decVarMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))
+      if (sortBriefDocs)
         docVarMembers.inSort(md); 
       else
         docVarMembers.append(md);
       break;
     case MemberDef::Function: 
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decFuncMembers.inSort(md);
       else
         decFuncMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))    
+      if (sortBriefDocs)
         docFuncMembers.inSort(md); 
       else
         docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decTypedefMembers.inSort(md);
       else
         decTypedefMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))
+      if (sortBriefDocs)
         docTypedefMembers.inSort(md); 
       else
         docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decEnumMembers.inSort(md);
       else
         decEnumMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))
+      if (sortBriefDocs)
         docEnumMembers.inSort(md); 
       else
         docEnumMembers.append(md);
@@ -196,21 +197,21 @@ void NamespaceDef::insertMember(MemberDef *md)
     case MemberDef::EnumValue:    
       break;
     case MemberDef::Prototype:    
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decProtoMembers.inSort(md);
       else
         decProtoMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))
+      if (sortBriefDocs)
         docProtoMembers.inSort(md); 
       else
         docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
-      if (Config_getBool("SORT_BRIEF_DOCS"))
+      if (sortBriefDocs)
         decDefineMembers.inSort(md);
       else
         decDefineMembers.append(md);
-      if (Config_getBool("SORT_MEMBER_DOCS"))
+      if (sortBriefDocs)
         docDefineMembers.inSort(md); 
       else
         docDefineMembers.append(md);

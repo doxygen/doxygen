@@ -206,7 +206,7 @@ class Definition
     virtual Definition *findInnerCompound(const char *name);
     virtual Definition *getOuterScope() const { return m_outerScope; }
     virtual void addInnerCompound(Definition *d);
-    virtual void setOuterScope(Definition *d) { m_outerScope = d; }
+    virtual void setOuterScope(Definition *d);
 
     MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
     MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }

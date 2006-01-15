@@ -35,10 +35,11 @@ static int compItems(void *item1,void *item2)
   ClassDef *c1=(ClassDef *)item1;
   ClassDef *c2=(ClassDef *)item2;
   static bool b = Config_getBool("SORT_BY_SCOPE_NAME");
+  //printf("compItems: %d %s<->%s\n",b,c1->qualifiedName().data(),c2->qualifiedName().data());
   if (b) 
   { 
-     return stricmp(c1->qualifiedName(),
-                    c2->qualifiedName());
+     return stricmp(c1->name(),
+                    c2->name());
   }
   else
   {
