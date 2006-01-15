@@ -20,7 +20,7 @@ doxygen_version_minor=4
 doxygen_version_revision=6
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=NO
+doxygen_version_mmn=20060115
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -319,7 +319,7 @@ echo "using $f_make"
 echo -n "  Checking for GNU install tool... "
 if test "$f_insttool" = NO; then
   install_names="ginstall install"
-  install_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  install_dirs="/usr/bin /usr/local/bin /bin /sbin /usr/ucb $bin_dirs"
   install_prog=NO
   install_found=NO
   for i in $install_names; do

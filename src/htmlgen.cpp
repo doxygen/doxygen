@@ -1235,21 +1235,39 @@ void HtmlGenerator::endIndexValue(const char *,bool)
   t << "</td></tr>" << endl;
 }
 
+void HtmlGenerator::startMemberDocList()
+{
+  DBG_HTML(t << "<!-- startMemberDocList -->" << endl;)
+  t << "<table class=\"memlist\">" << endl;
+  t << "  <tr>" << endl;
+  t << "    <td>" << endl;
+}
+
+void HtmlGenerator::endMemberDocList()
+{
+  DBG_HTML(t << "<!-- endMemberDocList -->" << endl;)
+  t << "    </td>" << endl;
+  t << "  </tr>" << endl;
+  t << "</table>" << endl;
+}
+
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
   t << "<p>" << endl;
-  t << "<table class=\"mdTable\" cellpadding=\"2\" cellspacing=\"0\">" << endl;
+  
+  t << "<table class=\"memitem\">" << endl;
   t << "  <tr>" << endl;
-  t << "    <td class=\"mdRow\">" << endl; 
-  t << "      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" << endl;
+  t << "    <td>" << endl;
+  t << "      <table class=\"memproto\">" << endl;
+  
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td class=\"mdPrefix\" colspan=\"4\">" << endl; 
+  t << "          <td class=\"memtemplate\" colspan=\"5\">";
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()
@@ -1259,13 +1277,11 @@ void HtmlGenerator::endMemberDocPrefixItem()
   t << "        </tr>" << endl;
 }
 
-void HtmlGenerator::startMemberDocName(bool align)
+void HtmlGenerator::startMemberDocName(bool /*align*/)
 {
   DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
   t << "        <tr>" << endl;
-  t << "          <td class=\"md\" nowrap valign=\"top\"";
-  if (align) t << " align=\"right\"";
-  t << ">";
+  t << "          <td class=\"memname\">";
 }
 
 void HtmlGenerator::endMemberDocName()
@@ -1277,11 +1293,8 @@ void HtmlGenerator::endMemberDocName()
 void HtmlGenerator::startParameterList(bool openBracket)
 {
   DBG_HTML(t << "<!-- startParameterList -->" << endl;)
-  t << "          <td class=\"md\" valign=\"top\">";
-  if (openBracket)
-  {
-    t << "(&nbsp;";
-  }
+  t << "          <td>";
+  if (openBracket) t << "(";
   t << "</td>" << endl;
 }
 
@@ -1290,17 +1303,17 @@ void HtmlGenerator::startParameterType(bool first,const char *key)
   if (first)
   {
     DBG_HTML(t << "<!-- startFirstParameterType -->" << endl;)
-    t << "          <td class=\"md\" nowrap valign=\"top\">";
+    t << "          <td class=\"paramtype\">";
   }
   else
   {
     DBG_HTML(t << "<!-- startParameterType -->" << endl;)
     t << "        <tr>" << endl;
-    t << "          <td class=\"md\" nowrap align=\"right\">";
+    t << "          <td class=\"paramkey\">";
     if (key) t << key;
     t << "</td>" << endl;
-    t << "          <td class=\"md\"></td>" << endl;
-    t << "          <td class=\"md\" nowrap>";
+    t << "          <td></td>" << endl;
+    t << "          <td class=\"paramtype\">";
   }
 }
 
@@ -1310,15 +1323,10 @@ void HtmlGenerator::endParameterType()
   t << "&nbsp;</td>" << endl;
 }
 
-void HtmlGenerator::startParameterName(bool oneArgOnly)
+void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
 {
   DBG_HTML(t << "<!-- startParameterName -->" << endl;)
-  t << "          <td class=\"mdname";
-  if (oneArgOnly) 
-  {
-    t << "1\" valign=\"top";
-  }
-  t << "\" nowrap>"; //&nbsp;";
+  t << "          <td class=\"paramname\">";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
@@ -1329,21 +1337,21 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
     if (emptyList)
     {
       t << "          </td>" << endl;
-      t << "          <td class=\"md\" valign=\"top\">";
+      t << "          <td>";
       if (closeBracket) t << "&nbsp;)";
       t << "&nbsp;</td>" << endl;
-      t << "          <td class=\"md\" nowrap>";
+      t << "          <td width=\"100%\">";
     }
     else
     {
-      t << "</td>" << endl;
+      t << "</td><td>&nbsp;</td>" << endl;
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
-      t << "          <td class=\"md\"></td>" << endl;
-      t << "          <td class=\"md\">";
+      t << "          <td></td>" << endl;
+      t << "          <td>";
       if (closeBracket) t << ")";
-      t << "&nbsp;</td>" << endl;
-      t << "          <td class=\"md\" colspan=\"2\">";
+      t << "</td>" << endl;
+      t << "          <td></td><td></td><td width=\"100%\">";
     }
   }
   else
@@ -1370,7 +1378,6 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
   t << "      </table>" << endl;
   t << "    </td>" << endl;
   t << "  </tr>" << endl;
-  t << "</table>" << endl; 
 }
 
 void HtmlGenerator::startDotGraph()
@@ -1461,17 +1468,15 @@ void HtmlGenerator::startIndent()
   // It's back to abusing tables :-(
   
   //t << "<div class=\"in\">" << endl; 
+  DBG_HTML(t << "<!-- startIndent -->" << endl;)
 
-  t << "<table cellspacing=\"5\" cellpadding=\"0\" border=\"0\">\n"
-       "  <tr>\n"
-       "    <td>\n"
-       "      &nbsp;\n"
-       "    </td>\n"
-       "    <td>\n";
+  t << "  <tr>\n"
+       "    <td >\n";
 }
 
 void HtmlGenerator::endIndent()          
 { 
+  DBG_HTML(t << "<!-- endIndent -->" << endl;)
   t << "    </td>\n"
        "  </tr>\n"
        "</table>\n";

@@ -98,6 +98,8 @@ class ManGenerator : public OutputGenerator
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     void writeListItem();
+    void startMemberDocList() {}
+    void endMemberDocList() {}
     void startMemberList();
     void endMemberList();
     void startAnonTypeScope(int);

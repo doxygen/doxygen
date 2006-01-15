@@ -1307,8 +1307,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   HtmlHelp *htmlHelp = 0;
   if (hasHtmlHelp)
   {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addIndexItem(ciname,name(),cfiname,cfname,memAnchor);
+    if (isEnumerate() && name().at(0)=='@')
+    {
+      // don't add to index
+    }
+    else
+    {
+      htmlHelp = HtmlHelp::getInstance();
+      htmlHelp->addIndexItem(ciname,name(),cfiname,cfname,memAnchor);
+    }
   }
 
   // get member name
@@ -2249,6 +2256,10 @@ bool MemberDef::isConstructor() const
     {
       return name()=="this";
     }
+    else if (fileDef && getLanguageFromFileName(fileDef->name())==SrcLangExt_PHP)
+    {                // for PHP
+      return name()=="__construct";
+    }
     else // for other languages
     {
       QCString locName = classDef->localName();
@@ -2272,6 +2283,10 @@ bool MemberDef::isDestructor() const
   if (m_isDMember) // for D
   {
     return name()=="~this";
+  }
+  else if (fileDef && getLanguageFromFileName(fileDef->name())==SrcLangExt_PHP)
+  {                // for PHP
+    return name()=="__destruct";
   }
   else // other languages
   {

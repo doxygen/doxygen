@@ -369,6 +369,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     ol.parseText(title);
     ol.endGroupHeader();
   }
+  ol.startMemberDocList();
   
   MemberListIterator mli(*this);
   MemberDef *md;
@@ -386,6 +387,7 @@ void MemberList::writeDocumentation(OutputList &ol,
       mg->writeDocumentation(ol,scopeName,container);
     }
   }
+  ol.endMemberDocList();
 }
 
 void MemberList::writeDocumentationPage(OutputList &ol,

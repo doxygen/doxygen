@@ -1015,7 +1015,11 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) 
+            {
+	      DBG(("CMD_EMPHASIS: reparsing command %s\n",g_token->name.data()));
+              goto reparsetoken;
+            }
           }
           break;
         case CMD_BOLD:
@@ -1025,7 +1029,11 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) 
+            {
+	      DBG(("CMD_BOLD: reparsing command %s\n",g_token->name.data()));
+              goto reparsetoken;
+            }
           }
           break;
         case CMD_CODE:
@@ -1035,7 +1043,11 @@ reparsetoken:
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,FALSE));
             if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
-            else if (tok==TK_WORD || tok==TK_HTMLTAG) goto reparsetoken;
+            else if (tok==TK_WORD || tok==TK_HTMLTAG) 
+            {
+	      DBG(("CMD_CODE: reparsing command %s\n",g_token->name.data()));
+              goto reparsetoken;
+            }
           }
           break;
         case CMD_HTMLONLY:
@@ -5164,8 +5176,9 @@ reparsetoken:
 	    // the command ended normally, keep scanning for new tokens.
 	    retval = 0;
 	  }
-          else if (retval==TK_LISTITEM || retval==TK_ENDLIST || retval==TK_WORD)
-          {
+          else if (retval>0 && retval<RetVal_OK)
+          { 
+            // the command ended with a new command, reparse this token
             tok = retval;
             goto reparsetoken;
           }

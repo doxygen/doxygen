@@ -306,8 +306,10 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberHeader() = 0;
     virtual void startMemberSubtitle() = 0;
     virtual void endMemberSubtitle() = 0;
-    virtual void startMemberList()  = 0;
-    virtual void endMemberList()    = 0;
+    virtual void startMemberDocList() = 0;
+    virtual void endMemberDocList() = 0;
+    virtual void startMemberList() = 0;
+    virtual void endMemberList() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
     virtual void startMemberItem(int) = 0;

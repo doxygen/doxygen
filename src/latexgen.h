@@ -93,6 +93,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberHeader();
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
+    void startMemberDocList() {}
+    void endMemberDocList() {}
     void startMemberList();
     void endMemberList();
     void startAnonTypeScope(int);

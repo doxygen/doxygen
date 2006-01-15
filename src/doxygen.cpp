@@ -1186,12 +1186,16 @@ static void resolveClassNestingRelations()
                   // anyway, so we can at least relate scopes properly.
         {
           Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
-          d->addInnerCompound(cd);
-          cd->setOuterScope(d);
-          warn(cd->getDefFileName(),cd->getDefLine(),
-              "Warning: Internal inconsistency: scope for class %s not "
-              "found!\n",cd->name().data()
-              );
+          if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
+                     // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+          {
+            d->addInnerCompound(cd);
+            cd->setOuterScope(d);
+            warn(cd->getDefFileName(),cd->getDefLine(),
+                "Warning: Internal inconsistency: scope for class %s not "
+                "found!\n",cd->name().data()
+                );
+          }
         }
         else
         {
@@ -1309,7 +1313,7 @@ static void buildNamespaceList(Entry *root)
 
         // also add namespace to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
-        //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"none");
+        //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"<none>");
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
@@ -1336,6 +1340,25 @@ static void buildNamespaceList(Entry *root)
 }
 
 //----------------------------------------------------------------------
+
+static NamespaceDef *findUsedNamespace(const NamespaceSDict *unl,
+                              const QCString &name)
+{
+  NamespaceDef *usingNd =0;
+  if (unl)
+  {
+    //printf("Found namespace dict %d\n",unl->count());
+    NamespaceSDict::Iterator unli(*unl);
+    NamespaceDef *und;
+    for (unli.toFirst();(und=unli.current());++unli)
+    {
+      QCString uScope=und->name()+"::";
+      usingNd = getResolvedNamespace(uScope+name);
+      //printf("Also trying with scope=`%s' usingNd=%p\n",(uScope+name).data(),usingNd);
+    }
+  }
+  return usingNd;
+}
 
 static void findUsingDirectives(Entry *root)
 {
@@ -1366,7 +1389,7 @@ static void findUsingDirectives(Entry *root)
       // find the scope in which the `using' namespace is defined by prepending
       // the possible scopes in which the using statement was found, starting
       // with the most inner scope and going to the most outer scope (i.e. 
-      // file scope).
+      // file scope). 
       int scopeOffset = nsName.length();
       do
       {
@@ -1384,7 +1407,34 @@ static void findUsingDirectives(Entry *root)
         }
       } while (scopeOffset>=0 && usingNd==0);
 
-      //printf("%s -> %p\n",name.data(),usingNd);
+      if (usingNd==0 && nd) // not found, try used namespaces in this scope
+                            // or in one of the parent namespace scopes
+      {
+        NamespaceDef *pnd = nd;
+        while (pnd && usingNd==0)
+        {
+          // also try with one of the used namespaces found earlier
+          usingNd = findUsedNamespace(pnd->getUsedNamespaces(),name);
+
+          // goto the parent
+          Definition *s = pnd->getOuterScope();
+          if (s && s->definitionType()==Definition::TypeNamespace)
+          {
+            pnd = (NamespaceDef*)s;
+          }
+          else
+          {
+            pnd = 0;
+          }
+        }
+      }
+      if (usingNd==0 && fd) // still nothing, also try used namespace in the
+                            // global scope
+      {
+        usingNd = findUsedNamespace(fd->getUsedNamespaces(),name);
+      }
+
+      //printf("%s -> %s\n",name.data(),usingNd?usingNd->name().data():"<none>");
 
       // add the namespace the correct scope
       if (usingNd)
@@ -1911,9 +1961,10 @@ static MemberDef *addVariableToFile(
          )
         // variable already in the scope
       {
-        if (! // not a php array
-            (getLanguageFromFileName(md->getFileDef()->name())==SrcLangExt_PHP) &&
-            (md->argsString()!=root->args && root->args.find('[')!=-1)
+        if (md->getFileDef() &&
+            ! // not a php array
+             (getLanguageFromFileName(md->getFileDef()->name())==SrcLangExt_PHP) &&
+             (md->argsString()!=root->args && root->args.find('[')!=-1)
            ) 
           // not a php array variable
         {
@@ -8852,6 +8903,7 @@ void parseInput()
   Doxygen::memberNameSDict.sort();
   Doxygen::functionNameSDict.sort();
   Doxygen::hiddenClasses.sort();
+  printf("Sorting %d classes\n",Doxygen::classSDict.count());
   Doxygen::classSDict.sort();
   
   msg("Freeing entry tree\n");
