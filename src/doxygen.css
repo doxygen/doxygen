@@ -309,7 +309,7 @@ HR { height: 1px;
   padding: 2px;
 }
 .memitem {
-  width: 100%;
+  padding: 4px;
   background-color: #eef3f5;
   border-width: 1px;
   border-style: solid;
@@ -318,6 +318,7 @@ HR { height: 1px;
 }
 .memname {
   white-space: nowrap;
+  font-weight: bold;
 }
 .memdoc{
   padding-left: 10px;

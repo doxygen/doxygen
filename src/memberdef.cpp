@@ -79,7 +79,7 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString & /*scopeName*/,MemberDef *md)
 {
-  ArgumentList *defArgList=md->isDocsForDefinition() ? 
+  ArgumentList *defArgList=(md->isDocsForDefinition() && !md->isProperty()) ? 
                              md->argumentList() : md->declArgumentList();
   //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
   if (defArgList==0) 
@@ -1148,6 +1148,25 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.startTypewriter();
     ol.docify(" [implementation]");
     ol.endTypewriter();
+  }
+
+  if (isProperty())
+  {
+      ol.writeLatexSpacing();
+      ol.startTypewriter();
+      ol.docify(" [");
+      QStrList sl;
+      if (isGettable()) sl.append("get");
+      if (isSettable()) sl.append("set");
+      const char *s=sl.first();
+      while (s)
+      {
+         ol.docify(s);
+         s=sl.next();
+         if (s) ol.docify(", ");
+      }
+      ol.docify("]");
+      ol.endTypewriter();
   }
 
   if (!detailsVisible && !annMemb)

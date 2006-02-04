@@ -814,6 +814,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
+    //printf("d=%p linkable=%d\n",d,d?d->isLinkable():0);
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));
@@ -1777,7 +1778,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipCPP>"//"				{ 
   					  g_code->codify(yytext);
 					}
-<Body>"{"				{ 
+<Body,FuncCall>"{"			{ 
                                           g_theVarContext.pushScope();
 
   					  g_scopeStack.push(INNERBLOCK);

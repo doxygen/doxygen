@@ -90,6 +90,7 @@
 "    <xsd:simpleContent>\n"
 "      <xsd:extension base=\"xsd:string\">\n"
 "        <xsd:attribute name=\"refid\" type=\"xsd:string\" />\n"
+"        <xsd:attribute name=\"prot\" type=\"DoxProtectionKind\" use=\"optional\"/>\n"
 "      </xsd:extension>\n"
 "    </xsd:simpleContent>\n"
 "  </xsd:complexType>\n"

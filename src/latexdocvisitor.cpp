@@ -191,7 +191,7 @@ void LatexDocVisitor::visit(DocURL *u)
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url() << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\\texttt{";
   filter(u->url());
   m_t << "}";
 }
@@ -214,13 +214,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "{\\bf ";      else m_t << "}";
+      if (s->enable()) m_t << "\\textbf{";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\em ";     else m_t << "\\/}";
+      if (s->enable()) m_t << "\\textit{";     else m_t << "\\/}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\tt ";   else m_t << "}";
+      if (s->enable()) m_t << "\\texttt{ ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
@@ -257,11 +257,11 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   switch(s->type())
   {
     case DocVerbatim::Code: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "\n\n\\begin{Code}\\begin{verbatim}"; 
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,s->context(),s->text().latin1(),
                                         s->isExample(),s->exampleFile());
-      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\\end{Code}\n" << endl; 
       break;
     case DocVerbatim::Verbatim: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
@@ -322,7 +322,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       { 
-         m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+         m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
@@ -330,25 +330,25 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                            inc->text().latin1(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
-         m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+         m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
       }
       break;    
     case DocInclude::Include: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),inc->isExample(),
                                         inc->exampleFile());
-      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
       break;
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "\n\n\\begin{VerbInclude}\\begin{verbatim}"; 
       m_t << inc->text();
-      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\end{VerbInclude}" << endl; 
       break;
   }
 }
@@ -359,7 +359,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    if (!m_hide) m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+    if (!m_hide) m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
     pushEnabled();
     m_hide = TRUE;
   }
@@ -378,7 +378,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     popEnabled();
-    if (!m_hide) m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+    if (!m_hide) m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
   }
   else
   {
@@ -718,7 +718,7 @@ void LatexDocVisitor::visitPre(DocHRef *href)
     m_t << href->url();
     m_t << "}";
   }
-  m_t << "{\\tt ";
+  m_t << "\texttt{";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
@@ -746,12 +746,12 @@ void LatexDocVisitor::visitPre(DocImage *img)
     if (m_hide) return;
     if (img->hasCaption())
     {
-      m_t << "\\begin{figure}[H]" << endl;
+      m_t << "\\begin{Image}" << endl;
       m_t << "\\begin{center}" << endl;
     }
     else
     {
-      m_t << "\\mbox{";
+      m_t << "\\begin{ImageNoCaption}\\mbox{";
     }
     QString gfxName = img->name();
     if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
@@ -789,7 +789,10 @@ void LatexDocVisitor::visitPost(DocImage *img)
     if (img->hasCaption())
     {
       m_t << "\\end{center}" << endl;
-      m_t << "\\end{figure}" << endl;
+      m_t << "\\end{Image}" << endl;
+    }
+    else{
+      m_t << "\\end{ImageNoCaption}" << endl;
     }
   }
   else // other format
@@ -969,7 +972,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   }
   else
   {
-    m_t << "{\\bf ";
+    m_t << "\\textbf{";
   }
   m_insideItem=TRUE;
   filter(x->title());
@@ -1025,11 +1028,10 @@ void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QSt
     if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
     if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
-
   }
   else
   {
-    m_t << "{\\bf ";
+    m_t << "\\doxyref{";
   }
 }
 
@@ -1038,11 +1040,11 @@ void LatexDocVisitor::endLink(const QString &ref,const QString &file,const QStri
   m_t << "}";
   if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
   {
-    m_t << "{\\rm ("; 
+    m_t << "{"; 
     filter(theTranslator->trPageAbbreviation());
-    m_t << "\\,\\pageref{" << file;
+    m_t << "}{" << file;
     if (!anchor.isEmpty()) m_t << "_" << anchor;
-    m_t << "})}";
+    m_t << "}";
   }
 }
 
@@ -1084,12 +1086,12 @@ void LatexDocVisitor::startDotFile(const QString &fileName,
   writeDotGraphFromFile(name,outDir,baseName,EPS);
   if (hasCaption)
   {
-    m_t << "\\begin{figure}[H]" << endl;
+    m_t << "\\begin{Image}" << endl;
     m_t << "\\begin{center}" << endl;
   }
   else
   {
-    m_t << "\\mbox{";
+    m_t << "\\begin{ImageNoCaption}\\mbox{";
   }
   m_t << "\\includegraphics";
   if (!width.isEmpty())
@@ -1111,11 +1113,15 @@ void LatexDocVisitor::startDotFile(const QString &fileName,
 void LatexDocVisitor::endDotFile(bool hasCaption)
 {
   if (m_hide) return;
-  m_t << "}" << endl; // end mbox or caption
+  m_t << "}" << endl; // end caption or mbox
   if (hasCaption)
   {
     m_t << "\\end{center}" << endl;
-    m_t << "\\end{figure}" << endl;
+    m_t << "\\end{Image}" << endl;
+  }
+  else
+  {
+    m_t << "\\end{ImageNoCaption}" << endl;
   }
 }
 

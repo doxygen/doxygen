@@ -222,7 +222,7 @@ declaration and the detailed description before the member definition.
 If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,
 it is sometimes desired to place the documentation block after the member 
-instead of before. For this purpose you should put an additional \< marker
+instead of before. For this purpose you have to put an additional \< marker
 in the comment block.
 
 Here are some examples:

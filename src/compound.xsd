@@ -90,6 +90,7 @@
     <xsd:simpleContent>
       <xsd:extension base="xsd:string">
         <xsd:attribute name="refid" type="xsd:string" />
+        <xsd:attribute name="prot" type="DoxProtectionKind" use="optional"/>
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>

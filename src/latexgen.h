@@ -115,14 +115,14 @@ class LatexGenerator : public OutputGenerator
 
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment() { t << endl << endl << "\\footnotesize\\begin{verbatim}"; }
-    void endCodeFragment()   { t << "\\end{verbatim}\\normalsize " << endl; }
+    void startCodeFragment() { t << endl << endl << "\\begin{Code}\\begin{verbatim}"; }
+    void endCodeFragment()   { t << "\\end{verbatim}\\end{Code}" << endl; }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "{\\bf "; }
+    void startBold()     { t << "\\textbf{"; }
     void endBold()       { t << "}"; }
     void startDescription();
     void endDescription();
