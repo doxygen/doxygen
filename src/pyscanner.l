@@ -154,6 +154,20 @@ static void newVariable()
   newEntry();
 }
 
+static void newFunction()
+{
+  if (current->name.left(2)=="__" && current->name.right(2)=="__")
+  {
+    // special method name, see
+    // http://docs.python.org/ref/specialnames.html
+    current->protection=Public;
+  }
+  else if (current->name.at(0)=='_')
+  {
+    current->protection=Private;
+  }
+}
+
 static inline int computeIndent(const char *s)
 {
   int col=0;
@@ -804,6 +818,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      }
 			      current->name = yytext;
 			      current->name = current->name.stripWhiteSpace();
+			      newFunction();
                             }
 
     {B}"("                  {
@@ -984,7 +999,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                         }
 
 <ClassInheritance>{
-   ({BB}|[(,)])        { // syntactic sugar for the list
+   ({BB}|[\(,\)])      { // syntactic sugar for the list
                        }
 
     ":"                { // begin of the class definition

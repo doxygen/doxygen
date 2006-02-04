@@ -158,6 +158,9 @@ static bool             docBlockInBody;
 static bool             docBlockJavaStyle;
 static char             docBlockTerm;
 
+static QCString         idlAttr;
+static QCString         idlProp;
+
 
 //-----------------------------------------------------------------------------
 
@@ -656,6 +659,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 %x	CopyArgComment
 %x	CopyArgCommentLine
 %x	CopyArgVerbatim
+
+%x      IDLAttribute
+%x      IDLProp
+%x      IDLPropName
 
  /** Prototype scanner states */
 
@@ -2189,11 +2196,14 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					}
 
 <FindMembers>"["			{ 
-					  if (current->name.isEmpty() || current->name=="typedef") // IDL function property
-					  {
-					    squareCount=1;
+  					  if (current->name.isEmpty() || current->name=="typedef") // IDL function property
+ 					  {
+          				    squareCount=1;
 					    lastSquareContext = YY_START;
-					    BEGIN(SkipSquare);
+					    idlAttr.resize(0);
+					    idlProp.resize(0);
+					    current->mtype = mtype;
+					    BEGIN( IDLAttribute );
 					  }
 					  else
 					  {
@@ -2202,6 +2212,75 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    BEGIN( Array ) ;
 					  }
 					}
+<IDLAttribute>"]"			{
+  					  // end of IDL function attribute
+					  if (--squareCount<=0)
+					  {
+					    lineCount();
+					    if (current->mtype == Property)
+					      BEGIN( IDLPropName );
+					    else
+					      BEGIN( lastSquareContext );
+					  }
+					}
+<IDLAttribute>"propput"	                {
+					  current->mtype = Property;
+					  current->memSpec |= Entry::Settable;
+					}
+<IDLAttribute>"propget" 		{
+					  current->mtype = Property;
+					  current->memSpec |= Entry::Gettable;
+					}
+<IDLAttribute>.				{
+					}
+<IDLPropName>{BN}*{ID}{BN}*		{
+					  // return type (probably HRESULT) - skip it
+					}
+<IDLPropName>{ID}{BN}*"("		{
+  					  current->name = yytext;
+					  current->name = current->name.left(current->name.length()-1).stripWhiteSpace();
+  					  current->startLine = yyLineNr;
+					  BEGIN( IDLProp );
+					}
+<IDLProp>{BN}*"["[^\]]*"]"{BN}*		{  // attribute of a parameter
+					   idlAttr += yytext;
+					}
+<IDLProp>{ID}				{  // property type
+					   idlProp = yytext;
+					}
+<IDLProp>{BN}*{ID}{BN}*"," 		{  // Rare: Another parameter ([propput] HRESULT Item(int index, [in] Type theRealProperty);)
+					  if (!current->args)
+					    current->args = "(";
+					  else
+					    current->args += ", ";
+					  current->args += idlAttr;
+					  current->args += " ";
+					  current->args += idlProp;	// prop was actually type of extra parameter
+					  current->args += " ";
+					  current->args += yytext;
+					  current->args = current->args.left(current->args.length() - 1);	// strip comma
+					  idlProp.resize(0);
+					  idlAttr.resize(0);
+					  BEGIN( IDLProp );
+					}
+<IDLProp>{BN}*{ID}{BN}*")"{BN}*		{
+					  // the parameter name for the property - just skip.
+					}
+<IDLProp>";"				{
+					  current->fileName   = yyFileName;
+					  current->type		= idlProp;
+  					  current->args       = current->args.simplifyWhiteSpace();
+  					  if (current->args)
+  					    current->args += ")";
+  					  current->name       = current->name.stripWhiteSpace();
+					  current->section    = Entry::VARIABLE_SEC;
+					  current_root->addSubEntry(current);
+					  current             = new Entry;
+					  initEntry();
+					  BEGIN( FindMembers );
+					}
+<IDLProp>.				{
+ 					}
 <Array>"]"				{ current->args += *yytext ;
 					  if (--squareCount<=0)
 	                                     BEGIN( FindMembers ) ;

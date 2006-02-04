@@ -953,7 +953,15 @@ static void writeInnerClasses(const ClassSDict *cl,QTextStream &t)
       if (cd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "    <innerclass refid=\"" << cd->getOutputFileBase()
-          << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+          << "\" prot=\"";
+        switch(cd->protection())
+        {
+           case Public:    t << "public";     break;
+           case Protected: t << "protected";  break;
+           case Private:   t << "private";    break;
+           case Package:   t << "package";    break;
+        }
+        t << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
       }
     }
   }

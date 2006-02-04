@@ -1238,48 +1238,55 @@ void HtmlGenerator::endIndexValue(const char *,bool)
 void HtmlGenerator::startMemberDocList()
 {
   DBG_HTML(t << "<!-- startMemberDocList -->" << endl;)
-  t << "<table class=\"memlist\">" << endl;
-  t << "  <tr>" << endl;
-  t << "    <td>" << endl;
+  //t << "<table class=\"memlist\">" << endl;
+  //t << "  <tr>" << endl;
+  //t << "    <td>" << endl;
 }
 
 void HtmlGenerator::endMemberDocList()
 {
   DBG_HTML(t << "<!-- endMemberDocList -->" << endl;)
-  t << "    </td>" << endl;
-  t << "  </tr>" << endl;
-  t << "</table>" << endl;
+  //t << "    </td>" << endl;
+  //t << "  </tr>" << endl;
+  //t << "</table>" << endl;
 }
 
 void HtmlGenerator::startMemberDoc(const char *,const char *,const char *,const char *) 
 { 
   DBG_HTML(t << "<!-- startMemberDoc -->" << endl;)
-  t << "<p>" << endl;
-  
-  t << "<table class=\"memitem\">" << endl;
-  t << "  <tr>" << endl;
-  t << "    <td>" << endl;
-  t << "      <table class=\"memproto\">" << endl;
+  //t << "<p>" << endl;
+ 
+  t << "\n<div class=\"memitem\">" << endl;
+  //t << "<table>" << endl;
+  //t << "  <tr>" << endl;
+  //t << "    <td>" << endl;
+  //t << "      <table class=\"memproto\">" << endl;
+  t << "<div class=\"memproto\">" << endl;
   
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- startMemberDocPrefixItem -->" << endl;)
-  t << "        <tr>" << endl;
-  t << "          <td class=\"memtemplate\" colspan=\"5\">";
+  //t << "        <tr>" << endl;
+  //t << "          <td class=\"memtemplate\" colspan=\"5\">";
+  t << "<div class=\"memtemplate\">" << endl;
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()
 {
   DBG_HTML(t << "<!-- endMemberDocPrefixItem -->" << endl;)
-  t << "</td>" << endl;
-  t << "        </tr>" << endl;
+  //t << "</td>" << endl;
+  //t << "        </tr>" << endl;
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::startMemberDocName(bool /*align*/)
 {
   DBG_HTML(t << "<!-- startMemberDocName -->" << endl;)
+
+  t << "      <table class=\"memname\">" << endl;
+    
   t << "        <tr>" << endl;
   t << "          <td class=\"memname\">";
 }
@@ -1376,8 +1383,10 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
     t << "        </tr>" << endl;
   }
   t << "      </table>" << endl;
-  t << "    </td>" << endl;
-  t << "  </tr>" << endl;
+  //t << "    </td>" << endl;
+  //t << "  </tr>" << endl;
+  //t << "</table>" << endl;
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::startDotGraph()
@@ -1462,25 +1471,15 @@ void HtmlGenerator::endMemberGroup(bool)
 
 void HtmlGenerator::startIndent()        
 { 
-  // I really wanted to use CSS here to provide an indented section, but
-  // alas, Netscape is buggy enough to sometimes "forget" to end the
-  // indent cause a staircase effect where the indent continuously increases.
-  // It's back to abusing tables :-(
-  
-  //t << "<div class=\"in\">" << endl; 
   DBG_HTML(t << "<!-- startIndent -->" << endl;)
 
-  t << "  <tr>\n"
-       "    <td >\n";
+  t << "<div class=\"memdoc\">\n";
 }
 
 void HtmlGenerator::endIndent()          
 { 
   DBG_HTML(t << "<!-- endIndent -->" << endl;)
-  t << "    </td>\n"
-       "  </tr>\n"
-       "</table>\n";
-  //t << "</div>" << endl; 
+  t << endl << "</div>" << endl << "</div><p>" << endl; 
 }
 
 void HtmlGenerator::addIndexItem(const char *,const char *)

@@ -335,6 +335,20 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
 {
   t << "}}\n";
   t << "\\cfoot{}\n";
+  t << "\\newenvironment{Code}\n";
+  t << "{\\footnotesize}\n";
+  t << "{\\normalsize}\n";
+  t << "\\newcommand{\\doxyref}[3]{\\textbf{#1} (\\textnormal{#2}\\,\\pageref{#3})}\n";
+  t << "\\newenvironment{DocInclude}\n";
+  t << "{\\footnotesize}\n";
+  t << "{\\normalsize}\n";
+  t << "\\newenvironment{VerbInclude}\n";
+  t << "{\\footnotesize}\n";
+  t << "{\\normalsize}\n";
+  t << "\\newenvironment{Image}\n";
+  t << "{\\begin{figure}[H]}\n";
+  t << "{\\end{figure}}\n";
+  t << "\\newenvironment{ImageNoCaption}{}{}\n";
   t << "\\newenvironment{CompactList}\n";
   t << "{\\begin{list}{}{\n";
   t << "  \\setlength{\\leftmargin}{0.5cm}\n";
@@ -910,7 +924,7 @@ void LatexGenerator::endHtmlLink()
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,
                                         const char *path,const char *name)
 {
-  t << "\\item\\contentsline{section}{{\\bf ";
+  t << "\\item\\contentsline{section}{\\textbf{";
   if (path) docify(path);
   docify(name); 
   t << "} ";
@@ -945,7 +959,7 @@ void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
 //void LatexGenerator::writeClassLink(const char *,const char *,
 //                                    const char *,const char *name)
 //{
-//  t << "{\\bf ";
+//  t << "\\textbf{";
 //  docify(name);
 //  t << "}"; 
 //}
@@ -961,7 +975,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
   }
   else
   {
-    t << "{\\bf ";
+    t << "\\textbf{";
   }
 }
 
@@ -985,7 +999,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   }
   else
   {
-    t << "{\\bf ";
+    t << "\\textbf{";
     docify(text);
     t << "}";
   } 
@@ -993,15 +1007,15 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
 
 void LatexGenerator::startPageRef()
 {
-  t << " {\\rm (";
+  t << " \\doxyref{";
 }
 
 void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 {
-  t << "\\,\\pageref{";
+  t << "}{";
   if (clname) t << clname; 
   if (anchor) t << "_" << anchor;
-  t << "})}";
+  t << "}";
 }
 
 void LatexGenerator::writeCodeLink(const char *,const char *,
@@ -1406,7 +1420,7 @@ void LatexGenerator::endMemberList()
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
   if (hasHeader) t << "\\begin{Indent}";
-  t << "{\\bf ";
+  t << "\\textbf{";
 }
 
 void LatexGenerator::endMemberGroupHeader()
