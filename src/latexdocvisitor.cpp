@@ -36,7 +36,7 @@ static QString escapeLabelName(const char *s)
     switch (c)
     {
       case '%': result+="\\%"; break;
-      case '|': result+="\\texttt{\"|}"; break;
+      case '|': result+="\\tt{\"|}"; break;
       case '!': result+="\"!"; break;
       default: result+=c;
     }
@@ -69,7 +69,7 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
       case '!': m_t << "\"!"; break;
       case '"': m_t << "\"\""; break;
       case '@': m_t << "\"@"; break;
-      case '|': m_t << "\\texttt{\"|}"; break;
+      case '|': m_t << "\\tt{\"|}"; break;
       case '[': m_t << "["; break;
       case ']': m_t << "]"; break;
       default:  str[0]=c; filter(str); break;
@@ -191,7 +191,7 @@ void LatexDocVisitor::visit(DocURL *u)
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url() << "}";
   }
-  m_t << "\\texttt{";
+  m_t << "\\tt{";
   filter(u->url());
   m_t << "}";
 }
@@ -214,13 +214,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "\\textbf{";      else m_t << "}";
+      if (s->enable()) m_t << "{\\bf ";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "\\textit{";     else m_t << "\\/}";
+      if (s->enable()) m_t << "{\\em ";     else m_t << "\\/}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "\\texttt{ ";   else m_t << "}";
+      if (s->enable()) m_t << "{\\tt ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
@@ -718,7 +718,7 @@ void LatexDocVisitor::visitPre(DocHRef *href)
     m_t << href->url();
     m_t << "}";
   }
-  m_t << "\texttt{";
+  m_t << "{\\tt ";
 }
 
 void LatexDocVisitor::visitPost(DocHRef *) 
@@ -972,7 +972,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   }
   else
   {
-    m_t << "\\textbf{";
+    m_t << "\\bf{";
   }
   m_insideItem=TRUE;
   filter(x->title());

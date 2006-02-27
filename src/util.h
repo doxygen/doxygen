@@ -152,6 +152,8 @@ void generateFileRef(OutputDocInterface &od,const char *,
 
 void writePageRef(OutputDocInterface &od,const char *cn,const char *mn);
 
+QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec);
+
 bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *srcAl,
                      Definition *dstScope,FileDef *dstFileScope,ArgumentList *dstAl,
                      bool checkCV

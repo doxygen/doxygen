@@ -1817,7 +1817,14 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     {
       startQuickIndexItem(t,"namespacemembers"+Doxygen::htmlFileExtension,
           hli==HLI_NamespaceMembers,compact,first,relPath);
-      t << fixSpaces(theTranslator->trNamespaceMembers());
+      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+      {
+        t << fixSpaces(theTranslator->trPackageMembers());
+      }
+      else
+      {
+        t << fixSpaces(theTranslator->trNamespaceMembers());
+      }
       endQuickIndexItem(t);
     }
     endQuickIndexList(t,compact);

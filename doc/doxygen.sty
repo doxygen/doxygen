@@ -27,6 +27,20 @@
 \rfoot[\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2004}]{}
 \lfoot[]{\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2004}}
 \cfoot{}
+\newenvironment{Code}
+{\footnotesize}
+{\normalsize}
+\newcommand{\doxyref}[3]{\textbf{#1} (\textnormal{#2}\,\pageref{#3})}
+\newenvironment{DocInclude}
+{\footnotesize}
+{\normalsize}
+\newenvironment{VerbInclude}
+{\footnotesize}
+{\normalsize}
+\newenvironment{Image}
+{\begin{figure}[H]}
+{\end{figure}}
+\newenvironment{ImageNoCaption}{}{}
 \newenvironment{CompactList}
 {\begin{list}{}{
   \setlength{\leftmargin}{0.5cm}

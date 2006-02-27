@@ -14,12 +14,6 @@
 
 all: doxygen_manual.pdf
 
-#doxygen_manual.pdf: doxygen_manual.ps
-#	ps2pdf doxygen_manual.ps doxygen_manual.pdf
-
-#doxygen_manual.ps: doxygen_manual.dvi
-#	dvips -o doxygen_manual.ps doxygen_manual.dvi
-
 doxygen_manual.pdf: doxygen_manual.tex doxygen.sty
 	echo "Running latex..."
 	pdflatex doxygen_manual.tex 
