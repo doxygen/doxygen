@@ -2503,7 +2503,7 @@ void MemberDef::setTagInfo(TagInfo *ti)
 {
   if (ti)
   {
-    setAnchor(ti->anchor);
+    anc=ti->anchor;
     setReference(ti->tagName);
     explicitOutputFileBase = stripExtension(ti->fileName);
   }

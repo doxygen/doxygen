@@ -515,39 +515,6 @@ static QCString addFormula()
 static void checkFormula();
 //-----------------------------------------------------------------------------
 
-static void prependScope()
-{
-#if 0
-  Entry *current_root = current->parent;
-  if (current_root && current_root->section & Entry::SCOPE_MASK)
-  {
-    current->name.prepend(current_root->name+"::");
-    if (current_root->tArgLists)
-    {
-      if (current->tArgLists==0)
-      {
-	current->tArgLists = new QList<ArgumentList>;
-	current->tArgLists->setAutoDelete(TRUE);
-      }
-      QListIterator<ArgumentList> talsi(*current_root->tArgLists);
-      ArgumentList *srcAl=0;
-      for (talsi.toLast();(srcAl=talsi.current());--talsi)
-      {
-        ArgumentList *dstAl = new ArgumentList;
-	dstAl->setAutoDelete(TRUE);
-	QListIterator<Argument> tali(*srcAl);
-        Argument *a;
-        for (;(a=tali.current());++tali)
-        {
-          dstAl->append(new Argument(*a));
-        }	  
-        current->tArgLists->insert(0,dstAl);	
-      }
-    }
-  }
-#endif
-}
-
 static void addSection()
 {
   sectionTitle+=yytext;
@@ -994,7 +961,6 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 
 <EnumDocArg1>{SCOPEID}			{ // handle argument
   					  current->name = yytext;
-					  prependScope();
 					  BEGIN( Comment );
   					}
 <EnumDocArg1>{LC}			{ // line continuation
@@ -1065,12 +1031,10 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					    current->name+="-p";
 					  }
 					  // prepend outer scope name 
-					  prependScope();
 					  BEGIN( ClassDocArg2 );
 					}
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
 					  current->name = yytext;
-					  prependScope();
 					  BEGIN( ClassDocArg2 );
    					}
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation

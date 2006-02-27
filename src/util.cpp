@@ -2750,13 +2750,24 @@ static QCString stripDeclKeywords(const QCString &s)
   return s;
 }
 
+// forward decl for circular dependencies
+static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type);
+
+QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec)
+{
+   QCString templSpec = spec.stripWhiteSpace();
+   if (templSpec.isEmpty() || templSpec.at(0) != '<') return templSpec;
+   return "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1));
+}
+
+
 static QCString getCanonicalTypeForIdentifier(
                   Definition *d,FileDef *fs,const QCString &word,
                   QCString *tSpec)
 {
   QCString symName,scope,result,templSpec,tmpName;
   //DefinitionList *defList=0;
-  if (tSpec) templSpec = stripDeclKeywords(*tSpec);
+  if (tSpec) templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
@@ -2770,20 +2781,16 @@ static QCString getCanonicalTypeForIdentifier(
   ClassDef *cd = 0;
   MemberDef *mType = 0;
   QCString ts;
-  if (!templSpec.isEmpty())
+
+  // lookup class / class template instance
+  cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
+  bool isTemplInst = cd && !templSpec.isEmpty();
+  if (!cd && !templSpec.isEmpty())
   {
-    cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
-    if (cd && tSpec) *tSpec="";
-  }
-  if (cd==0)
-  {
+     // class template specialization not known, look up class template
     cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
   }
 
-  if (!ts.isEmpty() && templSpec.isEmpty())
-  {
-    templSpec = stripDeclKeywords(ts);
-  }
   //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
   //    symName.data(),
   //    word.data(),
@@ -2794,12 +2801,25 @@ static QCString getCanonicalTypeForIdentifier(
 
   //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",
   //    (word+templSpec).data(),
-  //    cd?cd->qualifiedNameWithTemplateParameters().data():"<none>",
+  //    cd?cd->qualifiedName().data():"<none>",
   //    templSpec.data(),ts.data());
-  if (cd) // known type
+
+  if (cd) // known class type
   {
-    //result = cd->qualifiedNameWithTemplateParameters();
-    result = removeRedundantWhiteSpace(cd->qualifiedName()+templSpec);
+    if (isTemplInst)
+    {
+      // spec is already part of class type
+      templSpec="";
+      if (tSpec) *tSpec="";
+    }
+    else if (!ts.isEmpty() && templSpec.isEmpty())
+    {
+      // use formal template args for spec
+      templSpec = stripDeclKeywords(ts);
+    }
+
+    result = removeRedundantWhiteSpace(cd->qualifiedName() + templSpec);
+
     if (cd->isTemplate() && tSpec)
     {
       *tSpec="";
@@ -2809,7 +2829,7 @@ static QCString getCanonicalTypeForIdentifier(
   {
     result = mType->qualifiedName();
   }
-  else // not known as a class
+  else
   {
     QCString resolvedType = resolveTypeDef(d,word);
     if (resolvedType.isEmpty()) // not known as a typedef either
@@ -2824,21 +2844,9 @@ static QCString getCanonicalTypeForIdentifier(
   return result;
 }
 
-static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *arg)
+static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
 {
-  QCString type = arg->type.stripWhiteSpace();
-  QCString name = arg->name;
-  //printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
-  if ((type=="const" || type=="volatile") && !name.isEmpty()) 
-  { // name is part of type => correct
-    type+=" ";
-    type+=name;
-  } 
-  if (name=="const" || name=="volatile")
-  { // name is part of type => correct
-    if (!type.isEmpty()) type+=" ";
-    type+=name;
-  }
+  type = type.stripWhiteSpace();
 
   // strip const and volatile keywords that are not relevant for the type
   stripIrrelevantConstVolatile(type);
@@ -2851,7 +2859,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   type.stripPrefix("typename ");
 
   type = removeRedundantWhiteSpace(type);
-  //printf("extractCanonicalTyp2(type=%s,name=%s)\n",type.data(),name.data());
+  //printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
   
@@ -2888,6 +2896,25 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,const Argument *a
   //printf("extractCanonicalType = %s->%s\n",type.data(),canType.data());
  
   return removeRedundantWhiteSpace(canType);
+}
+
+static QCString extractCanonicalArgType(Definition *d,FileDef *fs,const Argument *arg)
+{
+  QCString type = arg->type.stripWhiteSpace();
+  QCString name = arg->name;
+  //printf("extractCanonicalArgType(type=%s,name=%s)\n",type.data(),name.data());
+  if ((type=="const" || type=="volatile") && !name.isEmpty()) 
+  { // name is part of type => correct
+    type+=" ";
+    type+=name;
+  } 
+  if (name=="const" || name=="volatile")
+  { // name is part of type => correct
+    if (!type.isEmpty()) type+=" ";
+    type+=name;
+  }
+
+  return extractCanonicalType(d,fs,type);
 }
 
 static bool matchArgument2(
@@ -2929,11 +2956,11 @@ static bool matchArgument2(
 
   if (srcA->canType.isEmpty())
   {
-    srcA->canType = extractCanonicalType(srcScope,srcFileScope,srcA);
+    srcA->canType = extractCanonicalArgType(srcScope,srcFileScope,srcA);
   }
   if (dstA->canType.isEmpty())
   {
-    dstA->canType = extractCanonicalType(dstScope,dstFileScope,dstA);
+    dstA->canType = extractCanonicalArgType(dstScope,dstFileScope,dstA);
   }
   
   if (srcA->canType==dstA->canType)

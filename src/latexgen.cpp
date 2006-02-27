@@ -63,7 +63,7 @@ static QCString escapeLabelName(const char *s)
     switch (c)
     {
       case '%': result+="\\%"; break;
-      case '|': result+="\\texttt{\"|}"; break;
+      case '|': result+="\\tt{\"|}"; break;
       case '!': result+="\"!"; break;
       default: result+=c;
     }
@@ -85,7 +85,7 @@ static QCString escapeMakeIndexChars(LatexGenerator *g,QTextStream &t,const char
       case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
       case '@': t << "\"@"; break;
-      case '|': t << "\\texttt{\"|}"; break;
+      case '|': t << "\\tt{\"|}"; break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
       default:  str[0]=c; g->docify(str); break;
@@ -355,7 +355,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "  \\setlength{\\itemsep}{0pt}\n";
   t << "  \\setlength{\\parsep}{0pt}\n";
   t << "  \\setlength{\\topsep}{0pt}\n";
-  t << "  \\renewcommand{\\makelabel}{}}}\n";
+  t << "  \\renewcommand{\\makelabel}{\\hfill}}}\n";
   t << "{\\end{list}}\n";
   t << "\\newenvironment{CompactItemize}\n";
   t << "{\n";
@@ -377,7 +377,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "}\n";
   t << "{\\end{tabular*}\\par}\n";
   t << "\\newcommand{\\entrylabel}[1]{\n";
-  t << "   {\\parbox[b]{\\labelwidth-4pt}{\\makebox[0pt][l]{\\textbf{#1}}\\\\}}}\n";
+  t << "   {\\parbox[b]{\\labelwidth-4pt}{\\makebox[0pt][l]{\\textbf{#1}}\\vspace{1.5\\baselineskip}}}}\n";
   t << "\\newenvironment{Desc}\n";
   t << "{\\begin{list}{}\n";
   t << "  {\n";
@@ -924,7 +924,7 @@ void LatexGenerator::endHtmlLink()
 void LatexGenerator::writeStartAnnoItem(const char *,const char *,
                                         const char *path,const char *name)
 {
-  t << "\\item\\contentsline{section}{\\textbf{";
+  t << "\\item\\contentsline{section}{\\bf ";
   if (path) docify(path);
   docify(name); 
   t << "} ";
@@ -959,7 +959,7 @@ void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
 //void LatexGenerator::writeClassLink(const char *,const char *,
 //                                    const char *,const char *name)
 //{
-//  t << "\\textbf{";
+//  t << "{\\bf";
 //  docify(name);
 //  t << "}"; 
 //}
@@ -975,7 +975,7 @@ void LatexGenerator::startTextLink(const char *f,const char *anchor)
   }
   else
   {
-    t << "\\textbf{";
+    t << "{\\bf ";
   }
 }
 
@@ -999,7 +999,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   }
   else
   {
-    t << "\\textbf{";
+    t << "\\bf{";
     docify(text);
     t << "}";
   } 
@@ -1420,7 +1420,7 @@ void LatexGenerator::endMemberList()
 void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 {
   if (hasHeader) t << "\\begin{Indent}";
-  t << "\\textbf{";
+  t << "{\\bf ";
 }
 
 void LatexGenerator::endMemberGroupHeader()

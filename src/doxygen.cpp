@@ -2185,13 +2185,14 @@ done:
 
 static void buildVarList(Entry *root)
 {
+  int isFuncPtr=-1;
   if (!root->name.isEmpty() &&
       (root->type.isEmpty() || compoundKeywordDict.find(root->type)==0) &&
       (
        (root->section==Entry::VARIABLE_SEC    // it's a variable
        ) ||
        (root->section==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
-        findFunctionPtr(root->type)!=-1
+        (isFuncPtr=findFunctionPtr(root->type))!=-1
        ) ||
        (root->section==Entry::FUNCTION_SEC && // class variable initialized by constructor
         isVarWithConstructor(root)
@@ -2228,7 +2229,7 @@ static void buildVarList(Entry *root)
     }
     else
     {
-      int i=findFunctionPtr(root->type);
+      int i=isFuncPtr;
       if (i!=-1) // function pointer
       {
         int ai = root->type.find('[',i);
@@ -2243,6 +2244,11 @@ static void buildVarList(Entry *root)
           root->args.prepend(")");
           //printf("root->type=%s root->args=%s\n",root->type.data(),root->args.data());
         }
+      }
+      else if (root->type.find("typedef ")!=-1 && root->type.right(2)=="()") // typedef void (func)(int)
+      {
+        root->type=root->type.left(root->type.length()-1);
+        root->args.prepend(")");
       }
     }
     
@@ -3911,9 +3917,12 @@ static bool findClassRelation(
 
         }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
+        // make templSpec canonical
+        templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
+
         if (found)
         {
-          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",biName.data(),templSpec.data());
+          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",biName.data(),templSpec.isEmpty()?"":templSpec.data());
           // add base class to this class
 
           // if templSpec is not empty then we should "instantiate"
@@ -8903,7 +8912,6 @@ void parseInput()
   Doxygen::memberNameSDict.sort();
   Doxygen::functionNameSDict.sort();
   Doxygen::hiddenClasses.sort();
-  printf("Sorting %d classes\n",Doxygen::classSDict.count());
   Doxygen::classSDict.sort();
   
   msg("Freeing entry tree\n");

@@ -414,6 +414,7 @@ EXPCHAR           [#(){}\[\],:.%/\\=`*~|&<>!;+-]
 NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*  
+SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
 BORDER            ([^A-Za-z0-9])
 
 TRISINGLEQUOTE    "'''"(!)?
@@ -899,13 +900,15 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
-    \n/"##"	      {
+    /*
+    ^{B}/"##"         {  // start of a special comment
                         yyLineNr++;
 			endOfDef();
 			g_hideClassDocs = FALSE;
 			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
+    */
     ^{BB}/\n	      { // skip empty line
       		        current->program+=yytext;
       	              }
@@ -953,7 +956,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       		        current->program+=*yytext;
 			yyLineNr++; 
 		      }
-    ^{POUNDCOMMENT}   { // normal comment
+    {POUNDCOMMENT}    { // normal comment
       		        current->program+=yytext;
                       }
     .                 { // any character
@@ -1007,9 +1010,9 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       			 BEGIN(ClassCaptureIndent);
                        }
 
-    {IDENTIFIER}       {
+    {SCOPE}            {
                          current->extends->append(
-					      new BaseInfo(yytext,Public,Normal)
+					      new BaseInfo(substitute(yytext,".","::"),Public,Normal)
 					    );
                          //Has base class-do stuff
                        }
@@ -1040,7 +1043,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 				 //fprintf(stderr,"setting indent %d\n",g_curIndent);
 				 //printf("current->program=[%s]\n",current->program.data());
 				 g_hideClassDocs = TRUE;
-				 BEGIN( ClassBody );
+			         BEGIN(ClassBody);
                                }
 
     ""/({NONEMPTY}|{EXPCHAR})  {
@@ -1492,6 +1495,11 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 static void parsePrototype(const QCString &text)
 {
   //printf("**** parsePrototype(%s) begin\n",text.data());
+  if (text.isEmpty()) 
+  {
+    warn(yyFileName,yyLineNr,"Empty prototype found!");
+    return;
+  }
 
   //g_expectModuleDocs = FALSE;
   g_specialBlock = FALSE;

@@ -543,7 +543,8 @@ ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
-TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&]*">")?
+TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
+FTSCOPE   {ID}("<"[a-z_A-Z0-9\*\&,]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 ATTR      ({B}+[^>\n]*)?
 A         [aA]
@@ -1486,7 +1487,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <QtPropType>{B}+			{
   				          current->type+=yytext;
   					}
-<QtPropType>({ID}"::")*{ID}		{
+<QtPropType>({FTSCOPE}"::")*{FTSCOPE}	{
   					  current->type+=yytext;
                                           BEGIN(QtPropName);
   					}
@@ -2408,6 +2409,10 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 <ReadBody,ReadNSBody,ReadBodyIntf>"{"       { current->program += yytext ;
 					  ++curlyCount ;
 					}
+<ReadBodyIntf>"}"			{
+					  current->program += yytext ;
+					  --curlyCount ;
+  					}
 <ReadBody,ReadNSBody>"}"		{ //err("ReadBody count=%d\n",curlyCount);
   					  if ( curlyCount>0 )
 					  {
@@ -2681,7 +2686,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 
-<FindMembers>"("/({BN}*{TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
+<FindMembers>"("/{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
 <FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
   					  current->bodyLine = yyLineNr;
   					  lineCount();
@@ -3485,7 +3490,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
   					  yyLineNr++;
   				          //addToBody(yytext);
   					}
-<SkipCurly,SkipCurlyCpp>[^\n"'@\\/{}]+	{
+<SkipCurly,SkipCurlyCpp>[^\n#"'@\\/{}]+	{
   				          //addToBody(yytext);
   					}
 <SkipCurlyCpp>\n			{ 
@@ -3783,8 +3788,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    current->name.sprintf("@%d",anonCount++);
 					  }
 					  curlyCount=0;
-					  if (/*current->section==Entry::PROTOCOL_SEC ||
-					      current->section==Entry::OBJCIMPL_SEC*/
+					  if (current_root && // not a nested struct inside an @interface section
+					      current_root->section!=Entry::INTERFACE_SEC &&
 					      insideObjC
 					     )
 					  { // ObjC body that ends with @end

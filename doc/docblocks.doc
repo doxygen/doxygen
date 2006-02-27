@@ -374,7 +374,7 @@ are supported.
 
 There is also another way to document Python code using comments that 
 start with "##". These type of comment blocks are more in line with the 
-way documentation blocks work for the other languages support doxygen 
+way documentation blocks work for the other languages supported by doxygen 
 and this also allows the use of special commands. 
 
 Here is the same example again but now using doxygen style comments:
