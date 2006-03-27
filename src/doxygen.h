@@ -117,6 +117,7 @@ class Doxygen
     static DirSDict                  directories;
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;
+    static bool                      suppressDocWarnings;
 };
 
 void initDoxygen();

@@ -186,7 +186,7 @@ void LatexGenerator::init()
     t << "refman.pdf: refman.tex" << endl;
     t << "\tpdflatex refman.tex" << endl;
     t << "\tmakeindex refman.idx" << endl;
-    t << "\tpdflatex refman.tex" << endl << endl
+    t << "\tpdflatex refman.tex" << endl
       << "\tlatex_count=5 ; \\" << endl
       << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
       << "\t    do \\" << endl

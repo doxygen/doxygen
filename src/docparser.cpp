@@ -377,6 +377,7 @@ static void detectNoDocumentedParams()
     ArgumentList *al     = g_memberDef->argumentList();
     ArgumentList *declAl = g_memberDef->declArgumentList();
     QString returnType   = g_memberDef->typeString();
+
     if (!g_memberDef->hasDocumentedParams() &&
         g_hasParamCommand)
     {

@@ -1931,7 +1931,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   if (!Config_getBool("EXTRACT_ALL") &&
       Config_getBool("WARN_IF_UNDOCUMENTED") &&
-      Config_getBool("WARN_NO_PARAMDOC"))
+      Config_getBool("WARN_NO_PARAMDOC") &&
+      !Doxygen::suppressDocWarnings)
   {
     if (!hasDocumentedParams())
     {

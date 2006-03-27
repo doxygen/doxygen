@@ -54,7 +54,7 @@ public:
     {
 	T elem( this->last() );
 	if ( !this->isEmpty() )
-	    remove( this->fromLast() );
+	    this->remove( this->fromLast() );
 	return elem;
     }
     T& top() { return this->last(); }

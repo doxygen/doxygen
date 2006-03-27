@@ -125,6 +125,7 @@ DirSDict       Doxygen::directories(17);
 SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager *Doxygen::parserManager = 0;
 QCString Doxygen::htmlFileExtension;
+bool           Doxygen::suppressDocWarnings = FALSE;
 
 // locally accessible globals
 static QDict<Entry>   classEntries(1009);
@@ -1750,7 +1751,7 @@ static MemberDef *addVariableToClass(
   }
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
-      "    %s' %s'::`%s' `%s' prot=`%d ann=%d init=%s\n",
+      "    `%s' `%s'::`%s' `%s' prot=`%d ann=%d init=%s\n",
       root->type.data(),
       qualScope.data(), 
       name.data(),
@@ -4876,6 +4877,7 @@ static void findMember(Entry *root,
     else
     {
       scopeName = mergeScopes(root->parent->name,scopeName);
+      printf("joinedName=%s\n",scopeName.data());
     }
   }
   else // see if we can prefix a namespace or class that is used from the file
@@ -9110,9 +9112,6 @@ void generateOutput()
   msg("Generating index page...\n"); 
   writeIndex(*outputList);
 
-  msg("Generating file index...\n");
-  writeFileIndex(*outputList);
-
   msg("Generating example documentation...\n");
   generateExampleDocs();
 
@@ -9126,14 +9125,35 @@ void generateOutput()
   msg("Generating file documentation...\n");
   generateFileDocs();
   
-  msg("Generating class documentation...\n");
-  generateClassDocs();
-  
   msg("Generating page documentation...\n");
   generatePageDocs();
   
   msg("Generating group documentation...\n");
   generateGroupDocs();
+
+  msg("Generating group index...\n");
+  writeGroupIndex(*outputList);
+ 
+  msg("Generating class documentation...\n");
+  generateClassDocs();
+  
+  if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
+  {
+    msg("Generating graphical class hierarchy...\n");
+    writeGraphicalClassHierarchy(*outputList);
+  }
+
+  msg("Generating namespace index...\n");
+  generateNamespaceDocs();
+  
+  msg("Generating namespace member index...\n");
+  writeNamespaceMemberIndex(*outputList);
+
+  if (Config_getBool("GENERATE_LEGEND"))
+  {
+    msg("Generating graph info page...\n");
+    writeGraphInfo(*outputList);
+  }
 
   if (Config_getBool("SHOW_DIRECTORIES"))
   {
@@ -9141,11 +9161,8 @@ void generateOutput()
     generateDirDocs(*outputList);
   }
 
-  msg("Generating namespace index...\n");
-  generateNamespaceDocs();
-  
-  msg("Generating group index...\n");
-  writeGroupIndex(*outputList);
+  msg("Generating file index...\n");
+  writeFileIndex(*outputList);
  
   if (Config_getBool("SHOW_DIRECTORIES"))
   {
@@ -9159,18 +9176,9 @@ void generateOutput()
   msg("Generating file member index...\n");
   writeFileMemberIndex(*outputList);
   
-  msg("Generating namespace member index...\n");
-  writeNamespaceMemberIndex(*outputList);
-
   msg("Generating page index...\n");
   writePageIndex(*outputList);
   
-  if (Config_getBool("GENERATE_LEGEND"))
-  {
-    msg("Generating graph info page...\n");
-    writeGraphInfo(*outputList);
-  }
-
   //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
   
   if (Config_getBool("GENERATE_RTF"))
@@ -9182,12 +9190,6 @@ void generateOutput()
     }
   }
   
-  if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
-  {
-    msg("Generating graphical class hierarchy...\n");
-    writeGraphicalClassHierarchy(*outputList);
-  }
-
   if (Doxygen::formulaList.count()>0 && Config_getBool("GENERATE_HTML"))
   {
     msg("Generating bitmaps for formulas in HTML...\n");
