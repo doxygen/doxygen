@@ -559,6 +559,7 @@ TITLE     [tT][iI][tT][lL][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 IDLATTR   ("["[^\]]*"]"){BN}*
+TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
 %option noyywrap
 
@@ -1168,8 +1169,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  BEGIN( CompoundName );
   					}
 <FindMembers>"@class" | // for Objective C class declarations
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class{" |
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"class"{BN}+ { 
+<FindMembers>{B}*{TYPEDEFPREFIX}"class{" |
+<FindMembers>{B}*{TYPEDEFPREFIX}"class"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC;
 					  addType( current ) ;
@@ -1202,8 +1203,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					    lineCount();
 					  }
   					}
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct{" | 
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"struct"/{BN}+ { 
+<FindMembers>{B}*{TYPEDEFPREFIX}"struct{" | 
+<FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::STRUCT_SEC ;
 					  addType( current ) ;
@@ -1215,8 +1216,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union{" |
-<FindMembers>{B}*(("typedef"{BN}+)?)("volatile"{BN}+)?"union"{BN}+ { 
+<FindMembers>{B}*{TYPEDEFPREFIX}"union{" |
+<FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::UNION_SEC ;
 					  addType( current ) ;
@@ -1228,8 +1229,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*(("typedef"{BN}+)?){IDLATTR}?"enum{" |
-<FindMembers>{B}*(("typedef"{BN}+)?){IDLATTR}?"enum"{BN}+ { // for IDL: typedef [something] enum
+<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum{" |
+<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"{BN}+ { // for IDL: typedef [something] enum
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::ENUM_SEC ;
 					  addType( current ) ;
@@ -3421,6 +3422,7 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					        previous->inbodyLine = current->docLine;
 					        previous->inbodyFile = current->docFile;
 					      }
+					      //printf("*** inbodyDocs+=%s\n",current->doc.data());
 					      previous->inbodyDocs += current->doc;
 					      current->doc.resize(0);
 					    }
@@ -3790,6 +3792,8 @@ IDLATTR   ("["[^\]]*"]"){BN}*
 					  curlyCount=0;
 					  if (current_root && // not a nested struct inside an @interface section
 					      current_root->section!=Entry::INTERFACE_SEC &&
+					      (current->section==Entry::INTERFACE_SEC ||
+					       current->section==Entry::OBJCIMPL_SEC) &&
 					      insideObjC
 					     )
 					  { // ObjC body that ends with @end
@@ -4393,8 +4397,10 @@ static void newEntry()
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
+  static bool hideInBodyDocs = Config_getBool("HIDE_IN_BODY_DOCS");
   int position=0;
   bool needsEntry=FALSE;
+  if (docBlockInBody && hideInBodyDocs) return;
   if (docBlockInBody)
   {
     if (previous==0) 
@@ -4837,7 +4843,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension)
   QCString fe=extension.lower();
   return 
    !( fe==".java" || fe==".as"  || fe==".cs"    || fe==".d"    || fe==".php" || 
-      fe==".php4" || fe==".inc" || fe==".phtml" || fe==".m"    || fe==".mm"
+      fe==".php4" || fe==".inc" || fe==".phtml" 
     );
 }
 

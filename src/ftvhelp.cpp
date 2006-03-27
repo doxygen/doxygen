@@ -653,15 +653,6 @@ void FTVHelp::generateTreeView()
     }
     t << "\">" << endl;
     t << "    <title>TreeView</title>\n";
-    t << "    <style type=\"text/css\">\n";
-    t << "    <!--\n";
-    t << "    .directory { font-size: 10pt; font-weight: bold; }\n";
-    t << "    .directory h3 { margin: 0px; margin-top: 1em; font-size: 11pt; }\n";
-    t << "    .directory p { margin: 0px; white-space: nowrap; }\n";
-    t << "    .directory div { display: none; margin: 0px; }\n";
-    t << "    .directory img { vertical-align: middle; }\n";
-    t << "    -->\n";
-    t << "    </style>\n";
     t << "    <script type=\"text/javascript\">\n";
     t << "    <!-- // Hide script from old browsers\n";
     t << "    \n";
@@ -722,7 +713,7 @@ void FTVHelp::generateTreeView()
     t << "    </script>\n";
     t << "  </head>\n";
     t << "\n";
-    t << "  <body>\n";
+    t << "  <body class=\"ftvtree\">\n";
     t << "    <div class=\"directory\">\n";
     t << "      <h3>";
     QCString &projName = Config_getString("PROJECT_NAME");

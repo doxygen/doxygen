@@ -74,9 +74,9 @@ static void writeGraphHeader(QTextStream &t)
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"Helvetica\",fontsize=10,"
-       "labelfontname=\"Helvetica\",labelfontsize=10];\n";
-  t << "  node [fontname=\"Helvetica\",fontsize=10,shape=record];\n";
+  t << "  edge [fontname=\"FreeSans.ttf\",fontsize=10,"
+       "labelfontname=\"FreeSans.ttf\",labelfontsize=10];\n";
+  t << "  node [fontname=\"FreeSans.ttf\",fontsize=10,shape=record];\n";
 }
 
 static void writeGraphFooter(QTextStream &t)
@@ -274,10 +274,10 @@ static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
   {
     int numBytes = f.readLine(buf,maxLineLen);
     buf[numBytes-1]='\0';
-    if (strncmp(buf,"%%BoundingBox: ",15)==0)
+    if (strncmp(buf,"%%PageBoundingBox: ",15)==0)
     {
       int x,y;
-      if (sscanf(buf,"%%%%BoundingBox: %d %d %d %d",&x,&y,width,height)!=4)
+      if (sscanf(buf,"%%%%PageBoundingBox: %d %d %d %d",&x,&y,width,height)!=4)
       {
         return FALSE;
       }
@@ -667,7 +667,7 @@ void DotNode::writeBox(QTextStream &t,
   t << "\",height=0.2,width=0.4";
   if (m_isRoot)
   {
-    t << ",color=\"white\", fillcolor=\"black\", style=\"filled\" fontcolor=\"white\"";
+    t << ",color=\"black\", fillcolor=\"grey75\", style=\"filled\" fontcolor=\"black\"";
   }
   else 
   {
@@ -729,7 +729,7 @@ void DotNode::writeArrow(QTextStream &t,
       t << ",arrowhead=\"" << arrowStyle[ei->m_color] << "\"";
   }
 
-  if (format==BITMAP) t << ",fontname=\"Helvetica\"";
+  if (format==BITMAP) t << ",fontname=\"FreeSans.ttf\"";
   t << "];" << endl; 
 }
 
@@ -2552,23 +2552,23 @@ void generateGraphLegend(const char *path)
   }
   QTextStream dotText(&dotFile); 
   writeGraphHeader(dotText);
-  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",style=\"filled\" fontcolor=\"white\"];\n";
-  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"grey75\"];\n";
-  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"Helvetica\"];\n";
-  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"Helvetica\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"grey75\"];\n";
+  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"FreeSans.ttf\"];\n";
+  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
   writeGraphFooter(dotText);
   dotFile.close();
 
@@ -3091,8 +3091,8 @@ void DotGroupCollaboration::writeGraphHeader(QTextStream &t)
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"Helvetica\",fontsize=8,"
-    "labelfontname=\"Helvetica\",labelfontsize=8];\n";
-  t << "  node [fontname=\"Helvetica\",fontsize=10,shape=record];\n";
+  t << "  edge [fontname=\"FreeSans.ttf\",fontsize=8,"
+    "labelfontname=\"FreeSans.ttf\",labelfontsize=8];\n";
+  t << "  node [fontname=\"FreeSans.ttf\",fontsize=10,shape=record];\n";
   t << "rankdir=LR;\n";
 }

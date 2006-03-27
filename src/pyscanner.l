@@ -660,7 +660,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        //printf("Found member variable %s\n",&yytext[5]);
+                        //printf("Found member variable %s in %s\n",&yytext[5],current_root->name.data());
 			current->name=&yytext[5];
 			current->section=Entry::VARIABLE_SEC;
 			current->fileName  = yyFileName;
@@ -900,15 +900,13 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
-    /*
-    ^{B}/"##"         {  // start of a special comment
+    \n/"##"           {  // start of a special comment at indent 0
                         yyLineNr++;
 			endOfDef();
 			g_hideClassDocs = FALSE;
 			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
-    */
     ^{BB}/\n	      { // skip empty line
       		        current->program+=yytext;
       	              }

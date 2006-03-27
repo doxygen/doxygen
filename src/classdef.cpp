@@ -1514,6 +1514,7 @@ void ClassDef::writeMemberDocumentation(OutputList &ol)
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
+    Doxygen::suppressDocWarnings = TRUE;
   }
   
   typedefMembers.writeDocumentation(ol,name(),this,
@@ -1543,6 +1544,7 @@ void ClassDef::writeMemberDocumentation(OutputList &ol)
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.enable(OutputGenerator::Html);
+    Doxygen::suppressDocWarnings = FALSE;
   }
 }
 

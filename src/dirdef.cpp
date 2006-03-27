@@ -561,8 +561,8 @@ void DirDef::writeDepGraph(QTextStream &t)
       t << "  bgcolor=transparent;\n";
     }
     t << "  compound=true\n";
-    t << "  node [ fontsize=10, fontname=\"Helvetica\"];\n";
-    t << "  edge [ labelfontsize=9, labelfontname=\"Helvetica\"];\n";
+    t << "  node [ fontsize=10, fontname=\"FreeSans.ttf\"];\n";
+    t << "  edge [ labelfontsize=9, labelfontname=\"FreeSans.ttf\"];\n";
 
     QDict<DirDef> dirsInGraph(257);
     
@@ -572,7 +572,7 @@ void DirDef::writeDepGraph(QTextStream &t)
       t << "  subgraph cluster" << parent()->getOutputFileBase() << " {\n";
       t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
         << parent()->shortName() 
-        << "\" fontname=\"Helvetica\", fontsize=10, URL=\"";
+        << "\" fontname=\"FreeSans.ttf\", fontsize=10, URL=\"";
       t << parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
       t << "\"]\n";
     }

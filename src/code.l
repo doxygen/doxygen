@@ -1770,11 +1770,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipCPP>\\[\r]?\n			{ 
   					  codifyLines(yytext);
 					}
-<SkipCPP>\n/.*\n			{ 
-  					  codifyLines(yytext);
-					  endFontClass();
-					  BEGIN( g_lastSkipCppContext ) ;
-					}
 <SkipCPP>"//"				{ 
   					  g_code->codify(yytext);
 					}
@@ -2790,6 +2785,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    BEGIN( g_lastCContext ) ;
 					  }
   					}
+<SkipCPP>\n/.*\n			{ 
+  					  codifyLines(yytext);
+					  endFontClass();
+					  BEGIN( g_lastSkipCppContext ) ;
+					}
 <*>\n{B}*"//@"[{}].*\n			{ // remove one-line group marker
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
