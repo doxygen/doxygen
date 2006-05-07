@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -56,6 +56,7 @@ class Translator
      *  It is implemented by the adapter classes.
      */
     virtual QCString updateNeededMessage() { return ""; }
+    virtual ~Translator() {}
    
     // Please, have a look at comments inside the translator_en.h file
     // to learn the meaning of the following methods.  The translator_en.h
@@ -440,8 +441,12 @@ class Translator
 
     virtual QCString trOverloadText() = 0;
 
-    virtual ~Translator() {}
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
     
+    virtual QCString trCallerGraph() = 0;
+
 };
 
 #endif

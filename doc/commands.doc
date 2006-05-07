@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -48,6 +48,7 @@ documentation:
 \refitem cmdbug \\bug
 \refitem cmdc \\c
 \refitem cmdcallgraph \\callgraph
+\refitem cmdcallergraph \\callergraph
 \refitem cmdcategory \\category
 \refitem cmdclass \\class
 \refitem cmdcode \\code
@@ -215,6 +216,18 @@ doxygen. Unrecognized commands are treated as normal text.
   function or method calls other documented functions). The call graph will 
   generated regardless of the value of \ref cfg_call_graph "CALL_GRAPH".
   \note The completeness (and correctness) of the call graph depends on the 
+  doxygen code parser which is not perfect.
+
+<hr>
+\section cmdcallergraph \\callergraph 
+
+  \addindex \\callergraph
+  When this command is put in a comment block of a function or method
+  and \ref cfg_have_dot "HAVE_DOT" is set to YES, then doxygen will 
+  generate a caller graph for that function (provided the implementation of the
+  function or method calls other documented functions). The caller graph will 
+  generated regardless of the value of \ref cfg_caller_graph "CALLER_GRAPH".
+  \note The completeness (and correctness) of the caller graph depends on the 
   doxygen code parser which is not perfect.
 
 <hr>

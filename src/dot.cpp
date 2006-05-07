@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -415,7 +415,7 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=*s;
     }
-    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
     {
       goto error;
     }
@@ -425,7 +425,7 @@ bool DotRunner::run()
     for (li.toFirst();(s=li.current());++li)
     {
       QCString dotArgs="\""+m_file+"\" "+*s;
-      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
       {
         goto error;
       }
@@ -1853,7 +1853,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+        if (iSystem("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2111,7 +2111,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+        if (iSystem("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2184,10 +2184,11 @@ void DotInclDepGraph::writeXML(QTextStream &t)
 
 int DotCallGraph::m_curNodeNumber = 0;
 
-DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth)
+DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth,bool inverse)
 {
   m_maxDistance = 0;
   m_recDepth = maxRecursionDepth;
+  m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   m_scope    = md->getOuterScope();
   QCString uniqueId;
@@ -2233,7 +2234,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
   QDir::setCurrent(d.absPath());
   QDir thisDir;
 
-  QCString baseName=m_diskName+"_cgraph";
+  QCString baseName = m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
   QCString mapName=baseName;
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
@@ -2257,7 +2258,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
                         format,                           // format
                         TRUE,                             // lrRank
                         FALSE,                            // renderParents
-                        FALSE                             // backArrows
+                        m_inverse                         // backArrows
                        );
     if (format==BITMAP)
     {
@@ -2289,7 +2290,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+        if (iSystem("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2345,7 +2346,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
 
 void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
 {
-  MemberSDict *refs = md->getReferencesMembers();
+  MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   if (refs)
   {
     MemberSDict::Iterator mri(*refs);
@@ -2473,7 +2474,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+        if (iSystem("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2644,7 +2645,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          outFile,outFile);
-    if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+    if (iSystem("epstopdf",epstopdfArgs)!=0)
     {
       err("Error: Problems running epstopdf. Check your TeX installation!\n");
     }
@@ -2986,7 +2987,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       QCString epstopdfArgs(maxCmdLine);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
           baseName.data(),baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      if (iSystem("epstopdf",epstopdfArgs)!=0)
       {
         err("Error: Problems running epstopdf. Check your TeX installation!\n");
         QDir::setCurrent(oldDir);

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -623,6 +623,7 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 /*! Write a source listing of this file to the output */
 void FileDef::writeSource(OutputList &ol)
 {
+  static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   QCString title = docname;
   if (!fileVersion.isEmpty())
   {
@@ -657,7 +658,7 @@ void FileDef::writeSource(OutputList &ol)
   pIntf->resetCodeParserState();
   ol.startCodeFragment();
   pIntf->parseCode(ol,0,
-            fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+            fileToString(absFilePath(),filterSourceFiles),
             FALSE,0,this
            );
   ol.endCodeFragment();
@@ -667,12 +668,13 @@ void FileDef::writeSource(OutputList &ol)
 
 void FileDef::parseSource()
 {
+  static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   DevNullCodeDocInterface devNullIntf;
   ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
   pIntf->resetCodeParserState();
   pIntf->parseCode(
             devNullIntf,0,
-            fileToString(absFilePath(),Config_getBool("FILTER_SOURCE_FILES")),
+            fileToString(absFilePath(),filterSourceFiles),
             FALSE,0,this
            );
 }

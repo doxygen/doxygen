@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1949,6 +1949,14 @@ void Config::create()
                     TRUE
               );
   cb->addDependency("SOURCE_BROWSER");
+  cb = addBool(     "REFERENCES_LINK_SOURCE",
+                    "If the REFERENCES_LINK_SOURCE tag is set to YES (the default)\n"
+                    "and SOURCE_BROWSER tag is set to YES, then the hyperlinks from\n"
+                    "functions in REFERENCES_RELATION and REFERENCED_BY_RELATION lists will\n"
+                    "link to the source code.  Otherwise they will link to the documentstion.\n",
+                    TRUE
+              );
+  cb->addDependency("SOURCE_BROWSER");
   cb = addBool(
                     "USE_HTAGS",
 		    "If the USE_HTAGS tag is set to YES then the references to source code \n"
@@ -2647,6 +2655,16 @@ void Config::create()
                     "Note that enabling this option will significantly increase the time of a run. \n"
 		    "So in most cases it will be better to enable call graphs for selected \n"
 		    "functions only using the \\callgraph command.\n",
+                    FALSE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "CALLER_GRAPH",
+                    "If the CALLER_GRAPH and HAVE_DOT tags are set to YES then doxygen will \n"
+		    "generate a caller dependency graph for every global function or class method. \n"
+                    "Note that enabling this option will significantly increase the time of a run. \n"
+		    "So in most cases it will be better to enable caller graphs for selected \n"
+		    "functions only using the \\callergraph command.\n",
                     FALSE
                  );
   cb->addDependency("HAVE_DOT");

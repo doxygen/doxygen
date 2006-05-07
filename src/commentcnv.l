@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -329,20 +329,23 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				     g_blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly"|"f$"|"f["|"f{"[a-z]*)/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("f$"|"f["|"f{"[a-z]*) {
                                      copyToOutput(yytext,yyleng); 
-				     if (yytext[2]=='[')
+				     g_blockName=&yytext[1];
+				     if (g_blockName.at(1)=='[')
 				     {
-				       g_blockName="f]";
+				       g_blockName.at(1)=']';
 				     }
-				     else if (yytext[2]=='{')
+				     else if (g_blockName.at(1)=='{')
 				     {
-				       g_blockName="f}";
+				       g_blockName.at(1)='}';
 				     }
-				     else
-				     {
-				       g_blockName=&yytext[1];
-				     }
+				     g_lastCommentContext = YY_START;
+				     BEGIN(Verbatim);
+  			           }
+<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+                                     copyToOutput(yytext,yyleng); 
+				     g_blockName=&yytext[1];
 				     g_lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }

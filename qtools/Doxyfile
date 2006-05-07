@@ -527,6 +527,13 @@ REFERENCED_BY_RELATION = YES
 
 REFERENCES_RELATION    = YES
 
+# If the REFERENCES_LINK_SOURCE tag is set to YES (the default)
+# and SOURCE_BROWSER tag is set to YES, then the hyperlinks from
+# functions in REFERENCES_RELATION and REFERENCED_BY_RELATION lists will
+# link to the source code.  Otherwise they will link to the documentstion.
+
+REFERENCES_LINK_SOURCE = YES
+
 # If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen 
 # will generate a verbatim copy of the header file for each class for 
 # which an include is specified. Set to NO to disable this.
@@ -1072,6 +1079,14 @@ INCLUDED_BY_GRAPH      = NO
 # functions only using the \callgraph command.
 
 CALL_GRAPH             = NO
+
+# If the CALLER_GRAPH and HAVE_DOT tags are set to YES then doxygen will 
+# generate a caller dependency graph for every global function or class method. 
+# Note that enabling this option will significantly increase the time of a run. 
+# So in most cases it will be better to enable caller graphs for selected 
+# functions only using the \callergraph command.
+
+CALLER_GRAPH           = NO
 
 # If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen 
 # will graphical hierarchy of all classes instead of a textual one.

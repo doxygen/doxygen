@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1619,6 +1619,16 @@ class TranslatorEnglish : public Translator
               "provided for convenience. It differs from the above "
               "function only in what argument(s) it accepts.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCallerGraph()
+    {
+      return "Here is the caller graph for this function:";
+    }
+
 };
 
 #endif

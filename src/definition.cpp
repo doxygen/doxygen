@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -543,7 +543,7 @@ void Definition::writeSourceRefList(OutputList &ol,const char *scopeName,
            ) name+="()";
         //Definition *d = md->getOutputFileBase();
         //if (d==Doxygen::globalScope) d=md->getBodyDef();
-        if (md->getStartBodyLine()!=-1 && md->getBodyDef()) 
+        if (!(md->isLinkable() && !Config_getBool("REFERENCES_LINK_SOURCE")) && md->getStartBodyLine()!=-1 && md->getBodyDef()) 
         {
           //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope); 
           // for HTML write a real link

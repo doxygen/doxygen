@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -64,6 +64,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
 \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
 \refitem cfg_call_graph CALL_GRAPH
+\refitem cfg_caller_graph CALLER_GRAPH
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 \refitem cfg_chm_file CHM_FILE
 \refitem cfg_class_diagrams CLASS_DIAGRAMS 
@@ -180,6 +181,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_recursive RECURSIVE
 \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
 \refitem cfg_references_relation REFERENCES_RELATION
+\refitem cfg_references_link_source REFERENCES_LINK_SOURCE
 \refitem cfg_repeat_brief REPEAT_BRIEF
 \refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
 \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
@@ -918,6 +920,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the \c REFERENCES_RELATION tag is set to \c YES (the default)
  then for each documented function all documented entities
  called/used by that function will be listed. 
+
+\anchor cfg_references_link_source
+<dt>\c REFERENCES_LINK_SOURCE <dd>
+ \addindex REFERENCES_LINK_SOURCE
+ If the \c REFERENCES_LINK_SOURCE tag is set to \c YES (the default)
+ and SOURCE_BROWSER tag is set to \c YES, then the hyperlinks from 
+ functions in REFERENCES_RELATION and REFERENCED_BY_RELATION lists will 
+ link to the source code.  Otherwise they will link to the documentstion.
 
 \anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>
@@ -1687,6 +1697,15 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  Note that enabling this option will significantly increase the time of a run.
  So in most cases it will be better to enable call graphs for selected 
  functions only using the \\callgraph command.
+
+\anchor cfg_caller_graph
+<dt>\c CALLER_GRAPH <dd>
+ \addindex CALLER_GRAPH
+ If the \c CALLER_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen will 
+ generate a caller dependency graph for every global function or class method. 
+ Note that enabling this option will significantly increase the time of a run.
+ So in most cases it will be better to enable caller graphs for selected 
+ functions only using the \\callergraph command.
 
 \anchor cfg_graphical_hierarchy
 <dt>\c GRAPHICAL_HIERARCHY <dd>

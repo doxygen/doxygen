@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1674,6 +1674,7 @@ static void findUsingDeclImports(Entry *root)
                 }
                 newMd->setDefinition(md->definition());
                 newMd->enableCallGraph(root->callGraph);
+                newMd->enableCallerGraph(root->callerGraph);
                 newMd->setBitfields(md->bitfieldString());
                 newMd->addSectionsToDefinition(root->anchors);
                 newMd->setBodySegment(md->getStartBodyLine(),md->getEndBodyLine());
@@ -1831,6 +1832,7 @@ static MemberDef *addVariableToClass(
   md->setReadAccessor(root->read);
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
   md->setHidden(root->hidden);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
@@ -1999,6 +2001,7 @@ static MemberDef *addVariableToFile(
   md->setMemberGroupId(root->mGrpId);
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
   md->setExplicitExternal(root->explicitExternal);
   //md->setOuterScope(fd);
   if (!root->explicitExternal)
@@ -2521,6 +2524,7 @@ static void addMethodToClass(Entry *root,ClassDef *cd,
   if (def.left(7)=="friend ") def=def.right(def.length()-7);
   md->setDefinition(def);
   md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
 
   Debug::print(Debug::Functions,0,
       "  Func Member:\n"
@@ -2753,6 +2757,7 @@ static void buildFunctionList(Entry *root)
                 md->addSectionsToDefinition(root->anchors);
 
                 md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+                md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
 
                 // merge ingroup specifiers
                 if (md->getGroupDef()==0 && root->groups->first()!=0)
@@ -2863,6 +2868,7 @@ static void buildFunctionList(Entry *root)
                     );
           md->setDefinition(def);
           md->enableCallGraph(root->callGraph);
+          md->enableCallerGraph(root->callerGraph);
           //if (root->mGrpId!=-1) 
           //{
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
@@ -3011,7 +3017,9 @@ static void findFriends()
             mmd->setDocsForDefinition(fmd->isDocsForDefinition());
 
             mmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
+            mmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
             fmd->enableCallGraph(mmd->hasCallGraph() || fmd->hasCallGraph());
+            fmd->enableCallerGraph(mmd->hasCallerGraph() || fmd->hasCallerGraph());
           }
         }
       }
@@ -3184,7 +3192,9 @@ static void transferFunctionDocumentation()
               mdec->setMemberDefinition(mdef);
 
               mdef->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
+              mdef->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
               mdec->enableCallGraph(mdec->hasCallGraph() || mdef->hasCallGraph());
+              mdec->enableCallerGraph(mdec->hasCallerGraph() || mdef->hasCallerGraph());
             }
           }
         }
@@ -4354,6 +4364,7 @@ static void addMemberDocs(Entry *root,
   fDecl.stripPrefix("extern ");
   md->setDefinition(fDecl);
   md->enableCallGraph(root->callGraph);
+  md->enableCallerGraph(root->callerGraph);
   ClassDef     *cd=md->getClassDef();
   NamespaceDef *nd=md->getNamespaceDef();
   QCString fullName;
@@ -4466,6 +4477,7 @@ static void addMemberDocs(Entry *root,
   }
 
   md->enableCallGraph(md->hasCallGraph() || root->callGraph);
+  md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
 
   md->mergeMemberSpecifiers(root->memSpec);
   md->addSectionsToDefinition(root->anchors);
@@ -5279,6 +5291,7 @@ static void findMember(Entry *root,
           md->setTemplateSpecialization(TRUE);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
+          md->enableCallerGraph(root->callerGraph);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
@@ -5339,6 +5352,7 @@ static void findMember(Entry *root,
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
+          md->enableCallerGraph(root->callerGraph);
           QCString doc=getOverloadDocs();
           doc+="<p>";
           doc+=root->doc;
@@ -5499,6 +5513,7 @@ static void findMember(Entry *root,
           md->setMemberSpecifiers(root->memSpec);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
+          md->enableCallerGraph(root->callerGraph);
           md->setDocumentation(root->doc,root->docFile,root->docLine);
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setDocsForDefinition(!root->proto);
@@ -5562,6 +5577,7 @@ localObjCMethod:
         md->setMemberClass(cd);
         md->setDefinition(funcDecl);
         md->enableCallGraph(root->callGraph);
+        md->enableCallerGraph(root->callerGraph);
         md->setDocumentation(root->doc,root->docFile,root->docLine);
         md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -5857,6 +5873,7 @@ static void findEnums(Entry *root)
       md->addSectionsToDefinition(root->anchors);
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
+      md->enableCallerGraph(root->callerGraph);
       md->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",name.data(),nd);
       bool defSet=FALSE;
@@ -6331,7 +6348,6 @@ static void buildCompleteMemberLists()
 static void generateFileSources()
 {
   if (documentedHtmlFiles==0) return;
-  
   if (Doxygen::inputNameList.count()>0)
   {
     FileNameListIterator fnli(Doxygen::inputNameList); 
@@ -6342,13 +6358,13 @@ static void generateFileSources()
       FileDef *fd;
       for (;(fd=fni.current());++fni)
       {
-        if (fd->generateSourceFile())
+        if (fd->generateSourceFile()) // sources need to be shown in the output
         {
           msg("Generating code for file %s...\n",fd->docName().data());
           fd->writeSource(*outputList);
         }
-        else if (!fd->isReference() && 
-             (Doxygen::parseSourcesNeeded || Config_getBool("CALL_GRAPH")))
+        else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
+          // we needed to parse the sources even if we do not show them
         {
           msg("Parsing code for file %s...\n",fd->docName().data());
           fd->parseSource();
@@ -8105,7 +8121,7 @@ static void readAliases()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2005\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2006\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -8509,6 +8525,10 @@ void readConfiguration(int argc, char **argv)
   setPerlModDoxyfile(configFileInfo.absFilePath());
 
   Doxygen::xrefLists->setAutoDelete(TRUE);
+
+  Doxygen::parseSourcesNeeded = Config_getBool("CALL_GRAPH") || 
+                                Config_getBool("CALLER_GRAPH");
+  
 
 }
 

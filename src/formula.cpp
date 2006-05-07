@@ -2,7 +2,7 @@
  i
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -173,55 +173,25 @@ void FormulaList::generateBitmaps(const char *path)
       // Then we run ghostscript to convert the postscript to a pixmap
       // The pixmap is a truecolor image, where only black and white are
       // used.  
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
-      char gsArgs[256];
-      sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
-                     "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
-                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
-                     formBase.data(),formBase.data()
-             );
-      // gswin32 is a GUI api which will pop up a window and run
-      // asynchronously. To prevent both, we use ShellExecuteEx and
-      // WaitForSingleObject (thanks to Robert Golias for the code)
-      SHELLEXECUTEINFO sInfo = {
-        sizeof(SHELLEXECUTEINFO),   /* structure size */
-        SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
-        NULL,                       /* window handle */
-        NULL,                       /* action to perform: open */
-        "gswin32.exe",              /* file to execute */
-        gsArgs,                     /* argument list */ 
-        NULL,                       /* use current working dir */
-        SW_HIDE,                    /* minimize on start-up */
-        0,                          /* application instance handle */
-        NULL,                       /* ignored: id list */
-        NULL,                       /* ignored: class name */
-        NULL,                       /* ignored: key class */
-        0,                          /* ignored: hot key */
-        NULL,                       /* ignored: icon */
-        NULL                        /* resulting application handle */
-      };
-      if (!ShellExecuteEx(&sInfo))
-      {
-        err("Problem running ghostscript. Check your installation!\n");
-        return;
-      }
-      else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
-      {
-        WaitForSingleObject(sInfo.hProcess,INFINITE); 
-      }
+	  // used the c version of program, so standard in / standard out work.
+	  const char *ghostscriptCommand = "gswin32c.exe";
 #else
+	  const char *ghostscriptCommand = "gs";
+#endif
+
       char gsArgs[4096];
       sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                     "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
-      if (iSystem("gs",gsArgs)!=0)
+      if (iSystem(ghostscriptCommand,gsArgs)!=0)
       {
-        err("Problem running ghostscript. Check your installation!\n");
+        err("Problem running ghostscript %s %s. Check your installation!\n",ghostscriptCommand,gsArgs);
         return;
       }
-#endif
       f.setName(formBase+".pnm");
       uint imageX=0,imageY=0;
       // we read the generated image again, to obtain the pixel data.

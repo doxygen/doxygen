@@ -908,7 +908,7 @@ void writeDirDependencyGraph(const char *dirName)
       
       //QCString dotArgs(4096);
       //dotArgs.sprintf("%s -Tgif -o %s",path.data(),outFile.data());
-      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs)!=0)
+      //if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
       //{
       //  err("Problems running dot. Check your installation!\n");
       //}

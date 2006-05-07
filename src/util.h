@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -232,7 +232,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 
 QCString stripScope(const char *name);
 
-int iSystem(const char *command,const char *args,bool isBatchFile=FALSE);
+int iSystem(const char *command,const char *args,bool commandHasConsole=TRUE);
 
 QCString convertToHtml(const char *s);
 

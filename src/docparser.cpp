@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -216,7 +216,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            outputDir.data(), baseName.data(),
 			   outputDir.data(), baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs,TRUE)!=0)
+      if (iSystem("epstopdf",epstopdfArgs)!=0)
       {
 	err("Error: Problems running epstopdf. Check your TeX installation!\n");
       }
