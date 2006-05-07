@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -112,6 +112,7 @@ class MemberDef : public Definition
     Protection protection() const         { return prot; }
     Specifier virtualness() const;
     MemberType memberType() const         { return mtype; }
+    QCString   memberTypeName() const;
 
     // getter methods
     bool isSignal() const                 { return mtype==Signal;      }
@@ -265,6 +266,10 @@ class MemberDef : public Definition
     bool hasCallGraph() const { return m_hasCallGraph; }
     void enableCallGraph(bool e);
     
+    // callergraph related members
+    bool hasCallerGraph() const { return m_hasCallerGraph; }
+    void enableCallerGraph(bool e);
+    
     bool visibleMemberGroup(bool hideNoHeader);
     MemberDef *templateMaster() const { return m_templateMaster; } 
 
@@ -352,6 +357,7 @@ class MemberDef : public Definition
     bool annUsed;             
     bool annShown;           
     bool m_hasCallGraph;
+    bool m_hasCallerGraph;
     int maxInitLines;         // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 

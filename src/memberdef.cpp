@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -333,6 +333,7 @@ MemberDef::MemberDef(const char *df,int dl,
   //membTAL=0;
   m_defTmpArgLists=0;
   m_hasCallGraph = FALSE;
+  m_hasCallerGraph = FALSE;
   initLines=0;
   type=t;
   if (mt==Typedef) type.stripPrefix("typedef ");
@@ -1908,7 +1909,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       && isFunction() && Config_getBool("HAVE_DOT")
      )
   {
-    DotCallGraph callGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+    DotCallGraph callGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"), false);
     if (!callGraph.isTrivial())
     {
       msg("Generating call graph for function %s\n",qualifiedName().data());
@@ -1917,6 +1918,22 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.startCallGraph();
       ol.parseText(theTranslator->trCallGraph());
       ol.endCallGraph(callGraph);
+      ol.enableAll();
+    }
+  }
+  if ((m_hasCallerGraph || Config_getBool("CALLER_GRAPH")) 
+      && isFunction() && Config_getBool("HAVE_DOT")
+     )
+  {
+    DotCallGraph callerGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"), true);
+    if (!callerGraph.isTrivial())
+    {
+      msg("Generating caller graph for function %s\n",qualifiedName().data());
+      ol.disable(OutputGenerator::Man);
+      ol.newParagraph();
+      ol.startCallGraph();
+      ol.parseText(theTranslator->trCallerGraph());
+      ol.endCallGraph(callerGraph);
       ol.enableAll();
     }
   }
@@ -1950,6 +1967,27 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
 }
 
+QCString MemberDef::memberTypeName() const
+{
+  switch (mtype)
+  {
+    case Define:      return "define";
+    case Function:    return "function";
+    case Variable:    return "variable";
+    case Typedef:     return "typedef";
+    case Enumeration: return "enumeration"; 
+    case EnumValue:   return "enumvalue";
+    case Prototype:   return "prototype";   
+    case Signal:      return "signal";
+    case Slot:        return "slot";
+    case Friend:      return "friend";
+    case DCOP:        return "dcop";
+    case Property:    return "property";
+    case Event:       return "event";
+    default:          return "unknown";
+  }
+}
+
 void MemberDef::warnIfUndocumented()
 {
   if (memberGroup) return;
@@ -1979,8 +2017,8 @@ void MemberDef::warnIfUndocumented()
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
      )
   {
-    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s of %s %s is not documented.",
-         name().data(),argsString()?argsString():"",t,d->name().data());
+    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s (%s) of %s %s is not documented.",
+         name().data(),argsString()?argsString():"",memberTypeName().data(),t,d->name().data());
   }
 }
 
@@ -2456,6 +2494,12 @@ void MemberDef::findSectionsInDocumentation()
 void MemberDef::enableCallGraph(bool e) 
 { 
   m_hasCallGraph=e; 
+  if (e) Doxygen::parseSourcesNeeded = TRUE;
+}
+
+void MemberDef::enableCallerGraph(bool e) 
+{ 
+  m_hasCallerGraph=e; 
   if (e) Doxygen::parseSourcesNeeded = TRUE;
 }
 

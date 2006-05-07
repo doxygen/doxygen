@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2717,7 +2717,11 @@ void ClassDef::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pri,co
 
 void ClassDef::addInnerCompound(Definition *d)
 {
-  m_innerClasses->inSort(d->localName(),(ClassDef *)d);
+  if (d->definitionType()==Definition::TypeClass) // only classes can be
+                                                  // nested in classes.
+  {
+    m_innerClasses->inSort(d->localName(),(ClassDef *)d);
+  }
 }
 
 Definition *ClassDef::findInnerCompound(const char *name)

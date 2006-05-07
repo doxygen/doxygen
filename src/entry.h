@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -270,6 +270,7 @@ class Entry
     int  initLines;           //!< define/variable initializer lines to show 
     bool subGrouping;         //!< automatically group class members?
     bool callGraph;           //!< do we need to draw the call graph?
+    bool callerGraph;         //!< do we need to draw the caller graph?
     Specifier    virt;        //!< virtualness of the entry 
     Entry       *parent;      //!< parent node in the tree
     QCString	 type;        //!< member type 

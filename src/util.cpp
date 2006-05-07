@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -129,7 +129,7 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 
     
 /*! Implements an interruptable system call on Unix/Windows */
-int iSystem(const char *command,const char *args,bool isBatchFile)
+int iSystem(const char *command,const char *args,bool commandHasConsole)
 {
   QTime time;
   time.start();
@@ -148,7 +148,7 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
   Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",fullCmd.data());
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
-  isBatchFile=isBatchFile;
+  commandHasConsole=commandHasConsole;
   /*! taken from the system() manpage on my Linux box */
   int pid,status=0;
 
@@ -211,15 +211,19 @@ int iSystem(const char *command,const char *args,bool isBatchFile)
 #endif // _OS_SOLARIS
 
 #else // Win32 specific
-  if (isBatchFile)
+  if (commandHasConsole)
   {
     return system(fullCmd);
   }
   else
   {
+	// gswin32 is a GUI api which will pop up a window and run
+	// asynchronously. To prevent both, we use ShellExecuteEx and
+	// WaitForSingleObject (thanks to Robert Golias for the code)
+
     SHELLEXECUTEINFO sInfo = {
       sizeof(SHELLEXECUTEINFO),   /* structure size */
-      SEE_MASK_NOCLOSEPROCESS,    /* leave the process running */
+      SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,    /* leave the process running */
       NULL,                       /* window handle */
       NULL,                       /* action to perform: open */
       command,                    /* file to execute */

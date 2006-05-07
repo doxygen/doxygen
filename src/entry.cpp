@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -87,6 +87,7 @@ Entry::Entry(const Entry &e)
   initializer = e.initializer;
   initLines   = e.initLines;
   callGraph   = e.callGraph;
+  callerGraph = e.callerGraph;
   objc        = e.objc;
   tagInfo     = e.tagInfo;
   hidden      = e.hidden;
@@ -224,6 +225,7 @@ void Entry::reset()
   endBodyLine = -1;
   mGrpId = -1;
   callGraph = FALSE;
+  callerGraph = FALSE;
   section = EMPTY_SEC;
   mtype   = Method;
   virt    = Normal;

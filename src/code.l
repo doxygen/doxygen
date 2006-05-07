@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -766,7 +766,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if (Config_getBool("REFERENCED_BY_RELATION") && 
+  if ((Config_getBool("REFERENCED_BY_RELATION") || Config_getBool("CALLER_GRAPH")) && 
       (src->isFunction() || src->isSlot()) 
      )
   {

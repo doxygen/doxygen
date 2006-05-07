@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1212,6 +1212,16 @@ class TranslatorDutch : public Translator
       return "Deze functie is overloaded en is beschikbaar gemaakt om het "
              "gebruik te vergemakkelijken. Ze verschilt alleen van de "
              "bovenstaande functie wat betreft de parameterlijst.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallerGraph()
+    {
+      return "Hier is de caller graaf voor deze functie:";
     }
     
 };

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -197,7 +197,7 @@ class DotInclDepGraph
 class DotCallGraph
 {
   public:
-    DotCallGraph(MemberDef *md,int maxRecursionDepth);
+    DotCallGraph(MemberDef *md,int maxRecursionDepth, bool inverse);
    ~DotCallGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,
                         const char *path,const char *relPath,bool writeImageMap=TRUE);
@@ -210,6 +210,7 @@ class DotCallGraph
     QDict<DotNode> *m_usedNodes;
     int             m_maxDistance;
     int             m_recDepth;
+    bool            m_inverse;
     QCString        m_diskName;
     Definition *    m_scope;
 };

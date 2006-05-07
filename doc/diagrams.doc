@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -55,6 +55,9 @@
   <li>if \ref cfg_call_graph "CALL_GRAPH" is set to YES, a 
       graphical call graph is drawn for each function showing the 
       functions that the function directly or indirectly calls.
+  <li>if \ref cfg_caller_graph "CALLER_GRAPH" is set to YES, a 
+      graphical caller graph is drawn for each function showing the 
+      functions that the function is directly or indirectly called by.
   </ul>
 
   The elements in the class diagrams in HTML and RTF 

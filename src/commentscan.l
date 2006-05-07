@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -93,6 +93,7 @@ static bool handleNoSubGrouping(const QCString &);
 static bool handleShowInitializer(const QCString &);
 static bool handleHideInitializer(const QCString &);
 static bool handleCallgraph(const QCString &);
+static bool handleCallergraph(const QCString &);
 static bool handleInternal(const QCString &);
 static bool handleLineBr(const QCString &);
 static bool handleStatic(const QCString &);
@@ -179,6 +180,7 @@ static DocCmdMap docCmdMap[] =
   { "showinitializer", &handleShowInitializer },
   { "hideinitializer", &handleHideInitializer },
   { "callgraph",       &handleCallgraph },
+  { "callergraph",     &handleCallergraph },
   { "internal",        &handleInternal },
   { "_linebr",         &handleLineBr },
   { "static",          &handleStatic },
@@ -2074,6 +2076,12 @@ static bool handleHideInitializer(const QCString &)
 static bool handleCallgraph(const QCString &)
 {
   current->callGraph = TRUE; // ON
+  return FALSE;
+}
+
+static bool handleCallergraph(const QCString &)
+{
+  current->callerGraph = TRUE; // ON
   return FALSE;
 }
 
