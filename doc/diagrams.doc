@@ -21,8 +21,8 @@
 
   Doxygen can use the "dot" tool from graphviz 1.5 to generate
   more advanced diagrams and graphs. Graphviz is an "open-sourced", 
-  cross-platform graph drawing toolkit from AT\&T and Lucent Bell Labs and
-  can be found at http://www.research.att.com/sw/tools/graphviz/
+  cross-platform graph drawing toolkit and can be found 
+  at http://www.graphviz.org/
 
   If you have the "dot" tool available in the path, you can set
   \ref cfg_have_dot "HAVE_DOT" to \c YES in the configuration file to 

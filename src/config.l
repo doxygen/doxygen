@@ -311,6 +311,7 @@ static int yyread(char *buf,int max_size)
     if (includeStack.isEmpty()) 
     {
         int c=0;
+	if (inputString==0) return c;
 	while( c < max_size && inputString[inputPosition] )
 	{
 	      *buf = inputString[inputPosition++] ;

@@ -2055,22 +2055,27 @@ bool ClassDef::isLinkable() const
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDef::isVisibleInHierarchy() 
 { 
-    return // show all classes or a subclass is visible
-      (Config_getBool("ALLEXTERNALS") || hasNonReferenceSuperClass()) &&
+  static bool allExternals     = Config_getBool("ALLEXTERNALS");
+  static bool extractPrivate   = Config_getBool("EXTRACT_PRIVATE");
+  static bool hideUndocClasses = Config_getBool("HIDE_UNDOC_CLASSES");
+  static bool extractStatic    = Config_getBool("EXTRACT_STATIC");
+
+  return // show all classes or a subclass is visible
+      (allExternals || hasNonReferenceSuperClass()) &&
       // and not an annonymous compound
       name().find('@')==-1 &&
       // not an artifically introduced class
       !m_artificial &&
       // and not privately inherited
-      (m_prot!=Private || Config_getBool("EXTRACT_PRIVATE")) &&
+      (m_prot!=Private || extractPrivate) &&
       // documented or shown anyway or documentation is external 
       (hasDocumentation() || 
-       !Config_getBool("HIDE_UNDOC_CLASSES") || 
+       !hideUndocClasses || 
        (m_templateMaster && m_templateMaster->hasDocumentation()) || 
        isReference()
       ) &&
       // is not part of an unnamed namespace or shown anyway
-      (!m_isStatic || Config_getBool("EXTRACT_STATIC"));
+      (!m_isStatic || extractStatic);
 }
 
 bool ClassDef::hasDocumentation() const

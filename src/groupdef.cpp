@@ -71,6 +71,7 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   docProtoMembers.setInGroup(TRUE);
   docTypedefMembers.setInGroup(TRUE);
   docEnumMembers.setInGroup(TRUE);
+  docEnumValMembers.setInGroup(TRUE);
   docFuncMembers.setInGroup(TRUE);
   docVarMembers.setInGroup(TRUE);
 
@@ -302,6 +303,18 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
         docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
+      if (!docOnly)
+      {
+        //printf("enum value %s!\n",md->name().data());
+        if (Config_getBool("SORT_BRIEF_DOCS"))
+          decEnumValMembers.inSort(md);
+        else
+          decEnumValMembers.append(md);
+      }
+      if (Config_getBool("SORT_MEMBER_DOCS"))
+        docEnumValMembers.inSort(md); 
+      else
+        docEnumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
       if (!docOnly)
@@ -381,6 +394,8 @@ void GroupDef::removeMember(MemberDef *md)
         docEnumMembers.remove(md);
         break;
       case MemberDef::EnumValue:    
+        decEnumValMembers.remove(md);
+        docEnumValMembers.remove(md);
         break;
       case MemberDef::Prototype:    
         decProtoMembers.remove(md);
@@ -654,6 +669,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     decProtoMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFuncProtos(),0);
     decTypedefMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trTypedefs(),0);
     decEnumMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trEnumerations(),0);
+    decEnumValMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trEnumerationValues(),0,TRUE);
     decFuncMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFunctions(),0);
     decVarMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trVariables(),0);
   }
@@ -728,6 +744,9 @@ void GroupDef::writeMemberDocumentation(OutputList &ol)
   
   docEnumMembers.writeDocumentation(ol,name(),this,
                              theTranslator->trEnumerationTypeDocumentation());
+
+  docEnumValMembers.writeDocumentation(ol,name(),this,
+                             theTranslator->trEnumerationValueDocumentation(),TRUE);
 
   docFuncMembers.writeDocumentation(ol,name(),this,
                              theTranslator->trFunctionDocumentation());

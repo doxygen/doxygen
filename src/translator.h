@@ -135,7 +135,6 @@ class Translator
     virtual QCString trFunctionPrototypeDocumentation() = 0;
     virtual QCString trTypedefDocumentation() = 0;
     virtual QCString trEnumerationTypeDocumentation() = 0;
-    //virtual QCString trEnumerationValueDocumentation() = 0;
     virtual QCString trFunctionDocumentation() = 0;
     virtual QCString trVariableDocumentation() = 0;
     virtual QCString trCompounds() = 0;
@@ -446,6 +445,7 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
     
     virtual QCString trCallerGraph() = 0;
+    virtual QCString trEnumerationValueDocumentation() = 0;
 
 };
 

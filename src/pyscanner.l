@@ -308,6 +308,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	brief ? current->briefLine : current->docLine,   // line of block start
 	docBlockInBody ? FALSE : brief, 
 	docBlockJavaStyle, // javadoc style
+	docBlockInBody,
 	protection,
         position,
         needsEntry)

@@ -1872,7 +1872,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputArray(yytext,yyleng);
   					  BEGIN(g_condCtx);
   					}
-<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t]+\n  |
+<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*\n  |
 <CondLine>.				{
   					  outputArray(yytext,yyleng);
   					  startCondSection(" ");
@@ -1943,7 +1943,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCPPComment>"//"			{
   					  outputChar('/');outputChar('/');
   					}
-<SkipCPPComment>[^\x06\n]+		{
+<SkipCPPComment>[^\x06\@\\\n]+		{
   					  outputArray(yytext,yyleng);
   					}
 <SkipCPPComment>.			{

@@ -502,12 +502,6 @@ class TranslatorEnglish : public Translator
     { return "Enumeration Type Documentation"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Enumerator Documentation"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
@@ -1624,10 +1618,18 @@ class TranslatorEnglish : public Translator
 // new since 1.4.6
 //////////////////////////////////////////////////////////////////////////
 
+    /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
       return "Here is the caller graph for this function:";
     }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Enumerator Documentation"; }
+
 
 };
 

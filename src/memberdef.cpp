@@ -694,7 +694,18 @@ void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
   }
   if (!onlyText) // write link
   {
-    ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
+    if (mtype==EnumValue && getGroupDef()==0 &&          // enum value is not grouped
+        getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
+    {
+      GroupDef *enumValGroup = getEnumScope()->getGroupDef();
+      ol.writeObjectLink(enumValGroup->getReference(),
+                         enumValGroup->getOutputFileBase(),
+                         anchor(),n);
+    }
+    else
+    {
+      ol.writeObjectLink(getReference(),getOutputFileBase(),anchor(),n);
+    }
   }
   else // write only text
   {
@@ -1029,6 +1040,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
       }
     }
   }
+  else if (ltype=="@") // rename type from enum values
+  {
+    ltype="";
+  }
   else
   {
     if (isObjCMethod())
@@ -1291,7 +1306,8 @@ bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const
 void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                    const char *scName,
                                    Definition *container,
-                                   bool inGroup
+                                   bool inGroup,
+                                   bool showEnumValues
                                   )
 {
   // if this member is in a group find the real scope name.
@@ -1301,7 +1317,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
-  if (isEnumValue()) return;
+  if (isEnumValue() && !showEnumValues) return;
 
   QCString scopeName = scName;
   QCString memAnchor = anchor();
@@ -1355,6 +1371,13 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else
     {
       ldef.prepend("enum ");
+    }
+  }
+  else if (isEnumValue())
+  {
+    if (ldef.at(0)=='@')
+    {
+      ldef=ldef.mid(2);
     }
   }
   int i=0,l;

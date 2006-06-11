@@ -51,6 +51,10 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapterBase
     {
       return english.trCallerGraph();
     }
+    virtual QCString trEnumerationValueDocumentation()
+    {
+      return english.trEnumerationValueDocumentation();
+    }
 };
 
 class TranslatorAdapter_1_4_1 : public TranslatorAdapter_1_4_6

@@ -62,9 +62,9 @@ tools should be installed.
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
     \latexonly \\par (see {\tt http://www.tug.org/interest.html\#free})\endlatexonly.
     This is needed for generating LaTeX, Postscript, and PDF output.
-<li><a href="http://www.research.att.com/sw/tools/graphviz/">
+<li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10 or higher</a>
-    \latexonly \\par (see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
+    \latexonly \\par (see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, 
     the graphical inheritance graphs, and the collaboration graphs.
     If you compile graphviz yourself, make sure you do include
@@ -559,9 +559,9 @@ features:
     You can download it from 
     <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">Microsoft</a>.
 
-<li><a href="http://www.research.att.com/sw/tools/graphviz/">
+<li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10</a><br>
-    \latexonly(see {\tt http://www.research.att.com/sw/tools/graphviz/})\endlatexonly.
+    \latexonly(see {\tt http://www.graphviz.org/})\endlatexonly.
     Needed for the include dependency graphs, the graphical inheritance graphs,
     and the collaboration graphs.
 </ul>

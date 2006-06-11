@@ -120,7 +120,7 @@ SearchIndex *  Doxygen::searchIndex=0;
 SDict<DefinitionList> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
-QCache<LookupInfo> Doxygen::lookupCache(20000,20000);
+QCache<LookupInfo> Doxygen::lookupCache(50000,50000);
 DirSDict       Doxygen::directories(17);
 SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager *Doxygen::parserManager = 0;
@@ -4889,7 +4889,6 @@ static void findMember(Entry *root,
     else
     {
       scopeName = mergeScopes(root->parent->name,scopeName);
-      printf("joinedName=%s\n",scopeName.data());
     }
   }
   else // see if we can prefix a namespace or class that is used from the file
@@ -6131,7 +6130,7 @@ static void findEnumDocumentation(Entry *root)
               md->setMemberGroupId(root->mGrpId);
 
               GroupDef *gd=md->getGroupDef();
-              if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is
+              if (gd==0 && root->groups->first()!=0) // member not grouped but out-of-line documentation is
               {
                 addMemberToGroups(root,md);
               }
@@ -7894,6 +7893,7 @@ static int readFileOrDirectory(const char *s,
 {
   //printf("killDict=%p count=%d\n",killDict,killDict->count());
   // strip trailing slashes
+  if (s==0) return 0;
   QCString fs = s;
   char lc = fs.at(fs.length()-1);
   if (lc=='/' || lc=='\\') fs = fs.left(fs.length()-1);

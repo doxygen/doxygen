@@ -469,7 +469,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_4_6
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "Deinições e macros"; }
+    { return "Definições e macros"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes

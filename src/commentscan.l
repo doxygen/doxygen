@@ -261,7 +261,8 @@ enum OutputContext
 {
   OutputDoc,
   OutputBrief,
-  OutputXRef
+  OutputXRef,
+  OutputInbody
 };
 
 enum GuardType
@@ -299,7 +300,7 @@ static QCString         inputString;         // input string
 static int		inputPosition;       // read pointer
 static QCString		yyFileName;          // file name that is read from
 static int		yyLineNr;            // line number in the input
-//static bool             inBody;              // was the comment found inside the body of a function?
+static bool             inBody;              // was the comment found inside the body of a function?
 static OutputContext    inContext;           // are we inside the brief, details or xref part
 static bool             briefEndsAtDot;      // does the brief description stop at a dot?
 static QCString         formulaText;         // Running text of a formula
@@ -479,7 +480,14 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
     cmdString.sprintf("\\xrefitem %s %d\n",listName,itemId);
-    docEntry->doc += cmdString;
+    if (inBody)
+    {
+      docEntry->inbodyDocs += cmdString;
+    }
+    else
+    {
+      docEntry->doc += cmdString;
+    }
     SectionInfo *si=new SectionInfo(listName,anchorLabel,
 	                            sectionTitle,SectionInfo::Anchor);
     Doxygen::sectionDict.insert(anchorLabel,si);
@@ -605,6 +613,7 @@ static inline void setOutput(OutputContext ctx)
   }
 
   inContext = ctx;
+  if (inContext!=OutputXRef && inBody) inContext=OutputInbody;
   switch(inContext)
   {
     case OutputDoc:
@@ -628,6 +637,9 @@ static inline void setOutput(OutputContext ctx)
       pOutputString = &outputXRef;
       // first item found, so can't append to previous
       //xrefAppendFlag = FALSE;
+      break;
+    case OutputInbody:
+      pOutputString = &current->inbodyDocs;
       break;
   }
 }
@@ -780,7 +792,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 <Comment>("\\"[a-z_A-Z]+)+"\\"		{ // directory (or chain of commands!)
   					  addOutput(yytext);
   					}
-<Comment>{XREFCMD}/[^a-z_A-Z]*		{ // command that can end a brief description
+<Comment>{XREFCMD}/[^a-z_A-Z]*		{ // xref command 
 					  if (inContext!=OutputXRef) 
 					  {
 					    briefEndsAtDot=FALSE;
@@ -826,7 +838,12 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					      // yuk, this is probably not very portable across lex implementations, 
 					      // but we need to know the position in the input buffer where this 
 					      // rule matched.
+					      // for flex 2.5.33+ we should use YY_CURRENT_BUFFER_LVALUE
+#if YY_FLEX_MINOR_VERSION>=5 && YY_FLEX_SUBMINOR_VERSION>=33
+					      inputPosition=prevPosition + yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf;
+#else
 					      inputPosition=prevPosition + yy_bp - yy_current_buffer->yy_ch_buf;
+#endif
 					      yyterminate();
 					    }
 					  }
@@ -2177,6 +2194,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 		       /* in */     int lineNr,
 		       /* in */     bool isBrief,
 		       /* in */     bool isJavaDocStyle,
+		       /* in */     bool isInbody,
 		       /* in,out */ Protection &prot,
 		       /* in,out */ int &position,
 		       /* out */    bool &newEntryNeeded
@@ -2202,10 +2220,15 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   xrefAppendFlag = FALSE;
   insidePre      = FALSE;
   parseMore      = FALSE;
+  inBody         = isInbody;
   outputXRef.resize(0);
   setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
   briefEndsAtDot = isJavaDocStyle;
 
+  if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
+  {
+    current->inbodyDocs+="\n\n";
+  }
 
   Debug::print(Debug::CommentScan,0,"-----------\nCommentScanner: %s:%d\n"
                "input=[%s]\n",fileName.data(),lineNr,comment.data()
