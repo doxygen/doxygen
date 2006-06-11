@@ -106,6 +106,7 @@ class GroupDef : public Definition
     MemberList docProtoMembers;
     MemberList docTypedefMembers;
     MemberList docEnumMembers;
+    MemberList docEnumValMembers;
     MemberList docFuncMembers;
     MemberList docVarMembers;
 

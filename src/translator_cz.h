@@ -65,6 +65,9 @@
 // 2004/09/14 - The new methods "since 1.3.9" implemented. 
 // 2005/02/11 - The "never used" methods removed.
 // 2005/03/08 - Update for "new since 1.4.1" (trOverloadText()) 
+// 2006/05/10 - Update for "new since 1.4.6" -- trCallerGraph(), 
+//              modified trCallGraph() to make the meaning unambiguous
+//              and clear in the Czech language.
 
 // Todo
 // ----
@@ -1488,7 +1491,7 @@ class TranslatorCzech : public TranslatorAdapter_1_4_6
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return decode("Graf volání pro tuto funkci:");
+      return decode("Tato funkce volá...");
     }
    
 //////////////////////////////////////////////////////////////////////////
@@ -1620,6 +1623,17 @@ class TranslatorCzech : public TranslatorAdapter_1_4_6
               "která má usnadnit používání. Od výše uvedené metody se liší "
               "pouze jinak zadávanými argumenty.");
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCallerGraph()
+    {
+      return decode("Tuto funkci volají...");
+    }
+
+
 };
 
 #endif // TRANSLATOR_CZ_H

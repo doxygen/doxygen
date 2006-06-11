@@ -17,10 +17,10 @@
 
 doxygen_version_major=1
 doxygen_version_minor=4
-doxygen_version_revision=6
+doxygen_version_revision=7
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20060507
+doxygen_version_mmn=NO
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -154,6 +154,9 @@ if test -z "$f_platform"; then
       f_platform=macosx-c++
       if test "$f_insttool" = NO; then
         f_insttool=/usr/bin/install
+      fi
+      if test -n "`ls /Developer/SDKs/MacOSX10.*u.sdk`"; then
+        f_platform=macosx-uni-c++
       fi
       ;;
     FreeBSD:*)

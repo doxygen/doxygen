@@ -42,6 +42,8 @@ class ParserInterface;
  *  @param[in] isJavaDocStyle TRUE iff this comment block is in "JavaDoc" style.
  *         This means that it starts as a brief description until the end of
  *         the sentences is found and then proceeds as a detailed description.
+ *  @param[in] isInbody TRUE iff this comment block is located in the body of
+ *         a function.
  *  @param[in,out] prot The protection level in which this comment block was
  *         found. Commands in the comment block may override this.
  *  @param[in,out] position The character position within \a comment where the
@@ -63,6 +65,7 @@ bool parseCommentBlock(ParserInterface *parser,
 		       int lineNr,
 		       bool isBrief,
 		       bool isJavaDocStyle,
+                       bool isInbody,
 		       Protection &prot,
                        int &position,
                        bool &newEntryNeeded

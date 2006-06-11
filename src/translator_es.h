@@ -20,12 +20,13 @@
  * Some notes:
  * - It's posible that some sentences haven't got meaning because  
  * some words haven't got translate in spanish.
+ * Updated from 1.3.8 to 1.4.6 by Guillermo Ballester Valor (May-05-2006)
  */
 
 #ifndef TRANSLATOR_ES_H
 #define TRANSLATOR_ES_H
 
-class TranslatorSpanish : public TranslatorAdapter_1_3_8
+class TranslatorSpanish : public TranslatorAdapter_1_4_6
 {
   public:
     virtual QCString idLanguage()
@@ -1376,6 +1377,76 @@ class TranslatorSpanish : public TranslatorAdapter_1_3_8
       return "Coincidencias:";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Fichero Fuente " + filename;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Jerarquía de Directorio"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Documentación de Directorio"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of an HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Directorios"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "La jeraquía de este directorio está ordenada casi, "
+             "pero no completamente, de forma alfabética:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result="Referencia del Directorio "; result+=dirName; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Directori" : "directori"));
+      if (singular) result+="o"; else result+="os";
+      return result; 
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Esta es una función miembro sobrecargada que se "
+              "suministra por conveniencia. Difiere de la anterior "
+              "función solamente en los argumentos que acepta.";
+    }
 };
 
 

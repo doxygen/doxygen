@@ -194,7 +194,7 @@ class MemberDef : public Definition
                    bool inGroup); 
     void writeDocumentation(MemberList *ml,OutputList &ol,
                             const char *scopeName,Definition *container,
-                            bool inGroup);
+                            bool inGroup,bool showEnumValues=FALSE);
     void warnIfUndocumented();
     
     // relation to other members

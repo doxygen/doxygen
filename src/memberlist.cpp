@@ -50,7 +50,7 @@ int MemberList::compareItems(GCI item1, GCI item2)
 /*! Count the number of members in this list that are visible in
  *  the declaration part of a compound's documentation page.
  */
-void MemberList::countDecMembers()
+void MemberList::countDecMembers(bool countEnumValues)
 {
   if (m_numDecMembers!=-1) return; 
   
@@ -77,7 +77,8 @@ void MemberList::countDecMembers()
                                        m_funcCnt++,m_numDecMembers++; 
                                      break;
         case MemberDef::Enumeration: m_enumCnt++,m_numDecMembers++; break;
-        case MemberDef::EnumValue:   //m_enumValCnt++,m_numDecMembers++; 
+        case MemberDef::EnumValue:   if (countEnumValues)
+                                       m_enumValCnt++,m_numDecMembers++; 
                                      break;
         case MemberDef::Typedef:     m_typeCnt++,m_numDecMembers++; break;
         case MemberDef::Prototype:   m_protoCnt++,m_numDecMembers++; break;
@@ -117,7 +118,7 @@ void MemberList::countDecMembers()
   //printf("MemberList::countDecMembers()=%d\n",m_numDecMembers);
 }
 
-void MemberList::countDocMembers()
+void MemberList::countDocMembers(bool countEnumValues)
 {
   if (m_numDocMembers!=-1) return; // used cached value
   m_numDocMembers=0;
@@ -128,7 +129,8 @@ void MemberList::countDocMembers()
     if (md->isDetailedSectionVisible(m_inGroup,m_inFile)) 
     {
       // do not count enum values, since they do not produce entries of their own
-      if (md->memberType()!=MemberDef::EnumValue) m_numDocMembers++;
+      if (countEnumValues || md->memberType()!=MemberDef::EnumValue) 
+        m_numDocMembers++;
     }
   }
   if (memberGroupList)
@@ -181,9 +183,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   MemberListIterator mli(*this);
   for ( ; (md=mli.current()); ++mli )
   {
+    //printf(">>> Member `%s' type=%d visible=%d\n",
+    //    md->name().data(),md->memberType(),md->isBriefSectionVisible());
     if (md->isBriefSectionVisible())
     {
-      //printf(">>> Member `%s' type=%d\n",md->name().data(),md->memberType());
       switch(md->memberType())
       {
         case MemberDef::Define:    // fall through
@@ -264,6 +267,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             break;
           }
         case MemberDef::EnumValue: 
+          {
+            if (first) ol.startMemberList(),first=FALSE;
+            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+          }
           break;
       }
     }
@@ -298,11 +305,11 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 
 void MemberList::writeDeclarations(OutputList &ol,
              ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
-             const char *title,const char *subtitle
+             const char *title,const char *subtitle, bool showEnumValues
              /*, bool inGroup,bool countSubGroups*/)
 {
   //printf("----- writeDeclaration() ----\n");
-  countDecMembers(); // count member not in group
+  countDecMembers(showEnumValues); // count member not in group
   if (numDecMembers()==0) return;
   //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",title,subtitle,numDecMembers());
   if (title) 
@@ -355,11 +362,11 @@ void MemberList::writeDeclarations(OutputList &ol,
 
 void MemberList::writeDocumentation(OutputList &ol,
                      const char *scopeName, Definition *container,
-                     const char *title)
+                     const char *title,bool showEnumValues)
 {
   //printf("MemberList::writeDocumentation()\n");
 
-  countDocMembers();
+  countDocMembers(showEnumValues);
   if (numDocMembers()==0) return;
 
   if (title)
@@ -375,7 +382,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    md->writeDocumentation(this,ol,scopeName,container,m_inGroup);
+    md->writeDocumentation(this,ol,scopeName,container,m_inGroup,showEnumValues);
   }
   if (memberGroupList)
   {

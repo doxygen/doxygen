@@ -493,8 +493,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
   				     BEGIN(g_condCtx);
   				   }
 <CondLine>[ \t]*
-<CComment,ReadLine>[\\@]"cond"[ \t]*\n |
+<CComment,ReadLine>[\\@]"cond"[ \t\r]*\n |
 <CondLine>.			   { // forgot section id?
+  				     if (YY_START!=CondLine) g_condCtx=YY_START;
   				     bool oldSkip=g_skip;
   				     startCondSection(" "); // fake section id causing the section to be hidden unconditionally
 				     if (g_condCtx==CComment && !oldSkip && g_skip) 

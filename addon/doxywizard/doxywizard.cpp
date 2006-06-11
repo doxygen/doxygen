@@ -1191,6 +1191,16 @@ void MainWidget::saveConfigFile()
   if (!fn.isEmpty())
   {
     QFile f(fn);
+    if (f.exists() && QMessageBox::question(this,
+          "Overwrite file? -- Doxywizard",
+          "A file called "+fn+" already exists. Do you want to overwrite it?",
+          "&Yes","&no",
+          QString::null, 0, 1)
+       )
+    {
+      statusBar()->message("Save request aborted",messageTimeout);
+      return;
+    }
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);

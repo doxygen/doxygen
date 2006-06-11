@@ -625,7 +625,10 @@ static int countClassesInTreeList(const ClassSDict &cl)
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
       {
-        count++;
+        if (cd->subClasses()->count()>0) // should have sub classes
+        {
+          count++;
+        }
       }
     }
   }
@@ -634,17 +637,6 @@ static int countClassesInTreeList(const ClassSDict &cl)
 
 int countClassHierarchy()
 {
-#if 0
-// TODO: let this function return the real number of items in the hierarchy.
-  initClassHierarchy(&Doxygen::classSDict);
-  int count=0;
-  ClassSDict::Iterator cli(Doxygen::classSDict);
-  for ( ; cli.current(); ++cli)
-  {
-    if (cli.current()->subClasses()->count()>0) count++;
-  }
-  return count;
-#endif
   int count=0;
   initClassHierarchy(&Doxygen::classSDict);
   initClassHierarchy(&Doxygen::hiddenClasses);
@@ -657,7 +649,6 @@ int countClassHierarchy()
 
 void writeHierarchicalIndex(OutputList &ol)
 {
-  //printf("writeHierarchicalIndex: %d classes\n",hierarchyClasses);
   if (hierarchyClasses==0) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);

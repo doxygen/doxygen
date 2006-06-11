@@ -19,6 +19,8 @@
  *
  * Revision history
  *
+ *  2006/05: translated new items used since version 1.4.6
+ *           corrected typo in trPackageMembers method
  *  2005/03: translated new items used since version 1.4.1
  *           removed unused methods listed in Petr Prikryl February 28 translator report
  *  2004/09: translated new items used since version 1.3.9
@@ -1362,7 +1364,7 @@ class TranslatorItalian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trPackageMembers()
     {
-      return "Funczioni con visibilità di package";
+      return "Funzioni con visibilità di package";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
@@ -1522,6 +1524,15 @@ class TranslatorItalian : public TranslatorAdapter_1_4_6
        return "Questa è una funzione membro sovraccaricata (overloaded), "
               "fornita per comodità. Differisce dalla funzione di cui sopra"
               "unicamente per gli argomenti passati.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trCallerGraph()
+    {
+      return "Questo è il grafo dei chiamanti di questa funzione:";
     }
 
 };

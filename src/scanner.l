@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2569,7 +2569,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    // see if the compound does not have a name or is inside another
 					    // annonymous compound. If so we insert a 
 					    // special `annonymous' variable.
-					    Entry *p=current_root;
+					    //Entry *p=current_root;
+					    Entry *p=current;
 					    while (p)
 					    {
 					      // only look for class scopes, not namespace scopes
@@ -2586,7 +2587,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						  break;
 						}
 					      }
-					      p=p->parent;
+					      //p=p->parent;
+					      if (p==current) p=current_root; else p=p->parent;
 					    }
 					  }
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
@@ -3416,6 +3418,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else
 					  {
+#if 0
 					    if (!Config_getBool("HIDE_IN_BODY_DOCS") && 
 						!current->doc.isEmpty())
 					    {
@@ -3430,6 +3433,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      previous->inbodyDocs += current->doc;
 					      current->doc.resize(0);
 					    }
+#endif
 					    if (current->sli) // copy special list items
 					    {
 					      QListIterator<ListItemInfo> li(*current->sli);
@@ -3880,7 +3884,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <Specialization>{BN}+			{ lineCount(); *specName +=' '; }
 <Specialization>"<<"			{ *specName += yytext; }
-<Specialization>">>"			{ *specName += yytext; }
+<Specialization>">>"			{
+                                          if (insideCS) // for C# >> ends a nested template
+					  {
+					    REJECT;
+					  }
+					  else // for C++ >> is a bitshift operator and > > would end a nested template
+					  {
+                                            *specName += yytext; 
+					  }
+                                        }
 <Specialization>"typename"{BN}+		{ lineCount(); }
 <Specialization>"("			{ *specName += *yytext; roundCount++; }
 <Specialization>")"			{ *specName += *yytext; roundCount--; }
@@ -3977,7 +3990,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           insideCode=FALSE;
   					  current->program += yytext ;
   					}
-<Comment>[^ \.\n\/\*]+			{ current->program += yytext ; }
+<Comment>[^ \.\t\r\n\/\*]+		{ current->program += yytext ; }
 <Comment>"*/"				{ current->program += yytext ;
 					  if (!insideCode) BEGIN( lastContext ) ;
 					}
@@ -4405,6 +4418,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   if (docBlockInBody && hideInBodyDocs) return;
+#if 0
   if (docBlockInBody)
   {
     if (previous==0) 
@@ -4417,6 +4431,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
       previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
     }
   }
+#endif
   //printf("parseCommentBlock [%s]\n",doc.data());
   while (parseCommentBlock(
 	g_thisParser,
@@ -4426,6 +4441,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	brief ? current->briefLine : current->docLine,   // line of block start
 	docBlockInBody ? FALSE : brief, 
 	docBlockInBody ? FALSE : docBlockJavaStyle,
+	docBlockInBody,
 	protection,
         position,
         needsEntry
@@ -4440,7 +4456,9 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     newEntry();
   }
 
+#if 0
 exit:
+#endif
   if (docBlockTerm)
   {
     unput(docBlockTerm);
@@ -4478,6 +4496,7 @@ static void handleParametersCommentBlocks()
 	     yyFileName,         // file
 	     current->docLine,   // line of block start
 	     FALSE, 
+	     FALSE,
 	     FALSE,
 	     protection,
 	     position,
