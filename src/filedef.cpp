@@ -73,39 +73,39 @@ FileDef::FileDef(const char *p,const char *nm,
   diskname=dn;
   if (diskname.isEmpty()) diskname=nm;
   setReference(lref);
-  //printf("new FileDef(path=%s,name=%s,ref=%s)\n",p,nm,lref);
-  classSDict     = new ClassSDict(17);
-  includeList   = new QList<IncludeInfo>;
-  includeList->setAutoDelete(TRUE);
-  includeDict   = new QDict<IncludeInfo>(61);
-  includedByList = new QList<IncludeInfo>;
-  includedByList->setAutoDelete(TRUE);
-  includedByDict = new QDict<IncludeInfo>(61);
-  namespaceSDict = new NamespaceSDict;
-  srcDefDict = 0;
-  srcMemberDict = 0;
-  usingDirList = 0;
-  usingDeclList = 0;
-  package = 0;
-  isSource = FALSE; 
-  docname = nm;
-  dir = 0;
+  classSDict        = 0;
+  includeList       = 0;
+  includeDict       = 0; 
+  includedByList    = 0;
+  includedByDict    = 0; 
+  namespaceSDict    = 0; 
+  srcDefDict        = 0;
+  srcMemberDict     = 0;
+  usingDirList      = 0;
+  usingDeclList     = 0;
+  allMemberList     = 0;
+  decDefineMembers  = 0;
+  decProtoMembers   = 0;
+  decTypedefMembers = 0;
+  decEnumMembers    = 0;
+  decFuncMembers    = 0;
+  decVarMembers     = 0;
+  docDefineMembers  = 0;
+  docProtoMembers   = 0;
+  docTypedefMembers = 0;
+  docEnumMembers    = 0;
+  docFuncMembers    = 0;
+  docVarMembers     = 0;
+  package           = 0;
+  isSource          = FALSE; 
+  docname           = nm;
+  dir               = 0;
   if (Config_getBool("FULL_PATH_NAMES"))
   {
     docname.prepend(stripFromPath(path.copy()));
   }
-  memberGroupSDict = new MemberGroupSDict;
-  memberGroupSDict->setAutoDelete(TRUE);
+  memberGroupSDict = 0;
   acquireFileVersion();
-
-  // members in the detailed part of the documentation
-  docDefineMembers.setInFile(TRUE);
-  docProtoMembers.setInFile(TRUE);
-  docTypedefMembers.setInFile(TRUE);
-  docEnumMembers.setInFile(TRUE);
-  docFuncMembers.setInFile(TRUE);
-  docVarMembers.setInFile(TRUE);
-
 }
 
 /*! destroy the file definition */
@@ -122,40 +122,59 @@ FileDef::~FileDef()
   delete usingDirList;
   delete usingDeclList;
   delete memberGroupSDict;
+  delete allMemberList;
+  delete decDefineMembers;
+  delete decProtoMembers;
+  delete decTypedefMembers;
+  delete decEnumMembers;
+  delete decFuncMembers;
+  delete decVarMembers;
+  delete docDefineMembers;
+  delete docProtoMembers;
+  delete docTypedefMembers;
+  delete docEnumMembers;
+  delete docFuncMembers;
+  delete docVarMembers;
 }
 
 /*! Compute the HTML anchor names for all members in the class */ 
 void FileDef::computeAnchors()
 {
-  setAnchors(0,'a',&allMemberList);
+  if (allMemberList) setAnchors(0,'a',allMemberList);
 }
 
 void FileDef::distributeMemberGroupDocumentation()
 {
   //printf("FileDef::distributeMemberGroupDocumentation()\n");
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  if (memberGroupSDict)
   {
-    mg->distributeMemberGroupDocumentation();
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->distributeMemberGroupDocumentation();
+    }
   }
 }
 
 void FileDef::findSectionsInDocumentation()
 {
   docFindSections(documentation(),this,0,docFile());
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  if (memberGroupSDict)
   {
-    mg->findSectionsInDocumentation();
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->findSectionsInDocumentation();
+    }
   }
-  decDefineMembers.findSectionsInDocumentation();
-  decProtoMembers.findSectionsInDocumentation();
-  decTypedefMembers.findSectionsInDocumentation();
-  decEnumMembers.findSectionsInDocumentation();
-  decFuncMembers.findSectionsInDocumentation();
-  decVarMembers.findSectionsInDocumentation();
+  if (decDefineMembers)  decDefineMembers->findSectionsInDocumentation();
+  if (decProtoMembers)   decProtoMembers->findSectionsInDocumentation();
+  if (decTypedefMembers) decTypedefMembers->findSectionsInDocumentation();
+  if (decEnumMembers)    decEnumMembers->findSectionsInDocumentation();
+  if (decFuncMembers)    decFuncMembers->findSectionsInDocumentation();
+  if (decVarMembers)     decVarMembers->findSectionsInDocumentation();
 }
 
 void FileDef::writeDetailedDocumentation(OutputList &ol)
@@ -313,7 +332,8 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   ol.writeSynopsis();
  
-  if (Config_getBool("SHOW_INCLUDE_FILES") && includeList->count()>0)
+  if (Config_getBool("SHOW_INCLUDE_FILES") && includeList && 
+      includeList->count()>0)
   {
     ol.startTextBlock(TRUE);
     QListIterator<IncludeInfo> ili(*includeList);
@@ -439,7 +459,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   
   ol.startMemberSections();
 
-  if (namespaceSDict->count()>0)
+  if (namespaceSDict && namespaceSDict->count()>0)
   {
     NamespaceSDict::Iterator ndi(*namespaceSDict);
     NamespaceDef *nd;
@@ -483,26 +503,29 @@ void FileDef::writeDocumentation(OutputList &ol)
     if (found) ol.endMemberList();
   }
 
-  classSDict->writeDeclaration(ol);
+  if (classSDict) classSDict->writeDeclaration(ol);
   
   /* write user defined member groups */
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  if (memberGroupSDict)
   {
-    if (mg->header()!="[NOHEADER]")
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
     {
-      mg->writeDeclarations(ol,0,0,this,0);
+      if (mg->header()!="[NOHEADER]")
+      {
+        mg->writeDeclarations(ol,0,0,this,0);
+      }
     }
   }
 
   //allMemberList.writeDeclarations(ol,0,0,this,0,0,0);
-  decDefineMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trDefines(),0);
-  decProtoMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trFuncProtos(),0);
-  decTypedefMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trTypedefs(),0);
-  decEnumMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trEnumerations(),0);
-  decFuncMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trFunctions(),0);
-  decVarMembers.writeDeclarations(ol,0,0,this,0,theTranslator->trVariables(),0);
+  if (decDefineMembers)  decDefineMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trDefines(),0);
+  if (decProtoMembers)   decProtoMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trFuncProtos(),0);
+  if (decTypedefMembers) decTypedefMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trTypedefs(),0);
+  if (decEnumMembers)    decEnumMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trEnumerations(),0);
+  if (decFuncMembers)    decFuncMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trFunctions(),0);
+  if (decVarMembers)     decVarMembers->writeDeclarations(ol,0,0,this,0,theTranslator->trVariables(),0);
   ol.endMemberSections();
 
   if (!Config_getBool("DETAILS_AT_TOP"))
@@ -530,7 +553,7 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    allMemberList.sort();
+    if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
   }
 }
@@ -541,24 +564,42 @@ void FileDef::writeMemberDocumentation(OutputList &ol)
   {
     ol.disable(OutputGenerator::Html);
   }
-  
-  docDefineMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trDefineDocumentation());
-  
-  docProtoMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trFunctionPrototypeDocumentation());
 
-  docTypedefMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trTypedefDocumentation());
-  
-  docEnumMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trEnumerationTypeDocumentation());
+  if (docDefineMembers)
+  {
+    docDefineMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trDefineDocumentation());
+  }
 
-  docFuncMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trFunctionDocumentation());
-  
-  docVarMembers.writeDocumentation(ol,name(),this,
-                            theTranslator->trVariableDocumentation());
+  if (docProtoMembers)
+  {
+    docProtoMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trFunctionPrototypeDocumentation());
+  }
+
+  if (docTypedefMembers)
+  {
+    docTypedefMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trTypedefDocumentation());
+  }
+
+  if (docEnumMembers)
+  {
+    docEnumMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trEnumerationTypeDocumentation());
+  }
+
+  if (docFuncMembers)
+  {
+    docFuncMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trFunctionDocumentation());
+  }
+
+  if (docVarMembers)
+  {
+    docVarMembers->writeDocumentation(ol,name(),this,
+        theTranslator->trVariableDocumentation());
+  }
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -571,12 +612,12 @@ void FileDef::writeMemberPages(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   
-  docDefineMembers.writeDocumentationPage(ol,name(),this);
-  docProtoMembers.writeDocumentationPage(ol,name(),this);
-  docTypedefMembers.writeDocumentationPage(ol,name(),this);
-  docEnumMembers.writeDocumentationPage(ol,name(),this);
-  docFuncMembers.writeDocumentationPage(ol,name(),this);
-  docVarMembers.writeDocumentationPage(ol,name(),this);
+  if (docDefineMembers)  docDefineMembers->writeDocumentationPage(ol,name(),this);
+  if (docProtoMembers)   docProtoMembers->writeDocumentationPage(ol,name(),this);
+  if (docTypedefMembers) docTypedefMembers->writeDocumentationPage(ol,name(),this);
+  if (docEnumMembers)    docEnumMembers->writeDocumentationPage(ol,name(),this);
+  if (docFuncMembers)    docFuncMembers->writeDocumentationPage(ol,name(),this);
+  if (docVarMembers)     docVarMembers->writeDocumentationPage(ol,name(),this);
 
   ol.popGeneratorState();
 }
@@ -588,31 +629,34 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberListIterator mli(allMemberList);
-  MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  if (allMemberList)
   {
-    if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable())
+    MemberListIterator mli(*allMemberList);
+    MemberDef *md;
+    for (mli.toFirst();(md=mli.current());++mli)
     {
-      ol.writeString("          <tr><td class=\"navtab\">");
-      if (md->isLinkableInProject())
+      if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable())
       {
-        if (md==currentMd) // selected item => highlight
+        ol.writeString("          <tr><td class=\"navtab\">");
+        if (md->isLinkableInProject())
         {
-          ol.writeString("<a class=\"qindexHL\" ");
+          if (md==currentMd) // selected item => highlight
+          {
+            ol.writeString("<a class=\"qindexHL\" ");
+          }
+          else
+          {
+            ol.writeString("<a class=\"qindex\" ");
+          }
+          ol.writeString("href=\"");
+          if (createSubDirs) ol.writeString("../../");
+          ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+          ol.writeString("\">");
+          ol.writeString(md->localName());
+          ol.writeString("</a>");
         }
-        else
-        {
-          ol.writeString("<a class=\"qindex\" ");
-        }
-        ol.writeString("href=\"");
-        if (createSubDirs) ol.writeString("../../");
-        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
-        ol.writeString("\">");
-        ol.writeString(md->localName());
-        ol.writeString("</a>");
+        ol.writeString("</td></tr>\n");
       }
-      ol.writeString("</td></tr>\n");
     }
   }
 
@@ -681,12 +725,12 @@ void FileDef::parseSource()
 
 void FileDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(decDefineMembers,  &memberGroupSDict,this);
+  ::addMembersToMemberGroup(decProtoMembers,   &memberGroupSDict,this);
+  ::addMembersToMemberGroup(decTypedefMembers, &memberGroupSDict,this);
+  ::addMembersToMemberGroup(decEnumMembers,    &memberGroupSDict,this);
+  ::addMembersToMemberGroup(decFuncMembers,    &memberGroupSDict,this);
+  ::addMembersToMemberGroup(decVarMembers,     &memberGroupSDict,this);
 }
 
 /*! Adds member definition \a md to the list of all members of this file */
@@ -694,42 +738,64 @@ void FileDef::insertMember(MemberDef *md)
 {
   //printf("%s:FileDef::insertMember(%s (=%p) list has %d elements)\n",
   //    name().data(),md->name().data(),md,allMemberList.count());
-  if (allMemberList.findRef(md)!=-1) 
+  if (allMemberList && allMemberList->findRef(md)!=-1) 
   { 
     return;
   }
 
-  allMemberList.append(md); 
+  if (allMemberList==0)
+  {
+    allMemberList = new MemberList;
+  }
+  allMemberList->append(md); 
   bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   switch (md->memberType())
   {
     case MemberDef::Variable:     
     case MemberDef::Property:     
-      if (sortBriefDocs)  decVarMembers.inSort(md); else decVarMembers.append(md);
-      if (sortMemberDocs) docVarMembers.inSort(md); else docVarMembers.append(md);
+      if (decVarMembers==0) decVarMembers = new MemberList;
+      if (sortBriefDocs)  decVarMembers->inSort(md); else decVarMembers->append(md);
+      if (docVarMembers==0) docVarMembers = new MemberList;
+      if (sortMemberDocs) docVarMembers->inSort(md); else docVarMembers->append(md);
+      docVarMembers->setInFile(TRUE);
       break;
     case MemberDef::Function: 
-      if (sortBriefDocs)  decFuncMembers.inSort(md); else decFuncMembers.append(md);
-      if (sortMemberDocs) docFuncMembers.inSort(md); else docFuncMembers.append(md);
+      if (decFuncMembers==0) decFuncMembers = new MemberList;
+      if (sortBriefDocs)  decFuncMembers->inSort(md); else decFuncMembers->append(md);
+      if (docFuncMembers==0) docFuncMembers = new MemberList;
+      if (sortMemberDocs) docFuncMembers->inSort(md); else docFuncMembers->append(md);
+      docFuncMembers->setInFile(TRUE);
       break;
     case MemberDef::Typedef:      
-      if (sortBriefDocs)  decTypedefMembers.inSort(md); else decTypedefMembers.append(md);
-      if (sortMemberDocs) docTypedefMembers.inSort(md); else docTypedefMembers.append(md);
+      if (decTypedefMembers==0) decTypedefMembers = new MemberList;
+      if (sortBriefDocs)  decTypedefMembers->inSort(md); else decTypedefMembers->append(md);
+      if (docTypedefMembers==0) docTypedefMembers = new MemberList;
+      if (sortMemberDocs) docTypedefMembers->inSort(md); else docTypedefMembers->append(md);
+      docTypedefMembers->setInFile(TRUE);
       break;
     case MemberDef::Enumeration:  
-      if (sortBriefDocs)  decEnumMembers.inSort(md); else decEnumMembers.append(md);
-      if (sortMemberDocs) docEnumMembers.inSort(md); else docEnumMembers.append(md);
+      if (decEnumMembers==0) decEnumMembers = new MemberList;
+      if (sortBriefDocs)  decEnumMembers->inSort(md); else decEnumMembers->append(md);
+      if (docEnumMembers==0) docEnumMembers = new MemberList;
+      if (sortMemberDocs) docEnumMembers->inSort(md); else docEnumMembers->append(md);
+      docEnumMembers->setInFile(TRUE);
       break;
     case MemberDef::EnumValue:    // enum values are shown inside their enums
       break;
     case MemberDef::Prototype:    
-      if (sortBriefDocs)  decProtoMembers.inSort(md); else decProtoMembers.append(md);
-      if (sortMemberDocs) docProtoMembers.inSort(md); else docProtoMembers.append(md);
+      if (decProtoMembers==0) decProtoMembers = new MemberList;
+      if (sortBriefDocs)  decProtoMembers->inSort(md); else decProtoMembers->append(md);
+      if (docProtoMembers==0) docProtoMembers = new MemberList;
+      if (sortMemberDocs) docProtoMembers->inSort(md); else docProtoMembers->append(md);
+      docProtoMembers->setInFile(TRUE);
       break;
     case MemberDef::Define:       
-      if (sortBriefDocs)  decDefineMembers.inSort(md); else decDefineMembers.append(md);
-      if (sortMemberDocs) docDefineMembers.inSort(md); else docDefineMembers.append(md);
+      if (decDefineMembers==0) decDefineMembers = new MemberList;
+      if (sortBriefDocs)  decDefineMembers->inSort(md); else decDefineMembers->append(md);
+      if (docDefineMembers==0) docDefineMembers = new MemberList;
+      if (sortMemberDocs) docDefineMembers->inSort(md); else docDefineMembers->append(md);
+      docDefineMembers->setInFile(TRUE);
       break;
     default:
        err("FileDef::insertMembers(): "
@@ -744,6 +810,10 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
+  if (classSDict==0)
+  {
+    classSDict = new ClassSDict(17);
+  }
   if (Config_getBool("SORT_BRIEF_DOCS"))
     classSDict->inSort(cd->name(),cd);
   else
@@ -753,8 +823,13 @@ void FileDef::insertClass(ClassDef *cd)
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
 void FileDef::insertNamespace(NamespaceDef *nd)
 {
-  if (!nd->name().isEmpty() && namespaceSDict->find(nd->name())==0)
+  if (!nd->name().isEmpty() && 
+      (namespaceSDict==0 || namespaceSDict->find(nd->name())==0))
   {
+    if (namespaceSDict==0)
+    {
+      namespaceSDict = new NamespaceSDict;
+    }
     if (Config_getBool("SORT_BRIEF_DOCS"))
       namespaceSDict->inSort(nd->name(),nd);
     else
@@ -826,8 +901,14 @@ void FileDef::addIncludeDependency(FileDef *fd,const char *incName,bool local,
 {
   //printf("FileDef::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
-  if (!iName.isEmpty() && includeDict->find(iName)==0)
+  if (!iName.isEmpty() && (!includeDict || includeDict->find(iName)==0))
   {
+    if (includeDict==0)
+    {
+      includeDict   = new QDict<IncludeInfo>(61);
+      includeList   = new QList<IncludeInfo>;
+      includeList->setAutoDelete(TRUE);
+    }
     IncludeInfo *ii = new IncludeInfo;
     ii->fileDef     = fd;
     ii->includeName = incName;
@@ -894,8 +975,14 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,
 {
   //printf("FileDef::addIncludedByDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
-  if (!iName.isEmpty() && includedByDict->find(iName)==0)
+  if (!iName.isEmpty() && (includedByDict==0 || includedByDict->find(iName)==0))
   {
+    if (includedByDict==0)
+    {
+      includedByDict = new QDict<IncludeInfo>(61);
+      includedByList = new QList<IncludeInfo>;
+      includedByList->setAutoDelete(TRUE);
+    }
     IncludeInfo *ii = new IncludeInfo;
     ii->fileDef     = fd;
     ii->includeName = incName;
@@ -909,7 +996,7 @@ void FileDef::addIncludedByDependency(FileDef *fd,const char *incName,
 bool FileDef::isIncluded(const QCString &name) const
 {
   if (name.isEmpty()) return FALSE;
-  return includeDict->find(name)!=0;
+  return includeDict!=0 && includeDict->find(name)!=0;
 }
 
 bool FileDef::generateSourceFile() const 
@@ -929,18 +1016,21 @@ void FileDef::addListReferences()
              theTranslator->trFile(TRUE,TRUE),
              getOutputFileBase(),name()
             );
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  if (memberGroupSDict)
   {
-    mg->addListReferences(this);
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      mg->addListReferences(this);
+    }
   }
-  docDefineMembers.addListReferences(this);
-  docProtoMembers.addListReferences(this);
-  docTypedefMembers.addListReferences(this);
-  docEnumMembers.addListReferences(this);
-  docFuncMembers.addListReferences(this);
-  docVarMembers.addListReferences(this);
+  if (docDefineMembers)  docDefineMembers->addListReferences(this);
+  if (docProtoMembers)   docProtoMembers->addListReferences(this);
+  if (docTypedefMembers) docTypedefMembers->addListReferences(this);
+  if (docEnumMembers)    docEnumMembers->addListReferences(this);
+  if (docFuncMembers)    docFuncMembers->addListReferences(this);
+  if (docVarMembers)     docVarMembers->addListReferences(this);
 }
 
 //-------------------------------------------------------------------

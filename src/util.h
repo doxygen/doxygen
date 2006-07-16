@@ -240,9 +240,9 @@ QCString convertToXML(const char *s);
 
 QCString getOverloadDocs();
 
-void addMembersToMemberGroup(MemberList *ml,
-                             MemberGroupSDict *memberGroupSDict,
-                             Definition *context);
+void addMembersToMemberGroup(/* in */     MemberList *ml,
+                             /* in,out */ MemberGroupSDict **ppMemberGroupSDict,
+                             /* in */     Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,
                               QCString &name,QCString &templSpec);

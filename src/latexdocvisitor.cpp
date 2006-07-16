@@ -232,7 +232,7 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "\\begin{center}"; else m_t << "\\end{center} ";
       break;
     case DocStyleChange::Small:
-      if (s->enable()) m_t << "\\footnotesize ";  else m_t << "\\normalsize ";
+      if (s->enable()) m_t << "\n\\footnotesize ";  else m_t << "\n\\normalsize ";
       break;
     case DocStyleChange::Preformatted:
       if (s->enable()) 
@@ -243,7 +243,7 @@ void LatexDocVisitor::visit(DocStyleChange *s)
       else
       {
         m_insidePre=FALSE;
-        m_t << "\\end{alltt}\\normalsize " << endl;
+        m_t << "\\end{alltt}\n\\normalsize " << endl;
       }
       break;
     case DocStyleChange::Div:  /* HTML only */ break;

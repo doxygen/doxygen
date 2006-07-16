@@ -280,7 +280,7 @@ void endFile(OutputList &ol,bool)
 
 static bool classHasVisibleChildren(ClassDef *cd)
 {
-  if (cd->subClasses()->count()==0) return FALSE;
+  if (cd->subClasses()==0) return FALSE;
   BaseClassList *bcl=cd->subClasses();
   BaseClassListIterator bcli(*bcl);
   for ( ; bcli.current() ; ++bcli)
@@ -295,6 +295,7 @@ static bool classHasVisibleChildren(ClassDef *cd)
 
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 {
+  if (bcl==0) return;
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
@@ -379,6 +380,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 
 void writeClassTree(BaseClassList *cl,int level)
 {
+  if (cl==0) return;
   HtmlHelp *htmlHelp=0;
   FTVHelp  *ftvHelp=0;
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
@@ -468,6 +470,7 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
 
 void writeClassTree(ClassList *cl,int level)
 {
+  if (cl==0) return;
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
   bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
@@ -485,6 +488,7 @@ void writeClassTree(ClassList *cl,int level)
 
 void writeClassTree(ClassSDict *d,int level)
 {
+  if (d==0) return;
   bool &generateHtml = Config_getBool("GENERATE_HTML") ;
   bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
   bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
@@ -625,7 +629,7 @@ static int countClassesInTreeList(const ClassSDict &cl)
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
       {
-        if (cd->subClasses()->count()>0) // should have sub classes
+        if (cd->subClasses()) // should have sub classes
         {
           count++;
         }

@@ -258,14 +258,17 @@ void DiagramRow::insertClass(DiagramItem *parent,ClassDef *cd,bool doBases,
   di->move(count()*gridWidth,level*gridHeight);
   append(di);
   BaseClassList *bcl=doBases ? cd->baseClasses() : cd->subClasses();
-  /* there are base/sub classes */
   int count=0;
-  BaseClassDef *bcd=bcl->first();
-  while (bcd)
+  if (bcl)
   {
-    ClassDef *ccd=bcd->classDef;
-    if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/) count++;
-    bcd=bcl->next();
+    /* there are base/sub classes */
+    BaseClassDef *bcd=bcl->first();
+    while (bcd)
+    {
+      ClassDef *ccd=bcd->classDef;
+      if (ccd && ccd->isVisibleInHierarchy() /*&& !ccd->visited*/) count++;
+      bcd=bcl->next();
+    }
   }
   if (count>0 && (prot!=Private || !doBases))
   {

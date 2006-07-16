@@ -696,12 +696,15 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   if (!locScope.isEmpty() && (ccd=g_codeClassSDict[locScope]))
   {
     //printf("using classScope %s\n",g_classScope.data());
-    BaseClassListIterator bcli(*ccd->baseClasses());
-    for ( ; bcli.current() ; ++bcli)
+    if (ccd->baseClasses())
     {
-      if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
+      BaseClassListIterator bcli(*ccd->baseClasses());
+      for ( ; bcli.current() ; ++bcli)
       {
-	return;
+	if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
+	{
+	  return;
+	}
       }
     }
   }

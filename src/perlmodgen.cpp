@@ -1552,7 +1552,7 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
 void PerlModGenerator::generatePerlModSection(Definition *d,
 					      MemberList *ml,const char *name,const char *header)
 {
-  if (ml->count()==0) return; // empty list
+  if (ml==0) return; // empty list
 
   m_output.openHash(name);
 
@@ -1573,29 +1573,32 @@ void PerlModGenerator::generatePerlModSection(Definition *d,
 void PerlModGenerator::addListOfAllMembers(ClassDef *cd)
 {
   m_output.openList("all_members");
-  MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
-  MemberNameInfo *mni;
-  for (mnii.toFirst();(mni=mnii.current());++mnii)
+  if (cd->memberNameInfoSDict())
   {
-    MemberNameInfoIterator mii(*mni);
-    MemberInfo *mi;
-    for (mii.toFirst();(mi=mii.current());++mii)
+    MemberNameInfoSDict::Iterator mnii(*cd->memberNameInfoSDict());
+    MemberNameInfo *mni;
+    for (mnii.toFirst();(mni=mnii.current());++mnii)
     {
-      MemberDef *md=mi->memberDef;
-      ClassDef  *cd=md->getClassDef();
-      Definition *d=md->getGroupDef();
-      if (d==0) d = cd;
+      MemberNameInfoIterator mii(*mni);
+      MemberInfo *mi;
+      for (mii.toFirst();(mi=mii.current());++mii)
+      {
+        MemberDef *md=mi->memberDef;
+        ClassDef  *cd=md->getClassDef();
+        Definition *d=md->getGroupDef();
+        if (d==0) d = cd;
 
-      m_output.openHash()
-	.addFieldQuotedString("name", md->name())
-	.addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
-	.addFieldQuotedString("protection", getProtectionName(mi->prot));
+        m_output.openHash()
+          .addFieldQuotedString("name", md->name())
+          .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
+          .addFieldQuotedString("protection", getProtectionName(mi->prot));
 
-      if (!mi->ambiguityResolutionScope.isEmpty())
-	m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope);
+        if (!mi->ambiguityResolutionScope.isEmpty())
+          m_output.addFieldQuotedString("ambiguity_scope", mi->ambiguityResolutionScope);
 
-      m_output.addFieldQuotedString("scope", cd->name())
-	.closeHash();
+        m_output.addFieldQuotedString("scope", cd->name())
+          .closeHash();
+      }
     }
   }
   m_output.closeList();
@@ -1626,7 +1629,7 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
   
-  if (cd->baseClasses()->count()>0)
+  if (cd->baseClasses())
   {
     m_output.openList("base");
     BaseClassListIterator bcli(*cd->baseClasses());
@@ -1640,10 +1643,10 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
     m_output.closeList();
   }
 
-  if (cd->subClasses()->count()>0)
+  if (cd->subClasses())
   {
     m_output.openList("derived");
-    BaseClassListIterator bcli(*cd->baseClasses());
+    BaseClassListIterator bcli(*cd->subClasses());
     BaseClassDef *bcd;
     for (bcli.toFirst();(bcd=bcli.current());++bcli)
       m_output.openHash()
@@ -1692,29 +1695,29 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
   for (;(mg=mgli.current());++mgli)
     generatePerlModSection(cd,mg->members(),"user_defined",mg->header());
 
-  generatePerlModSection(cd,&cd->pubTypes,"public_typedefs");
-  generatePerlModSection(cd,&cd->pubMethods,"public_methods");
-  generatePerlModSection(cd,&cd->pubAttribs,"public_members");
-  generatePerlModSection(cd,&cd->pubSlots,"public_slots");
-  generatePerlModSection(cd,&cd->signals,"signals");
-  generatePerlModSection(cd,&cd->dcopMethods,"dcop_methods");
-  generatePerlModSection(cd,&cd->properties,"properties");
-  generatePerlModSection(cd,&cd->pubStaticMethods,"public_static_methods");
-  generatePerlModSection(cd,&cd->pubStaticAttribs,"public_static_members");
-  generatePerlModSection(cd,&cd->proTypes,"protected_typedefs");
-  generatePerlModSection(cd,&cd->proMethods,"protected_methods");
-  generatePerlModSection(cd,&cd->proAttribs,"protected_members");
-  generatePerlModSection(cd,&cd->proSlots,"protected_slots");
-  generatePerlModSection(cd,&cd->proStaticMethods,"protected_static_methods");
-  generatePerlModSection(cd,&cd->proStaticAttribs,"protected_static_members");
-  generatePerlModSection(cd,&cd->priTypes,"private_typedefs");
-  generatePerlModSection(cd,&cd->priMethods,"private_methods");
-  generatePerlModSection(cd,&cd->priAttribs,"private_members");
-  generatePerlModSection(cd,&cd->priSlots,"private_slots");
-  generatePerlModSection(cd,&cd->priStaticMethods,"private_static_methods");
-  generatePerlModSection(cd,&cd->priStaticAttribs,"private_static_members");
-  generatePerlModSection(cd,&cd->friends,"friend_methods");
-  generatePerlModSection(cd,&cd->related,"related_methods");
+  generatePerlModSection(cd,cd->pubTypes,"public_typedefs");
+  generatePerlModSection(cd,cd->pubMethods,"public_methods");
+  generatePerlModSection(cd,cd->pubAttribs,"public_members");
+  generatePerlModSection(cd,cd->pubSlots,"public_slots");
+  generatePerlModSection(cd,cd->signals,"signals");
+  generatePerlModSection(cd,cd->dcopMethods,"dcop_methods");
+  generatePerlModSection(cd,cd->properties,"properties");
+  generatePerlModSection(cd,cd->pubStaticMethods,"public_static_methods");
+  generatePerlModSection(cd,cd->pubStaticAttribs,"public_static_members");
+  generatePerlModSection(cd,cd->proTypes,"protected_typedefs");
+  generatePerlModSection(cd,cd->proMethods,"protected_methods");
+  generatePerlModSection(cd,cd->proAttribs,"protected_members");
+  generatePerlModSection(cd,cd->proSlots,"protected_slots");
+  generatePerlModSection(cd,cd->proStaticMethods,"protected_static_methods");
+  generatePerlModSection(cd,cd->proStaticAttribs,"protected_static_members");
+  generatePerlModSection(cd,cd->priTypes,"private_typedefs");
+  generatePerlModSection(cd,cd->priMethods,"private_methods");
+  generatePerlModSection(cd,cd->priAttribs,"private_members");
+  generatePerlModSection(cd,cd->priSlots,"private_slots");
+  generatePerlModSection(cd,cd->priStaticMethods,"private_static_methods");
+  generatePerlModSection(cd,cd->priStaticAttribs,"private_static_members");
+  generatePerlModSection(cd,cd->friends,"friend_methods");
+  generatePerlModSection(cd,cd->related,"related_methods");
 
   addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),cd,0,cd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),cd,0,cd->documentation());
@@ -1829,41 +1832,47 @@ void PerlModGenerator::generatePerlModForFile(FileDef *fd)
   m_output.openHash()
     .addFieldQuotedString("name", fd->name());
   
-  QListIterator<IncludeInfo> ili1(*fd->includeFileList());
   IncludeInfo *inc;
   m_output.openList("includes");
-  for (ili1.toFirst();(inc=ili1.current());++ili1)
+  if (fd->includeFileList())
   {
-    m_output.openHash()
-      .addFieldQuotedString("name", inc->includeName);
-    if (inc->fileDef && !inc->fileDef->isReference())
+    QListIterator<IncludeInfo> ili1(*fd->includeFileList());
+    for (ili1.toFirst();(inc=ili1.current());++ili1)
     {
-      m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
+      m_output.openHash()
+        .addFieldQuotedString("name", inc->includeName);
+      if (inc->fileDef && !inc->fileDef->isReference())
+      {
+        m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
+      }
+      m_output.closeHash();
     }
-    m_output.closeHash();
   }
   m_output.closeList();
   
-  QListIterator<IncludeInfo> ili2(*fd->includedByFileList());
   m_output.openList("included_by");
-  for (ili2.toFirst();(inc=ili2.current());++ili2)
+  if (fd->includedByFileList())
   {
-    m_output.openHash()
-      .addFieldQuotedString("name", inc->includeName);
-    if (inc->fileDef && !inc->fileDef->isReference())
+    QListIterator<IncludeInfo> ili2(*fd->includedByFileList());
+    for (ili2.toFirst();(inc=ili2.current());++ili2)
     {
-      m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
+      m_output.openHash()
+        .addFieldQuotedString("name", inc->includeName);
+      if (inc->fileDef && !inc->fileDef->isReference())
+      {
+        m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
+      }
+      m_output.closeHash();
     }
-    m_output.closeHash();
   }
   m_output.closeList();
   
-  generatePerlModSection(fd,&fd->decDefineMembers,"defines");
-  generatePerlModSection(fd,&fd->decProtoMembers,"prototypes");
-  generatePerlModSection(fd,&fd->decTypedefMembers,"typedefs");
-  generatePerlModSection(fd,&fd->decEnumMembers,"enums");
-  generatePerlModSection(fd,&fd->decFuncMembers,"functions");
-  generatePerlModSection(fd,&fd->decVarMembers,"variables");
+  generatePerlModSection(fd,fd->decDefineMembers,"defines");
+  generatePerlModSection(fd,fd->decProtoMembers,"prototypes");
+  generatePerlModSection(fd,fd->decTypedefMembers,"typedefs");
+  generatePerlModSection(fd,fd->decEnumMembers,"enums");
+  generatePerlModSection(fd,fd->decFuncMembers,"functions");
+  generatePerlModSection(fd,fd->decVarMembers,"variables");
 
   addPerlModDocBlock(m_output,"brief",fd->getDefFileName(),fd->getDefLine(),0,0,fd->briefDescription());
   addPerlModDocBlock(m_output,"detailed",fd->getDefFileName(),fd->getDefLine(),0,0,fd->documentation());

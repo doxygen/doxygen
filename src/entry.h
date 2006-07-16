@@ -22,6 +22,9 @@
 #include <qlist.h>
 
 struct SectionInfo;
+class QFile;
+class EntryNav;
+class FileDef;
 
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
@@ -246,35 +249,53 @@ class Entry
       Final     = 0x0080,
       Abstract  = 0x0100,
     };
+    enum GroupDocType
+    {
+      GROUPDOC_NORMAL,        //!< defgroup
+      GROUPDOC_ADD,           //!< addgroup
+      GROUPDOC_WEAK           //!< weakgroup
+    };                        //!< kind of group
+
 
     Entry();
     Entry(const Entry &);
     ~Entry();
     int getSize();
     void addSpecialListItem(const char *listName,int index);
+    void createNavigationIndex(EntryNav *rootNav,QFile &storage,FileDef *fd);
+
+    // while parsing a file these function can be used to navigate/build the tree
+    void setParent(Entry *parent) { m_parent = parent; }
+    Entry *parent() const { return m_parent; }
+    const QList<Entry> *children() const { return m_sublist; }
 
     /*! Adds entry \e as a child to this entry */
     void	addSubEntry (Entry* e) ;
     /*! Restore the state of this Entry to the default value it has
      *  at construction time. 
      */
-    void        reset();
+    void reset();
 
-    int        section;       //!< entry type (see Sections);
+  public:
+
+    // identification
+    int          section;     //!< entry type (see Sections);
+    QCString	 type;        //!< member type 
+    QCString	 name;        //!< member name
+    TagInfo     *tagInfo;     //!< tag file info
+
+    // content
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
+    int  memSpec;             //!< member specifiers
+    int  initLines;           //!< define/variable initializer lines to show 
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?
     bool proto;               //!< prototype ?
-    int  memSpec;             //!< member specifiers
-    int  initLines;           //!< define/variable initializer lines to show 
     bool subGrouping;         //!< automatically group class members?
     bool callGraph;           //!< do we need to draw the call graph?
     bool callerGraph;         //!< do we need to draw the caller graph?
     Specifier    virt;        //!< virtualness of the entry 
-    Entry       *parent;      //!< parent node in the tree
-    QCString	 type;        //!< member type 
-    QCString	 name;        //!< member name
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
     ArgumentList *argList;    //!< member arguments as a list
@@ -301,23 +322,18 @@ class Entry
     int          bodyLine;    //!< line number of the definition in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id
-    QList<Entry>    *sublist; //!< entries that are children of this one
     QList<BaseInfo> *extends; //!< list of base classes    
     QList<Grouping> *groups;  //!< list of groups this entry belongs to
     QList<SectionInfo> *anchors; //!< list of anchors defined in this entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
-    TagInfo    *tagInfo;      //!< tag file info
-    static int  num;          //!< counts the total number of entries
     bool        objc;         //!< Objective-C construct
-    bool        hidden;       //!< does this represent an entity this is hidden from the output
-    enum 
-    {
-      GROUPDOC_NORMAL,        //!< defgroup
-      GROUPDOC_ADD,           //!< addgroup
-      GROUPDOC_WEAK           //!< weakgroup
-    } groupDocType;           //!< kind of group
+    bool        hidden;       //!< does this represent an entity that is hidden from the output
+    GroupDocType groupDocType;
+
+    static int  num;          //!< counts the total number of entries
+
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
     {
@@ -343,11 +359,59 @@ class Entry
         default: return Grouping::GROUPING_LOWEST;
       }
     }
-  private:
+
+  private:  
+    void createSubtreeIndex(EntryNav *nav,QFile &storage,FileDef *fd);
+    Entry         *m_parent;    //!< parent node in the tree
+    QList<Entry>  *m_sublist;   //!< entries that are children of this one
     Entry &operator=(const Entry &); 
-} ;
+};
+
+class EntryNav
+{
+  public:
+    EntryNav(EntryNav *parent,Entry *e);
+   ~EntryNav();
+    void addChild(EntryNav *);
+    bool loadEntry(QFile &storage);
+    bool saveEntry(Entry *e,QFile &storage);
+    void setEntry(Entry *e);
+    void releaseEntry();
+    void changeSection(int section) { m_section = section; }
+    void setFileDef(FileDef *fd) { m_fileDef = fd; }
+
+    Entry *entry() const { return m_info; }
+    int section() const { return m_section; }
+    const QCString &type() const { return m_type; }
+    const QCString &name() const { return m_name; }
+    TagInfo *tagInfo() const { return m_tagInfo; }
+    const QList<EntryNav> *children() const { return m_subList; }
+    EntryNav *parent() const { return m_parent; }
+    FileDef *fileDef() const { return m_fileDef; }
+
+  private:
+
+    // navigation 
+    EntryNav        *m_parent;    //!< parent node in the tree
+    QList<EntryNav> *m_subList;   //!< entries that are children of this one
+
+    // identification
+    int          m_section;     //!< entry type (see Sections);
+    QCString	 m_type;        //!< member type 
+    QCString	 m_name;        //!< member name
+    TagInfo     *m_tagInfo;      //!< tag file info
+    FileDef     *m_fileDef;
+
+    Entry       *m_info;
+    int64        m_offset;
+    bool         m_noLoad;
+};
+
 
 typedef QList<Entry> EntryList;
 typedef QListIterator<Entry> EntryListIterator;
+
+typedef QList<EntryNav> EntryNavList;
+typedef QListIterator<EntryNav> EntryNavListIterator;
 
 #endif

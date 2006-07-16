@@ -1558,20 +1558,14 @@ void HtmlGenerator::printDoc(DocNode *n,const char *langExt)
   delete visitor; 
 }
 
+//---------------- helpers for index generation -----------------------------
+
 static void startQuickIndexList(QTextStream &t,bool compact)
 {
-  bool fancyTabs=TRUE;
   if (compact) 
   {
-    if (fancyTabs)
-    {
-      t << "<div class=\"tabs\">\n";
-      t << "  <ul>\n"; 
-    }
-    else
-    {
-      t << "<div class=\"qindex\">"; 
-    }
+    t << "<div class=\"tabs\">\n";
+    t << "  <ul>\n"; 
   }
   else 
   {
@@ -1581,13 +1575,9 @@ static void startQuickIndexList(QTextStream &t,bool compact)
 
 static void endQuickIndexList(QTextStream &t,bool compact)
 {
-  bool fancyTabs=TRUE;
   if (compact) 
   {
-    if (fancyTabs)
-    {
-      t << "  </ul>";
-    }
+    t << "  </ul>";
     t << "</div>\n";
   }
   else 
@@ -1597,42 +1587,20 @@ static void endQuickIndexList(QTextStream &t,bool compact)
 }
 
 static void startQuickIndexItem(QTextStream &t,const char *l,
-                                bool hl,bool compact,bool &first,
+                                bool hl,bool /*compact*/,
                                 const QCString &relPath)
 {
-  bool fancyTabs=TRUE;
-  if (!first && compact && !fancyTabs) t << " | ";
-  first=FALSE;
-  if (fancyTabs)
-  {
-    t << "    <li"; if (hl) t << " id=\"current\"";
-    t << "><a ";
-  }
-  else
-  {
-    if (!compact) t << "<li>";
-    if (hl && compact)
-    {
-      t << "<a class=\"qindexHL\" ";
-    }
-    else
-    {
-      t << "<a class=\"qindex\" ";
-    }
-  }
+  t << "    <li"; if (hl) t << " id=\"current\"";
+  t << "><a ";
   t << "href=\"" << relPath << l << "\">";
-  if (fancyTabs)
-  {
-    t << "<span>";
-  }
+  t << "<span>";
 }
 
 static void endQuickIndexItem(QTextStream &t)
 {
-  bool fancyTabs=TRUE;
-  if (fancyTabs) t << "</span>";
+  t << "</span>";
   t << "</a>";
-  if (fancyTabs) t << "</li>\n";
+  t << "</li>\n";
 }
 
 static QCString fixSpaces(const QCString &s)
@@ -1640,28 +1608,113 @@ static QCString fixSpaces(const QCString &s)
   return substitute(s," ","&nbsp;");
 }
 
+static void writeNamespaceSubIndex(QTextStream &t,bool compact,
+                                  HighlightedItem hli,const QCString &relPath
+                                 )
+{
+  startQuickIndexList(t,compact);
+  if (documentedNamespaces>0)
+  {
+    startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
+        hli==HLI_Namespaces,compact,relPath);
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      t << fixSpaces(theTranslator->trPackages());
+    }
+    else
+    {
+      t << theTranslator->trNamespaceList();
+    }
+    endQuickIndexItem(t);
+  }
+  if (documentedNamespaceMembers[NMHL_All]>0)
+  {
+    startQuickIndexItem(t,"namespacemembers"+Doxygen::htmlFileExtension,
+        hli==HLI_NamespaceMembers,compact,relPath);
+    if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+    {
+      t << fixSpaces(theTranslator->trPackageMembers());
+    }
+    else
+    {
+      t << fixSpaces(theTranslator->trNamespaceMembers());
+    }
+    endQuickIndexItem(t);
+  }
+  endQuickIndexList(t,compact);
+}
+
+static void writeClassSubIndex(QTextStream &t,bool compact,
+                               HighlightedItem hli,const QCString &relPath
+                              )
+{
+  startQuickIndexList(t,compact);
+  if (annotatedClasses>0)
+  {
+    if (Config_getBool("ALPHABETICAL_INDEX"))
+    {
+      startQuickIndexItem(t,"classes"+Doxygen::htmlFileExtension,
+          hli==HLI_Classes,compact,relPath);
+      t << fixSpaces(theTranslator->trAlphabeticalList());
+      endQuickIndexItem(t);
+    }
+    startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
+        hli==HLI_Annotated,compact,relPath);
+    t << fixSpaces(theTranslator->trCompoundList());
+    endQuickIndexItem(t);
+  } 
+  if (hierarchyClasses>0)
+  {
+    startQuickIndexItem(t,"hierarchy"+Doxygen::htmlFileExtension,
+        hli==HLI_Hierarchy,compact,relPath);
+    t << fixSpaces(theTranslator->trClassHierarchy());
+    endQuickIndexItem(t);
+  } 
+  if (documentedClassMembers[CMHL_All]>0)
+  {
+    startQuickIndexItem(t,"functions"+Doxygen::htmlFileExtension,
+        hli==HLI_Functions,compact,relPath);
+    t << fixSpaces(theTranslator->trCompoundMembers());
+    endQuickIndexItem(t);
+  } 
+  endQuickIndexList(t,compact);
+}
+
+static void writeFileSubIndex(QTextStream &t,bool compact,
+                              HighlightedItem hli,const QCString &relPath)
+{
+  startQuickIndexList(t,compact);
+  if (documentedHtmlFiles>0)
+  {
+    startQuickIndexItem(t,"files"+Doxygen::htmlFileExtension,
+        hli==HLI_Files,compact,relPath);
+    t << fixSpaces(theTranslator->trFileList());
+    endQuickIndexItem(t);
+  } 
+  if (documentedFileMembers[FMHL_All]>0)
+  {
+    startQuickIndexItem(t,"globals"+Doxygen::htmlFileExtension,
+        hli==HLI_Globals,compact,relPath);
+    t << fixSpaces(theTranslator->trFileMembers());
+    endQuickIndexItem(t);
+  } 
+  endQuickIndexList(t,compact);
+}
+
 static void writeDefaultQuickLinks(QTextStream &t,bool compact,
                                    HighlightedItem hli,const QCString &relPath)
 {
-  bool first=TRUE;
-  bool fancyTabs=TRUE;
   startQuickIndexList(t,compact);
-
-  if (Config_getBool("SEARCHENGINE") && !fancyTabs)
-  {
-    t << "  <form class=\"search\" action=\"" << relPath 
-      << "search.php\" method=\"get\">\n";
-  }
 
   if (Config_getBool("GENERATE_TREEVIEW"))
   {
     startQuickIndexItem(t,"main"+Doxygen::htmlFileExtension,
-                        hli==HLI_Main,compact,first,relPath);
+                        hli==HLI_Main,compact,relPath);
   }
   else
   {
     startQuickIndexItem(t,"index"+Doxygen::htmlFileExtension,
-                        hli==HLI_Main,compact,first,relPath);
+                        hli==HLI_Main,compact,relPath);
   }
   t << fixSpaces(theTranslator->trMainPage());
   endQuickIndexItem(t);
@@ -1669,7 +1722,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   if (documentedGroups>0)
   {
     startQuickIndexItem(t,"modules"+Doxygen::htmlFileExtension,
-                        hli==HLI_Modules,compact,first,relPath);
+                        hli==HLI_Modules,compact,relPath);
     t << fixSpaces(theTranslator->trModules());
     endQuickIndexItem(t);
   } 
@@ -1680,7 +1733,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   {
     startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
         hli==HLI_Namespaces || hli==HLI_NamespaceMembers || hli==HLI_NamespaceVisible,
-        compact,first,relPath);
+        compact,relPath);
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
       t << fixSpaces(theTranslator->trPackages());
@@ -1690,6 +1743,10 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
       t << theTranslator->trNamespaces();
     }
     endQuickIndexItem(t);
+    if (!compact)
+    {
+      writeNamespaceSubIndex(t,compact,hli,relPath);
+    }
   }
 
 
@@ -1702,10 +1759,14 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
       startQuickIndexItem(t,QCString(alphaIndex?"classes":"annotated")+Doxygen::htmlFileExtension,
           hli==HLI_Hierarchy || hli==HLI_Classes || 
           hli==HLI_Annotated || hli==HLI_Functions || hli==HLI_ClassVisible,
-          compact,first,relPath);
+          compact,relPath);
     }
     t << fixSpaces(theTranslator->trClasses());
     endQuickIndexItem(t);
+    if (!compact)
+    {
+      writeClassSubIndex(t,compact,hli,relPath);
+    }
   }
 
 
@@ -1715,72 +1776,63 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   {
     startQuickIndexItem(t,"files"+Doxygen::htmlFileExtension,
                         hli==HLI_Files || hli==HLI_Globals || hli==HLI_FileVisible,
-                        compact,first,relPath);
+                        compact,relPath);
     t << fixSpaces(theTranslator->trFile(TRUE,FALSE));
     endQuickIndexItem(t);
+    if (!compact)
+    {
+      writeFileSubIndex(t,compact,hli,relPath);
+    }
   } 
 
-  // ------------------------------------------------
+  // -------------- Directories
   
   if (Config_getBool("SHOW_DIRECTORIES") && documentedDirs>0)
   {
     startQuickIndexItem(t,"dirs"+Doxygen::htmlFileExtension,
-                        hli==HLI_Directories,compact,first,relPath);
+                        hli==HLI_Directories,compact,relPath);
     t << fixSpaces(theTranslator->trDirectories());
     endQuickIndexItem(t);
   } 
+
+  // -------------- Related pages
+  
   if (indexedPages>0)
   {
     startQuickIndexItem(t,"pages"+Doxygen::htmlFileExtension,
-                        hli==HLI_Pages,compact,first,relPath);
+                        hli==HLI_Pages,compact,relPath);
     t << fixSpaces(theTranslator->trRelatedPages());
     endQuickIndexItem(t);
   } 
+
+  // -------------- Examples
+  
   if (Doxygen::exampleSDict->count()>0)
   {
     startQuickIndexItem(t,"examples"+Doxygen::htmlFileExtension,
-                        hli==HLI_Examples,compact,first,relPath);
+                        hli==HLI_Examples,compact,relPath);
     t << fixSpaces(theTranslator->trExamples());
     endQuickIndexItem(t);
   } 
+
+  // -------------- Search field
+
   if (Config_getBool("SEARCHENGINE"))
   {
     QCString searchFor = fixSpaces(theTranslator->trSearchForIndex());
     if (searchFor.at(0)=='S') searchFor="<u>S</u>"+searchFor.mid(1);
-    if (fancyTabs)
+    t << "    <li>\n";
+    t << "      <form action=\"search.php\" method=\"get\">\n";
+    t << "        <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n";
+    t << "          <tr>\n";
+    t << "            <td><label>&nbsp;" << searchFor << "&nbsp;</label></td>\n";
+    if (hli!=HLI_Search)
     {
-      t << "    <li>\n";
-      t << "      <form action=\"search.php\" method=\"get\">\n";
-      t << "        <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n";
-      t << "          <tr>\n";
-      t << "            <td><label>&nbsp;" << searchFor << "&nbsp;</label></td>\n";
-      if (hli!=HLI_Search)
-      {
-        t << "            <td><input type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/></td>\n";
-        t << "          </tr>\n";
-        t << "        </table>\n";
-        t << "      </form>\n";
-        t << "    </li>\n";
-      }
-    }
-    else
-    {
-      if (compact)
-      {
-        t << "  | ";
-      }
-      else
-      {
-        t << "<li>";
-      }
-      t << "<span class=\"search";
-      if (hli==HLI_Search) t << "HL";
-      t << "\">" << searchFor << "&nbsp;";
-      if (hli!=HLI_Search)
-      {
-        t << "<input class=\"search\" type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/>"
-          "</span></form>";
-      }
+      t << "            <td><input type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/></td>\n";
+      t << "          </tr>\n";
+      t << "        </table>\n";
+      t << "      </form>\n";
+      t << "    </li>\n";
     }
   } 
   if (hli!=HLI_Search) // on the search page the page will be ended by the
@@ -1790,7 +1842,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   }
 
   //-------------------------------------------------------------------------
-  // write sub indices
+  // write sub indices in compact mode
 
   if ((hli==HLI_Namespaces || hli==HLI_NamespaceMembers || 
        hli==HLI_NamespaceVisible
@@ -1798,94 +1850,22 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
       documentedNamespaces>0 &&
       documentedNamespaceMembers[NMHL_All]>0)
   {
-    startQuickIndexList(t,compact);
-    if (documentedNamespaces>0)
-    {
-      startQuickIndexItem(t,"namespaces"+Doxygen::htmlFileExtension,
-          hli==HLI_Namespaces,compact,first,relPath);
-      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-      {
-        t << fixSpaces(theTranslator->trPackages());
-      }
-      else
-      {
-        t << theTranslator->trNamespaceList();
-      }
-      endQuickIndexItem(t);
-    }
-    if (documentedNamespaceMembers[NMHL_All]>0)
-    {
-      startQuickIndexItem(t,"namespacemembers"+Doxygen::htmlFileExtension,
-          hli==HLI_NamespaceMembers,compact,first,relPath);
-      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
-      {
-        t << fixSpaces(theTranslator->trPackageMembers());
-      }
-      else
-      {
-        t << fixSpaces(theTranslator->trNamespaceMembers());
-      }
-      endQuickIndexItem(t);
-    }
-    endQuickIndexList(t,compact);
+    writeNamespaceSubIndex(t,compact,hli,relPath);
   }
   else if ((hli==HLI_Hierarchy || hli==HLI_Classes || 
             hli==HLI_Annotated || hli==HLI_Functions || 
-            hli==HLI_ClassVisible
+            hli==HLI_ClassVisible || !compact
            ) && annotatedClasses>0
           )
   {
-    startQuickIndexList(t,compact);
-    if (annotatedClasses>0)
-    {
-      if (Config_getBool("ALPHABETICAL_INDEX"))
-      {
-        startQuickIndexItem(t,"classes"+Doxygen::htmlFileExtension,
-            hli==HLI_Classes,compact,first,relPath);
-        t << fixSpaces(theTranslator->trAlphabeticalList());
-        endQuickIndexItem(t);
-      }
-      startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
-          hli==HLI_Annotated,compact,first,relPath);
-      t << fixSpaces(theTranslator->trCompoundList());
-      endQuickIndexItem(t);
-    } 
-    if (hierarchyClasses>0)
-    {
-      startQuickIndexItem(t,"hierarchy"+Doxygen::htmlFileExtension,
-          hli==HLI_Hierarchy,compact,first,relPath);
-      t << fixSpaces(theTranslator->trClassHierarchy());
-      endQuickIndexItem(t);
-    } 
-    if (documentedClassMembers[CMHL_All]>0)
-    {
-      startQuickIndexItem(t,"functions"+Doxygen::htmlFileExtension,
-          hli==HLI_Functions,compact,first,relPath);
-      t << fixSpaces(theTranslator->trCompoundMembers());
-      endQuickIndexItem(t);
-    } 
-    endQuickIndexList(t,compact);
+    writeClassSubIndex(t,compact,hli,relPath);
   }
-  else if ((hli==HLI_Files || hli==HLI_Globals || hli==HLI_FileVisible) &&
-           documentedHtmlFiles>0 && documentedFileMembers[FMHL_All]>0
+  else if ((hli==HLI_Files || hli==HLI_Globals || 
+            hli==HLI_FileVisible || !compact
+           ) && documentedHtmlFiles>0 && documentedFileMembers[FMHL_All]>0
           )
   {
-    startQuickIndexList(t,compact);
-    if (documentedHtmlFiles>0)
-    {
-      startQuickIndexItem(t,"files"+Doxygen::htmlFileExtension,
-          hli==HLI_Files,compact,first,relPath);
-      t << fixSpaces(theTranslator->trFileList());
-      endQuickIndexItem(t);
-    } 
-    if (documentedFileMembers[FMHL_All]>0)
-    {
-      startQuickIndexItem(t,"globals"+Doxygen::htmlFileExtension,
-          hli==HLI_Globals,compact,first,relPath);
-      t << fixSpaces(theTranslator->trFileMembers());
-      endQuickIndexItem(t);
-    } 
-    endQuickIndexList(t,compact);
+    writeFileSubIndex(t,compact,hli,relPath);
   }
   
 }

@@ -30,3 +30,5 @@
 #define LANG_CA
 #define LANG_LT
 #define LANG_ZA
+#define LANG_AR
+#define LANG_FA

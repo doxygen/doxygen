@@ -579,30 +579,33 @@ static QCString convertLabel(const QCString &l)
   return result;
 }
 
-static void writeBoxMemberList(QTextStream &t,char prot,MemberList &ml,ClassDef *scope)
+static void writeBoxMemberList(QTextStream &t,char prot,MemberList *ml,ClassDef *scope)
 {
-  MemberListIterator mlia(ml);
-  MemberDef *mma;
-  for (mlia.toFirst();(mma = mlia.current());++mlia)
+  if (ml)
   {
-    if (mma->getClassDef() == scope)
+    MemberListIterator mlia(*ml);
+    MemberDef *mma;
+    for (mlia.toFirst();(mma = mlia.current());++mlia)
     {
-      t << prot << " " << convertLabel(mma->name());
-      if (!mma->isObjCMethod() && mma->isFunction()) t << "()";
-      t << "\\l";
-    }
-  }
-  // write member groups within the memberlist
-  MemberGroupList *mgl = ml.getMemberGroupList();
-  if (mgl)
-  {
-    MemberGroupListIterator mgli(*mgl);
-    MemberGroup *mg;
-    for (mgli.toFirst();(mg=mgli.current());++mgli)
-    {
-      if (mg->members())
+      if (mma->getClassDef() == scope)
       {
-        writeBoxMemberList(t,prot,*mg->members(),scope);
+        t << prot << " " << convertLabel(mma->name());
+        if (!mma->isObjCMethod() && mma->isFunction()) t << "()";
+        t << "\\l";
+      }
+    }
+    // write member groups within the memberlist
+    MemberGroupList *mgl = ml->getMemberGroupList();
+    if (mgl)
+    {
+      MemberGroupListIterator mgli(*mgl);
+      MemberGroup *mg;
+      for (mgli.toFirst();(mg=mgli.current());++mgli)
+      {
+        if (mg->members())
+        {
+          writeBoxMemberList(t,prot,mg->members(),scope);
+        }
       }
     }
   }
@@ -654,7 +657,7 @@ void DotNode::writeBox(QTextStream &t,
       {
         if (mg->members())
         {
-          writeBoxMemberList(t,'*',*mg->members(),m_classDef);
+          writeBoxMemberList(t,'*',mg->members(),m_classDef);
         }
       }
     }
@@ -1149,62 +1152,65 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
 {
   //printf("addHierarchy `%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
-  BaseClassListIterator bcli(*cd->subClasses());
-  BaseClassDef *bcd;
-  for ( ; (bcd=bcli.current()) ; ++bcli )
+  if (cd->subClasses())
   {
-    ClassDef *bClass=bcd->classDef; 
-    //printf("  Trying sub class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
-    if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+    BaseClassListIterator bcli(*cd->subClasses());
+    BaseClassDef *bcd;
+    for ( ; (bcd=bcli.current()) ; ++bcli )
     {
-      DotNode *bn;
-      //printf("  Node `%s' Found visible class=`%s'\n",n->m_label.data(),
-      //                                              bClass->name().data());
-      if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
+      ClassDef *bClass=bcd->classDef; 
+      //printf("  Trying sub class=`%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
+      if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
       {
-        if (n->m_children==0 || n->m_children->findRef(bn)==-1) // no arrow yet
+        DotNode *bn;
+        //printf("  Node `%s' Found visible class=`%s'\n",n->m_label.data(),
+        //                                              bClass->name().data());
+        if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
         {
+          if (n->m_children==0 || n->m_children->findRef(bn)==-1) // no arrow yet
+          {
+            n->addChild(bn,bcd->prot);
+            bn->addParent(n);
+            //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
+            //       n->m_label.data(),
+            //       bn->m_label.data(),
+            //       bn->m_children ? bn->m_children->count() : 0,
+            //       bn->m_parents  ? bn->m_parents->count()  : 0
+            //     );
+          }
+          //else
+          //{
+          //  printf("  Class already has an arrow!\n");
+          //}
+        }
+        else 
+        {
+          QCString tmp_url="";
+          if (bClass->isLinkable() && !bClass->isHidden())
+          {
+            tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+          }
+          bn = new DotNode(m_curNodeNumber++,
+              bClass->displayName(),
+              tmp_url.data()
+              );
           n->addChild(bn,bcd->prot);
           bn->addParent(n);
-          //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
-          //       n->m_label.data(),
-          //       bn->m_label.data(),
-          //       bn->m_children ? bn->m_children->count() : 0,
-          //       bn->m_parents  ? bn->m_parents->count()  : 0
-          //     );
+          //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
+          //   n->m_label.data(),
+          //   bn->m_label.data(),
+          //   bn->m_children ? bn->m_children->count() : 0,
+          //   bn->m_parents  ? bn->m_parents->count()  : 0
+          //  );
+          //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
+          m_usedNodes->insert(bClass->name(),bn); // add node to the used list
         }
-        //else
-        //{
-        //  printf("  Class already has an arrow!\n");
-        //}
-      }
-      else 
-      {
-        QCString tmp_url="";
-        if (bClass->isLinkable() && !bClass->isHidden())
+        if (!bClass->visited && !hideSuper && bClass->subClasses())
         {
-          tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+          bool wasVisited=bClass->visited;
+          bClass->visited=TRUE;
+          addHierarchy(bn,bClass,wasVisited);
         }
-        bn = new DotNode(m_curNodeNumber++,
-             bClass->displayName(),
-             tmp_url.data()
-           );
-        n->addChild(bn,bcd->prot);
-        bn->addParent(n);
-        //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
-        //   n->m_label.data(),
-        //   bn->m_label.data(),
-        //   bn->m_children ? bn->m_children->count() : 0,
-        //   bn->m_parents  ? bn->m_parents->count()  : 0
-        //  );
-        //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
-        m_usedNodes->insert(bClass->name(),bn); // add node to the used list
-      }
-      if (!bClass->visited && !hideSuper && bClass->subClasses()->count()>0)
-      {
-        bool wasVisited=bClass->visited;
-        bClass->visited=TRUE;
-        addHierarchy(bn,bClass,wasVisited);
       }
     }
   }
@@ -1235,7 +1241,7 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
       //m_usedNodes->clear();
       m_usedNodes->insert(cd->name(),n);
       m_rootNodes->insert(0,n);   
-      if (!cd->visited && cd->subClasses()->count()>0)
+      if (!cd->visited && cd->subClasses())
       {
         addHierarchy(n,cd,cd->visited);
         cd->visited=TRUE;
@@ -1400,14 +1406,18 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
 
   if (m_graphType == DotNode::Inheritance || m_graphType==DotNode::Collaboration)
   {
-    BaseClassListIterator bcli(base ? *cd->baseClasses() : *cd->subClasses());
-    BaseClassDef *bcd;
-    for ( ; (bcd=bcli.current()) ; ++bcli )
+    BaseClassList *bcl = base ? cd->baseClasses() : cd->subClasses();
+    if (bcl)
     {
-      //printf("-------- inheritance relation %s->%s templ=`%s'\n",
-      //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-      addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
-          bcd->templSpecifiers,base); 
+      BaseClassListIterator bcli(*bcl);
+      BaseClassDef *bcd;
+      for ( ; (bcd=bcli.current()) ; ++bcli )
+      {
+        //printf("-------- inheritance relation %s->%s templ=`%s'\n",
+        //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
+        addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+            bcd->templSpecifiers,base); 
+      }
     }
   }
   if (m_graphType == DotNode::Collaboration)
@@ -1948,53 +1958,56 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
 {
   QList<IncludeInfo> *includeFiles = 
      m_inverse ? fd->includedByFileList() : fd->includeFileList();
-  QListIterator<IncludeInfo> ili(*includeFiles);
-  IncludeInfo *ii;
-  for (;(ii=ili.current());++ili)
+  if (includeFiles)
   {
-    FileDef *bfd = ii->fileDef;
-    QCString in  = ii->includeName;
-    //printf(">>>> in=`%s' bfd=%p\n",ii->includeName.data(),bfd);
-    bool doc=TRUE,src=FALSE;
-    if (bfd)
+    QListIterator<IncludeInfo> ili(*includeFiles);
+    IncludeInfo *ii;
+    for (;(ii=ili.current());++ili)
     {
-      in  = bfd->absFilePath();  
-      doc = bfd->isLinkable() && !bfd->isHidden();
-      src = bfd->generateSourceFile();
-    }
-    if (doc || src || !Config_getBool("HIDE_UNDOC_RELATIONS"))
-    {
-      QCString url="";
-      if (bfd) url=bfd->getOutputFileBase().copy();
-      if (!doc && src)
+      FileDef *bfd = ii->fileDef;
+      QCString in  = ii->includeName;
+      //printf(">>>> in=`%s' bfd=%p\n",ii->includeName.data(),bfd);
+      bool doc=TRUE,src=FALSE;
+      if (bfd)
       {
-        url=bfd->getSourceFileBase();
+        in  = bfd->absFilePath();  
+        doc = bfd->isLinkable() && !bfd->isHidden();
+        src = bfd->generateSourceFile();
       }
-      DotNode *bn  = m_usedNodes->find(in);
-      if (bn) // file is already a node in the graph
+      if (doc || src || !Config_getBool("HIDE_UNDOC_RELATIONS"))
       {
-        n->addChild(bn,0,0,0);
-        bn->addParent(n);
-        bn->setDistance(distance);
-      }
-      else
-      {
-        QCString tmp_url;
-        if (bfd) tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
-        bn = new DotNode(
-                          m_curNodeNumber++,
-                          ii->includeName,
-                          tmp_url,
-                          distance
-                        );
-        if (distance>m_maxDistance) m_maxDistance=distance;
-        n->addChild(bn,0,0,0);
-        bn->addParent(n);
-        m_usedNodes->insert(in,bn);
+        QCString url="";
+        if (bfd) url=bfd->getOutputFileBase().copy();
+        if (!doc && src)
+        {
+          url=bfd->getSourceFileBase();
+        }
+        DotNode *bn  = m_usedNodes->find(in);
+        if (bn) // file is already a node in the graph
+        {
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+          bn->setDistance(distance);
+        }
+        else
+        {
+          QCString tmp_url;
+          if (bfd) tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+          bn = new DotNode(
+              m_curNodeNumber++,
+              ii->includeName,
+              tmp_url,
+              distance
+              );
+          if (distance>m_maxDistance) m_maxDistance=distance;
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+          m_usedNodes->insert(in,bn);
 
-        // we use <=, i.s.o < to cause one more level than intended which is used to 
-        // detect truncated nodes
-        if (bfd && distance<=m_recDepth) buildGraph(bn,bfd,distance+1);
+          // we use <=, i.s.o < to cause one more level than intended which is used to 
+          // detect truncated nodes
+          if (bfd && distance<=m_recDepth) buildGraph(bn,bfd,distance+1);
+        }
       }
     }
   }
@@ -2531,8 +2544,6 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
 
   QDir::setCurrent(oldDir);
   return baseName;
-
-
 }
 
 bool DotDirDeps::isTrivial() const
