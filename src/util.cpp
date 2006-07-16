@@ -1747,6 +1747,7 @@ QCString tempArgListToString(ArgumentList *al)
 void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
 {
   int count=0;
+  if (ml==0) return;
   MemberListIterator mli(*ml);
   MemberDef *md;
   for (;(md=mli.current());++mli)
@@ -1997,14 +1998,17 @@ int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
         "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
     return -1;
   }
-  BaseClassListIterator bcli(*cd->baseClasses());
   int m=maxInheritanceDepth; 
-  for ( ; bcli.current() ; ++bcli)
+  if (cd->baseClasses())
   {
-    //printf("class %s base class %s\n",cd->name().data(),bcli.current()->classDef->name().data());
-    int mc=minClassDistance(bcli.current()->classDef,bcd,level+1);
-    if (mc<m) m=mc;
-    if (m<0) break;
+    BaseClassListIterator bcli(*cd->baseClasses());
+    for ( ; bcli.current() ; ++bcli)
+    {
+      //printf("class %s base class %s\n",cd->name().data(),bcli.current()->classDef->name().data());
+      int mc=minClassDistance(bcli.current()->classDef,bcd,level+1);
+      if (mc<m) m=mc;
+      if (m<0) break;
+    }
   }
   return m;
 }
@@ -2198,7 +2202,7 @@ void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
                      );
     }
     //printf("base class `%s'\n",cd->name().data());
-    if (cd->baseClasses()->count()>0)
+    if (cd->baseClasses())
       trimBaseClassScope(cd->baseClasses(),s,level+1); 
   }
 }
@@ -2445,7 +2449,7 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
         cd=getClass(namespaceName+"::"+className);
       else
         cd=getClass(className);
-      if (cd && cd->baseClasses()->count()>0)
+      if (cd && cd->baseClasses())
       {
         trimBaseClassScope(cd->baseClasses(),srcAType); 
         trimBaseClassScope(cd->baseClasses(),dstAType); 
@@ -2795,18 +2799,20 @@ static QCString getCanonicalTypeForIdentifier(
     cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
   }
 
-  //printf("symbol=%s word=%s cd=%s d=%s fs=%s\n",
+  //printf("symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
   //    d?d->name().data():"<none>",
-  //    fs?fs->name().data():"<none>"
+  //    fs?fs->name().data():"<none>",
+  //    cd?cd->isTemplate():-1
   //   );
 
-  //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s\n",
+  //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s tSpec=%s\n",
   //    (word+templSpec).data(),
   //    cd?cd->qualifiedName().data():"<none>",
-  //    templSpec.data(),ts.data());
+  //    templSpec.data(),ts.data(),
+  //    tSpec?tSpec->data():"<null>");
 
   if (cd) // known class type
   {
@@ -2826,6 +2832,13 @@ static QCString getCanonicalTypeForIdentifier(
 
     if (cd->isTemplate() && tSpec)
     {
+      // template class, so remove the template part (it is part of the class name)
+      *tSpec="";
+    }
+    else if (ts.isEmpty() && !templSpec.isEmpty() && cd && !cd->isTemplate() && tSpec)
+    {
+      // obscure case, where a class is used as a template, but doxygen think it is
+      // not (could happen when loading the class from a tag file).
       *tSpec="";
     }
   }
@@ -2863,7 +2876,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
   type.stripPrefix("typename ");
 
   type = removeRedundantWhiteSpace(type);
-  //printf("extractCanonicalType(type=%s,name=%s)\n",type.data(),name.data());
+  //printf("extractCanonicalType(type=%s)\n",type.data());
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
   
@@ -2885,6 +2898,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
       static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
       int tp=0,tl,ti;
       // for each identifier template specifier
+      //printf("adding resolved %s to %s\n",templSpec.data(),canType.data());
       while ((ti=re.match(templSpec,tp,&tl))!=-1)
       {
         canType += templSpec.mid(tp,ti-tp);
@@ -4220,11 +4234,12 @@ int getPrefixIndex(const QCString &name)
 
 static void initBaseClassHierarchy(BaseClassList *bcl)
 {
+  if (bcl==0) return;
   BaseClassListIterator bcli(*bcl);
   for ( ; bcli.current(); ++bcli)
   {
     ClassDef *cd=bcli.current()->classDef;
-    if (cd->baseClasses()->count()==0) // no base classes => new root
+    if (cd->baseClasses()==0) // no base classes => new root
     {
       initBaseClassHierarchy(cd->baseClasses());
     }
@@ -4249,12 +4264,15 @@ void initClassHierarchy(ClassSDict *cl)
 
 bool hasVisibleRoot(BaseClassList *bcl)
 {
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current(); ++bcli)
+  if (bcl)
   {
-    ClassDef *cd=bcli.current()->classDef;
-    if (cd->isVisibleInHierarchy()) return TRUE;
-    hasVisibleRoot(cd->baseClasses());
+    BaseClassListIterator bcli(*bcl);
+    for ( ; bcli.current(); ++bcli)
+    {
+      ClassDef *cd=bcli.current()->classDef;
+      if (cd->isVisibleInHierarchy()) return TRUE;
+      hasVisibleRoot(cd->baseClasses());
+    }
   }
   return FALSE;
 }
@@ -4606,11 +4624,12 @@ QCString getOverloadDocs()
 }
       
 void addMembersToMemberGroup(MemberList *ml,
-                             MemberGroupSDict *memberGroupSDict,
+                             MemberGroupSDict **ppMemberGroupSDict,
                              Definition *context)
 {
   ASSERT(context!=0);
   //printf("addMemberToMemberGroup()\n");
+  if (ml==0) return;
   MemberListIterator mli(*ml);
   MemberDef *md;
   uint index;
@@ -4632,7 +4651,12 @@ void addMembersToMemberGroup(MemberList *ml,
             //QCString *pDocs      = Doxygen::memberDocDict[groupId];
             if (info)
             {
-              MemberGroup *mg = memberGroupSDict->find(groupId);
+              if (*ppMemberGroupSDict==0)
+              {
+                *ppMemberGroupSDict = new MemberGroupSDict;
+                (*ppMemberGroupSDict)->setAutoDelete(TRUE);
+              }
+              MemberGroup *mg = (*ppMemberGroupSDict)->find(groupId);
               if (mg==0)
               {
                 mg = new MemberGroup(
@@ -4642,7 +4666,7 @@ void addMembersToMemberGroup(MemberList *ml,
                        info->doc,
                        info->docFile
                       );
-                memberGroupSDict->append(groupId,mg);
+                (*ppMemberGroupSDict)->append(groupId,mg);
               }
               mg->insertMember(fmd); // insert in member group
               fmd->setMemberGroup(mg);
@@ -4660,7 +4684,12 @@ void addMembersToMemberGroup(MemberList *ml,
       //QCString *pDocs      = Doxygen::memberDocDict[groupId];
       if (info)
       {
-        MemberGroup *mg = memberGroupSDict->find(groupId);
+        if (*ppMemberGroupSDict==0)
+        {
+          *ppMemberGroupSDict = new MemberGroupSDict;
+          (*ppMemberGroupSDict)->setAutoDelete(TRUE);
+        }
+        MemberGroup *mg = (*ppMemberGroupSDict)->find(groupId);
         if (mg==0)
         {
           mg = new MemberGroup(
@@ -4670,7 +4699,7 @@ void addMembersToMemberGroup(MemberList *ml,
                   info->doc,
                   info->docFile
                  );
-          memberGroupSDict->append(groupId,mg);
+          (*ppMemberGroupSDict)->append(groupId,mg);
         }
         md = ml->take(index); // remove from member list
         mg->insertMember(md); // insert in member group

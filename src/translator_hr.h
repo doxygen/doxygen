@@ -65,11 +65,13 @@
 // 2005/03/21
 // - Added strings for 1.4.1
 //
-
+// 2006/06/11
+// - Added strings for 1.4.6
+//
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
-class TranslatorCroatian : public TranslatorAdapter_1_4_6
+class TranslatorCroatian : public Translator
 {
   private:
         /*! to avoid macro redefinition from translator_cz.h */
@@ -1254,6 +1256,21 @@ class TranslatorCroatian : public TranslatorAdapter_1_4_6
               "samo po vrsti argumenata koje prihvata.");
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Ovo je graf funkcija koje pozivaju ovu funkciju:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Dokumentacija enumeracija"; }
 };
 
 #endif

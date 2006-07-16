@@ -183,13 +183,13 @@ void GroupDef::addExample(const PageDef *def)
 
 void GroupDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(&decDefineMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decProtoMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decTypedefMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumValMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decFuncMembers,memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decVarMembers,memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decDefineMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decProtoMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decTypedefMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decEnumMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decEnumValMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decFuncMembers,&memberGroupSDict,this);
+  ::addMembersToMemberGroup(&decVarMembers,&memberGroupSDict,this);
 
   //printf("GroupDef::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
@@ -413,12 +413,12 @@ void GroupDef::removeMember(MemberDef *md)
 
 bool GroupDef::containsGroup(const GroupDef *def)
 {
-    return groupList->find(def) >= 0;
+    return this==def || groupList->find(def) >= 0;
 }
 
 void GroupDef::addGroup(const GroupDef *def)
 {
-  //printf("adding group `%s' to group `%s'\n",def->name().data(),name().data());
+  printf("adding group `%s' to group `%s'\n",def->name().data(),name().data());
   //if (Config_getBool("SORT_MEMBER_DOCS"))
   //  groupList->inSort(def);
   //else
@@ -427,7 +427,7 @@ void GroupDef::addGroup(const GroupDef *def)
 
 bool GroupDef::isASubGroup() const
 {
-  return m_partOfGroups && m_partOfGroups->count()!=0;
+  return partOfGroups() && partOfGroups()->count()!=0;
 }
 
 int GroupDef::countMembers() const
@@ -872,6 +872,8 @@ void addDirToGroups(Entry *root,DirDef *dd)
 
 void addGroupToGroups(Entry *root,GroupDef *subGroup)
 {
+  printf("addGroupToGroups for %s groups=%d\n",root->name.data(),
+      root->groups?root->groups->count():-1);
   QListIterator<Grouping> gli(*root->groups);
   Grouping *g;
   for (;(g=gli.current());++gli)

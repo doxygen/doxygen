@@ -63,7 +63,6 @@ static int              lastStringContext;
 static int              lastCurlyContext;
 static int              lastRoundContext;
 static int              lastSquareContext;
-//static int              lastAfterDocContext;
 static int              lastInitializerContext;
 static int              lastClassTemplSpecContext;
 static int              lastPreLineCtrlContext;
@@ -92,9 +91,6 @@ static bool             removeSlashes;
 static Specifier 	virt;
 static Specifier 	baseVirt;
 static QCString         msType,msName,msArgs;
-//static int              memberGroupId = DOX_NOGROUP;
-//static QCString         memberGroupHeader;
-//static QCString         memberGroupDocs;
 static bool             isTypedef;
 static int              tmpDocType;
 static QCString         sectionLabel;
@@ -181,9 +177,6 @@ static void initParser()
   sharpCount = 0;
   roundCount = 0;
   curlyCount = 0;
-  //memberGroupId = DOX_NOGROUP;
-  //memberGroupRelates.resize(0);
-  //memberGroupInside.resize(0);
   mtype = Method;
   gstat = FALSE;
   virt = Normal;
@@ -207,9 +200,6 @@ static void initEntry()
   current->mtype      = mtype;
   current->virt       = virt;
   current->stat       = gstat;
-  //current->mGrpId     = memberGroupId;
-  //current->relates    = memberGroupRelates;
-  //current->inside     = memberGroupInside;
   current->objc       = insideObjC;
   //if (!autoGroupStack.isEmpty())
   //{
@@ -2133,7 +2123,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  *pCopyCurlyString+=*yytext;
   					}
 <FindMembers>":"			{
-  					  if (current->type.isEmpty()) // bit pad field
+  					  if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
 					  {
 					    addType(current);
 					    current->name.sprintf("__pad%d__",padCount++);
@@ -2192,13 +2182,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    {
 					      current = new Entry ;
 					    }
+					    else if (current->groups)
+					    {
+					      current->groups->clear();
+					    }
 					    initEntry();
 					  }
 					  BEGIN( FindMembers ) ;
 					}
 
 <FindMembers>"["			{ 
-  					  if (current->name.isEmpty() || current->name=="typedef") // IDL function property
+  					  if (!insideCS && 
+					      current->name.isEmpty() || 
+					      current->name=="typedef"
+					     ) // IDL function property
  					  {
           				    squareCount=1;
 					    lastSquareContext = YY_START;
@@ -2340,7 +2337,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current_root->addSubEntry(current);
 					    current             = new Entry(*current);
 					    // add to the scope surrounding the enum (copy!)
-					    current_root->parent->addSubEntry(current);
+					    current_root->parent()->addSubEntry(current);
 					    current             = new Entry ;
 					    initEntry();
 					  }
@@ -2588,7 +2585,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 					      }
 					      //p=p->parent;
-					      if (p==current) p=current_root; else p=p->parent;
+					      if (p==current) p=current_root; else p=p->parent();
 					    }
 					  }
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
@@ -3801,7 +3798,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (current_root && // not a nested struct inside an @interface section
 					      current_root->section!=Entry::INTERFACE_SEC &&
 					      (current->section==Entry::INTERFACE_SEC ||
-					       current->section==Entry::OBJCIMPL_SEC) &&
+					       current->section==Entry::OBJCIMPL_SEC ||
+					       current->section==Entry::PROTOCOL_SEC || 
+					       current->section==Entry::CATEGORY_SEC) &&
 					      insideObjC
 					     )
 					  { // ObjC body that ends with @end
@@ -4418,20 +4417,6 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   if (docBlockInBody && hideInBodyDocs) return;
-#if 0
-  if (docBlockInBody)
-  {
-    if (previous==0) 
-    {
-      ASSERT(previous!=0); // shouldn't happen
-      goto exit;
-    }
-    if (!previous->doc.isEmpty()) 
-    { // start a new paragraph for the next piece of text found in the body
-      previous->doc=previous->doc.stripWhiteSpace()+"\n\n";
-    }
-  }
-#endif
   //printf("parseCommentBlock [%s]\n",doc.data());
   while (parseCommentBlock(
 	g_thisParser,
@@ -4456,9 +4441,6 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     newEntry();
   }
 
-#if 0
-exit:
-#endif
   if (docBlockTerm)
   {
     unput(docBlockTerm);
@@ -4525,90 +4507,11 @@ static void handleParametersCommentBlocks()
 
 //----------------------------------------------------------------------------
 
-//static void startGroupInDoc()
-//{
-//  if (current->section==Entry::GROUPDOC_SEC ) /* scope for a non-member group: @defgroup */
-//  {
-//    autoGroupStack.push(new Grouping(current->name,
-//	  current->groupingPri()
-//	  ));
-//  }
-//  else /* if (current->section == Entry::MEMBERGRP_SEC) scope for a member group: @name */
-//  {
-//    if (memberGroupId!=DOX_NOGROUP)
-//    {
-//      warn(yyFileName,yyLineNr,"Warning: member groups cannot be nested. Ending current group!\n");
-//      endGroup();
-//    }
-//    memberGroupId = newMemberGroupId();
-//    MemberGroupInfo *info = new MemberGroupInfo;
-//    if (current->section == Entry::MEMBERGRP_SEC)
-//    {
-//      info->header = memberGroupHeader.stripWhiteSpace();
-//    }
-//    Doxygen::memGrpInfoDict.insert(memberGroupId,info);
-//    memberGroupRelates = current->relates;
-//    memberGroupInside = current->inside;
-//    current->mGrpId = memberGroupId;
-//  }
-//}
-//
-////----------------------------------------------------------------------------
-//
-//static void endGroup()
-//{
-//  if (memberGroupId!=DOX_NOGROUP) // end of member group
-//  {
-//    //Doxygen::memberDocDict.insert(memberGroupId,
-//    //	new QCString(memberGroupDocs)
-//    //			);
-//    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(memberGroupId);
-//    if (info) 
-//    {
-//      info->doc = memberGroupDocs;
-//      info->docFile = yyFileName;
-//    }
-//    memberGroupId=DOX_NOGROUP;
-//    memberGroupRelates.resize(0);
-//    memberGroupInside.resize(0);
-//    if (YY_START!=ReadInitializer) 
-//    {
-//      current->mGrpId=DOX_NOGROUP;
-//      current->relates.resize(0);
-//    }
-//    memberGroupDocs.resize(0);
-//  }
-//  else if (!autoGroupStack.isEmpty()) // end of group
-//  {
-//    Grouping *current = autoGroupStack.pop();
-//    Grouping *parent = autoGroupStack.top();
-//    if( parent ) {
-//      setCurrentGroup( &parent->groupname, parent->pri );
-//    } else {
-//      setCurrentGroup( 0, Grouping::GROUPING_LOWEST );
-//    }
-//    delete current;
-//  }
-//}
-//
-////----------------------------------------------------------------------------
-//
-//static void forceEndGroup()
-//{
-//  while (memberGroupId!=DOX_NOGROUP || !autoGroupStack.isEmpty()) 
-//  {
-//    //printf("forceEndGroup ends group %d\n",memberGroupId);
-//    endGroup();
-//  }
-//}
-
-//----------------------------------------------------------------------------
-
 static void parseCompounds(Entry *rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
   g_inputFromFile = FALSE;
-  EntryListIterator eli(*rt->sublist);
+  EntryListIterator eli(*rt->children());
   Entry *ce;
   for (;(ce=eli.current());++eli)
   {

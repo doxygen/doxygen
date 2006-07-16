@@ -129,7 +129,7 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->objc       = FALSE; //insideObjC;
-  current->parent     = current_root;
+  current->setParent(current_root);
   initGroupInfo(current);
 }
 
@@ -950,6 +950,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     [^ \t\n#'"]+      { // non-special stuff
       		        current->program+=yytext;
 		        g_specialBlock = FALSE; 
+			g_hideClassDocs = FALSE;
                       }
     {NEWLINE}	      { 
       		        current->program+=*yytext;
@@ -1059,6 +1060,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 <VariableDec>{
    "="                { // the assignment operator
+                        printf("====== VariableDec at line %d\n",yyLineNr);
                       }
    {B}                { // spaces
 	              }
@@ -1128,6 +1130,9 @@ STARTDOCSYMS      ^{B}"##"/[^#]
    "#".*              { // comment
                         BEGIN( VariableEnd ); 
                       }
+   {IDENTIFIER}	      {
+      		        current->initializer+=yytext;
+	              }
    .		      {
       		        current->initializer+=*yytext;
                       }
@@ -1378,7 +1383,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 static void parseCompounds(Entry *rt)
 {
   //printf("parseCompounds(%s)\n",rt->name.data());
-  EntryListIterator eli(*rt->sublist);
+  EntryListIterator eli(*rt->children());
   Entry *ce;
   for (;(ce=eli.current());++eli)
   {
@@ -1395,9 +1400,9 @@ static void parseCompounds(Entry *rt)
         current_root = ce ;
         BEGIN( Search );
       }
-      else if (ce->parent)
+      else if (ce->parent())
       {
-        current_root = ce->parent;
+        current_root = ce->parent();
 	//printf("Searching for member variables in %s parent=%s\n",
 	//    ce->name.data(),ce->parent->name.data());
 	BEGIN( SearchMemVars );

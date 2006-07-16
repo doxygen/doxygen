@@ -12,6 +12,9 @@
 TranslatorAfrikaans
 Johan Prinsloo: johan@zippysnoek.com
 
+TranslatorArabic
+Moaz Reyad: <moazreyad@yahoo.com>
+
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino@uol.com.br
 
@@ -24,8 +27,8 @@ Li Daobing: lidaobing@gmail.com
 Wei Liu: liuwei@asiainfo.com
 
 TranslatorChinesetraditional
-Daniel YC Lin: daniel@twpda.com
-Gary Lee: garylee@ecosine.com.tw
+Daniel YC Lin: dlin@taifex.com.tw
+Gary Lee: garywlee@gmail.com
 
 TranslatorCroatian
 Boris Bralo: boris.bralo@zg.htnet.hr
@@ -81,6 +84,9 @@ Aidas Berukstis: aidasber@takas.lt
 
 TranslatorNorwegian
 Lars Erik Jordet: lejordet@gmail.com
+
+TranslatorPersian
+Ali Nadalizadeh: <nadalisoft@yahoo.com>
 
 TranslatorPolish 
 Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl

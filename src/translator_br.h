@@ -12,9 +12,12 @@
  *
  * Brazilian Portuguese version by
  *   Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
- *   Version: 1.4.1 (2005/03/20)
+ *   Version: 1.4.6 (2006/06/26)
  *
  * History:
+ *	 1.4.6
+ *		- trCallerGraph() added.
+ *      - trEnumerationValueDocumentation() added.
  *   1.4.1
  *		- Method trOverloadText() added.
  * 	 1.3.9
@@ -36,7 +39,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_4_6
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -488,12 +491,6 @@ class TranslatorBrazilian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Enumerações"; }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Valores enumerados"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
@@ -1612,6 +1609,22 @@ class TranslatorBrazilian : public TranslatorAdapter_1_4_6
        		"Ele difere do método acima apenas na lista de "
        		"argumentos que devem ser utilizados.";
     }    
-    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Este é o diagrama de chamadas para esta função:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Documentação da enumeração"; }
+  
 };
 #endif

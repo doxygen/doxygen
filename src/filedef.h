@@ -79,6 +79,11 @@ class FileDef : public Definition
       else 
         return Definition::name(); 
     } 
+
+    QCString fileName() const
+    {
+      return filename;
+    }
     
     QCString getOutputFileBase() const 
     { return convertNameToFile(diskname); }
@@ -166,23 +171,23 @@ class FileDef : public Definition
     //void generateXML(QTextStream &t);
     //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
 
-    MemberList allMemberList;
+    MemberList *allMemberList;
 
     // members in the declaration part of the documentation
-    MemberList decDefineMembers;
-    MemberList decProtoMembers;
-    MemberList decTypedefMembers;
-    MemberList decEnumMembers;
-    MemberList decFuncMembers;
-    MemberList decVarMembers;
+    MemberList *decDefineMembers;
+    MemberList *decProtoMembers;
+    MemberList *decTypedefMembers;
+    MemberList *decEnumMembers;
+    MemberList *decFuncMembers;
+    MemberList *decVarMembers;
 
     // members in the detailed part of the documentation
-    MemberList docDefineMembers;
-    MemberList docProtoMembers;
-    MemberList docTypedefMembers;
-    MemberList docEnumMembers;
-    MemberList docFuncMembers;
-    MemberList docVarMembers;
+    MemberList *docDefineMembers;
+    MemberList *docProtoMembers;
+    MemberList *docTypedefMembers;
+    MemberList *docEnumMembers;
+    MemberList *docFuncMembers;
+    MemberList *docVarMembers;
 
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
@@ -198,27 +203,24 @@ class FileDef : public Definition
      */
     void acquireFileVersion();
 
-
   private: 
-    
-    QDict<IncludeInfo> *includeDict;
-    QList<IncludeInfo> *includeList;
-    QDict<IncludeInfo> *includedByDict;
-    QList<IncludeInfo> *includedByList;
-    NamespaceSDict *usingDirList;
-    SDict<Definition> *usingDeclList;
-    QCString path;
-    QCString filepath;
-    QCString diskname;
-    QCString filename;
-    QCString docname;
+    QDict<IncludeInfo>   *includeDict;
+    QList<IncludeInfo>   *includeList;
+    QDict<IncludeInfo>   *includedByDict;
+    QList<IncludeInfo>   *includedByList;
+    NamespaceSDict       *usingDirList;
+    SDict<Definition>    *usingDeclList;
+    QCString              path;
+    QCString              filepath;
+    QCString              diskname;
+    QCString              filename;
+    QCString              docname;
     QIntDict<Definition> *srcDefDict;
-    QIntDict<MemberDef> *srcMemberDict;
-    bool isSource;
-    QCString fileVersion;
-
-    PackageDef *package;
-    DirDef     *dir;
+    QIntDict<MemberDef>  *srcMemberDict;
+    bool                  isSource;
+    QCString              fileVersion;
+    PackageDef           *package;
+    DirDef               *dir;
 };
 
 
@@ -283,6 +285,7 @@ class DirEntry
   protected:
     DirEntry *m_parent;
     QCString m_name;
+
   private:
     EntryKind m_kind;
     FileDef   *m_fd;

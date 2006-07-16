@@ -227,46 +227,46 @@ class ClassDef : public Definition
     QCString className() const;
 
     /* member lists by protection */
-    MemberList pubMethods;
-    MemberList proMethods;
-    MemberList pacMethods;
-    MemberList priMethods;
-    MemberList pubStaticMethods;
-    MemberList proStaticMethods;
-    MemberList pacStaticMethods;
-    MemberList priStaticMethods;
-    MemberList pubSlots;
-    MemberList proSlots;
-    MemberList priSlots;
-    MemberList pubAttribs;
-    MemberList proAttribs;
-    MemberList pacAttribs;
-    MemberList priAttribs;
-    MemberList pubStaticAttribs;
-    MemberList proStaticAttribs;
-    MemberList pacStaticAttribs;
-    MemberList priStaticAttribs;
-    MemberList pubTypes;
-    MemberList proTypes;
-    MemberList pacTypes;
-    MemberList priTypes;
-    MemberList related;
-    MemberList signals;
-    MemberList friends;
-    MemberList dcopMethods;
-    MemberList properties;
-    MemberList events;
+    MemberList *pubMethods;
+    MemberList *proMethods;
+    MemberList *pacMethods;
+    MemberList *priMethods;
+    MemberList *pubStaticMethods;
+    MemberList *proStaticMethods;
+    MemberList *pacStaticMethods;
+    MemberList *priStaticMethods;
+    MemberList *pubSlots;
+    MemberList *proSlots;
+    MemberList *priSlots;
+    MemberList *pubAttribs;
+    MemberList *proAttribs;
+    MemberList *pacAttribs;
+    MemberList *priAttribs;
+    MemberList *pubStaticAttribs;
+    MemberList *proStaticAttribs;
+    MemberList *pacStaticAttribs;
+    MemberList *priStaticAttribs;
+    MemberList *pubTypes;
+    MemberList *proTypes;
+    MemberList *pacTypes;
+    MemberList *priTypes;
+    MemberList *related;
+    MemberList *signals;
+    MemberList *friends;
+    MemberList *dcopMethods;
+    MemberList *properties;
+    MemberList *events;
     
     /* member list by types */
-    MemberList constructors;
-    MemberList typedefMembers;
-    MemberList enumMembers;
-    MemberList enumValMembers;
-    MemberList functionMembers;
-    MemberList relatedMembers;
-    MemberList variableMembers;
-    MemberList propertyMembers;
-    MemberList eventMembers;
+    MemberList *constructors;
+    MemberList *typedefMembers;
+    MemberList *enumMembers;
+    MemberList *enumValMembers;
+    MemberList *functionMembers;
+    MemberList *relatedMembers;
+    MemberList *variableMembers;
+    MemberList *propertyMembers;
+    MemberList *eventMembers;
 
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
@@ -354,6 +354,7 @@ class ClassDef : public Definition
 
   private: 
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
+    QCString getMemberListFileName() const;
     
     /*! file name that forms the base for the output file containing the
      *  class documentation. For compatibility with Qt (e.g. links via tag 
@@ -369,7 +370,7 @@ class ClassDef : public Definition
     /*! file name that forms the base for the "list of members" for this
      *  class.
      */
-    QCString m_memListFileName;            
+    //QCString m_memListFileName;            
 
     /*! Bare name of the class without any scoping prefixes 
      *  (like for nested classes and classes inside namespaces)
@@ -414,12 +415,6 @@ class ClassDef : public Definition
      */ 
     Protection m_prot;
 
-    /*! Does this class group its user-grouped members
-     *  as a sub-section of the normal (public/protected/..) 
-     *  groups?
-     */
-    bool m_subGrouping; 
-
     /*! The inner classes contained in this class. Will be 0 if there are
      *  no inner classes.
      */
@@ -447,6 +442,14 @@ class ClassDef : public Definition
     /*! The class this class is an instance of. */
     ClassDef *m_templateMaster;
 
+    /*! class name with outer class scope, but without namespace scope. */
+    QCString m_className;
+
+    /*! If this class is a Objective-C category, then this points to the
+     *  class which is extended.
+     */
+    ClassDef *m_categoryOf;
+
     /*! Indicated whether this class exists because it is used by
      *  some other class only (TRUE) or if some class inherits from
      *  it (FALSE). This is need to remove used-only classes from
@@ -469,15 +472,14 @@ class ClassDef : public Definition
     /*! TRUE if the class is defined in a source file rather than a header file. */
     bool m_isLocal;
 
-    /*! class name with outer class scope, but without namespace scope. */
-    QCString m_className;
-
-    /*! If this class is a Objective-C category, then this points to the
-     *  class which is extended.
-     */
-    ClassDef *m_categoryOf;
-
     bool m_isTemplArg;
+
+    /*! Does this class group its user-grouped members
+     *  as a sub-section of the normal (public/protected/..) 
+     *  groups?
+     */
+    bool m_subGrouping; 
+
 };
 
 /*! \brief Class that contains information about a usage relation. 

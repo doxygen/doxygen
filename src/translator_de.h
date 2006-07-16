@@ -108,13 +108,16 @@
 //   2005/05/09 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - Updated for "new since 1.4.3" version (removed unused methods)
 //
+//   2006/06/12 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Updated for "new since 1.4.6" version
+//
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_4_6
+class TranslatorGerman : public Translator
 {
   public:
 
@@ -1518,7 +1521,7 @@ class TranslatorGerman : public TranslatorAdapter_1_4_6
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Hier ist der Graph aller Aufrufe für diese Funktion:";
+      return "Hier ist ein Graph der zeigt, was diese Funktion aufruft:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1642,6 +1645,23 @@ class TranslatorGerman : public TranslatorAdapter_1_4_6
               "wegen bereitgestellt wird. Sie unterscheidet sich von der "
               "obigen Funktion nur in den Argumenten die sie unterstützt.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Hier ist ein Graph der zeigt, wo diese Funktion aufgerufen wird:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Enumerator-Dokumentation"; }
+
 
 };
 

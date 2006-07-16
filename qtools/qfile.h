@@ -94,6 +94,9 @@ public:
 
     int		handle() const;
 
+    int64       pos() const;
+    bool        seek(int64 pos);
+
 protected:
     QString	fn;
     FILE       *fh;

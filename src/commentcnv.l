@@ -370,7 +370,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				       BEGIN(g_lastCommentContext);
 				     }
                                    }
-<VerbatimCode>^"//"[\!\/]?	   { /* skip leading comments */
+<VerbatimCode>^[ \t]*"//"[\!\/]?   { /* skip leading comments */
   				     if (!g_inSpecialComment)
 				     {
                                        copyToOutput(yytext,yyleng); 

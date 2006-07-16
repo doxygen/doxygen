@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2006/06: updated translation of new items used since version 1.4.6
  *  2006/05: translated new items used since version 1.4.6
  *           corrected typo in trPackageMembers method
  *  2005/03: translated new items used since version 1.4.1
@@ -1530,10 +1531,17 @@ class TranslatorItalian : public TranslatorAdapter_1_4_6
 // new since 1.4.6
 //////////////////////////////////////////////////////////////////////////
 
+    /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
       return "Questo è il grafo dei chiamanti di questa funzione:";
     }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Documentazione dei tipi enumerati"; }
 
 };
 

@@ -431,7 +431,7 @@ MemberDef::MemberDef(const char *df,int dl,
   m_hasDocumentedParams = FALSE;
   m_hasDocumentedReturnType = FALSE;
   m_docProvider = 0;
-  m_isDMember = m_defFileName.right(2).lower()==".d";
+  m_isDMember = getDefFileName().right(2).lower()==".d";
 }
 
 /*! Destroys the member definition. */
@@ -541,7 +541,7 @@ QCString MemberDef::getOutputFileBase() const
   
   if (baseName.isEmpty())
   {
-    warn(m_defFileName,m_defLine,
+    warn(getDefFileName(),getDefLine(),
        "Warning: Internal inconsistency: member %s does not belong to any"
        " container!",name().data()
       );
@@ -873,6 +873,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
                )
 {
   //printf("%s MemberDef::writeDeclaration() inGroup=%d\n",name().data(),inGroup);
+
+  // hide enum value, since they appear already as part of the enum, unless they
+  // are explicitly grouped.
+  if (!inGroup && mtype==EnumValue) return;
 
   // hide members whose brief section should not be visible
   //if (!isBriefSectionVisible()) return;
@@ -2040,7 +2044,7 @@ void MemberDef::warnIfUndocumented()
       (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
      )
   {
-    warn_undoc(m_defFileName,m_defLine,"Warning: Member %s%s (%s) of %s %s is not documented.",
+    warn_undoc(getDefFileName(),getDefLine(),"Warning: Member %s%s (%s) of %s %s is not documented.",
          name().data(),argsString()?argsString():"",memberTypeName().data(),t,d->name().data());
   }
 }

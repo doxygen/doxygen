@@ -68,6 +68,7 @@
 // 2006/05/10 - Update for "new since 1.4.6" -- trCallerGraph(), 
 //              modified trCallGraph() to make the meaning unambiguous
 //              and clear in the Czech language.
+// 2006/06/13 - translation of the trEnumerationValueDocumentation().
 
 // Todo
 // ----
@@ -87,7 +88,7 @@
 // Windows version. The version which does not call the function is
 // probably slightly faster.
 
-class TranslatorCzech : public TranslatorAdapter_1_4_6
+class TranslatorCzech : public Translator
 {
   private:
     /*! The decode() inline assumes the source written in the 
@@ -1634,6 +1635,13 @@ class TranslatorCzech : public TranslatorAdapter_1_4_6
     }
 
 
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { 
+      return decode("Dokumentace výètových hodnot"); 
+    }
 };
 
 #endif // TRANSLATOR_CZ_H

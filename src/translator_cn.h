@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_4_1
+class TranslatorChinese : public Translator
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -33,6 +33,7 @@ class TranslatorChinese : public TranslatorAdapter_1_4_1
 		 * (e.g. "czech", "japanese", "russian", etc.). It sould be equal to
 		 * the identification used in the language.cpp.
 		 */
+    
     virtual QCString idLanguage()
     { return "chinese"; }
 
@@ -1494,6 +1495,43 @@ class TranslatorChinese : public TranslatorAdapter_1_4_1
       return "目录";
     }
     
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       /* return "This is an overloaded member function, "
+              "provided for convenience. It differs from the above "
+              "function only in what argument(s) it accepts."; */
+      return "这是为便于使用而提供的一个重载成员函数。"
+             "与上面的函数相比，它接受不同类型的参数。";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      /* return "Here is the caller graph for this function:"; */
+      return "这是这个函数的调用图。";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { 
+      /* return "Enumerator Documentation"; */
+      return "枚举变量文档";
+    }
+
+
 };
 
 #endif

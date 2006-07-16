@@ -1076,13 +1076,16 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 	//printf("Found result!\n");
 	return;
       }
-      BaseClassListIterator bcli(*vcd->baseClasses());
-      for ( ; bcli.current() ; ++bcli)
+      if (vcd->baseClasses())
       {
-	if (getLink(bcli.current()->classDef->name(),memName,ol)) 
+	BaseClassListIterator bcli(*vcd->baseClasses());
+	for ( ; bcli.current() ; ++bcli)
 	{
-	  //printf("Found result!\n");
-	  return;
+	  if (getLink(bcli.current()->classDef->name(),memName,ol)) 
+	  {
+	    //printf("Found result!\n");
+	    return;
+	  }
 	}
       }
     }
@@ -1176,12 +1179,15 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   if (!locScope.isEmpty() && (ccd=g_codeClassSDict[locScope]))
   {
     //printf("using classScope %s\n",g_classScope.data());
-    BaseClassListIterator bcli(*ccd->baseClasses());
-    for ( ; bcli.current() ; ++bcli)
+    if (ccd->baseClasses())
     {
-      if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
+      BaseClassListIterator bcli(*ccd->baseClasses());
+      for ( ; bcli.current() ; ++bcli)
       {
-	return;
+	if (getLink(bcli.current()->classDef->name(),locFunc,ol,funcName)) 
+	{
+	  return;
+	}
       }
     }
   }

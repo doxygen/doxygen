@@ -39,7 +39,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorCatalan : public TranslatorAdapter_1_4_6
+class TranslatorCatalan : public Translator
 {
   public:
 
@@ -1557,6 +1557,24 @@ class TranslatorCatalan : public TranslatorAdapter_1_4_6
               "proveïda per conveniència. Es diferencia de la funció "
               "anterior només en els arguments que accepta.";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Gràfic de crides a aquesta funció:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Documentació de les Enumeracions"; }
+
+
 };
 
 #endif

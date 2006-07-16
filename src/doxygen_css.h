@@ -341,6 +341,7 @@
 ".paramname {\n"
 "  color: #602020;\n"
 "  font-style: italic;\n"
+"  white-space: nowrap;\n"
 "}\n"
 "/* End Styling for detailed member documentation */\n"
 "\n"
@@ -355,4 +356,3 @@
 ".directory p { margin: 0px; white-space: nowrap; }\n"
 ".directory div { display: none; margin: 0px; }\n"
 ".directory img { vertical-align: -30%; }\n"
-"\n"

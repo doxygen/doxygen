@@ -40,6 +40,20 @@ struct ReachableDefinition
   int distance;
 };
 
+struct DocInfo
+{
+    QCString doc;  
+    int      line;
+    QCString file;
+};
+
+struct BodyInfo
+{
+    int      startLine;   // line number of the start of the definition
+    int      endLine;     // line number of the end of the definition
+    FileDef *fileDef;     // file definition containing the function body
+};
+    
 /*! The common base class of all entity definitions found in the sources. */
 class Definition
 {
@@ -82,10 +96,10 @@ class Definition
     virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
 
     /*! Returns the detailed description of this definition */
-    const QCString& documentation() const { return m_doc; }
+    QCString documentation() const { return m_details ? m_details->doc : QCString(""); }
     
     /*! Returns the brief description of this definition */
-    const QCString& briefDescription() const { return m_brief; }
+    QCString briefDescription() const { return m_brief ? m_brief->doc : QCString(""); }
 
     /*! Sets a new \a name for the definition */
     void setName(const char *name) { m_name=name; }
@@ -94,12 +108,12 @@ class Definition
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
 
     /*! Returns the line number at which the detailed documentation was found. */
-    int docLine() const { return m_docLine; }
+    int docLine() const { return m_details ? m_details->line : 1; }
 
     /*! Returns the file in which the detailed documentation block was found. 
      *  This can differ from getDefFileName().
      */
-    QCString docFile() const { return m_docFile; }
+    QCString docFile() const { return m_details ? m_details->file : QCString("<"+m_name+">"); }
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
@@ -107,12 +121,12 @@ class Definition
     void setBriefDescription(const char *b,const char *briefFile,int briefLine);
 
     /*! Returns the line number at which the brief description was found. */
-    int briefLine() const { return m_briefLine; }
+    int briefLine() const { return m_brief ? m_brief->line : 1; }
 
     /*! Returns the file in which the brief description was found. 
      *  This can differ from getDefFileName().
      */
-    QCString briefFile() const { return m_briefFile; }
+    QCString briefFile() const { return m_brief ? m_brief->file : QCString("<"+m_name+">"); }
 
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const { return m_defFileName; }
@@ -131,7 +145,6 @@ class Definition
 
     /*! Returns TRUE iff the definition is documented by the user. */
     virtual bool hasUserDocumentation() const;
-
 
     /*! Returns TRUE iff it is possible to link to this item within this
      *  project. 
@@ -188,10 +201,10 @@ class Definition
 
     // source references
     void setBodySegment(int bls,int ble);
-    void setBodyDef(FileDef *fd)         { m_bodyDef=fd; }
-    int getStartBodyLine() const         { return m_startBodyLine; }
-    int getEndBodyLine() const           { return m_endBodyLine; }
-    FileDef *getBodyDef()                { return m_bodyDef; }
+    void setBodyDef(FileDef *fd);
+    int getStartBodyLine() const         { return m_body ? m_body->startLine : -1; }
+    int getEndBodyLine() const           { return m_body ? m_body->endLine : -1; }
+    FileDef *getBodyDef()                { return m_body ? m_body->fileDef : 0; }
     void writeSourceDef(OutputList &ol,const char *scopeName);
     void writeInlineCode(OutputList &ol,const char *scopeName);
     void writeSourceRefs(OutputList &ol,const char *scopeName);
@@ -224,50 +237,38 @@ class Definition
   protected:
     void setLocalName(const QCString name) { m_localName=name; }
     
-    int      m_startBodyLine;   // line number of the start of the definition
-    int      m_endBodyLine;     // line number of the end of the definition
-    FileDef *m_bodyDef;         // file definition containing the function body
+  private: 
+    int getXRefListId(const char *listName) const;
+    void writeSourceRefList(OutputList &ol,const char *scopeName,
+                       const QCString &text,MemberSDict *members,bool);
+    SectionDict *m_sectionDict;  // dictionary of all sections
+    MemberSDict *m_sourceRefByDict;
+    MemberSDict *m_sourceRefsDict;
+
+    DocInfo  *m_details;
+    DocInfo  *m_brief;
+    BodyInfo *m_body;
+
+    /*! The class, namespace in which this class is located 
+     */ 
+    QCString m_name;           // name of the definition
+    QCString m_localName;      // local (unqualified) name of the definition
+                               // in the future m_name should become m_localName
+    QCString m_symbolName;
+    QCString m_qualifiedName;
+    QCString m_ref;   // reference to external documentation
+
+    QList<ListItemInfo> *m_xrefListItems;
+    bool m_isSymbol;
+    bool m_hidden;
+
+    Definition *m_outerScope;
+    GroupList *m_partOfGroups;
 
     // where the item was found
     QCString m_defFileName;
     int      m_defLine;
     QCString m_defFileExt;
-
-    /*! The class, namespace in which this class is located 
-     */ 
-    Definition *m_outerScope;
-    QCString m_name;     // name of the definition
-    QCString m_localName;      // local (unqualified) name of the definition
-                               // in the future m_name should become m_localName
-    /*! List of groups this definition is part of */
-    GroupList *m_partOfGroups;
-
-  private: 
-    int getXRefListId(const char *listName) const;
-    void writeSourceRefList(OutputList &ol,const char *scopeName,
-                       const QCString &text,MemberSDict *members,bool);
-    //QCString m_qualifiedName;  // name of the definition
-    QCString m_brief; // brief description
-    QCString m_doc;   // detailed description
-    QCString m_ref;   // reference to external documentation
-    SectionDict *m_sectionDict;  // dictionary of all sections
-    MemberSDict *m_sourceRefByDict;
-    MemberSDict *m_sourceRefsDict;
-    int m_testId;       // id for test list item
-    int m_todoId;       // id for todo list item
-    int m_bugId;        // id for bug list item
-    int m_deprecatedId; // id for deprecated list item
-    int m_docLine;
-    QCString m_docFile;
-    int m_briefLine;
-    QCString m_briefFile;
-    QList<ListItemInfo> *m_xrefListItems;
-    QCString m_symbolName;
-    bool m_isSymbol;
-    bool m_hidden;
-
-    
-    QCString m_qualifiedName;
 };
 
 class DefinitionList : public QList<Definition>

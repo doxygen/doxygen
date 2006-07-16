@@ -70,7 +70,7 @@ void setDotPath()
   if (checkIfDotInstalled())
   {
     Config_getString("DOT_PATH")=DOT_PATH;
-    Config_getBool("HAVE_DOT")=TRUE;
+    //Config_getBool("HAVE_DOT")=TRUE;
   }
 }
 

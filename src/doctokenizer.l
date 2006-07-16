@@ -560,9 +560,9 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 <St_XmlCode>{WS}*"</code>" {
                          return RetVal_OK;
                        }
-<St_Code,St_XmlCode>[^\\@\n]+  |
-<St_Code,St_XmlCode>\n         |
-<St_Code,St_XmlCode>.          {
+<St_Code,St_XmlCode>[^\\@\n<]+  |
+<St_Code,St_XmlCode>\n          |
+<St_Code,St_XmlCode>.           {
   			 g_token->verb+=yytext;
   		       }
 <St_HtmlOnly>{CMD}"endhtmlonly" {

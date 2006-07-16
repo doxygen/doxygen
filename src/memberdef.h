@@ -314,85 +314,75 @@ class MemberDef : public Definition
     bool visited;
     
   private:
+    // disable copying of member defs
+    MemberDef(const MemberDef &);
+    MemberDef &operator=(const MemberDef &);
+
     void writeLink(OutputList &ol,
                    ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
                    bool onlyText=FALSE);
 
-    ClassDef   *classDef;     // member of or related to 
-    FileDef    *fileDef;      // member of file definition 
+    ClassDef     *classDef;   // member of or related to 
+    FileDef      *fileDef;    // member of file definition 
+    NamespaceDef *nspace;     // the namespace this member is in.
+
     MemberDef  *enumScope;    // the enclosing scope, if this is an enum field
     MemberDef  *annEnumType;  // the annonymous enum that is the type of this member
+    MemberList *enumFields;   // enumeration fields
+    OutputList *enumDeclList; // stored piece of documentation for enumeration.
+
     MemberDef  *redefines;    // the members that this member redefines 
     MemberList *redefinedBy;  // the list of members that redefine this one
+
     MemberDef  *memDef;       // member definition for this declaration
     MemberDef  *memDec;       // member declaration for this definition
     ClassDef   *m_relatedAlso;  // points to class marked by relatedAlso
 
     ExampleSDict *exampleSDict; // a dictionary of all examples for quick access
 
-    MemberList *enumFields;   // enumeration fields
-    OutputList *enumDeclList; // stored piece of documentation for enumeration.
-    NamespaceDef *nspace;     // the namespace this member is in.
     QCString type;            // return type
     QCString args;            // function arguments/variable array specifiers
+    QCString def;             // member definition in code (fully qualified name)
+    QCString anc;             // HTML anchor name
+    Specifier virt;           // normal/virtual/pure virtual
+    Protection prot;          // protection type [Public/Protected/Private]
+    QCString decl;            // member declaration in class: TODO: can be generated
+
     QCString bitfields;       // struct member bitfields
     QCString read;            // property read accessor
     QCString write;           // property write accessor
     QCString exception;       // exceptions that can be thrown
     QCString init;            // initializer
     int initLines;            // number of lines in the initializer
-    QCString decl;            // member declaration in class
-    QCString def;             // member definition in code (fully qualified name)
-    QCString anc;             // HTML anchor name
-    MemberDef *groupAlias;    // Member containing the definition
-    Specifier virt;           // normal/virtual/pure virtual
-    Protection prot;          // protection type [Public/Protected/Private]
+
     int  memSpec;             // The specifiers present for this member
     MemberType mtype;         // returns the kind of member
-    bool related;             // is this a member that is only related to a class
-    bool stat;                // is it a static function?
-    bool proto;               // is it a prototype;
-    bool docEnumValues;       // is an enum with documented enum values.
-    bool annScope;            // member is part of an annoymous scope
-    bool annUsed;             
-    bool annShown;           
-    bool m_hasCallGraph;
-    bool m_hasCallerGraph;
     int maxInitLines;         // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
     MemberList *section;      // declation list containing this member 
     MemberDef  *annMemb;
+
     ArgumentList *defArgList;    // argument list of this member definition
     ArgumentList *declArgList;   // argument list of this member declaration
-    ArgumentList *tArgList;   // template argument list of function template
-    QList<ArgumentList> *m_defTmpArgLists;
-    int grpId;                // group id
-    MemberGroup *memberGroup; // group's member definition
 
-    GroupDef *group;          // group in which this member is in
-    bool explExt;             // member was explicitly declared external
-    bool tspec;               // member is a template specialization
+    ArgumentList *tArgList;   // template argument list of function template
+    MemberDef *m_templateMaster;
+    QList<ArgumentList> *m_defTmpArgLists;
 
     ClassDef *cachedAnonymousType; // if the member has an anonymous compound
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and 
                                    // cached here. 
+    SDict<MemberList> *classSectionSDict;
+
+    MemberDef *groupAlias;    // Member containing the definition
+    int grpId;                // group id
+    MemberGroup *memberGroup; // group's member definition
+    GroupDef *group;          // group in which this member is in
     Grouping::GroupPri_t grouppri; // priority of this definition
     QCString groupFileName;   // file where this grouping was defined
     int groupStartLine;       // line  "      "      "     "     "
-    bool groupHasDocs;        // true if the entry that caused the grouping was documented
     MemberDef *groupMember;
-    MemberDef *m_templateMaster;
-    SDict<MemberList> *classSectionSDict;
-    bool docsForDefinition;   // TRUE => documentation block is put before
-                              //         definition.
-                              // FALSE => block is put before declaration.
-
-
-    // disable copying of member defs
-    MemberDef(const MemberDef &);
-    MemberDef &operator=(const MemberDef &);
-    static int s_indentLevel;
 
     bool m_isTypedefValCached;
     ClassDef *m_cachedTypedefValue;
@@ -403,20 +393,36 @@ class MemberDef : public Definition
     QCString m_inbodyFile;
     QCString m_inbodyDocs;
 
-    // objective-c
-    bool m_implOnly; // function found in implementation but not 
-                     // in the interface
-
-    bool m_hasDocumentedParams;
-    bool m_hasDocumentedReturnType;
-
     // documentation inheritance
     MemberDef  *m_docProvider;
 
     // to store the output file base from tag files
     QCString explicitOutputFileBase;
 
+    // objective-c
+    bool m_implOnly; // function found in implementation but not 
+                     // in the interface
+    bool m_hasDocumentedParams;
+    bool m_hasDocumentedReturnType;
     bool m_isDMember;
+    bool related;             // is this a member that is only related to a class
+    bool stat;                // is it a static function?
+    bool proto;               // is it a prototype;
+    bool docEnumValues;       // is an enum with documented enum values.
+    bool annScope;            // member is part of an annoymous scope
+    bool annUsed;             
+    bool annShown;           
+    bool m_hasCallGraph;
+    bool m_hasCallerGraph;
+    bool explExt;             // member was explicitly declared external
+    bool tspec;               // member is a template specialization
+    bool groupHasDocs;        // true if the entry that caused the grouping was documented
+    bool docsForDefinition;   // TRUE => documentation block is put before
+                              //         definition.
+                              // FALSE => block is put before declaration.
+
+    static int s_indentLevel;
+
 };
 
 #endif

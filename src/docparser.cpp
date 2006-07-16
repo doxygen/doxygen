@@ -1169,6 +1169,7 @@ reparsetoken:
             }
             break;
           case HTML_CODE:
+          case XML_C:
             if (!g_token->endTag)
             {
               handleStyleEnter(parent,children,DocStyleChange::Code,&g_token->attribs);
@@ -4697,8 +4698,9 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         QString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
+          //printf("paramName=%s\n",paramName.data());
           m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
-          retval=handleStyleArgument(this,m_children,paramName); 
+          m_children.append(new DocWord(this,paramName)); 
           m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,FALSE));
           if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
         }

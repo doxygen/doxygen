@@ -100,24 +100,33 @@ Definition::Definition(const char *df,int dl,
     m_localName=name;
   }
   //printf("m_localName=%s\n",m_localName.data());
-  m_brief=b; 
-  m_doc=d; 
-  m_sectionDict=0, 
-  m_startBodyLine=m_endBodyLine=-1, 
-  m_bodyDef=0;
+  
+  if (b)
+  {
+    m_brief = new DocInfo;
+    m_brief->doc = b;
+  }
+  else
+  {
+    m_brief = 0;
+  }
+
+  if (d)
+  {
+    m_details = new DocInfo;
+    m_details->doc = d;
+  }
+  else
+  {
+    m_details = 0;
+  }
+  m_body = 0;
   m_sourceRefByDict=0;
   m_sourceRefsDict=0;
-  m_todoId=0;
-  m_testId=0;
-  m_bugId=0;
-  m_deprecatedId=0;
+  m_sectionDict=0, 
   m_outerScope=Doxygen::globalScope;
   m_partOfGroups=0;
   m_xrefListItems=0;
-  m_briefLine=1;
-  m_briefFile=(QCString)"<"+name+">";
-  m_docLine=1;
-  m_docFile=(QCString)"<"+name+">";
   m_isSymbol = isSymbol;
   m_hidden = FALSE;
   if (m_isSymbol) addToMap(name,this);
@@ -131,6 +140,9 @@ Definition::~Definition()
   delete m_sourceRefsDict;
   delete m_partOfGroups;
   delete m_xrefListItems;
+  delete m_brief;
+  delete m_details;
+  delete m_body;
 }
 
 void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
@@ -219,9 +231,13 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
     doc=d;
   }
   //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
-  m_doc=doc;
-  m_docFile = docFile;
-  m_docLine = docLine;
+  if (m_details==0)
+  {
+    m_details = new DocInfo;
+  }
+  m_details->doc  = doc;
+  m_details->file = docFile;
+  m_details->line = docLine;
 }
 
 #define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
@@ -235,20 +251,24 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
                          outputLanguage!="Korean";
 
   //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-  m_brief=QCString(b).stripWhiteSpace();
-  int bl=m_brief.length(); 
+  if (m_brief==0)
+  {
+    m_brief = new DocInfo;
+  }
+  m_brief->doc=QCString(b).stripWhiteSpace();
+  int bl=m_brief->doc.length(); 
   if (bl>0 && needsDot) // add punctuation if needed
   {
-    switch(m_brief.at(bl-1))
+    switch(m_brief->doc.at(bl-1))
     {
       case '.': case '!': case '?': break;
       default: 
-        if (uni_isupper(m_brief.at(0))) m_brief+='.'; 
+        if (uni_isupper(m_brief->doc.at(0))) m_brief->doc+='.'; 
         break;
     }
   }
-  m_briefFile = briefFile;
-  m_briefLine = briefLine;
+  m_brief->file = briefFile;
+  m_brief->line = briefLine;
 }
 
 /*! Reads a fragment of code from file \a fileName starting at 
@@ -373,7 +393,8 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 {
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config_getBool("SOURCE_BROWSER") && m_startBodyLine!=-1 && m_bodyDef)
+  if (Config_getBool("SOURCE_BROWSER") && 
+      m_body && m_body->startLine!=-1 && m_body->fileDef)
   {
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
     int lineMarkerPos = refText.find("@0");
@@ -381,8 +402,8 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
     {
       QCString lineStr,anchorStr;
-      lineStr.sprintf("%d",m_startBodyLine);
-      anchorStr.sprintf(Htags::useHtags ? "L%d" : "l%05d",m_startBodyLine);
+      lineStr.sprintf("%d",m_body->startLine);
+      anchorStr.sprintf(Htags::useHtags ? "L%d" : "l%05d",m_body->startLine);
       ol.newParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
@@ -390,7 +411,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.parseText(refText.left(lineMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
+        ol.writeObjectLink(0,m_body->fileDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -404,12 +425,12 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
-            0,m_bodyDef->name());
+        ol.writeObjectLink(0,m_body->fileDef->getSourceFileBase(),
+            0,m_body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         // write normal text (Latex/Man only)
-        ol.docify(m_bodyDef->name());
+        ol.docify(m_body->fileDef->name());
         ol.enableAll();
         
         // write text right from file marker
@@ -422,12 +443,12 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.parseText(refText.left(fileMarkerPos)); 
         ol.disableAllBut(OutputGenerator::Html); 
         // write file link (HTML only)
-        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
-            0,m_bodyDef->name());
+        ol.writeObjectLink(0,m_body->fileDef->getSourceFileBase(),
+            0,m_body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
         // write normal text (Latex/Man only)
-        ol.docify(m_bodyDef->name());
+        ol.docify(m_body->fileDef->name());
         ol.enableAll();
         
         // write text between markers
@@ -436,7 +457,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
-        ol.writeObjectLink(0,m_bodyDef->getSourceFileBase(),
+        ol.writeObjectLink(0,m_body->fileDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
@@ -457,18 +478,33 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
   ol.popGeneratorState();
 }
 
+void Definition::setBodySegment(int bls,int ble) 
+{
+  //printf("setBodySegment(%d,%d) for %s\n",bls,ble,name().data());
+  if (m_body==0) m_body = new BodyInfo;
+  m_body->startLine=bls; 
+  m_body->endLine=ble; 
+}
+
+void Definition::setBodyDef(FileDef *fd)         
+{
+  if (m_body==0) m_body = new BodyInfo;
+  m_body->fileDef=fd; 
+}
+
 /*! Write code of this definition into the documentation */
 void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 {
   ol.pushGeneratorState();
   //printf("Source Fragment %s: %d-%d bodyDef=%p\n",name().data(),
   //        m_startBodyLine,m_endBodyLine,m_bodyDef);
-  if (Config_getBool("INLINE_SOURCES") && m_startBodyLine!=-1 && 
-      m_endBodyLine>=m_startBodyLine && m_bodyDef)
+  if (Config_getBool("INLINE_SOURCES") && 
+      m_body && m_body->startLine!=-1 && 
+      m_body->endLine>=m_body->startLine && m_body->fileDef)
   {
     QCString codeFragment;
-    int actualStart=m_startBodyLine,actualEnd=m_endBodyLine;
-    if (readCodeFragment(m_bodyDef->absFilePath(),
+    int actualStart=m_body->startLine,actualEnd=m_body->endLine;
+    if (readCodeFragment(m_body->fileDef->absFilePath(),
           actualStart,actualEnd,codeFragment)
        )
     {
@@ -478,16 +514,16 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
       ol.startCodeFragment();
-      pIntf->parseCode(ol,           // codeOutIntf
-                       scopeName,    // scope
-                       codeFragment, // input
-                       FALSE,        // isExample
-                       0,            // exampleName
-                       m_bodyDef,    // fileDef
-                       actualStart,  // startLine
-                       actualEnd,    // endLine
-                       TRUE,         // inlineFragment
-                       thisMd        // memberDef
+      pIntf->parseCode(ol,               // codeOutIntf
+                       scopeName,        // scope
+                       codeFragment,     // input
+                       FALSE,            // isExample
+                       0,                // exampleName
+                       m_body->fileDef,  // fileDef
+                       actualStart,      // startLine
+                       actualEnd,        // endLine
+                       TRUE,             // inlineFragment
+                       thisMd            // memberDef
                       );
       ol.endCodeFragment();
       ol.newParagraph();
@@ -611,18 +647,19 @@ bool Definition::hasDocumentation() const
   static bool extractAll = Config_getBool("EXTRACT_ALL"); 
   static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
   bool hasDocs = 
-         !m_doc.isEmpty() ||             // has detailed docs
-         !m_brief.isEmpty() ||           // has brief description
+         (m_details && !m_details->doc.isEmpty()) || // has detailed docs
+         (m_brief && !m_brief->doc.isEmpty())     || // has brief description
          extractAll ||                   // extract everything
-         (sourceBrowser && m_startBodyLine!=-1 && m_bodyDef); // link to definition
+         (sourceBrowser && m_body && 
+          m_body->startLine!=-1 && m_body->fileDef); // link to definition
   return hasDocs;
 }
 
 bool Definition::hasUserDocumentation() const
 {
   bool hasDocs = 
-         !m_doc.isEmpty() ||
-         !m_brief.isEmpty();
+         (m_details && !m_details->doc.isEmpty()) ||
+         (m_brief && !m_brief->doc.isEmpty());
   return hasDocs;
 }
 
@@ -718,13 +755,6 @@ void Definition::setOuterScope(Definition *d)
 QCString Definition::localName() const
 {
   return m_localName;
-}
-
-void Definition::setBodySegment(int bls,int ble) 
-{
-  //printf("setBodySegment(%d,%d) for %s\n",bls,ble,name().data());
-  m_startBodyLine=bls; 
-  m_endBodyLine=ble; 
 }
 
 void Definition::makePartOfGroup(GroupDef *gd)
