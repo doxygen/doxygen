@@ -2329,8 +2329,8 @@ void openGroup(Entry *e,const char *,int)
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
     g_autoGroupStack.push(new Grouping(e->name,e->groupingPri()));
-    printf("==> openGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-	e->name.data(),e->section,g_autoGroupStack.count());
+    //printf("==> openGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
+    //	e->name.data(),e->section,g_autoGroupStack.count());
   }
   else // start of a member group
   {
@@ -2352,8 +2352,8 @@ void openGroup(Entry *e,const char *,int)
 
 void closeGroup(Entry *e,const char *fileName,int)
 {
-  printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
-      e->name.data(),e->section,g_autoGroupStack.count());
+  //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
+  //    e->name.data(),e->section,g_autoGroupStack.count());
   if (g_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
@@ -2372,7 +2372,7 @@ void closeGroup(Entry *e,const char *fileName,int)
   {
     Grouping *grp = g_autoGroupStack.pop();
     e->groups->removeLast();
-    printf("Removing %s\n",grp->groupname.data());
+    //printf("Removing %s\n",grp->groupname.data());
     delete grp;
     initGroupInfo(e);
   }
@@ -2386,9 +2386,9 @@ void initGroupInfo(Entry *e)
   e->relates    = g_memberGroupRelates;
   if (!g_autoGroupStack.isEmpty())
   {
-    printf("Appending group %s to %s: count=%d entry=%p\n",
-	g_autoGroupStack.top()->groupname.data(),
-	e->name.data(),e->groups->count(),e);
+    //printf("Appending group %s to %s: count=%d entry=%p\n",
+    //	g_autoGroupStack.top()->groupname.data(),
+    //	e->name.data(),e->groups->count(),e);
     e->groups->append(new Grouping(*g_autoGroupStack.top()));
   }
 }

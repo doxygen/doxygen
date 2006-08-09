@@ -108,6 +108,9 @@ static bool             g_hideClassDocs;
 
 static QCString         g_defVal;
 static int              g_braceCount;
+
+static bool             g_lexInit = FALSE;
+
 //-----------------------------------------------------------------------------
 
 
@@ -1060,7 +1063,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 <VariableDec>{
    "="                { // the assignment operator
-                        printf("====== VariableDec at line %d\n",yyLineNr);
+                        //printf("====== VariableDec at line %d\n",yyLineNr);
                       }
    {B}                { // spaces
 	              }
@@ -1415,6 +1418,7 @@ static void parseCompounds(Entry *rt)
       groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
       pyscanYYlex() ;
+      g_lexInit=TRUE;
       delete current; current=0;
       ce->program.resize(0);
 
@@ -1481,6 +1485,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     pyscanYYrestart( pyscanYYin );
     BEGIN( Search );
     pyscanYYlex();
+    g_lexInit=TRUE;
 
     groupLeaveFile(yyFileName,yyLineNr);
 
@@ -1527,6 +1532,7 @@ static void parsePrototype(const QCString &text)
   BEGIN( FunctionDec );
 
   pyscanYYlex();
+  g_lexInit=TRUE;
 
   current->name = current->name.stripWhiteSpace();
   if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
@@ -1542,6 +1548,16 @@ static void parsePrototype(const QCString &text)
   inputPosition = orgInputPosition;
 
   //printf("**** parsePrototype end\n");
+}
+
+void pyscanFreeScanner()
+{
+#if defined(YY_FLEX_SUBMINOR_VERSION) 
+  if (g_lexInit)
+  {
+    pyscanYYlex_destroy();
+  }
+#endif
 }
 
 //----------------------------------------------------------------------------

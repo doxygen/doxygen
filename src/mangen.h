@@ -267,6 +267,7 @@ class ManGenerator : public OutputGenerator
     //void endSectionRefList() {}
 
     void writeCodeAnchor(const char *) {}
+    void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
   private:
     bool firstCol;

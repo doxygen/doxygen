@@ -2637,12 +2637,55 @@ void writeGraphInfo(OutputList &ol)
   ol.popGeneratorState();
 }
 
+void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title,
+                         HtmlHelp *htmlHelp,FTVHelp *ftvHelp)
+{
+  if (ml && ml->count()>0)
+  {
+    bool first=TRUE;
+    MemberDef *md=ml->first();
+    while (md)
+    {
+      if (md->isDetailedSectionVisible(TRUE,FALSE))
+      {
+        if (first)
+        {
+          first=FALSE;
+          if (htmlHelp)
+          {
+            htmlHelp->addContentsItem(TRUE, convertToHtml(title), gd->getOutputFileBase(),0);
+            htmlHelp->incContentsDepth();
+          }
+          if (ftvHelp)
+          {
+
+            ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, title);
+            ftvHelp->incContentsDepth();
+          }
+        }
+        if (htmlHelp)
+        {
+          htmlHelp->addContentsItem(FALSE,md->name(),md->getOutputFileBase(),md->anchor()); 
+        }
+        if (ftvHelp)
+        {
+          ftvHelp->addContentsItem(FALSE,md->getReference(),md->getOutputFileBase(),md->anchor(),md->name()); 
+        }
+      }
+      md=ml->next();
+    }
+
+    if (htmlHelp && !first) htmlHelp->decContentsDepth();
+    if (ftvHelp && !first)  ftvHelp->decContentsDepth();
+
+  }
+}
+
 //----------------------------------------------------------------------------
 /*!
  * write groups as hierarchical trees
  * \author KPW
  */
-
 void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 {
   HtmlHelp *htmlHelp=0;
@@ -2680,12 +2723,15 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     int numSubItems = 0;
     if ( Config_getBool("TOC_EXPAND"))
     {
-      numSubItems += gd->docDefineMembers.count();
-      numSubItems += gd->docTypedefMembers.count();
-      numSubItems += gd->docEnumMembers.count();
-      numSubItems += gd->docFuncMembers.count();
-      numSubItems += gd->docVarMembers.count();
-      numSubItems += gd->docProtoMembers.count();
+      QListIterator<MemberList> mli(gd->getMemberLists());
+      MemberList *ml;
+      for (mli.toFirst();(ml=mli.current());++mli)
+      {
+        if (ml->listType()&MemberList::documentationLists)
+        {
+          numSubItems += ml->count();
+        }
+      }
       numSubItems += gd->namespaceSDict->count();
       numSubItems += gd->classSDict->count();
       numSubItems += gd->fileList->count();
@@ -2759,6 +2805,20 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 
     if (Config_getBool("TOC_EXPAND"))
     {
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docDefineMembers),
+                         theTranslator->trDefines(),htmlHelp,ftvHelp);
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docTypedefMembers),
+                         theTranslator->trTypedefs(),htmlHelp,ftvHelp);
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docEnumMembers),
+                         theTranslator->trEnumerations(),htmlHelp,ftvHelp);
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docFuncMembers),
+                         theTranslator->trFunctions(),htmlHelp,ftvHelp);
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docVarMembers),
+                         theTranslator->trVariables(),htmlHelp,ftvHelp);
+       writeGroupIndexItem(gd,gd->getMemberList(MemberList::docProtoMembers),
+                         theTranslator->trFuncProtos(),htmlHelp,ftvHelp);
+#if 0
+
       // write members
       struct MemInfo
       {
@@ -2821,6 +2881,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 
         }
       }
+#endif
 
       // write namespaces
       NamespaceSDict *namespaceSDict=gd->namespaceSDict;

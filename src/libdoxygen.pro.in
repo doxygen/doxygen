@@ -198,6 +198,7 @@ SOURCES      =	ce_lex.cpp \
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
+linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools
 INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5

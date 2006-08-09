@@ -47,6 +47,7 @@ QCString getResourcePath()
   return result;
 }
 
+#if 0
 #define GRAPHVIZ_PATH    "/Applications/Graphviz.app"
 #define DOT_PATH         GRAPHVIZ_PATH "/Contents/MacOS"
 #define DOT_LOCATION     DOT_PATH "/dot"
@@ -72,6 +73,12 @@ void setDotPath()
     Config_getString("DOT_PATH")=DOT_PATH;
     //Config_getBool("HAVE_DOT")=TRUE;
   }
+}
+#endif
+
+void setDotPath()
+{
+  Config_getString("DOT_PATH")=getResourcePath();
 }
 
 #endif
@@ -512,7 +519,12 @@ Step4::Step4(QWidget *parent) : QWidget(parent,"Step4")
     dotGroup->setButton(0);
     m_dotOptions->setEnabled(FALSE);
   gbox->addWidget(w,4,0);
+
+#if defined(Q_OS_MACX) // we bundle dot with the mac package
+  m_diagramMode->setButton(2);
+#else
   m_diagramMode->setButton(1);
+#endif
   layout->addWidget(m_diagramMode);
   layout->addStretch(1);
 
@@ -678,6 +690,7 @@ MainWidget::MainWidget(QWidget *parent)
   // initialize config settings
   Config::instance()->init();
   Config::instance()->check();
+  Config_getBool("HAVE_DOT")=TRUE;
 #if defined(Q_OS_MACX)
   setDotPath();
 #endif
@@ -887,8 +900,8 @@ void MainWidget::launchWizard()
   // --------  Initialize the dialog ----------------
   
   // step1
-  wizard.setProjectName(Config_getString("PROJECT_NAME"));
-  wizard.setProjectNumber(Config_getString("PROJECT_NUMBER"));
+  wizard.setProjectName(QString::fromLocal8Bit(Config_getString("PROJECT_NAME")));
+  wizard.setProjectNumber(QString::fromLocal8Bit(Config_getString("PROJECT_NUMBER")));
   if (Config_getList("INPUT").count()>0)
   {
     QString dirName=Config_getList("INPUT").getFirst();
@@ -899,7 +912,7 @@ void MainWidget::launchWizard()
     }
   }
   wizard.setRecursiveScan(Config_getBool("RECURSIVE"));
-  wizard.setDestinationDir(Config_getString("OUTPUT_DIRECTORY"));
+  wizard.setDestinationDir(QString::fromLocal8Bit(Config_getString("OUTPUT_DIRECTORY")));
 
   // step2
   wizard.setExtractAll(Config_getBool("EXTRACT_ALL"));
@@ -979,12 +992,12 @@ void MainWidget::launchWizard()
     // -------- Store the results ----------------
 
     // step1
-    Config_getString("PROJECT_NAME")=wizard.getProjectName();
+    Config_getString("PROJECT_NAME")=wizard.getProjectName().local8Bit();
     Config_getString("PROJECT_NUMBER")=wizard.getProjectNumber();
     Config_getList("INPUT").clear();
     Config_getList("INPUT").append(wizard.getSourceDir());
     Config_getBool("RECURSIVE")=wizard.scanRecursively();
-    Config_getString("OUTPUT_DIRECTORY")=wizard.getDestinationDir();
+    Config_getString("OUTPUT_DIRECTORY")=wizard.getDestinationDir().local8Bit();
 
     // step2
     if (wizard.extractAll())
@@ -1125,7 +1138,7 @@ void MainWidget::loadConfigFromFile(const QString &fn)
   else
   {
     Config::instance()->convertStrToVal();
-#if defined(Q_OS_MACX)
+#if 0 //defined(Q_OS_MACX)
     if (checkIfDotInstalled() && 
         qstricmp(Config_getString("DOT_PATH"),DOT_PATH)!=0
        )
@@ -1163,9 +1176,9 @@ void MainWidget::launchExpert()
   Expert expert(this);
   expert.init();
   expert.exec();
-#if defined(Q_OS_MACX)
-  setDotPath();
-#endif
+//#if defined(Q_OS_MACX)
+//  setDotPath();
+//#endif
   if (expert.hasChanged()) setConfigSaved(FALSE);
 }
 

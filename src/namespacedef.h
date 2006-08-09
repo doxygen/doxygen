@@ -64,17 +64,8 @@ class NamespaceDef : public Definition
     void combineUsingRelations();
     QCString displayName() const;
     
-    bool isLinkableInProject() const
-    {
-      int i = name().findRev("::");
-      if (i==-1) i=0; else i+=2;
-      return !name().isEmpty() && name().at(i)!='@' &&
-              hasDocumentation() && !isReference() && !isHidden();
-    }
-    bool isLinkable() const
-    {
-      return isLinkableInProject() || isReference();
-    }
+    bool isLinkableInProject() const;
+    bool isLinkable() const;
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
@@ -83,49 +74,38 @@ class NamespaceDef : public Definition
     void addInnerCompound(Definition *d);
     void addListReferences();
     
-  //protected:
-  //  void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
+    MemberList *getMemberList(MemberList::ListType lt) const;
+    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
-  public:
-    
-    // members in the declaration part of the documentation
-    MemberList decDefineMembers;
-    MemberList decProtoMembers;
-    MemberList decTypedefMembers;
-    MemberList decEnumMembers;
-    MemberList decFuncMembers;
-    MemberList decVarMembers;
+    /*! Returns the user defined member groups */
+    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
 
-    // members in the documentation part of the documentation
-    MemberList docAllMemberList;
-    MemberList docDefineMembers;
-    MemberList docProtoMembers;
-    MemberList docTypedefMembers;
-    MemberList docEnumMembers;
-    MemberList docFuncMembers;
-    MemberList docVarMembers;
+    /*! Returns the classes contained in this namespace */
+    ClassSDict *getClassSDict() const { return classSDict; }
 
-    /* user defined member groups */
-    MemberGroupSDict    *memberGroupSDict;
-
-    /*! Classes inside this namespace */
-    ClassSDict *classSDict;
-    /*! Namespaces inside this namespace */
-    NamespaceSDict *namespaceSDict;
+    /*! Returns the namespaces contained in this namespace */
+    NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
 
     bool visited;
 
   private:
-    //QCString reference;
-    QCString fileName;
-    QStrList files;
+    MemberList *createMemberList(MemberList::ListType lt);
+    void addMemberToList(MemberList::ListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
 
+    QCString              fileName;
+    QStrList              files;
 
-    NamespaceSDict *usingDirList;
-    SDict<Definition> *usingDeclList;
-    SDict<Definition> *m_innerCompounds;
+    NamespaceSDict       *usingDirList;
+    SDict<Definition>    *usingDeclList;
+    SDict<Definition>    *m_innerCompounds;
 
-    MemberList allMemberList;
+    MemberList           *allMemberList;
+    QList<MemberList>     m_memberLists;
+    MemberGroupSDict     *memberGroupSDict;
+    ClassSDict           *classSDict;
+    NamespaceSDict       *namespaceSDict;
 
 };
 

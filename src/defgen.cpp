@@ -313,7 +313,7 @@ void generateDEFClassSection(ClassDef *cd,
     MemberList *ml,
     const char *kind)
 {
-  if (cd && ml->count()>0)
+  if (cd && ml && ml->count()>0)
   {
     t << "  cp-section = {" << endl;
     t << "    sec-kind = '" << kind << "';" << endl;
@@ -408,54 +408,41 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
     }
   }
 
-  int numMembers = 
-    (cd->pubTypes         ? cd->pubTypes->count() : 0)+
-    (cd->pubMethods       ? cd->pubMethods->count() : 0)+
-    (cd->pubAttribs       ? cd->pubAttribs->count() : 0)+
-    (cd->pubSlots         ? cd->pubSlots->count() : 0)+
-    (cd->signals          ? cd->signals->count() : 0)+
-    (cd->dcopMethods      ? cd->dcopMethods->count() : 0)+
-    (cd->pubStaticMethods ? cd->pubStaticMethods->count() : 0)+
-    (cd->pubStaticAttribs ? cd->pubStaticAttribs->count() : 0)+
-    (cd->proTypes         ? cd->proTypes->count() : 0)+
-    (cd->proMethods       ? cd->proMethods->count() : 0)+
-    (cd->proAttribs       ? cd->proAttribs->count() : 0)+
-    (cd->proSlots         ? cd->proSlots->count() : 0)+
-    (cd->proStaticMethods ? cd->proStaticMethods->count() : 0)+
-    (cd->proStaticAttribs ? cd->proStaticAttribs->count() : 0)+
-    (cd->priTypes         ? cd->priTypes->count() : 0)+
-    (cd->priMethods       ? cd->priMethods->count() : 0)+
-    (cd->priAttribs       ? cd->priAttribs->count() : 0)+
-    (cd->priSlots         ? cd->priSlots->count() : 0)+
-    (cd->priStaticMethods ? cd->priStaticMethods->count() : 0)+
-    (cd->priStaticAttribs ? cd->priStaticAttribs->count() : 0)+
-    (cd->friends          ? cd->friends->count() : 0)+
-    (cd->related          ? cd->related->count() : 0);
+  int numMembers = 0;
+  QListIterator<MemberList> mli(cd->getMemberLists());
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::detailedLists)==0)
+    {
+      numMembers+=ml->count();
+    }
+  }
   if (numMembers>0)
   {
-    generateDEFClassSection(cd,t,cd->pubTypes,"public-type");
-    generateDEFClassSection(cd,t,cd->pubMethods,"public-func");
-    generateDEFClassSection(cd,t,cd->pubAttribs,"public-attrib");
-    generateDEFClassSection(cd,t,cd->pubSlots,"public-slot");
-    generateDEFClassSection(cd,t,cd->signals,"signal");
-    generateDEFClassSection(cd,t,cd->dcopMethods,"dcop-func");
-    generateDEFClassSection(cd,t,cd->properties,"property");
-    generateDEFClassSection(cd,t,cd->pubStaticMethods,"public-static-func");
-    generateDEFClassSection(cd,t,cd->pubStaticAttribs,"public-static-attrib");
-    generateDEFClassSection(cd,t,cd->proTypes,"protected-type");
-    generateDEFClassSection(cd,t,cd->proMethods,"protected-func");
-    generateDEFClassSection(cd,t,cd->proAttribs,"protected-attrib");
-    generateDEFClassSection(cd,t,cd->proSlots,"protected-slot");
-    generateDEFClassSection(cd,t,cd->proStaticMethods,"protected-static-func");
-    generateDEFClassSection(cd,t,cd->proStaticAttribs,"protected-static-attrib");
-    generateDEFClassSection(cd,t,cd->priTypes,"private-type");
-    generateDEFClassSection(cd,t,cd->priMethods,"private-func");
-    generateDEFClassSection(cd,t,cd->priAttribs,"private-attrib");
-    generateDEFClassSection(cd,t,cd->priSlots,"private-slot");
-    generateDEFClassSection(cd,t,cd->priStaticMethods,"private-static-func");
-    generateDEFClassSection(cd,t,cd->priStaticAttribs,"private-static-attrib");
-    generateDEFClassSection(cd,t,cd->friends,"signal");
-    generateDEFClassSection(cd,t,cd->related,"related");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubTypes),"public-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubMethods),"public-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubAttribs),"public-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubSlots),"public-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::signals),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::dcopMethods),"dcop-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::properties),"property");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubStaticMethods),"public-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::pubStaticAttribs),"public-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proTypes),"protected-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proMethods),"protected-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proAttribs),"protected-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proSlots),"protected-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proStaticMethods),"protected-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::proStaticAttribs),"protected-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priTypes),"private-type");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priMethods),"private-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priAttribs),"private-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priSlots),"private-slot");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priStaticMethods),"private-static-func");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::priStaticAttribs),"private-static-attrib");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::friends),"signal");
+    generateDEFClassSection(cd,t,cd->getMemberList(MemberList::related),"related");
   }
 
   t << "  cp-filename  = '" << cd->getDefFileName() << "';" << endl;
@@ -512,12 +499,12 @@ void generateDEFForNamespace(NamespaceDef *nd,QTextStream &t)
   writeDEFString(t,nd->name());
   t << ';' << endl;
 
-  generateDEFSection(nd,t,&nd->decDefineMembers,"define");
-  generateDEFSection(nd,t,&nd->decProtoMembers,"prototype");
-  generateDEFSection(nd,t,&nd->decTypedefMembers,"typedef");
-  generateDEFSection(nd,t,&nd->decEnumMembers,"enum");
-  generateDEFSection(nd,t,&nd->decFuncMembers,"func");
-  generateDEFSection(nd,t,&nd->decVarMembers,"var");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decDefineMembers),"define");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decProtoMembers),"prototype");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decTypedefMembers),"typedef");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decEnumMembers),"enum");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decFuncMembers),"func");
+  generateDEFSection(nd,t,nd->getMemberList(MemberList::decVarMembers),"var");
 
   t << "  ns-filename  = '" << nd->getDefFileName() << "';" << endl;
   t << "  ns-fileline  = '" << nd->getDefLine()     << "';" << endl;
@@ -539,12 +526,12 @@ void generateDEFForFile(FileDef *fd,QTextStream &t)
   writeDEFString(t,fd->name());
   t << ';' << endl;
 
-  generateDEFSection(fd,t,fd->decDefineMembers,"define");
-  generateDEFSection(fd,t,fd->decProtoMembers,"prototype");
-  generateDEFSection(fd,t,fd->decTypedefMembers,"typedef");
-  generateDEFSection(fd,t,fd->decEnumMembers,"enum");
-  generateDEFSection(fd,t,fd->decFuncMembers,"func");
-  generateDEFSection(fd,t,fd->decVarMembers,"var");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decDefineMembers),"define");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decProtoMembers),"prototype");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decTypedefMembers),"typedef");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decEnumMembers),"enum");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decFuncMembers),"func");
+  generateDEFSection(fd,t,fd->getMemberList(MemberList::decVarMembers),"var");
 
   t << "  file-full-name  = '" << fd->getDefFileName() << "';" << endl;
   t << "  file-first-line = '" << fd->getDefLine()     << "';" << endl;

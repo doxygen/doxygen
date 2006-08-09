@@ -33,6 +33,7 @@ int main(int argc,char **argv)
   initDoxygen();
 
   readConfiguration(argc,argv);
+  checkConfiguration();
   parseInput();
   generateOutput();
   return 0;

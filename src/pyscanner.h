@@ -54,4 +54,6 @@ class PythonLanguageScanner : public ParserInterface
     void parsePrototype(const char *text);
 };
 
+void pyscanFreeScanner();
+
 #endif

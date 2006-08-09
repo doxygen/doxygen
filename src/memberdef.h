@@ -259,8 +259,6 @@ class MemberDef : public Definition
     void setFromAnonymousMember(MemberDef *m) { annMemb=m; }    
     bool fromAnonymousScope() const { return annScope; }
     bool anonymousDeclShown() const { return annUsed; }
-    //void setIndentDepth( int i) { indDepth=i; }
-    //int  indentDepth() { return indDepth; }
 
     // callgraph related members
     bool hasCallGraph() const { return m_hasCallGraph; }
@@ -283,11 +281,6 @@ class MemberDef : public Definition
 
     MemberDef *inheritsDocsFrom() const { return m_docProvider; }
 
-    //QCString getBodyAnchor() const 
-    //{ 
-    //  return bodyMemb ? bodyMemb->anchor() : anchor(); 
-    //}
-    //void setBodyMember(MemberDef *md) { bodyMemb = md; }
     void setDocsForDefinition(bool b) { docsForDefinition = b; }
     void setGroupAlias(MemberDef *md) { groupAlias = md; }
     MemberDef *getGroupAlias() const { return groupAlias; }

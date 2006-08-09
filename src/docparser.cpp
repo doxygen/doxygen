@@ -3582,6 +3582,31 @@ void DocSimpleSect::appendLinkWord(const QString &word)
   g_inSeeBlock=FALSE;
 }
 
+QCString DocSimpleSect::typeString() const
+{
+  switch (m_type)
+  {
+    case Unknown:    break;
+    case See:        return "see";
+    case Return:     return "return";
+    case Author:     // fall through
+    case Authors:    return "author";
+    case Version:    return "version";
+    case Since:      return "since";
+    case Date:       return "date";
+    case Note:       return "note";
+    case Warning:    return "warning";
+    case Pre:        return "pre";
+    case Post:       return "post";
+    case Invar:      return "invariant";
+    case Remark:     return "remark";
+    case Attention:  return "attention";
+    case User:       return "user";
+    case Rcs:        return "rcs";
+  }
+  return "unknown";
+}
+
 //--------------------------------------------------------------------------
 
 int DocParamList::parse(const QString &cmdName)

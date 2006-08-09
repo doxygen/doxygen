@@ -49,4 +49,6 @@ class CLanguageScanner : public ParserInterface
     void parsePrototype(const char *text);
 };
 
+void scanFreeScanner();
+
 #endif

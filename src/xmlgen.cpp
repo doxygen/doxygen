@@ -39,6 +39,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
+#include <qintdict.h>
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -60,6 +61,51 @@ static const char compound_xsd[] =
 ;
 
 //------------------
+
+class XmlSectionMapper : public QIntDict<char>
+{
+  public:
+    XmlSectionMapper() : QIntDict<char>(47)
+    {
+      insert(MemberList::pubTypes,"public-type");
+      insert(MemberList::pubMethods,"public-func");
+      insert(MemberList::pubAttribs,"public-attrib");
+      insert(MemberList::pubSlots,"public-slot");
+      insert(MemberList::signals,"signal");
+      insert(MemberList::dcopMethods,"dcop-func");
+      insert(MemberList::properties,"property");
+      insert(MemberList::events,"event");
+      insert(MemberList::pubStaticMethods,"public-static-func");
+      insert(MemberList::pubStaticAttribs,"public-static-attrib");
+      insert(MemberList::proTypes,"protected-type");
+      insert(MemberList::proMethods,"protected-func");
+      insert(MemberList::proAttribs,"protected-attrib");
+      insert(MemberList::proSlots,"protected-slot");
+      insert(MemberList::proStaticMethods,"protected-static-func");
+      insert(MemberList::proStaticAttribs,"protected-static-attrib");
+      insert(MemberList::pacTypes,"package-type");
+      insert(MemberList::pacMethods,"package-func");
+      insert(MemberList::pacAttribs,"package-attrib");
+      insert(MemberList::pacStaticMethods,"package-static-func");
+      insert(MemberList::pacStaticAttribs,"package-static-attrib");
+      insert(MemberList::priTypes,"private-type");
+      insert(MemberList::priMethods,"private-func");
+      insert(MemberList::priAttribs,"private-attrib");
+      insert(MemberList::priSlots,"private-slot");
+      insert(MemberList::priStaticMethods,"private-static-func");
+      insert(MemberList::priStaticAttribs,"private-static-attrib");
+      insert(MemberList::friends,"friend");
+      insert(MemberList::related,"related");
+      insert(MemberList::decDefineMembers,"define");
+      insert(MemberList::decProtoMembers,"prototype");
+      insert(MemberList::decTypedefMembers,"typedef");
+      insert(MemberList::decEnumMembers,"enum");
+      insert(MemberList::decFuncMembers,"func");
+      insert(MemberList::decVarMembers,"var");
+    }
+};
+
+static XmlSectionMapper g_xmlSectionMapper;
 
 
 inline void writeXMLString(QTextStream &t,const char *s)
@@ -346,6 +392,10 @@ class XMLCodeGenerator : public CodeOutputInterface
         if (extRef) m_external=extRef;
       }
     }
+    void linkableSymbol(int, const char *,Definition *,Definition *) 
+    {
+    }
+
     void finish()
     {
       if (m_insideCodeLine) endCodeLine();
@@ -1192,9 +1242,9 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   writeInnerClasses(cd->getInnerClasses(),t);
 
   writeTemplateList(cd,t);
-  if (cd->memberGroupSDict)
+  if (cd->getMemberGroupSDict())
   {
-    MemberGroupSDict::Iterator mgli(*cd->memberGroupSDict);
+    MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
@@ -1203,6 +1253,16 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     }
   }
 
+  QListIterator<MemberList> mli(cd->getMemberLists());
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::detailedLists)==0)
+    {
+      generateXMLSection(cd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+    }
+  }
+#if 0
   generateXMLSection(cd,ti,t,cd->pubTypes,"public-type");
   generateXMLSection(cd,ti,t,cd->pubMethods,"public-func");
   generateXMLSection(cd,ti,t,cd->pubAttribs,"public-attrib");
@@ -1232,6 +1292,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   generateXMLSection(cd,ti,t,cd->priStaticAttribs,"private-static-attrib");
   generateXMLSection(cd,ti,t,cd->friends,"friend");
   generateXMLSection(cd,ti,t,cd->related,"related");
+#endif
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
@@ -1311,12 +1372,12 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   writeXMLString(t,nd->name());
   t << "</compoundname>" << endl;
 
-  writeInnerClasses(nd->classSDict,t);
-  writeInnerNamespaces(nd->namespaceSDict,t);
+  writeInnerClasses(nd->getClassSDict(),t);
+  writeInnerNamespaces(nd->getNamespaceSDict(),t);
 
-  if (nd->memberGroupSDict)
+  if (nd->getMemberGroupSDict())
   {
-    MemberGroupSDict::Iterator mgli(*nd->memberGroupSDict);
+    MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
@@ -1325,12 +1386,23 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
     }
   }
 
+  QListIterator<MemberList> mli(nd->getMemberLists());
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::declarationLists)==0)
+    {
+      generateXMLSection(nd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+    }
+  }
+#if 0
   generateXMLSection(nd,ti,t,&nd->decDefineMembers,"define");
   generateXMLSection(nd,ti,t,&nd->decProtoMembers,"prototype");
   generateXMLSection(nd,ti,t,&nd->decTypedefMembers,"typedef");
   generateXMLSection(nd,ti,t,&nd->decEnumMembers,"enum");
   generateXMLSection(nd,ti,t,&nd->decFuncMembers,"func");
   generateXMLSection(nd,ti,t,&nd->decVarMembers,"var");
+#endif
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription());
@@ -1437,18 +1509,18 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    </invincdepgraph>" << endl;
   }
 
-  if (fd->classSDict)
+  if (fd->getClassSDict())
   {
-    writeInnerClasses(fd->classSDict,t);
+    writeInnerClasses(fd->getClassSDict(),t);
   }
-  if (fd->namespaceSDict)
+  if (fd->getNamespaceSDict())
   {
-    writeInnerNamespaces(fd->namespaceSDict,t);
+    writeInnerNamespaces(fd->getNamespaceSDict(),t);
   }
 
-  if (fd->memberGroupSDict)
+  if (fd->getMemberGroupSDict())
   {
-    MemberGroupSDict::Iterator mgli(*fd->memberGroupSDict);
+    MemberGroupSDict::Iterator mgli(*fd->getMemberGroupSDict());
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
@@ -1457,12 +1529,23 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     }
   }
 
+  QListIterator<MemberList> mli(fd->getMemberLists());
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::declarationLists)==0)
+    {
+      generateXMLSection(fd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+    }
+  }
+#if 0
   generateXMLSection(fd,ti,t,fd->decDefineMembers,"define");
   generateXMLSection(fd,ti,t,fd->decProtoMembers,"prototype");
   generateXMLSection(fd,ti,t,fd->decTypedefMembers,"typedef");
   generateXMLSection(fd,ti,t,fd->decEnumMembers,"enum");
   generateXMLSection(fd,ti,t,fd->decFuncMembers,"func");
   generateXMLSection(fd,ti,t,fd->decVarMembers,"var");
+#endif
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
@@ -1525,9 +1608,9 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   writeInnerPages(gd->getPages(),t);
   writeInnerGroups(gd->getSubGroups(),t);
 
-  if (gd->memberGroupSDict)
+  if (gd->getMemberGroupSDict())
   {
-    MemberGroupSDict::Iterator mgli(*gd->memberGroupSDict);
+    MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
@@ -1536,12 +1619,23 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
     }
   }
 
+  QListIterator<MemberList> mli(gd->getMemberLists());
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::declarationLists)==0)
+    {
+      generateXMLSection(gd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+    }
+  }
+#if 0
   generateXMLSection(gd,ti,t,&gd->decDefineMembers,"define");
   generateXMLSection(gd,ti,t,&gd->decProtoMembers,"prototype");
   generateXMLSection(gd,ti,t,&gd->decTypedefMembers,"typedef");
   generateXMLSection(gd,ti,t,&gd->decEnumMembers,"enum");
   generateXMLSection(gd,ti,t,&gd->decFuncMembers,"func");
   generateXMLSection(gd,ti,t,&gd->decVarMembers,"var");
+#endif
 
   t << "    <briefdescription>" << endl;
   writeXMLDocBlock(t,gd->briefFile(),gd->briefLine(),gd,0,gd->briefDescription());

@@ -24,6 +24,7 @@ int Entry::num=0;
 
 Entry::Entry()
 {
+  //printf("Entry::Entry(%p)\n",this);
   num++;
   m_parent=0;
   section = EMPTY_SEC;
@@ -33,7 +34,7 @@ Entry::Entry()
   extends->setAutoDelete(TRUE);
   groups = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
-  anchors = new QList<SectionInfo>;
+  anchors = new QList<SectionInfo>; // Doxygen::sectionDict takes ownership of the items!
   argList = new ArgumentList;
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
@@ -49,6 +50,7 @@ Entry::Entry()
 
 Entry::Entry(const Entry &e)
 {
+  //printf("Entry::Entry(%p):copy\n",this);
   num++;
   section     = e.section;
   protection  = e.protection;
@@ -171,17 +173,17 @@ Entry::Entry(const Entry &e)
 
 Entry::~Entry()
 {
+  //printf("Entry::~Entry(%p) num=%d\n",this,num);
   //printf("Deleting entry %d name %s type %x children %d\n",
   //       num,name.data(),section,sublist->count());
   
-  //delete sublist; // each element is now own by a EntryNav so we do no longer own
-                    // our children.
+  delete m_sublist; // each element is now own by a EntryNav so we do no longer own
+                  // our children.
   delete extends;
   delete groups;
   delete anchors;
   delete argList;
   delete tArgLists;
-  //delete mtArgList;
   delete tagInfo;
   delete sli;
   num--;
@@ -200,6 +202,7 @@ void Entry::addSubEntry(Entry *current)
 
 void Entry::reset()
 {
+  //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
   args.resize(0);
@@ -273,12 +276,14 @@ void Entry::createSubtreeIndex(EntryNav *nav,QFile &storage,FileDef *fd)
     {
       childNode->createSubtreeIndex(childNav,storage,fd);
     }
+    //m_sublist->setAutoDelete(FALSE);
     m_sublist->clear();
   }
 }
 
 void Entry::createNavigationIndex(EntryNav *rootNav,QFile &storage,FileDef *fd)
 {
+  //printf("createNavigationIndex(%p) sublist=%p\n",this,m_sublist);
   if (m_sublist)
   {
     //printf("saveEntries: %d children\n",root->sublist->count());
@@ -290,6 +295,7 @@ void Entry::createNavigationIndex(EntryNav *rootNav,QFile &storage,FileDef *fd)
       createSubtreeIndex(rootNav,storage,fd);
     }
     // remove all entries from root
+    //m_sublist->setAutoDelete(FALSE);
     m_sublist->clear();
   }
 }
@@ -535,6 +541,7 @@ ArgumentList *unmarshalArgumentList(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   ArgumentList *result = new ArgumentList;
+  result->setAutoDelete(TRUE);
   //printf("unmarshalArgumentList: %d\n",count);
   for (i=0;i<count;i++)
   {
@@ -560,6 +567,7 @@ QList<ArgumentList> *unmarshalArgumentLists(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   QList<ArgumentList> *result = new QList<ArgumentList>;
+  result->setAutoDelete(TRUE);
   //printf("unmarshalArgumentLists: %d\n",count);
   for (i=0;i<count;i++)
   {
@@ -574,6 +582,7 @@ QList<BaseInfo> *unmarshalBaseInfoList(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   QList<BaseInfo> *result = new QList<BaseInfo>;
+  result->setAutoDelete(TRUE);
   for (i=0;i<count;i++)
   {
     QCString name   = unmarshalQCString(f);
@@ -590,6 +599,7 @@ QList<Grouping> *unmarshalGroupingList(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   QList<Grouping> *result = new QList<Grouping>;
+  result->setAutoDelete(TRUE);
   for (i=0;i<count;i++)
   {
     QCString name = unmarshalQCString(f);
@@ -605,6 +615,7 @@ QList<SectionInfo> *unmarshalSectionInfoList(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   QList<SectionInfo> *result = new QList<SectionInfo>;
+  result->setAutoDelete(TRUE);
   for (i=0;i<count;i++)
   { 
     QCString label = unmarshalQCString(f);
@@ -623,6 +634,7 @@ QList<ListItemInfo> *unmarshalItemInfoList(QFile &f)
   uint count = unmarshalUInt(f);
   if (count==NULL_LIST) return 0; // null list
   QList<ListItemInfo> *result = new QList<ListItemInfo>;
+  result->setAutoDelete(TRUE);
   for (i=0;i<count;i++)
   { 
     ListItemInfo *lii = new ListItemInfo;
@@ -710,6 +722,7 @@ bool loadEntry(Entry *e,QFile &f)
   e->virt             = (Specifier)unmarshalInt(f);
   e->args             = unmarshalQCString(f);
   e->bitfields        = unmarshalQCString(f);
+  delete e->argList;
   e->argList          = unmarshalArgumentList(f);
   e->tArgLists        = unmarshalArgumentLists(f);
   e->program          = unmarshalQCString(f);
@@ -734,8 +747,11 @@ bool loadEntry(Entry *e,QFile &f)
   e->bodyLine         = unmarshalInt(f);
   e->endBodyLine      = unmarshalInt(f);
   e->mGrpId           = unmarshalInt(f);
+  delete e->extends;
   e->extends          = unmarshalBaseInfoList(f);
+  delete e->groups;
   e->groups           = unmarshalGroupingList(f);
+  delete e->anchors;
   e->anchors          = unmarshalSectionInfoList(f);
   e->fileName         = unmarshalQCString(f);
   e->startLine        = unmarshalInt(f);
@@ -832,8 +848,8 @@ void EntryNav::releaseEntry()
 {
   if (!m_noLoad) 
   { 
-    delete m_info; 
     //printf("EntryNav::releaseEntry %p\n",m_info);
+    delete m_info; 
     m_info=0; 
   }
 }
