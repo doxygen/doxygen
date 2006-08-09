@@ -222,6 +222,8 @@ class HtmlGenerator : public OutputGenerator
 
     void writeCodeAnchor(const char *anchor) 
     { t << "<a name=\"" << anchor << "\"></a>"; }
+    void linkableSymbol(int,const char *,Definition *,Definition *) {}
+
     static void writeSearchPage();
 
   private:

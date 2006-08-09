@@ -444,7 +444,7 @@ void HtmlDocVisitor::visitPost(DocRoot *)
 void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
-  m_t << "<dl compact><dt><b>";
+  m_t << "<dl class=\"" << s->typeString() << "\" compact><dt><b>";
   switch(s->type())
   {
     case DocSimpleSect::See: 

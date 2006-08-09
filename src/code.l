@@ -106,6 +106,7 @@ static int	     g_lastCContext;
 static bool          g_insideObjC;
 static bool          g_insideProtocolList;
 
+static bool          g_lexInit = FALSE;
 
 // context for an Objective-C method call
 struct ObjCCallCtx
@@ -458,7 +459,6 @@ static void startCodeLine()
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
     //printf("startCodeLine %d d=%s\n", g_yyLineNr,d ? d->name().data() : "<null>");
-    //g_code->startLineNumber();
     if (!g_includeCodeFragment && d)
     {
       g_currentDefinition = d;
@@ -498,10 +498,8 @@ static void startCodeLine()
     }
     else
     {
-      //g_code->codify(lineNumber);
       g_code->writeLineNumber(0,0,0,g_yyLineNr);
     }
-    //g_code->endLineNumber();
   }
   g_code->startCodeLine(); 
   if (g_currentFontClass)
@@ -764,15 +762,20 @@ static MemberDef *setCallContextForVar(const QCString &name)
 
 static void addDocCrossReference(MemberDef *src,MemberDef *dst)
 {
+  static bool referencedByRelation = Config_getBool("REFERENCED_BY_RELATION");
+  static bool referencesRelation   = Config_getBool("REFERENCES_RELATION");
+  static bool callerGraph          = Config_getBool("CALLER_GRAPH");
+  static bool callGraph            = Config_getBool("CALL_GRAPH");
+
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if ((Config_getBool("REFERENCED_BY_RELATION") || Config_getBool("CALLER_GRAPH")) && 
+  if ((referencedByRelation || callerGraph) && 
       (src->isFunction() || src->isSlot()) 
      )
   {
     dst->addSourceReferencedBy(src);
   }
-  if ((Config_getBool("REFERENCES_RELATION") || Config_getBool("CALL_GRAPH")) && 
+  if ((referencesRelation || callGraph) && 
       (src->isFunction() || src->isSlot())
      )
   {
@@ -828,6 +831,8 @@ static bool getLinkInScope(const QCString &c,  // scope
       }
       //printf("d->getReference()=`%s' d->getOutputBase()=`%s' name=`%s' member name=`%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
      
+      ol.linkableSymbol(g_yyLineNr,md->name(),md,
+	                g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
@@ -936,6 +941,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	g_anchorCount++;
       }
     }
+    ol.linkableSymbol(g_yyLineNr,cd->name(),cd,
+                      g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
     addToSearchIndex(className);
     if (md)
@@ -977,6 +984,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
         //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
 	if (md->isLinkable())
 	{
+          ol.linkableSymbol(g_yyLineNr,md->name(),md,
+	                    g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
@@ -989,6 +998,8 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     }
     
     // nothing found, just write out the word
+    ol.linkableSymbol(g_yyLineNr,clName,0,
+	              g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     codifyLines(clName);
     addToSearchIndex(clName);
   }
@@ -1044,6 +1055,8 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const 
 	}
 
 	// write the actual link
+        ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
+                          g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	writeMultiLineCodeLink(ol,xmd->getReference(),
 	    xmd->getOutputFileBase(),xmd->anchor(),memName);
         addToSearchIndex(memName);
@@ -1149,6 +1162,9 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
       }
     }
   }
+  // nothing found -> write result as is
+  ol.linkableSymbol(g_yyLineNr,memName,0,
+	            g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   codifyLines(memName);
   addToSearchIndex(memName);
   return;
@@ -1331,6 +1347,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  {
 	    if (ctx->method && ctx->method->isLinkable())
 	    {
+              g_code->linkableSymbol(g_yyLineNr,ctx->method->name(),ctx->method,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
               writeMultiLineCodeLink(*g_code,
 		                     ctx->method->getReference(),
 	                             ctx->method->getOutputFileBase(),
@@ -1343,6 +1361,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    }
 	    else
 	    {
+              g_code->linkableSymbol(g_yyLineNr,pName->data(),0,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
    	      codifyLines(pName->data());
 	    }
 	  }
@@ -1414,6 +1434,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	    }
 	    else if (ctx->objectVar && ctx->objectVar->isLinkable()) // object is class variable
 	    {
+              g_code->linkableSymbol(g_yyLineNr,ctx->objectVar->name(),ctx->objectVar,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	      writeMultiLineCodeLink(*g_code,
 		    ctx->objectVar->getReference(),
 		    ctx->objectVar->getOutputFileBase(),
@@ -1430,6 +1452,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    ) // object is class name
 	    {
 	      ClassDef *cd = ctx->objectType;
+              g_code->linkableSymbol(g_yyLineNr,cd->name(),cd,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	      writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
@@ -1443,6 +1467,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      if (cd && cd->isLinkable())
 	      {
 		if (ctx->objectType==0) ctx->objectType=cd;
+                g_code->linkableSymbol(g_yyLineNr,cd->name(),cd,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	   	writeMultiLineCodeLink(*g_code,
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
@@ -1451,6 +1477,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      }
 	      else
 	      {
+                g_code->linkableSymbol(g_yyLineNr,pObject->data(),0,
+                            g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 		codifyLines(pObject->data());
 	      }
 	    }
@@ -1708,6 +1736,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_parmType.resize(0);g_parmName.resize(0);
   					}
+<ObjCMethod,ObjCParams,ObjCParamType>{ID} {
+					  generateClassOrGlobalLink(*g_code,yytext);
+  					}
 <ObjCMethod,ObjCParams,ObjCParamType>.	{
   					  g_code->codify(yytext);
   					}
@@ -1811,6 +1842,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 
   					  g_inClass=FALSE; 
 
+					  //fprintf(stderr,"g_bodyCurlyCount=%d\n",g_bodyCurlyCount);
 					  if (--g_bodyCurlyCount<=0)
 					  {
 					    g_insideBody=FALSE;
@@ -2232,6 +2264,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  {
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
+                                              g_code->linkableSymbol(g_yyLineNr,yytext,0,
+	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
 					    }
@@ -2239,6 +2273,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
 					  else
 					  {
+                                            g_code->linkableSymbol(g_yyLineNr,yytext,0,
+	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   					    g_code->codify(yytext);
 					    addToSearchIndex(yytext);
   					    g_name.resize(0);
@@ -2260,6 +2296,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    //fprintf(stderr,"g_theCallContext.getClass()=%p\n",g_theCallContext.getClass());
 					    if (!generateClassMemberLink(*g_code,g_theCallContext.getClass(),yytext))
 					    {
+                                              g_code->linkableSymbol(g_yyLineNr,yytext,0,
+	                                                        g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
 					      g_code->codify(yytext);
 					      addToSearchIndex(yytext);
 					    }
@@ -3140,6 +3178,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   codeYYrestart( codeYYin );
   BEGIN( Body );
   codeYYlex();
+  g_lexInit=TRUE;
   if (g_needsTermination)
   {
     endFontClass();
@@ -3154,11 +3193,23 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   return;
 }
 
+void codeFreeScanner()
+{
+#if defined(YY_FLEX_SUBMINOR_VERSION) 
+  if (g_lexInit)
+  {
+    codeYYlex_destroy();
+  }
+#endif
+}
+
+
+
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 extern "C" { // some bogus code to keep the compiler happy
   void codeYYdummy() { yy_flex_realloc(0,0); } 
 }
 #elif YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
+#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
 #endif
 

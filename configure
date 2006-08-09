@@ -20,7 +20,7 @@ doxygen_version_minor=4
 doxygen_version_revision=7
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20060716
+doxygen_version_mmn=20060809
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -34,6 +34,7 @@ f_prefix=/usr/local
 f_insttool=NO
 f_english=NO
 f_wizard=NO
+f_app=NO
 f_thread=NO
 f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa
 
@@ -80,6 +81,9 @@ while test -n "$1";  do
        ;;
     --with-doxywizard | -with-doxywizard)
        f_wizard=YES
+       ;;
+    --with-doxyapp | -with-doxyapp)
+       f_app=YES
        ;;
     -h | -help | --help)
        f_help=y
@@ -521,7 +525,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libpng/Makefile.in libmd5/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libpng/Makefile.in libmd5/Makefile.in addon/doxyapp/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -544,6 +548,9 @@ EOF
        if test $f_wizard = YES; then
          echo "	\$(MAKE) -C addon/doxywizard" >> $DST
        fi
+       if test $f_app = YES; then
+         echo "	\$(MAKE) -C addon/doxyapp" >> $DST
+       fi
        echo "" >> $DST
        echo "doxywizard_install:" >> $DST
        if test $f_wizard = YES; then
@@ -555,7 +562,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libpng/libpng.pro.in libmd5/libmd5.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libpng/libpng.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

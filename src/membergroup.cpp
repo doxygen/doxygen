@@ -39,7 +39,7 @@ MemberGroup::MemberGroup(Definition *parent,
       int id,const char *hdr,const char *d,const char *docFile) 
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
-  memberList      = new MemberList;
+  memberList      = new MemberList(MemberList::memberGroup);
   grpId           = id;
   grpHeader       = hdr;
   doc             = d;
@@ -47,6 +47,7 @@ MemberGroup::MemberGroup(Definition *parent,
   inSameSection   = TRUE;
   inDeclSection   = 0;
   m_numDecMembers = -1;
+  m_numDocMembers = -1;
   m_parent        = parent;
   m_docFile       = docFile;
   //printf("Member group docs=`%s'\n",doc.data());
@@ -139,6 +140,16 @@ int MemberGroup::countDecMembers(/*bool sectionPerType*/)
     m_numDecMembers = memberList->numDecMembers();
   }
   return m_numDecMembers;
+}
+
+int MemberGroup::countDocMembers()
+{
+  if (m_numDocMembers==-1)
+  {
+    memberList->countDocMembers();
+    m_numDocMembers = memberList->numDocMembers();
+  }
+  return m_numDocMembers;
 }
 
 void MemberGroup::distributeMemberGroupDocumentation()

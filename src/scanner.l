@@ -84,6 +84,7 @@ static Entry*		tempEntry    = 0 ;
 static Entry*		firstTypedefEntry = 0 ;
 static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
+static int              anonNSCount  = 0 ;        
 static QCString		yyFileName;
 static MethodTypes 	mtype;
 static bool    		gstat;
@@ -156,6 +157,8 @@ static char             docBlockTerm;
 
 static QCString         idlAttr;
 static QCString         idlProp;
+
+static bool             g_lexInit = FALSE;
 
 
 //-----------------------------------------------------------------------------
@@ -559,6 +562,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	DefineEnd
 %x	CompoundName
 %x	ClassVar
+%x	CSConstraint
 %x	ClassCategory
 %x	ClassTemplSpec
 %x	Bases
@@ -1873,7 +1877,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers,FindFields,ReadInitializer>"//"([!/]?){B}*{CMD}"}".*|"/*"([!*]?){B}*{CMD}"}".*"*/"	{
   					  closeGroup(current,yyFileName,yyLineNr);
   					}
-<FindMembers>"="			{
+<FindMembers>"="			{ // in PHP code this could also be due to "<?="
   					  current->bodyLine = yyLineNr;
 					  lastInitializerContext = YY_START;
 					  initBracketCount=0;
@@ -1999,6 +2003,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <SkipVerbString>.			{
 					  *pSkipVerbString+=*yytext;
+  					}
+<ReadInitializer>"?>"			{
+					  if (insidePHP)
+					    BEGIN( FindMembersPHP );
+					  else
+					    current->initializer+=yytext;
   					}
 <ReadInitializer>.			{ 
   					  current->initializer+=*yytext; 
@@ -3477,6 +3487,23 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					  }
 					}
+<SkipCurlyEndDoc>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { // desc is followed by another one
+					  docBlockContext   = SkipCurlyEndDoc;
+					  docBlockInBody    = FALSE;
+					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlock.resize(0);
+					  docBlockTerm = '}';
+					  if (yytext[yyleng-3]=='/')
+					  {
+					    startCommentBlock(TRUE);
+					    BEGIN( DocLine );
+					  }
+					  else
+					  {
+					    startCommentBlock(FALSE);
+					    BEGIN( DocBlock );
+					  }
+  					}
 <SkipCurlyEndDoc>"}"			{
   				          //addToBody("}");
 					  current = tempEntry;
@@ -3694,6 +3721,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    baseName.resize(0);
 					    BEGIN( BasesProt ) ;
 					  }
+					  else if (insideCS && strcmp(yytext,"where")==0) // C# type contraint
+					  {
+					    BEGIN( CSConstraint );
+					  }
 					  else
 					  {
 					    if (current->section == Entry::ENUM_SEC)
@@ -3703,6 +3734,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->type += ' ' ;
 					    current->type += current->name ;
 					    current->name = yytext ;
+					    
+					    if (nameIsOperator(current->name))
+					    {
+				              BEGIN( Operator );
+					    }
 					  }
   					}
 <ClassVar>[(\[]				{
@@ -3721,6 +3757,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             unput(*yytext);
 					    BEGIN( FindMembers );
 					  }
+					}
+<CSConstraint>"{"			{
+					  unput('{');
+					  BEGIN( ClassVar );
+					}
+<CSConstraint>\n			{
+					  yyLineNr++;
+					}
+<CSConstraint>.				{
 					}
 <ClassCategory>{ID}			{
 					  current->name+=yytext;
@@ -3792,7 +3837,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->name = removeRedundantWhiteSpace(current->name);
 					  if (current->name.isEmpty() && !isTypedef) // anonymous compound
 					  {
-					    current->name.sprintf("@%d",anonCount++);
+					    if (current->section==Entry::NAMESPACE_SEC) // allow reopening of anonymous namespaces
+					    {
+					      current->name.sprintf("@%d",anonNSCount);
+					    }
+					    else
+					    {
+					      current->name.sprintf("@%d",anonCount++);
+					    }
 					  }
 					  curlyCount=0;
 					  if (current_root && // not a nested struct inside an @interface section
@@ -4591,6 +4643,7 @@ static void parseCompounds(Entry *rt)
       groupEnterCompound(yyFileName,yyLineNr,ce->name);
       
       scanYYlex() ;
+      g_lexInit=TRUE;
       //forceEndGroup();
 
       groupLeaveCompound(yyFileName,yyLineNr,ce->name);
@@ -4639,6 +4692,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     initParser();
     groupEnterFile(yyFileName,yyLineNr);
     current       = new Entry;
+    //printf("current=%p current_root=%p\n",current,current_root);
     int sec=guessSection(yyFileName);
     if (sec)
     {
@@ -4659,6 +4713,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     }
 
     scanYYlex();
+    g_lexInit=TRUE;
 
     if (YY_START==Comment)
     {
@@ -4679,6 +4734,8 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     parseCompounds(rt);
 
     inputFile.close();
+
+    anonNSCount++;
   }
 }
 
@@ -4712,6 +4769,7 @@ static void parsePrototype(const QCString &text)
   scanYYrestart( scanYYin );
   BEGIN(Prototype);
   scanYYlex();
+  g_lexInit=TRUE;
 
   current->name = current->name.stripWhiteSpace();
   if (current->section == Entry::MEMBERDOC_SEC && current->args.isEmpty())
@@ -4726,6 +4784,16 @@ static void parsePrototype(const QCString &text)
   g_inputFromFile = orgInputFromFile;
 
   //printf("**** parsePrototype end\n");
+}
+
+void scanFreeScanner()
+{
+#if defined(YY_FLEX_SUBMINOR_VERSION)
+  if (g_lexInit)
+  {
+    scanYYlex_destroy();
+  }
+#endif
 }
 
 //static void handleGroupStartCommand(const char *header)
@@ -4782,7 +4850,6 @@ void CLanguageScanner::parsePrototype(const char *text)
 {
   ::parsePrototype(text);
 }
-
 
 //----------------------------------------------------------------------------
 

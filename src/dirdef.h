@@ -70,8 +70,6 @@ class DirDef : public Definition
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeDepGraph(QTextStream &t);
-    //void writePathFragment(OutputList &ol) const;
-    //void writeNavigationPath(OutputList &ol);
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;

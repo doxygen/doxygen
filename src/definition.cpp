@@ -46,14 +46,41 @@ static void addToMap(const char *name,Definition *d)
   if (index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
-    DefinitionList *dl=Doxygen::symbolMap->find(symbolName);
-    if (dl==0)
-    {
-      dl = new DefinitionList;
-      Doxygen::symbolMap->append(symbolName,dl);
-    }
     //printf("******* adding symbol `%s' (%p)\n",symbolName.data(),d);
-    dl->append(d);
+    DefinitionIntf *di=Doxygen::symbolMap->find(symbolName);
+    //printf("  addToMap(%p): looking for symbol %s: %p\n",d,symbolName.data(),di);
+    if (di==0) // new Symbol
+    {
+      //printf("  new symbol!\n");
+      Doxygen::symbolMap->insert(symbolName,d);
+    }
+    else // existing symbol
+    {
+      //printf("  existing symbol: ");
+      if (di->definitionType()==DefinitionIntf::TypeSymbolList) // already multiple symbols
+      {
+        //printf("adding to exiting list\n");
+        DefinitionList *dl = (DefinitionList*)di;
+        dl->append(d);
+      }
+      else // going from one to two symbols
+      {
+        Doxygen::symbolMap->take(symbolName);
+        DefinitionList *dl = new DefinitionList;
+        //printf("replacing symbol by list %p with elements %p and %p\n",dl,di,d);
+        dl->append((Definition*)di);
+        dl->append(d);
+        Doxygen::symbolMap->insert(symbolName,dl);
+      }
+    }
+
+    // auto resize if needed
+    static int sizeIndex=9;
+    if (Doxygen::symbolMap->size()>SDict_primes[sizeIndex])
+    {
+      Doxygen::symbolMap->resize(SDict_primes[++sizeIndex]);
+    }
+
     d->setSymbolName(symbolName);
   }
 }
@@ -66,12 +93,26 @@ static void removeFromMap(Definition *d)
   if (!symbolName.isEmpty()) 
   {
     //printf("******* removing symbol `%s' (%p)\n",symbolName.data(),d);
-    DefinitionList *dl=Doxygen::symbolMap->find(symbolName);
-    if (dl)
+    DefinitionIntf *di=Doxygen::symbolMap->find(symbolName);
+    if (di)
     {
-      ASSERT(dl!=0);
-      bool b = dl->removeRef(d);
-      ASSERT(b==TRUE);
+      ASSERT(di!=0);
+      if (di!=d) // symbolName not unique
+      {
+        //printf("  removing from list: %p!\n",di);
+        DefinitionList *dl = (DefinitionList*)di;
+        bool b = dl->removeRef(d);
+        ASSERT(b==TRUE);
+        if (dl->isEmpty())
+        {
+          Doxygen::symbolMap->take(symbolName);
+        }
+      }
+      else // symbolName unique
+      {
+        //printf("  removing symbol %p\n",di);
+        Doxygen::symbolMap->take(symbolName);
+      }
     }
   }
 }

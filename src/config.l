@@ -1196,6 +1196,27 @@ void Config::check()
     annotationFromBrief.append("an");
     annotationFromBrief.append("the");
   }
+
+  if (Config_getBool("CALL_GRAPH") && 
+      (!Config_getBool("SOURCE_BROWSER") || !Config_getBool("REFERENCES_RELATION"))
+     )
+  {
+      config_err("Warning: turning on CALL_GRAPH requires turning "
+	         "SOURCE_BROWSER and\nREFERENCES_RELATION on as well!\n"
+		 "Assuming SOURCE_BROWSER=YES and REFERENCES_RELATION=YES\n");
+      Config_getBool("SOURCE_BROWSER")=TRUE;
+      Config_getBool("REFERENCES_RELATION")=TRUE;
+  }
+  if (Config_getBool("CALLER_GRAPH") && 
+      (!Config_getBool("SOURCE_BROWSER") || !Config_getBool("REFERENCED_BY_RELATION"))
+     )
+  {
+      config_err("Warning: turning on CALLER_GRAPH requires turning "
+	         "SOURCE_BROWSER and\nREFERENCEDBY_RELATION on as well!\n"
+		 "Assuming SOURCE_BROWSER=YES and REFERENCED_BY_RELATION=YES\n");
+      Config_getBool("SOURCE_BROWSER")=TRUE;
+      Config_getBool("REFERENCED_BY_RELATION")=TRUE;
+  }
 }
 
 void Config::init()

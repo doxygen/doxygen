@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <qtextcodec.h>
+#include <unistd.h>
 
 #include "version.h"
 #include "doxygen.h"
@@ -66,6 +67,7 @@
 #include "parserintf.h"
 #include "htags.h"
 #include "pyscanner.h"
+#include "code.h"
 
 
 #define RECURSE_ENTRYTREE(func,var) \
@@ -125,7 +127,7 @@ bool           Doxygen::parseSourcesNeeded = FALSE;
 double         Doxygen::sysElapsedTime = 0.0;
 QTime          Doxygen::runningTime;
 SearchIndex *  Doxygen::searchIndex=0;
-SDict<DefinitionList> *Doxygen::symbolMap;
+QDict<DefinitionIntf> *Doxygen::symbolMap;
 bool           Doxygen::outputToWizard=FALSE;
 QDict<int> *   Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(50000,50000);
@@ -1406,7 +1408,9 @@ static void findUsingDirectives(EntryNav *rootNav)
 
       // see if the using statement was found inside a namespace or inside
       // the global file scope.
-      if (rootNav->parent() && rootNav->parent()->section() == Entry::NAMESPACE_SEC)
+      if (rootNav->parent() && rootNav->parent()->section()==Entry::NAMESPACE_SEC &&
+          (fd==0 || fd->name().right(5)!=".java") // not a .java file
+         )
       {
         nsName=stripAnonymousNamespaceScope(rootNav->parent()->name());
         if (!nsName.isEmpty())
@@ -1582,8 +1586,13 @@ static void findUsingDeclarations(EntryNav *rootNav)
       // file scope).
 
       QCString name = substitute(root->name,".","::");
-      MemberDef *mtd=0;
-      usingCd = getResolvedClass(nd,fd,name,&mtd);
+      //MemberDef *mtd=0;
+      //usingCd = getResolvedClass(nd,fd,name,&mtd);
+      usingCd = getClass(name);
+      if (usingCd==0)
+      {
+        usingCd = Doxygen::hiddenClasses.find(name);
+      }
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
       if (usingCd==0) // definition not in the input => add an artificial class
@@ -1592,7 +1601,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
              name.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
         usingCd = new ClassDef(
                      "<using>",1,
-                     root->name,ClassDef::Class);
+                     name,ClassDef::Class);
         Doxygen::hiddenClasses.append(root->name,usingCd);
         usingCd->setClassIsArtificial();
       }
@@ -1602,6 +1611,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
             usingCd->name().data(),nd?nd->name().data():fd->name().data());
       }
 
+#if 0
       if (mtd) // add the typedef to the correct scope
       {
         if (nd)
@@ -1615,7 +1625,9 @@ static void findUsingDeclarations(EntryNav *rootNav)
           fd->addUsingDeclaration(mtd);
         }
       }
-      else if (usingCd) // add the class to the correct scope
+      else 
+#endif
+      if (usingCd) // add the class to the correct scope
       {
         if (nd)
         {
@@ -2371,8 +2383,9 @@ static void buildVarList(EntryNav *rootNav)
         scope=root->relates;
     }
     
-    // note: changed from scope to classScope on 2-10-2005
-    if (!classScope.isEmpty() && !name.isEmpty() && (cd=getClass(classScope)))
+    cd=getClass(scope);
+    if (cd==0 && classScope!=scope) cd=getClass(classScope);
+    if (cd)
     {
       MemberDef *md=0;
 
@@ -4946,7 +4959,9 @@ static void findMember(EntryNav *rootNav,
   }
 
   if (root->relates.isEmpty() && rootNav->parent() && 
-      (rootNav->parent()->section()&Entry::SCOPE_MASK) &&
+      ((rootNav->parent()->section()&Entry::SCOPE_MASK) ||
+       (rootNav->parent()->section()==Entry::OBJCIMPL_SEC)
+      ) &&
       !rootNav->parent()->name().isEmpty()) // see if we can combine scopeName 
                                      // with the scope in which it was found
   {
@@ -5373,6 +5388,7 @@ static void findMember(EntryNav *rootNav,
           mn->append(md);
           cd->insertMember(md);
           md->setRefItems(root->sli);
+          delete tArgList;
         }
         else
         {
@@ -5711,6 +5727,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
       "findMemberDocumentation(): root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d root->mGrpId=%d\n",
       root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
       );
+  //printf("rootNav->parent()->name()=%s\n",rootNav->parent()->name().data());
   bool isFunc=TRUE;
 
   if (root->relatesDup && !root->relates.isEmpty())
@@ -7426,7 +7443,7 @@ static void generateNamespaceDocs()
       nd->writeDocumentation(*outputList);
     }
     // for each class in the namespace...
-    ClassSDict::Iterator cli(*nd->classSDict);
+    ClassSDict::Iterator cli(*nd->getClassSDict());
     for ( ; cli.current() ; ++cli )
     {
       ClassDef *cd=cli.current();
@@ -8267,8 +8284,8 @@ void initDoxygen()
   setlocale(LC_ALL,"");
   setlocale(LC_NUMERIC,"C");
 #endif 
-  Doxygen::symbolMap = new SDict<DefinitionList>(1000);
-  Doxygen::symbolMap->setAutoDelete(TRUE);
+  Doxygen::symbolMap = new QDict<DefinitionIntf>(1000);
+  //Doxygen::symbolMap->setAutoDelete(TRUE);
   Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
   Doxygen::runningTime.start();
@@ -8315,6 +8332,26 @@ void cleanUpDoxygen()
   delete theTranslator;
   delete outputList;
   Mappers::freeMappers();
+  codeFreeScanner();
+
+  // iterate through Doxygen::symbolMap and delete all
+  // DefinitionList objects, since they have no owner
+  QDictIterator<DefinitionIntf> dli(*Doxygen::symbolMap);
+  DefinitionIntf *di;
+  for (dli.toFirst();(di=dli.current());)
+  {
+    if (di->definitionType()==DefinitionIntf::TypeSymbolList)
+    {
+      DefinitionIntf *tmp = Doxygen::symbolMap->take(dli.currentKey());
+      delete (DefinitionList *)tmp;
+    }
+    else
+    {
+      ++dli;
+    }
+  } 
+
+
   //delete Doxygen::symbolMap; <- we cannot do this unless all static lists 
   //                              (such as Doxygen::namespaceSDict)
   //                              with objects based on Definition are made
@@ -8595,6 +8632,14 @@ void readConfiguration(int argc, char **argv)
     cleanUpDoxygen();
     exit(0);
   }
+
+  /* Perlmod wants to know the path to the config file.*/
+  QFileInfo configFileInfo(configName);
+  setPerlModDoxyfile(configFileInfo.absFilePath());
+}
+
+void checkConfiguration()
+{
   
   Config::instance()->substituteEnvironmentVars();
   Config::instance()->convertStrToVal();
@@ -8620,9 +8665,6 @@ void readConfiguration(int argc, char **argv)
   /* Set the global html file extension. */ 
   Doxygen::htmlFileExtension = Config_getString("HTML_FILE_EXTENSION");
 
-  /* Perlmod wants to know the path to the config file.*/
-  QFileInfo configFileInfo(configName);
-  setPerlModDoxyfile(configFileInfo.absFilePath());
 
   Doxygen::xrefLists->setAutoDelete(TRUE);
 
@@ -8940,6 +8982,16 @@ void parseInput()
         outputDirectory.data());
     exit(1);
   }
+
+  // we are done with input scanning now, so free up the buffers used by flex
+  // (can be around 4MB)
+  preFreeScanner();
+  scanFreeScanner();
+  pyscanFreeScanner();
+
+  //delete rootNav;
+  //g_storage.close();
+  //exit(1);
 
   /**************************************************************************
    *             Gather information                                         * 

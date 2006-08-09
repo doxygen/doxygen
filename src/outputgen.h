@@ -36,6 +36,7 @@ class DotGroupCollaboration;
 class DocNode;
 class MemberDef;
 class GroupDef;
+class Definition;
 
 /*! \brief Output interface for code parser. 
  */
@@ -69,6 +70,8 @@ class CodeOutputInterface
     virtual void startFontClass(const char *) = 0;
     virtual void endFontClass() = 0;
     virtual void writeCodeAnchor(const char *name) = 0;
+    virtual void linkableSymbol(int line,const char *symName,
+                 Definition *symDef,Definition *context) = 0;
 };
 
 /*! \brief Base Interface used for generating output outside of the

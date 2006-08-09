@@ -127,6 +127,8 @@ class FileDef : public Definition
     }
     bool isIncluded(const QCString &name) const;
 
+    bool isJava() const { return m_isJava; }
+
     void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeMemberDocumentation(OutputList &ol);
@@ -168,9 +170,13 @@ class FileDef : public Definition
     void addListReferences();
     bool isDocumentationFile() const;
 
+
     //void generateXML(QTextStream &t);
     //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
 
+    MemberList *getMemberList(MemberList::ListType lt) const;
+    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+#if 0
     MemberList *allMemberList;
 
     // members in the declaration part of the documentation
@@ -188,12 +194,12 @@ class FileDef : public Definition
     MemberList *docEnumMembers;
     MemberList *docFuncMembers;
     MemberList *docVarMembers;
+#endif
 
     /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
-
-    NamespaceSDict *namespaceSDict;
-    ClassSDict *classSDict;
+    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
+    NamespaceSDict *getNamespaceSDict() const     { return namespaceSDict; }
+    ClassSDict *getClassSDict() const             { return classSDict; }
     
     bool visited;
 
@@ -204,6 +210,11 @@ class FileDef : public Definition
     void acquireFileVersion();
 
   private: 
+    MemberList *createMemberList(MemberList::ListType lt);
+    void addMemberToList(MemberList::ListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+
     QDict<IncludeInfo>   *includeDict;
     QList<IncludeInfo>   *includeList;
     QDict<IncludeInfo>   *includedByDict;
@@ -218,9 +229,14 @@ class FileDef : public Definition
     QIntDict<Definition> *srcDefDict;
     QIntDict<MemberDef>  *srcMemberDict;
     bool                  isSource;
+    bool                  m_isJava;
     QCString              fileVersion;
     PackageDef           *package;
     DirDef               *dir;
+    QList<MemberList>     m_memberLists;
+    MemberGroupSDict     *memberGroupSDict;
+    NamespaceSDict       *namespaceSDict;
+    ClassSDict           *classSDict;
 };
 
 

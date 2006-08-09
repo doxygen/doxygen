@@ -107,7 +107,8 @@ void FormulaList::generateBitmaps(const char *path)
     if (latexCmd.isEmpty()) latexCmd="latex";
     if (iSystem(latexCmd,"_formulas.tex")!=0)
     {
-      err("Problems running latex. Check your installation or look for typos in _formulas.tex!\n");
+      err("Problems running latex. Check your installation or look "
+          "for typos in _formulas.tex and check _formulas.log!\n");
       formulaError=TRUE;
       //return;
     }
@@ -286,7 +287,7 @@ void FormulaList::generateBitmaps(const char *path)
     }
     // remove intermediate files produced by latex
     thisDir.remove("_formulas.dvi");
-    thisDir.remove("_formulas.log");
+    if (!formulaError) thisDir.remove("_formulas.log"); // keep file in case of errors
     thisDir.remove("_formulas.aux");
   }
   // remove the latex file itself

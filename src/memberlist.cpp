@@ -26,7 +26,7 @@
 #include "outputlist.h"
 #include "groupdef.h"
 
-MemberList::MemberList() : QList<MemberDef>()
+MemberList::MemberList(ListType lt) : m_listType(lt)
 {
   memberGroupList=0;
   m_numDecMembers=-1; // special value indicating that computation is needed
@@ -139,7 +139,7 @@ void MemberList::countDocMembers(bool countEnumValues)
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      mg->countDecMembers();
+      mg->countDocMembers();
       m_numDocMembers+=mg->numDocMembers();
     }
   }

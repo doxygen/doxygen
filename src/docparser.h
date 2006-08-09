@@ -915,6 +915,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     virtual ~DocSimpleSect();
     Kind kind() const       { return Kind_SimpleSect; }
     Type type() const       { return m_type; }
+    QCString typeString() const;
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v);
     int parse(bool userTitle);

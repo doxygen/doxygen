@@ -6,6 +6,7 @@ class QObject;
 class IInput
 {
   public:
+    virtual ~IInput() {}
     virtual void init() = 0;
     virtual void setEnabled(bool) = 0;
     virtual QObject *qobject() = 0;

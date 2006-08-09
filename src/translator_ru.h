@@ -1583,14 +1583,14 @@ class TranslatorRussian : public Translator
     /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
-      return "Граф вызова функции:";
+      return decode( "Граф вызова функции:" );
     }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Элементы перечислений"; }
+    { return decode( "Элементы перечислений" ); }
 
 
 };

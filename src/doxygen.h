@@ -110,7 +110,7 @@ class Doxygen
     static double                    sysElapsedTime;
     static QTime                     runningTime;
     static SearchIndex              *searchIndex;
-    static SDict<DefinitionList>    *symbolMap;
+    static QDict<DefinitionIntf>    *symbolMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
@@ -122,6 +122,7 @@ class Doxygen
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
+void checkConfiguration();
 void parseInput();
 void generateOutput();
 

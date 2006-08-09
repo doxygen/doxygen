@@ -28,5 +28,6 @@ void initPreprocessor();
 void cleanUpPreprocessor();
 void addSearchDir(const char *dir);
 void preprocessFile(const char *fileName,BufStr &output);
+void preFreeScanner();
 
 #endif

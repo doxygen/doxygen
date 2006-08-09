@@ -212,6 +212,7 @@ class LatexGenerator : public OutputGenerator
     void endFontClass() {}
 
     void writeCodeAnchor(const char *) {}
+    void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
   private:
     LatexGenerator(const LatexGenerator &);

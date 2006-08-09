@@ -270,6 +270,7 @@ class RTFGenerator : public OutputGenerator
     //void endSectionRefList() {}
 
     void writeCodeAnchor(const char *) {}
+    void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
     static bool preProcessFileInplace(const char *path,const char *name);
     

@@ -105,6 +105,7 @@ static int                g_condCtx;
 static bool               g_skip;
 static QStack<bool>       g_condStack;
 
+static bool               g_lexInit = FALSE;
 
 
 static void setFileName(const char *name)
@@ -2377,6 +2378,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_guardExpr.resize(0);
   
   preYYlex();
+  g_lexInit=TRUE;
   if (inputFilter.isEmpty())
     fclose(preYYin);
   else
@@ -2397,6 +2399,16 @@ void preprocessFile(const char *fileName,BufStr &output)
     }
     msg("\n---------\n");
   }
+}
+
+void preFreeScanner()
+{
+#if defined(YY_FLEX_SUBMINOR_VERSION) 
+  if (g_lexInit)
+  {
+    preYYlex_destroy();
+  }
+#endif
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 

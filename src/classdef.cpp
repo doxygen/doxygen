@@ -37,6 +37,12 @@
 #include "docparser.h"
 #include "searchindex.h"
 
+//static inline MemberList *createNewMemberList(MemberList::ListType lt)
+//{
+//  MemberList *result = new MemberList(lt);
+//  return result;
+//}
+
 
 // constructs a new class definition
 ClassDef::ClassDef(
@@ -98,6 +104,8 @@ ClassDef::ClassDef(
     m_isLocal=FALSE;
   }
 
+
+#if 0
   pubMethods=0;
   proMethods=0;
   pacMethods=0;
@@ -137,6 +145,7 @@ ClassDef::ClassDef(
   variableMembers=0;
   propertyMembers=0;
   eventMembers=0;
+#endif
 
 }
 
@@ -157,6 +166,48 @@ ClassDef::~ClassDef()
   delete m_variableInstances;
   delete m_templBaseClassNames;
   delete m_tempArgs;
+
+#if 0
+  delete pubMethods;
+  delete proMethods;
+  delete pacMethods;
+  delete priMethods;
+  delete pubStaticMethods;
+  delete proStaticMethods;
+  delete pacStaticMethods;
+  delete priStaticMethods;
+  delete pubSlots;
+  delete proSlots;
+  delete priSlots;
+  delete pubAttribs;
+  delete proAttribs;
+  delete pacAttribs;
+  delete priAttribs;
+  delete pubStaticAttribs;
+  delete proStaticAttribs;
+  delete pacStaticAttribs;
+  delete priStaticAttribs;
+  delete pubTypes;
+  delete proTypes;
+  delete pacTypes;
+  delete priTypes;
+  delete related;
+  delete signals;
+  delete friends;
+  delete dcopMethods;
+  delete properties;
+  delete events;
+  
+  delete constructors;
+  delete typedefMembers;
+  delete enumMembers;
+  delete enumValMembers;
+  delete functionMembers;
+  delete relatedMembers;
+  delete variableMembers;
+  delete propertyMembers;
+  delete eventMembers;
+#endif
 }
 
 QCString ClassDef::getMemberListFileName() const
@@ -217,35 +268,15 @@ void ClassDef::insertSubClass(ClassDef *cd,Protection p,
 
 void ClassDef::addMembersToMemberGroup()
 {
-  ::addMembersToMemberGroup(pubTypes,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pubMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pubAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pubSlots,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(signals,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(dcopMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pubStaticMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pubStaticAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pacTypes,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pacMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pacAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pacStaticMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(pacStaticAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proTypes,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proSlots,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proStaticMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(proStaticAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priTypes,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priSlots,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priStaticMethods,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(priStaticAttribs,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(friends,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(related,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(properties,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(events,&memberGroupSDict,this);
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::detailedLists)==0)
+    {
+      ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
+    }
+  }
 
   // add members inside sections to their groups
   if (memberGroupSDict)
@@ -272,93 +303,47 @@ void ClassDef::internalInsertMember(MemberDef *md,
   //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
   {
-    static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
+    static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+
     /********************************************/
     /* insert member in the declaration section */
     /********************************************/
-    if (md->isRelated() && 
-        (Config_getBool("EXTRACT_PRIVATE") || prot!=Private))
+    if (md->isRelated() && (extractPrivate || prot!=Private))
     {
-      if (related==0) related = new MemberList;
-      if (sortBriefDocs)
-        related->inSort(md);
-      else
-        related->append(md);
-      md->setSectionList(this,related);
+      addMemberToList(MemberList::related,md);
     }
     else if (md->isFriend())
     {
-      if (friends==0) friends = new MemberList;
-      if (sortBriefDocs)
-        friends->inSort(md);
-      else
-        friends->append(md);
-      md->setSectionList(this,friends);
+      addMemberToList(MemberList::friends,md);
     }
     else
     {
       switch (md->memberType())
       {
         case MemberDef::Signal: // Qt specific
-          if (signals==0) signals = new MemberList;
-          if (sortBriefDocs)
-            signals->inSort(md);
-          else
-            signals->append(md);
-          md->setSectionList(this,signals);
+          addMemberToList(MemberList::signals,md);
           break;
         case MemberDef::DCOP:   // KDE2 specific
-          if (dcopMethods==0) dcopMethods = new MemberList;
-          if (sortBriefDocs)
-            dcopMethods->inSort(md);
-          else
-            dcopMethods->append(md);
-          md->setSectionList(this,dcopMethods);
+          addMemberToList(MemberList::dcopMethods,md);
           break;
         case MemberDef::Property:
-          if (properties==0) properties = new MemberList;
-          if (sortBriefDocs)
-            properties->inSort(md);
-          else
-            properties->append(md);
-          md->setSectionList(this,properties);
+          addMemberToList(MemberList::properties,md);
           break;
         case MemberDef::Event:
-          if (events==0) events = new MemberList;
-          if (sortBriefDocs)
-            events->inSort(md);
-          else
-            events->append(md);
-          md->setSectionList(this,events);
+          addMemberToList(MemberList::events,md);
           break;
         case MemberDef::Slot:   // Qt specific
           switch (prot)
           {
             case Protected: 
             case Package: // slots in packages are not possible!
-              if (proSlots==0) proSlots = new MemberList;
-              if (sortBriefDocs)
-                proSlots->inSort(md);
-              else
-                proSlots->append(md); 
-              md->setSectionList(this,proSlots);
-              break;
+              addMemberToList(MemberList::proSlots,md);
               break;
             case Public:    
-              if (pubSlots==0) pubSlots = new MemberList;
-              if (sortBriefDocs)
-                pubSlots->inSort(md);
-              else
-                pubSlots->append(md); 
-              md->setSectionList(this,pubSlots);
+              addMemberToList(MemberList::pubSlots,md);
               break;
             case Private:   
-              if (priSlots==0) priSlots = new MemberList;
-              if (sortBriefDocs)
-                priSlots->inSort(md);
-              else
-                priSlots->append(md);
-              md->setSectionList(this,priSlots);
+              addMemberToList(MemberList::priSlots,md);
               break;
           }
           break;
@@ -370,36 +355,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  if (proStaticAttribs==0) proStaticAttribs= new MemberList;
-                  if (sortBriefDocs)
-                    proStaticAttribs->inSort(md);
-                  else
-                    proStaticAttribs->append(md); 
-                  md->setSectionList(this,proStaticAttribs);
+                  addMemberToList(MemberList::proStaticAttribs,md);
                   break;
                 case Package: 
-                  if (pacStaticAttribs==0) pacStaticAttribs= new MemberList;
-                  if (sortBriefDocs)
-                    pacStaticAttribs->inSort(md);
-                  else
-                    pacStaticAttribs->append(md); 
-                  md->setSectionList(this,pacStaticAttribs);
+                  addMemberToList(MemberList::pacStaticAttribs,md);
                   break;
                 case Public:    
-                  if (pubStaticAttribs==0) pubStaticAttribs= new MemberList;
-                  if (sortBriefDocs)
-                    pubStaticAttribs->inSort(md);
-                  else
-                    pubStaticAttribs->append(md); 
-                  md->setSectionList(this,pubStaticAttribs);
+                  addMemberToList(MemberList::pubStaticAttribs,md);
                   break;
                 case Private:   
-                  if (priStaticAttribs==0) priStaticAttribs= new MemberList;
-                  if (sortBriefDocs)
-                    priStaticAttribs->inSort(md);
-                  else
-                    priStaticAttribs->append(md); 
-                  md->setSectionList(this,priStaticAttribs);
+                  addMemberToList(MemberList::priStaticAttribs,md);
                   break;
               }
             }
@@ -408,36 +373,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  if (proStaticMethods==0) proStaticMethods = new MemberList;
-                  if (sortBriefDocs)
-                    proStaticMethods->inSort(md);
-                  else
-                    proStaticMethods->append(md); 
-                  md->setSectionList(this,proStaticMethods);
+                  addMemberToList(MemberList::proStaticMethods,md);
                   break;
                 case Package: 
-                  if (pacStaticMethods==0) pacStaticMethods = new MemberList;
-                  if (sortBriefDocs)
-                    pacStaticMethods->inSort(md);
-                  else
-                    pacStaticMethods->append(md); 
-                  md->setSectionList(this,pacStaticMethods);
+                  addMemberToList(MemberList::pacStaticMethods,md);
                   break;
                 case Public:    
-                  if (pubStaticMethods==0) pubStaticMethods = new MemberList;
-                  if (sortBriefDocs)
-                    pubStaticMethods->inSort(md);
-                  else
-                    pubStaticMethods->append(md); 
-                  md->setSectionList(this,pubStaticMethods);
+                  addMemberToList(MemberList::pubStaticMethods,md);
                   break;
                 case Private:   
-                  if (priStaticMethods==0) priStaticMethods = new MemberList;
-                  if (sortBriefDocs)
-                    priStaticMethods->inSort(md);
-                  else
-                    priStaticMethods->append(md); 
-                  md->setSectionList(this,priStaticMethods);
+                  addMemberToList(MemberList::priStaticMethods,md);
                   break;
               }
             }
@@ -449,36 +394,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  if (proAttribs==0) proAttribs = new MemberList;
-                  if (sortBriefDocs)
-                    proAttribs->inSort(md);
-                  else
-                    proAttribs->append(md); 
-                  md->setSectionList(this,proAttribs);
+                  addMemberToList(MemberList::proAttribs,md);
                   break;
                 case Package:
-                  if (pacAttribs==0) pacAttribs = new MemberList;
-                  if (sortBriefDocs)
-                    pacAttribs->inSort(md);
-                  else
-                    pacAttribs->append(md);
-                  md->setSectionList(this,pacAttribs);
+                  addMemberToList(MemberList::pacAttribs,md);
                   break;
                 case Public:    
-                  if (pubAttribs==0) pubAttribs = new MemberList;
-                  if (sortBriefDocs)
-                    pubAttribs->inSort(md);
-                  else
-                    pubAttribs->append(md); 
-                  md->setSectionList(this,pubAttribs);
+                  addMemberToList(MemberList::pubAttribs,md);
                   break;
                 case Private:   
-                  if (priAttribs==0) priAttribs = new MemberList;
-                  if (sortBriefDocs)
-                    priAttribs->inSort(md);
-                  else
-                    priAttribs->append(md); 
-                  md->setSectionList(this,priAttribs);
+                  addMemberToList(MemberList::priAttribs,md);
                   break;
               }
             }
@@ -487,36 +412,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  if (proTypes==0) proTypes = new MemberList;
-                  if (sortBriefDocs)
-                    proTypes->inSort(md);
-                  else
-                    proTypes->append(md); 
-                  md->setSectionList(this,proTypes); 
+                  addMemberToList(MemberList::proTypes,md);
                   break;
                 case Package: 
-                  if (pacTypes==0) pacTypes = new MemberList;
-                  if (sortBriefDocs)
-                    pacTypes->inSort(md);
-                  else
-                    pacTypes->append(md); 
-                  md->setSectionList(this,pacTypes); 
+                  addMemberToList(MemberList::pacTypes,md);
                   break;
                 case Public:    
-                  if (pubTypes==0) pubTypes = new MemberList;
-                  if (sortBriefDocs)
-                    pubTypes->inSort(md);
-                  else
-                    pubTypes->append(md); 
-                  md->setSectionList(this,pubTypes); 
+                  addMemberToList(MemberList::pubTypes,md);
                   break;
                 case Private:   
-                  if (priTypes==0) priTypes = new MemberList;
-                  if (sortBriefDocs)
-                    priTypes->inSort(md);
-                  else
-                    priTypes->append(md); 
-                  md->setSectionList(this,priTypes); 
+                  addMemberToList(MemberList::priTypes,md);
                   break;
               }
             }
@@ -525,36 +430,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  if (proMethods==0) proMethods = new MemberList;
-                  if (sortBriefDocs)
-                    proMethods->inSort(md);
-                  else
-                    proMethods->append(md); 
-                  md->setSectionList(this,proMethods); 
+                  addMemberToList(MemberList::proMethods,md);
                   break;
                 case Package: 
-                  if (pacMethods==0) pacMethods = new MemberList;
-                  if (sortBriefDocs)
-                    pacMethods->inSort(md);
-                  else
-                    pacMethods->append(md); 
-                  md->setSectionList(this,pacMethods); 
+                  addMemberToList(MemberList::pacMethods,md);
                   break;
                 case Public:    
-                  if (pubMethods==0) pubMethods = new MemberList;
-                  if (sortBriefDocs)
-                    pubMethods->inSort(md);
-                  else
-                    pubMethods->append(md); 
-                  md->setSectionList(this,pubMethods); 
+                  addMemberToList(MemberList::pubMethods,md);
                   break;
                 case Private:   
-                  if (priMethods==0) priMethods = new MemberList;
-                  if (sortBriefDocs)
-                    priMethods->inSort(md);
-                  else
-                    priMethods->append(md); 
-                  md->setSectionList(this,priMethods); 
+                  addMemberToList(MemberList::priMethods,md);
                   break;
               }
             }
@@ -566,42 +451,23 @@ void ClassDef::internalInsertMember(MemberDef *md,
     /*******************************************************/
     /* insert member in the detailed documentation section */
     /*******************************************************/
-    if ((md->isRelated() && 
-          (Config_getBool("EXTRACT_PRIVATE") || prot!=Private)
-        ) || md->isFriend()
-       )
+    if ((md->isRelated() && (extractPrivate || prot!=Private)) || md->isFriend())
     {
-      if (relatedMembers==0) relatedMembers = new MemberList;
-      if (Config_getBool("SORT_MEMBER_DOCS"))
-        relatedMembers->inSort(md);
-      else
-        relatedMembers->append(md);
+      addMemberToList(MemberList::relatedMembers,md);
     }
     else
     {
       switch (md->memberType())
       {
         case MemberDef::Property:
-          if (propertyMembers==0) propertyMembers = new MemberList;
-          if (Config_getBool("SORT_MEMBER_DOCS"))
-            propertyMembers->inSort(md);
-          else
-            propertyMembers->append(md);
+          addMemberToList(MemberList::propertyMembers,md);
           break;
         case MemberDef::Event:
-          if (eventMembers==0) eventMembers = new MemberList;
-          if (Config_getBool("SORT_MEMBER_DOCS"))
-            eventMembers->inSort(md);
-          else
-            eventMembers->append(md);
+          addMemberToList(MemberList::eventMembers,md);
           break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
-          if (functionMembers==0) functionMembers = new MemberList;
-          if (Config_getBool("SORT_MEMBER_DOCS"))
-            functionMembers->inSort(md);
-          else
-            functionMembers->append(md);
+          addMemberToList(MemberList::functionMembers,md);
           break;
         case MemberDef::Slot:
           switch (prot)
@@ -609,71 +475,44 @@ void ClassDef::internalInsertMember(MemberDef *md,
             case Protected: 
             case Package: 
             case Public:    
-              if (functionMembers==0) functionMembers = new MemberList;
-              if (Config_getBool("SORT_MEMBER_DOCS"))
-                functionMembers->inSort(md); 
-              else
-                functionMembers->append(md);
+              addMemberToList(MemberList::functionMembers,md);
               break;
             case Private:   
-              if (functionMembers==0) functionMembers = new MemberList;
-              if (Config_getBool("EXTRACT_PRIVATE"))
+              if (extractPrivate)
               {
-                if (Config_getBool("SORT_MEMBER_DOCS"))
-                  functionMembers->inSort(md); 
-                else
-                  functionMembers->append(md);
+                addMemberToList(MemberList::functionMembers,md);
               }
               break;
           }
           break;
         default: // any of the other members
-          if (prot!=Private || Config_getBool("EXTRACT_PRIVATE"))
+          if (prot!=Private || extractPrivate)
           {
             switch (md->memberType())
             {
               case MemberDef::Typedef:
-                if (typedefMembers==0) typedefMembers = new MemberList;
-                if (Config_getBool("SORT_MEMBER_DOCS"))
-                  typedefMembers->inSort(md);
-                else
-                  typedefMembers->append(md);
+                addMemberToList(MemberList::typedefMembers,md);
                 break;
               case MemberDef::Enumeration:
-                if (enumMembers==0) enumMembers = new MemberList;
-                if (Config_getBool("SORT_MEMBER_DOCS"))
-                  enumMembers->inSort(md);
-                else
-                  enumMembers->append(md);
+                addMemberToList(MemberList::enumMembers,md);
                 break;
               case MemberDef::EnumValue:
-                if (enumValMembers==0) enumValMembers = new MemberList;
-                if (Config_getBool("SORT_MEMBER_DOCS"))
-                  enumValMembers->inSort(md);
-                else
-                  enumValMembers->append(md);
+                addMemberToList(MemberList::enumValMembers,md);
                 break;
               case MemberDef::Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  if (constructors==0) constructors = new MemberList;
-                  constructors->append(md);
+                  MemberList *ml = createMemberList(MemberList::constructors);
+                  ml->append(md);
+                  md->setSectionList(this,ml);
                 }
                 else
                 {
-                  if (functionMembers==0) functionMembers = new MemberList;
-                  if (Config_getBool("SORT_MEMBER_DOCS"))
-                    functionMembers->inSort(md);
-                  else
-                    functionMembers->append(md);
+                  addMemberToList(MemberList::functionMembers,md);
                 }
                 break;
               case MemberDef::Variable:
-                if (variableMembers==0) variableMembers = new MemberList;
-                if (Config_getBool("SORT_MEMBER_DOCS"))
-                  variableMembers->inSort(md);
-                else
-                  variableMembers->append(md);
+                addMemberToList(MemberList::variableMembers,md);
                 break;
               default:
                 err("Unexpected member type %d found!\n",md->memberType());
@@ -735,34 +574,18 @@ void ClassDef::insertMember(MemberDef *md)
 void ClassDef::computeAnchors()
 {
   ClassDef *context = Config_getBool("INLINE_INHERITED_MEMB") ? this : 0;
-  setAnchors(context,'a',pubMethods);
-  setAnchors(context,'b',proMethods);
-  setAnchors(context,'c',pacMethods);
-  setAnchors(context,'d',priMethods);
-  setAnchors(context,'e',pubStaticMethods);
-  setAnchors(context,'f',proStaticMethods);
-  setAnchors(context,'g',pacStaticMethods);
-  setAnchors(context,'h',priStaticMethods);
-  setAnchors(context,'i',pubSlots);
-  setAnchors(context,'j',proSlots);
-  setAnchors(context,'k',priSlots);
-  setAnchors(context,'l',signals);
-  setAnchors(context,'m',related);
-  setAnchors(context,'n',friends);
-  setAnchors(context,'o',pubAttribs);
-  setAnchors(context,'p',proAttribs);
-  setAnchors(context,'q',pacAttribs);
-  setAnchors(context,'r',priAttribs);
-  setAnchors(context,'s',pubStaticAttribs);
-  setAnchors(context,'t',proStaticAttribs);
-  setAnchors(context,'u',pacStaticAttribs);
-  setAnchors(context,'v',priStaticAttribs);
-  setAnchors(context,'w',pubTypes);
-  setAnchors(context,'x',proTypes);
-  setAnchors(context,'y',priTypes);
-  setAnchors(context,'z',dcopMethods);
-  setAnchors(context,'0',properties);
-  setAnchors(context,'1',events);
+  const char *letters = "abcdefghijklmnopqrstuvwxyz0123456789";
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  int index = 0;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::detailedLists)==0)
+    {
+      setAnchors(context,letters[index++],ml);
+    }
+  }
+
   if (memberGroupSDict)
   {
     MemberGroupSDict::Iterator mgli(*memberGroupSDict);
@@ -799,35 +622,15 @@ void ClassDef::findSectionsInDocumentation()
       mg->findSectionsInDocumentation();
     }
   }
-  if (pubTypes) pubTypes->findSectionsInDocumentation();
-  if (pubMethods) pubMethods->findSectionsInDocumentation();
-  if (pubAttribs) pubAttribs->findSectionsInDocumentation();
-  if (pubSlots) pubSlots->findSectionsInDocumentation();
-  if (signals) signals->findSectionsInDocumentation();
-  if (dcopMethods) dcopMethods->findSectionsInDocumentation();
-  if (pubStaticMethods) pubStaticMethods->findSectionsInDocumentation();
-  if (pubStaticAttribs) pubStaticAttribs->findSectionsInDocumentation();
-  if (pacTypes) pacTypes->findSectionsInDocumentation();
-  if (pacMethods) pacMethods->findSectionsInDocumentation();
-  if (pacAttribs) pacAttribs->findSectionsInDocumentation();
-  if (pacStaticMethods) pacStaticMethods->findSectionsInDocumentation();
-  if (pacStaticAttribs) pacStaticAttribs->findSectionsInDocumentation();
-  if (proTypes) proTypes->findSectionsInDocumentation();
-  if (proMethods) proMethods->findSectionsInDocumentation();
-  if (proAttribs) proAttribs->findSectionsInDocumentation();
-  if (proSlots) proSlots->findSectionsInDocumentation();
-  if (proStaticMethods) proStaticMethods->findSectionsInDocumentation();
-  if (proStaticAttribs) proStaticAttribs->findSectionsInDocumentation();
-  if (priTypes) priTypes->findSectionsInDocumentation();
-  if (priMethods) priMethods->findSectionsInDocumentation();
-  if (priAttribs) priAttribs->findSectionsInDocumentation();
-  if (priSlots) priSlots->findSectionsInDocumentation();
-  if (priStaticMethods) priStaticMethods->findSectionsInDocumentation();
-  if (priStaticAttribs) priStaticAttribs->findSectionsInDocumentation();
-  if (friends) friends->findSectionsInDocumentation();
-  if (related) related->findSectionsInDocumentation();
-  if (properties) properties->findSectionsInDocumentation();
-  if (events) events->findSectionsInDocumentation();
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if ((ml->listType()&MemberList::detailedLists)==0)
+    {
+      ml->findSectionsInDocumentation();
+    }
+  }
 }
 
 
@@ -1502,71 +1305,102 @@ void ClassDef::writeDocumentation(OutputList &ol)
   }
 
   // public types
-  if (pubTypes) pubTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicTypes(),0); 
+  writeMemberDeclarations(ol,MemberList::pubTypes,theTranslator->trPublicTypes()); 
+  //if (pubTypes) pubTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicTypes(),0); 
 
   // public methods
-  if (pubSlots) pubSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
-  if (signals) signals->writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
-  if (dcopMethods) dcopMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
-  if (pubMethods) pubMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
-  if (pubStaticMethods) pubStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::pubSlots,theTranslator->trPublicSlots()); 
+  //if (pubSlots) pubSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicSlots(),0); 
+  writeMemberDeclarations(ol,MemberList::signals,theTranslator->trSignals()); 
+  //if (signals) signals->writeDeclarations(ol,this,0,0,0,theTranslator->trSignals(),0); 
+  writeMemberDeclarations(ol,MemberList::dcopMethods,theTranslator->trDCOPMethods()); 
+  //if (dcopMethods) dcopMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trDCOPMethods(),0); 
+  writeMemberDeclarations(ol,MemberList::pubMethods,theTranslator->trPublicMembers()); 
+  //if (pubMethods) pubMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::pubStaticMethods,theTranslator->trStaticPublicMembers()); 
+  //if (pubStaticMethods) pubStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicMembers(),0); 
 
   // public attribs
-  if (pubAttribs) pubAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
-  if (pubStaticAttribs) pubStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::pubAttribs,theTranslator->trPublicAttribs()); 
+  //if (pubAttribs) pubAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPublicAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::pubStaticAttribs,theTranslator->trStaticPublicAttribs()); 
+  //if (pubStaticAttribs) pubStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPublicAttribs(),0); 
   
   // protected types
-  if (proTypes) proTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedTypes(),0); 
+  writeMemberDeclarations(ol,MemberList::proTypes,theTranslator->trProtectedTypes()); 
+  //if (proTypes) proTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedTypes(),0); 
 
   // protected methods
-  if (proSlots) proSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedSlots(),0); 
-  if (proMethods) proMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
-  if (proStaticMethods) proStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::proSlots,theTranslator->trProtectedSlots()); 
+  //if (proSlots) proSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedSlots(),0); 
+  writeMemberDeclarations(ol,MemberList::proMethods,theTranslator->trProtectedMembers()); 
+  //if (proMethods) proMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::proStaticMethods,theTranslator->trStaticProtectedMembers());
+  //if (proStaticMethods) proStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedMembers(),0); 
 
   // protected attribs
-  if (proAttribs) proAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
-  if (proStaticAttribs) proStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::proAttribs,theTranslator->trProtectedAttribs()); 
+  //if (proAttribs) proAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trProtectedAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::proStaticAttribs,theTranslator->trStaticProtectedAttribs()); 
+  //if (proStaticAttribs) proStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticProtectedAttribs(),0); 
 
   // package types
-  if (pacTypes) pacTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageTypes(),0); 
+  writeMemberDeclarations(ol,MemberList::pacTypes,theTranslator->trPackageTypes()); 
+  //if (pacTypes) pacTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageTypes(),0); 
 
   // package methods
-  if (pacMethods) pacMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageMembers(),0); 
-  if (pacStaticMethods) pacStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::pacMethods,theTranslator->trPackageMembers()); 
+  //if (pacMethods) pacMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageMembers(),0); 
+  writeMemberDeclarations(ol,MemberList::pacStaticMethods,theTranslator->trStaticPackageMembers()); 
+  //if (pacStaticMethods) pacStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageMembers(),0); 
 
   // package attribs
-  if (pacAttribs) pacAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageAttribs(),0); 
-  if (pacStaticAttribs) pacStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::pacAttribs,theTranslator->trPackageAttribs()); 
+  //if (pacAttribs) pacAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPackageAttribs(),0); 
+  writeMemberDeclarations(ol,MemberList::pacStaticAttribs,theTranslator->trStaticPackageAttribs()); 
+  //if (pacStaticAttribs) pacStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPackageAttribs(),0); 
 
   // package
-  if (properties) properties->writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
+  writeMemberDeclarations(ol,MemberList::properties,theTranslator->trProperties()); 
+  //if (properties) properties->writeDeclarations(ol,this,0,0,0,theTranslator->trProperties(),0); 
 
   // events
-  if (events) events->writeDeclarations(ol,this,0,0,0,theTranslator->trEvents(),0); 
+  writeMemberDeclarations(ol,MemberList::events,theTranslator->trEvents()); 
+  //if (events) events->writeDeclarations(ol,this,0,0,0,theTranslator->trEvents(),0); 
 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
     // private types
-    if (priTypes) priTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
+    writeMemberDeclarations(ol,MemberList::priTypes,theTranslator->trPrivateTypes()); 
+    //if (priTypes) priTypes->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateTypes(),0); 
 
     // private members
-    if (priSlots) priSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateSlots(),0); 
-    if (priMethods) priMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
-    if (priStaticMethods) priStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
+    writeMemberDeclarations(ol,MemberList::priSlots,theTranslator->trPrivateSlots()); 
+    //if (priSlots) priSlots->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateSlots(),0); 
+    writeMemberDeclarations(ol,MemberList::priMethods,theTranslator->trPrivateMembers()); 
+    //if (priMethods) priMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateMembers(),0); 
+    writeMemberDeclarations(ol,MemberList::priStaticMethods,theTranslator->trStaticPrivateMembers()); 
+    //if (priStaticMethods) priStaticMethods->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateMembers(),0); 
 
     // private attribs
-    if (priAttribs) priAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
-    if (priStaticAttribs) priStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateAttribs(),0); 
+    writeMemberDeclarations(ol,MemberList::priAttribs,theTranslator->trPrivateAttribs()); 
+    //if (priAttribs) priAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trPrivateAttribs(),0); 
+    writeMemberDeclarations(ol,MemberList::priStaticAttribs,theTranslator->trStaticPrivateAttribs()); 
+    //if (priStaticAttribs) priStaticAttribs->writeDeclarations(ol,this,0,0,0,theTranslator->trStaticPrivateAttribs(),0); 
   }
 
   // friends
-  if (friends) friends->writeDeclarations(ol,this,0,0,0,theTranslator->trFriends(),0);
+  writeMemberDeclarations(ol,MemberList::friends,theTranslator->trFriends());
+  //if (friends) friends->writeDeclarations(ol,this,0,0,0,theTranslator->trFriends(),0);
 
   // related functions
-  if (related) related->writeDeclarations(ol,this,0,0,0,
-                  theTranslator->trRelatedFunctions(),
-                  theTranslator->trRelatedSubscript()
-                 ); 
+  writeMemberDeclarations(ol,MemberList::related,theTranslator->trRelatedFunctions(),
+                                              theTranslator->trRelatedSubscript()
+                         ); 
+  //if (related) related->writeDeclarations(ol,this,0,0,0,
+  //                theTranslator->trRelatedFunctions(),
+  //                theTranslator->trRelatedSubscript()
+  //               ); 
 
   // nested classes
   if (m_innerClasses) m_innerClasses->writeDeclaration(ol,0,0,TRUE);
@@ -1628,29 +1462,37 @@ void ClassDef::writeMemberDocumentation(OutputList &ol)
     Doxygen::suppressDocWarnings = TRUE;
   }
   
-  if (typedefMembers) typedefMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trMemberTypedefDocumentation());
+  writeMemberDocumentation(ol,MemberList::typedefMembers,theTranslator->trMemberTypedefDocumentation());
+  //if (typedefMembers) typedefMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trMemberTypedefDocumentation());
 
-  if (enumMembers) enumMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trMemberEnumerationDocumentation());
+  writeMemberDocumentation(ol,MemberList::enumMembers,theTranslator->trMemberEnumerationDocumentation());
+  //if (enumMembers) enumMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trMemberEnumerationDocumentation());
   
-  if (constructors) constructors->writeDocumentation(ol,name(),this,
-                         theTranslator->trConstructorDocumentation());
+  writeMemberDocumentation(ol,MemberList::constructors,theTranslator->trConstructorDocumentation());
+  //if (constructors) constructors->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trConstructorDocumentation());
 
-  if (functionMembers) functionMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trMemberFunctionDocumentation());
+  writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentation());
+  //if (functionMembers) functionMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trMemberFunctionDocumentation());
 
-  if (relatedMembers) relatedMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trRelatedFunctionDocumentation());
+  writeMemberDocumentation(ol,MemberList::relatedMembers,theTranslator->trRelatedFunctionDocumentation());
+  //if (relatedMembers) relatedMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trRelatedFunctionDocumentation());
 
-  if (variableMembers) variableMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trMemberDataDocumentation());
+  writeMemberDocumentation(ol,MemberList::variableMembers,theTranslator->trMemberDataDocumentation());
+  //if (variableMembers) variableMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trMemberDataDocumentation());
   
-  if (propertyMembers) propertyMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trPropertyDocumentation());
+  writeMemberDocumentation(ol,MemberList::propertyMembers,theTranslator->trPropertyDocumentation());
+  //if (propertyMembers) propertyMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trPropertyDocumentation());
   
-  if (eventMembers) eventMembers->writeDocumentation(ol,name(),this,
-                         theTranslator->trEventDocumentation());
+  writeMemberDocumentation(ol,MemberList::eventMembers,theTranslator->trEventDocumentation());
+  //if (eventMembers) eventMembers->writeDocumentation(ol,name(),this,
+  //                       theTranslator->trEventDocumentation());
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -1668,6 +1510,16 @@ void ClassDef::writeMemberPages(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if (ml->listType()&MemberList::detailedLists)
+    {
+      ml->writeDocumentationPage(ol,name(),this);
+    }
+  }
+#if 0
   if (typedefMembers) typedefMembers->writeDocumentationPage(ol,name(),this);
   if (enumMembers) enumMembers->writeDocumentationPage(ol,name(),this);
   if (constructors) constructors->writeDocumentationPage(ol,name(),this);
@@ -1676,6 +1528,7 @@ void ClassDef::writeMemberPages(OutputList &ol)
   if (variableMembers) variableMembers->writeDocumentationPage(ol,name(),this);
   if (propertyMembers) propertyMembers->writeDocumentationPage(ol,name(),this);
   if (eventMembers) eventMembers->writeDocumentationPage(ol,name(),this);
+#endif
 
   ol.popGeneratorState();
 }
@@ -2082,67 +1935,96 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
     }
   }
 
-  if (pubTypes) pubTypes->setInGroup(inGroup);
-  if (pubTypes) pubTypes->writePlainDeclarations(ol,this,0,0,0); 
-  if (pubMethods) pubMethods->setInGroup(inGroup);
-  if (pubMethods) pubMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (pubAttribs) pubAttribs->setInGroup(inGroup);
-  if (pubAttribs) pubAttribs->writePlainDeclarations(ol,this,0,0,0); 
-  if (pubSlots) pubSlots->setInGroup(inGroup);
-  if (pubSlots) pubSlots->writePlainDeclarations(ol,this,0,0,0); 
-  if (signals) signals->setInGroup(inGroup);
-  if (signals) signals->writePlainDeclarations(ol,this,0,0,0); 
-  if (dcopMethods) dcopMethods->setInGroup(inGroup);
-  if (dcopMethods) dcopMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (properties) properties->setInGroup(inGroup);
-  if (properties) properties->writePlainDeclarations(ol,this,0,0,0); 
-  if (events) events->setInGroup(inGroup);
-  if (events) events->writePlainDeclarations(ol,this,0,0,0); 
-  if (pubStaticMethods) pubStaticMethods->setInGroup(inGroup);
-  if (pubStaticMethods) pubStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (pubStaticAttribs) pubStaticAttribs->setInGroup(inGroup);
-  if (pubStaticAttribs) pubStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
-  if (proTypes) proTypes->setInGroup(inGroup);
-  if (proTypes) proTypes->writePlainDeclarations(ol,this,0,0,0); 
-  if (proMethods) proMethods->setInGroup(inGroup);
-  if (proMethods) proMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (proAttribs) proAttribs->setInGroup(inGroup);
-  if (proAttribs) proAttribs->writePlainDeclarations(ol,this,0,0,0); 
-  if (proSlots) proSlots->setInGroup(inGroup);
-  if (proSlots) proSlots->writePlainDeclarations(ol,this,0,0,0); 
-  if (proStaticMethods) proStaticMethods->setInGroup(inGroup);
-  if (proStaticMethods) proStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (proStaticAttribs) proStaticAttribs->setInGroup(inGroup);
-  if (proStaticAttribs) proStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
-  if (pacTypes) pacTypes->setInGroup(inGroup);
-  if (pacTypes) pacTypes->writePlainDeclarations(ol,this,0,0,0); 
-  if (pacMethods) pacMethods->setInGroup(inGroup);
-  if (pacMethods) pacMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (pacAttribs) pacAttribs->setInGroup(inGroup);
-  if (pacAttribs) pacAttribs->writePlainDeclarations(ol,this,0,0,0); 
-  if (pacStaticMethods) pacStaticMethods->setInGroup(inGroup);
-  if (pacStaticMethods) pacStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
-  if (pacStaticAttribs) pacStaticAttribs->setInGroup(inGroup);
-  if (pacStaticAttribs) pacStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubTypes,inGroup);
+  //if (pubTypes) pubTypes->setInGroup(inGroup);
+  //if (pubTypes) pubTypes->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubMethods,inGroup);
+  //if (pubMethods) pubMethods->setInGroup(inGroup);
+  //if (pubMethods) pubMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubAttribs,inGroup);
+  //if (pubAttribs) pubAttribs->setInGroup(inGroup);
+  //if (pubAttribs) pubAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubSlots,inGroup);
+  //if (pubSlots) pubSlots->setInGroup(inGroup);
+  //if (pubSlots) pubSlots->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::signals,inGroup);
+  //if (signals) signals->setInGroup(inGroup);
+  //if (signals) signals->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::dcopMethods,inGroup);
+  //if (dcopMethods) dcopMethods->setInGroup(inGroup);
+  //if (dcopMethods) dcopMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::properties,inGroup);
+  //if (properties) properties->setInGroup(inGroup);
+  //if (properties) properties->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::events,inGroup);
+  //if (events) events->setInGroup(inGroup);
+  //if (events) events->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubStaticMethods,inGroup);
+  //if (pubStaticMethods) pubStaticMethods->setInGroup(inGroup);
+  //if (pubStaticMethods) pubStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pubStaticAttribs,inGroup);
+  //if (pubStaticAttribs) pubStaticAttribs->setInGroup(inGroup);
+  //if (pubStaticAttribs) pubStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proTypes,inGroup);
+  //if (proTypes) proTypes->setInGroup(inGroup);
+  //if (proTypes) proTypes->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proMethods,inGroup);
+  //if (proMethods) proMethods->setInGroup(inGroup);
+  //if (proMethods) proMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proAttribs,inGroup);
+  //if (proAttribs) proAttribs->setInGroup(inGroup);
+  //if (proAttribs) proAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proSlots,inGroup);
+  //if (proSlots) proSlots->setInGroup(inGroup);
+  //if (proSlots) proSlots->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proStaticMethods,inGroup);
+  //if (proStaticMethods) proStaticMethods->setInGroup(inGroup);
+  //if (proStaticMethods) proStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::proStaticAttribs,inGroup);
+  //if (proStaticAttribs) proStaticAttribs->setInGroup(inGroup);
+  //if (proStaticAttribs) proStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pacTypes,inGroup);
+  //if (pacTypes) pacTypes->setInGroup(inGroup);
+  //if (pacTypes) pacTypes->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pacMethods,inGroup);
+  //if (pacMethods) pacMethods->setInGroup(inGroup);
+  //if (pacMethods) pacMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pacAttribs,inGroup);
+  //if (pacAttribs) pacAttribs->setInGroup(inGroup);
+  //if (pacAttribs) pacAttribs->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pacStaticMethods,inGroup);
+  //if (pacStaticMethods) pacStaticMethods->setInGroup(inGroup);
+  //if (pacStaticMethods) pacStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::pacStaticAttribs,inGroup);
+  //if (pacStaticAttribs) pacStaticAttribs->setInGroup(inGroup);
+  //if (pacStaticAttribs) pacStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
   if (Config_getBool("EXTRACT_PRIVATE"))
   {
-    if (priTypes) priTypes->setInGroup(inGroup);
-    if (priTypes) priTypes->writePlainDeclarations(ol,this,0,0,0); 
-    if (priMethods) priMethods->setInGroup(inGroup);
-    if (priMethods) priMethods->writePlainDeclarations(ol,this,0,0,0); 
-    if (priAttribs) priAttribs->setInGroup(inGroup); 
-    if (priAttribs) priAttribs->writePlainDeclarations(ol,this,0,0,0); 
-    if (priSlots) priSlots->setInGroup(inGroup); 
-    if (priSlots) priSlots->writePlainDeclarations(ol,this,0,0,0); 
-    if (priStaticMethods) priStaticMethods->setInGroup(inGroup); 
-    if (priStaticMethods) priStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
-    if (priStaticAttribs) priStaticAttribs->setInGroup(inGroup); 
-    if (priStaticAttribs) priStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priTypes,inGroup);
+    //if (priTypes) priTypes->setInGroup(inGroup);
+    //if (priTypes) priTypes->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priMethods,inGroup);
+    //if (priMethods) priMethods->setInGroup(inGroup);
+    //if (priMethods) priMethods->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priAttribs,inGroup);
+    //if (priAttribs) priAttribs->setInGroup(inGroup); 
+    //if (priAttribs) priAttribs->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priSlots,inGroup);
+    //if (priSlots) priSlots->setInGroup(inGroup); 
+    //if (priSlots) priSlots->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priStaticMethods,inGroup);
+    //if (priStaticMethods) priStaticMethods->setInGroup(inGroup); 
+    //if (priStaticMethods) priStaticMethods->writePlainDeclarations(ol,this,0,0,0); 
+    writePlainMemberDeclaration(ol,MemberList::priStaticAttribs,inGroup);
+    //if (priStaticAttribs) priStaticAttribs->setInGroup(inGroup); 
+    //if (priStaticAttribs) priStaticAttribs->writePlainDeclarations(ol,this,0,0,0); 
   }
-  if (friends) friends->setInGroup(inGroup);
-  if (friends) friends->writePlainDeclarations(ol,this,0,0,0);
-  if (related) related->setInGroup(inGroup);
-  if (related) related->writePlainDeclarations(ol,this,0,0,0); 
+  writePlainMemberDeclaration(ol,MemberList::friends,inGroup);
+  //if (friends) friends->setInGroup(inGroup);
+  //if (friends) friends->writePlainDeclarations(ol,this,0,0,0);
+  writePlainMemberDeclaration(ol,MemberList::related,inGroup);
+  //if (related) related->setInGroup(inGroup);
+  //if (related) related->writePlainDeclarations(ol,this,0,0,0); 
 }
 
 /*! a link to this class is possible within this project */
@@ -3142,15 +3024,15 @@ void ClassDef::addListReferences()
       mg->addListReferences(this);
     }
   }
-  if (constructors) constructors->addListReferences(this);
-  if (typedefMembers) typedefMembers->addListReferences(this);
-  if (enumMembers) enumMembers->addListReferences(this);
-  if (enumValMembers) enumValMembers->addListReferences(this);
-  if (functionMembers) functionMembers->addListReferences(this);
-  if (relatedMembers) relatedMembers->addListReferences(this);
-  if (variableMembers) variableMembers->addListReferences(this);
-  if (propertyMembers) propertyMembers->addListReferences(this);
-  if (eventMembers) eventMembers->addListReferences(this);
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if (ml->listType()&MemberList::detailedLists)
+    {
+      ml->addListReferences(this);
+    }
+  }
 }
 
 MemberDef *ClassDef::getMemberByName(const QCString &name) 
@@ -3181,5 +3063,71 @@ MemberDef *ClassDef::getMemberByName(const QCString &name)
   }
   //printf("getMemberByName(%s)=%p\n",name.data(),xmd);
   return xmd;
+}
+
+MemberList *ClassDef::createMemberList(MemberList::ListType lt)
+{
+  m_memberLists.setAutoDelete(TRUE);
+  QListIterator<MemberList> mli(m_memberLists);
+  MemberList *ml;
+  for (mli.toFirst();(ml=mli.current());++mli)
+  {
+    if (ml->listType()==lt)
+    {
+      return ml;
+    }
+  }
+  // not found, create a new member list
+  ml = new MemberList(lt);
+  m_memberLists.append(ml);
+  return ml;
+}
+
+MemberList *ClassDef::getMemberList(MemberList::ListType lt)
+{
+  MemberList *ml = m_memberLists.first();
+  while (ml)
+  {
+    if (ml->listType()==lt)
+    {
+      return ml;
+    }
+    ml = m_memberLists.next();
+  }
+  return 0;
+}
+
+void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
+{
+  static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
+  MemberList *ml = createMemberList(lt);
+  if (sortBriefDocs)
+    ml->inSort(md);
+  else
+    ml->append(md);
+  md->setSectionList(this,ml);
+}
+
+void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
+               const char *subTitle)
+{
+  MemberList * ml = getMemberList(lt);
+  if (ml) ml->writeDeclarations(ol,this,0,0,0,title,subTitle); 
+}
+
+void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
+{
+  MemberList * ml = getMemberList(lt);
+  if (ml) ml->writeDocumentation(ol,name(),this,title);
+}
+
+void ClassDef::writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup)
+{
+  MemberList * ml = getMemberList(lt);
+  if (ml) 
+  {
+    ml->setInGroup(inGroup);
+    ml->writePlainDeclarations(ol,this,0,0,0); 
+  }
 }
 

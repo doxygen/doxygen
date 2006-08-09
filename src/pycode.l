@@ -715,6 +715,36 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   return;
 }
 
+static void findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *symName)
+{
+  //printf("sym %s outerScope=%s equal=%d\n",
+  //    sym->name().data(),sym->getOuterScope()->name().data(),
+  //    sym->getOuterScope()==g_currentDefinition);
+
+  if (sym->getOuterScope() &&
+      sym->getOuterScope()->definitionType()==Definition::TypeClass &&
+      g_currentDefinition->definitionType()==Definition::TypeClass)
+  {
+    ClassDef *cd = (ClassDef*)sym->getOuterScope();
+    ClassDef *thisCd = (ClassDef *)g_currentDefinition;
+    QCString anchor;
+    if (sym->definitionType()==Definition::TypeMember)
+    {
+      anchor=((MemberDef *)sym)->anchor();
+    }
+
+    // TODO: find the nearest base class in case cd is a base class of
+    // thisCd 
+    if (cd==thisCd) 
+    {
+      writeMultiLineCodeLink(ol,sym->getReference(),
+          sym->getOutputFileBase(),
+          anchor,
+          symName);
+    }
+  }
+}
+
 static void findMemberLink(CodeOutputInterface &ol,char *symName)
 {
   //printf("Member reference: %s scope=%s member=%s\n",
@@ -724,41 +754,19 @@ static void findMemberLink(CodeOutputInterface &ol,char *symName)
   //    );
   if (g_currentDefinition)
   {
-    DefinitionList *dl = Doxygen::symbolMap->find(symName);
-    if (dl)
+    DefinitionIntf *di = Doxygen::symbolMap->find(symName);
+    if (di->definitionType()==DefinitionIntf::TypeSymbolList) // multiple symbols
     {
-      DefinitionListIterator dli(*dl);
+      DefinitionListIterator dli(*(DefinitionList*)di);
       Definition *sym;
       for (dli.toFirst();(sym=dli.current());++dli)
       {
-	//printf("sym %s outerScope=%s equal=%d\n",
-	//    sym->name().data(),sym->getOuterScope()->name().data(),
-	//    sym->getOuterScope()==g_currentDefinition);
-
-	if (sym->getOuterScope() &&
-	    sym->getOuterScope()->definitionType()==Definition::TypeClass &&
-	    g_currentDefinition->definitionType()==Definition::TypeClass)
-	{
-	  ClassDef *cd = (ClassDef*)sym->getOuterScope();
-	  ClassDef *thisCd = (ClassDef *)g_currentDefinition;
-	  QCString anchor;
-	  if (sym->definitionType()==Definition::TypeMember)
-	  {
-	    anchor=((MemberDef *)sym)->anchor();
-	  }
-
-	  // TODO: find the nearest base class in case cd is a base class of
-	  // thisCd 
-	  if (cd==thisCd) 
-	  {
-	    writeMultiLineCodeLink(ol,sym->getReference(),
-		sym->getOutputFileBase(),
-		anchor,
-		symName);
-	    return;
-	  }
-	}
+        findMemberLink(ol,sym,symName);
       }
+    }
+    else // single symbol
+    {
+      findMemberLink(ol,(Definition*)di,symName);
     }
   }
   //printf("sym %s not found\n",&yytext[5]);

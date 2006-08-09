@@ -461,7 +461,7 @@ void MemberDef::insertReimplementedBy(MemberDef *md)
   {
     m_templateMaster->insertReimplementedBy(md);
   }
-  if (redefinedBy==0) redefinedBy = new MemberList;
+  if (redefinedBy==0) redefinedBy = new MemberList(MemberList::redefinedBy);
   if (redefinedBy->findRef(md)==-1) 
   {
     redefinedBy->inSort(md);
@@ -480,7 +480,7 @@ MemberList *MemberDef::reimplementedBy() const
 
 void MemberDef::insertEnumField(MemberDef *md)
 {
-  if (enumFields==0) enumFields=new MemberList;
+  if (enumFields==0) enumFields=new MemberList(MemberList::enumFields);
   enumFields->append(md);
 }
 

@@ -55,7 +55,8 @@ class MemberGroup
     QCString documentation() { return doc; }
     bool allMembersInSameSection() { return inSameSection; }
     void addToDeclarationSection();
-    int countDecMembers(/*bool sectionPerType*/);
+    int countDecMembers();
+    int countDocMembers();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
     int varCount() const;
@@ -83,6 +84,7 @@ class MemberGroup
     MemberList *inDeclSection;
     bool inSameSection;
     int  m_numDecMembers;
+    int  m_numDocMembers;
     Definition *m_parent;
     QCString m_docFile;
 };

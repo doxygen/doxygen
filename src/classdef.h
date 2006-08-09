@@ -54,10 +54,6 @@ struct IncludeInfo;
 class ClassDef : public Definition
 {
   public:
-    /*! \name Public API
-     *  \{
-     */
-
     /*! The various compound types */
     enum CompoundType { Class=Entry::CLASS_SEC, 
                         Struct=Entry::STRUCT_SEC, 
@@ -67,22 +63,68 @@ class ClassDef : public Definition
                         Category=Entry::CATEGORY_SEC,
                         Exception=Entry::EXCEPTION_SEC
                       };
+
+    /*! Creates a new compound definition.
+     *  \param fileName  full path and file name in which this compound was
+     *                   found.
+     *  \param startLine line number where the definition of this compound
+     *                   starts.
+     *  \param name      the name of this compound (including scope)
+     *  \param ct        the kind of Compound
+     *  \param ref       the tag file from which this compound is extracted
+     *                   or 0 if the compound doesn't come from a tag file
+     *  \param fName     the file name as found in the tag file. 
+     *                   This overwrites the file that doxygen normally 
+     *                   generates based on the compound type & name.
+     *  \param isSymbol  If TRUE this class name is added as a publicly 
+     *                   visible (and referencable) symbol.
+     */
+    ClassDef(const char *fileName,int startLine,
+             const char *name,CompoundType ct,
+             const char *ref=0,const char *fName=0,
+             bool isSymbol=TRUE);
+    /*! Destroys a compound definition. */
+   ~ClassDef();
+
+    //-----------------------------------------------------------------------------------
+    // --- getters 
+    //-----------------------------------------------------------------------------------
+
+    /*! Used for RTTI, this is a class */
     DefType definitionType() const { return TypeClass; }
+
+    /*! Returns the unique base name (without extension) of the class's file on disk */
     QCString getOutputFileBase() const; 
     QCString getInstanceOutputFileBase() const; 
     QCString getFileBase() const;
+
+    /*! Returns the base name for the source code file */
     QCString getSourceFileBase() const; 
+
+    /*! If this class originated from a tagfile, this will return the tag file reference */
     QCString getReference() const;
+
+    /*! Returns TRUE if this class is imported via a tag file */
     bool isReference() const;
+
+    /*! Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
     bool isLocal() const { return m_isLocal; }
+
+    /*! returns TRUE if this class was artificially introduced, for instance because
+     *  it is used to show a template instantiation relation. 
+     */
     bool isArtificial() const { return m_artificial; }
 
+    /*! returns the classes nested into this class */
+    ClassSDict *getInnerClasses() { return m_innerClasses; }
+
+    /*! returns TRUE if this class has documentation */
     bool hasDocumentation() const;
 
     /*! Returns the name as it is appears in the documentation */
     QCString displayName() const;
 
-    /*! Returns the type of compound this is */
+    /*! Returns the type of compound this is, i.e. class/struct/union/.. */
     CompoundType compoundType() const { return m_compType; } 
 
     /*! Returns the type of compound as a string */
@@ -93,7 +135,7 @@ class ClassDef : public Definition
      */
     BaseClassList *baseClasses() { return m_inherits; }
     
-    /*! Returns the list of sub classes that directly inherit from this class
+    /*! Returns the list of sub classes that directly derive from this class
      */
     BaseClassList *subClasses() { return m_inheritedBy; }
 
@@ -102,21 +144,12 @@ class ClassDef : public Definition
      */ 
     MemberNameInfoSDict *memberNameInfoSDict() { return m_allMemberNameInfoSDict; }
 
-    void writeDocumentation(OutputList &ol);
-    void writeDocumentationForInnerClasses(OutputList &ol);
-    void writeMemberDocumentation(OutputList &ol);
-    void writeMemberPages(OutputList &ol);
-    void writeMemberList(OutputList &ol);
-    void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
-    void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
-    void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
-
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.
      */
     Protection protection() const { return m_prot; }
 
-    /*! returns TRUE iff a link is possible to an item within this project.
+    /*! returns TRUE iff a link is possible to this item within this project.
      */
     bool isLinkableInProject() const;
 
@@ -159,11 +192,13 @@ class ClassDef : public Definition
      *  this template class. Returns 0 if not a template or no instances.
      */
     QDict<ClassDef> *getTemplateInstances() const { return m_templateInstances; }
+
     /*! Returns the template master of which this class is an instance.
      *  Returns 0 if not applicable.
      */
     ClassDef *templateMaster() const { return m_templateMaster; } 
 
+    /*! Returns TRUE if this class is a template */
     bool isTemplate() const { return m_tempArgs!=0; }
 
     IncludeInfo *includeInfo() const { return m_incInfo; }
@@ -181,12 +216,6 @@ class ClassDef : public Definition
     UsesClassDict *usedInterfaceClasses() const
     {
       return m_usesIntfClassDict;
-    }
-
-    /** Marks this class as a template argument of some another class */
-    void makeTemplateArgument(bool b=TRUE)
-    {
-      m_isTemplArg = b;
     }
 
     bool isTemplateArgument() const
@@ -208,6 +237,7 @@ class ClassDef : public Definition
      *  with type="class" and name="T".
      */
     void getTemplateParameterLists(QList<ArgumentList> &lists) const;
+
     QCString qualifiedNameWithTemplateParameters(
         QList<ArgumentList> *actualParams=0) const;
 
@@ -219,128 +249,78 @@ class ClassDef : public Definition
     /*! Returns TRUE if this class is implemented in Objective-C */
     bool isObjectiveC() const { return m_isObjC; }
 
+    /*! Returns the class of which this is a category (Objective-C only) */
     ClassDef *categoryOf() const { return m_categoryOf; }
 
-    /*! returns the name of the class including outer classes, but not
+    /*! Returns the name of the class including outer classes, but not
      *  including namespaces.
      */
     QCString className() const;
 
-    /* member lists by protection */
-    MemberList *pubMethods;
-    MemberList *proMethods;
-    MemberList *pacMethods;
-    MemberList *priMethods;
-    MemberList *pubStaticMethods;
-    MemberList *proStaticMethods;
-    MemberList *pacStaticMethods;
-    MemberList *priStaticMethods;
-    MemberList *pubSlots;
-    MemberList *proSlots;
-    MemberList *priSlots;
-    MemberList *pubAttribs;
-    MemberList *proAttribs;
-    MemberList *pacAttribs;
-    MemberList *priAttribs;
-    MemberList *pubStaticAttribs;
-    MemberList *proStaticAttribs;
-    MemberList *pacStaticAttribs;
-    MemberList *priStaticAttribs;
-    MemberList *pubTypes;
-    MemberList *proTypes;
-    MemberList *pacTypes;
-    MemberList *priTypes;
-    MemberList *related;
-    MemberList *signals;
-    MemberList *friends;
-    MemberList *dcopMethods;
-    MemberList *properties;
-    MemberList *events;
-    
-    /* member list by types */
-    MemberList *constructors;
-    MemberList *typedefMembers;
-    MemberList *enumMembers;
-    MemberList *enumValMembers;
-    MemberList *functionMembers;
-    MemberList *relatedMembers;
-    MemberList *variableMembers;
-    MemberList *propertyMembers;
-    MemberList *eventMembers;
+    /*! Returns the members in the list identified by \a lt */
+    MemberList *getMemberList(MemberList::ListType lt);
 
-    /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
+    /*! Returns the list containing the list of members sorted per type */
+    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
-    /*! \} Public API */
+    /*! Returns the member groups defined for this class */
+    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
 
-    /*! \name Doxygen internal API
-     *  \{
-     */
+    QDict<int> *getTemplateBaseClassNames() const;
+    ClassDef *getVariableInstance(const char *templSpec);
+
+    //-----------------------------------------------------------------------------------
+    // --- setters ----
+    //-----------------------------------------------------------------------------------
+
     void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0);
     void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force); 
     void insertMember(MemberDef *);
     void insertUsedFile(const char *);
-    void computeAnchors();
-    //void computeMemberGroups();
-    //void setAnchor(MemberDef *);
-    //void dumpMembers();
     bool addExample(const char *anchor,const char *name, const char *file);
-    void addMembersToMemberGroup();
-    void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
-    void setTemplateArguments(ArgumentList *al);
-    void mergeMembers();
     void mergeCategory(ClassDef *category);
+    void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
     void setFileDef(FileDef *fd) { m_fileDef=fd; }
-    //void determineImplUsageRelation();
-    //void determineIntfUsageRelation();
     void setSubGrouping(bool enabled) { m_subGrouping = enabled; }
     void setProtection(Protection p) { m_prot=p; }
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
-    void addUsedClass(ClassDef *cd,const char *accessName);
-    void addUsedByClass(ClassDef *cd,const char *accessName);
-    //void initTemplateMapping();
-    //void setTemplateArgumentMapping(const char *formal,const char *actual);
-    //QCString getTemplateArgumentMapping(const char *formal) const;
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
                                 const QCString &templSpec,bool &freshInstance);
-    ClassDef *getVariableInstance(const char *templSpec);
-    void setTemplateBaseClassNames(QDict<int> *templateNames);
-    QDict<int> *getTemplateBaseClassNames() const;
-    void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
-    void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
+    void addUsedClass(ClassDef *cd,const char *accessName);
+    void addUsedByClass(ClassDef *cd,const char *accessName);
     void setClassIsArtificial() { m_artificial = TRUE; }
     void setIsStatic(bool b) { m_isStatic=b; }
     void setIsObjectiveC(bool b) { m_isObjC=b; }
-    void addListReferences();
     void setCompoundType(CompoundType t) { m_compType = t; } 
 
-    /*! Creates a new compound definition.
-     *  \param fileName  full path and file name in which this compound was
-     *                   found.
-     *  \param startLine line number where the definition of this compound
-     *                   starts.
-     *  \param name      the name of this compound (including scope)
-     *  \param ct        the kind of Compound
-     *  \param ref       the tag file from which this compound is extracted
-     *                   or 0 if the compound doesn't come from a tag file
-     *  \param fName     the file name as found in the tag file. 
-     *                   This overwrites the file that doxygen normally 
-     *                   generates based on the compound type & name.
-     *  \param isSymbol  If TRUE this class name is added as a publicly 
-     *                   visible (and referencable) symbol.
-     */
-    ClassDef(const char *fileName,int startLine,
-             const char *name,CompoundType ct,
-             const char *ref=0,const char *fName=0,
-             bool isSymbol=TRUE);
-    /*! Destroys a compound definition. */
-   ~ClassDef();
+    void setTemplateArguments(ArgumentList *al);
+    void setTemplateBaseClassNames(QDict<int> *templateNames);
+    void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
+    void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
 
-    ClassSDict *getInnerClasses() { return m_innerClasses; }
+    /*! Marks this class as a template argument of some another class */
+    void makeTemplateArgument(bool b=TRUE) { m_isTemplArg = b; }
+
+    //-----------------------------------------------------------------------------------
+    // --- actions ----
+    //-----------------------------------------------------------------------------------
+
+    void findSectionsInDocumentation();
+    void addMembersToMemberGroup();
+    void addListReferences();
+    void computeAnchors();
+    void mergeMembers();
+    void distributeMemberGroupDocumentation();
+    void writeDocumentation(OutputList &ol);
+    void writeDocumentationForInnerClasses(OutputList &ol);
+    void writeMemberDocumentation(OutputList &ol);
+    void writeMemberPages(OutputList &ol);
+    void writeMemberList(OutputList &ol);
+    void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
+    void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
+    void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
     
     bool visited;
 
@@ -350,11 +330,15 @@ class ClassDef : public Definition
     bool hasNonReferenceSuperClass();
     void showUsedFiles(OutputList &ol);
 
-    /*! \} Interal API */
-
   private: 
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     QCString getMemberListFileName() const;
+    void addMemberToList(MemberList::ListType lt,MemberDef *md);
+    MemberList *createMemberList(MemberList::ListType lt);
+    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
+                                 const char *subTitle=0);
+    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup);
     
     /*! file name that forms the base for the output file containing the
      *  class documentation. For compatibility with Qt (e.g. links via tag 
@@ -366,16 +350,6 @@ class ClassDef : public Definition
      *  in the documentation. 0 by default, set by setIncludeFile().
      */
     IncludeInfo *m_incInfo;                
-
-    /*! file name that forms the base for the "list of members" for this
-     *  class.
-     */
-    //QCString m_memListFileName;            
-
-    /*! Bare name of the class without any scoping prefixes 
-     *  (like for nested classes and classes inside namespaces)
-     */ 
-    //QCString m_scopelessName;              
 
     /*! List of base class (or super-classes) from which this class derives
      *  directly. 
@@ -449,6 +423,11 @@ class ClassDef : public Definition
      *  class which is extended.
      */
     ClassDef *m_categoryOf;
+
+    QList<MemberList> m_memberLists;
+
+    /* user defined member groups */
+    MemberGroupSDict *memberGroupSDict;
 
     /*! Indicated whether this class exists because it is used by
      *  some other class only (TRUE) or if some class inherits from

@@ -24,6 +24,7 @@ distclean: clean
 	cd addon/doxmlparser/src ; $(MAKE) distclean
 	cd addon/doxmlparser/test ; $(MAKE) distclean
 	cd addon/doxmlparser/examples/metrics ; $(MAKE) distclean
+	cd addon/doxyapp ; $(MAKE) distclean
 	-rm -f lib/lib*
 	-rm -f bin/doxy*
 	-rm -f html

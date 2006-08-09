@@ -629,29 +629,29 @@ void DotNode::writeBox(QTextStream &t,
   {
     t << "{" << convertLabel(m_label);
     t << "\\n|";
-    writeBoxMemberList(t,'+',m_classDef->pubAttribs,m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->pubStaticAttribs,m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->pacAttribs,m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->pacStaticAttribs,m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->proAttribs,m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->proStaticAttribs,m_classDef);
-    writeBoxMemberList(t,'-',m_classDef->priAttribs,m_classDef);
-    writeBoxMemberList(t,'-',m_classDef->priStaticAttribs,m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubAttribs),m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticAttribs),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacAttribs),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticAttribs),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proAttribs),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticAttribs),m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priAttribs),m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticAttribs),m_classDef);
     t << "|";
-    writeBoxMemberList(t,'+',m_classDef->pubMethods,m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->pubStaticMethods,m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->pubSlots,m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->pacMethods,m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->pacStaticMethods,m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->proMethods,m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->proStaticMethods,m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->proSlots,m_classDef);
-    writeBoxMemberList(t,'-',m_classDef->priMethods,m_classDef);
-    writeBoxMemberList(t,'-',m_classDef->priStaticMethods,m_classDef);
-    writeBoxMemberList(t,'-',m_classDef->priSlots,m_classDef);
-    if (m_classDef->memberGroupSDict)
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubMethods),m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubStaticMethods),m_classDef);
+    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberList::pubSlots),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacMethods),m_classDef);
+    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberList::pacStaticMethods),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proMethods),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proStaticMethods),m_classDef);
+    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberList::proSlots),m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priMethods),m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priStaticMethods),m_classDef);
+    writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberList::priSlots),m_classDef);
+    if (m_classDef->getMemberGroupSDict())
     {
-      MemberGroupSDict::Iterator mgdi(*m_classDef->memberGroupSDict);
+      MemberGroupSDict::Iterator mgdi(*m_classDef->getMemberGroupSDict());
       MemberGroup *mg;
       for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
       {
@@ -2774,7 +2774,7 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
   // Write collaboration
 
   // Add members
-  addMemberList( gd->getMembers() );
+  addMemberList( gd->getMemberList(MemberList::allMembersList) );
 
   // Add classes
   if ( gd->getClasses() && gd->getClasses()->count() )

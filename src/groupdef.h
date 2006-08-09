@@ -92,26 +92,11 @@ class GroupDef : public Definition
     void setGroupScope(Definition *d) { groupScope = d; }
     Definition *getGroupScope() const { return groupScope; }
 
-    // members in the declaration part of the documentation
-    MemberList decDefineMembers;
-    MemberList decProtoMembers;
-    MemberList decTypedefMembers;
-    MemberList decEnumMembers;
-    MemberList decEnumValMembers;
-    MemberList decFuncMembers;
-    MemberList decVarMembers;
-
-    // members in the documentation part of the documentation
-    MemberList docDefineMembers;
-    MemberList docProtoMembers;
-    MemberList docTypedefMembers;
-    MemberList docEnumMembers;
-    MemberList docEnumValMembers;
-    MemberList docFuncMembers;
-    MemberList docVarMembers;
+    MemberList *getMemberList(MemberList::ListType lt) const;
+    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
     /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
+    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
 
     FileList *      getFiles() const        { return fileList; }
     ClassSDict *    getClasses() const      { return classSDict; }
@@ -119,12 +104,18 @@ class GroupDef : public Definition
     GroupList *     getSubGroups() const    { return groupList; }
     PageSDict *     getPages() const        { return pageDict; }
     DirList *       getDirs() const         { return dirList; }
-    MemberList*     getMembers() const      { return allMemberList; }
+    //MemberList*     getMembers() const      { return allMemberList; }
     
   protected:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
 
   private: 
+    MemberList *createMemberList(MemberList::ListType lt);
+    void addMemberToList(MemberList::ListType lt,MemberDef *md);
+    void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void removeMemberFromList(MemberList::ListType lt,MemberDef *md);
+
     QCString title;                      // title of the group
     bool titleSet;                       // true if title is not the same as the name
     QCString fileName;                   // base name of the generated file
@@ -140,6 +131,9 @@ class GroupDef : public Definition
     MemberNameInfoSDict *allMemberNameInfoSDict;
     
     Definition *groupScope;
+
+    QList<MemberList> m_memberLists;
+    MemberGroupSDict *memberGroupSDict;
 
 };
 
