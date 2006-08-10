@@ -101,7 +101,7 @@ class NamespaceDef : public Definition
     SDict<Definition>    *usingDeclList;
     SDict<Definition>    *m_innerCompounds;
 
-    MemberList           *allMemberList;
+    //MemberList           *allMemberList;
     QList<MemberList>     m_memberLists;
     MemberGroupSDict     *memberGroupSDict;
     ClassSDict           *classSDict;
