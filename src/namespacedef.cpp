@@ -171,6 +171,12 @@ void NamespaceDef::addMembersToMemberGroup()
 
 void NamespaceDef::insertMember(MemberDef *md)
 {
+  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  if (allMemberList==0)
+  {
+    allMemberList = new MemberList(MemberList::allMembersList);
+    m_memberLists.append(allMemberList);
+  }
   allMemberList->append(md); 
   //static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
@@ -261,7 +267,8 @@ void NamespaceDef::insertMember(MemberDef *md)
 
 void NamespaceDef::computeAnchors()
 {
-  setAnchors(0,'a',allMemberList);
+  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  if (allMemberList) setAnchors(0,'a',allMemberList);
 }
 
 void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
@@ -420,7 +427,8 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
-    allMemberList->sort();
+    MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+    if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
   }
 }
@@ -495,31 +503,35 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberListIterator mli(*allMemberList);
-  MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  if (allMemberList)
   {
-    if (md->getNamespaceDef()==this && md->isLinkable())
+    MemberListIterator mli(*allMemberList);
+    MemberDef *md;
+    for (mli.toFirst();(md=mli.current());++mli)
     {
-      ol.writeString("          <tr><td class=\"navtab\">");
-      if (md->isLinkableInProject())
+      if (md->getNamespaceDef()==this && md->isLinkable())
       {
-        if (md==currentMd) // selected item => highlight
+        ol.writeString("          <tr><td class=\"navtab\">");
+        if (md->isLinkableInProject())
         {
-          ol.writeString("<a class=\"qindexHL\" ");
+          if (md==currentMd) // selected item => highlight
+          {
+            ol.writeString("<a class=\"qindexHL\" ");
+          }
+          else
+          {
+            ol.writeString("<a class=\"qindex\" ");
+          }
+          ol.writeString("href=\"");
+          if (createSubDirs) ol.writeString("../../");
+          ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+          ol.writeString("\">");
+          ol.writeString(md->localName());
+          ol.writeString("</a>");
         }
-        else
-        {
-          ol.writeString("<a class=\"qindex\" ");
-        }
-        ol.writeString("href=\"");
-        if (createSubDirs) ol.writeString("../../");
-        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
-        ol.writeString("\">");
-        ol.writeString(md->localName());
-        ol.writeString("</a>");
+        ol.writeString("</td></tr>\n");
       }
-      ol.writeString("</td></tr>\n");
     }
   }
 
@@ -529,8 +541,9 @@ void NamespaceDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) co
 
 int NamespaceDef::countMembers()
 {
-  allMemberList->countDocMembers();
-  return allMemberList->numDocMembers()+classSDict->count();
+  MemberList *allMemberList = getMemberList(MemberList::allMembersList);
+  if (allMemberList) allMemberList->countDocMembers();
+  return (allMemberList ? allMemberList->numDocMembers() : 0)+classSDict->count();
 }
 
 void NamespaceDef::addUsingDirective(NamespaceDef *nd)

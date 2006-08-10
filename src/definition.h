@@ -32,6 +32,7 @@ class GroupList;
 struct ListItemInfo;
 struct SectionInfo;
 class Definition;
+class DefinitionImpl;
 
 struct ReachableDefinition
 {
@@ -71,7 +72,10 @@ class DefinitionIntf
     virtual DefType definitionType() const = 0;
 };
 
-/*! The common base class of all entity definitions found in the sources. */
+/*! The common base class of all entity definitions found in the sources. 
+ *  This can be a class or a member function, or a file, or a namespace, etc.
+ *  Use definitionType() to find which type of definition this is.
+ */
 class Definition : public DefinitionIntf
 {
   public:
@@ -90,19 +94,18 @@ class Definition : public DefinitionIntf
     //-----------------------------------------------------------------------------------
 
     /*! Returns the name of the definition */
-    const QCString& name() const { return m_name; }
+    const QCString& name() const;
 
     /*! Returns the local name without any scope qualifiers. */
     QCString localName() const;
 
-    /*! Returns the base name of the output file that contains this 
-     *  definition. 
+    /*! Returns the fully qualified name of this definition
      */
     virtual QCString qualifiedName();
 
     /*! Returns the name of this definition as it appears in the symbol map.
      */
-    QCString symbolName() const { return m_symbolName; }
+    QCString symbolName() const;
 
     /*! Returns the base file name (without extension) of this definition.
      *  as it is referenced to/written to disk.
@@ -113,35 +116,35 @@ class Definition : public DefinitionIntf
     virtual QCString getSourceFileBase() const { ASSERT(0); return "NULL"; }
 
     /*! Returns the detailed description of this definition */
-    QCString documentation() const { return m_details ? m_details->doc : QCString(""); }
+    QCString documentation() const;
     
     /*! Returns the line number at which the detailed documentation was found. */
-    int docLine() const { return m_details ? m_details->line : 1; }
+    int docLine() const;
 
     /*! Returns the file in which the detailed documentation block was found. 
      *  This can differ from getDefFileName().
      */
-    QCString docFile() const { return m_details ? m_details->file : QCString("<"+m_name+">"); }
+    QCString docFile() const;
 
     /*! Returns the brief description of this definition */
-    QCString briefDescription() const { return m_brief ? m_brief->doc : QCString(""); }
+    QCString briefDescription() const;
 
     /*! Returns the line number at which the brief description was found. */
-    int briefLine() const { return m_brief ? m_brief->line : 1; }
+    int briefLine() const;
 
     /*! Returns the file in which the brief description was found. 
      *  This can differ from getDefFileName().
      */
-    QCString briefFile() const { return m_brief ? m_brief->file : QCString("<"+m_name+">"); }
+    QCString briefFile() const;
 
     /*! returns the file in which this definition was found */
-    QCString getDefFileName() const { return m_defFileName; }
+    QCString getDefFileName() const;
 
     /*! returns the file in which this definition was found */
-    QCString getDefFileExtension() const { return m_defFileExt; }
+    QCString getDefFileExtension() const;
 
     /*! returns the line number at which the definition was found */
-    int getDefLine() const { return m_defLine; }
+    int getDefLine() const;
 
     /*! Returns TRUE iff the definition is documented 
      *  (which could be generated documentation) 
@@ -165,45 +168,54 @@ class Definition : public DefinitionIntf
     /*! Returns TRUE iff the name is part of this project and 
      *  may appear in the output 
      */
-    virtual bool isVisibleInProject() const 
-    { return m_hidden || isLinkableInProject(); }
+    virtual bool isVisibleInProject() const;
 
     /*! Returns TRUE iff the name may appear in the output */
-    virtual bool isVisible() const
-    { return m_hidden || isLinkable(); }
+    virtual bool isVisible() const;
 
-    bool isHidden() const { return m_hidden; }
+    bool isHidden() const;
 
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
      *  translated into an external link target via 
      *  Doxygen::tagDestinationDict
      */
-    virtual QCString getReference() const { return m_ref; }
+    virtual QCString getReference() const;
 
     /*! Returns TRUE if this definition is imported via a tag file. */
-    virtual bool isReference() const { return !m_ref.isEmpty(); }
+    virtual bool isReference() const;
 
-    int getStartBodyLine() const         { return m_body ? m_body->startLine : -1; }
-    int getEndBodyLine() const           { return m_body ? m_body->endLine : -1; }
-    FileDef *getBodyDef()                { return m_body ? m_body->fileDef : 0; }
+    /*! Returns the first line of the body of this item (applicable to classes and 
+     *  functions).
+     */
+    int getStartBodyLine() const;
 
-    GroupList *partOfGroups() const { return m_partOfGroups; }
+    /*! Returns the last line of the body of this item (applicable to classes and 
+     *  functions).
+     */
+    int getEndBodyLine() const;
+
+    /*! Returns the file in which the body of this item is located or 0 if no
+     *  body is available.
+     */
+    FileDef *getBodyDef();
+
+    GroupList *partOfGroups() const;
 
     const QList<ListItemInfo> *xrefListItems() const;
 
     virtual Definition *findInnerCompound(const char *name);
-    virtual Definition *getOuterScope() const { return m_outerScope; }
+    virtual Definition *getOuterScope() const;
 
-    MemberSDict *getReferencesMembers() const { return m_sourceRefsDict; }
-    MemberSDict *getReferencedByMembers() const { return m_sourceRefByDict; }
+    MemberSDict *getReferencesMembers() const;
+    MemberSDict *getReferencedByMembers() const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    void setName(const char *name) { m_name=name; }
+    void setName(const char *name);
 
     /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
@@ -214,11 +226,11 @@ class Definition : public DefinitionIntf
     void setBriefDescription(const char *b,const char *briefFile,int briefLine);
 
     /*! Sets the tag file id via which this definition was imported. */
-    void setReference(const char *r) { m_ref=r; }
+    void setReference(const char *r);
 
     /*! Sets the name of this definition as it should appear in the symbol map.
      */
-    void setSymbolName(const QCString &name) { m_symbolName=name; }
+    void setSymbolName(const QCString &name);
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
@@ -236,7 +248,7 @@ class Definition : public DefinitionIntf
     virtual void addInnerCompound(Definition *d);
     virtual void setOuterScope(Definition *d);
 
-    void setHidden(bool b) { m_hidden = b; }
+    void setHidden(bool b);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -258,46 +270,21 @@ class Definition : public DefinitionIntf
     void writeDocAnchorsToTagFile();
 
   protected:
-    void setLocalName(const QCString name) { m_localName=name; }
+    void setLocalName(const QCString name);
     
-  private: 
     int getXRefListId(const char *listName) const;
     void writeSourceRefList(OutputList &ol,const char *scopeName,
                        const QCString &text,MemberSDict *members,bool);
 
-    //-----------------------------------------------------------------------------------
-    // --- member variables
-    //-----------------------------------------------------------------------------------
+    virtual void flushToDisk()  {}
+    virtual void loadFromDisk() {}
+    virtual void makeResident() { if (m_impl==0) loadFromDisk(); }
+    virtual bool isResident() const { return m_impl!=0; }
 
-    SectionDict *m_sectionDict;  // dictionary of all sections
+  private: 
+    DefinitionImpl *m_impl; // internal structure holding all private data
+    uint64 m_storagePos;    // location where the item is stored in file (if impl==0)
 
-    MemberSDict *m_sourceRefByDict;
-    MemberSDict *m_sourceRefsDict;
-
-    DocInfo  *m_details;
-    DocInfo  *m_brief;
-    BodyInfo *m_body;
-
-    /*! The class, namespace in which this class is located 
-     */ 
-    QCString m_name;           // name of the definition
-    QCString m_localName;      // local (unqualified) name of the definition
-                               // in the future m_name should become m_localName
-    QCString m_symbolName;
-    QCString m_qualifiedName;
-    QCString m_ref;   // reference to external documentation
-
-    QList<ListItemInfo> *m_xrefListItems;
-    bool m_isSymbol;
-    bool m_hidden;
-
-    Definition *m_outerScope;
-    GroupList *m_partOfGroups;
-
-    // where the item was found
-    QCString m_defFileName;
-    int      m_defLine;
-    QCString m_defFileExt;
 };
 
 class DefinitionList : public QList<Definition>, public DefinitionIntf
