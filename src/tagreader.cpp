@@ -1247,7 +1247,7 @@ void TagFileParser::buildLists(Entry *root)
     {
       mn = new FileName(fullName,tfi->name);
       mn->append(fd);
-      Doxygen::inputNameList.inSort(mn);
+      Doxygen::inputNameList->inSort(mn);
       Doxygen::inputNameDict->insert(tfi->name,mn);
     }
     buildMemberList(fe,tfi->members);

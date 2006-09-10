@@ -21,6 +21,9 @@
 #include "qtbc.h"
 #include <qlist.h>
 #include <qdict.h>
+#include <sys/types.h>
+
+#include "lockingptr.h"
 
 class FileDef;
 class OutputList;
@@ -64,9 +67,15 @@ class DefinitionIntf
     /*! Types of derived classes */
     enum DefType 
     { 
-      TypeClass, TypeMember, TypeFile, TypeGroup, 
-      TypeNamespace, TypePackage, TypePage, TypeDir, 
-      TypeSymbolList
+      TypeClass      = 0, 
+      TypeFile       = 1, 
+      TypeNamespace  = 2, 
+      TypeMember     = 3, 
+      TypeGroup      = 4, 
+      TypePackage    = 5, 
+      TypePage       = 6, 
+      TypeDir        = 7, 
+      TypeSymbolList = 8
     };
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
@@ -76,7 +85,7 @@ class DefinitionIntf
  *  This can be a class or a member function, or a file, or a namespace, etc.
  *  Use definitionType() to find which type of definition this is.
  */
-class Definition : public DefinitionIntf
+class Definition : public DefinitionIntf, public LockableObj
 {
   public:
     
@@ -94,7 +103,7 @@ class Definition : public DefinitionIntf
     //-----------------------------------------------------------------------------------
 
     /*! Returns the name of the definition */
-    const QCString& name() const;
+    const QCString& name() const { return m_name; }
 
     /*! Returns the local name without any scope qualifiers. */
     QCString localName() const;
@@ -200,22 +209,22 @@ class Definition : public DefinitionIntf
      */
     FileDef *getBodyDef();
 
-    GroupList *partOfGroups() const;
+    LockingPtr<GroupList> partOfGroups() const;
 
-    const QList<ListItemInfo> *xrefListItems() const;
+    LockingPtr< QList<ListItemInfo> > xrefListItems() const;
 
     virtual Definition *findInnerCompound(const char *name);
     virtual Definition *getOuterScope() const;
 
-    MemberSDict *getReferencesMembers() const;
-    MemberSDict *getReferencedByMembers() const;
+    LockingPtr<MemberSDict> getReferencesMembers() const;
+    LockingPtr<MemberSDict> getReferencedByMembers() const;
 
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    void setName(const char *name);
+    void setName(const char *name) { m_name = name; }
 
     /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
@@ -227,10 +236,6 @@ class Definition : public DefinitionIntf
 
     /*! Sets the tag file id via which this definition was imported. */
     void setReference(const char *r);
-
-    /*! Sets the name of this definition as it should appear in the symbol map.
-     */
-    void setSymbolName(const QCString &name);
 
     /*! Add the list of anchors that mark the sections that are found in the 
      * documentation.
@@ -271,19 +276,35 @@ class Definition : public DefinitionIntf
 
   protected:
     void setLocalName(const QCString name);
-    
-    int getXRefListId(const char *listName) const;
-    void writeSourceRefList(OutputList &ol,const char *scopeName,
-                       const QCString &text,MemberSDict *members,bool);
 
-    virtual void flushToDisk()  {}
-    virtual void loadFromDisk() {}
-    virtual void makeResident() { if (m_impl==0) loadFromDisk(); }
-    virtual bool isResident() const { return m_impl!=0; }
+    virtual void flushToDisk() const;
+    virtual void loadFromDisk() const;
+    void makeResident() const;
+    bool isResident() const
+    { 
+      return m_cacheHandle!=-1; 
+    }
 
   private: 
+    void lock() const;
+    void unlock() const;
+
+    static void addToMap(const char *name,Definition *d);
+    static void removeFromMap(Definition *d);
+    void saveToDisk() const;
+
+    void _setSymbolName(const QCString &name);
+
+    int  _getXRefListId(const char *listName) const;
+    void _writeSourceRefList(OutputList &ol,const char *scopeName,
+                       const QCString &text,MemberSDict *members,bool);
     DefinitionImpl *m_impl; // internal structure holding all private data
-    uint64 m_storagePos;    // location where the item is stored in file (if impl==0)
+    off_t m_storagePos;     // location where the item is stored in file (if impl==0)
+    int m_cacheHandle;
+    QCString m_name;
+    bool m_flushPending;
+    bool m_isSymbol;
+    QCString m_symbolName;
 
 };
 

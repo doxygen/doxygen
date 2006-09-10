@@ -29,7 +29,8 @@ void PageDef::findSectionsInDocumentation()
 
 GroupDef *PageDef::getGroupDef() const 
 { 
-  return partOfGroups() ? partOfGroups()->getFirst() : 0; 
+  LockingPtr<GroupList> groups = partOfGroups();
+  return groups!=0 ? groups->getFirst() : 0; 
 }
 
 QCString PageDef::getOutputFileBase() const 

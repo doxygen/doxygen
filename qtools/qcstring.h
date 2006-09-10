@@ -43,14 +43,14 @@
 #include "qarray.h"
 #endif // QT_H
 
+#include <stdlib.h>
 #include <string.h>
 
 #if defined(_OS_SUN_) && defined(_CC_GNU_)
 #include <strings.h>
 #endif
 
-//#undef SMALLSTRING
-#define SMALLSTRING
+class QGString;
 
 /*****************************************************************************
   Fixes and workarounds for some platforms
@@ -143,7 +143,6 @@ Q_EXPORT int qstrnicmp( const char *, const char *, uint len );
 
 #endif
 
-
 // qChecksum: Internet checksum
 
 Q_EXPORT Q_UINT16 qChecksum( const char *s, uint len );
@@ -166,34 +165,35 @@ Q_EXPORT QDataStream &operator<<( QDataStream &, const QByteArray & );
 Q_EXPORT QDataStream &operator>>( QDataStream &, QByteArray & );
 #endif
 
-
-
-#ifdef SMALLSTRING
-#define SCString QCString
-#include "scstring.h"
-#else
-
-/*****************************************************************************
-  QCString class
- *****************************************************************************/
-
 class QRegExp;
 
-class Q_EXPORT QCString : public QByteArray	// C string class
+/** This is an alternative implementation of QCString. It provides basically
+ *  the same functions but uses less memory for administration. This class
+ *  is just a wrapper around a plain C string requiring only 4 bytes "overhead".
+ *  QCString features sharing of data and stores the string length, but 
+ *  requires 4 + 12 bytes for this (even for the empty string). As doxygen 
+ *  uses a LOT of string during a run it saves a lot of memory to use a 
+ *  more memory efficient implementation at the cost of relatively low
+ *  runtime overhead.
+ */
+class QCString 
 {
 public:
-    QCString() {}				// make null string
-    QCString( int size );			// allocate size incl. \0
-    QCString( const QCString &s ) : QByteArray( s ) {}
-    QCString( const char *str );		// deep copy
-    QCString( const char *str, uint maxlen );	// deep copy, max length
+    QCString() : m_data(0) {}		// make null string
+    QCString( const QCString &s );
+    QCString( int size );
+    QCString( const char *str );
+    QCString( const char *str, uint maxlen );
+    ~QCString();
 
-    QCString    &operator=( const QCString &s );// shallow copy
+    QCString    &operator=( const QCString &s );// deep copy
     QCString    &operator=( const char *str );	// deep copy
 
-    bool	isNull()	const;
+    bool        isNull()        const;
     bool	isEmpty()	const;
     uint	length()	const;
+    uint        size()          const { return m_data ? length()+1 : 0; }
+    char *      data()          const { return m_data; }
     bool	resize( uint newlen );
     bool	truncate( uint pos );
     bool	fill( char c, int len = -1 );
@@ -211,13 +211,11 @@ public:
     int		contains( char c, bool cs=TRUE ) const;
     int		contains( const char *str, bool cs=TRUE ) const;
     int		contains( const QRegExp & ) const;
+    bool        stripPrefix(const char *prefix);
 
     QCString	left( uint len )  const;
     QCString	right( uint len ) const;
     QCString	mid( uint index, uint len=0xffffffff) const;
-
-    QCString	leftJustify( uint width, char fill=' ', bool trunc=FALSE)const;
-    QCString	rightJustify( uint width, char fill=' ',bool trunc=FALSE)const;
 
     QCString	lower() const;
     QCString	upper() const;
@@ -225,10 +223,11 @@ public:
     QCString	stripWhiteSpace()	const;
     QCString	simplifyWhiteSpace()	const;
 
+    QCString    &assign( const char *str );
     QCString    &insert( uint index, const char * );
     QCString    &insert( uint index, char );
-    QCString    &append( const char * );
-    QCString    &prepend( const char * );
+    QCString    &append( const char *s );
+    QCString    &prepend( const char *s );
     QCString    &remove( uint index, uint len );
     QCString    &replace( uint index, uint len, const char * );
     QCString    &replace( const QRegExp &, const char * );
@@ -239,10 +238,7 @@ public:
     uint	toUInt( bool *ok=0 )	const;
     long	toLong( bool *ok=0 )	const;
     ulong	toULong( bool *ok=0 )	const;
-    float	toFloat( bool *ok=0 )	const;
-    double	toDouble( bool *ok=0 )	const;
 
-    QCString    &setStr( const char *s );
     QCString    &setNum( short );
     QCString    &setNum( ushort );
     QCString    &setNum( int );
@@ -252,14 +248,56 @@ public:
     QCString    &setNum( float, char f='g', int prec=6 );
     QCString    &setNum( double, char f='g', int prec=6 );
 
-    bool	setExpand( uint index, char c );
-
 		operator const char *() const;
     QCString    &operator+=( const char *str );
     QCString    &operator+=( char c );
+    char &at( uint index ) const;
+    char &operator[]( int i ) const { return at(i); }
+    
+  private:
+    static void msg_index( uint );
+    void duplicate( const QCString &s );
+    void duplicate( const char *str);
+    QCString &duplicate( const char *str, int);
+
+    char *      m_data;
 };
 
-#endif
+inline char &QCString::at( uint index ) const
+{
+  return m_data[index];
+}
+
+inline void QCString::duplicate( const QCString &s )
+{
+  if (!s.isEmpty()) 
+  {
+    uint l = strlen(s.data());
+    m_data = (char *)malloc(l+1);
+    if (m_data) memcpy(m_data,s.data(),l+1);
+  }
+  else 
+    m_data=0; 
+}
+
+inline void QCString::duplicate( const char *str)
+{
+  if (str && str[0]!='\0') 
+  {
+    uint l = strlen(str);
+    m_data = (char *)malloc(l+1);
+    if (m_data) memcpy(m_data,str,l+1);
+  }
+  else 
+    m_data=0;
+}
+
+inline QCString &QCString::duplicate( const char *str, int)
+{
+  if (m_data) free(m_data);
+  duplicate(str);
+  return *this;
+}
 
 /*****************************************************************************
   QCString stream functions
@@ -370,21 +408,26 @@ Q_EXPORT inline bool operator>=( const char *s1, const QCString &s2 )
 
 Q_EXPORT inline QCString operator+( const QCString &s1, const QCString &s2 )
 {
-    QCString tmp( s1.data() );
+    QCString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
+
+inline QCString operator+( const QCString &s1, const QGString &s2 );
+inline QCString operator+( const QGString &s1, const QCString &s2 );
+
+
 Q_EXPORT inline QCString operator+( const QCString &s1, const char *s2 )
 {
-    QCString tmp( s1.data() );
+    QCString tmp(s1);
     tmp += s2;
     return tmp;
 }
 
 Q_EXPORT inline QCString operator+( const char *s1, const QCString &s2 )
 {
-    QCString tmp( s1 );
+    QCString tmp(s1);
     tmp += s2;
     return tmp;
 }
@@ -403,5 +446,6 @@ Q_EXPORT inline QCString operator+( char c1, const QCString &s2 )
     tmp += s2;
     return tmp;
 }
+
 
 #endif // QCSTRING_H

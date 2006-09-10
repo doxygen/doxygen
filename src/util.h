@@ -220,7 +220,7 @@ void initClassHierarchy(ClassSDict *cl);
 
 bool hasVisibleRoot(BaseClassList *bcl);
 
-int minClassDistance(ClassDef *cd,ClassDef *bcd,int level=0);
+int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
 
 QCString convertNameToFile(const char *name,bool allowDots=FALSE);
 
@@ -325,6 +325,8 @@ SrcLangExt getLanguageFromFileName(const QCString fileName);
 
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 
+ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
+                            MemberDef **pMemType=0,QCString *pTemplSpec=0);
 
 
 #endif

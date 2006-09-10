@@ -74,7 +74,8 @@ class ManGenerator : public OutputGenerator
     //void startAlphabeticalIndexList() {}
     //void endAlphabeticalIndexList() {} 
     //void writeIndexHeading(const char *) {}
-    void writeIndexItem(const char *ref,const char *file,const char *name);
+    void startIndexItem(const char *ref,const char *file);
+    void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,

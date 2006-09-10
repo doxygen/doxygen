@@ -1048,13 +1048,13 @@ void addDefine()
   md->setFileDef(g_yyFileDef);
   md->setDefinition("#define "+g_defName);
 
-  MemberName *mn=Doxygen::functionNameSDict[g_defName];
+  MemberName *mn=Doxygen::functionNameSDict->find(g_defName);
   if (mn==0)
   {
     mn = new MemberName(g_defName);
     //Doxygen::functionNameList.append(mn);
     //Doxygen::functionNameDict.insert(g_defName,mn);
-    Doxygen::functionNameSDict.append(g_defName,mn);
+    Doxygen::functionNameSDict->append(g_defName,mn);
   }
   mn->append(md);
   if (g_yyFileDef) g_yyFileDef->insertMember(md);

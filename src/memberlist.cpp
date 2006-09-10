@@ -25,12 +25,17 @@
 #include "doxygen.h"
 #include "outputlist.h"
 #include "groupdef.h"
+#include "marshal.h"
+
+MemberList::MemberList()
+{
+}
 
 MemberList::MemberList(ListType lt) : m_listType(lt)
 {
   memberGroupList=0;
-  m_numDecMembers=-1; // special value indicating that computation is needed
-  m_numDocMembers=-1; // special value indicating that computation is needed
+  m_numDecMembers=-1; // special value indicating that value needs to be computed
+  m_numDocMembers=-1; // special value indicating that value needs to be computed
   m_inGroup=FALSE;
   m_inFile=FALSE;
 }
@@ -456,9 +461,10 @@ void MemberList::addListReferences(Definition *def)
     if (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup)
     {
       md->addListReference(def);
-      if (md->memberType()==MemberDef::Enumeration && md->enumFieldList())
+      LockingPtr<MemberList> enumFields = md->enumFieldList();
+      if (md->memberType()==MemberDef::Enumeration && enumFields!=0)
       {
-        MemberListIterator vmli(*md->enumFieldList());
+        MemberListIterator vmli(*enumFields);
         MemberDef *vmd;
         for ( ; (vmd=vmli.current()) ; ++vmli)
         {
@@ -493,6 +499,69 @@ void MemberList::findSectionsInDocumentation()
     for (;(mg=mgli.current());++mgli)
     {
       mg->findSectionsInDocumentation();
+    }
+  }
+}
+
+void MemberList::marshal(StorageIntf *s)
+{
+  marshalInt(s,(int)m_listType);
+  marshalInt(s,m_varCnt);
+  marshalInt(s,m_funcCnt);
+  marshalInt(s,m_enumCnt);
+  marshalInt(s,m_enumValCnt);
+  marshalInt(s,m_typeCnt);
+  marshalInt(s,m_protoCnt);
+  marshalInt(s,m_defCnt);
+  marshalInt(s,m_friendCnt); 
+  marshalInt(s,m_numDecMembers);
+  marshalInt(s,m_numDocMembers);
+  marshalBool(s,m_inGroup);
+  marshalBool(s,m_inFile);
+  if (memberGroupList==0)
+  {
+    marshalUInt(s,NULL_LIST); // null pointer representation
+  }
+  else
+  {
+    marshalUInt(s,memberGroupList->count());
+    QListIterator<MemberGroup> mgi(*memberGroupList);
+    MemberGroup *mg=0;
+    for (mgi.toFirst();(mg=mgi.current());++mgi)
+    {
+      mg->marshal(s);
+    }
+  }
+}
+
+void MemberList::unmarshal(StorageIntf *s)
+{
+  m_listType       = (MemberList::ListType)unmarshalInt(s);
+  m_varCnt         = unmarshalInt(s);
+  m_funcCnt        = unmarshalInt(s);
+  m_enumCnt        = unmarshalInt(s);
+  m_enumValCnt     = unmarshalInt(s);
+  m_typeCnt        = unmarshalInt(s);
+  m_protoCnt       = unmarshalInt(s);
+  m_defCnt         = unmarshalInt(s);
+  m_friendCnt      = unmarshalInt(s); 
+  m_numDecMembers  = unmarshalInt(s);
+  m_numDocMembers  = unmarshalInt(s);
+  m_inGroup        = unmarshalBool(s);
+  m_inFile         = unmarshalBool(s);
+  uint i,count     = unmarshalUInt(s); 
+  if (count==NULL_LIST) // empty list
+  {
+    memberGroupList = 0;
+  }
+  else // add member groups
+  {
+    memberGroupList = new MemberGroupList;
+    for (i=0;i<count;i++)
+    {
+      MemberGroup *mg = new MemberGroup;
+      mg->unmarshal(s);
+      memberGroupList->append(mg);
     }
   }
 }

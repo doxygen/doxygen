@@ -255,7 +255,7 @@ static void checkArgumentName(const QString &name,bool isParam)
 {                
   if (!Config_getBool("WARN_IF_DOC_ERROR")) return;
   if (g_memberDef==0) return; // not a member
-  ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
+  LockingPtr<ArgumentList> al=g_memberDef->isDocsForDefinition() ? 
 		   g_memberDef->argumentList() :
                    g_memberDef->declArgumentList();
   if (al==0) return; // no argument list
@@ -304,7 +304,7 @@ static void checkArgumentName(const QString &name,bool isParam)
 	  "Warning: argument `%s' of command @param "
 	  "is not found in the argument list of %s%s%s%s",
 	  aName.data(),scope.data(),g_memberDef->name().data(),
-	  argListToString(al).data(),inheritedFrom.data());
+	  argListToString(al.pointer()).data(),inheritedFrom.data());
     }
     p=i+l;
   }
@@ -319,10 +319,10 @@ static void checkUndocumentedParams()
 {
   if (g_memberDef && g_hasParamCommand && Config_getBool("WARN_IF_DOC_ERROR"))
   {
-    ArgumentList *al=g_memberDef->isDocsForDefinition() ? 
+    LockingPtr<ArgumentList> al=g_memberDef->isDocsForDefinition() ? 
       g_memberDef->argumentList() :
       g_memberDef->declArgumentList();
-    if (al)
+    if (al!=0)
     {
       ArgumentListIterator ali(*al);
       Argument *a;
@@ -342,7 +342,7 @@ static void checkUndocumentedParams()
         QString errMsg=
             "Warning: The following parameters of "+
             QString(g_memberDef->qualifiedName()) + 
-            QString(argListToString(al)) +
+            QString(argListToString(al.pointer())) +
             " are not documented:\n";
         for (ali.toFirst();(a=ali.current());++ali)
         {
@@ -374,8 +374,8 @@ static void detectNoDocumentedParams()
 {
   if (g_memberDef && Config_getBool("WARN_NO_PARAMDOC"))
   {
-    ArgumentList *al     = g_memberDef->argumentList();
-    ArgumentList *declAl = g_memberDef->declArgumentList();
+    LockingPtr<ArgumentList> al     = g_memberDef->argumentList();
+    LockingPtr<ArgumentList> declAl = g_memberDef->declArgumentList();
     QString returnType   = g_memberDef->typeString();
 
     if (!g_memberDef->hasDocumentedParams() &&
@@ -388,7 +388,7 @@ static void detectNoDocumentedParams()
     {
       bool allDoc=TRUE; // no paramater => all parameters are documented
       if ( // member has parameters
-             al &&          // but the member has a parameter list
+             al!=0 &&       // but the member has a parameter list
              al->count()>0  // with at least one parameter (that is not void)
          )
       {
@@ -405,7 +405,7 @@ static void detectNoDocumentedParams()
           //printf("a->type=%s a->name=%s doc=%s\n",
           //        a->type.data(),a->name.data(),a->docs.data());
         }
-        if (!allDoc && declAl) // try declaration arguments as well
+        if (!allDoc && declAl!=0) // try declaration arguments as well
         {
           allDoc=TRUE;
           ArgumentListIterator ali(*declAl);
@@ -595,7 +595,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     //printf("Trying fullName=`%s'\n",fullName.data());
 
     // try class, namespace, group, page, file reference
-    cd = Doxygen::classSDict[fullName];
+    cd = Doxygen::classSDict->find(fullName);
     if (cd) // class 
     {
       *pDoc=cd->documentation();
@@ -603,7 +603,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       *pDef=cd;
       return TRUE;
     }
-    nd = Doxygen::namespaceSDict[fullName];
+    nd = Doxygen::namespaceSDict->find(fullName);
     if (nd) // namespace
     {
       *pDoc=nd->documentation();
@@ -611,7 +611,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       *pDef=nd;
       return TRUE;
     }
-    gd = Doxygen::groupSDict[cmdArg];
+    gd = Doxygen::groupSDict->find(cmdArg);
     if (gd) // group
     {
       *pDoc=gd->documentation();
@@ -2046,6 +2046,15 @@ void DocRef::parse()
           break;
       }
     }
+  }
+
+  if (m_children.isEmpty() && !m_text.isEmpty())
+  {
+    g_insideHtmlLink=TRUE;
+    docParserPushContext();
+    internalValidatingParseDoc(this,m_children,m_text);
+    docParserPopContext();
+    g_insideHtmlLink=FALSE;
   }
 
   handlePendingStyleCommands(this,m_children);

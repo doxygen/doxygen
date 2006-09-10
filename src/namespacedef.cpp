@@ -91,14 +91,6 @@ void NamespaceDef::findSectionsInDocumentation()
       ml->findSectionsInDocumentation();
     }
   }
-#if 0
-  decDefineMembers.findSectionsInDocumentation();
-  decProtoMembers.findSectionsInDocumentation();
-  decTypedefMembers.findSectionsInDocumentation();
-  decEnumMembers.findSectionsInDocumentation();
-  decFuncMembers.findSectionsInDocumentation();
-  decVarMembers.findSectionsInDocumentation();
-#endif
 }
 
 void NamespaceDef::insertUsedFile(const char *f)
@@ -159,14 +151,6 @@ void NamespaceDef::addMembersToMemberGroup()
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
     }
   }
-#if 0
-  ::addMembersToMemberGroup(&decDefineMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decProtoMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decTypedefMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decFuncMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decVarMembers,&memberGroupSDict,this);
-#endif
 }
 
 void NamespaceDef::insertMember(MemberDef *md)
@@ -178,82 +162,35 @@ void NamespaceDef::insertMember(MemberDef *md)
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
+  ::addNamespaceMemberNameToIndex(md);
   //static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
   {
     case MemberDef::Variable:     
       addMemberToList(MemberList::decVarMembers,md);
-      //if (sortBriefDocs)
-      //  decVarMembers.inSort(md);
-      //else
-      //  decVarMembers.append(md);
       addMemberToList(MemberList::docVarMembers,md);
-      //if (sortBriefDocs)
-      //  docVarMembers.inSort(md); 
-      //else
-      //  docVarMembers.append(md);
       break;
     case MemberDef::Function: 
       addMemberToList(MemberList::decFuncMembers,md);
-      //if (sortBriefDocs)
-      //  decFuncMembers.inSort(md);
-      //else
-      //  decFuncMembers.append(md);
       addMemberToList(MemberList::docFuncMembers,md);
-      //if (sortBriefDocs)
-      //  docFuncMembers.inSort(md); 
-      //else
-      //  docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
       addMemberToList(MemberList::decTypedefMembers,md);
-      //if (sortBriefDocs)
-      //  decTypedefMembers.inSort(md);
-      //else
-      //  decTypedefMembers.append(md);
       addMemberToList(MemberList::docTypedefMembers,md);
-      //if (sortBriefDocs)
-      //  docTypedefMembers.inSort(md); 
-      //else
-      //  docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
       addMemberToList(MemberList::decEnumMembers,md);
-      //if (sortBriefDocs)
-      //  decEnumMembers.inSort(md);
-      //else
-      //  decEnumMembers.append(md);
       addMemberToList(MemberList::docEnumMembers,md);
-      //if (sortBriefDocs)
-      //  docEnumMembers.inSort(md); 
-      //else
-      //  docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
       break;
     case MemberDef::Prototype:    
       addMemberToList(MemberList::decProtoMembers,md);
-      //if (sortBriefDocs)
-      //  decProtoMembers.inSort(md);
-      //else
-      //  decProtoMembers.append(md);
       addMemberToList(MemberList::docProtoMembers,md);
-      //if (sortBriefDocs)
-      //  docProtoMembers.inSort(md); 
-      //else
-      //  docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
       addMemberToList(MemberList::decDefineMembers,md);
-      //if (sortBriefDocs)
-      //  decDefineMembers.inSort(md);
-      //else
-      //  decDefineMembers.append(md);
       addMemberToList(MemberList::docDefineMembers,md);
-      //if (sortBriefDocs)
-      //  docDefineMembers.inSort(md); 
-      //else
-      //  docDefineMembers.append(md);
       break;
     default:
       err("NamespaceDef::insertMembers(): "
@@ -262,7 +199,6 @@ void NamespaceDef::insertMember(MemberDef *md)
            md->getClassDef() ? md->getClassDef()->name().data() : "",
            name().data());
   }
-  //addMemberToGroup(md,groupId);
 }
 
 void NamespaceDef::computeAnchors()
@@ -388,17 +324,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   }
 
   writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-  //decDefineMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trDefines(),0);
   writeMemberDeclarations(ol,MemberList::decProtoMembers,theTranslator->trFuncProtos());
-  //decProtoMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trFuncProtos(),0);
   writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
-  //decTypedefMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trTypedefs(),0);
   writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  //decEnumMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trEnumerations(),0);
   writeMemberDeclarations(ol,MemberList::decFuncMembers,theTranslator->trFunctions());
-  //decFuncMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trFunctions(),0);
   writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-  //decVarMembers.writeDeclarations(ol,0,this,0,0,theTranslator->trVariables(),0);
   ol.endMemberSections();
   
   if (!Config_getBool("DETAILS_AT_TOP"))
@@ -441,28 +371,11 @@ void NamespaceDef::writeMemberDocumentation(OutputList &ol)
   }
   
   writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  //docDefineMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trDefineDocumentation());
-  
   writeMemberDocumentation(ol,MemberList::docProtoMembers,theTranslator->trFunctionPrototypeDocumentation());
-  //docProtoMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trFunctionPrototypeDocumentation());
-
   writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  //docTypedefMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trTypedefDocumentation());
-  
   writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  //docEnumMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trEnumerationTypeDocumentation());
-
   writeMemberDocumentation(ol,MemberList::docFuncMembers,theTranslator->trFunctionDocumentation());
-  //docFuncMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trFunctionDocumentation());
-  
   writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-  //docVarMembers.writeDocumentation(ol,name(),this,
-  //                        theTranslator->trVariableDocumentation());
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
@@ -484,15 +397,6 @@ void NamespaceDef::writeMemberPages(OutputList &ol)
       ml->writeDocumentationPage(ol,name(),this);
     }
   }
-#if 0
-  docDefineMembers.writeDocumentationPage(ol,name(),this);
-  docProtoMembers.writeDocumentationPage(ol,name(),this);
-  docTypedefMembers.writeDocumentationPage(ol,name(),this);
-  docEnumMembers.writeDocumentationPage(ol,name(),this);
-  docFuncMembers.writeDocumentationPage(ol,name(),this);
-  docVarMembers.writeDocumentationPage(ol,name(),this);
-#endif
-
   ol.popGeneratorState();
 }
 
@@ -602,10 +506,13 @@ Definition *NamespaceDef::findInnerCompound(const char *n)
 
 void NamespaceDef::addListReferences()
 {
-  addRefItem(xrefListItems(),
-             theTranslator->trNamespace(TRUE,TRUE),
-             getOutputFileBase(),displayName()
-            );
+  {
+    LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
+    addRefItem(xrefItems.pointer(),
+        theTranslator->trNamespace(TRUE,TRUE),
+        getOutputFileBase(),displayName()
+        );
+  }
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)
@@ -621,14 +528,6 @@ void NamespaceDef::addListReferences()
       ml->addListReferences(this);
     }
   }
-#if 0
-  docDefineMembers.addListReferences(this);
-  docProtoMembers.addListReferences(this);
-  docTypedefMembers.addListReferences(this);
-  docEnumMembers.addListReferences(this);
-  docFuncMembers.addListReferences(this);
-  docVarMembers.addListReferences(this);
-#endif
 }
 
 QCString NamespaceDef::displayName() const

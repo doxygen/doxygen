@@ -507,13 +507,13 @@ FilePair *UsedDir::findFilePair(const char *name)
 DirDef *DirDef::createNewDir(const char *path)
 {
   ASSERT(path!=0);
-  DirDef *dir = Doxygen::directories.find(path);
+  DirDef *dir = Doxygen::directories->find(path);
   if (dir==0) // new dir
   {
     //printf("Adding new dir %s\n",path);
     dir = new DirDef(path);
     //printf("createNewDir %s short=%s\n",path,dir->shortName().data());
-    Doxygen::directories.inSort(path,dir);
+    Doxygen::directories->inSort(path,dir);
   }
   return dir;
 }
@@ -781,7 +781,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
 void buildDirectories()
 {
   // for each input file
-  FileNameListIterator fnli(Doxygen::inputNameList); 
+  FileNameListIterator fnli(*Doxygen::inputNameList); 
   FileName *fn;
   for (fnli.toFirst();(fn=fnli.current());++fnli)
   {
@@ -793,7 +793,7 @@ void buildDirectories()
       if (fd->getReference().isEmpty() && !fd->isDocumentationFile())
       {
         DirDef *dir;
-        if ((dir=Doxygen::directories.find(fd->getPath()))==0) // new directory
+        if ((dir=Doxygen::directories->find(fd->getPath()))==0) // new directory
         {
           dir = DirDef::mergeDirectoryInTree(fd->getPath());
         }
@@ -809,7 +809,7 @@ void buildDirectories()
   //DirDef *root = new DirDef("root:");
   // compute relations between directories => introduce container dirs.
   DirDef *dir;
-  DirSDict::Iterator sdi(Doxygen::directories);
+  DirSDict::Iterator sdi(*Doxygen::directories);
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
     //printf("New dir %s\n",dir->displayName().data());
@@ -817,7 +817,7 @@ void buildDirectories()
     int i=name.findRev('/',name.length()-2);
     if (i>0)
     {
-      DirDef *parent = Doxygen::directories.find(name.left(i+1));
+      DirDef *parent = Doxygen::directories->find(name.left(i+1));
       //if (parent==0) parent=root;
       if (parent) 
       {
@@ -832,7 +832,7 @@ void buildDirectories()
 void computeDirDependencies()
 {
   DirDef *dir;
-  DirSDict::Iterator sdi(Doxygen::directories);
+  DirSDict::Iterator sdi(*Doxygen::directories);
   // compute nesting level for each directory
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
@@ -877,7 +877,7 @@ void writeDirDependencyGraph(const char *dirName)
 {
   QString path;
   DirDef *dir;
-  DirSDict::Iterator sdi(Doxygen::directories);
+  DirSDict::Iterator sdi(*Doxygen::directories);
   QFile htmlPage(QCString(dirName)+"/dirdeps.html");
   if (htmlPage.open(IO_WriteOnly))
   {
@@ -921,7 +921,7 @@ void writeDirDependencyGraph(const char *dirName)
 void generateDirDocs(OutputList &ol)
 {
   DirDef *dir;
-  DirSDict::Iterator sdi(Doxygen::directories);
+  DirSDict::Iterator sdi(*Doxygen::directories);
   for (sdi.toFirst();(dir=sdi.current());++sdi)
   {
     dir->writeDocumentation(ol);

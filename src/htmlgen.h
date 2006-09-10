@@ -72,7 +72,8 @@ class HtmlGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList()  { t << "<ul>"  << endl; }
     void endItemList()    { t << "</ul>" << endl; }
-    void writeIndexItem(const char *ref,const char *file,const char *name);
+    void startIndexItem(const char *ref,const char *file);
+    void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,

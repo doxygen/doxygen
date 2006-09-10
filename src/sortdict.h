@@ -319,6 +319,75 @@ class SDict
         QListIterator<T> *m_li;
     };
 
+    class IteratorDict;         // first forward declare
+    friend class IteratorDict;  // then make it a friend
+    /*! Simple iterator for SDict. It iterates in over the dictionary elements
+     *  in an unsorted way, but does provide information about the element's key.
+     */
+    class IteratorDict
+    {
+      public:
+        /*! Create an iterator given the dictionary. */
+        IteratorDict(const SDict<T> &dict)
+        {
+          m_di = new QDictIterator<T>(*dict.m_dict);
+        }
+
+        /*! Destroys the dictionary */
+        virtual ~IteratorDict()
+        {
+          delete m_di;
+        }
+
+        /*! Set the iterator to the first element in the list. 
+         *  \return The first compound, or zero if the list was empty. 
+         */
+        T *toFirst() const
+        {
+          return m_di->toFirst();
+        }
+
+        /*! Set the iterator to the last element in the list. 
+         *  \return The first compound, or zero if the list was empty. 
+         */
+        T *toLast() const
+        {
+          return m_di->toLast();
+        }
+
+        /*! Returns the current compound */
+        T *current() const
+        {
+          return m_di->current();
+        }
+        
+        /*! Returns the current key */
+        QCString currentKey() const
+        {
+          return m_di->currentKey();
+        }
+        
+        /*! Moves the iterator to the next element.
+         *  \return the new "current" element, or zero if the iterator was
+         *          already pointing at the last element.
+         */
+        T *operator++()
+        {
+          return m_di->operator++();
+        }
+
+        /*! Moves the iterator to the previous element.
+         *  \return the new "current" element, or zero if the iterator was
+         *          already pointing at the first element.
+         */
+        T *operator--()
+        {
+          return m_di->operator--();
+        }
+
+      private:
+        QDictIterator<T> *m_di;
+    };
 };
 
 /*! internal wrapper class that redirects compareItems() to the 

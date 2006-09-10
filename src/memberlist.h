@@ -25,6 +25,7 @@
 class GroupDef;
 class MemberGroup;
 class MemberGroupList;
+class StorageIntf;
 
 class MemberList : public QList<MemberDef> 
 { 
@@ -99,6 +100,7 @@ class MemberList : public QList<MemberDef>
       memberGroup             = 55
     };
 
+    MemberList();
     MemberList(ListType lt);
    ~MemberList();
     ListType listType() const { return m_listType; }
@@ -134,9 +136,18 @@ class MemberList : public QList<MemberDef>
     void findSectionsInDocumentation();
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
 
+    void marshal(StorageIntf *s);
+    void unmarshal(StorageIntf *s);
+
   private:
-    int m_varCnt,m_funcCnt,m_enumCnt,m_enumValCnt,m_typeCnt;
-    int m_protoCnt,m_defCnt,m_friendCnt; 
+    int m_varCnt;
+    int m_funcCnt;
+    int m_enumCnt;
+    int m_enumValCnt;
+    int m_typeCnt;
+    int m_protoCnt;
+    int m_defCnt;
+    int m_friendCnt; 
     int m_numDecMembers; // number of members in the brief part of the memberlist
     int m_numDocMembers; // number of members in the detailed part of the memberlist
     MemberGroupList *memberGroupList;

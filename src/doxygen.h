@@ -43,6 +43,8 @@ class PageDef;
 class SearchIndex;
 class DirDef;
 class ParserManager;
+class ObjCache;
+class Store;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -73,8 +75,8 @@ extern QCString spaces;
 class Doxygen
 {
   public:
-    static ClassSDict                classSDict;
-    static ClassSDict                hiddenClasses;
+    static ClassSDict               *classSDict;
+    static ClassSDict               *hiddenClasses;
     static PageSDict                *exampleSDict;
     static PageSDict                *pageSDict;
     static PageDef                  *mainPage;
@@ -82,20 +84,17 @@ class Doxygen
     static FileNameDict             *includeNameDict;
     static FileNameDict             *exampleNameDict;
     static FileNameDict             *inputNameDict;
-    static FileNameList              inputNameList;
+    static FileNameList             *inputNameList;
     static FileNameDict             *imageNameDict;
     static FileNameDict             *dotFileNameDict;
     static QStrList                  tagfileList;
-    static MemberNameSDict           memberNameSDict;
-    static MemberNameSDict           functionNameSDict;
-    static FileList                  fileList;
-    static FileDict                  fileDict;
-    static ClassDef                  unrelatedClass; 
+    static MemberNameSDict          *memberNameSDict;
+    static MemberNameSDict          *functionNameSDict;
     static QTextStream               tagFile;
     static SectionDict               sectionDict;
     static StringDict                namespaceAliasDict;
-    static GroupSDict                groupSDict;
-    static NamespaceSDict            namespaceSDict;
+    static GroupSDict               *groupSDict;
+    static NamespaceSDict           *namespaceSDict;
     static FormulaList               formulaList;
     static FormulaDict               formulaDict;
     static FormulaDict               formulaNameDict;
@@ -114,10 +113,12 @@ class Doxygen
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static QCache<LookupInfo>        lookupCache;
-    static DirSDict                  directories;
+    static DirSDict                 *directories;
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
+    static ObjCache                 *symbolCache;
+    static Store                    *symbolStorage;
 };
 
 void initDoxygen();

@@ -15,8 +15,10 @@
  *
  */
 
+#include <stdlib.h>
 #include <qfile.h>
 #include "entry.h"
+#include "marshal.h"
 #include "util.h"
 #include "section.h"
 
@@ -61,10 +63,10 @@ Entry::Entry(const Entry &e)
   m_parent    = e.m_parent;
   type        = e.type.copy();
   name        = e.name.copy();
-  args        = e.args.copy();
+  args        = e.args;
   bitfields   = e.bitfields.copy();
   exception   = e.exception.copy();
-  program     = e.program.copy();
+  program     = e.program;
   includeFile = e.includeFile.copy();
   includeName = e.includeFile.copy();
   doc         = e.doc.copy();
@@ -261,7 +263,7 @@ int Entry::getSize()
   return sizeof(Entry);
 }
 
-void Entry::createSubtreeIndex(EntryNav *nav,QFile &storage,FileDef *fd)
+void Entry::createSubtreeIndex(EntryNav *nav,FileStorage *storage,FileDef *fd)
 {
   EntryNav *childNav = new EntryNav(nav,this);
   nav->addChild(childNav);
@@ -281,7 +283,7 @@ void Entry::createSubtreeIndex(EntryNav *nav,QFile &storage,FileDef *fd)
   }
 }
 
-void Entry::createNavigationIndex(EntryNav *rootNav,QFile &storage,FileDef *fd)
+void Entry::createNavigationIndex(EntryNav *rootNav,FileStorage *storage,FileDef *fd)
 {
   //printf("createNavigationIndex(%p) sublist=%p\n",this,m_sublist);
   if (m_sublist)
@@ -333,323 +335,9 @@ void Entry::addSpecialListItem(const char *listName,int itemId)
 
 //------------------------------------------------------------------
 
-#define NULL_LIST 0xffffffff
-
-void marshalInt(QFile &f,int v)
-{
-  uchar b[4];
-  b[0]=((uint)v)>>24;
-  b[1]=(((uint)v)>>16)&0xff;
-  b[2]=(((uint)v)>>8)&0xff;
-  b[3]=v&0xff;
-  f.writeBlock((const char *)b,4);
-}
-
-void marshalUInt(QFile &f,uint v)
-{
-  uchar b[4];
-  b[0]=v>>24;
-  b[1]=(v>>16)&0xff;
-  b[2]=(v>>8)&0xff;
-  b[3]=v&0xff;
-  f.writeBlock((const char *)b,4);
-}
-
-void marshalBool(QFile &f,bool b)
-{
-  char c = b;
-  f.writeBlock(&c,sizeof(char));
-}
-
-void marshalQCString(QFile &f,const QCString &s)
-{
-  uint l=s.length();
-  marshalUInt(f,l);
-  if (l>0) f.writeBlock(s.data(),l);
-}
-
-void marshalArgumentList(QFile &f,ArgumentList *argList)
-{
-  if (argList==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,argList->count());
-    ArgumentListIterator ali(*argList);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
-    {
-      marshalQCString(f,a->attrib);    
-      marshalQCString(f,a->type);    
-      marshalQCString(f,a->canType);    
-      marshalQCString(f,a->name);    
-      marshalQCString(f,a->array);    
-      marshalQCString(f,a->defval);    
-      marshalQCString(f,a->docs);    
-    }
-    marshalBool(f,argList->constSpecifier);
-    marshalBool(f,argList->volatileSpecifier);
-    marshalBool(f,argList->pureSpecifier);
-  }
-}
-
-void marshalArgumentLists(QFile &f,QList<ArgumentList> *argLists)
-{
-  if (argLists==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,argLists->count());
-    QListIterator<ArgumentList> ali(*argLists);
-    ArgumentList *al;
-    for (ali.toFirst();(al=ali.current());++ali)
-    {
-      marshalArgumentList(f,al);
-    }
-  }
-}
-
-void marshalBaseInfoList(QFile &f, QList<BaseInfo> *baseList)
-{
-  if (baseList==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,baseList->count());
-    QListIterator<BaseInfo> bli(*baseList);
-    BaseInfo *bi;
-    for (bli.toFirst();(bi=bli.current());++bli)
-    {
-      marshalQCString(f,bi->name);
-      marshalInt(f,(int)bi->prot);
-      marshalInt(f,(int)bi->virt);
-    }
-  }
-}
-
-void marshalGroupingList(QFile &f, QList<Grouping> *groups)
-{
-  if (groups==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,groups->count());
-    QListIterator<Grouping> gli(*groups);
-    Grouping *g;
-    for (gli.toFirst();(g=gli.current());++gli)
-    {
-      marshalQCString(f,g->groupname);
-      marshalInt(f,(int)g->pri);
-    }
-  }
-}
-
-void marshalSectionInfoList(QFile &f, QList<SectionInfo> *anchors)
-{
-  if (anchors==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,anchors->count());
-    QListIterator<SectionInfo> sli(*anchors);
-    SectionInfo *si;
-    for (sli.toFirst();(si=sli.current());++sli)
-    {
-      marshalQCString(f,si->label);
-      marshalQCString(f,si->title);
-      marshalQCString(f,si->ref);
-      marshalInt(f,(int)si->type);
-      marshalQCString(f,si->fileName);
-    }
-  }
-}
-
-void marshalItemInfoList(QFile &f, QList<ListItemInfo> *sli)
-{
-  if (sli==0)
-  {
-    marshalUInt(f,NULL_LIST); // null pointer representation
-  }
-  else
-  {
-    marshalUInt(f,sli->count());
-    QListIterator<ListItemInfo> liii(*sli);
-    ListItemInfo *lii;
-    for (liii.toFirst();(lii=liii.current());++liii)
-    {
-      marshalQCString(f,lii->type);
-      marshalInt(f,lii->itemId);
-    }
-  }
-}
-
-//------------------------------------------------------------------
-
-int unmarshalInt(QFile &f)
-{
-  uchar b[4];
-  f.readBlock((char *)b,4);
-  int result=(int)((((uint)b[0])<<24)+((uint)b[1]<<16)+((uint)b[2]<<8)+(uint)b[3]);
-  //printf("unmarshalInt: %x %x %x %x: %x offset=%llx\n",b[0],b[1],b[2],b[3],result,f.pos());
-  return result;
-}
-
-uint unmarshalUInt(QFile &f)
-{
-  uchar b[4];
-  f.readBlock((char *)b,4);
-  uint result=(((uint)b[0])<<24)+((uint)b[1]<<16)+((uint)b[2]<<8)+(uint)b[3];
-  //printf("unmarshalUInt: %x %x %x %x: %x offset=%llx\n",b[0],b[1],b[2],b[3],result,f.pos());
-  return result;
-}
-
-bool unmarshalBool(QFile &f)
-{
-  char result;
-  f.readBlock(&result,sizeof(result));
-  //printf("unmarshalBool: %x offset=%llx\n",result,f.pos());
-  return result;
-}
-
-QCString unmarshalQCString(QFile &f)
-{
-  uint len = unmarshalUInt(f);
-  //printf("unmarshalQCString: len=%d offset=%llx\n",len,f.pos());
-  QCString result(len+1);
-  result.at(len)='\0';
-  if (len>0)
-  {
-    f.readBlock(result.data(),len);
-  }
-  //printf("unmarshalQCString: result=%s\n",result.data());
-  return result;
-}
-
-ArgumentList *unmarshalArgumentList(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  ArgumentList *result = new ArgumentList;
-  result->setAutoDelete(TRUE);
-  //printf("unmarshalArgumentList: %d\n",count);
-  for (i=0;i<count;i++)
-  {
-    Argument *a = new Argument;
-    a->attrib  = unmarshalQCString(f);
-    a->type    = unmarshalQCString(f);
-    a->canType = unmarshalQCString(f);
-    a->name    = unmarshalQCString(f);
-    a->array   = unmarshalQCString(f);
-    a->defval  = unmarshalQCString(f);
-    a->docs    = unmarshalQCString(f);
-    result->append(a);
-  }
-  result->constSpecifier    = unmarshalBool(f);
-  result->volatileSpecifier = unmarshalBool(f);
-  result->pureSpecifier     = unmarshalBool(f);
-  return result;
-}
-
-QList<ArgumentList> *unmarshalArgumentLists(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  QList<ArgumentList> *result = new QList<ArgumentList>;
-  result->setAutoDelete(TRUE);
-  //printf("unmarshalArgumentLists: %d\n",count);
-  for (i=0;i<count;i++)
-  {
-    result->append(unmarshalArgumentList(f));
-  }
-  return result;
-}
-
-QList<BaseInfo> *unmarshalBaseInfoList(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  QList<BaseInfo> *result = new QList<BaseInfo>;
-  result->setAutoDelete(TRUE);
-  for (i=0;i<count;i++)
-  {
-    QCString name   = unmarshalQCString(f);
-    Protection prot = (Protection)unmarshalInt(f);
-    Specifier virt  = (Specifier)unmarshalInt(f);
-    result->append(new BaseInfo(name,prot,virt));
-  }
-  return result;
-}
-
-QList<Grouping> *unmarshalGroupingList(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  QList<Grouping> *result = new QList<Grouping>;
-  result->setAutoDelete(TRUE);
-  for (i=0;i<count;i++)
-  {
-    QCString name = unmarshalQCString(f);
-    Grouping::GroupPri_t prio = (Grouping::GroupPri_t)unmarshalInt(f);
-    result->append(new Grouping(name,prio));
-  }
-  return result;
-}
-
-QList<SectionInfo> *unmarshalSectionInfoList(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  QList<SectionInfo> *result = new QList<SectionInfo>;
-  result->setAutoDelete(TRUE);
-  for (i=0;i<count;i++)
-  { 
-    QCString label = unmarshalQCString(f);
-    QCString title = unmarshalQCString(f);
-    QCString ref   = unmarshalQCString(f);
-    SectionInfo::SectionType type = (SectionInfo::SectionType)unmarshalInt(f);
-    QCString fileName = unmarshalQCString(f);
-    result->append(new SectionInfo(fileName,label,title,type,ref));
-  }
-  return result;
-}
-
-QList<ListItemInfo> *unmarshalItemInfoList(QFile &f)
-{
-  uint i;
-  uint count = unmarshalUInt(f);
-  if (count==NULL_LIST) return 0; // null list
-  QList<ListItemInfo> *result = new QList<ListItemInfo>;
-  result->setAutoDelete(TRUE);
-  for (i=0;i<count;i++)
-  { 
-    ListItemInfo *lii = new ListItemInfo;
-    lii->type   = unmarshalQCString(f);
-    lii->itemId = unmarshalInt(f);
-    result->append(lii);
-  }
-  return result;
-}
-
-//------------------------------------------------------------------
-
 #define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 
-bool saveEntry(Entry *e,QFile &f)
+static bool saveEntry(Entry *e,FileStorage *f)
 {
   marshalUInt(f,HEADER);
   marshalInt(f,(int)e->protection);
@@ -667,8 +355,8 @@ bool saveEntry(Entry *e,QFile &f)
   marshalQCString(f,e->bitfields);
   marshalArgumentList(f,e->argList);
   marshalArgumentLists(f,e->tArgLists);
-  marshalQCString(f,e->program);
-  marshalQCString(f,e->initializer);
+  marshalQGString(f,e->program);
+  marshalQGString(f,e->initializer);
   marshalQCString(f,e->includeFile);
   marshalQCString(f,e->includeName);
   marshalQCString(f,e->doc);
@@ -701,7 +389,7 @@ bool saveEntry(Entry *e,QFile &f)
   return TRUE;
 }
 
-bool loadEntry(Entry *e,QFile &f)
+static bool loadEntry(Entry *e,FileStorage *f)
 {
   uint header=unmarshalUInt(f);
   if (header!=HEADER)
@@ -725,8 +413,8 @@ bool loadEntry(Entry *e,QFile &f)
   delete e->argList;
   e->argList          = unmarshalArgumentList(f);
   e->tArgLists        = unmarshalArgumentLists(f);
-  e->program          = unmarshalQCString(f);
-  e->initializer      = unmarshalQCString(f);
+  e->program          = unmarshalQGString(f);
+  e->initializer      = unmarshalQGString(f);
   e->includeFile      = unmarshalQCString(f);
   e->includeName      = unmarshalQCString(f);
   e->doc              = unmarshalQCString(f);
@@ -805,7 +493,7 @@ void EntryNav::addChild(EntryNav *e)
   m_subList->append(e);
 }
 
-bool EntryNav::loadEntry(QFile &storage)
+bool EntryNav::loadEntry(FileStorage *storage)
 {
   if (m_noLoad)
   {
@@ -829,7 +517,7 @@ bool EntryNav::loadEntry(QFile &storage)
   //}
   //m_info->parent = 0;
   //printf("load entry: seek to %llx\n",m_offset);
-  if (!storage.seek(m_offset)) 
+  if (!storage->seek(m_offset)) 
   {
     //printf("seek failed!\n");
     return FALSE;
@@ -837,9 +525,9 @@ bool EntryNav::loadEntry(QFile &storage)
   return ::loadEntry(m_info,storage);
 }
 
-bool EntryNav::saveEntry(Entry *e,QFile &storage)
+bool EntryNav::saveEntry(Entry *e,FileStorage *storage)
 {
-  m_offset = storage.pos();
+  m_offset = storage->pos();
   //printf("EntryNav::saveEntry offset=%llx\n",m_offset);
   return ::saveEntry(e,storage);
 }

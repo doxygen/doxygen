@@ -21,10 +21,13 @@
 #include "qtbc.h"
 #include <qlist.h>
 
+#include <qgstring.h>
+
 struct SectionInfo;
 class QFile;
 class EntryNav;
 class FileDef;
+class FileStorage;
 
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
@@ -262,7 +265,7 @@ class Entry
     ~Entry();
     int getSize();
     void addSpecialListItem(const char *listName,int index);
-    void createNavigationIndex(EntryNav *rootNav,QFile &storage,FileDef *fd);
+    void createNavigationIndex(EntryNav *rootNav,FileStorage *storage,FileDef *fd);
 
     // while parsing a file these function can be used to navigate/build the tree
     void setParent(Entry *parent) { m_parent = parent; }
@@ -300,8 +303,8 @@ class Entry
     QCString     bitfields;   //!< member's bit fields
     ArgumentList *argList;    //!< member arguments as a list
     QList<ArgumentList> *tArgLists; //!< template argument declarations
-    QCString	 program;     //!< the program text
-    QCString     initializer; //!< initial value (for variables)
+    QGString	 program;     //!< the program text
+    QGString     initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
@@ -361,7 +364,7 @@ class Entry
     }
 
   private:  
-    void createSubtreeIndex(EntryNav *nav,QFile &storage,FileDef *fd);
+    void createSubtreeIndex(EntryNav *nav,FileStorage *storage,FileDef *fd);
     Entry         *m_parent;    //!< parent node in the tree
     QList<Entry>  *m_sublist;   //!< entries that are children of this one
     Entry &operator=(const Entry &); 
@@ -373,8 +376,8 @@ class EntryNav
     EntryNav(EntryNav *parent,Entry *e);
    ~EntryNav();
     void addChild(EntryNav *);
-    bool loadEntry(QFile &storage);
-    bool saveEntry(Entry *e,QFile &storage);
+    bool loadEntry(FileStorage *storage);
+    bool saveEntry(Entry *e,FileStorage *storage);
     void setEntry(Entry *e);
     void releaseEntry();
     void changeSection(int section) { m_section = section; }

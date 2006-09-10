@@ -217,9 +217,9 @@ int iSystem(const char *command,const char *args,bool commandHasConsole)
   }
   else
   {
-	// gswin32 is a GUI api which will pop up a window and run
-	// asynchronously. To prevent both, we use ShellExecuteEx and
-	// WaitForSingleObject (thanks to Robert Golias for the code)
+    // gswin32 is a GUI api which will pop up a window and run
+    // asynchronously. To prevent both, we use ShellExecuteEx and
+    // WaitForSingleObject (thanks to Robert Golias for the code)
 
     SHELLEXECUTEINFO sInfo = {
       sizeof(SHELLEXECUTEINFO),   /* structure size */
@@ -335,7 +335,7 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
   while ((i=getScopeFragment(s,p,&l))!=-1)
   {
     //printf("Scope fragment %s\n",s.mid(i,l).data());
-    if (Doxygen::namespaceSDict[s.left(i+l)]!=0)
+    if (Doxygen::namespaceSDict->find(s.left(i+l))!=0)
     {
       if (s.at(i)!='@')
       {
@@ -501,11 +501,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
       MemberNameSDict *mnd=0;
       if (resScope->definitionType()==Definition::TypeClass)
       {
-        mnd=&Doxygen::memberNameSDict;
+        mnd=Doxygen::memberNameSDict;
       }
       else
       {
-        mnd=&Doxygen::functionNameSDict;
+        mnd=Doxygen::functionNameSDict;
       }
       MemberName *mn=mnd->find(resName);
       if (mn)
@@ -558,7 +558,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
 ClassDef *getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  return Doxygen::classSDict.find(name);
+  return Doxygen::classSDict->find(name);
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
@@ -578,11 +578,11 @@ NamespaceDef *getResolvedNamespace(const char *name)
     {
       warn_cont("Warning: possible recursive namespace alias detected for %s!\n",name);
     }
-    return Doxygen::namespaceSDict[subst->data()];
+    return Doxygen::namespaceSDict->find(subst->data());
   }
   else
   {
-    return Doxygen::namespaceSDict[name];
+    return Doxygen::namespaceSDict->find(name);
   }
 }
 
@@ -606,7 +606,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
  * 
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
-static ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
+ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                                    MemberDef **pMemType,QCString *pTemplSpec)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
@@ -668,7 +668,7 @@ static ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
       }
       else // Something like A<T>::B<S> => lookup A::B, spec=<S>
       {
-        *pTemplSpec = type.mid(i);
+        if (pTemplSpec) *pTemplSpec = type.mid(i);
       }
       result = getResolvedClassRec(md->getOuterScope(),fileScope,
            stripTemplateSpecifiersFromScope(type.left(i),FALSE),0,0);
@@ -700,7 +700,8 @@ static ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
 /*! Substitutes a simple unqualified \a name within \a scope. Returns the
  *  value of the typedef or \a name if no typedef was found.
  */
-QCString substTypedef(Definition *scope,FileDef *fileScope,const QCString &name)
+static QCString substTypedef(Definition *scope,FileDef *fileScope,const QCString &name,
+            MemberDef **pTypeDef=0)
 {
   QCString result=name;
   if (name.isEmpty()) return result;
@@ -752,7 +753,12 @@ QCString substTypedef(Definition *scope,FileDef *fileScope,const QCString &name)
       }
     }
   }
-  if (bestMatch) result = bestMatch->typeString();
+  if (bestMatch) 
+  {
+    result = bestMatch->typeString();
+    if (pTypeDef) *pTypeDef=bestMatch;
+  }
+  
   //printf("substTypedef(%s,%s)=%s\n",scope?scope->name().data():"<global>",
   //                                  name.data(),result.data());
   return result;
@@ -782,14 +788,24 @@ static Definition *endOfPathIsUsedClass(SDict<Definition> *cl,const QCString &lo
  */
 static Definition *followPath(Definition *start,FileDef *fileScope,const QCString &path)
 {
-  int is,ps=0;
+  int is,ps;
   int l;
   Definition *current=start;
+  ps=0;
   // for each part of the explicit scope
   while ((is=getScopeFragment(path,ps,&l))!=-1)
   {
     // try to resolve the part if it is a typedef
-    QCString qualScopePart = substTypedef(current,fileScope,path.mid(is,l));
+    MemberDef *typeDef=0;
+    QCString qualScopePart = substTypedef(current,fileScope,path.mid(is,l),&typeDef);
+    if (typeDef)
+    {
+      ClassDef *type = newResolveTypedef(fileScope,typeDef);
+      if (type)
+      {
+        return type;
+      }
+    }
     Definition *next = current->findInnerCompound(qualScopePart);
     if (next==0) // failed to follow the path 
     {
@@ -1090,6 +1106,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
 #endif
   }
 done:
+  //printf("> result=%d\n",result);
   visitedDict.remove(key);
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
@@ -1111,8 +1128,8 @@ void getResolvedSymbol(Definition *scope,
                        QCString &bestTemplSpec
                       )
 {
-  //printf("  found type %x name=%s (%d/%d) d=%p\n",
-  //       d->definitionType(),d->name().data(),count,dl->count(),d);
+  //printf("  found type %x name=%s d=%p\n",
+  //       d->definitionType(),d->name().data(),d);
 
   // only look at classes and members
   if (d->definitionType()==Definition::TypeClass ||
@@ -1275,7 +1292,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
 
   DefinitionIntf *di = Doxygen::symbolMap->find(name);
-  //printf("Looking for symbol %s result=%p\n",name.data(),dl);
+  //printf("Looking for symbol %s result=%p\n",name.data(),di);
   if (di==0) 
   {
     return 0;
@@ -2083,12 +2100,11 @@ QCString yearToString()
   return result;
 }
 
-
 //----------------------------------------------------------------------
 // recursive function that returns the number of branches in the 
 // inheritance tree that the base class `bcd' is below the class `cd'
 
-int minClassDistance(ClassDef *cd,ClassDef *bcd,int level)
+int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
 {
   if (bcd->categoryOf()) // use class that is being extended in case of 
     // an Objective-C category
@@ -3381,7 +3397,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
   //printf("mScope=`%s' mName=`%s'\n",mScope.data(),mName.data());
 
-  MemberName *mn = Doxygen::memberNameSDict[mName];
+  MemberName *mn = Doxygen::memberNameSDict->find(mName);
   //printf("mName=%s mn=%p\n",mName.data(),mn);
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
@@ -3420,8 +3436,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         {
           //if (mmd->isLinkable())
           //{
+          LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
           bool match=args==0 || 
-            matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
+            matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
                 fcd,fcd->getFileDef(),argList,
                 checkCV
                 );  
@@ -3429,12 +3446,15 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           if (match)
           {
             ClassDef *mcd=mmd->getClassDef();
-            int m=minClassDistance(fcd,mcd);
-            if (m<mdist && mcd->isLinkable())
+            if (mcd)
             {
-              mdist=m;
-              cd=mcd;
-              md=mmd;
+              int m=minClassDistance(fcd,mcd);
+              if (m<mdist && mcd->isLinkable())
+              {
+                mdist=m;
+                cd=mcd;
+                md=mmd;
+              }
             }
           }
           //}
@@ -3453,13 +3473,16 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             //{
             ClassDef *mcd=mmd->getClassDef();
             //printf("  >Class %s found\n",mcd->name().data());
-            int m=minClassDistance(fcd,mcd);
-            if (m<mdist /* && mcd->isLinkable()*/ )
+            if (mcd)
             {
-              //printf("Class distance %d\n",m);
-              mdist=m;
-              cd=mcd;
-              md=mmd;
+              int m=minClassDistance(fcd,mcd);
+              if (m<mdist /* && mcd->isLinkable()*/ )
+              {
+                //printf("Class distance %d\n",m);
+                mdist=m;
+                cd=mcd;
+                md=mmd;
+              }
             }
             //}
           }
@@ -3514,7 +3537,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
       QCString className = mmd->getClassDef()->name();
 
-      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
+      LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
+      if (matchArguments2(mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
             Doxygen::globalScope,mmd->getFileDef(),argList,
             checkCV
             )
@@ -3540,7 +3564,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   // maybe an namespace, file or group member ?
   //printf("Testing for global function scopeName=`%s' mScope=`%s' :: mName=`%s'\n",
   //              scopeName.data(),mScope.data(),mName.data());
-  if ((mn=Doxygen::functionNameSDict[mName])) // name is known
+  if ((mn=Doxygen::functionNameSDict->find(mName))) // name is known
   {
     //printf("  >function name found\n");
     NamespaceDef *fnd=0;
@@ -3558,7 +3582,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       }
       //printf("Trying namespace %s\n",namespaceName.data());
       if (!namespaceName.isEmpty() && 
-          (fnd=Doxygen::namespaceSDict[namespaceName]) &&
+          (fnd=Doxygen::namespaceSDict->find(namespaceName)) &&
           fnd->isLinkable()
          )
       {
@@ -3577,9 +3601,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             if (args && strcmp(args,"()")!=0)
             {
               argList=new ArgumentList;
+              LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
               stringToArgumentList(args,argList);
               match=matchArguments2(
-                  mmd->getOuterScope(),mmd->getFileDef(),mmd->argumentList(),
+                  mmd->getOuterScope(),mmd->getFileDef(),mmdAl.pointer(),
                   fnd,mmd->getFileDef(),argList,
                   checkCV); 
             }
@@ -3659,9 +3684,10 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           if (args && !md->isDefine() && strcmp(args,"()")!=0)
           {
             argList=new ArgumentList;
+            LockingPtr<ArgumentList> mdAl = md->argumentList();
             stringToArgumentList(args,argList);
             match=matchArguments2(
-                md->getOuterScope(),fd,md->argumentList(),
+                md->getOuterScope(),fd,mdAl.pointer(),
                 Doxygen::globalScope,fd,argList,
                 checkCV); 
             delete argList; argList=0;
@@ -3780,7 +3806,7 @@ bool getScopeDefs(const char *docScope,const char *scope,
     {
       return TRUE; // class link written => quit 
     }
-    else if ((nd=Doxygen::namespaceSDict[fullName]) && nd->isLinkable())
+    else if ((nd=Doxygen::namespaceSDict->find(fullName)) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit 
     }
@@ -3915,7 +3941,7 @@ bool resolveRef(/* in */  const char *scName,
     //    md->name().data(),md,md->anchor().data(),md->isLinkable(),(*resContext)->name().data());
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict[nameStr]))
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict->find(nameStr)))
   { // group link
     *resContext=gd;
     return TRUE;
@@ -4068,7 +4094,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=pd;
     return TRUE;
   }
-  else if ((gd=Doxygen::groupSDict[linkRef])) // link to a group
+  else if ((gd=Doxygen::groupSDict->find(linkRef))) // link to a group
   {
     *resContext=gd;
     return TRUE;
@@ -4089,12 +4115,12 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=cd;
     return TRUE;
   }
-  else if ((nd=Doxygen::namespaceSDict.find(linkRef)))
+  else if ((nd=Doxygen::namespaceSDict->find(linkRef)))
   {
     *resContext=nd;
     return TRUE;
   }
-  else if ((dir=Doxygen::directories.find(QFileInfo(linkRef).absFilePath()+"/"))
+  else if ((dir=Doxygen::directories->find(QFileInfo(linkRef).absFilePath()+"/"))
       && dir->isLinkable()) // TODO: make this location independent like filedefs
   {
     *resContext=dir;
@@ -4782,8 +4808,8 @@ void addMembersToMemberGroup(MemberList *ml,
   {
     if (md->isEnumerate()) // insert enum value of this enum into groups
     {
-      QList<MemberDef> *fmdl=md->enumFieldList();
-      if (fmdl)
+      LockingPtr<MemberList> fmdl=md->enumFieldList();
+      if (fmdl!=0)
       {
         MemberDef *fmd=fmdl->first();
         while (fmd)
@@ -5310,14 +5336,15 @@ void addRefItem(const QList<ListItemInfo> *sli,
 
 void addGroupListToTitle(OutputList &ol,Definition *d)
 {
-  if (d->partOfGroups()) // write list of group to which this definition belongs
+  LockingPtr<GroupList> groups = d->partOfGroups();
+  if (groups!=0) // write list of group to which this definition belongs
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
     ol.lineBreak();
     ol.startSmall();
     ol.docify("[");
-    GroupListIterator gli(*d->partOfGroups());
+    GroupListIterator gli(*groups);
     GroupDef *gd;
     bool first=TRUE;
     for (gli.toFirst();(gd=gli.current());++gli)

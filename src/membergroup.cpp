@@ -27,6 +27,7 @@
 #include "groupdef.h"
 #include "doxygen.h"
 #include "docparser.h"
+#include "marshal.h"
 
 //static QCString idToName(int id)
 //{
@@ -34,6 +35,10 @@
 //  result.sprintf("mgroup_%d",id);
 //  return result;
 //}
+
+MemberGroup::MemberGroup()
+{
+}
 
 MemberGroup::MemberGroup(Definition *parent,
       int id,const char *hdr,const char *d,const char *docFile) 
@@ -242,5 +247,37 @@ void MemberGroup::findSectionsInDocumentation()
 {
   docFindSections(doc,0,this,m_docFile);
   memberList->findSectionsInDocumentation();
+}
+
+void MemberGroup::marshal(StorageIntf *s)
+{
+  marshalMemberList(s,memberList);
+  marshalObjPointer(s,inDeclSection); // reference only
+  marshalInt(s,grpId);
+  marshalQCString(s,grpHeader);
+  marshalQCString(s,fileName);
+  marshalObjPointer(s,scope);
+  marshalQCString(s,doc);
+  marshalBool(s,inSameSection);
+  marshalInt(s,m_numDecMembers);
+  marshalInt(s,m_numDocMembers);
+  marshalObjPointer(s,m_parent);
+  marshalQCString(s,m_docFile);
+}
+
+void MemberGroup::unmarshal(StorageIntf *s)
+{
+  memberList      = unmarshalMemberList(s);
+  inDeclSection   = (MemberList *)unmarshalObjPointer(s); 
+  grpId           = unmarshalInt(s);
+  grpHeader       = unmarshalQCString(s);
+  fileName        = unmarshalQCString(s);
+  scope           = (Definition *)unmarshalObjPointer(s);
+  doc             = unmarshalQCString(s);
+  inSameSection   = unmarshalBool(s);
+  m_numDecMembers = unmarshalInt(s);
+  m_numDocMembers = unmarshalInt(s);
+  m_parent        = (Definition *)unmarshalObjPointer(s);
+  m_docFile       = unmarshalQCString(s);
 }
 

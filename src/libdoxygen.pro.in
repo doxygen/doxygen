@@ -60,15 +60,18 @@ HEADERS      =	bufstr.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
+                lockingptr.h \
 		logos.h \
 		mandocvisitor.h \
 		mangen.h \
+                marshal.h \
 		memberdef.h \
 		membergroup.h \
 		memberlist.h \
 		membername.h \
 		message.h \
 		namespacedef.h \
+                objcache.h \
 		outputgen.h \
 		outputlist.h \
 		pagedef.h \
@@ -88,6 +91,7 @@ HEADERS      =	bufstr.h \
 		search_php.h \
 		section.h \
 		sortdict.h \
+                store.h \
 		tagreader.h \
 		translator.h \
 		translator_adapter.h \
@@ -167,12 +171,14 @@ SOURCES      =	ce_lex.cpp \
 		logos.cpp \
 		mandocvisitor.cpp \
 		mangen.cpp \
+                marshal.cpp \
 		memberdef.cpp \
 		membergroup.cpp \
 		memberlist.cpp \
 		membername.cpp \
 		message.cpp \
 		namespacedef.cpp \
+                objcache.cpp \
 		outputgen.cpp \
 		outputlist.cpp \
 		pagedef.cpp \
@@ -187,6 +193,7 @@ SOURCES      =	ce_lex.cpp \
 		rtfstyle.cpp \
 		scanner.cpp \
 		searchindex.cpp \
+                store.cpp \
 		tagreader.cpp \
 		translator.cpp \
 		util.cpp \

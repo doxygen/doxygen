@@ -123,10 +123,15 @@ static QCString         fullArgString;
 
 static ArgumentList     *currentArgumentList;
 static char             lastCopyArgChar;
+
+static QCString         *pCopyQuotedString;
 static QCString         *pCopyRoundString;
 static QCString         *pCopyCurlyString;
-static QCString         *pCopyQuotedString;
-static QCString         *pSkipVerbString;
+
+static QGString         *pCopyCurlyGString;
+static QGString         *pCopyRoundGString;
+static QGString         *pCopyQuotedGString;
+static QGString         *pSkipVerbString;
 static QStack<Grouping> autoGroupStack;
 
 static bool             insideFormula;
@@ -640,8 +645,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	NSAliasArg
 %x	CopyString
 %x	CopyPHPString
+%x	CopyGString
+%x	CopyPHPGString
 %x	CopyRound
 %x	CopyCurly
+%x	GCopyRound
+%x	GCopyCurly
 %x	SkipUnionSwitch
 %x	Specialization
 %x	FuncPtrInit
@@ -772,7 +781,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount() ;
 					}
 
-<FindMembers>{B}*"signals"{BN}*":"{BN}* { current->mtype = mtype = Signal;
+<FindMembers>{B}*("signals"|"Q_SIGNALS"){BN}*":"{BN}* { current->mtype = mtype = Signal;
+  
 					  current->protection = protection = Public ;
 					  current->type.resize(0); 
 					  current->name.resize(0); 
@@ -781,7 +791,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount() ;
 					}
 
-<FindMembers>{B}*"public"{BN}*"slots"{BN}*":"{BN}* {
+<FindMembers>{B}*"public"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
 					  current->protection = protection = Public ;
 					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
@@ -791,7 +801,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount();
 					}
 
-<FindMembers>{B}*"protected"{BN}*"slots"{BN}*":"{BN}* {
+<FindMembers>{B}*"protected"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
 					  current->protection = protection = Protected ;
 					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
@@ -801,7 +811,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount();
 					}
 
-<FindMembers>{B}*"private"{BN}*"slots"{BN}*":"{BN}* {
+<FindMembers>{B}*"private"{BN}*("slots"|"Q_SLOTS"){BN}*":"{BN}* {
 					  current->protection = protection = Private ;
 					  current->mtype = mtype = Slot;
 					  current->type.resize(0); 
@@ -1886,17 +1896,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   /* Read initializer rules */
 <ReadInitializer>"("			{
   					  lastRoundContext=YY_START;
-  					  pCopyRoundString=&current->initializer;
+  					  pCopyRoundGString=&current->initializer;
 					  roundCount=0;
   					  current->initializer+=*yytext; 
-  					  BEGIN(CopyRound);
+  					  BEGIN(GCopyRound);
   					}
 <ReadInitializer>"{"			{
   					  lastCurlyContext=YY_START;
-  					  pCopyCurlyString=&current->initializer;
+  					  pCopyCurlyGString=&current->initializer;
 					  curlyCount=0;
   					  current->initializer+=*yytext; 
-  					  BEGIN(CopyCurly);
+  					  BEGIN(GCopyCurly);
   					}
 <ReadInitializer>[;,]			{
   					  //printf(">> initializer `%s' <<\n",current->initializer.data());
@@ -1924,8 +1934,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
                                             lastStringContext=YY_START;
   					    current->initializer+=*yytext; 
-  					    pCopyQuotedString=&current->initializer;
-					    BEGIN(CopyString);
+  					    pCopyQuotedGString=&current->initializer;
+					    BEGIN(CopyGString);
 					  }
 					}
 <ReadInitializer>"->"			{
@@ -1949,9 +1959,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  if (insidePHP)
 					  {
 					    current->initializer+=yytext; 
-                                            pCopyQuotedString = &current->initializer;
+                                            pCopyQuotedGString = &current->initializer;
                                             lastStringContext=YY_START;
-					    BEGIN(CopyPHPString);
+					    BEGIN(CopyPHPGString);
 					  }
 					  else
 					  {
@@ -2037,6 +2047,29 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  *pCopyQuotedString+=*yytext;
   					}
 
+  /* generic quoted growable string copy rules */
+<CopyGString,CopyPHPGString>\\.		{
+  					  *pCopyQuotedGString+=yytext;
+  					}
+<CopyGString>\"				{ 
+  					  *pCopyQuotedGString+=*yytext;
+  					  BEGIN( lastStringContext ); 
+					}
+<CopyPHPGString>\'			{ 
+  					  *pCopyQuotedGString+=*yytext;
+  					  BEGIN( lastStringContext ); 
+					}
+<CopyGString,CopyPHPGString>"/*"|"*/"|"//" {
+  					  *pCopyQuotedGString+=yytext;
+  					}
+<CopyGString,CopyPHPGString>\n		{
+  					  *pCopyQuotedGString+=*yytext;
+  					  yyLineNr++;
+  					}
+<CopyGString,CopyPHPGString>.		{
+  					  *pCopyQuotedGString+=*yytext;
+  					}
+
   /* generic round bracket list copy rules */
 <CopyRound>\"				{
 					  *pCopyRoundString+=*yytext;
@@ -2087,6 +2120,56 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  *pCopyRoundString+=*yytext;
   					}
 
+  /* generic round bracket list copy rules for growable strings */
+<GCopyRound>\"				{
+					  *pCopyRoundGString+=*yytext;
+  					  pCopyQuotedGString=pCopyRoundGString;
+					  lastStringContext=YY_START;
+					  BEGIN(CopyGString);
+					}
+<GCopyRound>"("				{
+  					  *pCopyRoundGString+=*yytext;
+  					  roundCount++;
+  					}
+<GCopyRound>")"				{
+  					  *pCopyRoundGString+=*yytext;
+					  if (--roundCount<0)
+					    BEGIN(lastRoundContext);
+  					}
+<GCopyRound>\n				{
+  					  yyLineNr++;
+  					  *pCopyRoundGString+=*yytext;
+  					}
+<GCopyRound>\'				{
+  					  if (insidePHP)
+					  {
+					    current->initializer+=yytext; 
+                                            pCopyQuotedGString = pCopyRoundGString;
+                                            lastStringContext=YY_START;
+					    BEGIN(CopyPHPGString);
+					  }
+					  else
+					  {
+					    *pCopyRoundGString+=yytext;
+					  }
+  					}
+<GCopyRound>{CHARLIT}		        { 
+                                          if (insidePHP)
+					  {
+					    REJECT;
+					  }
+					  else
+					  {
+                                            *pCopyRoundGString+=yytext; 
+					  }
+                                        }
+<GCopyRound>[^"'()\n]+			{
+  					  *pCopyRoundGString+=yytext;
+  					}
+<GCopyRound>.				{
+  					  *pCopyRoundGString+=*yytext;
+  					}
+
   /* generic curly bracket list copy rules */
 <CopyCurly>\"				{
 					  *pCopyCurlyString+=*yytext;
@@ -2132,6 +2215,56 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <CopyCurly>.				{
 					  *pCopyCurlyString+=*yytext;
   					}
+
+  /* generic curly bracket list copy rules for growable strings */
+<GCopyCurly>\"				{
+					  *pCopyCurlyGString+=*yytext;
+  					  pCopyQuotedGString=pCopyCurlyGString;
+					  lastStringContext=YY_START;
+					  BEGIN(CopyGString);
+					}
+<GCopyCurly>\'				{
+					  *pCopyCurlyGString+=*yytext;
+  					  if (insidePHP)
+					  {
+					    pCopyQuotedGString=pCopyCurlyGString;
+					    lastStringContext=YY_START;
+					    BEGIN(CopyPHPGString);
+					  }
+					}
+<GCopyCurly>"{"				{
+  					  *pCopyCurlyGString+=*yytext;
+					  curlyCount++;
+  					}
+<GCopyCurly>"}"				{
+					  *pCopyCurlyGString+=*yytext;
+					  if (--curlyCount<0)
+					    BEGIN(lastCurlyContext); 
+  					}
+<GCopyCurly>{CHARLIT}                    { if (insidePHP) 
+                                          { 
+					    REJECT; 
+					  } 
+					  else 
+					  {
+					    *pCopyCurlyGString+=yytext; 
+					  }
+                                        }
+<GCopyCurly>[^"'{}\/\n]+			{
+  					  *pCopyCurlyGString+=yytext;
+  					}
+<GCopyCurly>"/"				{ *pCopyCurlyGString+=yytext; }
+<GCopyCurly>\n				{
+  					  yyLineNr++;
+					  *pCopyCurlyGString+=*yytext;
+  					}
+<GCopyCurly>.				{
+					  *pCopyCurlyGString+=*yytext;
+  					}
+
+  /* ---------------------- */
+
+
 <FindMembers>":"			{
   					  if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
 					  {
@@ -2377,9 +2510,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           BEGIN( SkipVerbString );
 					}
 <ReadBody,ReadNSBody,ReadBodyIntf>\"	{ current->program += yytext ; 
-                                          pCopyQuotedString = &current->program;
+                                          pCopyQuotedGString = &current->program;
                                           lastStringContext=YY_START;
-                                          BEGIN( CopyString );
+                                          BEGIN( CopyGString );
 					}
 <ReadBody,ReadNSBody,ReadBodyIntf>"/*"{B}*		{ current->program += yytext ;
 					  lastContext = YY_START ;
@@ -2398,9 +2531,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					  { // begin of single quoted string
 					    current->program += yytext;
-                                            pCopyQuotedString = &current->program;
+                                            pCopyQuotedGString = &current->program;
                                             lastStringContext=YY_START;
-					    BEGIN(CopyPHPString);
+					    BEGIN(CopyPHPGString);
 					  }
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>{CHARLIT} { 
@@ -4213,6 +4346,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else
 					  {
+  					    mtype = Method;
                                             unput(';');
 					    BEGIN(FindMembers);
 					  }
