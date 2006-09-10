@@ -52,7 +52,7 @@ class Q_EXPORT QFile : public QIODevice			// file I/O device class
 public:
     QFile();
     QFile( const QString &name );
-   ~QFile();
+    virtual ~QFile();
 
     QString	name()	const;
     void	setName( const QString &name );
@@ -95,6 +95,7 @@ public:
     int		handle() const;
 
     int64       pos() const;
+    int64       toEnd();
     bool        seek(int64 pos);
 
 protected:

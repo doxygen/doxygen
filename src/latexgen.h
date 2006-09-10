@@ -70,7 +70,8 @@ class LatexGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList()  { t << "\\begin{CompactItemize}" << endl; }
     void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
-    void writeIndexItem(const char *ref,const char *file,const char *name);
+    void startIndexItem(const char *ref,const char *file);
+    void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,

@@ -299,8 +299,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endIndexKey()   = 0;
     virtual void startIndexValue(bool) = 0;
     virtual void endIndexValue(const char *,bool) = 0;
-    virtual void writeIndexItem(const char *ref,const char *file,
-                                const char *text) = 0;
+    virtual void startIndexItem(const char *ref,const char *file) = 0;
+    virtual void endIndexItem(const char *ref,const char *file) = 0;
     virtual void startGroupHeader() = 0;
     virtual void endGroupHeader() = 0;
     virtual void startMemberSections() = 0;

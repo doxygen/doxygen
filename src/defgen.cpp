@@ -137,7 +137,7 @@ void generateDEFForMember(MemberDef *md,
   if (isFunc) //function
   {
     ArgumentList *declAl = new ArgumentList;
-    ArgumentList *defAl = md->argumentList();
+    LockingPtr<ArgumentList> defAl = md->argumentList();
     stringToArgumentList(md->argsString(),declAl);
     QCString fcnPrefix = "  " + memPrefix + "param-";
 
@@ -213,9 +213,10 @@ void generateDEFForMember(MemberDef *md,
   // TODO: exceptions, const volatile
   if (md->memberType()==MemberDef::Enumeration) // enum
   {
-    if (md->enumFieldList())
+    LockingPtr<MemberList> enumList = md->enumFieldList();
+    if (enumList!=0)
     {
-      MemberListIterator emli(*md->enumFieldList());
+      MemberListIterator emli(*enumList);
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
@@ -239,9 +240,11 @@ void generateDEFForMember(MemberDef *md,
     << md->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
-  if (md->getReferencesMembers())
+
+  LockingPtr<MemberSDict> mdict = md->getReferencesMembers();
+  if (!mdict.isNull())
   {
-    MemberSDict::Iterator mdi(*md->getReferencesMembers());
+    MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
     QCString refPrefix = "  " + memPrefix + "ref-";
 
@@ -271,9 +274,10 @@ void generateDEFForMember(MemberDef *md,
       }
     } /* for (mdi.toFirst...) */
   }
-  if (md->getReferencedByMembers())
+  mdict = md->getReferencedByMembers();
+  if (!mdict.isNull())
   {
-    MemberSDict::Iterator mdi(*md->getReferencedByMembers());
+    MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
     QCString refPrefix = "  " + memPrefix + "ref-";
 
@@ -602,15 +606,15 @@ void generateDEF()
   QTextStream t(&f);
   t << "AutoGen Definitions dummy;" << endl;
 
-  if (Doxygen::classSDict.count()+Doxygen::inputNameList.count()>0)
+  if (Doxygen::classSDict->count()+Doxygen::inputNameList->count()>0)
   {
-    ClassSDict::Iterator cli(Doxygen::classSDict);
+    ClassSDict::Iterator cli(*Doxygen::classSDict);
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
       generateDEFForClass(cd,t);
     }
-    FileNameListIterator fnli(Doxygen::inputNameList);
+    FileNameListIterator fnli(*Doxygen::inputNameList);
     FileName *fn;
     for (;(fn=fnli.current());++fnli)
     {

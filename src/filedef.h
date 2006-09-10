@@ -170,31 +170,8 @@ class FileDef : public Definition
     void addListReferences();
     bool isDocumentationFile() const;
 
-
-    //void generateXML(QTextStream &t);
-    //void generateXMLSection(QTextStream &t,MemberList *ml,const char *type);
-
     MemberList *getMemberList(MemberList::ListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }
-#if 0
-    MemberList *allMemberList;
-
-    // members in the declaration part of the documentation
-    MemberList *decDefineMembers;
-    MemberList *decProtoMembers;
-    MemberList *decTypedefMembers;
-    MemberList *decEnumMembers;
-    MemberList *decFuncMembers;
-    MemberList *decVarMembers;
-
-    // members in the detailed part of the documentation
-    MemberList *docDefineMembers;
-    MemberList *docProtoMembers;
-    MemberList *docTypedefMembers;
-    MemberList *docEnumMembers;
-    MemberList *docFuncMembers;
-    MemberList *docVarMembers;
-#endif
 
     /* user defined member groups */
     MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }

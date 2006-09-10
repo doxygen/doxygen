@@ -115,8 +115,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startItemList); }
     void endItemList() 
     { forall(&OutputGenerator::endItemList); }
-    void writeIndexItem(const char *ref,const char *file,const char *text)
-    { forall(&OutputGenerator::writeIndexItem,ref,file,text); }
+    void startIndexItem(const char *ref,const char *file)
+    { forall(&OutputGenerator::startIndexItem,ref,file); }
+    void endIndexItem(const char *ref,const char *file)
+    { forall(&OutputGenerator::endIndexItem,ref,file); }
     void docify(const char *s)
     { forall(&OutputGenerator::docify,s); }
     void codify(const char *s)

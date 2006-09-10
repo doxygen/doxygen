@@ -72,12 +72,8 @@ class RTFGenerator : public OutputGenerator
     void endIndexValue(const char *,bool);
     void startItemList();
     void endItemList();
-    //void startEnumList();
-    //void endEnumList();
-    //void startAlphabeticalIndexList() {}
-    //void endAlphabeticalIndexList() {} 
-    //void writeIndexHeading(const char *) {}
-    void writeIndexItem(const char *ref,const char *file,const char *name);
+    void startIndexItem(const char *ref,const char *file);
+    void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
     void codify(const char *text);
     void writeObjectLink(const char *ref,const char *file,
@@ -88,7 +84,6 @@ class RTFGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    //void writeMailLink(const char *url);
     void startTypewriter() { t << "{\\f2 "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();

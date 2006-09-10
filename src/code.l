@@ -51,7 +51,7 @@
   
 static CodeOutputInterface * g_code;
 
-static ClassSDict    g_codeClassSDict(17);
+static ClassSDict    *g_codeClassSDict = 0;
 static QCString      g_curClassName;
 static QStrList      g_curClassBases;
 
@@ -127,10 +127,12 @@ static ObjCCallCtx *g_currentCtx=0;
 static int g_currentCtxId=0;
 static int g_currentNameId=0;
 static int g_currentObjId=0;
+static int g_currentWordId=0;
 static QStack<ObjCCallCtx> g_contextStack;
 static QIntDict<ObjCCallCtx> g_contextDict;
 static QIntDict<QCString> g_nameDict;
 static QIntDict<QCString> g_objectDict;
+static QIntDict<QCString> g_wordDict;
 static int g_braceCount=0;
   
 static void saveObjCContext();
@@ -225,7 +227,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
   ClassDef *varType;
   int i=0;
   if (
-      (varType=g_codeClassSDict[ltype]) ||  // look for class definitions inside the code block
+      (varType=g_codeClassSDict->find(ltype)) ||  // look for class definitions inside the code block
       (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,ltype)) // look for global class definitions
      ) 
   {
@@ -240,7 +242,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     QCString templateArgs(ltype.right(ltype.length() - i));
     if (  
          ( // look for class definitions inside the code block
-	   (varType=g_codeClassSDict[typeName]) ||
+	   (varType=g_codeClassSDict->find(typeName)) ||
            // otherwise look for global class definitions
            (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,typeName))
 	 ) && // and it must be a template
@@ -607,7 +609,7 @@ static void addUsingDirective(const char *name)
 {
   if (g_exampleBlock && g_sourceFileDef && name)
   {
-    NamespaceDef *nd = Doxygen::namespaceSDict.find(name);
+    NamespaceDef *nd = Doxygen::namespaceSDict->find(name);
     if (nd)
     {
       g_sourceFileDef->addUsingDirective(nd);
@@ -618,7 +620,7 @@ static void addUsingDirective(const char *name)
 static void setParameterList(MemberDef *md)
 {
   g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
-  ArgumentList *al = md->argumentList();
+  LockingPtr<ArgumentList> al = md->argumentList();
   if (al==0) return; 
   Argument *a = al->first();
   while (a)
@@ -721,7 +723,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
   }
 
   // look for a global member
-  if ((mn=Doxygen::functionNameSDict[name]))
+  if ((mn=Doxygen::functionNameSDict->find(name)))
   {
     //printf("global var `%s'\n",name.data());
     if (mn->count()==1) // global defined only once
@@ -1109,7 +1111,7 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable `%s'\n",g_classScope.data(),varName.data());
-      MemberName *vmn=Doxygen::memberNameSDict[varName];
+      MemberName *vmn=Doxygen::memberNameSDict->find(varName);
       if (vmn==0)
       {
 	int vi;
@@ -1119,7 +1121,7 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
-	  vmn=Doxygen::memberNameSDict[vn];
+	  vmn=Doxygen::memberNameSDict->find(vn);
 	  //printf("Trying name `%s' scope=%s\n",vn.data(),scope.data());
 	  if (vmn)
 	  {
@@ -1192,7 +1194,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
     }
   }
   //printf("generateFunctionLink(%s) classScope=`%s'\n",locFunc.data(),locScope.data());
-  if (!locScope.isEmpty() && (ccd=g_codeClassSDict[locScope]))
+  if (!locScope.isEmpty() && (ccd=g_codeClassSDict->find(locScope)))
   {
     //printf("using classScope %s\n",g_classScope.data());
     if (ccd->baseClasses())
@@ -1505,7 +1507,7 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	      if (QCString(ictx->method->typeString())=="id")
 	      {
 		// see if the method name is unique, if so we link to it
-		MemberName *mn=Doxygen::memberNameSDict.find(ctx->methodName);
+		MemberName *mn=Doxygen::memberNameSDict->find(ctx->methodName);
 		//printf("mn->count=%d ictx->method=%s ctx->methodName=%s\n",
 		//    mn==0?-1:(int)mn->count(),
 		//    ictx->method->name().data(),
@@ -1529,6 +1531,21 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 	  else
 	  {
 	    //printf("Invalid context: id=%d\n",refId);
+	  }
+	}
+	else if (nc=='w') // some word
+	{
+          nc=*p++;
+	  QCString refIdStr;
+	  while (nc!=0 && isdigit(nc)) { refIdStr+=nc; nc=*p++; }
+	  p--;
+	  int refId=refIdStr.toInt();
+	  QCString *pWord = g_wordDict.find(refId);
+	  if (pWord)
+	  {
+            g_code->linkableSymbol(g_yyLineNr,pWord->data(),0,
+                         g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
+            codifyLines(pWord->data());
 	  }
 	}
 	else // illegal marker
@@ -1568,6 +1585,15 @@ static QCString escapeObject(const char *s)
   result.sprintf("$o%d",g_currentObjId);
   g_objectDict.insert(g_currentObjId,new QCString(s));
   g_currentObjId++;
+  return result;
+}
+
+static QCString escapeWord(const char *s)
+{
+  QCString result;
+  result.sprintf("$w%d",g_currentWordId);
+  g_wordDict.insert(g_currentWordId,new QCString(s));
+  g_currentWordId++;
   return result;
 }
 
@@ -1723,7 +1749,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_parmType=yytext;
   					}
 <ObjCParamType>{ID}			{
-  					  g_code->codify(yytext);
+					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_parmType=yytext;
   					}
 <ObjCParamType>")"			{
@@ -1731,6 +1757,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  BEGIN(ObjCParams);
   					}
 <ObjCParams>{ID}			{
+                                          g_code->linkableSymbol(g_yyLineNr,yytext,0,
+	                                     g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
   					  g_code->codify(yytext);
   					  g_parmName=yytext;
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
@@ -1960,13 +1988,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					      //printf("Adding new class %s\n",g_curClassName.data());
 					      ClassDef *ncd=new ClassDef("<code>",1,
 				 		  g_curClassName,ClassDef::Class,0,0,FALSE);
-					      g_codeClassSDict.append(g_curClassName,ncd);
+					      g_codeClassSDict->append(g_curClassName,ncd);
 					      // insert base classes.
 					      char *s=g_curClassBases.first();
 					      while (s)
 					      {
 						ClassDef *bcd;
-						bcd=g_codeClassSDict[s];
+						bcd=g_codeClassSDict->find(s);
 						if (bcd==0) bcd=getResolvedClass(g_currentDefinition,g_sourceFileDef,s);
 						if (bcd && bcd!=ncd)
 						{
@@ -2321,9 +2349,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    g_contextDict.setAutoDelete(TRUE);
 					    g_nameDict.setAutoDelete(TRUE);
 					    g_objectDict.setAutoDelete(TRUE);
+					    g_wordDict.setAutoDelete(TRUE);
 					    g_contextDict.clear();
 					    g_nameDict.clear();
 					    g_objectDict.clear();
+					    g_wordDict.clear();
 					    g_currentCtxId  = 0;
 					    g_currentNameId  = 0;
 					    g_currentObjId  = 0;
@@ -2443,7 +2473,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 			            }
 				    else
 				    {
-                                      g_currentCtx->format+=yytext;
+                                      g_currentCtx->format+=escapeWord(yytext);
 				    }
                                   }
 <ObjCMName>{ID}/{BN}*":"           { 
@@ -2470,6 +2500,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <ObjCSkipStr>"@"/"\""		   { // needed to prevent matching the global rule (for C#)
                                      g_currentCtx->format+=yytext;
                                    }
+<ObjCCall,ObjCMName,ObjCSkipStr>{ID} { g_currentCtx->format+=escapeWord(yytext); }
 <ObjCCall,ObjCMName,ObjCSkipStr>.  { g_currentCtx->format+=*yytext; }
 <ObjCCall,ObjCMName,ObjCSkipStr>\n { g_currentCtx->format+=*yytext; }
 
@@ -3028,11 +3059,11 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_lastCContext = YY_START ;
 					  BEGIN( SkipCxxComment ) ;
 					}
-<*>"("					{
+<*>"("|"["					{
   					  g_code->codify(yytext);
 					  g_theCallContext.pushScope();
   					}
-<*>")"					{
+<*>")"|"]"					{
   					  g_code->codify(yytext);
 					  g_theCallContext.popScope();
   					}
@@ -3107,8 +3138,10 @@ void resetCCodeParserState()
 {
   //printf("***initParseCodeContext()\n");
   g_theVarContext.clear();
-  g_codeClassSDict.setAutoDelete(TRUE);
-  g_codeClassSDict.clear();
+  delete g_codeClassSDict;
+  g_codeClassSDict = new ClassSDict(17);
+  g_codeClassSDict->setAutoDelete(TRUE);
+  g_codeClassSDict->clear();
   g_curClassBases.clear();
   g_anchorCount = 0;
 }
@@ -3120,6 +3153,10 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
+  if (g_codeClassSDict==0)
+  {
+    resetCCodeParserState();
+  }
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;

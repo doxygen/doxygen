@@ -244,10 +244,13 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
           // both inside a file => definition and declaration do not have to be in the same file
            (srcMd->getOuterScope()->definitionType()==Definition::TypeFile &&
             md->getOuterScope()->definitionType()==Definition::TypeFile); 
+
+      LockingPtr<ArgumentList> srcMdAl = srcMd->argumentList();
+      LockingPtr<ArgumentList> mdAl    = md->argumentList();
       
       if (srcMd->isFunction() && md->isFunction() && 
-          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMd->argumentList(),
-                          md->getOuterScope(),md->getFileDef(),md->argumentList(),
+          matchArguments2(srcMd->getOuterScope(),srcMd->getFileDef(),srcMdAl.pointer(),
+                          md->getOuterScope(),md->getFileDef(),mdAl.pointer(),
                           TRUE
                          ) &&
           sameScope
@@ -467,7 +470,8 @@ void GroupDef::addGroup(const GroupDef *def)
 
 bool GroupDef::isASubGroup() const
 {
-  return partOfGroups() && partOfGroups()->count()!=0;
+  LockingPtr<GroupList> groups = partOfGroups();
+  return groups!=0 && groups->count()!=0;
 }
 
 int GroupDef::countMembers() const
@@ -890,7 +894,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       gd->addClass(cd);
       cd->makePartOfGroup(gd);
@@ -908,7 +912,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
   {
     GroupDef *gd=0;
     //printf("group `%s'\n",s->data());
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       gd->addNamespace(nd);
       nd->makePartOfGroup(gd);
@@ -926,7 +930,7 @@ void addDirToGroups(Entry *root,DirDef *dd)
   {
     GroupDef *gd=0;
     //printf("group `%s'\n",g->groupname.data());
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       gd->addDir(dd);
       dd->makePartOfGroup(gd);
@@ -944,7 +948,7 @@ void addGroupToGroups(Entry *root,GroupDef *subGroup)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]) &&
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)) &&
 	!gd->containsGroup(subGroup) )
     {
       gd->addGroup(subGroup);
@@ -973,7 +977,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
   {
     GroupDef *gd=0;
     if (!g->groupname.isEmpty() &&
-        (gd=Doxygen::groupSDict[g->groupname]) &&
+        (gd=Doxygen::groupSDict->find(g->groupname)) &&
 	g->pri >= pri)
     {
       if (fgd && gd!=fgd && g->pri==pri) 
@@ -1067,7 +1071,7 @@ void addExampleToGroups(Entry *root,PageDef *eg)
   for (;(g=gli.current());++gli)
   {
     GroupDef *gd=0;
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
       gd->addExample(eg);
       eg->makePartOfGroup(gd);
@@ -1090,10 +1094,13 @@ QCString GroupDef::getOutputFileBase() const
 
 void GroupDef::addListReferences()
 {
-  addRefItem(xrefListItems(),
+  {
+    LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
+    addRefItem(xrefItems.pointer(),
              theTranslator->trGroup(TRUE,TRUE),
              getOutputFileBase(),name()
             );
+  }
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;
   for (;(mg=mgli.current());++mgli)

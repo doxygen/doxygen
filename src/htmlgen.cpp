@@ -755,10 +755,9 @@ void HtmlGenerator::writeString(const char *text)
   t << text;
 }
 
-void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
-                                   const char *name)
+void HtmlGenerator::startIndexItem(const char *ref,const char *f)
 {
-  //printf("HtmlGenerator::writeIndexItem(%s,%s,%s)\n",ref,f,name);
+  //printf("HtmlGenerator::startIndexItem(%s,%s,%s)\n",ref,f,name);
   QCString *dest;
   t << "<li>";
   if (ref || f)
@@ -785,7 +784,11 @@ void HtmlGenerator::writeIndexItem(const char *ref,const char *f,
   {
     t << "<b>";
   }
-  docify(name);
+}
+
+void HtmlGenerator::endIndexItem(const char *ref,const char *f)
+{
+  //printf("HtmlGenerator::endIndexItem(%s,%s,%s)\n",ref,f,name);
   if (ref || f)
   {
     t << "</a>" << endl;

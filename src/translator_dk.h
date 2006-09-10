@@ -23,6 +23,7 @@
  * First version (not complete) for Doxygen 1.2.7
  * Extended and revised for Doxygen 1.3
  * Extended and revised for Doxygen 1.3.4
+ * Extended and revised for Doxygen 1.3.8
  */
 
 /*  Translator's notes:
@@ -34,25 +35,30 @@
 	  '..?'  angiver ord, der endnu ikke er fundet en oversættelse til
  	  '(do.)' angiver ord, der med vilje ikke er oversat, idet jeg selv
              overvejende bruger det engelske udtryk
-	  '(-> _) angiver ord, der er fundet en oversættelse til, men som jeg
-	         vægrer mig ved at oversætte.
+	  '(-> _)' angiver ord, der er fundet en oversættelse til, men som jeg
+	        vægrer mig ved at oversætte.
+          'KLID:_' angiver ord, hvor jeg med overlæg har rettet mig efter
+		KLID.dk's oversættelsesguide (enig eller ej).
 	)
 	bug -> 'kendt fejl'
 	class -> klasse
 	compound -> 'sammensat type'
 	constructor -> konstruktør ?
 	destructor -> destruktør ?
+	directory -> KLID:katalog (kunne også være 'bibliotek','mappe','folder')
 	event -> begivenhed ?
-    exception (-> undtagelse ?)
+	exception (-> undtagelse ?)
 	friend ..?
-    interface -> grænseflade ?
+	interface -> grænseflade ?
 	member -> medlem (TODO)
 	namespace -> (do.)
+	overloaded -> KLID:overdefineret
 	private -> privat
 	property -> egenskab?
 	protected -> beskyttet ??
 	public -> offentlig
-    slot ..?
+	reference(vb) -> "indeholde referencer til" (?)
+	slot ..?
 	source code -> kildekode
 	struct -> datastruktur
 	template (-> skabelon ?)
@@ -62,6 +68,7 @@
 
 	Specielle forbindelser:
 	'Inheritance diagram' -> Stamtræ  (selvom Nedarvningsdiagram også gik an)
+        
 
 	-----
 
@@ -258,7 +265,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
     { return "Denne nedarvningsliste er sorteret næsten - "
-             "men ikke helt - alfabetisk:";
+             "men ikke nødvendigvis helt - alfabetisk:";
     }
 
     /*! This is an introduction to the list with all files. */
@@ -323,7 +330,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
       } else {
         result+="fil-medlemmer";
       }
-      result+=" med links til ";
+      result+=", med links til ";
       if (extractAll)
         result+="de filer, de tilhører:";
       else
@@ -871,7 +878,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Include-afhængighedsgraf for "+fName+":";
+      return (QCString)"Inklusions-afhængighedsgraf for "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
@@ -1297,7 +1304,7 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
      */
     virtual QCString trReferences()
     {
-      return "Referencer";
+      return "Indeholder referencer til";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1456,6 +1463,85 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     {
       return "Kildefilen " + filename;
     }
+
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Katalogstruktur"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Katalog-dokumentation"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of an HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Kataloger"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy. 
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    { return "Denne katalogstruktur er sorteret næsten - "
+             "men ikke nødvendigvis helt - alfabetisk:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+      { QCString result="Indhold af kataloget "; result+=dirName; return result;}
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    { 
+      return createNoun(first_capital, singular, "katalog", "er");
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Dette er en overdefineret medlemsfunktion, "
+              "defineret af bekvemmelighedshensyn. "
+	      "Den adskiller sig kun fra den ovenstående funktion i, "
+	      "hvilke argumenter den tager.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Her er kalder-grafen for denne funktion:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    /*
+    virtual QCString trEnumerationValueDocumentation()
+      { return "Enumerator-dokumentation"; } //TODO?
+*/
+
 
 
 /*---------- For internal use: ----------------------------------------*/

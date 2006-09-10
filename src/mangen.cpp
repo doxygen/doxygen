@@ -184,8 +184,11 @@ void ManGenerator::writeString(const char *text)
   docify(text);
 }
 
-void ManGenerator::writeIndexItem(const char *,const char *,
-                                   const char *)
+void ManGenerator::startIndexItem(const char *,const char *)
+{
+}
+
+void ManGenerator::endIndexItem(const char *,const char *)
 {
 }
 

@@ -88,7 +88,7 @@ static bool             g_doubleQuote;
 static bool             g_specialBlock;
 //static bool             g_expectModuleDocs;
 static int              g_stringContext;
-static QCString *       g_copyString;
+static QGString *       g_copyString;
 static int              g_indent = 0;
 static int              g_curIndent = 0;
 

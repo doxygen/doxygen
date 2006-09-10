@@ -21,6 +21,8 @@
 #include "qtbc.h"
 #include <qfile.h>
 
+class MemberDef;
+
 enum IndexSections
 {
   isTitlePageStart,
@@ -165,5 +167,12 @@ void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
                const char *title,HighlightedItem hli=HLI_None);
 void endFile(OutputList &ol,bool external=FALSE);
+
+void initClassMemberIndices();
+void initFileMemberIndices();
+void initNamespaceMemberIndices();
+void addClassMemberNameToIndex(MemberDef *md);
+void addFileMemberNameToIndex(MemberDef *md);
+void addNamespaceMemberNameToIndex(MemberDef *md);
 
 #endif

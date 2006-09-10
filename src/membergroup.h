@@ -20,6 +20,7 @@
 
 #include "qtbc.h"
 #include <qlist.h>
+#include <qfile.h>
 #include "sortdict.h"
 
 #define DOX_NOGROUP -1
@@ -32,10 +33,12 @@ class MemberList;
 class GroupDef;
 class OutputList;
 class Definition;
+class StorageIntf;
 
 class MemberGroup 
 {
   public:
+    MemberGroup();
     MemberGroup(Definition *parent,int id,const char *header,
                 const char *docs,const char *docFile);
    ~MemberGroup();
@@ -74,14 +77,17 @@ class MemberGroup
     MemberList *members() const { return memberList; }
     Definition *parent() const { return m_parent; }
 
+    void marshal(StorageIntf *s);
+    void unmarshal(StorageIntf *s);
+
   private: 
     MemberList *memberList;      // list of all members in the group
+    MemberList *inDeclSection;
     int grpId;
     QCString grpHeader;
     QCString fileName;           // base name of the generated file
     Definition *scope;
     QCString doc;
-    MemberList *inDeclSection;
     bool inSameSection;
     int  m_numDecMembers;
     int  m_numDocMembers;

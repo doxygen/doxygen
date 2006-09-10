@@ -643,6 +643,19 @@ int64 QFile::pos() const
   return -1;
 }
 
+int64 QFile::toEnd() 
+{
+  if (isOpen())
+  {
+     // TODO: support 64 bit size
+     if (fseek( fh, 0, SEEK_END )!=-1)
+     {
+       return ftell( fh );
+     }
+  }
+  return -1;
+}
+
 bool QFile::seek( int64 pos )
 {
   if (isOpen())

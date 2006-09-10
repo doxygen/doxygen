@@ -26,6 +26,7 @@
  */
 
 #include </usr/include/unistd.h> // ugly hack to get the right unistd.h (doxygen has one too)
+#include <stdlib.h>
 #include "doxygen.h"
 #include "outputgen.h"
 #include "parserintf.h"
@@ -274,7 +275,7 @@ int main(int argc,char **argv)
   parseInput();
 
   // iterate over the input files
-  FileNameListIterator fnli(Doxygen::inputNameList); 
+  FileNameListIterator fnli(*Doxygen::inputNameList); 
   FileName *fn;
   // foreach file with a certain name
   for (fnli.toFirst();(fn=fnli.current());++fnli)
@@ -289,6 +290,8 @@ int main(int argc,char **argv)
     }
   }
 
+  // remove temporary files
+  unlink("/tmp/doxygen/doxygen_objdb.tmp");
   // clean up after us
   rmdir("/tmp/doxygen");
 

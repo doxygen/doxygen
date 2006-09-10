@@ -45,6 +45,7 @@ class PackageDef;
 class GroupDef;
 class StringDict;
 struct IncludeInfo;
+class ClassDefImpl;
 
 /*! \brief This class contains all information about a compound.
  *
@@ -108,15 +109,15 @@ class ClassDef : public Definition
     bool isReference() const;
 
     /*! Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
-    bool isLocal() const { return m_isLocal; }
+    bool isLocal() const;
 
     /*! returns TRUE if this class was artificially introduced, for instance because
      *  it is used to show a template instantiation relation. 
      */
-    bool isArtificial() const { return m_artificial; }
+    bool isArtificial() const;
 
     /*! returns the classes nested into this class */
-    ClassSDict *getInnerClasses() { return m_innerClasses; }
+    ClassSDict *getInnerClasses();
 
     /*! returns TRUE if this class has documentation */
     bool hasDocumentation() const;
@@ -125,7 +126,7 @@ class ClassDef : public Definition
     QCString displayName() const;
 
     /*! Returns the type of compound this is, i.e. class/struct/union/.. */
-    CompoundType compoundType() const { return m_compType; } 
+    CompoundType compoundType() const;
 
     /*! Returns the type of compound as a string */
     QCString compoundTypeString() const;
@@ -133,21 +134,21 @@ class ClassDef : public Definition
     /*! Returns the list of base classes from which this class directly
      *  inherits.
      */
-    BaseClassList *baseClasses() { return m_inherits; }
+    BaseClassList *baseClasses() const;
     
     /*! Returns the list of sub classes that directly derive from this class
      */
-    BaseClassList *subClasses() { return m_inheritedBy; }
+    BaseClassList *subClasses() const;
 
     /*! Returns a dictionary of all members. This includes any inherited 
      *  members. Members are sorted alphabetically.
      */ 
-    MemberNameInfoSDict *memberNameInfoSDict() { return m_allMemberNameInfoSDict; }
+    MemberNameInfoSDict *memberNameInfoSDict() const;
 
     /*! Return the protection level (Public,Protected,Private) in which 
      *  this compound was found.
      */
-    Protection protection() const { return m_prot; }
+    Protection protection() const;
 
     /*! returns TRUE iff a link is possible to this item within this project.
      */
@@ -164,23 +165,22 @@ class ClassDef : public Definition
     /*! Returns the template arguments of this class 
      *  Will return 0 if not applicable.
      */
-    ArgumentList *templateArguments() const { return m_tempArgs; }
+    ArgumentList *templateArguments() const;
 
     /*! Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */
-    NamespaceDef *getNamespaceDef() { return m_nspace; }
+    NamespaceDef *getNamespaceDef() const;
 
     /*! Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).
      */
-    FileDef      *getFileDef() const { return m_fileDef; }
+    FileDef      *getFileDef() const;
 
     /*! Returns the Java package this class is in or 0 if not applicable. 
      */ 
-    //PackageDef   *packageDef() const;
 
-    MemberDef    *getMemberByName(const QCString &);
+    MemberDef    *getMemberByName(const QCString &) const;
     
     /*! Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recusively traverse all branches of the
@@ -191,37 +191,25 @@ class ClassDef : public Definition
     /*! Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
      */
-    QDict<ClassDef> *getTemplateInstances() const { return m_templateInstances; }
+    QDict<ClassDef> *getTemplateInstances() const;
 
     /*! Returns the template master of which this class is an instance.
      *  Returns 0 if not applicable.
      */
-    ClassDef *templateMaster() const { return m_templateMaster; } 
+    ClassDef *templateMaster() const;
 
     /*! Returns TRUE if this class is a template */
-    bool isTemplate() const { return m_tempArgs!=0; }
+    bool isTemplate() const;
 
-    IncludeInfo *includeInfo() const { return m_incInfo; }
+    IncludeInfo *includeInfo() const;
     
-    UsesClassDict *usedImplementationClasses() const 
-    { 
-      return m_usesImplClassDict; 
-    }
+    UsesClassDict *usedImplementationClasses() const;
 
-    UsesClassDict *usedByImplementationClasses() const 
-    { 
-      return m_usedByImplClassDict; 
-    }
+    UsesClassDict *usedByImplementationClasses() const;
 
-    UsesClassDict *usedInterfaceClasses() const
-    {
-      return m_usesIntfClassDict;
-    }
+    UsesClassDict *usedInterfaceClasses() const;
 
-    bool isTemplateArgument() const
-    {
-      return m_isTemplArg;
-    }
+    bool isTemplateArgument() const;
 
     /*! Returns the definition of a nested compound if
      *  available, or 0 otherwise.
@@ -244,13 +232,13 @@ class ClassDef : public Definition
     /*! Returns TRUE if there is at least one pure virtual member in this
      *  class.
      */
-    bool isAbstract() const { return m_isAbstract; }
+    bool isAbstract() const;
 
     /*! Returns TRUE if this class is implemented in Objective-C */
-    bool isObjectiveC() const { return m_isObjC; }
+    bool isObjectiveC() const;
 
     /*! Returns the class of which this is a category (Objective-C only) */
-    ClassDef *categoryOf() const { return m_categoryOf; }
+    ClassDef *categoryOf() const;
 
     /*! Returns the name of the class including outer classes, but not
      *  including namespaces.
@@ -261,12 +249,13 @@ class ClassDef : public Definition
     MemberList *getMemberList(MemberList::ListType lt);
 
     /*! Returns the list containing the list of members sorted per type */
-    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    const QList<MemberList> &getMemberLists() const;
 
     /*! Returns the member groups defined for this class */
-    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
+    MemberGroupSDict *getMemberGroupSDict() const;
 
     QDict<int> *getTemplateBaseClassNames() const;
+
     ClassDef *getVariableInstance(const char *templSpec);
 
     //-----------------------------------------------------------------------------------
@@ -280,28 +269,27 @@ class ClassDef : public Definition
     void insertUsedFile(const char *);
     bool addExample(const char *anchor,const char *name, const char *file);
     void mergeCategory(ClassDef *category);
-    void setNamespace(NamespaceDef *nd) { m_nspace = nd; }
-    void setFileDef(FileDef *fd) { m_fileDef=fd; }
-    void setSubGrouping(bool enabled) { m_subGrouping = enabled; }
-    void setProtection(Protection p) { m_prot=p; }
+    void setNamespace(NamespaceDef *nd);
+    void setFileDef(FileDef *fd);
+    void setSubGrouping(bool enabled);
+    void setProtection(Protection p);
     void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs);
     void addInnerCompound(Definition *d);
     ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,
                                 const QCString &templSpec,bool &freshInstance);
     void addUsedClass(ClassDef *cd,const char *accessName);
     void addUsedByClass(ClassDef *cd,const char *accessName);
-    void setClassIsArtificial() { m_artificial = TRUE; }
-    void setIsStatic(bool b) { m_isStatic=b; }
-    void setIsObjectiveC(bool b) { m_isObjC=b; }
-    void setCompoundType(CompoundType t) { m_compType = t; } 
+    void setClassIsArtificial();
+    void setIsStatic(bool b);
+    void setIsObjectiveC(bool b);
+    void setCompoundType(CompoundType t);
 
     void setTemplateArguments(ArgumentList *al);
     void setTemplateBaseClassNames(QDict<int> *templateNames);
-    void setTemplateMaster(ClassDef *tm) { m_templateMaster=tm; }
+    void setTemplateMaster(ClassDef *tm);
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
-
-    /*! Marks this class as a template argument of some another class */
-    void makeTemplateArgument(bool b=TRUE) { m_isTemplArg = b; }
+    void makeTemplateArgument(bool b=TRUE);
+    void setCategoryOf(ClassDef *cd);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
@@ -340,6 +328,9 @@ class ClassDef : public Definition
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup);
     
+    ClassDefImpl *m_impl;
+
+#if 0
     /*! file name that forms the base for the output file containing the
      *  class documentation. For compatibility with Qt (e.g. links via tag 
      *  files) this name cannot be derived from the class name directly.
@@ -393,7 +384,6 @@ class ClassDef : public Definition
      *  no inner classes.
      */
     ClassSDict *m_innerClasses;
-
 
     /* classes for the collaboration diagram */
     UsesClassDict *m_usesImplClassDict;
@@ -458,6 +448,7 @@ class ClassDef : public Definition
      *  groups?
      */
     bool m_subGrouping; 
+#endif
 
 };
 

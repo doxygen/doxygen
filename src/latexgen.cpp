@@ -520,7 +520,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
         bool found=FALSE;
         for (gli.toFirst();(gd=gli.current()) && !found;++gli)
@@ -536,7 +536,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
         bool found=FALSE;
         for (dli.toFirst();(dd=dli.current()) && !found;++dli)
@@ -552,7 +552,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
         NamespaceDef *nd;
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
@@ -568,7 +568,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
@@ -585,7 +585,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList.first();
+        FileName *fn=Doxygen::inputNameList->first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -603,7 +603,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=Doxygen::inputNameList.next();
+          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -670,7 +670,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
         bool found=FALSE;
         for (gli.toFirst();(gd=gli.current()) && !found;++gli)
@@ -693,7 +693,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
         bool found=FALSE;
         for (dli.toFirst();(dd=dli.current()) && !found;++dli)
@@ -716,7 +716,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
         NamespaceDef *nd;
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
@@ -740,7 +740,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
@@ -764,7 +764,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList.first();
+        FileName *fn=Doxygen::inputNameList->first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -785,7 +785,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=Doxygen::inputNameList.next();
+          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -870,18 +870,21 @@ void LatexGenerator::writeString(const char *text)
   t << text;
 }
 
-void LatexGenerator::writeIndexItem(const char *ref,const char *fn,
-                                    const char *name)
+void LatexGenerator::startIndexItem(const char *ref,const char *fn)
 {
   t << "\\item ";
   if (!ref && fn)
   {
     t << "\\contentsline{section}{";
-    docify(name);
+  }
+}
+
+void LatexGenerator::endIndexItem(const char *ref,const char *fn)
+{
+  if (!ref && fn)
+  {
     t << "}{\\pageref{" << fn << "}}{}" << endl;
   }
-  else
-    docify(name);
 }
 
 //void LatexGenerator::writeIndexFileItem(const char *,const char *text)
@@ -999,7 +1002,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   }
   else
   {
-    t << "\\bf{";
+    t << "{\\bf";
     docify(text);
     t << "}";
   } 
@@ -1007,7 +1010,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
 
 void LatexGenerator::startPageRef()
 {
-  t << " \\doxyref{";
+  t << " \\doxyref{}{";
 }
 
 void LatexGenerator::endPageRef(const char *clname, const char *anchor)

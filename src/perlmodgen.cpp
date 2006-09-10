@@ -1440,16 +1440,16 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
       md->memberType()!=MemberDef::Enumeration)
     m_output.addFieldQuotedString("type", md->typeString());
   
+  LockingPtr<ArgumentList> al = md->argumentList();
   if (isFunc) //function
   {
-    ArgumentList *al = md->argumentList();
-    m_output.addFieldBoolean("const", al && al->constSpecifier)
-      .addFieldBoolean("volatile", al && al->volatileSpecifier);
+    m_output.addFieldBoolean("const", al!=0 && al->constSpecifier)
+      .addFieldBoolean("volatile", al!=0 && al->volatileSpecifier);
 
     m_output.openList("parameters");
-    ArgumentList *declAl = md->declArgumentList();
-    ArgumentList *defAl = md->argumentList();
-    if (declAl && declAl->count()>0)
+    LockingPtr<ArgumentList> declAl = md->declArgumentList();
+    LockingPtr<ArgumentList> defAl  = md->argumentList();
+    if (declAl!=0 && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -1487,7 +1487,7 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
 	   md->argsString()!=0) // define
   {
     m_output.openList("parameters");
-    ArgumentListIterator ali(*md->argumentList());
+    ArgumentListIterator ali(*al);
     Argument *a;
     for (ali.toFirst();(a=ali.current());++ali)
     {
@@ -1505,10 +1505,11 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   
   if (md->memberType()==MemberDef::Enumeration) // enum
   {
-    if (md->enumFieldList())
+    LockingPtr<MemberList> enumFields = md->enumFieldList();
+    if (enumFields!=0)
     {
       m_output.openList("values");
-      MemberListIterator emli(*md->enumFieldList());
+      MemberListIterator emli(*enumFields);
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
@@ -1534,8 +1535,8 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  MemberList *rbml = md->reimplementedBy();
-  if (rbml)
+  LockingPtr<MemberList> rbml = md->reimplementedBy();
+  if (rbml!=0)
   {
     MemberListIterator mli(*rbml);
     m_output.openList("reimplemented_by");
@@ -2014,21 +2015,21 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.add("$doxydocs=").openHash();
   
   m_output.openList("classes");
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   for (cli.toFirst();(cd=cli.current());++cli)
     generatePerlModForClass(cd);
   m_output.closeList();
 
   m_output.openList("namespaces");
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
     generatePerlModForNamespace(nd);
   m_output.closeList();
 
   m_output.openList("files");
-  FileNameListIterator fnli(Doxygen::inputNameList);
+  FileNameListIterator fnli(*Doxygen::inputNameList);
   FileName *fn;
   for (;(fn=fnli.current());++fnli)
   {
@@ -2040,7 +2041,7 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.closeList();
 
   m_output.openList("groups");
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {

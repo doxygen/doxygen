@@ -68,6 +68,9 @@
 #include "htags.h"
 #include "pyscanner.h"
 #include "code.h"
+#include "objcache.h"
+#include "store.h"
+#include "marshal.h"
 
 
 #define RECURSE_ENTRYTREE(func,var) \
@@ -83,59 +86,49 @@
 #endif
 
 // globally accessible variables
-ClassSDict     Doxygen::classSDict(1009);         
-ClassSDict     Doxygen::hiddenClasses(257);
-
-NamespaceSDict  Doxygen::namespaceSDict(20);      
-
-MemberNameSDict Doxygen::memberNameSDict(10000);   
-
-MemberNameSDict Doxygen::functionNameSDict(10000);   
-
-FileNameList   Doxygen::inputNameList;           // all input files
-FileNameDict  *Doxygen::inputNameDict;          
-
-GroupSDict      Doxygen::groupSDict(17);          
-
-FormulaList    Doxygen::formulaList;             // all formulas
-FormulaDict    Doxygen::formulaDict(1009);       // all formulas
-FormulaDict    Doxygen::formulaNameDict(1009);   // the label name of all formulas
-
-PageSDict      *Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
-PageSDict      *Doxygen::exampleSDict = new PageSDict(1009);       // all examples
-SectionDict    Doxygen::sectionDict(257);        // all page sections
-StringDict     Doxygen::aliasDict(257);          // aliases
-FileNameDict   *Doxygen::includeNameDict;        // include names
-FileNameDict   *Doxygen::exampleNameDict;        // examples
-FileNameDict   *Doxygen::imageNameDict;          // images
-FileNameDict   *Doxygen::dotFileNameDict;        // dot files
-StringDict     Doxygen::namespaceAliasDict(257); // all namespace aliases
-StringDict     Doxygen::tagDestinationDict(257); // all tag locations
-                                        // a member group
-QDict<void>    Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
-
+ClassSDict      *Doxygen::classSDict = 0;
+ClassSDict      *Doxygen::hiddenClasses = 0;
+NamespaceSDict  *Doxygen::namespaceSDict = 0;
+MemberNameSDict *Doxygen::memberNameSDict = 0;
+MemberNameSDict *Doxygen::functionNameSDict = 0;   
+FileNameList    *Doxygen::inputNameList = 0;       // all input files
+FileNameDict    *Doxygen::inputNameDict = 0;          
+GroupSDict      *Doxygen::groupSDict = 0;
+FormulaList      Doxygen::formulaList;             // all formulas
+FormulaDict      Doxygen::formulaDict(1009);       // all formulas
+FormulaDict      Doxygen::formulaNameDict(1009);   // the label name of all formulas
+PageSDict       *Doxygen::pageSDict = 0;
+PageSDict       *Doxygen::exampleSDict = 0;
+SectionDict      Doxygen::sectionDict(257);        // all page sections
+StringDict       Doxygen::aliasDict(257);          // aliases
+FileNameDict    *Doxygen::includeNameDict = 0;     // include names
+FileNameDict    *Doxygen::exampleNameDict = 0;     // examples
+FileNameDict    *Doxygen::imageNameDict = 0;       // images
+FileNameDict    *Doxygen::dotFileNameDict = 0;     // dot files
+StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
+StringDict       Doxygen::tagDestinationDict(257); // all tag locations
+QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
-
-PageDef       *Doxygen::mainPage = 0;           
-bool           Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
-QTextStream    Doxygen::tagFile;
-NamespaceDef  *Doxygen::globalScope;
-  
-QDict<RefList> *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
-
-bool           Doxygen::parseSourcesNeeded = FALSE;
-double         Doxygen::sysElapsedTime = 0.0;
-QTime          Doxygen::runningTime;
-SearchIndex *  Doxygen::searchIndex=0;
+PageDef         *Doxygen::mainPage = 0;           
+bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
+QTextStream      Doxygen::tagFile;
+NamespaceDef    *Doxygen::globalScope = 0;
+QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
+bool             Doxygen::parseSourcesNeeded = FALSE;
+double           Doxygen::sysElapsedTime = 0.0;
+QTime            Doxygen::runningTime;
+SearchIndex *    Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
-bool           Doxygen::outputToWizard=FALSE;
-QDict<int> *   Doxygen::htmlDirMap = 0;
+bool             Doxygen::outputToWizard=FALSE;
+QDict<int> *     Doxygen::htmlDirMap = 0;
 QCache<LookupInfo> Doxygen::lookupCache(50000,50000);
-DirSDict       Doxygen::directories(17);
+DirSDict        *Doxygen::directories;
 SDict<DirRelation> Doxygen::dirRelations(257);
-ParserManager *Doxygen::parserManager = 0;
+ParserManager   *Doxygen::parserManager = 0;
 QCString Doxygen::htmlFileExtension;
-bool           Doxygen::suppressDocWarnings = FALSE;
+bool             Doxygen::suppressDocWarnings = FALSE;
+ObjCache        *Doxygen::symbolCache = 0;
+Store           *Doxygen::symbolStorage;
 
 // locally accessible globals
 static QDict<EntryNav>   classEntries(1009);
@@ -146,7 +139,7 @@ static OutputList     *outputList = 0;         // list of output generating obje
 static QDict<FileDef> g_usingDeclarations(1009); // used classes
 static const char     idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 
-QFile g_storage;
+FileStorage *g_storage = 0;
 
 QCString       spaces;
 
@@ -157,13 +150,12 @@ void clearAll()
   excludeNameDict.clear();  
   delete outputList; outputList=0;
 
-  Doxygen::classSDict.clear();       
-  Doxygen::namespaceSDict.clear();   
+  Doxygen::classSDict->clear();       
+  Doxygen::namespaceSDict->clear();   
   Doxygen::pageSDict->clear();         
   Doxygen::exampleSDict->clear();      
-  Doxygen::inputNameList.clear();   
+  Doxygen::inputNameList->clear();   
   Doxygen::formulaList.clear();     
-  Doxygen::classSDict.clear();        
   Doxygen::sectionDict.clear();       
   Doxygen::inputNameDict->clear();    
   Doxygen::includeNameDict->clear();  
@@ -317,6 +309,21 @@ static void addSTLMember(EntryNav *rootNav,const char *type,const char *name)
   rootNav->addChild(memEntryNav);
 }
 
+static void addSTLIterator(EntryNav *classEntryNav,const char *name)
+{
+  Entry *iteratorClassEntry = new Entry;
+  iteratorClassEntry->fileName  = "[STL]";
+  iteratorClassEntry->startLine = 1;
+  iteratorClassEntry->name      = name;
+  iteratorClassEntry->section   = Entry::CLASS_SEC;
+  iteratorClassEntry->brief     = "STL iterator class";
+  iteratorClassEntry->hidden    = TRUE;
+  EntryNav *iteratorClassEntryNav = new EntryNav(classEntryNav,iteratorClassEntry);
+  iteratorClassEntryNav->setEntry(iteratorClassEntry);
+  classEntryNav->addChild(iteratorClassEntryNav);
+}
+
+
 static void addSTLClasses(EntryNav *rootNav)
 {
   Entry *namespaceEntry = new Entry;
@@ -389,6 +396,14 @@ static void addSTLClasses(EntryNav *rootNav)
     {
       classEntry->extends->append(new BaseInfo(info->baseClass2,Public,info->virtualInheritance?Virtual:Normal));
     }
+    if (info->iterators)
+    {
+      // add iterator class
+      addSTLIterator(classEntryNav,fullName+"::iterator");
+      addSTLIterator(classEntryNav,fullName+"::const_iterator");
+      addSTLIterator(classEntryNav,fullName+"::reverse_iterator");
+      addSTLIterator(classEntryNav,fullName+"::const_reverse_iterator");
+    }
     info++;
   }
 }
@@ -425,7 +440,7 @@ static void addRelatedPage(EntryNav *rootNav)
   Grouping *g;
   for (;(g=gli.current());++gli)
   {
-    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname])) break;
+    if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",root->name.data(),gd);
   QCString doc;
@@ -464,7 +479,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
     {
       GroupDef *gd;
 
-      if ((gd=Doxygen::groupSDict[root->name]))
+      if ((gd=Doxygen::groupSDict->find(root->name)))
       {
         if ( root->groupDocType==Entry::GROUPDOC_NORMAL )
         {
@@ -506,7 +521,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         gd->setDocumentation(root->doc,root->docFile,root->docLine);
         gd->addSectionsToDefinition(root->anchors);
-        Doxygen::groupSDict.append(root->name,gd);
+        Doxygen::groupSDict->append(root->name,gd);
         gd->setRefItems(root->sli);
       }
     }
@@ -538,7 +553,7 @@ static void findGroupScope(EntryNav *rootNav)
       rootNav->parent() && !rootNav->parent()->name().isEmpty())
   {
     GroupDef *gd;
-    if ((gd=Doxygen::groupSDict[rootNav->name()]))
+    if ((gd=Doxygen::groupSDict->find(rootNav->name())))
     {
       QCString scope = rootNav->parent()->name();
       if (rootNav->parent()->section()==Entry::PACKAGEDOC_SEC)
@@ -568,7 +583,7 @@ static void organizeSubGroupsFiltered(EntryNav *rootNav,bool additional)
         (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
     {
       GroupDef *gd;
-      if ((gd=Doxygen::groupSDict[root->name]))
+      if ((gd=Doxygen::groupSDict->find(root->name)))
       {
         //printf("adding %s to group %s\n",root->name.data(),gd->name().data());
         addGroupToGroups(root,gd);
@@ -640,7 +655,7 @@ static void buildFileList(EntryNav *rootNav)
         for (;(g=gli.current());++gli)
         {
           GroupDef *gd=0;
-          if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+          if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
           {
             gd->addFile(fd);
             //printf("File %s: in group %s\n",fd->name().data(),s->data());
@@ -828,7 +843,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
     QCString nsName = name.mid(idx,l);
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
-    NamespaceDef *nd=Doxygen::namespaceSDict.find(fullScope);
+    NamespaceDef *nd=Doxygen::namespaceSDict->find(fullScope);
     Definition *innerScope = nd;
     ClassDef *cd=0; 
     if (nd==0) cd = getClass(fullScope);
@@ -844,7 +859,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
         "[generated]",1,fullScope);
 
       // add namespace to the list
-      Doxygen::namespaceSDict.inSort(fullScope,nd);
+      Doxygen::namespaceSDict->inSort(fullScope,nd);
       innerScope = nd;
     }
     else // scope is a namespace
@@ -949,7 +964,7 @@ ArgumentList *getTemplateArgumentsFromName(
   int i,p=0;
   while ((i=name.find("::",p))!=-1)
   {
-    NamespaceDef *nd = Doxygen::namespaceSDict[name.left(i)];
+    NamespaceDef *nd = Doxygen::namespaceSDict->find(name.left(i));
     if (nd==0)
     {
       ClassDef *cd = getClass(name.left(i));
@@ -1024,7 +1039,7 @@ static void addClassToContext(EntryNav *rootNav)
   QCString qualifiedName = scName.isEmpty() ? fullName : scName+"::"+fullName;
 
   ClassDef *cd = getClass(qualifiedName);
-  
+
   Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
       cd ? cd->name().data() : root->name.data(), qualifiedName.data(),cd);
   
@@ -1137,7 +1152,7 @@ static void addClassToContext(EntryNav *rootNav)
 
     // add class to the list
     //printf("ClassDict.insert(%s)\n",resolveDefines(fullName).data());
-    Doxygen::classSDict.append(fullName,cd);
+    Doxygen::classSDict->append(fullName,cd);
 
   }
 
@@ -1191,7 +1206,7 @@ static void buildClassDocList(EntryNav *rootNav)
 
 static void resolveClassNestingRelations()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
 
   int nestingLevel=0;
@@ -1200,13 +1215,60 @@ static void resolveClassNestingRelations()
   {
     // iterate over all classes searching for a class with right nesting
     // level (starting with 0 and going up until no more classes are found)
+    //
+    // we start with all classes that are inside a namespace and then
+    // do the ones outside the namespace to avoid an "internal inconsistency" for the
+    // following:
+    // File A:
+    //    using namespace N;
+    //    class C::P {}
+    // File B:
+    //    namespace N { class C { class P {}; }; }
+    //
+    // If file A is parsed before file B then without it C::P would not be related to N.
     done=TRUE;
-    ClassSDict::Iterator cli(Doxygen::classSDict);
+    ClassSDict::Iterator cli(*Doxygen::classSDict);
     ClassDef *cd=0;
+    // first handle any class inside a namespace
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      //printf("nested relation for class %s\n",cd->name().data());
-      if (cd->name().contains("::")==nestingLevel)
+      QCString c,n;
+      extractNamespaceName(cd->name(),c,n,TRUE);
+      if (cd->name().contains("::")==nestingLevel && !n.isEmpty())
+      {
+        cd->visited=TRUE;
+        //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
+        // also add class to the correct structural context 
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
+                                                 cd->name(),cd->getFileDef());
+        if (d==0) // we didn't find anything, create the scope artificially
+                  // anyway, so we can at least relate scopes properly.
+        {
+          Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
+          if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
+                     // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+          {
+            d->addInnerCompound(cd);
+            cd->setOuterScope(d);
+            warn(cd->getDefFileName(),cd->getDefLine(),
+                "Warning: Internal inconsistency: scope for class %s not "
+                "found!\n",cd->name().data()
+                );
+          }
+        }
+        else
+        {
+          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+          d->addInnerCompound(cd);
+          cd->setOuterScope(d);
+        }
+      }
+      if (!cd->visited) done=FALSE;
+    }
+    // and now the same for classes outside any namespace
+    for (cli.toFirst();(cd=cli.current());++cli)
+    {
+      if (cd->name().contains("::")==nestingLevel && !cd->visited)
       {
         cd->visited=TRUE;
         //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
@@ -1271,7 +1333,7 @@ static void buildNamespaceList(EntryNav *rootNav)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDef *nd;
-      if ((nd=Doxygen::namespaceSDict[fullName])) // existing namespace
+      if ((nd=Doxygen::namespaceSDict->find(fullName))) // existing namespace
       {
         if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
@@ -1341,7 +1403,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         nd->setBodySegment(root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
         // add class to the list
-        Doxygen::namespaceSDict.inSort(fullName,nd);
+        Doxygen::namespaceSDict->inSort(fullName,nd);
 
         // also add namespace to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName);
@@ -1409,7 +1471,7 @@ static void findUsingDirectives(EntryNav *rootNav)
       // see if the using statement was found inside a namespace or inside
       // the global file scope.
       if (rootNav->parent() && rootNav->parent()->section()==Entry::NAMESPACE_SEC &&
-          (fd==0 || fd->name().right(5)!=".java") // not a .java file
+          (fd==0 || !fd->isJava()) // not a .java file
          )
       {
         nsName=stripAnonymousNamespaceScope(rootNav->parent()->name());
@@ -1497,7 +1559,7 @@ static void findUsingDirectives(EntryNav *rootNav)
         for (;(g=gli.current());++gli)
         {
           GroupDef *gd=0;
-          if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict[g->groupname]))
+          if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
             gd->addNamespace(nd);
         }
 
@@ -1512,7 +1574,7 @@ static void findUsingDirectives(EntryNav *rootNav)
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(root->fileName);
         // add class to the list
-        Doxygen::namespaceSDict.inSort(name,nd);
+        Doxygen::namespaceSDict->inSort(name,nd);
         nd->setRefItems(root->sli);
       }
     }
@@ -1591,7 +1653,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
       usingCd = getClass(name);
       if (usingCd==0)
       {
-        usingCd = Doxygen::hiddenClasses.find(name);
+        usingCd = Doxygen::hiddenClasses->find(name);
       }
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
@@ -1602,7 +1664,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
         usingCd = new ClassDef(
                      "<using>",1,
                      name,ClassDef::Class);
-        Doxygen::hiddenClasses.append(root->name,usingCd);
+        Doxygen::hiddenClasses->append(root->name,usingCd);
         usingCd->setClassIsArtificial();
       }
       else
@@ -1692,15 +1754,20 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   Entry *root = rootNav->entry();
 
                   //printf("found member %s\n",mni->memberName());
-                  MemberDef *newMd = new MemberDef(
+                  MemberDef *newMd = 0;
+                  {
+                    LockingPtr<ArgumentList> templAl = md->templateArguments();
+                    LockingPtr<ArgumentList> al = md->templateArguments();
+                    newMd = new MemberDef(
                       root->fileName,root->startLine,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
                       md->isStatic(),FALSE,md->memberType(),
-                      md->templateArguments(),md->argumentList()
+                      templAl.pointer(),al.pointer()
                       );
-                  cd->insertMember(newMd);
+                  }
                   newMd->setMemberClass(cd);
+                  cd->insertMember(newMd);
                   if (!root->doc.isEmpty() || !root->brief.isEmpty())
                   {
                     newMd->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -1743,7 +1810,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
 static void findIncludedUsingDirectives()
 {
   // first mark all files as not visited
-  FileNameListIterator fnli(Doxygen::inputNameList); 
+  FileNameListIterator fnli(*Doxygen::inputNameList); 
   FileName *fn;
   for (fnli.toFirst();(fn=fnli.current());++fnli)
   {
@@ -1832,7 +1899,7 @@ static MemberDef *addVariableToClass(
   // see if the member is already found in the same scope
   // (this may be the case for a static member that is initialized
   //  outside the class)
-  MemberName *mn=Doxygen::memberNameSDict[name];
+  MemberName *mn=Doxygen::memberNameSDict->find(name);
   if (mn)
   {
     MemberNameIterator mni(*mn);
@@ -1897,7 +1964,7 @@ static MemberDef *addVariableToClass(
     //printf("Adding memberName=%s\n",mn->memberName());
     //Doxygen::memberNameDict.insert(name,mn);
     //Doxygen::memberNameList.append(mn);
-    Doxygen::memberNameSDict.append(name,mn);
+    Doxygen::memberNameSDict->append(name,mn);
     // add the member to the class
   }
   cd->insertMember(md);
@@ -1982,7 +2049,7 @@ static MemberDef *addVariableToFile(
   }
   def.stripPrefix("static ");
 
-  MemberName *mn=Doxygen::functionNameSDict[name];
+  MemberName *mn=Doxygen::functionNameSDict->find(name);
   if (mn)
   {
     //QCString nscope=removeAnonymousScopes(scope);
@@ -2055,16 +2122,16 @@ static MemberDef *addVariableToFile(
   md->setRefItems(root->sli);
   if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
   {
-    nd->insertMember(md); 
     md->setNamespace(nd);
+    nd->insertMember(md); 
   }
 
   // add member to the file (we do this even if we have already inserted
   // it into the namespace. 
   if (fd)
   {
-    fd->insertMember(md);
     md->setFileDef(fd); 
+    fd->insertMember(md);
   }
 
   // add member definition to the list of globals 
@@ -2076,7 +2143,7 @@ static MemberDef *addVariableToFile(
   {
     mn = new MemberName(name);
     mn->append(md);
-    Doxygen::functionNameSDict.append(name,mn);
+    Doxygen::functionNameSDict->append(name,mn);
   }
   rootNav->changeSection(Entry::EMPTY_SEC);
   return md;
@@ -2143,7 +2210,7 @@ static bool isVarWithConstructor(EntryNav *rootNav)
   }
   if (!rootNav->parent()->name().isEmpty()) 
   {
-    ctx=Doxygen::namespaceSDict.find(rootNav->parent()->name());
+    ctx=Doxygen::namespaceSDict->find(rootNav->parent()->name());
   }
   type = root->type;
   // remove qualifiers
@@ -2601,7 +2668,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   // add member to the global list of all members
   //printf("Adding member=%s class=%s\n",md->name().data(),cd->name().data());
   MemberName *mn;
-  if ((mn=Doxygen::memberNameSDict[name]))
+  if ((mn=Doxygen::memberNameSDict->find(name)))
   {
     mn->append(md);
   }
@@ -2609,7 +2676,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   {
     mn = new MemberName(name);
     mn->append(md);
-    Doxygen::memberNameSDict.append(name,mn);
+    Doxygen::memberNameSDict->append(name,mn);
   }
 
   // add member to the class cd
@@ -2684,7 +2751,7 @@ static void buildFunctionList(EntryNav *rootNav)
         int te=rname.find('>');
         if (memIndex>0 && (ts==-1 || te==-1))
         {
-          nd = Doxygen::namespaceSDict.find(rname.left(memIndex));
+          nd = Doxygen::namespaceSDict->find(rname.left(memIndex));
           isMember = nd==0;
           if (nd)
           {
@@ -2729,7 +2796,7 @@ static void buildFunctionList(EntryNav *rootNav)
         bool found=FALSE;
         MemberName *mn;
         MemberDef *md=0;
-        if ((mn=Doxygen::functionNameSDict[rname]))
+        if ((mn=Doxygen::functionNameSDict->find(rname)))
         {
           Debug::print(Debug::Functions,0,"  --> function %s already found!\n",rname.data());
           MemberNameIterator mni(*mn);
@@ -2747,8 +2814,9 @@ static void buildFunctionList(EntryNav *rootNav)
             if (rnd) rnsName = rnd->name().copy();
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
+            LockingPtr<ArgumentList> mdAl = md->argumentList();
             if ( 
-                matchArguments2(md->getOuterScope(),mfd,md->argumentList(),
+                matchArguments2(md->getOuterScope(),mfd,mdAl.pointer(),
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE)
                )
@@ -2756,7 +2824,7 @@ static void buildFunctionList(EntryNav *rootNav)
               GroupDef *gd=0;
               if (root->groups->first()!=0)
               {
-                gd = Doxygen::groupSDict[root->groups->first()->groupname.data()];
+                gd = Doxygen::groupSDict->find(root->groups->first()->groupname.data());
               }
               //printf("match!\n");
               // see if we need to create a new member
@@ -2778,7 +2846,7 @@ static void buildFunctionList(EntryNav *rootNav)
               if (found)
               {
                 // merge argument lists
-                mergeArguments(md->argumentList(),root->argList,!root->doc.isEmpty());
+                mergeArguments(mdAl.pointer(),root->argList,!root->doc.isEmpty());
                 // merge documentation
                 if (md->documentation().isEmpty() && !root->doc.isEmpty())
                 {
@@ -2936,21 +3004,21 @@ static void buildFunctionList(EntryNav *rootNav)
           if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
           {
             // add member to namespace
-            nd->insertMember(md); 
             md->setNamespace(nd);
+            nd->insertMember(md); 
           }
           if (fd)
           {
             // add member to the file (we do this even if we have already
             // inserted it into the namespace)
-            fd->insertMember(md);
             md->setFileDef(fd); 
+            fd->insertMember(md);
           }
 
           // add member to the list of file members
           //printf("Adding member=%s\n",md->name().data());
           MemberName *mn;
-          if ((mn=Doxygen::functionNameSDict[name]))
+          if ((mn=Doxygen::functionNameSDict->find(name)))
           {
             mn->append(md);
           }
@@ -2958,7 +3026,7 @@ static void buildFunctionList(EntryNav *rootNav)
           {
             mn = new MemberName(name);
             mn->append(md);
-            Doxygen::functionNameSDict.append(name,mn);
+            Doxygen::functionNameSDict->append(name,mn);
           }
           addMemberToGroups(root,md);
           if (!root->relatesDup) // if this is a relatesalso command, allow find
@@ -3001,13 +3069,13 @@ static void buildFunctionList(EntryNav *rootNav)
 static void findFriends()
 {
   //printf("findFriends()\n");
-  MemberNameSDict::Iterator fnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
   MemberName *fn;
   for (;(fn=fnli.current());++fnli) // for each global function name
   {
     //printf("Function name=`%s'\n",fn->memberName());
     MemberName *mn;
-    if ((mn=Doxygen::memberNameSDict[fn->memberName()]))
+    if ((mn=Doxygen::memberNameSDict->find(fn->memberName())))
     { // there are members with the same name
       //printf("Function name is also a member name\n");
       MemberNameIterator fni(*fn);
@@ -3021,16 +3089,18 @@ static void findFriends()
           //printf("Checking for matching arguments 
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
+          LockingPtr<ArgumentList> mmdAl = mmd->argumentList();
+          LockingPtr<ArgumentList> fmdAl = fmd->argumentList();
           if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
-              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmd->argumentList(),
-                              fmd->getOuterScope(), fmd->getFileDef(), fmd->argumentList(),
+              matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), mmdAl.pointer(),
+                              fmd->getOuterScope(), fmd->getFileDef(), fmdAl.pointer(),
                               TRUE
                              )
                              
              ) // if the member is related and the arguments match then the 
                // function is actually a friend.
           {
-            mergeArguments(mmd->argumentList(),fmd->argumentList());
+            mergeArguments(mmdAl.pointer(),fmdAl.pointer());
             if (!fmd->documentation().isEmpty())
             {
               mmd->setDocumentation(fmd->documentation(),fmd->docFile(),fmd->docLine());
@@ -3115,7 +3185,7 @@ static void transferFunctionDocumentation()
   //printf("transferFunctionDocumentation()\n");
 
   // find matching function declaration and definitions.
-  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::functionNameSDict);
   MemberName *mn;
   for (;(mn=mnli.current());++mnli)
   {
@@ -3140,9 +3210,11 @@ static void transferFunctionDocumentation()
             //printf("mdef=(%p,%s) mdec=(%p,%s)\n",
             //    mdef, mdef ? mdef->name().data() : "",
             //    mdec, mdec ? mdec->name().data() : "");
-            if (mdef && mdec && 
-                matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
-                                mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
+
+            LockingPtr<ArgumentList> mdefAl = mdef->argumentList();
+            LockingPtr<ArgumentList> mdecAl = mdec->argumentList();
+            if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl.pointer(),
+                                mdec->getOuterScope(),mdec->getFileDef(),mdecAl.pointer(),
                                 TRUE
                                )
                ) /* match found */
@@ -3154,7 +3226,7 @@ static void transferFunctionDocumentation()
               //    );
 
               // first merge argument documentation
-              transferArgumentDocumentation(mdec->argumentList(),mdef->argumentList());
+              transferArgumentDocumentation(mdecAl.pointer(),mdefAl.pointer());
 
               /* copy documentation between function definition and declaration */
               if (!mdec->briefDescription().isEmpty())
@@ -3170,12 +3242,12 @@ static void transferFunctionDocumentation()
                 //printf("transfering docs mdef->mdec (%s->%s)\n",mdef->argsString(),mdec->argsString());
                 mdec->setDocumentation(mdef->documentation(),mdef->docFile(),mdef->docLine());
                 mdec->setDocsForDefinition(mdef->isDocsForDefinition());
-                if (mdef->argumentList())
+                if (mdefAl!=0)
                 {
-                  ArgumentList *mdefAl = new ArgumentList;
-                  stringToArgumentList(mdef->argsString(),mdefAl);
-                  transferArgumentDocumentation(mdef->argumentList(),mdefAl);
-                  mdec->setArgumentList(mdefAl);
+                  ArgumentList *mdefAlComb = new ArgumentList;
+                  stringToArgumentList(mdef->argsString(),mdefAlComb);
+                  transferArgumentDocumentation(mdefAl.pointer(),mdefAlComb);
+                  mdec->setArgumentList(mdefAlComb);
                 }
               }
               else if (!mdec->documentation().isEmpty())
@@ -3183,12 +3255,12 @@ static void transferFunctionDocumentation()
                 //printf("transfering docs mdec->mdef (%s->%s)\n",mdec->argsString(),mdef->argsString());
                 mdef->setDocumentation(mdec->documentation(),mdec->docFile(),mdec->docLine());
                 mdef->setDocsForDefinition(mdec->isDocsForDefinition());
-                if (mdec->argumentList())
+                if (mdecAl!=0)
                 {
-                  ArgumentList *mdecAl = new ArgumentList;
-                  stringToArgumentList(mdec->argsString(),mdecAl);
-                  transferArgumentDocumentation(mdec->argumentList(),mdecAl);
-                  mdef->setDeclArgumentList(mdecAl);
+                  ArgumentList *mdecAlComb = new ArgumentList;
+                  stringToArgumentList(mdec->argsString(),mdecAlComb);
+                  transferArgumentDocumentation(mdecAl.pointer(),mdecAlComb);
+                  mdef->setDeclArgumentList(mdecAlComb);
                 }
               }
               if (!mdef->inbodyDocumentation().isEmpty())
@@ -3261,7 +3333,7 @@ static void transferFunctionDocumentation()
 
 static void transferFunctionReferences()
 {
-  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::functionNameSDict);
   MemberName *mn;
   for (;(mn=mnli.current());++mnli)
   {
@@ -3280,63 +3352,68 @@ static void transferFunctionReferences()
       else if (md->isVariable() && !md->isExternal() && !md->isStatic())
         mdef=md;
     }
-    if (mdef && mdec && 
-        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdef->argumentList(),
-                        mdec->getOuterScope(),mdec->getFileDef(),mdec->argumentList(),
-                        TRUE
-                       )
-       ) /* match found */
+    if (mdef && mdec)
     {
-      MemberSDict *defDict = mdef->getReferencesMembers();
-      MemberSDict *decDict = mdec->getReferencesMembers();
-      if (defDict)
+      LockingPtr<ArgumentList> mdefAl = mdef->argumentList();
+      LockingPtr<ArgumentList> mdecAl = mdec->argumentList();
+      if (
+          matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),mdefAl.pointer(),
+                          mdec->getOuterScope(),mdec->getFileDef(),mdecAl.pointer(),
+                          TRUE
+            )
+         ) /* match found */
       {
-        MemberSDict::Iterator msdi(*defDict);
-        MemberDef *rmd;
-        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        LockingPtr<MemberSDict> defDict = mdef->getReferencesMembers();
+        LockingPtr<MemberSDict> decDict = mdec->getReferencesMembers();
+        if (defDict!=0)
         {
-          if (decDict==0 || decDict->find(rmd->name())==0)
+          MemberSDict::Iterator msdi(*defDict);
+          MemberDef *rmd;
+          for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
-            mdec->addSourceReferences(rmd);
+            if (decDict==0 || decDict->find(rmd->name())==0)
+            {
+              mdec->addSourceReferences(rmd);
+            }
           }
         }
-      }
-      if (decDict)
-      {
-        MemberSDict::Iterator msdi(*decDict);
-        MemberDef *rmd;
-        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        if (decDict!=0)
         {
-          if (defDict==0 || defDict->find(rmd->name())==0)
+          MemberSDict::Iterator msdi(*decDict);
+          MemberDef *rmd;
+          for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
-            mdef->addSourceReferences(rmd);
+            if (defDict==0 || defDict->find(rmd->name())==0)
+            {
+              mdef->addSourceReferences(rmd);
+            }
           }
         }
-      }
 
-      defDict = mdef->getReferencedByMembers();
-      decDict = mdec->getReferencedByMembers();
-      if (defDict)
-      {
-        MemberSDict::Iterator msdi(*defDict);
-        MemberDef *rmd;
-        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        defDict = mdef->getReferencedByMembers();
+        decDict = mdec->getReferencedByMembers();
+        if (defDict!=0)
         {
-          if (decDict==0 || decDict->find(rmd->name())==0)
+          MemberSDict::Iterator msdi(*defDict);
+          MemberDef *rmd;
+          for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
-            mdec->addSourceReferencedBy(rmd);
+            if (decDict==0 || decDict->find(rmd->name())==0)
+            {
+              mdec->addSourceReferencedBy(rmd);
+            }
           }
         }
-      }
-      if (decDict)
-      {
-        MemberSDict::Iterator msdi(*decDict);
-        MemberDef *rmd;
-        for (msdi.toFirst();(rmd=msdi.current());++msdi)
+        if (decDict!=0)
         {
-          if (defDict==0 || defDict->find(rmd->name())==0)
+          MemberSDict::Iterator msdi(*decDict);
+          MemberDef *rmd;
+          for (msdi.toFirst();(rmd=msdi.current());++msdi)
           {
-            mdef->addSourceReferencedBy(rmd);
+            if (defDict==0 || defDict->find(rmd->name())==0)
+            {
+              mdef->addSourceReferencedBy(rmd);
+            }
           }
         }
       }
@@ -3350,7 +3427,7 @@ static void transferRelatedFunctionDocumentation()
 {
   // find match between function declaration and definition for 
   // related functions
-  MemberNameSDict::Iterator mnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::functionNameSDict);
   MemberName *mn;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -3361,17 +3438,19 @@ static void transferRelatedFunctionDocumentation()
     {
       //printf("  Function `%s'\n",md->name().data());
       MemberName *rmn;
-      if ((rmn=Doxygen::memberNameSDict[md->name()])) // check if there is a member with the same name
+      if ((rmn=Doxygen::memberNameSDict->find(md->name()))) // check if there is a member with the same name
       {
         //printf("  Member name found\n");
         MemberDef *rmd;
         MemberNameIterator rmni(*rmn);
         for (rmni.toFirst();(rmd=rmni.current());++rmni) // for each member with the same name
         {
+          LockingPtr<ArgumentList>  mdAl = md->argumentList();
+          LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
           if (rmd->isRelated() && // related function
-              matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
-                              rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+              matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
+                              rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                               TRUE
                              )
              )
@@ -3555,7 +3634,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                   found=TRUE;
                   Debug::print(Debug::Classes,0,"    New used class `%s'\n", usedName.data());
 
-                  ClassDef *usedCd = Doxygen::hiddenClasses.find(usedName);
+                  ClassDef *usedCd = Doxygen::hiddenClasses->find(usedName);
                   if (usedCd==0)
                   {
                     usedCd = new ClassDef(
@@ -3563,7 +3642,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                         usedName,ClassDef::Class);
                     //printf("making %s a template argument!!!\n",usedCd->name().data());
                     usedCd->makeTemplateArgument();
-                    Doxygen::hiddenClasses.append(usedName,usedCd);
+                    Doxygen::hiddenClasses->append(usedName,usedCd);
                   }
                   if (usedCd)
                   {
@@ -3598,7 +3677,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
           }
           if (!found && !type.isEmpty()) // used class is not documented in any scope
           {
-            ClassDef *usedCd = Doxygen::hiddenClasses.find(type);
+            ClassDef *usedCd = Doxygen::hiddenClasses->find(type);
             if (usedCd==0 && !Config_getBool("HIDE_UNDOC_RELATIONS"))
             {
               if (type.right(2)=="(*") // type is a function pointer
@@ -3609,7 +3688,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
               usedCd = new ClassDef(
                   masterCd->getDefFileName(),masterCd->getDefLine(),
                   type,ClassDef::Class);
-              Doxygen::hiddenClasses.append(type,usedCd);
+              Doxygen::hiddenClasses->append(type,usedCd);
             }
             if (usedCd)
             {
@@ -3719,7 +3798,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   if (freshInstance)
   {
     Debug::print(Debug::Classes,0,"      found fresh instance '%s'!\n",instanceClass->name().data());
-    Doxygen::classSDict.append(instanceClass->name(),instanceClass);
+    Doxygen::classSDict->append(instanceClass->name(),instanceClass);
     instanceClass->setTemplateBaseClassNames(templateNames);
 
     // search for new template instances caused by base classes of 
@@ -4037,23 +4116,23 @@ static bool findClassRelation(
           baseClass=0;
           if (isATemplateArgument)
           {
-            baseClass=Doxygen::hiddenClasses.find(baseClassName);
+            baseClass=Doxygen::hiddenClasses->find(baseClassName);
             if (baseClass==0)
             {
               baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
-              Doxygen::hiddenClasses.append(baseClassName,baseClass);
+              Doxygen::hiddenClasses->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setClassIsArtificial();
             }
           }
           else
           {
-            baseClass=Doxygen::classSDict.find(baseClassName);
+            baseClass=Doxygen::classSDict->find(baseClassName);
             if (baseClass==0)
             {
               baseClass=new ClassDef(root->fileName,root->startLine,
                   baseClassName,ClassDef::Class);
-              Doxygen::classSDict.append(baseClassName,baseClass);
+              Doxygen::classSDict->append(baseClassName,baseClass);
               if (isArtificial) baseClass->setClassIsArtificial();
             }
           }
@@ -4153,7 +4232,7 @@ static void findClassEntries(EntryNav *rootNav)
  */
 static void findInheritedTemplateInstances()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
   QDictIterator<EntryNav> edi(classEntries);
   EntryNav *rootNav;
@@ -4176,7 +4255,7 @@ static void findInheritedTemplateInstances()
 
 static void findUsedTemplateInstances()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
   QDictIterator<EntryNav> edi(classEntries);
   EntryNav *rootNav;
@@ -4198,7 +4277,7 @@ static void findUsedTemplateInstances()
 
 static void computeClassRelations()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
   QDictIterator<EntryNav> edi(classEntries);
   EntryNav *rootNav;
@@ -4321,13 +4400,13 @@ static void computeTemplateClassRelations()
 
 static void computeMemberReferences()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     cd->computeAnchors();
   } 
-  FileName *fn=Doxygen::inputNameList.first();
+  FileName *fn=Doxygen::inputNameList->first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -4336,15 +4415,15 @@ static void computeMemberReferences()
       fd->computeAnchors();
       fd=fn->next();
     }
-    fn=Doxygen::inputNameList.next();
+    fn=Doxygen::inputNameList->next();
   }
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     nd->computeAnchors();
   }
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -4356,7 +4435,7 @@ static void computeMemberReferences()
 
 static void addListReferences()
 {
-  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -4367,7 +4446,7 @@ static void addListReferences()
       md->visited=FALSE;
     }
   }
-  MemberNameSDict::Iterator fnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
   for (fnli.toFirst();(mn=fnli.current());++fnli)
   {
     MemberNameIterator mni(*mn);
@@ -4378,13 +4457,13 @@ static void addListReferences()
     }
   }
 
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     cd->addListReferences();
   } 
-  FileName *fn=Doxygen::inputNameList.first();
+  FileName *fn=Doxygen::inputNameList->first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -4393,15 +4472,15 @@ static void addListReferences()
       fd->addListReferences();
       fd=fn->next();
     }
-    fn=Doxygen::inputNameList.next();
+    fn=Doxygen::inputNameList->next();
   }
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     nd->addListReferences();
   }
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -4416,9 +4495,12 @@ static void addListReferences()
     {
       name = pd->getGroupDef()->getOutputFileBase().copy();
     }
-    addRefItem(pd->xrefListItems(),
-               theTranslator->trPage(TRUE,TRUE),
-               name,pd->title());
+    {
+      LockingPtr< QList<ListItemInfo> > xrefItems = pd->xrefListItems();
+      addRefItem(xrefItems.pointer(),
+          theTranslator->trPage(TRUE,TRUE),
+          name,pd->title());
+    }
   }
 }
 
@@ -4458,22 +4540,23 @@ static void addMemberDocs(EntryNav *rootNav,
   // TODO determine scope based on root not md
   Definition *rscope = md->getOuterScope();
   
+  LockingPtr<ArgumentList> mdAl = md->argumentList();
   if (al)
   {
     //printf("merging arguments (1) docs=%d\n",root->doc.isEmpty());
-    mergeArguments(md->argumentList(),al,!root->doc.isEmpty());
+    mergeArguments(mdAl.pointer(),al,!root->doc.isEmpty());
   }
   else
   {
     if ( 
-          matchArguments2( md->getOuterScope(), md->getFileDef(), md->argumentList(),
+          matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
                            rscope,rfd,root->argList,
                            TRUE
                          )
        ) 
     {
       //printf("merging arguments (2)\n");
-      mergeArguments(md->argumentList(),root->argList,!root->doc.isEmpty());
+      mergeArguments(mdAl.pointer(),root->argList,!root->doc.isEmpty());
     }
   }
   if (over_load)  // the \overload keyword was used
@@ -4614,10 +4697,10 @@ static bool findGlobalMember(EntryNav *rootNav,
   QCString n=name;
   if (n.isEmpty()) return FALSE;
   if (n.find("::")!=-1) return FALSE; // skip undefined class members
-  MemberName *mn=Doxygen::functionNameSDict[n+tempArg]; // look in function dictionary
+  MemberName *mn=Doxygen::functionNameSDict->find(n+tempArg); // look in function dictionary
   if (mn==0)
   {
-    mn=Doxygen::functionNameSDict[n]; // try without template arguments
+    mn=Doxygen::functionNameSDict->find(n); // try without template arguments
   }
   if (mn) // function name defined
   {
@@ -4653,12 +4736,13 @@ static bool findGlobalMember(EntryNav *rootNav,
         QCString nsName = nd ? nd->name().data() : "";
 
         NamespaceDef *rnd = 0;
-        if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict[namespaceName];
+        if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
         
+        LockingPtr<ArgumentList> mdAl = md->argumentList();
         bool matching=
-          (md->argumentList()==0 && root->argList->count()==0) ||
+          (mdAl==0 && root->argList->count()==0) ||
           md->isVariable() || md->isTypedef() || /* in case of function pointers */
-          matchArguments2(md->getOuterScope(),md->getFileDef(),md->argumentList(),
+          matchArguments2(md->getOuterScope(),md->getFileDef(),mdAl.pointer(),
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
                           FALSE);
 
@@ -4967,7 +5051,7 @@ static void findMember(EntryNav *rootNav,
   {
     QCString joinedName = rootNav->parent()->name()+"::"+scopeName;
     if (!scopeName.isEmpty() && 
-        (getClass(joinedName) || Doxygen::namespaceSDict[joinedName]))
+        (getClass(joinedName) || Doxygen::namespaceSDict->find(joinedName)))
     {
       scopeName = joinedName;
     }
@@ -4990,7 +5074,7 @@ static void findMember(EntryNav *rootNav,
          for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
          {
            joinedName = fnd->name()+"::"+scopeName;
-           if (Doxygen::namespaceSDict[joinedName])
+           if (Doxygen::namespaceSDict->find(joinedName))
            {
              scopeName=joinedName;
              break;
@@ -5151,11 +5235,11 @@ static void findMember(EntryNav *rootNav,
     }
     if (!funcTempList.isEmpty()) // try with member specialization
     {
-      mn=Doxygen::memberNameSDict[funcName+funcTempList];
+      mn=Doxygen::memberNameSDict->find(funcName+funcTempList);
     }
     if (mn==0) // try without specialization
     {
-      mn=Doxygen::memberNameSDict[funcName];
+      mn=Doxygen::memberNameSDict->find(funcName);
     }
     if (!isRelated && mn) // function name already found
     {
@@ -5200,9 +5284,10 @@ static void findMember(EntryNav *rootNav,
               // get the template parameter lists found at the member declaration
               QList<ArgumentList> declTemplArgs;
               cd->getTemplateParameterLists(declTemplArgs);
-              if (md->templateArguments())
+              LockingPtr<ArgumentList> templAl = md->templateArguments();
+              if (templAl!=0)
               {
-                declTemplArgs.append(md->templateArguments());
+                declTemplArgs.append(templAl.pointer());
               }
 
               // get the template parameter lists found at the member definition
@@ -5216,9 +5301,10 @@ static void findMember(EntryNav *rootNav,
               /* substitute the occurrences of class template names in the 
                * argument list before matching 
                */
+              LockingPtr<ArgumentList> mdAl = md->argumentList();
               if (declTemplArgs.count()>0 && defTemplArgs &&
                   declTemplArgs.count()==defTemplArgs->count() &&
-                  md->argumentList()
+                  mdAl.pointer()
                  )
               {
                 /* the function definition has template arguments
@@ -5228,13 +5314,13 @@ static void findMember(EntryNav *rootNav,
                  */
                 argList = new ArgumentList;
                 substituteTemplatesInArgList(declTemplArgs,*defTemplArgs,
-                    md->argumentList(),argList);
+                    mdAl.pointer(),argList);
 
                 substDone=TRUE;
               }
               else /* no template arguments, compare argument lists directly */
               {
-                argList = md->argumentList();
+                argList = mdAl.pointer();
               }
 
               Debug::print(Debug::FindMembers,0,
@@ -5245,7 +5331,7 @@ static void findMember(EntryNav *rootNav,
 
               bool matching=
                 md->isVariable() || md->isTypedef() || // needed for function pointers
-                (md->argumentList()==0 && root->argList->count()==0) || 
+                (mdAl.pointer()==0 && root->argList->count()==0) || 
                 matchArguments2(
                     md->getClassDef(),md->getFileDef(),argList, 
                     cd,fd,root->argList,
@@ -5303,8 +5389,9 @@ static void findMember(EntryNav *rootNav,
                 //printf("cd->name()==%s className=%s\n",cd->name().data(),className.data());
                 if (cd!=0 && rightScopeMatch(cd->name(),className)) 
                 {
-                  if (root->tArgLists && md->templateArguments() &&
-                      root->tArgLists->getLast()->count()<=md->templateArguments()->count())
+                  LockingPtr<ArgumentList> templAl = md->templateArguments();
+                  if (root->tArgLists && templAl!=0 &&
+                      root->tArgLists->getLast()->count()<=templAl->count())
                   { 
                     addMethodToClass(rootNav,cd,md->name(),isFriend);
                     return;
@@ -5340,9 +5427,10 @@ static void findMember(EntryNav *rootNav,
                 ClassDef *cd=md->getClassDef();
                 if (cd!=0 && rightScopeMatch(cd->name(),className))
                 {
-                  if (md->templateArguments())
+                  LockingPtr<ArgumentList> templAl = md->templateArguments();
+                  if (templAl!=0)
                   {
-                    warn_cont("  template %s\n",tempArgListToString(md->templateArguments()).data());
+                    warn_cont("  template %s\n",tempArgListToString(templAl.pointer()).data());
                   }
                   warn_cont("  ");
                   if (md->typeString()) 
@@ -5481,7 +5569,7 @@ static void findMember(EntryNav *rootNav,
         bool newMemberName=FALSE; 
         bool isDefine=FALSE;
         {
-          MemberName *mn = Doxygen::functionNameSDict[funcName];
+          MemberName *mn = Doxygen::functionNameSDict->find(funcName);
           if (mn)
           {
             MemberDef *md = mn->first();
@@ -5495,7 +5583,7 @@ static void findMember(EntryNav *rootNav,
 
         FileDef *fd=rootNav->fileDef();
 
-        if ((mn=Doxygen::memberNameSDict[funcName])==0)
+        if ((mn=Doxygen::memberNameSDict->find(funcName))==0)
         {
           mn=new MemberName(funcName);
           newMemberName=TRUE; // we create a new member name
@@ -5505,9 +5593,10 @@ static void findMember(EntryNav *rootNav,
           MemberDef *rmd=mn->first();
           while (rmd && newMember) // see if we got another member with matching arguments
           {
+            LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
 
             newMember=newMember && 
-              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                                cd,fd,root->argList,
                                TRUE);
             if (newMember) rmd=mn->next();
@@ -5554,15 +5643,16 @@ static void findMember(EntryNav *rootNav,
           bool found=FALSE;
           if (root->bodyLine==-1)
           {
-            MemberName *rmn=Doxygen::functionNameSDict[funcName];
+            MemberName *rmn=Doxygen::functionNameSDict->find(funcName);
             if (rmn)
             {
               MemberDef *rmd=rmn->first();
               while (rmd && !found) // see if we got another member with matching arguments
               {
+                LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
                 // check for matching argument lists
                 if (
-                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmd->argumentList(),
+                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                                     cd,fd,root->argList,
                                     TRUE)
                    )
@@ -5614,7 +5704,7 @@ static void findMember(EntryNav *rootNav,
           {
             //Doxygen::memberNameList.append(mn);
             //Doxygen::memberNameDict.insert(funcName,mn);
-            Doxygen::memberNameSDict.append(funcName,mn);
+            Doxygen::memberNameSDict->append(funcName,mn);
           }
         }
         if (root->relatesDup)
@@ -5672,7 +5762,7 @@ localObjCMethod:
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
         md->setRefItems(root->sli);
-        if ((mn=Doxygen::memberNameSDict[root->name]))
+        if ((mn=Doxygen::memberNameSDict->find(root->name)))
         {
           mn->append(md);
         }
@@ -5680,7 +5770,7 @@ localObjCMethod:
         {
           mn = new MemberName(root->name);
           mn->append(md);
-          Doxygen::memberNameSDict.append(root->name,mn);
+          Doxygen::memberNameSDict->append(root->name,mn);
         }
       }
       else
@@ -5953,18 +6043,18 @@ static void findEnums(EntryNav *rootNav)
     {
       //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
       fd=0;
-      mnsd=&Doxygen::memberNameSDict;
+      mnsd=Doxygen::memberNameSDict;
       isGlobal=FALSE;
     }
     else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
     {
-      mnsd=&Doxygen::functionNameSDict;
+      mnsd=Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
     else // found a global enum
     {
       fd=rootNav->fileDef();
-      mnsd=&Doxygen::functionNameSDict;
+      mnsd=Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
 
@@ -6001,8 +6091,8 @@ static void findEnums(EntryNav *rootNav)
         }
         //printf("definition=%s\n",md->definition());
         defSet=TRUE;
-        nd->insertMember(md);
         md->setNamespace(nd);
+        nd->insertMember(md);
       }
 
       // even if we have already added the enum to a namespace, we still
@@ -6017,8 +6107,8 @@ static void findEnums(EntryNav *rootNav)
         }
         if (fd) 
         {
-          fd->insertMember(md);
           md->setFileDef(fd);
+          fd->insertMember(md);
         }
       }
       else if (cd)
@@ -6064,7 +6154,7 @@ static void findEnums(EntryNav *rootNav)
         {
           //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
           MemberName *fmn=0;
-          MemberNameSDict *emnsd = isRelated ? &Doxygen::functionNameSDict : mnsd;
+          MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
           if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
             // get list of members with the same name as the field
           {
@@ -6173,7 +6263,7 @@ static void findEnumDocumentation(EntryNav *rootNav)
       {
         //printf("Enum: scope=`%s' name=`%s'\n",cd->name(),name.data());
         QCString className=cd->name().copy();
-        MemberName *mn=Doxygen::memberNameSDict[name];
+        MemberName *mn=Doxygen::memberNameSDict->find(name);
         if (mn)
         {
           MemberNameIterator mni(*mn);
@@ -6227,7 +6317,7 @@ static void findEnumDocumentation(EntryNav *rootNav)
       else // enum outside class 
       {
         //printf("Enum outside class: %s grpId=%d\n",name.data(),root->mGrpId);
-        MemberName *mn=Doxygen::functionNameSDict[name];
+        MemberName *mn=Doxygen::functionNameSDict->find(name);
         if (mn)
         {
           MemberNameIterator mni(*mn);
@@ -6284,9 +6374,9 @@ static void findDEV(const MemberNameSDict &mnsd)
     {
       if (md->isEnumerate()) // member is an enum
       {
-        MemberList *fmdl = md->enumFieldList();
+        LockingPtr<MemberList> fmdl = md->enumFieldList();
         int documentedEnumValues=0;
-        if (fmdl) // enum has values
+        if (fmdl!=0) // enum has values
         {
           MemberListIterator fmni(*fmdl);
           MemberDef *fmd;
@@ -6307,8 +6397,8 @@ static void findDEV(const MemberNameSDict &mnsd)
 // values.
 static void findDocumentedEnumValues()
 {
-  findDEV(Doxygen::memberNameSDict);
-  findDEV(Doxygen::functionNameSDict); 
+  findDEV(*Doxygen::memberNameSDict);
+  findDEV(*Doxygen::functionNameSDict); 
 }
 
 
@@ -6319,7 +6409,7 @@ static void findDocumentedEnumValues()
 
 static void computeMemberRelations()
 {
-  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn;
   for ( ; (mn=mnli.current()) ; ++mnli ) // for each member name
   {
@@ -6343,9 +6433,11 @@ static void computeMemberRelations()
           //        argListToString(bmd->argumentList()).data(),
           //        argListToString(md->argumentList()).data()
           //      );
+          LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
+          LockingPtr<ArgumentList>  mdAl =  md->argumentList();
           if ( 
-              matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmd->argumentList(),
-                               md->getOuterScope(), md->getFileDef(), md->argumentList(),
+              matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl.pointer(),
+                               md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
                               TRUE
                              ) 
              )
@@ -6380,7 +6472,7 @@ static void computeMemberRelations()
 //static void computeClassImplUsageRelations()
 //{
 //  ClassDef *cd;
-//  ClassSDict::Iterator cli(Doxygen::classSDict);
+//  ClassSDict::Iterator cli(*Doxygen::classSDict);
 //  for (;(cd=cli.current());++cli)
 //  {
 //    cd->determineImplUsageRelation();
@@ -6391,7 +6483,7 @@ static void computeMemberRelations()
 
 static void createTemplateInstanceMembers()
 {
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   // for each class
   for (cli.toFirst();(cd=cli.current());++cli)
@@ -6419,14 +6511,14 @@ static void buildCompleteMemberLists()
 {
   ClassDef *cd;
   // merge members of categories into the class they extend
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     int i=cd->name().find('(');
     if (i!=-1) // it is an Objective-C category
     {
       QCString baseName=cd->name().left(i);
-      ClassDef *baseClass=Doxygen::classSDict.find(baseName);
+      ClassDef *baseClass=Doxygen::classSDict->find(baseName);
       if (baseClass)
       {
         //printf("*** merging members of category %s into %s\n",
@@ -6458,9 +6550,9 @@ static void buildCompleteMemberLists()
 static void generateFileSources()
 {
   if (documentedHtmlFiles==0) return;
-  if (Doxygen::inputNameList.count()>0)
+  if (Doxygen::inputNameList->count()>0)
   {
-    FileNameListIterator fnli(Doxygen::inputNameList); 
+    FileNameListIterator fnli(*Doxygen::inputNameList); 
     FileName *fn;
     for (;(fn=fnli.current());++fnli)
     {
@@ -6490,9 +6582,9 @@ static void generateFileDocs()
 {
   if (documentedHtmlFiles==0) return;
   
-  if (Doxygen::inputNameList.count()>0)
+  if (Doxygen::inputNameList->count()>0)
   {
-    FileNameListIterator fnli(Doxygen::inputNameList);
+    FileNameListIterator fnli(*Doxygen::inputNameList);
     FileName *fn;
     for (fnli.toFirst();(fn=fnli.current());++fnli)
     {
@@ -6516,7 +6608,7 @@ static void generateFileDocs()
 static void addSourceReferences()
 {
   // add source references for class definitions
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
@@ -6527,7 +6619,7 @@ static void addSourceReferences()
     }
   }
   // add source references for namespace definitions
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
@@ -6539,7 +6631,7 @@ static void addSourceReferences()
   }
   
   // add source references for member names
-  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn=0;
   for (mnli.toFirst();(mn=mnli.current());++mnli)
   {
@@ -6560,7 +6652,7 @@ static void addSourceReferences()
       }
     }
   }
-  MemberNameSDict::Iterator fnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
   for (fnli.toFirst();(mn=fnli.current());++fnli)
   {
     MemberNameIterator mni(*mn);
@@ -6647,15 +6739,15 @@ static void generateClassDocs()
     msg("Generating example index...\n");
   }
 
-  generateClassList(Doxygen::classSDict);
-  generateClassList(Doxygen::hiddenClasses);
+  generateClassList(*Doxygen::classSDict);
+  generateClassList(*Doxygen::hiddenClasses);
 }
 
 //----------------------------------------------------------------------------
 
 static void inheritDocumentation()
 {
-  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   MemberName *mn;
   //int count=0;
   for (;(mn=mnli.current());++mnli)
@@ -6693,7 +6785,7 @@ static void inheritDocumentation()
 static void combineUsingRelations()
 {
   // for each file
-  FileNameListIterator fnli(Doxygen::inputNameList);
+  FileNameListIterator fnli(*Doxygen::inputNameList);
   FileName *fn;
   for (fnli.toFirst();(fn=fnli.current());++fnli)
   {
@@ -6715,7 +6807,7 @@ static void combineUsingRelations()
   }
 
   // for each namespace
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
   {
@@ -6732,14 +6824,14 @@ static void combineUsingRelations()
 static void addMembersToMemberGroup()
 {
   // for each class
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
     cd->addMembersToMemberGroup();
   }
   // for each file
-  FileName *fn=Doxygen::inputNameList.first();
+  FileName *fn=Doxygen::inputNameList->first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -6748,17 +6840,17 @@ static void addMembersToMemberGroup()
       fd->addMembersToMemberGroup();
       fd=fn->next();
     }
-    fn=Doxygen::inputNameList.next();
+    fn=Doxygen::inputNameList->next();
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
     nd->addMembersToMemberGroup();
   }
   // for each group
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -6771,14 +6863,14 @@ static void addMembersToMemberGroup()
 static void distributeMemberGroupDocumentation()
 {
   // for each class
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
     cd->distributeMemberGroupDocumentation();
   }
   // for each file
-  FileName *fn=Doxygen::inputNameList.first();
+  FileName *fn=Doxygen::inputNameList->first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -6787,17 +6879,17 @@ static void distributeMemberGroupDocumentation()
       fd->distributeMemberGroupDocumentation();
       fd=fn->next();
     }
-    fn=Doxygen::inputNameList.next();
+    fn=Doxygen::inputNameList->next();
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
     nd->distributeMemberGroupDocumentation();
   }
   // for each group
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -6810,14 +6902,14 @@ static void distributeMemberGroupDocumentation()
 static void findSectionsInDocumentation()
 {
   // for each class
-  ClassSDict::Iterator cli(Doxygen::classSDict);
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
     cd->findSectionsInDocumentation();
   }
   // for each file
-  FileName *fn=Doxygen::inputNameList.first();
+  FileName *fn=Doxygen::inputNameList->first();
   while (fn)
   {
     FileDef *fd=fn->first();
@@ -6826,17 +6918,17 @@ static void findSectionsInDocumentation()
       fd->findSectionsInDocumentation();
       fd=fn->next();
     }
-    fn=Doxygen::inputNameList.next();
+    fn=Doxygen::inputNameList->next();
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
     nd->findSectionsInDocumentation();
   }
   // for each group
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -6869,7 +6961,7 @@ static void flushCachedTemplateRelations()
   }
   // remove all cached typedef resolutions whose target is a
   // template class as this may now be a template instance
-  MemberNameSDict::Iterator fnli(Doxygen::functionNameSDict);
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
   MemberName *fn;
   for (;(fn=fnli.current());++fnli) // for each global function name
   {
@@ -6884,7 +6976,7 @@ static void flushCachedTemplateRelations()
       }
     }
   }
-  MemberNameSDict::Iterator mnli(Doxygen::memberNameSDict);
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
   for (;(fn=mnli.current());++mnli) // for each class method name
   {
     MemberNameIterator mni(*fn);
@@ -6925,7 +7017,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
       md->setFileDef(rootNav->parent()->fileDef());
       //printf("Adding member=%s\n",md->name().data());
       MemberName *mn;
-      if ((mn=Doxygen::functionNameSDict[root->name]))
+      if ((mn=Doxygen::functionNameSDict->find(root->name)))
       {
         mn->append(md);
       }
@@ -6933,12 +7025,10 @@ static void findDefineDocumentation(EntryNav *rootNav)
       {
         mn = new MemberName(root->name);
         mn->append(md);
-        //Doxygen::functionNameDict.insert(root->name,mn);
-        //Doxygen::functionNameList.append(mn);
-        Doxygen::functionNameSDict.append(root->name,mn);
+        Doxygen::functionNameSDict->append(root->name,mn);
       }
     }
-    MemberName *mn=Doxygen::functionNameSDict[root->name];
+    MemberName *mn=Doxygen::functionNameSDict->find(root->name);
     if (mn)
     {
       int count=0;
@@ -7067,7 +7157,7 @@ static void findDirDocumentation(EntryNav *rootNav)
       normalizedName+='/';
     }
     DirDef *dir,*matchingDir=0;
-    SDict<DirDef>::Iterator sdi(Doxygen::directories);
+    SDict<DirDef>::Iterator sdi(*Doxygen::directories);
     for (sdi.toFirst();(dir=sdi.current());++sdi)
     {
       //printf("Dir: %s<->%s\n",dir->name().data(),normalizedName.data());
@@ -7373,6 +7463,7 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
+    resetCCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*outputList,n,n,pd->name());
     startTitle(*outputList,n);
@@ -7397,7 +7488,7 @@ static void generateExampleDocs()
 
 static void generateGroupDocs()
 {
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)
   {
@@ -7432,7 +7523,7 @@ static void generateNamespaceDocs()
 {
   writeNamespaceIndex(*outputList);
   
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   // for each namespace...
   for (;(nd=nli.current());++nli)
@@ -8284,10 +8375,9 @@ void initDoxygen()
   setlocale(LC_ALL,"");
   setlocale(LC_NUMERIC,"C");
 #endif 
-  Doxygen::symbolMap = new QDict<DefinitionIntf>(1000);
-  //Doxygen::symbolMap->setAutoDelete(TRUE);
-  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
   
+  //Doxygen::symbolMap->setAutoDelete(TRUE);
+
   Doxygen::runningTime.start();
   initPreprocessor();
 
@@ -8297,20 +8387,10 @@ void initDoxygen()
 
   // register any additional parsers here...
 
-  Doxygen::sectionDict.setAutoDelete(TRUE);
-  Doxygen::inputNameList.setAutoDelete(TRUE);
-  Doxygen::memberNameSDict.setAutoDelete(TRUE);
-  Doxygen::functionNameSDict.setAutoDelete(TRUE);
-  Doxygen::hiddenClasses.setAutoDelete(TRUE);
-  Doxygen::classSDict.setAutoDelete(TRUE);
-  Doxygen::pageSDict->setAutoDelete(TRUE);
-  Doxygen::exampleSDict->setAutoDelete(TRUE);
-  excludeNameDict.setAutoDelete(TRUE);
-  Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
-  Doxygen::tagDestinationDict.setAutoDelete(TRUE);
-  Doxygen::lookupCache.setAutoDelete(TRUE);
-  Doxygen::directories.setAutoDelete(TRUE);
-  Doxygen::dirRelations.setAutoDelete(TRUE);
+
+  initClassMemberIndices();
+  initNamespaceMemberIndices();
+  initFileMemberIndices();
 }
 
 void cleanUpDoxygen()
@@ -8327,30 +8407,39 @@ void cleanUpDoxygen()
   delete Doxygen::xrefLists;
   delete Doxygen::parserManager;
   cleanUpPreprocessor();
-  Config::deleteInstance();
-  QTextCodec::deleteAllCodecs();
   delete theTranslator;
   delete outputList;
   Mappers::freeMappers();
   codeFreeScanner();
 
-  // iterate through Doxygen::symbolMap and delete all
-  // DefinitionList objects, since they have no owner
-  QDictIterator<DefinitionIntf> dli(*Doxygen::symbolMap);
-  DefinitionIntf *di;
-  for (dli.toFirst();(di=dli.current());)
+  if (Doxygen::symbolMap)
   {
-    if (di->definitionType()==DefinitionIntf::TypeSymbolList)
+    // iterate through Doxygen::symbolMap and delete all
+    // DefinitionList objects, since they have no owner
+    QDictIterator<DefinitionIntf> dli(*Doxygen::symbolMap);
+    DefinitionIntf *di;
+    for (dli.toFirst();(di=dli.current());)
     {
-      DefinitionIntf *tmp = Doxygen::symbolMap->take(dli.currentKey());
-      delete (DefinitionList *)tmp;
-    }
-    else
-    {
-      ++dli;
-    }
-  } 
+      if (di->definitionType()==DefinitionIntf::TypeSymbolList)
+      {
+        DefinitionIntf *tmp = Doxygen::symbolMap->take(dli.currentKey());
+        delete (DefinitionList *)tmp;
+      }
+      else
+      {
+        ++dli;
+      }
+    } 
+  }
 
+  delete Doxygen::inputNameList;
+  delete Doxygen::memberNameSDict;
+  delete Doxygen::functionNameSDict;
+  delete Doxygen::groupSDict;
+  delete Doxygen::classSDict;
+  delete Doxygen::hiddenClasses;
+  delete Doxygen::namespaceSDict;
+  delete Doxygen::directories;
 
   //delete Doxygen::symbolMap; <- we cannot do this unless all static lists 
   //                              (such as Doxygen::namespaceSDict)
@@ -8676,12 +8765,85 @@ void checkConfiguration()
 
 void parseInput()
 {
-  Doxygen::inputNameDict     = new FileNameDict(10007);
-  Doxygen::includeNameDict   = new FileNameDict(10007);
-  Doxygen::exampleNameDict   = new FileNameDict(1009);
+  /**************************************************************************
+   *            Make sure the output directory exists
+   **************************************************************************/
+  QCString &outputDirectory = Config_getString("OUTPUT_DIRECTORY");
+  if (outputDirectory.isEmpty()) 
+  {
+    outputDirectory=QDir::currentDirPath();
+  }
+  else
+  {
+    QDir dir(outputDirectory);
+    if (!dir.exists())
+    {
+      dir.setPath(QDir::currentDirPath());
+      if (!dir.mkdir(outputDirectory))
+      {
+        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+	    "exist and cannot be created\n",outputDirectory.data());
+        cleanUpDoxygen();
+        exit(1);
+      }
+      else if (!Config_getBool("QUIET"))
+      {
+	err("Notice: Output directory `%s' does not exist. "
+	    "I have created it for you.\n", outputDirectory.data());
+      }
+      dir.cd(outputDirectory);
+    }
+    outputDirectory=dir.absPath();
+  }
+
+  /**************************************************************************
+   *            Initialize global lists and dictionaries
+   **************************************************************************/
+
+  Doxygen::symbolMap     = new QDict<DefinitionIntf>(1000);
+  Doxygen::symbolCache   = new ObjCache(15); // 15 -> room for 32768 elements, 
+                                             //       ~1.0 MByte "overhead"
+  Doxygen::symbolStorage = new Store;
+
+  if (Doxygen::symbolStorage->open(outputDirectory+"/doxygen_objdb.tmp")==-1)
+  {
+    err("Failed to open temporary file %s\n",(outputDirectory+"/doxygen_objdb.tmp").data());
+    exit(1);
+  }
+
+  Doxygen::inputNameList = new FileNameList;
+  Doxygen::inputNameList->setAutoDelete(TRUE);
+  Doxygen::memberNameSDict = new MemberNameSDict(10000);   
+  Doxygen::memberNameSDict->setAutoDelete(TRUE);
+  Doxygen::functionNameSDict = new MemberNameSDict(10000);   
+  Doxygen::functionNameSDict->setAutoDelete(TRUE);
+  Doxygen::groupSDict = new GroupSDict(17);          
+  Doxygen::groupSDict->setAutoDelete(TRUE);
+  Doxygen::globalScope = new NamespaceDef("<globalScope>",1,"<globalScope>");
+  Doxygen::namespaceSDict = new NamespaceSDict(20);      
+  Doxygen::namespaceSDict->setAutoDelete(TRUE);
+  Doxygen::classSDict = new ClassSDict(1009);         
+  Doxygen::classSDict->setAutoDelete(TRUE);
+  Doxygen::hiddenClasses = new ClassSDict(257);
+  Doxygen::hiddenClasses->setAutoDelete(TRUE);
+  Doxygen::directories = new DirSDict(17);
+  Doxygen::directories->setAutoDelete(TRUE);
+  Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
+  Doxygen::pageSDict->setAutoDelete(TRUE);
+  Doxygen::exampleSDict = new PageSDict(1009);       // all examples
+  Doxygen::exampleSDict->setAutoDelete(TRUE);
+  Doxygen::inputNameDict = new FileNameDict(10007);
+  Doxygen::includeNameDict = new FileNameDict(10007);
+  Doxygen::exampleNameDict = new FileNameDict(1009);
   Doxygen::exampleNameDict->setAutoDelete(TRUE);
-  Doxygen::imageNameDict     = new FileNameDict(257);
-  Doxygen::dotFileNameDict   = new FileNameDict(257);
+  Doxygen::imageNameDict = new FileNameDict(257);
+  Doxygen::dotFileNameDict = new FileNameDict(257);
+  Doxygen::sectionDict.setAutoDelete(TRUE);
+  Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
+  Doxygen::tagDestinationDict.setAutoDelete(TRUE);
+  Doxygen::lookupCache.setAutoDelete(TRUE);
+  Doxygen::dirRelations.setAutoDelete(TRUE);
+  excludeNameDict.setAutoDelete(TRUE);
 
   /**************************************************************************
    *            Initialize some global constants
@@ -8788,7 +8950,7 @@ void parseInput()
 
     inputSize+=readFileOrDirectory(
         path,
-        &Doxygen::inputNameList,
+        Doxygen::inputNameList,
         Doxygen::inputNameDict,
         &excludeNameDict,
         &Config_getList("FILE_PATTERNS"),
@@ -8819,34 +8981,6 @@ void parseInput()
   /**************************************************************************
    *            Check/create output directorties                            *
    **************************************************************************/
-
-  QCString &outputDirectory = Config_getString("OUTPUT_DIRECTORY");
-  if (outputDirectory.isEmpty()) 
-  {
-    outputDirectory=QDir::currentDirPath();
-  }
-  else
-  {
-    QDir dir(outputDirectory);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
-      {
-        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
-	    "exist and cannot be created\n",outputDirectory.data());
-        cleanUpDoxygen();
-        exit(1);
-      }
-      else if (!Config_getBool("QUIET"))
-      {
-	err("Notice: Output directory `%s' does not exist. "
-	    "I have created it for you.\n", outputDirectory.data());
-      }
-      dir.cd(outputDirectory);
-    }
-    outputDirectory=dir.absPath();
-  }
 
   QCString &htmlOutput = Config_getString("HTML_OUTPUT");
   bool &generateHtml = Config_getBool("GENERATE_HTML");
@@ -8949,10 +9083,11 @@ void parseInput()
    *             Handle Tag Files                                           *
    **************************************************************************/
 
-  g_storage.setName(outputDirectory+"/doxygen_entrydb.tmp");
-  if (!g_storage.open(IO_WriteOnly))
+  g_storage = new FileStorage;
+  g_storage->setName(outputDirectory+"/doxygen_entrydb.tmp");
+  if (!g_storage->open(IO_WriteOnly))
   {
-    err("Failed to create temporary storage file %s/doxygen_entrydb.tmp",
+    err("Failed to create temporary storage file %s/doxygen_entrydb.tmp\n",
         outputDirectory.data());
     exit(1);
   }
@@ -8975,8 +9110,8 @@ void parseInput()
    **************************************************************************/
 
   parseFiles(root,rootNav);
-  g_storage.close();
-  if (!g_storage.open(IO_ReadOnly))
+  g_storage->close();
+  if (!g_storage->open(IO_ReadOnly))
   {
     err("Failed to open temporary storage file %s/doxygen_entrydb.tmp for reading",
         outputDirectory.data());
@@ -9014,7 +9149,6 @@ void parseInput()
   buildNamespaceList(rootNav);
   findUsingDirectives(rootNav);
 
-  
   msg("Building file list...\n");
   buildFileList(rootNav);
   //generateFileTree();
@@ -9101,14 +9235,16 @@ void parseInput()
   findGroupScope(rootNav);
 
   msg("Sorting lists...\n");
-  Doxygen::memberNameSDict.sort();
-  Doxygen::functionNameSDict.sort();
-  Doxygen::hiddenClasses.sort();
-  Doxygen::classSDict.sort();
+  Doxygen::memberNameSDict->sort();
+  Doxygen::functionNameSDict->sort();
+  Doxygen::hiddenClasses->sort();
+  Doxygen::classSDict->sort();
   
   msg("Freeing entry tree\n");
   delete rootNav;
-  g_storage.close();
+  g_storage->close();
+  delete g_storage;
+  g_storage=0;
 
   QDir thisDir;
   thisDir.remove(outputDirectory+"/doxygen_entrydb.tmp");
@@ -9143,7 +9279,7 @@ void parseInput()
   // compute the shortest possible names of all files
   // without loosing the uniqueness of the file names.
   msg("Generating disk names...\n");
-  Doxygen::inputNameList.generateDiskNames();
+  Doxygen::inputNameList->generateDiskNames();
   
   msg("Adding source references...\n");
   addSourceReferences();
@@ -9445,7 +9581,23 @@ void generateOutput()
          Doxygen::sysElapsedTime
         );
   }
+
+  /**************************************************************************
+   *                        Start cleaning up                               *
+   **************************************************************************/
+
+  //Doxygen::symbolCache->printStats();
+  //Doxygen::symbolStorage->printStats();
   cleanUpDoxygen();
+
   finializeDocParser();
+  Doxygen::symbolStorage->close();
+  QDir thisDir;
+  thisDir.remove(Config_getString("OUTPUT_DIRECTORY")+"/doxygen_objdb.tmp");
+  Config::deleteInstance();
+  QTextCodec::deleteAllCodecs();
+  delete Doxygen::symbolCache;
+  delete Doxygen::symbolMap;
+  delete Doxygen::symbolStorage;
 }
 

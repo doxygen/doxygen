@@ -456,9 +456,10 @@ static void writeTemplateArgumentList(ArgumentList *al,
 
 static void writeMemberTemplateLists(MemberDef *md,QTextStream &t)
 {
-  if (md->templateArguments()) // function template prefix
+  LockingPtr<ArgumentList> templMd = md->templateArguments();
+  if (templMd!=0) // function template prefix
   {
-    writeTemplateArgumentList(md->templateArguments(),t,md->getClassDef(),md->getFileDef(),8);
+    writeTemplateArgumentList(templMd.pointer(),t,md->getClassDef(),md->getFileDef(),8);
   }
 }
 
@@ -622,9 +623,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 
   if (isFunc)
   {
-    ArgumentList *al = md->argumentList();
+    LockingPtr<ArgumentList> al = md->argumentList();
     t << " const=\"";
-    if (al && al->constSpecifier)    t << "yes"; else t << "no"; 
+    if (al!=0 && al->constSpecifier)    t << "yes"; else t << "no"; 
     t << "\"";
 
     t << " explicit=\"";
@@ -711,8 +712,8 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       << rmd->getOutputFileBase() << "_1" << rmd->anchor() << "\">"
       << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
-  MemberList *rbml = md->reimplementedBy();
-  if (rbml)
+  LockingPtr<MemberList> rbml = md->reimplementedBy();
+  if (rbml!=0)
   {
     MemberListIterator mli(*rbml);
     for (mli.toFirst();(rmd=mli.current());++mli)
@@ -725,9 +726,9 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
 
   if (isFunc) //function
   {
-    ArgumentList *declAl = md->declArgumentList();
-    ArgumentList *defAl = md->argumentList();
-    if (declAl && declAl->count()>0)
+    LockingPtr<ArgumentList> declAl = md->declArgumentList();
+    LockingPtr<ArgumentList> defAl = md->argumentList();
+    if (declAl!=0 && declAl->count()>0)
     {
       ArgumentListIterator declAli(*declAl);
       ArgumentListIterator defAli(*defAl);
@@ -820,9 +821,10 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   
   if (md->memberType()==MemberDef::Enumeration) // enum
   {
-    if (md->enumFieldList())
+    LockingPtr<MemberList> enumFields = md->enumFieldList();
+    if (enumFields!=0)
     {
-      MemberListIterator emli(*md->enumFieldList());
+      MemberListIterator emli(*enumFields);
       MemberDef *emd;
       for (emli.toFirst();(emd=emli.current());++emli)
       {
@@ -887,18 +889,20 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   }
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
-  if (md->getReferencesMembers())
+  LockingPtr<MemberSDict> mdict = md->getReferencesMembers();
+  if (mdict!=0)
   {
-    MemberSDict::Iterator mdi(*md->getReferencesMembers());
+    MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
       writeMemberReference(t,def,rmd,"references");
     }
   }
-  if (md->getReferencedByMembers())
+  mdict = md->getReferencedByMembers();
+  if (mdict!=0)
   {
-    MemberSDict::Iterator mdi(*md->getReferencedByMembers());
+    MemberSDict::Iterator mdi(*mdict);
     MemberDef *rmd;
     for (mdi.toFirst();(rmd=mdi.current());++mdi)
     {
@@ -1837,7 +1841,7 @@ void generateXML()
   t << "version=\"" << versionString << "\">" << endl;
 
   {
-    ClassSDict::Iterator cli(Doxygen::classSDict);
+    ClassSDict::Iterator cli(*Doxygen::classSDict);
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
@@ -1854,14 +1858,14 @@ void generateXML()
   //    generateXMLForClass(cd,t);
   //  }
   //}
-  NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
     msg("Generating XML output for namespace %s\n",nd->name().data());
     generateXMLForNamespace(nd,t);
   }
-  FileNameListIterator fnli(Doxygen::inputNameList);
+  FileNameListIterator fnli(*Doxygen::inputNameList);
   FileName *fn;
   for (;(fn=fnli.current());++fnli)
   {
@@ -1873,7 +1877,7 @@ void generateXML()
       generateXMLForFile(fd,t);
     }
   }
-  GroupSDict::Iterator gli(Doxygen::groupSDict);
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (;(gd=gli.current());++gli)
   {
@@ -1891,7 +1895,7 @@ void generateXML()
   }
   {
     DirDef *dir;
-    DirSDict::Iterator sdi(Doxygen::directories);
+    DirSDict::Iterator sdi(*Doxygen::directories);
     for (sdi.toFirst();(dir=sdi.current());++sdi)
     {
       msg("Generate XML output for dir %s\n",dir->name().data());

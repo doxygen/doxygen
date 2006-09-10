@@ -1260,10 +1260,10 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
   
   // build a graph with each class as a node and the inheritance relations
   // as edges
-  initClassHierarchy(&Doxygen::classSDict);
-  initClassHierarchy(&Doxygen::hiddenClasses);
-  addClassList(&Doxygen::classSDict);
-  addClassList(&Doxygen::hiddenClasses);
+  initClassHierarchy(Doxygen::classSDict);
+  initClassHierarchy(Doxygen::hiddenClasses);
+  addClassList(Doxygen::classSDict);
+  addClassList(Doxygen::hiddenClasses);
   // m_usedNodes now contains all nodes in the graph
  
   // color the graph into a set of independent subgraphs
@@ -2359,8 +2359,8 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
 
 void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
 {
-  MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
-  if (refs)
+  LockingPtr<MemberSDict> refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  if (!refs.isNull())
   {
     MemberSDict::Iterator mri(*refs);
     MemberDef *rmd;
@@ -2733,9 +2733,10 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
   // hierarchy.
 
   // Write parents
-  if ( gd->partOfGroups() )
+  LockingPtr<GroupList> groups = gd->partOfGroups();
+  if ( groups!=0 )
   {
-    GroupListIterator gli(*gd->partOfGroups());
+    GroupListIterator gli(*groups);
     GroupDef *d;
     for (gli.toFirst();(d=gli.current());++gli)
     {

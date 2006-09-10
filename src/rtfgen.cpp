@@ -417,7 +417,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isModuleDocumentation:
       {
         //Module Documentation
-        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
         bool found=FALSE;
         for (gli.toFirst();(gd=gli.current()) && !found;++gli)
@@ -433,7 +433,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isDirDocumentation:
       {
         //Directory Documentation
-        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
         bool found=FALSE;
         for (dli.toFirst();(dd=dli.current()) && !found;++dli)
@@ -449,7 +449,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isNamespaceDocumentation:
       {
         // Namespace Documentation
-        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
         NamespaceDef *nd;
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
@@ -465,7 +465,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isClassDocumentation:
       {
         //Compound Documentation
-        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
@@ -482,7 +482,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //File Documentation
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList.first();
+        FileName *fn=Doxygen::inputNameList->first();
         while (fn)
         {
           FileDef *fd=fn->first();
@@ -499,7 +499,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=Doxygen::inputNameList.next();
+          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -647,7 +647,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(Doxygen::groupSDict);
+        GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         for (gli.toFirst();(gd=gli.current());++gli)
@@ -664,7 +664,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(Doxygen::directories);
+        SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
         t << "{\\tc \\v " << theTranslator->trDirDocumentation() << "}"<< endl;
         for (dli.toFirst();(dd=dli.current());++dli)
@@ -681,7 +681,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(Doxygen::namespaceSDict);
+        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
         NamespaceDef *nd;
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
@@ -711,7 +711,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassSDict::Iterator cli(Doxygen::classSDict);
+        ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
 
@@ -743,7 +743,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isFileDocumentation:
       {
         bool isFirst=TRUE;
-        FileName *fn=Doxygen::inputNameList.first();
+        FileName *fn=Doxygen::inputNameList->first();
 
         t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}"<< endl;
         while (fn)
@@ -772,7 +772,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
             }
             fd=fn->next();
           }
-          fn=Doxygen::inputNameList.next();
+          fn=Doxygen::inputNameList->next();
         }
       }
       break;
@@ -935,12 +935,14 @@ void RTFGenerator::writeListItem()
   m_omitParagraph = TRUE;
 }
 
-void RTFGenerator::writeIndexItem(const char *ref,const char *fn,
-    const char *name)
+void RTFGenerator::startIndexItem(const char *,const char *)
 {
-  DBG_RTF(t << "{\\comment (writeIndexItem)}" << endl)
-  //t << rtf_LCList_DepthStyle() << endl;
-  docify(name);
+  DBG_RTF(t << "{\\comment (startIndexItem)}" << endl)
+}
+
+void RTFGenerator::endIndexItem(const char *ref,const char *fn)
+{
+  DBG_RTF(t << "{\\comment (endIndexItem)}" << endl)
   if (!ref && fn)
   {
     t << "\\tab ";
