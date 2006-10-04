@@ -107,95 +107,124 @@ static bool handlePublicSection(const QCString &s);
 static bool handleInherit(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
-  
+
 struct DocCmdMap
 {
   const char *cmdName;
   DocCmdFunc handler;
+  bool endsBrief;
 };
 
 // map of command to handler function
 static DocCmdMap docCmdMap[] =
 {
-  { "brief",           &handleBrief },
-  { "short",           &handleBrief },
-  { "fn",              &handleFn },
-  { "var",             &handleFn },
-  { "typedef",         &handleFn },
-  { "property",        &handleFn },
-  { "def",             &handleDef },
-  { "overload",        &handleOverload },
-  { "enum",            &handleEnum },
-  { "defgroup",        &handleDefGroup },
-  { "addtogroup",      &handleAddToGroup },
-  { "weakgroup",       &handleWeakGroup },
-  { "namespace",       &handleNamespace },
-  { "package",         &handlePackage },
-  { "class",           &handleClass },
-  { "protocol",        &handleProtocol },
-  { "category",        &handleCategory },
-  { "union",           &handleUnion },
-  { "struct",          &handleStruct },
-  { "interface",       &handleInterface },
-  { "idlexcept",       &handleIdlException },
-  { "page",            &handlePage },
-  { "mainpage",        &handleMainpage },
-  { "file",            &handleFile },
-  { "dir",             &handleDir },
-  { "example",         &handleExample },
-  { "details",         &handleDetails },
-  { "name",            &handleName },
-  { "todo",            &handleTodo },
-  { "test",            &handleTest },
-  { "bug",             &handleBug },
-  { "deprecated",      &handleDeprecated },
-  { "xrefitem",        &handleXRefItem },
-  { "related",         &handleRelated },
-  { "relates",         &handleRelated },
-  { "relatedalso",     &handleRelatedAlso },
-  { "relatesalso",     &handleRelatedAlso },
-  { "refitem",         &handleRefItem },
-  { "subpage",         &handleSubpage },
-  { "section",         &handleSection },
-  { "subsection",      &handleSection },
-  { "subsubsection",   &handleSection },
-  { "paragraph",       &handleSection },
-  { "anchor",          &handleAnchor },
-  { "verbatim",        &handleFormatBlock },
-  { "latexonly",       &handleFormatBlock },
-  { "htmlonly",        &handleFormatBlock },
-  { "xmlonly",         &handleFormatBlock },
-  { "rtfonly",         &handleFormatBlock },
-  { "manonly",         &handleFormatBlock },
-  { "dot",             &handleFormatBlock },
-  { "code",            &handleFormatBlock },
-  { "addindex",        &handleAddIndex },
-  { "if",              &handleIf },
-  { "ifnot",           &handleIfNot },
-  { "elseif",          &handleElseIf },
-  { "else",            &handleElse },
-  { "endif",           &handleEndIf },
-  { "ingroup",         &handleIngroup },
-  { "nosubgrouping",   &handleNoSubGrouping },
-  { "showinitializer", &handleShowInitializer },
-  { "hideinitializer", &handleHideInitializer },
-  { "callgraph",       &handleCallgraph },
-  { "callergraph",     &handleCallergraph },
-  { "internal",        &handleInternal },
-  { "_linebr",         &handleLineBr },
-  { "static",          &handleStatic },
-  { "pure",            &handlePure },
-  { "private",         &handlePrivate},
-  { "privatesection",  &handlePrivateSection },
-  { "protected",       &handleProtected },
-  { "protectedsection",&handleProtectedSection },
-  { "public",          &handlePublic },
-  { "publicsection",   &handlePublicSection },
-  { "inherit",         &handleInherit },
-  { 0, 0 }
+  // command name      handler function         ends brief description
+  { "brief",           &handleBrief,            FALSE },
+  { "short",           &handleBrief,            FALSE },
+  { "fn",              &handleFn,               TRUE  },
+  { "var",             &handleFn,               TRUE  },
+  { "typedef",         &handleFn,               TRUE  },
+  { "property",        &handleFn,               TRUE  },
+  { "def",             &handleDef,              TRUE  },
+  { "overload",        &handleOverload,         TRUE  },
+  { "enum",            &handleEnum,             TRUE  },
+  { "defgroup",        &handleDefGroup,         TRUE  },
+  { "addtogroup",      &handleAddToGroup,       TRUE  },
+  { "weakgroup",       &handleWeakGroup,        TRUE  },
+  { "namespace",       &handleNamespace,        TRUE  },
+  { "package",         &handlePackage,          TRUE  },
+  { "class",           &handleClass,            TRUE  },
+  { "protocol",        &handleProtocol,         TRUE  },
+  { "category",        &handleCategory,         TRUE  },
+  { "union",           &handleUnion,            TRUE  },
+  { "struct",          &handleStruct,           TRUE  },
+  { "interface",       &handleInterface,        TRUE  },
+  { "idlexcept",       &handleIdlException,     TRUE  },
+  { "page",            &handlePage,             TRUE  },
+  { "mainpage",        &handleMainpage,         TRUE  },
+  { "file",            &handleFile,             TRUE  },
+  { "dir",             &handleDir,              TRUE  },
+  { "example",         &handleExample,          TRUE  },
+  { "details",         &handleDetails,          TRUE  },
+  { "name",            &handleName,             TRUE  },
+  { "todo",            &handleTodo,             TRUE  },
+  { "test",            &handleTest,             TRUE  },
+  { "bug",             &handleBug,              TRUE  },
+  { "deprecated",      &handleDeprecated,       TRUE  },
+  { "xrefitem",        &handleXRefItem,         TRUE  },
+  { "related",         &handleRelated,          TRUE  },
+  { "relates",         &handleRelated,          TRUE  },
+  { "relatedalso",     &handleRelatedAlso,      TRUE  },
+  { "relatesalso",     &handleRelatedAlso,      TRUE  },
+  { "refitem",         &handleRefItem,          TRUE  },
+  { "subpage",         &handleSubpage,          TRUE  },
+  { "section",         &handleSection,          TRUE  },
+  { "subsection",      &handleSection,          TRUE  },
+  { "subsubsection",   &handleSection,          TRUE  },
+  { "paragraph",       &handleSection,          TRUE  },
+  { "anchor",          &handleAnchor,           TRUE  },
+  { "verbatim",        &handleFormatBlock,      TRUE },
+  { "latexonly",       &handleFormatBlock,      FALSE },
+  { "htmlonly",        &handleFormatBlock,      FALSE },
+  { "xmlonly",         &handleFormatBlock,      FALSE },
+  { "rtfonly",         &handleFormatBlock,      FALSE },
+  { "manonly",         &handleFormatBlock,      FALSE },
+  { "dot",             &handleFormatBlock,      TRUE  },
+  { "code",            &handleFormatBlock,      TRUE  },
+  { "addindex",        &handleAddIndex,         TRUE  },
+  { "if",              &handleIf,               FALSE },
+  { "ifnot",           &handleIfNot,            FALSE },
+  { "elseif",          &handleElseIf,           FALSE },
+  { "else",            &handleElse,             FALSE },
+  { "endif",           &handleEndIf,            FALSE },
+  { "ingroup",         &handleIngroup,          TRUE  },
+  { "nosubgrouping",   &handleNoSubGrouping,    TRUE  },
+  { "showinitializer", &handleShowInitializer,  TRUE  },
+  { "hideinitializer", &handleHideInitializer,  TRUE  },
+  { "callgraph",       &handleCallgraph,        TRUE  },
+  { "callergraph",     &handleCallergraph,      TRUE  },
+  { "internal",        &handleInternal,         TRUE  },
+  { "_linebr",         &handleLineBr,           FALSE },
+  { "static",          &handleStatic,           TRUE  },
+  { "pure",            &handlePure,             TRUE  },
+  { "private",         &handlePrivate,          TRUE  },
+  { "privatesection",  &handlePrivateSection,   TRUE  },
+  { "protected",       &handleProtected,        TRUE  },
+  { "protectedsection",&handleProtectedSection, TRUE  },
+  { "public",          &handlePublic,           TRUE  },
+  { "publicsection",   &handlePublicSection,    TRUE  },
+  { "inherit",         &handleInherit,          TRUE  },
+  { "arg",             0,                       TRUE  },
+  { "attention",       0,                       TRUE  },
+  { "author",          0,                       TRUE  },
+  { "date",            0,                       TRUE  },
+  { "dotfile",         0,                       TRUE  },
+  { "htmlinclude",     0,                       TRUE  },
+  { "image",           0,                       TRUE  },
+  { "include",         0,                       TRUE  },
+  { "includelineno",   0,                       TRUE  },
+  { "invariant",       0,                       TRUE  },
+  { "li",              0,                       TRUE  },
+  { "line",            0,                       TRUE  },
+  { "note",            0,                       TRUE  },
+  { "par",             0,                       TRUE  },
+  { "param",           0,                       TRUE  },
+  { "post",            0,                       TRUE  },
+  { "pre",             0,                       TRUE  },
+  { "remarks",         0,                       TRUE  },
+  { "return",          0,                       TRUE  },
+  { "returns",         0,                       TRUE  },
+  { "retval",          0,                       TRUE  },
+  { "sa",              0,                       TRUE  },
+  { "see",             0,                       TRUE  },
+  { "since",           0,                       TRUE  },
+  { "throw",           0,                       TRUE  },
+  { "until",           0,                       TRUE  },
+  { "verbinclude",     0,                       TRUE  },
+  { "version",         0,                       TRUE  },
+  { "warning",         0,                       TRUE  },
+  { 0, 0, FALSE }
 };
-
-
 
 /** @brief Command mapper.
  *
@@ -205,8 +234,14 @@ static DocCmdMap docCmdMap[] =
 class DocCmdMapper
 {
   public:
+    struct Cmd
+    {
+      DocCmdFunc func;
+      bool endsBrief;
+    };
+
     /** maps a command name to a handler function */
-    static DocCmdFunc *map(const char *name)
+    static Cmd *map(const char *name)
     {
       return instance()->find(name);
     }
@@ -224,21 +259,30 @@ class DocCmdMapper
       return s_instance;
     }
 
-    DocCmdMapper() : m_map(89)
+    DocCmdMapper() : m_map(113)
     {
+      m_map.setAutoDelete(TRUE);
       DocCmdMap *p = docCmdMap;
       while (p->cmdName)
       {
-	m_map.insert(p->cmdName,&p->handler);
+	if (m_map.find(p->cmdName)!=0)
+	{
+	  printf("Error: command %s already added\n",p->cmdName);
+	  exit(1);
+	}
+	Cmd *cmd = new Cmd;
+	cmd->func = p->handler;
+	cmd->endsBrief = p->endsBrief;
+	m_map.insert(p->cmdName,cmd);
 	p++;
       }
     }
 
-    DocCmdFunc *find(const char *name)
+    Cmd *find(const char *name)
     {
       return m_map.find(name);
     }
-    QDict<DocCmdFunc> m_map;
+    QDict<Cmd> m_map;
     static DocCmdMapper *s_instance;
 };
 
@@ -656,6 +700,17 @@ static inline void addOutput(char c)
   *pOutputString+=c;
 }
 
+static void endBrief()
+{
+  if (!current->brief.stripWhiteSpace().isEmpty())
+  { // only go to the detailed description if we have
+    // found some brief description and not just whitespace
+    briefEndsAtDot=FALSE;
+    setOutput(OutputDoc);
+    addOutput(yytext);
+  }
+}
+
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -801,12 +856,14 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					  // continue with the same input
                                           REJECT;
 					}
+   /*
 <Comment>{DETAILEDCMD}/[^a-z_A-Z]*	{ // command that can end a brief description
 				          briefEndsAtDot=FALSE;
 				          setOutput(OutputDoc);
 					  // continue with the same input
                                           REJECT;
 					}
+   */
 <Comment>"<"{DETAILEDHTML}{ATTR}">"	{ // HTML command that ends a brief description
 					  setOutput(OutputDoc);
 					  // continue with the same input
@@ -825,10 +882,16 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					}
 <Comment>{CMD}[a-z_A-Z]+{B}*		{ // potentially interesting command
   					  QCString cmdName = QCString(&yytext[1]).stripWhiteSpace();
-  					  DocCmdFunc *funcPtr = DocCmdMapper::map(cmdName);
-					  if (funcPtr) // special action is required
+					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
+					  if (cmdPtr) // special action is required
 					  {
-					    if ((*funcPtr)(cmdName))
+					    if (cmdPtr->endsBrief && !current->brief.stripWhiteSpace().isEmpty())
+					    { 
+				              briefEndsAtDot=FALSE;
+					      // this command forces the end of brief description
+					      setOutput(OutputDoc);
+					    }
+					    if (cmdPtr->func && cmdPtr->func(cmdName))
 					    {
 					      // implicit split of the comment block into two
 					      // entries. Restart the next block at the start
@@ -845,6 +908,12 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					      inputPosition=prevPosition + yy_bp - yy_current_buffer->yy_ch_buf;
 #endif
 					      yyterminate();
+					    }
+					    else if (cmdPtr->func==0)
+					    {
+					      // command without handler, to be processed
+					      // later by parsedoc.cpp
+					      addOutput(yytext);
 					    }
 					  }
 					  else // command not relevant
@@ -911,11 +980,10 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
   					    addOutput(yytext);
 					    setOutput(OutputDoc);
 					  }
-					  else if (!current->brief.stripWhiteSpace().isEmpty())
+					  else 
 					  { // only go to the detailed description if we have
 					    // found some brief description and not just whitespace
-					    setOutput(OutputDoc);
-  					    addOutput(yytext);
+					    endBrief();
 					  }
   					  lineCount();
   					}
@@ -1853,7 +1921,7 @@ static bool handlePage(const QCString &)
 static bool handleMainpage(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
-  current->name = "mainpage";
+  if (!stop) current->name = "mainpage";
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -1861,7 +1929,7 @@ static bool handleMainpage(const QCString &)
 static bool handleFile(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::FILEDOC_SEC);
-  current->name = yyFileName;
+  if (!stop) current->name = yyFileName;
   BEGIN( FileDocArg1 );
   return stop;
 }
@@ -1869,7 +1937,7 @@ static bool handleFile(const QCString &)
 static bool handleDir(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::DIRDOC_SEC);
-  current->name = yyFileName;
+  if (!stop) current->name = yyFileName;
   BEGIN( FileDocArg1 );
   return stop;
 }
@@ -1877,7 +1945,7 @@ static bool handleDir(const QCString &)
 static bool handleExample(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::EXAMPLE_SEC);
-  current->name = yyFileName;
+  if (!stop) current->name = yyFileName;
   BEGIN( FileDocArg1 );
   return stop;
 }
@@ -1891,11 +1959,14 @@ static bool handleDetails(const QCString &)
 static bool handleName(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::MEMBERGRP_SEC);
-  g_memberGroupHeader.resize(0);
-  BEGIN( NameParam );
-  if (g_memberGroupId!=DOX_NOGROUP) // end of previous member group
+  if (!stop)
   {
-    closeGroup(current,yyFileName,yyLineNr);
+    g_memberGroupHeader.resize(0);
+    BEGIN( NameParam );
+    if (g_memberGroupId!=DOX_NOGROUP) // end of previous member group
+    {
+      closeGroup(current,yyFileName,yyLineNr);
+    }
   }
   return stop;
 }
@@ -2123,54 +2194,63 @@ static bool handleLineBr(const QCString &)
 
 static bool handleStatic(const QCString &)
 {
+  endBrief();
   current->stat = TRUE; 
   return FALSE;
 }
 
 static bool handlePure(const QCString &)
 {
+  endBrief();
   current->virt = Pure; 
   return FALSE;
 }
 
 static bool handlePrivate(const QCString &)
 {
+  endBrief();
   current->protection = Private; 
   return FALSE;
 }
 
 static bool handlePrivateSection(const QCString &)
 {
+  endBrief();
   current->protection = protection = Private; 
   return FALSE;
 }
 
 static bool handleProtected(const QCString &)
 {
+  endBrief();
   current->protection = Protected; 
   return FALSE;
 }
 
 static bool handleProtectedSection(const QCString &)
 {
+  endBrief();
   current->protection = protection = Protected ;
   return FALSE;
 }
 
 static bool handlePublic(const QCString &)
 {
+  endBrief();
   current->protection = Public;
   return FALSE;
 }
 
 static bool handlePublicSection(const QCString &)
 {
+  endBrief();
   current->protection = protection = Public; 
   return FALSE;
 }
 
 static bool handleInherit(const QCString &)
 {
+  endBrief();
   BEGIN(InheritParam);
   return FALSE;
 }
@@ -2200,7 +2280,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 		       /* out */    bool &newEntryNeeded
 		      )
 {
-  //fprintf(stderr,"parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
+  //printf("parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
   //    isBrief,isJavaDocStyle,lineNr);
 
   initParser();

@@ -209,6 +209,7 @@ class MemberDef : public Definition
     bool isTypedefValCached() const;
     ClassDef *getCachedTypedefVal() const;
     QCString getCachedTypedefTemplSpec() const;
+    QCString getCachedResolvedTypedef() const;
 
     MemberDef *memberDefinition() const;
     MemberDef *memberDeclaration() const;
@@ -294,7 +295,7 @@ class MemberDef : public Definition
     void setDocsForDefinition(bool b);
     void setGroupAlias(MemberDef *md);
 
-    void cacheTypedefVal(ClassDef *val,const QCString &templSpec);
+    void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType);
     void invalidateTypedefValCache();
     
     // declaration <-> definition relation
@@ -330,6 +331,11 @@ class MemberDef : public Definition
     void flushToDisk() const;
     void loadFromDisk() const;
   private:
+    void lock() const;
+    void unlock() const;
+    void saveToDisk() const;
+    void makeResident() const;
+
     static int s_indentLevel;
     // disable copying of member defs
     MemberDef(const MemberDef &);
@@ -340,6 +346,9 @@ class MemberDef : public Definition
                    bool onlyText=FALSE);
 
     MemberDefImpl *m_impl;
+    int m_cacheHandle;
+    off_t m_storagePos;     // location where the item is stored in file (if impl==0)
+    bool m_flushPending;
 };
 
 #endif

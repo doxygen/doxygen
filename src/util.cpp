@@ -594,7 +594,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
                               FileDef *fileScope,
                               const char *n,
                               MemberDef **pTypeDef,
-                              QCString *pTemplSpec
+                              QCString *pTemplSpec,
+                              QCString *pResolvedType
                              );
 int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition *item,
                      const QCString &explicitScopePart);
@@ -607,7 +608,8 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
  *  Example: typedef int T; will return 0, since "int" is not a class.
  */
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
-                                   MemberDef **pMemType,QCString *pTemplSpec)
+                            MemberDef **pMemType,QCString *pTemplSpec,
+                            QCString *pResolvedType)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -616,7 +618,8 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
     //printf("Already cached %s->%s\n",
     //    md->name().data(),
     //    md->getCachedTypedefVal()?md->getCachedTypedefVal()->name().data():"<none>");
-    if (pTemplSpec) *pTemplSpec = md->getCachedTypedefTemplSpec();
+    if (pTemplSpec)    *pTemplSpec    = md->getCachedTypedefTemplSpec();
+    if (pResolvedType) *pResolvedType = md->getCachedResolvedTypedef();
     return md->getCachedTypedefVal();
   }
   QCString qname = md->qualifiedName();
@@ -625,29 +628,33 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
   g_resolvedTypedefs.insert(qname,md); // put on the trace list
   
   QCString type = md->typeString(); // get the "value" of the typedef
-  int ip=type.length()-1; // remove * and & at the end
+  QCString typedefValue = type;
+  int tl=type.length();
+  int ip=tl-1; // remove * and & at the end
   while (ip>=0 && (type.at(ip)=='*' || type.at(ip)=='&' || type.at(ip)==' ')) 
   {
     ip--;
   }
   type=type.left(ip+1);
-  type.stripPrefix("const ");  // strip leading "const"
-  type.stripPrefix("struct "); // strip leading "struct"
-  type.stripPrefix("union ");  // strip leading "union"
-  type=type.stripWhiteSpace(); // strip leading and trailing whitespace
+  int sp=0;
+  if (type.stripPrefix("const ")) sp+=6;  // strip leading "const"
+  if (type.stripPrefix("struct ")) sp+=7; // strip leading "struct"
+  if (type.stripPrefix("union ")) sp+=6;  // strip leading "union"
+  while (sp<tl && type.at(sp)==' ') sp++;
   MemberDef *memTypeDef = 0;
   ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
-                                  fileScope,type,&memTypeDef,0);
-  // if type is a typedef than return what it resolves to.
+                                  fileScope,type,&memTypeDef,0,pResolvedType);
+  // if type is a typedef then return what it resolves to.
   if (memTypeDef && memTypeDef->isTypedef()) 
   {
-    return newResolveTypedef(fileScope,memTypeDef,pMemType,pTemplSpec);
+    result=newResolveTypedef(fileScope,memTypeDef,pMemType,pTemplSpec);
+    goto done;
   }
   else if (memTypeDef && memTypeDef->isEnumerate() && pMemType)
   {
     *pMemType = memTypeDef;
   }
-  
+
   //printf("type=%s result=%p\n",type.data(),result);
   if (result==0)
   {
@@ -656,8 +663,9 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
     int i=type.find('<');
     if (si==-1 && i!=-1) // typedef of a template => try the unspecialized version
     {
-      *pTemplSpec = type.mid(i);
-      result = getResolvedClassRec(md->getOuterScope(),fileScope,type.left(i),0,0);
+      if (pTemplSpec) *pTemplSpec = type.mid(i);
+      result = getResolvedClassRec(md->getOuterScope(),fileScope,
+                                   type.left(i),0,0,pResolvedType);
     }
     else if (si!=-1) // A::B
     {
@@ -671,7 +679,25 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
         if (pTemplSpec) *pTemplSpec = type.mid(i);
       }
       result = getResolvedClassRec(md->getOuterScope(),fileScope,
-           stripTemplateSpecifiersFromScope(type.left(i),FALSE),0,0);
+           stripTemplateSpecifiersFromScope(type.left(i),FALSE),0,0,
+           pResolvedType);
+    }
+
+    if (result) ip=si+sp+1;
+  }
+
+done:
+  if (pResolvedType)
+  {
+    if (result)
+    {
+      *pResolvedType=result->qualifiedName();
+      if (sp>0)    pResolvedType->prepend(typedefValue.left(sp));
+      if (ip<tl-1) pResolvedType->append(typedefValue.right(tl-ip-1));
+    }
+    else
+    {
+      *pResolvedType=typedefValue;
     }
   }
 
@@ -682,14 +708,10 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
   {
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
-    if (pTemplSpec)
-    {
-      md->cacheTypedefVal(result,*pTemplSpec);
-    }
-    else
-    {
-      md->cacheTypedefVal(result,"");
-    }
+    md->cacheTypedefVal(result,
+        pTemplSpec ? *pTemplSpec : QCString(),
+        pResolvedType ? *pResolvedType : QCString()
+       );
   }
   
   g_resolvedTypedefs.remove(qname); // remove from the trace list
@@ -914,7 +936,15 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
   int result=0; // assume we found it
   int i;
 
-  if (item->getOuterScope()==scope) 
+  Definition *itemScope=item->getOuterScope();
+
+  if (itemScope==scope || 
+      (item->definitionType()==Definition::TypeMember && 
+       itemScope && itemScope->definitionType()==Definition::TypeClass  &&
+       scope->definitionType()==Definition::TypeClass && 
+       ((ClassDef*)scope)->isAccessibleMember((MemberDef *)item)
+      )
+     ) 
   {
     //printf("> found it\n");
   }
@@ -1118,14 +1148,15 @@ int computeQualifiedIndex(const QCString &name)
   return name.findRev("::",i==-1 ? name.length() : i);
 }
 
-void getResolvedSymbol(Definition *scope,
+static void getResolvedSymbol(Definition *scope,
                        FileDef *fileScope,
                        Definition *d, 
                        const QCString &explicitScopePart,
                        int &minDistance,
                        ClassDef *&bestMatch,
                        MemberDef *&bestTypedef,
-                       QCString &bestTemplSpec
+                       QCString &bestTemplSpec,
+                       QCString &bestResolvedType
                       )
 {
   //printf("  found type %x name=%s d=%p\n",
@@ -1161,6 +1192,7 @@ void getResolvedSymbol(Definition *scope,
             bestMatch = cd; 
             bestTypedef = 0;
             bestTemplSpec.resize(0);
+            bestResolvedType = cd->qualifiedName();
           }
           else if (distance==minDistance &&
               fileScope && bestMatch &&
@@ -1181,6 +1213,7 @@ void getResolvedSymbol(Definition *scope,
             bestMatch = cd; 
             bestTypedef = 0;
             bestTemplSpec.resize(0);
+            bestResolvedType = cd->qualifiedName();
           }
         }
         else
@@ -1206,22 +1239,25 @@ void getResolvedSymbol(Definition *scope,
             if (distance<minDistance)
             {
               QCString spec;
+              QCString type;
               minDistance=distance;
               MemberDef *enumType = 0;
-              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec);
-              if (cd) // shouldn't be 0, but could in some weird cases
+              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec,&type);
+              if (cd)  // type resolves to a class
               {
-                //printf("      bestTypeDef=%p spec=%s\n",md,spec.data());
+                //printf("      bestTypeDef=%p spec=%s type=%s\n",md,spec.data(),type.data());
                 bestMatch = cd;
                 bestTypedef = md;
                 bestTemplSpec = spec;
+                bestResolvedType = type;
               }
-              else if (enumType)
+              else if (enumType) // type resolves to a enum
               {
                 //printf("      is enum\n");
                 bestMatch = 0;
                 bestTypedef = enumType;
                 bestTemplSpec = "";
+                bestResolvedType = enumType->qualifiedName();
               }
               else
               {
@@ -1246,6 +1282,7 @@ void getResolvedSymbol(Definition *scope,
             bestMatch = 0;
             bestTypedef = md;
             bestTemplSpec = "";
+            bestResolvedType = md->qualifiedName();
           }
         }
       }
@@ -1255,6 +1292,7 @@ void getResolvedSymbol(Definition *scope,
       //printf("  Not accessible!\n");
     }
   } // if definition is a class or member
+  //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,bestResolvedType.data());
 }
 
 /* Find the fully qualified class name refered to by the input class
@@ -1267,7 +1305,8 @@ ClassDef *getResolvedClassRec(Definition *scope,
     FileDef *fileScope,
     const char *n,
     MemberDef **pTypeDef,
-    QCString *pTemplSpec
+    QCString *pTemplSpec,
+    QCString *pResolvedType
     )
 {
   //printf("[getResolvedClassRec(%s,%s)\n",scope?scope->name().data():"<global>",n);
@@ -1345,8 +1384,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
   {
-    if (pTemplSpec) *pTemplSpec=pval->templSpec;
-    if (pTypeDef)   *pTypeDef=pval->typeDef;
+    if (pTemplSpec)    *pTemplSpec=pval->templSpec;
+    if (pTypeDef)      *pTypeDef=pval->typeDef;
+    if (pResolvedType) *pResolvedType=pval->resolvedType;
     //printf("] cachedMatch=%s\n",
     //    pval->classDef?pval->classDef->name().data():"<none>");
     //if (pTemplSpec) 
@@ -1362,6 +1402,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   ClassDef *bestMatch=0;
   MemberDef *bestTypedef=0;
   QCString bestTemplSpec;
+  QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
   if (di->definitionType()==DefinitionIntf::TypeSymbolList)
@@ -1372,14 +1413,16 @@ ClassDef *getResolvedClassRec(Definition *scope,
     for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
     {
       getResolvedSymbol(scope,fileScope,d,explicitScopePart,
-                        minDistance,bestMatch,bestTypedef,bestTemplSpec);
+                        minDistance,bestMatch,bestTypedef,bestTemplSpec,
+                        bestResolvedType);
     }
   }
   else 
   {
     Definition *d = (Definition *)di;
     getResolvedSymbol(scope,fileScope,d,explicitScopePart,
-                      minDistance,bestMatch,bestTypedef,bestTemplSpec);
+                      minDistance,bestMatch,bestTypedef,bestTemplSpec,
+                      bestResolvedType);
   }
 
   if (pTypeDef) 
@@ -1390,17 +1433,24 @@ ClassDef *getResolvedClassRec(Definition *scope,
   {
     *pTemplSpec = bestTemplSpec;
   }
+  if (pResolvedType)
+  {
+    *pResolvedType = bestResolvedType;
+  }
+  //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
+  //    bestMatch,bestResolvedType.data());
 
   pval=Doxygen::lookupCache.find(key);
   if (pval)
   {
-    pval->classDef  = bestMatch;
-    pval->typeDef   = bestTypedef;
-    pval->templSpec = bestTemplSpec;
+    pval->classDef     = bestMatch;
+    pval->typeDef      = bestTypedef;
+    pval->templSpec    = bestTemplSpec;
+    pval->resolvedType = bestResolvedType;
   }
   else
   {
-    Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec));
+    Doxygen::lookupCache.insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -1420,7 +1470,8 @@ ClassDef *getResolvedClass(Definition *scope,
     MemberDef **pTypeDef,
     QCString *pTemplSpec,
     bool mayBeUnlinkable,
-    bool mayBeHidden
+    bool mayBeHidden,
+    QCString *pResolvedType
     )
 {
   g_resolvedTypedefs.clear();
@@ -1439,7 +1490,7 @@ ClassDef *getResolvedClass(Definition *scope,
   //    n,
   //    mayBeUnlinkable
   //   );
-  ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec);
+  ClassDef *result = getResolvedClassRec(scope,fileScope,n,pTypeDef,pTemplSpec,pResolvedType);
   if (!mayBeUnlinkable && result && !result->isLinkable()) 
   {
     if (!mayBeHidden || !result->isHidden())
@@ -2115,7 +2166,7 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   if (level==256)
   {
     err("Error: Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
+        "inheritance relation! Please send a bug report to dimitri@stack.nl",cd->name().data());
     return -1;
   }
   int m=maxInheritanceDepth; 
@@ -2531,7 +2582,6 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
     dstAType = dstAType.right(dstAType.length()-9); 
   }
 
-
   srcAType = removeRedundantWhiteSpace(srcAType);
   dstAType = removeRedundantWhiteSpace(dstAType);
 
@@ -2883,9 +2933,10 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type);
 
 QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec)
 {
+  //printf("getCanonicalTemplateSpec(%s)\n",spec.data());
   QCString templSpec = spec.stripWhiteSpace();
   if (templSpec.isEmpty() || templSpec.at(0) != '<') return templSpec;
-  return "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1));
+  return "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
 }
 
 
@@ -2895,7 +2946,7 @@ static QCString getCanonicalTypeForIdentifier(
 {
   QCString symName,scope,result,templSpec,tmpName;
   //DefinitionList *defList=0;
-  if (tSpec) templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
+  if (tSpec && !tSpec->isEmpty()) templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
 
   if (word.findRev("::")!=-1 && !(tmpName=stripScope(word)).isEmpty())
   {
@@ -2909,17 +2960,19 @@ static QCString getCanonicalTypeForIdentifier(
   ClassDef *cd = 0;
   MemberDef *mType = 0;
   QCString ts;
+  QCString resolvedType;
 
   // lookup class / class template instance
-  cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE);
+  cd = getResolvedClass(d,fs,word+templSpec,&mType,&ts,TRUE,TRUE,&resolvedType);
   bool isTemplInst = cd && !templSpec.isEmpty();
   if (!cd && !templSpec.isEmpty())
   {
     // class template specialization not known, look up class template
-    cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE);
+    cd = getResolvedClass(d,fs,word,&mType,&ts,TRUE,TRUE,&resolvedType);
   }
+  if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
-  //printf("symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
+  //printf("  symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
@@ -2928,38 +2981,57 @@ static QCString getCanonicalTypeForIdentifier(
   //    cd?cd->isTemplate():-1
   //   );
 
-  //printf(">>>> word '%s' => '%s' templSpec=%s ts=%s tSpec=%s\n",
+  //printf("  >>>> word '%s' => '%s' templSpec=%s ts=%s tSpec=%s isTemplate=%d resolvedType=%s\n",
   //    (word+templSpec).data(),
   //    cd?cd->qualifiedName().data():"<none>",
-  //    templSpec.data(),ts.data(),
-  //    tSpec?tSpec->data():"<null>");
+  //   templSpec.data(),ts.data(),
+  //   tSpec?tSpec->data():"<null>",
+  //    cd?cd->isTemplate():FALSE,
+  //    resolvedType.data());
 
-  if (cd) // known class type
+  //printf("  mtype=%s\n",mType?mType->name().data():"<none>");
+
+  if (cd) // resolves to a known class type
   {
-    if (isTemplInst)
+    if (mType && mType->isTypedef()) // but via a typedef
     {
-      // spec is already part of class type
-      templSpec="";
-      if (tSpec) *tSpec="";
+      result = resolvedType;
     }
-    else if (!ts.isEmpty() && templSpec.isEmpty())
+    else
     {
-      // use formal template args for spec
-      templSpec = stripDeclKeywords(ts);
-    }
+      if (isTemplInst)
+      {
+        // spec is already part of class type
+        templSpec="";
+        if (tSpec) *tSpec="";
+      }
+      else if (!ts.isEmpty() && templSpec.isEmpty())
+      {
+        // use formal template args for spec
+        templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,ts));
+      }
 
-    result = removeRedundantWhiteSpace(cd->qualifiedName() + templSpec);
+      result = removeRedundantWhiteSpace(cd->qualifiedName() + templSpec);
 
-    if (cd->isTemplate() && tSpec)
-    {
-      // template class, so remove the template part (it is part of the class name)
-      *tSpec="";
-    }
-    else if (ts.isEmpty() && !templSpec.isEmpty() && cd && !cd->isTemplate() && tSpec)
-    {
-      // obscure case, where a class is used as a template, but doxygen think it is
-      // not (could happen when loading the class from a tag file).
-      *tSpec="";
+      if (cd->isTemplate() && tSpec) //
+      {
+        if (!templSpec.isEmpty()) // specific instance
+        {
+          result=cd->name()+templSpec;
+        }
+        else // use template type
+        {
+          result=cd->qualifiedNameWithTemplateParameters();
+        }
+        // template class, so remove the template part (it is part of the class name)
+        *tSpec="";
+      }
+      else if (ts.isEmpty() && !templSpec.isEmpty() && cd && !cd->isTemplate() && tSpec)
+      {
+        // obscure case, where a class is used as a template, but doxygen think it is
+        // not (could happen when loading the class from a tag file).
+        *tSpec="";
+      }
     }
   }
   else if (mType && mType->isEnumerate()) // an enum
@@ -2968,7 +3040,7 @@ static QCString getCanonicalTypeForIdentifier(
   }
   else
   {
-    QCString resolvedType = resolveTypeDef(d,word);
+    resolvedType = resolveTypeDef(d,word);
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
       result = word;
@@ -2996,7 +3068,8 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
   type.stripPrefix("typename ");
 
   type = removeRedundantWhiteSpace(type);
-  //printf("extractCanonicalType(type=%s)\n",type.data());
+  //printf("extractCanonicalType(type=%s) def=%s file=%s\n",type.data(),
+  //    d ? d->name().data() : "<null>",fs ? fs->name().data() : "<null>");
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
 
@@ -3008,7 +3081,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
     //printf("     i=%d p=%d\n",i,p);
     canType += type.mid(pp,i-pp);
 
-    //printf("word=%s templSpec=%s\n",word.data(),templSpec.data());
+    //printf(" word=%s templSpec=%s\n",word.data(),templSpec.data());
 
     canType += getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
     if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
@@ -3668,14 +3741,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       MemberListIterator mli(*mn);
       for (mli.toFirst();(md=mli.current());++mli)
       {
-        //if (md->isLinkable())
-        //{
         fd=md->getFileDef();
         gd=md->getGroupDef();
         //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
         //    md->name().data(),args,fd,gd);
         if (
-            (gd && gd->isLinkable()) || (fd && fd->isLinkable()) 
+            ((gd && gd->isLinkable()) || (fd && fd->isLinkable())) && 
+            md->getNamespaceDef()==0
            )
         {
           //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
@@ -3698,7 +3770,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
             members.append(md);
           }
         }
-        //}
       }
       if (members.count()!=1 && args && !strcmp(args,"()"))
       {
@@ -3739,12 +3810,12 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         MemberDef *bmd = 0;
         for (md=members.first(); md; md=members.next())
         {
-          if (md->getFileDef() == currentFile)
+          if (currentFile && md->getBodyDef()==currentFile)
           {
             bmd = 0;
             break;
           }
-          if (!(md->isStatic()) || Config_getBool("EXTRACT_STATIC")) bmd = md;     
+          if (!md->isStatic() || Config_getBool("EXTRACT_STATIC")) bmd = md;     
         }
         if (bmd) md=bmd;
       }
@@ -4174,7 +4245,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
     }
     else
     {
-      err("%s:%d: Internal error: resolveLink successful but no compound found!\n",__FILE__,__LINE__);
+      err("%s:%d: Internal error: resolveLink successful but no compound found!",__FILE__,__LINE__);
     }
     return TRUE;
   }

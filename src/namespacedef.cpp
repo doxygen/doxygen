@@ -51,6 +51,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
   visited=FALSE;
+  m_subGrouping=Config_getBool("SUBGROUPING");
 }
 
 NamespaceDef::~NamespaceDef()
@@ -149,6 +150,21 @@ void NamespaceDef::addMembersToMemberGroup()
     if (ml->listType()&MemberList::declarationLists)
     {
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
+    }
+  }
+
+  // add members inside sections to their groups
+  if (memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      if (mg->allMembersInSameSection() && m_subGrouping)
+      {
+        //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
+        mg->addToDeclarationSection();
+      }
     }
   }
 }
@@ -316,11 +332,18 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   namespaceSDict->writeDeclaration(ol,TRUE);
 
   /* write user defined member groups */
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  if (memberGroupSDict)
   {
-    mg->writeDeclarations(ol,0,this,0,0);
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      if ((!mg->allMembersInSameSection() || !m_subGrouping) 
+          && mg->header()!="[NOHEADER]")
+      {
+        mg->writeDeclarations(ol,0,this,0,0);
+      }
+    }
   }
 
   writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
@@ -676,6 +699,7 @@ void NamespaceDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
     ml->inSort(md);
   else
     ml->append(md);
+  if (ml->listType()&MemberList::declarationLists) md->setSectionList(this,ml);
 }
 
 MemberList *NamespaceDef::getMemberList(MemberList::ListType lt) const

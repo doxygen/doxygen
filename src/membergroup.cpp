@@ -133,6 +133,7 @@ void MemberGroup::addToDeclarationSection()
 {
   if (inDeclSection)
   {
+    //printf("Adding group %p to list %p\n",this,inDeclSection);
     inDeclSection->addMemberGroup(this);
   }
 }

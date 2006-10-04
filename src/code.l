@@ -798,7 +798,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  //printf("Trying `%s'::`%s'\n",c.data(),m.data());
+  //printf("getLinkInScope: trying `%s'::`%s'\n",c.data(),m.data());
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
   {
@@ -851,6 +851,7 @@ static bool getLink(const char *className,
 		    CodeOutputInterface &ol,
 		    const char *text=0)
 {
+  //printf("getLink(%s,%s)\n",className,memberName);
   QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
   if (!getLinkInScope(c,m,memberName,ol,text))

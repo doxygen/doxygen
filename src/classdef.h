@@ -188,6 +188,11 @@ class ClassDef : public Definition
      */
     bool isBaseClass(ClassDef *bcd,bool followInstances,int level=0);
 
+    /*! returns TRUE iff \a md is a member of this class or of the
+     *  the public/protected members of a base class 
+     */
+    bool isAccessibleMember(MemberDef *md);
+
     /*! Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
      */
@@ -258,6 +263,8 @@ class ClassDef : public Definition
 
     ClassDef *getVariableInstance(const char *templSpec);
 
+    bool isUsedOnly() const;
+
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
@@ -290,6 +297,7 @@ class ClassDef : public Definition
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
     void makeTemplateArgument(bool b=TRUE);
     void setCategoryOf(ClassDef *cd);
+    void setUsedOnly(bool b);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

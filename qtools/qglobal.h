@@ -262,6 +262,19 @@
 #error "Qt has not been tested with this compiler - talk to qt-bugs@trolltech.com"
 #endif
 
+// detect Microsoft compiler version
+#ifdef _CC_MSVC_
+#if _MSC_VER >= 1400
+#define _CC_V2005
+#elif _MSC_VER >= 1310
+#define _CC_V2003
+#elif _MSC_VER > 1300
+#define _CC_V2002
+#else
+#define _CC_V1998
+#endif 
+#endif
+
 #ifndef Q_PACKED
 #define Q_PACKED
 #endif

@@ -168,6 +168,8 @@ class ClassDefImpl
      *  groups?
      */
     bool subGrouping; 
+
+    bool usedOnly;
 };
 
 void ClassDefImpl::init(const char *defFileName, const char *name,
@@ -206,6 +208,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   isTemplArg = FALSE;
   membersMerged = FALSE;
   categoryOf = 0;
+  usedOnly = FALSE;
   QCString ns;
   extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
@@ -258,78 +261,11 @@ ClassDef::ClassDef(
   m_impl->isObjC   = FALSE;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
 
-#if 0
-  m_compType=ct;
-  m_isObjC = FALSE;
-  QCString compoundName=compoundTypeString();
-  if (fName)
-  {
-    m_fileName=stripExtension(fName);
-  }
-  else
-  {
-    m_fileName=compoundName+name();
-  }
-  m_exampleSDict = 0;
-  m_inherits    = 0;
-  m_inheritedBy = 0;
-  m_allMemberNameInfoSDict = 0;
-  m_incInfo=0;
-  m_tempArgs=0;
-  m_prot=Public;
-  m_nspace=0;
-  m_fileDef=0;
-  m_usesImplClassDict=0;
-  m_usedByImplClassDict=0;
-  m_usesIntfClassDict=0;
-  memberGroupSDict = 0;
-  m_innerClasses = 0;
-  m_subGrouping=Config_getBool("SUBGROUPING");
-  m_templateInstances = 0;
-  m_variableInstances = 0;
-  m_templateMaster =0;
-  m_templBaseClassNames = 0;
-  m_artificial = FALSE;
-  m_isAbstract = FALSE;
-  m_isStatic = FALSE;
-  m_isTemplArg = FALSE;
-  m_membersMerged = FALSE;
-  m_categoryOf = 0;
-  QCString ns;
-  extractNamespaceName(name(),m_className,ns);
-  //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
-
-  if (((QCString)defFileName).right(5)!=".java" && 
-      guessSection(defFileName)==Entry::SOURCE_SEC)
-  {
-    m_isLocal=TRUE;
-  }
-  else
-  {
-    m_isLocal=FALSE;
-  }
-#endif
 }
 
 // destroy the class definition
 ClassDef::~ClassDef()
 {
-#if 0
-  delete m_inherits;
-  delete m_inheritedBy;
-  delete m_allMemberNameInfoSDict;
-  delete m_exampleSDict;
-  delete m_usesImplClassDict;
-  delete m_usedByImplClassDict;
-  delete m_usesIntfClassDict;
-  delete m_incInfo;
-  delete memberGroupSDict;
-  delete m_innerClasses;
-  delete m_templateInstances;
-  delete m_variableInstances;
-  delete m_templBaseClassNames;
-  delete m_tempArgs;
-#endif
   delete m_impl;
 }
 
@@ -3080,6 +3016,11 @@ MemberDef *ClassDef::getMemberByName(const QCString &name) const
   return xmd;
 }
 
+bool ClassDef::isAccessibleMember(MemberDef *md)
+{
+  return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE);
+}
+
 MemberList *ClassDef::createMemberList(MemberList::ListType lt)
 {
   m_impl->memberLists.setAutoDelete(TRUE);
@@ -3319,5 +3260,15 @@ void ClassDef::makeTemplateArgument(bool b)
 void ClassDef::setCategoryOf(ClassDef *cd)
 {
   m_impl->categoryOf = cd;
+}
+
+void ClassDef::setUsedOnly(bool b)
+{
+  m_impl->usedOnly = b;
+}
+
+bool ClassDef::isUsedOnly() const
+{
+  return m_impl->usedOnly;
 }
 

@@ -176,16 +176,31 @@ void ObjCache::moveToFront(int index)
 
 unsigned int ObjCache::hash(void *addr)
 {
-  // Thomas Wang's 32 bit Mix Function
+  static bool isPtr64 = sizeof(addr)==8 && sizeof(long)==8;
 
-  // TODO: what if sizeof(void*)!=4 ?
-  unsigned int key = (unsigned int)addr;
-  key += ~(key << 15);
-  key ^=  (key >> 10);
-  key +=  (key << 3);
-  key ^=  (key >> 6);
-  key += ~(key << 11);
-  key ^=  (key >> 16);
+  unsigned long key = (unsigned long)addr;
+  if (isPtr64)
+  {
+    // Thomas Wang's 64 bit Mix Function
+    key += ~(key << 32);
+    key ^=  (key >> 22);
+    key += ~(key << 13);
+    key ^=  (key >> 8);
+    key +=  (key << 3);
+    key ^=  (key >> 15);
+    key += ~(key << 27);
+    key ^=  (key >> 31);
+  }
+  else
+  {
+    // Thomas Wang's 32 bit Mix Function
+    key += ~(key << 15);
+    key ^=  (key >> 10);
+    key +=  (key << 3);
+    key ^=  (key >> 6);
+    key += ~(key << 11);
+    key ^=  (key >> 16);
+  }
   return key & (m_size-1);
 }
 

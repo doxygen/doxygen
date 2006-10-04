@@ -879,7 +879,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
                                               FileDef *fileScope)
 {
-  //printf("findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
+  //printf("<findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
   Definition *resultScope=startScope;
   if (resultScope==0) resultScope=Doxygen::globalScope;
   QCString scope=stripTemplateSpecifiersFromScope(n,FALSE);
@@ -887,7 +887,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
   i1=getScopeFragment(scope,0,&l1);
   if (i1==-1) 
   {
-    //printf("no fragments!\n");
+    //printf(">no fragments!\n");
     return resultScope;
   }
   int p=i1+l1,l2=0,i2;
@@ -895,24 +895,34 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
   {
     QCString nestedNameSpecifier = scope.mid(i1,l1);
     Definition *orgScope = resultScope;
+    //printf("  nestedNameSpecifier=%s\n",nestedNameSpecifier.data());
     resultScope = resultScope->findInnerCompound(nestedNameSpecifier);
-    //printf("resultScope=%p\n",resultScope);
+    //printf("  resultScope=%p\n",resultScope);
     if (resultScope==0) 
     {
-      if (orgScope==Doxygen::globalScope && fileScope) 
+      NamespaceSDict *usedNamespaces;
+      if (orgScope==Doxygen::globalScope && fileScope &&
+          (usedNamespaces = fileScope->getUsedNamespaces())) 
         // also search for used namespaces 
       {
-        NamespaceSDict *usedNamespaces = fileScope->getUsedNamespaces();
-        if (usedNamespaces)
+        NamespaceSDict::Iterator ni(*usedNamespaces);
+        NamespaceDef *nd;
+        for (ni.toFirst();((nd=ni.current()) && resultScope==0);++ni)
         {
-          NamespaceSDict::Iterator ni(*usedNamespaces);
-          NamespaceDef *nd;
-          for (ni.toFirst();((nd=ni.current()) && resultScope==0);++ni)
+          // restart search within the used namespace
+          resultScope = findScopeFromQualifiedName(nd,n,fileScope);
+        }
+        if (resultScope) 
+        {
+          // for a nested class A::I in used namespace N, we get
+          // N::A::I while looking for A, so we should compare
+          // resultScope->name() against scope.left(i2+l2)
+          //printf("  -> result=%s scope=%s\n",resultScope->name().data(),scope.data());
+          if (rightScopeMatch(resultScope->name(),scope.left(i2+l2)))
           {
-            // restart search within the used namespace
-            resultScope = findScopeFromQualifiedName(nd,n,fileScope);
+            break;
           }
-          if (resultScope) goto nextFragment;
+          goto nextFragment;
         }
       }
 
@@ -934,13 +944,15 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
                          scope.right(scope.length()-p);
           resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"));
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
-          //resultScope = findScopeFromQualifiedName(startScope,fqn,usedFd);
-          //printf("Match! resultScope=%p\n",resultScope);
-          if (resultScope) return resultScope;
+          if (resultScope) 
+          {
+            //printf("> Match! resultScope=%s\n",resultScope->name().data());
+            return resultScope;
+          }
         }
       }
       
-      //printf("name %s not found in scope %s\n",nestedNameSpecifier.data(),orgScope->name().data());
+      //printf("> name %s not found in scope %s\n",nestedNameSpecifier.data(),orgScope->name().data());
       return 0;
     }
  nextFragment:
@@ -948,7 +960,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
     l1=l2;
     p=i2+l2;
   }
-  //printf("findScopeFromQualifiedName scope %s\n",resultScope->name().data());
+  //printf(">findScopeFromQualifiedName scope %s\n",resultScope->name().data());
   return resultScope;
 }
 
@@ -1061,9 +1073,9 @@ static void addClassToContext(EntryNav *rootNav)
       {
         warn(
             root->fileName,root->startLine,
-            "Warning: class %s already has a detailed description. "
+            "Warning: class %s already has a detailed description found in file %s at line %d. "
             "Skipping the one found here.",
-            fullName.data()
+            fullName.data(),cd->docFile().data(),cd->docLine()
             );
       }
       else if (!root->doc.isEmpty())
@@ -1074,9 +1086,9 @@ static void addClassToContext(EntryNav *rootNav)
       {
         warn(
             root->fileName,root->startLine,
-            "Warning: class %s already has a brief description\n"
+            "Warning: class %s already has a brief description found in file %s at line %d\n"
             "         skipping the one found here.",
-            fullName.data()
+            fullName.data(),cd->briefFile().data(),cd->briefLine()
             );
       }
       else if (!root->brief.isEmpty())
@@ -1252,7 +1264,7 @@ static void resolveClassNestingRelations()
             cd->setOuterScope(d);
             warn(cd->getDefFileName(),cd->getDefLine(),
                 "Warning: Internal inconsistency: scope for class %s not "
-                "found!\n",cd->name().data()
+                "found!",cd->name().data()
                 );
           }
         }
@@ -1286,7 +1298,7 @@ static void resolveClassNestingRelations()
             cd->setOuterScope(d);
             warn(cd->getDefFileName(),cd->getDefLine(),
                 "Warning: Internal inconsistency: scope for class %s not "
-                "found!\n",cd->name().data()
+                "found!",cd->name().data()
                 );
           }
         }
@@ -1347,9 +1359,9 @@ static void buildNamespaceList(EntryNav *rootNav)
           {
             warn(
                  root->fileName,root->startLine,
-                 "Warning: namespace %s already has a detailed description. "
+                 "Warning: namespace %s already has a detailed description found in file %s at line %d. "
                  "Skipping the documentation found here.",
-                 fullName.data());
+                 fullName.data(),nd->docFile().data(),nd->docLine());
           }
           if (nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
@@ -1359,9 +1371,9 @@ static void buildNamespaceList(EntryNav *rootNav)
           else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
             warn(root->fileName,root->startLine,
-                 "Warning: namespace %s already has a brief description. "
+                 "Warning: namespace %s already has a brief description found in file %s at line %d. "
                  "Skipping the documentation found here.",
-                 fullName.data()
+                 fullName.data(),nd->docFile().data(),nd->docLine()
                 );
           }
         }
@@ -3642,6 +3654,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                         usedName,ClassDef::Class);
                     //printf("making %s a template argument!!!\n",usedCd->name().data());
                     usedCd->makeTemplateArgument();
+                    usedCd->setUsedOnly(TRUE);
                     Doxygen::hiddenClasses->append(usedName,usedCd);
                   }
                   if (usedCd)
@@ -3688,6 +3701,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
               usedCd = new ClassDef(
                   masterCd->getDefFileName(),masterCd->getDefLine(),
                   type,ClassDef::Class);
+              usedCd->setUsedOnly(TRUE);
               Doxygen::hiddenClasses->append(type,usedCd);
             }
             if (usedCd)
@@ -5250,6 +5264,7 @@ static void findMember(EntryNav *rootNav,
         if (funcSpec.isEmpty()) // not a member specialization
         {
           int count=0;
+          int noMatchCount=0;
           MemberNameIterator mni(*mn);
           MemberDef *md;
           bool memFound=FALSE;
@@ -5371,6 +5386,11 @@ static void findMember(EntryNav *rootNav,
                 memFound=TRUE;
               }
             } 
+            else if (cd && cd!=tcd) // we did find a class with the same name as cd
+                                    // but in a different namespace
+            {
+              noMatchCount++;
+            }
           } 
           if (count==0 && rootNav->parent() && 
               rootNav->parent()->section()==Entry::OBJCIMPL_SEC)
@@ -5402,7 +5422,8 @@ static void findMember(EntryNav *rootNav,
             }
 
             warn(root->fileName,root->startLine,
-                "Warning: no matching class member found for"
+                "Warning: no %smatching class member found for",
+                noMatchCount>1 ? "uniquely " : ""
                 );   
 
             if (root->tArgLists)
@@ -5440,6 +5461,7 @@ static void findMember(EntryNav *rootNav,
                   QCString qScope = cd->qualifiedNameWithTemplateParameters();
                   if (!qScope.isEmpty()) warn_cont("%s::%s",qScope.data(),md->name().data());
                   if (md->argsString()) warn_cont("%s",md->argsString());
+                  if (noMatchCount>1) warn_cont(" at line %d of file %s",md->getDefLine(),md->getDefFileName().data());
                   warn_cont("\n");
                 }
               }
@@ -6146,6 +6168,7 @@ static void findEnums(EntryNav *rootNav)
       }
       addMemberToGroups(root,md);
 
+#if 0
       if (rootNav->children())
       {
         EntryNavListIterator eli(*rootNav->children());
@@ -6209,6 +6232,7 @@ static void findEnums(EntryNav *rootNav)
           }
         }
       }
+#endif
     }
 
     rootNav->releaseEntry();
@@ -6218,6 +6242,160 @@ static void findEnums(EntryNav *rootNav)
     RECURSE_ENTRYTREE(findEnums,rootNav);
   }
 }
+
+//----------------------------------------------------------------------
+
+static void addEnumValuesToEnums(EntryNav *rootNav)
+{
+  if (rootNav->section()==Entry::ENUM_SEC)
+    // non anonymous enumeration
+  {
+    rootNav->loadEntry(g_storage);
+    Entry *root = rootNav->entry();
+
+    ClassDef       *cd=0;
+    FileDef        *fd=0;
+    NamespaceDef   *nd=0;
+    MemberNameSDict *mnsd=0;
+    bool isGlobal;
+    bool isRelated=FALSE;
+    //printf("Found enum with name `%s' relates=%s\n",root->name.data(),root->relates.data());
+    int i;
+
+    QCString name;
+    QCString scope;
+
+    if ((i=root->name.findRev("::"))!=-1) // scope is specified
+    {
+      scope=root->name.left(i); // extract scope
+      name=root->name.right(root->name.length()-i-2); // extract name
+      if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
+    }
+    else // no scope, check the scope in which the docs where found
+    {
+      if (( rootNav->parent()->section() & Entry::SCOPE_MASK )
+          && !rootNav->parent()->name().isEmpty()
+         ) // found enum docs inside a compound
+      {
+        scope=rootNav->parent()->name();
+        if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
+      }
+      name=root->name;
+    }
+
+    if (!root->relates.isEmpty()) 
+    {   // related member, prefix user specified scope
+      isRelated=TRUE;
+      if (getClass(root->relates)==0 && !scope.isEmpty())
+        scope=mergeScopes(scope,root->relates);
+      else 
+        scope=root->relates.copy();
+      if ((cd=getClass(scope))==0) nd=getResolvedNamespace(scope);
+    }
+
+    if (cd && !name.isEmpty()) // found a enum inside a compound
+    {
+      //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
+      fd=0;
+      mnsd=Doxygen::memberNameSDict;
+      isGlobal=FALSE;
+    }
+    else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
+    {
+      mnsd=Doxygen::functionNameSDict;
+      isGlobal=TRUE;
+    }
+    else // found a global enum
+    {
+      fd=rootNav->fileDef();
+      mnsd=Doxygen::functionNameSDict;
+      isGlobal=TRUE;
+    }
+
+    if (!name.isEmpty())
+    {
+      MemberName *mn = mnsd->find(name);
+      if (mn)
+      {
+        MemberNameIterator mni(*mn);
+        MemberDef *md;
+        for (mni.toFirst(); (md=mni.current()) ; ++mni) 
+        {
+          if (md->isEnumerate() && rootNav->children())
+          {
+            EntryNavListIterator eli(*rootNav->children());
+            EntryNav *e;
+            for (;(e=eli.current());++eli)
+            {
+              //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
+              MemberName *fmn=0;
+              MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
+              if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
+                // get list of members with the same name as the field
+              {
+                MemberNameIterator fmni(*fmn);
+                MemberDef *fmd;
+                for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
+                {
+                  if (fmd->isEnumValue())
+                  {
+                    //printf("found enum value with same name\n");
+                    if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+                    {
+                      NamespaceDef *fnd=fmd->getNamespaceDef();
+                      if (fnd==nd) // enum value is inside a namespace
+                      {
+                        md->insertEnumField(fmd);
+                        fmd->setEnumScope(md);
+                      }
+                    }
+                    else if (isGlobal)
+                    {
+                      FileDef *ffd=fmd->getFileDef();
+                      if (ffd==fd) // enum value has file scope
+                      {
+                        md->insertEnumField(fmd);
+                        fmd->setEnumScope(md);
+                      }
+                    }
+                    else if (isRelated && cd) // reparent enum value to
+                      // match the enum's scope
+                    {
+                      md->insertEnumField(fmd);   // add field def to list
+                      fmd->setEnumScope(md);      // cross ref with enum name
+                      fmd->setEnumClassScope(cd); // cross ref with enum name
+                      fmd->setOuterScope(cd);
+                      fmd->makeRelated();
+                      cd->insertMember(fmd);
+                    }
+                    else
+                    {
+                      ClassDef *fcd=fmd->getClassDef();
+                      if (fcd==cd) // enum value is inside a class
+                      {
+                        //printf("Inserting enum field %s in enum scope %s\n",
+                        //    fmd->name().data(),md->name().data());
+                        md->insertEnumField(fmd); // add field def to list
+                        fmd->setEnumScope(md);    // cross ref with enum name
+                      }
+                    }
+                  } 
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    rootNav->releaseEntry();
+  }
+  else
+  {
+    RECURSE_ENTRYTREE(addEnumValuesToEnums,rootNav);
+  }
+}
+
 
 //----------------------------------------------------------------------
 // find the documentation blocks for the enumerations
@@ -7203,7 +7381,6 @@ static void buildPageList(EntryNav *rootNav)
 {
   if (rootNav->section() == Entry::PAGEDOC_SEC)
   {
-    //printf("buildPageList %s\n",root->name.data());
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
 
@@ -8801,8 +8978,8 @@ void parseInput()
    **************************************************************************/
 
   Doxygen::symbolMap     = new QDict<DefinitionIntf>(1000);
-  Doxygen::symbolCache   = new ObjCache(15); // 15 -> room for 32768 elements, 
-                                             //       ~1.0 MByte "overhead"
+  Doxygen::symbolCache   = new ObjCache(16); // 16 -> room for 65536 elements, 
+                                             //       ~2.0 MByte "overhead"
   Doxygen::symbolStorage = new Store;
 
   if (Doxygen::symbolStorage->open(outputDirectory+"/doxygen_objdb.tmp")==-1)
@@ -9182,6 +9359,9 @@ void parseInput()
   msg("Building example list...\n");
   buildExampleList(rootNav);
   
+  msg("Searching for enumerations...\n");
+  findEnums(rootNav);
+  
   msg("Searching for documented variables...\n");
   buildVarList(rootNav);
 
@@ -9210,10 +9390,9 @@ void parseInput()
   computeClassRelations();        
   classEntries.clear();          
 
-  msg("Searching for enumerations...\n");
-  findEnums(rootNav);
+  addEnumValuesToEnums(rootNav);
   findEnumDocumentation(rootNav);
-  
+
   msg("Searching for member function documentation...\n");
   findObjCMethodDefinitions(rootNav);
   findMemberDocumentation(rootNav); // may introduce new members !

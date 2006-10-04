@@ -34,7 +34,6 @@
 #include "section.h"
 #include "htags.h"
 #include "parserintf.h"
-#include "objcache.h"
 #include "marshal.h"
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
@@ -237,14 +236,11 @@ Definition::Definition(const char *df,int dl,
                        const char *name,const char *b,
                        const char *d,bool isSymbol)
 {
-  m_storagePos=-1;
   m_name = name;
   m_impl = new DefinitionImpl;
   m_impl->init(df,dl,name,b,d);
   m_isSymbol = isSymbol;
   if (isSymbol) addToMap(name,this);
-  m_cacheHandle=-1;
-  m_flushPending = FALSE;
 }
 
 Definition::~Definition()
@@ -257,11 +253,6 @@ Definition::~Definition()
   {
     delete m_impl;
     m_impl=0;
-  }
-  if (m_cacheHandle!=-1)
-  {
-    Doxygen::symbolCache->del(m_cacheHandle);
-    m_cacheHandle=-1;
   }
 }
 
@@ -1173,74 +1164,14 @@ void Definition::setLocalName(const QCString name)
 }
 
 void Definition::makeResident() const
-{ 
-  if (m_cacheHandle==-1) // not yet in cache
-  { 
-    Definition *victim = 0;
-    Definition *that = (Definition*)this; // fake method constness
-    that->m_cacheHandle = Doxygen::symbolCache->add(that,(void **)&victim);
-    //printf("adding %s to cache, handle=%d\n",m_impl->name.data(),that->m_cacheHandle);
-    if (victim)  // cache was full, victim was the least recently used item and has to go
-    {
-      victim->m_cacheHandle=-1; // invalidate cache handle
-      victim->saveToDisk();     // store the item on disk
-    }
-    else // cache not yet full
-    {
-      //printf("Adding %s to cache, handle=%d\n",m_impl->name.data(),m_cacheHandle);
-    }
-    if (m_storagePos!=-1) // already been written to disk
-    {
-      if (isLocked()) // locked in memory
-      {
-        assert(m_impl!=0);
-        that->m_flushPending=FALSE; // no need to flush anymore
-      }
-      else // not locked in memory
-      {
-        assert(m_impl==0);
-        loadFromDisk();
-      }
-    }
-  }
-  else // already cached, make this object the most recently used.
-  {
-    assert(m_impl!=0);
-    //printf("Touching symbol %s\n",m_impl->name.data());
-    Doxygen::symbolCache->use(m_cacheHandle);
-  }
+{
 }
 
-void Definition::saveToDisk() const
-{
-  assert(m_impl!=0);
-  Definition *that = (Definition *)this;
-  if (isLocked()) // cannot flush the item as it is locked
-  {
-    that->m_flushPending=TRUE; // flush when unlocked
-  }
-  else // ready to flush the item to disk
-  {
-    //printf("Adding %s to cache, handle=%d by replacing %s\n",
-    //    m_impl->name.data(),m_cacheHandle,victim->m_impl->name.data());
-    if (m_storagePos!=-1) 
-      // if victim was stored on disk already and is not locked
-    {
-      // free the storage space occupied by the old store item
-      Doxygen::symbolStorage->release(m_storagePos); // free up space for others
-    }
-    // write a the new (possibly modified) instance to disk
-    flushToDisk();
-    // end to write sequence (unless nothing was written due to the lock)
-    Doxygen::symbolStorage->end();
-  }
-}
 
 void Definition::flushToDisk() const
 {
   //printf("%p: Definition::flushToDisk()\n",this);
   Definition *that = (Definition *)this;
-  that->m_storagePos = Doxygen::symbolStorage->alloc();
   //printf("Definition::flushToDisk(): pos=%d\n",(int)m_storagePos); 
   marshalUInt(Doxygen::symbolStorage,START_MARKER);
   marshalSectionDict  (Doxygen::symbolStorage,m_impl->sectionDict);
@@ -1262,7 +1193,6 @@ void Definition::flushToDisk() const
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
   delete that->m_impl;
   that->m_impl = 0;
-  that->m_flushPending=FALSE;
 }
 
 void Definition::loadFromDisk() const
@@ -1271,7 +1201,6 @@ void Definition::loadFromDisk() const
   Definition *that = (Definition *)this;
   assert(m_impl==0);
   that->m_impl = new DefinitionImpl;
-  Doxygen::symbolStorage->seek(m_storagePos);
   uint marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==START_MARKER);
   m_impl->sectionDict     = unmarshalSectionDict  (Doxygen::symbolStorage);
@@ -1292,20 +1221,5 @@ void Definition::loadFromDisk() const
   m_impl->defFileExt      = unmarshalQCString     (Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
-}
-
-void Definition::lock() const
-{
-}
-
-void Definition::unlock() const
-{
-  if (m_flushPending && !isLocked())
-  {
-    // write a the new (possibly modified) instance to disk
-    flushToDisk();
-    // end to write sequence (unless nothing was written due to the lock)
-    Doxygen::symbolStorage->end();
-  }
 }
 
