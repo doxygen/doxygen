@@ -175,7 +175,8 @@ ClassDef *getResolvedClass(Definition *scope,
                            MemberDef **pTypeDef=0,
                            QCString *pTemplSpec=0,
                            bool mayBeUnlinkable=FALSE,
-                           bool mayBeHidden=FALSE);
+                           bool mayBeHidden=FALSE,
+                           QCString *pResolvedType=0);
 
 NamespaceDef *getResolvedNamespace(const char *key);
 
@@ -326,7 +327,8 @@ SrcLangExt getLanguageFromFileName(const QCString fileName);
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
-                            MemberDef **pMemType=0,QCString *pTemplSpec=0);
+                            MemberDef **pMemType=0,QCString *pTemplSpec=0,
+                            QCString *pResolvedType=0);
 
 
 #endif

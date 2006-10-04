@@ -29,7 +29,7 @@
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_4_6
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -452,12 +452,6 @@ class TranslatorJapanese : public TranslatorAdapter_1_4_6
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return decode("列挙型"); }
-
-    /*! This is used in the documentation of a file/namespace before the list
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return decode("列挙型の値"); }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
@@ -1562,5 +1556,23 @@ class TranslatorJapanese : public TranslatorAdapter_1_4_6
 		     "利便性のために用意されています。"
 		     "元の関数との違いは引き数のみです。");
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      // return "Here is the caller graph for this function:";
+      return "呼出しグラフ:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "列挙型"; }
+
 };
 #endif

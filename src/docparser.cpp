@@ -339,6 +339,7 @@ static void checkUndocumentedParams()
       }
       if (found)
       {
+        bool first=TRUE;
         QString errMsg=
             "Warning: The following parameters of "+
             QString(g_memberDef->qualifiedName()) + 
@@ -349,7 +350,15 @@ static void checkUndocumentedParams()
           QString argName = g_memberDef->isDefine() ? a->type : a->name;
           if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
           {
-            errMsg+="  parameter "+argName+"\n";
+            if (!first)
+            {
+              errMsg+="\n";
+            }
+            else
+            {
+              first=FALSE;
+            }
+            errMsg+="  parameter "+argName;
           }
         }
         if (g_memberDef->inheritsDocsFrom())

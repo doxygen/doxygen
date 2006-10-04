@@ -84,7 +84,7 @@ pdf: docs
 DISTFILES =  Doxyfile libpng libmd5 addon tmake doc wintools examples bin lib objects \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
              Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
-             VERSION packages
+             VERSION packages winbuild
 
 archive: clean
 	tar zcvf dx`date +%y%m%d`.tgz $(DISTFILES)

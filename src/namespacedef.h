@@ -106,7 +106,7 @@ class NamespaceDef : public Definition
     MemberGroupSDict     *memberGroupSDict;
     ClassSDict           *classSDict;
     NamespaceSDict       *namespaceSDict;
-
+    bool                  m_subGrouping;
 };
 
 class NamespaceList : public QList<NamespaceDef>

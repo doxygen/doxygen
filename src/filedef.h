@@ -214,6 +214,7 @@ class FileDef : public Definition
     MemberGroupSDict     *memberGroupSDict;
     NamespaceSDict       *namespaceSDict;
     ClassSDict           *classSDict;
+    bool                  m_subGrouping;
 };
 
 

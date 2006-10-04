@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
 Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 10 translators are up-to-date, 23 translators are based on
+Of them, 12 translators are up-to-date, 21 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -22,10 +22,12 @@ still may be some details listed even for them:
   TranslatorChinese
   TranslatorCroatian
   TranslatorCzech
+  TranslatorDanish -- Change the base class to Translator.
   TranslatorDutch -- Remove the obsolete methods (never used).
   TranslatorEnglish -- Remove the obsolete methods (never used).
   TranslatorGerman
   TranslatorItalian -- Change the base class to Translator.
+  TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorRussian
 
 ----------------------------------------------------------------------
@@ -42,7 +44,6 @@ must be implemented to become up-to-date:
   TranslatorNorwegian             1.4.6 	 1 method to implement
   TranslatorLithuanian            1.4.6 	 2 methods to implement
   TranslatorKorean                1.4.6 	 2 methods to implement
-  TranslatorJapanese              1.4.6 	 1 method to implement
   TranslatorIndonesian            1.4.6 	 1 method to implement
   TranslatorHungarian             1.4.6 	 2 methods to implement
   TranslatorFrench                1.4.6 	 1 method to implement
@@ -52,7 +53,6 @@ must be implemented to become up-to-date:
   TranslatorUkrainian             1.4.1 	 2 methods to implement
   TranslatorSerbian               1.4.1 	 2 methods to implement
   TranslatorRomanian              1.4.1 	 2 methods to implement
-  TranslatorDanish                1.3.9 	 8 methods to implement
   TranslatorPortuguese            1.3.3 	13 methods to implement
   TranslatorSlovak                1.2.18	22 methods to implement
   TranslatorGreek                 1.2.11	27 methods to implement
@@ -145,21 +145,10 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorDanish   (TranslatorAdapter_1_3_9)  8 methods to implement
+TranslatorDanish   (TranslatorAdapter_1_3_9)
 ----------------
 
-  Implements 186 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-    virtual QCString trDirIndex()
-    virtual QCString trDirDocumentation()
-    virtual QCString trDirectories()
-    virtual QCString trDirDescription()
-    virtual QCString trCallerGraph()
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
+  Implements 194 of the required methods.
 
   Obsolete methods (should be removed, never used):
 
@@ -435,14 +424,10 @@ TranslatorItalian   (TranslatorAdapter_1_4_6)
   Implements 194 of the required methods.
 
 
-TranslatorJapanese   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorJapanese   (Translator)
 ------------------
 
-  Implements 193 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCallerGraph()
+  Implements 194 of the required methods.
 
   Obsolete methods (should be removed, never used):
 

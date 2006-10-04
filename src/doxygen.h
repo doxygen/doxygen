@@ -59,11 +59,13 @@ class StringDict : public QDict<QCString>
 
 struct LookupInfo
 {
-  LookupInfo(ClassDef *cd=0,MemberDef *td=0,QCString ts="") 
-    : classDef(cd), typeDef(td), templSpec(ts) {}
+  LookupInfo() : classDef(0), typeDef(0) {}
+  LookupInfo(ClassDef *cd,MemberDef *td,QCString ts,QCString rt) 
+    : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
   ClassDef  *classDef;
   MemberDef *typeDef;
   QCString   templSpec;
+  QCString   resolvedType;
 };
 
 extern QCString spaces;

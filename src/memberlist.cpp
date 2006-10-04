@@ -316,7 +316,8 @@ void MemberList::writeDeclarations(OutputList &ol,
   //printf("----- writeDeclaration() ----\n");
   countDecMembers(showEnumValues); // count member not in group
   if (numDecMembers()==0) return;
-  //printf("MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",title,subtitle,numDecMembers());
+  //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
+  //    this,title,subtitle,numDecMembers());
   if (title) 
   {
     ol.startMemberHeader();

@@ -37,20 +37,15 @@ class LockableObj
     /*! Returns TRUE if the object is currently locked. */
     bool isLocked() const { return m_lockCount>0; }
 
-#ifndef _WIN32
   protected:
-#endif
     /*! Called when the object is locked. */
     virtual void lock() const = 0;
 
     /*! Called when the object is unlocked. */
     virtual void unlock() const = 0;
 
-#ifndef _WIN32 // HACK: VC++ 6.0 does not understand friend template classes.
   private:
     template<class T> friend class LockingPtr;
-#endif
-
     int  m_lockCount;
 };
 

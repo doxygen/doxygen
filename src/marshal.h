@@ -7,17 +7,17 @@
 #include "store.h"
 
 class ArgumentList;
-class BaseInfo;
-class Grouping;
-class SectionInfo;
-class ListItemInfo;
+struct BaseInfo;
+struct Grouping;
+struct SectionInfo;
+struct ListItemInfo;
 class QCString;
 class QGString;
 class SectionDict;
 class MemberSDict;
 class GroupList;
-class BodyInfo;
-class DocInfo;
+struct BodyInfo;
+struct DocInfo;
 class MemberList;
 class ExampleSDict;
 

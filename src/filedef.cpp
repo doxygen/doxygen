@@ -93,6 +93,7 @@ FileDef::FileDef(const char *p,const char *nm,
   m_isJava          = name().right(5)==".java";
   memberGroupSDict = 0;
   acquireFileVersion();
+  m_subGrouping=Config_getBool("SUBGROUPING");
 }
 
 /*! destroy the file definition */
@@ -491,7 +492,8 @@ void FileDef::writeDocumentation(OutputList &ol)
     MemberGroup *mg;
     for (;(mg=mgli.current());++mgli)
     {
-      if (mg->header()!="[NOHEADER]")
+      if ((!mg->allMembersInSameSection() || !m_subGrouping) 
+          && mg->header()!="[NOHEADER]")
       {
         mg->writeDeclarations(ol,0,0,this,0);
       }
@@ -687,6 +689,21 @@ void FileDef::addMembersToMemberGroup()
     if (ml->listType()&MemberList::declarationLists)
     {
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
+    }
+  }
+
+  // add members inside sections to their groups
+  if (memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      if (mg->allMembersInSameSection() && m_subGrouping)
+      {
+        //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
+        mg->addToDeclarationSection();
+      }
     }
   }
 }
@@ -1363,6 +1380,7 @@ void FileDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
   {
     ml->setInFile(TRUE);
   }
+  if (ml->listType()&MemberList::declarationLists) md->setSectionList(this,ml);
 }
 
 MemberList *FileDef::getMemberList(MemberList::ListType lt) const

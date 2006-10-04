@@ -69,6 +69,7 @@ struct FileState
 static int                g_yyLineNr   = 1;
 static QCString           g_yyFileName;
 static FileDef           *g_yyFileDef;
+static FileDef           *g_inputFileDef;
 static int                g_ifcount    = 0;
 static QStrList          *g_pathList = 0;  
 static QStack<FileState>  g_includeStack;
@@ -1043,17 +1044,13 @@ void addDefine()
   }
   md->setInitializer(g_defLitText.stripWhiteSpace());
   
-  //md->setDefFile(g_yyFileName);
-  //md->setDefLine(g_yyLineNr);
-  md->setFileDef(g_yyFileDef);
+  md->setFileDef(g_inputFileDef);
   md->setDefinition("#define "+g_defName);
 
   MemberName *mn=Doxygen::functionNameSDict->find(g_defName);
   if (mn==0)
   {
     mn = new MemberName(g_defName);
-    //Doxygen::functionNameList.append(mn);
-    //Doxygen::functionNameDict.insert(g_defName,mn);
     Doxygen::functionNameSDict->append(g_defName,mn);
   }
   mn->append(md);
@@ -1790,6 +1787,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_insideComment=FALSE;
   					  BEGIN(DefineText);
   					}
+<DefineArg>"..."			{ // Variadic macro
+					  g_defVarArgs = TRUE;
+					  g_defArgsStr+=yytext;
+					  g_argDict->insert("__VA_ARGS__",new int(g_defArgs));
+					  g_defArgs++;
+  					}
 <DefineArg>{ID}{B}*("..."?)		{
   					  //printf("Define addArg(%s)\n",yytext);
   					  QCString argName=yytext;
@@ -2372,6 +2375,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_level    = 0;
   g_ifcount  = 0;
   setFileName(fileName);
+  g_inputFileDef = g_yyFileDef;
   BEGIN( Start );
   
   g_lastGuardName.resize(0);

@@ -279,19 +279,14 @@ class Definition : public DefinitionIntf, public LockableObj
 
     virtual void flushToDisk() const;
     virtual void loadFromDisk() const;
-    void makeResident() const;
-    bool isResident() const
-    { 
-      return m_cacheHandle!=-1; 
-    }
+    virtual void makeResident() const;
+    void lock() const {}
+    void unlock() const {}
 
   private: 
-    void lock() const;
-    void unlock() const;
 
     static void addToMap(const char *name,Definition *d);
     static void removeFromMap(Definition *d);
-    void saveToDisk() const;
 
     void _setSymbolName(const QCString &name);
 
@@ -299,10 +294,7 @@ class Definition : public DefinitionIntf, public LockableObj
     void _writeSourceRefList(OutputList &ol,const char *scopeName,
                        const QCString &text,MemberSDict *members,bool);
     DefinitionImpl *m_impl; // internal structure holding all private data
-    off_t m_storagePos;     // location where the item is stored in file (if impl==0)
-    int m_cacheHandle;
     QCString m_name;
-    bool m_flushPending;
     bool m_isSymbol;
     QCString m_symbolName;
 

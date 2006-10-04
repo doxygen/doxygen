@@ -37,6 +37,7 @@
 #include "searchindex.h"
 #include "parserintf.h"
 #include "marshal.h"
+#include "objcache.h"
 
 #define START_MARKER 0x4D454D5B // MEM[
 #define END_MARKER   0x4D454D5D // MEM]
@@ -367,6 +368,7 @@ class MemberDefImpl
     bool isTypedefValCached;
     ClassDef *cachedTypedefValue;
     QCString cachedTypedefTemplSpec;
+    QCString cachedResolvedType;
     
     // inbody documentation
     int inbodyLine;
@@ -574,8 +576,11 @@ MemberDef::MemberDef(const char *df,int dl,
                      const ArgumentList *tal,const ArgumentList *al
                     ) : Definition(df,dl,removeRedundantWhiteSpace(na))
 {
+  m_storagePos=-1;
+  m_cacheHandle=-1;
   m_impl = new MemberDefImpl;
   m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al);
+  m_flushPending = FALSE;
 
 #if 0
   //printf("++++++ MemberDef(%s file=%s,line=%d static=%d) ++++++ \n",
@@ -697,6 +702,11 @@ MemberDef::MemberDef(const char *df,int dl,
 MemberDef::~MemberDef()
 {
   delete m_impl;
+  if (m_cacheHandle!=-1)
+  {
+    Doxygen::symbolCache->del(m_cacheHandle);
+    m_cacheHandle=-1;
+  }
 }
 
 void MemberDef::setReimplements(MemberDef *md)   
@@ -774,7 +784,10 @@ QCString MemberDef::getOutputFileBase() const
   makeResident();
   static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
   QCString baseName;
-  if (m_impl->explicitOutputFileBase)
+  //printf("Member: %s: templateMaster=%p group=%p classDef=%p nspace=%p fileDef=%p\n",
+  //    name().data(),m_impl->templateMaster,m_impl->group,m_impl->classDef,
+  //    m_impl->nspace,m_impl->fileDef);
+  if (!m_impl->explicitOutputFileBase.isEmpty())
   {
     return m_impl->explicitOutputFileBase;
   }
@@ -805,6 +818,7 @@ QCString MemberDef::getOutputFileBase() const
        "Warning: Internal inconsistency: member %s does not belong to any"
        " container!",name().data()
       );
+    exit(1);
     return "dummy";
   }
   else if (separateMemberPages)
@@ -3375,6 +3389,12 @@ QCString MemberDef::getCachedTypedefTemplSpec() const
   return m_impl->cachedTypedefTemplSpec; 
 }
 
+QCString MemberDef::getCachedResolvedTypedef() const
+{ 
+  makeResident();
+  return m_impl->cachedResolvedType; 
+}
+
 MemberDef *MemberDef::memberDefinition() const
 { 
   makeResident();
@@ -3591,21 +3611,24 @@ void MemberDef::setMemberDeclaration(MemberDef *md)
   m_impl->memDec=md; 
 }
 
-void MemberDef::cacheTypedefVal(ClassDef*val, QCString const& templSpec)
+void MemberDef::cacheTypedefVal(ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
 {
   makeResident();
   m_impl->isTypedefValCached=TRUE; 
   m_impl->cachedTypedefValue=val; 
   m_impl->cachedTypedefTemplSpec=templSpec; 
+  m_impl->cachedResolvedType=resolvedType;
 }
 
 void MemberDef::flushToDisk() const
 {
+  if (isLocked()) return;
+  MemberDef *that = (MemberDef*)this;
+  that->m_storagePos = Doxygen::symbolStorage->alloc();
   //printf("%p: MemberDef::flushToDisk()\n",this);
   // write the definition base class member variables to disk
   Definition::flushToDisk();
 
-  if (isLocked()) return;
   //printf("%p:   flushing specific part\n",this);
 
   // write the memberdef member variables to disk
@@ -3658,6 +3681,7 @@ void MemberDef::flushToDisk() const
   marshalBool         (Doxygen::symbolStorage,m_impl->isTypedefValCached);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->cachedTypedefValue);
   marshalQCString     (Doxygen::symbolStorage,m_impl->cachedTypedefTemplSpec);
+  marshalQCString     (Doxygen::symbolStorage,m_impl->cachedResolvedType);
   marshalInt          (Doxygen::symbolStorage,m_impl->inbodyLine);
   marshalQCString     (Doxygen::symbolStorage,m_impl->inbodyFile);
   marshalQCString     (Doxygen::symbolStorage,m_impl->inbodyDocs);
@@ -3682,25 +3706,27 @@ void MemberDef::flushToDisk() const
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
 
   // function doesn't modify the object conceptually but compiler doesn't know this.
-  MemberDef *that = (MemberDef *)this;
   delete that->m_impl;
   that->m_impl=0;
+  that->m_flushPending=FALSE;
 }
 
 void MemberDef::loadFromDisk() const
 {
   //printf("%p: MemberDef::loadFromDisk()\n",this);
-  Definition::loadFromDisk();
-
+  MemberDef *that = (MemberDef *)this;
   if (isLocked()) 
   {
     assert(m_impl!=0);
     return;
   }
   assert(m_impl==0);
+
+  Doxygen::symbolStorage->seek(m_storagePos);
+  Definition::loadFromDisk();
+
   //printf("%p:   loading specific part\n",this);
 
-  MemberDef *that = (MemberDef *)this;
   that->m_impl = new MemberDefImpl;
 
   uint marker = unmarshalUInt(Doxygen::symbolStorage);
@@ -3753,6 +3779,7 @@ void MemberDef::loadFromDisk() const
   m_impl->isTypedefValCached      = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->cachedTypedefValue      = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->cachedTypedefTemplSpec  = unmarshalQCString     (Doxygen::symbolStorage);
+  m_impl->cachedResolvedType      = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->inbodyLine              = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->inbodyFile              = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->inbodyDocs              = unmarshalQCString     (Doxygen::symbolStorage);
@@ -3777,4 +3804,85 @@ void MemberDef::loadFromDisk() const
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
 }
+
+void MemberDef::makeResident() const
+{ 
+  if (m_cacheHandle==-1) // not yet in cache
+  { 
+    MemberDef *victim = 0;
+    MemberDef *that = (MemberDef*)this; // fake method constness
+    that->m_cacheHandle = Doxygen::symbolCache->add(that,(void **)&victim);
+    //printf("adding %s to cache, handle=%d\n",m_impl->name.data(),that->m_cacheHandle);
+    if (victim)  // cache was full, victim was the least recently used item and has to go
+    {
+      victim->m_cacheHandle=-1; // invalidate cache handle
+      victim->saveToDisk();     // store the item on disk
+    }
+    else // cache not yet full
+    {
+      //printf("Adding %s to cache, handle=%d\n",m_impl->name.data(),m_cacheHandle);
+    }
+    if (m_storagePos!=-1) // already been written to disk
+    {
+      if (isLocked()) // locked in memory
+      {
+        assert(m_impl!=0);
+        that->m_flushPending=FALSE; // no need to flush anymore
+      }
+      else // not locked in memory
+      {
+        assert(m_impl==0);
+        loadFromDisk();
+      }
+    }
+  }
+  else // already cached, make this object the most recently used.
+  {
+    assert(m_impl!=0);
+    //printf("Touching symbol %s\n",m_impl->name.data());
+    Doxygen::symbolCache->use(m_cacheHandle);
+  }
+}
+
+void MemberDef::saveToDisk() const
+{
+  assert(m_impl!=0);
+  MemberDef *that = (MemberDef *)this;
+  if (isLocked()) // cannot flush the item as it is locked
+  {
+    that->m_flushPending=TRUE; // flush when unlocked
+  }
+  else // ready to flush the item to disk
+  {
+    //printf("Adding %s to cache, handle=%d by replacing %s\n",
+    //    m_impl->name.data(),m_cacheHandle,victim->m_impl->name.data());
+    if (m_storagePos!=-1) 
+      // if victim was stored on disk already and is not locked
+    {
+      // free the storage space occupied by the old store item
+      Doxygen::symbolStorage->release(m_storagePos); // free up space for others
+    }
+    // write a the new (possibly modified) instance to disk
+    flushToDisk();
+    // end to write sequence (unless nothing was written due to the lock)
+    Doxygen::symbolStorage->end();
+  }
+}
+
+void MemberDef::lock() const
+{
+}
+
+void MemberDef::unlock() const
+{
+  if (m_flushPending && !isLocked())
+  {
+    // write a the new (possibly modified) instance to disk
+    flushToDisk();
+    // end to write sequence (unless nothing was written due to the lock)
+    Doxygen::symbolStorage->end();
+  }
+}
+
+
 

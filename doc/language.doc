@@ -102,7 +102,7 @@ when the translator was updated.
     <td>Danish</td>
     <td>Erik S&oslash;e S&oslash;rensen</td>
     <td>eriksoe+doxygen at daimi dot au dot dk</td>
-    <td>1.3.9</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Dutch</td>
@@ -162,7 +162,7 @@ when the translator was updated.
     <td>Japanese</td>
     <td>Ryunosuke Satoh<br>Kenji Nagamatsu<br>Iwasa Kazmi</td>
     <td>sun594 at hotmail dot com<br>naga at joyful dot club dot ne dot jp<br>iwasa at cosmo-system dot jp</td>
-    <td>1.4.6</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>JapaneseEn</td>
@@ -294,7 +294,7 @@ when the translator was updated.
   \hline
   Czech & Petr P\v{r}ikryl & {\tt\tiny prikrylp@skil.cz} & up-to-date \\
   \hline
-  Danish & Erik S\o{}e S\o{}rensen & {\tt\tiny eriksoe+doxygen@daimi.au.dk} & 1.3.9 \\
+  Danish & Erik S\o{}e S\o{}rensen & {\tt\tiny eriksoe+doxygen@daimi.au.dk} & up-to-date \\
   \hline
   Dutch & Dimitri van Heesch & {\tt\tiny dimitri@stack.nl} & up-to-date \\
   \hline
@@ -316,7 +316,7 @@ when the translator was updated.
   Italian & Alessandro Falappa & {\tt\tiny alessandro@falappa.net} & up-to-date \\
   ~ & Ahmed Aldo Faisal & {\tt\tiny aaf23@cam.ac.uk} & ~ \\
   \hline
-  Japanese & Ryunosuke Satoh & {\tt\tiny sun594@hotmail.com} & 1.4.6 \\
+  Japanese & Ryunosuke Satoh & {\tt\tiny sun594@hotmail.com} & up-to-date \\
   ~ & Kenji Nagamatsu & {\tt\tiny naga@joyful.club.ne.jp} & ~ \\
   ~ & Iwasa Kazmi & {\tt\tiny iwasa@cosmo-system.jp} & ~ \\
   \hline
