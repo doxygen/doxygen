@@ -194,10 +194,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trFileList()
     { return "File List"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Header Files"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     { 
@@ -330,10 +326,6 @@ class TranslatorEnglish : public Translator
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Here are the header files that make up the API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Here is a list of all examples:"; }
@@ -346,14 +338,7 @@ class TranslatorEnglish : public Translator
     virtual QCString trModulesDescription()
     { return "Here is a list of all modules:"; }
 
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "No description available"; }
-    
     // index titles (the project name is prepended for these) 
-
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
@@ -555,17 +540,9 @@ class TranslatorEnglish : public Translator
     virtual QCString trForInternalUseOnly()
     { return "For internal use only."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplemented for internal reasons; the API is not affected."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Warning"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Bugs and limitations"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -841,10 +818,6 @@ class TranslatorEnglish : public Translator
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Sources";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definition at line @0 of file @1.";
@@ -1151,11 +1124,6 @@ class TranslatorEnglish : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfaces";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1187,11 +1155,6 @@ class TranslatorEnglish : public Translator
     virtual QCString trPackages()
     {
       return "Packages";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Package Documentation";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1329,17 +1292,6 @@ class TranslatorEnglish : public Translator
       return result; 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Field" : "field"));
-      if (!singular)  result+="s";
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.

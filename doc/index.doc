@@ -97,7 +97,7 @@ The second part forms a reference manual:
               used within the documentation.
 <li>Section \ref htmlcmds shows an overview of the HTML commands that
               can be used within the documentation.
-<li>Section \ref xmlcmds shows an overview of the XML commands that
+<li>Section \ref xmlcmds shows an overview of the C# style XML commands that
               can be used within the documentation.
 </ul>
 

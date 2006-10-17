@@ -1537,8 +1537,12 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   {
 nextChar:
     char c=s.at(i);
-    if (csp<6 && c==constScope[csp]) csp++; else csp=0;
-    if (vsp<8 && c==virtualScope[vsp]) vsp++; else vsp=0;
+    if ((csp==0 && (i==0 || !isId(constScope[i-1])) && csp<6) && 
+        c==constScope[csp]
+       ) csp++; else csp=0;
+    if ((vsp==0 && (i==0 || !isId(virtualScope[i-1])) && vsp<8) && 
+        c==virtualScope[vsp]
+       ) vsp++; else vsp=0;
     if (c=='"') // quoted string
     {
       i++;

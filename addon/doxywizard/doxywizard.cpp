@@ -47,35 +47,6 @@ QCString getResourcePath()
   return result;
 }
 
-#if 0
-#define GRAPHVIZ_PATH    "/Applications/Graphviz.app"
-#define DOT_PATH         GRAPHVIZ_PATH "/Contents/MacOS"
-#define DOT_LOCATION     DOT_PATH "/dot"
-
-bool checkIfDotInstalled()
-{
-  QFileInfo fi(GRAPHVIZ_PATH);
-  if (fi.exists() && fi.isDir())
-  {
-    fi.setFile(DOT_LOCATION);
-    if (fi.exists() && fi.isFile())
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-void setDotPath()
-{
-  if (checkIfDotInstalled())
-  {
-    Config_getString("DOT_PATH")=DOT_PATH;
-    //Config_getBool("HAVE_DOT")=TRUE;
-  }
-}
-#endif
-
 void setDotPath()
 {
   Config_getString("DOT_PATH")=getResourcePath();
@@ -235,11 +206,12 @@ Step2::Step2(QWidget *parent) : QWidget(parent,"Step2")
   layout->addWidget(f);
 
   m_optimizeLang = new QButtonGroup("Select programming language to optimize the results for",this);
-  gbox = new QGridLayout( m_optimizeLang, 4, 1, 8, 0 );
+  gbox = new QGridLayout( m_optimizeLang, 5, 1, 8, 0 );
   gbox->addRowSpacing( 0, fontMetrics().lineSpacing()+2 );
   gbox->addWidget(new QRadioButton("Optimize for C++ output",m_optimizeLang),1,0);
   gbox->addWidget(new QRadioButton("Optimize for Java output",m_optimizeLang),2,0);
   gbox->addWidget(new QRadioButton("Optimize for C output",m_optimizeLang),3,0);
+  gbox->addWidget(new QRadioButton("Optimize for C# output",m_optimizeLang),4,0);
   m_optimizeLang->setButton(0);
   layout->addWidget(m_optimizeLang);
 
@@ -279,6 +251,7 @@ OptLang Step2::optimizeFor() const
     case 0:  return Lang_Cpp;
     case 1:  return Lang_Java;
     case 2:  return Lang_C;
+    case 3:  return Lang_CS;
   }
   return Lang_Cpp;
 }
@@ -302,6 +275,7 @@ void Step2::setOptimizeFor(OptLang lang)
     case Lang_Cpp:  m_optimizeLang->setButton(0); break;
     case Lang_Java: m_optimizeLang->setButton(1); break;
     case Lang_C:    m_optimizeLang->setButton(2); break;
+    case Lang_CS:   m_optimizeLang->setButton(3); break;
   }
 }
 
@@ -1047,6 +1021,12 @@ void MainWidget::launchWizard()
       case Lang_C:
         Config_getBool("OPTIMIZE_OUTPUT_FOR_C")=TRUE;
         Config_getBool("OPTIMIZE_OUTPUT_JAVA")=FALSE;
+        break;
+      case Lang_CS:
+        Config_getBool("OPTIMIZE_OUTPUT_FOR_C")=FALSE;
+        Config_getBool("OPTIMIZE_OUTPUT_JAVA")=TRUE;
+        Config_getBool("EXTRACT_STATIC")=TRUE;
+        Config_getBool("EXTRACT_LOCAL_CLASSES")=TRUE;
         break;
     }
 

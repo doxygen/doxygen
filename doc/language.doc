@@ -59,7 +59,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Arabic</td>
     <td>Moaz Reyad</td>
-    <td><moazreyad at yahoo dot com></td>
+    <td>moazreyad at yahoo dot com</td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -126,7 +126,7 @@ when the translator was updated.
     <td>French</td>
     <td>Xavier Outhier</td>
     <td>xouthier at yahoo dot fr</td>
-    <td>1.4.6</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>German</td>
@@ -197,7 +197,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Persian</td>
     <td>Ali Nadalizadeh</td>
-    <td><nadalisoft at yahoo dot com></td>
+    <td>nadalisoft at yahoo dot com</td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -239,7 +239,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Slovene</td>
     <td>Matja&#x017e; Ostrover&#x0161;nik</td>
-    <td>matjaz.ostroversnik at ztm dot si</td>
+    <td>matjaz.ostroversnik at ostri dot org</td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -277,7 +277,7 @@ when the translator was updated.
   \hline
   Afrikaans & Johan Prinsloo & {\tt\tiny johan@zippysnoek.com} & 1.4.6 \\
   \hline
-  Arabic & Moaz Reyad & {\tt\tiny <moazreyad@yahoo.com>} & 1.4.6 \\
+  Arabic & Moaz Reyad & {\tt\tiny moazreyad@yahoo.com} & 1.4.6 \\
   \hline
   Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino@uol.com.br} & up-to-date \\
   \hline
@@ -302,7 +302,7 @@ when the translator was updated.
   \hline
   Finnish & Olli Korhonen & {\tt\tiny olli.korhonen lost@cyberspace} & obsolete \\
   \hline
-  French & Xavier Outhier & {\tt\tiny xouthier@yahoo.fr} & 1.4.6 \\
+  French & Xavier Outhier & {\tt\tiny xouthier@yahoo.fr} & up-to-date \\
   \hline
   German & Jens Seidel & {\tt\tiny jensseidel@users.sf.net} & up-to-date \\
   \hline
@@ -333,7 +333,7 @@ when the translator was updated.
   \hline
   Norwegian & Lars Erik Jordet & {\tt\tiny lejordet@gmail.com} & 1.4.6 \\
   \hline
-  Persian & Ali Nadalizadeh & {\tt\tiny <nadalisoft@yahoo.com>} & 1.4.6 \\
+  Persian & Ali Nadalizadeh & {\tt\tiny nadalisoft@yahoo.com} & 1.4.6 \\
   \hline
   Polish & Piotr Kaminski & {\tt\tiny Piotr.Kaminski@ctm.gdynia.pl} & 1.4.6 \\
   ~ & Grzegorz Kowal & {\tt\tiny g\_kowal@poczta.onet.pl} & ~ \\
@@ -348,7 +348,7 @@ when the translator was updated.
   \hline
   Slovak & Stanislav Kudl\'{a}\v{c} & {\tt\tiny skudlac@pobox.sk} & 1.2.18 \\
   \hline
-  Slovene & Matja\v{z} Ostrover\v{s}nik & {\tt\tiny matjaz.ostroversnik@ztm.si} & 1.4.6 \\
+  Slovene & Matja\v{z} Ostrover\v{s}nik & {\tt\tiny matjaz.ostroversnik@ostri.org} & 1.4.6 \\
   \hline
   Spanish & Francisco Oltra Thennet & {\tt\tiny foltra@puc.cl} & 1.4.6 \\
   \hline

@@ -344,6 +344,8 @@ of doxygen (\<=1.2.17) will not work correctly with newer versions of
 graphviz (\>=1.8.8). The effect of this incompatibility is that
 generated graphs in HTML are not properly clickable. For doxygen 1.3
 it is recommended to use at least graphviz 1.8.10 or higher.
+For doxygen 1.4.7 or higher it is recommended to 
+use GraphViz 2.8 or higher to avoid font issues.
 
 <b>Red Hat 9.0 problems</b>
 
@@ -358,6 +360,39 @@ export LANG=
 before running make.
 
 \section install_src_windows Compiling from source on Windows
+
+From version 1.5.0 onwards, build files are provided for Visual Studio 2005.
+Also the free "Express" version of Developer Studio can be used to compile doxygen.
+Alternatively, you can compile doxygen \ref install_src_unix "the Unix way" using 
+<a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
+or <a href="http://www.mingw.org/">MinGW</a>.
+
+Before you can compile doxygen you need to download and install the C++ compiler of
+Visual Studio. Since Microsoft apparently wants to lure everyone into using their 
+.NET stuff, you need to
+<a href="http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/">
+do some manual steps</a> in order to setup a proper working environment for building
+native win32 applications.
+
+Once your environment is setup, you 
+can <a href="http://www.stack.nl/~dimitri/doxygen/download.html#latestsrc">download</a> 
+the source distribution of doxygen and unpack it. 
+If you don't have a tool like WinZip, then I suggest to download 
+<a href="http://sourceforge.net/projects/unxutils/">unxutils</a>
+and untar the archive from within a command box using
+\verbatim
+  tar zxvf doxygen-version.src.tar.gz
+\endverbatim
+Inside the archive you will find a \c winbuild directory containing a \c Doxygen.sln
+file. Just open this file in Visual Studio. You can now build the Doxygen, Doxytag,
+and Doxywizard projects for Release or Debug to compile the executables. 
+
+Note that compiling Doxywizard currently requires a <a href="http://www.trolltech.com/products/qt/qt3">
+commercial license for Qt 3</a>.
+
+Also read the next section for additional tools you may need to install.
+
+<!--
 
 Currently, I have only compiled doxygen for Windows using Microsoft's 
 Visual C++ (version 6.0). For other compilers you may need to edit the 
@@ -507,8 +542,41 @@ Compilation is now done by performing the following steps:
     documentation can be generated. 
 </ol>
 
+-->
+
 \section install_bin_windows Installing the binaries on Windows
 
+Doxygen comes as a self-installing archive, so installation is extremely simple.
+Just follow the dialogs.
+
+After installation it is recommended to also download and install GraphViz
+(version 2.8 or better is highly recommended). Doxygen can use the \c dot tool 
+of the GraphViz package to render nicer diagrams, see the 
+\ref cfg_have_dot "HAVE_DOT" option in the configuration file.
+
+If you want to produce compressed HTML files (see \ref 
+cfg_generate_htmlhelp "GENERATE_HTMLHELP") in the config file, then 
+you need the Microsoft HTML help workshop. 
+You can download it from 
+<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">Microsoft</a>.
+
+In order to generate PDF output or use scientific formulas you will also need to
+install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
+<a href="http://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>. 
+
+For LaTeX a number of distributions exists. Popular onces that should work with
+doxygen are <a href="http://www.miktex.org">MikTex</a> 
+and <a href="http://www.xemtex.org">XemTex</a>.
+
+Ghostscript can be <a href="http://sourceforge.net/projects/ghostscript/">downloaded</a> 
+from Sourceforge.
+
+After installing LaTeX and Ghostscript you'll need to make sure the tools
+latex.exe, pdflatex.exe, and gswin32c.exe are present in the search path of a
+command box. Follow <a href="http://www.computerhope.com/issues/ch000549.htm">these</a>
+instructions if you are unsure and run the commands from a command box to verify it works.
+
+<!--
 There is no fancy installation procedure at the moment (if anyone can
 add it in a location independent way please let me know).
 
@@ -566,21 +634,23 @@ features:
     and the collaboration graphs.
 </ul>
 
+-->
+
 \section build_tools Tools used to develop doxygen
 
-Doxygen was developed and tested under Linux using the following 
+Doxygen was developed and tested under Linux &amp; MacOSX using the following 
 open-source tools:
 <ul>
-<li>GCC version 3.3.1
-<li>GNU flex version 2.5.4
+<li>GCC version 3.3.6 (Linux) and 4.0.1 (MacOSX)
+<li>GNU flex version 2.5.33 (Linux) and 2.5.4 (MacOSX)
 <li>GNU bison version 1.75
 <li>GNU make version 3.80
 <li>Perl version 5.8.1
 <li>VIM version 6.2
-<li>Mozilla 1.0
+<li>Firefox 1.5
 <li>Troll Tech's tmake version 1.3 (included in the distribution) 
-<li>teTeX version 1.0
-<li>CVS 1.10.7
+<li>teTeX version 2.0.2
+<li>CVS 1.12.12
 </ul>
 
 \htmlonly

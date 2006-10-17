@@ -13,7 +13,7 @@ TranslatorAfrikaans
 Johan Prinsloo: johan@zippysnoek.com
 
 TranslatorArabic
-Moaz Reyad: <moazreyad@yahoo.com>
+Moaz Reyad: moazreyad@yahoo.com
 
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino@uol.com.br
@@ -86,7 +86,7 @@ TranslatorNorwegian
 Lars Erik Jordet: lejordet@gmail.com
 
 TranslatorPersian
-Ali Nadalizadeh: <nadalisoft@yahoo.com>
+Ali Nadalizadeh: nadalisoft@yahoo.com
 
 TranslatorPolish 
 Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl
@@ -108,7 +108,7 @@ TranslatorSlovak
 Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
 
 TranslatorSlovene
-Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ztm.si
+Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ostri.org
 
 TranslatorSpanish 
 Francisco Oltra Thennet: foltra@puc.cl

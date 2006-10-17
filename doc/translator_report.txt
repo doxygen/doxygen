@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
 Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 12 translators are up-to-date, 21 translators are based on
+Of them, 13 translators are up-to-date, 20 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,16 +17,17 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 194 of the required methods. Anyway, there
 still may be some details listed even for them:
 
-  TranslatorBrazilian -- Remove the obsolete methods (never used).
+  TranslatorBrazilian
   TranslatorCatalan
   TranslatorChinese
   TranslatorCroatian
   TranslatorCzech
-  TranslatorDanish -- Change the base class to Translator.
-  TranslatorDutch -- Remove the obsolete methods (never used).
-  TranslatorEnglish -- Remove the obsolete methods (never used).
+  TranslatorDanish
+  TranslatorDutch
+  TranslatorEnglish
+  TranslatorFrench
   TranslatorGerman
-  TranslatorItalian -- Change the base class to Translator.
+  TranslatorItalian
   TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorRussian
 
@@ -46,7 +47,6 @@ must be implemented to become up-to-date:
   TranslatorKorean                1.4.6 	 2 methods to implement
   TranslatorIndonesian            1.4.6 	 1 method to implement
   TranslatorHungarian             1.4.6 	 2 methods to implement
-  TranslatorFrench                1.4.6 	 1 method to implement
   TranslatorChinesetraditional    1.4.6 	 1 method to implement
   TranslatorArabic                1.4.6 	 1 method to implement
   TranslatorAfrikaans             1.4.6 	 2 methods to implement
@@ -105,24 +105,6 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorBrazilian   (Translator)
--------------------
-
-  Implements 194 of the required methods.
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
-
-
 TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
 ----------------------------
 
@@ -136,60 +118,6 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
 
     virtual QCString trHeaderFilesDescription()
     virtual QCString trField(bool/*first_capital*/, bool/*singular*/)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorDanish   (TranslatorAdapter_1_3_9)
-----------------
-
-  Implements 194 of the required methods.
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorDutch   (Translator)
----------------
-
-  Implements 194 of the required methods.
-
-  Obsolete methods (should be removed, never used):
-
-    QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    QCString trPackageDocumentation()
-    QCString trSources()
-    QCString trReimplementedForInternalReasons()
-    QCString trInterfaces()
-    QCString trHeaderFiles()
-    QCString trBugsAndLimitations()
-    QCString trNoDescriptionAvailable()
-
-
-TranslatorEnglish   (Translator)
------------------
-
-  Implements 194 of the required methods.
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
     virtual QCString trPackageDocumentation()
     virtual QCString trSources()
     virtual QCString trReimplementedForInternalReasons()
@@ -315,28 +243,6 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorFrench   (TranslatorAdapter_1_4_6)  1 method to implement
-----------------
-
-  Implements 193 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCallerGraph()
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
-
-
 TranslatorGreek   (TranslatorAdapter_1_2_11)  27 methods to implement
 ---------------
 
@@ -416,12 +322,6 @@ TranslatorIndonesian   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorItalian   (TranslatorAdapter_1_4_6)
------------------
-
-  Implements 194 of the required methods.
 
 
 TranslatorJapanese   (Translator)

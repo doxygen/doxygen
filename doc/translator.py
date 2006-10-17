@@ -46,6 +46,8 @@
   2004/10/04 - Reporting of not called translator methods added.
   2004/10/05 - Modified to check only doxygen/src sources for the previous report.
   2005/02/28 - Slight modification to generate "mailto.txt" auxiliary file.
+  2005/08/15 - Doxygen's root directory determined primarily from DOXYGEN 
+               environment variable. When not found, then relatively to the script.
   """                               
 
 from __future__ import generators
@@ -1177,12 +1179,16 @@ class TrManager:
         this will process only translator_cz.h source.
         """
         
-        # Determine the path to the script and the absolute path to the
-        # Doxygen's root subdirectory.
+        # Determine the path to the script and its name.
         self.script = os.path.abspath(sys.argv[0]) 
         self.script_path, self.script_name = os.path.split(self.script) 
         self.script_path = os.path.abspath(self.script_path)
-        self.doxy_path = os.path.abspath(os.path.join(self.script_path, '..'))    
+        
+        # Determine the absolute path to the Doxygen's root subdirectory.
+        # If DOXYGEN environment variable is not found, the directory is
+        # determined from the path of the script.
+        doxy_default = os.path.join(self.script_path, '..')    
+        self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
         
         # Get the explicit arguments of the script.
         self.script_argLst = sys.argv[1:]
@@ -1369,9 +1375,8 @@ class TrManager:
         the translator methods are included in the list. The file names 
         are searched in doxygen/src directory.
         """ 
-        srcdir = os.path.join(self.doxy_path, 'src')
         files = []
-        for item in os.listdir(srcdir):
+        for item in os.listdir(self.src_path):
             # Split the bare name to get the extension.
             name, ext = os.path.splitext(item)
             ext = ext.lower()
@@ -1379,7 +1384,7 @@ class TrManager:
             # Include only .cpp and .h files (case independent) and exclude
             # the files where the checked identifiers are defined.
             if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
-                fname = os.path.join(srcdir, item)
+                fname = os.path.join(self.src_path, item)
                 assert os.path.isfile(fname) # assumes no directory with the ext
                 files.append(fname)          # full name
         return files
@@ -1624,7 +1629,7 @@ class TrManager:
         
         Fills the dictionary classId -> [(name, e-mail), ...]."""
         
-        fname = os.path.join(self.script_path, self.maintainersFileName)
+        fname = os.path.join(self.doc_path, self.maintainersFileName)
 
         # Include the maintainers file to the group of files checked with
         # respect to the modification time.
@@ -1678,7 +1683,7 @@ class TrManager:
         # Check the last modification time of the template file. It is the
         # last file from the group that decide whether the documentation
         # should or should not be generated.
-        fTplName = os.path.join(self.script_path, self.languageTplFileName)
+        fTplName = os.path.join(self.doc_path, self.languageTplFileName)
         tim = os.path.getmtime(fTplName)
         if tim > self.lastModificationTime:
             self.lastModificationTime = tim

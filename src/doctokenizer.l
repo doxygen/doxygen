@@ -195,7 +195,7 @@ static void handleHtmlTag()
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<yyleng && c==' ') { c=tagText.at(++i); }
+    while (i<yyleng && isspace(c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -206,17 +206,17 @@ static void handleHtmlTag()
     }
     startName=i;
     // search for end of name
-    while (i<yyleng && c!=' ' && c!='=') { c=tagText.at(++i); }
+    while (i<yyleng && !isspace(c) && c!='=') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower(); 
     // skip spaces
-    while (i<yyleng && c==' ') { c=tagText.at(++i); } 
+    while (i<yyleng && isspace(c)) { c=tagText.at(++i); } 
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<yyleng && c==' ') { c=tagText.at(++i); } 
+      while (i<yyleng && isspace(c)) { c=tagText.at(++i); } 
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
@@ -240,7 +240,7 @@ static void handleHtmlTag()
       {
 	startAttrib=i;
 	// search for separator
-        while (i<yyleng && c!=' ') { c=tagText.at(++i); } 
+        while (i<yyleng && !isspace(c)) { c=tagText.at(++i); } 
 	endAttrib=i;
 	if (i<yyleng) c=tagText.at(++i);
       }
@@ -261,7 +261,7 @@ static QString stripEmptyLines(const char *s)
   for (;;)
   {
     int c;
-    while ((c=s[p]) && (c==' ' || c=='\t' || c=='\r')) p++;
+    while ((c=s[p]) && isspace(c)) p++;
     if (s[p]=='\n') result=++p; else break;
   }
   return &s[result];

@@ -79,7 +79,7 @@
 #ifndef TRANSLATOR_DK_H
 #define TRANSLATOR_DK_H
 
-class TranslatorDanish : public TranslatorAdapter_1_3_9
+class TranslatorDanish : public Translator
 {
   public:
 
@@ -225,10 +225,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     virtual QCString trFileList()
     { return "Filoversigt"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Headerfiler"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
@@ -338,10 +334,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Her er de headerfiler, der udgør API'en:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Her er en liste over alle eksempler:"; }
@@ -353,15 +345,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Her er en liste over alle moduler:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Ikke beskrevet"; }
-
-    // index titles (the project name is prepended for these)
-
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
@@ -558,18 +541,9 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     virtual QCString trForInternalUseOnly()
     { return "Kun til intern brug."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Metoden er genimplementeret af interne grunde; "
-	  "API'en er ikke påvirket."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Advarsel"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Fejl og begrænsninger"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -842,9 +816,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
-
-    virtual QCString trSources()
-    { return "Kilder"; /* Tranlation?? */ }
 
     virtual QCString trDefinedAtLineInSourceFile()
     {
@@ -1122,11 +1093,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Grænseflader";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1157,11 +1123,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     virtual QCString trPackages()
     {
       return "Pakker";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Pakke-dokumentation";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
@@ -1265,15 +1226,6 @@ class TranslatorDanish : public TranslatorAdapter_1_3_9
     virtual QCString trMember(bool first_capital, bool singular)
     {
       return createNoun(first_capital, singular, "medlem", "mer");
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      return createNoun(first_capital, singular, "felt", "er");
     }
 
     /*! This is used for translation of the word that will possibly
