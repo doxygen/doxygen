@@ -963,12 +963,14 @@ void MemberDef::setDefinitionTemplateParameterLists(QList<ArgumentList> *lists)
 void MemberDef::writeLink(OutputList &ol,ClassDef *,NamespaceDef *,
                       FileDef *fd,GroupDef *gd,bool onlyText)
 {
+  static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
   makeResident();
   LockingPtr<MemberDef> lock(this,this);
-  QCString sep = Config_getBool("OPTIMIZE_OUTPUT_JAVA") ? "." : "::";
+  QCString sep = optimizeOutputJava ? "." : "::";
   QCString n = name();
-  if (m_impl->classDef && gd) n.prepend(m_impl->classDef->name()+sep);
-  else if (m_impl->nspace && (gd || fd)) n.prepend(m_impl->nspace->name()+sep);
+  if (!hideScopeNames && m_impl->classDef && gd) n.prepend(m_impl->classDef->name()+sep);
+  else if (!hideScopeNames && m_impl->nspace && (gd || fd)) n.prepend(m_impl->nspace->name()+sep);
   if (isObjCMethod())
   {
     if (isStatic()) ol.docify("+ "); else ol.docify("- ");

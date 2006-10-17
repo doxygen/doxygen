@@ -36,7 +36,7 @@ static QString escapeLabelName(const char *s)
     switch (c)
     {
       case '%': result+="\\%"; break;
-      case '|': result+="\\tt{\"|}"; break;
+      case '|': result+="\\texttt{\"|}"; break;
       case '!': result+="\"!"; break;
       default: result+=c;
     }
@@ -69,7 +69,7 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
       case '!': m_t << "\"!"; break;
       case '"': m_t << "\"\""; break;
       case '@': m_t << "\"@"; break;
-      case '|': m_t << "\\tt{\"|}"; break;
+      case '|': m_t << "\\texttt{\"|}"; break;
       case '[': m_t << "["; break;
       case ']': m_t << "]"; break;
       default:  str[0]=c; filter(str); break;
@@ -191,7 +191,7 @@ void LatexDocVisitor::visit(DocURL *u)
     if (u->isEmail()) m_t << "mailto:";
     m_t << u->url() << "}";
   }
-  m_t << "\\tt{";
+  m_t << "{\\tt ";
   filter(u->url());
   m_t << "}";
 }
@@ -972,7 +972,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   }
   else
   {
-    m_t << "\\bf{";
+    m_t << "{\\bf ";
   }
   m_insideItem=TRUE;
   filter(x->title());

@@ -1041,14 +1041,18 @@ static void addClassToContext(EntryNav *rootNav)
   {
      scName=rootNav->parent()->name();
   }
-  // name without parent's scope
+  // name without parent's scope: TODO: is this still true?
   QCString fullName = root->name;
 
   // strip off any template parameters (but not those for specializations)
   fullName=stripTemplateSpecifiersFromScope(fullName);
 
   // name with scope
-  QCString qualifiedName = scName.isEmpty() ? fullName : scName+"::"+fullName;
+  QCString qualifiedName = fullName;
+  if (!scName.isEmpty() && !leftScopeMatch(fullName,scName))
+  {
+    qualifiedName.prepend(scName+"::");
+  }
 
   ClassDef *cd = getClass(qualifiedName);
 

@@ -91,8 +91,6 @@ class TranslatorDutch : public Translator
     { return "Klasse Lijst"; }
     QCString trFileList()
     { return "File Lijst"; }
-    QCString trHeaderFiles()
-    { return "Header Lijst"; }
     QCString trCompoundMembers()
     { return "Klasse Members"; }
     QCString trFileMembers()
@@ -136,16 +134,12 @@ class TranslatorDutch : public Translator
       else result+="de files waartoe ze behoren:";
       return result;
     }
-    QCString trHeaderFilesDescription()
-    { return "Hieronder volgen de header files die de API vormen:"; }
     QCString trExamplesDescription()
     { return "Hieronder volgt de lijst met alle voorbeelden:"; }
     QCString trRelatedPagesDescription()
     { return "Hieronder volgt de lijst met alle pagina's die gerelateerde documentatie bevatten:"; }
     QCString trModulesDescription()
     { return "Hieronder volgt de lijst met alle modules:"; }
-    QCString trNoDescriptionAvailable()
-    { return "Geen korte beschrijving beschikbaar"; }
 
     QCString trDocumentation()
     { return "Documentatie"; }
@@ -217,14 +211,8 @@ class TranslatorDutch : public Translator
     }
     QCString trForInternalUseOnly()
     { return "Alleen voor intern gebruik."; }
-    QCString trReimplementedForInternalReasons()
-    { return "Om interne redenen opnieuwd ge&iuml;mplemented; "
-             "de API wordt er niet door be&iuml;nvloed."; 
-    }
     QCString trWarning()
     { return "Waarschuwing"; }
-    QCString trBugsAndLimitations()
-    { return "Fouten en beperkingen"; }
     QCString trVersion()
     { return "Versie"; }
     QCString trDate()
@@ -466,10 +454,6 @@ class TranslatorDutch : public Translator
 // new since 0.49-991106
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trSources()
-    {
-      return "Broncode";
-    }
     QCString trDefinedAtLineInSourceFile()
     {
       return "De definitie bevindt zich op regel @0 in de file @1.";
@@ -765,11 +749,6 @@ class TranslatorDutch : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    QCString trInterfaces()
-    {
-      return "Interfaces";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     QCString trClasses()
     {
@@ -794,11 +773,6 @@ class TranslatorDutch : public Translator
     QCString trPackages()
     {
       return "Packages";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    QCString trPackageDocumentation()
-    {
-      return "Package Documentatie";
     }
     /*! Text shown before a multi-line define */
     QCString trDefineValue()
@@ -936,17 +910,6 @@ class TranslatorDutch : public Translator
       return result; 
     }
    
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Veld" : "veld"));
-      if (!singular)  result+="en";
-      return result; 
-    }
-
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.

@@ -183,10 +183,6 @@ class TranslatorBrazilian : public Translator
     virtual QCString trFileList()
     { return "Lista de Arquivos"; }
 
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Arquivos de Cabeçalho (Headers)"; }
-
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
@@ -321,10 +317,6 @@ class TranslatorBrazilian : public Translator
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Estes são os arquivos de cabeçalho que compõe a API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
     { return "Esta é a lista com todos os exemplos:"; }
@@ -336,15 +328,6 @@ class TranslatorBrazilian : public Translator
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
     { return "Esta é a lista com todos os módulos:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Sem descrição disponível"; }
-
-    // index titles (the project name is prepended for these)
-
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
@@ -546,17 +529,9 @@ class TranslatorBrazilian : public Translator
     virtual QCString trForInternalUseOnly()
     { return "Apenas para uso interno."; }
 
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Reimplementado por razões internas. A API não foi modificada."; }
-
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
     { return "Aviso"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Problemas e Limitações"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -832,10 +807,6 @@ class TranslatorBrazilian : public Translator
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Códigos-Fonte";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
       return "Definição na linha @0 do arquivo @1.";
@@ -1138,11 +1109,6 @@ class TranslatorBrazilian : public Translator
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Interfaces";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
@@ -1172,11 +1138,6 @@ class TranslatorBrazilian : public Translator
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
-    {
-      return "Pacotes";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
     {
       return "Pacotes";
     }
@@ -1312,17 +1273,6 @@ class TranslatorBrazilian : public Translator
     virtual QCString trMember(bool first_capital, bool singular)
     {
       QCString result((first_capital ? "Membro" : "membro"));
-      if (!singular)  result+="s";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Campo" : "campo"));
       if (!singular)  result+="s";
       return result;
     }

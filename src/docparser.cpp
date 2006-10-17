@@ -158,7 +158,8 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
   //printf("Search for %s\n",fileName);
   if ((fd=findFileDef(Doxygen::imageNameDict,fileName,ambig)))
   {
-    QFile inImage(QString(fd->absFilePath().data()));
+    QCString inputFile = fd->absFilePath();
+    QFile inImage(inputFile);
     if (inImage.open(IO_ReadOnly))
     {
       result = fileName;
@@ -185,19 +186,22 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
-      QFile outImage(QString(outputFile.data()));
-      if (outImage.open(IO_WriteOnly)) // copy the image
+      if (outputFile!=inputFile) // prevent copying to ourself
       {
-	char *buffer = new char[inImage.size()];
-	inImage.readBlock(buffer,inImage.size());
-	outImage.writeBlock(buffer,inImage.size());
-	outImage.flush();
-	delete buffer;
-      }
-      else
-      {
-	warn_doc_error(g_fileName,doctokenizerYYlineno,
-	    "Warning: could not write output image %s",outputFile.data());
+        QFile outImage(outputFile.data());
+        if (outImage.open(IO_WriteOnly)) // copy the image
+        {
+          char *buffer = new char[inImage.size()];
+          inImage.readBlock(buffer,inImage.size());
+          outImage.writeBlock(buffer,inImage.size());
+          outImage.flush();
+          delete buffer;
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,
+              "Warning: could not write output image %s",outputFile.data());
+        }
       }
     }
     else

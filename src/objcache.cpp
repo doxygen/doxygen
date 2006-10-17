@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <qglobal.h>
 #include "objcache.h"
 
 //----------------------------------------------------------------------
@@ -176,11 +177,10 @@ void ObjCache::moveToFront(int index)
 
 unsigned int ObjCache::hash(void *addr)
 {
-  static bool isPtr64 = sizeof(addr)==8 && sizeof(long)==8;
-
-  unsigned long key = (unsigned long)addr;
+  static bool isPtr64 = sizeof(addr)==8;
   if (isPtr64)
   {
+    uint64 key = (uint64)addr;
     // Thomas Wang's 64 bit Mix Function
     key += ~(key << 32);
     key ^=  (key >> 22);
@@ -190,18 +190,20 @@ unsigned int ObjCache::hash(void *addr)
     key ^=  (key >> 15);
     key += ~(key << 27);
     key ^=  (key >> 31);
+    return key & (m_size-1);
   }
   else
   {
     // Thomas Wang's 32 bit Mix Function
+    unsigned long key = (unsigned long)addr;
     key += ~(key << 15);
     key ^=  (key >> 10);
     key +=  (key << 3);
     key ^=  (key >> 6);
     key += ~(key << 11);
     key ^=  (key >> 16);
+    return key & (m_size-1);
   }
-  return key & (m_size-1);
 }
 
 ObjCache::HashNode *ObjCache::hashFind(void *obj)

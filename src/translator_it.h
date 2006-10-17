@@ -19,6 +19,7 @@
  *
  * Revision history
  *
+ *  2006/10: made class to derive directly from Translator class (reported in Petr Prikryl October 9 translator report)
  *  2006/06: updated translation of new items used since version 1.4.6
  *  2006/05: translated new items used since version 1.4.6
  *           corrected typo in trPackageMembers method
@@ -77,7 +78,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public TranslatorAdapter_1_4_6
+class TranslatorItalian : public Translator
 {
   public:
 

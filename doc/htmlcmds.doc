@@ -36,7 +36,11 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\<CAPTION\></tt> Starts a caption. Use within a table only.
 <li><tt>\</CAPTION\></tt> Ends a caption. Use within a table only.
 <li><tt>\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
+                       Note that for C# code, this command is equivalent to 
+                       \ref cmdcode "\\code".
 <li><tt>\</CODE\></tt> End a <tt>\<CODE\></tt> section.
+                       Note that for C# code, this command is equivalent to
+                       \ref cmdendcode "\\endcode".
 <li><tt>\<DD\></tt>    Starts an item description.
 <li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.

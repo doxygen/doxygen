@@ -290,8 +290,8 @@ static void appendDocBlock() {
 
 static void handleCommentBlock(const QCString &doc,bool brief)
 {
-  //printf("handleCommentBlock(doc=[%s] brief=%d docBlockInBody=%d\n",
-  //    doc.data(),brief,docBlockInBody);
+  //printf("handleCommentBlock(doc=[%s] brief=%d docBlockInBody=%d docBlockJavaStyle=%d\n",
+  //    doc.data(),brief,docBlockInBody,docBlockJavaStyle);
 
   // TODO: Fix me
   docBlockInBody=FALSE;
@@ -310,7 +310,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	yyFileName, // file
 	brief ? current->briefLine : current->docLine,   // line of block start
 	docBlockInBody ? FALSE : brief, 
-	docBlockJavaStyle, // javadoc style
+	FALSE, //docBlockJavaStyle, // javadoc style
 	docBlockInBody,
 	protection,
         position,
@@ -854,7 +854,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
      ")"                { // end of parameter list
                         }
 
-     ":"                {
+     ":"{B}             {
 			  g_specialBlock = TRUE; // expecting a docstring
 			  bodyEntry = current;
                           BEGIN( FunctionBody );
