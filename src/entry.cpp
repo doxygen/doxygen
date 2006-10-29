@@ -21,6 +21,7 @@
 #include "marshal.h"
 #include "util.h"
 #include "section.h"
+#include "doxygen.h"
 
 int Entry::num=0;
 
@@ -394,7 +395,8 @@ static bool loadEntry(Entry *e,FileStorage *f)
   uint header=unmarshalUInt(f);
   if (header!=HEADER)
   {
-    printf("Internal error: Invalid header for entry in storage file: %x. Disk full?\n",header);
+    printf("Internal error: Invalid header %x for entry in storage file %s\n",
+        header,Doxygen::entryDBFileName.data());
     exit(1);
   }
   e->protection       = (Protection)unmarshalInt(f);

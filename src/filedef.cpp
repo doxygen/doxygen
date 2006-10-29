@@ -840,6 +840,13 @@ void FileDef::addUsingDirective(NamespaceDef *nd)
   {
     usingDirList->append(nd->qualifiedName(),nd);
   }
+  //printf("%p: FileDef::addUsingDirective: %s:%d\n",this,name().data(),usingDirList->count());
+}
+
+NamespaceSDict *FileDef::getUsedNamespaces() const 
+{ 
+  //printf("%p: FileDef::getUsedNamespace: %s:%d\n",this,name().data(),usingDirList?usingDirList->count():0);
+  return usingDirList; 
 }
 
 void FileDef::addUsingDeclaration(Definition *d)
@@ -917,7 +924,10 @@ void FileDef::addIncludedUsingDirectives()
               if (usingDirList==0) usingDirList = new NamespaceSDict;
               //printf("Prepending used namespace %s to the list of file %s\n",
               //    nd->name().data(),name().data());
-              usingDirList->prepend(nd->qualifiedName(),nd);
+              if (usingDirList->find(nd->qualifiedName())==0) // not yet added
+              {
+                usingDirList->prepend(nd->qualifiedName(),nd);
+              }
             }
           }
         }

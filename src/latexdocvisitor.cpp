@@ -1021,17 +1021,32 @@ void LatexDocVisitor::filter(const char *str)
 
 void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
 {
-  if (ref.isEmpty() && Config_getBool("PDF_HYPERLINKS"))
+  if (ref.isEmpty() && Config_getBool("PDF_HYPERLINKS")) // internal PDF link 
   {
-    m_t << "\\hyperlink{";
-    if (!file.isEmpty()) m_t << stripPath(file);
-    if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
-    if (!anchor.isEmpty()) m_t << anchor;
-    m_t << "}{";
+    if (ref.isEmpty()) {
+      m_t << "\\hyperlink{";
+      if (!file.isEmpty()) m_t << stripPath(file);
+      if (!file.isEmpty() && !anchor.isEmpty()) m_t << "_";
+      if (!anchor.isEmpty()) m_t << anchor;
+      m_t << "}{";
+    }
+    else
+    {
+      QCString *dest;
+      m_t << "\\href{";
+      if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
+      if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
+      if (!anchor.isEmpty()) m_t << "#" << anchor;
+      m_t << "}{";
+    }
   }
-  else
+  else if (ref.isEmpty()) // internal non-PDF link
   {
     m_t << "\\doxyref{";
+  }
+  else // external link
+  { 
+    m_t << "{\\bf ";
   }
 }
 

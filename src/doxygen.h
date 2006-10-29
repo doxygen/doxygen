@@ -121,6 +121,8 @@ class Doxygen
     static bool                      suppressDocWarnings;
     static ObjCache                 *symbolCache;
     static Store                    *symbolStorage;
+    static QCString                  objDBFileName;
+    static QCString                  entryDBFileName;
 };
 
 void initDoxygen();

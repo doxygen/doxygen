@@ -1002,7 +1002,7 @@ void LatexGenerator::writeObjectLink(const char *ref, const char *f,
   }
   else
   {
-    t << "{\\bf";
+    t << "{\\bf ";
     docify(text);
     t << "}";
   } 

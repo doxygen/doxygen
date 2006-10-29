@@ -79,6 +79,7 @@ void MemberGroup::insertMember(MemberDef *md)
   else if (inDeclSection==0)
   {
     inDeclSection = md->getSectionList(m_parent);
+    //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
   }
   memberList->append(md);
 
@@ -133,7 +134,7 @@ void MemberGroup::addToDeclarationSection()
 {
   if (inDeclSection)
   {
-    //printf("Adding group %p to list %p\n",this,inDeclSection);
+    //printf("Adding group %p to list %p (type=%d)\n",this,inDeclSection,inDeclSection->listType());
     inDeclSection->addMemberGroup(this);
   }
 }

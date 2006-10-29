@@ -235,6 +235,8 @@ QCString stripScope(const char *name);
 
 int iSystem(const char *command,const char *args,bool commandHasConsole=TRUE);
 
+uint iPid();
+
 QCString convertToHtml(const char *s);
 
 QCString convertToXML(const char *s);

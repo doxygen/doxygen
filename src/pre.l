@@ -1222,6 +1222,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 %x	CopyString
 %x      Include
 %x      IncludeID
+%x      EndImport
 %x	DefName
 %x	DefineArg
 %x	DefineText
@@ -1700,7 +1701,22 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Include>[^\">\n]+[\">]			{ 
 					  g_incName+=yytext;
 					  readIncludeFile(g_incName);
-					  BEGIN(Start);
+					  if (g_isImported)
+					  {
+					    BEGIN(EndImport);
+					  }
+					  else
+					  {
+					    BEGIN(Start);
+					  }
+  					}
+<EndImport>[^\\]*/\n			{
+  					  BEGIN(Start);
+  					}
+<EndImport>\\[\r]?"\n"			{ 
+					  outputChar('\n');
+					}
+<EndImport>.				{
   					}
 <DefName>{ID}/"("			{
   					  //printf("Define() `%s'\n",yytext);

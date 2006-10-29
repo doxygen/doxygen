@@ -818,7 +818,6 @@ QCString MemberDef::getOutputFileBase() const
        "Warning: Internal inconsistency: member %s does not belong to any"
        " container!",name().data()
       );
-    exit(1);
     return "dummy";
   }
   else if (separateMemberPages)
@@ -2634,6 +2633,7 @@ MemberList *MemberDef::getSectionList(Definition *d) const
 void MemberDef::setSectionList(Definition *d, MemberList *sl)   
 { 
   makeResident();
+  //printf("MemberDef::setSectionList(%p,%p) name=%s\n",d,sl,name().data());
   char key[20];
   sprintf(key,"%p",d);
   if (m_impl->classSectionSDict==0) 

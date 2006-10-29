@@ -140,5 +140,9 @@ rpmbinary: dist
 	gzip -9v $(DISTDIR).src.tar
 	rpmbuild -tb $(DISTDIR).src.tar.gz
 
+
+ctags:
+	ctags -f tags src addon/doxywizard qtools
+
 FORCE:
 
