@@ -37,15 +37,17 @@ class LockableObj
     /*! Returns TRUE if the object is currently locked. */
     bool isLocked() const { return m_lockCount>0; }
 
-  protected:
+//VC++6.0 workaround
+//  protected:
     /*! Called when the object is locked. */
     virtual void lock() const = 0;
 
     /*! Called when the object is unlocked. */
     virtual void unlock() const = 0;
 
-  private:
-    template<class T> friend class LockingPtr;
+//VC++6.0 workaround
+//  private:
+//    template<class T> friend class LockingPtr;
     int  m_lockCount;
 };
 

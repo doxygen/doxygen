@@ -150,7 +150,7 @@ class FileDef : public Definition
     DirDef *getDirDef() const { return dir; }
 
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
+    NamespaceSDict *getUsedNamespaces() const;
     void addUsingDeclaration(Definition *def);
     SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();

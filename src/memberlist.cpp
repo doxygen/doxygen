@@ -313,7 +313,7 @@ void MemberList::writeDeclarations(OutputList &ol,
              const char *title,const char *subtitle, bool showEnumValues
              /*, bool inGroup,bool countSubGroups*/)
 {
-  //printf("----- writeDeclaration() ----\n");
+  //printf("----- writeDeclaration() this=%p ----\n",this);
   countDecMembers(showEnumValues); // count member not in group
   if (numDecMembers()==0) return;
   //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
@@ -341,6 +341,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     MemberGroup *mg;
     while ((mg=mgli.current()))
     {
+      //printf("mg->header=%s\n",mg->header().data());
       bool hasHeader=mg->header()!="[NOHEADER]";
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
@@ -450,6 +451,7 @@ void MemberList::addMemberGroup(MemberGroup *mg)
   {
     memberGroupList=new MemberGroupList;
   }
+  //printf("addMemberGroup: this=%p mg=%p\n",this,mg);
   memberGroupList->append(mg);
 }
 

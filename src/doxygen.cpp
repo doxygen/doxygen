@@ -72,7 +72,6 @@
 #include "store.h"
 #include "marshal.h"
 
-
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
     EntryNavListIterator eli(*var->children()); \
@@ -83,6 +82,11 @@
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
 #define pclose _pclose
+#endif
+
+#if !defined(_WIN32) || defined(__CYGWIN__)
+#include <signal.h>
+#define HAS_SIGNALS
 #endif
 
 // globally accessible variables
@@ -129,6 +133,8 @@ QCString Doxygen::htmlFileExtension;
 bool             Doxygen::suppressDocWarnings = FALSE;
 ObjCache        *Doxygen::symbolCache = 0;
 Store           *Doxygen::symbolStorage;
+QCString         Doxygen::objDBFileName;
+QCString         Doxygen::entryDBFileName;
 
 // locally accessible globals
 static QDict<EntryNav>   classEntries(1009);
@@ -142,6 +148,7 @@ static const char     idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 FileStorage *g_storage = 0;
 
 QCString       spaces;
+
 
 
 void clearAll()
@@ -6299,39 +6306,41 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
 
     if (cd && !name.isEmpty()) // found a enum inside a compound
     {
-      //printf("Enum `%s'::`%s'\n",cd->name(),name.data());
+      //printf("Enum in class `%s'::`%s'\n",cd->name().data(),name.data());
       fd=0;
       mnsd=Doxygen::memberNameSDict;
       isGlobal=FALSE;
     }
     else if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@') // found enum inside namespace
     {
+      //printf("Enum in namespace `%s'::`%s'\n",nd->name().data(),name.data());
       mnsd=Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
     else // found a global enum
     {
       fd=rootNav->fileDef();
+      //printf("Enum in file `%s': `%s'\n",fd->name().data(),name.data());
       mnsd=Doxygen::functionNameSDict;
       isGlobal=TRUE;
     }
 
     if (!name.isEmpty())
     {
-      MemberName *mn = mnsd->find(name);
+      MemberName *mn = mnsd->find(name); // for all members with this name
       if (mn)
       {
         MemberNameIterator mni(*mn);
         MemberDef *md;
-        for (mni.toFirst(); (md=mni.current()) ; ++mni) 
+        for (mni.toFirst(); (md=mni.current()) ; ++mni)  // for each enum in this list
         {
           if (md->isEnumerate() && rootNav->children())
           {
-            EntryNavListIterator eli(*rootNav->children());
+            EntryNavListIterator eli(*rootNav->children()); // for each enum value
             EntryNav *e;
             for (;(e=eli.current());++eli)
             {
-              //printf("e->name=%s isRelated=%d\n",e->name.data(),isRelated);
+              //printf("e->name=%s isRelated=%d\n",e->name().data(),isRelated);
               MemberName *fmn=0;
               MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
               if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
@@ -6341,9 +6350,10 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                 MemberDef *fmd;
                 for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
                 {
-                  if (fmd->isEnumValue())
+                  if (fmd->isEnumValue() && fmd->getOuterScope()==md->getOuterScope()) // in same scope
                   {
-                    //printf("found enum value with same name\n");
+                    //printf("found enum value with same name %s in scope %s\n",
+                    //    fmd->name().data(),fmd->getOuterScope()->name().data());
                     if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
                     {
                       NamespaceDef *fnd=fmd->getNamespaceDef();
@@ -8208,7 +8218,7 @@ static int readDir(QFileInfo *fi,
       {
         if (errorIfNotExist)
         {
-          err("Error: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+          err("Warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
         }
       }
       else if (cfi->isFile() && 
@@ -8297,7 +8307,7 @@ static int readFileOrDirectory(const char *s,
       {
         if (errorIfNotExist)
         {
-          err("Error: source %s is not a readable file or directory... skipping.\n",s);
+          err("Warning: source %s is not a readable file or directory... skipping.\n",s);
         }
       }
       else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
@@ -8366,7 +8376,7 @@ static void readFormulaRepository()
       int se=line.find(':'); // find name and text separator.
       if (se==-1)
       {
-        err("Error: formula.repository is corrupted!\n");
+        err("Warning: formula.repository is corrupted!\n");
         break;
       }
       else
@@ -8556,7 +8566,7 @@ void initDoxygen()
   setlocale(LC_ALL,"");
   setlocale(LC_NUMERIC,"C");
 #endif 
-  
+
   //Doxygen::symbolMap->setAutoDelete(TRUE);
 
   Doxygen::runningTime.start();
@@ -8746,7 +8756,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            err("Warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -8794,7 +8804,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("Error: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            err("Warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -8920,7 +8930,7 @@ void checkConfiguration()
   QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
   if (!setTranslator(outputLanguage))
   {
-    err("Error: Output language %s not supported! Using English instead.\n",
+    err("Warning: Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
   QStrList &includePath = Config_getList("INCLUDE_PATH");
@@ -8943,6 +8953,24 @@ void checkConfiguration()
   
 
 }
+
+#ifdef HAS_SIGNALS
+static void stopDoxygen(int)
+{
+  QDir thisDir;
+  msg("Cleaning up...\n");
+  if (!Doxygen::entryDBFileName.isEmpty())
+  {
+    thisDir.remove(Doxygen::entryDBFileName);
+  }
+  if (!Doxygen::objDBFileName.isEmpty())
+  {
+    thisDir.remove(Doxygen::objDBFileName);
+  }
+  exit(1);
+}
+#endif
+
 
 void parseInput()
 {
@@ -8986,9 +9014,19 @@ void parseInput()
                                              //       ~2.0 MByte "overhead"
   Doxygen::symbolStorage = new Store;
 
-  if (Doxygen::symbolStorage->open(outputDirectory+"/doxygen_objdb.tmp")==-1)
+#ifdef HAS_SIGNALS
+  signal(SIGINT, stopDoxygen);
+#endif
+
+  uint pid = iPid();
+  Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
+  Doxygen::objDBFileName.prepend(outputDirectory+"/");
+  Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
+  Doxygen::entryDBFileName.prepend(outputDirectory+"/");
+  
+  if (Doxygen::symbolStorage->open(Doxygen::objDBFileName)==-1)
   {
-    err("Failed to open temporary file %s\n",(outputDirectory+"/doxygen_objdb.tmp").data());
+    err("Failed to open temporary file %s\n",Doxygen::objDBFileName.data());
     exit(1);
   }
 
@@ -9265,11 +9303,11 @@ void parseInput()
    **************************************************************************/
 
   g_storage = new FileStorage;
-  g_storage->setName(outputDirectory+"/doxygen_entrydb.tmp");
+  g_storage->setName(Doxygen::entryDBFileName);
   if (!g_storage->open(IO_WriteOnly))
   {
-    err("Failed to create temporary storage file %s/doxygen_entrydb.tmp\n",
-        outputDirectory.data());
+    err("Failed to create temporary storage file %s\n",
+        Doxygen::entryDBFileName.data());
     exit(1);
   }
   Entry *root=new Entry;
@@ -9294,8 +9332,8 @@ void parseInput()
   g_storage->close();
   if (!g_storage->open(IO_ReadOnly))
   {
-    err("Failed to open temporary storage file %s/doxygen_entrydb.tmp for reading",
-        outputDirectory.data());
+    err("Failed to open temporary storage file %s for reading",
+        Doxygen::entryDBFileName.data());
     exit(1);
   }
 
@@ -9430,7 +9468,7 @@ void parseInput()
   g_storage=0;
 
   QDir thisDir;
-  thisDir.remove(outputDirectory+"/doxygen_entrydb.tmp");
+  thisDir.remove(Doxygen::entryDBFileName);
   
   msg("Determining which enums are documented\n");
   findDocumentedEnumValues();
@@ -9776,7 +9814,7 @@ void generateOutput()
   finializeDocParser();
   Doxygen::symbolStorage->close();
   QDir thisDir;
-  thisDir.remove(Config_getString("OUTPUT_DIRECTORY")+"/doxygen_objdb.tmp");
+  thisDir.remove(Doxygen::objDBFileName);
   Config::deleteInstance();
   QTextCodec::deleteAllCodecs();
   delete Doxygen::symbolCache;

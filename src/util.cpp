@@ -254,6 +254,17 @@ int iSystem(const char *command,const char *args,bool commandHasConsole)
 
 }
 
+uint iPid()
+{
+  uint pid;
+#if !defined(_WIN32) || defined(__CYGWIN__)
+  pid = (uint)getpid();
+#else
+  pid = (uint)GetCurrentProcessId();
+#endif
+  return pid;
+}
+
 
 
 
@@ -886,9 +897,11 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
   {
     NamespaceSDict::Iterator nli(*nl);
     NamespaceDef *und;
-    for (nli.toFirst();(und=nli.current());++nli)
+    int count=0;
+    for (nli.toFirst();(und=nli.current());++nli,count++)
     {
-      //printf("[Trying via used namespace %s\n",und->name().data());
+      //printf("[Trying via used namespace %s: count=%d/%d\n",und->name().data(),
+      //    count,nl->count());
       Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,fileScope,explicitScopePart);
       if (sc && item->getOuterScope()==sc) 
       {

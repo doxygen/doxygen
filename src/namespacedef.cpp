@@ -483,6 +483,13 @@ void NamespaceDef::addUsingDirective(NamespaceDef *nd)
   {
     usingDirList->append(nd->qualifiedName(),nd);
   }
+  //printf("%p: NamespaceDef::addUsingDirective: %s:%d\n",this,name().data(),usingDirList->count());
+}
+
+NamespaceSDict *NamespaceDef::getUsedNamespaces() const 
+{ 
+  //printf("%p: NamespaceDef::getUsedNamespace: %s:%d\n",this,name().data(),usingDirList?usingDirList->count():0);
+  return usingDirList; 
 }
 
 void NamespaceDef::addUsingDeclaration(Definition *d)

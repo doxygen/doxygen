@@ -58,7 +58,7 @@ class NamespaceDef : public Definition
     void computeAnchors();
     int countMembers();
     void addUsingDirective(NamespaceDef *nd);
-    NamespaceSDict *getUsedNamespaces() const { return usingDirList; }
+    NamespaceSDict *getUsedNamespaces() const;
     void addUsingDeclaration(Definition *def);
     SDict<Definition> *getUsedClasses() const { return usingDeclList; }
     void combineUsingRelations();

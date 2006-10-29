@@ -3061,7 +3061,9 @@ void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
     ml->inSort(md);
   else
     ml->append(md);
-  md->setSectionList(this,ml);
+
+  // for members in the declaration lists we set the section, needed for member grouping
+  if ((ml->listType()&MemberList::detailedLists)==0) md->setSectionList(this,ml);
 }
 
 void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,

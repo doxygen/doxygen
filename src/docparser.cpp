@@ -1674,6 +1674,10 @@ void DocCopy::parse()
       g_styleStack.clear();
       g_nodeStack.clear();
       g_copyStack.append(def);
+      // make sure the descriptions end with a newline, so the parser will correctly
+      // handle them in all cases.
+      brief+='\n';
+      doc+='\n';
       internalValidatingParseDoc(this,m_children,brief);
       internalValidatingParseDoc(this,m_children,doc);
       g_copyStack.remove(def);

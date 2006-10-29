@@ -797,11 +797,13 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                       }
 
     {TRIDOUBLEQUOTE}  { // start of a comment block
+			current->program+=yytext;
 			initTriDoubleQuoteBlock();
 			BEGIN(TripleComment);
                       }
 
     {TRISINGLEQUOTE}  { // start of a comment block
+			current->program+=yytext;
 			initTriSingleQuoteBlock();
 			BEGIN(TripleComment);
                       }

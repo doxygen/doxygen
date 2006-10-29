@@ -291,7 +291,8 @@ int main(int argc,char **argv)
   }
 
   // remove temporary files
-  unlink("/tmp/doxygen/doxygen_objdb.tmp");
+  if (!Doxygen::objDBFileName.isEmpty()) unlink(Doxygen::objDBFileName);
+  if (!Doxygen::entryDBFileName.isEmpty()) unlink(Doxygen::entryDBFileName);
   // clean up after us
   rmdir("/tmp/doxygen");
 

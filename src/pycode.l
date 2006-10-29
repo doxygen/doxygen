@@ -755,18 +755,21 @@ static void findMemberLink(CodeOutputInterface &ol,char *symName)
   if (g_currentDefinition)
   {
     DefinitionIntf *di = Doxygen::symbolMap->find(symName);
-    if (di->definitionType()==DefinitionIntf::TypeSymbolList) // multiple symbols
+    if (di)
     {
-      DefinitionListIterator dli(*(DefinitionList*)di);
-      Definition *sym;
-      for (dli.toFirst();(sym=dli.current());++dli)
+      if (di->definitionType()==DefinitionIntf::TypeSymbolList) // multiple symbols
       {
-        findMemberLink(ol,sym,symName);
+	DefinitionListIterator dli(*(DefinitionList*)di);
+	Definition *sym;
+	for (dli.toFirst();(sym=dli.current());++dli)
+	{
+	  findMemberLink(ol,sym,symName);
+	}
       }
-    }
-    else // single symbol
-    {
-      findMemberLink(ol,(Definition*)di,symName);
+      else // single symbol
+      {
+	findMemberLink(ol,(Definition*)di,symName);
+      }
     }
   }
   //printf("sym %s not found\n",&yytext[5]);
