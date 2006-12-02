@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -715,7 +715,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   return;
 }
 
-static void findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *symName)
+static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *symName)
 {
   //printf("sym %s outerScope=%s equal=%d\n",
   //    sym->name().data(),sym->getOuterScope()->name().data(),
@@ -741,8 +741,10 @@ static void findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
           sym->getOutputFileBase(),
           anchor,
           symName);
+      return TRUE;
     }
   }
+  return FALSE;
 }
 
 static void findMemberLink(CodeOutputInterface &ol,char *symName)
@@ -763,12 +765,12 @@ static void findMemberLink(CodeOutputInterface &ol,char *symName)
 	Definition *sym;
 	for (dli.toFirst();(sym=dli.current());++dli)
 	{
-	  findMemberLink(ol,sym,symName);
+	  if (findMemberLink(ol,sym,symName)) return;
 	}
       }
       else // single symbol
       {
-	findMemberLink(ol,(Definition*)di,symName);
+	if (findMemberLink(ol,(Definition*)di,symName)) return;
       }
     }
   }

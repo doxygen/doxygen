@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -1556,6 +1556,12 @@ void Config::create()
 		    "diagrams that involve STL classes more complete and accurate. \n",
 		    FALSE
 		 );
+  cb = addBool(
+                    "CPP_CLI_SUPPORT",
+		    "If you use Microsoft's C++/CLI language, you should set this option to YES to\n"
+		    "enable parsing support.\n",
+		    FALSE
+      	         );
   cb = addBool(
                     "DISTRIBUTE_GROUP_DOC",
                     "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"

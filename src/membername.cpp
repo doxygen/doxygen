@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -72,34 +72,12 @@ MemberNameIterator::MemberNameIterator(const MemberName &mnlist) :
 {
 }
 
-#if 0
-
-MemberNameList::MemberNameList() : QList<MemberName>()
-{
-}
-
-MemberNameList::~MemberNameList()
-{
-}
-
-int MemberNameList::compareItems(GCI item1, GCI item2)
-{
-  MemberName *n1=(MemberName *)item1;
-  MemberName *n2=(MemberName *)item2;
-  return stricmp(n1->memberName(),n2->memberName());
-}
-
-MemberNameListIterator::MemberNameListIterator(const MemberNameList &mnlist) :
-  QListIterator<MemberName>(mnlist)
-{
-}
-
-#endif
-
 int MemberNameSDict::compareItems(GCI item1, GCI item2)
 {
   MemberName *n1=(MemberName *)item1;
   MemberName *n2=(MemberName *)item2;
-  return stricmp(n1->memberName(),n2->memberName());
+  return stricmp(n1->memberName()+getPrefixIndex(n1->memberName()),
+                 n2->memberName()+getPrefixIndex(n2->memberName())
+                );
 }
 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -962,7 +962,7 @@ void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
 //void LatexGenerator::writeClassLink(const char *,const char *,
 //                                    const char *,const char *name)
 //{
-//  t << "{\\bf";
+//  t << "{\\bf ";
 //  docify(name);
 //  t << "}"; 
 //}

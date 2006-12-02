@@ -60,19 +60,20 @@ install: doxywizard_install
 
 install_docs: 
 	$(INSTTOOL) -d $(DOCDIR)
-	cp -r doc $(DOCDIR)
+	$(MAKE) -C examples
+	$(MAKE) -C doc 
+	$(MAKE) -C latex 
+	cp latex/doxygen_manual.pdf $(DOCDIR)
+	#cp -r doc $(DOCDIR)
 	cp -r examples $(DOCDIR)
-	echo "DOXYGEN  = $(INSTALL)" >  $(DOCDIR)/doc/Makefile
-	echo "DOXYDOCS = .."         >> $(DOCDIR)/doc/Makefile
-	echo "VERSION  = $(VERSION)" >> $(DOCDIR)/doc/Makefile
-	echo "PERL     = $(PERL)"    >> $(DOCDIR)/doc/Makefile
-	cat doc/Makefile.in          >> $(DOCDIR)/doc/Makefile
-	cd $(DOCDIR)/examples ; $(MAKE)
-	cd $(DOCDIR)/doc ; $(MAKE)
-	rm -rf $(DOCDIR)/doc
-	cd $(DOCDIR)/latex ; $(MAKE)
-	cp $(DOCDIR)/latex/doxygen_manual.pdf $(DOCDIR)
-	rm -rf $(DOCDIR)/latex
+	cp -r html $(DOCDIR)
+	#echo "DOXYGEN  = $(INSTALL)" >  $(DOCDIR)/doc/Makefile
+	#echo "DOXYDOCS = .."         >> $(DOCDIR)/doc/Makefile
+	#echo "VERSION  = $(VERSION)" >> $(DOCDIR)/doc/Makefile
+	#echo "PERL     = $(PERL)"    >> $(DOCDIR)/doc/Makefile
+	#cat doc/Makefile.in          >> $(DOCDIR)/doc/Makefile
+	#rm -rf $(DOCDIR)/doc
+	#rm -rf $(DOCDIR)/latex
 
 docs: FORCE
 	cd examples ; $(MAKE)

@@ -1158,6 +1158,10 @@ static void readIncludeFile(const QCString &inc)
         msg("#include %s: not found or already included! skipping...\n",incFileName.data());
         //printf("Error: include file %s not found\n",yytext);
       }
+      if (g_curlyCount>0) // failed to find #include inside { ... }
+      {
+	warn(g_yyFileName,g_yyLineNr,"Warning: include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
+      }
     }
   }
 }

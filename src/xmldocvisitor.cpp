@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -721,7 +721,7 @@ void XmlDocVisitor::visitPost(DocRef *ref)
 {
   if (m_hide) return;
   if (!ref->file().isEmpty()) endLink();
-  m_t << " ";
+  //m_t << " ";
 }
 
 void XmlDocVisitor::visitPre(DocSecRefItem *ref)

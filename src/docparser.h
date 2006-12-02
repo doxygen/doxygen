@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -971,6 +971,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     bool isFirst() const        { return m_isFirst; }
     bool isLast() const         { return m_isLast; }
     const QList<DocNode> &children() const { return m_children; }
+    QList<DocNode> &children()  { return m_children; }
 
     int handleCommand(const QString &cmdName);
     int handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs);

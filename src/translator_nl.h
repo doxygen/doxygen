@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -677,7 +677,7 @@ class TranslatorDutch : public Translator
         "<p>\n"
         "De rechthoeken in the bovenstaande graaf hebben de volgende betekenis:\n"
         "<ul>\n"
-        "<li>Een gevulde zwarte rechthoek representeert de structure of klasse waarvoor "
+        "<li>Een gevulde grijze rechthoek representeert de structure of klasse waarvoor "
         "de graaf is gegeneerd.\n"
         "<li>Een rechthoek met een zwarte rand representeert een gedocumenteerde structure of klasse.\n"
         "<li>Een rechthoek met een grijze rand representeert een ongedocumenteerde structure of klasse.\n"

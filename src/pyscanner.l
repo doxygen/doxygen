@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -695,6 +695,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			initSpecialBlock();
 			BEGIN(SpecialComment);
                       }
+    {POUNDCOMMENT}    { // #
+	              }
     "'"	              { // start of a single quoted string
        			g_stringContext=YY_START;
 			g_copyString=0;
@@ -705,8 +707,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			g_copyString=0;
                         BEGIN( DoubleQuoteString );
                       }
-    .
     \n		      { yyLineNr++; }
+    .                 // anything else
 }
 
 <FunctionBody>{
@@ -1223,6 +1225,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      current->program+=docBlock;
 			      current->program+=yytext;
 			    }
+                            if (g_hideClassDocs)
+                              current->startLine = yyLineNr;
 			    g_hideClassDocs=FALSE;
 			    BEGIN(docBlockContext);
 			  }

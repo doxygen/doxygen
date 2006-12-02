@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -2037,6 +2037,34 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
            target.data()); 
 }
 
+static void flattenParagraphs(QList<DocNode> &children)
+{
+  QListIterator<DocNode> li(children);
+  QList<DocNode> newChildren;
+  DocNode *dn;
+  for (li.toFirst();(dn=li.current());++li)
+  {
+    if (dn->kind()==DocNode::Kind_Para)
+    {
+      DocPara *para = (DocPara*)dn;
+      QList<DocNode> &paraChildren = para->children();
+      paraChildren.setAutoDelete(FALSE); // unlink children from paragraph node
+      QListIterator<DocNode> li2(paraChildren);
+      DocNode *dn2;
+      for (li2.toFirst();(dn2=li2.current());++li2)
+      {
+        newChildren.append(dn2); // add them to new node
+      }
+    }
+  }
+  children.clear();
+  QListIterator<DocNode> li3(newChildren);
+  for (li3.toFirst();(dn=li3.current());++li3)
+  {
+    children.append(dn);
+  }
+}
+
 void DocRef::parse()
 {
   g_nodeStack.push(this);
@@ -2072,6 +2100,7 @@ void DocRef::parse()
     internalValidatingParseDoc(this,m_children,m_text);
     docParserPopContext();
     g_insideHtmlLink=FALSE;
+    flattenParagraphs(m_children);
   }
 
   handlePendingStyleCommands(this,m_children);
@@ -4799,6 +4828,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         {
           DocRef *ref = new DocRef(this,cref);
           m_children.append(ref);
+          ref->parse();
         }
         else
         {

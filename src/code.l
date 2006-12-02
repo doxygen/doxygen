@@ -55,9 +55,6 @@ static ClassSDict    *g_codeClassSDict = 0;
 static QCString      g_curClassName;
 static QStrList      g_curClassBases;
 
-// TODO: is this still needed? if so, make it work
-static bool          g_inClass;
-
 static QCString      g_parmType;
 static QCString      g_parmName;
 
@@ -95,7 +92,9 @@ static int	     g_bracketCount = 0;
 static int	     g_curlyCount   = 0;
 static int	     g_sharpCount   = 0;
 static bool          g_inFunctionTryBlock = FALSE;
+static bool          g_inForEachExpression = FALSE;
 
+static int           g_lastTemplCastContext;
 static int	     g_lastSpecialCContext;
 static int           g_lastStringContext;
 static int           g_lastSkipCppContext;
@@ -107,6 +106,8 @@ static bool          g_insideObjC;
 static bool          g_insideProtocolList;
 
 static bool          g_lexInit = FALSE;
+
+static QStack<int>   g_classScopeLengthStack;
 
 // context for an Objective-C method call
 struct ObjCCallCtx
@@ -377,6 +378,7 @@ static CallContext g_theCallContext;
 /*! add class/namespace name s to the scope */
 static void pushScope(const char *s)
 {
+  g_classScopeLengthStack.push(new int(g_classScope.length()));
   if (g_classScope.isEmpty())
   {
     g_classScope = s;
@@ -392,17 +394,11 @@ static void pushScope(const char *s)
 /*! remove the top class/namespace name from the scope */
 static void popScope()
 {
-  if (!g_classScope.isEmpty())
+  if (!g_classScopeLengthStack.isEmpty())
   {
-    int i=g_classScope.findRev("::");
-    if (i==-1) // last name, strip all
-    {
-      g_classScope.resize(0);
-    } 
-    else // strip name
-    {
-      g_classScope = g_classScope.left(i);
-    }
+    int *pLength = g_classScopeLengthStack.pop();
+    g_classScope.truncate(*pLength);
+    delete pLength;
   }
   else
   {
@@ -1624,9 +1620,10 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol")
-KEYWORD ("asm"|"auto"|"class"|"const"|"const_cast"|"delete"|"dynamic_cast"|"enum"|"explicit"|"extern"|"false"|"friend"|"inline"|"mutable"|"namespace"|"new"|"operator"|"private"|"protected"|"public"|"register"|"reinterpret_cast"|"sizeof"|"static"|"static_cast"|"struct"|"template"|"this"|"self"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
-FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"for"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
-TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"boolean"|"id"|"SEL")
+KEYWORD ("add"|"asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
+FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
+TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
+CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 ARITHOP "+"|"-"|"/"|"*"|"%"|"--"|"++"
 ASSIGNOP "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
@@ -1650,10 +1647,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 %x      ClassName
 %x      PackageName
 %x      ClassVar
+%x	CppCliTypeModifierFollowup
 %x      Bases
 %x      SkipSharp
 %x      ReadInclude
 %x      TemplDecl
+%x      TemplCast
 %x	CallEnd
 %x      ObjCMethod
 %x	ObjCParams
@@ -1680,7 +1679,20 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  if (!g_insideTemplate) 
 					    BEGIN( ClassName ); 
 					}
-<Body>("class"|"struct"|"union"|"namespace")[ \t\n]+ { 
+<Body>(("public"|"private"){B}+)?("ref"|"value"|"interface"|"enum"){B}+("class"|"struct") {
+  					  if (g_insideTemplate) REJECT;
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					  BEGIN( ClassName ); 
+					}
+<Body>"property"|"event"/{BN}*			{ 
+  					  if (g_insideTemplate) REJECT;
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
+<Body>(KEYWORD_CPPCLI_DATATYPE|("partial"{B}+)?"class"|"struct"|"union"|"namespace"){B}+ { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -1723,7 +1735,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (*yytext=='{')
 					  {
 					    g_curlyCount++;
-					    g_inClass=TRUE;
   					    if (g_searchingForBody)
 					    {
 					      g_searchingForBody=FALSE;
@@ -1869,8 +1880,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 
   					  g_code->codify(yytext);
 
-  					  g_inClass=FALSE; 
-
 					  //fprintf(stderr,"g_bodyCurlyCount=%d\n",g_bodyCurlyCount);
 					  if (--g_bodyCurlyCount<=0)
 					  {
@@ -1910,8 +1919,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
 
-  					  g_inClass=FALSE; 
-
 					  g_currentMemberDef=0;
 					  if (g_currentDefinition) 
 					    g_currentDefinition=g_currentDefinition->getOuterScope();
@@ -1922,11 +1929,16 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_searchingForBody=FALSE; 
   					  BEGIN( Body ); 
 					}
-<ClassName,ClassVar>[*&]+       	{
+<ClassName,ClassVar>[*&^%]+       	{
   					  g_type=g_curClassName.copy();
   					  g_name.resize(0);
 					  g_code->codify(yytext);
 					  BEGIN( Body ); // variable of type struct *
+					}
+<ClassName>"__declspec"{B}*"("{B}*{ID}{B}*")"	{
+					  startFontClass("keyword");
+  					  g_code->codify(yytext);
+					  endFontClass();
 					}
 <ClassName>{ID}("::"{ID})*	        {
                                           g_curClassName=yytext;
@@ -1952,23 +1964,29 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_curClassBases.clear();
   					  BEGIN( Bases ); 
 					}
+<ClassVar>("sealed"|"abstract")/{BN}*(":"|"{") {
+					  //fprintf(stderr,"***** C++/CLI modifier %s on g_curClassName=%s\n",yytext,g_curClassName.data());
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+  					  BEGIN( CppCliTypeModifierFollowup ); 
+					}
 <ClassVar>{ID}				{
   					  g_type = g_curClassName.copy();
 					  g_name = yytext;
 					  g_theVarContext.addVariable(g_type,g_name);
 					  generateClassOrGlobalLink(*g_code,yytext);
   					}
-<ClassName,ClassVar>[ \t\n]*":"[ \t\n]*	{
+<ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*":"{B}*	{
   					  codifyLines(yytext);
 					  g_curClassBases.clear();
   					  BEGIN( Bases ); 
 					}
 <PackageName>[ \t]*";"				|
-<Bases,ClassName,ClassVar>[ \t]*"{"[ \t]*	{
+<Bases,ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*"{"{B}* {
                                           g_theVarContext.pushScope();
   					  g_code->codify(yytext);
 					  g_curlyCount++;
-					  g_inClass=TRUE;
 					  if (YY_START==ClassVar && g_curClassName.isEmpty())
 					  {
 					    g_curClassName = g_name.copy();
@@ -2086,7 +2104,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_name+=yytext; 
   					  BEGIN( FuncCall );
 					}
-<Body,TemplDecl>"template"/([^a-zA-Z0-9])		{
+<Body,TemplDecl>("template"|"generic")/([^a-zA-Z0-9])		{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -2126,18 +2144,26 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
   					}
+<FuncCall>"in"/{BN}*			{
+					  if (!g_inForEachExpression) REJECT;
+  					  startFontClass("keywordflow");
+  					  codifyLines(yytext);
+					  endFontClass();
+  				          g_name.resize(0);g_type.resize(0);
+					}
 <Body>{FLOWKW}/{BN}*"(" 			{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
   				          g_name.resize(0);g_type.resize(0);
+					  g_inForEachExpression = (strcmp(yytext,"for each")==0 || strcmp(yytext, "foreach")==0);
 					  BEGIN(FuncCall);
   					}
 <Body>{FLOWKW}/([^a-z_A-Z0-9]) 		{
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
-					  if (g_inFunctionTryBlock && strcmp(yytext,"catch")==0)
+					  if (g_inFunctionTryBlock && (strcmp(yytext,"catch")==0 || strcmp(yytext,"finally")==0))
 					  {
 					    g_inFunctionTryBlock=FALSE;
 					  }
@@ -2163,6 +2189,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  addType();
   					  g_name+=yytext; 
   					}
+<Body>"generic"/{B}*"<"[^\n\/\-\.\{\"\>]*">"{B}* {
+  					  startFontClass("keyword");
+					  g_code->codify(yytext);
+					  endFontClass();
+					  g_sharpCount=0;
+					  BEGIN(TemplDecl);
+					}
 <Body>"template"/{B}*"<"[^\n\/\-\.\{\"\>]*">"{B}* { // template<...>
   					  startFontClass("keyword");
 					  g_code->codify(yytext);
@@ -2187,7 +2220,37 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    BEGIN(Body);
 					  }
   					}
-<Body>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
+<TemplCast>">"				{
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					  BEGIN( g_lastTemplCastContext );
+  					}
+<TemplCast>{ID}("::"{ID})*		{
+					  generateClassOrGlobalLink(*g_code,yytext);
+					}
+<TemplCast>("const"|"volatile"){B}*	{
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
+<TemplCast>[*^]*			{
+  					  codifyLines(yytext);
+					}
+<Body,FuncCall>{CASTKW}"<"                { // static_cast<T>(
+  					  startFontClass("keyword");
+  					  codifyLines(yytext);
+					  endFontClass();
+                                          g_lastTemplCastContext = YY_START;
+					  BEGIN(TemplCast);
+					}
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>]*">"("::"{ID})*/{B}* { // A<T> *pt;
+					  int i=QCString(yytext).find('<');
+					  QCString kw = QCString(yytext).left(i).stripWhiteSpace();
+					  if (kw.right(5)=="_cast" && YY_START==Body)
+					  {
+					    REJECT;
+					  }
 					  addType();
 					  generateClassOrGlobalLink(*g_code,yytext);
   					  g_name+=yytext; 
@@ -2223,6 +2286,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  startFontClass("stringliteral");
   					  g_code->codify(yytext);
   					  g_lastStringContext=YY_START;
+					  g_inForEachExpression = FALSE;
   					  BEGIN( SkipString );
   					}
 <SkipString>[^\"\\\r\n]*		{ 
@@ -2525,7 +2589,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
 					}
-<MemberCall2,FuncCall,OldStyleArgs>{TYPEKW}/([^a-z_A-Z0-9]) {
+<MemberCall2,FuncCall,OldStyleArgs,TemplCast>{TYPEKW}/([^a-z_A-Z0-9]) {
 					  addParmType();
 					  g_parmName=yytext; 
   					  startFontClass("keywordtype");
@@ -2546,6 +2610,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					}
 <FuncCall>";"				{ // probably a cast, not a function call
   					  g_code->codify(yytext);
+					  g_inForEachExpression = FALSE;
 					  BEGIN( Body );
   					}
 <MemberCall2,FuncCall>,			{
@@ -2563,9 +2628,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
 					}
 <MemberCall2,FuncCall>{OPERATOR}        { // operator
-  					  if (strcmp(yytext,"*") && strcmp(yytext,"&")) // typically a pointer or reference
+  					  if (strcmp(yytext,"*") && 
+					      strcmp(yytext,"&") &&
+					      strcmp(yytext,"^") &&
+					      strcmp(yytext,"%")) // typically a pointer or reference
 					  {
-					    // not a * or &
+					    // not a * or &, or C++/CLI's ^ or %
 					    g_parmType.resize(0);g_parmName.resize(0);
 					  }
   					  g_code->codify(yytext);
@@ -2573,6 +2641,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <MemberCall,MemberCall2,FuncCall>")"	{ 
 					  g_theVarContext.addVariable(g_parmType,g_parmName);
 					  g_theCallContext.popScope();
+					  g_inForEachExpression = FALSE;
 					  //g_theCallContext.setClass(0); // commented out, otherwise a()->b() does not work for b().
   					  g_code->codify(yytext);
   					  if (--g_bracketCount<=0) 
@@ -2595,7 +2664,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  codifyLines(yytext);
   					  g_bracketCount=0;
 					  if (*yytext==';') g_searchingForBody=FALSE; 
-					  if (!g_inClass && !g_type.isEmpty())
+					  if (!g_type.isEmpty())
 					  {
 					    //fprintf(stderr,"add variable g_type=%s g_name=%s)\n",g_type.data(),g_name.data());
 					    g_theVarContext.addVariable(g_type,g_name);
@@ -2617,12 +2686,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    BEGIN( SkipInits );
 					  }
   					}
-<CallEnd>("const"|"volatile")({BN}+("const"|"volatile"))*{BN}*/[;=] {
+<CallEnd>("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"sealed"|"override"))*/{BN}*(";"|"="|"throw"{BN}*"(") {
 					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
   					}
-<CallEnd,OldStyleArgs>("const"|"volatile")*({BN}+("const"|"volatile"))*{BN}*"{" {
+<CallEnd,OldStyleArgs>("const"|"volatile"|"sealed"|"override")*({BN}+("const"|"volatile"|"sealed"|"override"))*{BN}*"{" {
                                           if (g_insideBody)
 					  {
 					    g_theVarContext.pushScope();
@@ -3139,6 +3208,8 @@ void resetCCodeParserState()
 {
   //printf("***initParseCodeContext()\n");
   g_theVarContext.clear();
+  g_classScopeLengthStack.setAutoDelete(TRUE);
+  g_classScopeLengthStack.clear();
   delete g_codeClassSDict;
   g_codeClassSDict = new ClassSDict(17);
   g_codeClassSDict->setAutoDelete(TRUE);
