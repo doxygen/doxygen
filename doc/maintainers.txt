@@ -55,7 +55,7 @@ TranslatorGerman
 Jens Seidel: jensseidel@users.sf.net
 
 TranslatorGreek
-Harry Kalogirou: harkal@rainbow.cs.unipi.gr
+Paul Gessos: nickreserved@yahoo.com
 
 TranslatorHungarian
 &Aacute;kos Kiss: akiss@users.sourceforge.net

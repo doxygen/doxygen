@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -636,6 +636,21 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     if (md->isInline()) t << "yes"; else t << "no";
     t << "\"";
 
+    if (md->isFinal())
+    {
+      t << " final=\"yes\"";
+    }
+
+    if (md->isSealed())
+    {
+      t << " sealed=\"yes\"";
+    }
+
+    if (md->isNew())
+    {
+      t << " new=\"yes\"";
+    }
+
     t << " virt=\"";
     switch (md->virtualness())
     {
@@ -657,6 +672,11 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     if (md->isMutable()) t << "yes"; else t << "no";
     t << "\"";
     
+    if (md->isInitonly())
+    {
+      t << " initonly=\"yes\"";
+    }
+    
   }
   else if (md->memberType() == MemberDef::Property)
   {
@@ -667,8 +687,29 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << " writable=\"";
     if (md->isWritable()) t << "yes"; else t << "no";
     t << "\"";
-  }
 
+    t << " gettable=\"";
+    if (md->isGettable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " settable=\"";
+    if (md->isSettable()) t << "yes"; else t << "no";
+    t << "\"";
+  }
+  else if (md->memberType() == MemberDef::Event)
+  {
+    t << " add=\"";
+    if (md->isAddable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " remove=\"";
+    if (md->isRemovable()) t << "yes"; else t << "no";
+    t << "\"";
+
+    t << " raise=\"";
+    if (md->isRaisable()) t << "yes"; else t << "no";
+    t << "\"";
+  }
 
   t << ">" << endl;
 
@@ -1394,7 +1435,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)==0)
+    if ((ml->listType()&MemberList::declarationLists)!=0)
     {
       generateXMLSection(nd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1537,7 +1578,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)==0)
+    if ((ml->listType()&MemberList::declarationLists)!=0)
     {
       generateXMLSection(fd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }
@@ -1627,7 +1668,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   MemberList *ml;
   for (mli.toFirst();(ml=mli.current());++mli)
   {
-    if ((ml->listType()&MemberList::declarationLists)==0)
+    if ((ml->listType()&MemberList::declarationLists)!=0)
     {
       generateXMLSection(gd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
     }

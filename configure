@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=NO
+doxygen_version_mmn=20061202
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -215,6 +215,9 @@ if test -z "$f_platform"; then
       f_platform=unixware-g++
       ;;
     Cygwin:*)
+      f_platform=win32-g++
+      ;;
+    CYGWIN:*)
       f_platform=win32-g++
       ;;
     *MiNT:*)
@@ -432,15 +435,13 @@ fi
 test -f .makeconfig && rm .makeconfig
 test -f .tmakeconfig && rm .tmakeconfig
 
-if test -z $PWD; then
-  PWD=`pwd`
-fi
+configPWD=`pwd`
 
 cat > .makeconfig <<EOF
-DOXYGEN   = $PWD
-TMAKEPATH = $PWD/tmake/lib/$f_platform
+DOXYGEN   = $configPWD
+TMAKEPATH = $configPWD/tmake/lib/$f_platform
 ENV       = env TMAKEPATH=\$(TMAKEPATH)
-TMAKE     = $PWD/tmake/bin/tmake
+TMAKE     = $configPWD/tmake/bin/tmake
 MAKE      = $f_make
 PERL      = $f_perl
 RM        = rm -f
@@ -512,6 +513,11 @@ EOF
     TMAKE_LFLAGS += -static
 EOF
   fi
+fi
+if test "$f_platform" = "hpux-g++"; then
+  cat >> .tmakeconfig <<EOF
+    TMAKE_CXXFLAGS += -D_LARGEFILE_SOURCE
+EOF
 fi
 if test "$f_wizard" = YES; then
   cat >> .tmakeconfig <<EOF

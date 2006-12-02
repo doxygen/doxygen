@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -2086,6 +2086,7 @@ void ClassDef::mergeMembers()
   bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB" );
   if (baseClasses())
   {
+    //printf("  => has base classes!\n");
     BaseClassListIterator bcli(*baseClasses());
     BaseClassDef *bcd;
     for ( ; (bcd=bcli.current()) ; ++bcli )
@@ -2096,17 +2097,17 @@ void ClassDef::mergeMembers()
       bClass->mergeMembers();
 
       MemberNameInfoSDict *srcMnd  = bClass->memberNameInfoSDict();
-      MemberNameInfoSDict *dstMnd  =         m_impl->allMemberNameInfoSDict;
+      MemberNameInfoSDict *dstMnd  = m_impl->allMemberNameInfoSDict;
 
-      if (srcMnd && dstMnd)
+      if (srcMnd)
       {
         MemberNameInfoSDict::Iterator srcMnili(*srcMnd);
         MemberNameInfo *srcMni;
         for ( ; (srcMni=srcMnili.current()) ; ++srcMnili)
         {
-          //printf("Base member name %s\n",srcMni->memberName());
+          //printf("    Base member name %s\n",srcMni->memberName());
           MemberNameInfo *dstMni;
-          if ((dstMni=dstMnd->find(srcMni->memberName())))
+          if (dstMnd!=0 && (dstMni=dstMnd->find(srcMni->memberName())))
             // a member with that name is already in the class.
             // the member may hide or reimplement the one in the sub class
             // or there may be another path to the base class that is already 
@@ -2298,6 +2299,12 @@ void ClassDef::mergeMembers()
               }
             }
 
+            if (dstMnd==0)
+            {
+              m_impl->allMemberNameInfoSDict = new MemberNameInfoSDict(17);
+              m_impl->allMemberNameInfoSDict->setAutoDelete(TRUE);
+              dstMnd = m_impl->allMemberNameInfoSDict;
+            }
             // add it to the dictionary
             dstMnd->append(newMni->memberName(),newMni);
           }
@@ -2317,7 +2324,7 @@ void ClassDef::mergeCategory(ClassDef *category)
   category->setCategoryOf(this);
     
   MemberNameInfoSDict *srcMnd  = category->memberNameInfoSDict();
-  MemberNameInfoSDict *dstMnd  =           m_impl->allMemberNameInfoSDict;
+  MemberNameInfoSDict *dstMnd  = m_impl->allMemberNameInfoSDict;
 
   if (srcMnd && dstMnd)
   {

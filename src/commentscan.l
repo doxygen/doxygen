@@ -656,24 +656,31 @@ static inline void setOutput(OutputContext ctx)
     }
   }
 
+  int oldContext = inContext;
   inContext = ctx;
   if (inContext!=OutputXRef && inBody) inContext=OutputInbody;
   switch(inContext)
   {
     case OutputDoc:
-      stripTrailingWhiteSpace(current->doc);
-      if (current->docFile.isEmpty())
+      if (oldContext!=inContext)
       {
-        current->docFile = yyFileName;
-        current->docLine = yyLineNr;
+        stripTrailingWhiteSpace(current->doc);
+        if (current->docFile.isEmpty())
+        {
+          current->docFile = yyFileName;
+          current->docLine = yyLineNr;
+        }
       }
       pOutputString = &current->doc;
       break;
     case OutputBrief:
-      if (current->briefFile.isEmpty())
+      if (oldContext!=inContext)
       {
-        current->briefFile = yyFileName;
-        current->briefLine = yyLineNr;
+	if (current->briefFile.isEmpty())
+	{
+	  current->briefFile = yyFileName;
+	  current->briefLine = yyLineNr;
+	}
       }
       pOutputString = &current->brief;
       break;

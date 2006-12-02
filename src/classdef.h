@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -23,7 +23,7 @@
 #include <qdict.h>
 #include <qstrlist.h>
 
-#include "entry.h"
+//#include "entry.h"
 #include "memberlist.h"
 #include "definition.h"
 #include "sortdict.h"
@@ -56,13 +56,13 @@ class ClassDef : public Definition
 {
   public:
     /*! The various compound types */
-    enum CompoundType { Class=Entry::CLASS_SEC, 
-                        Struct=Entry::STRUCT_SEC, 
-                        Union=Entry::UNION_SEC,
-                        Interface=Entry::INTERFACE_SEC,
-                        Protocol=Entry::PROTOCOL_SEC,
-                        Category=Entry::CATEGORY_SEC,
-                        Exception=Entry::EXCEPTION_SEC
+    enum CompoundType { Class, //=Entry::CLASS_SEC, 
+                        Struct, //=Entry::STRUCT_SEC, 
+                        Union, //=Entry::UNION_SEC,
+                        Interface, //=Entry::INTERFACE_SEC,
+                        Protocol, //=Entry::PROTOCOL_SEC,
+                        Category, //=Entry::CATEGORY_SEC,
+                        Exception //=Entry::EXCEPTION_SEC
                       };
 
     /*! Creates a new compound definition.

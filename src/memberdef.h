@@ -140,8 +140,15 @@ class MemberDef : public Definition
     bool isSettable() const;
     bool isReadable() const;
     bool isWritable() const;
+    bool isAddable() const;
+    bool isRemovable() const;
+    bool isRaisable() const;
     bool isFinal() const;
     bool isAbstract() const;
+    bool isOverride() const;
+    bool isInitonly() const;
+    bool isNew() const;
+    bool isSealed() const;
     bool isImplementation() const;
     bool isExternal() const;
     bool isTemplateSpecialization() const;

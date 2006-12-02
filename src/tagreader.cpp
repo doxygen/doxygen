@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -1169,15 +1169,16 @@ void TagFileParser::buildLists(Entry *root)
   while (tci)
   {
     Entry *ce = new Entry;
+    ce->section = Entry::CLASS_SEC;
     switch (tci->kind)
     {
-      case TagClassInfo::Class:     ce->section = Entry::CLASS_SEC;     break;
-      case TagClassInfo::Struct:    ce->section = Entry::STRUCT_SEC;    break;
-      case TagClassInfo::Union:     ce->section = Entry::UNION_SEC;     break;
-      case TagClassInfo::Interface: ce->section = Entry::INTERFACE_SEC; break;
-      case TagClassInfo::Exception: ce->section = Entry::EXCEPTION_SEC; break;
-      case TagClassInfo::Protocol:  ce->section = Entry::PROTOCOL_SEC;  break;
-      case TagClassInfo::Category:  ce->section = Entry::CATEGORY_SEC;  break;
+      case TagClassInfo::Class:     break;
+      case TagClassInfo::Struct:    ce->spec = Entry::Struct;    break;
+      case TagClassInfo::Union:     ce->spec = Entry::Union;     break;
+      case TagClassInfo::Interface: ce->spec = Entry::Interface; break;
+      case TagClassInfo::Exception: ce->spec = Entry::Exception; break;
+      case TagClassInfo::Protocol:  ce->spec = Entry::Protocol;  break;
+      case TagClassInfo::Category:  ce->spec = Entry::Category;  break;
     }
     ce->name     = tci->name;
     addDocAnchors(ce,tci->docAnchors);

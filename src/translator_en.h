@@ -1052,7 +1052,7 @@ class TranslatorEnglish : public Translator
         "<p>\n"
         "The boxes in the above graph have the following meaning:\n"
         "<ul>\n"
-        "<li>%A filled black box represents the struct or class for which the "
+        "<li>%A filled gray box represents the struct or class for which the "
         "graph is generated.\n"
         "<li>%A box with a black border denotes a documented struct or class.\n"
         "<li>%A box with a grey border denotes an undocumented struct or class.\n"

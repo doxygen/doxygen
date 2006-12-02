@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -89,7 +89,7 @@ Entry::Entry(const Entry &e)
   mGrpId      = e.mGrpId;
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
-  memSpec     = e.memSpec;
+  spec        = e.spec;
   initializer = e.initializer;
   initLines   = e.initLines;
   callGraph   = e.callGraph;
@@ -241,7 +241,7 @@ void Entry::reset()
   stat    = FALSE;
   proto   = FALSE;
   explicitExternal = FALSE;
-  memSpec  = 0;
+  spec  = 0;
   objc = FALSE;
   hidden = FALSE;
   subGrouping = TRUE;
@@ -343,7 +343,7 @@ static bool saveEntry(Entry *e,FileStorage *f)
   marshalUInt(f,HEADER);
   marshalInt(f,(int)e->protection);
   marshalInt(f,(int)e->mtype);
-  marshalInt(f,e->memSpec);
+  marshalInt(f,e->spec);
   marshalInt(f,e->initLines);
   marshalBool(f,e->stat);
   marshalBool(f,e->explicitExternal);
@@ -401,7 +401,7 @@ static bool loadEntry(Entry *e,FileStorage *f)
   }
   e->protection       = (Protection)unmarshalInt(f);
   e->mtype            = (MethodTypes)unmarshalInt(f);
-  e->memSpec          = unmarshalInt(f);
+  e->spec             = unmarshalInt(f);
   e->initLines        = unmarshalInt(f);
   e->stat             = unmarshalBool(f);
   e->explicitExternal = unmarshalBool(f);

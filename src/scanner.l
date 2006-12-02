@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
@@ -104,13 +104,16 @@ static QCString*        specName;
 static QCString         formulaText;
 static QCString         formulaEnd;
 static bool             useOverrideCommands = FALSE;
-static bool             insideIDL = FALSE;		//!< processing IDL code?
-static bool             insideJava = FALSE;		//!< processing Java code?
-static bool             insideCS = FALSE;		//!< processing C# code?
-static bool             insideD = FALSE;		//!< processing D code?
-static bool             insidePHP = FALSE;		//!< processing PHP code?
+
+static bool             insideIDL   = FALSE;		//!< processing IDL code?
+static bool             insideJava  = FALSE;		//!< processing Java code?
+static bool             insideCS    = FALSE;		//!< processing C# code?
+static bool             insideD     = FALSE;		//!< processing D code?
+static bool             insidePHP   = FALSE;		//!< processing PHP code?
+static bool             insideObjC  = FALSE;            //!< processing Objective C code?
+static bool             insideCli   = FALSE;            //!< processing C++/CLI code?
+
 static bool             insideCppQuote = FALSE;
-static bool             insideObjC = FALSE;             //!< processing Objective C code?
 static bool             insideProtocolList = FALSE;
 
 static int              argRoundCount;
@@ -195,6 +198,7 @@ static void initParser()
   autoGroupStack.setAutoDelete(TRUE);
   insideFormula = FALSE;
   insideCode=FALSE;
+  insideCli=Config_getBool("CPP_CLI_SUPPORT");
   previous = 0;
 }
 
@@ -202,7 +206,7 @@ static void initEntry()
 {
   if (insideJava) 
   {
-    protection = current_root->section==Entry::INTERFACE_SEC ? Public : Package;
+    protection = (current_root->spec & Entry::Interface) ?  Public : Package;
   }
   current->protection = protection ;
   current->mtype      = mtype;
@@ -570,6 +574,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	CSConstraint
 %x	ClassCategory
 %x	ClassTemplSpec
+%x      CliPropertyType
+%x      CliOverride
 %x	Bases
 %x	BasesProt
 %x	NextSemi
@@ -829,7 +835,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->argList->clear();
 					  lineCount() ;
 					}
-<FindMembers>{B}*"protected"{BN}*":"{BN}* { 
+<FindMembers>{B}*"internal"{BN}*":"{BN}* {  // for now treat C++/CLI's internal as package...
+					  current->protection = protection = Package ;
+					  current->mtype = mtype = Method;
+					  current->type.resize(0); 
+					  current->name.resize(0); 
+					  current->args.resize(0);
+					  current->argList->clear();
+					  lineCount() ;
+  					}
+<FindMembers>{B}*"protected"{BN}*":"{BN}* {  
   					  current->protection = protection = Protected ;
 					  current->mtype = mtype = Method;
 					  current->type.resize(0); 
@@ -847,6 +862,69 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->argList->clear();
 					  lineCount() ;
 					}
+<FindMembers>{B}*"event"{BN}*           { 
+  					  if (insideCli)
+					  {
+					    // C++/CLI event
+					    lineCount() ;
+  					    current->mtype = mtype = Event;
+					    current->bodyLine = yyLineNr;
+					    curlyCount=0;
+					    BEGIN( CliPropertyType );
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+                                        }
+<FindMembers>{B}*"property"{BN}*	{
+  					   if (insideCli)
+					   {
+					     // C++/CLI property
+					     lineCount() ;
+  					     current->mtype = mtype = Property;
+					     current->bodyLine = yyLineNr;
+					     curlyCount=0;
+					     BEGIN( CliPropertyType );
+					   }
+					   else
+					   {
+					     REJECT;
+					   }
+					}
+<CliPropertyType>{ID}			{
+  					  addType( current );
+  					  current->name = yytext;
+  					}
+<CliPropertyType>"{"			{
+					  curlyCount=0;
+					  printf("event: '%s' '%s'\n",current->type.data(),current->name.data());
+  					  BEGIN( CSAccessorDecl );
+  					}
+<CliPropertyType>";"			{
+  					  unput(*yytext);
+					  BEGIN( FindMembers );
+  					}
+<CliPropertyType>\n			{
+  					  yyLineNr++;
+  					}
+<CliPropertyType>{B}*			{
+  					}
+<CliPropertyType>.			{
+  					  addType( current );
+  					  current->type += yytext;
+  					}
+<FindMembers>{B}*"property"{BN}*        { 
+                                          if (!current->type.isEmpty())
+					  {
+					    REJECT;
+                                          }
+					  else
+					  { 
+                                            current->mtype = mtype = Property;
+                                            lineCount();
+					  }
+                                        }
 <FindMembers>{B}*"@private"{BN}+	{
   					  current->protection = protection = Private ;
 					  current->mtype = mtype = Method;
@@ -1012,6 +1090,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <PackageName>";"			{
   					  BEGIN(FindMembers);
   					}
+<FindMembers>{B}*"initonly"{BN}+	{
+  					  current->type += " initonly ";
+					  if (insideCli) current->spec |= Entry::Initonly;
+					  lineCount();
+  					}
 <FindMembers>{B}*"static"{BN}+     	{ current->type += " static ";
   					  current->stat = TRUE;
 					  lineCount();
@@ -1033,17 +1116,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else
 					  {
-					    current->memSpec|=Entry::Abstract;
+					    current->spec|=Entry::Abstract;
 					  }
 					  lineCount();
 					}
-<FindMembers>{B}*"inline"{BN}+		{ current->memSpec|=Entry::Inline;
+<FindMembers>{B}*"inline"{BN}+		{ current->spec|=Entry::Inline;
                                           lineCount(); 
                                         }
-<FindMembers>{B}*"mutable"{BN}+		{ current->memSpec|=Entry::Mutable;
+<FindMembers>{B}*"mutable"{BN}+		{ current->spec|=Entry::Mutable;
                                           lineCount(); 
                                         }
-<FindMembers>{B}*"explicit"{BN}+	{ current->memSpec|=Entry::Explicit;
+<FindMembers>{B}*"explicit"{BN}+	{ current->spec|=Entry::Explicit;
                                           lineCount(); 
                                         }
   /*
@@ -1108,7 +1191,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           if (insideIDL || insideJava || insideCS || insideD || insidePHP)
 					  {
   					    isTypedef=FALSE;
-					    current->section = Entry::INTERFACE_SEC;
+					    current->section = Entry::CLASS_SEC;
+                                            current->spec = Entry::Interface;
 					    addType( current ) ;
 					    current->type += " interface" ;
 					    current->fileName  = yyFileName;
@@ -1138,7 +1222,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*"@interface"{BN}+	{ // Objective-C class interface
 					  lineCount();
   					  isTypedef=FALSE;
-					  current->section = Entry::INTERFACE_SEC;
+					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Interface;
 					  current->objc = insideObjC = TRUE;
 					  current->protection = protection = Public ;
 					  addType( current ) ;
@@ -1151,7 +1236,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*"@protocol"{BN}+	{ // Objective-C protocol definition
 					  lineCount();
   					  isTypedef=FALSE;
-					  current->section = Entry::PROTOCOL_SEC;
+					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Protocol;
 					  current->objc = insideObjC = TRUE;
 					  current->protection = protection = Public ;
 					  addType( current ) ;
@@ -1163,7 +1249,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <FindMembers>{B}*"exception"{BN}+ 	{ // Corba IDL exception
   					  isTypedef=FALSE;
-					  current->section = Entry::EXCEPTION_SEC;
+					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Exception;
 					  addType( current ) ;
 					  current->type += " exception" ;
 					  current->fileName  = yyFileName;
@@ -1186,6 +1273,48 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*"value class{" |         // C++/CLI extension
+<FindMembers>{B}*"value class"{BN}+     {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Value;
+					  addType( current ) ;
+					  current->type += " value class" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
+<FindMembers>{B}*"ref class{" |          // C++/CLI extension
+<FindMembers>{B}*"ref class"{BN}+       {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Ref;
+					  addType( current ) ;
+					  current->type += " ref class" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
+<FindMembers>{B}*"interface class{" |     // C++/CLI extension
+<FindMembers>{B}*"interface class"{BN}+ {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Interface;
+					  addType( current ) ;
+					  current->type += " interface class" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
 <FindMembers>{B}*"coclass"{BN}+		{
   					  if (insideIDL)
 					  {
@@ -1210,7 +1339,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct{" | 
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
-  					  current->section = Entry::STRUCT_SEC ;
+  					  current->section = Entry::CLASS_SEC ;
+                                          current->spec    = Entry::Struct;
 					  addType( current ) ;
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
@@ -1220,10 +1350,53 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*"value struct{" |      // C++/CLI extension
+<FindMembers>{B}*"value struct"{BN}+     {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec    = Entry::Struct | Entry::Value;
+					  addType( current ) ;
+					  current->type += " value struct" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
+<FindMembers>{B}*"ref struct{" |       // C++/CLI extension
+<FindMembers>{B}*"ref struct"{BN}+     {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec    = Entry::Struct | Entry::Ref;
+					  addType( current ) ;
+					  current->type += " ref struct" ;
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
+<FindMembers>{B}*"interface struct{" |     // C++/CLI extension
+<FindMembers>{B}*"interface struct"{BN}+ {
+  					  isTypedef=FALSE;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec    = Entry::Struct | Entry::Interface;
+					  addType( current ) ;
+					  current->type += " interface struct";
+					  current->fileName  = yyFileName;
+					  current->startLine = yyLineNr;
+					  current->bodyLine  = yyLineNr;
+					  lineCount() ;
+					  if (yytext[yyleng-1]=='{') unput('{');
+					  BEGIN( CompoundName ) ;
+  					}
 <FindMembers>{B}*{TYPEDEFPREFIX}"union{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ { 
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
-  					  current->section = Entry::UNION_SEC ;
+  					  current->section = Entry::CLASS_SEC;
+                                          current->spec    = Entry::Union;
 					  addType( current ) ;
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
@@ -1233,8 +1406,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
-<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum{" |
-<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"{BN}+ { // for IDL: typedef [something] enum
+<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?"{" |
+<FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::ENUM_SEC ;
 					  addType( current ) ;
@@ -1271,7 +1444,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  unput(*yytext);
 					  BEGIN( FindMembers ) ;
 					}
-<FindMembers>"template"({BN}*)"<"/[>]?	{ 
+<FindMembers>("template"|"generic")({BN}*)"<"/[>]?	{  // generic is a C++/CLI extension
   					  lineCount();
 					  if (current->tArgLists==0)
 					  {
@@ -1280,6 +1453,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  ArgumentList *al = new ArgumentList;
 					  al->setAutoDelete(TRUE);
+					  current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
 					  templateStr="<";
@@ -1501,11 +1675,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  BEGIN(QtPropAttr);
   					}
 <QtPropAttr>"READ"			{
-  					  current->memSpec |= Entry::Readable;
+  					  current->spec |= Entry::Readable;
 					  BEGIN(QtPropRead);
   					}
 <QtPropAttr>"WRITE"			{
-  					  current->memSpec |= Entry::Writable;
+  					  current->spec |= Entry::Writable;
 					  BEGIN(QtPropWrite);
   					}
 <QtPropAttr>"RESET"{B}+{ID}		{ // reset method => not supported yet
@@ -1762,7 +1936,19 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  BEGIN( CopyRound );
 					}
 
-<FindMembers>[*&]+			{ current->name += yytext ; 
+<FindMembers>[\^%]			{  // ^ and % are C++/CLI extensions
+  					  if (insideCli)
+					  {
+  					    addType( current );
+                                            current->name = yytext ; 
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+  					}
+<FindMembers>[*&]+			{ 
+                                          current->name += yytext ;  
   					  addType( current );
 					}
 <FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
@@ -2335,7 +2521,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 
 <FindMembers>"["			{ 
-  					  if (!insideCS && 
+  					  if (!insideCS &&  
 					      current->name.isEmpty() || 
 					      current->name=="typedef"
 					     ) // IDL function property
@@ -2367,11 +2553,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <IDLAttribute>"propput"	                {
 					  current->mtype = Property;
-					  current->memSpec |= Entry::Settable;
+					  current->spec |= Entry::Settable;
 					}
 <IDLAttribute>"propget" 		{
 					  current->mtype = Property;
-					  current->memSpec |= Entry::Gettable;
+					  current->spec |= Entry::Gettable;
 					}
 <IDLAttribute>.				{
 					}
@@ -2588,7 +2774,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					      current->name = current->name.stripWhiteSpace();
 					      //printf("adding `%s' `%s' `%s' brief=%s insideObjC=%d %x\n",current->type.data(),current->name.data(),current->args.data(),current->brief.data(),insideObjC,current->section);
 					      if (insideObjC && 
-						  (current->section==Entry::INTERFACE_SEC || current->section==Entry::CATEGORY_SEC)
+						  ((current->spec&Entry::Interface) || (current->spec==Entry::Category))
 						 ) // method definition follows
 					      {
 				                BEGIN( ReadBodyIntf ) ;
@@ -2598,7 +2784,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					        current_root->addSubEntry( current ) ;
 						current = new Entry(*current);
 						if (current->section==Entry::NAMESPACE_SEC || 
-						    current->section==Entry::INTERFACE_SEC ||
+						    (current->spec==Entry::Interface) ||
 						    insideJava || insidePHP || insideCS || insideD
 						   )
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
@@ -2684,11 +2870,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  // handle *pName in: typedef { ... } name, *pName;
 					  if (firstTypedefEntry) 
 					  {
-					    if (firstTypedefEntry->section==Entry::STRUCT_SEC)
+					    if (firstTypedefEntry->spec&Entry::Struct)
 					    {
 					      msType.prepend("struct "+firstTypedefEntry->name);
 					    }
-					    else if (firstTypedefEntry->section==Entry::UNION_SEC)
+					    else if (firstTypedefEntry->spec&Entry::Union)
 					    {
 					      msType.prepend("union "+firstTypedefEntry->name);
 					    }
@@ -3272,6 +3458,26 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             unput(*yytext); BEGIN( Function );
                                           }
                                         }
+<FuncQual>{BN}*"abstract"{BN}*          { // pure virtual member function
+                                          lineCount() ; 
+                                          current->virt = Pure;
+                                          current->args += " override "; 
+                                        }
+<FuncQual>{BN}*"override"{BN}*          { // overridden virtual member function
+                                          lineCount() ; 
+                                          current->spec |= Entry::Override;
+                                          current->args += " override "; 
+                                        }
+<FuncQual>{BN}*"sealed"{BN}*            { // sealed member function
+                                          lineCount() ; 
+                                          current->spec |= Entry::Sealed;
+                                          current->args += " sealed "; 
+                                        }
+<FuncQual>{BN}*"new"{BN}*               { // new member function
+                                          lineCount() ; 
+                                          current->spec |= Entry::New;
+                                          current->args += " new "; 
+                                        }
 <FuncQual>{BN}*"const"{BN}*       	{ // const member function
   					  lineCount() ; 
   					  current->args += " const "; 
@@ -3301,12 +3507,31 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  lastCPPContext = YY_START;
   					  BEGIN(SkipCPP);
 					}	
-<FuncQual>"="				{ // typically an initialized function pointer
-                                          //current->args += *yytext; 
-					  //BEGIN(FuncPtrInit);
-  					  lastInitializerContext=YY_START;
-					  initBracketCount=0;
-  					  BEGIN(ReadInitializer);
+<FuncQual>"="				{ 
+                                          if (insideCli && 
+					      (current_root->section&Entry::COMPOUND_MASK) 
+					     )
+					  {
+					    BEGIN(CliOverride);
+					  }
+					  else
+					  {
+                                            // typically an initialized function pointer
+  					    lastInitializerContext=YY_START;
+					    initBracketCount=0;
+  					    BEGIN(ReadInitializer);
+					  }
+  					}
+<CliOverride>{ID}			{
+  					}
+<CliOverride>"{"			{ 
+  					  unput(*yytext);
+					  BEGIN(FuncQual);
+  					}
+<CliOverride>\n				{
+  					  yyLineNr++;
+  					}
+<CliOverride>.				{
   					}
 <FuncPtrInit>[{;]			{
   					  unput(*yytext);
@@ -3494,11 +3719,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    if (findAndRemoveWord(current->type,"final"))
 					    {
-					      current->memSpec |= Entry::Final;
+					      current->spec |= Entry::Final;
 					    }
 					    if (findAndRemoveWord(current->type,"abstract"))
 					    {
-					      current->memSpec |= Entry::Abstract;
+					      current->spec |= Entry::Abstract;
 					    }
 					  }
 					  if ( insidePHP && !containsWord(current->type,"function"))
@@ -3524,7 +3749,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    {
 					      if ( !insidePHP && (current_root->section & Entry::COMPOUND_MASK) )
 					      {
-						previous->memSpec |= Entry::Inline;
+						previous->spec |= Entry::Inline;
 					      }
 					      //addToBody(yytext);
 					      curlyCount=0;
@@ -3739,7 +3964,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <CompoundName>{SCOPENAME}{BN}*/"<"	{
   					  sharpCount = 0;
   					  current->name = yytext ;
-					  if (current->section==Entry::PROTOCOL_SEC)
+					  if (current->spec & Entry::Protocol)
 					  {
 					    current->name+="-p";
 					  }
@@ -3764,7 +3989,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  if (--sharpCount<=0)
 					  {
 					    current->name = removeRedundantWhiteSpace(current->name);
-					    if (current->section == Entry::PROTOCOL_SEC)
+					    if (current->spec & Entry::Protocol)
 					    { // Objective-C protocol
 					      unput('{'); // fake start of body
 					      BEGIN( ClassVar );
@@ -3794,11 +4019,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
-					  if (current->section == Entry::PROTOCOL_SEC)
+					  if (current->spec & Entry::Protocol)
 					  {
 					    current->name += "-p";
 					  }
-					  if (current->section == Entry::PROTOCOL_SEC ||
+					  if ((current->section & Entry::Protocol) ||
 					      current->section == Entry::OBJCIMPL_SEC)
 					  {
 					    unput('{'); // fake start of body
@@ -3839,6 +4064,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					    // Multiple class forward declaration
 					  }
   					}
+<ClassVar>("sealed"|"abstract")/{BN}*(":"|"{") {
+  					  if (insideCli)
+					  {
+					    if (yytext[0]=='s') // sealed
+					      current->spec |= Entry::SealedClass;
+					    else // abstract
+					      current->spec |= Entry::AbstractClass;
+					    BEGIN( ClassVar ); 
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+					}
 <ClassVar>{ID}				{
   					  if (insideIDL && strcmp(yytext,"switch")==0)
 					  {
@@ -3880,7 +4119,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->name+='(';
                                             if (current->section!=Entry::OBJCIMPL_SEC)
                                             {
-					      current->section=Entry::CATEGORY_SEC;
+					      current->spec|=Entry::Category;
                                             }
 					    BEGIN( ClassCategory );
 					  }
@@ -3912,8 +4151,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <ClassVar>":"				{ 
   					  current->type.resize(0);
-					  if (current->section == Entry::INTERFACE_SEC || 
-					      current->section == Entry::STRUCT_SEC || 
+					  if ((current->spec & Entry::Interface) || 
+					      (current->spec & Entry::Struct) || 
 					      insidePHP || insideCS || insideD || insideObjC
 					     )
 					    baseProt=Public;
@@ -3981,11 +4220,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  curlyCount=0;
 					  if (current_root && // not a nested struct inside an @interface section
-					      current_root->section!=Entry::INTERFACE_SEC &&
-					      (current->section==Entry::INTERFACE_SEC ||
-					       current->section==Entry::OBJCIMPL_SEC ||
-					       current->section==Entry::PROTOCOL_SEC || 
-					       current->section==Entry::CATEGORY_SEC) &&
+					      !(current_root->spec & Entry::Interface) &&
+					      ((current->spec & (Entry::Interface | Entry::Protocol | Entry::Category) ||
+					        current->section==Entry::OBJCIMPL_SEC)
+					      ) &&
 					      insideObjC
 					     )
 					  { // ObjC body that ends with @end
@@ -4108,7 +4346,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      new BaseInfo(baseName,baseProt,baseVirt)
 					    );
 					  }
-					  if (current->section==Entry::INTERFACE_SEC || 
+					  if ((current->spec & Entry::Interface) || 
 					      insideJava || insidePHP || insideCS || 
 					      insideD || insideObjC)
 					  {
@@ -4292,7 +4530,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount();
 					}
 <FindMembers>"{"			{
-                                          if (insideCS && !current->name.isEmpty() && !current->type.isEmpty())
+                                          if (insideCS &&    
+					      !current->name.isEmpty() && 
+					      !current->type.isEmpty())
 					  {
 					    if (containsWord(current->type,"event")) // event
 					    {
@@ -4304,7 +4544,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					    current->bodyLine = yyLineNr;
 					    curlyCount=0;
-					    BEGIN(CSAccessorDecl);
+					    BEGIN( CSAccessorDecl );
 					  }
 					  else
 					  {
@@ -4351,8 +4591,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN(FindMembers);
 					  }
                                         }
-<CSAccessorDecl>"set"			{ if (curlyCount==0) current->memSpec |= Entry::Settable; }
-<CSAccessorDecl>"get"			{ if (curlyCount==0) current->memSpec |= Entry::Gettable; }
+<CSAccessorDecl>"set"			{ if (curlyCount==0) current->spec |= Entry::Settable;  }
+<CSAccessorDecl>"get"			{ if (curlyCount==0) current->spec |= Entry::Gettable;  }
+<CSAccessorDecl>"add"			{ if (curlyCount==0) current->spec |= Entry::Addable;   }
+<CSAccessorDecl>"remove"		{ if (curlyCount==0) current->spec |= Entry::Removable; }
+<CSAccessorDecl>"raise"			{ if (curlyCount==0) current->spec |= Entry::Raisable;  }
 <CSAccessorDecl>.			{}
 <CSAccessorDecl>\n			{ yyLineNr++; }
 
@@ -4364,9 +4607,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
  /**********************************************************************************/
 
  /* ---- Single line comments ------ */
-
+<DocLine>[^\n]*"\n"[ \t]*"//"[/!]       { // continuation of multiline C++-style comment
+				           docBlock+=yytext;
+          		                   docBlock.resize(docBlock.size() - 3);
+                                        }
 <DocLine>[^\n]*/"\n"			{ // whole line
-					  handleCommentBlock(yytext,TRUE);
+  					  docBlock+=yytext;
+					  handleCommentBlock(docBlock,TRUE);
 					  BEGIN( docBlockContext );
   					}
 
@@ -4429,12 +4676,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					    BEGIN(DocBlock);
 					  }
   					}
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("f$"|"f]"|"f}")     {
   					  docBlock+=yytext;
-				          if (yytext[1]=='f') // end of formula
-				          {
-				            BEGIN(DocBlock);
-				          }
+					  BEGIN(DocBlock);
+  					}
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+  					  docBlock+=yytext;
 					  if (&yytext[4]==docBlockName)
 					  {
   					    BEGIN(DocBlock);
@@ -4446,7 +4693,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    REJECT;
 					  }
   					}
-<DocCopyBlock>[^@/*\\\n]+		{ // any character that is not special
+<DocCopyBlock>[^@/*\]\$\\\n]+		{ // any character that is not special
   					  docBlock+=yytext;
   					}
 <DocCopyBlock>"/*"|"*/"|"//"		{
@@ -4734,11 +4981,28 @@ static void parseCompounds(Entry *rt)
 	    ce->fileName.right(4)==".inc" ||
 	    ce->fileName.right(2)==".d"
 	   )
+	{
           current->protection = protection = Public ; 
+	}
 	else if (ce->fileName.right(5)==".java")
+	{
           current->protection = protection = Package ; 
+	}
+	else if (ce->spec&(Entry::Interface | Entry::Ref | Entry::Value | Entry::Struct | Entry::Union))
+	{
+	  if (ce->objc)
+	  {
+	    current->protection = protection = Protected ;
+	  }
+	  else
+	  {
+	    current->protection = protection = Public ;
+	  }
+	}
 	else 
+	{
           current->protection = protection = Private ;
+	}
       }
       else if (ce->section == Entry::ENUM_SEC ) // enum
       {
@@ -4751,17 +5015,6 @@ static void parseCompounds(Entry *rt)
           current->stat = gstat = TRUE;
 	}
 	current->protection = protection = ce->protection;
-      }
-      else if (ce->section==Entry::INTERFACE_SEC)
-      {
-	if (ce->objc)
-	{
-	  current->protection = protection = Protected ;
-	}
-	else
-	{
-	  current->protection = protection = Public ;
-	}
       }
       else // named struct, union, protocol, category
       {

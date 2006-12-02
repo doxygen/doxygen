@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -113,7 +113,8 @@ class ArgumentList : public QList<Argument>
     ArgumentList() : QList<Argument>(), 
                      constSpecifier(FALSE),
                      volatileSpecifier(FALSE),
-                     pureSpecifier(FALSE) { setAutoDelete(TRUE); }
+                     pureSpecifier(FALSE)
+                     { setAutoDelete(TRUE); }
     /*! Destroys the argument list */
    ~ArgumentList() {}
     bool hasDocumentation() const;
@@ -187,16 +188,17 @@ class Entry
     /*! Kind of entries that are supported */
     enum Sections { 
       CLASS_SEC        = 0x00000001, 
-      STRUCT_SEC       = 0x00000002,
-      UNION_SEC        = 0x00000004, 
-      EXCEPTION_SEC    = 0x00000008,
+      //STRUCT_SEC       = 0x00000002,
+      //UNION_SEC        = 0x00000004, 
+      //EXCEPTION_SEC    = 0x00000008,
       NAMESPACE_SEC    = 0x00000010,
-      INTERFACE_SEC    = 0x00000020,
-      PROTOCOL_SEC     = 0x00000040,
-      CATEGORY_SEC     = 0x00000080,
-      COMPOUND_MASK    = CLASS_SEC | STRUCT_SEC | UNION_SEC | 
-                         INTERFACE_SEC | EXCEPTION_SEC | 
-                         PROTOCOL_SEC | CATEGORY_SEC,
+      //INTERFACE_SEC    = 0x00000020,
+      //PROTOCOL_SEC     = 0x00000040,
+      //CATEGORY_SEC     = 0x00000080,
+      COMPOUND_MASK    = CLASS_SEC //| STRUCT_SEC | UNION_SEC | 
+                         //INTERFACE_SEC | EXCEPTION_SEC | 
+                         //PROTOCOL_SEC | CATEGORY_SEC
+                         ,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
       
       CLASSDOC_SEC     = 0x00000800, 
@@ -251,6 +253,28 @@ class Entry
       Writable  = 0x0040,
       Final     = 0x0080,
       Abstract  = 0x0100,
+      Addable   = 0x0200,
+      Removable = 0x0400,
+      Raisable  = 0x0800,
+      Override  = 0x1000,
+      New       = 0x2000,
+      Sealed    = 0x4000,
+      Initonly  = 0x8000
+    };
+    enum ClassSpecifier
+    {
+      Template       = 0x0001,
+      Generic        = 0x0002,
+      Ref            = 0x0004,
+      Value          = 0x0008,
+      Interface      = 0x0010,
+      Struct         = 0x0020,
+      Union          = 0x0040,
+      Exception      = 0x0080,
+      Protocol       = 0x0100,
+      Category       = 0x0200,
+      SealedClass    = 0x0400,
+      AbstractClass  = 0x0800
     };
     enum GroupDocType
     {
@@ -290,7 +314,7 @@ class Entry
     // content
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
-    int  memSpec;             //!< member specifiers
+    int  spec;                //!< class/member specifiers
     int  initLines;           //!< define/variable initializer lines to show 
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?

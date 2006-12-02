@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ *
+ * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,24 +15,30 @@
  *
  */
 
-/* 
- * 15 Dec 2001 : Translation to greek by 
- *               Harry Kalogirou <harkal@rainbow.cs.unipi.gr>
- */ 
+/*
+ * 15 Dec 2001 : Translation to greek by
+ *               Harry Kalogirou <no email>
+ *
+ * 04 Feb 2006 : Greek maintainance by
+ *               Paul Gessos <nickreserved@yahoo.com>
+ */
 
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_2_11
+class TranslatorGreek : public Translator
 {
+  protected:
+    friend class TranslatorAdapterBase;
+
   public:
 
     // --- Language control methods -------------------
-    
-    /*! Used for identification of the language. The identification 
-     * should not be translated. It should be replaced by the name 
+
+    /*! Used for identification of the language. The identification
+     * should not be translated. It should be replaced by the name
      * of the language in English using lower-case characters only
-     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to 
+     * (e.g. "czech", "japanese", "russian", etc.). It should be equal to
      * the identification used in language.cpp.
      */
     virtual QCString idLanguage()
@@ -61,35 +67,35 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "Λεπτομερή Περιγραφή"; }
+    { return "Λεπτομερής Περιγραφή"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
     { return "Τεκμηρίωση Μελών Typedef"; }
-    
+
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
     { return "Τεκμηρίωση Απαριθμήσεων Μελών"; }
-    
+
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
     { return "Τεκμηρίωση Συναρτήσεων Μελών"; }
-    
+
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Τεκμηρίωση Πεδίων"; 
+        return "Τεκμηρίωση Πεδίων";
       }
       else
       {
-        return "Τεκμηρίωση Δεδομένων Μελών"; 
+        return "Τεκμηρίωση Δεδομένων Μελών";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore() 
+    virtual QCString trMore()
     { return "Περισσότερα..."; }
 
     /*! put in the class documentation */
@@ -107,54 +113,54 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return ", περιλαμβανομένων όλων των κληρονομημένων μελών."; }
-    
+
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
     { QCString result="Δημιουργήθηκε αυτόματα από το Doxygen";
       if (s) result+=(QCString)" για "+s;
-      result+=" από τον πηγαίο κώδικα."; 
+      result+=" από τον πηγαίο κώδικα.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
     { return "όνομα απαρύθμισης"; }
-    
+
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "τιμή απαρύθμισης"; }
-    
+    { return "τιμή απαρίθμησης"; }
+
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
     { return "ορισμένο στο "; }
 
     // quick reference sections
 
-    /*! This is put above each page as a link to the list of all groups of 
+    /*! This is put above each page as a link to the list of all groups of
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
     { return "Κομμάτια"; }
-    
+
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
     { return "Ιεραρχία Κλάσεων"; }
-    
+
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         return "Δομές Δεδομένων";
       }
       else
       {
-        return "Λίστα Συσσωματωμάτων"; 
+        return "Λίστα Συσσωματωμάτων";
       }
     }
-    
+
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
     { return "Λίστα Αρχείων"; }
@@ -165,27 +171,27 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Πεδία Δεδομένων"; 
+        return "Πεδία Δεδομένων";
       }
       else
       {
-        return "Μέλη Συσσωματώματα"; 
+        return "Μέλη Συσσωματώματα";
       }
     }
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Καθολικοί ορισμοί"; 
+        return "Καθολικοί ορισμοί";
       }
       else
       {
-        return "Μέλη Αρχείων"; 
+        return "Μέλη Αρχείων";
       }
     }
 
@@ -218,16 +224,16 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
-    { 
-      
+    {
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Ακολουθούνε οι δομές δεδομένων με σύντομες περιγραφές:"; 
+        return "Ακολουθούνε οι δομές δεδομένων με σύντομες περιγραφές:";
       }
       else
       {
         return "Ακολουθούνε οι κλάσεις, οι δομές, "
-               "τα σώματα και οι διαπροσωπίες με σύντομες περιγραφές:"; 
+               "τα σώματα και οι διαπροσωπίες με σύντομες περιγραφές:";
       }
     }
 
@@ -248,7 +254,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         result+="κλάσεων";
       }
       result+=" με συνδέσμους ";
-      if (!extractAll) 
+      if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -259,7 +265,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
           result+="στην τεκμηρίωση των κλάσεων για κάθε πεδίο:";
         }
       }
-      else 
+      else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
@@ -278,7 +284,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       QCString result="Ακολουθεί η λίστα όλων των ";
       if (!extractAll) result+="τεκμηριωμένων ";
-      
+
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
         result+="συναρτήσεων, μεταβλητών, ορισμών, απαριθμήσεων, και ορισμών τύπων";
@@ -288,9 +294,9 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         result+="μελών αρχείων";
       }
       result+=" με συνδέσμους ";
-      if (extractAll) 
+      if (extractAll)
         result+="στα αρχεία που ανήκουν:";
-      else 
+      else
         result+="στην τεκμηρίωση:";
       return result;
     }
@@ -312,49 +318,49 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     { return "Ακολουθεί η λίστα όλων των μονάδων:"; }
 
     /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given. 
+     * description is given.
      */
     virtual QCString trNoDescriptionAvailable()
     { return "Δεν υπάρχει περιγραφή διαθέσιμη"; }
-    
-    // index titles (the project name is prepended for these) 
+
+    // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
     { return "Τεκμηρίωση"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
     { return "Ευρετήριο μονάδων"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
     { return "Ιεραρχικό Ευρετήριο"; }
 
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
      */
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-      { 
+      {
         return "Ευρετήριο δομών δεδομένων";
       }
       else
       {
-        return "Συμπαγές Ευρετήριο"; 
+        return "Συμπαγές Ευρετήριο";
       }
     }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * list of all files.
      */
-    virtual QCString trFileIndex() 
+    virtual QCString trFileIndex()
     { return "Ευρετήτιο Αρχείων"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
@@ -367,14 +373,14 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
      *  the documentation of all classes, structs and unions.
      */
     virtual QCString trClassDocumentation()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Τεκμηρίωση Δομών Δεδομένων"; 
+        return "Τεκμηρίωση Δομών Δεδομένων";
       }
       else
       {
-        return "Τεκμηρίωση Κλάσεων"; 
+        return "Τεκμηρίωση Κλάσεων";
       }
     }
 
@@ -399,111 +405,105 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
     { return "Ενχειρίδιο Αναφοράς"; }
-    
-    /*! This is used in the documentation of a file as a header before the 
+
+    /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
     { return "Ορισμοί"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
     { return "Πρωτοτυπήσεις Συναρτήσεων"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
     { return "Ορισμοί Τύπων"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
     { return "Απαριθμήσεις"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
     { return "Συναρτήσεις"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
     { return "Μεταβλητές"; }
 
-    /*! This is used in the documentation of a file as a header before the 
+    /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
     { return "Τιμές Απαριθμήσεων"; }
-    
+
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
     { return "Τεκμηρίωση Ορισμών"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
     { return "Τεκμηρίωση Πρωτοτυπήσεων των Συναρτήσεων"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
     { return "Τεκμηρίωση Ορισμών Τύπων"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
     { return "Τεκμηρίωση Απαριθμήσεων"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
-     *  of documentation blocks for enumeration values
-     */
-    virtual QCString trEnumerationValueDocumentation()
-    { return "Τεκμηρίωση Τιμών των Απαριθμήσεων"; }
-
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
     { return "Τεκμηρίωση Συναρτήσεων"; }
 
-    /*! This is used in the documentation of a file/namespace before the list 
+    /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
     { return "Τεκμηρίωση Μεταβλητών"; }
 
-    /*! This is used in the documentation of a file/namespace/group before 
+    /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
      */
     virtual QCString trCompounds()
-    { 
+    {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Δομές Δεδομένων"; 
+        return "Δομές Δεδομένων";
       }
       else
       {
-        return "Συσσωματώματα"; 
+        return "Συσσωματώματα";
       }
     }
 
-    /*! This is used in the standard footer of each page and indicates when 
-     *  the page was generated 
+    /*! This is used in the standard footer of each page and indicates when
+     *  the page was generated
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
-    { 
+    {
       QCString result=(QCString)"Δημιουργήθηκε στις "+date;
       if (projName) result+=(QCString)" για "+projName;
       result+=(QCString)" από";
@@ -521,7 +521,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return (QCString)"Διάγραμμα κληρονομικότητας για την "+clName+":";
     }
-    
+
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
     { return "Μόνο για εσωτερική χρήση."; }
@@ -561,7 +561,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
     { return "Εξαίρεση"; }
-    
+
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Δημιουργήθηκε από "; }
@@ -569,17 +569,17 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "Λίστα Χώρων Ονομάτων"; }
+    { return "Λίστα Namespace"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
       QCString result="Ακολουθέι η λίστα όλων των ";
       if (!extractAll) result+="τεκμηριωμένων ";
-      result+="χώρων ονομάτων με σύντομες περιγραφές:";
+      result+="Namespace με σύντομες περιγραφές:";
       return result;
     }
 
@@ -588,17 +588,17 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
      */
     virtual QCString trFriends()
     { return "Φίλοι"; }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! used in the class documentation as a header before the list of all
-     * related classes 
+     * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "Τεκμηρίωση Φίλικών και Συσχετιζόμενων Συναρτήσεων"; }
-    
+    { return "Τεκμηρίωση Φιλικών και Συσχετιζόμενων Συναρτήσεων"; }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
@@ -616,12 +616,12 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
         case ClassDef::Struct:     result+=" Δομής"; break;
         case ClassDef::Union:      result+=" Ένωσης"; break;
         case ClassDef::Interface:  result+=" Διαπροσωπίας"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break; // translate me!
-        case ClassDef::Category:   result+=" Category"; break; // translate me!
+        case ClassDef::Protocol:   result+=" Πρωτοκόλλου"; break;
+        case ClassDef::Category:   result+=" Κατηγορίας"; break;
         case ClassDef::Exception:  result+=" Εξαίρεσης"; break;
       }
       if (isTemplate) result+=" Template";
-      
+
       return result;
     }
 
@@ -629,7 +629,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" Αναφορά Αρχείου"; 
+      result+=" Αναφορά Αρχείου";
       return result;
     }
 
@@ -637,10 +637,10 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Αναφορά Χώρου Ονομάτων";
+      result+=" Αναφορά Namespace";
       return result;
     }
-    
+
     virtual QCString trPublicMembers()
     { return "Δημόσιες Μέθοδοι"; }
     virtual QCString trPublicSlots()
@@ -661,7 +661,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     { return "Ιδιοτικά Slots"; }
     virtual QCString trStaticPrivateMembers()
     { return "Στατικές Ιδιοτικές Μέδοδοι"; }
-    
+
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
      */
@@ -670,23 +670,23 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
       QCString result;
       int i;
       // the inherits list contain `numEntries' classes
-      for (i=0;i<numEntries;i++) 
+      for (i=0;i<numEntries;i++)
       {
         // use generateMarker to generate placeholders for the class links!
-        result+=generateMarker(i); // generate marker for entry i in the list 
+        result+=generateMarker(i); // generate marker for entry i in the list
                                    // (order is left to right)
-        
+
         if (i!=numEntries-1)  // not the last entry, so we need a separator
         {
-          if (i<numEntries-2) // not the fore last entry 
+          if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
             result+=", και ";
         }
       }
-      return result; 
+      return result;
     }
-    
+
     /*! used in class documentation to produce a list of base classes,
      *  if class diagrams are disabled.
      */
@@ -703,12 +703,12 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
       return "Κληρονομείται από "+trWriteList(numEntries)+".";
     }
 
-    /*! used in member documentation blocks to produce a list of 
+    /*! used in member documentation blocks to produce a list of
      *  members that are hidden by this one.
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "Επαναυλοποιείται από "+trWriteList(numEntries)+".";
+      return "Επαναϋλοποιείται από "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -716,7 +716,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "Επαναυλοποιείται στην "+trWriteList(numEntries)+".";
+      return "Επαναϋλοποιείται στην "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
@@ -725,17 +725,17 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
-    { 
+    {
       QCString result="Ακολουθεί η λίστα όλων των ";
       if (!extractAll) result+="τεκμηριωμένων ";
       result+="μελών χώρων ονομάτων με συνδέσμους ";
-      if (extractAll) 
+      if (extractAll)
         result+="στην τεκμηρίωση του χώρου ονομάτων για κάθε μέλος:";
-      else 
+      else
         result+="στους χώρους ονομάτων που ανήκουν:";
       return result;
     }
-    /*! This is used in LaTeX as the title of the chapter with the 
+    /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
@@ -803,7 +803,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     virtual QCString trMainPage()
     { return "Κύρια Σελίδα"; }
 
-    /*! This is used in references to page that are put in the LaTeX 
+    /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
@@ -852,7 +852,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Τεκμηρίωση Constructor & Destructor"; 
+      return "Τεκμηρίωση Constructor & Destructor";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -909,7 +909,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     virtual QCString trNote()
     {
       return "Σημείωση";
@@ -998,7 +998,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return "Από";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.1.5
 //////////////////////////////////////////////////////////////////////////
@@ -1008,7 +1008,7 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return "Υπόμνημα Διαγραμμάτων";
     }
-    /*! page explaining how the dot graph's should be interpreted 
+    /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
      */
     virtual QCString trLegendDocs()
@@ -1072,11 +1072,11 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return "υπόμνημα";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.0
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
@@ -1164,11 +1164,11 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return "Τιμή:";
     }
-    
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.5
 //////////////////////////////////////////////////////////////////////////
-    
+
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
@@ -1184,9 +1184,9 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
 // new since 1.2.6
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used as ansicpg for RTF file 
-     * 
-     * The following table shows the correlation of Charset name, Charset Value and 
+    /*! Used as ansicpg for RTF file
+     *
+     * The following table shows the correlation of Charset name, Charset Value and
      * <pre>
      * Codepage number:
      * Charset Name       Charset Value(hex)  Codepage number
@@ -1207,15 +1207,15 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
      * GB2313_CHARSET          134 (x86)             936
      * CHINESEBIG5_CHARSET     136 (x88)             950
      * </pre>
-     * 
+     *
      */
     virtual QCString trRTFansicp()
     {
       return "1253";
     }
-    
 
-    /*! Used as ansicpg for RTF fcharset 
+
+    /*! Used as ansicpg for RTF fcharset
      *  \see trRTFansicp() for a table of possible values.
      */
     virtual QCString trRTFCharSet()
@@ -1228,93 +1228,93 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     {
       return "Ευρετήριο";
     }
-   
+
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trClass(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Κλάση" : "κλάση"));
       if (!singular)  result+="";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trFile(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Αρχεί" : "αρχεί"));
       if (!singular)  result+="α"; else result+="ο";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trNamespace(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Namespace" : "namespace"));
       if (!singular)  result+="s";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGroup(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Ομάδ" : "ομάδ"));
       if (!singular)  result+="ες"; else result+="α";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trPage(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Σελίδ" : "σελίδ"));
       if (!singular)  result+="ες"; else result+="α";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Μέλ" : "μέλ"));
       if (!singular)  result+="η"; else result+="ος";
-      return result; 
-    }
-   
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    { 
-      QCString result((first_capital ? "Πεδί" : "πεδί"));
-      if (!singular)  result+="α"; else result+="ο";
-      return result; 
+      return result;
     }
 
     /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names 
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trField(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Πεδί" : "πεδί"));
+      if (!singular)  result+="α"; else result+="ο";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
      *  of the category.
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
-    { 
+    {
       QCString result((first_capital ? "Καθολικ" : "καθολικ"));
       if (!singular) result+="ές"; else result+="ή";
-      return result; 
+      return result;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1324,12 +1324,278 @@ class TranslatorGreek : public TranslatorAdapter_1_2_11
     /*! This text is generated when the \\author command is used and
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
-    {                                                                         
+    {
       QCString result((first_capital ? "Συγραφ" : "συγραφ"));
       if (!singular)  result+=""; else result+="έας";
-      return result; 
+      return result;
     }
 
-};
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.11
+//////////////////////////////////////////////////////////////////////////
 
+    /*! This text is put before the list of members referenced by a member
+     */
+    virtual QCString trReferences()
+    {
+      return "Αναφορές";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.13
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in member documentation blocks to produce a list of
+     *  members that are implemented by this one.
+     */
+    virtual QCString trImplementedFromList(int numEntries)
+    {
+      return "Υλοποιεί "+trWriteList(numEntries)+".";
+    }
+
+    /*! used in member documentation blocks to produce a list of
+     *  all members that implement this abstract member.
+     */
+    virtual QCString trImplementedInList(int numEntries)
+    {
+      return "Υλοποιείται από "+trWriteList(numEntries)+".";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.16
+//////////////////////////////////////////////////////////////////////////
+
+    /*! used in RTF documentation as a heading for the Table
+     *  of Contents.
+     */
+    virtual QCString trRTFTableOfContents()
+    {
+      return "Πίνακας Περιεχομένων";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.17
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as the header of the list of item that have been
+     *  flagged deprecated
+     */
+    virtual QCString trDeprecatedList()
+    {
+      return "Λίστα Καταργημένων";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.2.18
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a header for declaration section of the events found in
+     * a C# program
+     */
+    virtual QCString trEvents()
+    {
+      return "Συμβάντα";
+    }
+    /*! Header used for the documentation section of a class' events. */
+    virtual QCString trEventDocumentation()
+    {
+      return "Τεκμηρίωση Συμβάντων";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used as a heading for a list of Java class types with package scope.
+     */
+    virtual QCString trPackageTypes()
+    {
+      return "Τύποι Πακέτων";
+    }
+    /*! Used as a heading for a list of Java class functions with package
+     * scope.
+     */
+    virtual QCString trPackageMembers()
+    {
+      return "Συναρτήσεις Πακέτου";
+    }
+    /*! Used as a heading for a list of static Java class functions with
+     *  package scope.
+     */
+    virtual QCString trStaticPackageMembers()
+    {
+      return "Στατικές Συναρτήσεις Πακέτου";
+    }
+    /*! Used as a heading for a list of Java class variables with package
+     * scope.
+     */
+    virtual QCString trPackageAttribs()
+    {
+      return "Μεταβλητές Πακέτου";
+    }
+    /*! Used as a heading for a list of static Java class variables with
+     * package scope.
+     */
+    virtual QCString trStaticPackageAttribs()
+    {
+      return "Στατικές Μεταβλητές Πακέτου";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! Used in the quick index of a class/file/namespace member list page
+     *  to link to the unfiltered list of all members.
+     */
+    virtual QCString trAll()
+    {
+      return "Όλα";
+    }
+    /*! Put in front of the call graph for a function. */
+    virtual QCString trCallGraph()
+    {
+      return "Το γράφημα δείχνει ποιές συναρτήσεις καλούνται από αυτή:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.3
+//////////////////////////////////////////////////////////////////////////
+
+    /*! When the search engine is enabled this text is put in the header
+     *  of each page before the field where one can enter the text to search
+     *  for.
+     */
+    virtual QCString trSearchForIndex()
+    {
+      return "Αναζήτηση για";
+    }
+    /*! This string is used as the title for the page listing the search
+     *  results.
+     */
+    virtual QCString trSearchResultsTitle()
+    {
+      return "Αποτελέσματα Αναζήτησης";
+    }
+    /*! This string is put just before listing the search results. The
+     *  text can be different depending on the number of documents found.
+     *  Inside the text you can put the special marker $num to insert
+     *  the number representing the actual number of search results.
+     *  The @a numDocuments parameter can be either 0, 1 or 2, where the
+     *  value 2 represents 2 or more matches. HTML markup is allowed inside
+     *  the returned string.
+     */
+    virtual QCString trSearchResults(int numDocuments)
+    {
+      if (numDocuments==0)
+      {
+        return "Συγγνώμη, δεν υπάρχει κείμενο που να ταιριάζει με την αίτησή σας.";
+      }
+      else if (numDocuments==1)
+      {
+        return "Βρέθηκε <b>1</b> κείμενο που ταιριάζει με την αίτησή σας.";
+      }
+      else
+      {
+        return "Βρέθηκαν <b>$num</b> κείμενα που ταιριάζουν με την αίτησή σας. "
+               "Πρώτα εμφανίζονται τα κείμενα που ταιριάζουν πιο πολύ.";
+      }
+    }
+    /*! This string is put before the list of matched words, for each search
+     *  result. What follows is the list of words that matched the query.
+     */
+    virtual QCString trSearchMatches()
+    {
+      return "Ταίριαξαν:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.8
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used in HTML as the title of page with source code for file filename
+     */
+    virtual QCString trSourceFile(QCString& filename)
+    {
+      return "Αρχείο κώδικα " + filename;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.3.9
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used as the name of the chapter containing the directory
+     *  hierarchy.
+     */
+    virtual QCString trDirIndex()
+    { return "Ιεραρχία Καταλόγου"; }
+
+    /*! This is used as the name of the chapter containing the documentation
+     *  of the directories.
+     */
+    virtual QCString trDirDocumentation()
+    { return "Τεκμηρίωση Καταλόγου"; }
+
+    /*! This is used as the title of the directory index and also in the
+     *  Quick links of an HTML page, to link to the directory hierarchy.
+     */
+    virtual QCString trDirectories()
+    { return "Κατάλογοι"; }
+
+    /*! This returns a sentences that introduces the directory hierarchy.
+     *  and the fact that it is sorted alphabetically per level
+     */
+    virtual QCString trDirDescription()
+    {
+			return "Η ιεραρχία καταλόγων ταξινομήθηκε αλφαβητικά, αλλά όχι πολύ αυστηρά:";
+    }
+
+    /*! This returns the title of a directory page. The name of the
+     *  directory is passed via \a dirName.
+     */
+    virtual QCString trDirReference(const char *dirName)
+    { QCString result=QCString("Αναφορά του Καταλόγου ") + dirName; return result; }
+
+    /*! This returns the word directory with or without starting capital
+     *  (\a first_capital) and in sigular or plural form (\a singular).
+     */
+    virtual QCString trDir(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Κατάλογο" : "κατάλογο"));
+      if (singular) result+="ς"; else result+="ι";
+      return result;
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.1
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This text is added to the documentation when the \\overload command
+     *  is used for a overloaded function.
+     */
+    virtual QCString trOverloadText()
+    {
+       return "Αυτή είναι μια υπερφορτωμένη συνάρτηση-μέλος, "
+              "που παρέχεται για ευκολία. Διαφέρει από την παραπάνω "
+              "συνάρτηση μόνο στον τύπο των παραμέτρων που δέχεται.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Το γράφημα δείχνει από ποιές συναρτήσεις καλείται αυτή η συνάρτηση:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Enumerator Documentation"; }
+
+
+};
 #endif

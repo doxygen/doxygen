@@ -1,4 +1,4 @@
-(1.4.7)
+(1.5.1)
 
 Doxygen supports the following 33 languages (sorted alphabetically):
 
@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
 Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 13 translators are up-to-date, 20 translators are based on
+Of them, 14 translators are up-to-date, 19 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -27,6 +27,7 @@ still may be some details listed even for them:
   TranslatorEnglish
   TranslatorFrench
   TranslatorGerman
+  TranslatorGreek -- Remove the obsolete methods (never used).
   TranslatorItalian
   TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorRussian
@@ -55,8 +56,11 @@ must be implemented to become up-to-date:
   TranslatorRomanian              1.4.1 	 2 methods to implement
   TranslatorPortuguese            1.3.3 	13 methods to implement
   TranslatorSlovak                1.2.18	22 methods to implement
-  TranslatorGreek                 1.2.11	27 methods to implement
   TranslatorFinnish               obsolete	96 methods to implement
+
+Note: The adapter classes TranslatorAdapter_1_2_11,
+TranslatorAdapter_1_2_13, TranslatorAdapter_1_2_16,
+TranslatorAdapter_1_2_17 are not used and can be removed.
 
 ----------------------------------------------------------------------
 The following translator classes derive directly from the
@@ -243,40 +247,10 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorGreek   (TranslatorAdapter_1_2_11)  27 methods to implement
+TranslatorGreek   (Translator)
 ---------------
 
-  Implements 167 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trOverloadText()
-    virtual QCString trEventDocumentation()
-    virtual QCString trDirIndex()
-    virtual QCString trImplementedFromList(int numEntries)
-    virtual QCString trPackageMembers()
-    virtual QCString trStaticPackageMembers()
-    virtual QCString trDirDocumentation()
-    virtual QCString trSearchResultsTitle()
-    virtual QCString trDirectories()
-    virtual QCString trDeprecatedList()
-    virtual QCString trDirDescription()
-    virtual QCString trStaticPackageAttribs()
-    virtual QCString trCallGraph()
-    virtual QCString trPackageTypes()
-    virtual QCString trImplementedInList(int numEntries)
-    virtual QCString trSearchResults(int numDocuments)
-    virtual QCString trPackageAttribs()
-    virtual QCString trSearchMatches()
-    virtual QCString trEvents()
-    virtual QCString trCallerGraph()
-    virtual QCString trReferences()
-    virtual QCString trSourceFile(QCString & filename)
-    virtual QCString trDirReference(const char * dirName)
-    virtual QCString trDir(bool first_capital, bool singular)
-    virtual QCString trSearchForIndex()
-    virtual QCString trAll()
-    virtual QCString trRTFTableOfContents()
+  Implements 194 of the required methods.
 
   Obsolete methods (should be removed, never used):
 

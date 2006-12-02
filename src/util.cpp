@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -626,13 +626,16 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
   {
-    //printf("Already cached %s->%s\n",
+    //printf("Already cached %s->%s [%s]\n",
     //    md->name().data(),
-    //    md->getCachedTypedefVal()?md->getCachedTypedefVal()->name().data():"<none>");
+    //    md->getCachedTypedefVal()?md->getCachedTypedefVal()->name().data():"<none>",
+    //    md->getCachedResolvedTypedef()?md->getCachedResolvedTypedef().data():"<none>");
+
     if (pTemplSpec)    *pTemplSpec    = md->getCachedTypedefTemplSpec();
     if (pResolvedType) *pResolvedType = md->getCachedResolvedTypedef();
     return md->getCachedTypedefVal();
   }
+  //printf("new typedef\n");
   QCString qname = md->qualifiedName();
   if (g_resolvedTypedefs.find(qname)) return 0; // typedef already done
 
@@ -648,9 +651,9 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
   }
   type=type.left(ip+1);
   int sp=0;
-  if (type.stripPrefix("const ")) sp+=6;  // strip leading "const"
+  if (type.stripPrefix("const "))  sp+=6;  // strip leading "const"
   if (type.stripPrefix("struct ")) sp+=7; // strip leading "struct"
-  if (type.stripPrefix("union ")) sp+=6;  // strip leading "union"
+  if (type.stripPrefix("union "))  sp+=6;  // strip leading "union"
   while (sp<tl && type.at(sp)==' ') sp++;
   MemberDef *memTypeDef = 0;
   ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
@@ -677,6 +680,8 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
       if (pTemplSpec) *pTemplSpec = type.mid(i);
       result = getResolvedClassRec(md->getOuterScope(),fileScope,
                                    type.left(i),0,0,pResolvedType);
+      //printf("result=%p pRresolvedType=%s sp=%d ip=%d tl=%d\n",
+      //    result,pResolvedType?pResolvedType->data():"<none>",sp,ip,tl);
     }
     else if (si!=-1) // A::B
     {
@@ -694,7 +699,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
            pResolvedType);
     }
 
-    if (result) ip=si+sp+1;
+    //if (result) ip=si+sp+1;
   }
 
 done:
@@ -703,6 +708,7 @@ done:
     if (result)
     {
       *pResolvedType=result->qualifiedName();
+      //printf("*pResolvedType=%s\n",pResolvedType->data());
       if (sp>0)    pResolvedType->prepend(typedefValue.left(sp));
       if (ip<tl-1) pResolvedType->append(typedefValue.right(tl-ip-1));
     }
@@ -719,6 +725,7 @@ done:
   {
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
+    //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
     md->cacheTypedefVal(result,
         pTemplSpec ? *pTemplSpec : QCString(),
         pResolvedType ? *pResolvedType : QCString()
@@ -840,6 +847,7 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
       }
     }
     Definition *next = current->findInnerCompound(qualScopePart);
+    //printf("++ Looking for %s inside %s result %p\n",qualScopePart.data(),current->name().data(),next?next->name().data():"<null>");
     if (next==0) // failed to follow the path 
     {
       if (current->definitionType()==Definition::TypeNamespace)
@@ -1015,7 +1023,18 @@ done:
 
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
  * if item in not in this scope. The explicitScopePart limits the search
- * to scopes that match \a scope plus the explicit part.
+ * to scopes that match \a scope (or its parent scope(s)) plus the explicit part.
+ * Example:
+ *
+ * class A { public: class I {}; };
+ * class B { public: class J {}; };
+ *
+ * - Looking for item=='J' inside scope=='B' will return 0.
+ * - Looking for item=='I' inside scope=='B' will return -1 
+ *   (as it is not found in B nor in the global scope).
+ * - Looking for item=='A::I' inside scope=='B', first the match B::A::I is tried but 
+ *   not found and then A::I is searched in the global scope, which matches and 
+ *   thus the result is 1.
  */
 int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
                      Definition *item,const QCString &explicitScopePart)
@@ -1039,10 +1058,29 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   Definition *newScope = followPath(scope,fileScope,explicitScopePart);
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
+    Definition *itemScope = item->getOuterScope();
     //printf("scope traversal successful %s<->%s!\n",item->getOuterScope()->name().data(),newScope->name().data());
-    if (item->getOuterScope()==newScope) 
+    if (newScope && newScope->definitionType()==Definition::TypeClass)
+    {
+      //ClassDef *cd = (ClassDef *)newScope;
+      //printf("---> Class %s: bases=%p\n",cd->name().data(),cd->baseClasses());
+    }
+    if (itemScope==newScope)  // exact match of scopes => distance==0
     {
       //printf("> found it\n");
+    }
+    else if (itemScope && newScope &&
+             itemScope->definitionType()==Definition::TypeClass &&
+             newScope->definitionType()==Definition::TypeClass &&
+             ((ClassDef*)newScope)->isBaseClass((ClassDef*)itemScope,TRUE,0)
+            )
+    {
+      // inheritance is also ok. Example: looking for B::I, where 
+      // class A { public: class I {} };
+      // class B : public A {}
+
+      //printf("outerScope(%s) is base class of newScope(%s)\n",
+      //    outerScope->name().data(),newScope->name().data());
     }
     else 
     {
@@ -1134,19 +1172,6 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
       //printf("> result=%d\n",i);
       result= (i==-1) ? -1 : i+1;
     }
-#if 0
-    if (scope!=Doxygen::globalScope)
-    {
-      int i=isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
-          item,explicitScopePart);
-      //printf("> result=%d\n",i);
-      result= (i==-1) ? -1 : i+1;
-    }
-    else
-    {
-      result = -1;
-    }
-#endif
   }
 done:
   //printf("> result=%d\n",result);
@@ -1175,7 +1200,7 @@ static void getResolvedSymbol(Definition *scope,
   //printf("  found type %x name=%s d=%p\n",
   //       d->definitionType(),d->name().data(),d);
 
-  // only look at classes and members
+  // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember && 
        (((MemberDef*)d)->isTypedef() || ((MemberDef*)d)->isEnumerate()) 
@@ -1418,7 +1443,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
-  if (di->definitionType()==DefinitionIntf::TypeSymbolList)
+  if (di->definitionType()==DefinitionIntf::TypeSymbolList) // not a unique name
   {
     DefinitionListIterator dli(*(DefinitionList*)di);
     Definition *d;
@@ -1430,7 +1455,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
                         bestResolvedType);
     }
   }
-  else 
+  else // unique name
   {
     Definition *d = (Definition *)di;
     getResolvedSymbol(scope,fileScope,d,explicitScopePart,
@@ -1540,6 +1565,7 @@ static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
+  static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
   if (s.isEmpty()) return s;
   QCString result;
   uint i;
@@ -1644,6 +1670,7 @@ nextChar:
         if (rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) result+=' ';
       }
       result+=c;
+      if (cliSupport && (c=='^' || c=='%') && i>1 && isId(s.at(i-1))) result+=' '; // C++/CLI: Type^ name and Type% name
     }
   }
   //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
@@ -2183,7 +2210,7 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   if (level==256)
   {
     err("Error: Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to dimitri@stack.nl",cd->name().data());
+        "inheritance relation! Please send a bug report to dimitri@stack.nl\n",cd->name().data());
     return -1;
   }
   int m=maxInheritanceDepth; 
@@ -2948,12 +2975,20 @@ static QCString stripDeclKeywords(const QCString &s)
 // forward decl for circular dependencies
 static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type);
 
-QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec)
+QCString getCanonicalTemplateSpec(Definition *d,FileDef *,const QCString& spec)
 {
-  //printf("getCanonicalTemplateSpec(%s)\n",spec.data());
   QCString templSpec = spec.stripWhiteSpace();
-  if (templSpec.isEmpty() || templSpec.at(0) != '<') return templSpec;
-  return "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
+  //if (!templSpec.isEmpty() && templSpec.at(0) == '<') 
+  //{
+  //  templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
+  //}
+  QCString resolvedType = resolveTypeDef(d,spec);
+  if (!resolvedType.isEmpty()) // not known as a typedef either
+  {
+    templSpec = resolvedType;
+  }
+  //printf("getCanonicalTemplateSpec(%s)=%s\n",spec.data(),templSpec.data());
+  return templSpec;
 }
 
 
@@ -3096,14 +3131,14 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
     // foreach identifier in the type
   {
     //printf("     i=%d p=%d\n",i,p);
-    canType += type.mid(pp,i-pp);
+    if (i>pp) canType += type.mid(pp,i-pp);
 
-    //printf(" word=%s templSpec=%s\n",word.data(),templSpec.data());
 
     canType += getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
+    //printf(" word=%s templSpec=%s canType=%s\n",word.data(),templSpec.data(),canType.data());
     if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
-      // (i.e. type is not a template specialization)
-      // then resolve any identifiers inside. 
+                              // (i.e. type is not a template specialization)
+                              // then resolve any identifiers inside. 
     {
       static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
       int tp=0,tl,ti;

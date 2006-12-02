@@ -1463,14 +1463,34 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.endTypewriter();
   }
 
-  if (isProperty())
+  if (isProperty() && (isSettable() || isGettable()))
   {
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
       QStrList sl;
-      if (isGettable()) sl.append("get");
-      if (isSettable()) sl.append("set");
+      if (isGettable())  sl.append("get");
+      if (isSettable())  sl.append("set");
+      const char *s=sl.first();
+      while (s)
+      {
+         ol.docify(s);
+         s=sl.next();
+         if (s) ol.docify(", ");
+      }
+      ol.docify("]");
+      ol.endTypewriter();
+  }
+
+  if (isEvent() && (isAddable() || isRemovable() || isRaisable()))
+  {
+      ol.writeLatexSpacing();
+      ol.startTypewriter();
+      ol.docify(" [");
+      QStrList sl;
+      if (isAddable())   sl.append("add");
+      if (isRemovable()) sl.append("remove");
+      if (isRaisable())  sl.append("raise");
       const char *s=sl.first();
       while (s)
       {
@@ -1840,15 +1860,14 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
 
   Specifier lvirt=virtualness();
- 
+
   if (!isObjCMethod() &&
       (protection()!=Public || lvirt!=Normal ||
-       isFriend() || isRelated() || isExplicit() ||
-       isMutable() || (isInline() && Config_getBool("INLINE_INFO")) ||
+       isFriend() || isRelated() || 
+       (isInline() && Config_getBool("INLINE_INFO")) ||
        isSignal() || isSlot() ||
        isStatic() || (m_impl->classDef && m_impl->classDef!=container) ||
-       isSettable() || isGettable() || isReadable() || isWritable() ||
-       isFinal() || isAbstract()
+       (m_impl->memSpec & ~Entry::Inline)!=0 
       )
      )
   {
@@ -1861,17 +1880,23 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else if (isRelated()) sl.append("related");
     else
     {
-      if      (Config_getBool("INLINE_INFO") && isInline())              
-        sl.append("inline");
+      if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
       if      (isExplicit())            sl.append("explicit");
       if      (isMutable())             sl.append("mutable");
       if      (isStatic())              sl.append("static");
       if      (isGettable())            sl.append("get");
       if      (isSettable())            sl.append("set");
+      if      (isAddable())             sl.append("add");
+      if      (isRemovable())           sl.append("remove");
+      if      (isRaisable())            sl.append("raise");
       if      (isReadable())            sl.append("read");
       if      (isWritable())            sl.append("write");
       if      (isFinal())               sl.append("final");
       if      (isAbstract())            sl.append("abstract");
+      if      (isOverride())            sl.append("override");
+      if      (isInitonly())            sl.append("initonly");
+      if      (isSealed())              sl.append("sealed");
+      if      (isNew())                 sl.append("new");
       if      (protection()==Protected) sl.append("protected");
       else if (protection()==Private)   sl.append("private");
       else if (protection()==Package)   sl.append("package");
@@ -3181,6 +3206,24 @@ bool MemberDef::isSettable() const
   return (m_impl->memSpec&Entry::Settable)!=0; 
 }
 
+bool MemberDef::isAddable() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Addable)!=0; 
+}
+
+bool MemberDef::isRemovable() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Removable)!=0; 
+}
+
+bool MemberDef::isRaisable() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Raisable)!=0; 
+}
+
 bool MemberDef::isReadable() const
 { 
   makeResident();
@@ -3197,6 +3240,30 @@ bool MemberDef::isFinal() const
 { 
   makeResident();
   return (m_impl->memSpec&Entry::Final)!=0; 
+}
+
+bool MemberDef::isNew() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::New)!=0; 
+}
+
+bool MemberDef::isSealed() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Sealed)!=0; 
+}
+
+bool MemberDef::isOverride() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Override)!=0; 
+}
+
+bool MemberDef::isInitonly() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Initonly)!=0; 
 }
 
 bool MemberDef::isAbstract() const
@@ -3394,6 +3461,7 @@ QCString MemberDef::getCachedTypedefTemplSpec() const
 QCString MemberDef::getCachedResolvedTypedef() const
 { 
   makeResident();
+  //printf("MemberDef::getCachedResolvedTypedef()=%s m_impl=%p\n",m_impl->cachedResolvedType.data(),m_impl);
   return m_impl->cachedResolvedType; 
 }
 
@@ -3620,6 +3688,7 @@ void MemberDef::cacheTypedefVal(ClassDef*val, const QCString & templSpec, const 
   m_impl->cachedTypedefValue=val; 
   m_impl->cachedTypedefTemplSpec=templSpec; 
   m_impl->cachedResolvedType=resolvedType;
+  //printf("MemberDef::cacheTypedefVal=%s m_impl=%p\n",m_impl->cachedResolvedType.data(),m_impl);
 }
 
 void MemberDef::flushToDisk() const

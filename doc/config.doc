@@ -73,6 +73,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 \refitem cfg_compact_latex COMPACT_LATEX 
 \refitem cfg_compact_rtf COMPACT_RTF
+\refitem cfg_cpp_cli_support CPP_CLI_SUPPORT
 \refitem cfg_create_subdirs CREATE_SUBDIRS
 \refitem cfg_details_at_top DETAILS_AT_TOP 
 \refitem cfg_directory_graph DIRECTORY_GRAPH
@@ -392,6 +393,12 @@ followed by the descriptions of the tags grouped by category.
  definitions whose arguments contain STL classes (e.g. func(std::string); v.s.
  func(std::string) {}). This also make the inheritance and collaboration
  diagrams that involve STL classes more complete and accurate.
+
+\anchor cfg_cpp_cli_support
+<dt>\c CPP_CLI_SUPPORT <dd>
+ \addindex CPP_CLI_SUPPORT
+ If you use Microsoft's C++/CLI language, you should set this option to YES to
+ enable parsing support.
 
 \anchor cfg_distribute_group_doc
 <dt>\c DISTRIBUTE_GROUP_DOC <dd>

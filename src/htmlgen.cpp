@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -431,13 +431,13 @@ static const char tabs_css[] =
 "   background-position: 0% -150px;\n"
 "}\n"
 "\n"
-"DIV.tabs LI#current A\n"
+"DIV.tabs LI.current A\n"
 "{\n"
 "   background-position: 100% -150px;\n"
 "   border-width     : 0px;\n"
 "}\n"
 "\n"
-"DIV.tabs LI#current SPAN\n"
+"DIV.tabs LI.current SPAN\n"
 "{\n"
 "   background-position: 0% -150px;\n"
 "   padding-bottom   : 6px;\n"
@@ -1580,7 +1580,7 @@ static void endQuickIndexList(QTextStream &t,bool compact)
 {
   if (compact) 
   {
-    t << "  </ul>";
+    t << "  </ul>\n";
     t << "</div>\n";
   }
   else 
@@ -1593,7 +1593,7 @@ static void startQuickIndexItem(QTextStream &t,const char *l,
                                 bool hl,bool /*compact*/,
                                 const QCString &relPath)
 {
-  t << "    <li"; if (hl) t << " id=\"current\"";
+  t << "    <li"; if (hl) t << " class=\"current\"";
   t << "><a ";
   t << "href=\"" << relPath << l << "\">";
   t << "<span>";

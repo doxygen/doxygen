@@ -147,8 +147,22 @@
     <xsd:attribute name="virt" type="DoxVirtualKind" />
     <xsd:attribute name="volatile" type="DoxBool" />
     <xsd:attribute name="mutable" type="DoxBool" />
+    <!-- Qt property -->
     <xsd:attribute name="readable" type="DoxBool" use="optional"/>
     <xsd:attribute name="writable" type="DoxBool" use="optional"/>
+    <!-- C++/CLI variable -->
+    <xsd:attribute name="initonly" type="DoxBool" use="optional"/>
+    <!-- C++/CLI and C# property -->
+    <xsd:attribute name="settable" type="DoxBool" use="optional"/>
+    <xsd:attribute name="gettable" type="DoxBool" use="optional"/>
+    <!-- C++/CLI function -->
+    <xsd:attribute name="final" type="DoxBool" use="optional"/>
+    <xsd:attribute name="sealed" type="DoxBool" use="optional"/>
+    <xsd:attribute name="new" type="DoxBool" use="optional"/>
+    <!-- C++/CLI event -->
+    <xsd:attribute name="add" type="DoxBool" use="optional"/>
+    <xsd:attribute name="remove" type="DoxBool" use="optional"/>
+    <xsd:attribute name="raise" type="DoxBool" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="descriptionType" mixed="true">

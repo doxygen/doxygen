@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -1000,32 +1000,45 @@ ArgumentList *getTemplateArgumentsFromName(
   return ali.current();
 }
 
-static ClassDef::CompoundType convertToCompoundType(int section)
+static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
 {
     ClassDef::CompoundType sec=ClassDef::Class; 
+    if (specifier&Entry::Struct) 
+      sec=ClassDef::Struct;
+    else if (specifier&Entry::Union) 
+      sec=ClassDef::Union;
+    else if (specifier&Entry::Interface) 
+      sec=ClassDef::Interface;
+    else if (specifier&Entry::Protocol) 
+      sec=ClassDef::Protocol;
+    else if (specifier&Entry::Category) 
+      sec=ClassDef::Category;
+    else if (specifier&Entry::Exception) 
+      sec=ClassDef::Exception;
+
     switch(section)
     {
-      case Entry::UNION_SEC: 
+      //case Entry::UNION_SEC: 
       case Entry::UNIONDOC_SEC: 
         sec=ClassDef::Union; 
         break;
-      case Entry::STRUCT_SEC:
+      //case Entry::STRUCT_SEC:
       case Entry::STRUCTDOC_SEC: 
         sec=ClassDef::Struct; 
         break;
-      case Entry::INTERFACE_SEC:
+      //case Entry::INTERFACE_SEC:
       case Entry::INTERFACEDOC_SEC:
         sec=ClassDef::Interface; 
         break;
-      case Entry::PROTOCOL_SEC:
+      //case Entry::PROTOCOL_SEC:
       case Entry::PROTOCOLDOC_SEC:
         sec=ClassDef::Protocol; 
         break;
-      case Entry::CATEGORY_SEC:
+      //case Entry::CATEGORY_SEC:
       case Entry::CATEGORYDOC_SEC:
         sec=ClassDef::Category; 
         break;
-      case Entry::EXCEPTION_SEC:
+      //case Entry::EXCEPTION_SEC:
       case Entry::EXCEPTIONDOC_SEC:
         sec=ClassDef::Exception; 
         break;
@@ -1123,11 +1136,11 @@ static void addClassToContext(EntryNav *rootNav)
       cd->setTemplateArguments(tArgList);
     }
 
-    cd->setCompoundType(convertToCompoundType(root->section));
+    cd->setCompoundType(convertToCompoundType(root->section,root->spec));
   }
   else // new class
   {
-    ClassDef::CompoundType sec = convertToCompoundType(root->section);
+    ClassDef::CompoundType sec = convertToCompoundType(root->section,root->spec);
     Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
 
@@ -1960,7 +1973,7 @@ static MemberDef *addVariableToClass(
   md->setInitializer(root->initializer);
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
-  md->setMemberSpecifiers(root->memSpec);
+  md->setMemberSpecifiers(root->spec);
   md->setReadAccessor(root->read);
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
@@ -2606,7 +2619,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
-  md->setMemberSpecifiers(root->memSpec);
+  md->setMemberSpecifiers(root->spec);
   md->setMemberGroupId(root->mGrpId);
   FileDef *fd=rootNav->fileDef();
   md->setBodyDef(fd);
@@ -2722,7 +2735,7 @@ static void buildFunctionList(EntryNav *rootNav)
 
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesDup=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d memSpec=%d proto=%d docFile=%s\n",
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesDup=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%d proto=%d docFile=%s\n",
                  root->type.data(),
                  rootNav->parent()->name().data(),
                  root->name.data(),
@@ -2734,7 +2747,7 @@ static void buildFunctionList(EntryNav *rootNav)
                  root->bodyLine,
                  root->tArgLists ? (int)root->tArgLists->count() : -1,
                  root->mGrpId,
-                 root->memSpec,
+                 root->spec,
                  root->proto,
                  root->docFile.data()
                 );
@@ -2955,7 +2968,7 @@ static void buildFunctionList(EntryNav *rootNav)
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
-          md->setMemberSpecifiers(root->memSpec);
+          md->setMemberSpecifiers(root->spec);
           md->setMemberGroupId(root->mGrpId);
 
           // see if the function is inside a namespace that was not part of
@@ -4065,6 +4078,20 @@ static bool findClassRelation(
             //      baseClass,baseClassName.data(),templSpec.data());
           }
         }
+        else if (baseClass && !templSpec.isEmpty()) // we have a known class, but also
+                                                    // know it is a template, so see if
+                                                    // we can also link to the explicit
+                                                    // instance (for instance if a class
+                                                    // derived from a template argument)
+        {
+          ClassDef *templClass=getClass(baseClass->name()+templSpec);
+          if (templClass)
+          {
+            // use the template instance instead of the template base.
+            baseClass = templClass;
+            templSpec.resize(0);
+          }
+        }
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
@@ -4102,7 +4129,7 @@ static bool findClassRelation(
 
         if (found)
         {
-          Debug::print(Debug::Classes,0,"    Documented class `%s' templSpec=%s\n",biName.data(),templSpec.isEmpty()?"":templSpec.data());
+          Debug::print(Debug::Classes,0,"    Documented base class `%s' templSpec=%s\n",biName.data(),templSpec.isEmpty()?"":templSpec.data());
           // add base class to this class
 
           // if templSpec is not empty then we should "instantiate"
@@ -4116,10 +4143,12 @@ static bool findClassRelation(
           // relations.
           if (!templSpec.isEmpty() && mode==TemplateInstances)
           {
+            //printf("       => findTemplateInstanceRelation\n");
             findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
           }
           else if (mode==DocumentedOnly || mode==Undocumented)
           {
+            //printf("       => insert base class\n");
             QCString usedName;
             if (baseClassTypeDef) 
             {
@@ -4267,7 +4296,7 @@ static void findInheritedTemplateInstances()
     // strip any annonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
-    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
+    Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
       rootNav->loadEntry(g_storage);
@@ -4290,7 +4319,7 @@ static void findUsedTemplateInstances()
     // strip any annonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
-    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
+    Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
       rootNav->loadEntry(g_storage);
@@ -4316,7 +4345,7 @@ static void computeClassRelations()
     // strip any annonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
-    Debug::print(Debug::Classes,0,"  Class %s : \n",bName.data());
+    Debug::print(Debug::Classes,0,"  Relations: Class %s : \n",bName.data());
     if ((cd=getClass(bName)))
     {
       findBaseClassesForClass(rootNav,cd,cd,cd,DocumentedOnly,FALSE);
@@ -4542,8 +4571,8 @@ static void addMemberDocs(EntryNav *rootNav,
                   )
 {
   Entry *root = rootNav->entry();
-  //printf("addMemberDocs: `%s'::`%s' `%s' funcDecl=`%s' memSpec=%d\n",
-  //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,root->memSpec);
+  //printf("addMemberDocs: `%s'::`%s' `%s' funcDecl=`%s' mSpec=%d\n",
+  //     root->parent->name.data(),md->name().data(),md->argsString(),funcDecl,root->spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -4664,7 +4693,7 @@ static void addMemberDocs(EntryNav *rootNav,
   md->enableCallGraph(md->hasCallGraph() || root->callGraph);
   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
 
-  md->mergeMemberSpecifiers(root->memSpec);
+  md->mergeMemberSpecifiers(root->spec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
   if (cd) cd->insertUsedFile(root->fileName);
@@ -4964,10 +4993,10 @@ static void findMember(EntryNav *rootNav,
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
                "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
-               "memSpec=%d isObjC=%d\n",
+               "spec=%d isObjC=%d\n",
                root,funcDecl.data(),root->relates.data(),overloaded,isFunc,root->mGrpId,
                root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
-               root->memSpec,root->objc
+               root->spec,root->objc
               );
 
   QCString scopeName;
@@ -4992,17 +5021,17 @@ static void findMember(EntryNav *rootNav,
     }
     if (funcDecl.stripPrefix("inline "))
     {
-      root->memSpec|=Entry::Inline;
+      root->spec|=Entry::Inline;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("explicit "))
     {
-      root->memSpec|=Entry::Explicit;
+      root->spec|=Entry::Explicit;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("mutable "))
     {
-      root->memSpec|=Entry::Mutable;
+      root->spec|=Entry::Mutable;
       done=FALSE;
     }
     if (funcDecl.stripPrefix("virtual "))
@@ -5504,7 +5533,7 @@ static void findMember(EntryNav *rootNav,
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
-          md->setMemberSpecifiers(root->memSpec);
+          md->setMemberSpecifiers(root->spec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -5568,7 +5597,7 @@ static void findMember(EntryNav *rootNav,
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
-          md->setMemberSpecifiers(root->memSpec);
+          md->setMemberSpecifiers(root->spec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -5714,7 +5743,7 @@ static void findMember(EntryNav *rootNav,
           //  md->setMemberGroup(memberGroupDict[root->mGrpId]);
           //}
           md->setMemberClass(cd);
-          md->setMemberSpecifiers(root->memSpec);
+          md->setMemberSpecifiers(root->spec);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
@@ -5790,7 +5819,7 @@ localObjCMethod:
         md->setBodySegment(root->bodyLine,root->endBodyLine);
         FileDef *fd=rootNav->fileDef();
         md->setBodyDef(fd);
-        md->setMemberSpecifiers(root->memSpec);
+        md->setMemberSpecifiers(root->spec);
         md->setMemberGroupId(root->mGrpId);
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);
@@ -5847,8 +5876,8 @@ static void filterMemberDocumentation(EntryNav *rootNav)
   Entry *root = rootNav->entry();
   int i=-1,l;
   Debug::print(Debug::FindMembers,0,
-      "findMemberDocumentation(): root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->memSpec=%d root->mGrpId=%d\n",
-      root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->memSpec,root->mGrpId
+      "findMemberDocumentation(): root->type=`%s' root->inside=`%s' root->name=`%s' root->args=`%s' section=%x root->spec=%d root->mGrpId=%d\n",
+      root->type.data(),root->inside.data(),root->name.data(),root->args.data(),root->section,root->spec,root->mGrpId
       );
   //printf("rootNav->parent()->name()=%s\n",rootNav->parent()->name().data());
   bool isFunc=TRUE;
@@ -7184,6 +7213,30 @@ static void flushCachedTemplateRelations()
   }
 }
 
+//----------------------------------------------------------------------------
+
+static void flushUnresolvedRelations()
+{
+  // Remove all unresolved references to classes from the cache.
+  // This is needed before resolving the inheritance relations, since
+  // it would otherwise not find the inheritance relation
+  // for C in the example below, as B::I was already found to be unresolvable 
+  // (which is correct if you igore the inheritance relation between A and B).
+  // 
+  // class A { class I {} };
+  // class B : public A {};
+  // class C : public B::I {};
+  //
+  QCacheIterator<LookupInfo> ci(Doxygen::lookupCache);
+  LookupInfo *li=0;
+  for (ci.toFirst();(li=ci.current());++ci)
+  {
+    if (li->classDef==0 && li->typeDef==0)
+    {
+      Doxygen::lookupCache.remove(ci.currentKey());
+    }
+  }
+}
 
 //----------------------------------------------------------------------------
 
@@ -9416,9 +9469,10 @@ void parseInput()
   msg("Searching for documented defines...\n");
   findDefineDocumentation(rootNav); 
   
-  msg("Computing template instances...\n");
   findClassEntries(rootNav);         
+  msg("Computing class inheritance relations...\n");
   findInheritedTemplateInstances();       
+  msg("Computing class usage relations...\n");
   findUsedTemplateInstances();       
 
   msg("Flushing cached template relations that have become invalid...\n");
@@ -9429,6 +9483,7 @@ void parseInput()
 
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
+  flushUnresolvedRelations();
   computeClassRelations();        
   classEntries.clear();          
 
