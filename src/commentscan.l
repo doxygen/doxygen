@@ -605,7 +605,6 @@ static inline void setOutput(OutputContext ctx)
 		    newXRefItemKey==xrefItemKey);              // with the same key if \xrefitem
   //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
   //   	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
-  xrefItemKey = newXRefItemKey;
 
   //printf("setOutput(inContext=%d ctx=%d)\n",inContext,ctx);
   if (inContext==OutputXRef) // end of XRef section => add the item 
@@ -655,6 +654,7 @@ static inline void setOutput(OutputContext ctx)
 	break;
     }
   }
+  xrefItemKey = newXRefItemKey;
 
   int oldContext = inContext;
   inContext = ctx;
@@ -1319,7 +1319,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
                                           xrefKind = XRef_Item;
 					  BEGIN( Comment );
   					}
-<XRefItemParam2>{LC}			{ // line continuation
+<XRefItemParam2,XRefItemParam3>{LC}	{ // line continuation
                                           yyLineNr++; 
 					  addOutput('\n');
   					}

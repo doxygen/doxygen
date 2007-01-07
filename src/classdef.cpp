@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -563,7 +563,6 @@ void ClassDef::internalInsertMember(MemberDef *md,
                 {
                   MemberList *ml = createMemberList(MemberList::constructors);
                   ml->append(md);
-                  md->setSectionList(this,ml);
                 }
                 else
                 {
@@ -1260,7 +1259,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_GRAPH"))
     // write class diagram using dot
   {
-    DotClassGraph inheritanceGraph(this,DotNode::Inheritance,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+    DotClassGraph inheritanceGraph(this,DotNode::Inheritance);
     if (!inheritanceGraph.isTrivial())
     {
       ol.pushGeneratorState();
@@ -1295,7 +1294,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
   {
-    DotClassGraph usageImplGraph(this,DotNode::Collaboration,Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+    DotClassGraph usageImplGraph(this,DotNode::Collaboration);
     if (!usageImplGraph.isTrivial())
     {
       ol.pushGeneratorState();

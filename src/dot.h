@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -37,6 +37,7 @@ class DotGroupCollaboration;
 
 enum GraphOutputFormat { BITMAP , EPS };
 
+/** @brief Attributes of an edge of a dot graph */
 struct EdgeInfo
 {
   enum Colors { Blue=0, Green=1, Red=2, Purple=3, Grey=4, Orange=5 };
@@ -50,11 +51,14 @@ struct EdgeInfo
   int m_labColor;
 };
 
+/** @brief A node in a dot graph */
 class DotNode
 {
   public:
     enum GraphType { Dependency, Inheritance, Collaboration, Hierarchy, CallGraph };
-    DotNode(int n,const char *lab,const char *url,int distance = 0,bool rootNode=FALSE,ClassDef *cd=0);
+    enum TruncState { Unknown, Truncated, Untruncated };
+    DotNode(int n,const char *lab,const char *tip,const char *url,
+            bool rootNode=FALSE,ClassDef *cd=0);
    ~DotNode();
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
@@ -63,20 +67,21 @@ class DotNode
                   const char *edgeURL=0,
                   int edgeLabCol=-1
                  );
-    void setDistance(int distance);
     void addParent(DotNode *n);
     void deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes=0);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int findParent( DotNode *n );
     void write(QTextStream &t,GraphType gt,GraphOutputFormat f,
-               bool topDown,bool toChildren,int maxDistance,bool backArrows,bool reNumber);
+               bool topDown,bool toChildren,bool backArrows,bool reNumber);
     int  m_subgraphId;
     void clearWriteFlag();
     void writeXML(QTextStream &t,bool isClassGraph);
     void writeDEF(QTextStream &t);
     QCString label() const { return m_label; }
     int  number() const { return m_number; }
+    bool isVisible() const { return m_visible; }
+    TruncState isTruncated() const { return m_truncated; }
 
   private:
     void colorConnectedNodes(int curColor);
@@ -85,8 +90,11 @@ class DotNode
     void writeArrow(QTextStream &t,GraphType gt,GraphOutputFormat f,DotNode *cn,
                     EdgeInfo *ei,bool topDown, bool pointBack=TRUE, bool reNumber=FALSE);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
+    void markAsVisible(bool b=TRUE) { m_visible=b; }
+    void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
     int              m_number;
     QCString         m_label;     //!< label text
+    QCString         m_tooltip;   //!< node's tooltip
     QCString         m_url;       //!< url of the node (format: remote$local)
     QList<DotNode>  *m_parents;   //!< list of parent nodes (incoming arrows)
     QList<DotNode>  *m_children;  //!< list of child nodes (outgoing arrows)
@@ -94,9 +102,10 @@ class DotNode
     bool             m_deleted;   //!< used to mark a node as deleted
     bool             m_written;   //!< used to mark a node as written
     bool             m_hasDoc;    //!< used to mark a node as documented
-    int              m_distance;  //!< distance to the root node
     bool             m_isRoot;    //!< indicates if this is a root node
     ClassDef *       m_classDef;  //!< class representing this node (can be 0)
+    bool             m_visible;   //!< is the node visible in the output
+    TruncState       m_truncated; //!< does the node have non-visible children/parents
 
     friend class DotGfxHierarchyTable;
     friend class DotClassGraph;
@@ -105,27 +114,23 @@ class DotNode
     friend class DotCallGraph;
     friend class DotGroupCollaboration;
 
-    friend void writeDotGraph(
-                      DotNode *root, GraphType gt,
-                      GraphOutputFormat f, const QCString &baseName,
-                      bool lrRank, bool renderParents,
-                      int distance, bool backArrows, bool reNumber
-                     );
     friend QCString computeMd5Signature(
                       DotNode *root, GraphType gt,
                       GraphOutputFormat f, 
                       bool lrRank, bool renderParents,
-                      int distance, bool backArrows
+                      bool backArrows,
+                      QCString &graphStr
                      );
 };
-inline
-int DotNode::findParent( DotNode *n )
+
+inline int DotNode::findParent( DotNode *n )
 {
     if( !m_parents )
         return -1;
     return m_parents->find(n);
 }
 
+/** @brief Represents a graphical class hierarchy */
 class DotGfxHierarchyTable
 {
   public:
@@ -143,11 +148,11 @@ class DotGfxHierarchyTable
     DotNodeList    *m_rootSubgraphs;
 };
 
+/** @brief Representation of a class inheritance or dependency graph */
 class DotClassGraph
 {
   public:
-    //enum GraphType { Interface, Implementation, Inheritance };
-    DotClassGraph(ClassDef *cd,DotNode::GraphType t,int maxRecusionDepth);
+    DotClassGraph(ClassDef *cd,DotNode::GraphType t);
    ~DotClassGraph();
     bool isTrivial() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
@@ -158,23 +163,25 @@ class DotClassGraph
     QCString diskName() const;
 
   private:
-    void buildGraph(ClassDef *cd,DotNode *n,int level,bool base);
+    void buildGraph(ClassDef *cd,DotNode *n,bool base);
+    void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes,bool includeParents);
+    void determineTruncatedNodes(QList<DotNode> &queue,bool includeParents);
     void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
-                  int level,const char *usedName,const char *templSpec,
+                  const char *usedName,const char *templSpec,
                   bool base);
+
     DotNode        *   m_startNode;
     QDict<DotNode> *   m_usedNodes;
     static int         m_curNodeNumber;
     DotNode::GraphType m_graphType;
-    int                m_recDepth;
     QCString           m_diskName;
-    int                m_maxDistance;
 };
 
+/** @brief Representation of an include dependency graph */
 class DotInclDepGraph
 {
   public:
-    DotInclDepGraph(FileDef *fd,int maxRecusionDepth,bool inverse);
+    DotInclDepGraph(FileDef *fd,bool inverse);
    ~DotInclDepGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
                     const char *relPath,
@@ -184,25 +191,30 @@ class DotInclDepGraph
     void writeXML(QTextStream &t);
 
   private:
-    void buildGraph(DotNode *n,FileDef *fd,int distance);
+    void buildGraph(DotNode *n,FileDef *fd);
+    void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
+    void determineTruncatedNodes(QList<DotNode> &queue);
+
     DotNode        *m_startNode;
     QDict<DotNode> *m_usedNodes;
     static int      m_curNodeNumber;
     QCString        m_diskName;
     int             m_maxDistance;
     bool            m_inverse;
-    int             m_recDepth;
 };
 
+/** @brief Representation of an call graph */
 class DotCallGraph
 {
   public:
-    DotCallGraph(MemberDef *md,int maxRecursionDepth, bool inverse);
+    DotCallGraph(MemberDef *md,bool inverse);
    ~DotCallGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,
                         const char *path,const char *relPath,bool writeImageMap=TRUE);
-    void buildGraph(DotNode *n,MemberDef *md,int distance);
+    void buildGraph(DotNode *n,MemberDef *md);
     bool isTrivial() const;
+    void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
+    void determineTruncatedNodes(QList<DotNode> &queue);
     
   private:
     DotNode        *m_startNode;
@@ -215,6 +227,7 @@ class DotCallGraph
     Definition *    m_scope;
 };
 
+/** @brief Representation of an directory dependency graph */
 class DotDirDeps
 {
   public:
@@ -230,6 +243,7 @@ class DotDirDeps
     DirDef *m_dir;
 };
 
+/** @brief Representation of a group collaboration graph */
 class DotGroupCollaboration
 {
   public :
@@ -271,7 +285,7 @@ class DotGroupCollaboration
     QCString writeGraph(QTextStream &t, GraphOutputFormat format,
                     const char *path,const char *relPath,
                     bool writeImageMap=TRUE);
-    void buildGraph(GroupDef* gd,int distance);
+    void buildGraph(GroupDef* gd);
     bool isTrivial() const;
   private :
     void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
@@ -308,8 +322,9 @@ class DotRunner
 };
 
 
-
+/** Generated a graphs legend page */
 void generateGraphLegend(const char *path);
+
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);
 QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,

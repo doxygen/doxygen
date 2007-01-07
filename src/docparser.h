@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -206,7 +206,7 @@ class DocLinkedWord : public DocNode
   public:
     DocLinkedWord(DocNode *parent,const QString &word,
                   const QString &ref,const QString &file,
-                  const QString &anchor);
+                  const QString &anchor,const QString &tooltip);
     QString word() const       { return m_word; }
     Kind kind() const          { return Kind_LinkedWord; }
     DocNode *parent() const    { return m_parent; }
@@ -214,6 +214,7 @@ class DocLinkedWord : public DocNode
     QString relPath() const    { return m_relPath; }
     QString ref() const        { return m_ref; }
     QString anchor() const     { return m_anchor; }
+    QString tooltip() const    { return m_tooltip; }
     void accept(DocVisitor *v) { v->visit(this); }
 
   private:
@@ -223,6 +224,7 @@ class DocLinkedWord : public DocNode
     QString  m_file;
     QString  m_relPath;
     QString  m_anchor;
+    QString  m_tooltip;
 };
 
 /*! @brief Node representing an URL (or email address) */

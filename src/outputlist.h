@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -127,8 +127,9 @@ class OutputList : public OutputDocInterface
                          const char *anchor, const char *name)
     { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,name); }
     void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name)
-    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name); }
+                       const char *anchor,const char *name,
+                       const char *tooltip)
+    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name,tooltip); }
     void startTextLink(const char *file,const char *anchor)
     { forall(&OutputGenerator::startTextLink,file,anchor); }
     void endTextLink()

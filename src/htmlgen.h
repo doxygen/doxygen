@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -79,7 +79,8 @@ class HtmlGenerator : public OutputGenerator
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
     void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name);
+                       const char *anchor,const char *name,
+                       const char *tooltip);
     void startTextLink(const char *file,const char *anchor);
     void endTextLink();
     void startHtmlLink(const char *url);

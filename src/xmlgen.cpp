@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -182,7 +182,7 @@ static void writeCombineScript()
 }
 
 void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
-                  const char *anchorId,const char *text)
+                  const char *anchorId,const char *text,const char *tooltip)
 {
   t << "<ref refid=\"" << compoundId;
   if (anchorId) t << "_1" << anchorId;
@@ -190,6 +190,7 @@ void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
   if (anchorId) t << "member"; else t << "compound"; 
   t << "\"";
   if (extRef) t << " external=\"" << extRef << "\"";
+  if (tooltip) t << " tooltip=\"" << tooltip << "\"";
   t << ">";
   writeXMLString(t,text);
   t << "</ref>";
@@ -208,7 +209,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
                    const char *anchor,const char *text
                   ) const
     {
-      writeXMLLink(m_t,extRef,file,anchor,text);
+      writeXMLLink(m_t,extRef,file,anchor,text,0);
     }
   private:
     QTextStream &m_t;
@@ -288,7 +289,8 @@ class XMLCodeGenerator : public CodeOutputInterface
       writeXMLCodeString(m_t,text,col);
     }
     void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *name) 
+                       const char *anchor,const char *name,
+                       const char *tooltip) 
     {
       XML_DB(("(writeCodeLink)\n"));
       if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -296,7 +298,7 @@ class XMLCodeGenerator : public CodeOutputInterface
         m_t << "<highlight class=\"normal\">";
         m_normalHLNeedStartTag=FALSE;
       }
-      writeXMLLink(m_t,ref,file,anchor,name);
+      writeXMLLink(m_t,ref,file,anchor,name,tooltip);
       col+=strlen(name);
     }
     void startCodeLine() 
@@ -1345,16 +1347,14 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   t << "    <detaileddescription>" << endl;
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
   t << "    </detaileddescription>" << endl;
-  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance,
-                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "    <inheritancegraph>" << endl;
     inheritanceGraph.writeXML(t);
     t << "    </inheritancegraph>" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotNode::Collaboration,
-                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+  DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "    <collaborationgraph>" << endl;
@@ -1538,7 +1538,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     }
   }
 
-  DotInclDepGraph incDepGraph(fd,Config_getInt("MAX_DOT_GRAPH_DEPTH"),FALSE);
+  DotInclDepGraph incDepGraph(fd,FALSE);
   if (!incDepGraph.isTrivial())
   {
     t << "    <incdepgraph>" << endl;
@@ -1546,7 +1546,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     t << "    </incdepgraph>" << endl;
   }
 
-  DotInclDepGraph invIncDepGraph(fd,Config_getInt("MAX_DOT_GRAPH_DEPTH"),TRUE);
+  DotInclDepGraph invIncDepGraph(fd,TRUE);
   if (!invIncDepGraph.isTrivial())
   {
     t << "    <invincdepgraph>" << endl;

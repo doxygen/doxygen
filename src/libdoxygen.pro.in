@@ -1,5 +1,5 @@
 #
-# $Id$
+# 
 #
 # Copyright (C) 1997-2006 by Dimitri van Heesch.
 #
@@ -93,6 +93,7 @@ HEADERS      =	bufstr.h \
 		sortdict.h \
                 store.h \
 		tagreader.h \
+                textdocvisitor.h \
 		translator.h \
 		translator_adapter.h \
 		translator_br.h \
@@ -195,6 +196,7 @@ SOURCES      =	ce_lex.cpp \
 		searchindex.cpp \
                 store.cpp \
 		tagreader.cpp \
+                textdocvisitor.cpp \
 		translator.cpp \
 		util.cpp \
 		version.cpp \

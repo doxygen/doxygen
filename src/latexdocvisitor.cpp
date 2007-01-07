@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -261,7 +261,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,s->context(),s->text().latin1(),
                                         s->isExample(),s->exampleFile());
-      m_t << "\\end{verbatim}\\end{Code}\n" << endl; 
+      m_t << "\\end{verbatim}\n\\end{Code}\n" << endl; 
       break;
     case DocVerbatim::Verbatim: 
       m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
@@ -281,9 +281,10 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         static int dotindex = 1;
         QCString fileName(4096);
 
-        fileName.sprintf("%s%d", 
+        fileName.sprintf("%s%d%s", 
             (Config_getString("LATEX_OUTPUT")+"/inline_dotgraph_").data(), 
-            dotindex++
+            dotindex++,
+            ".dot"
            );
         QFile file(fileName);
         if (!file.open(IO_WriteOnly))
@@ -298,7 +299,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         endDotFile(FALSE);
         m_t << "\\end{center}\n";
 
-        file.remove();
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
   }

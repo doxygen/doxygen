@@ -310,6 +310,7 @@ class MemberDef : public Definition
     void setMemberDeclaration(MemberDef *md);
         
     void setAnonymousUsed();
+    void copyArgumentNames(MemberDef *bmd);
     
     //-----------------------------------------------------------------------------------
     // --- actions ----

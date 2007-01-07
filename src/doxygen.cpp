@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -1897,7 +1897,7 @@ static MemberDef *addVariableToClass(
   }
   Debug::print(Debug::Variables,0,
       "  class variable:\n"
-      "    `%s' `%s'::`%s' `%s' prot=`%d ann=%d init=%s\n",
+      "    `%s' `%s'::`%s' `%s' prot=`%d ann=%d init=`%s'\n",
       root->type.data(),
       qualScope.data(), 
       name.data(),
@@ -2476,7 +2476,6 @@ static void buildVarList(EntryNav *rootNav)
     else
       mtype=MemberDef::Variable;
 
-
     if (!root->relates.isEmpty()) // related variable
     {
       isRelated=TRUE;
@@ -2563,7 +2562,10 @@ nextMember:
     EntryNav *e;
     for (;(e=eli.current());++eli)
     {
-      if (e->section()!=Entry::ENUM_SEC) buildVarList(e);
+      if (e->section()!=Entry::ENUM_SEC) 
+      {
+        buildVarList(e);
+      }
     }
   }
 }
@@ -4669,8 +4671,13 @@ static void addMemberDocs(EntryNav *rootNav,
     }
   }
 
+  //printf("initializer: '%s'(isEmpty=%d) '%s'(isEmpty=%d)\n",
+  //    md->initializer().data(),md->initializer().isEmpty(),
+  //    root->initializer.data(),root->initializer.isEmpty()
+  //   );
   if (md->initializer().isEmpty() && !root->initializer.isEmpty())
   {
+    //printf("setInitializer\n");
     md->setInitializer(root->initializer);
     md->setMaxInitLines(root->initLines);
   }
@@ -6369,60 +6376,80 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
             EntryNav *e;
             for (;(e=eli.current());++eli)
             {
-              //printf("e->name=%s isRelated=%d\n",e->name().data(),isRelated);
-              MemberName *fmn=0;
-              MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
-              if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
-                // get list of members with the same name as the field
+              SrcLangExt sle;
+              if (rootNav->fileDef() &&
+                  ( (sle=getLanguageFromFileName(rootNav->fileDef()->name()))==SrcLangExt_CSharp
+                  || sle==SrcLangExt_Java
+                  )
+                 )
               {
-                MemberNameIterator fmni(*fmn);
-                MemberDef *fmd;
-                for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
+                // For C# enum value are only inside the enum scope, so we
+                // must create them here
+                e->loadEntry(g_storage);
+                MemberDef *fmd = addVariableToFile(e,MemberDef::EnumValue,
+                                 md->getOuterScope() ? md->getOuterScope()->name() : "",
+                                 e->name(),TRUE,0); 
+                md->insertEnumField(fmd);
+                fmd->setEnumScope(md);
+                e->releaseEntry();
+              }
+              else
+              {
+                //printf("e->name=%s isRelated=%d\n",e->name().data(),isRelated);
+                MemberName *fmn=0;
+                MemberNameSDict *emnsd = isRelated ? Doxygen::functionNameSDict : mnsd;
+                if (!e->name().isEmpty() && (fmn=(*emnsd)[e->name()])) 
+                  // get list of members with the same name as the field
                 {
-                  if (fmd->isEnumValue() && fmd->getOuterScope()==md->getOuterScope()) // in same scope
+                  MemberNameIterator fmni(*fmn);
+                  MemberDef *fmd;
+                  for (fmni.toFirst(); (fmd=fmni.current()) ; ++fmni) 
                   {
-                    //printf("found enum value with same name %s in scope %s\n",
-                    //    fmd->name().data(),fmd->getOuterScope()->name().data());
-                    if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
+                    if (fmd->isEnumValue() && fmd->getOuterScope()==md->getOuterScope()) // in same scope
                     {
-                      NamespaceDef *fnd=fmd->getNamespaceDef();
-                      if (fnd==nd) // enum value is inside a namespace
+                      //printf("found enum value with same name %s in scope %s\n",
+                      //    fmd->name().data(),fmd->getOuterScope()->name().data());
+                      if (nd && !nd->name().isEmpty() && nd->name().at(0)!='@')
                       {
-                        md->insertEnumField(fmd);
-                        fmd->setEnumScope(md);
+                        NamespaceDef *fnd=fmd->getNamespaceDef();
+                        if (fnd==nd) // enum value is inside a namespace
+                        {
+                          md->insertEnumField(fmd);
+                          fmd->setEnumScope(md);
+                        }
                       }
-                    }
-                    else if (isGlobal)
-                    {
-                      FileDef *ffd=fmd->getFileDef();
-                      if (ffd==fd) // enum value has file scope
+                      else if (isGlobal)
                       {
-                        md->insertEnumField(fmd);
-                        fmd->setEnumScope(md);
+                        FileDef *ffd=fmd->getFileDef();
+                        if (ffd==fd) // enum value has file scope
+                        {
+                          md->insertEnumField(fmd);
+                          fmd->setEnumScope(md);
+                        }
                       }
-                    }
-                    else if (isRelated && cd) // reparent enum value to
-                      // match the enum's scope
-                    {
-                      md->insertEnumField(fmd);   // add field def to list
-                      fmd->setEnumScope(md);      // cross ref with enum name
-                      fmd->setEnumClassScope(cd); // cross ref with enum name
-                      fmd->setOuterScope(cd);
-                      fmd->makeRelated();
-                      cd->insertMember(fmd);
-                    }
-                    else
-                    {
-                      ClassDef *fcd=fmd->getClassDef();
-                      if (fcd==cd) // enum value is inside a class
+                      else if (isRelated && cd) // reparent enum value to
+                                                // match the enum's scope
                       {
-                        //printf("Inserting enum field %s in enum scope %s\n",
-                        //    fmd->name().data(),md->name().data());
-                        md->insertEnumField(fmd); // add field def to list
-                        fmd->setEnumScope(md);    // cross ref with enum name
+                        md->insertEnumField(fmd);   // add field def to list
+                        fmd->setEnumScope(md);      // cross ref with enum name
+                        fmd->setEnumClassScope(cd); // cross ref with enum name
+                        fmd->setOuterScope(cd);
+                        fmd->makeRelated();
+                        cd->insertMember(fmd);
                       }
-                    }
-                  } 
+                      else
+                      {
+                        ClassDef *fcd=fmd->getClassDef();
+                        if (fcd==cd) // enum value is inside a class
+                        {
+                          //printf("Inserting enum field %s in enum scope %s\n",
+                          //    fmd->name().data(),md->name().data());
+                          md->insertEnumField(fmd); // add field def to list
+                          fmd->setEnumScope(md);    // cross ref with enum name
+                        }
+                      }
+                    } 
+                  }
                 }
               }
             }
@@ -6994,6 +7021,7 @@ static void inheritDocumentation()
           md->setDocumentation(bmd->documentation(),bmd->docFile(),bmd->docLine());
           md->setDocsForDefinition(bmd->isDocsForDefinition());
           md->setBriefDescription(bmd->briefDescription(),bmd->briefFile(),bmd->briefLine());
+          md->copyArgumentNames(bmd);
           md->setInbodyDocumentation(bmd->inbodyDocumentation(),bmd->inbodyFile(),bmd->inbodyLine());
         }
       }
@@ -7697,6 +7725,25 @@ static void buildExampleList(EntryNav *rootNav)
 }
 
 //----------------------------------------------------------------------------
+// prints the Entry tree (for debugging)
+
+void printNavTree(EntryNav *rootNav,int indent)
+{
+  QCString indentStr;
+  indentStr.fill(' ',indent);
+  msg("%s%s (sec=0x%x)\n",
+      indentStr.isEmpty()?"":indentStr.data(),
+      rootNav->name().isEmpty()?"<empty>":rootNav->name().data(),
+      rootNav->section());
+  if (rootNav->children()) 
+  {
+    EntryNavListIterator eli(*rootNav->children());
+    for (;eli.current();++eli) printNavTree(eli.current(),indent+2);
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // generate the example documentation 
 
 static void generateExampleDocs()
@@ -8065,7 +8112,6 @@ static bool patternMatch(QFileInfo *fi,QStrList *patList)
       int i=pattern.find('=');
       if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
 
-      //printf("Matching `%s' against pattern `%s'\n",fi->fileName().data(),pattern);
 #if defined(_WIN32) // windows
       QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
 #else                // unix
@@ -8074,6 +8120,8 @@ static bool patternMatch(QFileInfo *fi,QStrList *patList)
       found = found || re.match(fi->fileName())!=-1 || 
                        re.match(fi->filePath())!=-1 ||
                        re.match(fi->absFilePath())!=-1;
+      //printf("Matching `%s' against pattern `%s' found=%d\n",
+      //    fi->fileName().data(),pattern.data(),found);
       pattern=patList->next();
     }
   }
@@ -8255,7 +8303,7 @@ static int readDir(QFileInfo *fi,
   QDir dir((const char *)fi->absFilePath());
   dir.setFilter( QDir::Files | QDir::Dirs | QDir::Hidden );
   int totalSize=0;
-  msg("Search for files in directory %s\n", fi->absFilePath().data());
+  msg("Searching for files in directory %s\n", fi->absFilePath().data());
   //printf("killDict=%p count=%d\n",killDict,killDict->count());
   
   const QFileInfoList *list = dir.entryInfoList();
@@ -8312,6 +8360,7 @@ static int readDir(QFileInfo *fi,
       else if (recursive &&
           (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
           cfi->isDir() && cfi->fileName()!="." && 
+          !patternMatch(cfi,exclPatList) &&
           cfi->fileName()!="..")
       {
         cfi->setFile(cfi->absFilePath());
@@ -9137,120 +9186,6 @@ void parseInput()
   bool alwaysRecursive = Config_getBool("RECURSIVE");
 
   /**************************************************************************
-   *             Read and preprocess input                                  *
-   **************************************************************************/
-
-  // gather names of all files in the include path
-  msg("Searching for include files...\n");
-  QStrList &includePathList = Config_getList("INCLUDE_PATH");
-  char *s=includePathList.first();
-  while (s)
-  {
-    QStrList &pl = Config_getList("INCLUDE_FILE_PATTERNS");
-    if (pl.count()==0) 
-    {
-      pl = Config_getList("FILE_PATTERNS");
-    }
-    readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
-                        &Config_getList("EXCLUDE_PATTERNS"),0,0,
-                        alwaysRecursive);
-    s=includePathList.next(); 
-  }
-  
-  msg("Searching for example files...\n");
-  QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
-  s=examplePathList.first();
-  while (s)
-  {
-    readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
-                        &Config_getList("EXAMPLE_PATTERNS"),
-                        0,0,0,
-                        (alwaysRecursive || Config_getBool("EXAMPLE_RECURSIVE")));
-    s=examplePathList.next(); 
-  }
-
-  msg("Searching for images...\n");
-  QStrList &imagePathList=Config_getList("IMAGE_PATH");
-  s=imagePathList.first();
-  while (s)
-  {
-    readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
-                        0,0,0,
-                        alwaysRecursive);
-    s=imagePathList.next(); 
-  }
-
-  msg("Searching for dot files...\n");
-  QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
-  s=dotFileList.first();
-  while (s)
-  {
-    readFileOrDirectory(s,0,Doxygen::dotFileNameDict,0,0,
-                        0,0,0,
-                        alwaysRecursive);
-    s=dotFileList.next(); 
-  }
-
-  msg("Searching for files to exclude\n");
-  QStrList &excludeList = Config_getList("EXCLUDE");
-  s=excludeList.first();
-  while (s)
-  {
-    readFileOrDirectory(s,0,0,0,&Config_getList("FILE_PATTERNS"),
-                        0,0,&excludeNameDict,
-                        alwaysRecursive,
-                        FALSE);
-    s=excludeList.next();
-  }
-
-  /**************************************************************************
-   *             Determine Input Files                                      *
-   **************************************************************************/
-
-  msg("Searching for files to process...\n");
-  QDict<void> *killDict = new QDict<void>(10007);
-  int inputSize=0;
-  QStrList &inputList=Config_getList("INPUT");
-  inputFiles.setAutoDelete(TRUE);
-  s=inputList.first();
-  while (s)
-  {
-    QCString path=s;
-    uint l = path.length();
-    // strip trailing slashes
-    if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
-
-    inputSize+=readFileOrDirectory(
-        path,
-        Doxygen::inputNameList,
-        Doxygen::inputNameDict,
-        &excludeNameDict,
-        &Config_getList("FILE_PATTERNS"),
-        &Config_getList("EXCLUDE_PATTERNS"),
-        &inputFiles,0,
-        alwaysRecursive,
-        TRUE,
-        killDict);
-    s=inputList.next();
-  }
-  delete killDict;
-  
-  // add predefined macro name to a dictionary
-  QStrList &expandAsDefinedList =Config_getList("EXPAND_AS_DEFINED");
-  s=expandAsDefinedList.first();
-  while (s)
-  {
-    if (Doxygen::expandAsDefinedDict[s]==0)
-    {
-      Doxygen::expandAsDefinedDict.insert(s,(void *)666);
-    }
-    s=expandAsDefinedList.next();
-  }
-
-  // read aliases and store them in a dictionary
-  readAliases();
-
-  /**************************************************************************
    *            Check/create output directorties                            *
    **************************************************************************/
 
@@ -9343,6 +9278,128 @@ void parseInput()
     cleanUpDoxygen();
     exit(1);
   }
+  /**************************************************************************
+   *             Read and preprocess input                                  *
+   **************************************************************************/
+ 
+  QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
+  // prevent search in the output directories
+  if (generateHtml)  exclPatterns.append(htmlOutput);
+  if (generateXml)   exclPatterns.append(xmlOutput);
+  if (generateLatex) exclPatterns.append(latexOutput);
+  if (generateRtf)   exclPatterns.append(rtfOutput);
+  if (generateMan)   exclPatterns.append(manOutput);
+
+  // gather names of all files in the include path
+  msg("Searching for include files...\n");
+  QStrList &includePathList = Config_getList("INCLUDE_PATH");
+  char *s=includePathList.first();
+  while (s)
+  {
+    QStrList &pl = Config_getList("INCLUDE_FILE_PATTERNS");
+    if (pl.count()==0) 
+    {
+      pl = Config_getList("FILE_PATTERNS");
+    }
+    readFileOrDirectory(s,0,Doxygen::includeNameDict,0,&pl,
+                        &exclPatterns,0,0,
+                        alwaysRecursive);
+    s=includePathList.next(); 
+  }
+  
+  msg("Searching for example files...\n");
+  QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
+  s=examplePathList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::exampleNameDict,0,
+                        &Config_getList("EXAMPLE_PATTERNS"),
+                        0,0,0,
+                        (alwaysRecursive || Config_getBool("EXAMPLE_RECURSIVE")));
+    s=examplePathList.next(); 
+  }
+
+  msg("Searching for images...\n");
+  QStrList &imagePathList=Config_getList("IMAGE_PATH");
+  s=imagePathList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::imageNameDict,0,0,
+                        0,0,0,
+                        alwaysRecursive);
+    s=imagePathList.next(); 
+  }
+
+  msg("Searching for dot files...\n");
+  QStrList &dotFileList=Config_getList("DOTFILE_DIRS");
+  s=dotFileList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::dotFileNameDict,0,0,
+                        0,0,0,
+                        alwaysRecursive);
+    s=dotFileList.next(); 
+  }
+
+  msg("Searching for files to exclude\n");
+  QStrList &excludeList = Config_getList("EXCLUDE");
+  s=excludeList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,0,0,&Config_getList("FILE_PATTERNS"),
+                        0,0,&excludeNameDict,
+                        alwaysRecursive,
+                        FALSE);
+    s=excludeList.next();
+  }
+
+  /**************************************************************************
+   *             Determine Input Files                                      *
+   **************************************************************************/
+
+  msg("Searching for files to process...\n");
+  QDict<void> *killDict = new QDict<void>(10007);
+  int inputSize=0;
+  QStrList &inputList=Config_getList("INPUT");
+  inputFiles.setAutoDelete(TRUE);
+  s=inputList.first();
+  while (s)
+  {
+    QCString path=s;
+    uint l = path.length();
+    // strip trailing slashes
+    if (path.at(l-1)=='\\' || path.at(l-1)=='/') path=path.left(l-1);
+
+    inputSize+=readFileOrDirectory(
+        path,
+        Doxygen::inputNameList,
+        Doxygen::inputNameDict,
+        &excludeNameDict,
+        &Config_getList("FILE_PATTERNS"),
+        &exclPatterns,
+        &inputFiles,0,
+        alwaysRecursive,
+        TRUE,
+        killDict);
+    s=inputList.next();
+  }
+  delete killDict;
+  
+  // add predefined macro name to a dictionary
+  QStrList &expandAsDefinedList =Config_getList("EXPAND_AS_DEFINED");
+  s=expandAsDefinedList.first();
+  while (s)
+  {
+    if (Doxygen::expandAsDefinedDict[s]==0)
+    {
+      Doxygen::expandAsDefinedDict.insert(s,(void *)666);
+    }
+    s=expandAsDefinedList.next();
+  }
+
+  // read aliases and store them in a dictionary
+  readAliases();
+
 
   // Notice: the order of the function calls below is very important!
   
@@ -9389,6 +9446,8 @@ void parseInput()
         Doxygen::entryDBFileName.data());
     exit(1);
   }
+
+  //printNavTree(rootNav,0);
 
   // we are done with input scanning now, so free up the buffers used by flex
   // (can be around 4MB)

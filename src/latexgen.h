@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -77,7 +77,8 @@ class LatexGenerator : public OutputGenerator
     void writeObjectLink(const char *ref,const char *file,
                          const char *anchor,const char *name);
     void writeCodeLink(const char *ref, const char *file,
-                       const char *anchor,const char *name);
+                       const char *anchor,const char *name,
+                       const char *tooltip);
     void startTextLink(const char *,const char *);
     void endTextLink();
     void startHtmlLink(const char *url);
@@ -117,7 +118,7 @@ class LatexGenerator : public OutputGenerator
     void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
     void writeAnchor(const char *fileName,const char *name);
     void startCodeFragment() { t << endl << endl << "\\begin{Code}\\begin{verbatim}"; }
-    void endCodeFragment()   { t << "\\end{verbatim}\\end{Code}" << endl; }
+    void endCodeFragment()   { t << "\\end{verbatim}\n\\end{Code}" << endl; }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() { col=0; }
     void endCodeLine() { codify("\n"); }

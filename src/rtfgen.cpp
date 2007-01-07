@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Parker Waechter & Dimitri van Heesch.
  *
@@ -1266,7 +1266,8 @@ void RTFGenerator::endPageRef(const char *clname, const char *anchor)
 }
 
 void RTFGenerator::writeCodeLink(const char *ref,const char *f,
-    const char *anchor,const char *name)
+                                 const char *anchor,const char *name,
+                                 const char *)
 {
   if (!ref && Config_getBool("RTF_HYPERLINKS"))
   {

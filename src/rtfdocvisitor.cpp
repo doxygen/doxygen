@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -354,9 +354,10 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         static int dotindex = 1;
         QCString fileName(4096);
 
-        fileName.sprintf("%s%d", 
+        fileName.sprintf("%s%d%s", 
             (Config_getString("RTF_OUTPUT")+"/inline_dotgraph_").data(), 
-            dotindex++
+            dotindex++,
+            ".dot"
            );
         QFile file(fileName);
         if (!file.open(IO_WriteOnly))
@@ -368,7 +369,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         m_t << "\\par{\\qc "; // center picture
         writeDotFile(fileName);
         m_t << "} ";
-        file.remove();
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
   }

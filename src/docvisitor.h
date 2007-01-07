@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -25,7 +25,8 @@ const int DocVisitor_Latex = 1;
 const int DocVisitor_XML   = 2;
 const int DocVisitor_RTF   = 3;
 const int DocVisitor_Man   = 4;
-const int DocVisitor_Other = 5;
+const int DocVisitor_Text  = 5;
+const int DocVisitor_Other = 6;
 
 // forward declarations
 class DocWord;

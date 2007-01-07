@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -408,7 +408,8 @@ static void endCodeLine()
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *ref,const char *file,
-                  const char *anchor,const char *text)
+                  const char *anchor,const char *text,
+                  const char *tooltip)
 {
   bool done=FALSE;
   char *p=(char *)text;
@@ -422,7 +423,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       g_yyLineNr++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
@@ -432,7 +433,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -529,7 +530,8 @@ static bool getLinkInScope(const QCString &c,  // scope
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
-				text ? text : memberText);
+				text ? text : memberText,
+                                md->briefDescriptionAsTooltip());
       addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
@@ -607,7 +609,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 
   if (cd && cd->isLinkable()) // is it a linkable class
   {
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
     if (md)
     {
@@ -653,7 +655,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
         //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
 	if (md->isLinkable())
 	{
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
+	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
 	  {
@@ -740,7 +742,8 @@ static bool findMemberLink(CodeOutputInterface &ol,Definition *sym,const char *s
       writeMultiLineCodeLink(ol,sym->getReference(),
           sym->getOutputFileBase(),
           anchor,
-          symName);
+          symName,
+          sym->briefDescriptionAsTooltip());
       return TRUE;
     }
   }

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -43,9 +43,9 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
     virtual void codify(const char *) {}
-    virtual void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *name) 
-    { ref=ref; file=file; anchor=anchor; name=name; }
+    virtual void writeCodeLink(const char *,const char *,
+                               const char *,const char *,
+                               const char *) {}
     virtual void writeLineNumber(const char *,const char *,
                                  const char *,int) {}
     virtual void startCodeLine() {}
@@ -324,9 +324,10 @@ void FileDef::writeDocumentation(OutputList &ol)
       bool isIDLorJava = FALSE;
       if (fd)
       {
-        isIDLorJava = fd->name().right(4)==".idl" || 
+        isIDLorJava = fd->name().right(4)==".idl" ||   // M$ or Corba IDL
                       fd->name().right(5)==".pidl" ||
-                      fd->name().right(5)==".java";
+                      fd->name().right(5)==".java" ||  // Sun's Java
+                      fd->name().right(4)==".jsl";     // M$ J#
       }
       ol.startTypewriter();
       if (isIDLorJava) // IDL/Java include
@@ -393,7 +394,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("INCLUDE_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
-    DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),FALSE);
+    DotInclDepGraph incDepGraph(this,FALSE);
     if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock(); 
@@ -411,7 +412,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   if (Config_getBool("HAVE_DOT") && Config_getBool("INCLUDED_BY_GRAPH"))
   {
     //printf("Graph for file %s\n",name().data());
-    DotInclDepGraph incDepGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"),TRUE);
+    DotInclDepGraph incDepGraph(this,TRUE);
     if (!incDepGraph.isTrivial())
     {
       ol.startTextBlock(); 

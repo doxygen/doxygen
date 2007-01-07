@@ -552,7 +552,8 @@ static void codifyLines(char *text)
  */
 static void writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *ref,const char *file,
-                  const char *anchor,const char *text)
+                  const char *anchor,const char *text,
+		  const char *tooltip)
 {
   bool done=FALSE;
   char *p=(char *)text;
@@ -566,7 +567,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       g_yyLineNr++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       endCodeLine();
       if (g_yyLineNr<g_inputLines) 
       {
@@ -576,7 +577,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -834,7 +835,8 @@ static bool getLinkInScope(const QCString &c,  // scope
       writeMultiLineCodeLink(ol,md->getReference(),
 	                        md->getOutputFileBase(),
 	                        md->anchor(),
-				text ? text : memberText);
+				text ? text : memberText,
+				md->briefDescriptionAsTooltip());
       addToSearchIndex(text ? text : memberText);
       return TRUE;
     } 
@@ -942,7 +944,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     }
     ol.linkableSymbol(g_yyLineNr,cd->name(),cd,
                       g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName);
+    writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
     if (md)
     {
@@ -985,7 +987,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	{
           ol.linkableSymbol(g_yyLineNr,md->name(),md,
 	                    g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName);
+	  writeMultiLineCodeLink(ol,md->getReference(),md->getOutputFileBase(),md->anchor(),clName,md->briefDescriptionAsTooltip());
           addToSearchIndex(clName);
 	  if (g_currentMemberDef)
 	  {
@@ -1057,7 +1059,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const 
         ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
                           g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
 	writeMultiLineCodeLink(ol,xmd->getReference(),
-	    xmd->getOutputFileBase(),xmd->anchor(),memName);
+	    xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
         addToSearchIndex(memName);
 	return TRUE;
       }
@@ -1352,7 +1354,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		                     ctx->method->getReference(),
 	                             ctx->method->getOutputFileBase(),
 	                             ctx->method->anchor(),
-				     pName->data());
+				     pName->data(),
+				     ctx->method->briefDescriptionAsTooltip());
 	      if (g_currentMemberDef)
 	      {
 	        addDocCrossReference(g_currentMemberDef,ctx->method);
@@ -1439,7 +1442,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    ctx->objectVar->getReference(),
 		    ctx->objectVar->getOutputFileBase(),
 		    ctx->objectVar->anchor(),
-		    pObject->data());
+		    pObject->data(),
+		    ctx->objectVar->briefDescriptionAsTooltip());
 	      if (g_currentMemberDef)
 	      {
 	        addDocCrossReference(g_currentMemberDef,ctx->objectVar);
@@ -1457,7 +1461,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
 		    0,
-		    pObject->data());
+		    pObject->data(),
+		    cd->briefDescriptionAsTooltip());
 	    }
 	    else // object still needs to be resolved
 	    {
@@ -1472,7 +1477,8 @@ static void writeObjCMethodCall(ObjCCallCtx *ctx)
 		    cd->getReference(),
 		    cd->getOutputFileBase(),
 		    0,
-		    pObject->data());
+		    pObject->data(),
+		    cd->briefDescriptionAsTooltip());
 	      }
 	      else
 	      {
@@ -1822,7 +1828,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (found)
 					  {
 					    //printf("      include file %s found=%d\n",fd->absFilePath().data(),found);
-					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext);
+					    g_code->writeCodeLink(fd->getReference(),fd->getOutputFileBase(),0,yytext,fd->briefDescriptionAsTooltip());
 					  }
 					  else
 					  {

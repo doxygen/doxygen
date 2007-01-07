@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -1058,6 +1058,18 @@ void doctokenizerYYcleanup()
 void doctokenizerYYsetInsidePre(bool b)
 {
   g_insidePre = b;
+}
+
+void doctokenizerYYpushBackHtmlTag(const char *tag)
+{
+  QCString tagName = tag;
+  int i,l = tagName.length();
+  unput('>');
+  for (i=l-1;i>=0;i--)
+  {
+    unput(tag[i]);
+  }
+  unput('<');
 }
 
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
