@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -332,6 +332,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                             MemberDef **pMemType=0,QCString *pTemplSpec=0,
                             QCString *pResolvedType=0);
 
+QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr);
 
 #endif
 

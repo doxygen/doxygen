@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2005 by Dimitri van Heesch.
  *
@@ -2533,6 +2533,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->mtype = mtype;
 					    BEGIN( IDLAttribute );
 					  }
+                                          else if (insideCS &&
+                                                  current->name.isEmpty())
+                                          {
+                                            squareCount=1;
+                                            lastSquareContext = YY_START;
+                                            // Skip the C# attribute
+                                            // for this member
+                                            current->args.resize(0);
+                                            BEGIN( SkipSquare );
+                                          }
 					  else
 					  {
   					    current->args += yytext ;
@@ -2643,8 +2653,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <Sharp>.				{ current->type += *yytext ; }
 <FindFields>{ID}			{
-  					  current->name = yytext;
+  					  current->bodyLine = yyLineNr;
+  					  current->name     = yytext;
 					}
+<FindFields>"("				{
+  					  // Java enum initializer
+  					  unput('(');
+  					  lastInitializerContext = YY_START;
+					  initBracketCount=0;
+  					  BEGIN(ReadInitializer);
+  					}
 <FindFields>"="				{
   					  lastInitializerContext = YY_START;
 					  initBracketCount=0;
@@ -2664,9 +2682,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->section    = Entry::VARIABLE_SEC;
 					    // add to the scope of the enum
 					    current_root->addSubEntry(current);
-					    current             = new Entry(*current);
-					    // add to the scope surrounding the enum (copy!)
-					    current_root->parent()->addSubEntry(current);
+					    if (!insideCS && !insideJava) // for C# and Java 1.5+ enum values always have to be explicitly qualified
+					    {
+					      current             = new Entry(*current);
+					      // add to the scope surrounding the enum (copy!)
+					      current_root->parent()->addSubEntry(current);
+					    }
 					    current             = new Entry ;
 					    initEntry();
 					  }
@@ -4708,7 +4729,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <DocCopyBlock><<EOF>>			{
   					  warn(yyFileName,yyLineNr,
-					      "Warning: reached end of file while inside a %s block!\n",
+					      "Warning: reached end of file while inside a %s block!\n"
+					      "The command that should end the block seems to be missing!\n",
 					      docBlockName.data());
   					  yyterminate();
   					}
@@ -5223,7 +5245,7 @@ bool CLanguageScanner::needsPreprocessing(const QCString &extension)
 {
   QCString fe=extension.lower();
   return 
-   !( fe==".java" || fe==".as"  || fe==".cs"    || fe==".d"    || fe==".php" || 
+   !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" || 
       fe==".php4" || fe==".inc" || fe==".phtml" 
     );
 }

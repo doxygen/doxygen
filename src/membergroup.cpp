@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -65,11 +65,12 @@ MemberGroup::~MemberGroup()
 
 void MemberGroup::insertMember(MemberDef *md)
 {
-  //printf("MemberGroup::insertMember memberList=%p count=%d"
+  //printf("MemberGroup::insertMember m_parent=%s memberList=%p count=%d"
   //       " member section list: %p\n",
-  //       memberList->first() ? memberList->first()->getSectionList() : 0,
+  //       m_parent ? m_parent->name().data() : "<null>",
+  //       memberList->first() ? memberList->first()->getSectionList(m_parent) : 0,
   //       memberList->count(),
-  //       md->getSectionList());
+  //       md->getSectionList(m_parent));
   MemberDef *firstMd = memberList->first();
   if (inSameSection && memberList->count()>0 && 
       firstMd->getSectionList(m_parent)!=md->getSectionList(m_parent))
@@ -134,7 +135,8 @@ void MemberGroup::addToDeclarationSection()
 {
   if (inDeclSection)
   {
-    //printf("Adding group %p to list %p (type=%d)\n",this,inDeclSection,inDeclSection->listType());
+    //printf("Adding group %p to list %p (type=%d)\n",this,
+    //                              inDeclSection,inDeclSection->listType());
     inDeclSection->addMemberGroup(this);
   }
 }

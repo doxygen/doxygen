@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -37,16 +37,26 @@ struct SectionInfo;
 class Definition;
 class DefinitionImpl;
 
+#if 0
 struct ReachableDefinition
 {
   ReachableDefinition(Definition *d,int dist) : def(d), distance(dist) {}
   Definition *def;
   int distance;
 };
+#endif
 
 struct DocInfo
 {
     QCString doc;  
+    int      line;
+    QCString file;
+};
+
+struct BriefInfo
+{
+    QCString doc;  
+    QCString tooltip;  
     int      line;
     QCString file;
 };
@@ -135,8 +145,13 @@ class Definition : public DefinitionIntf, public LockableObj
      */
     QCString docFile() const;
 
-    /*! Returns the brief description of this definition */
+    /*! Returns the brief description of this definition. This can include commands. */
     QCString briefDescription() const;
+
+    /*! Returns a plain text version of the brief description suitable for use
+     *  as a tool tip. 
+     */
+    QCString briefDescriptionAsTooltip() const;
 
     /*! Returns the line number at which the brief description was found. */
     int briefLine() const;
@@ -182,6 +197,7 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! Returns TRUE iff the name may appear in the output */
     virtual bool isVisible() const;
 
+    /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     bool isHidden() const;
 
     /*! If this definition was imported via a tag file, this function
@@ -293,6 +309,8 @@ class Definition : public DefinitionIntf, public LockableObj
     int  _getXRefListId(const char *listName) const;
     void _writeSourceRefList(OutputList &ol,const char *scopeName,
                        const QCString &text,MemberSDict *members,bool);
+    void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
+    void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace);
     DefinitionImpl *m_impl; // internal structure holding all private data
     QCString m_name;
     bool m_isSymbol;

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -586,7 +586,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr size=\"1\"><address style=\"align: right;\"><small>\n";
+  t << "<hr size=\"1\"><address style=\"text-align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
     << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
@@ -642,7 +642,7 @@ static void writePageFooter(QTextStream &t,const QCString &lastTitle,
 {
   if (g_footer.isEmpty())
   {
-    t << "<hr size=\"1\"><address style=\"align: right;\"><small>";
+    t << "<hr size=\"1\"><address style=\"text-align: right;\"><small>";
     t << theTranslator->trGeneratedAt(
         dateToString(TRUE),
         Config_getString("PROJECT_NAME")
@@ -841,7 +841,8 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
 }
 
 void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
-                                  const char *anchor, const char *name)
+                                  const char *anchor, const char *name,
+                                  const char *tooltip)
 {
   QCString *dest;
   if (ref) 
@@ -866,7 +867,9 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   }
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
-  t << "\">";
+  t << "\"";
+  if (tooltip) t << " title=\"" << tooltip << "\"";
+  t << ">";
   docify(name);
   t << "</a>";
   col+=strlen(name);
@@ -1508,7 +1511,7 @@ void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
   if (file)
   {
     startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,file,anchor,lineNumber);
+    writeCodeLink(ref,file,anchor,lineNumber,0);
     endCodeAnchor();
   }
   else

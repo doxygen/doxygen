@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -1022,7 +1022,8 @@ void LatexGenerator::endPageRef(const char *clname, const char *anchor)
 }
 
 void LatexGenerator::writeCodeLink(const char *,const char *,
-                                   const char *,const char *name)
+                                   const char *,const char *name,
+                                   const char *)
 {
   t << name;
   col+=strlen(name);

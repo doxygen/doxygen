@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -48,6 +48,7 @@
 #include "debug.h"
 #include "searchindex.h"
 #include "doxygen.h"
+#include "textdocvisitor.h"
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
@@ -205,7 +206,14 @@ int iSystem(const char *command,const char *args,bool commandHasConsole)
     else
     {
       Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
-      return status;
+      if (WIFEXITED(status))
+      {
+        return WEXITSTATUS(status);
+      }
+      else
+      {
+        return status;
+      }
     }
   }
 #endif // _OS_SOLARIS
@@ -1656,8 +1664,8 @@ nextChar:
       result+=" :";
       vsp=0;
     }
-    else if (!isspace((uchar)c) ||
-        ( i>0 && i<l-1 && 
+    else if (!isspace((uchar)c) || // not a space
+        ( i>0 && i<l-1 &&          // internal character
           (isId(s.at(i-1)) || s.at(i-1)==')' || s.at(i-1)==',' || s.at(i-1)=='>' || s.at(i-1)==']')
           && (isId(s.at(i+1)) || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))
             || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3))))
@@ -3901,7 +3909,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
  *   - if `cd' is non zero, the scope was a class pointed to by cd.
  *   - if `nd' is non zero, the scope was a namespace pointed to by nd.
  */
-bool getScopeDefs(const char *docScope,const char *scope,
+static bool getScopeDefs(const char *docScope,const char *scope,
     ClassDef *&cd, NamespaceDef *&nd)
 {
   cd=0;nd=0;
@@ -3946,14 +3954,14 @@ bool getScopeDefs(const char *docScope,const char *scope,
   return FALSE;
 }
 
-static bool isLowerCase(QCString &s)
-{
-  char *p=s.data();
-  if (p==0) return TRUE;
-  int c;
-  while ((c=*p++)) if (!islower(c)) return FALSE;
-  return TRUE; 
-}
+//static bool isLowerCase(QCString &s)
+//{
+//  char *p=s.data();
+//  if (p==0) return TRUE;
+//  int c;
+//  while ((c=*p++)) if (!islower(c)) return FALSE;
+//  return TRUE; 
+//}
 
 
 
@@ -3967,8 +3975,6 @@ bool resolveRef(/* in */  const char *scName,
     /* out */ MemberDef  **resMember
     )
 {
-  //printf("resolveRef(scName=%s,name=%s,inSeeBlock=%d)\n",scName,name,inSeeBlock);
-
   QCString tsName = name;
   bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
@@ -3987,10 +3993,10 @@ bool resolveRef(/* in */  const char *scName,
     ClassDef *cd=0;
     NamespaceDef *nd=0;
 
-    if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
-    { // link to lower case only name => do not try to autolink 
-      return FALSE;
-    }
+    //if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
+    //{ // link to lower case only name => do not try to autolink 
+    //  return FALSE;
+    //}
 
     //printf("scName=%s fullName=%s\n",scName,fullName.data());
 
@@ -6024,6 +6030,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".idl",   (void*)SrcLangExt_IDL);
     extLookup.insert(".odl",   (void*)SrcLangExt_IDL);
     extLookup.insert(".java",  (void*)SrcLangExt_Java);
+    extLookup.insert(".jsl",   (void*)SrcLangExt_Java);
     extLookup.insert(".as",    (void*)SrcLangExt_Java);
     extLookup.insert(".cs",    (void*)SrcLangExt_CSharp);
     extLookup.insert(".d",     (void*)SrcLangExt_D);
@@ -6121,3 +6128,31 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
   else
     return FALSE;
 }
+
+QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr)
+{
+  QString result;
+  QTextStream t(&result,IO_WriteOnly);
+  DocNode *root = validatingParseDoc(fileName,lineNr,Doxygen::globalScope,0,doc,FALSE,FALSE);
+  TextDocVisitor *visitor = new TextDocVisitor(t);
+  root->accept(visitor);
+  delete visitor;
+  delete root;
+  int i=0;
+  if (result.length()>80)
+  {
+    for (i=80;i<100;i++) // search for nice truncation point
+    {
+      if (result.at(i).isSpace() || 
+          result.at(i)==',' || 
+          result.at(i)=='.' || 
+          result.at(i)=='?')
+      {
+        break;
+      }
+    }
+  }
+  if (i>0) result=result.left(i)+"...";
+  return result.data();
+}
+

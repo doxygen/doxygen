@@ -155,49 +155,6 @@ class TranslatorAdapter_1_2_18 : public TranslatorAdapter_1_3
     { return english.trEventDocumentation(); }
 };
 
-class TranslatorAdapter_1_2_17 : public TranslatorAdapter_1_2_18
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.2.17"); }
-
-    virtual QCString trDeprecatedList()
-    { return english.trDeprecatedList(); }
-};
-
-class TranslatorAdapter_1_2_16 : public TranslatorAdapter_1_2_17
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.2.16"); }
-
-    virtual QCString trRTFTableOfContents()
-    { return english.trRTFTableOfContents(); }
-};
-
-class TranslatorAdapter_1_2_13 : public TranslatorAdapter_1_2_16
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.2.13"); }
-
-    virtual QCString trImplementedFromList(int numEntries) 
-    { return english.trImplementedFromList(numEntries); }
-
-    virtual QCString trImplementedInList(int numEntries) 
-    { return english.trImplementedInList(numEntries); }
-};
-
-class TranslatorAdapter_1_2_11 : public TranslatorAdapter_1_2_13
-{
-  public:
-    virtual QCString updateNeededMessage() 
-    { return createUpdateNeededMessage(idLanguage(),"release 1.2.11"); }
-   
-    virtual QCString trReferences()
-    { return english.trReferences(); }
-    
-};
 
 #endif
 

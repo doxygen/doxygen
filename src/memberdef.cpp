@@ -581,121 +581,6 @@ MemberDef::MemberDef(const char *df,int dl,
   m_impl = new MemberDefImpl;
   m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al);
   m_flushPending = FALSE;
-
-#if 0
-  //printf("++++++ MemberDef(%s file=%s,line=%d static=%d) ++++++ \n",
-  //    na,df,dl,s);
-  classDef=0;
-  fileDef=0;
-  redefines=0;
-  m_relatedAlso=0;
-  redefinedBy=0;
-  nspace=0;
-  memDef=0;
-  memDec=0;
-  group=0;
-  grpId=-1;
-  exampleSDict=0;
-  enumFields=0;
-  enumScope=0;
-  m_defTmpArgLists=0;
-  m_hasCallGraph = FALSE;
-  m_hasCallerGraph = FALSE;
-  initLines=0;
-  type=t;
-  if (mt==Typedef) type.stripPrefix("typedef ");
-  type.stripPrefix("struct ");
-  type.stripPrefix("class " );
-  type.stripPrefix("union " );
-  type=removeRedundantWhiteSpace(type);
-
-  args=a;
-  args=removeRedundantWhiteSpace(args);
-  if (type.isEmpty()) decl=name()+args; else decl=type+" "+name()+args;
-
-  memberGroup=0;
-  virt=v;
-  prot=p;
-  related=r;
-  stat=s;
-  mtype=mt;
-  exception=e;
-  proto=FALSE;
-  annScope=FALSE;
-  memSpec=0;
-  annMemb=0;
-  annUsed=FALSE;
-  annEnumType=0;
-  groupAlias=0;
-  explExt=FALSE;
-  tspec=FALSE;
-  cachedAnonymousType=0;
-  maxInitLines=Config_getInt("MAX_INITIALIZER_LINES");
-  userInitLines=-1;
-  docEnumValues=FALSE;
-  // copy function template arguments (if any)
-  if (tal)
-  {
-    tArgList = new ArgumentList;
-    tArgList->setAutoDelete(TRUE);
-    ArgumentListIterator ali(*tal);
-    Argument *a;
-    for (;(a=ali.current());++ali)
-    {
-      tArgList->append(new Argument(*a));
-    }
-  }
-  else
-  {
-    tArgList=0;
-  }
-  //printf("new member al=%p\n",al);
-  // copy function definition arguments (if any)
-  if (al)
-  {
-    defArgList = new ArgumentList;
-    defArgList->setAutoDelete(TRUE);
-    ArgumentListIterator ali(*al);
-    Argument *a;
-    for (;(a=ali.current());++ali)
-    {
-      //printf("copy argument %s (doc=%s)\n",a->name.data(),a->docs.data());
-      defArgList->append(new Argument(*a));
-    }
-    defArgList->constSpecifier    = al->constSpecifier;
-    defArgList->volatileSpecifier = al->volatileSpecifier;
-    defArgList->pureSpecifier     = al->pureSpecifier;
-    //printf("defArgList(%p)->constSpecifier=%d\n",defArgList,defArgList->constSpecifier);
-  }
-  else
-  {
-    defArgList=0;
-  }
-  // convert function declaration arguments (if any)
-  if (!args.isEmpty())
-  {
-    declArgList = new ArgumentList;
-    stringToArgumentList(args,declArgList);
-    //printf("setDeclArgList %s to %p const=%d\n",args.data(),
-    //    declArgList,declArgList->constSpecifier);
-  }
-  else
-  {
-    declArgList = 0;
-  }
-  m_templateMaster = 0;
-  classSectionSDict = 0;
-  docsForDefinition = TRUE;
-  m_isTypedefValCached = FALSE;
-  m_cachedTypedefValue = 0;
-  m_inbodyLine = -1;
-  m_implOnly=FALSE;
-  groupMember = 0;
-  m_hasDocumentedParams = FALSE;
-  m_hasDocumentedReturnType = FALSE;
-  m_docProvider = 0;
-  m_isDMember = getDefFileName().right(2).lower()==".d";
-#endif
 }
 
 /*! Destroys the member definition. */
@@ -1632,6 +1517,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool hasParameterList = FALSE;
   bool inFile = container->definitionType()==Definition::TypeFile;
   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
+  static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
@@ -1660,7 +1546,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cfname = getOutputFileBase();
   QCString cfiname = container->getOutputFileBase();
 
-  bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
+  static bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
   HtmlHelp *htmlHelp = 0;
   if (hasHtmlHelp)
   {
@@ -1671,7 +1557,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     else
     {
       htmlHelp = HtmlHelp::getInstance();
-      htmlHelp->addIndexItem(ciname,name(),cfiname,cfname,memAnchor);
+      htmlHelp->addIndexItem(ciname,                                // level1
+                             name(),                                // level2
+                             separateMemPages ? cfname : cfiname,   // contRef
+                             cfname,                                // memRef
+                             memAnchor);                            // anchor
     }
   }
 
@@ -2062,7 +1952,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
           if (hasHtmlHelp)
           {
-            HtmlHelp::getInstance()->addIndexItem(cname,fmd->name(),cfiname,cfname,fmd->anchor());
+             htmlHelp->addIndexItem(ciname,                                // level1
+                                    fmd->name(),                           // level2
+                                    separateMemPages ? cfname : cfiname,   // contRef
+                                    cfname,                                // memRef
+                                    fmd->anchor());                        // anchor
           }
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
@@ -2261,7 +2155,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       && isFunction() && Config_getBool("HAVE_DOT")
      )
   {
-    DotCallGraph callGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"), FALSE);
+    DotCallGraph callGraph(this,FALSE);
     if (!callGraph.isTrivial())
     {
       msg("Generating call graph for function %s\n",qualifiedName().data());
@@ -2277,7 +2171,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       && isFunction() && Config_getBool("HAVE_DOT")
      )
   {
-    DotCallGraph callerGraph(this,Config_getInt("MAX_DOT_GRAPH_DEPTH"), true);
+    DotCallGraph callerGraph(this, true);
     if (!callerGraph.isTrivial())
     {
       msg("Generating caller graph for function %s\n",qualifiedName().data());
@@ -2567,7 +2461,8 @@ bool MemberDef::hasOneLineInitializer() const
 {
   makeResident();
   //printf("%s: init=%s, initLines=%d maxInitLines=%d userInitLines=%d\n",
-  //    name().data(),init.data(),initLines,maxInitLines,userInitLines);
+  //    name().data(),m_impl->initializer.data(),m_impl->initLines,
+  //    m_impl->maxInitLines,m_impl->userInitLines);
   return !m_impl->initializer.isEmpty() && m_impl->initLines==0 && // one line initializer
          ((m_impl->maxInitLines>0 && m_impl->userInitLines==-1) || m_impl->userInitLines>0); // enabled by default or explicitly
 }
@@ -2586,7 +2481,6 @@ bool MemberDef::hasMultiLineInitializer() const
 void MemberDef::setInitializer(const char *initializer)    
 { 
   makeResident();
-  //printf("setInitializer(%s)\n",initializer);
   m_impl->initializer=initializer; 
   int p=m_impl->initializer.length()-1;
   while (p>=0 && isspace((uchar)m_impl->initializer.at(p))) p--;
@@ -3955,5 +3849,35 @@ void MemberDef::unlock() const
   }
 }
 
+void MemberDef::copyArgumentNames(MemberDef *bmd)
+{
+  makeResident();
+  {
+    LockingPtr<ArgumentList> arguments = bmd->argumentList();
+    if (m_impl->defArgList && arguments!=0)
+    {
+      ArgumentListIterator aliDst(*m_impl->defArgList);
+      ArgumentListIterator aliSrc(*arguments);
+      Argument *argDst, *argSrc;
+      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
+      {
+        argDst->name = argSrc->name;
+      }
+    }
+  }
+  {
+    LockingPtr<ArgumentList> arguments = bmd->declArgumentList();
+    if (m_impl->defArgList && arguments!=0)
+    {
+      ArgumentListIterator aliDst(*m_impl->declArgList);
+      ArgumentListIterator aliSrc(*arguments);
+      Argument *argDst, *argSrc;
+      for (;(argDst=aliDst.current()) && (argSrc=aliSrc.current());++aliDst,++aliSrc)
+      {
+        argDst->name = argSrc->name;
+      }
+    }
+  }
+}
 
 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -132,7 +132,8 @@ class HtmlDocVisitor : public DocVisitor
     void filter(const char *str);
     void filterQuotedCdataAttr(const char* str);
     void startLink(const QString &ref,const QString &file,
-                   const QString &relPath,const QString &anchor);
+                   const QString &relPath,const QString &anchor,
+                   const QString &tooltip = QString::null);
     void endLink();
     void writeDotFile(const QString &fileName,const QString &relPath);
 

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -69,7 +69,7 @@ void HtmlDocVisitor::visit(DocWord *w)
 void HtmlDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
-  startLink(w->ref(),w->file(),w->relPath(),w->anchor());
+  startLink(w->ref(),w->file(),w->relPath(),w->anchor(),w->tooltip());
   filter(w->word());
   endLink();
 }
@@ -228,9 +228,10 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         static int dotindex = 1;
         QCString fileName(4096);
 
-        fileName.sprintf("%s%d", 
+        fileName.sprintf("%s%d%s", 
             (Config_getString("HTML_OUTPUT")+"/inline_dotgraph_").data(), 
-            dotindex++
+            dotindex++,
+            ".dot"
            );
         QFile file(fileName);
         if (!file.open(IO_WriteOnly))
@@ -244,7 +245,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         writeDotFile(fileName,s->relPath());
         m_t << "</div>" << endl;
 
-        file.remove();
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
       break;
   }
@@ -1062,7 +1063,8 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
 }
 
 void HtmlDocVisitor::startLink(const QString &ref,const QString &file,
-                               const QString &relPath,const QString &anchor)
+                               const QString &relPath,const QString &anchor,
+                               const QString &tooltip)
 {
   QCString *dest;
   if (!ref.isEmpty()) // link to entity imported via tag file
@@ -1087,7 +1089,9 @@ void HtmlDocVisitor::startLink(const QString &ref,const QString &file,
   }
   if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
   if (!anchor.isEmpty()) m_t << "#" << anchor;
-  m_t << "\">";
+  m_t << "\"";
+  if (!tooltip.isEmpty()) m_t << " title=\"" << tooltip << "\"";
+  m_t << ">";
 }
 
 void HtmlDocVisitor::endLink()

@@ -13,6 +13,7 @@
  *
  */
 
+#include <stdio.h>
 #include "qgstring.h"
 
 #include <assert.h>
@@ -20,25 +21,31 @@
 #define BLOCK_SIZE 64
 #define ROUND_SIZE(x) ((x)+BLOCK_SIZE-1)&~(BLOCK_SIZE-1)
 
+#define DBG_STR(x) do { } while(0)
+
 QGString::QGString() // make null string
   : m_data(0), m_len(0), m_memSize(0) 
 {
+  DBG_STR(("%p: QGString::QGString() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
 } 
 
 QGString::QGString(uint size)
 {
-  m_memSize = ROUND_SIZE(size);
-  if (m_memSize==0)
+  if (size==0)
   {
     m_data=0;
     m_len=0;
   }
   else
   {
+    m_memSize = ROUND_SIZE(size+1);
     m_data = (char*)malloc(m_memSize);
-    m_data[0]='\0';
-    m_len=0;
+    memset(m_data,' ',size);
+    m_data[size]='\0';
+    m_len=size;
   }
+  DBG_STR(("%p: QGString::QGString(uint size=%d) %d:%s\n",
+      this,size,m_len,m_data?m_data:"<none>"));
 }
 
 QGString::QGString( const QGString &s ) 
@@ -56,6 +63,7 @@ QGString::QGString( const QGString &s )
     m_memSize = s.m_memSize;
     qstrcpy(m_data,s.m_data);
   }
+  DBG_STR(("%p: QGString::QGString(const QGString &) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
 } 
 
 QGString::QGString( const char *str )
@@ -74,12 +82,14 @@ QGString::QGString( const char *str )
     m_data = (char *)malloc(m_memSize);
     qstrcpy(m_data,str);
   }
+  DBG_STR(("%p: QGString::QGString(const char *) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
 }
 
 QGString::~QGString() 
 { 
   free(m_data); 
   m_data=0; 
+  DBG_STR(("%p: QGString::~QGString() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
 }
 
 bool QGString::resize( uint newlen )
@@ -89,6 +99,7 @@ bool QGString::resize( uint newlen )
   {
     if (m_data) { free(m_data); m_data=0; }
     m_memSize=0;
+    DBG_STR(("%p: 1.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
     return TRUE;
   }
   m_memSize = ROUND_SIZE(newlen+1);
@@ -101,9 +112,14 @@ bool QGString::resize( uint newlen )
   {
     m_data = (char *)realloc(m_data,m_memSize);
   }
-  if (m_data==0) return FALSE;
+  if (m_data==0) 
+  {
+    DBG_STR(("%p: 2.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
+    return FALSE;
+  }
   m_data[newlen-1]='\0';
   m_len = qstrlen(m_data);
+  DBG_STR(("%p: 3.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return TRUE;
 }
 
@@ -123,6 +139,8 @@ QGString &QGString::operator=( const QGString &s )
     m_data    = (char*)malloc(m_memSize);
     qstrcpy(m_data,s.m_data);
   }
+  DBG_STR(("%p: QGString::operator=(const QGString &%p) %d:%s\n",
+      this,&s,m_len,m_data?m_data:"<none>"));
   return *this;
 }
 
@@ -143,6 +161,7 @@ QGString &QGString::operator=( const char *str )
     m_data    = (char*)malloc(m_memSize);
     qstrcpy(m_data,str);
   }
+  DBG_STR(("%p: QGString::operator=(const char *) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return *this;
 }
 
@@ -160,6 +179,8 @@ QGString &QGString::operator+=( const QGString &s )
     m_data = newData;
     memcpy( m_data + len1, s, len2 + 1 );
   }
+  m_len = len1+len2;
+  DBG_STR(("%p: QGString::operator+=(const QGString &) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return *this;
 }
 
@@ -178,6 +199,7 @@ QGString &QGString::operator+=( const char *str )
     memcpy( m_data + len1, str, len2 + 1 );
   }
   m_len+=len2;
+  DBG_STR(("%p: QGString::operator+=(const char *) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return *this;
 }
 
@@ -195,6 +217,7 @@ QGString &QGString::operator+=( char c )
     m_data[len+1] = '\0';
   }
   m_len++;
+  DBG_STR(("%p: QGString::operator+=(char s) %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return *this;
 }
 

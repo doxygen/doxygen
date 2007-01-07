@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -902,7 +902,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
           DocLinkedWord(parent,name,
             member->getReference(),
             member->getOutputFileBase(),
-            member->anchor()
+            member->anchor(),
+            member->briefDescriptionAsTooltip()
                        )
                      );
     }
@@ -920,7 +921,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
           DocLinkedWord(parent,name,
                         compound->getReference(),
                         compound->getOutputFileBase(),
-                        ""
+                        "",
+                        compound->briefDescriptionAsTooltip()
                        )
                      );
     }
@@ -932,7 +934,8 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
           DocLinkedWord(parent,g_token->name,
                          compound->getReference(),
                          compound->getSourceFileBase(),
-                         ""
+                         "",
+                         compound->briefDescriptionAsTooltip()
                        )
                      );
     }
@@ -957,7 +960,9 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
         DocLinkedWord(parent,name,
           cd->getReference(),
           cd->getOutputFileBase(),
-          ""));
+          "",
+          cd->briefDescriptionAsTooltip()
+          ));
   }
   else // normal non-linkable word
   {
@@ -1448,9 +1453,10 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
 
 DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
                   const QString &ref,const QString &file,
-                  const QString &anchor) : 
+                  const QString &anchor,const QString &tooltip) : 
       m_parent(parent), m_word(word), m_ref(ref), 
-      m_file(file), m_relPath(g_relPath), m_anchor(anchor) 
+      m_file(file), m_relPath(g_relPath), m_anchor(anchor),
+      m_tooltip(tooltip)
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
   if (!g_searchUrl.isEmpty())
@@ -2835,6 +2841,7 @@ int DocHtmlRow::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <td> or <th> tag but "
           "found <%s> instead!",g_token->name.data());
+      doctokenizerYYpushBackHtmlTag(g_token->name);
       goto endrow;
     }
   }
@@ -3161,6 +3168,7 @@ int DocHtmlDescList::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <dt> tag but "
           "found <%s> instead!",g_token->name.data());
+      doctokenizerYYpushBackHtmlTag(g_token->name);
       goto enddesclist;
     }
   }
@@ -3294,6 +3302,7 @@ int DocHtmlList::parse()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <li> tag but "
           "found <%s> instead!",g_token->name.data());
+      doctokenizerYYpushBackHtmlTag(g_token->name);
       goto endlist;
     }
   }
@@ -3354,6 +3363,7 @@ int DocHtmlList::parseXml()
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <item> tag but "
           "found <%s> instead!",g_token->name.data());
+      doctokenizerYYpushBackHtmlTag(g_token->name);
       goto endlist;
     }
   }

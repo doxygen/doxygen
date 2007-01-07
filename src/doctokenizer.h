@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -143,5 +143,6 @@ void doctokenizerYYsetStateInternalRef();
 void doctokenizerYYsetStateText();
 void doctokenizerYYsetStateSkipTitle();
 void doctokenizerYYsetInsidePre(bool b);
+void doctokenizerYYpushBackHtmlTag(const char *tag);
 
 #endif

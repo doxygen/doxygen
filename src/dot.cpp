@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -34,6 +34,7 @@
 #include <qtextstream.h>
 #include <md5.h>
 
+#define MAP_CMD "cmap"
 
 //--------------------------------------------------------------------
 
@@ -84,6 +85,7 @@ static void writeGraphFooter(QTextStream &t)
   t << "}" << endl;
 }
 
+#if 0
 /*! converts the rectangles in a server site image map into a client 
  *  site image map.
  *  \param t the stream to which the result is written.
@@ -198,6 +200,105 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   
   return TRUE;
 }
+#endif
+
+/*! converts the rectangles in a client site image map into a stream
+ *  \param t the stream to which the result is written.
+ *  \param mapName the name of the map file.
+ *  \param relPath the relative path to the root of the output directory
+ *                 (used in case CREATE_SUBDIRS is enabled).
+ *  \param urlOnly if FALSE the url field in the map contains an external 
+ *                 references followed by a $ and then the URL.  
+ *  \returns TRUE if succesful.
+ */
+static bool convertMapFile(QTextStream &t,const char *mapName,
+                           const QCString relPath, bool urlOnly=FALSE)
+{
+  QFile f(mapName);
+  if (!f.open(IO_ReadOnly)) 
+  {
+    err("Error opening map file %s for inclusion in the docs!\n",mapName);
+    return FALSE;
+  }
+  const int maxLineLen=10240;
+  while (!f.atEnd()) // foreach line
+  {
+    QCString buf(maxLineLen);
+    int numBytes = f.readLine(buf.data(),maxLineLen);
+    buf[numBytes-1]='\0';
+
+    // search for href="...", store ... part in link
+    int indexS = buf.find("href=\""), indexE;
+    if (indexS!=-1 && (indexE=buf.find('"',indexS+6))!=-1)
+    {
+      QCString link = buf.mid(indexS+6,indexE-indexS-6);
+      QCString result;
+      QCString *dest;
+      if (urlOnly) // for user defined dot graphs
+      {
+        if (link.left(5)=="\\ref ") // \ref url
+        {
+          result="href=\"";
+          // fake ref node to resolve the url
+          DocRef *df = new DocRef( (DocNode*) 0, link.mid(5) );
+          if (!df->ref().isEmpty())
+          {
+            if ((dest=Doxygen::tagDestinationDict[df->ref()])) 
+              result += *dest + "/";
+          }
+          else if (!relPath.isEmpty())
+          {
+            result += relPath;
+          }
+          if (!df->file().isEmpty())  
+            result += df->file().data() + Doxygen::htmlFileExtension;
+          if (!df->anchor().isEmpty()) 
+            result += "#" + df->anchor();
+          delete df;
+          result += "\"";
+        }
+        else
+        {
+          result = "href=\"" + link + "\"";
+        }
+      }
+      else // ref$url (external ref via tag file), or $url (local ref)
+      {
+        int marker = link.find('$');
+        if (marker!=-1)
+        {
+          QCString ref = link.left(marker);
+          QCString url = link.mid(marker+1);
+          if (!ref.isEmpty())
+          {
+            result = "doxygen=\"" + ref + ":";
+            if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
+            result += "\" ";
+          }
+          result+= "href=\"";
+          if (!ref.isEmpty())
+          {
+            if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
+          }
+          else if (!relPath.isEmpty())
+          {
+            result += relPath;
+          }
+          result+= url + "\"";
+        }
+        else // should not happen, but handle properly anyway
+        {
+          result = "href=\"" + link + "\"";
+        }
+      }
+      QCString leftPart = buf.left(indexS);
+      QCString rightPart = buf.mid(indexE+1);
+      buf = leftPart + result + rightPart;
+    }
+    t << buf;
+  }
+  return TRUE;
+}
 
 static QArray<int> s_newNumber;
 static int s_max_newNumber=0;
@@ -241,6 +342,7 @@ static void resetReNumbering()
   s_newNumber.resize(s_max_newNumber);
 }
 
+#if 0
 static bool readBoundingBoxDot(const char *fileName,int *width,int *height)
 {
   QFile f(fileName);
@@ -263,6 +365,7 @@ static bool readBoundingBoxDot(const char *fileName,int *width,int *height)
   }
   return FALSE;
 }
+#endif
 
 static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
 {
@@ -360,6 +463,7 @@ static bool checkAndUpdateMd5Signature(const QCString &baseName,const QCString &
     // read checksum
     QCString md5stored(33);
     int bytesRead=f.readBlock(md5stored.data(),32);
+    md5stored[32]='\0';
     // compare checksum
     if (bytesRead==32 && md5==md5stored)
     {
@@ -405,17 +509,20 @@ void DotRunner::addJob(const char *format,const char *output)
 
 bool DotRunner::run()
 {
+  int exitCode=0;
+  static QCString dotExe = Config_getString("DOT_PATH")+"dot";
+  QCString dotArgs;
   QListIterator<QCString> li(m_jobs);
   QCString *s;
   if (Config_getBool("DOT_MULTI_TARGETS"))
   {
-    QCString dotArgs="\""+m_file+"\"";
+    dotArgs="\""+m_file+"\"";
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs+=' ';
       dotArgs+=*s;
     }
-    if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
+    if ((exitCode=iSystem(dotExe,dotArgs,FALSE))!=0)
     {
       goto error;
     }
@@ -424,8 +531,8 @@ bool DotRunner::run()
   {
     for (li.toFirst();(s=li.current());++li)
     {
-      QCString dotArgs="\""+m_file+"\" "+*s;
-      if (iSystem(Config_getString("DOT_PATH")+"dot",dotArgs,FALSE)!=0)
+      dotArgs="\""+m_file+"\" "+*s;
+      if ((exitCode=iSystem(dotExe,dotArgs,FALSE))!=0)
       {
         goto error;
       }
@@ -433,7 +540,8 @@ bool DotRunner::run()
   }
   return TRUE;
 error:
-  err("Problems running dot. Check your installation!\n");
+  err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+      exitCode,dotExe.data(),dotArgs.data());
   return FALSE;
 }
 
@@ -452,18 +560,24 @@ static void deleteNodes(DotNode *node,SDict<DotNode> *skipNodes=0)
   deletedNodes.clear(); // actually remove the nodes.
 }
 
-DotNode::DotNode(int n,const char *lab,const char *url,int distance,
+DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
                  bool isRoot,ClassDef *cd)
-  : m_number(n), m_label(lab), m_url(url), m_isRoot(isRoot), m_classDef(cd)
+  : m_subgraphId(-1)
+  , m_number(n)
+  , m_label(lab)
+  , m_tooltip(tip)
+  , m_url(url)
+  , m_parents(0)
+  , m_children(0)
+  , m_edgeInfo(0)
+  , m_deleted(FALSE)
+  , m_written(FALSE)
+  , m_hasDoc(FALSE)
+  , m_isRoot(isRoot)
+  , m_classDef(cd)
+  , m_visible(FALSE)
+  , m_truncated(Unknown)
 {
-  m_children   = 0; 
-  m_edgeInfo   = 0;
-  m_parents    = 0;
-  m_subgraphId =-1;
-  m_deleted    = FALSE;
-  m_written    = FALSE;
-  m_hasDoc     = FALSE;
-  m_distance   = distance;
 }
 
 DotNode::~DotNode()
@@ -471,11 +585,6 @@ DotNode::~DotNode()
   delete m_children;
   delete m_parents;
   delete m_edgeInfo;
-}
-
-void DotNode::setDistance(int distance)
-{
-  if (distance<m_distance) m_distance=distance;
 }
 
 void DotNode::addChild(DotNode *n,
@@ -663,7 +772,7 @@ void DotNode::writeBox(QTextStream &t,
     }
     t << "}";
   }
-  else // old look
+  else // standard look
   {
     t << convertLabel(m_label);
   }
@@ -694,6 +803,10 @@ void DotNode::writeBox(QTextStream &t,
         t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
+    }
+    if (!m_tooltip.isEmpty())
+    {
+      t << ",tooltip=\"" << m_tooltip << "\"";
     }
   }
   t << "];" << endl; 
@@ -741,27 +854,16 @@ void DotNode::write(QTextStream &t,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
-                    int distance,
                     bool backArrows,
                     bool reNumber
                    )
 {
   //printf("DotNode::write(%d) name=%s this=%p written=%d\n",distance,m_label.data(),this,m_written);
   if (m_written) return; // node already written to the output
-  if (m_distance>distance) return;
-  QList<DotNode> *nl = toChildren ? m_children : m_parents; 
-  bool hasNonReachableChildren=FALSE;
-  if (m_distance==distance && nl)
-  {
-    QListIterator<DotNode> dnli(*nl);
-    DotNode *cn;
-    for (dnli.toFirst();(cn=dnli.current());++dnli)
-    {
-      if (cn->m_distance>distance) hasNonReachableChildren=TRUE;
-    }
-  }
-  writeBox(t,gt,format,hasNonReachableChildren,reNumber);
+  if (!m_visible) return; // node is not visible
+  writeBox(t,gt,format,m_truncated==Truncated,reNumber);
   m_written=TRUE;
+  QList<DotNode> *nl = toChildren ? m_children : m_parents; 
   if (nl)
   {
     if (toChildren)
@@ -771,12 +873,12 @@ void DotNode::write(QTextStream &t,
       DotNode *cn;
       for (dnli1.toFirst();(cn=dnli1.current());++dnli1,++dnli2)
       {
-        if (cn->m_distance<=distance) 
+        if (cn->isVisible())
         {
           //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
           writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows,reNumber);
         }
-        cn->write(t,gt,format,topDown,toChildren,distance,backArrows,reNumber);
+        cn->write(t,gt,format,topDown,toChildren,backArrows,reNumber);
       }
     }
     else // render parents
@@ -785,7 +887,7 @@ void DotNode::write(QTextStream &t,
       DotNode *pn;
       for (dnli.toFirst();(pn=dnli.current());++dnli)
       {
-        if (pn->m_distance<=distance) 
+        if (pn->isVisible())
         {
           //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
           writeArrow(t,
@@ -798,7 +900,7 @@ void DotNode::write(QTextStream &t,
               reNumber
               );
         }
-        pn->write(t,gt,format,TRUE,FALSE,distance,backArrows,reNumber);
+        pn->write(t,gt,format,TRUE,FALSE,backArrows,reNumber);
       }
     }
   }
@@ -978,6 +1080,7 @@ void DotNode::colorConnectedNodes(int curColor)
       if (cn->m_subgraphId==-1) // uncolored child node
       {
         cn->m_subgraphId=curColor;
+        cn->markAsVisible();
         cn->colorConnectedNodes(curColor);
         //printf("coloring node %s (%p): %d\n",cn->m_label.data(),cn,cn->m_subgraphId);
       }
@@ -993,6 +1096,7 @@ void DotNode::colorConnectedNodes(int curColor)
       if (pn->m_subgraphId==-1) // uncolored parent node
       {
         pn->m_subgraphId=curColor;
+        pn->markAsVisible();
         pn->colorConnectedNodes(curColor);
         //printf("coloring node %s (%p): %d\n",pn->m_label.data(),pn,pn->m_subgraphId);
       }
@@ -1074,8 +1178,10 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     DotNode *node;
 
     // compute md5 checksum of the graph were are about to generate
-    QString buf;
-    QTextStream md5stream(&buf,IO_WriteOnly);
+    QString theGraph;
+    QTextStream md5stream(&theGraph,IO_WriteOnly);
+    writeGraphHeader(md5stream);
+    md5stream << "  rankdir=LR;" << endl;
     for (dnli2.toFirst();(node=dnli2.current());++dnli2)
     {
       if (node->m_subgraphId==n->m_subgraphId) 
@@ -1087,13 +1193,14 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     {
       if (node->m_subgraphId==n->m_subgraphId) 
       {
-        node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE,TRUE);
+        node->write(md5stream,DotNode::Hierarchy,BITMAP,FALSE,TRUE,TRUE,TRUE);
       }
     }
+    writeGraphFooter(md5stream);
     resetReNumbering();
     uchar md5_sig[16];
     QCString sigStr(33);
-    MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
+    MD5Buffer((const unsigned char *)theGraph.ascii(),theGraph.length(),md5_sig);
     MD5SigToString(md5_sig,sigStr.data(),33);
     if (checkAndUpdateMd5Signature(baseName,sigStr) || 
         !QFileInfo(mapName).exists())
@@ -1103,29 +1210,13 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       QFile f(dotName);
       if (!f.open(IO_WriteOnly)) return;
       QTextStream t(&f);
-      writeGraphHeader(t);
-      t << "  rankdir=LR;" << endl;
-      for (dnli2.toFirst();(node=dnli2.current());++dnli2)
-      {
-        if (node->m_subgraphId==n->m_subgraphId) 
-        {
-          node->clearWriteFlag();
-        }
-      }
-      for (dnli2.toFirst();(node=dnli2.current());++dnli2)
-      {
-        if (node->m_subgraphId==n->m_subgraphId) 
-        {
-          node->write(t,DotNode::Hierarchy,BITMAP,FALSE,TRUE,1000,TRUE,TRUE);
-        }
-      }
-      writeGraphFooter(t);
+      t << theGraph;
       f.close();
       resetReNumbering();
 
       DotRunner dotRun(dotName);
       dotRun.addJob(imgExt,imgName);
-      dotRun.addJob("imap",mapName);
+      dotRun.addJob(MAP_CMD,mapName);
       if (!dotRun.run())
       {
         out << "</table>" << endl;
@@ -1190,8 +1281,10 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
           {
             tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
           }
+          QCString tooltip = bClass->briefDescriptionAsTooltip();
           bn = new DotNode(m_curNodeNumber++,
               bClass->displayName(),
+              tooltip,
               tmp_url.data()
               );
           n->addChild(bn,bcd->prot);
@@ -1234,8 +1327,10 @@ void DotGfxHierarchyTable::addClassList(ClassSDict *cl)
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
       }
       //printf("Inserting root class %s\n",cd->name().data());
+      QCString tooltip = cd->briefDescriptionAsTooltip();
       DotNode *n = new DotNode(m_curNodeNumber++,
           cd->displayName(),
+          tooltip,
           tmp_url.data());
 
       //m_usedNodes->clear();
@@ -1281,6 +1376,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable()
         //printf("Starting at node %s (%p): %d\n",n->m_label.data(),n,curColor);
         done=FALSE; // still uncolored nodes
         n->m_subgraphId=curColor;
+        n->markAsVisible();
         n->colorConnectedNodes(curColor);
         curColor++;
         const DotNode *dn=n->findDocNode();
@@ -1325,7 +1421,7 @@ DotGfxHierarchyTable::~DotGfxHierarchyTable()
 int DotClassGraph::m_curNodeNumber = 0;
 
 void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
-    const char *label,int distance,const char *usedName,const char *templSpec,bool base)
+    const char *label,const char *usedName,const char *templSpec,bool base)
 {
   if (Config_getBool("HIDE_UNDOC_CLASSES") && !cd->isLinkable()) return;
 
@@ -1358,7 +1454,6 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
       bn->addChild(n,prot,edgeStyle,label);
       n->addParent(bn);
     }
-    bn->setDistance(distance);
     //printf(" add exiting node %s of %s\n",bn->m_label.data(),n->m_label.data());
   }
   else // new class
@@ -1370,14 +1465,14 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     {
       tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
     }
+    QCString tooltip = cd->briefDescriptionAsTooltip();
     bn = new DotNode(m_curNodeNumber++,
         displayName,
+        tooltip,
         tmp_url.data(),
-        distance,
         FALSE,        // rootNode
         cd
        );
-    if (distance>m_maxDistance) m_maxDistance=distance;
     if (base)
     {
       n->addChild(bn,prot,edgeStyle,label);
@@ -1392,13 +1487,85 @@ void DotClassGraph::addClass(ClassDef *cd,DotNode *n,int prot,
     //printf(" add new child node `%s' to %s hidden=%d url=%s\n",
     //    className.data(),n->m_label.data(),cd->isHidden(),tmp_url.data());
     
-    // we use <=, i.s.o < to cause one more level than intended which is used to 
-    // detect truncated nodes
-    if (distance<=m_recDepth) buildGraph(cd,bn,distance+1,base);
+    buildGraph(cd,bn,base);
   }
 }
 
-void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
+void DotClassGraph::determineTruncatedNodes(QList<DotNode> &queue,bool includeParents)
+{
+  while (queue.count()>0)
+  {
+    DotNode *n = queue.take(0);
+    if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
+    {
+      bool truncated = FALSE;
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          if (!dn->isVisible()) 
+            truncated = TRUE;
+          else 
+            queue.append(dn);
+        }
+      }
+      if (n->m_parents && includeParents)
+      {
+        QListIterator<DotNode> li(*n->m_parents);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          if (!dn->isVisible()) 
+            truncated = TRUE;
+          else 
+            queue.append(dn);
+        }
+      }
+      n->markAsTruncated(truncated);
+    }
+  }
+}
+
+void DotClassGraph::determineVisibleNodes(QList<DotNode> &queue,
+                                          int &maxNodes,bool includeParents)
+{
+  while (queue.count()>0 && maxNodes>0)
+  {
+    DotNode *n = queue.take(0);
+    //printf("*** Processing node %p queue=%d maxNodes=%d m_children=%p m_parents=%p\n",
+    //    n,queue.count(),maxNodes,n->m_children,n->m_parents);
+    if (!n->isVisible()) // not yet processed
+    {
+      //printf("    Marked as visible!\n");
+      n->markAsVisible();
+      maxNodes--;
+      // add direct children
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          queue.append(dn);
+        }
+      }
+      // add direct parents
+      if (n->m_parents && includeParents)
+      {
+        QListIterator<DotNode> li(*n->m_parents);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          queue.append(dn);
+        }
+      }
+    }
+  }
+}
+
+void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base)
 {
   //printf("DocClassGraph::buildGraph(%s,distance=%d,base=%d)\n",
   //    cd->name().data(),distance,base);
@@ -1415,7 +1582,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
       {
         //printf("-------- inheritance relation %s->%s templ=`%s'\n",
         //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-        addClass(bcd->classDef,n,bcd->prot,0,distance,bcd->usedName,
+        addClass(bcd->classDef,n,bcd->prot,0,bcd->usedName,
             bcd->templSpecifiers,base); 
       }
     }
@@ -1434,15 +1601,6 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
       UsesClassDef *ucd;
       for (;(ucd=ucdi.current());++ucdi)
       {
-        //if (base)
-        //{
-        //  printf("%s uses %s\n",cd->name().data(),ucd->classDef->name().data());
-        //}
-        //else
-        //{
-        //  printf("%s is used by %s\n",cd->name().data(),ucd->classDef->name().data());
-        //}
-        //printf("drawing\n");
         QCString label;
         QDictIterator<void> dvi(*ucd->accessors);
         const char *s;
@@ -1459,7 +1617,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
             label+=QCString("\n")+s;
           }
         }
-        addClass(ucd->classDef,n,EdgeInfo::Purple,label,distance,0,
+        addClass(ucd->classDef,n,EdgeInfo::Purple,label,0,
             ucd->templSpecifiers,base);
       }
     }
@@ -1480,7 +1638,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
         {
           if (templInstance==cd)
           {
-            addClass(templMaster,n,EdgeInfo::Orange,cli.currentKey(),distance,0,
+            addClass(templMaster,n,EdgeInfo::Orange,cli.currentKey(),0,
                 0,TRUE);
           }
         }
@@ -1495,7 +1653,7 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
         ClassDef *templInstance;
         for (;(templInstance=cli.current());++cli)
         {
-          addClass(templInstance,n,EdgeInfo::Orange,cli.currentKey(),distance,0,
+          addClass(templInstance,n,EdgeInfo::Orange,cli.currentKey(),0,
               0,FALSE);
         }
       }
@@ -1503,42 +1661,48 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,int distance,bool base)
   }
 }
 
-DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t,int maxRecursionDepth)
+DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
 {
   //printf("--------------- DotClassGraph::DotClassGraph `%s'\n",cd->displayName().data());
   m_graphType = t;
-  m_maxDistance = 0;
-  m_recDepth = maxRecursionDepth;
   QCString tmp_url="";
   if (cd->isLinkable() && !cd->isHidden()) 
   {
     tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
   }
   QCString className = cd->displayName();
-  //if (cd->templateArguments())
-  //{
-  //  className+=tempArgListToString(cd->templateArguments());
-  //}
+  QCString tooltip = cd->briefDescriptionAsTooltip();
   m_startNode = new DotNode(m_curNodeNumber++,
                             className,
+                            tooltip,
                             tmp_url.data(),
-                            0,                         // distance
                             TRUE,                      // is a root node
                             cd
                            );
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(className,m_startNode);
 
-  //ClassSDict::Iterator cli(Doxygen::classSDict);
-  //ClassDef *icd;
-  //for (cli.toFirst();(icd=cli.current());++cli) icd->initTemplateMapping();
-
   //printf("Root node %s\n",cd->name().data());
-  if (m_recDepth>0) 
-  {
-    buildGraph(cd,m_startNode,1,TRUE);
-    if (t==DotNode::Inheritance) buildGraph(cd,m_startNode,1,FALSE);
-  }
+  //if (m_recDepth>0) 
+  //{
+    buildGraph(cd,m_startNode,TRUE);
+    if (t==DotNode::Inheritance) buildGraph(cd,m_startNode,FALSE);
+  //}
+
+  int maxNodes = Config_getInt("DOT_GRAPH_MAX_NODES");
+  int directChildNodes = 1;
+  if (m_startNode->m_children!=0) 
+    directChildNodes+=m_startNode->m_children->count();
+  if (t==DotNode::Inheritance && m_startNode->m_parents!=0)
+    directChildNodes+=m_startNode->m_parents->count();
+  if (directChildNodes>maxNodes) maxNodes=directChildNodes;
+  QList<DotNode> openNodeQueue;
+  openNodeQueue.append(m_startNode);
+  determineVisibleNodes(openNodeQueue,maxNodes,t==DotNode::Inheritance);
+  openNodeQueue.clear();
+  openNodeQueue.append(m_startNode);
+  determineTruncatedNodes(openNodeQueue,t==DotNode::Inheritance);
+
   m_diskName = cd->getFileBase().copy();
 }
 
@@ -1556,6 +1720,7 @@ DotClassGraph::~DotClassGraph()
   delete m_usedNodes;
 }
 
+#if 0
 void writeDotGraph(DotNode *root,
                    DotNode::GraphType gt,
                    GraphOutputFormat format,
@@ -1607,6 +1772,7 @@ void writeDotGraph(DotNode *root,
     f.close();
   }
 }
+#endif
 
 /*! Computes a 16 byte md5 checksum for a given dot graph.
  *  The md5 checksum is returned as a 32 character ASCII string.
@@ -1616,8 +1782,8 @@ QCString computeMd5Signature(DotNode *root,
                    GraphOutputFormat format,
                    bool lrRank,
                    bool renderParents,
-                   int distance,
-                   bool backArrows
+                   bool backArrows,
+                   QCString &graphStr
                   )
 {
   bool reNumber=TRUE;
@@ -1625,33 +1791,42 @@ QCString computeMd5Signature(DotNode *root,
   //printf("computeMd5Signature\n");
   QString buf;
   QTextStream md5stream(&buf,IO_WriteOnly);
+  writeGraphHeader(md5stream);
   if (lrRank)
   {
     md5stream << "rankdir=LR;" << endl;
   }
   root->clearWriteFlag();
-  root->write(md5stream,gt,format,gt!=DotNode::CallGraph,TRUE,distance,backArrows,reNumber);
+  root->write(md5stream,gt,format,gt!=DotNode::CallGraph,TRUE,backArrows,reNumber);
   if (renderParents && root->m_parents) 
   {
     QListIterator<DotNode>  dnli(*root->m_parents);
     DotNode *pn;
     for (dnli.toFirst();(pn=dnli.current());++dnli)
     {
-      if (pn->m_distance<=distance) 
+      if (pn->isVisible()) 
       {
-        root->writeArrow(md5stream,
-            gt,
-            format,
-            pn,
-            pn->m_edgeInfo->at(pn->m_children->findRef(root)),
-            FALSE,
-            backArrows,
-            reNumber
+        root->writeArrow(md5stream,                              // stream
+            gt,                                                  // graph type
+            format,                                              // output format
+            pn,                                                  // child node
+            pn->m_edgeInfo->at(pn->m_children->findRef(root)),   // edge info
+            FALSE,                                               // topDown?
+            backArrows,                                          // point back?
+            reNumber                                             // renumber nodes
             );
       }
-      pn->write(md5stream,gt,format,TRUE,FALSE,distance,backArrows,reNumber);
+      pn->write(md5stream,      // stream
+                gt,             // graph type
+                format,         // output format
+                TRUE,           // topDown?
+                FALSE,          // toChildren?
+                backArrows,     // backward pointing arrows?
+                reNumber        // renumber nodes?
+               );
     }
   }
+  writeGraphFooter(md5stream);
   uchar md5_sig[16];
   QCString sigStr(33);
   MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
@@ -1660,10 +1835,40 @@ QCString computeMd5Signature(DotNode *root,
   {
     resetReNumbering();
   }
+  graphStr=buf.ascii();
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;
 }
 
+static bool updateDotGraph(DotNode *root,
+                           DotNode::GraphType gt,
+                           //QDir &thisDir,
+                           const QCString &baseName,
+                           GraphOutputFormat format,
+                           bool lrRank,
+                           bool renderParents,
+                           bool backArrows
+                          )
+{
+  QCString theGraph;
+  // TODO: write graph to theGraph, then compute md5 checksum
+  QCString md5 = computeMd5Signature(
+                   root,gt,format,lrRank,renderParents,backArrows,theGraph);
+  if (checkAndUpdateMd5Signature(baseName,md5)) // graph needs to be regenerated
+  {
+    QFile f;
+    f.setName(baseName+".dot");
+    if (f.open(IO_WriteOnly))
+    {
+      QTextStream t(&f);
+      t << theGraph;
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+
+#if 0
 static bool findMaximalDotGraph(DotNode *root,
                                 int maxDist,
                                 const QCString &baseName,
@@ -1750,6 +1955,7 @@ static bool findMaximalDotGraph(DotNode *root,
   }
   return TRUE;
 }
+#endif
 
 QCString DotClassGraph::diskName() const
 {
@@ -1810,28 +2016,17 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   baseName = convertNameToFile(diskName());
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString md5 = computeMd5Signature(m_startNode,        // root
-                                     m_graphType,        // gt
-                                     format,             // format
-                                     !isTBRank,          // lrRank
-                                     m_graphType==DotNode::Inheritance, // renderParent
-                                     QMIN(m_recDepth,m_maxDistance),    // maxDist
-                                     TRUE                               // backArrows
-                                    );
-  if (checkAndUpdateMd5Signature(baseName,md5) ||
-      !QFileInfo(baseName+".map").exists()
-     )
+
+  if (updateDotGraph(m_startNode,
+                 m_graphType,
+                 baseName,
+                 format,
+                 !isTBRank,
+                 m_graphType==DotNode::Inheritance,
+                 TRUE
+                )
+      )
   {
-    findMaximalDotGraph(m_startNode,                       // root
-                        QMIN(m_recDepth,m_maxDistance),    // maxDist
-                        baseName,                          // baseName
-                        thisDir,                           // thisDir
-                        m_graphType,                       // gt
-                        format,                            // format
-                        !isTBRank,                         // lrRank
-                        m_graphType==DotNode::Inheritance, // renderParents
-                        TRUE                               // backArrows
-                       );
     if (format==BITMAP) // run dot to create a bitmap image
     {
       QCString dotArgs(maxCmdLine);
@@ -1839,7 +2034,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
       DotRunner dotRun(baseName+".dot");
       dotRun.addJob(imgExt,imgName);
-      if (generateImageMap) dotRun.addJob("imap",baseName+".map");
+      if (generateImageMap) dotRun.addJob(MAP_CMD,baseName+".map");
       if (!dotRun.run())
       {
         QDir::setCurrent(oldDir);
@@ -1875,7 +2070,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
   }
 
-  if (format==BITMAP && generateImageMap) // run dot to create a image map
+  if (format==BITMAP && generateImageMap) // produce HTML to include the image
   {
     QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
     out << "<p><center><img src=\"" << relPath << baseName << "." 
@@ -1905,7 +2100,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     }
     //thisDir.remove(baseName+".map");
   }
-  else if (format==EPS) // run dot to create a .eps image
+  else if (format==EPS) // produce tex to include the .eps image
   {
       int width,height;
       if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
@@ -1954,7 +2149,7 @@ void DotClassGraph::writeDEF(QTextStream &t)
 
 int DotInclDepGraph::m_curNodeNumber = 0;
 
-void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
+void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd)
 {
   QList<IncludeInfo> *includeFiles = 
      m_inverse ? fd->includedByFileList() : fd->includeFileList();
@@ -1987,49 +2182,107 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
         {
           n->addChild(bn,0,0,0);
           bn->addParent(n);
-          bn->setDistance(distance);
         }
         else
         {
           QCString tmp_url;
           if (bfd) tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+          QCString tooltip = fd->briefDescriptionAsTooltip();
           bn = new DotNode(
               m_curNodeNumber++,
               ii->includeName,
+              tooltip,
               tmp_url,
-              distance
+              0 //distance
               );
-          if (distance>m_maxDistance) m_maxDistance=distance;
           n->addChild(bn,0,0,0);
           bn->addParent(n);
           m_usedNodes->insert(in,bn);
 
-          // we use <=, i.s.o < to cause one more level than intended which is used to 
-          // detect truncated nodes
-          if (bfd && distance<=m_recDepth) buildGraph(bn,bfd,distance+1);
+          if (bfd) buildGraph(bn,bfd);
         }
       }
     }
   }
 }
 
-DotInclDepGraph::DotInclDepGraph(FileDef *fd,int maxRecursionDepth,bool inverse)
+void DotInclDepGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
+{
+  while (queue.count()>0 && maxNodes>0)
+  {
+    DotNode *n = queue.take(0);
+    if (!n->isVisible()) // not yet processed
+    {
+      n->markAsVisible();
+      maxNodes--;
+      // add direct children
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          queue.append(dn);
+        }
+      }
+    }
+  }
+}
+
+void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
+{
+  while (queue.count()>0)
+  {
+    DotNode *n = queue.take(0);
+    if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
+    {
+      bool truncated = FALSE;
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          if (!dn->isVisible()) 
+            truncated = TRUE;
+          else 
+            queue.append(dn);
+        }
+      }
+      n->markAsTruncated(truncated);
+    }
+  }
+}
+
+
+DotInclDepGraph::DotInclDepGraph(FileDef *fd,bool inverse)
 {
   m_maxDistance = 0;
-  m_recDepth = maxRecursionDepth;
   m_inverse = inverse;
   ASSERT(fd!=0);
   m_diskName  = fd->getFileBase().copy();
   QCString tmp_url=fd->getReference()+"$"+fd->getFileBase();
   m_startNode = new DotNode(m_curNodeNumber++,
                             fd->docName(),
+                            "",
                             tmp_url.data(),
-                            0,       // distance
                             TRUE     // root node
                            );
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(fd->absFilePath(),m_startNode);
-  buildGraph(m_startNode,fd,1);
+  buildGraph(m_startNode,fd);
+
+  int maxNodes = Config_getInt("DOT_GRAPH_MAX_NODES");
+  int directChildNodes = 1;
+  if (m_startNode->m_children!=0) 
+    directChildNodes+=m_startNode->m_children->count();
+  if (directChildNodes>maxNodes) maxNodes=directChildNodes;
+  QList<DotNode> openNodeQueue;
+  openNodeQueue.append(m_startNode);
+  determineVisibleNodes(openNodeQueue,maxNodes);
+  openNodeQueue.clear();
+  openNodeQueue.append(m_startNode);
+  determineTruncatedNodes(openNodeQueue);
 }
 
 DotInclDepGraph::~DotInclDepGraph()
@@ -2072,28 +2325,16 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   if (m_inverse) mapName+="dep";
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
-  QCString md5 = computeMd5Signature(m_startNode,         // root
-                                     DotNode::CallGraph,  // gt
-                                     format,              // format
-                                     TRUE,                // lrRank
-                                     FALSE,               // renderParents
-                                     QMIN(m_recDepth,m_maxDistance), // maxDist
-                                     FALSE                // backArrows
-                                    );
-  if (checkAndUpdateMd5Signature(baseName,md5) ||
-      !QFileInfo(baseName+".map").exists()
-     )
+  if (updateDotGraph(m_startNode,
+                 DotNode::CallGraph,
+                 baseName,
+                 format,
+                 TRUE,         // lrRank
+                 FALSE,        // renderParents
+                 m_inverse     // backArrows
+                )
+      )
   {
-    findMaximalDotGraph(m_startNode,                      // root
-                        QMIN(m_recDepth,m_maxDistance),   // maxDist
-                        baseName,                         // baseName
-                        thisDir,                          // thisDir
-                        DotNode::CallGraph,               // gt
-                        format,                           // format
-                        TRUE,                             // lrRank
-                        FALSE,                            // renderParents
-                        m_inverse                         // backArrows
-                       );
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
@@ -2101,7 +2342,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       QCString imgName=baseName+"."+imgExt;
       DotRunner dotRun(baseName+".dot");
       dotRun.addJob(imgExt,imgName);
-      if (generateImageMap) dotRun.addJob("imap",baseName+".map");
+      if (generateImageMap) dotRun.addJob(MAP_CMD,baseName+".map");
       if (!dotRun.run())
       {
         QDir::setCurrent(oldDir);
@@ -2197,10 +2438,110 @@ void DotInclDepGraph::writeXML(QTextStream &t)
 
 int DotCallGraph::m_curNodeNumber = 0;
 
-DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth,bool inverse)
+void DotCallGraph::buildGraph(DotNode *n,MemberDef *md)
+{
+  LockingPtr<MemberSDict> refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  if (!refs.isNull())
+  {
+    MemberSDict::Iterator mri(*refs);
+    MemberDef *rmd;
+    for (;(rmd=mri.current());++mri)
+    {
+      if (rmd->isFunction())
+      {
+        QCString uniqueId;
+        uniqueId=rmd->getReference()+"$"+
+                 rmd->getOutputFileBase()+"#"+rmd->anchor();
+        DotNode *bn  = m_usedNodes->find(uniqueId);
+        if (bn) // file is already a node in the graph
+        {
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+        }
+        else
+        {
+          QCString name;
+          if (Config_getBool("HIDE_SCOPE_NAMES"))
+          {
+            name  = rmd->getOuterScope()==m_scope ? 
+                    rmd->name() : rmd->qualifiedName();
+          }
+          else
+          {
+            name = rmd->qualifiedName();
+          }
+          QCString tooltip = rmd->briefDescriptionAsTooltip();
+          bn = new DotNode(
+              m_curNodeNumber++,
+              linkToText(name,FALSE),
+              tooltip,
+              uniqueId,
+              0 //distance
+              );
+          n->addChild(bn,0,0,0);
+          bn->addParent(n);
+          m_usedNodes->insert(uniqueId,bn);
+
+          buildGraph(bn,rmd);
+        }
+      }
+    }
+  }
+}
+
+void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
+{
+  while (queue.count()>0 && maxNodes>0)
+  {
+    DotNode *n = queue.take(0);
+    if (!n->isVisible()) // not yet processed
+    {
+      n->markAsVisible();
+      maxNodes--;
+      // add direct children
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          queue.append(dn);
+        }
+      }
+    }
+  }
+}
+
+void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
+{
+  while (queue.count()>0)
+  {
+    DotNode *n = queue.take(0);
+    if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
+    {
+      bool truncated = FALSE;
+      if (n->m_children)
+      {
+        QListIterator<DotNode> li(*n->m_children);
+        DotNode *dn;
+        for (li.toFirst();(dn=li.current());++li)
+        {
+          if (!dn->isVisible()) 
+            truncated = TRUE;
+          else 
+            queue.append(dn);
+        }
+      }
+      n->markAsTruncated(truncated);
+    }
+  }
+}
+
+
+
+DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
 {
   m_maxDistance = 0;
-  m_recDepth = maxRecursionDepth;
   m_inverse = inverse;
   m_diskName = md->getOutputFileBase()+"_"+md->anchor();
   m_scope    = md->getOuterScope();
@@ -2218,13 +2559,25 @@ DotCallGraph::DotCallGraph(MemberDef *md,int maxRecursionDepth,bool inverse)
   }
   m_startNode = new DotNode(m_curNodeNumber++,
                             linkToText(name,FALSE),
+                            "",
                             uniqueId.data(),
-                            0,       // distance
                             TRUE     // root node
                            );
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(uniqueId,m_startNode);
-  buildGraph(m_startNode,md,1);
+  buildGraph(m_startNode,md);
+
+  int maxNodes = Config_getInt("DOT_GRAPH_MAX_NODES");
+  int directChildNodes = 1;
+  if (m_startNode->m_children!=0) 
+    directChildNodes+=m_startNode->m_children->count();
+  if (directChildNodes>maxNodes) maxNodes=directChildNodes;
+  QList<DotNode> openNodeQueue;
+  openNodeQueue.append(m_startNode);
+  determineVisibleNodes(openNodeQueue,maxNodes);
+  openNodeQueue.clear();
+  openNodeQueue.append(m_startNode);
+  determineTruncatedNodes(openNodeQueue);
 }
 
 DotCallGraph::~DotCallGraph()
@@ -2251,28 +2604,16 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
   QCString mapName=baseName;
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
-  QCString md5 = computeMd5Signature(m_startNode,         // root
-                                     DotNode::CallGraph,  // gt
-                                     format,              // format
-                                     TRUE,                // lrRank
-                                     FALSE,               // renderParents
-                                     QMIN(m_recDepth,m_maxDistance), // maxDist
-                                     FALSE                // backArrows
-                                    );
-  if (checkAndUpdateMd5Signature(baseName,md5) ||
-      !QFileInfo(baseName+".map").exists()
-     )
+  if (updateDotGraph(m_startNode,
+                 DotNode::CallGraph,
+                 baseName,
+                 format,
+                 TRUE,         // lrRank
+                 FALSE,        // renderParents
+                 m_inverse     // backArrows
+                )
+      )
   {
-    findMaximalDotGraph(m_startNode,                      // root
-                        QMIN(m_recDepth,m_maxDistance),   // maxDist
-                        baseName,                         // baseName
-                        thisDir,                          // thisDir
-                        DotNode::CallGraph,               // gt
-                        format,                           // format
-                        TRUE,                             // lrRank
-                        FALSE,                            // renderParents
-                        m_inverse                         // backArrows
-                       );
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
@@ -2280,7 +2621,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
       QCString imgName=baseName+"."+imgExt;
       DotRunner dotRun(baseName+".dot");
       dotRun.addJob(imgExt,imgName);
-      if (generateImageMap) dotRun.addJob("imap",baseName+".map");
+      if (generateImageMap) dotRun.addJob(MAP_CMD,baseName+".map");
       if (!dotRun.run())
       {
         QDir::setCurrent(oldDir);
@@ -2357,59 +2698,6 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
   return baseName;
 }
 
-void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
-{
-  LockingPtr<MemberSDict> refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
-  if (!refs.isNull())
-  {
-    MemberSDict::Iterator mri(*refs);
-    MemberDef *rmd;
-    for (;(rmd=mri.current());++mri)
-    {
-      if (rmd->isFunction())
-      {
-        QCString uniqueId;
-        uniqueId=rmd->getReference()+"$"+
-                 rmd->getOutputFileBase()+"#"+rmd->anchor();
-        DotNode *bn  = m_usedNodes->find(uniqueId);
-        if (bn) // file is already a node in the graph
-        {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-        }
-        else
-        {
-          QCString name;
-          if (Config_getBool("HIDE_SCOPE_NAMES"))
-          {
-            name  = rmd->getOuterScope()==m_scope ? 
-                    rmd->name() : rmd->qualifiedName();
-          }
-          else
-          {
-            name = rmd->qualifiedName();
-          }
-          bn = new DotNode(
-              m_curNodeNumber++,
-              linkToText(name,FALSE),
-              uniqueId,
-              distance
-              );
-          if (distance>m_maxDistance) m_maxDistance=distance;
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          m_usedNodes->insert(uniqueId,bn);
-
-          // we use <=, i.s.o < to cause one more level than intended which is used to 
-          // detect truncated nodes
-          if (distance<=m_recDepth) buildGraph(bn,rmd,distance+1);
-        }
-      }
-    }
-  }
-}
-
 bool DotCallGraph::isTrivial() const
 {
   return m_startNode->m_children==0;
@@ -2464,7 +2752,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
       QCString imgName=baseName+"."+imgExt;
       DotRunner dotRun(baseName+".dot");
       dotRun.addJob(imgExt,imgName);
-      if (generateImageMap) dotRun.addJob("imap",baseName+".map");
+      if (generateImageMap) dotRun.addJob(MAP_CMD,baseName+".map");
       if (!dotRun.run())
       {
         QDir::setCurrent(oldDir);
@@ -2609,6 +2897,12 @@ void generateGraphLegend(const char *path)
   QDir::setCurrent(oldDir);
 }
   
+#undef PUTENV
+#if defined(_WIN32) && (!defined(__BORLANDC__) || (__BORLANDC__ < 0x0550))
+#define PUTENV _putenv
+#else 
+#define PUTENV putenv
+#endif
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format)
@@ -2627,15 +2921,19 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
-  //{ // copy input file to output dir.
-  //  QFile inf(inFile,IO_ReadOnly);
-  //  QFileInfo infinfo(inf);
-  //  uint s = infinfo.size();
-  //  QByteArray a(s);
-  //  inf.readBlock(a.data(),s);
-  //  QFile outf(outDir,IO_WriteOnly);
-  //  outf.writeBlock(a.data(),s);
-  //}
+  QCString env = getenv("DOTFONTPATH");
+  if (env==".") // this path was set by doxygen, so dot can find the FreeSans.ttf font, 
+                // for user defined graphs we use the default search path built into dot, 
+                // unless the user has set the DOTFONTPATH as well. 
+  {
+    // temporarily remove the DOTFONTPATH environment variable
+    // so dot will use the built-in search path.
+#ifdef _WIN32
+    SetEnvironmentVariable("DOTFONTPATH", 0)
+#else
+    unsetenv("DOTFONTPATH");
+#endif
+  }
   
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
@@ -2648,7 +2946,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   if (!dotRun.run())
   {
     QDir::setCurrent(oldDir);
-    return;
+    goto error;
   }
   // Added by Nils Strom
   if ( (format==EPS) && (Config_getBool("USE_PDFLATEX")) )
@@ -2664,6 +2962,17 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 
   if (format==BITMAP) checkDotResult(imgName);
 
+  if (env==".")
+  {
+    // restore the DOTFONTPATH variable again
+#ifdef _WIN32
+    SetEnvironmentVariable("DOTFONTPATH", env)
+#else
+    setenv("DOTFONTPATH",env,1);
+#endif
+  }
+
+error:
   QDir::setCurrent(oldDir);
 }
 
@@ -2687,7 +2996,7 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
   DotRunner dotRun(inFile);
-  dotRun.addJob("imap",outFile);
+  dotRun.addJob(MAP_CMD,outFile);
   if (!dotRun.run())
   {
     QDir::setCurrent(oldDir);
@@ -2712,13 +3021,14 @@ DotGroupCollaboration::DotGroupCollaboration(GroupDef* gd)
     m_curNodeId = 0;
     QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
     m_usedNodes = new QDict<DotNode>(1009);
-    m_rootNode = new DotNode(m_curNodeId++, gd->groupTitle(), tmp_url, 0, TRUE );
+    m_rootNode = new DotNode(m_curNodeId++, gd->groupTitle(), "", tmp_url, TRUE );
+    m_rootNode->markAsVisible();
     m_usedNodes->insert(gd->name(), m_rootNode );
     m_edges.setAutoDelete(TRUE);
 
     m_diskName = gd->getOutputFileBase();
 
-    buildGraph( gd, 0 );
+    buildGraph( gd );
 }
 
 DotGroupCollaboration::~DotGroupCollaboration()
@@ -2726,7 +3036,7 @@ DotGroupCollaboration::~DotGroupCollaboration()
   delete m_usedNodes;
 }
 
-void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
+void DotGroupCollaboration::buildGraph(GroupDef* gd)
 {
   QCString tmp_url;
   //===========================
@@ -2744,7 +3054,9 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
       if ( !nnode )
       { // add node
         tmp_url = d->getReference()+"$"+d->getOutputFileBase();
-        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tmp_url );
+        QCString tooltip = d->briefDescriptionAsTooltip();
+        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tooltip, tmp_url );
+        nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
       tmp_url = "";
@@ -2763,7 +3075,9 @@ void DotGroupCollaboration::buildGraph(GroupDef* gd,int)
       if ( !nnode )
       { // add node
         tmp_url = def->getReference()+"$"+def->getOutputFileBase();
-        nnode = new DotNode(m_curNodeId++, def->groupTitle(), tmp_url );
+        QCString tooltip = def->briefDescriptionAsTooltip();
+        nnode = new DotNode(m_curNodeId++, def->groupTitle(), tooltip, tmp_url );
+        nnode->markAsVisible();
         m_usedNodes->insert(def->name(), nnode );
       }
       tmp_url = "";
@@ -2899,7 +3213,9 @@ void DotGroupCollaboration::addCollaborationMember(
       if ( nnode==0 )
       { // add node
         tmp_str = d->getReference()+"$"+d->getOutputFileBase();
-        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tmp_str );
+        QCString tooltip = d->briefDescriptionAsTooltip();
+        nnode = new DotNode(m_curNodeId++, d->groupTitle(), tooltip, tmp_str );
+        nnode->markAsVisible();
         m_usedNodes->insert(d->name(), nnode );
       }
       tmp_str = def->qualifiedName();
@@ -2941,7 +3257,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
     // write other nodes.
     for (dni.toFirst();(pn=dni.current());++dni)
     {
-      pn->write(tdot,DotNode::Inheritance,format,TRUE,FALSE,1,FALSE,FALSE);
+      pn->write(tdot,DotNode::Inheritance,format,TRUE,FALSE,FALSE,FALSE);
     }
 
     // write edges
@@ -2965,7 +3281,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
 
     DotRunner dotRun(baseName+".dot");
     dotRun.addJob(imgExt,imgName);
-    if (writeImageMap) dotRun.addJob("imap",mapName);
+    if (writeImageMap) dotRun.addJob(MAP_CMD,mapName);
     if (!dotRun.run())
     {
       QDir::setCurrent(oldDir);

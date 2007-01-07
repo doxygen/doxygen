@@ -655,7 +655,12 @@ class TranslatorJapanese : public Translator
                                    // (order is left to right)
 
         if (i!=numEntries-1)  // not the last entry, so we need a separator
-	  result+=decode("¡¦");
+        {
+          if (i<numEntries-2) // not the fore last entry
+            result+=decode(", ");
+          else                // the fore last entry
+            result+=decode(", ¤È ");
+        }
       }
       return result;
     }

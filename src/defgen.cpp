@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -457,16 +457,14 @@ void generateDEFForClass(ClassDef *cd,QTextStream &t)
   t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_" << endl
     << cd->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
 
-  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance,
-                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+  DotClassGraph inheritanceGraph(cd,DotNode::Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
     t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_" << endl;
     inheritanceGraph.writeDEF(t);
     t << endl << "_EnD_oF_dEf_TeXt_;" << endl;
   }
-  DotClassGraph collaborationGraph(cd,DotNode::Collaboration,
-                                 Config_getInt("MAX_DOT_GRAPH_DEPTH"));
+  DotClassGraph collaborationGraph(cd,DotNode::Collaboration);
   if (!collaborationGraph.isTrivial())
   {
     t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_" << endl;

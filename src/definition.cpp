@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -51,8 +51,7 @@ class DefinitionImpl
     DefinitionImpl();
    ~DefinitionImpl();
     void init(const char *df,int dl,
-         const char *n,const char *b,
-         const char *d);
+         const char *n);
 
     SectionDict *sectionDict;  // dictionary of all sections, not accessible
 
@@ -61,9 +60,9 @@ class DefinitionImpl
     QList<ListItemInfo> *xrefListItems; 
     GroupList *partOfGroups;            
 
-    DocInfo  *details; // not exported
-    DocInfo  *brief;   // not exported
-    BodyInfo *body;    // not exported
+    DocInfo   *details; // not exported
+    BriefInfo *brief;   // not exported
+    BodyInfo  *body;    // not exported
 
     QCString localName;      // local (unqualified) name of the definition
                                // in the future m_name should become m_localName
@@ -101,8 +100,7 @@ DefinitionImpl::~DefinitionImpl()
 }
 
 void DefinitionImpl::init(const char *df,int dl,
-                          const char *n,const char *b,
-                          const char *d)
+                          const char *n)
 {
   defFileName = df;
   int lastDot = defFileName.findRev('.');
@@ -123,25 +121,8 @@ void DefinitionImpl::init(const char *df,int dl,
   }
   //printf("m_localName=%s\n",m_localName.data());
 
-  if (b)
-  {
-    brief = new DocInfo;
-    brief->doc = b;
-  }
-  else
-  {
-    brief = 0;
-  }
-
-  if (d)
-  {
-    details = new DocInfo;
-    details->doc = d;
-  }
-  else
-  {
-    details = 0;
-  }
+  brief = 0;
+  details = 0;
   body = 0;
   sourceRefByDict=0;
   sourceRefsDict=0;
@@ -238,9 +219,11 @@ Definition::Definition(const char *df,int dl,
 {
   m_name = name;
   m_impl = new DefinitionImpl;
-  m_impl->init(df,dl,name,b,d);
+  m_impl->init(df,dl,name);
   m_isSymbol = isSymbol;
   if (isSymbol) addToMap(name,this);
+  _setBriefDescription(b,df,dl);
+  _setDocumentation(d,df,dl,TRUE);
 }
 
 Definition::~Definition()
@@ -307,10 +290,9 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
+void Definition::_setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
 { 
   if (d==0) return;
-  makeResident();
   //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
   QCString doc = d;
   if (stripWhiteSpace)
@@ -331,21 +313,26 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
   m_impl->details->line = docLine;
 }
 
+void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace)
+{
+  if (d==0) return;
+  makeResident();
+  _setDocumentation(d,docFile,docLine,stripWhiteSpace);
+}
+
 #define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
 
-void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
-{ 
+void Definition::_setBriefDescription(const char *b,const char *briefFile,int briefLine)
+{
   if (b==0) return;
   static QCString outputLanguage = Config_getEnum("OUTPUT_LANGUAGE");
   static bool needsDot = outputLanguage!="Japanese" && 
                          outputLanguage!="Chinese" &&
                          outputLanguage!="Korean";
-  makeResident();
-
   //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
   if (m_impl->brief==0)
   {
-    m_impl->brief = new DocInfo;
+    m_impl->brief = new BriefInfo;
   }
   m_impl->brief->doc=QCString(b).stripWhiteSpace();
   int bl=m_impl->brief->doc.length(); 
@@ -361,6 +348,14 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
   }
   m_impl->brief->file = briefFile;
   m_impl->brief->line = briefLine;
+  m_impl->brief->tooltip = parseCommentAsText(m_impl->brief->doc,briefFile,briefLine);
+}
+
+void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
+{ 
+  if (b==0) return;
+  makeResident();
+  _setBriefDescription(b,briefFile,briefLine);
 }
 
 /*! Reads a fragment of code from file \a fileName starting at 
@@ -1040,6 +1035,12 @@ QCString Definition::briefDescription() const
   return m_impl->brief ? m_impl->brief->doc : QCString(""); 
 }
 
+QCString Definition::briefDescriptionAsTooltip() const
+{
+  makeResident();
+  return m_impl->brief ? m_impl->brief->tooltip : QCString(""); 
+}
+
 int Definition::briefLine() const 
 { 
   makeResident();
@@ -1180,7 +1181,7 @@ void Definition::flushToDisk() const
   marshalItemInfoList (Doxygen::symbolStorage,m_impl->xrefListItems);
   marshalGroupList    (Doxygen::symbolStorage,m_impl->partOfGroups);
   marshalDocInfo      (Doxygen::symbolStorage,m_impl->details);
-  marshalDocInfo      (Doxygen::symbolStorage,m_impl->brief);
+  marshalBriefInfo    (Doxygen::symbolStorage,m_impl->brief);
   marshalBodyInfo     (Doxygen::symbolStorage,m_impl->body);
   marshalQCString     (Doxygen::symbolStorage,m_impl->localName);
   marshalQCString     (Doxygen::symbolStorage,m_impl->qualifiedName);
@@ -1209,7 +1210,7 @@ void Definition::loadFromDisk() const
   m_impl->xrefListItems   = unmarshalItemInfoList (Doxygen::symbolStorage);
   m_impl->partOfGroups    = unmarshalGroupList    (Doxygen::symbolStorage);
   m_impl->details         = unmarshalDocInfo      (Doxygen::symbolStorage);
-  m_impl->brief           = unmarshalDocInfo      (Doxygen::symbolStorage);
+  m_impl->brief           = unmarshalBriefInfo    (Doxygen::symbolStorage);
   m_impl->body            = unmarshalBodyInfo     (Doxygen::symbolStorage);
   m_impl->localName       = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->qualifiedName   = unmarshalQCString     (Doxygen::symbolStorage);

@@ -1714,7 +1714,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(Start);
 					  }
   					}
-<EndImport>[^\\]*/\n			{
+<EndImport>[^\\\n]*/\n			{
   					  BEGIN(Start);
   					}
 <EndImport>\\[\r]?"\n"			{ 

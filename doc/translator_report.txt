@@ -58,10 +58,6 @@ must be implemented to become up-to-date:
   TranslatorSlovak                1.2.18	22 methods to implement
   TranslatorFinnish               obsolete	96 methods to implement
 
-Note: The adapter classes TranslatorAdapter_1_2_11,
-TranslatorAdapter_1_2_13, TranslatorAdapter_1_2_16,
-TranslatorAdapter_1_2_17 are not used and can be removed.
-
 ----------------------------------------------------------------------
 The following translator classes derive directly from the
 TranslatorEnglish. The class identifier has the suffix 'En' that says

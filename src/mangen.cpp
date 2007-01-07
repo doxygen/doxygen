@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -204,7 +204,8 @@ void ManGenerator::writeObjectLink(const char *,const char *,
 }
 
 void ManGenerator::writeCodeLink(const char *,const char *,
-                                    const char *, const char *name)
+                                 const char *, const char *name,
+                                 const char *)
 {
   docify(name);
 }

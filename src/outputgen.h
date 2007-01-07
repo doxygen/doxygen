@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
@@ -51,15 +51,17 @@ class CodeOutputInterface
     virtual void codify(const char *s) = 0;
 
     /*! Writes a link to an object in a code fragment.
-     *  \param ref    If this is non-zero, the object is to be found in
-     *                an external documentation file.
-     *  \param file   The file in which the object is located.
-     *  \param anchor The anchor uniquely identifying the object within 
-     *                the file. 
-     *  \param name   The text to display as a placeholder for the link.
+     *  \param ref      If this is non-zero, the object is to be found in
+     *                  an external documentation file.
+     *  \param file     The file in which the object is located.
+     *  \param anchor   The anchor uniquely identifying the object within 
+     *                  the file. 
+     *  \param name     The text to display as a placeholder for the link.
+     *  \param tooltip  The tooltip to display when the mouse is on the link.
      */
     virtual void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *name) = 0;
+                               const char *anchor,const char *name,
+                               const char *tooltip) = 0;
 
     virtual void writeLineNumber(const char *ref,const char *file,
                                  const char *anchor,int lineNumber) = 0;

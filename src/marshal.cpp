@@ -243,6 +243,22 @@ void marshalDocInfo(StorageIntf *s,DocInfo *docInfo)
   }
 }
 
+void marshalBriefInfo(StorageIntf *s,BriefInfo *briefInfo)
+{
+  if (briefInfo==0)
+  {
+    marshalUInt(s,NULL_LIST); // null pointer representation
+  }
+  else
+  {
+    marshalUInt(s,1); 
+    marshalQCString(s,briefInfo->doc);
+    marshalQCString(s,briefInfo->tooltip);
+    marshalInt(s,briefInfo->line);
+    marshalQCString(s,briefInfo->file);
+  }
+}
+
 void marshalBodyInfo(StorageIntf *s,BodyInfo *bodyInfo)
 {
   if (bodyInfo==0)
@@ -563,6 +579,18 @@ DocInfo *unmarshalDocInfo(StorageIntf *s)
   result->doc  = unmarshalQCString(s);
   result->line = unmarshalInt(s);
   result->file = unmarshalQCString(s);
+  return result;
+}
+
+BriefInfo *unmarshalBriefInfo(StorageIntf *s)
+{
+  uint count = unmarshalUInt(s); 
+  if (count==NULL_LIST) return 0;
+  BriefInfo *result = new BriefInfo;
+  result->doc     = unmarshalQCString(s);
+  result->tooltip = unmarshalQCString(s);
+  result->line    = unmarshalInt(s);
+  result->file    = unmarshalQCString(s);
   return result;
 }
 
