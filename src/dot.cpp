@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2006 by Dimitri van Heesch.
@@ -15,6 +15,11 @@
  * input used in their production; they are not affected by this license.
  *
  */
+
+#ifdef _WIN32
+#include <windows.h>
+#define BITMAP W_BITMAP
+#endif
 
 #include <stdlib.h>
 
@@ -2929,7 +2934,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
     // temporarily remove the DOTFONTPATH environment variable
     // so dot will use the built-in search path.
 #ifdef _WIN32
-    SetEnvironmentVariable("DOTFONTPATH", 0)
+    SetEnvironmentVariable("DOTFONTPATH", 0);
 #else
     unsetenv("DOTFONTPATH");
 #endif
@@ -2966,7 +2971,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   {
     // restore the DOTFONTPATH variable again
 #ifdef _WIN32
-    SetEnvironmentVariable("DOTFONTPATH", env)
+    SetEnvironmentVariable("DOTFONTPATH", env);
 #else
     setenv("DOTFONTPATH",env,1);
 #endif
