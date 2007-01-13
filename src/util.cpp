@@ -6132,6 +6132,7 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
 QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr)
 {
   QString result;
+  if (doc.isEmpty()) return result.data();
   QTextStream t(&result,IO_WriteOnly);
   DocNode *root = validatingParseDoc(fileName,lineNr,Doxygen::globalScope,0,doc,FALSE,FALSE);
   TextDocVisitor *visitor = new TextDocVisitor(t);
