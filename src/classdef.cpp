@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -359,6 +359,8 @@ void ClassDef::internalInsertMember(MemberDef *md,
                                     bool addToAllList
                                    )
 {
+  if (md->isHidden()) return;
+
   //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
   {
@@ -2043,6 +2045,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
   if (level>256)
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",name().data(),bcd->name().data());
+    abort();
     return FALSE;
   }
   if (baseClasses())

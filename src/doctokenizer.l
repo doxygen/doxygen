@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -31,6 +31,7 @@
 #include "membergroup.h"
 #include "definition.h"
 #include "doxygen.h"
+#include "portable.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -472,7 +473,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 <St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */
                          QCString name = &yytext[2];
 			 name = name.left(name.length()-1);
-			 QCString value = getenv(name);
+			 QCString value = portable_getenv(name);
 			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */ 

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -41,14 +41,14 @@ class TranslatorJapaneseEn : public TranslatorEnglish
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return "Shift_JIS";
-      }
-      else
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
+      //  return "Shift_JIS";
+      //}
+      //else
+      //{
         return "euc-jp";
-      }
+      //}
     }
     virtual QCString trRTFansicp()
     {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <errno.h>
 
 #include <qfileinfo.h>
 #include <qdir.h>
@@ -31,6 +32,7 @@
   
 #include "config.h"
 #include "version.h"
+#include "portable.h"
 
 #include "lang_cfg.h"
 
@@ -61,6 +63,11 @@ void config_warn(const char *fmt, ...)
   vfprintf(stderr, fmt, args);
   va_end(args);
 }
+
+static QCString configStringRecode(
+    const QCString &str,
+    const char *fromEncoding,
+    const char *toEncoding);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
@@ -100,9 +107,11 @@ void ConfigOption::writeIntValue(QTextStream &t,int i)
 
 void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
 {
-  const char *p=s.data();
   char c;
   bool needsEscaping=FALSE;
+  // convert the string back to it original encoding
+  QCString se = configStringRecode(s,"UTF-8",m_encoding);
+  const char *p=se.data();
   if (p)
   {
     while ((c=*p++)!=0 && !needsEscaping) 
@@ -110,7 +119,7 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
     if (needsEscaping)
     { 
       t << "\"";
-      p=s.data();
+      p=se.data();
       while (*p)
       {
 	if (*p=='"') t << "\\"; // escape quotes
@@ -120,7 +129,7 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
     }
     else
     {
-      t << s;
+      t << se;
     }
   }
 }
@@ -297,6 +306,7 @@ static QCString     enumValuesPerLineString;
 static QCString     treeViewWidthString;
 static QCString     maxDotGraphWidthString;
 static QCString     maxDotGraphHeightString;
+static QCString     encoding;
 
 static Config      *config;
 
@@ -326,6 +336,51 @@ static int yyread(char *buf,int max_size)
     }
 }
 
+
+static QCString configStringRecode(
+    const QCString &str,
+    const char *fromEncoding,
+    const char *toEncoding)
+{
+  QCString inputEncoding = fromEncoding;
+  QCString outputEncoding = toEncoding;
+  if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
+  int inputSize=str.length();
+  int outputSize=inputSize*4+1;
+  QCString output(outputSize);
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==(void *)(-1)) 
+  {
+    fprintf(stderr,"Error: unsupported character conversion: '%s'->'%s'\n",
+        inputEncoding.data(),outputEncoding.data());
+    exit(1);
+  }
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
+  const char *inputPtr  = str.data();
+  char       *outputPtr = output.data();
+  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+  {
+    outputSize-=oLeft;
+    output.resize(outputSize+1);
+    output.at(outputSize+1)='\0';
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+  }
+  else
+  {
+    fprintf(stderr,"Error: failed to translate characters from %s to %s: %s\n",
+        inputEncoding.data(),outputEncoding.data(),strerror(errno));
+    exit(1);
+  }
+  portable_iconv_close(cd);
+  return output;
+}
+
+static void checkEncoding()
+{
+  ConfigString *option = (ConfigString*)config->get("DOXYFILE_ENCODING");
+  encoding = *option->valueRef();
+}
 
 static FILE *tryPath(const char *path,const char *fileName)
 {
@@ -429,6 +484,7 @@ static void readIncludeFile(const char *incName)
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
                                            cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
 					   ConfigOption *option = config->get(cmd);
+					   option->setEncoding(encoding);
 					   if (option==0) // oops not known
 					   {
 					     config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
@@ -521,7 +577,7 @@ static void readIncludeFile(const char *incName)
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") { 
-  					  readIncludeFile(yytext); 
+  					  readIncludeFile(configStringRecode(yytext,encoding,"UTF-8")); 
   					  BEGIN(Start);
 					}
 <<EOF>>					{
@@ -565,7 +621,9 @@ static void readIncludeFile(const char *incName)
 					  }
 					  elemStr.resize(0);
   					}
-<GetString>[^ \"\t\r\n]+		{ (*s)+=yytext; }
+<GetString>[^ \"\t\r\n]+		{ (*s)+=configStringRecode(yytext,encoding,"UTF-8"); 
+                                          checkEncoding();
+                                        }
 <GetString,GetStrList,SkipInvalid>"\""	{ lastState=YY_START;
   					  BEGIN(GetQuotedString); 
                                           tmpString.resize(0); 
@@ -573,9 +631,14 @@ static void readIncludeFile(const char *incName)
 <GetQuotedString>"\""|"\n" 		{ 
   					  //printf("Quoted String = `%s'\n",tmpString.data());
   					  if (lastState==GetString)
-					    (*s)+=tmpString;
+					  {
+					    (*s)+=configStringRecode(tmpString,encoding,"UTF-8");
+                                            checkEncoding();
+					  }
 					  else
-					    elemStr+=tmpString;
+					  {
+					    elemStr+=configStringRecode(tmpString,encoding,"UTF-8");
+					  }
 					  if (*yytext=='\n')
 					  {
 					    config_err("Warning: Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
@@ -603,7 +666,7 @@ static void readIncludeFile(const char *incName)
 					  }
 					}
 <GetStrList>[^ \#\"\t\r\n]+		{
-  					  elemStr+=yytext;
+  					  elemStr+=configStringRecode(yytext,encoding,"UTF-8");
   					}
 <SkipComment>\n				{ yyLineNr++; BEGIN(Start); }
 <SkipComment>\\[ \r\t]*\n		{ yyLineNr++; BEGIN(Start); }
@@ -704,7 +767,7 @@ static void substEnvVarsInString(QCString &s)
   while ((i=re.match(s,p,&l))!=-1)
   {
     //printf("Found environment var s.mid(%d,%d)=`%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=getenv(s.mid(i+2,l-3));
+    QCString env=portable_getenv(s.mid(i+2,l-3));
     substEnvVarsInString(env); // recursively expand variables if needed.
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
@@ -1040,11 +1103,7 @@ void Config::check()
 	dotPath+='/';
       } 
     } 
-#if defined(_WIN32)
-    QFileInfo dp(dotPath+"dot.exe");
-#else
-    QFileInfo dp(dotPath+"dot");
-#endif
+    QFileInfo dp(dotPath+portable_dotCommand());
     if (!dp.exists() || !dp.isFile())
     {
       config_err("Warning: the dot tool could not be found at %s\n",dotPath.data());
@@ -1117,23 +1176,24 @@ void Config::check()
     filePatternList.append("*.mm");
     filePatternList.append("*.dox");
     filePatternList.append("*.py");
-#if !defined(_WIN32)
-    // unix => case sensitive match => also include useful uppercase versions
-    filePatternList.append("*.C");
-    filePatternList.append("*.CC"); 
-    filePatternList.append("*.C++");
-    filePatternList.append("*.II");
-    filePatternList.append("*.I++");
-    filePatternList.append("*.H");
-    filePatternList.append("*.HH");
-    filePatternList.append("*.H++");
-    filePatternList.append("*.CS");
-    filePatternList.append("*.PHP");
-    filePatternList.append("*.PHP3");
-    filePatternList.append("*.M");
-    filePatternList.append("*.MM");
-    filePatternList.append("*.PY");
-#endif
+    if (portable_fileSystemIsCaseSensitive())
+    {
+      // unix => case sensitive match => also include useful uppercase versions
+      filePatternList.append("*.C");
+      filePatternList.append("*.CC"); 
+      filePatternList.append("*.C++");
+      filePatternList.append("*.II");
+      filePatternList.append("*.I++");
+      filePatternList.append("*.H");
+      filePatternList.append("*.HH");
+      filePatternList.append("*.H++");
+      filePatternList.append("*.CS");
+      filePatternList.append("*.PHP");
+      filePatternList.append("*.PHP3");
+      filePatternList.append("*.M");
+      filePatternList.append("*.MM");
+      filePatternList.append("*.PY");
+    }
   }
 
   // add default pattern if needed
@@ -1143,44 +1203,35 @@ void Config::check()
     examplePatternList.append("*");
   }
 
-#undef PUTENV
-#undef SEP
-#if defined(_WIN32) && (!defined(__BORLANDC__) || (__BORLANDC__ < 0x0550))
-#define PUTENV _putenv
-#define SEP ";"
-#else 
-#define PUTENV putenv
-#define SEP ":"
-#endif
   if (Config_getBool("HAVE_DOT")) 
   {
-    char *curFontPath = getenv("DOTFONTPATH");
-    int l=curFontPath ? strlen(curFontPath)+1 : 0;
-    static char *buf = 0;
-    buf = (char *)realloc(buf,strlen("DOTFONTPATH=.")+l+1);
-    strcpy(buf,"DOTFONTPATH=.");
-    if (l>0)
+    QCString curFontPath = portable_getenv("DOTFONTPATH");
+    QCString newFontPath = ".";
+    if (!curFontPath.isEmpty())
     {
-      strcat(buf,SEP);
-      strcat(buf,curFontPath);
+      newFontPath+=portable_pathListSeparator();
+      newFontPath+=curFontPath;
     }
-    PUTENV(buf);
+    portable_setenv("DOTFONTPATH",newFontPath);
   }
 
-#if 0
-  int &depth = Config_getInt("MAX_DOT_GRAPH_DEPTH");
-  if (depth==0)
-  {
-    depth=1000;
-  }
-#endif
-  
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
   {
     // don't show inline info for Java output, since Java has no inline 
     // concept.
     Config_getBool("INLINE_INFO")=FALSE;
   }
+
+#if 0
+  if (Config_getString("RTF_OUTPUT_ENCODING").isEmpty())
+  {
+    Config_getString("RTF_OUTPUT_ENCODING")="ISO-8859-1";
+  }
+  if (Config_getString("LATEX_OUTPUT_ENCODING").isEmpty())
+  {
+    Config_getString("LATEX_OUTPUT_ENCODING")="ISO-8859-1";
+  }
+#endif
   
   // add default words if needed
   QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");
@@ -1247,7 +1298,15 @@ void Config::create()
   addInfo("Project","Project related configuration options");
   //-----------------------------------------------------------------------------------------------
   
-  
+  cs = addString(
+                  "DOXYFILE_ENCODING",
+		  "This tag specifies the encoding used for all characters in the config file that \n"
+		  "follow. The default is UTF-8 which is also the encoding used for all text before \n"
+		  "the first occurrence of this tag. Doxygen uses libiconv (or the iconv built into \n"
+		  "libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of \n"
+		  "possible encodings.\n"
+                );
+  cs->setDefaultValue("UTF-8");
   cs = addString(
                  "PROJECT_NAME",
                  "The PROJECT_NAME tag is a single word (or a sequence of words surrounded \n"
@@ -1386,6 +1445,8 @@ void Config::create()
 #ifdef LANG_UA
   ce->addValue("Ukrainian");
 #endif
+
+#if 0
   cb = addBool(
                     "USE_WINDOWS_ENCODING",
 		    "This tag can be used to specify the encoding used in the generated output. \n"
@@ -1401,6 +1462,9 @@ void Config::create()
 		    FALSE
 #endif
 		 );
+#endif
+  addObsolete("USE_WINDOWS_ENCODING");
+
   cb = addBool(
                     "BRIEF_MEMBER_DESC",
                     "If the BRIEF_MEMBER_DESC tag is set to YES (the default) Doxygen will \n"
@@ -1667,11 +1731,7 @@ void Config::create()
                     "allowed. This is useful if you have classes or files whose names only differ \n"
                     "in case and if your file system supports case sensitive file names. Windows \n"
                     "and Mac users are advised to set this option to NO.\n",
-#if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__)
-		    FALSE // case insensitive file system expected
-#else
-                    TRUE // case sensitive file system expected
-#endif
+		    portable_fileSystemIsCaseSensitive()
                  );
   cb = addBool(
                     "HIDE_SCOPE_NAMES",
@@ -1858,6 +1918,13 @@ void Config::create()
                     "with spaces. \n"
                  );
   cl->setWidgetType(ConfigList::FileAndDir);
+  cs = addString(   "INPUT_ENCODING",
+                    "This tag can be used to specify the character encoding of the source files that \n"
+		    "doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default \n"
+		    "input encoding. Doxygen uses libiconv (or the iconv built into libc) for the transcoding. \n"
+		    "See http://www.gnu.org/software/libiconv for the list of possible encodings.\n"
+                );
+  cs->setDefaultValue("UTF-8");
   cl = addList(
                     "FILE_PATTERNS",
                     "If the value of the INPUT tag contains directories, you can use the \n"
@@ -1895,6 +1962,13 @@ void Config::create()
                     "certain files from those directories. Note that the wildcards are matched \n"
 		    "against the file with absolute path, so to exclude all test directories \n"
 		    "for example use the pattern */test/* \n"
+                 );
+  cl = addList(
+                    "EXCLUDE_SYMBOLS",
+                    "The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names \n"
+		    "(namespaces, classes, functions, etc.) that should be excluded from the output. \n"
+		    "The symbol name can be a fully qualified name, a word, or if the wildcard * is used, \n"
+		    "a substring. Examples: ANamespace, AClass, AClass::ANamespace, ANamespace::*Test \n"
                  );
   cl = addList(
                     "EXAMPLE_PATH",
@@ -2206,6 +2280,16 @@ void Config::create()
   cs->setDefaultValue("latex");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_LATEX");
+#if 0
+  cs = addString(   "LATEX_OUTPUT_ENCODING",
+                    "The LATEX_OUTPUT_ENCODING specifies the character encoding of the LaTeX output.\n"
+                    "produced by doxygen. If left blank ISO-8859-1 will be used. Doxygen uses \n"
+		    "libiconv for the transcoding. See http://www.gnu.org/software/libiconv for \n"
+		    "the list of possible encodings.\n"
+                );
+  cs->setDefaultValue("ISO-8859-1");
+  cs->addDependency("GENERATE_LATEX");
+#endif
   cs = addString(
                     "LATEX_CMD_NAME",
                     "The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be \n"
@@ -2312,6 +2396,16 @@ void Config::create()
   cs->setDefaultValue("rtf");
   cs->setWidgetType(ConfigString::Dir);
   cs->addDependency("GENERATE_RTF");
+#if 0
+  cs = addString(   "RTF_OUTPUT_ENCODING",
+                    "The RTF_OUTPUT_ENCODING specifies the character encoding of the RTF output.\n"
+                    "produced by doxygen. If left blank ISO-8859-1 will be used. Doxygen uses \n"
+		    "libiconv for the transcoding. See http://www.gnu.org/software/libiconv for \n"
+		    "the list of possible encodings.\n"
+                );
+  cs->setDefaultValue("ISO-8859-1");
+  cs->addDependency("GENERATE_RTF");
+#endif
   cb = addBool(
                     "COMPACT_RTF",
                     "If the COMPACT_RTF tag is set to YES Doxygen generates more compact \n"
@@ -2855,21 +2949,21 @@ static QCString configFileToString(const char *name)
       config_err("Error: file `%s' not found\n",name);
       return "";
     }
-      f.setName(name);
-      fileOpened=f.open(IO_ReadOnly);
-      if (fileOpened)
-      {
-        int fsize=f.size();
-        QCString contents(fsize+2);
-        f.readBlock(contents.data(),fsize);
-        f.close();
-        if (fsize==0 || contents[fsize-1]=='\n') 
-          contents[fsize]='\0';
-        else
-          contents[fsize]='\n'; // to help the scanner
-        contents[fsize+1]='\0';
-        return contents;
-      }
+    f.setName(name);
+    fileOpened=f.open(IO_ReadOnly);
+    if (fileOpened)
+    {
+      int fsize=f.size();
+      QCString contents(fsize+2);
+      f.readBlock(contents.data(),fsize);
+      f.close();
+      if (fsize==0 || contents[fsize-1]=='\n') 
+	contents[fsize]='\0';
+      else
+	contents[fsize]='\n'; // to help the scanner
+      contents[fsize+1]='\0';
+      return contents;
+    }
   }
   if (!fileOpened)  
   {
@@ -2897,6 +2991,7 @@ bool Config::parseString(const char *fn,const char *str)
 
 bool Config::parse(const char *fn)
 {
+  encoding = "UTF-8";
   return parseString(fn,configFileToString(fn)); 
 }
 

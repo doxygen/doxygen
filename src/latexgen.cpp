@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -239,19 +239,22 @@ static void writeDefaultHeaderPart1(QTextStream &t)
       << "\\usepackage[ps2pdf," << endl
       << "            pagebackref=true," << endl
       << "            colorlinks=true," << endl
-      << "            linkcolor=blue" << endl
+      << "            linkcolor=blue," << endl
+      << "            unicode" << endl
       << "           ]{hyperref}" << endl
       << "\\usepackage{pspicture}" << endl
       << "\\else" << endl
       << "\\usepackage[pdftex," << endl
       << "            pagebackref=true," << endl
       << "            colorlinks=true," << endl
-      << "            linkcolor=blue" << endl
+      << "            linkcolor=blue," << endl
+      << "            unicode" << endl
       << "           ]{hyperref}" << endl
       << "\\fi" << endl;
   }
   // Try to get the command for switching on the language
   // support
+  t << "\\usepackage[utf8]{inputenc}" << endl;
   QCString sLanguageSupportCommand(
       theTranslator->latexLanguageSupportCommand());
 
@@ -261,7 +264,6 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     // if the command is empty, no output is needed.
     t << sLanguageSupportCommand << endl;
   }
-
   t << "\\usepackage{doxygen}\n";
   QStrList &extraPackages = Config_getList("EXTRA_PACKAGES");
   const char *s=extraPackages.first();
@@ -425,17 +427,20 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2006";
+  //t << "Dimitri van Heesch \\copyright~1997-2007";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2006";
+  //t << "Dimitri van Heesch \\copyright~1997-2007";
   writeDefaultStyleSheetPart3(t);
 }
 
 void LatexGenerator::startFile(const char *name,const char *,const char *)
 {
+#if 0
+  setEncoding(Config_getString("LATEX_OUTPUT_ENCODING"));
+#endif
   QCString fileName=name;
   relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
@@ -845,14 +850,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2006";
+        //t << " Dimitri van Heesch \\copyright~1997-2007";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2006";
+        //t << " Dimitri van Heesch \\copyright~1997-2007";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }

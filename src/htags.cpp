@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -23,6 +23,7 @@
 #include "util.h"
 #include "message.h"
 #include "config.h"
+#include "portable.h"
 
 
 bool Htags::useHtags = FALSE;
@@ -89,7 +90,7 @@ bool Htags::execute(const QCString &htmldir)
   QCString oldDir = convertToQCString(QDir::currentDirPath());
   QDir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",commandLine.data());
-  bool result=iSystem("htags",commandLine,FALSE)==0;
+  bool result=portable_system("htags",commandLine,FALSE)==0;
   QDir::setCurrent(oldDir);
   return result;
 }

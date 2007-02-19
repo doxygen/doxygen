@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,7 +20,8 @@
 
 #include <qglobal.h>
 #include <stdio.h>
-#include <sys/types.h>
+
+#include "portable.h"
 
 /*! @brief Abstract interface for file based memory storage operations */
 class StorageIntf
@@ -63,7 +64,7 @@ class Store : public StorageIntf
     int open(const char *name);
 
     /*! Allocates a handle to write to and read from. */
-    off_t alloc();
+    portable_off_t alloc();
 
     /*! Writes \a size bytes in array \a buf to the store. 
      *  First alloc() has to be called.
@@ -78,13 +79,13 @@ class Store : public StorageIntf
     void end();
 
     /*! Releases the memory corresponding to the handle returned with alloc() */
-    void release(off_t handle);
+    void release(portable_off_t handle);
 
     /*! Closes the store */
     void close();
 
     /*! Goes to the start of information corresponding to handle \a pos */
-    void seek(off_t handle);
+    void seek(portable_off_t handle);
 
     /*! Reads \a size bytes from the store into the array pointed to be \a buf.
      *  \note Before reading seek() has to be called to set the right start of the store.
@@ -102,12 +103,12 @@ class Store : public StorageIntf
     };
     struct Node
     {
-      off_t pos;
+      portable_off_t pos;
       struct Node *next;
     };
     void printFreeList();
     FILE *m_file;
-    off_t m_front;
+    portable_off_t m_front;
     Node *m_head;
     State m_state;
     int m_reads;

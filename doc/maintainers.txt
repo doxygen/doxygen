@@ -111,6 +111,7 @@ TranslatorSlovene
 Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ostri.org
 
 TranslatorSpanish 
+Bartomeu: bartomeu@loteria3cornella.com
 Francisco Oltra Thennet: foltra@puc.cl
 
 TranslatorSwedish 

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -116,7 +116,9 @@ class TranslatorKorean : public TranslatorAdapter_1_4_6
         // I'm not sure what this should be.
         // When I figure it out, I'll update this.
 		//see http://www.ktug.or.kr/jsboard/read.php?table=operate&no=4422&page=1
-		return "\\usepackage{hfont}\n";
+	return "\\usepackage{hfont}\n"
+               "\\usepackage{ucs}\n"
+               "\\usepackage[encapsulation]{CJK}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */

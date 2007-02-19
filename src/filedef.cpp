@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,11 +33,7 @@
 #include "searchindex.h"
 #include "htags.h"
 #include "parserintf.h"
-
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
+#include "portable.h"
 
 class DevNullCodeDocInterface : public CodeOutputInterface
 {
@@ -712,6 +708,7 @@ void FileDef::addMembersToMemberGroup()
 /*! Adds member definition \a md to the list of all members of this file */
 void FileDef::insertMember(MemberDef *md)
 {
+  if (md->isHidden()) return;
   //printf("%s:FileDef::insertMember(%s (=%p) list has %d elements)\n",
   //    name().data(),md->name().data(),md,allMemberList.count());
   MemberList *allMemberList = getMemberList(MemberList::allMembersList);
@@ -769,6 +766,7 @@ void FileDef::insertMember(MemberDef *md)
 /*! Adds compound definition \a cd to the list of all compounds of this file */
 void FileDef::insertClass(ClassDef *cd)
 {
+  if (cd->isHidden()) return;
   if (classSDict==0)
   {
     classSDict = new ClassSDict(17);
@@ -782,6 +780,7 @@ void FileDef::insertClass(ClassDef *cd)
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
 void FileDef::insertNamespace(NamespaceDef *nd)
 {
+  if (nd->isHidden()) return;
   if (!nd->name().isEmpty() && 
       (namespaceSDict==0 || namespaceSDict->find(nd->name())==0))
   {
@@ -1310,7 +1309,7 @@ void FileDef::acquireFileVersion()
   if (!vercmd.isEmpty()) 
   {
     msg("Version of %s : ",filepath.data());
-    FILE *f=popen(vercmd+" \""+filepath+"\"","r");
+    FILE *f=portable_popen(vercmd+" \""+filepath+"\"","r");
     if (!f)
     {
       err("Error: could not execute %s\n",vercmd.data());
@@ -1319,7 +1318,7 @@ void FileDef::acquireFileVersion()
     const int bufSize=1024;
     char buf[bufSize];
     int numRead = fread(buf,1,bufSize,f);
-    pclose(f);
+    portable_pclose(f);
     if (numRead > 0) 
     {
       fileVersion = QCString(buf,numRead).stripWhiteSpace();

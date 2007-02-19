@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -57,14 +57,14 @@ class TranslatorRussian : public Translator
      */
     inline QCString decode(const QCString & sInput)
     { 
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return Koi8RToWindows1251(sInput);
-      }
-      else
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
+      //  return Koi8RToWindows1251(sInput);
+      //}
+      //else
+      //{
         return sInput;
-      }
+      //}
     }
 
   public:
@@ -75,27 +75,27 @@ class TranslatorRussian : public Translator
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      { 
-        return "\\usepackage[cp1251]{inputenc}\n\\usepackage[russian]{babel}\n"; 
-      }
-      else
-      { 
-        return "\\usepackage[koi8-r]{inputenc}\n\\usepackage[russian]{babel}\n"; 
-      }
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{ 
+      //  return "\\usepackage[cp1251]{inputenc}\n\\usepackage[russian]{babel}\n"; 
+      //}
+      //else
+      //{ 
+        return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n"; 
+      //}
     }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      { 
-        return "Windows-1251"; 
-      }
-      else
-      { 
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{ 
+      //  return "Windows-1251"; 
+      //}
+      //else
+      //{ 
         return "koi8-r"; 
-      }
+      //}
     }
 
     // --- Language translation methods -------------------

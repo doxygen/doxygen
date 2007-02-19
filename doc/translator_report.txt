@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
 Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 14 translators are up-to-date, 19 translators are based on
+Of them, 15 translators are up-to-date, 18 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -31,6 +31,7 @@ still may be some details listed even for them:
   TranslatorItalian
   TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorRussian
+  TranslatorSpanish
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -39,7 +40,6 @@ version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
   TranslatorSwedish               1.4.6 	 2 methods to implement
-  TranslatorSpanish               1.4.6 	 1 method to implement
   TranslatorSlovene               1.4.6 	 2 methods to implement
   TranslatorPolish                1.4.6 	 1 method to implement
   TranslatorPersian               1.4.6 	 1 method to implement
@@ -560,28 +560,6 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  2 methods to implement
 
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
-
-
-TranslatorSpanish   (TranslatorAdapter_1_4_6)  1 method to implement
------------------
-
-  Implements 193 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCallerGraph()
-
-  Obsolete methods (should be removed, never used):
-
-    virtual QCString trHeaderFilesDescription()
-    virtual QCString trField(bool first_capital, bool singular)
-    virtual QCString trPackageDocumentation()
-    virtual QCString trSources()
-    virtual QCString trReimplementedForInternalReasons()
-    virtual QCString trInterfaces()
-    virtual QCString trHeaderFiles()
-    virtual QCString trBugsAndLimitations()
-    virtual QCString trNoDescriptionAvailable()
 
 
 TranslatorSwedish   (TranslatorAdapter_1_4_6)  2 methods to implement

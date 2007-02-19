@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,11 +28,11 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
      */
     inline QCString decode(const QCString & sInput)
     { 
-#ifdef _WIN32
-      return Koi8RToWindows1251(sInput);
-#else
+//#ifdef _WIN32
+//      return Koi8RToWindows1251(sInput);
+//#else
       return sInput;
-#endif
+//#endif
     }
 
   public:
@@ -43,21 +43,21 @@ class TranslatorUkrainian : public TranslatorAdapter_1_4_1
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
     {
-#ifdef _WIN32
-      return "\\usepackage[cp1251]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
-#else
-      return "\\usepackage[koi8-u]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
-#endif
+//#ifdef _WIN32
+//      return "\\usepackage[cp1251]{inputenc}\n\\usepackage[ukrainian]{babel}\n"; 
+//#else
+      return "\\usepackage[T2A]{fontenc}\n\\usepackage[ukrainian]{babel}\n"; 
+//#endif
     }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-#ifdef _WIN32
-      return "Windows-1251"; 
-#else
+//#ifdef _WIN32
+//      return "Windows-1251"; 
+//#else
       return "koi8-u";
-#endif
+//#endif
     }
 
     // --- Language translation methods -------------------

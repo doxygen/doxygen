@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -17,9 +17,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#include <windows.h>
-#endif
+#include <errno.h>
 
 #include <md5.h>
 
@@ -49,20 +47,7 @@
 #include "searchindex.h"
 #include "doxygen.h"
 #include "textdocvisitor.h"
-
-#if !defined(_WIN32) || defined(__CYGWIN__)
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
-extern char **environ;
-#endif
-
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
+#include "portable.h"
 
 //------------------------------------------------------------------------
 
@@ -127,155 +112,6 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-
-    
-/*! Implements an interruptable system call on Unix/Windows */
-int iSystem(const char *command,const char *args,bool commandHasConsole)
-{
-  QTime time;
-  time.start();
-
-  if (command==0) return 1;
-
-  QCString fullCmd=command;
-  fullCmd=fullCmd.stripWhiteSpace();
-  if (fullCmd.at(0)!='"' && fullCmd.find(' ')!=-1)
-  {
-    // add quotes around command as it contains spaces and is not quoted already
-    fullCmd="\""+fullCmd+"\"";
-  }
-  fullCmd += " ";
-  fullCmd += args;
-  Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",fullCmd.data());
-
-#if !defined(_WIN32) || defined(__CYGWIN__)
-  commandHasConsole=commandHasConsole;
-  /*! taken from the system() manpage on my Linux box */
-  int pid,status=0;
-
-
-#ifdef _OS_SOLARIS // for Solaris we use vfork since it is more memory efficient
-
-  // on Solaris fork() duplicates the memory usage
-  // so we use vfork instead
-  
-  // spawn shell
-  if ((pid=vfork())<0)
-  {
-    status=-1;
-  }
-  else if (pid==0)
-  {
-     execl("/bin/sh","sh","-c",fullCmd.data(),(char*)0);
-     _exit(127);
-  }
-  else
-  {
-    while (waitpid(pid,&status,0 )<0)
-    {
-      if (errno!=EINTR)
-      {
-        status=-1;
-        break;
-      }
-    }
-  }
-  Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
-  return status;
-
-#else  // Other Unices just use fork
-
-  pid = fork();
-  if (pid==-1) return -1;
-  if (pid==0)
-  {
-    const char * argv[4];
-    argv[0] = "sh";
-    argv[1] = "-c";
-    argv[2] = fullCmd.data();
-    argv[3] = 0;
-    execve("/bin/sh",(char * const *)argv,environ);
-    exit(127);
-  }
-  for (;;)
-  {
-    if (waitpid(pid,&status,0)==-1)
-    {
-      if (errno!=EINTR) return -1;
-    }
-    else
-    {
-      Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
-      if (WIFEXITED(status))
-      {
-        return WEXITSTATUS(status);
-      }
-      else
-      {
-        return status;
-      }
-    }
-  }
-#endif // _OS_SOLARIS
-
-#else // Win32 specific
-  if (commandHasConsole)
-  {
-    return system(fullCmd);
-  }
-  else
-  {
-    // gswin32 is a GUI api which will pop up a window and run
-    // asynchronously. To prevent both, we use ShellExecuteEx and
-    // WaitForSingleObject (thanks to Robert Golias for the code)
-
-    SHELLEXECUTEINFO sInfo = {
-      sizeof(SHELLEXECUTEINFO),   /* structure size */
-      SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,    /* leave the process running */
-      NULL,                       /* window handle */
-      NULL,                       /* action to perform: open */
-      command,                    /* file to execute */
-      args,                       /* argument list */ 
-      NULL,                       /* use current working dir */
-      SW_HIDE,                    /* minimize on start-up */
-      0,                          /* application instance handle */
-      NULL,                       /* ignored: id list */
-      NULL,                       /* ignored: class name */
-      NULL,                       /* ignored: key class */
-      0,                          /* ignored: hot key */
-      NULL,                       /* ignored: icon */
-      NULL                        /* resulting application handle */
-    };
-    if (!ShellExecuteEx(&sInfo))
-    {
-      return -1;
-    }
-    else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
-    {
-      WaitForSingleObject(sInfo.hProcess,INFINITE); 
-      CloseHandle(sInfo.hProcess);
-    }
-  }
-  Doxygen::sysElapsedTime+=((double)time.elapsed())/1000.0;
-  return 0;
-#endif
-
-}
-
-uint iPid()
-{
-  uint pid;
-#if !defined(_WIN32) || defined(__CYGWIN__)
-  pid = (uint)getpid();
-#else
-  pid = (uint)GetCurrentProcessId();
-#endif
-  return pid;
-}
-
-
-
-
 
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
@@ -2051,13 +1887,7 @@ QCString getFileFilter(const char* name)
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-
-#if defined(_WIN32) || defined(_OS_MAC_) // windows or mac
-      QRegExp fpat(filterPattern,FALSE,TRUE); // case insensitive match
-#else // unix
-      QRegExp fpat(filterPattern,TRUE,TRUE); // case sensitive match
-#endif
-
+      QRegExp fpat(filterPattern,portable_fileSystemIsCaseSensitive(),TRUE); 
       if (fpat.match(name)!=-1) 
       {
         // found a match!
@@ -2073,6 +1903,80 @@ QCString getFileFilter(const char* name)
 
   // no match
   return "";
+}
+
+QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding)
+{
+  QCString inputEncoding  = fromEncoding;
+  QCString outputEncoding = toEncoding;
+  if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || 
+      inputEncoding==outputEncoding) return str;
+  int inputSize=str.length();
+  int outputSize=inputSize*4+1;
+  QCString output(outputSize);
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==(void *)(-1))
+  {
+    err("Error: unsupported character conversion: '%s'->'%s'\n",
+        inputEncoding.data(),outputEncoding.data());
+    exit(1);
+  }
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
+  const char *inputPtr  = str.data();
+  char       *outputPtr = output.data();
+  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+  {
+    outputSize-=oLeft;
+    output.resize(outputSize+1);
+    output.at(outputSize+1)='\0';
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+  }
+  else
+  {
+    err("Error: failed to translate characters from %s to %s: %s\n",
+        inputEncoding.data(),outputEncoding.data(),strerror(errno));
+    exit(1);
+  }
+  portable_iconv_close(cd);
+  return output;
+}
+
+
+QCString transcodeCharacterStringToUTF8(const QCString &input)
+{
+  static QCString inputEncoding = Config_getString("INPUT_ENCODING");
+  const char *outputEncoding = "UTF-8";
+  if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
+  int inputSize=input.length();
+  int outputSize=inputSize*4+1;
+  QCString output(outputSize);
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==(void *)(-1)) 
+  {
+    err("Error: unsupported character conversion: '%s'->'%s'\n",
+        inputEncoding.data(),outputEncoding);
+    exit(1);
+  }
+  size_t iLeft=inputSize;
+  size_t oLeft=outputSize;
+  const char *inputPtr = input.data();
+  char *outputPtr = output.data();
+  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+  {
+    outputSize-=oLeft;
+    output.resize(outputSize+1);
+    output.at(outputSize+1)='\0';
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+  }
+  else
+  {
+    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+        inputEncoding.data(),outputEncoding);
+    exit(1);
+  }
+  portable_iconv_close(cd);
+  return output;
 }
 
 /*! reads a file with name \a name and returns it as a string. If \a filter
@@ -2135,13 +2039,13 @@ QCString fileToString(const char *name,bool filter)
         {
           contents.resize(newSize);
         }
-        return contents;
+        return transcodeCharacterStringToUTF8(contents);
       }
     }
     else // filter the input
     {
       QCString cmd=filterName+" \""+name+"\"";
-      FILE *f=popen(cmd,"r");
+      FILE *f=portable_popen(cmd,"r");
       if (!f)
       {
         err("Error: could not execute filter %s\n",filterName.data());
@@ -2160,8 +2064,8 @@ QCString fileToString(const char *name,bool filter)
       contents.resize(totalSize);
       contents.at(totalSize-2)='\n'; // to help the scanner
       contents.at(totalSize-1)='\0';
-      pclose(f);
-      return contents;
+      portable_pclose(f);
+      return transcodeCharacterStringToUTF8(contents);
     }
   }
   if (!fileOpened)  
@@ -4629,19 +4533,20 @@ QCString convertNameToFile(const char *name,bool allowDots)
   QCString result;
   if (shortNames) // use short names only
   {
-    static QDict<void> usedNames(10007);
+    static QDict<int> usedNames(10007);
+    usedNames.setAutoDelete(TRUE);
     static int count=1;
 
-    void *value=usedNames.find(name);
+    int *value=usedNames.find(name);
     int num;
     if (value==0)
     {
-      usedNames.insert(name,(void *)count);
+      usedNames.insert(name,new int(count));
       num = count++;
     }
     else
     {
-      num = *(int*)&value;
+      num = *value;
     }
     result.sprintf("a%05d",num); 
   }
@@ -5488,6 +5393,7 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
   }
 }
 
+#if 0
 /*!
  * Function converts Latin1 character to latex string representin the same
  * character.
@@ -5622,7 +5528,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xCE: t << "\\^{I}";   break;
     case 0xCF: t << "\\v{D}";   break;
 
-    case 0xD0: t << "\\bar{D}"; break;
+    case 0xD0: t << "\\DJ "; break;
     case 0xD1: t << "\\'{N}";   break;
     case 0xD2: t << "\\v{N}";   break;
     case 0xD3: t << "\\'{O}";   break;
@@ -5656,7 +5562,7 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     case 0xEE: t << "\\^{\\i}"; break;
     case 0xEF: t << "\\v{d}";   break;
 
-    case 0xF0: t << "\\bar{d}"; break;
+    case 0xF0: t << "\\dj "; break;
     case 0xF1: t << "\\'{n}";   break;
     case 0xF2: t << "\\v{n}";   break;
     case 0xF3: t << "\\'{o}";   break;
@@ -5676,11 +5582,14 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
     default: t << (char)c;
   }
 }
+#endif
 
 void filterLatexString(QTextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem)
 {
+#if 0
   static bool isCzech         = theTranslator->idLanguage()=="czech";
+  static bool isSerbian       = theTranslator->idLanguage()=="serbian";
   static bool isJapanese      = theTranslator->idLanguage()=="japanese" ||
     theTranslator->idLanguage()=="japanese-en";
   static bool isKorean        = theTranslator->idLanguage()=="korean" ||
@@ -5693,6 +5602,7 @@ void filterLatexString(QTextStream &t,const char *str,
   static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
   static bool isGreek         = theTranslator->idLanguage()=="greek";
   //printf("filterLatexString(%s)\n",str);
+#endif
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -5711,9 +5621,11 @@ void filterLatexString(QTextStream &t,const char *str,
           case '}':  t << "\\}"; break;
           case '_':  t << "\\_"; break;
           default: 
+                     t << (char)c;
+#if 0
                      {
                        // Some languages use wide characters
-                       if (c>=128 && (isJapanese || isKorean || isChinese))
+                       if (c>=128 && (isJapanese || isKorean || isChinese || isSerbian))
                        { 
                          t << (char)c;
                          if (*p)  
@@ -5728,6 +5640,7 @@ void filterLatexString(QTextStream &t,const char *str,
                        }
                        break;
                      }
+#endif
         }
       }
       else
@@ -5776,9 +5689,11 @@ void filterLatexString(QTextStream &t,const char *str,
                      break;
 
           default:   
+                     t << (char)c;
+#if 0
                      {
                        // Some languages use wide characters
-                       if (isJapanese || isKorean || isChinese)
+                       if (isJapanese || isKorean || isChinese || isSerbian)
                        { 
                          if (c>=128) 
                          {
@@ -5845,6 +5760,7 @@ void filterLatexString(QTextStream &t,const char *str,
                          }
                        }
                      }
+#endif
         }
       }
       pc = c;
@@ -6024,24 +5940,25 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
 {
   int i = fileName.findRev('.');
   static bool init=FALSE;
-  static QDict<void> extLookup;
+  static QDict<int> extLookup;
+  extLookup.setAutoDelete(TRUE);
   if (!init) // one time initialization
   {
-    extLookup.insert(".idl",   (void*)SrcLangExt_IDL);
-    extLookup.insert(".odl",   (void*)SrcLangExt_IDL);
-    extLookup.insert(".java",  (void*)SrcLangExt_Java);
-    extLookup.insert(".jsl",   (void*)SrcLangExt_Java);
-    extLookup.insert(".as",    (void*)SrcLangExt_Java);
-    extLookup.insert(".cs",    (void*)SrcLangExt_CSharp);
-    extLookup.insert(".d",     (void*)SrcLangExt_D);
-    extLookup.insert(".php",   (void*)SrcLangExt_PHP);
-    extLookup.insert(".php4",  (void*)SrcLangExt_PHP);
-    extLookup.insert(".php5",  (void*)SrcLangExt_PHP);
-    extLookup.insert(".inc",   (void*)SrcLangExt_PHP);
-    extLookup.insert(".phtml", (void*)SrcLangExt_PHP);
-    extLookup.insert(".m",     (void*)SrcLangExt_ObjC);
-    extLookup.insert(".M",     (void*)SrcLangExt_ObjC);
-    extLookup.insert(".mm",    (void*)SrcLangExt_ObjC);
+    extLookup.insert(".idl",   new int(SrcLangExt_IDL));
+    extLookup.insert(".odl",   new int(SrcLangExt_IDL));
+    extLookup.insert(".java",  new int(SrcLangExt_Java));
+    extLookup.insert(".jsl",   new int(SrcLangExt_Java));
+    extLookup.insert(".as",    new int(SrcLangExt_Java));
+    extLookup.insert(".cs",    new int(SrcLangExt_CSharp));
+    extLookup.insert(".d",     new int(SrcLangExt_D));
+    extLookup.insert(".php",   new int(SrcLangExt_PHP));
+    extLookup.insert(".php4",  new int(SrcLangExt_PHP));
+    extLookup.insert(".php5",  new int(SrcLangExt_PHP));
+    extLookup.insert(".inc",   new int(SrcLangExt_PHP));
+    extLookup.insert(".phtml", new int(SrcLangExt_PHP));
+    extLookup.insert(".m",     new int(SrcLangExt_ObjC));
+    extLookup.insert(".M",     new int(SrcLangExt_ObjC));
+    extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
     init=TRUE;
   }
   if (i!=-1) // name has an extension
@@ -6049,10 +5966,10 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     QCString extStr=fileName.right(fileName.length()-i);
     if (!extStr.isEmpty()) // non-empty extension
     {
-      void *pVal=extLookup.find(extStr);
+      int *pVal=extLookup.find(extStr);
       if (pVal) // listed extension
       {
-        return *(SrcLangExt*)&pVal; // cast void* address to enum value
+        return (SrcLangExt)*pVal; // cast void* address to enum value
       }
     }
   }

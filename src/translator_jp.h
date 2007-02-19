@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -35,33 +35,33 @@ class TranslatorJapanese : public Translator
   /*! The decode() can change euc into sjis */
   inline QCString decode(const QCString & sInput)
   {
-    if (Config_getBool("USE_WINDOWS_ENCODING"))
-    {
-      return JapaneseEucToSjis(sInput);
-    }
-    else
-    {
+    //if (Config_getBool("USE_WINDOWS_ENCODING"))
+    //{
+    //  return JapaneseEucToSjis(sInput);
+    //}
+    //else
+    //{
       return sInput;
-    }
+    //}
   }
   public:
     virtual QCString idLanguage()
     { return "japanese"; }
     virtual QCString latexLanguageSupportCommand()
-      {
-	return "";
-      }
+    {
+      return "";
+    }
     /*! returns the name of the package that is included by LaTeX */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return "Shift_JIS";
-      }
-      else
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
+      //  return "Shift_JIS";
+      //}
+      //else
+      //{
         return "euc-jp";
-      }
+      //}
     }
 
     /*! used in the compound documentation before a list of related functions. */

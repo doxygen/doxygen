@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -96,14 +96,14 @@ class TranslatorCzech : public Translator
      */
     inline QCString decode(const QCString & sInput)
     { 
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
         return sInput;
-      }
-      else
-      {
-        return Win1250ToISO88592(sInput);
-      }
+      //}
+      //else
+      //{
+      //  return Win1250ToISO88592(sInput);
+      //}
     }
     
   public:
@@ -113,19 +113,22 @@ class TranslatorCzech : public Translator
     { return "czech"; }
 
     virtual QCString latexLanguageSupportCommand()
-    { return "\\usepackage{czech}\n"; }
+    { 
+      return "\\usepackage[T2A]{fontenc}\n"
+             "\\usepackage[czech]{babel}\n";
+    }
     
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
         return "windows-1250";
-      }
-      else
-      {
-        return "iso-8859-2";
-      }
+      //}
+      //else
+      //{
+      //  return "iso-8859-2";
+      //}
     }
 
     // --- Language translation methods -------------------

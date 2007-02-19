@@ -3,7 +3,7 @@
  *
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -109,7 +109,6 @@ class TranslatorDanish : public Translator
     {
       return
 	"\\usepackage[danish]{babel}\n"
-	"\\usepackage[latin1]{inputenc}\n"
 	"\\usepackage[T1]{fontenc}\n";
     }
 

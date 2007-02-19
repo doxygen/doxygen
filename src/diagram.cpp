@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,6 +33,7 @@
 //#include "latexgen.h"
 //#include "htmlgen.h"
 #include "doxygen.h"
+#include "portable.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1251,7 +1252,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using `%s'\n",epstopdfCmd.data());
-    if (iSystem("epstopdf",epstopdfArgs)!=0)
+    if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
        return;

@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -31,11 +31,11 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_18
 	 */
 	inline QCString Decode(const QCString & sInput)
 	{
-#ifdef _WIN32
+//#ifdef _WIN32
 	  return sInput;
-#else
-	  return Win1250ToISO88592(sInput);
-#endif
+//#else
+//	  return Win1250ToISO88592(sInput);
+//#endif
 	}
 
   public:
@@ -45,16 +45,16 @@ class TranslatorSlovak : public TranslatorAdapter_1_2_18
 	{ return "slovak"; }
 
 	virtual QCString latexLanguageSupportCommand()
-	{ return "\\usepackage{slovak}\n"; }
+	{ return "\\usepackage[slovak]{babel}\n"; }
 
 	/*! return the language charset. This will be used for the HTML output */
 	virtual QCString idLanguageCharset()
 	{
-#ifdef _WIN32
+//#ifdef _WIN32
 		return "windows-1250";
-#else
-		return "iso-8859-2";
-#endif
+//#else
+//		return "iso-8859-2";
+//#endif
 	}
 
 	// --- Language translation methods -------------------

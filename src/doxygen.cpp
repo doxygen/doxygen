@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <qtextcodec.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "version.h"
 #include "doxygen.h"
@@ -71,6 +72,7 @@
 #include "objcache.h"
 #include "store.h"
 #include "marshal.h"
+#include "portable.h"
 
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
@@ -78,11 +80,6 @@
     for (;eli.current();++eli) func(eli.current()); \
   } } while(0) 
 
-
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <signal.h>
@@ -148,6 +145,8 @@ static const char     idMask[] = "[A-Za-z_][A-Za-z_0-9]*";
 FileStorage *g_storage = 0;
 
 QCString       spaces;
+
+static bool g_successfulRun = FALSE;
 
 
 
@@ -1422,7 +1421,6 @@ static void buildNamespaceList(EntryNav *rootNav)
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
-        nd->setHidden(root->hidden);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -3846,8 +3844,15 @@ static bool findTemplateInstanceRelation(Entry *root,
     EntryNav *templateRootNav = classEntries.find(templateClass->name());
     if (templateRootNav)
     {
-      templateRootNav->loadEntry(g_storage);
+      bool unloadNeeded=FALSE;
       Entry *templateRoot = templateRootNav->entry();
+      if (templateRoot==0) // not yet loaded
+      {
+        templateRootNav->loadEntry(g_storage);
+        templateRoot = templateRootNav->entry();
+        ASSERT(templateRoot!=0); // now it should really be loaded
+        unloadNeeded=TRUE;
+      }
 
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
           templateRoot->name.data(),templSpec.data());
@@ -3860,7 +3865,10 @@ static bool findTemplateInstanceRelation(Entry *root,
           isArtificial,templArgs,templateNames);
       delete templArgs;
 
-      templateRootNav->releaseEntry();
+      if (unloadNeeded) // still cleanup to do
+      {
+        templateRootNav->releaseEntry();
+      }
     }
     else
     {
@@ -8022,6 +8030,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   if (fileOpened)
   {
     QTextStream t(&f);
+    t.setEncoding(QTextStream::Latin1);
     Config::instance()->writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -8128,6 +8137,43 @@ static bool patternMatch(QFileInfo *fi,QStrList *patList)
   return found;
 }
 
+static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
+           const char *inputEncoding,const char *outputEncoding)
+{
+  if (inputEncoding==0 || outputEncoding==0) return size;
+  if (qstricmp(inputEncoding,outputEncoding)==0) return size;
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==(void *)(-1)) 
+  {
+    err("Error: unsupported character conversion: '%s'->'%s': %s\n"
+        "Check the INPUT_ENCODING setting in the config file!\n",
+        inputEncoding,outputEncoding,strerror(errno));
+    exit(1);
+  }
+  int tmpBufSize=size*4+1;
+  BufStr tmpBuf(tmpBufSize);
+  size_t iLeft=size;
+  size_t oLeft=tmpBufSize;
+  const char *srcPtr = srcBuf.data();
+  char *dstPtr = tmpBuf.data();
+  uint newSize=0;
+  if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
+  {
+    newSize = tmpBufSize-oLeft;
+    srcBuf.shrink(newSize);
+    strncpy(srcBuf.data(),tmpBuf.data(),newSize);
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+  }
+  else
+  {
+    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+        inputEncoding,outputEncoding);
+    exit(1);
+  }
+  portable_iconv_close(cd);
+  return newSize;
+}
+
 //----------------------------------------------------------------------------
 // reads a file into an array and filters out any 0x00 and 0x06 bytes,
 // because these are special for the parser.
@@ -8136,7 +8182,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
 {
   // try to open file
   int size=0;
-  uint oldPos = dest.curPos();
+  //uint oldPos = dest.curPos();
   //printf(".......oldPos=%d\n",oldPos);
 
   QFileInfo fi(fileName);
@@ -8153,7 +8199,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
     size=fi.size();
     // read the file
     dest.skip(size);
-    if (f.readBlock(dest.data()+oldPos,size)!=size)
+    if (f.readBlock(dest.data()/*+oldPos*/,size)!=size)
     {
       err("Error while reading file %s\n",fileName);
       return;
@@ -8162,7 +8208,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   else
   {
     QCString cmd=filterName+" \""+fileName+"\"";
-    FILE *f=popen(cmd,"r");
+    FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
       err("Error: could not execute filter %s\n",filterName.data());
@@ -8176,7 +8222,7 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
       //printf(">>>>>>>>Reading %d bytes\n",numRead);
       dest.addArray(buf,numRead),size+=numRead;
     }
-    pclose(f);
+    portable_pclose(f);
   }
   // filter unwanted bytes from the resulting data
   uchar conv[256];
@@ -8185,14 +8231,14 @@ static void copyAndFilterFile(const char *fileName,BufStr &dest)
   conv[0x06]=0x20; // replace the offending characters with spaces
   conv[0x00]=0x20;
   // remove any special markers from the input
-  uchar *p=(uchar *)dest.data()+oldPos;
+  uchar *p=(uchar *)dest.data()/*+oldPos*/;
   for (i=0;i<size;i++,p++) *p=conv[*p];
   // and translate CR's
-  int newSize=filterCRLF(dest.data()+oldPos,size);
+  int newSize=filterCRLF(dest.data()/*+oldPos*/,size);
   //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {
-    dest.shrink(oldPos+newSize); // resize the array
+    dest.shrink(/*oldPos+*/newSize); // resize the array
     //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,dest.data());
   }
 }
@@ -8232,6 +8278,18 @@ static void copyStyleSheet()
 
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
+  void *cd = 0;
+  QCString inpEncoding = Config_getString("INPUT_ENCODING");
+  bool needsTranscoding = !inpEncoding.isEmpty();
+  if (needsTranscoding)
+  {
+    if (!(cd = portable_iconv_open("UTF-8", inpEncoding)))
+    {
+       err("Error: unsupported character enconding: '%s'",inpEncoding.data());
+       exit(1);
+    }
+  }
+
   QCString *s=inputFiles.first();
   while (s)
   {
@@ -8243,23 +8301,27 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
 
     QFileInfo fi(fileName);
     BufStr preBuf(fi.size()+4096);
-    BufStr *bufPtr = &preBuf;
+    //BufStr *bufPtr = &preBuf;
 
     if (Config_getBool("ENABLE_PREPROCESSING") && 
         parser->needsPreprocessing(extension))
     {
       msg("Preprocessing %s...\n",s->data());
-      preprocessFile(fileName,*bufPtr);
+      preprocessFile(fileName,preBuf);
     }
     else
     {
       msg("Reading %s...\n",s->data());
-      copyAndFilterFile(fileName,*bufPtr);
+      copyAndFilterFile(fileName,preBuf);
     }
 
-    bufPtr->addChar('\n'); /* to prevent problems under Windows ? */
+    preBuf.addChar('\n'); /* to prevent problems under Windows ? */
 
-    BufStr convBuf(bufPtr->curPos()+1024);
+    // do character transcoding if needed.
+    transcodeCharacterBuffer(preBuf,preBuf.curPos(),
+                             Config_getString("INPUT_ENCODING"),"UTF-8");
+
+    BufStr convBuf(preBuf.curPos()+1024);
 
     // convert multi-line C++ comments to C style comments
     convertCppComments(&preBuf,&convBuf,fileName);
@@ -8622,7 +8684,7 @@ static void readAliases()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2006\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2007\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -9073,9 +9135,27 @@ static void stopDoxygen(int)
 }
 #endif
 
+static void exitDoxygen()
+{
+  if (!g_successfulRun)  // premature exit
+  {
+    QDir thisDir;
+    msg("Exiting...\n");
+    if (!Doxygen::entryDBFileName.isEmpty())
+    {
+      thisDir.remove(Doxygen::entryDBFileName);
+    }
+    if (!Doxygen::objDBFileName.isEmpty())
+    {
+      thisDir.remove(Doxygen::objDBFileName);
+    }
+  }
+}
 
 void parseInput()
 {
+  atexit(exitDoxygen);
+
   /**************************************************************************
    *            Make sure the output directory exists
    **************************************************************************/
@@ -9120,7 +9200,7 @@ void parseInput()
   signal(SIGINT, stopDoxygen);
 #endif
 
-  uint pid = iPid();
+  uint pid = portable_pid();
   Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
   Doxygen::objDBFileName.prepend(outputDirectory+"/");
   Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
@@ -9741,17 +9821,15 @@ void generateOutput()
 
   msg("Generating style sheet...\n");
   //printf("writing style info\n");
+  QCString genString = 
+        theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"));
   outputList->writeStyleInfo(0); // write first part
   outputList->disableAllBut(OutputGenerator::Latex);
-  outputList->parseText(
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
-          );
+  outputList->parseText(genString);
   outputList->writeStyleInfo(1); // write second part
   //parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(2); // write third part
-  outputList->parseText(
-            theTranslator->trGeneratedAt(dateToString(TRUE),Config_getString("PROJECT_NAME"))
-          );
+  outputList->parseText(genString);
   outputList->writeStyleInfo(3); // write fourth part
   //parseText(*outputList,theTranslator->trWrittenBy());
   outputList->writeStyleInfo(4); // write last part
@@ -9897,7 +9975,7 @@ void generateOutput()
     msg("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
-    if (iSystem(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
+    if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
     {
       err("Error: failed to run html help compiler on index.hhp");
     }
@@ -9934,5 +10012,6 @@ void generateOutput()
   delete Doxygen::symbolCache;
   delete Doxygen::symbolMap;
   delete Doxygen::symbolStorage;
+  g_successfulRun=TRUE;
 }
 

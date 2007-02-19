@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -21,16 +21,18 @@
 // translation by Dejan D. M. Milosavljevic <dmilos@email.com>;<dmilosx@ptt.yu>;<office@ddmrm.com>
 // // 10x 2 Ivana Miletic for gramatical consutation.
 
+// UTF-8 patch by Nenad Bulatovic <buletina@gmail.com>
+
 class TranslatorSerbian : public TranslatorAdapter_1_4_1
 {                                
 private:
    QCString decode(const QCString& sInput)
    { 
-#ifdef _WIN32
-     return ISO88592ToWin1250(sInput);
-#else
+//#ifdef _WIN32
+//     return ISO88592ToWin1250(sInput);
+//#else
      return sInput;
-#endif
+//#endif
    }
 
 
@@ -63,17 +65,18 @@ private:
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "";
+      QCString result="\\usepackage[serbian]{babel}\n";
+      return result;
     }
 
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-#ifdef _WIN32
-        { return "windows-1250"; }
-#else
-        { return "iso-8859-2"; }
-#endif
+//#ifdef _WIN32
+//        { return "windows-1250"; }
+//#else
+        { return "UTF-8"; }
+//#endif
     }
 
     // --- Language translation methods -------------------
@@ -84,56 +87,56 @@ private:
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return decode( "(To nisu funkcije èlanice.)" ); } 
+    { return decode( "(To nisu funkcije Älanice.)" ); } 
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return decode( "Op¹irnije obja¹njenje" ); } // detalj je francuska rec.
+    { return decode( "OpÅ¡irnije objaÅ¡njenje" ); } // detalj je francuska rec.
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return decode( "Dokumentacija typedef èlanova" ); }
+    { return decode( "Dokumentacija typedef Älanova" ); }
     
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return decode( "Dokumentacija enum èlanova" ); }
+    { return decode( "Dokumentacija enum Älanova" ); }
     
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return decode( "Dokumentacija funkcija èlanica" ); }
+    { return decode( "Dokumentacija funkcija Älanica" ); }
     
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Dokumentacija èlanova" ); 
+        return decode( "Dokumentacija Älanova" ); 
       }
       else
       {
-        return decode( "Dokumentacija javnih èlanova" ); 
+        return decode( "Dokumentacija javnih Älanova" ); 
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore() 
-    { return decode( "Jo¹..." ); }
+    { return decode( "JoÅ¡..." ); }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return decode( "Spisak svih èlanova." ); }
+    { return decode( "Spisak svih Älanova." ); }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return decode( "Spisak èlanova" ); }
+    { return decode( "Spisak Älanova" ); }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return decode( "Ovo je spisak svih èlanova " ); }
+    { return decode( "Ovo je spisak svih Älanova " ); }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return decode( ", ukljuèujuæi nasleğene èlanove." ); }
+    { return decode( ", ukljuÄujuÄ‡i nasleÄ‘ene Älanove." ); }
     
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -195,11 +198,11 @@ private:
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Svi èlanovi struktura" ); 
+        return decode( "Svi Älanovi struktura" ); 
       }             
       else
       {
-        return decode( "Svi èlanovi klasa" ); 
+        return decode( "Svi Älanovi klasa" ); 
       }
     }
 
@@ -208,11 +211,11 @@ private:
     { 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-       return decode( "Èlanovi datoteke" ); 
+       return decode( "ÄŒlanovi datoteke" ); 
       }
       else
       {
-       return decode( "Èlanovi datoteke" ); 
+       return decode( "ÄŒlanovi datoteke" ); 
       }
     }
 
@@ -226,12 +229,12 @@ private:
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return decode( "Tra¾i" ); }
+    { return decode( "TraÅ¾i" ); }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return decode( "Stablo nasleğivanja je slo¾eno "
-                     "pribli¾no po abecedi:" ); }
+    { return decode( "Stablo nasleÄ‘ivanja je sloÅ¾eno "
+                     "pribliÅ¾no po abecedi:" ); }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
@@ -252,7 +255,7 @@ private:
       }
       else
       {
-        return decode( "Spisak klasa, struktura, unija i interjfejsa sa kratkim opisom:" );
+        return decode( "Spisak klasa, struktura, unija i interfejsa sa kratkim opisom:" );
                
       }
     }
@@ -267,22 +270,22 @@ private:
       }
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="èlanova struktura ili unija";
+        result+="Älanova struktura ili unija";
       }
       else
       {
-        result+="èlanova klasa";
+        result+="Älanova klasa";
       }
       result+=" sa linkovima na ";
       if (extractAll) 
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="dokumentaciju èlanova struktura/unija:";  
+          result+="dokumentaciju Älanova struktura/unija:";  
         }
         else
         {
-          result+="dokumentaciju svakog èlana klase:";       
+          result+="dokumentaciju svakog Älana klase:";       
         }
       }
       else 
@@ -311,7 +314,7 @@ private:
       }
       else
       {
-        result+="èlanova";               
+        result+="Älanova";               
       }
      
       result+=" sa linkovima na ";
@@ -326,7 +329,7 @@ private:
 
     /*! This is an introduction to the page with the list of all header files. */
     virtual QCString trHeaderFilesDescription()
-    { return decode( "Zaglavlja koje izgrağuju API:" ); }
+    { return decode( "Zaglavlja koje izgraÄ‘uju API:" ); }
 
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
@@ -334,7 +337,7 @@ private:
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return decode( "Spisak svih sliènih stranica:" ); }
+    { return decode( "Spisak svih sliÄnih stranica:" ); }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
@@ -363,7 +366,7 @@ private:
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return decode( "Hijerarhijski sad¾raj" ); }
+    { return decode( "Hijerarhijski sadÅ¾raj" ); }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * annotated compound index.
@@ -372,11 +375,11 @@ private:
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       { 
-        return decode( "Glavni sadr¾aj" ); 
+        return decode( "Glavni sadrÅ¾aj" ); 
       }
       else
       {
-        return decode( "Glavni sadr¾aj" ); 
+        return decode( "Glavni sadrÅ¾aj" ); 
       }
     }
 
@@ -427,7 +430,7 @@ private:
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return decode( "Priruènik" ); }
+    { return decode( "PriruÄnik" ); }
     
     /*! This is used in the documentation of a file as a header before the 
      *  list of defines
@@ -548,16 +551,16 @@ private:
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return decode( QCString("Dijagram nasleğivanja za klasu ") + clName + ":" );
+      return decode( QCString("Dijagram nasleÄ‘ivanja za klasu ") + clName + ":" );
     }
     
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
-    { return decode( "Samo za unutra¹nju upotrebu." ); }
+    { return decode( "Samo za unutraÅ¡nju upotrebu." ); }
 
     /*! this text is generated when the \\reimp command is used. */
     virtual QCString trReimplementedForInternalReasons()
-    { return decode("Preurağeno zbog unutra¹njih razloga; Nema uticaja na API." ); }
+    { return decode("PreuraÄ‘eno zbog unutraÅ¡njih razloga; Nema uticaja na API." ); }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
@@ -565,7 +568,7 @@ private:
 
     /*! this text is generated when the \\bug command is used. */
     virtual QCString trBugsAndLimitations()
-    { return decode( "Gre¹ke i ogranièenja" ); }
+    { return decode( "GreÅ¡ke i ograniÄenja" ); }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
@@ -577,11 +580,11 @@ private:
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return decode( "Vraæene vrednosti" ); }
+    { return decode( "VraÄ‡ene vrednosti" ); }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return decode( "Takoğe pogledati" ); }
+    { return decode( "TakoÄ‘e pogledati" ); }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
@@ -649,7 +652,7 @@ private:
         case ClassDef::Category:   result+="kategorije "; break; // 
         case ClassDef::Exception:  result+="izuzetka "; break;
       }
-      if (isTemplate) result += "¹ablona ";  
+      if (isTemplate) result += "Å¡ablona ";  
       
       result += clName;
       return decode( result );
@@ -672,25 +675,25 @@ private:
     }
     
     virtual QCString trPublicMembers()
-    { return decode("Javni èlanovi"); }
+    { return decode("Javni Älanovi"); }
     virtual QCString trPublicSlots()
     { return "Javni slotovi"; }
     virtual QCString trSignals()
     { return "Signali"; }
     virtual QCString trStaticPublicMembers()
-    { return decode("Zajednièki javni èlanovi"); }
+    { return decode("ZajedniÄki javni Älanovi"); }
     virtual QCString trProtectedMembers()
-    { return decode("Za¹tiæeni èlanovi");  }
+    { return decode("ZaÅ¡tiÄ‡eni Älanovi");  }
     virtual QCString trProtectedSlots()
-    { return decode("Za¹tiæeni slotovi"); }
+    { return decode("ZaÅ¡tiÄ‡eni slotovi"); }
     virtual QCString trStaticProtectedMembers()
-    { return decode("Zajednièki za¹tiæeni èlanovi"); }
+    { return decode("ZajedniÄki zaÅ¡tiÄ‡eni Älanovi"); }
     virtual QCString trPrivateMembers()
-    { return decode("Privani èlanovi"); }
+    { return decode("Privatni Älanovi"); }
     virtual QCString trPrivateSlots()
     { return decode("Privatni slotovi"); }
     virtual QCString trStaticPrivateMembers()
-    { return decode("Zajednièki privatni èlanovi"); }
+    { return decode("ZajedniÄki privatni Älanovi"); }
     
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -722,7 +725,7 @@ private:
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return decode("Nasleğeno od "+trWriteList(numEntries)+".");
+      return decode("NasleÄ‘eno od "+trWriteList(numEntries)+".");
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -730,7 +733,7 @@ private:
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return decode( "Nasleğeno u "+trWriteList(numEntries)+"." );
+      return decode( "NasleÄ‘eno u "+trWriteList(numEntries)+"." );
     }
 
     /*! used in member documentation blocks to produce a list of 
@@ -738,7 +741,7 @@ private:
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return decode("Preurağeno od "+trWriteList(numEntries)+"." );
+      return decode("PreuraÄ‘eno od "+trWriteList(numEntries)+"." );
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -746,21 +749,21 @@ private:
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return decode("Preurağeno u "+trWriteList(numEntries)+"." );
+      return decode("PreuraÄ‘eno u "+trWriteList(numEntries)+"." );
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return decode("Èlanovi prostora imena"); }
+    { return decode("ÄŒlanovi prostora imena"); }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     { 
       QCString result="Spisak svih ";
       if (!extractAll) result+="dokumentovanih ";
-      result+="èlanova prostora imena sa linkovima na ";
+      result+="Älanova prostora imena sa linkovima na ";
       if (extractAll) 
-        result+="dokumentaciju svakog èlana prostora imena: ";
+        result+="dokumentaciju svakog Älana prostora imena: ";
       else 
         result+="prostor imena kojima pripadaju: ";
       return decode( result );
@@ -826,7 +829,7 @@ private:
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return decode( "Vraæena vrednost" ); }
+    { return decode( "VraÄ‡ena vrednost" ); }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
@@ -872,7 +875,7 @@ private:
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return decode( (QCString)"Dijagram nasleğenih èlanova za "+clName+":" );
+      return decode( (QCString)"Dijagram nasleÄ‘enih Älanova za "+clName+":" );
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
@@ -912,7 +915,7 @@ private:
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return decode( "Poèetna vriednost:" );
+      return decode( "PoÄetna vrednost:" );
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
@@ -921,15 +924,15 @@ private:
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return decode("Grafièki prikaz stabla klasa");
+      return decode("GrafiÄki prikaz stabla klasa");
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return decode("Prika¾i stablo klasa u grafièkom obliku");
+      return decode("PrikaÅ¾i stablo klasa u grafiÄkom obliku");
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return decode( "Prika¾i stablo klasa u tekstualnom obliku" );
+      return decode( "PrikaÅ¾i stablo klasa u tekstualnom obliku" );
     }
     virtual QCString trPageIndex()
     {
@@ -952,28 +955,28 @@ private:
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return decode( "Èlanovi" );        
+        return decode( "ÄŒlanovi" );        
       }
       else
       {
-        return decode( "Javni èlanovi" );
+        return decode( "Javni Älanovi" );
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return decode( "Zajednièki javni èlanovi");
+      return decode( "ZajedniÄki javni Älanovi");
     }
     virtual QCString trProtectedTypes()
     {
-      return decode( "Za¹tiæeni tipovi" );
+      return decode( "ZaÅ¡tiÄ‡eni tipovi" );
     }
     virtual QCString trProtectedAttribs()
     {
-      return decode( "Za¹tiæeni èlanovi" );
+      return decode( "ZaÅ¡tiÄ‡eni Älanovi" );
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return decode( "Zajednièki za¹tiæeni èlanovi" );
+      return decode( "ZajedniÄki zaÅ¡tiÄ‡eni Älanovi" );
     }
     virtual QCString trPrivateTypes()
     {
@@ -981,11 +984,11 @@ private:
     }
     virtual QCString trPrivateAttribs()
     {
-      return decode( "Privatni èlanovi" );
+      return decode( "Privatni Älanovi" );
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return decode( "Zajednièki privatni èlanovi" );
+      return decode( "ZajedniÄki privatni Älanovi" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -995,12 +998,12 @@ private:
     /*! Used as a marker that is put before a \\todo item */
     virtual QCString trTodo()
     {
-      return decode( "Neurağeno" );
+      return decode( "NeuraÄ‘eno" );
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return decode("Spisak neurağenog");
+      return decode("Spisak neuraÄ‘enog");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1009,20 +1012,20 @@ private:
 
     virtual QCString trReferencedBy()
     {
-      return decode( "Kori¹æeno od" ); 
+      return decode( "KoriÅ¡Ä‡eno od" ); 
     }
     virtual QCString trRemarks()
     {
-      return decode( "Zapa¾anja" );
+      return decode( "ZapaÅ¾anja" );
     }
     virtual QCString trAttention()
     {
-      return decode( "Pa¾nja" );
+      return decode( "PaÅ¾nja" );
     }
     virtual QCString trInclByDepGraph()
     {
       return decode("Ovaj graf pokazuje koja datoteka direktno "
-      "ili indirektno ukljuèuju ovu datoteku: ");
+      "ili indirektno ukljuÄuju ovu datoteku: ");
     }
     virtual QCString trSince()
     {
@@ -1036,7 +1039,7 @@ private:
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return decode( "Obja¹njenje kori¹æenih simbola" );
+      return decode( "ObjaÅ¡njenje koriÅ¡Ä‡enih simbola" );
     }
     /*! page explaining how the dot graph's should be interpreted 
      *  The %A in the text below are to prevent link to classes called "A".
@@ -1044,7 +1047,7 @@ private:
     virtual QCString trLegendDocs()
     {
       return decode(        
-       "Ova stranica obja¹njava kako tumaèiti grafikone koje je napravio "
+       "Ova stranica objaÅ¡njava kako tumaÄiti grafikone koje je napravio "
         "doxygen.<p>\n"
         "Na primer:\n"
         "\\code\n"
@@ -1076,29 +1079,29 @@ private:
         "};\n"
         "\\endcode\n"
         "Ako je \\c MAX_DOT_GRAPH_HEIGHT tag u konfiguracionoj datoteci "
-        "postavljen na  200 gornje veze æe izgledati:"
+        "postavljen na  200 gornje veze Ä‡e izgledati:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         
-        "Pravougaonici imaju sledeæa znaèenja:\n"
+        "Pravougaonici imaju sledeÄ‡a znaÄenja:\n"
         "<ul>\n"
          "<li>Puni crni predstavlja strukturu ili klasu za koju je graf napravljen.\n"
          "<li>Sa crnom ivicom predstavlja dokumentovanu strukturu ili klasu.\n"
          "<li>Sa sivom ivicom predstavlja nedokumentovanu strukturu ili klasu.\n"
          "<li>Sa crvenom ivicom predstavlja dokumentovanu strukturu ili klasu\n"
-         "za koju nije prikazan graf nasleğivanja/kori¹æenja. Graf je odseèen "
-         "ako ne stane unutar odreğenih granica." 
+         "za koju nije prikazan graf nasleÄ‘ivanja/koriÅ¡Ä‡enja. Graf je odseÄen "
+         "ako ne stane unutar odreÄ‘enih granica." 
         "</ul>" 
-        "Strelice imaju sledeæa znaèenja:\n"
+        "Strelice imaju sledeÄ‡a znaÄenja:\n"
         "<ul>\n"
-         "<li>Tamnoplava strelica oznaèava javno nasleğivanje.\n"
-         "<li>Tamnozelena strelica oznaèava za¹tiæeno nasleğivanje.\n"
-         "<li>Tamnocrvena strelica oznaèava privatno nasleğivanje.\n"
-         "<li>Ljubièasta isprekidana strelica ako je klasa koristi ili je njen èlan. "
-          "Strelica je oznaèena imenom èlana.\n"
-         "<li>Zuta strelica oznaèava vezu izmeğu primerka ¹ablona"
-          " i ¹ablon klase od koje je napravljena. "
-          "Strelica je oznaèena imenom prarametra ¹ablona.\n"
+         "<li>Tamnoplava strelica oznaÄava javno nasleÄ‘ivanje.\n"
+         "<li>Tamnozelena strelica oznaÄava zaÅ¡tiÄ‡eno nasleÄ‘ivanje.\n"
+         "<li>Tamnocrvena strelica oznaÄava privatno nasleÄ‘ivanje.\n"
+         "<li>LjubiÄasta isprekidana strelica ako je klasa koristi ili je njen Älan. "
+          "Strelica je oznaÄena imenom Älana.\n"
+         "<li>Zuta strelica oznaÄava vezu izmeÄ‘u primerka Å¡ablona"
+          " i Å¡ablon klase od koje je napravljena. "
+          "Strelica je oznaÄena imenom parametra Å¡ablona.\n"
         "</ul>\n"
          );
 
@@ -1106,7 +1109,7 @@ private:
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return decode( "Obja¹njenje kori¹æenih simbola" );
+      return decode( "ObjaÅ¡njenje koriÅ¡Ä‡enih simbola" );
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1163,7 +1166,7 @@ private:
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Strikture";
+        return "Strukture";
       }
       else
       {
@@ -1208,12 +1211,12 @@ private:
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return decode( "Gre¹ka" );
+      return decode( "GreÅ¡ka" );
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return decode( "Spisak gre¹aka" );
+      return decode( "Spisak greÅ¡aka" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1262,7 +1265,7 @@ private:
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return decode( "Sadr¾aj" );
+      return decode( "SadrÅ¾aj" );
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1327,7 +1330,7 @@ private:
      */
     virtual QCString trMember(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Èlan" : "èlan"));
+      QCString result((first_capital ? "ÄŒlan" : "Älan"));
       result+= (singular ? "" : "ovi");
       return decode( result ); 
     }
@@ -1387,7 +1390,7 @@ private:
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return decode( "Defini¹e "+trWriteList(numEntries)+"." );
+      return decode( "DefiniÅ¡e "+trWriteList(numEntries)+"." );
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1407,7 +1410,7 @@ private:
          */
     virtual QCString trRTFTableOfContents()
      {
-      return decode( "Sadr¾aj" );
+      return decode( "SadrÅ¾aj" );
      }
      
 //////////////////////////////////////////////////////////////////////////
@@ -1419,7 +1422,7 @@ private:
      */
     virtual QCString trDeprecatedList()
     {
-      return decode( "Spisak zastarelih funkcija èlanica" );
+      return decode( "Spisak zastarelih funkcija Älanica" );
     } 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.18
@@ -1430,12 +1433,12 @@ private:
      */
     virtual QCString trEvents()
     {
-      return decode( "Dogağaji" );
+      return decode( "DogaÄ‘aji" );
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return decode( "Dokumentacija dogağaja" );
+      return decode( "Dokumentacija dogaÄ‘aja" );
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.3
@@ -1459,7 +1462,7 @@ private:
      */
     virtual QCString trStaticPackageMembers()
     { 
-      return decode( "Statièke funkcije u paketu" );  // Zajednicke funkcije u paketu
+      return decode( "StatiÄke funkcije u paketu" );  // Zajednicke funkcije u paketu
     }
     /*! Used as a heading for a list of Java class variables with package 
      * scope.
@@ -1473,7 +1476,7 @@ private:
      */
     virtual QCString trStaticPackageAttribs()
     { 
-      return decode( "Statièki atributi u paketu" );  // Zajednicki clanovi u paketu
+      return decode( "StatiÄki atributi u paketu" );  // Zajednicki clanovi u paketu
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1503,14 +1506,14 @@ private:
      */
     virtual QCString trSearchForIndex()
     {
-      return decode("Tra¾i");
+      return decode("TraÅ¾i");
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return decode( "Rezultati pretra¾ivanja" );
+      return decode( "Rezultati pretraÅ¾ivanja" );
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
@@ -1524,20 +1527,20 @@ private:
     {
       if (numDocuments==0)
       {
-        return decode("Nema dokumenta koji odgovaraju va¹em upitu");
+        return decode("Nema dokumenta koji odgovaraju vaÅ¡em upitu");
       }
       else if (numDocuments==1)
       { // 10x 2 Ivana Miletic 4 gramatical consutation.
-        return decode("Nağen je <b>1</b> dokument koji odgovara va¹em upitu.");
+        return decode("NaÄ‘en je <b>1</b> dokument koji odgovara vaÅ¡em upitu.");
       }
     else if (numDocuments<5) 
     {  // 10x 2 Ivana Miletic 4 gramatical consutation.
-      return decode("Nağena su <b>$num</b> dokumenta koji odgovaraju va¹em upitu."
+      return decode("NaÄ‘ena su <b>$num</b> dokumenta koji odgovaraju vaÅ¡em upitu."
                     "Najbolji su prikazani prvi.");
     }
     else 
     {  // 10x 2 Ivana Miletic 4 gramatical consutation.
-      return decode("Nağeno je <b>$num</b> dokumenata koji odgovaraju va¹em upitu."
+      return decode("NaÄ‘eno je <b>$num</b> dokumenata koji odgovaraju vaÅ¡em upitu."
         "Najbolji su prikazani prvi.");
     }
     }
@@ -1546,7 +1549,7 @@ private:
      */
     virtual QCString trSearchMatches()
     {
-      return decode( "Pronağeno:" );
+      return decode( "PronaÄ‘eno:" );
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1586,7 +1589,7 @@ private:
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-    { return decode( "Stablo direktorijuma slozeno priblizno abecednim redom" );
+    { return decode( "Stablo direktorijuma slozeno pribliÅ¾no po abecednom redu" );
     }
 
     /*! This returns the title of a directory page. The name of the

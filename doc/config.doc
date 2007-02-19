@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -148,6 +148,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
 \refitem cfg_inline_sources INLINE_SOURCES
 \refitem cfg_input INPUT
+\refitem cfg_input_encoding INPUT_ENCODING
 \refitem cfg_input_filter INPUT_FILTER
 \refitem cfg_internal_docs INTERNAL_DOCS
 \refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
@@ -749,6 +750,13 @@ function's detailed documentation block.
 
  \b Note: 
  If this tag is empty the current directory is searched.
+
+\anchor cfg_input_encoding
+ This tag can be used to specify the character encoding of the source files that 
+ doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
+ input encoding. Doxygen uses libiconv (or the iconv built into libc) for the transcoding. 
+ See <a href="http://www.gnu.org/software/libiconv">the libiconv documentation</a> for 
+ the list of possible encodings.
 
 \anchor cfg_file_patterns
 <dt>\c FILE_PATTERNS <dd>

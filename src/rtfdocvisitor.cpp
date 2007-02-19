@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -29,8 +29,8 @@
 #include "parserintf.h"
 
 
-#define DBG_RTF(x) m_t << x
-//#define DBG_RTF(x) do {} while(0)
+//#define DBG_RTF(x) m_t << x
+#define DBG_RTF(x) do {} while(0)
 
 RTFDocVisitor::RTFDocVisitor(QTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
@@ -1294,12 +1294,12 @@ void RTFDocVisitor::visitPost(DocText *)
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocText)}\n");
 }
 
-static char* getMultiByte(int c)
-{
-    static char s[10];
-    sprintf(s,"\\'%X",c);
-    return s;
-}
+//static char* getMultiByte(int c)
+//{
+//    static char s[10];
+//    sprintf(s,"\\'%X",c);
+//    return s;
+//}
 
 void RTFDocVisitor::filter(const char *str,bool verbatim)
 { 
@@ -1310,21 +1310,21 @@ void RTFDocVisitor::filter(const char *str,bool verbatim)
     unsigned char pc='\0';
     while (*p)
     {
-      static bool MultiByte = FALSE;
+      //static bool MultiByte = FALSE;
       c=*p++;
 
-      if ( MultiByte )
-      {
-        m_t << getMultiByte( c );
-        MultiByte = FALSE;
-        continue;
-      }
-      if ( c >= 0x80 )
-      {
-        MultiByte = TRUE;
-        m_t << getMultiByte( c );
-        continue;
-      }
+      //if ( MultiByte )
+      //{
+      //  m_t << getMultiByte( c );
+      //  MultiByte = FALSE;
+      //  continue;
+      //}
+      //if ( c >= 0x80 )
+      //{
+      //  MultiByte = TRUE;
+      //  m_t << getMultiByte( c );
+      //  continue;
+      //}
 
       switch (c)
       {

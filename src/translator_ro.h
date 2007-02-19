@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -75,7 +75,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage{romanian}\n";
+      return "\\usepackage[romanian]{babel}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */

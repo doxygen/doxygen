@@ -16,6 +16,9 @@
 		<ToolFile
 			RelativePath=".\moc.rules"
 		/>
+		<ToolFile
+			RelativePath=".\Lex.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -29,10 +32,13 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="moc"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-				Name="moc"
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -113,10 +119,13 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="moc"
+			/>
+			<Tool
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
-				Name="moc"
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -201,6 +210,26 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\config.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\addon\doxywizard\doxywizard.cpp"
 				>
 			</File>
@@ -253,7 +282,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\addon\doxywizard\version.cpp"
+				RelativePath="..\src\portable.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\version.cpp"
 				>
 			</File>
 		</Filter>
@@ -288,6 +321,10 @@
 			</File>
 			<File
 				RelativePath="..\addon\doxywizard\inputstrlist.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\portable.h"
 				>
 			</File>
 			<File

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -17,6 +17,7 @@
  */
 
 #include "store.h"
+#include "portable.h"
 
 
 #include <stdio.h>
@@ -26,7 +27,7 @@
 #include <assert.h>
 
 #define BLOCK_SIZE         512 // should be >8 and a multiple of 8
-#define BLOCK_POINTER_SIZE sizeof(off_t)
+#define BLOCK_POINTER_SIZE sizeof(portable_off_t)
 
 
 #define ASSERTS_ENABLED
@@ -36,12 +37,6 @@
 #else
 #define STORE_ASSERT(x)
 #endif
-
-#ifdef _WIN32 // TODO: add 64bit support using _fseeki64 and _ftelli64 (studio 2003+ req)
-#define fseeko fseek
-#define ftello ftell
-#endif
-
 
 //------------------------------------------------------------------------------------
 
@@ -101,20 +96,20 @@ void Store::close()
   m_state  = Init;
 }
      
-off_t Store::alloc()
+portable_off_t Store::alloc()
 {
   STORE_ASSERT(m_state==Reading);
   m_state=Writing;
-  off_t pos;
+  portable_off_t pos;
   if (m_head==0) // allocate new block
   {
     //printf("alloc: new block\n");
-    if (fseeko(m_file,0,SEEK_END)==-1) // go to end of the file
+    if (portable_fseek(m_file,0,SEEK_END)==-1) // go to end of the file
     {
       fprintf(stderr,"Store::alloc: Error seeking to end of file: %s\n",strerror(errno));
       exit(1);
     }
-    pos = ftello(m_file);
+    pos = portable_ftell(m_file);
     STORE_ASSERT( (pos & (BLOCK_SIZE-1))==0 );
     m_front = pos + BLOCK_SIZE; // move front to end of this block
   }
@@ -127,7 +122,7 @@ off_t Store::alloc()
     m_head = node->next;
     delete node;
     // move to start of the block
-    if (fseeko(m_file,pos,SEEK_SET)==-1)
+    if (portable_fseek(m_file,pos,SEEK_SET)==-1)
     {
       fprintf(stderr,"Store::alloc: Error seeking to position %d: %s\n",
           (int)pos,strerror(errno));
@@ -142,10 +137,10 @@ off_t Store::alloc()
 int Store::write(const char *buf,uint size)
 {
   STORE_ASSERT(m_state==Writing);
-  //printf("%x: Store::write\n",(int)ftello(m_file));
+  //printf("%x: Store::write\n",(int)portable_ftell(m_file));
   do
   {
-    off_t curPos     = ftello(m_file);
+    portable_off_t curPos     = portable_ftell(m_file);
     int bytesInBlock = BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1));
     int bytesLeft    = bytesInBlock<(int)size ? (int)size-bytesInBlock : 0;
     int numBytes     = size - bytesLeft;
@@ -162,26 +157,26 @@ int Store::write(const char *buf,uint size)
     }
     if (bytesLeft>0) // still more bytes to write
     {
-      STORE_ASSERT(((ftello(m_file)+BLOCK_POINTER_SIZE)&(BLOCK_SIZE-1))==0);
+      STORE_ASSERT(((portable_ftell(m_file)+BLOCK_POINTER_SIZE)&(BLOCK_SIZE-1))==0);
       // allocate new block
       if (m_head==0) // no free blocks to reuse
       {
-        //printf("%x: Store::write: new: pos=%x\n",(int)m_front,(int)ftello(m_file));
+        //printf("%x: Store::write: new: pos=%x\n",(int)m_front,(int)portable_ftell(m_file));
         // write pointer to next block
         if (fwrite(&m_front,BLOCK_POINTER_SIZE,1,m_file)!=1)
         {
           fprintf(stderr,"Error writing to store: %s\n",strerror(errno));
           exit(1);
         }
-        STORE_ASSERT(ftello(m_file)==(curPos&~(BLOCK_SIZE-1))+BLOCK_SIZE);
+        STORE_ASSERT(portable_ftell(m_file)==(curPos&~(BLOCK_SIZE-1))+BLOCK_SIZE);
 
         // move to next block
-        if (fseeko(m_file,0,SEEK_END)==-1) // go to end of the file
+        if (portable_fseek(m_file,0,SEEK_END)==-1) // go to end of the file
         {
           fprintf(stderr,"Store::alloc: Error seeking to end of file: %s\n",strerror(errno));
           exit(1);
         }
-        STORE_ASSERT(ftello(m_file)==m_front);
+        STORE_ASSERT(portable_ftell(m_file)==m_front);
         // move front to the next of the block
         m_front+=BLOCK_SIZE;
       }
@@ -194,12 +189,12 @@ int Store::write(const char *buf,uint size)
           exit(1);
         }
         Node *node = m_head;
-        off_t pos = node->pos;
+        portable_off_t pos = node->pos;
         // point head to next free item
         m_head = node->next;
         delete node;
         // move to start of the block
-        if (fseeko(m_file,pos,SEEK_SET)==-1)
+        if (portable_fseek(m_file,pos,SEEK_SET)==-1)
         {
           fprintf(stderr,"Store::write: Error seeking to position %d: %s\n",
               (int)pos,strerror(errno));
@@ -218,7 +213,7 @@ int Store::write(const char *buf,uint size)
 void Store::end()
 {
   STORE_ASSERT(m_state==Writing);
-  off_t curPos     = ftello(m_file);
+  portable_off_t curPos     = portable_ftell(m_file);
   int bytesInBlock = BLOCK_SIZE - (curPos & (BLOCK_SIZE-1));
   //printf("%x: Store::end erasing %x bytes\n",(int)curPos&~(BLOCK_SIZE-1),bytesInBlock);
   //printf("end: bytesInBlock=%x\n",bytesInBlock);
@@ -231,13 +226,13 @@ void Store::end()
   m_state=Reading;
 }
 
-void Store::release(off_t pos)
+void Store::release(portable_off_t pos)
 {
   STORE_ASSERT(m_state==Reading);
   //printf("%x: Store::release\n",(int)pos);
   STORE_ASSERT(pos>0 && (pos & (BLOCK_SIZE-1))==0);
   // goto end of the block
-  off_t cur = pos, next;
+  portable_off_t cur = pos, next;
   while (1)
   {
     // add new node to the free list
@@ -247,7 +242,7 @@ void Store::release(off_t pos)
 
     m_head = node;
     // goto the end of cur block
-    if (fseeko(m_file,cur+BLOCK_SIZE-BLOCK_POINTER_SIZE,SEEK_SET)==-1)
+    if (portable_fseek(m_file,cur+BLOCK_SIZE-BLOCK_POINTER_SIZE,SEEK_SET)==-1)
     {
       fprintf(stderr,"Store::release: Error seeking to position %d: %s\n",
           (int)(cur+BLOCK_SIZE-BLOCK_POINTER_SIZE),strerror(errno));
@@ -266,11 +261,11 @@ void Store::release(off_t pos)
   }
 }
 
-void Store::seek(off_t pos)
+void Store::seek(portable_off_t pos)
 {
   STORE_ASSERT(m_state==Reading);
   //printf("%x: Store::seek\n",(int)pos);
-  if (fseeko(m_file,pos,SEEK_SET)==-1)
+  if (portable_fseek(m_file,pos,SEEK_SET)==-1)
   {
     fprintf(stderr,"Store::seek: Error seeking to position %d: %s\n",
         (int)pos,strerror(errno));
@@ -282,10 +277,10 @@ void Store::seek(off_t pos)
 int Store::read(char *buf,uint size)
 {
   STORE_ASSERT(m_state==Reading);
-  //printf("%x: Store::read total=%d\n",(int)ftello(m_file),size);
+  //printf("%x: Store::read total=%d\n",(int)portable_ftell(m_file),size);
   do
   {
-    off_t curPos     = ftello(m_file);
+    portable_off_t curPos     = portable_ftell(m_file);
     int bytesInBlock = BLOCK_SIZE - BLOCK_POINTER_SIZE - (curPos & (BLOCK_SIZE-1));
     int bytesLeft    = bytesInBlock<(int)size ? (int)size-bytesInBlock : 0;
     int numBytes     = size - bytesLeft;
@@ -293,7 +288,7 @@ int Store::read(char *buf,uint size)
 
     if (numBytes>0)
     {
-      //printf("%x: Store::read: %d out of %d bytes\n",(int)ftello(m_file),numBytes,size);
+      //printf("%x: Store::read: %d out of %d bytes\n",(int)portable_ftell(m_file),numBytes,size);
       if ((int)fread(buf,1,numBytes,m_file)!=numBytes)
       {
         fprintf(stderr,"Error reading from store: %s\n",strerror(errno));
@@ -303,9 +298,9 @@ int Store::read(char *buf,uint size)
     }
     if (bytesLeft>0)
     {
-      off_t newPos;
+      portable_off_t newPos;
       // read offset of the next block
-      STORE_ASSERT(((ftello(m_file)+BLOCK_POINTER_SIZE)&(BLOCK_SIZE-1))==0);
+      STORE_ASSERT(((portable_ftell(m_file)+BLOCK_POINTER_SIZE)&(BLOCK_SIZE-1))==0);
       if (fread((char *)&newPos,BLOCK_POINTER_SIZE,1,m_file)!=1)
       {
         fprintf(stderr,"Error reading from store: %s\n",strerror(errno));
@@ -317,7 +312,7 @@ int Store::read(char *buf,uint size)
       STORE_ASSERT((newPos&(BLOCK_SIZE-1))==0);
       curPos = newPos;
       // move to next block
-      if (fseeko(m_file,curPos,SEEK_SET)==-1)
+      if (portable_fseek(m_file,curPos,SEEK_SET)==-1)
       {
         fprintf(stderr,"Store::read: Error seeking to position %d: %s\n",
             (int)curPos,strerror(errno));
@@ -335,7 +330,7 @@ int Store::read(char *buf,uint size)
 void Store::printFreeList()
 {
   printf("FreeList: ");
-  off_t pos = m_head->pos;
+  portable_off_t pos = m_head->pos;
   while (pos)
   {
     printf("%x ",(int)pos);
@@ -354,7 +349,7 @@ void Store::printStats()
 
 int main()
 {
-  printf("sizeof(off_t)=%d\n",(int)sizeof(off_t));
+  printf("sizeof(portable_off_t)=%d\n",(int)sizeof(portable_off_t));
   Store s;
   if (s.open("test.db")==0)
   {
@@ -366,13 +361,13 @@ int main()
     {
       char buf[100];
 
-      off_t handle = s.alloc();
+      portable_off_t handle = s.alloc();
       for (i=0;i<1000000000;i++)
       {
         s.write(str1,strlen(str1)+1);
       }
       s.end();
-      off_t handle2 = s.alloc();
+      portable_off_t handle2 = s.alloc();
       for (i=0;i<10;i++)
       {
         s.write(str2,strlen(str2)+1);

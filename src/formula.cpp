@@ -2,7 +2,7 @@
  i
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -17,9 +17,6 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #include "qtbc.h"
 #include <qfile.h>
@@ -32,6 +29,7 @@
 #include "util.h"
 #include "message.h"
 #include "config.h"
+#include "portable.h"
 
 Formula::Formula(const char *text)
 {
@@ -105,7 +103,7 @@ void FormulaList::generateBitmaps(const char *path)
     //system("latex _formulas.tex </dev/null >/dev/null");
     QCString latexCmd = Config_getString("LATEX_CMD_NAME");
     if (latexCmd.isEmpty()) latexCmd="latex";
-    if (iSystem(latexCmd,"_formulas.tex")!=0)
+    if (portable_system(latexCmd,"_formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
@@ -127,7 +125,7 @@ void FormulaList::generateBitmaps(const char *path)
       // encapsulated postscript.
       sprintf(dviArgs,"-q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
           pageIndex,formBase.data());
-      if (iSystem("dvips",dviArgs)!=0)
+      if (portable_system("dvips",dviArgs)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
         return;
@@ -175,22 +173,15 @@ void FormulaList::generateBitmaps(const char *path)
       // The pixmap is a truecolor image, where only black and white are
       // used.  
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-	  // used the c version of program, so standard in / standard out work.
-	  const char *ghostscriptCommand = "gswin32c.exe";
-#else
-	  const char *ghostscriptCommand = "gs";
-#endif
-
       char gsArgs[4096];
       sprintf(gsArgs,"-q -g%dx%d -r%dx%dx -sDEVICE=ppmraw "
                     "-sOutputFile=%s.pnm -dNOPAUSE -dBATCH -- %s.ps",
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
-      if (iSystem(ghostscriptCommand,gsArgs)!=0)
+      if (portable_system(portable_ghostScriptCommand(),gsArgs)!=0)
       {
-        err("Problem running ghostscript %s %s. Check your installation!\n",ghostscriptCommand,gsArgs);
+        err("Problem running ghostscript %s %s. Check your installation!\n",portable_ghostScriptCommand(),gsArgs);
         return;
       }
       f.setName(formBase+".pnm");

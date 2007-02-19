@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -44,11 +44,7 @@
 #include "defargs.h"
 #include "debug.h"
 #include "bufstr.h"
-
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
+#include "portable.h"
 
 #define YY_NEVER_INTERACTIVE 1
   
@@ -202,7 +198,7 @@ static FILE *checkAndOpenFile(const QCString &absName)
     if (!filterName.isEmpty())
     {
       QCString cmd = filterName+" \""+absName+"\"";
-      f=popen(cmd,"r");
+      f=portable_popen(cmd,"r");
       if (!f) err("Error: could not execute filter %s\n",cmd.data());
     }
     else
@@ -2112,7 +2108,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    if (getFileFilter(fs->fileName.data()).isEmpty())
 					      fclose(fs->filePtr);
 					    else
-					      pclose(fs->filePtr);
+					      portable_pclose(fs->filePtr);
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->bufState );
 					    yy_delete_buffer( oldBuf );
@@ -2384,7 +2380,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   {
     QCString cmd = inputFilter+" \""+fileName+"\"";
     Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
-    preYYin = popen(cmd,"r");
+    preYYin = portable_popen(cmd,"r");
     if (!preYYin)
     {
       err("Error: could not execute filter %s\n",cmd.data());
@@ -2406,7 +2402,7 @@ void preprocessFile(const char *fileName,BufStr &output)
   if (inputFilter.isEmpty())
     fclose(preYYin);
   else
-    pclose(preYYin);
+    portable_pclose(preYYin);
   
   if (Debug::isFlagSet(Debug::Preprocessor))
   {

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,6 +20,7 @@
 #include "qtbc.h"
 #include "outputgen.h"
 #include "message.h"
+#include "portable.h"
 
 OutputGenerator::OutputGenerator()
 {
@@ -63,11 +64,37 @@ void OutputGenerator::startPlainFile(const char *name)
 
 void OutputGenerator::endPlainFile()
 {
-  //printf("endPlainFile(%s)\n",file->name());
-  fs.writeRawBytes(a.data(),a.size()) ;  // write string buffer to file
+  bool converted=false;
+  if (!encoding.isEmpty())
+  {
+    QByteArray enc(a.size()*4);
+    void *cd = portable_iconv_open(encoding,"UTF-8");
+    if (cd!=(void *)(-1))
+    {
+      size_t iLeft=a.size();
+      size_t oLeft=enc.size();
+      const char *inputPtr = a.data();
+      char *outputPtr = enc.data();
+      if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+      {
+        enc.resize(enc.size()-oLeft);
+        postProcess(enc);
+        //printf("a.size()=%d enc.size()=%d iLeft=%d oLeft=%d enc2.size()=%d\n",
+        //    a.size(),enc.size(),iLeft,oLeft,enc2.size());
+        fs.writeRawBytes(enc.data(),enc.size()) ;  // write string buffer to file
+        converted=TRUE;
+      }
+      portable_iconv_close(cd);
+    }
+  }
+  if (!converted)
+  {
+    //printf("endPlainFile(%s)\n",file->name());
+    fs.writeRawBytes(a.data(),a.size()) ;  // write string buffer to file
+  }
+  b.close();
   delete file; 
   file=0;
-  b.close();
   a.resize(0);
   b.setBuffer(a);
   b.open(IO_WriteOnly);

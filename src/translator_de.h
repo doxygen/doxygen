@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -137,9 +137,10 @@ class TranslatorGerman : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      QCString result="\\usepackage{ngerman}\n";
-      result+="\\usepackage[latin1]{inputenc}\n";
+      //QCString result="\\usepackage{ngerman}\n";
+      //result+="\\usepackage[latin1]{inputenc}\n";
       //result+="%\\usepackage[latin1]{inputenc}% Kodierung (cp850,latin1,ansinew)\n";
+      QCString result="\\usepackage[german]{babel}\n";
       return result;
     }
 
