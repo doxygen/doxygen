@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1081,7 +1081,7 @@ void HtmlDocVisitor::startLink(const QString &ref,const QString &file,
   m_t << "href=\"";
   if (!ref.isEmpty())
   {
-    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << relPath << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
   }
   else
   {

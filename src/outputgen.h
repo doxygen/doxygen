@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -278,6 +278,8 @@ class OutputGenerator : public BaseOutputDocInterface
     bool isEnabled() const { return active; }
     void pushGeneratorState();
     void popGeneratorState();
+    void setEncoding(const QCString &enc) { encoding = enc; }
+    virtual void postProcess(QByteArray &) { }
 
     virtual void printDoc(DocNode *,const char *langExt) = 0;
 
@@ -383,6 +385,7 @@ class OutputGenerator : public BaseOutputDocInterface
     QCString dir;
     bool active;
     QStack<bool> *genStack;
+    QString encoding;
 
   private:
     OutputGenerator(const OutputGenerator &o);

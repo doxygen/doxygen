@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -771,6 +771,8 @@ bool MemberDef::isLinkableInProject() const
   static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
   static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
   makeResident();
+
+  if (isHidden()) return FALSE;
   //printf("MemberDef::isLinkableInProject(name=%s)\n",name().data());
   if (m_impl->templateMaster)
   {
@@ -1792,7 +1794,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       else if (protection()==Package)   sl.append("package");
       if      (lvirt==Virtual)          sl.append("virtual");
       else if (lvirt==Pure)             sl.append("pure virtual");
-      if      (isSignal())              sl.append("signal");
+      if      (isSignal())             sl.append("signal");
       if      (isSlot())                sl.append("slot");
     }
     if (m_impl->classDef && m_impl->classDef!=container) sl.append("inherited");
@@ -2562,14 +2564,22 @@ void MemberDef::setSectionList(Definition *d, MemberList *sl)
   m_impl->classSectionSDict->append(key,sl);
 }
 
-Specifier MemberDef::virtualness() const
+Specifier MemberDef::virtualness(int count) const
 {
+  if (count>25) 
+  {
+     warn(getDefFileName(),getDefLine(),
+       "Warning: Internal inconsistency: recursion detected in overload relation for member %s!"
+       ,name().data()
+      );
+     return Normal;
+  }
   makeResident();
   Specifier v = m_impl->virt;
   MemberDef *rmd = reimplements();
   while (rmd && v==Normal)
   {
-    v = rmd->virtualness()==Normal ? Normal : Virtual;
+    v = rmd->virtualness(count+1)==Normal ? Normal : Virtual;
     rmd = rmd->reimplements();
   }
   return v;

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -135,6 +135,63 @@ void DefinitionImpl::init(const char *df,int dl,
 
 //-----------------------------------------------------------------------------------------
 
+static bool matchExcludedSymbols(const char *name)
+{
+  static QStrList &exclSyms = Config_getList("EXCLUDE_SYMBOLS");
+  if (exclSyms.count()==0) return FALSE; // nothing specified
+  const char *pat = exclSyms.first();
+  QCString symName = name;
+  while (pat)
+  {
+    QCString pattern = pat;
+    bool forceStart=FALSE;
+    bool forceEnd=FALSE;
+    if (pattern.at(0)=='^') 
+      pattern=pattern.mid(1),forceStart=TRUE;
+    if (pattern.at(pattern.length()-1)=='$') 
+      pattern=pattern.left(pattern.length()-1),forceEnd=TRUE;
+    if (pattern.find('*')!=-1) // wildcard mode
+    {
+      QRegExp re(substitute(pattern,"*",".*"),TRUE);
+      int i,pl;
+      i = re.match(symName,0,&pl);
+      //printf("  %d = re.match(%s) pattern=%s\n",i,symName.data(),pattern.data());
+      if (i!=-1) // wildcard match
+      {
+        int sl=symName.length();
+        // check if it is a whole word match
+        if ((i==0     || pattern.at(0)=='*'    || (!isId(symName.at(i-1))  && !forceStart)) &&
+            (i+pl==sl || pattern.at(i+pl)=='*' || (!isId(symName.at(i+pl)) && !forceEnd))
+           )
+        {
+          //printf("--> name=%s pattern=%s match at %d\n",symName.data(),pattern.data(),i);
+          return TRUE;
+        }
+      }
+    }
+    else if (!pattern.isEmpty()) // match words
+    {
+      int i = symName.find(pattern);
+      if (i!=-1) // we have a match!
+      {
+        int pl=pattern.length();
+        int sl=symName.length();
+        // check if it is a whole word match
+        if ((i==0     || (!isId(symName.at(i-1))  && !forceStart)) &&
+            (i+pl==sl || (!isId(symName.at(i+pl)) && !forceEnd))
+           )
+        {
+          //printf("--> name=%s pattern=%s match at %d\n",symName.data(),pattern.data(),i);
+          return TRUE; 
+        }
+      }
+    }
+    pat = exclSyms.next();
+  }
+  //printf("--> name=%s: no match\n",name);
+  return FALSE;
+}
+
 void Definition::addToMap(const char *name,Definition *d)
 {
   QCString symbolName = name;
@@ -224,6 +281,7 @@ Definition::Definition(const char *df,int dl,
   if (isSymbol) addToMap(name,this);
   _setBriefDescription(b,df,dl);
   _setDocumentation(d,df,dl,TRUE);
+  if (matchExcludedSymbols(name)) m_impl->hidden = TRUE;
 }
 
 Definition::~Definition()
@@ -472,6 +530,7 @@ static bool readCodeFragment(const char *fileName,
     }
     if (Config_getBool("FILTER_SOURCE_FILES")) pclose(f); else fclose(f);
   }
+  result = transcodeCharacterStringToUTF8(result);
   return found;
 }
 
@@ -849,6 +908,7 @@ void Definition::setOuterScope(Definition *d)
     m_impl->qualifiedName.resize(0); // flush cached scope name
     m_impl->outerScope = d; 
   }
+  m_impl->hidden = m_impl->hidden || d->isHidden();
 }
 
 QCString Definition::localName() const
@@ -1079,12 +1139,12 @@ bool Definition::isHidden() const
 
 bool Definition::isVisibleInProject() const 
 { 
-  return isLinkableInProject() || m_impl->hidden; 
+  return isLinkableInProject() && !m_impl->hidden; 
 }
 
 bool Definition::isVisible() const
 { 
-  return isLinkable() || m_impl->hidden; 
+  return isLinkable() && !m_impl->hidden; 
 }
 
 QCString Definition::getReference() const 
@@ -1155,7 +1215,7 @@ void Definition::_setSymbolName(const QCString &name)
 void Definition::setHidden(bool b) 
 { 
   makeResident();
-  m_impl->hidden = b; 
+  m_impl->hidden = m_impl->hidden || b; 
 }
 
 void Definition::setLocalName(const QCString name) 

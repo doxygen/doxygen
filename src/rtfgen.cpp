@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Parker Waechter & Dimitri van Heesch.
  *
  * Style sheet additions by Alexander Bartolich
  *
@@ -324,6 +324,7 @@ void RTFGenerator::beginRTFSection()
 
 void RTFGenerator::startFile(const char *name,const char *,const char *)
 {
+  setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp().data()));
   QCString fileName=name;
   relPath = relativePathToRoot(fileName);
 
@@ -1600,13 +1601,13 @@ void RTFGenerator::endSection(const char *lab,SectionInfo::SectionType)
 //  writeSectionRef(name,lab,title);
 //}
 
-char* RTFGenerator::getMultiByte(int c)
-{
-    static char s[10];
-
-    sprintf(s,"\\'%X",c);
-    return s;
-}
+//char* RTFGenerator::getMultiByte(int c)
+//{
+//    static char s[10];
+//
+//    sprintf(s,"\\'%X",c);
+//    return s;
+//}
 
 void RTFGenerator::docify(const char *str)
 {
@@ -1617,9 +1618,10 @@ void RTFGenerator::docify(const char *str)
     unsigned char pc='\0';
     while (*p)
     {
-      static bool MultiByte = FALSE;
+      //static bool MultiByte = FALSE;
       c=*p++;
 
+#if 0
       if ( MultiByte )
       {
         t << getMultiByte( c );
@@ -1632,6 +1634,7 @@ void RTFGenerator::docify(const char *str)
         t << getMultiByte( c );
         continue;
       }
+#endif
 
       switch (c)
       {
@@ -1664,10 +1667,11 @@ void RTFGenerator::codify(const char *str)
 
     while (*p)
     {
-      static bool MultiByte = FALSE;
+      //static bool MultiByte = FALSE;
 
       c=*p++;
 
+#if 0
       if( MultiByte )
       {
         t << getMultiByte( c );
@@ -1680,6 +1684,7 @@ void RTFGenerator::codify(const char *str)
         t << getMultiByte( c );
         continue;
       }
+#endif
 
       switch(c)
       {
@@ -2517,3 +2522,26 @@ void RTFGenerator::rtfwriteRuler_thin()
   t << "{\\pard\\widctlpar\\brdrb\\brdrs\\brdrw5\\brsp20 \\adjustright \\par}" << endl; 
 }
 
+void RTFGenerator::postProcess(QByteArray &a)
+{
+  QByteArray enc(a.size()*4); // worst case
+  int off=0;
+  uint i;
+  for (i=0;i<a.size();i++)
+  {
+    unsigned char c = (unsigned char)a.at(i);
+    if (c>0x80)
+    {
+      char s[10];
+      sprintf(s,"\\'%X",c);
+      qstrcpy(enc.data()+off,s);
+      off+=qstrlen(s);
+    }
+    else
+    {
+      enc.at(off++)=c;
+    }
+  }
+  enc.resize(off);
+  a = enc;
+}

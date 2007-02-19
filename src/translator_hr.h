@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -77,14 +77,14 @@ class TranslatorCroatian : public Translator
         /*! to avoid macro redefinition from translator_cz.h */
         inline QCString decode(const QCString& sInput)
         { 
-          if (Config_getBool("USE_WINDOWS_ENCODING"))
-          {
-            return ISO88592ToWin1250(sInput);
-          }
-          else
-          {
+          //if (Config_getBool("USE_WINDOWS_ENCODING"))
+          //{
+          //  return ISO88592ToWin1250(sInput);
+          //}
+          //else
+          //{
             return sInput;
-          }
+          //}
         }
   
   public:
@@ -92,14 +92,14 @@ class TranslatorCroatian : public Translator
     { return "croatian"; }
     QCString idLanguageCharset()
     {
-      if (Config_getBool("USE_WINDOWS_ENCODING"))
-      {
-        return "windows-1250"; 
-      }
-      else
-      {
+      //if (Config_getBool("USE_WINDOWS_ENCODING"))
+      //{
+      //  return "windows-1250"; 
+      //}
+      //else
+      //{
         return "iso-8859-2";
-      }
+      //}
     }
     QCString latexLanguageSupportCommand()
     { return "\\usepackage[croatian]{babel}\n"; }

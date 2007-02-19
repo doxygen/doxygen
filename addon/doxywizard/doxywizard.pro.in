@@ -1,7 +1,7 @@
 #
 # 
 #
-# Copyright (C) 1997-2006 by Dimitri van Heesch.
+# Copyright (C) 1997-2007 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby
@@ -27,8 +27,9 @@ HEADERS     =	doxywizard.h \
                 inputbool.h \
 		inputstrlist.h \
 		inputint.h \
-                expert.h \ 
-                config.h
+                expert.h  \
+                config.h \
+                portable.h 
 
 # source flle for the project
 SOURCES     =	doxywizard.cpp \
@@ -38,7 +39,8 @@ SOURCES     =	doxywizard.cpp \
 		inputstrlist.cpp \
 		inputint.cpp \
                 expert.cpp \ 
-                config.cpp
+                config.cpp \
+                portable.cpp
 
 # where to put the objects
 OBJECTS_DIR =   obj

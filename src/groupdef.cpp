@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -153,6 +153,7 @@ void GroupDef::findSectionsInDocumentation()
 
 void GroupDef::addFile(const FileDef *def)
 {
+  if (def->isHidden()) return;
   if (Config_getBool("SORT_BRIEF_DOCS"))
     fileList->inSort(def);
   else
@@ -161,6 +162,7 @@ void GroupDef::addFile(const FileDef *def)
 
 void GroupDef::addClass(const ClassDef *cd)
 {
+  if (cd->isHidden()) return;
   if (Config_getBool("SORT_BRIEF_DOCS"))
     classSDict->inSort(cd->name(),cd);
   else
@@ -169,6 +171,7 @@ void GroupDef::addClass(const ClassDef *cd)
 
 void GroupDef::addNamespace(const NamespaceDef *def)
 {
+  if (def->isHidden()) return;
   if (Config_getBool("SORT_BRIEF_DOCS"))
     namespaceSDict->inSort(def->name(),def);  
   else
@@ -177,6 +180,7 @@ void GroupDef::addNamespace(const NamespaceDef *def)
 
 void GroupDef::addDir(const DirDef *def)
 {
+  if (def->isHidden()) return;
   if (Config_getBool("SORT_BRIEF_DOCS"))
     dirList->inSort(def);  
   else
@@ -185,6 +189,7 @@ void GroupDef::addDir(const DirDef *def)
 
 void GroupDef::addPage(PageDef *def)
 {
+  if (def->isHidden()) return;
   //printf("Making page %s part of a group\n",def->name.data());
   pageDict->append(def->name(),def);
   def->makePartOfGroup(this);
@@ -192,6 +197,7 @@ void GroupDef::addPage(PageDef *def)
 
 void GroupDef::addExample(const PageDef *def)
 {
+  if (def->isHidden()) return;
   exampleDict->append(def->name(),def);
 }
 
@@ -229,6 +235,7 @@ void GroupDef::addMembersToMemberGroup()
 
 bool GroupDef::insertMember(MemberDef *md,bool docOnly)
 {
+  if (md->isHidden()) return FALSE;
   //printf("GroupDef(%s)::insertMember(%s)\n", title.data(), md->name().data());
   MemberNameInfo *mni=0;
   if ((mni=(*allMemberNameInfoSDict)[md->name()]))

@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -223,7 +223,7 @@ If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,
 it is sometimes desired to place the documentation block after the member 
 instead of before. For this purpose you have to put an additional \< marker
-in the comment block.
+in the comment block. Note that this also works for the parameters of a function.
 
 Here are some examples:
 \verbatim

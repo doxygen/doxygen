@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="Doxytag"
 	ProjectGUID="{EE0E8466-1E25-4FBC-B273-5EA6776EFE95}"
+	RootNamespace="Doxytag"
 	>
 	<Platforms>
 		<Platform
@@ -11,6 +12,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<ToolFile
+			RelativePath=".\Lex.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -28,6 +32,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="Lex"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -124,6 +131,9 @@
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="Lex"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -208,7 +218,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\src\config.cpp"
+				RelativePath="..\src\doxytag.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -230,24 +240,22 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\doxytag.cpp"
+				RelativePath="..\src\doxytag.l"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PtagYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PtagYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>

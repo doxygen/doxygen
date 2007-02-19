@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2005 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -46,7 +46,8 @@ class TranslatorGreek : public Translator
 
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[greek,english]{babel}\n\\usepackage[iso-8859-7]{inputenc}\n";
+      //return "\\usepackage[greek,english]{babel}\n\\usepackage[iso-8859-7]{inputenc}\n";
+      return "\\usepackage[greek,english]{babel}\n";
     }
 
     /*! return the language charset. This will be used for the HTML output */

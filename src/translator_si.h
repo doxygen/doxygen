@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,15 +37,15 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      */
     QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[slovene]{babel} \n\\usepackage[latin2]{inputenc} \n\\usepackage[T1]{fontenc}\n";
+      return "\\usepackage[slovene]{babel}\n\\usepackage[T1]{fontenc}\n";
     }
     QCString idLanguageCharset()
     { 
-#ifdef _WIN32
+//#ifdef _WIN32
       return "windows-1250"; 
-#else
-      return "iso-8859-2"; 
-#endif
+//#else
+//      return "iso-8859-2"; 
+//#endif
     }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }

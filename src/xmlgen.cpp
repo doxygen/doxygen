@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -563,6 +563,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   
   // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
+  if (md->isHidden()) return;
 
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
@@ -1051,7 +1052,7 @@ static void writeInnerClasses(const ClassSDict *cl,QTextStream &t)
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      if (cd->name().find('@')==-1) // skip anonymous scopes
+      if (!cd->isHidden() && cd->name().find('@')==-1) // skip anonymous scopes
       {
         t << "    <innerclass refid=\"" << cd->getOutputFileBase()
           << "\" prot=\"";
@@ -1076,7 +1077,7 @@ static void writeInnerNamespaces(const NamespaceSDict *nl,QTextStream &t)
     NamespaceDef *nd;
     for (nli.toFirst();(nd=nli.current());++nli)
     {
-      if (nd->name().find('@')==-1) // skip anonymouse scopes
+      if (!nd->isHidden() && nd->name().find('@')==-1) // skip anonymouse scopes
       {
         t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
           << "\">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
@@ -1166,6 +1167,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   // - examples using the class
   
   if (cd->isReference())        return; // skip external references.
+  if (cd->isHidden())           return; // skip hidden classes.
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
@@ -1393,7 +1395,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
   // + location
   // - files containing (parts of) the namespace definition
 
-  if (nd->isReference()) return; // skip external references
+  if (nd->isReference() || nd->isHidden()) return; // skip external references
 
   ti << "  <compound refid=\"" << nd->getOutputFileBase() 
      << "\" kind=\"namespace\"" << "><name>" 

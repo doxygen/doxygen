@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -49,6 +49,7 @@ class RTFGenerator : public OutputGenerator
     void writeFooter() {}
     void endFile();
     void clearBuffer();
+    void postProcess(QByteArray &);
     
     //void writeIndex();
 	
@@ -298,7 +299,7 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_thick();
     void rtfwriteRuler_thin();
     void writeRTFReference(const char *label);
-    char *getMultiByte(int c);
+    //char *getMultiByte(int c);
 };
 
 #endif

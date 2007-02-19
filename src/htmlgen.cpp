@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -546,8 +546,9 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
 
   t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
     "<html><head>" 
-    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=" 
-         << theTranslator->idLanguageCharset() << "\">\n"
+    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8" 
+         //<< theTranslator->idLanguageCharset() 
+         << "\">\n"
     "<title>"; 
   t << convertToHtml(title);
   t << "</title>\n";
@@ -777,6 +778,10 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
     if (ref)
     {
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
+    }
+    else
+    {
+      t << relPath;
     }
     if (f) t << f << Doxygen::htmlFileExtension << "\">";
   }

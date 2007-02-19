@@ -12,6 +12,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<ToolFile
+			RelativePath=".\Lex.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -31,6 +34,9 @@
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="Lex"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -45,8 +51,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5"
-				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -71,7 +77,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="qtools.lib libpng.lib zlib.lib ws2_32.lib"
+				AdditionalDependencies="qtools.lib libpng.lib zlib.lib ws2_32.lib iconv.lib"
 				OutputFile="..\bin\Debug\doxygen.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -126,6 +132,9 @@
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="Lex"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -143,8 +152,8 @@
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\src,..\qtools,..\libpng,..\libmd5,."
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC;CHARSET_STATIC"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -169,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib libpng.lib zlib.lib "
+				AdditionalDependencies="qtools.lib libpng.lib zlib.lib iconv.lib"
 				OutputFile="..\bin\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -216,24 +225,6 @@
 			<File
 				RelativePath="..\src\ce_lex.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\ce_parse.cpp"
@@ -326,88 +317,128 @@
 			<File
 				RelativePath="..\src\code.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\code.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PcodeYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\commentcnv.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\commentcnv.l"
+				>
 			</File>
 			<File
 				RelativePath="..\src\commentscan.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\commentscan.l"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PcommentScanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\config.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\config.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex  -PconfigYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\constexp.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
+						AdditionalDependencies="$(InputDir)constexp.l"
+						Output="$(InputDir)ce_lex.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex  -PcppExpYY -t $(InputDir)constexp.l &gt;$(InputDir)ce_lex.cpp"
+						AdditionalDependencies="$(InputDir)constexp.l"
+						Output="$(InputDir)ce_lex.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\constexp.y"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
+						Outputs="$(InputDir)\..\src\ce_parse.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Running bison on constexp.y"
+						CommandLine="runbison.bat $(InputDir)&#x0D;&#x0A;"
+						Outputs="$(InputDir)\..\src\ce_parse.cpp"
 					/>
 				</FileConfiguration>
 			</File>
@@ -458,44 +489,48 @@
 			<File
 				RelativePath="..\src\declinfo.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\declinfo.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdeclinfoYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\defargs.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\defargs.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdefargsYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -634,22 +669,24 @@
 			<File
 				RelativePath="..\src\doctokenizer.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\doctokenizer.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PdoctokenizerYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1410,68 +1447,78 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\portable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\pre.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pre.l"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex  -PpreYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\pycode.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\pycode.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PpycodeYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\pyscanner.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\pyscanner.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1566,22 +1613,24 @@
 			<File
 				RelativePath="..\src\scanner.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\src\scanner.l"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						Name="Lex"
+						CommandLine="flex -PscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2017,6 +2066,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\portable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\pre.h"
 				>
 			</File>
@@ -2230,6 +2283,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_za.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translatordecoder.h"
 				>
 			</File>
 			<File

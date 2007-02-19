@@ -1,9 +1,9 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,6 +33,7 @@
 #include "docparser.h"
 #include "debug.h"
 #include "pagedef.h"
+#include "portable.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -527,7 +528,7 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=*s;
     }
-    if ((exitCode=iSystem(dotExe,dotArgs,FALSE))!=0)
+    if ((exitCode=portable_system(dotExe,dotArgs,FALSE))!=0)
     {
       goto error;
     }
@@ -537,7 +538,7 @@ bool DotRunner::run()
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs="\""+m_file+"\" "+*s;
-      if ((exitCode=iSystem(dotExe,dotArgs,FALSE))!=0)
+      if ((exitCode=portable_system(dotExe,dotArgs,FALSE))!=0)
       {
         goto error;
       }
@@ -2063,7 +2064,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs)!=0)
+        if (portable_system("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2370,7 +2371,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs)!=0)
+        if (portable_system("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2649,7 +2650,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs)!=0)
+        if (portable_system("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2780,7 +2781,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
         QCString epstopdfArgs(maxCmdLine);
         epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
             baseName.data(),baseName.data());
-        if (iSystem("epstopdf",epstopdfArgs)!=0)
+        if (portable_system("epstopdf",epstopdfArgs)!=0)
         {
           err("Error: Problems running epstopdf. Check your TeX installation!\n");
           QDir::setCurrent(oldDir);
@@ -2902,22 +2903,11 @@ void generateGraphLegend(const char *path)
   QDir::setCurrent(oldDir);
 }
   
-#undef PUTENV
-#if defined(_WIN32) && (!defined(__BORLANDC__) || (__BORLANDC__ < 0x0550))
-#define PUTENV _putenv
-#else 
-#define PUTENV putenv
-#endif
-
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format)
 {
   QCString absOutFile = outDir;
-#ifdef _WIN32
-  absOutFile+='\\';
-#else
-  absOutFile+='/';
-#endif
+  absOutFile+=portable_pathSeparator();
   absOutFile+=outFile;
 
   // chdir to the output dir, so dot can find the font file.
@@ -2926,18 +2916,14 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
-  QCString env = getenv("DOTFONTPATH");
+  QCString env = portable_getenv("DOTFONTPATH");
   if (env==".") // this path was set by doxygen, so dot can find the FreeSans.ttf font, 
                 // for user defined graphs we use the default search path built into dot, 
                 // unless the user has set the DOTFONTPATH as well. 
   {
     // temporarily remove the DOTFONTPATH environment variable
     // so dot will use the built-in search path.
-#ifdef _WIN32
-    SetEnvironmentVariable("DOTFONTPATH", 0);
-#else
-    unsetenv("DOTFONTPATH");
-#endif
+    portable_unsetenv("DOTFONTPATH");
   }
   
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
@@ -2959,7 +2945,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                          outFile,outFile);
-    if (iSystem("epstopdf",epstopdfArgs)!=0)
+    if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
       err("Error: Problems running epstopdf. Check your TeX installation!\n");
     }
@@ -2970,11 +2956,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   if (env==".")
   {
     // restore the DOTFONTPATH variable again
-#ifdef _WIN32
-    SetEnvironmentVariable("DOTFONTPATH", env);
-#else
-    setenv("DOTFONTPATH",env,1);
-#endif
+    portable_setenv("DOTFONTPATH",env);
   }
 
 error:
@@ -3320,7 +3302,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       QCString epstopdfArgs(maxCmdLine);
       epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
           baseName.data(),baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs)!=0)
+      if (portable_system("epstopdf",epstopdfArgs)!=0)
       {
         err("Error: Problems running epstopdf. Check your TeX installation!\n");
         QDir::setCurrent(oldDir);

@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -40,6 +40,7 @@
 #include "section.h"
 #include "searchindex.h"
 #include "language.h"
+#include "portable.h"
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -220,7 +221,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            outputDir.data(), baseName.data(),
 			   outputDir.data(), baseName.data());
-      if (iSystem("epstopdf",epstopdfArgs)!=0)
+      if (portable_system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Error: Problems running epstopdf. Check your TeX installation!\n");
       }
@@ -5642,7 +5643,6 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             bool isExample, const char *exampleName,
                             bool singleLine, bool linkFromIndex)
 {
-  
   //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
   //                                     md?md->name().data():"<none>");
   //printf("========== validating %s at line %d\n",fileName,startLine);

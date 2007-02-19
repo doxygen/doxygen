@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2006 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -19,6 +19,7 @@
 #include "language.h"
 #include "lang_cfg.h"
 #include "translator.h"
+#include "translatordecoder.h"
 #include "translator_en.h"
 #if !defined(ENGLISH_ONLY)
 #include "translator_adapter.h"
@@ -159,55 +160,55 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SE
   else if (L_EQUAL("swedish"))
   {
-    theTranslator=new TranslatorSwedish;
+    theTranslator=new TranslatorDecoder(new TranslatorSwedish);
   }
 #endif
 #ifdef LANG_CZ
   else if (L_EQUAL("czech"))
   {
-    theTranslator=new TranslatorCzech;
+    theTranslator=new TranslatorDecoder(new TranslatorCzech);
   }
 #endif
 #ifdef LANG_FR  
   else if (L_EQUAL("french"))
   {
-    theTranslator=new TranslatorFrench;
+    theTranslator=new TranslatorDecoder(new TranslatorFrench);
   }
 #endif
 #ifdef LANG_ID  
   else if (L_EQUAL("indonesian"))
   {
-    theTranslator=new TranslatorIndonesian;
+    theTranslator=new TranslatorDecoder(new TranslatorIndonesian);
   }
 #endif
 #ifdef LANG_IT  
   else if (L_EQUAL("italian"))
   {
-    theTranslator=new TranslatorItalian;
+    theTranslator=new TranslatorDecoder(new TranslatorItalian);
   }
 #endif
 #ifdef LANG_DE
   else if (L_EQUAL("german"))
   {
-    theTranslator=new TranslatorGerman;
+    theTranslator=new TranslatorDecoder(new TranslatorGerman);
   }
 #endif
 #ifdef LANG_JP
   else if (L_EQUAL("japanese"))
   {
-    theTranslator=new TranslatorJapanese;
+    theTranslator=new TranslatorDecoder(new TranslatorJapanese);
   }
 #endif
 #ifdef LANG_JE
   else if (L_EQUAL("japanese-en"))
   {
-    theTranslator=new TranslatorJapaneseEn;
+    theTranslator=new TranslatorDecoder(new TranslatorJapaneseEn);
   }
 #endif
 #ifdef LANG_ES
   else if (L_EQUAL("spanish"))
   {
-    theTranslator=new TranslatorSpanish;
+    theTranslator=new TranslatorDecoder(new TranslatorSpanish);
   }
 #endif
 #ifdef LANG_FI
@@ -221,139 +222,139 @@ bool setTranslator(const char *langName)
 #ifdef LANG_RU
   else if (L_EQUAL("russian"))
   {
-    theTranslator=new TranslatorRussian;
+    theTranslator=new TranslatorDecoder(new TranslatorRussian);
   }
 #endif
 #ifdef LANG_HR
   else if (L_EQUAL("croatian"))
   {
-    theTranslator=new TranslatorCroatian;
+    theTranslator=new TranslatorDecoder(new TranslatorCroatian);
   }
 #endif
 #ifdef LANG_PL
   else if (L_EQUAL("polish"))
   {
-    theTranslator=new TranslatorPolish;
+    theTranslator=new TranslatorDecoder(new TranslatorPolish);
   }
 #endif
 #ifdef LANG_PT
   else if (L_EQUAL("portuguese"))
   {
-    theTranslator=new TranslatorPortuguese;
+    theTranslator=new TranslatorDecoder(new TranslatorPortuguese);
   }
 #endif
 #ifdef LANG_HU
   else if (L_EQUAL("hungarian"))
   {
-    theTranslator=new TranslatorHungarian;
+    theTranslator=new TranslatorDecoder(new TranslatorHungarian);
   }
 #endif
 #ifdef LANG_KR
   else if (L_EQUAL("korean"))
   {
-    theTranslator=new TranslatorKorean;
+    theTranslator=new TranslatorDecoder(new TranslatorKorean);
   }
 #endif
 #ifdef LANG_KE
   else if (L_EQUAL("korean-en"))
   {
-    theTranslator=new TranslatorKoreanEn;
+    theTranslator=new TranslatorDecoder(new TranslatorKoreanEn);
   }
 #endif
 #ifdef LANG_RO
   else if (L_EQUAL("romanian"))
   {
-    theTranslator=new TranslatorRomanian;
+    theTranslator=new TranslatorDecoder(new TranslatorRomanian);
   }
 #endif
 #ifdef LANG_SI
   else if (L_EQUAL("slovene"))
   {
-    theTranslator=new TranslatorSlovene;
+    theTranslator=new TranslatorDecoder(new TranslatorSlovene);
   }
 #endif
 #ifdef LANG_CN
   else if (L_EQUAL("chinese"))
   {
-    theTranslator=new TranslatorChinese;
+    theTranslator=new TranslatorDecoder(new TranslatorChinese);
   }
 #endif
 #ifdef LANG_TW
   else if (L_EQUAL("chinese-traditional"))
   {
-    theTranslator=new TranslatorChinesetraditional;
+    theTranslator=new TranslatorDecoder(new TranslatorChinesetraditional);
   }
 #endif
 #ifdef LANG_NO
   else if (L_EQUAL("norwegian"))
   {
-    theTranslator=new TranslatorNorwegian;
+    theTranslator=new TranslatorDecoder(new TranslatorNorwegian);
   }
 #endif
 #ifdef LANG_BR
   else if (L_EQUAL("brazilian"))
   {
-    theTranslator=new TranslatorBrazilian;
+    theTranslator=new TranslatorDecoder(new TranslatorBrazilian);
   }
 #endif
 #ifdef LANG_DK
   else if (L_EQUAL("danish"))
   {
-    theTranslator=new TranslatorDanish;
+    theTranslator=new TranslatorDecoder(new TranslatorDanish);
   }
 #endif
 #ifdef LANG_SK
   else if (L_EQUAL("slovak"))
   {
-    theTranslator=new TranslatorSlovak;
+    theTranslator=new TranslatorDecoder(new TranslatorSlovak);
   }
 #endif
 #ifdef LANG_UA
   else if (L_EQUAL("ukrainian"))
   {
-    theTranslator=new TranslatorUkrainian;
+    theTranslator=new TranslatorDecoder(new TranslatorUkrainian);
   }
 #endif
 #ifdef LANG_GR
   else if (L_EQUAL("greek"))
   {
-    theTranslator=new TranslatorGreek;
+    theTranslator=new TranslatorDecoder(new TranslatorGreek);
   }
 #endif
 #ifdef LANG_SR
   else if (L_EQUAL("serbian"))
   {
-    theTranslator=new TranslatorSerbian;
+    theTranslator=new TranslatorDecoder(new TranslatorSerbian);
   }
 #endif
 #ifdef LANG_CA
   else if (L_EQUAL("catalan"))
   {
-    theTranslator=new TranslatorCatalan;
+    theTranslator=new TranslatorDecoder(new TranslatorCatalan);
   }
 #endif
 #ifdef LANG_LT
   else if (L_EQUAL("lithuanian"))
   {
-    theTranslator=new TranslatorLithuanian;
+    theTranslator=new TranslatorDecoder(new TranslatorLithuanian);
   }
 #endif
 #ifdef LANG_ZA
   else if (L_EQUAL("afrikaans"))
   {
-    theTranslator=new TranslatorAfrikaans;
+    theTranslator=new TranslatorDecoder(new TranslatorAfrikaans);
   }
 #endif
 #ifdef LANG_AR
   else if (L_EQUAL("arabic"))
   {
-    theTranslator=new TranslatorArabic;
+    theTranslator=new TranslatorDecoder(new TranslatorArabic);
   }
 #endif
 #ifdef LANG_FA
   else if (L_EQUAL("persian"))
   {
-    theTranslator=new TranslatorPersian;
+    theTranslator=new TranslatorDecoder(new TranslatorPersian);
   }
 #endif
 #endif // ENGLISH_ONLY
