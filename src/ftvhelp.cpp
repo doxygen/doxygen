@@ -611,6 +611,9 @@ void FTVHelp::generateTreeView()
     t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
     t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
     t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
+    t << "  <noframes>" << endl;
+    t << "    <a href=\"main.html\">Frames are disabled. Click here to go to the main page.</a>" << endl;
+    t << "  </noframes>" << endl;
     t << "</frameset>" << endl;
     t << "</html>" << endl;
     f.close();

@@ -52,8 +52,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(QTDIR)\include;..\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="$(QTDIR)\include;..\src;."
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(QTDIR)\lib\qt-mt336.lib $(QTDIR)\lib\qtmain.lib"
+				AdditionalDependencies="$(QTDIR)\lib\qt-mt336.lib $(QTDIR)\lib\qtmain.lib  iconv.lib"
 				OutputFile="..\bin\Debug\doxywizard.exe"
 				LinkIncremental="2"
 				GenerateManifest="false"
@@ -138,8 +138,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="$(QTDIR)\include;..\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="$(QTDIR)\include;..\src;."
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;LIBICONV_STATIC"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -158,7 +158,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(QTDIR)\lib\qt-mt336.lib $(QTDIR)\lib\qtmain.lib"
+				AdditionalDependencies="$(QTDIR)\lib\qt-mt336.lib $(QTDIR)\lib\qtmain.lib  iconv.lib"
 				OutputFile="..\bin\doxywizard.exe"
 				LinkIncremental="1"
 				GenerateManifest="false"
@@ -301,6 +301,10 @@
 			</File>
 			<File
 				RelativePath="..\addon\doxywizard\expert.h"
+				>
+			</File>
+			<File
+				RelativePath=".\iconv.h"
 				>
 			</File>
 			<File

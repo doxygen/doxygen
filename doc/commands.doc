@@ -74,6 +74,7 @@ documentation:
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
 \refitem cmdendmanonly \\endmanonly
+\refitem cmdendmsc \\endmsc
 \refitem cmdendverbatim \\endverbatim
 \refitem cmdendxmlonly \\endxmlonly
 \refitem cmdenum \\enum
@@ -102,6 +103,7 @@ documentation:
 \refitem cmdlink \\link
 \refitem cmdmainpage \\mainpage
 \refitem cmdmanonly \\manonly
+\refitem cmdmsc \\msc
 \refitem cmdn \\n
 \refitem cmdname \\name
 \refitem cmdnamespace \\namespace
@@ -1779,6 +1781,53 @@ class C {};
 \endcode
   
 <hr>
+\section cmdmsc \\msc
+
+  \addindex \\msc
+  Starts a text fragment which should contain a valid description of a
+  message sequence chart. See http://www.mcternan.me.uk/mscgen/ for examples.
+  The text fragment ends with \ref cmdendmsc "\\endmsc". 
+  \note The text fragment should only include the part of the message 
+  sequence chart that is
+  within the <code>msc {...}</code> block.
+  \note You need to install the <code>mscgen</code> tool, if you want to use this
+  command. 
+
+Here is an example of the use of the \\msc command.
+\code
+/** Sender class. Can be used to send a command to the server.
+ *  The receiver will acknowlegde the command by calling Ack().
+ *  \msc
+ *    Sender,Receiver;
+ *    Sender->Receiver [label="Command()", URL="\ref Receiver::Command()"];
+ *    Sender<-Receiver [label="Ack()", URL="\ref Ack()", ID="1"];
+ *  \endmsc
+ */
+class Sender
+{
+  public:
+    /** Acknowledgement from server */
+    void Ack(bool ok);
+};
+
+/** Receiver class. Can be used to receive and execute commands.
+ *  After execution of a command, the receiver will send an acknowledgement
+ *  \msc
+ *    Receiver,Sender;
+ *    Receiver<-Sender [label="Command()", URL="\ref Command()"];
+ *    Receiver->Sender [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+ *  \endmsc
+ */
+class Receiver
+{
+  public:
+    /** Executable a command on the server */
+    void Command(int commandId);
+};
+
+\endcode  
+
+<hr>
 \section cmddotfile \\dotfile <file> ["caption"] 
 
   \addindex \\dotfile
@@ -1843,6 +1892,12 @@ class C {};
 
   \addindex \\enddot
   Ends a blocks that was started with \ref cmddot "\\dot".
+
+<hr>
+\section cmdendmsc \\endmsc
+
+  \addindex \\endmsc
+  Ends a blocks that was started with \ref cmdmsc "\\msc".
 
 <hr>
 \section cmdendhtmlonly \\endhtmlonly

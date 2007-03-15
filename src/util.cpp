@@ -395,6 +395,10 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
     //    qualifiedName.data(),context->name().data(),md->typeString()
     //    );
     result=md->typeString();
+    if (result.find("*)")!=-1) // typedef of a function/member pointer
+    {
+      result+=md->argsString();
+    }
     if (typedefContext) *typedefContext=md->getOuterScope();
   }
   else
@@ -1929,7 +1933,7 @@ QCString recodeString(const QCString &str,const char *fromEncoding,const char *t
   {
     outputSize-=oLeft;
     output.resize(outputSize+1);
-    output.at(outputSize+1)='\0';
+    output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
   }
   else
@@ -1966,7 +1970,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   {
     outputSize-=oLeft;
     output.resize(outputSize+1);
-    output.at(outputSize+1)='\0';
+    output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
   }
   else

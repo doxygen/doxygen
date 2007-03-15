@@ -1311,6 +1311,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\msc.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\namespacedef.cpp"
 				>
 				<FileConfiguration
@@ -1954,6 +1958,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\iconv.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\image.h"
 				>
 			</File>
@@ -2031,6 +2039,10 @@
 			</File>
 			<File
 				RelativePath="..\src\message.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\msc.h"
 				>
 			</File>
 			<File

@@ -606,7 +606,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 <FromModItem>{
   "*"		{ // import all
-                  QCString item=g_packageName+"."+yytext;
+                  QCString item=g_packageName;
 		  current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
 		  current->fileName = yyFileName; 
 		  //printf("Adding using directive: found:%s:%d name=%s\n",yyFileName.data(),yyLineNr,current->name.data());

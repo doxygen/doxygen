@@ -1008,7 +1008,7 @@ class TranslatorKorean : public TranslatorAdapter_1_4_6
 	  "class Inherited : public PublicBase,\n"
 	  "                  protected ProtectedBase,\n"
 	  "                  private PrivateBase,\n"
-	  "                  public Undocumented\n"
+	  "                  public Undocumented,\n"
 	  "                  public Templ<int>\n"
 	  "{\n"
 	  "  private:\n"

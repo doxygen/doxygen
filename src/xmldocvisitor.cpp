@@ -208,6 +208,11 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</dot>";
       break;
+    case DocVerbatim::Msc: 
+      m_t << "<msc>";
+      filter(s->text());
+      m_t << "</msc>";
+      break;
   }
 }
 

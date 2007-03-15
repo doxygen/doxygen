@@ -358,6 +358,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 %x St_XmlOnly
 %x St_Verbatim
 %x St_Dot
+%x St_Msc
 %x St_Param
 %x St_XRefItem
 %x St_XRefItem2
@@ -602,17 +603,25 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
   			 g_token->verb=stripEmptyLines(g_token->verb);
                          return RetVal_OK;
                        }
-<St_Verbatim>[^\\@\n]+     |
-<St_Verbatim>\n            |
-<St_Verbatim>.             { /* Verbatim text */
+<St_Verbatim>[^\\@\n]+ |
+<St_Verbatim>\n        |
+<St_Verbatim>.         { /* Verbatim text */
   			 g_token->verb+=yytext;
   		       }
-<St_Dot>{CMD}"enddot" {
+<St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
                        }
-<St_Dot>[^\\@\n]+     |
-<St_Dot>\n            |
-<St_Dot>.             { /* dot text */
+<St_Dot>[^\\@\n]+      |
+<St_Dot>\n             |
+<St_Dot>.              { /* dot text */
+  			 g_token->verb+=yytext;
+  		       }
+<St_Msc>{CMD}"endmsc"  {
+                         return RetVal_OK;
+                       }
+<St_Msc>[^\\@\n]+      |
+<St_Msc>\n             |
+<St_Msc>.              { /* msc text */
   			 g_token->verb+=yytext;
   		       }
 <St_Title>"\""	       { // quoted title
@@ -844,6 +853,10 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
                                       g_endMarker="enddot";
 				      BEGIN(St_SecSkip);
   				    }
+<St_Sections>{CMD}"msc"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endmsc";
+				      BEGIN(St_SecSkip);
+  				    }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endhtmlonly";
 				      BEGIN(St_SecSkip);
@@ -1004,6 +1017,12 @@ void doctokenizerYYsetStateDot()
 {
   g_token->verb="";
   BEGIN(St_Dot);
+}
+
+void doctokenizerYYsetStateMsc()
+{
+  g_token->verb="";
+  BEGIN(St_Msc);
 }
 
 void doctokenizerYYsetStateParam()

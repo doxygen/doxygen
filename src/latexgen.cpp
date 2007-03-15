@@ -1142,13 +1142,12 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "}" << endl;
   }
   if (Config_getBool("COMPACT_LATEX")) t << "\\paragraph"; else t << "\\subsubsection";
-  if (Config_getBool("PDF_HYPERLINKS") && memname) 
-  {
-    t << "["; 
-    escapeMakeIndexChars(this,t,memname);
-    //filterTitle(title) 
-    t << "]";
-  }
+  //if (Config_getBool("PDF_HYPERLINKS") && memname) 
+  //{
+  //  t << "["; 
+  //  escapeMakeIndexChars(this,t,memname);
+  //  t << "]";
+  //}
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
 }
 

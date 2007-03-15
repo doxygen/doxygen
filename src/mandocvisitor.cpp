@@ -219,6 +219,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::XmlOnly: 
     case DocVerbatim::LatexOnly: 
     case DocVerbatim::Dot: 
+    case DocVerbatim::Msc: 
       /* nothing */ 
       break;
   }

@@ -25,6 +25,7 @@
 #include "util.h"
 #include "message.h"
 #include "parserintf.h"
+#include "msc.h"
 
 static QString escapeLabelName(const char *s)
 {
@@ -297,6 +298,33 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         m_t << "\\begin{center}\n";
         startDotFile(fileName,"","",FALSE);
         endDotFile(FALSE);
+        m_t << "\\end{center}\n";
+
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
+      }
+      break;
+    case DocVerbatim::Msc: 
+      {
+        static int mscindex = 1;
+        QCString baseName(4096);
+
+        baseName.sprintf("%s%d", 
+            (Config_getString("LATEX_OUTPUT")+"/inline_mscgraph_").data(), 
+            mscindex++
+           );
+        QFile file(baseName+".msc");
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s.msc for writing\n",baseName.data());
+        }
+        QCString text = "msc {";
+        text+=s->text();
+        text+="}";
+        file.writeBlock( text, text.length() );
+        file.close();
+
+        m_t << "\\begin{center}\n";
+        writeMscFile(baseName);
         m_t << "\\end{center}\n";
 
         if (Config_getBool("DOT_CLEANUP")) file.remove();
@@ -1139,5 +1167,25 @@ void LatexDocVisitor::endDotFile(bool hasCaption)
   {
     m_t << "\\end{ImageNoCaption}" << endl;
   }
+}
+
+void LatexDocVisitor::writeMscFile(const QString &baseName)
+{
+  QString outDir = Config_getString("LATEX_OUTPUT");
+  writeMscGraphFromFile(baseName,outDir,baseName,MSC_EPS);
+  m_t << "\\begin{ImageNoCaption}\\mbox{";
+  m_t << "\\includegraphics";
+  //if (!width.isEmpty())
+  //{
+  //  m_t << "[width=" << width << "]";
+  //}
+  //else if (!height.isEmpty())
+  //{
+  //  m_t << "[height=" << height << "]";
+  //}
+  m_t << "{" << baseName << "}";
+
+  m_t << "}" << endl; // end mbox
+  m_t << "\\end{ImageNoCaption}" << endl;
 }
 

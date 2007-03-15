@@ -1070,6 +1070,29 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{BN}{1,80}			{
   					  lineCount();
   					}
+<FindMembers>"@"{ID}{BN}*"("		{
+  					  if (insideJava) // Java annotation
+					  {
+  					    lineCount();
+					    lastSkipRoundContext = YY_START;
+					    roundCount=1;
+					    BEGIN( SkipRound );
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+                                        }
+<FindMembers>"@"{ID}			{
+  					  if (insideJava) // Java annotation
+					  {
+					    // skip annotation
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+  					}
 <PackageName>{ID}("."{ID})*		{
   					  isTypedef=FALSE;
 					  current->name = yytext;
@@ -1186,7 +1209,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->name = QCString(yytext).stripWhiteSpace();
 					  }
 					}
-<FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL interface
+<FindMembers>{B}*((("disp")?"interface")|"valuetype"){BN}+ 	{ // M$/Corba IDL/Java interface
 					  lineCount();
                                           if (insideIDL || insideJava || insideCS || insideD || insidePHP)
 					  {
@@ -1219,12 +1242,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->bodyLine  = yyLineNr;
 					  BEGIN( CompoundName );
   					}
-<FindMembers>{B}*"@interface"{BN}+	{ // Objective-C class interface
+<FindMembers>{B}*"@interface"{BN}+	{ // Objective-C class interface, or Java attribute
 					  lineCount();
   					  isTypedef=FALSE;
 					  current->section = Entry::CLASS_SEC;
                                           current->spec = Entry::Interface;
-					  current->objc = insideObjC = TRUE;
+					  current->objc = insideObjC = !insideJava;
 					  current->protection = protection = Public ;
 					  addType( current ) ;
 					  current->type += " interface" ;
@@ -1593,7 +1616,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  sharpCount++; 
 					}
 <EndTemplate>">>"			{
-  					  current->name+=yytext;
+  					  if (insideJava || insideCS)
+					  {
+					    unput('>');
+					    unput(' ');
+					    unput('>');
+					  }
+					  else
+					  {
+  					    current->name+=yytext;
+					  }
   					  // *currentTemplateSpec+=yytext; 
   					}
 <EndTemplate>">"			{

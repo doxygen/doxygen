@@ -323,7 +323,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<CComment,ReadLine>[\\@]("dot"|"code")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("dot"|"code"|"msc")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     g_lastCommentContext = YY_START;
 				     g_blockName=&yytext[1];
@@ -352,7 +352,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <Scan>.                            { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
 				     if (yytext[1]=='f') // end of formula
 				     {
@@ -363,7 +363,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 				       BEGIN(g_lastCommentContext);
 				     }
                                    }
-<VerbatimCode>[\\@]("enddot"|"endcode") { /* end of verbatim block */
+<VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc") { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
 				     if (&yytext[4]==g_blockName)
 				     {

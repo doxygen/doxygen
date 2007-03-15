@@ -170,6 +170,7 @@ static DocCmdMap docCmdMap[] =
   { "rtfonly",         &handleFormatBlock,      FALSE },
   { "manonly",         &handleFormatBlock,      FALSE },
   { "dot",             &handleFormatBlock,      TRUE  },
+  { "msc",             &handleFormatBlock,      TRUE  },
   { "code",            &handleFormatBlock,      TRUE  },
   { "addindex",        &handleAddIndex,         TRUE  },
   { "if",              &handleIf,               FALSE },
@@ -742,7 +743,7 @@ static int yyread(char *buf,int max_size)
        /* start command character */
 CMD	  ("\\"|"@")
 DCMD1     ("arg"|"attention"|"author"|"code")
-DCMD2     ("date"|"dot"|"dotfile"|"example")
+DCMD2     ("date"|"dot"|"msc"|"dotfile"|"example")
 DCMD3     ("htmlinclude"|"htmlonly"|"image"|"include")
 DCMD4     ("includelineno"|"internal"|"invariant")
 DCMD5     ("latexonly"|"li"|"line"|"manonly"|"name") 
@@ -1488,7 +1489,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
   					  addOutput(yytext);
 					  if (&yytext[4]==blockName) // found end of the block
 					  {

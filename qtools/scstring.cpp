@@ -13,10 +13,17 @@
  *
  */
 
+// with this switch you can choose between the original qcstring implementation,
+// which implicitly shares data so copying is faster, but requires at least 12 bytes, and
+// the new implementation in this file, which has a smaller footprint (only 4 bytes for
+// an empty string), but always copies strings.
+#define SMALLSTRING
+
 #include "qcstring.h"
 #ifndef SMALLSTRING
 #include "qcstring.cpp"
 #else
+#define SCString QCString
 
 #include <qstring.h>
 #include <stdlib.h>
@@ -60,7 +67,7 @@ SCString::SCString( const char *str, uint maxlen )
   if (str && ( l = QMIN(qstrlen(str),maxlen) )) 
   { 
     m_data=(char *)malloc(l+1);
-    strncpy(m_data,str,maxlen);
+    strncpy(m_data,str,l+1);
     m_data[l]='\0';
   } 
   else

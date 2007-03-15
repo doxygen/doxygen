@@ -151,6 +151,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::LatexOnly: printf("<latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("<xmlonly>"); break;
         case DocVerbatim::Dot: printf("<dot>"); break;
+        case DocVerbatim::Msc: printf("<msc>"); break;
       }
       printf("%s",s->text().data());
       switch(s->type())
@@ -162,6 +163,7 @@ class PrintDocVisitor : public DocVisitor
         case DocVerbatim::LatexOnly: printf("</latexonly>"); break;
         case DocVerbatim::XmlOnly: printf("</xmlonly>"); break;
         case DocVerbatim::Dot: printf("</dot>"); break;
+        case DocVerbatim::Msc: printf("</msc>"); break;
       }
     }
     void visit(DocAnchor *a)

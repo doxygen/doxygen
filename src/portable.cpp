@@ -127,7 +127,10 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
 
     SHELLEXECUTEINFO sInfo = {
       sizeof(SHELLEXECUTEINFO),   /* structure size */
-      SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,    /* leave the process running */
+      SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,  /* tell us the process
+                                                       *  handle so we can wait till it's done | 
+                                                       *  do not display msg box if error 
+                                                       */
       NULL,                       /* window handle */
       NULL,                       /* action to perform: open */
       command,                    /* file to execute */
@@ -334,12 +337,12 @@ const char *portable_ghostScriptCommand()
 #endif
 }
 
-const char *portable_dotCommand()
+const char *portable_commandExtension()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    return "dot.exe";
+    return ".exe";
 #else
-    return "dot";
+    return "";
 #endif
 }
 

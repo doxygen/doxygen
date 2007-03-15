@@ -27,6 +27,7 @@
 #include "config.h"
 #include "htmlgen.h"
 #include "parserintf.h"
+#include "msc.h"
 
 
 static const int NUM_HTML_LIST_TYPES = 4;
@@ -243,6 +244,33 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         m_t << "<div align=\"center\">" << endl;
         writeDotFile(fileName,s->relPath());
+        m_t << "</div>" << endl;
+
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
+      }
+      break;
+    case DocVerbatim::Msc:
+      {
+        static int mscindex = 1;
+        QCString baseName(4096);
+
+        baseName.sprintf("%s%d", 
+            (Config_getString("HTML_OUTPUT")+"/inline_mscgraph_").data(), 
+            mscindex++
+           );
+        QFile file(baseName+".msc");
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s.msc for writing\n",baseName.data());
+        }
+        QCString text = "msc {";
+        text+=s->text();
+        text+="}";
+        file.writeBlock( text, text.length() );
+        file.close();
+
+        m_t << "<div align=\"center\">" << endl;
+        writeMscFile(baseName,s->relPath());
         m_t << "</div>" << endl;
 
         if (Config_getBool("DOT_CLEANUP")) file.remove();
@@ -1128,6 +1156,24 @@ void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
   QString imap = getDotImageMapFromFile(fileName,outDir,relPath.data());
+  m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
+}
+
+void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath)
+{
+  QString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  QString outDir = Config_getString("HTML_OUTPUT");
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
+  QString mapName = baseName+".map";
+  QString mapFile = fileName+".map";
+  m_t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
+    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+  QString imap = getMscImageMapFromFile(fileName,outDir,relPath.data());
   m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 
