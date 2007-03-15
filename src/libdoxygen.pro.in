@@ -70,6 +70,7 @@ HEADERS      =	bufstr.h \
 		memberlist.h \
 		membername.h \
 		message.h \
+                msc.h \
 		namespacedef.h \
                 objcache.h \
 		outputgen.h \
@@ -178,6 +179,7 @@ SOURCES      =	ce_lex.cpp \
 		memberlist.cpp \
 		membername.cpp \
 		message.cpp \
+                msc.cpp \
 		namespacedef.cpp \
                 objcache.cpp \
 		outputgen.cpp \

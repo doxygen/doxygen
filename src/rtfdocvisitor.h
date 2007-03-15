@@ -144,6 +144,7 @@ class RTFDocVisitor : public DocVisitor
     void pushEnabled();
     void popEnabled();
     void writeDotFile(const QString &fileName);
+    void writeMscFile(const QString &fileName);
 
     //--------------------------------------
     // state variables

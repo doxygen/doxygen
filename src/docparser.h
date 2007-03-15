@@ -362,7 +362,7 @@ class DocWhiteSpace : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, XmlOnly, Verbatim, Dot };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, XmlOnly, Verbatim, Dot, Msc };
     DocVerbatim(DocNode *parent,const QString &context,
                 const QString &text, Type t,bool isExample,
                 const QString &exampleFile);
@@ -374,7 +374,7 @@ class DocVerbatim : public DocNode
     void accept(DocVisitor *v)  { v->visit(this); }
     bool isExample() const      { return m_isExample; }
     QString exampleFile() const { return m_exampleFile; }
-    QString relPath() const    { return m_relPath; }
+    QString relPath() const     { return m_relPath; }
 
   private:
     DocNode *m_parent;

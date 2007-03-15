@@ -4392,6 +4392,15 @@ int DocPara::handleCommand(const QString &cmdName)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_MSC:
+      {
+        doctokenizerYYsetStateMsc();
+        retval = doctokenizerYYlex();
+        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName));
+        if (retval==0) warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: msc section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
@@ -4400,6 +4409,9 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
     case CMD_ENDDOT:
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
+      break; 
+    case CMD_ENDMSC:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected command %s",g_token->name.data());
       break; 
     case CMD_PARAM:

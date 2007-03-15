@@ -136,6 +136,7 @@ class HtmlDocVisitor : public DocVisitor
                    const QString &tooltip = QString::null);
     void endLink();
     void writeDotFile(const QString &fileName,const QString &relPath);
+    void writeMscFile(const QString &fileName,const QString &relPath);
 
     void pushEnabled();
     void popEnabled();

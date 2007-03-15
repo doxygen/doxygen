@@ -58,7 +58,7 @@ QCString::QCString( const char *str, uint maxlen )
   if (str && ( l = QMIN(qstrlen(str),maxlen) )) 
   { 
     m_data=(char *)malloc(l+1);
-    strncpy(m_data,str,maxlen);
+    strncpy(m_data,str,l+1);
     m_data[l]='\0';
   } 
   else

@@ -363,7 +363,7 @@ static QCString configStringRecode(
   {
     outputSize-=oLeft;
     output.resize(outputSize+1);
-    output.at(outputSize+1)='\0';
+    output.at(outputSize)='\0';
     //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
   }
   else
@@ -1089,21 +1089,7 @@ void Config::check()
   QCString &dotPath = Config_getString("DOT_PATH");
   if (!dotPath.isEmpty())
   {
-    if (dotPath.find('\\')!=-1)
-    {
-      if (dotPath.at(dotPath.length()-1)!='\\')
-      {
-	dotPath+='\\';
-      } 
-    } 
-    else if (dotPath.find('/')!=-1)
-    {
-      if (dotPath.at(dotPath.length()-1)!='/')
-      {
-	dotPath+='/';
-      } 
-    } 
-    QFileInfo dp(dotPath+portable_dotCommand());
+    QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
       config_err("Warning: the dot tool could not be found at %s\n",dotPath.data());
@@ -1122,6 +1108,31 @@ void Config::check()
   {
     dotPath="";
   }
+
+  // check mscgen path
+  QCString &mscgenPath = Config_getString("MSCGEN_PATH");
+  if (!mscgenPath.isEmpty())
+  {
+    QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
+    if (!dp.exists() || !dp.isFile())
+    {
+      config_err("Warning: the mscgen tool could not be found at %s\n",mscgenPath.data());
+      mscgenPath="";
+    }
+    else
+    {
+      mscgenPath=dp.dirPath(TRUE)+"/";
+#if defined(_WIN32) // convert slashes
+      uint i=0,l=mscgenPath.length();
+      for (i=0;i<l;i++) if (mscgenPath.at(i)=='/') mscgenPath.at(i)='\\';
+#endif
+    }
+  }
+  else // make sure the string is empty but not null!
+  {
+    mscgenPath="";
+  }
+
   
   // check input
   QStrList &inputSources=Config_getList("INPUT");
@@ -1138,8 +1149,7 @@ void Config::check()
       QFileInfo fi(s);
       if (!fi.exists())
       {
-	config_err("Error: tag INPUT: input source `%s' does not exist\n",s);
-	exit(1);
+	config_err("Warning: tag INPUT: input source `%s' does not exist\n",s);
       }
       s=inputSources.next();
     }
@@ -2711,6 +2721,13 @@ void Config::create()
 		    "powerful graphs. \n",
                     TRUE
                  );
+  cs = addString(   "MSCGEN_PATH",
+                    "You can define message sequence charts within doxygen comments using the \\msc \n"
+		    "command. Doxygen will then run the mscgen tool (see http://www.mcternan.me.uk/mscgen/) to \n"
+		    "produce the chart and insert it in the documentation. The MSCGEN_PATH tag allows you to \n"
+		    "specify the directory where the mscgen tool resides. If left empty the tool is assumed to \n"
+		    "be found in the default search path. \n"
+                );
   cb = addBool(
                     "HIDE_UNDOC_RELATIONS",
 		    "If set to YES, the inheritance and collaboration graphs will hide \n"

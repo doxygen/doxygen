@@ -143,6 +143,7 @@ class LatexDocVisitor : public DocVisitor
     void startDotFile(const QString &fileName,const QString &width,
                       const QString &height, bool hasCaption);
     void endDotFile(bool hasCaption);
+    void writeMscFile(const QString &fileName);
 
     void pushEnabled();
     void popEnabled();

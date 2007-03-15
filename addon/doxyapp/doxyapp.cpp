@@ -40,7 +40,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
     void codify(const char *) {}
-    void writeCodeLink(const char *,const char *,const char *,const char *)  {}
+    void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
     void startCodeLine() {}
     void endCodeLine() {}
     void startCodeAnchor(const char *) {}

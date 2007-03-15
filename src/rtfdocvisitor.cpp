@@ -27,6 +27,7 @@
 #include "message.h"
 #include <qfileinfo.h> 
 #include "parserintf.h"
+#include "msc.h"
 
 
 //#define DBG_RTF(x) m_t << x
@@ -368,6 +369,31 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         file.close();
         m_t << "\\par{\\qc "; // center picture
         writeDotFile(fileName);
+        m_t << "} ";
+        if (Config_getBool("DOT_CLEANUP")) file.remove();
+      }
+      break;
+    case DocVerbatim::Msc: 
+      {
+        static int mscindex = 1;
+        QCString baseName(4096);
+
+        baseName.sprintf("%s%d", 
+            (Config_getString("RTF_OUTPUT")+"/inline_mscgraph_").data(), 
+            mscindex++
+           );
+        QFile file(baseName+".msc");
+        if (!file.open(IO_WriteOnly))
+        {
+          err("Could not open file %s for writing\n",baseName.data());
+        }
+        QCString text = "msc {";
+        text+=s->text();
+        text+="}";
+        file.writeBlock( text, text.length() );
+        file.close();
+        m_t << "\\par{\\qc "; // center picture
+        writeMscFile(baseName);
         m_t << "} ";
         if (Config_getBool("DOT_CLEANUP")) file.remove();
       }
@@ -1420,4 +1446,23 @@ void RTFDocVisitor::writeDotFile(const QString &fileName)
   m_lastIsPara=TRUE;
 }
 
+void RTFDocVisitor::writeMscFile(const QString &fileName)
+{
+  QString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  QString outDir = Config_getString("RTF_OUTPUT");
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
+  if (!m_lastIsPara) m_t << "\\par" << endl;
+  m_t << "{" << endl;
+  m_t << rtf_Style_Reset;
+  m_t << "\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
+  m_t << baseName << ".png";
+  m_t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
+  m_t << "}" << endl;
+  m_lastIsPara=TRUE;
+}
 

@@ -71,7 +71,7 @@ class TranslatorDecoder : public Translator
       {
         oSize -= oLeft;
         output.resize(oSize+1);
-        output.at(oSize+1)='\0';
+        output.at(oSize)='\0';
         return output;
       }
       else

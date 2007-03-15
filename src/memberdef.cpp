@@ -1549,7 +1549,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cfiname = container->getOutputFileBase();
 
   static bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  HtmlHelp *htmlHelp = 0;
+  HtmlHelp *htmlHelp = HtmlHelp::getInstance();
   if (hasHtmlHelp)
   {
     if (isEnumerate() && name().at(0)=='@')
@@ -1558,7 +1558,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     else
     {
-      htmlHelp = HtmlHelp::getInstance();
       htmlHelp->addIndexItem(ciname,                                // level1
                              name(),                                // level2
                              separateMemPages ? cfname : cfiname,   // contRef
@@ -1876,7 +1875,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
 
   /* write detailed description */
-  if (!detailed.isEmpty())
+  if (!detailed.isEmpty() || !m_impl->inbodyDocs.isEmpty())
   { 
     ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
     if (!m_impl->inbodyDocs.isEmpty())

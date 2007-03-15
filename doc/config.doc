@@ -163,6 +163,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_man_links MAN_LINKS
 \refitem cfg_man_output MAN_OUTPUT
 \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
+\refitem cfg_mscgen_path MSCGEN_PATH
 \refitem cfg_multiline_cpp_is_brief MULTILINE_CPP_IS_BRIEF
 \refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
 \refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
@@ -1634,6 +1635,15 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  Note that this option is superseded by the HAVE_DOT option below. 
  This is only a fallback. It is recommended to install and use dot, 
  since it yields more powerful graphs. 
+
+\anchor cfg_mscgen_path
+<dt>\c MSCGEN_PATH <dd>
+ \addindex MSCGEN_PATH
+ You can define message sequence charts within doxygen comments using the \ref cmdmsc "\\msc" 
+ command. Doxygen will then run the <a href="http://www.mcternan.me.uk/mscgen/">msgen tool</a>) to 
+ produce the chart and insert it in the documentation. The <code>MSCGEN_PATH</code> tag allows you to 
+ specify the directory where the mscgen tool resides. If left empty the tool is assumed to 
+ be found in the default search path.
 
 \anchor cfg_have_dot
 <dt>\c HAVE_DOT <dd>
