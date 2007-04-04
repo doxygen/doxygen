@@ -263,12 +263,11 @@ void replaceComment(int offset);
 
 %}
 
-CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
-
 %option noyywrap
 
 %x Scan
 %x SkipString
+%x SkipChar
 %x SComment
 %x CComment
 %x Verbatim
@@ -285,8 +284,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(SkipString); 
                                    }
-<Scan>{CHARLIT}			   {
+<Scan>'				   {
                                      copyToOutput(yytext,yyleng); 
+				     BEGIN(SkipChar);
   				   }
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yytext,yyleng); 
@@ -398,6 +398,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 <SkipString>\n                     { /* new line inside string (illegal for some compilers) */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
+<SkipChar>\\.		           { /* escaped character */
+                                     copyToOutput(yytext,yyleng); 
+                                   }
+<SkipChar>'                        { /* end of character literal */ 
+                                     copyToOutput(yytext,yyleng); 
+                                     BEGIN(Scan);
+                                   }
+<SkipChar>.                        { /* any other string character */ 
+                                     copyToOutput(yytext,yyleng); 
+                                   }
+<SkipChar>\n                       { /* new line character */
+                                     copyToOutput(yytext,yyleng); 
+                                   }
+
 <CComment>[^\\@*\n]*	           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,yyleng); 
                                    }

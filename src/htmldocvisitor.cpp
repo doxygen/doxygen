@@ -102,7 +102,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Hash:    m_t << "#"; break;
     case DocSymbol::Percent: m_t << "%"; break;
     case DocSymbol::Copy:    m_t << "&copy;"; break;
-    case DocSymbol::Tm:      m_t << "&tm;"; break;
+    case DocSymbol::Tm:      m_t << "&trade;"; break;
     case DocSymbol::Reg:     m_t << "&reg;"; break;
     case DocSymbol::Apos:    m_t << "'"; break;
     case DocSymbol::Quot:    m_t << "\""; break;

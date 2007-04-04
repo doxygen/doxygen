@@ -142,8 +142,7 @@ inline void writeXMLCodeString(QTextStream &t,const char *s, int &col)
 
 static void writeXMLHeader(QTextStream &t)
 {
-  t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
-    << "' standalone='no'?>" << endl;;
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;
@@ -1877,8 +1876,7 @@ void generateXML()
   t.setEncoding(QTextStream::Latin1);
 
   // write index header
-  t << "<?xml version='1.0' encoding='" << theTranslator->idLanguageCharset()
-    << "' standalone='no'?>" << endl;;
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
   t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
   t << "version=\"" << versionString << "\">" << endl;

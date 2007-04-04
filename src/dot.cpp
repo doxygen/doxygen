@@ -2116,7 +2116,8 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         return baseName;
       }
       int maxWidth = 420; /* approx. page width in points */
-      out << "\\begin{figure}[H]\n"
+      out << "\\nopagebreak\n"
+        "\\begin{figure}[H]\n"
         "\\begin{center}\n"
         "\\leavevmode\n"
         "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
@@ -2410,7 +2411,8 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     }
     int maxWidth = 420; /* approx. page width in points */
    
-    out << "\\begin{figure}[H]\n"
+    out << "\\nopagebreak\n"
+           "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
            "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
@@ -2689,7 +2691,8 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     }
     int maxWidth = 420; /* approx. page width in points */
    
-    out << "\\begin{figure}[H]\n"
+    out << "\\nopagebreak\n"
+           "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
            "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
@@ -2825,7 +2828,8 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
     }
     int maxWidth = 420; /* approx. page width in points */
    
-    out << "\\begin{figure}[H]\n"
+    out << "\\nopagebreak\n"
+           "\\begin{figure}[H]\n"
            "\\begin{center}\n"
            "\\leavevmode\n"
            "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
@@ -3317,7 +3321,8 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       return baseName;
     }
     int maxWidth = 420; /* approx. page width in points */
-    t << "\\begin{figure}[H]\n"
+    t << "\\nopagebreak\n"
+         "\\begin{figure}[H]\n"
          "\\begin{center}\n"
          "\\leavevmode\n"
          "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
