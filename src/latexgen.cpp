@@ -102,7 +102,9 @@ LatexGenerator::LatexGenerator() : OutputGenerator()
   //printf("LatexGenerator::LatexGenerator() insideTabbing=FALSE\n");
   insideTabbing=FALSE;
   firstDescItem=TRUE;
+  disableLinks=FALSE;
   m_indent=0;
+  templateMemberItem = FALSE;
 }
 
 LatexGenerator::~LatexGenerator()
@@ -974,7 +976,7 @@ void LatexGenerator::endIndexValue(const char *name,bool hasBrief)
 
 void LatexGenerator::startTextLink(const char *f,const char *anchor)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
+  if (!disableLinks && Config_getBool("PDF_HYPERLINKS"))
   {
     t << "\\hyperlink{";
     if (f) t << stripPath(f);
@@ -995,7 +997,7 @@ void LatexGenerator::endTextLink()
 void LatexGenerator::writeObjectLink(const char *ref, const char *f,
                                      const char *anchor, const char *text)
 {
-  if (!ref && Config_getBool("PDF_HYPERLINKS"))
+  if (!disableLinks && !ref && Config_getBool("PDF_HYPERLINKS"))
   {
     t << "\\hyperlink{";
     if (f) t << stripPath(f);
@@ -1088,10 +1090,12 @@ void LatexGenerator::startGroupHeader()
   {
     t << "\\subsection{";
   }
+  disableLinks=TRUE;
 }
 
 void LatexGenerator::endGroupHeader()
 {
+  disableLinks=FALSE;
   t << "}" << endl;
 }
 
@@ -1105,10 +1109,12 @@ void LatexGenerator::startMemberHeader()
   {
     t << "\\subsection*{";
   }
+  disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberHeader()
 {
+  disableLinks=FALSE;
   t << "}" << endl;
 }
 
@@ -1149,10 +1155,12 @@ void LatexGenerator::startMemberDoc(const char *clname,
   //  t << "]";
   //}
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
+  disableLinks=TRUE;
 }
 
 void LatexGenerator::endMemberDoc(bool) 
 { 
+  disableLinks=FALSE;
   t << "}";
   if (Config_getBool("COMPACT_LATEX")) t << "\\hfill";
 }
@@ -1351,12 +1359,29 @@ void LatexGenerator::endAnonTypeScope(int indent)
   }
 }
 
-void LatexGenerator::startMemberItem(int) 
+void LatexGenerator::startMemberTemplateParams()
+{
+  if (templateMemberItem)
+  {
+    t << "{\\footnotesize ";
+  }
+}
+
+void LatexGenerator::endMemberTemplateParams()
+{
+  if (templateMemberItem)
+  {
+    t << "}\\\\";
+  }
+}
+
+void LatexGenerator::startMemberItem(int annoType) 
 { 
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!insideTabbing)
   {
     t << "\\item " << endl; 
+    templateMemberItem = (annoType == 3);
   }
 }
 
@@ -1366,6 +1391,7 @@ void LatexGenerator::endMemberItem()
   {
     t << "\\\\";
  } 
+  templateMemberItem = FALSE;
   t << endl; 
 }
 

@@ -17,10 +17,10 @@
 
 doxygen_version_major=1
 doxygen_version_minor=5
-doxygen_version_revision=1
+doxygen_version_revision=2
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20070315
+doxygen_version_mmn=NO
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -426,7 +426,7 @@ echo "using $f_perl";
 #
 echo "  Creating VERSION file."
 # Output should be something like 1.4.5-20051010
-if test "$doxygen_version_mmn" = NO; then
+if test "x$doxygen_version_mmn" = "xNO"; then
   echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision" > VERSION
 else
   echo "$doxygen_version_major.$doxygen_version_minor.$doxygen_version_revision-$doxygen_version_mmn" > VERSION

@@ -596,8 +596,7 @@ void FTVHelp::generateTreeView()
 #endif
     t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
     t << "<html><head>";
-    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset="
-      << theTranslator->idLanguageCharset() << "\">\n";
+    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n";
     t << "<title>"; 
     if (Config_getString("PROJECT_NAME").isEmpty())
     {
@@ -635,8 +634,7 @@ void FTVHelp::generateTreeView()
 #endif
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
-    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset="
-      << theTranslator->idLanguageCharset() << "\" />\n";
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\" />\n";
     t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
     t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
     t << "    <link rel=\"stylesheet\" href=\"";

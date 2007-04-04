@@ -103,8 +103,8 @@ class LatexGenerator : public OutputGenerator
     void endAnonTypeScope(int);
     void startMemberItem(int);
     void endMemberItem();
-    void startMemberTemplateParams() {}
-    void endMemberTemplateParams() {}
+    void startMemberTemplateParams();
+    void endMemberTemplateParams();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();
@@ -222,8 +222,10 @@ class LatexGenerator : public OutputGenerator
     int col;
     bool insideTabbing;
     bool firstDescItem;
+    bool disableLinks;
     QCString relPath;
     int m_indent;
+    bool templateMemberItem;
 };
 
 #endif

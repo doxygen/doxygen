@@ -1573,14 +1573,14 @@ class TranslatorJapanese : public Translator
     virtual QCString trCallerGraph()
     {
       // return "Here is the caller graph for this function:";
-      return "¸Æ½Ð¤·¥°¥é¥Õ:";
+      return decode("¸Æ½Ð¤·¥°¥é¥Õ:");
     }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration values
      */
     virtual QCString trEnumerationValueDocumentation()
-    { return "Îóµó·¿"; }
+    { return decode("Îóµó·¿"); }
 
 };
 #endif

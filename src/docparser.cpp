@@ -1316,7 +1316,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
   int l=symName.length();
   DBG(("decodeSymbol(%s) l=%d\n",symName.data(),l));
   if      (symName=="&copy;")  return DocSymbol::Copy;
-  else if (symName=="&tm;")    return DocSymbol::Tm;
+  else if (symName=="&trade;") return DocSymbol::Tm;
   else if (symName=="&reg;")   return DocSymbol::Reg;
   else if (symName=="&lt;")    return DocSymbol::Less;
   else if (symName=="&gt;")    return DocSymbol::Greater;

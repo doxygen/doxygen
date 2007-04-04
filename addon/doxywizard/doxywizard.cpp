@@ -52,6 +52,11 @@ void setDotPath()
   Config_getString("DOT_PATH")=getResourcePath();
 }
 
+void setMscgenPath()
+{
+  Config_getString("MSCGEN_PATH")=getResourcePath();
+}
+
 #endif
 
 
@@ -667,6 +672,7 @@ MainWidget::MainWidget(QWidget *parent)
   Config_getBool("HAVE_DOT")=TRUE;
 #if defined(Q_OS_MACX)
   setDotPath();
+  setMscgenPath();
 #endif
   
   QWidget *w = new QWidget(this);

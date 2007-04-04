@@ -384,7 +384,7 @@ static void checkEncoding()
 
 static FILE *tryPath(const char *path,const char *fileName)
 {
-  QCString absName=(QCString)path+"/"+fileName;
+  QCString absName=(path ? (QCString)path+"/"+fileName : (QCString)fileName);
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
@@ -398,8 +398,27 @@ static FILE *tryPath(const char *path,const char *fileName)
 static void substEnvVarsInStrList(QStrList &sl);
 static void substEnvVarsInString(QCString &s);
 
+static bool isAbsolute(const char * fileName)
+{
+# ifdef _WIN32
+  if (isalpha (fileName [0]) && fileName[1] == ':')
+    fileName += 2;
+# endif
+  char const fst = fileName [0];
+  if (fst == '/')  {
+    return true;
+  }
+# ifdef _WIN32
+  if (fst == '\\')
+    return true;
+# endif
+  return false;
+}
+
 static FILE *findFile(const char *fileName)
 {
+  if(isAbsolute(fileName))
+    return tryPath(NULL, fileName);
   substEnvVarsInStrList(includePathList);
   char *s=includePathList.first();
   while (s) // try each of the include paths
@@ -431,7 +450,6 @@ static void readIncludeFile(const char *incName)
 
   FILE *f;
 
-  //printf("Searching for `%s'\n",incFileName.data());
   if ((f=findFile(inc))) // see if the include file can be found
   {
     // For debugging

@@ -552,6 +552,7 @@ ATTR      ({B}+[^>\n]*)?
 A         [aA]
 BR	  [bB][rR]
 PRE       [pP][rR][eE]
+CODE      [cC][oO][dD][eE]
 TABLE	  [tT][aA][bB][lL][eE]
 P	  [pP]
 UL        [uU][lL]
@@ -4709,6 +4710,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 				          docBlockName=&yytext[1];
   					  BEGIN(DocCopyBlock);
   					}
+<DocBlock>{B}*"<code>"                  {
+  					  if (insideCS)
+					  {
+					    docBlock+=yytext;
+					    docBlockName="<code>";
+					    BEGIN(DocCopyBlock);
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+  					}
 <DocBlock>[^@*\/\\\n]+			{ // any character that isn't special
   					  docBlock+=yytext;
   					}
@@ -4725,6 +4738,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <DocCopyBlock>"</"{PRE}">"		{ // end of a <pre> block
   					  docBlock+=yytext;
 					  if (docBlockName=="<pre>")
+					  {
+  					    BEGIN(DocBlock);
+					  }
+  					}
+<DocCopyBlock>"</"{CODE}">"		{ // end of a <code> block
+  					  docBlock+=yytext;
+					  if (docBlockName=="<code>")
 					  {
   					    BEGIN(DocBlock);
 					  }
@@ -4746,7 +4766,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    REJECT;
 					  }
   					}
-<DocCopyBlock>[^@/*\]\$\\\n]+		{ // any character that is not special
+<DocCopyBlock>[^\<@/*\]\$\\\n]+		{ // any character that is not special
   					  docBlock+=yytext;
   					}
 <DocCopyBlock>"/*"|"*/"|"//"		{
