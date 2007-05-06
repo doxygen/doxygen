@@ -48,6 +48,7 @@
   2005/02/28 - Slight modification to generate "mailto.txt" auxiliary file.
   2005/08/15 - Doxygen's root directory determined primarily from DOXYGEN 
                environment variable. When not found, then relatively to the script.
+  2007/03/20 - The "translate me!" searched in comments and reported if found.             
   """                               
 
 from __future__ import generators
@@ -156,17 +157,20 @@ class Transl:
         # Initialize the other collected information.
         self.classId = None
         self.baseClassId = None
-        self.readableStatus = None  # 'up-to-date', '1.2.3', '1.3', etc.
-        self.status = None          # '', '1.2.03', '1.3.00', etc.
-        self.lang = None            # like 'Brasilian'
-        self.langReadable = None    # like 'Brasilian Portuguese'
-        self.note = None            # like 'should be cleaned up'
-        self.prototypeDic = {}      # uniPrototype -> prototype
-        self.obsoleteMethods = None # list of prototypes to be removed
-        self.missingMethods = None  # list of prototypes to be implemented
+        self.readableStatus = None   # 'up-to-date', '1.2.3', '1.3', etc.
+        self.status = None           # '', '1.2.03', '1.3.00', etc.
+        self.lang = None             # like 'Brasilian'
+        self.langReadable = None     # like 'Brasilian Portuguese'
+        self.note = None             # like 'should be cleaned up'
+        self.prototypeDic = {}       # uniPrototype -> prototype
+        self.translateMeText = 'translate me!'
+        self.translateMeFlag = False # comments with "translate me!" found
+        self.obsoleteMethods = None  # list of prototypes to be removed
+        self.missingMethods = None   # list of prototypes to be implemented
         self.implementedMethods = None  # list of implemented required methods
-        self.adaptMinClass = None   # The newest adapter class that can be used
+        self.adaptMinClass = None    # The newest adapter class that can be used
             
+        
     def __tokenGenerator(self):
         """Generator that reads the file and yields tokens as 4-tuples.
         
@@ -265,6 +269,12 @@ class Transl:
                             sys.stderr.write(msg)
                     
                     yield (tokenId, tokenStr, tokenLineNo)
+
+                    # If it is a comment that contains the self.translateMeText 
+                    # string, set the flag -- the situation will be reported.
+                    if tokenId == 'comment' and tokenStr.find(self.translateMeText) >= 0:
+                        self.translateMeFlag = True
+            
                     tokenId = None
                     tokenStr = ''
                     tokenLineNo = 0 
@@ -1103,11 +1113,17 @@ class Transl:
                     self.adaptMinClass = adaptMinClass
                     self.readableStatus = adaptMinVersion # simplified
         
+        # If everything seems OK, but the explicit mark self.translateMeText 
+        # in comments was found, something must be translated.
+        if not self.note and self.status == '' and self.translateMeFlag:
+            self.note = 'The "%s" found in a comment.' % self.translateMeText
+        
         # If everything seems OK, but there are obsolete methods, set 
         # the note to clean-up source. This note will be used only when
         # the previous code did not set another note (priority).
         if not self.note and self.status == '' and self.obsoleteMethods:
             self.note = 'Remove the obsolete methods (never used).'
+            
                 
     def report(self, fout):
         """Returns the report part for the source as a multiline string.

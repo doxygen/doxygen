@@ -21,6 +21,7 @@ struct DocInfo;
 struct BriefInfo;
 class MemberList;
 class ExampleSDict;
+class Entry;
 
 #define NULL_LIST 0xffffffff
 
@@ -31,6 +32,49 @@ class FileStorage : public QFile, public StorageIntf
     FileStorage( const QString &name) : QFile(name) {}
     int read(char *buf,uint size)        { return QFile::readBlock(buf,size); }
     int write(const char *buf,uint size) { return QFile::writeBlock(buf,size); }
+};
+
+class StreamStorage : public StorageIntf
+{
+  public:
+    StreamStorage()
+    {
+      m_data=0;
+      m_offset=0;
+      m_len=0;
+    }
+   ~StreamStorage()
+    {
+      delete m_data;
+    }
+    StreamStorage(char *data,uint len)
+    {
+      m_data=data;
+      m_offset=0;
+      m_len=len;
+    }
+    int read(char *buf,uint size)
+    {
+      int bytesLeft = QMIN((int)size,m_len-m_offset);
+      if (bytesLeft>0) memcpy(buf,m_data,bytesLeft);
+      m_offset+=bytesLeft;
+      return bytesLeft;
+    }
+    int write(const char *buf,uint size)
+    {
+      m_data=(char *)realloc(m_data,m_offset+size);
+      memcpy(m_data+m_offset,buf,size);
+      m_offset+=size;
+      m_len+=size;
+      return size;
+    }
+    void rewind() { m_offset=0; }
+    char *data() const { return m_data; }
+    int size() { return m_len; }
+  private:
+    char *m_data;
+    int m_offset;
+    int m_len;
 };
 
 //----- marshaling function: datatype -> byte stream --------------------
@@ -56,6 +100,8 @@ void marshalGroupList(StorageIntf *s,GroupList *groupList);
 void marshalMemberList(StorageIntf *s,MemberList *ml);
 void marshalExampleSDict(StorageIntf *s,ExampleSDict *ed);
 void marshalMemberLists(StorageIntf *s,SDict<MemberList> *mls);
+void marshalEntry(StorageIntf *s,Entry *e);
+void marshalEntryTree(StorageIntf *s,Entry *e);
 
 //----- unmarshaling function: byte stream -> datatype ------------------
 
@@ -80,5 +126,7 @@ GroupList *          unmarshalGroupList(StorageIntf *s);
 MemberList *         unmarshalMemberList(StorageIntf *s);
 ExampleSDict *       unmarshalExampleSDict(StorageIntf *s);
 SDict<MemberList> *  unmarshalMemberLists(StorageIntf *s);
+Entry *              unmarshalEntry(StorageIntf *s);
+Entry *              unmarshalEntryTree(StorageIntf *s);
 
 #endif

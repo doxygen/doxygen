@@ -160,7 +160,7 @@ static int              docBlockContext;
 static QCString         docBlock;
 static QCString         docBlockName;
 static bool             docBlockInBody;
-static bool             docBlockJavaStyle;
+static bool             docBlockAutoBrief;
 static char             docBlockTerm;
 
 static QCString         idlAttr;
@@ -614,6 +614,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x      SkipSharp
 %x	SkipRound
 %x	SkipSquare
+%x	SkipRemainder
 %x	TypedefName
 %x	TryFunctionBlock
 %x	TryFunctionBlockEnd
@@ -1992,7 +1993,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
-					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = ';';
 					  if (yytext[yyleng-3]=='/')
@@ -2010,7 +2012,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  lineCount();
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
-					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = ',';
 					  if (yytext[yyleng-3]=='/')
@@ -2032,7 +2035,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = FALSE;
-					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = 0;
 					  if (yytext[yyleng-3]=='/')
@@ -2072,7 +2076,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    {
 					      docBlockContext   = YY_START;
 					      docBlockInBody    = FALSE;
-					      docBlockJavaStyle = FALSE;
+					      docBlockAutoBrief = FALSE;
 					      docBlock.resize(0);
 					      docBlockTerm = 0;
 					      startCommentBlock(TRUE);
@@ -2091,7 +2095,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      docBlockContext   = YY_START;
 					      docBlockInBody    = FALSE;
 					      docBlock.resize(0);
-					      docBlockJavaStyle = yytext[2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					      docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                          ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					      docBlockTerm = 0;
 					      startCommentBlock(FALSE);
 					      BEGIN(DocBlock);
@@ -2701,6 +2706,31 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  initBracketCount=0;
   					  BEGIN(ReadInitializer);
   					}
+<FindFields>";"                         {
+  					  if (insideJava)  // last enum field in Java class
+					  {
+					    current->fileName   = yyFileName;
+					    current->startLine  = yyLineNr;
+					    current->type       = "@"; // enum marker
+					    current->args       = current->args.simplifyWhiteSpace();
+					    current->name       = current->name.stripWhiteSpace();
+					    current->section    = Entry::VARIABLE_SEC;
+					    current_root->addSubEntry(current);
+					    current             = new Entry ;
+					    initEntry();
+
+					    // TODO: skip until the end of the scope
+					    BEGIN( SkipRemainder );
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
+  					}
+<SkipRemainder>\n			{ 
+                                          yyLineNr++;
+                                        }
+<SkipRemainder>[^\n]*
 <FindFields>","				{
 					  //printf("adding `%s' `%s' `%s' to enum `%s' (mGrpId=%d)\n",
 					  //     current->type.data(), current->name.data(),
@@ -3884,7 +3914,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
 					    docBlockContext   = SkipCurlyEndDoc;
 					    docBlockInBody    = FALSE;
-					    docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					    docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                        ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					    docBlock.resize(0);
 					    docBlockTerm = '}';
 					    if (yytext[yyleng-3]=='/')
@@ -3902,7 +3933,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <SkipCurlyEndDoc>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { // desc is followed by another one
 					  docBlockContext   = SkipCurlyEndDoc;
 					  docBlockInBody    = FALSE;
-					  docBlockJavaStyle = yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool("JAVADOC_AUTOBRIEF") ) ||
+					                      ( yytext[yyleng-2]=='!' && Config_getBool("QT_AUTOBRIEF") );
 					  docBlock.resize(0);
 					  docBlockTerm = '}';
 					  if (yytext[yyleng-3]=='/')
@@ -4493,8 +4525,21 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
-					  docBlockJavaStyle = FALSE;
+					  docBlockAutoBrief = Config_getBool("QT_AUTOBRIEF");
 					  docBlock.resize(0);
+					  if (docBlockAutoBrief)
+					  {
+					    current->briefLine = yyLineNr;
+					    current->briefFile = yyFileName;
+					  }
+					  if (!docBlockInBody)
+					  {
+					    current->doc.resize(0);
+					    if (docBlockAutoBrief)
+					    {
+					      current->brief.resize(0);
+					    }
+					  }
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 					}
@@ -4514,9 +4559,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->docFile = yyFileName;
 					  docBlockContext = YY_START;
 					  docBlockInBody  = YY_START==SkipCurly;
-					  docBlockJavaStyle = Config_getBool("JAVADOC_AUTOBRIEF");
+					  docBlockAutoBrief = Config_getBool("JAVADOC_AUTOBRIEF");
 					  docBlock.resize(0);
-					  if (docBlockJavaStyle)
+					  if (docBlockAutoBrief)
 					  {
 					    current->briefLine = yyLineNr;
 					    current->briefFile = yyFileName;
@@ -4524,7 +4569,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (!docBlockInBody)
 					  {
 					    current->doc.resize(0);
-					    if (docBlockJavaStyle)
+					    if (docBlockAutoBrief)
 					    {
 					      current->brief.resize(0);
 					    }
@@ -4551,7 +4596,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
-					  docBlockJavaStyle = FALSE;
+					  docBlockAutoBrief = FALSE;
 					  docBlock.resize(0);
 					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
@@ -4575,7 +4620,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
-					  docBlockJavaStyle = FALSE;
+					  docBlockAutoBrief = FALSE;
 					  docBlock.resize(0);
 					  startCommentBlock(TRUE);
 					  BEGIN( DocLine );
@@ -4932,7 +4977,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	yyFileName, // file
 	brief ? current->briefLine : current->docLine,   // line of block start
 	docBlockInBody ? FALSE : brief, 
-	docBlockInBody ? FALSE : docBlockJavaStyle,
+	docBlockInBody ? FALSE : docBlockAutoBrief,
 	docBlockInBody,
 	protection,
         position,

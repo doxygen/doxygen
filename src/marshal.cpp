@@ -10,6 +10,7 @@
 #include "groupdef.h"
 #include "example.h"
 
+#define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 
 void marshalInt(StorageIntf *s,int v)
 {
@@ -349,6 +350,72 @@ void marshalMemberLists(StorageIntf *s,SDict<MemberList> *mls)
   }
 }
 
+void marshalEntry(StorageIntf *s,Entry *e)
+{
+  marshalUInt(s,HEADER);
+  marshalQCString(s,e->name);
+  marshalQCString(s,e->type);
+  marshalInt(s,e->section);
+  marshalInt(s,(int)e->protection);
+  marshalInt(s,(int)e->mtype);
+  marshalInt(s,e->spec);
+  marshalInt(s,e->initLines);
+  marshalBool(s,e->stat);
+  marshalBool(s,e->explicitExternal);
+  marshalBool(s,e->proto);
+  marshalBool(s,e->subGrouping);
+  marshalBool(s,e->callGraph);
+  marshalBool(s,e->callerGraph);
+  marshalInt(s,(int)e->virt);
+  marshalQCString(s,e->args);
+  marshalQCString(s,e->bitfields);
+  marshalArgumentList(s,e->argList);
+  marshalArgumentLists(s,e->tArgLists);
+  marshalQGString(s,e->program);
+  marshalQGString(s,e->initializer);
+  marshalQCString(s,e->includeFile);
+  marshalQCString(s,e->includeName);
+  marshalQCString(s,e->doc);
+  marshalInt(s,e->docLine);
+  marshalQCString(s,e->docFile);
+  marshalQCString(s,e->brief);
+  marshalInt(s,e->briefLine);
+  marshalQCString(s,e->briefFile);
+  marshalQCString(s,e->inbodyDocs);
+  marshalInt(s,e->inbodyLine);
+  marshalQCString(s,e->inbodyFile);
+  marshalQCString(s,e->relates);
+  marshalBool(s,e->relatesDup);
+  marshalQCString(s,e->read);
+  marshalQCString(s,e->write);
+  marshalQCString(s,e->inside);
+  marshalQCString(s,e->exception);
+  marshalInt(s,e->bodyLine);
+  marshalInt(s,e->endBodyLine);
+  marshalInt(s,e->mGrpId);
+  marshalBaseInfoList(s,e->extends);
+  marshalGroupingList(s,e->groups);
+  marshalSectionInfoList(s,e->anchors);
+  marshalQCString(s,e->fileName);
+  marshalInt(s,e->startLine);
+  marshalItemInfoList(s,e->sli);
+  marshalBool(s,e->objc);
+  marshalBool(s,e->hidden);
+  marshalInt(s,(int)e->groupDocType);
+}
+
+void marshalEntryTree(StorageIntf *s,Entry *e)
+{
+  marshalEntry(s,e);
+  marshalUInt(s,e->children()->count());
+  QListIterator<Entry> eli(*e->children());
+  Entry *child;
+  for (eli.toFirst();(child=eli.current());++eli)
+  {
+    marshalEntryTree(s,child);
+  }
+}
+
 //------------------------------------------------------------------
 
 int unmarshalInt(StorageIntf *s)
@@ -664,4 +731,75 @@ SDict<MemberList> *unmarshalMemberLists(StorageIntf *s)
   return result;
 }
 
+Entry * unmarshalEntry(StorageIntf *s)
+{
+  Entry *e = new Entry;
+  uint header=unmarshalUInt(s);
+  ASSERT(header==HEADER);
+  e->name             = unmarshalQCString(s);
+  e->type             = unmarshalQCString(s);
+  e->section          = unmarshalInt(s);
+  e->protection       = (Protection)unmarshalInt(s);
+  e->mtype            = (MethodTypes)unmarshalInt(s);
+  e->spec             = unmarshalInt(s);
+  e->initLines        = unmarshalInt(s);
+  e->stat             = unmarshalBool(s);
+  e->explicitExternal = unmarshalBool(s);
+  e->proto            = unmarshalBool(s);
+  e->subGrouping      = unmarshalBool(s);
+  e->callGraph        = unmarshalBool(s);
+  e->callerGraph      = unmarshalBool(s);
+  e->virt             = (Specifier)unmarshalInt(s);
+  e->args             = unmarshalQCString(s);
+  e->bitfields        = unmarshalQCString(s);
+  delete e->argList;
+  e->argList          = unmarshalArgumentList(s);
+  e->tArgLists        = unmarshalArgumentLists(s);
+  e->program          = unmarshalQGString(s);
+  e->initializer      = unmarshalQGString(s);
+  e->includeFile      = unmarshalQCString(s);
+  e->includeName      = unmarshalQCString(s);
+  e->doc              = unmarshalQCString(s);
+  e->docLine          = unmarshalInt(s);
+  e->docFile          = unmarshalQCString(s);
+  e->brief            = unmarshalQCString(s);
+  e->briefLine        = unmarshalInt(s);
+  e->briefFile        = unmarshalQCString(s);
+  e->inbodyDocs       = unmarshalQCString(s);
+  e->inbodyLine       = unmarshalInt(s);
+  e->inbodyFile       = unmarshalQCString(s);
+  e->relates          = unmarshalQCString(s);
+  e->relatesDup       = unmarshalBool(s);
+  e->read             = unmarshalQCString(s);
+  e->write            = unmarshalQCString(s);
+  e->inside           = unmarshalQCString(s);
+  e->exception        = unmarshalQCString(s);
+  e->bodyLine         = unmarshalInt(s);
+  e->endBodyLine      = unmarshalInt(s);
+  e->mGrpId           = unmarshalInt(s);
+  delete e->extends;
+  e->extends          = unmarshalBaseInfoList(s);
+  delete e->groups;
+  e->groups           = unmarshalGroupingList(s);
+  delete e->anchors;
+  e->anchors          = unmarshalSectionInfoList(s);
+  e->fileName         = unmarshalQCString(s);
+  e->startLine        = unmarshalInt(s);
+  e->sli              = unmarshalItemInfoList(s);
+  e->objc             = unmarshalBool(s);
+  e->hidden           = unmarshalBool(s);
+  e->groupDocType     = (Entry::GroupDocType)unmarshalInt(s);
+  return e;
+}
 
+Entry * unmarshalEntryTree(StorageIntf *s)
+{
+  Entry *e = unmarshalEntry(s);
+  uint count = unmarshalUInt(s);
+  uint i;
+  for (i=0;i<count;i++)
+  {
+    e->addSubEntry(unmarshalEntryTree(s));
+  }
+  return e;
+}

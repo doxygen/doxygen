@@ -1692,10 +1692,13 @@ void PerlModGenerator::generatePerlModForClass(ClassDef *cd)
 
   addTemplateList(cd,m_output);
   addListOfAllMembers(cd);
-  MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
-    generatePerlModSection(cd,mg->members(),"user_defined",mg->header());
+  if (cd->getMemberGroupSDict())
+  {
+    MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+      generatePerlModSection(cd,mg->members(),"user_defined",mg->header());
+  }
 
   generatePerlModSection(cd,cd->getMemberList(MemberList::pubTypes),"public_typedefs");
   generatePerlModSection(cd,cd->getMemberList(MemberList::pubMethods),"public_methods");
@@ -1795,10 +1798,13 @@ void PerlModGenerator::generatePerlModForNamespace(NamespaceDef *nd)
     m_output.closeList();
   }
 
-  MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
-    generatePerlModSection(nd,mg->members(),"user-defined",mg->header());
+  if (nd->getMemberGroupSDict())
+  {
+    MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+      generatePerlModSection(nd,mg->members(),"user-defined",mg->header());
+  }
 
   generatePerlModSection(nd,nd->getMemberList(MemberList::decDefineMembers),"defines");
   generatePerlModSection(nd,nd->getMemberList(MemberList::decProtoMembers),"prototypes");
@@ -1967,10 +1973,13 @@ void PerlModGenerator::generatePerlModForGroup(GroupDef *gd)
     m_output.closeList();
   }
 
-  MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
-    generatePerlModSection(gd,mg->members(),"user-defined",mg->header());
+  if (gd->getMemberGroupSDict())
+  {
+    MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+      generatePerlModSection(gd,mg->members(),"user-defined",mg->header());
+  }
 
   generatePerlModSection(gd,gd->getMemberList(MemberList::decDefineMembers),"defines");
   generatePerlModSection(gd,gd->getMemberList(MemberList::decProtoMembers),"prototypes");

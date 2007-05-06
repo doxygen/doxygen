@@ -84,10 +84,10 @@
   For non overloaded members the argument list may be omitted.
 
   If a function is overloaded and no matching argument list is specified
-  (i.e. pattern 2 or 5 is used), a link will be created to the 
+  (i.e. pattern 2 or 6 is used), a link will be created to the 
   documentation of one of the overloaded members.
 
-  For member functions the class scope (as used in patterns 4 to 6) may
+  For member functions the class scope (as used in patterns 4 to 7) may
   be omitted, if:
   <ol>
   <li>The pattern points to a documented member that belongs to the same class
@@ -101,7 +101,7 @@
 
   All of these entities can be linked to in the same way as described in the 
   previous section. For sake of clarity it is advised to only use 
-  patterns 3 and 6 in this case.
+  patterns 3 and 7 in this case.
 
   \par Example:
   \verbinclude autolink.cpp

@@ -164,7 +164,7 @@ static void endCondSection()
   }
 }
 
-/** remove and executes \\cond and \\endcond commands in \a s */
+/** remove and executes cond and endcond commands in \a s */
 static QCString handleCondCmdInAliases(const QCString &s)
 {
   QCString result;
@@ -566,7 +566,7 @@ void replaceComment(int offset)
  *  -# It converts multi-line C++ style comment blocks (that are aligned)
  *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
  *  -# It replaces aliases with their definition (see ALIASES)
- *  -# It handles conditional sections (\cond...\endcond blocks)
+ *  -# It handles conditional sections (cond...endcond blocks)
  */
 void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
 {

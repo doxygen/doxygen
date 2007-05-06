@@ -1422,7 +1422,7 @@ static void readTextFileByName(const QString &file,QString &text)
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
   {
-    text = fileToString(fd->absFilePath(),FALSE);
+    text = fileToString(fd->absFilePath(),Config_getBool("FILTER_SOURCE_FILES"));
   }
   else if (ambig)
   {
@@ -2092,6 +2092,8 @@ void DocRef::parse()
 	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
                g_token->name.data());
           break;
+        case TK_HTMLTAG:
+          break;
         default:
 	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected token %s",
 		tokToString(tok));
@@ -2111,7 +2113,7 @@ void DocRef::parse()
   }
 
   handlePendingStyleCommands(this,m_children);
-  DBG(("DocRef::parse() end\n"));
+  
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
 }
@@ -2155,7 +2157,7 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
 }
 
 
-QString DocLink::parse(bool isJavaLink)
+QString DocLink::parse(bool isJavaLink,bool isXmlLink)
 {
   QString result;
   g_nodeStack.push(this);
@@ -2187,6 +2189,13 @@ QString DocLink::parse(bool isJavaLink)
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unsupported symbol %s found",
               g_token->name.data());
           break;
+        case TK_HTMLTAG:
+          if (g_token->name!="see" || !isXmlLink)
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected xml/html command %s found",
+                g_token->name.data());
+          }
+          goto endlink;
         case TK_LNKWORD: 
         case TK_WORD: 
           if (isJavaLink) // special case to detect closing }
@@ -4847,11 +4856,31 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       // can we expect from Microsoft...)
       {
         QString cref;
+        //printf("XML_SEE: empty tag=%d\n",g_token->emptyTag);
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
-          DocRef *ref = new DocRef(this,cref);
-          m_children.append(ref);
-          ref->parse();
+          if (g_token->emptyTag) // <see cref="..."/> style
+          {
+            bool inSeeBlock = g_inSeeBlock;
+            g_token->name = cref;
+            g_inSeeBlock = TRUE;
+            handleLinkedWord(this,m_children);
+            g_inSeeBlock = inSeeBlock;
+          }
+          else // <see cref="...">...</see> style
+          {
+            //DocRef *ref = new DocRef(this,cref);
+            //m_children.append(ref);
+            //ref->parse();
+            doctokenizerYYsetStatePara();
+            DocLink *lnk = new DocLink(this,cref);
+            m_children.append(lnk);
+            QString leftOver = lnk->parse(FALSE,TRUE);
+            if (!leftOver.isEmpty())
+            {
+              m_children.append(new DocWord(this,leftOver));
+            }
+          }
         }
         else
         {

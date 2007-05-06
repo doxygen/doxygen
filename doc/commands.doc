@@ -58,6 +58,7 @@ documentation:
 \refitem cmddef \\def
 \refitem cmddefgroup \\defgroup
 \refitem cmddeprecated \\deprecated
+\refitem cmddetails \\details
 \refitem cmddir \\dir
 \refitem cmddontinclude \\dontinclude
 \refitem cmddot \\dot
@@ -862,6 +863,14 @@ is empty, \c TEST, \c DEV, or \c DEV \c TEST.
   Starts a paragraph indicating that this documentation block belongs to
   a deprecated entity. Can be used to describe alternatives, 
   expected life span, etc.
+
+<hr>
+\section cmddetails \\details {detailed decription}
+
+  \addindex \\details
+  Just like \ref cmdbrief "\\brief" starts a brief description, \\details
+  starts the detailed description. You can also start a new paragraph (blank line)
+  then the \\details command is not needed.
 
 <hr>
 \section cmdelse \\else 

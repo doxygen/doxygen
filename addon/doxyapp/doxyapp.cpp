@@ -25,7 +25,6 @@
  *  show some information about it.
  */
 
-#include </usr/include/unistd.h> // ugly hack to get the right unistd.h (doxygen has one too)
 #include <stdlib.h>
 #include "doxygen.h"
 #include "outputgen.h"

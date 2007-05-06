@@ -293,6 +293,7 @@ int guessSection(const char *name)
       n.right(4)==".hpp" ||
       n.right(4)==".h++" ||
       n.right(4)==".idl" ||
+      n.right(4)==".ddl" ||
       n.right(5)==".pidl"
      ) return Entry::HEADER_SEC;
   return 0;
@@ -1476,7 +1477,7 @@ nextChar:
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5 && 
+    else if (c=='t' && csp==5 && (i<5 || !isId(s.at(i-5))) &&
         !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
           s.at(i+1)==','  || s.at(i+1)=='\0')) 
       // prevent const ::A from being converted to const::A
@@ -1485,12 +1486,12 @@ nextChar:
       if (s.at(i+1)==' ') i++;
       csp=0;
     }
-    else if (c==':' && csp==6) // replace const::A by const ::A
+    else if (c==':' && csp==6 && (i<6 || !isId(s.at(i-6)))) // replace const::A by const ::A
     {
       result+=" :";
       csp=0;
     }
-    else if (c=='l' && vsp==7 && 
+    else if (c=='l' && vsp==7 && (i<7 || !isId(s.at(i-7))) &&
         !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
           s.at(i+1)==','  || s.at(i+1)=='\0')) 
       // prevent virtual ::A from being converted to virtual::A
@@ -1499,7 +1500,7 @@ nextChar:
       if (s.at(i+1)==' ') i++;
       vsp=0;
     }
-    else if (c==':' && vsp==8) // replace virtual::A by virtual ::A
+    else if (c==':' && vsp==8 && (i<8 || !isId(s.at(i-8)))) // replace virtual::A by virtual ::A
     {
       result+=" :";
       vsp=0;
@@ -5949,6 +5950,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
   if (!init) // one time initialization
   {
     extLookup.insert(".idl",   new int(SrcLangExt_IDL));
+    extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".odl",   new int(SrcLangExt_IDL));
     extLookup.insert(".java",  new int(SrcLangExt_Java));
     extLookup.insert(".jsl",   new int(SrcLangExt_Java));

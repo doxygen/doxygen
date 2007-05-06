@@ -132,6 +132,7 @@ ObjCache        *Doxygen::symbolCache = 0;
 Store           *Doxygen::symbolStorage;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
+bool             Doxygen::gatherDefines = TRUE;
 
 // locally accessible globals
 static QDict<EntryNav>   classEntries(1009);
@@ -4687,8 +4688,9 @@ static void addMemberDocs(EntryNav *rootNav,
   {
     //printf("setInitializer\n");
     md->setInitializer(root->initializer);
-    md->setMaxInitLines(root->initLines);
   }
+  
+  md->setMaxInitLines(root->initLines);
 
   if (rfd)
   {
@@ -8178,7 +8180,7 @@ static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
 // reads a file into an array and filters out any 0x00 and 0x06 bytes,
 // because these are special for the parser.
 
-static void copyAndFilterFile(const char *fileName,BufStr &dest)
+void copyAndFilterFile(const char *fileName,BufStr &dest)
 {
   // try to open file
   int size=0;
@@ -8349,7 +8351,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
 // The directory is read iff the recusiveFlag is set.
 // The contents of all files is append to the input string
 
-static int readDir(QFileInfo *fi,
+int readDir(QFileInfo *fi,
             FileNameList *fnList,
             FileNameDict *fnDict,
             StringDict  *exclDict,
@@ -8441,7 +8443,7 @@ static int readDir(QFileInfo *fi,
 // read a file or all files in a directory and append their contents to the
 // input string. The names of the files are appended to the `fiList' list.
 
-static int readFileOrDirectory(const char *s,
+int readFileOrDirectory(const char *s,
                         FileNameList *fnList,
                         FileNameDict *fnDict,
                         StringDict *exclDict,
@@ -8450,8 +8452,8 @@ static int readFileOrDirectory(const char *s,
                         StringList *resultList,
                         StringDict *resultDict,
                         bool recursive,
-                        bool errorIfNotExist=TRUE,
-                        QDict<void> *killDict = 0
+                        bool errorIfNotExist,
+                        QDict<void> *killDict
                        )
 {
   //printf("killDict=%p count=%d\n",killDict,killDict->count());
@@ -8526,7 +8528,7 @@ static int readFileOrDirectory(const char *s,
 
 //----------------------------------------------------------------------------
 
-static void readFormulaRepository()
+void readFormulaRepository()
 {
   QFile f(Config_getString("HTML_OUTPUT")+"/formula.repository");
   if (f.open(IO_ReadOnly)) // open repository
@@ -8641,7 +8643,7 @@ static void escapeAliases()
 
 //----------------------------------------------------------------------------
 
-static void readAliases()
+void readAliases()
 { 
   // add aliases to a dictionary
   Doxygen::aliasDict.setAutoDelete(TRUE);

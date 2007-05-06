@@ -1006,7 +1006,8 @@ Define *newDefine()
 void addDefine()
 {
   if (g_skip) return; // do not add this define as it is inside a 
-                      // conditional section (@cond command) that is disabled.
+                      // conditional section (cond command) that is disabled.
+  if (!Doxygen::gatherDefines) return;
 
   //printf("addDefine %s %s\n",g_defName.data(),g_defArgsStr.data());
   //ArgumentList *al = new ArgumentList;
