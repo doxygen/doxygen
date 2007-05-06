@@ -45,6 +45,8 @@ class DirDef;
 class ParserManager;
 class ObjCache;
 class Store;
+class QFileInfo;
+class BufStr;
 
 typedef QList<QCString>    StringList;
 typedef QDict<FileDef>     FileDict;
@@ -123,6 +125,7 @@ class Doxygen
     static Store                    *symbolStorage;
     static QCString                  objDBFileName;
     static QCString                  entryDBFileName;
+    static bool                      gatherDefines;
 };
 
 void initDoxygen();
@@ -130,6 +133,33 @@ void readConfiguration(int argc, char **argv);
 void checkConfiguration();
 void parseInput();
 void generateOutput();
+void readAliases();
+void readFormulaRepository();
+int readFileOrDirectory(const char *s,
+                        FileNameList *fnList,
+                        FileNameDict *fnDict,
+                        StringDict *exclDict,
+                        QStrList *patList,
+                        QStrList *exclPatList,
+                        StringList *resultList,
+                        StringDict *resultDict,
+                        bool recursive,
+                        bool errorIfNotExist=TRUE,
+                        QDict<void> *killDict = 0
+                       );
+int readDir(QFileInfo *fi,
+            FileNameList *fnList,
+            FileNameDict *fnDict,
+            StringDict  *exclDict,
+            QStrList *patList,
+            QStrList *exclPatList,
+            StringList *resultList,
+            StringDict *resultDict,
+            bool errorIfNotExist,
+            bool recursive,
+            QDict<void> *killDict
+           );
+void copyAndFilterFile(const char *fileName,BufStr &dest);
 
 #define NEWMATCH
 

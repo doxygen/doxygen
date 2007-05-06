@@ -2281,15 +2281,15 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 		       /* in */     const QCString &fileName,
 		       /* in */     int lineNr,
 		       /* in */     bool isBrief,
-		       /* in */     bool isJavaDocStyle,
+		       /* in */     bool isAutoBriefOn,
 		       /* in */     bool isInbody,
 		       /* in,out */ Protection &prot,
 		       /* in,out */ int &position,
 		       /* out */    bool &newEntryNeeded
 		      )
 {
-  //printf("parseCommentBlock() isBrief=%d isJavaDocStyle=%d lineNr=%d\n",
-  //    isBrief,isJavaDocStyle,lineNr);
+  //printf("parseCommentBlock() isBrief=%d isAutoBriefOn=%d lineNr=%d\n",
+  //    isBrief,isAutoBriefOn,lineNr);
 
   initParser();
   guards.setAutoDelete(TRUE);
@@ -2310,8 +2310,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   parseMore      = FALSE;
   inBody         = isInbody;
   outputXRef.resize(0);
-  setOutput( isBrief || isJavaDocStyle ? OutputBrief : OutputDoc );
-  briefEndsAtDot = isJavaDocStyle;
+  setOutput( isBrief || isAutoBriefOn ? OutputBrief : OutputDoc );
+  briefEndsAtDot = isAutoBriefOn;
 
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {

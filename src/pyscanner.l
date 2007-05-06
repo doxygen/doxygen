@@ -829,6 +829,11 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			      current->name = current->name.stripWhiteSpace();
 			      newFunction();
                             }
+    {B}":"		    { // function without arguments
+			      g_specialBlock = TRUE; // expecting a docstring
+			      bodyEntry = current;
+                              BEGIN( FunctionBody );
+			    }
 
     {B}"("                  {
 			       BEGIN( FunctionParams );
@@ -1110,7 +1115,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
        			g_stringContext=VariableEnd;
 			BEGIN(TripleString);
                       }
-   "("		      { // typle
+   "("		      { // tuple
 			current->type = "tuple";
       		        current->initializer+=*yytext;
                         g_atomStart='(';
@@ -1167,6 +1172,12 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			{
 			  BEGIN(VariableEnd);
 			}
+                      }
+   "\""	              {
+       			g_stringContext=YY_START;
+			current->initializer+="\"";
+			g_copyString=&current->initializer;
+                        BEGIN( DoubleQuoteString );
                       }
    {IDENTIFIER}       {
       		        current->initializer+=yytext;

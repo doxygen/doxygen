@@ -694,6 +694,24 @@ static QCString convertLabel(const QCString &l)
   return result;
 }
 
+static QCString escapeTooltip(const QCString &tooltip)
+{
+  QCString result;
+  const char *p=tooltip.data();
+  if (p==0) return result;
+  char c;
+  while ((c=*p++))
+  {
+    switch(c)
+    {
+      case '\\': result+="\\\\"; break;
+      case '"':  result+="\\\""; break;
+      default:   result+=c; break;
+    }
+  }
+  return result;
+}
+
 static void writeBoxMemberList(QTextStream &t,char prot,MemberList *ml,ClassDef *scope)
 {
   if (ml)
@@ -812,7 +830,7 @@ void DotNode::writeBox(QTextStream &t,
     }
     if (!m_tooltip.isEmpty())
     {
-      t << ",tooltip=\"" << m_tooltip << "\"";
+      t << ",tooltip=\"" << escapeTooltip(m_tooltip) << "\"";
     }
   }
   t << "];" << endl; 

@@ -28,6 +28,7 @@ class QFile;
 class EntryNav;
 class FileDef;
 class FileStorage;
+class StorageIntf;
 
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
@@ -302,6 +303,8 @@ class Entry
      *  at construction time. 
      */
     void reset();
+    void marshall(StorageIntf *);
+    void unmarshall(StorageIntf *);
 
   public:
 

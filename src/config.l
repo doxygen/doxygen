@@ -502,7 +502,6 @@ static void readIncludeFile(const char *incName)
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
                                            cmd=cmd.left(cmd.length()-1).stripWhiteSpace(); 
 					   ConfigOption *option = config->get(cmd);
-					   option->setEncoding(encoding);
 					   if (option==0) // oops not known
 					   {
 					     config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
@@ -511,6 +510,7 @@ static void readIncludeFile(const char *incName)
 					   }
 					   else // known tag
 					   {
+					     option->setEncoding(encoding);
 					     switch(option->kind())
 					     {
 					       case ConfigOption::O_Info:
@@ -1574,8 +1574,17 @@ void Config::create()
                     "If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen \n"
                     "will interpret the first line (until the first dot) of a JavaDoc-style \n"
                     "comment as the brief description. If set to NO, the JavaDoc \n"
-                    "comments will behave just like the Qt-style comments (thus requiring an \n"
-                    "explicit @brief command for a brief description. \n",
+                    "comments will behave just like regular Qt-style comments \n"
+                    "(thus requiring an explicit @brief command for a brief description.) \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "QT_AUTOBRIEF",
+                    "If the QT_AUTOBRIEF tag is set to YES then Doxygen will \n"
+                    "interpret the first line (until the first dot) of a Qt-style \n"
+                    "comment as the brief description. If set to NO, the comments \n"
+                    "will behave just like regular Qt-style comments (thus requiring \n"
+                    "an explicit \\brief command for a brief description.) \n",
                     FALSE
                  );
   cb = addBool(
@@ -2821,7 +2830,7 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALL_GRAPH",
-                    "If the CALL_GRAPH and HAVE_DOT tags are set to YES then doxygen will \n"
+                    "If the CALL_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then doxygen will \n"
 		    "generate a call dependency graph for every global function or class method. \n"
                     "Note that enabling this option will significantly increase the time of a run. \n"
 		    "So in most cases it will be better to enable call graphs for selected \n"
@@ -2831,7 +2840,7 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALLER_GRAPH",
-                    "If the CALLER_GRAPH and HAVE_DOT tags are set to YES then doxygen will \n"
+                    "If the CALLER_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then doxygen will \n"
 		    "generate a caller dependency graph for every global function or class method. \n"
                     "Note that enabling this option will significantly increase the time of a run. \n"
 		    "So in most cases it will be better to enable caller graphs for selected \n"

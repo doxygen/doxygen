@@ -373,16 +373,16 @@ void * portable_iconv_open(const char* tocode, const char* fromcode)
 size_t portable_iconv (void *cd, const char** inbuf,  size_t *inbytesleft, 
                                        char** outbuf, size_t *outbytesleft)
 {
-#if (defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION==0x0109))
+#if ((defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION>=0x0109)) || defined(_OS_SOLARIS_))
 #define CASTNEEDED(x) (x)
 #else
 #define CASTNEEDED(x) (char **)(x)
 #endif
-  return iconv(cd,CASTNEEDED(inbuf),inbytesleft,outbuf,outbytesleft);
+  return iconv((iconv_t)cd,CASTNEEDED(inbuf),inbytesleft,outbuf,outbytesleft);
 }
 
 int portable_iconv_close (void *cd)
 {
-  return iconv_close(cd);
+  return iconv_close((iconv_t)cd);
 }
 

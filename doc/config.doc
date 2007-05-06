@@ -85,6 +85,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_dot_path DOT_PATH
 \refitem cfg_dot_transparent DOT_TRANSPARENT
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
+\refitem cfg_doxyfile_encoding DOXYFILE_ENCODING
 \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 \refitem cfg_enabled_sections ENABLED_SECTIONS
@@ -178,6 +179,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_predefined PREDEFINED
 \refitem cfg_project_name PROJECT_NAME
 \refitem cfg_project_number PROJECT_NUMBER
+\refitem cfg_qt_autobrief QT_AUTOBRIEF
 \refitem cfg_quiet QUIET
 \refitem cfg_recursive RECURSIVE
 \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
@@ -226,9 +228,18 @@ followed by the descriptions of the tags grouped by category.
 \endsecreflist
 
 \section config_project Project related options
-\anchor cfg_project_name
+\anchor cfg_doxyfile_encoding
 <dl>
 
+<dt>\c DOXYFILE_ENCODING <dd>
+ \addindex DOXYFILE_ENCODING
+ This tag specifies the encoding used for all characters in the config file that 
+ follow. The default is UTF-8 which is also the encoding used for all text before
+ the first occurrence of this tag. Doxygen uses libiconv (or the iconv built into
+ libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of
+ possible encodings.
+
+\anchor cfg_project_name
 <dt>\c PROJECT_NAME <dd>
  \addindex PROJECT_NAME
  The \c PROJECT_NAME tag is a single word (or a sequence of words
@@ -382,7 +393,17 @@ followed by the descriptions of the tags grouped by category.
   If the \c JAVADOC_AUTOBRIEF is set to \c YES then doxygen
   will interpret the first line (until the first dot) of a JavaDoc-style
   comment as the brief description. If set to NO (the default), the 
-  Javadoc-style will behave just like the Qt-style comments.
+  Javadoc-style will behave just like regular Qt-style comments
+  (thus requiring an explicit \@brief command for a brief description.)
+
+\anchor cfg_qt_autobrief
+<dt>\c QT_AUTOBRIEF <dd>
+ \addindex QT_AUTOBRIEF
+  If the \c QT_AUTOBRIEF is set to \c YES then doxygen
+  will interpret the first line (until the first dot) of a Qt-style
+  comment as the brief description. If set to NO (the default), the
+  Qt-style will behave just like regular Qt-style comments (thus
+  requiring an explicit \\brief command for a brief description.)
 
 \anchor cfg_builtin_stl_support
 <dt>\c BUILTIN_STL_SUPPORT <dd>
@@ -753,6 +774,8 @@ function's detailed documentation block.
  If this tag is empty the current directory is searched.
 
 \anchor cfg_input_encoding
+<dt>\c INPUT_ENCODING <dd>
+ \addindex INPUT_ENCODING
  This tag can be used to specify the character encoding of the source files that 
  doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
  input encoding. Doxygen uses libiconv (or the iconv built into libc) for the transcoding. 

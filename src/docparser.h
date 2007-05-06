@@ -639,7 +639,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
 {
   public:
     DocLink(DocNode *parent,const QString &target);
-    QString parse(bool);
+    QString parse(bool,bool isXmlLink=FALSE);
     Kind kind() const          { return Kind_Link; }
     QString file() const       { return m_file; }
     QString relPath() const    { return m_relPath; }

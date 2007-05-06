@@ -3436,8 +3436,11 @@ void MemberDef::setBitfields(const char *s)
 
 void MemberDef::setMaxInitLines(int lines)
 { 
-  makeResident();
-  m_impl->userInitLines=lines; 
+  if (lines!=-1)
+  {
+    makeResident();
+    m_impl->userInitLines=lines; 
+  }
 }
 
 void MemberDef::setExplicitExternal(bool b)

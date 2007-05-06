@@ -1,4 +1,4 @@
-(1.5.1-20070219)
+(1.5.2)
 
 Doxygen supports the following 33 languages (sorted alphabetically):
 
@@ -17,20 +17,20 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 194 of the required methods. Anyway, there
 still may be some details listed even for them:
 
-  TranslatorBrazilian
+  TranslatorBrazilian -- The "translate me!" found in a comment.
   TranslatorCatalan
-  TranslatorChinese
-  TranslatorCroatian
+  TranslatorChinese -- The "translate me!" found in a comment.
+  TranslatorCroatian -- The "translate me!" found in a comment.
   TranslatorCzech
-  TranslatorDanish
+  TranslatorDanish -- The "translate me!" found in a comment.
   TranslatorDutch
   TranslatorEnglish
   TranslatorFrench
-  TranslatorGerman
-  TranslatorGreek -- Remove the obsolete methods (never used).
-  TranslatorItalian
+  TranslatorGerman -- The "translate me!" found in a comment.
+  TranslatorGreek -- The "translate me!" found in a comment.
+  TranslatorItalian -- The "translate me!" found in a comment.
   TranslatorJapanese -- Remove the obsolete methods (never used).
-  TranslatorRussian
+  TranslatorRussian -- The "translate me!" found in a comment.
   TranslatorSpanish
 
 ----------------------------------------------------------------------
@@ -105,6 +105,18 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
+TranslatorBrazilian   (Translator)
+-------------------
+
+  Implements 194 of the required methods.
+
+
+TranslatorChinese   (Translator)
+-----------------
+
+  Implements 194 of the required methods.
+
+
 TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
 ----------------------------
 
@@ -125,6 +137,18 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
+
+
+TranslatorCroatian   (Translator)
+------------------
+
+  Implements 194 of the required methods.
+
+
+TranslatorDanish   (Translator)
+----------------
+
+  Implements 194 of the required methods.
 
 
 TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
@@ -243,6 +267,12 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     QCString trNoDescriptionAvailable()
 
 
+TranslatorGerman   (Translator)
+----------------
+
+  Implements 194 of the required methods.
+
+
 TranslatorGreek   (Translator)
 ---------------
 
@@ -292,6 +322,12 @@ TranslatorIndonesian   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
+
+
+TranslatorItalian   (Translator)
+-----------------
+
+  Implements 194 of the required methods.
 
 
 TranslatorJapanese   (Translator)
@@ -483,6 +519,12 @@ TranslatorRomanian   (TranslatorAdapter_1_4_1)  2 methods to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
+
+
+TranslatorRussian   (Translator)
+-----------------
+
+  Implements 194 of the required methods.
 
 
 TranslatorSerbian   (TranslatorAdapter_1_4_1)  2 methods to implement

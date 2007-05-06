@@ -98,7 +98,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString mscExe = /*Config_getString("MSC_PATH")+*/ "mscgen";
+  QCString mscExe = Config_getString("MSC_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs;
   QCString extension;
   if (format==MSC_BITMAP)
