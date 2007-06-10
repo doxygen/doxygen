@@ -98,7 +98,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   // go to the html output directory (i.e. path)
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString mscExe = Config_getString("MSC_PATH")+"mscgen"+portable_commandExtension();
+  QCString mscExe = Config_getString("MSCGEN_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs;
   QCString extension;
   if (format==MSC_BITMAP)
@@ -151,7 +151,7 @@ QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
   QCString mscExe = "mscgen";
   QCString mscArgs = "-T ismap -i \"";
   mscArgs+=inFile + ".msc\" -o \"";
-  mscArgs+=outFile + ".map\"";
+  mscArgs+=outFile + "\"";
 
   int exitCode;
   if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
@@ -162,7 +162,7 @@ QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
   
   QString result;
   QTextOStream tmpout(&result);
-  convertMapFile(tmpout, outFile+".map", relPath);
+  convertMapFile(tmpout, outFile, relPath);
   QDir().remove(outFile);
 
   QDir::setCurrent(oldDir);

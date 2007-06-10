@@ -391,7 +391,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,FALSE);
-    if (!incDepGraph.isTrivial())
+    if (!incDepGraph.isTrivial() && !incDepGraph.isTooBig())
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
@@ -409,7 +409,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   {
     //printf("Graph for file %s\n",name().data());
     DotInclDepGraph incDepGraph(this,TRUE);
-    if (!incDepGraph.isTrivial())
+    if (!incDepGraph.isTrivial() && !incDepGraph.isTooBig())
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
@@ -723,7 +723,7 @@ void FileDef::insertMember(MemberDef *md)
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
-  ::addFileMemberNameToIndex(md);
+  //::addFileMemberNameToIndex(md);
   switch (md->memberType())
   {
     case MemberDef::Variable:     

@@ -75,6 +75,7 @@ The first part forms a user manual:
                  and members in the documentation.
 <li>Section \ref output shows how to generate the various output formats
                  supported by doxygen.
+<li>Section \ref custcmd show how to define and use custom commands in your comments.
 <li>Section \ref external explains how to let doxygen create links to externally generated documentation.
 <li>Section \ref faq gives answers to frequently asked questions. 
 <li>Section \ref trouble tells you what to do when you have problems.

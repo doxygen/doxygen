@@ -772,10 +772,15 @@ bool MemberDef::isLinkableInProject() const
   static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
   makeResident();
 
-  if (isHidden()) return FALSE;
   //printf("MemberDef::isLinkableInProject(name=%s)\n",name().data());
+  if (isHidden()) 
+  {
+    //printf("is hidden\n");
+    return FALSE;
+  }
   if (m_impl->templateMaster)
   {
+    //printf("has template master\n");
     return m_impl->templateMaster->isLinkableInProject();
   }
   if (name().isEmpty() || name().at(0)=='@') 
@@ -2157,7 +2162,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
      )
   {
     DotCallGraph callGraph(this,FALSE);
-    if (!callGraph.isTrivial())
+    if (!callGraph.isTrivial() && !callGraph.isTooBig())
     {
       msg("Generating call graph for function %s\n",qualifiedName().data());
       ol.disable(OutputGenerator::Man);
@@ -2172,8 +2177,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       && isFunction() && Config_getBool("HAVE_DOT")
      )
   {
-    DotCallGraph callerGraph(this, true);
-    if (!callerGraph.isTrivial())
+    DotCallGraph callerGraph(this, TRUE);
+    if (!callerGraph.isTrivial() && !callerGraph.isTooBig())
     {
       msg("Generating caller graph for function %s\n",qualifiedName().data());
       ol.disable(OutputGenerator::Man);

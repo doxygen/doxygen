@@ -61,6 +61,10 @@ static QCString g_blockName;
 static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
 
+static QCString g_aliasString;
+static int      g_blockCount;
+static int      g_lastBlockContext;
+
 static void replaceCommentMarker(const char *s,int len)
 {
   const char *p=s;
@@ -223,27 +227,11 @@ static QCString handleCondCmdInAliases(const QCString &s)
 /** copies string \a s with length \a len to the output, while 
  *  replacing any alias commands found in the string.
  */
-static void replaceAliases(const char *s,int len)
+static void replaceAliases(const char *s)
 {
-  static QRegExp cmd("[@\\\\][a-z_A-Z][a-z_A-Z0-9]*");
-  QCString in=s;
-  int p=0,i,l;
-  while ((i=cmd.match(in,p,&l))!=-1)
-  {
-    copyToOutput(s+p,i-p);
-    QCString *pValue=Doxygen::aliasDict[in.mid(i+1,l-1)];
-    if (pValue)
-    {
-      QCString val = handleCondCmdInAliases(*pValue);
-      copyToOutput(val.data(),val.length());
-    }
-    else
-    {
-      copyToOutput(s+i,l);
-    }
-    p=i+l;
-  }
-  copyToOutput(s+p,len-p);
+  QCString result = resolveAliasCmd(s);
+  //printf("replaceAliases(%s)->'%s'\n",s,result.data());
+  copyToOutput(result,result.length());
 }
 
 
@@ -274,6 +262,7 @@ void replaceComment(int offset);
 %x VerbatimCode
 %x ReadLine
 %x CondLine
+%x ReadAliasArgs
 
 %%
 
@@ -300,8 +289,7 @@ void replaceComment(int offset);
 				     }
 				     g_blockHeadCol=g_col;
                                      copyToOutput("/**",3); 
-				     //copyToOutput(yytext+i,yyleng-i); 
-				     replaceAliases(yytext+i,yyleng-i);
+				     replaceAliases(yytext+i);
 				     g_inSpecialComment=TRUE;
 				     BEGIN(SComment); 
                                    }
@@ -310,8 +298,7 @@ void replaceComment(int offset);
                                      int i=17; //=strlen("//##Documentation");
 				     g_blockHeadCol=g_col;
 				     copyToOutput("/**",3);
-				     //copyToOutput(yytext+i,yyleng-i);
-				     replaceAliases(yytext+i,yyleng-i);
+				     replaceAliases(yytext+i);
 				     BEGIN(SComment);
   				   }
 <Scan>"//"/.*\n	                   { /* one line C++ comment */ 
@@ -521,17 +508,37 @@ void replaceComment(int offset);
 				     if (*yytext=='\n') g_lineNr++;
 				     BEGIN(g_condCtx);
   				   }
-<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*   { // expand alias
-  				      QCString *pValue=Doxygen::aliasDict[yytext+1];
-				      if (pValue)
-				      {    
-					QCString val = handleCondCmdInAliases(*pValue);
-					copyToOutput(val.data(),val.length());
-				      }
-				      else
-				      {
-					copyToOutput(yytext,yyleng);
-				      }
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
+				     replaceAliases(yytext);
+  				   }
+<CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*"{" { // expand alias with arguments
+                                     g_lastBlockContext=YY_START;
+				     g_blockCount=1;
+				     g_aliasString=yytext;
+				     BEGIN( ReadAliasArgs );
+  				   }
+<ReadAliasArgs>[^{}\n\*]+	   {
+                                     g_aliasString+=yytext;
+  				   }
+<ReadAliasArgs>\n		   {
+                                     g_aliasString+=yytext;
+                                     g_lineNr++;
+  				   }
+<ReadAliasArgs>"{"		   {
+                                     g_aliasString+=yytext;
+                                     g_blockCount++;
+                                   }
+<ReadAliasArgs>"}"		   {
+                                     g_aliasString+=yytext;
+                                     g_blockCount--;
+				     if (g_blockCount==0)
+				     {
+				       replaceAliases(g_aliasString);
+				       BEGIN( g_lastBlockContext );
+				     }
+  			           }
+<ReadAliasArgs>.		   {
+                                     g_aliasString+=yytext;
   				   }
 <ReadLine>.			   {
   				     copyToOutput(yytext,yyleng);

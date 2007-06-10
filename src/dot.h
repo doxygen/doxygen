@@ -82,6 +82,7 @@ class DotNode
     int  number() const { return m_number; }
     bool isVisible() const { return m_visible; }
     TruncState isTruncated() const { return m_truncated; }
+    int distance() const { return m_distance; }
 
   private:
     void colorConnectedNodes(int curColor);
@@ -89,6 +90,7 @@ class DotNode
                   bool hasNonReachableChildren, bool reNumber=FALSE);
     void writeArrow(QTextStream &t,GraphType gt,GraphOutputFormat f,DotNode *cn,
                     EdgeInfo *ei,bool topDown, bool pointBack=TRUE, bool reNumber=FALSE);
+    void setDistance(int distance);
     const DotNode   *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
     void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
@@ -106,6 +108,7 @@ class DotNode
     ClassDef *       m_classDef;  //!< class representing this node (can be 0)
     bool             m_visible;   //!< is the node visible in the output
     TruncState       m_truncated; //!< does the node have non-visible children/parents
+    int              m_distance;  //!< shortest path to the root node
 
     friend class DotGfxHierarchyTable;
     friend class DotClassGraph;
@@ -155,6 +158,7 @@ class DotClassGraph
     DotClassGraph(ClassDef *cd,DotNode::GraphType t);
    ~DotClassGraph();
     bool isTrivial() const;
+    bool isTooBig() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
                     const char *relPath, bool TBRank=TRUE,bool imageMap=TRUE);
 
@@ -163,12 +167,12 @@ class DotClassGraph
     QCString diskName() const;
 
   private:
-    void buildGraph(ClassDef *cd,DotNode *n,bool base);
+    void buildGraph(ClassDef *cd,DotNode *n,bool base,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes,bool includeParents);
     void determineTruncatedNodes(QList<DotNode> &queue,bool includeParents);
     void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
                   const char *usedName,const char *templSpec,
-                  bool base);
+                  bool base,int distance);
 
     DotNode        *   m_startNode;
     QDict<DotNode> *   m_usedNodes;
@@ -187,11 +191,12 @@ class DotInclDepGraph
                     const char *relPath,
                     bool writeImageMap=TRUE);
     bool isTrivial() const;
+    bool isTooBig() const;
     QCString diskName() const;
     void writeXML(QTextStream &t);
 
   private:
-    void buildGraph(DotNode *n,FileDef *fd);
+    void buildGraph(DotNode *n,FileDef *fd,int distance);
     void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
     void determineTruncatedNodes(QList<DotNode> &queue);
 
@@ -213,6 +218,7 @@ class DotCallGraph
                         const char *path,const char *relPath,bool writeImageMap=TRUE);
     void buildGraph(DotNode *n,MemberDef *md);
     bool isTrivial() const;
+    bool isTooBig() const;
     void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
     void determineTruncatedNodes(QList<DotNode> &queue);
     

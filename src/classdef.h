@@ -310,6 +310,7 @@ class ClassDef : public Definition
     void mergeMembers();
     void distributeMemberGroupDocumentation();
     void writeDocumentation(OutputList &ol);
+    void writeClassDiagrams(OutputList &ol);
     void writeDocumentationForInnerClasses(OutputList &ol);
     void writeMemberDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);

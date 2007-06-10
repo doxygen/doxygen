@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=2
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20070506
+doxygen_version_mmn=20070610
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -214,10 +214,7 @@ if test -z "$f_platform"; then
     UNIX_SV:4.2*)
       f_platform=unixware-g++
       ;;
-    Cygwin:*)
-      f_platform=win32-g++
-      ;;
-    CYGWIN:*)
+    Cygwin:*|CYGWIN:*)
       f_platform=win32-g++
       ;;
     *MiNT:*)

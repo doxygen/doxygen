@@ -1667,7 +1667,8 @@ void initClassMemberIndices()
 void addClassMemberNameToIndex(MemberDef *md)
 {
   static bool hideFriendCompounds = Config_getBool("HIDE_FRIEND_COMPOUNDS");
-  ClassDef *cd;
+  ClassDef *cd=0;
+
   if (md->isLinkableInProject() && 
       (cd=md->getClassDef()) && 
       cd->isLinkableInProject() &&

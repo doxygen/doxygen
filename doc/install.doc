@@ -38,14 +38,17 @@ If you downloaded the source distribution, you need at least the
 following to build the executable:
 <ul>
 <li>The <a href="ftp://prep.ai.mit.edu/pub/gnu/">GNU</a> tools 
-    flex, bison and make
+    flex, bison and GNU make, and strip
     \addindex flex
     \addindex bison
     \addindex make
+    \addindex strip
 <li>In order to generate a Makefile for your platform, you need 
     <a href="http://www.perl.com/">perl</a>
     \latexonly(see {\tt http://www.perl.com/})\endlatexonly.
     \addindex perl
+<li>The configure script assume the availibility of standard Unix tools such 
+    as sed, date, find, uname, mv, cp, cat, echo, tr, cd, and rm.
 </ul>
 
 To take full advantage of doxygen's features the following additional
@@ -56,7 +59,7 @@ tools should be installed.
     <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
     \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
     \addindex Qt
-    version 3.2 or higher.
+    version 3.3 or higher.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
@@ -70,8 +73,11 @@ tools should be installed.
     If you compile graphviz yourself, make sure you do include
     freetype support (which requires the freetype library and header files), 
     otherwise the graphs will not render proper text labels.
-<li>The ghostscript interpreter. To be found at 
+<li>For formulas or if you do not wish to use pdflatex, the ghostscript interpreter
+    is needed. You can find it at 
     <a href="http://www.ghostscript.com/">www.ghostscript.com</a>.
+<li>In order to generate doxygen's own documentation, Python is needed, you
+    can find it  at <a href="http://www.python.org">www.python.org</a>.
 </ul>
 
 Compilation is now done by performing the following steps:
@@ -104,7 +110,7 @@ Compilation is now done by performing the following steps:
     See the <code>PLATFORMS</code> file for a list of possible platform
     options.
 
-    If you have Qt-3.2.x or higher installed and want to build the GUI 
+    If you have Qt-3.3.x installed and want to build the GUI 
     front-end, you should run the configure script with 
     the <code>--with-doxywizard</code> option:
 
@@ -136,13 +142,11 @@ Compilation is now done by performing the following steps:
 
     To let doxygen generate the HTML documentation.
     
-    \note You will need the stream editor <code>sed</code> for this, 
-    but this should be available on any Unix platform.
-
     The HTML directory of the distribution will now contain the html 
     documentation (just point a HTML browser to the file 
     <code>index.html</code> in the 
-    html directory).
+    html directory). You will need the <code>python</code> interpreter 
+    for this.
     
 <li>Optional: Generate a PDF version of the manual
     (you will need <code>pdflatex</code>, <code>makeindex</code>, and

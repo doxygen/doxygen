@@ -577,18 +577,26 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
+  {
     m_t << "<ol" << htmlAttribsToString(s->attribs()) << ">\n"; 
+  }
   else 
+  {
     m_t << "<ul" << htmlAttribsToString(s->attribs()) << ">\n";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlList *s) 
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
+  {
     m_t << "</ol>"; 
-  else 
+  }
+  else
+  { 
     m_t << "</ul>";
+  }
   if (!s->isPreformatted()) m_t << "\n";
 }
 
