@@ -620,7 +620,8 @@ class TranslatorChinese : public Translator
      */
  		virtual QCString trNamespaces()
     {
-      return "Namespaces";
+      // return "Namespaces";
+      return "Ãû×Ö¿Õ¼ä";
     }
 
 //////////////////////////////////////////////////////////////////////////

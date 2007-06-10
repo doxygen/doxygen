@@ -1140,6 +1140,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
     void markLast(bool v=TRUE)  { m_isLast=v; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
+    int parseXml();
 
   private:
     DocNode *      m_parent;
@@ -1179,6 +1180,7 @@ class DocHtmlRow : public CompAccept<DocHtmlRow>, public DocNode
     void accept(DocVisitor *v) { CompAccept<DocHtmlRow>::accept(this,v); }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
+    int parseXml(bool header);
 
   private:
     DocNode *  m_parent;
@@ -1199,6 +1201,7 @@ class DocHtmlTable : public CompAccept<DocHtmlTable>, public DocNode
     bool hasCaption()       { return m_caption!=0; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
+    int parseXml();
     uint numCols() const;
     void accept(DocVisitor *v);
 

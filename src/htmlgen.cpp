@@ -873,7 +873,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\"";
-  if (tooltip) t << " title=\"" << tooltip << "\"";
+  if (tooltip) t << " title=\"" << convertToXML(tooltip) << "\"";
   t << ">";
   docify(name);
   t << "</a>";

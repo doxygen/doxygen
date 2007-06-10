@@ -596,7 +596,7 @@ void ClassDef::internalInsertMember(MemberDef *md,
     m_impl->isAbstract=TRUE;
   }
 
-  ::addClassMemberNameToIndex(md);
+  //::addClassMemberNameToIndex(md);
   if (addToAllList && 
       !(Config_getBool("HIDE_FRIEND_COMPOUNDS") &&
         md->isFriend() &&
@@ -982,6 +982,192 @@ void ClassDef::showUsedFiles(OutputList &ol)
 }
 
 
+void ClassDef::writeClassDiagrams(OutputList &ol)
+{
+  // count direct inheritance relations
+  int count=0;
+  BaseClassDef *ibcd;
+  if (m_impl->inheritedBy)
+  {
+    ibcd=m_impl->inheritedBy->first();
+    while (ibcd)
+    {
+      ClassDef *icd=ibcd->classDef;
+      if ( icd->isVisibleInHierarchy()) count++;
+      ibcd=m_impl->inheritedBy->next();
+    }
+  }
+  if (m_impl->inherits)
+  {
+    ibcd=m_impl->inherits->first();
+    while (ibcd)
+    {
+      ClassDef *icd=ibcd->classDef;
+      if ( icd->isVisibleInHierarchy()) count++;
+      ibcd=m_impl->inherits->next();
+    }
+  }
+
+  
+  bool renderDiagram = FALSE;
+  if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_GRAPH"))
+    // write class diagram using dot
+  {
+    DotClassGraph inheritanceGraph(this,DotNode::Inheritance);
+    if (!inheritanceGraph.isTrivial() && !inheritanceGraph.isTooBig())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.startDotGraph();
+      ol.parseText(theTranslator->trClassDiagram(displayName()));
+      ol.endDotGraph(inheritanceGraph);
+      if (Config_getBool("GENERATE_LEGEND"))
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.writeString("<center><font size=\"2\">[");
+        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
+        ol.docify(theTranslator->trLegend());
+        ol.endHtmlLink();
+        ol.writeString("]</font></center>");
+        ol.popGeneratorState();
+      }
+      ol.popGeneratorState();
+      renderDiagram = TRUE;
+    }
+  }
+  else if (Config_getBool("CLASS_DIAGRAMS") && count>0) 
+    // write class diagram using build-in generator
+  {
+    ClassDiagram diagram(this); // create a diagram of this class.
+    ol.startClassDiagram();
+    ol.disable(OutputGenerator::Man);
+    ol.parseText(theTranslator->trClassDiagram(displayName()));
+    ol.enable(OutputGenerator::Man);
+    ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
+    renderDiagram = TRUE;
+  } 
+
+  if (Config_getBool("CLASS_DIAGRAMS") && renderDiagram) 
+  {
+    ol.disableAllBut(OutputGenerator::Man);
+  }
+
+  if (m_impl->inherits && (count=m_impl->inherits->count())>0)
+  {
+    //parseText(ol,theTranslator->trInherits()+" ");
+
+    QCString inheritLine = theTranslator->trInheritsList(m_impl->inherits->count());
+    QRegExp marker("@[0-9]+");
+    int index=0,newIndex,matchLen;
+    // now replace all markers in inheritLine with links to the classes
+    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    {
+      ol.parseText(inheritLine.mid(index,newIndex-index));
+      bool ok;
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      BaseClassDef *bcd=m_impl->inherits->at(entryIndex);
+      if (ok && bcd)
+      {
+        ClassDef *cd=bcd->classDef;
+        if (cd->isLinkable())
+        {
+          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+          {
+            Doxygen::tagFile << "    <base";
+            if (bcd->prot==Protected)
+            {
+              Doxygen::tagFile << " protection=\"protected\"";
+            }
+            else if (bcd->prot==Private)
+            {
+              Doxygen::tagFile << " protection=\"private\"";
+            }
+            if (bcd->virt==Virtual)
+            {
+              Doxygen::tagFile << " virtualness=\"virtual\"";
+            }
+            Doxygen::tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+          }
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName()+bcd->templSpecifiers);
+        }
+        else
+        {
+          ol.docify(cd->displayName());
+        }
+      }
+      else
+      {
+        err("Error: invalid marker %d in inherits list!\n",entryIndex);
+      }
+      index=newIndex+matchLen;
+    } 
+    ol.parseText(inheritLine.right(inheritLine.length()-index));
+    ol.newParagraph();
+  }
+
+  // write subclasses
+  if (m_impl->inheritedBy && (count=m_impl->inheritedBy->count())>0)
+  {
+    QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
+    QRegExp marker("@[0-9]+");
+    int index=0,newIndex,matchLen;
+    // now replace all markers in inheritLine with links to the classes
+    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    {
+      ol.parseText(inheritLine.mid(index,newIndex-index));
+      bool ok;
+      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
+      BaseClassDef *bcd=m_impl->inheritedBy->at(entryIndex);
+      if (ok && bcd)
+      {
+        ClassDef *cd=bcd->classDef;
+        if (cd->isLinkable())
+        {
+          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+        }
+        else
+        {
+          ol.docify(cd->displayName());
+        }
+        writeInheritanceSpecifier(ol,bcd);
+      }
+      index=newIndex+matchLen;
+    } 
+    ol.parseText(inheritLine.right(inheritLine.length()-index));
+    ol.newParagraph();
+  }
+
+  if (Config_getBool("CLASS_DIAGRAMS") && renderDiagram) 
+  {
+    ol.enableAll();
+  }
+
+  if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
+  {
+    DotClassGraph usageImplGraph(this,DotNode::Collaboration);
+    if (!usageImplGraph.isTrivial())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.startDotGraph();
+      ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
+      ol.endDotGraph(usageImplGraph);
+      if (Config_getBool("GENERATE_LEGEND"))
+      {
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.writeString("<center><font size=\"2\">[");
+        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
+        ol.docify(theTranslator->trLegend());
+        ol.endHtmlLink();
+        ol.writeString("]</font></center>");
+      }
+      ol.popGeneratorState();
+    }
+  }
+
+}
+
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
@@ -1140,182 +1326,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  
-  if (Config_getBool("CLASS_DIAGRAMS")) ol.disableAllBut(OutputGenerator::Man);
-
-  
-  // write super classes
-  int count;
-  if (m_impl->inherits && (count=m_impl->inherits->count())>0)
-  {
-    //parseText(ol,theTranslator->trInherits()+" ");
-
-    QCString inheritLine = theTranslator->trInheritsList(m_impl->inherits->count());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
-    // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
-    {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=m_impl->inherits->at(entryIndex);
-      if (ok && bcd)
-      {
-        ClassDef *cd=bcd->classDef;
-        if (cd->isLinkable())
-        {
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-          {
-            Doxygen::tagFile << "    <base";
-            if (bcd->prot==Protected)
-            {
-              Doxygen::tagFile << " protection=\"protected\"";
-            }
-            else if (bcd->prot==Private)
-            {
-              Doxygen::tagFile << " protection=\"private\"";
-            }
-            if (bcd->virt==Virtual)
-            {
-              Doxygen::tagFile << " virtualness=\"virtual\"";
-            }
-            Doxygen::tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
-          }
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName()+bcd->templSpecifiers);
-        }
-        else
-        {
-          ol.docify(cd->displayName());
-        }
-      }
-      else
-      {
-        err("Error: invalid marker %d in inherits list!\n",entryIndex);
-      }
-      index=newIndex+matchLen;
-    } 
-    ol.parseText(inheritLine.right(inheritLine.length()-index));
-    ol.newParagraph();
-  }
-
-  // write subclasses
-  if (m_impl->inheritedBy && (count=m_impl->inheritedBy->count())>0)
-  {
-    QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
-    // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
-    {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=m_impl->inheritedBy->at(entryIndex);
-      if (ok && bcd)
-      {
-        ClassDef *cd=bcd->classDef;
-        if (cd->isLinkable())
-        {
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-        }
-        else
-        {
-          ol.docify(cd->displayName());
-        }
-        writeInheritanceSpecifier(ol,bcd);
-      }
-      index=newIndex+matchLen;
-    } 
-    ol.parseText(inheritLine.right(inheritLine.length()-index));
-    ol.newParagraph();
-  }
-
-  if (Config_getBool("CLASS_DIAGRAMS")) ol.enableAll();
-  
-
-  count=0;
-  BaseClassDef *ibcd;
-  if (m_impl->inheritedBy)
-  {
-    ibcd=m_impl->inheritedBy->first();
-    while (ibcd)
-    {
-      ClassDef *icd=ibcd->classDef;
-      if ( icd->isVisibleInHierarchy()) count++;
-      ibcd=m_impl->inheritedBy->next();
-    }
-  }
-  if (m_impl->inherits)
-  {
-    ibcd=m_impl->inherits->first();
-    while (ibcd)
-    {
-      ClassDef *icd=ibcd->classDef;
-      if ( icd->isVisibleInHierarchy()) count++;
-      ibcd=m_impl->inherits->next();
-    }
-  }
-
-  
-  if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_GRAPH"))
-    // write class diagram using dot
-  {
-    DotClassGraph inheritanceGraph(this,DotNode::Inheritance);
-    if (!inheritanceGraph.isTrivial())
-    {
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
-      ol.startDotGraph();
-      ol.parseText(theTranslator->trClassDiagram(displayName()));
-      ol.endDotGraph(inheritanceGraph);
-      if (Config_getBool("GENERATE_LEGEND"))
-      {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
-        ol.docify(theTranslator->trLegend());
-        ol.endHtmlLink();
-        ol.writeString("]</font></center>");
-        ol.popGeneratorState();
-      }
-      ol.popGeneratorState();
-    }
-  }
-  else if (Config_getBool("CLASS_DIAGRAMS") && count>0) 
-    // write class diagram using build-in generator
-  {
-    ClassDiagram diagram(this); // create a diagram of this class.
-    ol.startClassDiagram();
-    ol.disable(OutputGenerator::Man);
-    ol.parseText(theTranslator->trClassDiagram(displayName()));
-    ol.enable(OutputGenerator::Man);
-    ol.endClassDiagram(diagram,getOutputFileBase(),displayName());
-  } 
-
-  if (Config_getBool("HAVE_DOT") && Config_getBool("COLLABORATION_GRAPH"))
-  {
-    DotClassGraph usageImplGraph(this,DotNode::Collaboration);
-    if (!usageImplGraph.isTrivial())
-    {
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
-      ol.startDotGraph();
-      ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
-      ol.endDotGraph(usageImplGraph);
-      if (Config_getBool("GENERATE_LEGEND"))
-      {
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
-        ol.docify(theTranslator->trLegend());
-        ol.endHtmlLink();
-        ol.writeString("]</font></center>");
-      }
-      ol.popGeneratorState();
-    }
-  }
+  writeClassDiagrams(ol); 
 
   // write link to list of all members (HTML only)
   if (m_impl->allMemberNameInfoSDict && 

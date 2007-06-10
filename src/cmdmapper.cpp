@@ -162,7 +162,8 @@ CommandMap htmlTagMap[] =
   { "exception",  XML_EXCEPTION },
   { "include",    XML_INCLUDE },
   { "item",       XML_ITEM },
-  { "list",       XML_LIST },
+  { "list",       XML_LIST }, // type="table|bullet|number"
+  { "listheader", XML_LISTHEADER },
   { "para",       XML_PARA },
   { "param",      XML_PARAM },
   { "paramref",   XML_PARAMREF },
@@ -172,14 +173,15 @@ CommandMap htmlTagMap[] =
   { "see",        XML_SEE },
   { "seealso",    XML_SEEALSO },
   { "summary",    XML_SUMMARY },
+  { "term",       XML_TERM },
   { "value",      XML_VALUE },
   { 0,            0 }
 };
 
 //----------------------------------------------------------------------------
 
-Mapper *Mappers::cmdMapper     = new Mapper(cmdMap);
-Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap);
+Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,TRUE);
+Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,FALSE);
 
 void Mappers::freeMappers()
 {

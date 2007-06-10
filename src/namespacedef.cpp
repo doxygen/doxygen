@@ -179,7 +179,7 @@ void NamespaceDef::insertMember(MemberDef *md)
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
-  ::addNamespaceMemberNameToIndex(md);
+  //::addNamespaceMemberNameToIndex(md);
   //static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
   {

@@ -39,7 +39,11 @@ Here is the list of tags supported by doxygen:
                          file. Ignored by doxygen at the moment.
 <li><tt>\<item\></tt> List item. Can only be used inside a <tt>\<list\></tt> context.
 <li><tt>\<list type="type"\></tt> Starts a list, supported types are <tt>bullet</tt>
-                         or <tt>number</tt>. A list consists of a number of <tt>\<item\></tt> tags.
+                         or <tt>number</tt> and <tt>table</tt>. 
+                         A list consists of a number of <tt>\<item\></tt> tags.
+                         A list of type table, is a two column table which can have
+                         a header.
+<li><tt>\<listheader\></tt>   Starts the header of a list of type "table".
 <li><tt>\<para\></tt>    Identifies a paragraph of text.
 <li><tt>\<param name="paramName"\></tt> Marks a piece of text as the documentation
                          for parameter "paramName". Similar to 
@@ -56,6 +60,7 @@ Here is the list of tags supported by doxygen:
                          to "member". Similar to using \ref cmdsa "\\sa" member.
 <li><tt>\<summary\></tt> Identifies the brief description.
                          Similar to using \ref cmdbrief "\\brief".
+<li><tt>\<term\></tt>    Part of a <tt>\<list\></tt> command.
 <li><tt>\<value\></tt>   Identifies a property. Ignored by doxygen.
 </ul>
 

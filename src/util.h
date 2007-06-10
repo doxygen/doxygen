@@ -187,7 +187,7 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
 
 int guessSection(const char *name);
 
-bool isId(char c);
+bool isId(int c);
 
 QCString removeRedundantWhiteSpace(const QCString &s);
 
@@ -333,6 +333,15 @@ QCString parseCommentAsText(const QString &doc,const QCString &fileName,int line
 QCString transcodeCharacterStringToUTF8(const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
+
+QCString extractAliasArgs(const QCString &args,int pos);
+
+int countAliasArguments(const QCString argList);
+
+QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList);
+
+QCString resolveAliasCmd(const QCString aliasCmd);
+QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
 
 #endif
 

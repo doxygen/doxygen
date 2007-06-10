@@ -6397,7 +6397,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                 // must create them here
                 e->loadEntry(g_storage);
                 MemberDef *fmd = addVariableToFile(e,MemberDef::EnumValue,
-                                 md->getOuterScope() ? md->getOuterScope()->name() : "",
+                                 md->getOuterScope() ? md->getOuterScope()->name() : QCString(),
                                  e->name(),TRUE,0); 
                 md->insertEnumField(fmd);
                 fmd->setEnumScope(md);
@@ -6659,6 +6659,43 @@ static void findDocumentedEnumValues()
   findDEV(*Doxygen::functionNameSDict); 
 }
 
+//----------------------------------------------------------------------
+
+static void addMembersToIndex()
+{
+  MemberName *mn;
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
+  // for each member name
+  for (mnli.toFirst();(mn=mnli.current());++mnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    // for each member definition
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      addClassMemberNameToIndex(md);
+    }
+  }
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+  // for each member name
+  for (fnli.toFirst();(mn=fnli.current());++fnli)
+  {
+    MemberDef *md;
+    MemberNameIterator mni(*mn);
+    // for each member definition
+    for (mni.toFirst();(md=mni.current());++mni)
+    {
+      if (md->getNamespaceDef())
+      {
+        addNamespaceMemberNameToIndex(md);
+      }
+      else
+      {
+        addFileMemberNameToIndex(md);
+      }
+    }
+  }
+}
 
 //----------------------------------------------------------------------
 // computes the relation between all members. For each member `m'
@@ -8560,49 +8597,13 @@ void readFormulaRepository()
 
 //----------------------------------------------------------------------------
 
-static QDict<void> aliasesProcessed;
-
-static QCString expandAliasesRec(const QCString s)
-{
-  QCString result;
-  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
-  QCString value=s;
-  int i,p=0,l;
-  while ((i=cmdPat.match(value,p,&l))!=-1)
-  {
-    result+=value.mid(p,i-p);
-    QCString cmd=value.mid(i+1,l-1);
-    //printf("Found command '%s'\n",cmd.data());
-    QCString *aliasText=Doxygen::aliasDict.find(cmd);
-    if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
-    {
-      aliasesProcessed.insert(cmd,(void *)0x8);
-      result+=expandAliasesRec(*aliasText);
-      aliasesProcessed.remove(cmd);
-    }
-    else // command is not an alias
-    {
-      result+=value.mid(i,l);
-    }
-    p=i+l;
-  }
-  result+=value.right(value.length()-p);
-
-  //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
-  return result;
-}
-
 static void expandAliases()
 {
   QDictIterator<QCString> adi(Doxygen::aliasDict);
   QCString *s;
   for (adi.toFirst();(s=adi.current());++adi)
   {
-    aliasesProcessed.clear();
-    // avoid expanding this command recursively
-    aliasesProcessed.insert(adi.currentKey(),(void *)0x8);
-    // expand embedded commands
-    *s = expandAliasesRec(*s);
+    *s = expandAlias(adi.currentKey(),*s);
   }
 }
 
@@ -8678,7 +8679,6 @@ void readAliases()
   }
   expandAliases();
   escapeAliases();
-  aliasesProcessed.clear();
 }
 
 //----------------------------------------------------------------------------
@@ -9880,6 +9880,7 @@ void generateOutput()
   writeGroupIndex(*outputList);
  
   msg("Generating class documentation...\n");
+  addMembersToIndex();
   generateClassDocs();
   
   if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
@@ -9979,7 +9980,7 @@ void generateOutput()
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
     if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
     {
-      err("Error: failed to run html help compiler on index.hhp");
+      err("Error: failed to run html help compiler on index.hhp\n");
     }
     QDir::setCurrent(oldDir);
   }

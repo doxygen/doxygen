@@ -158,16 +158,18 @@ enum HtmlTagType
   XML_INCLUDE    = XML_CmdMask + 5,
   XML_ITEM       = XML_CmdMask + 6,
   XML_LIST       = XML_CmdMask + 7,
-  XML_PARA       = XML_CmdMask + 8,
-  XML_PARAM      = XML_CmdMask + 9,
-  XML_PARAMREF   = XML_CmdMask + 10,
-  XML_PERMISSION = XML_CmdMask + 11,
-  XML_REMARKS    = XML_CmdMask + 12,
-  XML_RETURNS    = XML_CmdMask + 13,
-  XML_SEE        = XML_CmdMask + 14,
-  XML_SEEALSO    = XML_CmdMask + 15,
-  XML_SUMMARY    = XML_CmdMask + 16,
-  XML_VALUE      = XML_CmdMask + 17
+  XML_LISTHEADER = XML_CmdMask + 8,
+  XML_PARA       = XML_CmdMask + 9,
+  XML_PARAM      = XML_CmdMask + 10,
+  XML_PARAMREF   = XML_CmdMask + 11,
+  XML_PERMISSION = XML_CmdMask + 12,
+  XML_REMARKS    = XML_CmdMask + 13,
+  XML_RETURNS    = XML_CmdMask + 14,
+  XML_SEE        = XML_CmdMask + 15,
+  XML_SEEALSO    = XML_CmdMask + 16,
+  XML_SUMMARY    = XML_CmdMask + 17,
+  XML_TERM       = XML_CmdMask + 18,
+  XML_VALUE      = XML_CmdMask + 19
 
 };
 
@@ -177,11 +179,12 @@ class Mapper
     int map(const char *n)
     {
       QCString name=n;
+      if (!m_cs) name=name.lower();
       int *result;
-      return !name.isEmpty() && (result=m_map.find(name.lower())) ? *result: 0;
+      return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
     }
 
-    Mapper(const CommandMap *cm) : m_map(89)
+    Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
     {
       m_map.setAutoDelete(TRUE);
       const CommandMap *p = cm;
@@ -193,6 +196,7 @@ class Mapper
     }
   private:
     QDict<int> m_map;
+    bool m_cs;
 };
 
 struct Mappers

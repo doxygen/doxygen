@@ -116,8 +116,9 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
 
-bool isId(char c)
+bool isId(int c)
 {
+  if (c<0 || c>255) return FALSE;
   return c=='_' || isalnum(c);
 }
 
@@ -6079,4 +6080,167 @@ QCString parseCommentAsText(const QString &doc,const QCString &fileName,int line
   if (i>0) result=result.left(i)+"...";
   return result.data();
 }
+
+//--------------------------------------------------------------------------------------
+
+static QDict<void> aliasesProcessed;
+
+QCString expandAliasRec(const QCString s)
+{
+  QCString result;
+  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
+  QCString value=s;
+  int i,p=0,l;
+  while ((i=cmdPat.match(value,p,&l))!=-1)
+  {
+    result+=value.mid(p,i-p);
+    QCString args = extractAliasArgs(value,i+l);
+    bool hasArgs = !args.isEmpty();            // found directly after command
+    QCString cmd;
+    if (hasArgs)
+    {
+      int numArgs = countAliasArguments(args);
+      cmd  = value.mid(i+1,l-1)+QCString().sprintf("{%d}",numArgs);  // alias name + {n}
+    }
+    else
+    {
+      cmd = value.mid(i+1,l-1);
+    }
+    //printf("Found command '%s' args='%s'\n",cmd.data(),args.data());
+    QCString *aliasText=Doxygen::aliasDict.find(cmd);
+    if (aliasesProcessed.find(cmd)==0 && aliasText) // expand the alias
+    {
+      //printf("is an alias!\n");
+      aliasesProcessed.insert(cmd,(void *)0x8);
+      QCString val = *aliasText;
+      if (hasArgs)
+      {
+        val = replaceAliasArguments(val,args);
+        //printf("replace '%s'->'%s' args='%s'\n",
+        //       aliasText->data(),val.data(),args.data());
+      }
+      result+=expandAliasRec(val);
+      aliasesProcessed.remove(cmd);
+      p=i+l;
+      if (hasArgs) p+=args.length()+2;
+    }
+    else // command is not an alias
+    {
+      //printf("not an alias!\n");
+      result+=value.mid(i,l);
+      p=i+l;
+    }
+  }
+  result+=value.right(value.length()-p);
+
+  //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
+  return result;
+}
+
+static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
+                                     const QCString &paramValue)
+{
+  QCString result = aliasValue;
+  QCString paramMarker;
+  paramMarker.sprintf("\\%d",paramNum);
+  int markerLen = paramMarker.length();
+  int p=0,i;
+  while ((i=aliasValue.find(paramMarker,p))!=-1) // search for marker
+  {
+    //printf("Found marker '%s' at %d len=%d for param '%s' in '%s'\n",
+    //                 paramMarker.data(),i,markerLen,paramValue.data(),aliasValue.data());
+    if (i==0 || aliasValue.at(i-1)!='\\') // found unescaped marker
+    {
+      QCString before = result.left(i);
+      QCString after  = result.mid(i+markerLen);
+      result = before + paramValue + after;
+      p=i+paramValue.length();
+    }
+    else // ignore escaped markers
+    {
+      p=i+1;
+    }
+  }
+  result = expandAliasRec(substitute(result,"\\,",","));
+  //printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
+  //    aliasValue.data(),paramNum,paramValue.data(),result.data());
+  return result;
+}
+
+QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList)
+{
+  QCString result = aliasValue;
+  QList<QCString> args;
+  int p=0,i,c=1;
+  for (i=0;i<(int)argList.length();i++)
+  {
+    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\'))
+    {
+      result = replaceAliasArgument(result,c,argList.mid(p,i-p));
+      p=i+1;
+      c++;
+    }
+  }
+  if (p<(int)argList.length())
+  {
+    result = replaceAliasArgument(result,c,argList.right(argList.length()-p));
+  }
+  return result;
+}
+
+int countAliasArguments(const QCString argList)
+{
+  int count=1;
+  int l = argList.length();
+  int i;
+  for (i=0;i<l;i++) 
+  {
+    if (argList.at(i)==',' && (i==0 || argList.at(i-1)!='\\')) count++;
+  }
+  return count;
+}
+
+QCString extractAliasArgs(const QCString &args,int pos)
+{
+  int i;
+  int bc=0;
+  if (args.at(pos)=='{') // alias has argument
+  {
+    for (i=pos;i<(int)args.length();i++)
+    {
+      if (args.at(i)=='{') bc++;
+      if (args.at(i)=='}') bc--;
+      if (bc==0) 
+      {
+        //printf("extractAliasArgs('%s')->'%s'\n",args.data(),args.mid(pos+1,i-pos-1).data());
+        return args.mid(pos+1,i-pos-1);
+      }
+    }
+  }
+  return "";
+}
+
+QCString resolveAliasCmd(const QCString aliasCmd)
+{
+  QCString result;
+  aliasesProcessed.clear();
+  //printf("Expanding: '%s'\n",aliasCmd.data());
+  result = expandAliasRec(aliasCmd);
+  //printf("Expanding result: '%s'->'%s'\n",aliasCmd.data(),result.data());
+  return result;
+}
+
+QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
+{
+  QCString result;
+  aliasesProcessed.clear();
+  // avoid expanding this command recursively
+  aliasesProcessed.insert(aliasName,(void *)0x8);
+  // expand embedded commands
+  //printf("Expanding: '%s'->'%s'\n",aliasName.data(),aliasValue.data());
+  result = expandAliasRec(aliasValue);
+  //printf("Expanding result: '%s'->'%s'\n",aliasName.data(),result.data());
+  return result;
+}
+
 

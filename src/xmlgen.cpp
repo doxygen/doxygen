@@ -189,7 +189,7 @@ void writeXMLLink(QTextStream &t,const char *extRef,const char *compoundId,
   if (anchorId) t << "member"; else t << "compound"; 
   t << "\"";
   if (extRef) t << " external=\"" << extRef << "\"";
-  if (tooltip) t << " tooltip=\"" << tooltip << "\"";
+  if (tooltip) t << " tooltip=\"" << convertToXML(tooltip) << "\"";
   t << ">";
   writeXMLString(t,text);
   t << "</ref>";

@@ -237,7 +237,15 @@ static void writeDefaultHeaderPart1(QTextStream &t)
   }
   if (Config_getBool("PDF_HYPERLINKS")) 
   {
-    t << "\\ifx\\pdfoutput\\undefined" << endl
+    t << "\\usepackage{ifpdf}" << endl
+      << "\\ifpdf" << endl
+      << "\\usepackage[pdftex," << endl
+      << "            pagebackref=true," << endl
+      << "            colorlinks=true," << endl
+      << "            linkcolor=blue," << endl
+      << "            unicode" << endl
+      << "           ]{hyperref}" << endl
+      << "\\else" << endl
       << "\\usepackage[ps2pdf," << endl
       << "            pagebackref=true," << endl
       << "            colorlinks=true," << endl
@@ -245,13 +253,6 @@ static void writeDefaultHeaderPart1(QTextStream &t)
       << "            unicode" << endl
       << "           ]{hyperref}" << endl
       << "\\usepackage{pspicture}" << endl
-      << "\\else" << endl
-      << "\\usepackage[pdftex," << endl
-      << "            pagebackref=true," << endl
-      << "            colorlinks=true," << endl
-      << "            linkcolor=blue," << endl
-      << "            unicode" << endl
-      << "           ]{hyperref}" << endl
       << "\\fi" << endl;
   }
   // Try to get the command for switching on the language

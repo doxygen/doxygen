@@ -536,6 +536,18 @@ static bool insideOL(DocNode *n)
 
 //---------------------------------------------------------------------------
 
+static bool insideTable(DocNode *n)
+{
+  while (n)
+  {
+    if (n->kind()==DocNode::Kind_HtmlTable) return TRUE;
+    n=n->parent();
+  }
+  return FALSE;
+}
+
+//---------------------------------------------------------------------------
+
 ///*! Returns TRUE iff node n is a child of a language node */
 //static bool insideLang(DocNode *n)
 //{
@@ -2820,6 +2832,43 @@ int DocHtmlCell::parse()
   return retval;
 }
 
+int DocHtmlCell::parseXml()
+{
+  int retval=RetVal_OK;
+  g_nodeStack.push(this);
+  DBG(("DocHtmlCell::parseXml() start\n"));
+
+  // parse one or more paragraphs
+  bool isFirst=TRUE;
+  DocPara *par=0;
+  do
+  {
+    par = new DocPara(this);
+    if (isFirst) { par->markFirst(); isFirst=FALSE; }
+    m_children.append(par);
+    retval=par->parse();
+    if (retval==TK_HTMLTAG)
+    {
+      int tagId=Mappers::htmlTagMapper->map(g_token->name);
+      if (tagId==XML_ITEM && g_token->endTag) // found </item> tag
+      {
+        retval=TK_NEWPARA; // ignore the tag
+      }
+      else if (tagId==XML_DESCRIPTION && g_token->endTag) // found </description> tag
+      {
+        retval=TK_NEWPARA; // ignore the tag
+      }
+    }
+  }
+  while (retval==TK_NEWPARA);
+  if (par) par->markLast();
+
+  DBG(("DocHtmlCell::parseXml() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval;
+}
+
 //---------------------------------------------------------------------------
 
 int DocHtmlRow::parse()
@@ -2883,6 +2932,68 @@ int DocHtmlRow::parse()
 
 endrow:
   DBG(("DocHtmlRow::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval;
+}
+
+int DocHtmlRow::parseXml(bool isHeading)
+{
+  int retval=RetVal_OK;
+  g_nodeStack.push(this);
+  DBG(("DocHtmlRow::parseXml() start\n"));
+
+  bool isFirst=TRUE;
+  DocHtmlCell *cell=0;
+
+  // get next token
+  int tok=doctokenizerYYlex();
+  // skip whitespace
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
+  // should find a html tag now
+  if (tok==TK_HTMLTAG)
+  {
+    int tagId=Mappers::htmlTagMapper->map(g_token->name);
+    if (tagId==XML_TERM && !g_token->endTag) // found <term> tag
+    {
+    }
+    else if (tagId==XML_DESCRIPTION && !g_token->endTag) // found <description> tag
+    {
+    }
+    else // found some other tag
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <term> or <description> tag but "
+          "found <%s> instead!",g_token->name.data());
+      doctokenizerYYpushBackHtmlTag(g_token->name);
+      goto endrow;
+    }
+  }
+  else if (tok==0) // premature end of comment
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment while looking"
+        " for a html description title");
+    goto endrow;
+  }
+  else // token other than html token
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected <td> or <th> tag but found %s token instead!",
+        tokToString(tok));
+    goto endrow;
+  }
+
+  do
+  {
+    cell=new DocHtmlCell(this,g_token->attribs,isHeading);
+    cell->markFirst(isFirst);
+    isFirst=FALSE;
+    m_children.append(cell);
+    retval=cell->parseXml();
+  }
+  while (retval==RetVal_TableCell || retval==RetVal_TableHCell);
+  if (cell) cell->markLast(TRUE);
+
+endrow:
+  DBG(("DocHtmlRow::parseXml() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval;
@@ -2953,6 +3064,48 @@ getrow:
   } 
 
   DBG(("DocHtmlTable::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+  return retval==RetVal_EndTable ? RetVal_OK : retval;
+}
+
+int DocHtmlTable::parseXml()
+{
+  int retval=RetVal_OK;
+  g_nodeStack.push(this);
+  DBG(("DocHtmlTable::parseXml() start\n"));
+  
+  // get next token
+  int tok=doctokenizerYYlex();
+  // skip whitespace
+  while (tok==TK_WHITESPACE || tok==TK_NEWPARA) tok=doctokenizerYYlex();
+  // should find a html tag now
+  int tagId=0;
+  bool isHeader=FALSE;
+  if (tok==TK_HTMLTAG)
+  {
+    tagId=Mappers::htmlTagMapper->map(g_token->name);
+    if (tagId==XML_ITEM && !g_token->endTag) // found <item> tag
+    {
+      retval=RetVal_TableRow;
+    }
+    if (tagId==XML_LISTHEADER && !g_token->endTag) // found <listheader> tag
+    {
+      retval=RetVal_TableRow;
+      isHeader=TRUE;
+    }
+  }
+
+  // parse one or more rows
+  while (retval==RetVal_TableRow)
+  {
+    DocHtmlRow *tr=new DocHtmlRow(this,g_token->attribs);
+    m_children.append(tr);
+    retval=tr->parseXml(isHeader);
+    isHeader=FALSE;
+  } 
+
+  DBG(("DocHtmlTable::parseXml() end\n"));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
   return retval==RetVal_EndTable ? RetVal_OK : retval;
@@ -4788,6 +4941,10 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case XML_EXAMPLE:
     case XML_DESCRIPTION:
+      if (insideTable(this))
+      {
+        retval=RetVal_TableCell;
+      }
       break;
     case XML_C:
       handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
@@ -4836,18 +4993,30 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       }
       break;
     case XML_ITEM:
-      if (!insideUL(this) && !insideOL(this))
+    case XML_LISTHEADER:
+      if (insideTable(this))
       {
-        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: lonely <item> tag found");
+        retval=RetVal_TableRow;
+      }
+      else if (insideUL(this) || insideOL(this))
+      {
+        retval=RetVal_ListItem;
       }
       else
       {
-        retval=RetVal_ListItem;
+        warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: lonely <item> tag found");
       }
       break;
     case XML_RETURNS:
       retval = handleSimpleSection(DocSimpleSect::Return,TRUE);
       g_hasReturnCommand=TRUE;
+      break;
+    case XML_TERM:
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
+      if (insideTable(this))
+      {
+        retval=RetVal_TableCell;
+      }
       break;
     case XML_SEE:
       // I'm not sure if <see> is the same as <seealso> or if it
@@ -4923,14 +5092,25 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
     case XML_LIST:
       {
         QString type;
+        findAttribute(tagHtmlAttribs,"type",&type);
         DocHtmlList::Type listType = DocHtmlList::Unordered;
-        if (findAttribute(tagHtmlAttribs,"type",&type) && type=="number")
+        if (type=="number")
         {
           listType=DocHtmlList::Ordered;
         }
-        DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,listType);
-        m_children.append(list);
-        retval=list->parseXml();
+        if (type=="table")
+        {
+          DocHtmlTable *table = new DocHtmlTable(this,tagHtmlAttribs);
+          m_children.append(table);
+          retval=table->parseXml();
+        }
+        else
+        {
+          HtmlAttribList emptyList;
+          DocHtmlList *list = new DocHtmlList(this,emptyList,listType);
+          m_children.append(list);
+          retval=list->parseXml();
+        }
       }
       break;
     case XML_INCLUDE:
@@ -5078,6 +5258,9 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       // ignore </a> tag (can be part of <a name=...></a>
       break;
 
+    case XML_TERM:
+      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+      break;
     case XML_SUMMARY:
     case XML_REMARKS:
     case XML_PARA:
@@ -5094,6 +5277,7 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
       handleStyleLeave(this,m_children,DocStyleChange::Code,"c");
       break;
     case XML_ITEM:
+    case XML_LISTHEADER:
     case XML_INCLUDE:
     case XML_PERMISSION:
     case XML_DESCRIPTION:
