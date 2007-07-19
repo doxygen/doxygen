@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=2
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20070610
+doxygen_version_mmn=20070719
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -238,7 +238,7 @@ if test -z "$f_platform"; then
 fi
 
 if test -z "$f_docdir"; then
-  f_docdir=$f_prefix/share/doc/packages/doxygen
+  f_docdir='$(INSTALL)/share/doc/packages/doxygen'
 fi
 
 if test "$f_plf_auto" = NO; then

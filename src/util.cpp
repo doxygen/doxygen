@@ -500,10 +500,11 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
     ip--;
   }
   type=type.left(ip+1);
+  type.stripPrefix("const ");  // strip leading "const"
+  type.stripPrefix("struct "); // strip leading "struct"
+  type.stripPrefix("union ");  // strip leading "union"
   int sp=0;
-  if (type.stripPrefix("const "))  sp+=6;  // strip leading "const"
-  if (type.stripPrefix("struct ")) sp+=7; // strip leading "struct"
-  if (type.stripPrefix("union "))  sp+=6;  // strip leading "union"
+  tl=type.length(); // length may have been changed
   while (sp<tl && type.at(sp)==' ') sp++;
   MemberDef *memTypeDef = 0;
   ClassDef  *result = getResolvedClassRec(md->getOuterScope(),
@@ -697,9 +698,13 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
       }
     }
     Definition *next = current->findInnerCompound(qualScopePart);
-    //printf("++ Looking for %s inside %s result %p\n",qualScopePart.data(),current->name().data(),next?next->name().data():"<null>");
+    //printf("++ Looking for %s inside %s result %s\n",
+    //     qualScopePart.data(),
+    //     current->name().data(),
+    //     next?next->name().data():"<null>");
     if (next==0) // failed to follow the path 
     {
+      //printf("==> next==0!\n");
       if (current->definitionType()==Definition::TypeNamespace)
       {
         current = endOfPathIsUsedClass(
@@ -715,6 +720,7 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
     else // continue to follow scope
     {
       current = next;
+      //printf("==> current = %p\n",current);
     }
     ps=is+l;
   }
@@ -1295,6 +1301,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
 
   if (di->definitionType()==DefinitionIntf::TypeSymbolList) // not a unique name
   {
+    //printf("  name is not unique\n");
     DefinitionListIterator dli(*(DefinitionList*)di);
     Definition *d;
     int count=0;
@@ -1307,6 +1314,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   }
   else // unique name
   {
+    //printf("  name is unique\n");
     Definition *d = (Definition *)di;
     getResolvedSymbol(scope,fileScope,d,explicitScopePart,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,
@@ -1426,12 +1434,29 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   {
 nextChar:
     char c=s.at(i);
-    if ((csp==0 && (i==0 || !isId(constScope[i-1])) || (csp>0 && csp<6)) && 
-        c==constScope[csp]
-       ) csp++; else csp=0;
-    if ((vsp==0 && (i==0 || !isId(virtualScope[i-1])) || (vsp>0 && vsp<8)) && 
-        c==virtualScope[vsp]
-       ) vsp++; else vsp=0;
+
+    // search for "const"
+    if (csp<6 && c==constScope[csp] && // character matches substring "const"
+         (csp>0 ||                     // if it is the first character 
+          i==0  ||                     // the previous may not be a digit
+          !isId(s.at(i-1))
+         )
+       )
+      csp++; 
+    else // reset counter
+      csp=0;
+
+    // search for "virtual"
+    if (vsp<8 && c==virtualScope[vsp] && // character matches substring "virtual"
+         (vsp>0 ||                       // if it is the first character
+          i==0  ||                       // the previous may not be a digit 
+          !isId(s.at(i-1))
+         )
+       )
+      vsp++;
+    else // reset counter
+      vsp=0;
+
     if (c=='"') // quoted string
     {
       i++;
@@ -1478,30 +1503,40 @@ nextChar:
       result+=' ';
       result+=s.at(i);
     }
-    else if (c=='t' && csp==5 && (i<5 || !isId(s.at(i-5))) &&
-        !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
-          s.at(i+1)==','  || s.at(i+1)=='\0')) 
+    else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
+             !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
+               s.at(i+1)==')' || 
+               s.at(i+1)==',' || 
+               s.at(i+1)=='\0'
+              )
+            ) 
       // prevent const ::A from being converted to const::A
     {
       result+="t ";
       if (s.at(i+1)==' ') i++;
       csp=0;
     }
-    else if (c==':' && csp==6 && (i<6 || !isId(s.at(i-6)))) // replace const::A by const ::A
+    else if (c==':' && csp==6 /*&& (i<6 || !isId(s.at(i-6)))*/) 
+      // replace const::A by const ::A
     {
       result+=" :";
       csp=0;
     }
-    else if (c=='l' && vsp==7 && (i<7 || !isId(s.at(i-7))) &&
-        !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || s.at(i+1)==')' || 
-          s.at(i+1)==','  || s.at(i+1)=='\0')) 
+    else if (c=='l' && vsp==7 /*&& (i<7 || !isId(s.at(i-7)))*/ &&
+             !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
+               s.at(i+1)==')' || 
+               s.at(i+1)==',' || 
+               s.at(i+1)=='\0'
+              )
+            ) 
       // prevent virtual ::A from being converted to virtual::A
     {
       result+="l ";
       if (s.at(i+1)==' ') i++;
       vsp=0;
     }
-    else if (c==':' && vsp==8 && (i<8 || !isId(s.at(i-8)))) // replace virtual::A by virtual ::A
+    else if (c==':' && vsp==8 /*&& (i<8 || !isId(s.at(i-8)))*/) 
+      // replace virtual::A by virtual ::A
     {
       result+=" :";
       vsp=0;
@@ -1552,7 +1587,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     bool keepSpaces)
 {
   //printf("`%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z][~a-z_A-Z0-9.:]*");
+  static QRegExp regExp("[a-z_A-Z][~!a-z_A-Z0-9.:]*");
   QCString txtStr=text;
   int strLen = txtStr.length();
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
@@ -1571,7 +1606,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       )
   {
     // add non-word part to the result
-    floatingIndex+=newIndex-skipIndex;
+    floatingIndex+=newIndex-skipIndex+matchLen;
     bool insideString=FALSE; 
     int i;
     for (i=index;i<newIndex;i++) 
@@ -1579,24 +1614,28 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       if (txtStr.at(i)=='"') insideString=!insideString; 
     }
 
-    if (strLen>30 && floatingIndex>25 && autoBreak) // try to insert a split point
+    //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
+    if (strLen>25 && floatingIndex>20 && autoBreak) // try to insert a split point
     {
       QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
       int splitLength = splitText.length();
-      int i=splitText.find('<');
-      if (i==-1) i=splitText.find(',');
+      int offset=1;
+      i=splitText.find(',');
+      if (i==-1) { i=splitText.find('<'); if (i!=-1) offset=0; }
+      if (i==-1) i=splitText.find('>');
       if (i==-1) i=splitText.find(' ');
+      //printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset);
       if (i!=-1) // add a link-break at i in case of Html output
       {
-        out.writeString(splitText.left(i+1),keepSpaces);
+        out.writeString(splitText.left(i+offset),keepSpaces);
         out.writeBreak();
-        out.writeString(splitText.right(splitLength-i-1),keepSpaces);
+        out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
+        floatingIndex=splitLength-i-offset+matchLen;
       } 
       else
       {
         out.writeString(splitText,keepSpaces); 
       }
-      floatingIndex=splitLength-i-1;
     }
     else
     {
@@ -1686,7 +1725,6 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
     skipIndex=index=newIndex+matchLen;
-    floatingIndex+=matchLen;
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
@@ -2893,14 +2931,17 @@ static QCString stripDeclKeywords(const QCString &s)
 // forward decl for circular dependencies
 static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type);
 
-QCString getCanonicalTemplateSpec(Definition *d,FileDef *,const QCString& spec)
+QCString getCanonicalTemplateSpec(Definition *d,FileDef *fs,const QCString& spec)
 {
+  
   QCString templSpec = spec.stripWhiteSpace();
-  //if (!templSpec.isEmpty() && templSpec.at(0) == '<') 
-  //{
-  //  templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
-  //}
-  QCString resolvedType = resolveTypeDef(d,spec);
+  // this part had been commented out before... but it is needed to match for instance
+  // std::list<std::string> against list<string> so it is now back again!
+  if (!templSpec.isEmpty() && templSpec.at(0) == '<') 
+  {
+    templSpec = "< " + extractCanonicalType(d,fs,templSpec.right(templSpec.length()-1).stripWhiteSpace());
+  }
+  QCString resolvedType = resolveTypeDef(d,templSpec);
   if (!resolvedType.isEmpty()) // not known as a typedef either
   {
     templSpec = resolvedType;
@@ -2926,6 +2967,8 @@ static QCString getCanonicalTypeForIdentifier(
   {
     symName=word;
   }
+  //printf("getCanonicalTypeForIdentifier(%s,[%s->%s]) start\n",
+  //    word.data(),tSpec?tSpec->data():"<none>",templSpec.data());
 
   ClassDef *cd = 0;
   MemberDef *mType = 0;
@@ -2942,7 +2985,7 @@ static QCString getCanonicalTypeForIdentifier(
   }
   if (cd && cd->isUsedOnly()) cd=0; // ignore types introduced by usage relations
 
-  //printf("  symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
+  //printf("  getCanonicalTypeForIdentifer: symbol=%s word=%s cd=%s d=%s fs=%s cd->isTemplate=%d\n",
   //    symName.data(),
   //    word.data(),
   //    cd?cd->name().data():"<none>",
@@ -3020,6 +3063,7 @@ static QCString getCanonicalTypeForIdentifier(
       result = resolvedType;
     }
   }
+  //printf("getCanonicalTypeForIdentifier [%s]->[%s]\n",word.data(),result.data());
   return result;
 }
 
@@ -3038,7 +3082,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
   type.stripPrefix("typename ");
 
   type = removeRedundantWhiteSpace(type);
-  //printf("extractCanonicalType(type=%s) def=%s file=%s\n",type.data(),
+  //printf("extractCanonicalType(type=%s) start: def=%s file=%s\n",type.data(),
   //    d ? d->name().data() : "<null>",fs ? fs->name().data() : "<null>");
 
   static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
@@ -3112,7 +3156,7 @@ static bool matchArgument2(
   if (srcA->array!=dstA->array) // nomatch for char[] against char
   {
     NOMATCH
-      return FALSE;
+    return FALSE;
   }
   QCString sSrcName = " "+srcA->name;
   QCString sDstName = " "+dstA->name;
@@ -3147,14 +3191,14 @@ static bool matchArgument2(
   if (srcA->canType==dstA->canType)
   {
     MATCH
-      return TRUE;
+    return TRUE;
   }
   else
   {
     //printf("   Canonical types do not match [%s]<->[%s]\n",
     //    srcA->canType.data(),dstA->canType.data());
     NOMATCH
-      return FALSE;
+    return FALSE;
   }
 }
 
@@ -3173,12 +3217,12 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     if (match)
     {
       MATCH
-        return TRUE;
+      return TRUE;
     }
     else
     {
       NOMATCH
-        return FALSE;
+      return FALSE;
     }
   }
 
@@ -3190,7 +3234,7 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     a->type = "void";
     srcAl->append(a);
     MATCH
-      return TRUE;
+    return TRUE;
   }
   if ( dstAl->count()==0 && srcAl->count()==1 &&
       srcAl->getFirst()->type=="void" )
@@ -3199,13 +3243,13 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     a->type = "void";
     dstAl->append(a);
     MATCH
-      return TRUE;
+    return TRUE;
   }
 
   if (srcAl->count() != dstAl->count())
   {
     NOMATCH
-      return FALSE; // different number of arguments -> no match
+    return FALSE; // different number of arguments -> no match
   }
 
   if (checkCV)
@@ -3213,12 +3257,12 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     if (srcAl->constSpecifier != dstAl->constSpecifier) 
     {
       NOMATCH
-        return FALSE; // one member is const, the other not -> no match
+      return FALSE; // one member is const, the other not -> no match
     }
     if (srcAl->volatileSpecifier != dstAl->volatileSpecifier)
     {
       NOMATCH
-        return FALSE; // one member is volatile, the other not -> no match
+      return FALSE; // one member is volatile, the other not -> no match
     }
   }
 
@@ -3233,11 +3277,11 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
        )
     {
       NOMATCH
-        return FALSE;
+      return FALSE;
     }
   }
   MATCH
-    return TRUE; // all arguments match 
+  return TRUE; // all arguments match 
 }
 
 
@@ -5953,6 +5997,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".idl",   new int(SrcLangExt_IDL));
     extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".odl",   new int(SrcLangExt_IDL));
+    extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".java",  new int(SrcLangExt_Java));
     extLookup.insert(".jsl",   new int(SrcLangExt_Java));
     extLookup.insert(".as",    new int(SrcLangExt_Java));
@@ -6243,4 +6288,24 @@ QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
   return result;
 }
 
+void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
+{
+  if (al==0) return;
+  ol.startConstraintList("Type constraints"); // TODO: add to translator!
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (;(a=ali.current());++ali)
+  {
+    ol.startConstraintParam();
+    ol.parseText(a->name);
+    ol.endConstraintParam();
+    ol.startConstraintType();
+    linkifyText(TextGeneratorOLImpl(ol),d,0,0,a->type);
+    ol.endConstraintType();
+    ol.startConstraintDocs();
+    ol.parseDoc(d->docFile(),d->docLine(),d,0,a->docs,TRUE,FALSE);
+    ol.endConstraintDocs();
+  }
+  ol.endConstraintList();
+}
 

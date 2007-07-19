@@ -1000,6 +1000,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  // prepend scope in case of nested classes
 			  if (current_root->section&Entry::SCOPE_MASK)
 			  {
+			    printf("*** Prepending scope %s to class %s\n",current_root->name.data(),current->name.data());
 			    current->name.prepend(current_root->name+"::");
 			  }
 			  
@@ -1476,11 +1477,15 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
 
     QFileInfo fi(fileName);
     g_moduleScope = findPackageScope(fileName);
-    if (!g_moduleScope.isEmpty())
+    QString baseName=fi.baseName();
+    if (baseName!="__init__") // package initializer file is not a package itself
     {
-      g_moduleScope+="::";
+      if (!g_moduleScope.isEmpty())
+      {
+	g_moduleScope+="::";
+      }
+      g_moduleScope+=baseName;
     }
-    g_moduleScope+=fi.baseName();
 
     current            = new Entry;
     current->name      = g_moduleScope;

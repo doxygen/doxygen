@@ -390,6 +390,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalQCString(s,e->write);
   marshalQCString(s,e->inside);
   marshalQCString(s,e->exception);
+  marshalArgumentList(s,e->typeConstr);
   marshalInt(s,e->bodyLine);
   marshalInt(s,e->endBodyLine);
   marshalInt(s,e->mGrpId);
@@ -774,6 +775,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->write            = unmarshalQCString(s);
   e->inside           = unmarshalQCString(s);
   e->exception        = unmarshalQCString(s);
+  e->typeConstr       = unmarshalArgumentList(s);
   e->bodyLine         = unmarshalInt(s);
   e->endBodyLine      = unmarshalInt(s);
   e->mGrpId           = unmarshalInt(s);

@@ -259,7 +259,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     if (!documentation().isEmpty())
     {
       ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
-      ol.newParagraph();
+      //ol.newParagraph();
     }
     ol.endTextBlock();
   }
@@ -321,8 +321,10 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
   ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::RTF);
   ol.newParagraph();
   ol.enable(OutputGenerator::Man);
+  ol.enable(OutputGenerator::RTF);
   ol.writeSynopsis();
 
   ol.endTextBlock();

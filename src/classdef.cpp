@@ -85,6 +85,9 @@ class ClassDefImpl
     /*! Template arguments of this class */
     ArgumentList *tempArgs;
 
+    /*! Type constraints for template parameters */
+    ArgumentList *typeConstraints;
+
     /*! Files that were used for generating the class documentation. */
     QStrList files;
 
@@ -189,6 +192,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   allMemberNameInfoSDict = 0;
   incInfo=0;
   tempArgs=0;
+  typeConstraints=0;
   prot=Public;
   nspace=0;
   fileDef=0;
@@ -244,6 +248,7 @@ ClassDefImpl::~ClassDefImpl()
   delete variableInstances;
   delete templBaseClassNames;
   delete tempArgs;
+  delete typeConstraints;
 }
 
 // constructs a new class definition
@@ -870,6 +875,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
+        ol.disable(OutputGenerator::RTF);
         ol.newParagraph();
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
@@ -879,12 +885,12 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     // write documentation
     if (!documentation().isEmpty())
     {
-      ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::RTF);
-        ol.newParagraph();
-      ol.popGeneratorState();
-      ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+      //ol.newParagraph();
+      ol.parseDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
     }
+    // write type constraints
+    writeTypeConstraints(ol,this,m_impl->typeConstraints);
+
     // write examples
     if (exampleFlag && m_impl->exampleSDict)
     {
@@ -894,7 +900,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
       writeExample(ol,m_impl->exampleSDict);
       ol.endSimpleSect();
     }
-    ol.newParagraph();
+    //ol.newParagraph();
     writeSourceDef(ol,name());
     ol.endTextBlock();
   }
@@ -1021,17 +1027,6 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
       ol.startDotGraph();
       ol.parseText(theTranslator->trClassDiagram(displayName()));
       ol.endDotGraph(inheritanceGraph);
-      if (Config_getBool("GENERATE_LEGEND"))
-      {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
-        ol.docify(theTranslator->trLegend());
-        ol.endHtmlLink();
-        ol.writeString("]</font></center>");
-        ol.popGeneratorState();
-      }
       ol.popGeneratorState();
       renderDiagram = TRUE;
     }
@@ -1048,7 +1043,8 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
     renderDiagram = TRUE;
   } 
 
-  if (Config_getBool("CLASS_DIAGRAMS") && renderDiagram) 
+  if (renderDiagram) // if we already show the inheritance relations graphically,
+                     // then hide the text version
   {
     ol.disableAllBut(OutputGenerator::Man);
   }
@@ -1138,7 +1134,7 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
     ol.newParagraph();
   }
 
-  if (Config_getBool("CLASS_DIAGRAMS") && renderDiagram) 
+  if (renderDiagram) 
   {
     ol.enableAll();
   }
@@ -1153,15 +1149,6 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
       ol.startDotGraph();
       ol.parseText(theTranslator->trCollaborationDiagram(displayName()));
       ol.endDotGraph(usageImplGraph);
-      if (Config_getBool("GENERATE_LEGEND"))
-      {
-        ol.disableAllBut(OutputGenerator::Html);
-        ol.writeString("<center><font size=\"2\">[");
-        ol.startHtmlLink(relativePathToRoot(0)+"graph_legend"+Doxygen::htmlFileExtension);
-        ol.docify(theTranslator->trLegend());
-        ol.endHtmlLink();
-        ol.writeString("]</font></center>");
-      }
       ol.popGeneratorState();
     }
   }
@@ -1229,8 +1216,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
     if (!Config_getBool("DETAILS_AT_TOP")) 
     {
       ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
-      ol.writeString(" \n");
       ol.pushGeneratorState();
+      ol.disable(OutputGenerator::RTF);
+      ol.writeString(" \n");
+      ol.enable(OutputGenerator::RTF);
       ol.disableAllBut(OutputGenerator::Html);
       ol.startTextLink(0,"_details");
     
@@ -1329,12 +1318,13 @@ void ClassDef::writeDocumentation(OutputList &ol)
   writeClassDiagrams(ol); 
 
   // write link to list of all members (HTML only)
-  if (m_impl->allMemberNameInfoSDict && 
+  if (m_impl->allMemberNameInfoSDict &&
       !Config_getBool("OPTIMIZE_OUTPUT_FOR_C")
      )
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
+    ol.newParagraph();
     ol.startTextLink(getMemberListFileName(),0);
     ol.parseText(theTranslator->trListOfAllMembers());
     ol.endTextLink();
@@ -1345,10 +1335,10 @@ void ClassDef::writeDocumentation(OutputList &ol)
   ol.endTextBlock();
   
   // write detailed description if the user wants it near the top
-  if (Config_getBool("DETAILS_AT_TOP")) {
+  if (Config_getBool("DETAILS_AT_TOP")) 
+  {
     writeDetailedDescription(ol,pageType,exampleFlag);
   }
-
 
   ///////////////////////////////////////////////////////////////////////////
   //// Member declarations + brief descriptions
@@ -1863,6 +1853,19 @@ void ClassDef::setTemplateArguments(ArgumentList *al)
   for (;(a=ali.current());++ali)
   {
     m_impl->tempArgs->append(new Argument(*a));
+  }
+}
+
+void ClassDef::setTypeConstraints(ArgumentList *al)
+{
+  if (al==0) return;
+  if (!m_impl->typeConstraints) delete m_impl->typeConstraints;
+  m_impl->typeConstraints = new ArgumentList;
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (;(a=ali.current());++ali)
+  {
+    m_impl->typeConstraints->append(new Argument(*a));
   }
 }
 

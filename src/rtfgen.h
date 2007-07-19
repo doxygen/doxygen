@@ -64,6 +64,8 @@ class RTFGenerator : public OutputGenerator
     void endTitle() {} 
 
     void newParagraph();
+    void startParagraph();
+    void endParagraph();
     void writeString(const char *text);
     void startIndexList();
     void endIndexList();
@@ -254,6 +256,16 @@ class RTFGenerator : public OutputGenerator
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
+
+    void startConstraintList(const char  *);
+    void startConstraintParam();
+    void endConstraintParam();
+    void startConstraintType();
+    void endConstraintType();
+    void startConstraintDocs();
+    void endConstraintDocs();
+    void endConstraintList();
+
 
     void startFontClass(const char *) {}
     void endFontClass() {}

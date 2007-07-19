@@ -36,11 +36,11 @@ class TextDocVisitor : public DocVisitor
     // visitor functions for leaf nodes
     //--------------------------------------
     
-    void visit(DocWord *w)        { m_t << w->word(); }
-    void visit(DocLinkedWord *w)  { m_t << w->word(); }
+    void visit(DocWord *w)        { filter(w->word()); }
+    void visit(DocLinkedWord *w)  { filter(w->word()); }
     void visit(DocWhiteSpace *)   { m_t << " ";       }
     void visit(DocSymbol *);
-    void visit(DocURL *u)         { m_t << u->url();  }
+    void visit(DocURL *u)         { filter(u->url());  }
     void visit(DocLineBreak *)    { m_t << " ";       }
     void visit(DocHorRuler *)     {}
     void visit(DocStyleChange *)  {}

@@ -873,6 +873,15 @@ void LatexGenerator::newParagraph()
   t << endl << endl;
 }
 
+void LatexGenerator::startParagraph()
+{
+  t << endl << endl;
+}
+
+void LatexGenerator::endParagraph()
+{
+}
+
 void LatexGenerator::writeString(const char *text)
 {
   t << text;
@@ -1597,4 +1606,47 @@ void LatexGenerator::printDoc(DocNode *n,const char *langExt)
   n->accept(visitor);
   delete visitor; 
 }
+
+void LatexGenerator::startConstraintList(const char *header)
+{
+  t << "\\begin{Desc}\n\\item[";
+  docify(header);
+  t << "]";
+  t << "\\begin{description}" << endl;
+}
+
+void LatexGenerator::startConstraintParam()
+{
+  t << "\\item[{\\em ";
+}
+
+void LatexGenerator::endConstraintParam()
+{
+}
+
+void LatexGenerator::startConstraintType()
+{
+  t << "} : {\\em ";
+}
+
+void LatexGenerator::endConstraintType()
+{
+  t << "}]";
+}
+
+void LatexGenerator::startConstraintDocs()
+{
+}
+
+void LatexGenerator::endConstraintDocs()
+{
+}
+
+void LatexGenerator::endConstraintList()
+{
+  t << "\\end{description}" << endl;
+  t << "\\end{Desc}" << endl;
+}
+
+
 

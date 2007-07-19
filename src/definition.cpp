@@ -551,7 +551,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
       QCString lineStr,anchorStr;
       lineStr.sprintf("%d",m_impl->body->startLine);
       anchorStr.sprintf(Htags::useHtags ? "L%d" : "l%05d",m_impl->body->startLine);
-      ol.newParagraph();
+      ol.startParagraph();
       if (lineMarkerPos<fileMarkerPos) // line marker before file marker
       {
         // write text left from linePos marker
@@ -616,6 +616,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
         ol.parseText(refText.right(
               refText.length()-lineMarkerPos-2)); 
       }
+      ol.endParagraph();
     }
     else
     {
@@ -691,7 +692,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
   ol.pushGeneratorState();
   if (Config_getBool("SOURCE_BROWSER") && members)
   {
-    ol.newParagraph();
+    ol.startParagraph();
     ol.parseText(text);
     ol.docify(" ");
 
@@ -772,6 +773,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     } 
     ol.parseText(ldefLine.right(ldefLine.length()-index));
     ol.writeString(".");
+    ol.endParagraph();
   }
   ol.popGeneratorState();
 }

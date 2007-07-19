@@ -852,6 +852,7 @@ void RTFGenerator::lineBreak()
 {
   DBG_RTF(t << "{\\comment (lineBreak)}"    << endl)
   t << "\\par" << endl;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::writeString(const char *text)
@@ -863,16 +864,16 @@ void RTFGenerator::startIndexList()
 {
   DBG_RTF(t << "{\\comment (startIndexList)}" << endl)
   t << "{" << endl;
+  t << "\\par" << endl;
   incrementIndentLevel();
   t << rtf_Style_Reset << rtf_LCList_DepthStyle() << endl;
-  newParagraph();
   m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::endIndexList()
 {
   DBG_RTF(t << "{\\comment (endIndexList)}" << endl)
-  newParagraph();
+  t << "\\par";
   t << "}";
   decrementIndentLevel();
   m_omitParagraph = TRUE;
@@ -881,6 +882,7 @@ void RTFGenerator::endIndexList()
 /*! start bullet list */
 void RTFGenerator::startItemList()
 {
+  newParagraph();
   DBG_RTF(t << "{\\comment (startItemList level=" << m_listLevel << ") }" << endl)
   t << "{";
   incrementIndentLevel();
@@ -954,8 +956,8 @@ void RTFGenerator::endIndexItem(const char *ref,const char *fn)
   {
     t << endl;
   }
-  newParagraph();
   m_omitParagraph = TRUE;
+  newParagraph();
 }
 
 //void RTFGenerator::writeIndexFileItem(const char *,const char *text)
@@ -1048,17 +1050,19 @@ void RTFGenerator::startIndexKey()
 
 void RTFGenerator::endIndexKey()
 {
+  DBG_RTF(t << "{\\comment (endIndexKey)}" << endl)
 }
 
 void RTFGenerator::startIndexValue(bool hasBrief)
 {
+  DBG_RTF(t << "{\\comment (startIndexValue)}" << endl)
   t << " ";
   if (hasBrief) t << "(";
 }
 
 void RTFGenerator::endIndexValue(const char *name,bool hasBrief)
 {
-  DBG_RTF(t << "{\\comment (endIndexKey)}" << endl)
+  DBG_RTF(t << "{\\comment (endIndexValue)}" << endl)
   if (hasBrief) t << ")";
   t << "} ";
   if (name)
@@ -1071,6 +1075,7 @@ void RTFGenerator::endIndexValue(const char *name,bool hasBrief)
   {
     t << endl;
   }
+  m_omitParagraph=FALSE;
   newParagraph();
 }
 
@@ -1353,7 +1358,7 @@ void RTFGenerator::startGroupHeader()
 void RTFGenerator::endGroupHeader()
 {
   DBG_RTF(t <<"{\\comment endGroupHeader}" << endl)
-  newParagraph();
+  t << "\\par" << endl;
   t << rtf_Style_Reset << endl;
 }
 
@@ -1496,7 +1501,9 @@ void RTFGenerator::endMemberDescription()
   endEmphasis();
   newParagraph();
   decrementIndentLevel();
-  t << "\\par}" << endl;
+  //t << "\\par";
+  t << "}" << endl;
+  //m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::startDescList(SectionTypes)
@@ -1714,6 +1721,7 @@ void RTFGenerator::writeChar(char c)
 
 void RTFGenerator::startClassDiagram()
 {
+  DBG_RTF(t <<"{\\comment startClassDiagram }" << endl)
 }
 
 void RTFGenerator::endClassDiagram(ClassDiagram &d,
@@ -1987,9 +1995,9 @@ void RTFGenerator::startTextBlock(bool dense)
   }
 }
 
-void RTFGenerator::endTextBlock(bool paraBreak)
+void RTFGenerator::endTextBlock(bool /*paraBreak*/)
 {
-  if (paraBreak) newParagraph();
+  newParagraph();
   DBG_RTF(t << "{\\comment endTextBlock}" << endl)
   t << "}" << endl;
   //m_omitParagraph = TRUE;
@@ -1999,10 +2007,24 @@ void RTFGenerator::newParagraph()
 {
   if (!m_omitParagraph)
   {
-  DBG_RTF(t << "{\\comment (newParagraph)}"    << endl)
+    DBG_RTF(t << "{\\comment (newParagraph)}"    << endl)
     t << "\\par" << endl;
   }
   m_omitParagraph = FALSE;
+}
+
+void RTFGenerator::startParagraph()
+{
+  DBG_RTF(t << "{\\comment startParagraph}" << endl)
+  newParagraph();
+  t << "{" << endl;
+}
+
+void RTFGenerator::endParagraph()
+{
+  DBG_RTF(t << "{\\comment endParagraph}" << endl)
+  t << "}\\par" << endl;
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::startMemberSubtitle()
@@ -2496,6 +2518,7 @@ void RTFGenerator::printDoc(DocNode *n,const char *langExt)
   RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,langExt);
   n->accept(visitor);
   delete visitor; 
+  m_omitParagraph = TRUE;
 }
 
 void RTFGenerator::rtfwriteRuler_doubleline() 
@@ -2545,3 +2568,68 @@ void RTFGenerator::postProcess(QByteArray &a)
   enc.resize(off);
   a = enc;
 }
+
+void RTFGenerator::startConstraintList(const char *header)
+{
+  DBG_RTF(t << "{\\comment (startConstraintList)}"    << endl)
+  t << "{"; // ends at endConstraintList
+  t << "{"; 
+  startBold();
+  newParagraph();
+  docify(header);
+  endBold();
+  t << "}";
+  newParagraph();
+  incrementIndentLevel();
+  t << rtf_Style_Reset << rtf_DList_DepthStyle();
+}
+
+void RTFGenerator::startConstraintParam()
+{
+  DBG_RTF(t << "{\\comment (startConstraintParam)}"    << endl)
+  startEmphasis();
+}
+
+void RTFGenerator::endConstraintParam()
+{
+  DBG_RTF(t << "{\\comment (endConstraintParam)}"    << endl)
+  endEmphasis();
+  t << " : ";
+}
+
+void RTFGenerator::startConstraintType()
+{
+  DBG_RTF(t << "{\\comment (startConstraintType)}"    << endl)
+  startEmphasis();
+}
+
+void RTFGenerator::endConstraintType()
+{
+  DBG_RTF(t << "{\\comment (endConstraintType)}"    << endl)
+  endEmphasis();
+  t << " ";
+}
+
+void RTFGenerator::startConstraintDocs()
+{
+  DBG_RTF(t << "{\\comment (startConstraintDocs)}"    << endl)
+}
+
+void RTFGenerator::endConstraintDocs()
+{
+  DBG_RTF(t << "{\\comment (endConstraintDocs)}"    << endl)
+  newParagraph();
+}
+
+void RTFGenerator::endConstraintList()
+{
+  DBG_RTF(t << "{\\comment (endConstraintList)}"    << endl)
+  newParagraph();
+  decrementIndentLevel();
+  m_omitParagraph = TRUE;
+  t << "}";
+}
+
+
+
+

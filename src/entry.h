@@ -349,6 +349,7 @@ class Entry
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found
     QCString     exception;   //!< throw specification
+    ArgumentList *typeConstr; //!< where clause (C#) for type constraints
     int          bodyLine;    //!< line number of the definition in the source
     int          endBodyLine; //!< line number where the definition ends
     int          mGrpId;      //!< member group id

@@ -60,6 +60,8 @@ class ManGenerator : public OutputGenerator
     void endTitle();
     
     void newParagraph();
+    void startParagraph();
+    void endParagraph();
     void writeString(const char *text);
     void startIndexList() {}
     void endIndexList()   { newParagraph(); } 
@@ -267,6 +269,15 @@ class ManGenerator : public OutputGenerator
 
     //void startSectionRefList() {}
     //void endSectionRefList() {}
+
+    void startConstraintList(const char *);
+    void startConstraintParam();
+    void endConstraintParam();
+    void startConstraintType();
+    void endConstraintType();
+    void startConstraintDocs();
+    void endConstraintDocs();
+    void endConstraintList();
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}

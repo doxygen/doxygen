@@ -168,6 +168,7 @@ static void endCondSection()
   }
 }
 
+#if 0
 /** remove and executes cond and endcond commands in \a s */
 static QCString handleCondCmdInAliases(const QCString &s)
 {
@@ -223,6 +224,7 @@ static QCString handleCondCmdInAliases(const QCString &s)
   result+=s.right(s.length()-p);
   return result;
 }
+#endif
 
 /** copies string \a s with length \a len to the output, while 
  *  replacing any alias commands found in the string.

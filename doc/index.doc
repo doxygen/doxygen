@@ -192,8 +192,6 @@ Thanks go to:
 <li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalisation support.
     All language maintainers for providing translations into many languages.
-<li>Gerald Steffens of <a href="http://www.e-trend.de">E-trend</a>
-    for financial support.
 <li>The band <a href="http://www.porcupinetree.com">Porcupine Tree</a> for 
     providing hours of great music to listen to while coding.
 <li>many, many others for suggestions, patches and bug reports.

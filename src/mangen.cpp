@@ -179,6 +179,21 @@ void ManGenerator::newParagraph()
   paragraph=TRUE;
 }
 
+void ManGenerator::startParagraph()
+{
+  if (!paragraph)
+  {
+    if (!firstCol) t << endl;
+    t << ".PP" << endl;
+    firstCol=TRUE;
+  }
+  paragraph=TRUE;
+}
+
+void ManGenerator::endParagraph()
+{
+}
+
 void ManGenerator::writeString(const char *text)
 {
   docify(text);
@@ -639,4 +654,55 @@ void ManGenerator::printDoc(DocNode *n,const char *langExt)
   firstCol=FALSE;
   paragraph = FALSE;
 }
+
+void ManGenerator::startConstraintList(const char *header)
+{
+  if (!firstCol) 
+  { t << endl << ".PP" << endl; 
+    firstCol=TRUE; paragraph=TRUE; 
+    col=0;
+  }
+  paragraph=FALSE;
+  startBold();
+  docify(header);
+  endBold();
+  paragraph=TRUE;
+}
+
+void ManGenerator::startConstraintParam()
+{
+  writeListItem();
+  startEmphasis();
+}
+
+void ManGenerator::endConstraintParam()
+{
+  endEmphasis();
+  t << " : ";
+}
+
+void ManGenerator::startConstraintType()
+{
+  startEmphasis();
+}
+
+void ManGenerator::endConstraintType()
+{
+  endEmphasis();
+}
+
+void ManGenerator::startConstraintDocs()
+{
+}
+
+void ManGenerator::endConstraintDocs()
+{
+  t << endl; firstCol=TRUE;
+}
+
+void ManGenerator::endConstraintList()
+{
+}
+
+
 

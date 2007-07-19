@@ -346,6 +346,7 @@ class MemberDefImpl
     ArgumentList *declArgList;   // argument list of this member declaration
 
     ArgumentList *tArgList;      // template argument list of function template
+    ArgumentList *typeConstraints; // type constraints for template parameters
     MemberDef *templateMaster;
     QList<ArgumentList> *defTmpArgLists; // lists of template argument lists 
                                          // (for template functions in nested template classes)
@@ -410,6 +411,7 @@ MemberDefImpl::MemberDefImpl() :
     defArgList(0),
     declArgList(0),
     tArgList(0),
+    typeConstraints(0),
     defTmpArgLists(0),
     classSectionSDict(0)
 {
@@ -422,6 +424,7 @@ MemberDefImpl::~MemberDefImpl()
   delete enumFields;
   delete defArgList;
   delete tArgList;
+  delete typeConstraints;
   delete defTmpArgLists;
   delete classSectionSDict;
   delete declArgList;
@@ -2014,10 +2017,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     // write class that contains a member that is reimplemented by this one
     if (bcd->isLinkable())
     {
-      ol.disable(OutputGenerator::RTF);
-      ol.newParagraph();
-      ol.enableAll();
-
+      ol.startParagraph();
       QCString reimplFromLine; 
       if (bmd->virtualness()!=Pure && bcd->compoundType()!=ClassDef::Interface)
       {
@@ -2062,6 +2062,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       {
         err("Error: translation error: no marker in trReimplementsFromList()\n");
       }
+      ol.endParagraph();
     }
 
     //ol.writeString(".");
@@ -2087,9 +2088,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     {
       mli.toFirst();
       // write the list of classes that overwrite this member
-      ol.disable(OutputGenerator::RTF);
-      ol.newParagraph();
-      ol.enable(OutputGenerator::RTF);
+      ol.startParagraph();
 
       QCString reimplInLine;
       if (m_impl->virt==Pure || (m_impl->classDef && m_impl->classDef->compoundType()==ClassDef::Interface))
@@ -2137,6 +2136,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         index=newIndex+matchLen;
       } 
       ol.parseText(reimplInLine.right(reimplInLine.length()-index));
+      ol.endParagraph();
     }
   }
 
@@ -2148,6 +2148,11 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     writeExample(ol,m_impl->exampleSDict);
     //ol.endDescItem();
     ol.endSimpleSect();
+  }
+
+  if (m_impl->typeConstraints)
+  {
+    writeTypeConstraints(ol,this,m_impl->typeConstraints);
   }
 
   // write reference to the source
@@ -2635,7 +2640,8 @@ bool MemberDef::isDestructor() const
   }
   else // other languages
   {
-    return name().find('~')!=-1 && name().find("operator")==-1; 
+    return (name().find('~')!=-1 || name().find('!')!=-1)  // The ! is for C++/CLI
+           && name().find("operator")==-1; 
   }
 }
 
@@ -2778,6 +2784,21 @@ void MemberDef::setDeclArgumentList(ArgumentList *al)
   makeResident();
   if (m_impl->declArgList) delete m_impl->declArgList;
   m_impl->declArgList = al;
+}
+
+void MemberDef::setTypeConstraints(ArgumentList *al)
+{
+  if (al==0) return;
+  makeResident();
+  if (m_impl->typeConstraints) delete m_impl->typeConstraints;
+  m_impl->typeConstraints = new ArgumentList;
+  m_impl->typeConstraints->setAutoDelete(TRUE);
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (;(a=ali.current());++ali)
+  {
+    m_impl->typeConstraints->append(new Argument(*a));
+  }
 }
 
 void MemberDef::findSectionsInDocumentation()
@@ -3648,6 +3669,7 @@ void MemberDef::flushToDisk() const
   marshalArgumentList (Doxygen::symbolStorage,m_impl->defArgList);
   marshalArgumentList (Doxygen::symbolStorage,m_impl->declArgList);
   marshalArgumentList (Doxygen::symbolStorage,m_impl->tArgList);
+  marshalArgumentList (Doxygen::symbolStorage,m_impl->typeConstraints);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->templateMaster);
   marshalArgumentLists(Doxygen::symbolStorage,m_impl->defTmpArgLists);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->cachedAnonymousType);
@@ -3746,6 +3768,7 @@ void MemberDef::loadFromDisk() const
   m_impl->defArgList              = unmarshalArgumentList (Doxygen::symbolStorage);
   m_impl->declArgList             = unmarshalArgumentList (Doxygen::symbolStorage);
   m_impl->tArgList                = unmarshalArgumentList (Doxygen::symbolStorage);
+  m_impl->typeConstraints         = unmarshalArgumentList (Doxygen::symbolStorage);
   m_impl->templateMaster          = (MemberDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->defTmpArgLists          = unmarshalArgumentLists(Doxygen::symbolStorage);
   m_impl->cachedAnonymousType     = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
