@@ -168,6 +168,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     ol.startGroupHeader();
     ol.parseText(theTranslator->trDetailedDescription());
     ol.endGroupHeader();
+    ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
       ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
@@ -192,7 +193,7 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
     //printf("Writing source ref for file %s\n",name().data());
     if (Config_getBool("SOURCE_BROWSER")) 
     {
-      ol.newParagraph();
+      ol.startParagraph();
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
       if (fileMarkerPos!=-1) // should always pass this.
@@ -203,7 +204,9 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
         ol.parseText(refText.right(
               refText.length()-fileMarkerPos-2)); // text right from marker 2
       }
+      ol.endParagraph();
     }
+    ol.endTextBlock();
   }
 }
 

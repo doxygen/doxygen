@@ -63,6 +63,8 @@ class HtmlGenerator : public OutputGenerator
     void endTitle() { t << "</h1>"; }
     
     void newParagraph();
+    void startParagraph();
+    void endParagraph();
     void writeString(const char *text);
     void startIndexList();
     void endIndexList();
@@ -219,6 +221,15 @@ class HtmlGenerator : public OutputGenerator
     void startParameterList(bool);
     void endParameterList();
 
+    void startConstraintList(const char *);
+    void startConstraintParam();
+    void endConstraintParam();
+    void startConstraintType();
+    void endConstraintType();
+    void startConstraintDocs();
+    void endConstraintDocs();
+    void endConstraintList();
+
     void startFontClass(const char *s) { t << "<span class=\"" << s << "\">"; }
     void endFontClass() { t << "</span>"; }
 
@@ -227,6 +238,7 @@ class HtmlGenerator : public OutputGenerator
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
     static void writeSearchPage();
+    static void generateSectionImages();
 
   private:
     QCString lastTitle;

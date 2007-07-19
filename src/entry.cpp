@@ -27,122 +27,6 @@
 
 #define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 
-#if 0
-static bool saveEntry(Entry *e,StorageIntf *f)
-{
-  marshalUInt(f,HEADER);
-  marshalInt(f,(int)e->protection);
-  marshalInt(f,(int)e->mtype);
-  marshalInt(f,e->spec);
-  marshalInt(f,e->initLines);
-  marshalBool(f,e->stat);
-  marshalBool(f,e->explicitExternal);
-  marshalBool(f,e->proto);
-  marshalBool(f,e->subGrouping);
-  marshalBool(f,e->callGraph);
-  marshalBool(f,e->callerGraph);
-  marshalInt(f,(int)e->virt);
-  marshalQCString(f,e->args);
-  marshalQCString(f,e->bitfields);
-  marshalArgumentList(f,e->argList);
-  marshalArgumentLists(f,e->tArgLists);
-  marshalQGString(f,e->program);
-  marshalQGString(f,e->initializer);
-  marshalQCString(f,e->includeFile);
-  marshalQCString(f,e->includeName);
-  marshalQCString(f,e->doc);
-  marshalInt(f,e->docLine);
-  marshalQCString(f,e->docFile);
-  marshalQCString(f,e->brief);
-  marshalInt(f,e->briefLine);
-  marshalQCString(f,e->briefFile);
-  marshalQCString(f,e->inbodyDocs);
-  marshalInt(f,e->inbodyLine);
-  marshalQCString(f,e->inbodyFile);
-  marshalQCString(f,e->relates);
-  marshalBool(f,e->relatesDup);
-  marshalQCString(f,e->read);
-  marshalQCString(f,e->write);
-  marshalQCString(f,e->inside);
-  marshalQCString(f,e->exception);
-  marshalInt(f,e->bodyLine);
-  marshalInt(f,e->endBodyLine);
-  marshalInt(f,e->mGrpId);
-  marshalBaseInfoList(f,e->extends);
-  marshalGroupingList(f,e->groups);
-  marshalSectionInfoList(f,e->anchors);
-  marshalQCString(f,e->fileName);
-  marshalInt(f,e->startLine);
-  marshalItemInfoList(f,e->sli);
-  marshalBool(f,e->objc);
-  marshalBool(f,e->hidden);
-  marshalInt(f,(int)e->groupDocType);
-  return TRUE;
-}
-
-static bool loadEntry(Entry *e,StorageIntf *f)
-{
-  uint header=unmarshalUInt(f);
-  if (header!=HEADER)
-  {
-    printf("Internal error: Invalid header %x for entry in storage file %s\n",
-        header,Doxygen::entryDBFileName.data());
-    exit(1);
-  }
-  e->protection       = (Protection)unmarshalInt(f);
-  e->mtype            = (MethodTypes)unmarshalInt(f);
-  e->spec             = unmarshalInt(f);
-  e->initLines        = unmarshalInt(f);
-  e->stat             = unmarshalBool(f);
-  e->explicitExternal = unmarshalBool(f);
-  e->proto            = unmarshalBool(f);
-  e->subGrouping      = unmarshalBool(f);
-  e->callGraph        = unmarshalBool(f);
-  e->callerGraph      = unmarshalBool(f);
-  e->virt             = (Specifier)unmarshalInt(f);
-  e->args             = unmarshalQCString(f);
-  e->bitfields        = unmarshalQCString(f);
-  delete e->argList;
-  e->argList          = unmarshalArgumentList(f);
-  e->tArgLists        = unmarshalArgumentLists(f);
-  e->program          = unmarshalQGString(f);
-  e->initializer      = unmarshalQGString(f);
-  e->includeFile      = unmarshalQCString(f);
-  e->includeName      = unmarshalQCString(f);
-  e->doc              = unmarshalQCString(f);
-  e->docLine          = unmarshalInt(f);
-  e->docFile          = unmarshalQCString(f);
-  e->brief            = unmarshalQCString(f);
-  e->briefLine        = unmarshalInt(f);
-  e->briefFile        = unmarshalQCString(f);
-  e->inbodyDocs       = unmarshalQCString(f);
-  e->inbodyLine       = unmarshalInt(f);
-  e->inbodyFile       = unmarshalQCString(f);
-  e->relates          = unmarshalQCString(f);
-  e->relatesDup       = unmarshalBool(f);
-  e->read             = unmarshalQCString(f);
-  e->write            = unmarshalQCString(f);
-  e->inside           = unmarshalQCString(f);
-  e->exception        = unmarshalQCString(f);
-  e->bodyLine         = unmarshalInt(f);
-  e->endBodyLine      = unmarshalInt(f);
-  e->mGrpId           = unmarshalInt(f);
-  delete e->extends;
-  e->extends          = unmarshalBaseInfoList(f);
-  delete e->groups;
-  e->groups           = unmarshalGroupingList(f);
-  delete e->anchors;
-  e->anchors          = unmarshalSectionInfoList(f);
-  e->fileName         = unmarshalQCString(f);
-  e->startLine        = unmarshalInt(f);
-  e->sli              = unmarshalItemInfoList(f);
-  e->objc             = unmarshalBool(f);
-  e->hidden           = unmarshalBool(f);
-  e->groupDocType     = (Entry::GroupDocType)unmarshalInt(f);
-  return TRUE;
-}
-#endif
-
 //------------------------------------------------------------------
 
 /*! the argument list is documented if one of its
@@ -181,6 +65,7 @@ Entry::Entry()
   argList->setAutoDelete(TRUE);
   //printf("Entry::Entry() tArgList=0\n");
   tArgLists = 0;
+  typeConstr = 0;
   mGrpId = -1;
   tagInfo = 0;
   sli = 0;
@@ -245,6 +130,8 @@ Entry::Entry(const Entry &e)
   anchors     = new QList<SectionInfo>;
   argList     = new ArgumentList;
   argList->setAutoDelete(TRUE);
+  typeConstr  = new ArgumentList;
+  typeConstr->setAutoDelete(TRUE);
   tArgLists = 0;
   groupDocType = e.groupDocType;
 
@@ -290,6 +177,16 @@ Entry::Entry(const Entry &e)
   argList->volatileSpecifier = e.argList->volatileSpecifier;
   argList->pureSpecifier     = e.argList->pureSpecifier;
   
+  // deep copy type contraint list
+  if (e.typeConstr)
+  {
+    QListIterator<Argument> tcli(*e.typeConstr);
+    for (;(a=tcli.current());++tcli)
+    {
+      typeConstr->append(new Argument(*a));
+    }
+  }
+
   // deep copy template argument lists
   if (e.tArgLists)
   {
@@ -391,9 +288,10 @@ void Entry::reset()
   groups->clear();
   anchors->clear();
   argList->clear();
-  if (tagInfo) { delete tagInfo; tagInfo=0; }
-  if (tArgLists) { delete tArgLists; tArgLists=0; }
-  if (sli) { delete sli; sli=0; }
+  if (tagInfo)    { delete tagInfo; tagInfo=0; }
+  if (tArgLists)  { delete tArgLists; tArgLists=0; }
+  if (sli)        { delete sli; sli=0; }
+  if (typeConstr) { delete typeConstr; typeConstr=0; }
   //if (mtArgList) { delete mtArgList; mtArgList=0; }
 }
 

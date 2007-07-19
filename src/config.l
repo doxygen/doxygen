@@ -2222,6 +2222,16 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
+  cb = addBool(
+                    "HTML_DYNAMIC_SECTIONS",
+                    "If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML \n"
+		    "documentation will contain sections that can be hidden and shown after the \n"
+		    "page has loaded. For this to work a browser that supports \n"
+                    "JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox \n"
+		    "Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). \n",
+                    FALSE
+                 );
+  cb->addDependency("GENERATE_HTML");
   cs = addString(
                     "CHM_FILE",
                     "If the GENERATE_HTMLHELP tag is set to YES, the CHM_FILE tag can \n"

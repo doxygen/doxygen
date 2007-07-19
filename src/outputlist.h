@@ -97,6 +97,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endTitle); }
     void newParagraph() 
     { forall(&OutputGenerator::newParagraph); }
+    void startParagraph() 
+    { forall(&OutputGenerator::startParagraph); }
+    void endParagraph() 
+    { forall(&OutputGenerator::endParagraph); }
     void writeString(const char *text) 
     { forall(&OutputGenerator::writeString,text); }
     void startIndexList() 
@@ -370,6 +374,25 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParameterList,openBracket); }
     void endParameterList()
     { forall(&OutputGenerator::endParameterList); }
+
+    void startConstraintList(const char *header) 
+    { forall(&OutputGenerator::startConstraintList,header); }
+    void startConstraintParam() 
+    { forall(&OutputGenerator::startConstraintParam); }
+    void endConstraintParam() 
+    { forall(&OutputGenerator::endConstraintParam); }
+    void startConstraintType()
+    { forall(&OutputGenerator::startConstraintType); }
+    void endConstraintType()
+    { forall(&OutputGenerator::endConstraintType); }
+    void startConstraintDocs()
+    { forall(&OutputGenerator::startConstraintDocs); }
+    void endConstraintDocs()
+    { forall(&OutputGenerator::endConstraintDocs); }
+    void endConstraintList()
+    { forall(&OutputGenerator::endConstraintList); }
+
+
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()
@@ -395,6 +418,8 @@ class OutputList : public OutputDocInterface
       }
     }
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
+
+
 
   private:
     void debug();

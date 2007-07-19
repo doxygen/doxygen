@@ -22,10 +22,11 @@
  *  
  *  This example shows how to use to code parser to get cross-references information
  *  and it also shows how to look up symbols in a program parsed by doxygen and
- *  show some information about it.
+ *  show some information about them.
  */
 
 #include <stdlib.h>
+#include <unistd.h>
 #include "doxygen.h"
 #include "outputgen.h"
 #include "parserintf.h"

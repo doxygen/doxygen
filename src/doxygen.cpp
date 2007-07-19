@@ -1164,6 +1164,7 @@ static void addClassToContext(EntryNav *rootNav)
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setIsObjectiveC(root->objc);
     cd->setHidden(root->hidden);
+    cd->setTypeConstraints(root->typeConstr);
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
 
     ArgumentList *tArgList = 
@@ -1357,6 +1358,8 @@ static void buildNamespaceList(EntryNav *rootNav)
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
 
+    //printf("** buildNamespaceList(%s)\n",root->name.data());
+
     QCString fullName = root->name;
     if (root->section==Entry::PACKAGEDOC_SEC)
     {
@@ -1422,6 +1425,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
+        nd->setHidden(root->hidden);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -2577,6 +2581,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
                   const QCString &rname,bool isFriend)
 {
   Entry *root = rootNav->entry();
+  FileDef *fd=rootNav->fileDef();
 
   int l,i;
   static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
@@ -2598,7 +2603,8 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   else                          mtype=MemberDef::Function;
 
   // strip redundant template specifier for constructors
-  if ((i=name.find('<'))!=-1 && name.find('>')!=-1)
+  if ((fd==0 || getLanguageFromFileName(fd->name())==SrcLangExt_Cpp) &&
+     (i=name.find('<')!=-1) && name.find('>')!=-1)
   {
     name=name.left(i); 
   }
@@ -2622,7 +2628,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->spec);
   md->setMemberGroupId(root->mGrpId);
-  FileDef *fd=rootNav->fileDef();
+  md->setTypeConstraints(root->typeConstr);
   md->setBodyDef(fd);
   md->setFileDef(fd);
   //md->setScopeTemplateArguments(root->tArgList);
@@ -2964,6 +2970,7 @@ static void buildFunctionList(EntryNav *rootNav)
           md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
           md->setPrototype(root->proto);
           md->setDocsForDefinition(!root->proto);
+          md->setTypeConstraints(root->typeConstr);
           //md->setBody(root->body);
           md->setBodySegment(root->bodyLine,root->endBodyLine);
           FileDef *fd=rootNav->fileDef();
@@ -5539,6 +5546,7 @@ static void findMember(EntryNav *rootNav,
           md->setTagInfo(rootNav->tagInfo());
           md->setMemberClass(cd);
           md->setTemplateSpecialization(TRUE);
+          md->setTypeConstraints(root->typeConstr);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
@@ -5599,6 +5607,7 @@ static void findMember(EntryNav *rootNav,
               root->protection,root->virt,root->stat,TRUE,
               mtype,tArgList,root->argList);
           md->setTagInfo(rootNav->tagInfo());
+          md->setTypeConstraints(root->typeConstr);
           md->setMemberClass(cd);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
@@ -9288,7 +9297,7 @@ void parseInput()
     cleanUpDoxygen();
     exit(1);
   }
-  
+
   QCString &xmlOutput = Config_getString("XML_OUTPUT");
   bool &generateXml = Config_getBool("GENERATE_XML");
   if (xmlOutput.isEmpty() && generateXml)
@@ -9709,6 +9718,21 @@ void parseInput()
     msg("Computing dependencies between directories...\n");
     computeDirDependencies();
   }
+
+  msg("Counting data structures...\n");
+  countDataStructures();
+ 
+  msg("Resolving user defined references...\n");
+  resolveUserReferences();
+
+  msg("Finding anchors and sections in the documentation...\n");
+  findSectionsInDocumentation();
+
+  transferFunctionReferences();
+
+  msg("Combining using relations...\n");
+  combineUsingRelations();
+
 }
 
 void generateOutput()
@@ -9734,31 +9758,6 @@ void generateOutput()
 
   initDocParser();
 
-  //{
-  //  QCString fileName = Config_getString("HTML_OUTPUT")+"/filetree.html";
-  //  QFile f(fileName);
-  //  if (f.open(IO_WriteOnly))
-  //  {
-  //    QTextStream t(&f);
-  //    t << "<html>\n";
-  //    t << "  <head>\n";
-  //    t << "    <style type=\"text/css\">\n";
-  //    t << "    <!--\n";
-  //    t << "    .directory { font-size: 10pt; font-weight: bold; }\n";
-  //    t << "    .directory h3 { margin: 0px; margin-top: 1em; font-size: 11pt; }\n";
-  //    t << "    .directory p { margin: 0px; white-space: nowrap; }\n";
-  //    t << "    .directory div { display: visible; margin: 0px; }\n";
-  //    t << "    .directory img { vertical-align: middle; }\n";
-  //    t << "    -->\n";
-  //    t << "    </style>\n";
-  //    t << "  </head>\n";
-  //    t << "  <body>\n";
-  //    generateFileTree(t);
-  //    t << "  </body>\n";
-  //    t << "</html>\n";
-  //  }
-  //}
-  
   outputList = new OutputList(TRUE);
   if (Config_getBool("GENERATE_HTML"))  
   {
@@ -9766,6 +9765,7 @@ void generateOutput()
     HtmlGenerator::init();
     if (Config_getBool("GENERATE_HTMLHELP")) HtmlHelp::getInstance()->initialize();
     if (Config_getBool("GENERATE_TREEVIEW")) FTVHelp::getInstance()->initialize();
+    if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
   }
   if (Config_getBool("GENERATE_LATEX")) 
@@ -9842,18 +9842,6 @@ void generateOutput()
   // count the number of documented elements in the lists we have built. 
   // If the result is 0 we do not generate the lists and omit the 
   // corresponding links in the index.
-  msg("Counting data structures...\n");
-  countDataStructures();
- 
-  msg("Resolving user defined references...\n");
-  resolveUserReferences();
-
-  msg("Combining using relations...\n");
-  combineUsingRelations();
-
-  msg("Finding anchors and sections in the documentation...\n");
-  findSectionsInDocumentation();
-
   msg("Generating index page...\n"); 
   writeIndex(*outputList);
 
@@ -9865,7 +9853,6 @@ void generateOutput()
   {
     generateFileSources();
   }
-  transferFunctionReferences();
 
   msg("Generating file documentation...\n");
   generateFileDocs();
@@ -9958,6 +9945,7 @@ void generateOutput()
 
   if (Config_getBool("GENERATE_HTML") && Config_getBool("DOT_CLEANUP")) removeDoxFont(Config_getString("HTML_OUTPUT"));
   if (Config_getBool("GENERATE_RTF") && Config_getBool("DOT_CLEANUP"))  removeDoxFont(Config_getString("RTF_OUTPUT"));
+
   if (Config_getBool("GENERATE_XML"))
   {
     msg("Generating XML output...\n");

@@ -343,5 +343,8 @@ QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argLis
 QCString resolveAliasCmd(const QCString aliasCmd);
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
 
+void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al);
+
+
 #endif
 

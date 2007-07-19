@@ -242,7 +242,7 @@ static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
   {
     int numBytes = f.readLine(buf,maxLineLen-1); // read line
     buf[numBytes]='\0';
-    if (strncmp(buf,bb.data(),bb.length()-1)==0) // found PageBoundBox string
+    if (strncmp(buf,bb.data(),bb.length()-1)==0) // found PageBoundingBox string
     {
       int x,y;
       if (sscanf(buf+bb.length(),"%d %d %d %d",&x,&y,width,height)!=4)
@@ -543,7 +543,6 @@ static QCString escapeTooltip(const QCString &tooltip)
     switch(c)
     {
       case '\\': result+="\\\\"; break;
-      case '"':  result+="\\\""; break;
       default:   result+=c; break;
     }
   }
@@ -1398,44 +1397,98 @@ void DotClassGraph::determineTruncatedNodes(QList<DotNode> &queue,bool includePa
   }
 }
 
-void DotClassGraph::determineVisibleNodes(QList<DotNode> &queue,
-                                          int &maxNodes,bool includeParents)
+bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
+                                          int maxNodes,bool includeParents)
 {
-  while (queue.count()>0 && maxNodes>0)
+  QList<DotNode> childQueue;
+  QList<DotNode> parentQueue;
+  QArray<int> childTreeWidth;
+  QArray<int> parentTreeWidth;
+  childQueue.append(rootNode);
+  if (includeParents) parentQueue.append(rootNode);
+  bool firstNode=TRUE; // flag to force reprocessing rootNode in the parent loop 
+                       // despite being marked visible in the child loop
+  while ((childQueue.count()>0 || parentQueue.count()>0) && maxNodes>0)
   {
     static int maxDistance = Config_getInt("MAX_DOT_GRAPH_DEPTH");
-    DotNode *n = queue.take(0);
-    //printf("*** Processing node %p queue=%d maxNodes=%d m_children=%p "
-    //       "m_parents=%p distance=%d maxDistance=%d\n",
-    //    n,queue.count(),maxNodes,n->m_children,n->m_parents,n->distance(),
-    //    maxDistance);
-    if (!n->isVisible() && n->distance()<maxDistance) // not yet processed
+    if (childQueue.count()>0)
     {
-      //printf("    Marked as visible!\n");
-      n->markAsVisible();
-      maxNodes--;
-      // add direct children
-      if (n->m_children)
+      DotNode *n = childQueue.take(0);
+      int distance = n->distance();
+      if (!n->isVisible() && distance<maxDistance) // not yet processed
       {
-        QListIterator<DotNode> li(*n->m_children);
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
+        if (distance>0)
         {
-          queue.append(dn);
+          int oldSize=(int)childTreeWidth.size();
+          if (distance>oldSize)
+          {
+            childTreeWidth.resize(QMAX(childTreeWidth.size(),(uint)distance));
+            int i; for (i=oldSize;i<distance;i++) childTreeWidth[i]=0;
+          }
+          childTreeWidth[distance-1]+=n->label().length();
+        }
+        n->markAsVisible();
+        maxNodes--;
+        // add direct children
+        if (n->m_children)
+        {
+          QListIterator<DotNode> li(*n->m_children);
+          DotNode *dn;
+          for (li.toFirst();(dn=li.current());++li)
+          {
+            childQueue.append(dn);
+          }
         }
       }
-      // add direct parents
-      if (n->m_parents && includeParents)
+    }
+    if (includeParents && parentQueue.count()>0)
+    {
+      DotNode *n = parentQueue.take(0);
+      if ((!n->isVisible() || firstNode) && n->distance()<maxDistance) // not yet processed
       {
-        QListIterator<DotNode> li(*n->m_parents);
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
+        firstNode=FALSE;
+        int distance = n->distance();
+        if (distance>0)
         {
-          queue.append(dn);
+          int oldSize = (int)parentTreeWidth.size();
+          if (distance>oldSize)
+          {
+            parentTreeWidth.resize(QMAX(parentTreeWidth.size(),(uint)distance));
+            int i; for (i=oldSize;i<distance;i++) parentTreeWidth[i]=0;
+          }
+          parentTreeWidth[distance-1]+=n->label().length();
+        }
+        n->markAsVisible();
+        maxNodes--;
+        // add direct parents
+        if (n->m_parents)
+        {
+          QListIterator<DotNode> li(*n->m_parents);
+          DotNode *dn;
+          for (li.toFirst();(dn=li.current());++li)
+          {
+            parentQueue.append(dn);
+          }
         }
       }
     }
   }
+  int maxWidth=0;
+  int maxHeight=(int)QMAX(childTreeWidth.size(),parentTreeWidth.size());
+  uint i;
+  for (i=0;i<childTreeWidth.size();i++)
+  {
+    if (childTreeWidth[i]>maxWidth) maxWidth=childTreeWidth[i];
+  }
+  for (i=0;i<parentTreeWidth.size();i++)
+  {
+    if (parentTreeWidth[i]>maxWidth) maxWidth=parentTreeWidth[i];
+  }
+  //printf("max tree width=%d, max tree height=%d\n",maxWidth,maxHeight);
+  return maxWidth>80 && maxHeight<12; // used metric to decide to render the tree
+                                      // from left to right instead of top to bottom,
+                                      // with the idea to render very wide trees in
+                                      // left to right order.
 }
 
 void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
@@ -1564,18 +1617,16 @@ DotClassGraph::DotClassGraph(ClassDef *cd,DotNode::GraphType t)
     if (t==DotNode::Inheritance) buildGraph(cd,m_startNode,FALSE,1);
   //}
 
-  static int nodes = Config_getInt("DOT_GRAPH_MAX_NODES");
-  int maxNodes = nodes;
+  static int maxNodes = Config_getInt("DOT_GRAPH_MAX_NODES");
   //int directChildNodes = 1;
   //if (m_startNode->m_children!=0) 
   //  directChildNodes+=m_startNode->m_children->count();
   //if (t==DotNode::Inheritance && m_startNode->m_parents!=0)
   //  directChildNodes+=m_startNode->m_parents->count();
   //if (directChildNodes>maxNodes) maxNodes=directChildNodes;
+  //openNodeQueue.append(m_startNode);
+  m_lrRank = determineVisibleNodes(m_startNode,maxNodes,t==DotNode::Inheritance);
   QList<DotNode> openNodeQueue;
-  openNodeQueue.append(m_startNode);
-  determineVisibleNodes(openNodeQueue,maxNodes,t==DotNode::Inheritance);
-  openNodeQueue.clear();
   openNodeQueue.append(m_startNode);
   determineTruncatedNodes(openNodeQueue,t==DotNode::Inheritance);
 
@@ -1733,7 +1784,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
                                const char *relPath,
-                               bool isTBRank,
+                               bool /*isTBRank*/,
                                bool generateImageMap)
 {
   QDir d(path);
@@ -1772,7 +1823,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
                  m_graphType,
                  baseName,
                  format,
-                 !isTBRank,
+                 m_lrRank, //!isTBRank,
                  m_graphType==DotNode::Inheritance,
                  TRUE
                 )
@@ -1853,20 +1904,33 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   }
   else if (format==EPS) // produce tex to include the .eps image
   {
-      int width,height;
+      int width=420,height=600;
       if (!readBoundingBoxEPS(baseName+".eps",&width,&height))
       {
         err("Error: Could not extract bounding box from .eps!\n");
         QDir::setCurrent(oldDir);
         return baseName;
       }
-      int maxWidth = 420; /* approx. page width in points */
+      //printf("Got EPS size %d,%d\n",width,height);
+      int maxWidth  = 400;  /* approx. page width in points, excl. margins */
+      int maxHeight = 400;  /* approx. page height in points, excl. margins */ 
       out << "\\nopagebreak\n"
         "\\begin{figure}[H]\n"
         "\\begin{center}\n"
-        "\\leavevmode\n"
-        "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-        << "pt]{" << baseName << "}\n"
+        "\\leavevmode\n";
+      if (width>maxWidth)
+      {
+        out << "\\includegraphics[width=" << maxWidth << "pt]";
+      }
+      else if (height>maxHeight)
+      {
+        out << "\\includegraphics[height=" << maxHeight << "pt]";
+      }
+      else
+      {
+        out << "\\includegraphics[width=" << width/2 << "pt]";
+      }
+      out << "{" << baseName << "}\n"
         "\\end{center}\n"
         "\\end{figure}\n";
   }
@@ -2204,7 +2268,7 @@ void DotInclDepGraph::writeXML(QTextStream &t)
 
 int DotCallGraph::m_curNodeNumber = 0;
 
-void DotCallGraph::buildGraph(DotNode *n,MemberDef *md)
+void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
 {
   LockingPtr<MemberSDict> refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
   if (!refs.isNull())
@@ -2223,6 +2287,7 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md)
         {
           n->addChild(bn,0,0,0);
           bn->addParent(n);
+          bn->setDistance(distance);
         }
         else
         {
@@ -2246,9 +2311,10 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md)
               );
           n->addChild(bn,0,0,0);
           bn->addParent(n);
+          bn->setDistance(distance);
           m_usedNodes->insert(uniqueId,bn);
 
-          buildGraph(bn,rmd);
+          buildGraph(bn,rmd,distance+1);
         }
       }
     }
@@ -2259,8 +2325,9 @@ void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
 {
   while (queue.count()>0 && maxNodes>0)
   {
+    static int maxDistance = Config_getInt("MAX_DOT_GRAPH_DEPTH");
     DotNode *n = queue.take(0);
-    if (!n->isVisible()) // not yet processed
+    if (!n->isVisible() && n->distance()<maxDistance) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
@@ -2329,9 +2396,10 @@ DotCallGraph::DotCallGraph(MemberDef *md,bool inverse)
                             uniqueId.data(),
                             TRUE     // root node
                            );
+  m_startNode->setDistance(0);
   m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->insert(uniqueId,m_startNode);
-  buildGraph(m_startNode,md);
+  buildGraph(m_startNode,md,1);
 
   static int nodes = Config_getInt("DOT_GRAPH_MAX_NODES");
   int maxNodes = nodes;

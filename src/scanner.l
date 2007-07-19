@@ -68,6 +68,7 @@ static int              lastClassTemplSpecContext;
 static int              lastPreLineCtrlContext;
 static int              lastSkipVerbStringContext;
 static int              lastCommentInArgContext;
+static int              lastCSConstraint;
 static Protection	protection;
 static Protection	baseProt;
 static int		sharpCount   = 0 ;
@@ -82,6 +83,7 @@ static Entry*		current      = 0 ;
 static Entry*		previous     = 0 ;
 static Entry*		tempEntry    = 0 ;
 static Entry*		firstTypedefEntry = 0 ;
+static Entry*		memspecEntry = 0 ;
 static int		yyLineNr     = 1 ;
 static int              anonCount    = 0 ;        
 static int              anonNSCount  = 0 ;        
@@ -303,7 +305,7 @@ static QCString stripQuotes(const char *s)
 
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
-static void handleParametersCommentBlocks();
+static void handleParametersCommentBlocks(ArgumentList *al);
 
 //-----------------------------------------------------------------
 
@@ -359,7 +361,6 @@ static void prependScope()
       for (talsi.toLast();(srcAl=talsi.current());--talsi)
       {
         ArgumentList *dstAl = new ArgumentList;
-	dstAl->setAutoDelete(TRUE);
 	QListIterator<Argument> tali(*srcAl);
         Argument *a;
         for (;(a=tali.current());++tali)
@@ -544,7 +545,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
-SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
 FTSCOPE   {ID}("<"[a-z_A-Z0-9\*\&,]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
@@ -572,7 +573,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	DefineEnd
 %x	CompoundName
 %x	ClassVar
-%x	CSConstraint
+%x	CSConstraintName
+%x	CSConstraintType
 %x	ClassCategory
 %x	ClassTemplSpec
 %x      CliPropertyType
@@ -1477,7 +1479,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->tArgLists->setAutoDelete(TRUE);
 					  }
 					  ArgumentList *al = new ArgumentList;
-					  al->setAutoDelete(TRUE);
 					  current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
@@ -2052,11 +2053,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
    
 <FindMembers,FindFields>("//"([!/]?){B}*{CMD}"{")|("/*"([!*]?){B}*{CMD}"{")	{
-  					  //Entry *tmp = current;
-					  //if (previous)
-					  //{
-					  //  current = previous;
-					  //}
   					  //handleGroupStartCommand(current->name);
                                           if (previous && previous->section==Entry::GROUPDOC_SEC)
 					  {
@@ -2866,6 +2862,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      else
 					      {
 					        current_root->addSubEntry( current ) ;
+					        memspecEntry = current;
 						current = new Entry(*current);
 						if (current->section==Entry::NAMESPACE_SEC || 
 						    (current->spec==Entry::Interface) ||
@@ -2874,6 +2871,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						  current->reset();
 						  initEntry();
+						  memspecEntry = 0;
 						  BEGIN( FindMembers ) ;
 						}
 						else
@@ -2934,6 +2932,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->args = current->args.simplifyWhiteSpace();
   					  current->type = current->type.simplifyWhiteSpace();
 					  current_root->addSubEntry( current ) ;
+					  memspecEntry = current;
 					  current = new Entry(*current);
 					  unput(';');
 					  BEGIN( MemberSpec ) ;
@@ -3004,60 +3003,73 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
 					  if (!msName.isEmpty() && msName!=current->name) // skip typedef T {} T;
 					  {
-  					    Entry *varEntry=new Entry;
-					    varEntry->protection = current->protection ;
-                                            varEntry->mtype = current->mtype;
-					    varEntry->virt = current->virt;
-					    varEntry->stat = current->stat;
-					    varEntry->section = Entry::VARIABLE_SEC;
-					    varEntry->name = msName.stripWhiteSpace();
-					    varEntry->type = current->type.simplifyWhiteSpace()+" ";
-					    varEntry->args = msArgs; //current->args.simplifyWhiteSpace();
-					    //if (!current->name.isEmpty() && current->name[0]!='@' && 
-					    //    current->parent->section & Entry::COMPOUND_MASK)
-					    //  varEntry->type+=current->parent->name+"::";
-					    if (isTypedef)
+					    static bool optimizeForC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
+					    // case 1: typedef struct _S { ... } S_t; 
+					    // -> omit typedef and use S_t as the struct name
+					    if (optimizeForC && 
+						isTypedef && 
+						(current->spec&(Entry::Struct|Entry::Union)) &&
+						msType.stripWhiteSpace().isEmpty() && 
+						memspecEntry)
 					    {
-					      varEntry->type.prepend("typedef ");
-					      //  //printf("current->name = %s %s\n",current->name.data(),msName.data());
-					      //  if (!current->name.isEmpty() && current->name.at(0)!='@')
-					      //  {
-					      //	//printf("2>>>>>>>>>> adding %s->%s\n",msName.data(),current->name.data());
-					      //    QCString scope;
-					      //    if (current_root->section & Entry::SCOPE_MASK) scope=current_root->name;
-					      //    Doxygen::typedefDict.insert(msName,new TypedefInfo(current->name,scope));
-					      //  }
+					      memspecEntry->name=msName;
 					    }
-					    varEntry->type+=current->name+msType;
-					    varEntry->fileName = yyFileName;
-					    varEntry->startLine = yyLineNr;
-					    varEntry->doc = current->doc.copy();
-					    varEntry->brief = current->brief.copy();
-					    varEntry->mGrpId = current->mGrpId;
-
-					    // deep copy group list
-					    QListIterator<Grouping> gli(*current->groups);
-					    Grouping *g;
-					    for (;(g=gli.current());++gli)
+					    else // case 2: create a typedef field
 					    {
-					      varEntry->groups->append(new Grouping(*g));
-					    }
-					    if (current->sli) // copy special list items
-					    {
-					      QListIterator<ListItemInfo> li(*current->sli);
-					      ListItemInfo *lii;
-					      for (li.toFirst();(lii=li.current());++li)
+					      Entry *varEntry=new Entry;
+					      varEntry->protection = current->protection ;
+					      varEntry->mtype = current->mtype;
+					      varEntry->virt = current->virt;
+					      varEntry->stat = current->stat;
+					      varEntry->section = Entry::VARIABLE_SEC;
+					      varEntry->name = msName.stripWhiteSpace();
+					      varEntry->type = current->type.simplifyWhiteSpace()+" ";
+					      varEntry->args = msArgs; 
+					      if (isTypedef)
 					      {
-						varEntry->addSpecialListItem(lii->type,lii->itemId);
+						varEntry->type.prepend("typedef ");
+						//  //printf("current->name = %s %s\n",current->name.data(),msName.data());
 					      }
-					      //delete current->sli;
-					      //current->sli = 0;
-					    }
+					      if (optimizeForC &&
+						  isTypedef &&
+						  (current->spec&(Entry::Struct|Entry::Union)) &&
+						  memspecEntry
+						 ) // case 1: use S_t as type for pS_t in "typedef struct _S {} S_t, *pS_t;"
+					      {
+						varEntry->type+=memspecEntry->name+msType;
+					      }
+					      else // case 2: use _S as type for for pS_t
+					      {
+						varEntry->type+=current->name+msType;
+					      }
+					      varEntry->fileName = yyFileName;
+					      varEntry->startLine = yyLineNr;
+					      varEntry->doc = current->doc.copy();
+					      varEntry->brief = current->brief.copy();
+					      varEntry->mGrpId = current->mGrpId;
 
-					    //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
-					    //      varEntry->type.data(),varEntry->name.data(),
-					    //      varEntry->args.data(),varEntry->brief.data(),varEntry->doc.data());
-					    current_root->addSubEntry(varEntry);
+					      // deep copy group list
+					      QListIterator<Grouping> gli(*current->groups);
+					      Grouping *g;
+					      for (;(g=gli.current());++gli)
+					      {
+						varEntry->groups->append(new Grouping(*g));
+					      }
+					      if (current->sli) // copy special list items
+					      {
+						QListIterator<ListItemInfo> li(*current->sli);
+						ListItemInfo *lii;
+						for (li.toFirst();(lii=li.current());++li)
+						{
+						  varEntry->addSpecialListItem(lii->type,lii->itemId);
+						}
+					      }
+
+					      //printf("Add: type=`%s',name=`%s',args=`%s' brief=%s doc=%s\n",
+					      //      varEntry->type.data(),varEntry->name.data(),
+					      //      varEntry->args.data(),varEntry->brief.data(),varEntry->doc.data());
+					      current_root->addSubEntry(varEntry);
+					    }
 					  }
 					  if (*yytext==';')
 					  {
@@ -3066,6 +3078,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    msArgs.resize(0);
 					    isTypedef=FALSE;
 					    firstTypedefEntry=0;
+					    memspecEntry=0;
 					    current->reset();
 					    initEntry();
 					    BEGIN( FindMembers );
@@ -3272,7 +3285,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
 					  stringToArgumentList(fullArgString,current->argList);
-                                          handleParametersCommentBlocks();
+                                          handleParametersCommentBlocks(current->argList);
 
 					  /* remember the current documentation block, since
 					     we could overwrite it with the documentation of
@@ -3295,7 +3308,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      unput(yytext[i]);
 					    }
 					    stringToArgumentList(fullArgString,current->argList);
-                                            handleParametersCommentBlocks();
+                                            handleParametersCommentBlocks(current->argList);
 					    BEGIN( currentArgumentContext );
 					  }
 					  else // not a define
@@ -3347,7 +3360,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    *copyArgString+=*yytext;
 					    fullArgString+=*yytext;
 					    stringToArgumentList(fullArgString,current->argList);
-                                            handleParametersCommentBlocks();
+                                            handleParametersCommentBlocks(current->argList);
 					    BEGIN( currentArgumentContext );
 					  }
 					  else
@@ -3657,7 +3670,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  yyLineNr++;
   					}
 <FuncQual>{ID}				{ // typically a K&R style C function
-					  if (checkForKnRstyleC())
+                                          if (insideCS && strcmp(yytext,"where")==0)
+					  { 
+					    // type contraint for a method
+                                            delete current->typeConstr;
+                                            current->typeConstr = new ArgumentList;
+					    current->typeConstr->append(new Argument);
+					    lastCSConstraint = YY_START;
+					    BEGIN( CSConstraintName );
+					  }
+					  else if (checkForKnRstyleC())
 					  {
 					    //fprintf(stderr,"===> got a K&R style function\n");
                                             current->args = yytext; 
@@ -4181,7 +4203,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else if (insideCS && strcmp(yytext,"where")==0) // C# type contraint
 					  {
-					    BEGIN( CSConstraint );
+                                            delete current->typeConstr;
+                                            current->typeConstr = new ArgumentList;
+					    current->typeConstr->append(new Argument);
+					    lastCSConstraint = YY_START;
+					    BEGIN( CSConstraintName );
 					  }
 					  else
 					  {
@@ -4216,14 +4242,53 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN( FindMembers );
 					  }
 					}
-<CSConstraint>"{"			{
-					  unput('{');
-					  BEGIN( ClassVar );
+<CSConstraintType,CSConstraintName>("/*"[*!]|"//"[/!])("<"?)	{ // special comment
+                                          fullArgString.resize(0);
+					  lastCopyArgChar='#'; // end marker
+					  lastCommentInArgContext=YY_START;
+					  if (yytext[1]=='/')
+					    BEGIN( CopyArgCommentLine );
+					  else
+					    BEGIN( CopyArgComment );
 					}
-<CSConstraint>\n			{
+<CSConstraintType,CSConstraintName>"#"	{ // artifically inserted token to signal end of comment block
+                                          current->typeConstr->last()->docs = fullArgString;
+  					}
+<CSConstraintType>"{"			{ // end of type constraint reached
+                                          // parse documentation of the constraints
+                                          handleParametersCommentBlocks(current->typeConstr);
+					  unput('{');
+					  BEGIN( lastCSConstraint );
+					}
+<CSConstraintName>":"                   {
+                                          BEGIN( CSConstraintType );
+                                        }
+<CSConstraintName>{ID}                  {
+                                          // parameter name
+                                          current->typeConstr->last()->name=yytext;
+                                        }
+<CSConstraintType>"where"		{ // another constraint for a different param
+					  current->typeConstr->append(new Argument);
+                                          BEGIN( CSConstraintName );
+  					}
+<CSConstraintType>({ID}".")*{ID}("<"{ID}">")?("()")?  {
+                                          if (current->typeConstr->last()->type.isEmpty())
+                                              // first type constraint for this parameter
+                                          {
+                                            current->typeConstr->last()->type=yytext;
+                                          }
+                                          else // new type constraint for same parameter
+                                          {
+                                            QCString name = current->typeConstr->last()->name;
+                                            current->typeConstr->append(new Argument);
+                                            current->typeConstr->last()->name=name;
+                                            current->typeConstr->last()->type=yytext;
+                                          }
+                                        }
+<CSConstraintName,CSConstraintType>\n	{
 					  yyLineNr++;
 					}
-<CSConstraint>.				{
+<CSConstraintName,CSConstraintType>.	{
 					}
 <ClassCategory>{ID}			{
 					  current->name+=yytext;
@@ -5000,10 +5065,10 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   }
 }
 
-static void handleParametersCommentBlocks()
+static void handleParametersCommentBlocks(ArgumentList *al)
 {
   //printf(">>>>>>> handleParametersCommentBlocks()\n");
-  ArgumentListIterator ali(*current->argList);
+  ArgumentListIterator ali(*al);
   Argument *a;
   for (ali.toFirst();(a=ali.current());++ali)
   {

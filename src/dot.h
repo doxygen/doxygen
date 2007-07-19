@@ -168,7 +168,7 @@ class DotClassGraph
 
   private:
     void buildGraph(ClassDef *cd,DotNode *n,bool base,int distance);
-    void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes,bool includeParents);
+    bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
     void determineTruncatedNodes(QList<DotNode> &queue,bool includeParents);
     void addClass(ClassDef *cd,DotNode *n,int prot,const char *label,
                   const char *usedName,const char *templSpec,
@@ -179,6 +179,7 @@ class DotClassGraph
     static int         m_curNodeNumber;
     DotNode::GraphType m_graphType;
     QCString           m_diskName;
+    bool               m_lrRank;
 };
 
 /** @brief Representation of an include dependency graph */
@@ -216,7 +217,7 @@ class DotCallGraph
    ~DotCallGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,
                         const char *path,const char *relPath,bool writeImageMap=TRUE);
-    void buildGraph(DotNode *n,MemberDef *md);
+    void buildGraph(DotNode *n,MemberDef *md,int distance);
     bool isTrivial() const;
     bool isTooBig() const;
     void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);

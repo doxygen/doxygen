@@ -132,6 +132,11 @@ class BaseOutputDocInterface : public CodeOutputInterface
     /*! Starts a new paragraph */
     virtual void newParagraph()   = 0;
 
+    /*! Starts a new paragraph */
+    virtual void startParagraph() = 0;
+    /*! End a paragraph */
+    virtual void endParagraph() = 0;
+
     /*! Writes a link to an object in the documentation.
      *  \param ref    If this is non-zero, the object is to be found in
      *                an external documentation file.
@@ -375,6 +380,15 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endParameterName(bool,bool,bool) = 0;
     virtual void startParameterList(bool) = 0;
     virtual void endParameterList() = 0;
+
+    virtual void startConstraintList(const char *) = 0;
+    virtual void startConstraintParam() = 0;
+    virtual void endConstraintParam() = 0;
+    virtual void startConstraintType() = 0;
+    virtual void endConstraintType() = 0;
+    virtual void startConstraintDocs() = 0;
+    virtual void endConstraintDocs() = 0;
+    virtual void endConstraintList() = 0;
 
   protected:
     QTextStream fs;

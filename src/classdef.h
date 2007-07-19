@@ -294,6 +294,7 @@ class ClassDef : public Definition
     void setTemplateArguments(ArgumentList *al);
     void setTemplateBaseClassNames(QDict<int> *templateNames);
     void setTemplateMaster(ClassDef *tm);
+    void setTypeConstraints(ArgumentList *al);
     void addMembersToTemplateInstance(ClassDef *cd,const char *templSpec);
     void makeTemplateArgument(bool b=TRUE);
     void setCategoryOf(ClassDef *cd);

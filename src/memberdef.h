@@ -281,6 +281,7 @@ class MemberDef : public Definition
     void setArgumentList(ArgumentList *al);
     void setDeclArgumentList(ArgumentList *al);
     void setDefinitionTemplateParameterLists(QList<ArgumentList> *lists);
+    void setTypeConstraints(ArgumentList *al);
 
     // namespace related members
     void setNamespace(NamespaceDef *nd);

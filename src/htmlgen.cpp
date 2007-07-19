@@ -46,7 +46,7 @@ static const char defaultStyleSheet[] =
 #include "doxygen_css.h"
 ;
 
-const char search_script[]=
+static const char search_script[]=
 #include "search_php.h"
 ;
 
@@ -488,7 +488,29 @@ static void writeTabData(const char *dir)
   }
 }
 
-//-----------------------------------------------------------------------
+//------------------------------------------------------------------------
+
+unsigned char open_gif[] = {
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x09, 0x00, 0x09, 0x00, 0xf0, 0x00,
+  0x00, 0x8e, 0xaf, 0xc4, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
+  0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x09, 0x00,
+  0x00, 0x02, 0x0d, 0x8c, 0x8f, 0xa9, 0xcb, 0xe0, 0xff, 0x02, 0x8c, 0x66,
+  0x26, 0x7a, 0x51, 0x01, 0x00, 0x3b
+};
+unsigned int open_gif_len = 54;
+
+unsigned char closed_gif[] = {
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x09, 0x00, 0x09, 0x00, 0xf0, 0x00,
+  0x00, 0x8e, 0xaf, 0xc4, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
+  0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x09, 0x00,
+  0x00, 0x02, 0x10, 0x8c, 0x03, 0xa7, 0x98, 0xcb, 0xad, 0x80, 0x84, 0x66,
+  0xca, 0x38, 0x57, 0xd6, 0xf4, 0xd0, 0x02, 0x00, 0x3b
+};
+unsigned int closed_gif_len = 57;
+
+
+
+//------------------------- Pictures for the Tabs ------------------------
 
 HtmlGenerator::HtmlGenerator() : OutputGenerator()
 {
@@ -598,6 +620,54 @@ void HtmlGenerator::writeFooterFile(QFile &file)
     << "</html>\n";
 }
 
+static void generateDynamicSections(QTextStream &t,const QCString &relPath)
+{
+  if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
+  { 
+    t << 
+      "<script type=\"text/javascript\">\n"
+      "<!--\n"
+      "function changeDisplayState (e){\n"
+      "  var num=this.id.replace(/[^[0-9]/g,'');\n"
+      "  var button=this.firstChild;\n"
+      "  var sectionDiv=document.getElementById('dynsection'+num);\n"
+      "  if (sectionDiv.style.display=='none'||sectionDiv.style.display==''){\n"
+      "    sectionDiv.style.display='block';\n"
+      "    button.src='" << relPath << "open.gif';\n"
+      "  }else{\n"
+      "    sectionDiv.style.display='none';\n"
+      "    button.src='" << relPath << "closed.gif';\n"
+      "  }\n"
+      "}\n"
+      "function initDynSections(){\n"
+      "  var divs=document.getElementsByTagName('div');\n"
+      "  var sectionCounter=1;\n"
+      "  for(var i=0;i<divs.length-1;i++){\n"
+      "    if(divs[i].className=='dynheader'&&divs[i+1].className=='dynsection'){\n"
+      "      var header=divs[i];\n"
+      "      var section=divs[i+1];\n"
+      "      var button=header.firstChild;\n"
+      "      if (button!='IMG'){\n"
+      "        divs[i].insertBefore(document.createTextNode(' '),divs[i].firstChild);\n"
+      "        button=document.createElement('img');\n"
+      "        divs[i].insertBefore(button,divs[i].firstChild);\n"
+      "      }\n"
+      "      header.style.cursor='pointer';\n"
+      "      header.onclick=changeDisplayState;\n"
+      "      header.id='dynheader'+sectionCounter;\n"
+      "      button.src='" << relPath << "closed.gif';\n"
+      "      section.id='dynsection'+sectionCounter;\n"
+      "      section.style.display='none';\n"
+      "      sectionCounter++;\n"
+      "    }\n"
+      "  }\n"
+      "}\n"
+      "window.onload = initDynSections;\n"
+      "-->\n"
+      "</script>\n";
+  }
+}
+
 
 void HtmlGenerator::startFile(const char *name,const char *,
                               const char *title)
@@ -635,8 +705,8 @@ void HtmlGenerator::startFile(const char *name,const char *,
   }
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
     << versionString << " -->" << endl;
+  generateDynamicSections(t,relPath);
 }
-
 
 static void writePageFooter(QTextStream &t,const QCString &lastTitle,
                             const QCString relPath)
@@ -749,6 +819,16 @@ void HtmlGenerator::endDoxyAnchor(const char *,const char *)
 void HtmlGenerator::newParagraph()
 {
   t << endl << "<p>" << endl;
+}
+
+void HtmlGenerator::startParagraph()
+{
+  t << endl << "<p>";
+}
+
+void HtmlGenerator::endParagraph()
+{
+  t << "</p>" << endl;
 }
 
 void HtmlGenerator::writeString(const char *text)
@@ -1033,18 +1113,22 @@ void HtmlGenerator::writeChar(char c)
 
 void HtmlGenerator::startClassDiagram()
 {
-  t << "<p>";
+  //t << "<p>";
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endClassDiagram(ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   t << "\n<p><center><img src=\""
     << relPath << fileName << ".png\" usemap=\"#" << name << "_map\""
     << " border=\"0\" alt=\"\"></center>" << endl
     << "<map name=\"" << name << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
+  t << "</div>" << endl;
 }
 
 
@@ -1402,49 +1486,75 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
 
 void HtmlGenerator::startDotGraph()
 {
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   g.writeGraph(t,BITMAP,dir,relPath);
+  if (Config_getBool("GENERATE_LEGEND"))
+  {
+    t << "<center><font size=\"2\">[";
+    startHtmlLink(relPath+"graph_legend"+Doxygen::htmlFileExtension);
+    t << theTranslator->trLegend();
+    endHtmlLink();
+    t << "]</font></center>";
+  }
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::startInclDepGraph()
 {
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   g.writeGraph(t,BITMAP,dir,relPath);
+  t << "</div>" << endl;
 }
-
 
 void HtmlGenerator::startGroupCollaboration()
 {
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   g.writeGraph(t,BITMAP,dir,relPath);
+  t << "</div>" << endl;
 }
-
 
 void HtmlGenerator::startCallGraph()
 {
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endCallGraph(DotCallGraph &g)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   g.writeGraph(t,BITMAP,dir,relPath);
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::startDirDepGraph()
 {
+  t << "<div class=\"dynheader\">" << endl;
 }
 
 void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
 {
+  t << "</div>" << endl;
+  t << "<div class=\"dynsection\">" << endl;
   g.writeGraph(t,BITMAP,dir,relPath);
+  t << "</div>" << endl;
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
@@ -1965,4 +2075,69 @@ void HtmlGenerator::writeSearchPage()
     }
   }
 }
+
+void HtmlGenerator::generateSectionImages()
+{
+  {
+    QCString fileName = Config_getString("HTML_OUTPUT")+"/open.gif";
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly))
+    {
+      f.writeBlock((char*)open_gif,open_gif_len);
+    }
+  }
+  {
+    QCString fileName = Config_getString("HTML_OUTPUT")+"/closed.gif";
+    QFile f(fileName);
+    if (f.open(IO_WriteOnly))
+    {
+      f.writeBlock((char*)closed_gif,closed_gif_len);
+    }
+  }
+}
+
+void HtmlGenerator::startConstraintList(const char *header)
+{
+  t << "<div class=\"typeconstraint\">" << endl;
+  t << "<dl compact><dt><b>" << header << "</b><dt><dd>" << endl;
+  t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl;
+}
+
+void HtmlGenerator::startConstraintParam()
+{
+  t << "<tr><td valign=\"top\"><em>";
+}
+
+void HtmlGenerator::endConstraintParam()
+{
+  t << "</em></td>";
+}
+
+void HtmlGenerator::startConstraintType()
+{
+  t << "<td>&nbsp;:</td><td valign=\"top\"><em>";
+}
+
+void HtmlGenerator::endConstraintType()
+{
+  t << "</em></td>";
+}
+
+void HtmlGenerator::startConstraintDocs()
+{
+  t << "<td>&nbsp;";
+}
+
+void HtmlGenerator::endConstraintDocs()
+{
+  t << "</td></tr>" << endl;
+}
+
+void HtmlGenerator::endConstraintList()
+{
+  t << "</table>" << endl;
+  t << "</dl>" << endl;
+  t << "</div>" << endl;
+}
+
 

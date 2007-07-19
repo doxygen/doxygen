@@ -61,6 +61,8 @@ class LatexGenerator : public OutputGenerator
     void endTitle()   { t << "}"; }
 
     void newParagraph();
+    void startParagraph();
+    void endParagraph();
     void writeString(const char *text);
     void startIndexList() { t << "\\begin{CompactList}"    << endl; }
     void endIndexList()   { t << "\\end{CompactList}"      << endl; }
@@ -209,6 +211,15 @@ class LatexGenerator : public OutputGenerator
     void endParameterName(bool,bool,bool) {}
     void startParameterList(bool) {}
     void endParameterList() {}
+
+    void startConstraintList(const char *);
+    void startConstraintParam();
+    void endConstraintParam();
+    void startConstraintType();
+    void endConstraintType();
+    void startConstraintDocs();
+    void endConstraintDocs();
+    void endConstraintList();
 
     void startFontClass(const char *) {}
     void endFontClass() {}

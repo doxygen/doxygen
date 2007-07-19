@@ -368,11 +368,15 @@ static void checkUndocumentedParams()
         }
         if (g_memberDef->inheritsDocsFrom())
         {
-           warn_doc_error(g_memberDef->getDefFileName(),g_memberDef->getDefLine(),errMsg);
+           warn_doc_error(g_memberDef->getDefFileName(),
+                          g_memberDef->getDefLine(),
+                          substitute(errMsg,"%","%%"));
         }
         else
         {
-           warn_doc_error(g_memberDef->docFile(),g_memberDef->docLine(),errMsg);
+           warn_doc_error(g_memberDef->docFile(),
+                          g_memberDef->docLine(),
+                          substitute(errMsg,"%","%%"));
         }
       }
     }
