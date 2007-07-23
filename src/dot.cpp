@@ -1478,11 +1478,11 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
   uint i;
   for (i=0;i<childTreeWidth.size();i++)
   {
-    if (childTreeWidth[i]>maxWidth) maxWidth=childTreeWidth[i];
+    if (childTreeWidth.at(i)>maxWidth) maxWidth=childTreeWidth.at(i);
   }
   for (i=0;i<parentTreeWidth.size();i++)
   {
-    if (parentTreeWidth[i]>maxWidth) maxWidth=parentTreeWidth[i];
+    if (parentTreeWidth.at(i)>maxWidth) maxWidth=parentTreeWidth.at(i);
   }
   //printf("max tree width=%d, max tree height=%d\n",maxWidth,maxHeight);
   return maxWidth>80 && maxHeight<12; // used metric to decide to render the tree
