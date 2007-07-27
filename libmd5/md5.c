@@ -19,8 +19,6 @@
  *  - Ian Jackson <ian@chiark.greenend.org.uk>.
  * Still in the public domain.
  */
-#include "config.h"
-
 #include <string.h>		/* for memcpy() */
 #include <sys/types.h>		/* for stupid systems */
 
