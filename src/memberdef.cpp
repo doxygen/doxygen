@@ -150,7 +150,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
 
     // or use the following to put the function pointer as it appears in
     // the prototype.
-    // bool hasFuncPtrType=vp!=-1 && wp!=-1 && wp<vp; 
+    //bool hasFuncPtrType=vp!=-1 && wp!=-1 && wp<vp; 
 
     if (!a->attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
@@ -455,9 +455,9 @@ void MemberDefImpl::init(Definition *def,
   initLines=0;
   type=t;
   if (mt==MemberDef::Typedef) type.stripPrefix("typedef ");
-  type.stripPrefix("struct ");
-  type.stripPrefix("class " );
-  type.stripPrefix("union " );
+  //  type.stripPrefix("struct ");
+  //  type.stripPrefix("class " );
+  //  type.stripPrefix("union " );
   type=removeRedundantWhiteSpace(type);
   args=a;
   args=removeRedundantWhiteSpace(args);
@@ -970,10 +970,11 @@ bool MemberDef::isBriefSectionVisible() const
   makeResident();
   LockingPtr<MemberDef> lock(this,this);
   MemberGroupInfo *info = Doxygen::memGrpInfoDict[m_impl->grpId];
+  //printf("name=%s m_impl->grpId=%d info=%p\n",name().data(),m_impl->grpId,info);
   //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
   bool hasDocs = hasDocumentation() || 
                   // part of a documented member group
-                 (m_impl->grpId!=-1 && info && !info->doc.isEmpty());
+                 (m_impl->grpId!=-1 && info && !(info->doc.isEmpty() && info->header.isEmpty()));
 
   // only include static members with file/namespace scope if 
   // explicitly enabled in the config file
@@ -1033,9 +1034,9 @@ bool MemberDef::isBriefSectionVisible() const
                                   );
 
   //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d"
-  //       "visibleIfPrivate=%d visibleIfDocVirtual=%d visibltIfNotDefaultCDTor=%d "
+  //       "visibleIfPrivate=%d visibltIfNotDefaultCDTor=%d "
   //       "visibleIfFriendCompound=%d\n",visibleIfStatic,visibleIfDocumented,
-  //       visibleIfEnabled,visibleIfPrivate,visibleIfDocVirtual,visibleIfNotDefaultCDTor,
+  //       visibleIfEnabled,visibleIfPrivate,visibleIfNotDefaultCDTor,
   //       visibleIfFriendCompound);
   
   bool visible = visibleIfStatic     && visibleIfDocumented      && 
@@ -1222,7 +1223,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       }
       else
       {
-        ltype = ltype.left(i) + " { ... } " + ltype.right(ltype.length()-i-l);
+        ltype = ltype.left(i) + " { ... } " + removeAnonymousScopes(ltype.right(ltype.length()-i-l));
         linkifyText(TextGeneratorOLImpl(ol),d,getBodyDef(),name(),ltype,TRUE); 
       }
     }
@@ -1575,7 +1576,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
 
   // get member name
-  QCString doxyName=name().copy();
+  QCString doxyName=name();
   // prepend scope if there is any. TODO: make this optional for C only docs
   if (scopeName) doxyName.prepend((QCString)scopeName+"::");
   QCString doxyArgs=argsString();

@@ -1000,7 +1000,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  // prepend scope in case of nested classes
 			  if (current_root->section&Entry::SCOPE_MASK)
 			  {
-			    printf("*** Prepending scope %s to class %s\n",current_root->name.data(),current->name.data());
+			    //printf("*** Prepending scope %s to class %s\n",current_root->name.data(),current->name.data());
 			    current->name.prepend(current_root->name+"::");
 			  }
 			  

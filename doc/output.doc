@@ -49,8 +49,10 @@ The following output formats are \e indirectly supported by doxygen:
 <dt><b>PDF</b>\htmlonly &nbsp;&nbsp;&nbsp;\endhtmlonly
 <dd>Generated from the \f$\mbox{\LaTeX}\f$ output by
     running <code>make pdf</code> in the output directory.
-    In order to get hyperlinks in the PDF file, 
-    \c PDF_HYPERLINKS should be set to \c YES in the configuration file.
+    To improve the PDF output, you typically would want to enable the use 
+    of \c pdflatex by setting \ref cfg_use_pdflatex "USE_PDFLATEX" to \c YES in the 
+    configuration file. In order to get hyperlinks in the PDF file you also need to enable
+    \ref cfg_pdf_hyperlinks "PDF_HYPERLINKS".
 </dl>
 
 */

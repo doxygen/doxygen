@@ -68,23 +68,7 @@ static const char *sectionLevelToName[] =
 
 //---------------------------------------------------------------------------
 
-// global variables during a call to validatingParseDoc
-static bool         g_hasParamCommand;
-static bool         g_hasReturnCommand;
-static MemberDef *  g_memberDef;
-static QDict<void>  g_paramsFound;
-static bool         g_isExample;
-static QCString     g_exampleName;
-static SectionDict *g_sectionDict;
-
-static QCString     g_searchUrl;
-
-// include file state
-static QString g_includeFileText;
-static uint     g_includeFileOffset;
-static uint     g_includeFileLength;
-
-// parser state
+// Parser state: global variables during a call to validatingParseDoc
 static QString                g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
@@ -95,6 +79,20 @@ static QList<Definition>      g_copyStack;
 static QString                g_fileName;
 static QString                g_relPath;
 
+static bool                   g_hasParamCommand;
+static bool                   g_hasReturnCommand;
+static MemberDef *            g_memberDef;
+static QDict<void>            g_paramsFound;
+static bool                   g_isExample;
+static QCString               g_exampleName;
+static SectionDict *          g_sectionDict;
+static QCString               g_searchUrl;
+
+static QString                g_includeFileText;
+static uint                   g_includeFileOffset;
+static uint                   g_includeFileLength;
+
+// parser's context to store all global variables
 struct DocParserContext
 {
   QString context;
@@ -104,9 +102,23 @@ struct DocParserContext
   QStack<DocStyleChange> styleStack;
   QStack<DocStyleChange> initialStyleStack;
   QList<Definition> copyStack;
-  MemberDef *memberDef;
   QString fileName;
   QString relPath;
+
+  bool         hasParamCommand;
+  bool         hasReturnCommand;
+  MemberDef *  memberDef;
+  QDict<void>  paramsFound;
+  bool         isExample;
+  QCString     exampleName;
+  SectionDict *sectionDict;
+  QCString     searchUrl;
+
+  QString  includeFileText;
+  uint     includeFileOffset;
+  uint     includeFileLength;
+
+  TokenInfo *token;
 };
 
 static QStack<DocParserContext> g_parserStack;
@@ -115,6 +127,10 @@ static QStack<DocParserContext> g_parserStack;
 
 static void docParserPushContext()
 {
+  //QCString indent;
+  //indent.fill(' ',g_parserStack.count()*2+2);
+  //printf("%sdocParserPushContext() count=%d\n",indent.data(),g_nodeStack.count());
+
   doctokenizerYYpushContext();
   DocParserContext *ctx   = new DocParserContext;
   ctx->context            = g_context;
@@ -126,6 +142,23 @@ static void docParserPushContext()
   ctx->copyStack          = g_copyStack;
   ctx->fileName           = g_fileName;
   ctx->relPath            = g_relPath;
+
+  ctx->hasParamCommand    = g_hasParamCommand;
+  ctx->hasReturnCommand   = g_hasReturnCommand;
+  ctx->memberDef          = g_memberDef;
+  ctx->paramsFound        = g_paramsFound;
+  ctx->isExample          = g_isExample;
+  ctx->exampleName        = g_exampleName;
+  ctx->sectionDict        = g_sectionDict;
+  ctx->searchUrl          = g_searchUrl;
+
+  ctx->includeFileText    = g_includeFileText;
+  ctx->includeFileOffset  = g_includeFileOffset;
+  ctx->includeFileLength  = g_includeFileLength;
+  
+  ctx->token              = g_token;
+  g_token = new TokenInfo;
+
   g_parserStack.push(ctx);
 }
 
@@ -141,8 +174,29 @@ static void docParserPopContext()
   g_copyStack           = ctx->copyStack;
   g_fileName            = ctx->fileName;
   g_relPath             = ctx->relPath;
+
+  g_hasParamCommand     = ctx->hasParamCommand;
+  g_hasReturnCommand    = ctx->hasReturnCommand;
+  g_memberDef           = ctx->memberDef;
+  g_paramsFound         = ctx->paramsFound;
+  g_isExample           = ctx->isExample;
+  g_exampleName         = ctx->exampleName;
+  g_sectionDict         = ctx->sectionDict;
+  g_searchUrl           = ctx->searchUrl;
+
+  g_includeFileText     = ctx->includeFileText;
+  g_includeFileOffset   = ctx->includeFileOffset;
+  g_includeFileLength   = ctx->includeFileLength;
+
+  delete g_token;
+  g_token               = ctx->token;
+
   delete ctx;
   doctokenizerYYpopContext();
+
+  //QCString indent;
+  //indent.fill(' ',g_parserStack.count()*2+2);
+  //printf("%sdocParserPopContext() count=%d\n",indent.data(),g_nodeStack.count());
 }
 
 //---------------------------------------------------------------------------
@@ -5876,7 +5930,10 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //                                     md?md->name().data():"<none>");
   //printf("========== validating %s at line %d\n",fileName,startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
-  g_token = new TokenInfo;
+  //g_token = new TokenInfo;
+
+  // store parser state so we can re-enter this function if needed
+  docParserPushContext();
 
   if (ctx &&
       (ctx->definitionType()==Definition::TypeClass || 
@@ -5999,9 +6056,11 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   doctokenizerYYlineno=startLine;
   doctokenizerYYinit(input,g_fileName);
 
+
   // build abstract syntax tree
   DocRoot *root = new DocRoot(md!=0,singleLine);
   root->parse();
+
 
   if (Debug::isFlagSet(Debug::PrintTree))
   {
@@ -6011,24 +6070,29 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
     delete v;
   }
 
+
   checkUndocumentedParams();
   detectNoDocumentedParams();
-
-  delete g_token;
 
   // TODO: These should be called at the end of the program.
   //doctokenizerYYcleanup();
   //Mappers::cmdMapper->freeInstance();
   //Mappers::htmlTagMapper->freeInstance();
 
+  // restore original parser state
+  docParserPopContext();
+
   return root;
 }
 
 DocNode *validatingParseText(const char *input)
 {
+  // store parser state so we can re-enter this function if needed
+  docParserPushContext();
+
   //printf("------------ input ---------\n%s\n"
   //       "------------ end input -----\n",input);
-  g_token = new TokenInfo;
+  //g_token = new TokenInfo;
   g_context = "";
   g_fileName = "<parseText>";
   g_relPath = "";
@@ -6068,8 +6132,8 @@ DocNode *validatingParseText(const char *input)
     }
   }
 
-  delete g_token;
-
+  // restore original parser state
+  docParserPopContext();
   return txt;
 }
 

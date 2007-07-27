@@ -184,7 +184,8 @@ void LatexGenerator::init()
   }
   else // use pdflatex for higher quality output
   {
-    t << "all: clean refman.pdf" << endl << endl;
+    t << "all: clean refman.pdf" << endl << endl
+      << "pdf: refman.pdf" << endl << endl;
     t << "refman.pdf: refman.tex" << endl;
     t << "\tpdflatex refman.tex" << endl;
     t << "\tmakeindex refman.idx" << endl;

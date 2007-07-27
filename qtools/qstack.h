@@ -59,6 +59,7 @@ public:
     type *pop()				{ return (type *)QGList::takeFirst(); }
     bool  remove()			{ return QGList::removeFirst(); }
     void  clear()			{ QGList::clear(); }
+    type *bottom()  const		{ return (type *)QGList::clast(); }
     type *top()	    const		{ return (type *)QGList::cfirst(); }
 	  operator type *() const	{ return (type *)QGList::cfirst(); }
     type *current() const		{ return (type *)QGList::cfirst(); }

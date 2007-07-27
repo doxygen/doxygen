@@ -272,7 +272,7 @@ class DocCmdMapper
       {
 	if (m_map.find(p->cmdName)!=0)
 	{
-	  printf("Error: command %s already added\n",p->cmdName);
+	  printf("Error: DocCmdMapper: command %s already added\n",p->cmdName);
 	  exit(1);
 	}
 	Cmd *cmd = new Cmd;
@@ -687,7 +687,14 @@ static inline void setOutput(OutputContext ctx)
 	  current->briefLine = yyLineNr;
 	}
       }
-      pOutputString = &current->brief;
+      if (current->brief.isEmpty())
+      {
+        pOutputString = &current->brief;
+      }
+      else
+      {
+        pOutputString = &current->doc;
+      }
       break;
     case OutputXRef:
       pOutputString = &outputXRef;

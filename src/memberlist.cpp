@@ -67,6 +67,7 @@ void MemberList::countDecMembers(bool countEnumValues)
   MemberDef *md;
   for (mli.toFirst();(md=mli.current());++mli)
   {
+    //printf("MemberList::countDecMembers(md=%s,%d)\n",md->name().data(),md->isBriefSectionVisible());
     if (md->isBriefSectionVisible())
     {
       switch(md->memberType())
@@ -177,8 +178,12 @@ void MemberList::writePlainDeclarations(OutputList &ol,
 {
   //printf("----- writePlainDeclaration() ----\n");
   countDecMembers();
-  if (numDecMembers()==0) return; // no members in this list
-  //printf("----> writePlainDeclaration() numDecMembers()=%d\n",
+  if (numDecMembers()==0) 
+  {
+    //printf("  --> no members!\n");
+    return; // no members in this list
+  }
+  //printf("  --> writePlainDeclaration() numDecMembers()=%d\n",
   //     numDecMembers());
   
   ol.pushGeneratorState();
