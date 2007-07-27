@@ -783,7 +783,7 @@ See section \ref memgroup for an example.
   \ref cmdendcond "\\endcond" command, which is typically found in 
   another comment block. The main purpose of this pair of
   commands is to (conditionally) exclude part of a file from processing
-  (traditionally this could only be achieved using C processor commands). 
+  (in older version of doxygen this could only be achieved using C preprocessor commands). 
 
   The section between \\cond and \\endcond commands can be included by
   adding its section label to the \ref cfg_enabled_sections "ENABLED_SECTIONS"
@@ -838,8 +838,8 @@ class Implementation : public Intf
 /// @endcond 
 \endverbatim
 
-The output will be different depending on whether \c ENABLED_SECTIONS
-is empty, \c TEST, \c DEV, or \c DEV \c TEST.
+The output will be different depending on whether or not \c ENABLED_SECTIONS
+contains \c TEST, or \c DEV
 
 <hr>
 \section cmddate \\date { date description }

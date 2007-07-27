@@ -18,6 +18,7 @@
 #include "qtbc.h"
 #include <ctype.h>
 #include <qregexp.h>
+#include <md5.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -63,6 +64,7 @@ class DefinitionImpl
     DocInfo   *details; // not exported
     BriefInfo *brief;   // not exported
     BodyInfo  *body;    // not exported
+    QCString   docSignatures;
 
     QCString localName;      // local (unqualified) name of the definition
                                // in the future m_name should become m_localName
@@ -280,7 +282,7 @@ Definition::Definition(const char *df,int dl,
   m_isSymbol = isSymbol;
   if (isSymbol) addToMap(name,this);
   _setBriefDescription(b,df,dl);
-  _setDocumentation(d,df,dl,TRUE);
+  _setDocumentation(d,df,dl,TRUE,FALSE);
   if (matchExcludedSymbols(name)) m_impl->hidden = TRUE;
 }
 
@@ -348,7 +350,25 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-void Definition::_setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace) 
+bool Definition::_docsAlreadyAdded(const QString &doc)
+{
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)doc.data(),doc.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  if (m_impl->docSignatures.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
+  {
+    m_impl->docSignatures+=":"+sigStr;
+    return FALSE;
+  }
+  else
+  {
+    return TRUE;
+  }
+}
+
+void Definition::_setDocumentation(const char *d,const char *docFile,int docLine,
+                                   bool stripWhiteSpace,bool atTop) 
 { 
   if (d==0) return;
   //printf("Definition::setDocumentation(%s,%s,%d,%d)\n",d,docFile,docLine,stripWhiteSpace);
@@ -361,52 +381,82 @@ void Definition::_setDocumentation(const char *d,const char *docFile,int docLine
   {
     doc=d;
   }
-  //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
-  if (m_impl->details==0)
+  if (!_docsAlreadyAdded(doc))
   {
-    m_impl->details = new DocInfo;
+    //printf("setting docs for %s: `%s'\n",name().data(),m_doc.data());
+    if (m_impl->details==0)
+    {
+      m_impl->details = new DocInfo;
+    }
+    if (m_impl->details->doc.isEmpty()) // fresh detailed description
+    {
+      m_impl->details->doc  = doc;
+    }
+    else if (atTop) // another detailed description, append it to the start
+    {
+      m_impl->details->doc  = doc+"\n\n"+m_impl->details->doc;
+    }
+    else // another detailed description, append it to the end
+    {
+      m_impl->details->doc  += "\n\n"+doc;
+    }
+    if (docLine!=-1) // store location if valid
+    {
+      m_impl->details->file = docFile;
+      m_impl->details->line = docLine;
+    }
   }
-  m_impl->details->doc  = doc;
-  m_impl->details->file = docFile;
-  m_impl->details->line = docLine;
 }
 
 void Definition::setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace)
 {
   if (d==0) return;
   makeResident();
-  _setDocumentation(d,docFile,docLine,stripWhiteSpace);
+  _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE);
 }
 
 #define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
 
 void Definition::_setBriefDescription(const char *b,const char *briefFile,int briefLine)
 {
-  if (b==0) return;
   static QCString outputLanguage = Config_getEnum("OUTPUT_LANGUAGE");
   static bool needsDot = outputLanguage!="Japanese" && 
                          outputLanguage!="Chinese" &&
                          outputLanguage!="Korean";
-  //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
-  if (m_impl->brief==0)
-  {
-    m_impl->brief = new BriefInfo;
-  }
-  m_impl->brief->doc=QCString(b).stripWhiteSpace();
-  int bl=m_impl->brief->doc.length(); 
+  QCString brief = b;
+  brief = brief.stripWhiteSpace();
+  if (brief.isEmpty()) return;
+  int bl = brief.length();
   if (bl>0 && needsDot) // add punctuation if needed
   {
-    switch(m_impl->brief->doc.at(bl-1))
+    switch(brief.at(bl-1))
     {
       case '.': case '!': case '?': break;
       default: 
-        if (uni_isupper(m_impl->brief->doc.at(0))) m_impl->brief->doc+='.'; 
+        if (uni_isupper(brief.at(0))) brief+='.'; 
         break;
     }
   }
-  m_impl->brief->file = briefFile;
-  m_impl->brief->line = briefLine;
-  m_impl->brief->tooltip = parseCommentAsText(m_impl->brief->doc,briefFile,briefLine);
+
+  if (m_impl->brief && !m_impl->brief->doc.isEmpty())
+  {
+      //printf("adding to details\n");
+      _setDocumentation(brief,briefFile,briefLine,FALSE,TRUE);
+  }
+  else if (!_docsAlreadyAdded(brief))
+  {
+    //fprintf(stderr,"Definition::setBriefDescription(%s,%s,%d)\n",b,briefFile,briefLine);
+    if (m_impl->brief==0)
+    {
+      m_impl->brief = new BriefInfo;
+    }
+    m_impl->brief->doc=brief;
+    if (briefLine!=-1)
+    {
+      m_impl->brief->file = briefFile;
+      m_impl->brief->line = briefLine;
+    }
+  }
 }
 
 void Definition::setBriefDescription(const char *b,const char *briefFile,int briefLine) 
@@ -1100,7 +1150,24 @@ QCString Definition::briefDescription() const
 QCString Definition::briefDescriptionAsTooltip() const
 {
   makeResident();
-  return m_impl->brief ? m_impl->brief->tooltip : QCString(""); 
+  if (m_impl->brief)
+  {
+    if (m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
+    {
+      static bool reentering=FALSE; 
+      if (!reentering)
+      {
+        reentering=TRUE; // prevent requests for tooltips while parsing a tooltip
+        m_impl->brief->tooltip = parseCommentAsText(
+            m_impl->brief->doc,
+            m_impl->brief->file,
+            m_impl->brief->line);
+        reentering=FALSE;
+      }
+    }
+    return m_impl->brief->tooltip;
+  }
+  return QCString("");
 }
 
 int Definition::briefLine() const 
@@ -1245,6 +1312,7 @@ void Definition::flushToDisk() const
   marshalDocInfo      (Doxygen::symbolStorage,m_impl->details);
   marshalBriefInfo    (Doxygen::symbolStorage,m_impl->brief);
   marshalBodyInfo     (Doxygen::symbolStorage,m_impl->body);
+  marshalQCString     (Doxygen::symbolStorage,m_impl->docSignatures);
   marshalQCString     (Doxygen::symbolStorage,m_impl->localName);
   marshalQCString     (Doxygen::symbolStorage,m_impl->qualifiedName);
   marshalQCString     (Doxygen::symbolStorage,m_impl->ref);
@@ -1274,6 +1342,7 @@ void Definition::loadFromDisk() const
   m_impl->details         = unmarshalDocInfo      (Doxygen::symbolStorage);
   m_impl->brief           = unmarshalBriefInfo    (Doxygen::symbolStorage);
   m_impl->body            = unmarshalBodyInfo     (Doxygen::symbolStorage);
+  m_impl->docSignatures   = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->localName       = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->qualifiedName   = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->ref             = unmarshalQCString     (Doxygen::symbolStorage);

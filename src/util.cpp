@@ -163,8 +163,8 @@ QCString removeAnonymousScopes(const QCString &s)
   return result;
 }
 
-// replace anonymous scopes with __anonymous__ 
-QCString replaceAnonymousScopes(const QCString &s)
+// replace anonymous scopes with __anonymous__ or replacement if provided
+QCString replaceAnonymousScopes(const QCString &s,const char *replacement)
 {
   QCString result;
   if (s.isEmpty()) return result;
@@ -174,7 +174,14 @@ QCString replaceAnonymousScopes(const QCString &s)
   while ((i=re.match(s,p,&l))!=-1)
   {
     result+=s.mid(p,i-p);
-    result+="__anonymous__";
+    if (replacement)
+    {
+      result+=replacement;
+    }
+    else
+    {
+      result+="__anonymous__";
+    }
     p=i+l;
   }
   result+=s.right(sl-p);
@@ -4556,6 +4563,8 @@ QCString escapeCharsInString(const char *name,bool allowDots)
       case '!': result+="_9"; break;
       case ',': result+="_00"; break;
       case ' ': result+="_01"; break;
+      case '{': result+="_02"; break;
+      case '}': result+="_03"; break;
       default: 
                 if (caseSenseNames || !isupper(c))
                 {
@@ -4654,6 +4663,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
 #endif
     result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
+  //printf("*** convertNameToFile(%s)->%s\n",name,result.data());
   return result;
 }
 
@@ -4821,12 +4831,6 @@ QCString stripScope(const char *name)
 
 }
 
-/*! Convert nibble (range 0..15) to hex char */
-//static char nibbleToHex(int n)
-//{
-//  return (n < 10) ? ('0'+n) : ('a'+n-10);
-//}
-
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
 {
@@ -4843,19 +4847,7 @@ QCString convertToXML(const char *s)
       case '&':  result+="&amp;";  break;
       case '\'': result+="&apos;"; break; 
       case '"':  result+="&quot;"; break;
-      default:   
-                 //if (c<0) 
-                 //{       <- this doesn't work for languages that use
-                 //           characters with codes beyond 255
-                 //  result+=(QCString)"&#x" + 
-                 //          nibbleToHex((((uchar)c)>>4)&0xf)+
-                 //          nibbleToHex(c&0xf)+";";
-                 //}
-                 //else 
-                 //{
-                 result+=c;        
-                 //}
-                 break;
+      default:   result+=c;        break;
     }
   }
   return result;
@@ -4864,7 +4856,23 @@ QCString convertToXML(const char *s)
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const char *s)
 {
-  return convertToXML(s);
+  QCString result;
+  if (s==0) return result;
+  const char *p=s;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '<':  result+="&lt;";   break;
+      case '>':  result+="&gt;";   break;
+      case '&':  result+="&amp;";  break;
+      case '\'': result+="&#39;"; break; 
+      case '"':  result+="&quot;"; break;
+      default:   result+=c;        break;
+    }
+  }
+  return result;
 }
 
 /*! Returns the standard string that is generated when the \\overload
@@ -5304,7 +5312,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
     // append documentation block to the page.
-    pd->setDocumentation(pd->documentation()+"\n\n"+doc,fileName,startLine);
+    pd->setDocumentation(doc,fileName,startLine);
     //printf("Adding page docs `%s' pi=%p name=%s\n",doc.data(),pi,name);
   }
   else // new page
@@ -5999,8 +6007,8 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".odl",   new int(SrcLangExt_IDL));
     extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".java",  new int(SrcLangExt_Java));
-    extLookup.insert(".jsl",   new int(SrcLangExt_Java));
-    extLookup.insert(".as",    new int(SrcLangExt_Java));
+    extLookup.insert(".as",    new int(SrcLangExt_JS));
+    extLookup.insert(".js",    new int(SrcLangExt_JS));
     extLookup.insert(".cs",    new int(SrcLangExt_CSharp));
     extLookup.insert(".d",     new int(SrcLangExt_D));
     extLookup.insert(".php",   new int(SrcLangExt_PHP));

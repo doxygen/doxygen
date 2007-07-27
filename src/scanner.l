@@ -114,6 +114,7 @@ static bool             insideD     = FALSE;		//!< processing D code?
 static bool             insidePHP   = FALSE;		//!< processing PHP code?
 static bool             insideObjC  = FALSE;            //!< processing Objective C code?
 static bool             insideCli   = FALSE;            //!< processing C++/CLI code?
+static bool             insideJS    = FALSE;            //!< processing JavaScript code?
 
 static bool             insideCppQuote = FALSE;
 static bool             insideProtocolList = FALSE;
@@ -330,6 +331,7 @@ static void setContext()
   insideD    = langExt==SrcLangExt_D;
   insidePHP  = langExt==SrcLangExt_PHP;
   insideObjC = langExt==SrcLangExt_ObjC;
+  insideJS   = langExt==SrcLangExt_JS;
   if ( insidePHP )
   {
     useOverrideCommands = TRUE;
@@ -506,6 +508,23 @@ static void addKnRArgInfo(const QCString &type,const QCString &name,
 }
 
 //-----------------------------------------------------------------------------
+
+
+void fixArgumentListForJavaScript(ArgumentList *al)
+{
+  if (al==0) return;
+  ArgumentListIterator ali(*al);
+  Argument *a;
+  for (ali.toFirst();(a=ali.current());++ali)
+  {
+    if (!a->type.isEmpty() && a->name.isEmpty())
+    { // a->type is actually the (typeless) parameter name, so move it
+      a->name=a->type;
+      a->type.resize(0);
+    }
+  }
+}
+
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
@@ -750,6 +769,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  unput(*yytext);
 					  BEGIN( FindMembers );
   					}
+<FindMembers>"<?php"			{ // PHP code with unsupported extension?
+                                          insidePHP = TRUE;
+  					}
 <FindMembersPHP>"<?"("php"?)            { // PHP code start
                                            BEGIN( FindMembers );
 					}
@@ -902,7 +924,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <CliPropertyType>"{"			{
 					  curlyCount=0;
-					  printf("event: '%s' '%s'\n",current->type.data(),current->name.data());
+					  //printf("event: '%s' '%s'\n",current->type.data(),current->name.data());
   					  BEGIN( CSAccessorDecl );
   					}
 <CliPropertyType>";"			{
@@ -1762,13 +1784,21 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    insideTryBlock=FALSE;
 					    BEGIN(TryFunctionBlock);
 					  }
+					  else if (insideJS && strcmp(yytext,"var")==0)
+					  { // javascript variable
+					    current->type="var";
+					  }
+					  else if (insideJS && strcmp(yytext,"function")==0)
+					  { // javascript function
+					    current->type="function";
+					  }
 					  else
 					  {
 					    if (YY_START==FindMembers)
 					    {
 					      addType( current ) ;
 					    }
-					    bool javaLike = insideJava || insideCS || insideD || insidePHP;
+					    bool javaLike = insideJava || insideCS || insideD || insidePHP || insideJS;
 					    if (javaLike && strcmp(yytext,"public")==0)
 					    {
 					      current->protection = Public;
@@ -1780,6 +1810,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    else if (javaLike && strcmp(yytext,"private")==0)
 					    {
 					      current->protection = Private;
+					    }
+					    else if (javaLike && strcmp(yytext,"static")==0)
+					    {
+					      if (YY_START==FindMembers)
+					        current->name  = yytext;
+					      else
+						current->name += yytext;
+			 		      current->stat = TRUE;
 					    }
 					    else
 					    {
@@ -2866,7 +2904,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						current = new Entry(*current);
 						if (current->section==Entry::NAMESPACE_SEC || 
 						    (current->spec==Entry::Interface) ||
-						    insideJava || insidePHP || insideCS || insideD
+						    insideJava || insidePHP || insideCS || insideD || insideJS
 						   )
 						{ // namespaces and interfaces and java classes ends with a closing bracket without semicolon
 						  current->reset();
@@ -2902,6 +2940,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN( TypedefName );
 					  }
 					}
+<TypedefName>("const"|"volatile"){BN}	{ // late "const" or "volatile" keyword
+					  lineCount();
+  					  current->type.prepend(yytext);
+  					}
 <TypedefName>{ID}			{
   					  if (current->section == Entry::ENUM_SEC)
 					  {
@@ -3285,6 +3327,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  *copyArgString+=*yytext;
   					  fullArgString+=*yytext;
 					  stringToArgumentList(fullArgString,current->argList);
+					  if (insideJS)
+					  {
+					    fixArgumentListForJavaScript(current->argList);
+					  }
                                           handleParametersCommentBlocks(current->argList);
 
 					  /* remember the current documentation block, since
@@ -4193,7 +4239,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    roundCount=0;
 					    BEGIN(SkipUnionSwitch);
 					  }
-					  else if ((insideJava || insidePHP) && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
+					  else if ((insideJava || insidePHP || insideJS) && (strcmp(yytext,"implements")==0 || strcmp(yytext,"extends")==0))
 					  {
   					    current->type.resize(0);
 					    baseProt=Public;
@@ -4362,7 +4408,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    if (current->section==Entry::NAMESPACE_SEC) // allow reopening of anonymous namespaces
 					    {
-					      current->name.sprintf("@%d",anonNSCount);
+					      if (Config_getBool("EXTRACT_ANON_NSPACES")) // use visible name
+					      {
+					        current->name="anonymous_namespace{"+stripPath(current->fileName)+"}";
+					      }
+					      else // use invisible name
+					      {
+					        current->name.sprintf("@%d",anonNSCount);
+					      }
 					    }
 					    else
 					    {
@@ -4573,12 +4626,23 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
+#if 0
   					  if (YY_START!=SkipCurly)
 					  {
 					    current->doc.resize(0);
+					  }
+#endif
+					  if (!current->doc.isEmpty())
+					  {
+					    current->doc+="\n\n";
+					  }
+					  else
+					  {
 					    current->docLine = yyLineNr;
 					    current->docFile = yyFileName;
 					  }
+//
+
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -4597,6 +4661,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->briefLine = yyLineNr;
 					    current->briefFile = yyFileName;
 					  }
+#if 0
 					  if (!docBlockInBody)
 					  {
 					    current->doc.resize(0);
@@ -4605,6 +4670,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      current->brief.resize(0);
 					    }
 					  }
+#endif
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 					}
@@ -4631,6 +4697,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->briefLine = yyLineNr;
 					    current->briefFile = yyFileName;
 					  }
+#if 0
 					  if (!docBlockInBody)
 					  {
 					    current->doc.resize(0);
@@ -4639,16 +4706,19 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      current->brief.resize(0);
 					    }
 					  }
+#endif
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
   					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" { 
+#if 0
                                           if (YY_START!=SkipCurly)
 					  {
   					    current->brief.resize(0);
 					    current->briefFile=yyFileName;
 					    current->briefLine=yyLineNr;
 					  }
+#endif
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -4663,16 +4733,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockAutoBrief = FALSE;
 					  docBlock.resize(0);
-					  startCommentBlock(TRUE);
+					  startCommentBlock(current->brief.isEmpty());
 					  BEGIN( DocLine );
 					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] { 
+#if 0
                                           if (YY_START!=SkipCurly)
 					  {
   					    current->brief.resize(0);
 					    current->briefFile=yyFileName;
 					    current->briefLine=yyLineNr;
 					  }
+#endif
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
@@ -4687,7 +4759,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  docBlockInBody    = YY_START==SkipCurly;
 					  docBlockAutoBrief = FALSE;
 					  docBlock.resize(0);
-					  startCommentBlock(TRUE);
+					  startCommentBlock(current->brief.isEmpty());
 					  BEGIN( DocLine );
 					}
 <FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
@@ -4777,7 +4849,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                         }
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;
-					  handleCommentBlock(docBlock,TRUE);
+					  handleCommentBlock(docBlock,current->brief.isEmpty());
 					  BEGIN( docBlockContext );
   					}
 
@@ -5148,7 +5220,7 @@ static void parseCompounds(Entry *rt)
 	BEGIN( FindMembers ) ;
       current_root = ce ;
       yyFileName = ce->fileName;
-      setContext();
+      //setContext();
       yyLineNr = ce->startLine ;
       insideObjC = ce->objc;
       //printf("---> Inner block starts at line %d objC=%d\n",yyLineNr,insideObjC);
@@ -5160,15 +5232,12 @@ static void parseCompounds(Entry *rt)
       // set default protection based on the compound type
       if( ce->section==Entry::CLASS_SEC ) // class
       {
-	if (
-	    ce->fileName.right(4)==".php" ||
-	    ce->fileName.right(4)==".inc" ||
-	    ce->fileName.right(2)==".d"
-	   )
+
+        if (insidePHP || insideD || insideJS)
 	{
           current->protection = protection = Public ; 
 	}
-	else if (ce->fileName.right(5)==".java")
+	else if (insideJava)
 	{
           current->protection = protection = Package ; 
 	}

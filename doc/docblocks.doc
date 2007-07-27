@@ -24,15 +24,21 @@ needs to end up in the generated documentation. For Python code there is
 a different comment convention, which can be found in section 
 \ref pythonblocks
 
-For each code item there are two types of descriptions, which together
-form the documentation: a \e brief description and \e detailed
-description, both are optional. 
-Having more than one brief or detailed description however, is 
-not allowed. 
+For each code item there are two (or in some cases three) types of descriptions, 
+which together form the documentation: a \e brief description and \e detailed
+description, both are optional. For methods and functions there is also a third
+type of description, the so called "in body" description, which consists of 
+the concatenation of all comment blocks found within the body of the method or function.
+
+Having more than one brief or detailed description is allowed (but not recommended,
+as the order in which the descriptions will appear is not specified).
 
 As the name suggest, a brief description is
 a short one-liner, whereas the detailed description provides longer, 
-more detailed documentation.
+more detailed documentation. An "in body" description can also act as a detailed
+description or can describe a collection of implementation details.
+For the HTML output brief descriptions are also
+use to provide tooltips at places where an item is referenced.
 
 There are several ways to mark a comment block as a detailed description:
 <ol>
@@ -86,6 +92,15 @@ or
 
 Some people like to make their comment blocks more visible in the
 documentation. For this purpose you can use the following:
+
+
+\verbatim
+/************************************************
+ *  ... text
+ ***********************************************/
+\endverbatim
+
+or
 
 \verbatim
 /////////////////////////////////////////////////

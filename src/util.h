@@ -92,6 +92,7 @@ enum SrcLangExt
   SrcLangExt_PHP    = 0x080,
   SrcLangExt_ObjC   = 0x100,
   SrcLangExt_Cpp    = 0x200,
+  SrcLangExt_JS     = 0x400,
 };
 
 //--------------------------------------------------------------------
@@ -215,7 +216,7 @@ int getPrefixIndex(const QCString &name);
 
 QCString removeAnonymousScopes(const QCString &s);
 
-QCString replaceAnonymousScopes(const QCString &s);
+QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
 
 void initClassHierarchy(ClassSDict *cl);
 

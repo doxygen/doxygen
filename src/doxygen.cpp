@@ -488,6 +488,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
 
       if ((gd=Doxygen::groupSDict->find(root->name)))
       {
+#if 0
         if ( root->groupDocType==Entry::GROUPDOC_NORMAL )
         {
           warn(root->fileName,root->startLine,
@@ -496,6 +497,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
               root->name.data());
         }
         else
+#endif
         {
           if ( !gd->hasGroupTitle() )
             gd->setGroupTitle( root->type );
@@ -503,12 +505,10 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
             warn( root->fileName,root->startLine,
                 "group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
                 root->name.data(), root->type.data(), gd->groupTitle() );
-          if ( gd->briefDescription().isEmpty() )
+          //if ( gd->briefDescription().isEmpty() )
             gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          if ( !root->doc.stripWhiteSpace().isEmpty() )
-            gd->setDocumentation( gd->documentation().isEmpty() ? root->doc :
-                gd->documentation() + "\n\n" + root->doc,
-                root->docFile, root->docLine );
+          //if ( !root->doc.stripWhiteSpace().isEmpty() )
+            gd->setDocumentation( root->doc, root->docFile, root->docLine );
           gd->addSectionsToDefinition(root->anchors);
           gd->setRefItems(root->sli);
           //addGroupToGroups(root,gd);
@@ -637,6 +637,7 @@ static void buildFileList(EntryNav *rootNav)
     //printf("**************** root->name=%s fd=%p\n",root->name.data(),fd);
     if (fd && !ambig)
     {
+#if 0
       if ((!root->doc.isEmpty() && !fd->documentation().isEmpty()) ||
           (!root->brief.isEmpty() && !fd->briefDescription().isEmpty()))
       {
@@ -648,6 +649,7 @@ static void buildFileList(EntryNav *rootNav)
             );
       }
       else
+#endif
       {
         //printf("Adding documentation!\n");
         // using FALSE in setDocumentation is small hack to make sure a file 
@@ -1088,6 +1090,7 @@ static void addClassToContext(EntryNav *rootNav)
     //  //printf("existing ClassDef tempArgList=%p specScope=%s\n",root->tArgList,root->scopeSpec.data());
     //  cd->setTemplateArguments(tArgList);
     //}
+#if 0
     if (!root->doc.isEmpty() || !root->brief.isEmpty() || 
         (root->bodyLine!=-1 && Config_getBool("SOURCE_BROWSER"))
        ) 
@@ -1103,9 +1106,11 @@ static void addClassToContext(EntryNav *rootNav)
             );
       }
       else if (!root->doc.isEmpty())
+#endif
       {
         cd->setDocumentation(root->doc,root->docFile,root->docLine);
       }
+#if 0
       if (!root->brief.isEmpty() && !cd->briefDescription().isEmpty())
       {
         warn(
@@ -1116,6 +1121,7 @@ static void addClassToContext(EntryNav *rootNav)
             );
       }
       else if (!root->brief.isEmpty())
+#endif
       {
         cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       }
@@ -1125,7 +1131,9 @@ static void addClassToContext(EntryNav *rootNav)
         cd->setBodyDef(fd);
       }
       //cd->setName(fullName); // change name to match docs
+#if 0
     }
+#endif
 
     if (cd->templateArguments()==0) 
     {
@@ -1360,13 +1368,13 @@ static void buildNamespaceList(EntryNav *rootNav)
 
     //printf("** buildNamespaceList(%s)\n",root->name.data());
 
-    QCString fullName = root->name;
+    QCString fName = root->name;
     if (root->section==Entry::PACKAGEDOC_SEC)
     {
-      fullName=substitute(fullName,".","::");
+      fName=substitute(fName,".","::");
     }
-    
-    fullName = stripAnonymousNamespaceScope(fullName);
+
+    QCString fullName = stripAnonymousNamespaceScope(fName);
     if (!fullName.isEmpty())
     {
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
@@ -1374,13 +1382,16 @@ static void buildNamespaceList(EntryNav *rootNav)
       NamespaceDef *nd;
       if ((nd=Doxygen::namespaceSDict->find(fullName))) // existing namespace
       {
+#if 0
         if (!root->doc.isEmpty() || !root->brief.isEmpty()) // block contains docs
         { 
           if (nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
+#endif
             nd->setDocumentation(root->doc,root->docFile,root->docLine);
             nd->setName(fullName); // change name to match docs
             nd->addSectionsToDefinition(root->anchors);
+#if 0
           }
           else if (!nd->documentation().isEmpty() && !root->doc.isEmpty())
           {
@@ -1392,7 +1403,9 @@ static void buildNamespaceList(EntryNav *rootNav)
           }
           if (nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
+#endif
             nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+#if 0
             nd->setName(fullName); // change name to match docs
           }
           else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
@@ -1404,6 +1417,7 @@ static void buildNamespaceList(EntryNav *rootNav)
                 );
           }
         }
+#endif
 
         // file definition containing the namespace nd
         FileDef *fd=rootNav->fileDef();
@@ -2199,7 +2213,8 @@ static int findFunctionPtr(const QCString &type,int *pLength=0)
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 && // contains (...*...)
       type.find("operator")==-1 &&   // not an operator
-      type.find(")(")==-1            // not a function pointer return type
+      (type.find(")(")==-1 || type.find("typedef ")!=-1)
+                                    // not a function pointer return type
      )
   {
     if (pLength) *pLength=l;
@@ -2392,6 +2407,7 @@ static void buildVarList(EntryNav *rootNav)
     else
     {
       int i=isFuncPtr;
+      if (i==-1) i=findFunctionPtr(root->type); // for typedefs isFuncPtr is not yet set
       if (i!=-1) // function pointer
       {
         int ai = root->type.find('[',i);
@@ -2847,10 +2863,16 @@ static void buildFunctionList(EntryNav *rootNav)
           {
             NamespaceDef *mnd = md->getNamespaceDef();
             NamespaceDef *rnd = 0;
-            if (!rootNav->parent()->name().isEmpty())
+            //printf("root namespace=%s\n",rootNav->parent()->name().data());
+            QCString fullScope = scope;
+            QCString parentScope = rootNav->parent()->name();
+            if (!parentScope.isEmpty() && !leftScopeMatch(parentScope,scope))
             {
-              rnd = getResolvedNamespace(rootNav->parent()->name());
+              if (!scope.isEmpty()) fullScope.prepend("::");
+              fullScope.prepend(parentScope);
             }
+            //printf("fullScope=%s\n",fullScope.data());
+            rnd = getResolvedNamespace(fullScope);
             FileDef *mfd = md->getFileDef();
             QCString nsName,rnsName;
             if (mnd)  nsName = mnd->name().copy();
@@ -2870,6 +2892,7 @@ static void buildFunctionList(EntryNav *rootNav)
                 gd = Doxygen::groupSDict->find(root->groups->first()->groupname.data());
               }
               //printf("match!\n");
+              //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());
               // see if we need to create a new member
               found=(mnd && rnd && nsName==rnsName) ||   // members are in the same namespace
                     ((mnd==0 && rnd==0 && mfd!=0 &&       // no external reference and
@@ -2893,9 +2916,6 @@ static void buildFunctionList(EntryNav *rootNav)
                 // merge documentation
                 if (md->documentation().isEmpty() && !root->doc.isEmpty())
                 {
-                  md->setDocumentation(root->doc,root->docFile,root->docLine);
-                  md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-                  md->setDocsForDefinition(!root->proto);
                   ArgumentList *argList = new ArgumentList;
                   stringToArgumentList(root->args,argList);
                   if (root->proto)
@@ -2908,21 +2928,28 @@ static void buildFunctionList(EntryNav *rootNav)
                     md->setArgumentList(argList);
                   }
                 }
+#if 0
                 else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && mnd==rnd)
                 {
                   warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
                   //printf("md->docs=[%s] root->docs=[%s]\n",md->documentation().data(),root->doc.data());
                 }
+#endif
+                md->setDocumentation(root->doc,root->docFile,root->docLine);
+                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+                md->setDocsForDefinition(!root->proto);
 
                 if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
                 {
-                  md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
                   md->setArgsString(root->args);
                 }
+#if 0
                 else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && mnd==rnd)
                 {
                   warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
                 }
+#endif
+                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
                 md->addSectionsToDefinition(root->anchors);
 
@@ -4648,6 +4675,8 @@ static void addMemberDocs(EntryNav *rootNav,
     //printf("Adding docs md->docs=`%s' root->docs=`%s'!\n",
     //     md->documentation().data(),root->doc.data());
     // documentation outside a compound overrides the documentation inside it
+
+#if 0
     if ( /* !md->isStatic() && !root->stat &&   do not replace doc of a static */
         (
          md->documentation().isEmpty() ||    /* no docs yet */
@@ -4656,6 +4685,7 @@ static void addMemberDocs(EntryNav *rootNav,
          )
         ) && !root->doc.isEmpty() 
        )
+#endif
     {
       //printf("overwrite!\n");
       md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -4666,12 +4696,14 @@ static void addMemberDocs(EntryNav *rootNav,
     //     md->briefDescription().data(),root->brief.data());
     // brief descriptions inside a compound override the documentation 
     // outside it
+#if 0
     if ( /* !md->isStatic() && !root->stat &&  do not replace doc of static */
         ( 
          md->briefDescription().isEmpty() ||  /* no docs yet */
          !rootNav->parent()->name().isEmpty()         /* member of a class */
         ) && !root->brief.isEmpty()
        )
+#endif
     {
       //printf("overwrite!\n");
       md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -5715,6 +5747,7 @@ static void findMember(EntryNav *rootNav,
           //    root->argList ? (int)root->argList->count() : -1);
 
           // new related (member) function
+#if 0 // removed as it doesn't handle related template functions correctly
           ArgumentList *tArgList = 
             getTemplateArgumentsFromName(scopeName+"::"+funcName,root->tArgLists);
           MemberDef *md=new MemberDef(
@@ -5722,7 +5755,37 @@ static void findMember(EntryNav *rootNav,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,root->stat,TRUE,
               mtype,tArgList,funcArgs.isEmpty() ? 0 : root->argList);
+#endif
+          // first note that we pass:
+          //   (root->tArgLists ? root->tArgLists->last() : 0)
+          // for the template arguments fo the new "member."
+          // this accurately reflects the template arguments of
+          // the related function, which don't have to do with
+          // those of the related class.
+          MemberDef *md=new MemberDef(
+              root->fileName,root->startLine,
+              funcType,funcName,funcArgs,exceptions,
+              root->protection,root->virt,root->stat,TRUE,
+              mtype,
+              (root->tArgLists ? root->tArgLists->last() : 0),
+              funcArgs.isEmpty() ? 0 : root->argList);
+          // 
+          // we still have the problem that
+          // MemberDef::writeDocumentation() in memberdef.cpp
+          // writes the template argument list for the class,
+          // as if this member is a member of the class.
+          // fortunately, MemberDef::writeDocumentation() has
+          // a special mechanism that allows us to totally
+          // override the set of template argument lists that
+          // are printed.  We use that and set it to the
+          // template argument lists of the related function.
+          //
+          md->setDefinitionTemplateParameterLists(root->tArgLists);
+
           md->setTagInfo(rootNav->tagInfo());
+
+
+
           //printf("Related member name=`%s' decl=`%s' bodyLine=`%d'\n",
           //       funcName.data(),funcDecl.data(),root->bodyLine);
 
@@ -6541,7 +6604,9 @@ static void findEnumDocumentation(EntryNav *rootNav)
             if (cd && cd->name()==className && md->isEnumerate())
             {
               // documentation outside a compound overrides the documentation inside it
+#if 0
               if (!md->documentation() || rootNav->parent()->name().isEmpty()) 
+#endif
               {
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setDocsForDefinition(!root->proto);
@@ -6549,7 +6614,9 @@ static void findEnumDocumentation(EntryNav *rootNav)
 
               // brief descriptions inside a compound override the documentation 
               // outside it
+#if 0
               if (!md->briefDescription() || !rootNav->parent()->name().isEmpty())
+#endif
               {
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }
@@ -7374,12 +7441,16 @@ static void findDefineDocumentation(EntryNav *rootNav)
         {
           if (md->memberType()==MemberDef::Define)
           {
+#if 0
             if (md->documentation().isEmpty())
+#endif
             {
               md->setDocumentation(root->doc,root->docFile,root->docLine);
               md->setDocsForDefinition(!root->proto);
             }
+#if 0
             if (md->briefDescription().isEmpty())
+#endif
             {
               md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
             }
@@ -7416,12 +7487,16 @@ static void findDefineDocumentation(EntryNav *rootNav)
             if (fd && fd->absFilePath()==root->fileName) 
               // doc and define in the same file assume they belong together.
             {
+#if 0
               if (md->documentation().isEmpty())
+#endif
               {
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setDocsForDefinition(!root->proto);
               }
+#if 0
               if (md->briefDescription().isEmpty())
+#endif
               {
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
               }

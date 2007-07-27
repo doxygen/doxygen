@@ -647,6 +647,8 @@ static void readIncludeFile(const char *incName)
                                           tmpString.resize(0); 
 					}
 <GetQuotedString>"\""|"\n" 		{ 
+                                          // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
+                                          tmpString+=" ";
   					  //printf("Quoted String = `%s'\n",tmpString.data());
   					  if (lastState==GetString)
 					  {
@@ -790,6 +792,8 @@ static void substEnvVarsInString(QCString &s)
     s = s.left(i)+env+s.right(s.length()-i-l);
     p=i+env.length(); // next time start at the end of the expanded string
   }
+  s=s.stripWhiteSpace(); // to strip the bogus space that was added when an argument
+                         // has quotes
   //printf("substEnvVarInString(%s) end\n",s.data());
 }
 
@@ -799,7 +803,9 @@ static void substEnvVarsInStrList(QStrList &sl)
   while (s)
   {
     QCString result(s);
+    // an argument with quotes will have an extra space at the end, so wasQuoted will be TRUE.
     bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1);
+    // here we strip the quote again
     substEnvVarsInString(result);
 
     //printf("Result %s was quoted=%d\n",result.data(),wasQuoted);
@@ -1716,6 +1722,14 @@ void Config::create()
 		    "the interface are included in the documentation. \n"
 		    "If set to NO (the default) only methods in the interface are included. \n",
                     FALSE
+                 );
+  cb = addBool(
+                    "EXTRACT_ANON_NSPACES",
+                    "If this flag is set to YES, the members of anonymous namespaces will be extracted \n"
+                    "and appear in the documentation as a namespace called 'anonymous_namespace{file}', \n"
+                    "where file will be replaced with the base name of the file that contains the anonymous \n"
+                    "namespace. By default anonymous namespace are hidden. \n",
+                   FALSE 
                  );
   cb = addBool(
                     "HIDE_UNDOC_MEMBERS",

@@ -222,7 +222,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     ltype = ltype.right(ltype.length()-6);
   }
   if (ltype.isEmpty() || lname.isEmpty()) return;
-  DBG_CTX((stderr,"** addVariable trying: type=%s name=%s g_currentDefinition=%s\n",
+  DBG_CTX((stderr,"** addVariable trying: type='%s' name='%s' g_currentDefinition=%s\n",
 	ltype.data(),lname.data(),g_currentDefinition?g_currentDefinition->name().data():"<none>"));
   Scope *scope = m_scopes.count()==0 ? &m_globalScope : m_scopes.getLast();
   ClassDef *varType;
@@ -232,7 +232,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
       (varType=getResolvedClass(g_currentDefinition,g_sourceFileDef,ltype)) // look for global class definitions
      ) 
   {
-    DBG_CTX((stderr,"** addVariable type=%s name=%s\n",ltype.data(),lname.data()));
+    DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",ltype.data(),lname.data()));
     scope->append(lname,varType); // add it to a list
   }
   else if ((i=ltype.find('<'))!=-1)
@@ -253,7 +253,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
     }
     if (newDef)
     {
-      DBG_CTX((stderr,"** addVariable type=%s templ=%s name=%s\n",typeName.data(),templateArgs.data(),lname.data()));
+      DBG_CTX((stderr,"** addVariable type='%s' templ='%s' name='%s'\n",typeName.data(),templateArgs.data(),lname.data()));
       scope->append(lname, newDef);
     }
     else
@@ -268,7 +268,7 @@ void VariableContext::addVariable(const QCString &type,const QCString &name)
                             // is hidden to avoid false links to global variables with the same name
                             // TODO: make this work for namespaces as well!
     {
-      DBG_CTX((stderr,"** addVariable: dummy context\n"));
+      DBG_CTX((stderr,"** addVariable: dummy context for '%s'\n",lname.data()));
       scope->append(lname,dummyContext);
     }
     else
@@ -876,7 +876,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   QCString className=clName;
   if (className.isEmpty()) return;
-  if (g_insideProtocolList)
+  if (g_insideProtocolList) // for Obj-C
   {
     className+="-p";
   }
@@ -919,10 +919,14 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     {
       //printf("non-dummy context lcd=%s!\n",lcd->name().data());
       g_theCallContext.setClass(lcd);
-      if (getLink(g_classScope,clName,ol,clName))
-      {
-	return;
-      }
+
+      // to following is needed for links to a global variable, but is
+      // no good for a link to a local variable that is also a global symbol.
+       
+      //if (getLink(g_classScope,clName,ol,clName))
+      //{
+	//return;
+      //}
     }
     isLocal=TRUE;
     //fprintf(stderr,"is a local variable cd=%p!\n",cd);
@@ -1750,6 +1754,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    if (!g_curClassName.isEmpty()) // valid class name
 					    {
 					      pushScope(g_curClassName);
+                                              DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
   					      g_scopeStack.push(SCOPEBLOCK);
 					    }
 					  }
@@ -1859,6 +1864,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <Body,FuncCall>"{"			{ 
                                           g_theVarContext.pushScope();
 
+                                          DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
   					  g_scopeStack.push(INNERBLOCK);
 
   					  if (g_searchingForBody)
@@ -1874,11 +1880,15 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
   					  g_type.resize(0); 
 					  g_name.resize(0);
+					  BEGIN( Body );
 					}
 <Body,MemberCall,MemberCall2>"}"	{ 
                                           g_theVarContext.popScope();
+  					  g_type.resize(0); 
+					  g_name.resize(0);
 
 					  int *scope = g_scopeStack.pop();
+                                          DBG_CTX((stderr,"** scope stack pop SCOPEBLOCK=%d\n",scope==SCOPEBLOCK));
   					  if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
 					  {
 					    popScope();
@@ -1914,6 +1924,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
                                             g_theVarContext.popScope();
 
 					    int *scope = g_scopeStack.pop();
+                                            DBG_CTX((stderr,"** scope stack pop SCOPEBLOCK=%d\n",scope==SCOPEBLOCK));
   					    if (scope==SCOPEBLOCK || scope==CLASSBLOCK) 
 					    {
 					      popScope();
@@ -1980,7 +1991,10 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <ClassVar>{ID}				{
   					  g_type = g_curClassName.copy();
 					  g_name = yytext;
-					  g_theVarContext.addVariable(g_type,g_name);
+					  if (g_insideBody)
+					  {
+					    g_theVarContext.addVariable(g_type,g_name);
+					  }
 					  generateClassOrGlobalLink(*g_code,yytext);
   					}
 <ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*":"{B}*	{
@@ -2005,6 +2019,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (g_insideBody) g_bodyCurlyCount++;
 					  if (!g_curClassName.isEmpty()) // valid class name
 					  {
+                                            DBG_CTX((stderr,"** scope stack push CLASSBLOCK\n"));
   					    g_scopeStack.push(CLASSBLOCK);
 					    pushScope(g_curClassName);
 					    //fprintf(stderr,"***** g_curClassName=%s\n",g_curClassName.data());
@@ -2032,6 +2047,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
 					  else // not a class name -> assume inner block
 					  {
+                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
   					    g_scopeStack.push(INNERBLOCK);
 					  }
 					  g_curClassName.resize(0);
@@ -2185,6 +2201,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (*yytext==')')
 					  {
 					    g_theCallContext.popScope();
+					    g_bracketCount--;
 					    BEGIN(FuncCall);
 					  }
   					}
@@ -2440,6 +2457,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    g_saveType = g_type.copy();
 					    if (*yytext!='[' && !g_type.isEmpty()) 
 					    {
+					      //printf("g_scopeStack.bottom()=%p\n",g_scopeStack.bottom());
 					      if (g_scopeStack.top()!=CLASSBLOCK)
 					      {
 						//printf("AddVariable: '%s' '%s' context=%d\n",
@@ -2625,6 +2643,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_parmType.resize(0);g_parmName.resize(0);
 					}
 <MemberCall2,FuncCall>"("		{
+					  g_parmType.resize(0);g_parmName.resize(0);
   					  g_code->codify(yytext);
   					  g_bracketCount++; 
 					  g_theCallContext.pushScope();
@@ -2717,10 +2736,12 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    {
 					      setClassScope(g_realScope);
 					    }
+                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
   					    g_scopeStack.push(SCOPEBLOCK);
 					  }
 					  else
 					  {
+                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
   					    g_scopeStack.push(INNERBLOCK);
 					  }
 					  yytext[yyleng-1]='\0';
@@ -2806,11 +2827,13 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  if (g_insideBody) g_bodyCurlyCount++;
 					  if (g_name.find("::")!=-1) 
 					  {
+                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
   					    g_scopeStack.push(SCOPEBLOCK);
 					    setClassScope(g_realScope);
 					  }
 					  else
 					  {
+                                            DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
   					    g_scopeStack.push(INNERBLOCK);
 					  }
   					  g_type.resize(0); g_name.resize(0);
