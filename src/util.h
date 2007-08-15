@@ -234,7 +234,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 
 QCString stripScope(const char *name);
 
-QCString convertToHtml(const char *s);
+QCString convertToHtml(const char *s,bool keepEntities=TRUE);
 
 QCString convertToXML(const char *s);
 

@@ -57,6 +57,12 @@ sub GenerateDep {
 #$ GenerateDep("pycode.cpp","pycode.l");
 	$(LEX) -PpycodeYY -t pycode.l | $(INCBUFSIZE) >pycode.cpp
 
+#$ GenerateDep("fortranscanner.cpp","fortranscanner.l");
+	$(LEX) -i -PfscanYY -t fortranscanner.l | $(INCBUFSIZE) >fortranscanner.cpp
+
+#$ GenerateDep("fortrancode.cpp","fortrancode.l");
+	$(LEX) -i -PfcodeYY -t fortrancode.l | $(INCBUFSIZE) >fortrancode.cpp
+
 #$ GenerateDep("pre.cpp","pre.l");
 	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
 

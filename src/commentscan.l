@@ -354,6 +354,7 @@ static OutputContext    inContext;           // are we inside the brief, details
 static bool             briefEndsAtDot;      // does the brief description stop at a dot?
 static QCString         formulaText;         // Running text of a formula
 static QCString         formulaEnv;          // environment name
+static int              formulaNewLines;     // amount of new lines in the formula
 static QCString        *pOutputString;       // pointer to string to which the output is appended.
 static QCString         outputXRef;          // temp argument of todo/test/../xrefitem commands
 static QCString         blockName;           // preformatted block name (e.g. verbatim, latexonly,...)
@@ -566,6 +567,8 @@ static QCString addFormula()
   {
     formLabel.sprintf("\\form#%d",f->getId());
   }
+  int i;
+  for (i=0;i<formulaNewLines;i++) formLabel+='\n';
   return formLabel;
 }
 
@@ -955,14 +958,17 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
 					  formulaText="\\begin";
 					  formulaEnv=&yytext[2];
 					  formulaText+=formulaEnv;
+					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
   					}
 <Comment>{CMD}"f$"			{ // start of a inline formula
 					  formulaText="$";
+					  formulaNewLines=0;
 					  BEGIN(ReadFormulaShort);
   					}
 <Comment>{CMD}"f["			{ // start of a block formula
 					  formulaText="\\[";
+					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
   					}
 <Comment>{CMD}"{"                       { // begin of a group
@@ -1056,6 +1062,7 @@ MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]
                                           formulaText+=yytext; 
  					} 
 <ReadFormulaLong,ReadFormulaShort>\n	{ // new line
+                                          formulaNewLines++;
                                           formulaText+=*yytext; 
 					  yyLineNr++; 
 					}

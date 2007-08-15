@@ -23,6 +23,7 @@
 
 class ArgumentList;
 
-extern void stringToArgumentList(const char *argsString,ArgumentList* &argList);
+extern void stringToArgumentList(const char *argsString,ArgumentList* &argList,
+                                 QCString *extraTypeChars=0);
 
 #endif

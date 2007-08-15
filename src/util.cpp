@@ -690,17 +690,20 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
   int l;
   Definition *current=start;
   ps=0;
+  //printf("followPath: start='%s' path='%s'\n",start?start->name().data():"<none>",path.data());
   // for each part of the explicit scope
   while ((is=getScopeFragment(path,ps,&l))!=-1)
   {
     // try to resolve the part if it is a typedef
     MemberDef *typeDef=0;
     QCString qualScopePart = substTypedef(current,fileScope,path.mid(is,l),&typeDef);
+    //printf("      qualScopePart=%s\n",qualScopePart.data());
     if (typeDef)
     {
       ClassDef *type = newResolveTypedef(fileScope,typeDef);
       if (type)
       {
+        //printf("Found type %s\n",type->name().data());
         return type;
       }
     }
@@ -714,14 +717,15 @@ static Definition *followPath(Definition *start,FileDef *fileScope,const QCStrin
       //printf("==> next==0!\n");
       if (current->definitionType()==Definition::TypeNamespace)
       {
-        current = endOfPathIsUsedClass(
+        next = endOfPathIsUsedClass(
             ((NamespaceDef *)current)->getUsedClasses(),qualScopePart);
       }
       else if (current->definitionType()==Definition::TypeFile)
       {
-        current = endOfPathIsUsedClass(
+        next = endOfPathIsUsedClass(
             ((FileDef *)current)->getUsedClasses(),qualScopePart);
       }
+      current = next;
       if (current==0) break;
     }
     else // continue to follow scope
@@ -875,7 +879,7 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
     // repeat for the parent scope
     i=isAccessibleFrom(scope->getOuterScope(),fileScope,item);
     //printf("> result=%d\n",i);
-    result= (i==-1) ? -1 : i+1;
+    result= (i==-1) ? -1 : i+2;
   }
 done:
   visitedDict.remove(key);
@@ -914,7 +918,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   if (visitedDict.find(key)) return -1; // already looked at this
   visitedDict.insert(key,(void *)0x8);
 
-  //printf("<isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
+  //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
   //                                      item?item->name().data():"<none>",
   //                                      explicitScopePart.data());
   int result=0; // assume we found it
@@ -922,12 +926,12 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
     Definition *itemScope = item->getOuterScope();
-    //printf("scope traversal successful %s<->%s!\n",item->getOuterScope()->name().data(),newScope->name().data());
-    if (newScope && newScope->definitionType()==Definition::TypeClass)
-    {
-      //ClassDef *cd = (ClassDef *)newScope;
-      //printf("---> Class %s: bases=%p\n",cd->name().data(),cd->baseClasses());
-    }
+    //printf("    scope traversal successful %s<->%s!\n",item->getOuterScope()->name().data(),newScope->name().data());
+    //if (newScope && newScope->definitionType()==Definition::TypeClass)
+    //{
+    //  ClassDef *cd = (ClassDef *)newScope;
+    //  printf("---> Class %s: bases=%p\n",cd->name().data(),cd->baseClasses());
+    //}
     if (itemScope==newScope)  // exact match of scopes => distance==0
     {
       //printf("> found it\n");
@@ -941,9 +945,14 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
       // inheritance is also ok. Example: looking for B::I, where 
       // class A { public: class I {} };
       // class B : public A {}
+      // but looking for B::I, where
+      // class A { public: class I {} };
+      // class B { public: class I {} };
+      // will find A::I, so we still prefer a direct match and give this one a distance of 1
+      result=1;
 
-      //printf("outerScope(%s) is base class of newScope(%s)\n",
-      //    outerScope->name().data(),newScope->name().data());
+      //printf("scope(%s) is base class of newScope(%s)\n",
+      //    scope->name().data(),newScope->name().data());
     }
     else 
     {
@@ -998,7 +1007,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
             item,explicitScopePart);
       }
       //printf("> result=%d\n",i);
-      result = (i==-1) ? -1 : i+1;
+      result = (i==-1) ? -1 : i+2;
     }
   }
   else // failed to resolve explicitScope
@@ -1033,11 +1042,11 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
       int i=isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
           item,explicitScopePart);
       //printf("> result=%d\n",i);
-      result= (i==-1) ? -1 : i+1;
+      result= (i==-1) ? -1 : i+2;
     }
   }
 done:
-  //printf("> result=%d\n",result);
+  //printf("  > result=%d\n",result);
   visitedDict.remove(key);
   //Doxygen::lookupCache.insert(key,new int(result));
   return result;
@@ -1060,7 +1069,7 @@ static void getResolvedSymbol(Definition *scope,
                        QCString &bestResolvedType
                       )
 {
-  //printf("  found type %x name=%s d=%p\n",
+  //printf("  => found type %x name=%s d=%p\n",
   //       d->definitionType(),d->name().data(),d);
 
   // only look at classes and members that are enums or typedefs
@@ -1159,6 +1168,13 @@ static void getResolvedSymbol(Definition *scope,
                 bestTypedef = enumType;
                 bestTemplSpec = "";
                 bestResolvedType = enumType->qualifiedName();
+              }
+              else if (md->isReference()) // external reference
+              {
+                bestMatch = 0;
+                bestTypedef = md;
+                bestTemplSpec = spec;
+                bestResolvedType = type;
               }
               else
               {
@@ -1285,6 +1301,9 @@ ClassDef *getResolvedClassRec(Definition *scope,
   //printf("Searching for %s result=%p\n",key.data(),pval);
   if (pval)
   {
+    //printf("LookupInfo %p %p '%s' %p\n", 
+    //    pval->classDef, pval->typeDef, pval->templSpec.data(), 
+    //    pval->resolvedType.data()); 
     if (pTemplSpec)    *pTemplSpec=pval->templSpec;
     if (pTypeDef)      *pTypeDef=pval->typeDef;
     if (pResolvedType) *pResolvedType=pval->resolvedType;
@@ -1662,10 +1681,12 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       MemberDef    *md=0;
       NamespaceDef *nd=0;
       GroupDef     *gd=0;
+      //printf("** Match word '%s'\n",matchWord.data());
 
       MemberDef *typeDef=0;
       if ((cd=getResolvedClass(scope,fileScope,matchWord,&typeDef))) 
       {
+        //printf("Found class %s\n",cd->name().data());
         // add link to the result
         if (external ? cd->isLinkable() : cd->isLinkableInProject())
         {
@@ -1675,6 +1696,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       }
       else if (typeDef)
       {
+        //printf("Found typedef %s\n",typeDef->name().data());
         if (external ? typeDef->isLinkable() : typeDef->isLinkableInProject())
         {
           out.writeLink(typeDef->getReference(),
@@ -1692,6 +1714,10 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
           out.writeLink(cd->getReference(),cd->getOutputFileBase(),0,word);
           found=TRUE;
         }
+      }
+      else
+      {
+        //printf("   -> nothing\n");
       }
 
       QCString scopeName;
@@ -1714,14 +1740,11 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
          )
       {
         //printf("Found ref scope=%s\n",d?d->name().data():"<global>");
-        if ((external ? md->isLinkable() : md->isLinkableInProject()))
-        {
-          //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
-          //                       md->anchor(),word);
-          out.writeLink(md->getReference(),md->getOutputFileBase(),
-              md->anchor(),word);
-          found=TRUE;
-        }
+        //ol.writeObjectLink(d->getReference(),d->getOutputFileBase(),
+        //                       md->anchor(),word);
+        out.writeLink(md->getReference(),md->getOutputFileBase(),
+            md->anchor(),word);
+        found=TRUE;
       }
     }
 
@@ -4854,7 +4877,7 @@ QCString convertToXML(const char *s)
 }
 
 /*! Converts a string to a HTML-encoded string */
-QCString convertToHtml(const char *s)
+QCString convertToHtml(const char *s,bool keepEntities)
 {
   QCString result;
   if (s==0) return result;
@@ -4866,7 +4889,30 @@ QCString convertToHtml(const char *s)
     {
       case '<':  result+="&lt;";   break;
       case '>':  result+="&gt;";   break;
-      case '&':  result+="&amp;";  break;
+      case '&':  if (keepEntities)
+                 {
+                   const char *e=p;
+                   char ce;
+                   while ((ce=*e++))
+                   {
+                     if (ce==';' || (!(isId(ce) || ce=='#'))) break;
+                   }
+                   if (ce==';') // found end of an entity
+                   {
+                     // copy entry verbatim
+                     result+=c;
+                     while (p<e) result+=*p++;
+                   }
+                   else
+                   {
+                     result+="&amp;";
+                   }
+                 }
+                 else
+                 {
+                   result+="&amp;";  
+                 }
+                 break;
       case '\'': result+="&#39;"; break; 
       case '"':  result+="&quot;"; break;
       default:   result+=c;        break;
@@ -6193,27 +6239,28 @@ QCString expandAliasRec(const QCString s)
 static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
                                      const QCString &paramValue)
 {
-  QCString result = aliasValue;
+  QCString result;
   QCString paramMarker;
   paramMarker.sprintf("\\%d",paramNum);
   int markerLen = paramMarker.length();
   int p=0,i;
   while ((i=aliasValue.find(paramMarker,p))!=-1) // search for marker
   {
+    result+=aliasValue.mid(p,i-p);
     //printf("Found marker '%s' at %d len=%d for param '%s' in '%s'\n",
     //                 paramMarker.data(),i,markerLen,paramValue.data(),aliasValue.data());
     if (i==0 || aliasValue.at(i-1)!='\\') // found unescaped marker
     {
-      QCString before = result.left(i);
-      QCString after  = result.mid(i+markerLen);
-      result = before + paramValue + after;
-      p=i+paramValue.length();
+      result += paramValue;
+      p=i+markerLen;
     }
     else // ignore escaped markers
     {
+      result += aliasValue.mid(i,markerLen);
       p=i+1;
     }
   }
+  result+=aliasValue.right(aliasValue.length()-p);
   result = expandAliasRec(substitute(result,"\\,",","));
   //printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
   //    aliasValue.data(),paramNum,paramValue.data(),result.data());

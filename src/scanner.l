@@ -666,6 +666,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x      MemberSpecSkip
 %x	EndTemplate
 %x	FuncPtr
+%x	FuncPtrOperator
 %x	EndFuncPtr
 %x	ReadFuncArgType
 %x	ReadTempArgs
@@ -686,6 +687,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	FuncFunc
 %x	FuncFuncEnd
 %x	FuncFuncType
+%x	FuncFuncArray
 %x      CopyArgString
 %x      CopyArgPHPString
 %x	CopyArgRound
@@ -1866,6 +1868,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             }
 					  }
 					}
+<FindMembers>[0-9]{ID}			{ // some number where we did not expect one
+  					}
 <FindMembers>"."			{
   					  if (insideJava || insideCS || insideD)
 					  {
@@ -2691,14 +2695,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <IDLProp>.				{
  					}
-<Array>"]"				{ current->args += *yytext ;
+<Array>"]"		                { current->args += *yytext ;
 					  if (--squareCount<=0)
 	                                     BEGIN( FindMembers ) ;
 					}
-<Array>"["				{ current->args += *yytext ;
+<FuncFuncArray>"]"		        { current->args += *yytext ;
+					  if (--squareCount<=0)
+	                                     BEGIN( Function ) ;
+					}
+<Array,FuncFuncArray>"["		{ current->args += *yytext ;
 					  squareCount++;	
 					}
-<Array>.				{ current->args += *yytext ; }
+<Array,FuncFuncArray>.			{ current->args += *yytext ; }
 <SkipSquare>"["				{ squareCount++; }
 <SkipSquare>"]"				{
   					  if (--squareCount<=0)
@@ -3155,7 +3163,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 
 <FindMembers>"("/{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
-<FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*"*"{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) */
+<FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*[*&]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[] */
   					  current->bodyLine = yyLineNr;
   					  lineCount();
   					  addType(current);
@@ -3166,17 +3174,40 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <FuncPtr>{SCOPENAME}			{
   					  current->name = yytext;
-					  if (current->name=="const" || current->name=="volatile")
+					  if (nameIsOperator(current->name))
 					  {
-					    funcPtrType += current->name;
+					    BEGIN( FuncPtrOperator );
 					  }
 					  else
 					  {
-					    BEGIN( EndFuncPtr );
+					    if (current->name=="const" || current->name=="volatile")
+					    {
+					      funcPtrType += current->name;
+					    }
+					    else
+					    {
+					      BEGIN( EndFuncPtr );
+					    }
 					  }
   					}
 <FuncPtr>.				{
   					  //printf("Error: FuncPtr `%c' unexpected at line %d of %s\n",*yytext,yyLineNr,yyFileName);
+  					}
+<FuncPtrOperator>"("{BN}*")"{BN}*/"("	{
+  					  current->name += yytext;
+					  current->name = current->name.simplifyWhiteSpace();
+					  lineCount();
+  					}
+<FuncPtrOperator>\n			{
+                                          yyLineNr++;
+  					  current->name += *yytext;
+  					}
+<FuncPtrOperator>"("			{
+  					  unput(*yytext);
+					  BEGIN( EndFuncPtr );
+                                        }
+<FuncPtrOperator>.			{
+  					  current->name += *yytext;
   					}
 <EndFuncPtr>")"{BN}*/";"		{ // a variable with extra braces
  					  lineCount();
@@ -3194,10 +3225,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->args += ")";
 					  BEGIN(FindMembers);
   					}
-<EndFuncPtr>"("				{ // a function returning a function
+<EndFuncPtr>"("				{ // a function returning a function or 
+                                          // a function returning a pointer to an array
   					  current->args += *yytext ;
-					  roundCount=0;
-					  BEGIN( FuncFunc );
+					  //roundCount=0;
+					  //BEGIN( FuncFunc );
+					  current->bodyLine = yyLineNr;
+					  currentArgumentContext = FuncFuncEnd;
+					  fullArgString=current->args.copy();
+					  copyArgString=&current->args;
+					  BEGIN( ReadFuncArgType ) ;
   					}
 <EndFuncPtr>"["[^\n\]]*"]"		{
   					  funcPtrType+=yytext;
@@ -3227,6 +3264,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  lineCount();
 					  current->type+=funcPtrType.data()+1;
   					  BEGIN(Function);
+  					}
+<FuncFuncEnd>")"{BN}*/"["		{ // function returning a pointer to an array
+                                          lineCount();
+					  current->type+=funcPtrType;
+					  current->args+=")";
+					  BEGIN(FuncFuncArray);
   					}
 <FuncFuncEnd>.				{
   					  current->args += *yytext;
@@ -3827,31 +3870,27 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					                // was: current->args.simplifyWhiteSpace();
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
+					  static QRegExp re("([^)]*\\[*&][^)]*)"); // (...*...)
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
 					    QCString tempName;
-					    static QRegExp re("operator[^a-z_A-Z0-9]");
 					    if (tempArg==-1) tempName=current->name; else tempName=current->name.left(tempArg);
-					    if (/*(current->type.isEmpty() && tempName.find(re)==-1) || */
-						 current->type.left(8)=="typedef "
-					       )
+					    if (current->type.isEmpty() &&
+						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
-					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n",
-					      //   current->type.data(),current->name.data(),current->args.data());
+					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
 					      current->section = Entry::VARIABLE_SEC ;
 					    }
 					    else	      
 					    {
-					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n",
-					      //   current->type.data(),current->name.data(),current->args.data());
+					      //printf("Scanner.l: found in class function: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
 					      current->section = Entry::FUNCTION_SEC ;
 			                      current->proto = *yytext==';';
 					    }
 					  }
 					  else // a global function prototype or function variable
 					  {
-					    static QRegExp re("([^)]*\\*[^)]*)"); // (...*...)
 					    //printf("Scanner.l: prototype? type=`%s' name=`%s' args=`%s'\n",current->type.data(),current->name.data(),current->args.data());
 					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
@@ -4975,14 +5014,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <Prototype>"operator"{B}*"("{B}*")"	{
   					  current->name+=yytext;
   					}
-<Prototype>"("			{
+<Prototype>"("			       {
   					  current->args+=*yytext;
 					  currentArgumentContext = PrototypeQual;
 					  fullArgString = current->args.copy();
 					  copyArgString = &current->args;
 					  BEGIN( ReadFuncArgType ) ;
   					}
-<Prototype>"("({ID}"::")*({B}*"*")+	{
+<Prototype>"("({ID}"::")*({B}*[&*])+	{
   					  current->type+=current->name+yytext;
 					  current->name.resize(0);
   					  BEGIN( PrototypePtr );
@@ -4990,9 +5029,19 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <PrototypePtr>{SCOPENAME}		{
   					  current->name+=yytext;
   					}
+<PrototypePtr>"("			{
+  					  current->args+=*yytext;
+					  currentArgumentContext = PrototypeQual;
+					  fullArgString = current->args.copy();
+					  copyArgString = &current->args;
+					  BEGIN( ReadFuncArgType ) ;
+  					}
 <PrototypePtr>")"			{
   					  current->type+=')';
   					  BEGIN( Prototype );
+  					}
+<PrototypePtr>.				{
+  					  current->name+=yytext;
   					}
 <PrototypeQual>"{"			{
   					  BEGIN( PrototypeSkipLine);
@@ -5010,7 +5059,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->virt = Pure; 
 					  current->argList->pureSpecifier=TRUE;
 					}
-<PrototypeQual>"throw"{B}*"("	{
+<PrototypeQual>"throw"{B}*"("	        {
   					  current->exception = "throw(";
 					  BEGIN(PrototypeExc);
   					}
@@ -5018,10 +5067,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->exception += ')';
 					  BEGIN(PrototypeQual);
   					}
-<PrototypeExc>.			{
+<PrototypeExc>.			        {
   					  current->exception += *yytext;
   					}
-<Prototype,PrototypeQual>.	{
+<PrototypeQual>.			{
+  					  current->args += *yytext;
+  					}
+<Prototype>.	                        {
   					  current->name += *yytext;
   					}
 <PrototypeSkipLine>.			{

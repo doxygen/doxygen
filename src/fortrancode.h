@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2006 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,21 +15,21 @@
  *
  */
 
-#ifndef PRE_H
-#define PRE_H
+#ifndef CODE_H
+#define CODE_H
 
 #include "qtbc.h"
 #include <stdio.h>
-//#include <qfile.h>
-#include "define.h"
 
-class BufStr;
+class CodeOutputInterface;
+class FileDef;
+class MemberDef;
 
-DefineDict* getFileDefineDict();
-void initPreprocessor();
-void cleanUpPreprocessor();
-void addSearchDir(const char *dir);
-void preprocessFile(const char *fileName,BufStr &output);
-void preFreeScanner();
+void parseFortranCode(CodeOutputInterface &,const char *,const QCString &, 
+            bool ,const char *,FileDef *fd=0,
+            int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
+            MemberDef *memberDef=0);
+void resetFortranCodeParserState();
+void codeFreeScanner();
 
 #endif

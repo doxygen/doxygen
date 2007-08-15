@@ -71,6 +71,7 @@ static QCString		g_curArgName;
 static QCString		g_curArgDocs;
 static QCString		g_curArgAttrib;
 static QCString		g_curArgArray;
+static QCString		g_extraTypeChars;
 static int              g_argRoundCount;
 static int              g_argSharpCount;
 static int              g_argCurlyCount;
@@ -359,6 +360,10 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <FuncQual>"="{B}*"0"		  	{ 
 					  g_argList->pureSpecifier=TRUE;
 					}
+<FuncQual>")"{B}*"["[^]]*"]"		{ // for functions returning a pointer to an array, 
+                                          // i.e. ")[]" in "int (*f(int))[4]" with argsString="(int))[4]"
+  					  g_extraTypeChars=yytext;
+  					}
 <ReadDocBlock>[^\*\n]+			{
   					  g_curArgDocs+=yytext;
   					}
@@ -402,7 +407,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
  *  \param al a reference to resulting argument list pointer.
  */
  
-void stringToArgumentList(const char *argsString,ArgumentList* &al)
+void stringToArgumentList(const char *argsString,ArgumentList* &al,QCString *extraTypeChars)
 {
   if (al==0) return; 
   if (argsString==0) return;
@@ -411,6 +416,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
   g_curArgDocs.resize(0);
   g_curArgAttrib.resize(0);
   g_curArgArray.resize(0);
+  g_extraTypeChars.resize(0);
   g_argRoundCount = 0;
   g_argSharpCount = 0;
   g_argCurlyCount = 0;
@@ -425,6 +431,7 @@ void stringToArgumentList(const char *argsString,ArgumentList* &al)
   defargsYYrestart( defargsYYin );
   BEGIN( Start );
   defargsYYlex();
+  if (extraTypeChars) *extraTypeChars=g_extraTypeChars;
   //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
 }
 

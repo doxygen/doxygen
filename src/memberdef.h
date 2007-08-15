@@ -89,6 +89,7 @@ class MemberDef : public Definition
     const char *argsString() const;
     const char *excpString() const;
     const char *bitfieldString() const;
+    const char *extraTypeChars() const;
     const QCString &initializer() const;
     int initializerLines() const;
     int  getMemberSpecifiers() const;

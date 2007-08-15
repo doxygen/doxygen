@@ -1170,6 +1170,8 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
 
+  msg("Generating XML output for class %s\n",cd->name().data());
+
   ti << "  <compound refid=\"" << cd->getOutputFileBase() 
      << "\" kind=\"" << cd->compoundTypeString()
      << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
@@ -1886,7 +1888,6 @@ void generateXML()
     ClassDef *cd;
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      msg("Generating XML output for class %s\n",cd->name().data());
       generateXMLForClass(cd,t);
     }
   }

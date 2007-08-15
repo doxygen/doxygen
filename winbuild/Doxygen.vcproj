@@ -1505,6 +1505,30 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\fortrancode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortrancode.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\pyscanner.cpp"
 				>
 			</File>
@@ -1525,6 +1549,30 @@
 					<Tool
 						Name="Lex"
 						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2096,7 +2144,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\fortrancode.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\pyscanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.h"
 				>
 			</File>
 			<File

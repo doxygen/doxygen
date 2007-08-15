@@ -53,10 +53,12 @@
 //}
 
 
-static QCString escapeLabelName(const char *s)
+static QCString escapeLabelName(LatexGenerator *g,const char *s)
 {
   QCString result;
   const char *p=s;
+  char str[2];
+  str[1]=0;
   char c;
   while ((c=*p++))
   {
@@ -65,7 +67,7 @@ static QCString escapeLabelName(const char *s)
       case '%': result+="\\%"; break;
       case '|': result+="\\tt{\"|}"; break;
       case '!': result+="\"!"; break;
-      default: result+=c;
+      default:  str[0]=c; g->docify(str); break;
     }
   }
   return result;
@@ -1069,7 +1071,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   if (name)
   {
     t << "\\label{" << fileName << "}\\index{" 
-      << name << "@{";
+      << escapeLabelName(this,name) << "@{";
     escapeMakeIndexChars(this,t,name);
     t << "}}" << endl;
   }
@@ -1139,15 +1141,15 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\index{";
     if (clname)
     {
-      t << clname << "@{";
-      docify(clname);
+      t << escapeLabelName(this,clname) << "@{";
+      escapeMakeIndexChars(this,t,clname);
       t << "}!";
     }
-    t << escapeLabelName(memname) << "@{";
+    t << escapeLabelName(this,memname) << "@{";
     escapeMakeIndexChars(this,t,memname);
     t << "}}" << endl;
 
-    t << "\\index{" << escapeLabelName(memname) << "@{";
+    t << "\\index{" << escapeLabelName(this,memname) << "@{";
     escapeMakeIndexChars(this,t,memname);
     t << "}";
     if (clname)
@@ -1221,12 +1223,12 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 {
   if (s1)
   {
-    t << "\\index{" << escapeLabelName(s1) << "@{";
+    t << "\\index{" << escapeLabelName(this,s1) << "@{";
     escapeMakeIndexChars(this,t,s1);
     t << "}";
     if (s2)
     {
-      t << "!" << escapeLabelName(s2) << "@{";
+      t << "!" << escapeLabelName(this,s2) << "@{";
       escapeMakeIndexChars(this,t,s2);
       t << "}";
     }
@@ -1356,9 +1358,9 @@ void LatexGenerator::startAnonTypeScope(int indent)
   {
     t << "\\begin{tabbing}" << endl;
     t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill" << endl;
-    //printf("LatexGenerator::startMemberItem() insideTabbing=TRUE\n");
     insideTabbing=TRUE;
   }
+  m_indent=indent;
 }
 
 void LatexGenerator::endAnonTypeScope(int indent)
@@ -1368,6 +1370,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
     t << endl << "\\end{tabbing}";
     insideTabbing=FALSE;
   }
+  m_indent=indent;
 }
 
 void LatexGenerator::startMemberTemplateParams()
@@ -1401,7 +1404,7 @@ void LatexGenerator::endMemberItem()
   if (insideTabbing)
   {
     t << "\\\\";
- } 
+  } 
   templateMemberItem = FALSE;
   t << endl; 
 }
@@ -1414,7 +1417,7 @@ void LatexGenerator::startMemberDescription()
   }
   else
   {
-    for (int i=0;i<m_indent+1;i++) t << "\\>";
+    for (int i=0;i<m_indent+2;i++) t << "\\>";
     t << "{\\em ";
   }
 }
@@ -1427,18 +1430,17 @@ void LatexGenerator::endMemberDescription()
   }
   else
   {
-    t << "}\\\\";
-    m_indent=0;
+    t << "}\\\\\n";
   }
 }
 
 
 void LatexGenerator::writeNonBreakableSpace(int) 
 {
+  //printf("writeNonBreakbleSpace()\n");
   if (insideTabbing)
   {
     t << "\\>";
-    m_indent++;
   }
   else
     t << "~"; 

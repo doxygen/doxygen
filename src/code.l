@@ -2607,8 +2607,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_code->codify(yytext);
 					}
 <MemberCall2,FuncCall>{KEYWORD}/([^a-z_A-Z0-9]) {
-					  addParmType();
-					  g_parmName=yytext; 
+					  //addParmType();
+					  //g_parmName=yytext; 
   					  startFontClass("keyword");
   					  g_code->codify(yytext);
 					  endFontClass();

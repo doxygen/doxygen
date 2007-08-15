@@ -2709,6 +2709,7 @@ void ClassDef::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pri,co
 
 void ClassDef::addInnerCompound(Definition *d)
 {
+  //printf("**** %s::addInnerCompound(%s)\n",name().data(),d->name().data());
   if (d->definitionType()==Definition::TypeClass) // only classes can be
                                                   // nested in classes.
   {

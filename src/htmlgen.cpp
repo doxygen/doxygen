@@ -930,6 +930,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
                                   const char *tooltip)
 {
   QCString *dest;
+  //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
   if (ref) 
   {
     t << "<a class=\"codeRef\" ";

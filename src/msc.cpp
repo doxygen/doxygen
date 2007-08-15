@@ -148,7 +148,7 @@ QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
   QDir::setCurrent(outDir);
   //printf("Going to dir %s\n",QDir::currentDirPath().data());
 
-  QCString mscExe = "mscgen";
+  QCString mscExe = Config_getString("MSCGEN_PATH")+"mscgen"+portable_commandExtension();
   QCString mscArgs = "-T ismap -i \"";
   mscArgs+=inFile + ".msc\" -o \"";
   mscArgs+=outFile + "\"";

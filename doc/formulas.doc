@@ -95,9 +95,9 @@ valid commands in \f$\mbox{\LaTeX}\f$'s math-mode. For the third command
 the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 
-from typos in formulas. It may have to be necessary to remove the
+from typos in formulas. It may be necessary to remove the
 file <code>formula.repository</code> that is written to the html directory to 
-a rid of an incorrect formula
+get rid of an incorrect formula.
 
 \htmlonly
 Go to the <a href="diagrams.html">next</a> section or return to the
