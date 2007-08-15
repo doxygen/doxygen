@@ -321,11 +321,12 @@ FUNCARG   "("{FUNCCHAR}*")"({BLANK}*("volatile"|"const"))?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"
-OPCAST    {BLANK}+[^(\r\n.,]+
-OPMASK    ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
+OPCAST    {BLANK}+[^<(\r\n.,][^(\r\n.,]*
+OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
+OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
-LNKWORD2  {SCOPEPRE}*"operator"{OPMASK}
+LNKWORD2  ({SCOPEPRE}*"operator"{OPMASK})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
 CHARWORD  [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,.]
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]

@@ -79,7 +79,7 @@ void PageDef::writeDocumentation(OutputList &ol)
       (si=Doxygen::sectionDict.find(pageName))!=0)
   {
     ol.startSection(si->label,si->title,si->type);
-    ol.docify(si->title);
+    ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE);
     stringToSearchIndex(getOutputFileBase(),
                         theTranslator->trPage(TRUE,TRUE)+" "+si->title,
                         si->title);

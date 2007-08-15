@@ -104,6 +104,9 @@ static QStack<bool>       g_condStack;
 
 static bool               g_lexInit = FALSE;
 
+DefineDict* getFileDefineDict() {
+  return g_fileDefineDict;
+}
 
 static void setFileName(const char *name)
 {

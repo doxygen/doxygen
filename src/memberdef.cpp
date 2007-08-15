@@ -259,6 +259,10 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     ol.endParameterName(TRUE,TRUE,!md->isObjCMethod());
   }
   ol.popGeneratorState();
+  if (md->extraTypeChars())
+  {
+    ol.docify(md->extraTypeChars());
+  }
   if (defArgList->constSpecifier)
   {
     ol.docify(" const");
@@ -334,6 +338,7 @@ class MemberDefImpl
     QCString write;           // property write accessor
     QCString exception;       // exceptions that can be thrown
     QCString initializer;     // initializer
+    QCString extraTypeChars;  // extra type info found after the argument list
     int initLines;            // number of lines in the initializer
 
     int  memSpec;             // The specifiers present for this member
@@ -525,7 +530,7 @@ void MemberDefImpl::init(Definition *def,
   if (!args.isEmpty())
   {
     declArgList = new ArgumentList;
-    stringToArgumentList(args,declArgList);
+    stringToArgumentList(args,declArgList,&extraTypeChars);
     //printf("setDeclArgList %s to %p const=%d\n",args.data(),
     //    declArgList,declArgList->constSpecifier);
   }
@@ -725,6 +730,11 @@ QCString MemberDef::getOutputFileBase() const
 QCString MemberDef::getReference() const
 {
   makeResident();
+  QCString ref = Definition::getReference();
+  if (!ref.isEmpty())
+  {
+    return ref;
+  }
   if (m_impl->templateMaster)
   {
     return m_impl->templateMaster->getReference();
@@ -1406,7 +1416,10 @@ void MemberDef::writeDeclaration(OutputList &ol,
   //printf("endMember %s annoClassDef=%p annEnumType=%p\n",
   //    name().data(),annoClassDef,annEnumType);
   ol.endMemberItem();
-  if (endAnonScopeNeeded) ol.endAnonTypeScope(--s_indentLevel);
+  if (endAnonScopeNeeded) 
+  {
+    ol.endAnonTypeScope(--s_indentLevel);
+  }
 
   // write brief description
   if (!briefDescription().isEmpty() && 
@@ -2872,6 +2885,7 @@ void MemberDef::setTagInfo(TagInfo *ti)
   if (ti)
   {
     makeResident();
+    //printf("%s: Setting tag name=%s anchor=%s\n",name().data(),ti->tagName.data(),ti->anchor.data());
     m_impl->anc=ti->anchor;
     setReference(ti->tagName);
     m_impl->explicitOutputFileBase = stripExtension(ti->fileName);
@@ -2905,7 +2919,13 @@ const char *MemberDef::declaration() const
 const char *MemberDef::definition() const
 { 
   makeResident();
-  return m_impl->def; 
+  return m_impl->def;
+}
+
+const char *MemberDef::extraTypeChars() const
+{
+  makeResident();
+  return m_impl->extraTypeChars;
 }
 
 const char *MemberDef::typeString() const
@@ -3661,6 +3681,7 @@ void MemberDef::flushToDisk() const
   marshalQCString     (Doxygen::symbolStorage,m_impl->write);
   marshalQCString     (Doxygen::symbolStorage,m_impl->exception);
   marshalQCString     (Doxygen::symbolStorage,m_impl->initializer);
+  marshalQCString     (Doxygen::symbolStorage,m_impl->extraTypeChars);
   marshalInt          (Doxygen::symbolStorage,m_impl->initLines);
   marshalInt          (Doxygen::symbolStorage,m_impl->memSpec);
   marshalInt          (Doxygen::symbolStorage,(int)m_impl->mtype);
@@ -3760,6 +3781,7 @@ void MemberDef::loadFromDisk() const
   m_impl->write                   = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->exception               = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->initializer             = unmarshalQCString     (Doxygen::symbolStorage);
+  m_impl->extraTypeChars          = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->initLines               = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->memSpec                 = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->mtype                   = (MemberDef::MemberType)unmarshalInt          (Doxygen::symbolStorage);

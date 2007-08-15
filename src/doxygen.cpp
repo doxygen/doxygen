@@ -68,6 +68,7 @@
 #include "parserintf.h"
 #include "htags.h"
 #include "pyscanner.h"
+#include "fortranscanner.h"
 #include "code.h"
 #include "objcache.h"
 #include "store.h"
@@ -1149,8 +1150,6 @@ static void addClassToContext(EntryNav *rootNav)
   else // new class
   {
     ClassDef::CompoundType sec = convertToCompoundType(root->section,root->spec);
-    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
-        fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
 
     QCString className;
     QCString namespaceName;
@@ -1168,6 +1167,8 @@ static void addClassToContext(EntryNav *rootNav)
     }
     cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
         tagName,refFileName);
+    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d cd=%p\n",
+        fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1,cd);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setIsObjectiveC(root->objc);
@@ -1279,6 +1280,7 @@ static void resolveClassNestingRelations()
     {
       QCString c,n;
       extractNamespaceName(cd->name(),c,n,TRUE);
+      n = stripAnonymousNamespaceScope(n);
       if (cd->name().contains("::")==nestingLevel && !n.isEmpty())
       {
         cd->visited=TRUE;
@@ -1316,14 +1318,15 @@ static void resolveClassNestingRelations()
       if (cd->name().contains("::")==nestingLevel && !cd->visited)
       {
         cd->visited=TRUE;
+        QCString name = stripAnonymousNamespaceScope(cd->name());
         //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
         // also add class to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
-                                                 cd->name(),cd->getFileDef());
+                                                 name,cd->getFileDef());
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
-          Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
+          Definition *d = buildScopeFromQualifiedName(name,name.contains("::"));
           if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                      // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
           {
@@ -1331,7 +1334,7 @@ static void resolveClassNestingRelations()
             cd->setOuterScope(d);
             warn(cd->getDefFileName(),cd->getDefLine(),
                 "Warning: Internal inconsistency: scope for class %s not "
-                "found!",cd->name().data()
+                "found while looking in the global scope!",name.data()
                 );
           }
         }
@@ -2127,8 +2130,10 @@ static MemberDef *addVariableToFile(
       {
         if (md->getFileDef() &&
             ! // not a php array
-             (getLanguageFromFileName(md->getFileDef()->name())==SrcLangExt_PHP) &&
-             (md->argsString()!=root->args && root->args.find('[')!=-1)
+             (
+               (getLanguageFromFileName(md->getFileDef()->name())==SrcLangExt_PHP) &&
+               (md->argsString()!=root->args && root->args.find('[')!=-1)
+             )
            ) 
           // not a php array variable
         {
@@ -2600,7 +2605,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   FileDef *fd=rootNav->fileDef();
 
   int l,i;
-  static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
+  static QRegExp re("([a-z_A-Z0-9: ]*[ &*]*[ ]*");
 
   if (!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // function variable
   {
@@ -2784,10 +2789,6 @@ static void buildFunctionList(EntryNav *rootNav)
       
       ClassDef *cd=0;
       // check if this function's parent is a class
-      static QRegExp re("([a-z_A-Z0-9: ]*[ *]*[ ]*");
-      //printf("root->parent=`%s' %x cd=%p root->type.find(re,0)=%d\n",
-      //    root->parent->name.data(),root->parent->section,getClass(root->parent->name),
-      //    root->type.find(re,0));
       QCString scope=rootNav->parent()->name(); //stripAnonymousNamespaceScope(root->parent->name);
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
 
@@ -2826,12 +2827,14 @@ static void buildFunctionList(EntryNav *rootNav)
       
       }
 
+      static QRegExp re("([a-z_A-Z0-9: ]*[ &*]*[ ]*");
       if (!rootNav->parent()->name().isEmpty() &&
           (rootNav->parent()->section() & Entry::COMPOUND_MASK) && 
           cd &&
           // do some fuzzy things to exclude function pointers 
-          (root->type.isEmpty() || root->type.find(re,0)==-1 || 
-           root->type.find(")(")!=-1 || root->type.find("operator")!=-1
+          (root->type.isEmpty() || 
+           (root->type.find(re,0)==-1 || root->args.find(")[")!=-1) ||  // type contains ..(..* and args not )[.. -> function pointer
+           root->type.find(")(")!=-1 || root->type.find("operator")!=-1 // type contains ..)(.. and not "operator"
           )
          )
       {
@@ -3121,6 +3124,10 @@ static void buildFunctionList(EntryNav *rootNav)
 
         //printf("unrelated function %d `%s' `%s' `%s'\n",
         //    root->parent->section,root->type.data(),rname.data(),root->args.data());
+      }
+      else
+      {
+          Debug::print(Debug::Functions,0,"  --> %s not processed!\n",rname.data());
       }
     }
     else if (rname.isEmpty())
@@ -4030,7 +4037,7 @@ static bool findClassRelation(
   //  int *tempArgIndex;
   //  for (;(tempArgIndex=qdi.current());++qdi)
   //  {
-  //    printf("(%s->%d) ",qdi.currentKey().data(),*tempArgIndex);
+  //    printf("(%s->%d) ",qdi.currentKey(),*tempArgIndex);
   //  }
   //}
   //printf("\n");
@@ -4077,8 +4084,8 @@ static bool findClassRelation(
                                           );
       //printf("baseClassName=%s baseClass=%p cd=%p explicitGlobalScope=%d\n",
       //    baseClassName.data(),baseClass,cd,explicitGlobalScope);
-      //printf("    root->name=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
-      //                    root->name.data(),
+      //printf("    scope=`%s' baseClassName=`%s' baseClass=%s templSpec=%s\n",
+      //                    cd ? cd->name().data():"<none>",
       //                    baseClassName.data(),
       //                    baseClass?baseClass->name().data():"<none>",
       //                    templSpec.data()
@@ -4091,11 +4098,12 @@ static bool findClassRelation(
       if (!isRecursiveBaseClass(rootNav->name(),baseClassName) || explicitGlobalScope)
       {
         Debug::print(
-            Debug::Classes,0,"    class relation %s inherited/used by %s found (%s and %s)\n",
+            Debug::Classes,0,"    class relation %s inherited/used by %s found (%s and %s) templSpec='%s'\n",
             baseClassName.data(),
             rootNav->name().data(),
             (bi->prot==Private)?"private":((bi->prot==Protected)?"protected":"public"),
-            (bi->virt==Normal)?"normal":"virtual"
+            (bi->virt==Normal)?"normal":"virtual",
+            templSpec.data()
            );
 
         int i=baseClassName.find('<');
@@ -4142,17 +4150,19 @@ static bool findClassRelation(
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
         if (!found && si!=-1)
         {
+          QCString tmpTemplSpec;
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,si);
           baseClass=getResolvedClass(cd,
                                      cd->getFileDef(),
                                      baseClassName,
                                      &baseClassTypeDef,
-                                     &templSpec,
+                                     &tmpTemplSpec,
                                      mode==Undocumented,
                                      TRUE
                                     );
           found=baseClass!=0 && baseClass!=cd;
+          if (found) templSpec = tmpTemplSpec;
         }
         
         //printf("root->name=%s biName=%s baseClassName=%s\n",
@@ -4227,6 +4237,8 @@ static bool findClassRelation(
           else
           {
             baseClass=Doxygen::classSDict->find(baseClassName);
+            //printf("*** classDDict->find(%s)=%p biName=%s templSpec=%s\n",
+            //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
             {
               baseClass=new ClassDef(root->fileName,root->startLine,
@@ -5384,8 +5396,8 @@ static void findMember(EntryNav *rootNav,
               // don't be fooled by anonymous scopes
               tcd=cd;
             }
-            //printf("Looking for %s inside nd=%s result=%p\n",
-            //    scopeName.data(),nd?nd->name().data():"<none>",tcd);
+            //printf("Looking for %s inside nd=%s result=%p (%s) cd=%p\n",
+            //    scopeName.data(),nd?nd->name().data():"<none>",tcd,tcd?tcd->name().data():"",cd);
 
             if (cd && tcd==cd) // member's classes match
             {
@@ -8825,6 +8837,9 @@ void initDoxygen()
   ParserInterface *defaultParser = new CLanguageScanner;
   Doxygen::parserManager = new ParserManager(defaultParser);
   Doxygen::parserManager->registerParser(".py",new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser(".f90", new FortranLanguageScanner);
+  Doxygen::parserManager->registerParser(".F90", new FortranLanguageScanner);
+
 
   // register any additional parsers here...
 

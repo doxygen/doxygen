@@ -450,6 +450,11 @@ void HtmlHelp::createProjectFile()
     t << "tab_b.gif" << endl;
     t << "tab_l.gif" << endl;
     t << "tab_r.gif" << endl;
+    if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
+    {
+      t << "open.gif" << endl;
+      t << "closed.gif" << endl;
+    }
     f.close();
   }
   else

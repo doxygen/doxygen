@@ -82,6 +82,8 @@ HEADERS      =	bufstr.h \
                 printdocvisitor.h \
                 pycode.h \
                 pyscanner.h \
+                fortrancode.h \
+                fortranscanner.h \
 		qtbc.h \
 		reflist.h \
                 rtfdocvisitor.h \
@@ -190,6 +192,8 @@ SOURCES      =	ce_lex.cpp \
 		pre.cpp \
 		pycode.cpp \
 		pyscanner.cpp \    
+		fortrancode.cpp \
+		fortranscanner.cpp \    
 		reflist.cpp \
                 rtfdocvisitor.cpp \
 		rtfgen.cpp \

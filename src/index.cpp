@@ -2589,7 +2589,7 @@ void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title,
           first=FALSE;
           if (htmlHelp)
           {
-            htmlHelp->addContentsItem(TRUE, convertToHtml(title), gd->getOutputFileBase(),0);
+            htmlHelp->addContentsItem(TRUE, convertToHtml(title,TRUE), gd->getOutputFileBase(),0);
             htmlHelp->incContentsDepth();
           }
           if (ftvHelp)
@@ -2715,7 +2715,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       SectionInfo *si=0;
       if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
       if (htmlHelp) htmlHelp->addContentsItem(FALSE,
-                                   convertToHtml(pd->title()),
+                                   convertToHtml(pd->title(),TRUE),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0
                                   ); 
@@ -2723,7 +2723,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
                                    gd->getReference(),
                                    gd->getOutputFileBase(),
                                    si ? si->label.data() : 0,
-                                   convertToHtml(pd->title())
+                                   convertToHtml(pd->title(),TRUE)
                                   ); 
     }
 
@@ -2762,7 +2762,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       {
         if (htmlHelp)
         {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces()), gd->getOutputFileBase(), 0);
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces(),TRUE), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
@@ -2779,11 +2779,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         {
           if (htmlHelp)
           {
-            htmlHelp->addContentsItem(FALSE, convertToHtml(nsd->name()), nsd->getOutputFileBase());
+            htmlHelp->addContentsItem(FALSE, convertToHtml(nsd->name(),TRUE), nsd->getOutputFileBase());
           }
           if (ftvHelp)
           {
-            ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name()));
+            ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name(),TRUE));
           }
         }
         if (htmlHelp) htmlHelp->decContentsDepth();
@@ -2795,7 +2795,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       {
         if (htmlHelp)
         {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trClasses()), gd->getOutputFileBase(), 0);
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trClasses(),TRUE), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
@@ -2832,7 +2832,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         if (htmlHelp)
         {
           htmlHelp->addContentsItem(TRUE, 
-              convertToHtml(theTranslator->trFile(TRUE,FALSE)), 
+              convertToHtml(theTranslator->trFile(TRUE,FALSE),TRUE), 
               gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
@@ -2850,9 +2850,9 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
         while (fd)
         {
           if (htmlHelp)
-            htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase());
+            htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name(),TRUE),fd->getOutputFileBase());
           if (ftvHelp)
-            ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
+            ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name(),TRUE));
           fd=fileList->next();
         }
         if (htmlHelp)
@@ -2866,7 +2866,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
       {
         if (htmlHelp)
         {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trExamples()), gd->getOutputFileBase(), 0);
+          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trExamples(),TRUE), gd->getOutputFileBase(), 0);
           htmlHelp->incContentsDepth();
         }
 
@@ -2991,9 +2991,9 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
       while (fd)
       {
         if (htmlHelp)
-          htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name()),fd->getOutputFileBase());
+          htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name(),TRUE),fd->getOutputFileBase());
         if (ftvHelp)
-          ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name()));
+          ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name(),TRUE));
         fd=fileList->next();
       }
     }
