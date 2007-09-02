@@ -1641,7 +1641,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     }
 
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
-    if (strLen>25 && floatingIndex>20 && autoBreak) // try to insert a split point
+    if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
     {
       QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
       int splitLength = splitText.length();
@@ -4588,6 +4588,13 @@ QCString escapeCharsInString(const char *name,bool allowDots)
       case ' ': result+="_01"; break;
       case '{': result+="_02"; break;
       case '}': result+="_03"; break;
+      case '?': result+="_04"; break;
+      case '^': result+="_05"; break;
+      case '%': result+="_06"; break;
+      case '(': result+="_07"; break;
+      case ')': result+="_08"; break;
+      case '+': result+="_09"; break;
+      case '=': result+="_0A"; break;
       default: 
                 if (caseSenseNames || !isupper(c))
                 {

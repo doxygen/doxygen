@@ -480,6 +480,8 @@ void HtmlHelp::finalize()
 {
   // end the contents file
   cts << "</UL>\n";
+  cts << "</BODY>\n";
+  cts << "</HTML>\n";
   cts.unsetDevice();
   cf->close();
   delete cf;
@@ -488,6 +490,8 @@ void HtmlHelp::finalize()
   
   // end the index file
   kts << "</UL>\n";
+  kts << "</BODY>\n";
+  kts << "</HTML>\n";
   kts.unsetDevice();
   kf->close();
   delete kf;

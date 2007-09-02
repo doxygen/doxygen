@@ -17,6 +17,9 @@ TEMPLATE    =	doxywizard.t
 # executable to generate
 TARGET      =   ../../bin/doxywizard
 
+# we do not use the debug features in this copy of portable.cpp
+DEFINES     = NODEBUG
+
 # configure options
 CONFIG      =	qt warn_on $extraopts
 

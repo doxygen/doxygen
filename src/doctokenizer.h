@@ -83,6 +83,7 @@ struct TokenInfo
 
   // simple section
   QString simpleSectName;
+  QString simpleSectText;
 
   // verbatim fragment
   QString verb;

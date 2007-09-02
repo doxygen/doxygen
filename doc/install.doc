@@ -376,7 +376,7 @@ Before you can compile doxygen you need to download and install the C++ compiler
 Visual Studio. Since Microsoft apparently wants to lure everyone into using their 
 .NET stuff, they made things somewhat difficult when you use the Express version.
 You need to
-<a href="http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/">
+<a href="http://msdn2.microsoft.com/en-gb/express/aa700755.aspx">
 do some manual steps</a> in order to setup a proper working environment for building
 native win32 applications such as Doxygen.
 

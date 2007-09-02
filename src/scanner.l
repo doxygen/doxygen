@@ -890,7 +890,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->argList->clear();
 					  lineCount() ;
 					}
-<FindMembers>{B}*"event"{BN}*           { 
+<FindMembers>{B}*"event"{BN}+           { 
   					  if (insideCli)
 					  {
 					    // C++/CLI event
@@ -905,7 +905,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    REJECT;
 					  }
                                         }
-<FindMembers>{B}*"property"{BN}*	{
+<FindMembers>{B}*"property"{BN}+	{
   					   if (insideCli)
 					   {
 					     // C++/CLI property
@@ -942,7 +942,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  addType( current );
   					  current->type += yytext;
   					}
-<FindMembers>{B}*"property"{BN}*        { 
+<FindMembers>{B}*"property"{BN}+        { 
                                           if (!current->type.isEmpty())
 					  {
 					    REJECT;
@@ -2751,15 +2751,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindFields>";"                         {
   					  if (insideJava)  // last enum field in Java class
 					  {
-					    current->fileName   = yyFileName;
-					    current->startLine  = yyLineNr;
-					    current->type       = "@"; // enum marker
-					    current->args       = current->args.simplifyWhiteSpace();
-					    current->name       = current->name.stripWhiteSpace();
-					    current->section    = Entry::VARIABLE_SEC;
-					    current_root->addSubEntry(current);
-					    current             = new Entry ;
-					    initEntry();
+					    if (!current->name.isEmpty())
+					    {
+					      current->fileName   = yyFileName;
+					      current->startLine  = yyLineNr;
+					      current->type       = "@"; // enum marker
+					      current->args       = current->args.simplifyWhiteSpace();
+					      current->name       = current->name.stripWhiteSpace();
+					      current->section    = Entry::VARIABLE_SEC;
+					      current_root->addSubEntry(current);
+					      current             = new Entry ;
+					      initEntry();
+					    }
 
 					    // TODO: skip until the end of the scope
 					    BEGIN( SkipRemainder );
@@ -4001,7 +4004,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      delete current->sli;
 					      current->sli = 0;
 					    }
-					    previous->endBodyLine=yyLineNr;
+					    if (previous) previous->endBodyLine=yyLineNr;
 					    BEGIN( lastCurlyContext ) ;
 					  }
 					}
@@ -4209,6 +4212,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  BEGIN( FindMembers );
 					}
+<CompoundName>{SCOPENAME}/"("		{ 
+					  current->name = yytext ;
+					  lineCount();
+					  if (current->spec & Entry::Protocol)
+					  {
+					    current->name += "-p";
+					  }
+					  BEGIN( ClassVar );
+					}
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
@@ -4380,9 +4392,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <ClassCategory>")"			{
 					  current->name+=')';
-					  // category has no variables so push back an empty body
-					  unput('}');
-					  unput('{');
+					  if ((current->section & Entry::Protocol) ||
+					      current->section == Entry::OBJCIMPL_SEC)
+					  {
+					    unput('{'); // fake start of body
+					  }
+					  else // category has no variables so push back an empty body
+					  {
+					    unput('}');
+					    unput('{');
+					  }
 					  BEGIN( ClassVar );
 					}
 <ClassVar>":"				{ 

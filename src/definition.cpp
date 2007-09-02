@@ -849,14 +849,15 @@ void Definition::writeSourceRefs(OutputList &ol,const char *scopeName)
 bool Definition::hasDocumentation() const
 { 
   static bool extractAll    = Config_getBool("EXTRACT_ALL"); 
-  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  //static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
   makeResident();
   bool hasDocs = 
          (m_impl->details && !m_impl->details->doc.isEmpty()) || // has detailed docs
          (m_impl->brief && !m_impl->brief->doc.isEmpty())     || // has brief description
-         extractAll ||                   // extract everything
-         (sourceBrowser && m_impl->body && 
-          m_impl->body->startLine!=-1 && m_impl->body->fileDef); // link to definition
+         extractAll //||                   // extract everything
+  //       (sourceBrowser && m_impl->body && 
+  //        m_impl->body->startLine!=-1 && m_impl->body->fileDef)
+         ; // link to definition
   return hasDocs;
 }
 

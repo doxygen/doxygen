@@ -568,7 +568,9 @@ static QCString addFormula()
     formLabel.sprintf("\\form#%d",f->getId());
   }
   int i;
-  for (i=0;i<formulaNewLines;i++) formLabel+='\n';
+  for (i=0;i<formulaNewLines;i++) formLabel+="\\_fakenl"; // add fake newlines to
+                                                          // keep the warnings 
+                                                          // correctly aligned.
   return formLabel;
 }
 
@@ -690,7 +692,9 @@ static inline void setOutput(OutputContext ctx)
 	  current->briefLine = yyLineNr;
 	}
       }
-      if (current->brief.isEmpty())
+      if (current->brief.stripWhiteSpace().isEmpty()) // we only want one brief
+	                                              // description even if multiple
+	                                              // are given...
       {
         pOutputString = &current->brief;
       }
@@ -794,6 +798,7 @@ LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
+RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 %option noyywrap
 

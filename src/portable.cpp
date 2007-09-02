@@ -22,7 +22,9 @@ extern char **environ;
 #endif
 
 #include "portable.h"
-//#include "debug.h"
+#ifndef NODEBUG
+#include "debug.h"
+#endif
 //#include "doxygen.h"
 
 static double  sysElapsedTime;
@@ -43,7 +45,9 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
   }
   fullCmd += " ";
   fullCmd += args;
-  //Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",fullCmd.data());
+#ifndef NODEBUG
+  Debug::print(Debug::ExtCmd,0,"Executing external command `%s`\n",fullCmd.data());
+#endif
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
   commandHasConsole=commandHasConsole;
