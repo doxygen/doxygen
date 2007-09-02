@@ -415,6 +415,9 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
   			 g_token->name = "inheritdoc";
 			 return TK_COMMAND;
 		       }
+<St_Para>"\\_fakenl"     { // artificial new line
+                             yylineno++; 
+  		          }
 <St_Para>{SPCMD3}      {
   			 g_token->name = "form";
 			 bool ok;

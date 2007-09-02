@@ -1473,6 +1473,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
       }
     }
   }
+  if (Config_getBool("UML_LOOK")) return FALSE; // UML graph are always top to bottom
   int maxWidth=0;
   int maxHeight=(int)QMAX(childTreeWidth.size(),parentTreeWidth.size());
   uint i;

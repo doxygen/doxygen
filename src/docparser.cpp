@@ -3798,9 +3798,10 @@ int DocSimpleSect::parseRcs()
   m_title = new DocTitle(this);
   m_title->parseFromString(g_token->name);
 
-  docParserPushContext();
-  internalValidatingParseDoc(this,m_children,g_token->text);
-  docParserPopContext();
+  QString text = g_token->text;
+  docParserPushContext(); // this will create a new g_token
+  internalValidatingParseDoc(this,m_children,text);
+  docParserPopContext(); // this will restore the old g_token
 
   DBG(("DocSimpleSect::parseRcs()\n"));
   DocNode *n=g_nodeStack.pop();
@@ -5455,7 +5456,16 @@ reparsetoken:
 	    // so a new simple section will be started at this level.
 	    // This is the same as unputting the last read token and continuing.
 	    g_token->name = g_token->simpleSectName;
-	    tok = TK_COMMAND;
+            if (g_token->name.left(4)=="rcs:") // RCS section
+            {
+              g_token->name = g_token->name.mid(4);
+              g_token->text = g_token->simpleSectText;
+              tok = TK_RCSTAG;
+            }
+            else // other section
+            {
+	      tok = TK_COMMAND;
+            }
 	    DBG(("reparsing command %s\n",g_token->name.data()));
 	    goto reparsetoken;
 	  }
@@ -5545,7 +5555,16 @@ reparsetoken:
 	    // so a new simple section will be started at this level.
 	    // This is the same as unputting the last read token and continuing.
 	    g_token->name = g_token->simpleSectName;
-	    tok = TK_COMMAND;
+            if (g_token->name.left(4)=="rcs:") // RCS section
+            {
+              g_token->name = g_token->name.mid(4);
+              g_token->text = g_token->simpleSectText;
+              tok = TK_RCSTAG;
+            }
+            else // other section
+            {
+	      tok = TK_COMMAND;
+            }
 	    DBG(("reparsing command %s\n",g_token->name.data()));
 	    goto reparsetoken;
 	  }
@@ -5608,6 +5627,25 @@ reparsetoken:
 	goto endparagraph;
       case TK_RCSTAG:
         {
+	  DocNode *n=parent();
+	  while (n && 
+                 n->kind()!=DocNode::Kind_SimpleSect && 
+                 n->kind()!=DocNode::Kind_ParamSect
+                ) 
+          {
+            n=n->parent();
+          }
+	  if (n)  // already in a simple section
+	  {
+	    // simple section cannot start in this paragraph, need
+	    // to unwind the stack and remember the command.
+	    g_token->simpleSectName = "rcs:"+g_token->name;
+            g_token->simpleSectText = g_token->text;
+	    retval=RetVal_SimpleSec;
+	    goto endparagraph;
+	  }
+
+	  // see if we are in a simple list
           DocSimpleSect *ss=new DocSimpleSect(this,DocSimpleSect::Rcs);
           m_children.append(ss);
           ss->parseRcs();

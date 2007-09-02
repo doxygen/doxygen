@@ -2091,7 +2091,7 @@ static MemberDef *addVariableToFile(
   }
   else
   {
-    if (!root->type.isEmpty())
+    if (!root->type.isEmpty() && !root->name.isEmpty())
     {
       if (name.at(0)=='@') // dummy variable representing annonymous union
         def=root->type;
@@ -2625,7 +2625,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
 
   // strip redundant template specifier for constructors
   if ((fd==0 || getLanguageFromFileName(fd->name())==SrcLangExt_Cpp) &&
-     (i=name.find('<')!=-1) && name.find('>')!=-1)
+     name.left(9)!="operator " && (i=name.find('<'))!=-1 && name.find('>')!=-1)
   {
     name=name.left(i); 
   }
