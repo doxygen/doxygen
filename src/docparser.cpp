@@ -1387,6 +1387,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
   DBG(("decodeSymbol(%s) l=%d\n",symName.data(),l));
   if      (symName=="&copy;")  return DocSymbol::Copy;
   else if (symName=="&trade;") return DocSymbol::Tm;
+  else if (symName=="&tm;")    return DocSymbol::Tm; // alias for &trace;
   else if (symName=="&reg;")   return DocSymbol::Reg;
   else if (symName=="&lt;")    return DocSymbol::Less;
   else if (symName=="&gt;")    return DocSymbol::Greater;
@@ -2049,7 +2050,7 @@ void DocInternalRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocRef::DocRef(DocNode *parent,const QString &target) : 
+DocRef::DocRef(DocNode *parent,const QString &target,const QString &context) : 
    m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
 {
   Definition  *compound = 0;
@@ -2071,7 +2072,7 @@ DocRef::DocRef(DocNode *parent,const QString &target) :
     //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor);
     return;
   }
-  else if (resolveLink(g_context,target,TRUE,&compound,anchor))
+  else if (resolveLink(context,target,TRUE,&compound,anchor))
   {
     bool isFile = compound ? 
                  (compound->definitionType()==Definition::TypeFile ? TRUE : FALSE) : 
@@ -2318,8 +2319,8 @@ endlink:
 
 //---------------------------------------------------------------------------
 
-DocDotFile::DocDotFile(DocNode *parent,const QString &name) : 
-      m_parent(parent), m_name(name), m_relPath(g_relPath)
+DocDotFile::DocDotFile(DocNode *parent,const QString &name,const QString &context) : 
+      m_parent(parent), m_name(name), m_relPath(g_relPath), m_context(context)
 {
 }
 
@@ -3235,7 +3236,7 @@ int DocHtmlDescTitle::parse()
                     }
                     else
                     {
-                      DocRef *ref = new DocRef(this,g_token->name);
+                      DocRef *ref = new DocRef(this,g_token->name,g_context);
                       m_children.append(ref);
                       ref->parse();
                     }
@@ -4247,7 +4248,7 @@ void DocPara::handleDotFile(const QString &cmdName)
     return;
   }
   QString name = g_token->name;
-  DocDotFile *df = new DocDotFile(this,name);
+  DocDotFile *df = new DocDotFile(this,name,g_context);
   m_children.append(df);
   df->parse();
 }
@@ -4298,7 +4299,7 @@ void DocPara::handleRef(const QString &cmdName)
         tokToString(tok),cmdName.data());
     goto endref;
   }
-  ref = new DocRef(this,g_token->name);
+  ref = new DocRef(this,g_token->name,g_context);
   m_children.append(ref);
   ref->parse();
 endref:

@@ -1669,6 +1669,13 @@ void Config::create()
 		    FALSE
       	         );
   cb = addBool(
+                    "SIP_SUPPORT",
+                    "Set the SIP_SUPPORT tag to YES if your project consists of sip sources only. \n"
+		    "Doxygen will parse them like normal C++ but will assume all classes use public \n"
+		    "instead of private inheritance when no explicit protection keyword is present. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "DISTRIBUTE_GROUP_DOC",
                     "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
                     "tag is set to YES, then doxygen will reuse the documentation of the first \n"

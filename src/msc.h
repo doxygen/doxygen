@@ -26,7 +26,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format);
 
 QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
-                               const QCString& relPath);
+                               const QCString& relPath,const QString& context);
 
 #endif
 

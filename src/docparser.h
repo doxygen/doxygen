@@ -614,7 +614,7 @@ class DocImage : public CompAccept<DocImage>, public DocNode
 class DocDotFile : public CompAccept<DocDotFile>, public DocNode
 {
   public:
-    DocDotFile(DocNode *parent,const QString &name);
+    DocDotFile(DocNode *parent,const QString &name,const QString &context);
     void parse();
     Kind kind() const          { return Kind_DotFile; }
     QString name() const       { return m_name; }
@@ -624,6 +624,7 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     QString width() const      { return m_width; }
     QString height() const     { return m_height; }
     DocNode *parent() const    { return m_parent; }
+    QString context() const    { return m_context; }
     void accept(DocVisitor *v) { CompAccept<DocDotFile>::accept(this,v); }
   private:
     DocNode *m_parent;
@@ -632,6 +633,7 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     QString  m_relPath;
     QString  m_width;
     QString  m_height;
+    QString  m_context;
 };
 
 /*! @brief Node representing a link to some item */
@@ -661,7 +663,7 @@ class DocLink : public CompAccept<DocLink>, public DocNode
 class DocRef : public CompAccept<DocRef>, public DocNode
 {
   public:
-    DocRef(DocNode *parent,const QString &target);
+    DocRef(DocNode *parent,const QString &target,const QString &context);
     void parse();
     Kind kind() const            { return Kind_Ref; }
     QString file() const         { return m_file; }

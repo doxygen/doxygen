@@ -539,6 +539,7 @@ static void stripQualifiers(QCString &typeStr)
     if (typeStr.stripPrefix("static "));
     else if (typeStr.stripPrefix("virtual "));
     else if (typeStr.stripPrefix("volatile "));
+    else if (typeStr=="virtual") typeStr="";
     else done=TRUE;
   }
 }
@@ -563,6 +564,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
   if (md->isHidden()) return;
+  if (md->name().at(0)=='@') return; // anonymous member
 
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;
@@ -1012,31 +1014,34 @@ static void writeListOfAllMembers(ClassDef *cd,QTextStream &t)
       for (mii.toFirst();(mi=mii.current());++mii)
       {
         MemberDef *md=mi->memberDef;
-        Protection prot = mi->prot;
-        Specifier virt=md->virtualness();
-        t << "      <member refid=\"" << md->getOutputFileBase() << "_1" <<
-          md->anchor() << "\" prot=\"";
-        switch (prot)
+        if (md->name().at(0)!='@') // skip anonymous members
         {
-          case Public:    t << "public";    break;
-          case Protected: t << "protected"; break;
-          case Private:   t << "private";   break;
-          case Package:   t << "package";   break;
+          Protection prot = mi->prot;
+          Specifier virt=md->virtualness();
+          t << "      <member refid=\"" << md->getOutputFileBase() << "_1" <<
+            md->anchor() << "\" prot=\"";
+          switch (prot)
+          {
+            case Public:    t << "public";    break;
+            case Protected: t << "protected"; break;
+            case Private:   t << "private";   break;
+            case Package:   t << "package";   break;
+          }
+          t << "\" virt=\"";
+          switch(virt)
+          {
+            case Normal:  t << "non-virtual";  break;
+            case Virtual: t << "virtual";      break;
+            case Pure:    t << "pure-virtual"; break;
+          }
+          t << "\"";
+          if (!mi->ambiguityResolutionScope.isEmpty())
+          {
+            t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope) << "\"";
+          }
+          t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" << 
+            convertToXML(md->name()) << "</name></member>" << endl;
         }
-        t << "\" virt=\"";
-        switch(virt)
-        {
-          case Normal:  t << "non-virtual";  break;
-          case Virtual: t << "virtual";      break;
-          case Pure:    t << "pure-virtual"; break;
-        }
-        t << "\"";
-        if (!mi->ambiguityResolutionScope.isEmpty())
-        {
-          t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope) << "\"";
-        }
-        t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" << 
-          convertToXML(md->name()) << "</name></member>" << endl;
       }
     }
   }

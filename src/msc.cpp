@@ -26,7 +26,8 @@
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(QTextStream &t,const char *mapName,const QCString relPath)
+static bool convertMapFile(QTextStream &t,const char *mapName,const QCString relPath,
+                           const QString &context)
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly))
@@ -66,7 +67,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
       {
         // handle doxygen \ref tag URL reference
         QCString *dest;
-        DocRef *df = new DocRef( (DocNode*) 0, url );
+        DocRef *df = new DocRef( (DocNode*) 0, url, context );
         if (!df->ref().isEmpty())
         {
           if ((dest=Doxygen::tagDestinationDict[df->ref()])) t << *dest << "/";
@@ -138,7 +139,7 @@ error:
 }
 
 QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
-                               const QCString& relPath)
+                               const QCString& relPath,const QString& context)
 {
   QString outFile = inFile + ".map";
 
@@ -162,7 +163,7 @@ QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
   
   QString result;
   QTextOStream tmpout(&result);
-  convertMapFile(tmpout, outFile, relPath);
+  convertMapFile(tmpout, outFile, relPath, context);
   QDir().remove(outFile);
 
   QDir::setCurrent(oldDir);

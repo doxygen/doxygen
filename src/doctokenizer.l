@@ -317,7 +317,7 @@ SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
 SCOPEMASK {SCOPECPP}|{SCOPEOBJC}
-FUNCARG   "("{FUNCCHAR}*")"({BLANK}*("volatile"|"const"))?
+FUNCARG   "("{FUNCCHAR}*")"({BLANK}*("volatile"|"const"){BLANK})?
 OPNEW     {BLANK}+"new"({BLANK}*"[]")?
 OPDEL     {BLANK}+"delete"({BLANK}*"[]")?
 OPNORM    {OPNEW}|{OPDEL}|"+"|"-"|"*"|"/"|"%"|"^"|"&"|"|"|"~"|"!"|"="|"<"|">"|"+="|"-="|"*="|"/="|"%="|"^="|"&="|"|="|"<<"|">>"|"<<="|">>="|"=="|"!="|"<="|">="|"&&"|"||"|"++"|"--"|","|"->*"|"->"|"[]"|"()"

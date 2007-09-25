@@ -10,31 +10,20 @@
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Brazilian Portuguese version by
- *   Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
- *   Version: 1.4.6 (2006/06/26)
+ * Brazilian Portuguese translation version 20070914
+ *    Maintainer: Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
+ *    Thanks to Jorge Ramos and others
  *
  * History:
- *	 1.4.6
- *		- trCallerGraph() added.
+ *   20070914
+ *      - "Translate me" fixed
+ *      - Revision number changed from doxygen version to a date string.
+ *      - History cleanup
+ *      - Latex babel package fixed.
+ *   1.4.6
+ *      - trCallerGraph() added.
  *      - trEnumerationValueDocumentation() added.
- *   1.4.1
- *		- Method trOverloadText() added.
- * 	 1.3.9
- *		- Updated to Doxygen 1.3.9
- * 	 1.3.8
- *		- Updated to Doxygen 1.3.8
- *   1.3.3:
- *      - Updated to Doxygen 1.3.3
- *   1.3.2:
- *      - Updated to Doxygen 1.3.2
- *   1.3:
- *      - Updated to Doxygen 1.3.x.
- *   1.2.19:
- *      - Updated to Doxygen 1.2.19
- *      - Translation Review (Thanks to Jorge Ramos and others)
- *      - Small fixes in C output.
- *      - Latex generation support fixed (invalid package name).
+ *   Previous history removed from this version.
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
@@ -64,7 +53,7 @@ class TranslatorBrazilian : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[spanish]{babel}";
+      return "\\usepackage[brazil]{babel}";
     }
 
     /*! return the language charset. This will be used for the HTML output */
@@ -611,8 +600,8 @@ class TranslatorBrazilian : public Translator
         case ClassDef::Struct:     result+=" Estrutura "; break;
         case ClassDef::Union:      result+=" União "; break;
         case ClassDef::Interface:  result+=" Interface "; break;
-        case ClassDef::Protocol:   result+=" Protocol "; break; // translate me!
-        case ClassDef::Category:   result+=" Category "; break; // translate me!
+        case ClassDef::Protocol:   result+=" Protocolo "; break;
+        case ClassDef::Category:   result+=" Categoria "; break;
         case ClassDef::Exception:  result+=" Exceção "; break;
       }
       result+=(QCString)clName;
@@ -769,8 +758,8 @@ class TranslatorBrazilian : public Translator
         case ClassDef::Struct:     result+="estrutura "; break;
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;
-        case ClassDef::Protocol:   result+="protocol "; break; // translate me!
-        case ClassDef::Category:   result+="category "; break; // translate me!
+        case ClassDef::Protocol:   result+="protocolo "; break;
+        case ClassDef::Category:   result+="categoria "; break;
         case ClassDef::Exception:  result+="exceção "; break;
       }
       result+=" foi gerada a partir ";

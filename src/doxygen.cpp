@@ -2605,7 +2605,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   FileDef *fd=rootNav->fileDef();
 
   int l,i;
-  static QRegExp re("([a-z_A-Z0-9: ]*[ &*]*[ ]*");
+  static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
 
   if (!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // function variable
   {
@@ -2827,7 +2827,7 @@ static void buildFunctionList(EntryNav *rootNav)
       
       }
 
-      static QRegExp re("([a-z_A-Z0-9: ]*[ &*]*[ ]*");
+      static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
       if (!rootNav->parent()->name().isEmpty() &&
           (rootNav->parent()->section() & Entry::COMPOUND_MASK) && 
           cd &&
@@ -4210,6 +4210,7 @@ static bool findClassRelation(
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
             }
+            if (Config_getBool("SIP_SUPPORT")) bi->prot=Public;
             cd->insertBaseClass(baseClass,usedName,bi->prot,bi->virt,templSpec);
             // add this class as super class to the base class
             baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);

@@ -475,8 +475,8 @@ class TranslatorChinese : public Translator
         case ClassDef::Struct: result+="结构"; break;
         case ClassDef::Union:  result+="联合"; break;
         case ClassDef::Interface:  result+="接口"; break;
-        case ClassDef::Protocol:   result+="协议"; break; // translate me!
-        case ClassDef::Category:   result+="分类"; break; // translate me!
+        case ClassDef::Protocol:   result+="协议"; break;
+        case ClassDef::Category:   result+="分类"; break;
         case ClassDef::Exception:  result+="异常"; break;
       }
       result+="参考";
@@ -642,8 +642,8 @@ class TranslatorChinese : public Translator
         case ClassDef::Struct:     result+="结构"; break;
         case ClassDef::Union:      result+="联合"; break;
         case ClassDef::Interface:  result+="接口"; break;
-        case ClassDef::Protocol:   result+="协议"; break; // translate me!
-        case ClassDef::Category:   result+="分类"; break; // translate me!
+        case ClassDef::Protocol:   result+="协议"; break;
+        case ClassDef::Category:   result+="分类"; break;
         case ClassDef::Exception:  result+="异常"; break;
       }
       result+="的文档由以下文件生成：";

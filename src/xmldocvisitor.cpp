@@ -875,7 +875,7 @@ void XmlDocVisitor::visitPost(DocInternalRef *)
 void XmlDocVisitor::visitPre(DocCopy *c)
 {
   if (m_hide) return;
-  m_t << "<copydoc link=\"" << c->link() << "\">";
+  m_t << "<copydoc link=\"" << convertToXML(c->link()) << "\">";
 }
 
 void XmlDocVisitor::visitPost(DocCopy *)

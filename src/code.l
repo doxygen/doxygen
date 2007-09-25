@@ -78,6 +78,7 @@ static QStack<int>   g_scopeStack;      //!< 1 if bracket starts a scope,
                                         //   2 for internal blocks 
 static int           g_anchorCount;
 static FileDef *     g_sourceFileDef;
+static bool          g_lineNumbers;
 static Definition *  g_currentDefinition;
 static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
@@ -449,14 +450,13 @@ static void setClassScope(const QCString &name)
 static void startCodeLine()
 {
   //if (g_currentFontClass) { g_code->endFontClass(); }
-  if (g_sourceFileDef)
+  if (g_sourceFileDef && g_lineNumbers)
   {
     //QCString lineNumber,lineAnchor;
     //lineNumber.sprintf("%05d",g_yyLineNr);
     //lineAnchor.sprintf("l%05d",g_yyLineNr);
    
     Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
-    //printf("startCodeLine %d d=%s\n", g_yyLineNr,d ? d->name().data() : "<null>");
     if (!g_includeCodeFragment && d)
     {
       g_currentDefinition = d;
@@ -1120,7 +1120,7 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 	int vi;
 	QCString vn=varName;
 	QCString scope;
-	if ((vi=vn.findRev("::"))!=-1) // explicit scope A::b(), probably static member
+	if ((vi=vn.findRev("::"))!=-1 || (vi=vn.findRev('.'))!=-1)  // explicit scope A::b(), probably static member
 	{
 	  ClassDef *jcd = getClass(vn.left(vi));
 	  vn=vn.right(vn.length()-vi-2);
@@ -1182,11 +1182,13 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   QCString locScope=g_classScope.copy();
   QCString locFunc=removeRedundantWhiteSpace(funcName);
   //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
+  int len=2;
   int i=locFunc.findRev("::");
+  if (i==-1) i=locFunc.findRev("."),len=1;
   if (i>0)
   {
     locScope=locFunc.left(i);
-    locFunc=locFunc.right(locFunc.length()-i-2).stripWhiteSpace();
+    locFunc=locFunc.right(locFunc.length()-i-len).stripWhiteSpace();
     int ts=locScope.find('<'); // start of template
     int te=locScope.findRev('>'); // end of template
     //printf("ts=%d te=%d\n",ts,te);
@@ -3285,6 +3287,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
+  g_lineNumbers   = fd!=0;
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
@@ -3306,6 +3309,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     g_exampleFile = convertNameToFile(g_exampleName+"-example");
   }
   g_includeCodeFragment = inlineFragment;
+  //printf("** exBlock=%d exName=%s include=%d\n",exBlock,exName,inlineFragment);
   startCodeLine();
   g_type.resize(0);
   g_name.resize(0);
@@ -3322,7 +3326,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
     endFontClass();
     g_code->endCodeLine();
   }
-  if (exBlock && g_sourceFileDef)
+  if (exBlock && fd==0)
   {
     // delete the temporary file definition used for this example
     delete g_sourceFileDef;
