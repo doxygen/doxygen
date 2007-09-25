@@ -230,6 +230,8 @@ class LatexGenerator : public OutputGenerator
   private:
     LatexGenerator(const LatexGenerator &);
     LatexGenerator &operator=(const LatexGenerator &);
+    void escapeLabelName(const char *s);
+    void escapeMakeIndexChars(const char *s);
     int col;
     bool insideTabbing;
     bool firstDescItem;

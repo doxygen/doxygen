@@ -243,7 +243,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         file.close();
 
         m_t << "<div align=\"center\">" << endl;
-        writeDotFile(fileName,s->relPath());
+        writeDotFile(fileName,s->relPath(),s->context());
         m_t << "</div>" << endl;
 
         if (Config_getBool("DOT_CLEANUP")) file.remove();
@@ -270,7 +270,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         file.close();
 
         m_t << "<div align=\"center\">" << endl;
-        writeMscFile(baseName,s->relPath());
+        writeMscFile(baseName,s->relPath(),s->context());
         m_t << "</div>" << endl;
 
         if (Config_getBool("DOT_CLEANUP")) file.remove();
@@ -293,8 +293,16 @@ void HtmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::Include: 
       m_t << PREFRAG_START;
       Doxygen::parserManager->getParser(inc->extension())
-                            ->parseCode(m_ci,inc->context(),inc->text().latin1(),
-                                        inc->isExample(),inc->exampleFile());
+                            ->parseCode(m_ci,                 
+                                        inc->context(),
+                                        inc->text().latin1(),
+                                        inc->isExample(),
+                                        inc->exampleFile(),
+                                        0,   // fd
+                                        -1,  // startLine
+                                        -1,  // endLine
+                                        TRUE // inlineFragment
+                                       );
       m_t << PREFRAG_END;
       break;
     case DocInclude::IncWithLines:
@@ -303,7 +311,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
-                               ->parseCode(m_ci,inc->context(),
+                               ->parseCode(m_ci,
+                                           inc->context(),
                                            inc->text().latin1(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
@@ -814,7 +823,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  writeDotFile(df->file(),df->relPath());
+  writeDotFile(df->file(),df->relPath(),df->context());
   m_t << "<div align=\"center\">" << endl;
   if (df->hasCaption())
   { 
@@ -1148,7 +1157,8 @@ void HtmlDocVisitor::popEnabled()
   delete v;
 }
 
-void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath)
+void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath,
+                                  const QString &context)
 {
   QString baseName=fileName;
   int i;
@@ -1163,11 +1173,12 @@ void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath
   m_t << "<img src=\"" << relPath << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getDotImageMapFromFile(fileName,outDir,relPath.data());
+  QString imap = getDotImageMapFromFile(fileName,outDir,relPath.data(),context);
   m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 
-void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath)
+void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath,
+                                  const QString &context)
 {
   QString baseName=fileName;
   int i;
@@ -1181,7 +1192,7 @@ void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath
   QString mapFile = fileName+".map";
   m_t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getMscImageMapFromFile(fileName,outDir,relPath.data());
+  QString imap = getMscImageMapFromFile(fileName,outDir,relPath.data(),context);
   m_t << "<map name=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 

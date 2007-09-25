@@ -17,7 +17,7 @@
  */
 
 /**
- @TODO - continutation lines not always recognized
+ @todo - continutation lines not always recognized
        - merging of use-statements with same module name and different only-names
        - rename part of use-statement
        - links to interface functions 
@@ -414,7 +414,7 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 
 /**
  gets the link to a generic procedure which depends not on the name, but on the parameter list
- @TODO implementation
+ @todo implementation
 */
 static bool getGenericProcedureLink(const ClassDef *cd, 
                                     const char *memberText, 
@@ -618,7 +618,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 
  /*-------- ignore ------------------------------------------------------------*/
 
-<Start>{IGNORE}/{BS}"("?                { // do not search keywords, intrinsics... @TODO: complete list
+<Start>{IGNORE}/{BS}"("?                { // do not search keywords, intrinsics... TODO: complete list
   					  codifyLines(yytext);
                                         }
  /*-------- inner construct ---------------------------------------------------*/

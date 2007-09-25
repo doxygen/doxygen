@@ -98,10 +98,13 @@ static void writeGraphFooter(QTextStream &t)
  *                 (used in case CREATE_SUBDIRS is enabled).
  *  \param urlOnly if FALSE the url field in the map contains an external 
  *                 references followed by a $ and then the URL.  
+ *  \param context the context (file, class, or namespace) in which the 
+ *                 map file was found
  *  \returns TRUE if succesful.
  */
 static bool convertMapFile(QTextStream &t,const char *mapName,
-                           const QCString relPath, bool urlOnly=FALSE)
+                           const QCString relPath, bool urlOnly=FALSE,
+                           const QString &context=QString())
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly)) 
@@ -129,7 +132,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
         {
           result="href=\"";
           // fake ref node to resolve the url
-          DocRef *df = new DocRef( (DocNode*) 0, link.mid(5) );
+          DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
           if (!df->ref().isEmpty())
           {
             if ((dest=Doxygen::tagDestinationDict[df->ref()])) 
@@ -1047,6 +1050,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
     // compute md5 checksum of the graph were are about to generate
     QString theGraph;
     QTextStream md5stream(&theGraph,IO_WriteOnly);
+    md5stream.setEncoding(md5stream.UnicodeUTF8);
     writeGraphHeader(md5stream);
     md5stream << "  rankdir=LR;" << endl;
     for (dnli2.toFirst();(node=dnli2.current());++dnli2)
@@ -1077,6 +1081,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
       QFile f(dotName);
       if (!f.open(IO_WriteOnly)) return;
       QTextStream t(&f);
+      t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
       f.close();
       resetReNumbering();
@@ -1677,6 +1682,7 @@ QCString computeMd5Signature(DotNode *root,
   //printf("computeMd5Signature\n");
   QString buf;
   QTextStream md5stream(&buf,IO_WriteOnly);
+  md5stream.setEncoding(md5stream.UnicodeUTF8);
   writeGraphHeader(md5stream);
   if (lrRank)
   {
@@ -1753,6 +1759,7 @@ static bool updateDotGraph(DotNode *root,
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
+      t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
     }
     return TRUE;
@@ -1894,6 +1901,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     out << "\"></center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
+    tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2207,6 +2215,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
+    tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2499,6 +2508,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
+    tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2586,6 +2596,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
       err("Cannot create file %s.dot for writing!\n",baseName.data());
     }
     QTextStream t(&f);
+    t.setEncoding(t.UnicodeUTF8);
     m_dir->writeDepGraph(t);
     f.close();
     
@@ -2639,6 +2650,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
+    tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,baseName+".map",relPath,TRUE);
     if (!tmpstr.isEmpty())
     {
@@ -2811,7 +2823,7 @@ error:
  *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
 QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
-    const QCString &relPath)
+    const QCString &relPath,const QString &context)
 {
   QString outFile = inFile + ".map";
 
@@ -2831,7 +2843,8 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
   
   QString result;
   QTextOStream tmpout(&result);
-  convertMapFile(tmpout, outFile, relPath ,TRUE);
+  tmpout.setEncoding(tmpout.UnicodeUTF8);
+  convertMapFile(tmpout, outFile, relPath ,TRUE, context);
   QDir().remove(outFile);
 // printf("result=%s\n",result.data());
 
@@ -3072,6 +3085,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
   if (dotfile.open(IO_WriteOnly))
   {
     QTextStream tdot(&dotfile);
+    tdot.setEncoding(tdot.UnicodeUTF8);
     writeGraphHeader(tdot);
 
     // clean write flags

@@ -826,11 +826,17 @@ int isAccessibleFrom(Definition *scope,FileDef *fileScope,Definition *item)
 
   Definition *itemScope=item->getOuterScope();
 
-  if (itemScope==scope || 
-      (item->definitionType()==Definition::TypeMember && 
-       itemScope && itemScope->definitionType()==Definition::TypeClass  &&
-       scope->definitionType()==Definition::TypeClass && 
-       ((ClassDef*)scope)->isAccessibleMember((MemberDef *)item)
+  if ( 
+      itemScope==scope ||                                                  // same thing
+      (item->definitionType()==Definition::TypeMember &&                   // a member
+       itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
+       scope->definitionType()==Definition::TypeClass &&                   // accessible
+       ((ClassDef*)scope)->isAccessibleMember((MemberDef *)item)           // from scope
+      ) ||
+      (item->definitionType()==Definition::TypeClass &&                    // a nested class
+       itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base 
+       scope->definitionType()==Definition::TypeClass &&                   // class of scope
+       ((ClassDef*)scope)->isBaseClass((ClassDef*)itemScope,TRUE)          
       )
      ) 
   {
@@ -915,7 +921,11 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   QCString key(40+explicitScopePart.length());
   key.sprintf("%p:%p:%p:%s",scope,fileScope,item,explicitScopePart.data());
   static QDict<void> visitedDict;
-  if (visitedDict.find(key)) return -1; // already looked at this
+  if (visitedDict.find(key)) 
+  {
+    //printf("Already visited!\n");
+    return -1; // already looked at this
+  }
   visitedDict.insert(key,(void *)0x8);
 
   //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",

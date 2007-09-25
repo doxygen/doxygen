@@ -53,49 +53,6 @@
 //}
 
 
-static QCString escapeLabelName(LatexGenerator *g,const char *s)
-{
-  QCString result;
-  const char *p=s;
-  char str[2];
-  str[1]=0;
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '%': result+="\\%"; break;
-      case '|': result+="\\tt{\"|}"; break;
-      case '!': result+="\"!"; break;
-      default:  str[0]=c; g->docify(str); break;
-    }
-  }
-  return result;
-}
-
-static QCString escapeMakeIndexChars(LatexGenerator *g,QTextStream &t,const char *s)
-{
-  QCString result;
-  const char *p=s;
-  char str[2];
-  str[1]=0;
-  char c;
-  while ((c=*p++))
-  {
-    switch (c)
-    {
-      case '!': t << "\"!"; break;
-      case '"': t << "\"\""; break;
-      case '@': t << "\"@"; break;
-      case '|': t << "\\tt{\"|}"; break;
-      case '[': t << "["; break;
-      case ']': t << "]"; break;
-      default:  str[0]=c; g->docify(str); break;
-    }
-  }
-  return result;
-}
-
 
 LatexGenerator::LatexGenerator() : OutputGenerator()
 {
@@ -1070,9 +1027,10 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
   t << "}" << endl;
   if (name)
   {
-    t << "\\label{" << fileName << "}\\index{" 
-      << escapeLabelName(this,name) << "@{";
-    escapeMakeIndexChars(this,t,name);
+    t << "\\label{" << fileName << "}\\index{";
+    escapeLabelName(name);
+    t << "@{";
+    escapeMakeIndexChars(name);
     t << "}}" << endl;
   }
   if (Config_getBool("PDF_HYPERLINKS") && fileName)
@@ -1141,16 +1099,20 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << "\\index{";
     if (clname)
     {
-      t << escapeLabelName(this,clname) << "@{";
-      escapeMakeIndexChars(this,t,clname);
+      escapeLabelName(clname);
+      t << "@{";
+      escapeMakeIndexChars(clname);
       t << "}!";
     }
-    t << escapeLabelName(this,memname) << "@{";
-    escapeMakeIndexChars(this,t,memname);
+    escapeLabelName(memname);
+    t << "@{";
+    escapeMakeIndexChars(memname);
     t << "}}" << endl;
 
-    t << "\\index{" << escapeLabelName(this,memname) << "@{";
-    escapeMakeIndexChars(this,t,memname);
+    t << "\\index{";
+    escapeLabelName(memname);
+    t << "@{";
+    escapeMakeIndexChars(memname);
     t << "}";
     if (clname)
     {
@@ -1223,13 +1185,17 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 {
   if (s1)
   {
-    t << "\\index{" << escapeLabelName(this,s1) << "@{";
-    escapeMakeIndexChars(this,t,s1);
+    t << "\\index{";
+    escapeLabelName(s1);
+    t << "@{";
+    escapeMakeIndexChars(s1);
     t << "}";
     if (s2)
     {
-      t << "!" << escapeLabelName(this,s2) << "@{";
-      escapeMakeIndexChars(this,t,s2);
+      t << "!";
+      escapeLabelName(s2);
+      t << "@{";
+      escapeMakeIndexChars(s2);
       t << "}";
     }
     t << "}";
@@ -1651,5 +1617,43 @@ void LatexGenerator::endConstraintList()
   t << "\\end{Desc}" << endl;
 }
 
+void LatexGenerator::escapeLabelName(const char *s)
+{
+  const char *p=s;
+  char str[2];
+  str[1]=0;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '%': t << "\\%";       break;
+      case '|': t << "\\tt{\"|}"; break;
+      case '!': t << "\"!";       break;
+      default:  str[0]=c; docify(str); break;
+    }
+  }
+}
+
+void LatexGenerator::escapeMakeIndexChars(const char *s)
+{
+  const char *p=s;
+  char str[2];
+  str[1]=0;
+  char c;
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '!': t << "\"!"; break;
+      case '"': t << "\"\""; break;
+      case '@': t << "\"@"; break;
+      case '|': t << "\\tt{\"|}"; break;
+      case '[': t << "["; break;
+      case ']': t << "]"; break;
+      default:  str[0]=c; docify(str); break;
+    }
+  }
+}
 
 

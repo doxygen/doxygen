@@ -200,6 +200,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_used_files SHOW_USED_FILES
+\refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 \refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
@@ -423,6 +424,14 @@ followed by the descriptions of the tags grouped by category.
  \addindex CPP_CLI_SUPPORT
  If you use Microsoft's C++/CLI language, you should set this option to YES to
  enable parsing support.
+
+\anchor cfg_sip_support
+<dt>\c SIP_SUPPORT <dd>
+ \addindex OPTIMIZE_OUTPUT_SIP
+ Set the SIP_SUPPORT tag to YES if your project consists 
+ of <a href="http://www.riverbankcomputing.co.uk/sip/">sip</a> sources only. 
+ Doxygen will parse them like normal C++ but will assume all classes use public 
+ instead of private inheritance when no explicit protection keyword is present. 
 
 \anchor cfg_distribute_group_doc
 <dt>\c DISTRIBUTE_GROUP_DOC <dd>

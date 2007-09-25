@@ -85,10 +85,10 @@ static QCString addTemplateNames(const QCString &s,const QCString &n,const QCStr
 static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
                                  const QCString & /*scopeName*/,MemberDef *md)
 {
-  LockingPtr<ArgumentList> defArgList=(md->isDocsForDefinition() && !md->isProperty()) ? 
+  LockingPtr<ArgumentList> defArgList=(md->isDocsForDefinition()) ? 
                              md->argumentList() : md->declArgumentList();
   //printf("writeDefArgumentList `%s' isDocsForDefinition()=%d\n",md->name().data(),md->isDocsForDefinition());
-  if (defArgList==0) 
+  if (defArgList==0 || md->isProperty()) 
   {
     return FALSE; // member has no function like argument list
   }
@@ -771,7 +771,7 @@ QCString MemberDef::anchor() const
     {
       result=m_impl->groupMember->anchor();
     }
-    else
+    else if (getReference().isEmpty())
     {
       result.prepend("g");
     }
@@ -2693,6 +2693,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
       {
         Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
         Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl; 
+        Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;
         Doxygen::tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl; 
         Doxygen::tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl; 
         Doxygen::tagFile << "    </member>" << endl;
@@ -2741,6 +2742,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
             {
               Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
               Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 
+              Doxygen::tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension) << "</anchorfile>" << endl;              
               Doxygen::tagFile << "      <anchor>" << convertToXML(fmd->anchor()) << "</anchor>" << endl; 
               Doxygen::tagFile << "      <arglist>" << convertToXML(fmd->argsString()) << "</arglist>" << endl; 
               Doxygen::tagFile << "    </member>" << endl;

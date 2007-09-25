@@ -594,7 +594,7 @@ void FTVHelp::generateTreeView()
 #if QT_VERSION >= 200
     t.setEncoding(QTextStream::Latin1);
 #endif
-    t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
+    t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
     t << "<html><head>";
     t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n";
     t << "<title>"; 

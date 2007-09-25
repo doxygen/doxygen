@@ -924,6 +924,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  addType( current );
   					  current->name = yytext;
   					}
+<CliPropertyType>"["{ID}"]"		{ // C++/CLI indexed property
+  					  current->args = yytext;
+  					}
 <CliPropertyType>"{"			{
 					  curlyCount=0;
 					  //printf("event: '%s' '%s'\n",current->type.data(),current->name.data());

@@ -732,9 +732,9 @@ See section \ref memgroup for an example.
   The paragraph will be indented. 
   The text of the paragraph has no special internal structure. All visual
   enhancement commands may be used inside the paragraph.
-  Multiple adjacent \\author commands will be joined into a single paragraph
-  and separated by commas. Alternatively, one \\author command may mention 
-  several authors. The \\author command ends when a blank line or some other 
+  Multiple adjacent \\author commands will be joined into a single paragraph.
+  Each author description will start a new line. Alternatively, one \\author command 
+  may mention several authors. The \\author command ends when a blank line or some other 
   sectioning command is encountered.
 
   \par Example:
