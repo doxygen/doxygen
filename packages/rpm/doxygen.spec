@@ -1,0 +1,107 @@
+%define version 1.5.4
+%define revision 1
+%define mmn 1
+%define name doxygen
+
+%define contentdir /var/www
+%define suexec_caller doxygen
+%define buildroot /var/tmp/%{name}-%{version}-%{revision}root
+
+Summary: A documentation system for C/C++.
+Name: doxygen
+Version: %{version}
+Release: %{revision}
+URL: http://www.stack.nl/~dimitri/doxygen/index.html
+Vendor: Dimitri van Heesch
+License: GNU General Public License
+Group: Development/Tools
+Source: %{name}-%{version}_%{revision}.src.tar.gz
+BuildRoot: %{buildroot}
+BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips
+Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv, libstdc++ >= 2.96
+Provides: doxygen = %{mmn}
+#Obsoletes: doxygen-20050927
+
+%description
+Doxygen can generate an online class browser (in HTML) and/or a
+reference manual (in LaTeX) from a set of documented source files. The
+documentation is extracted directly from the sources. Doxygen can
+also be configured to extract the code structure from undocumented
+source files.
+
+%package doxywizard
+Group: Development/Libraries
+Summary: GUI Interface for doxygen.
+Requires: doxygen = %{mmn}
+Requires: qt >= 3.3
+Provides: doxywizard = %{mmn}
+# Obsoletes:
+
+%description doxywizard
+Doxygen can generate an online class browser (in HTML) and/or a
+reference manual (in LaTeX) from a set of documented source files. The
+documentation is extracted directly from the sources. Doxygen can
+also be configured to extract the code structure from undocumented
+source files.
+
+This is the GUI interface for doxygen.  It requires qt and X11 to
+install.
+
+%package manual
+Group: Documentation
+Summary: Documentation for doxygen.
+Provides: doxygenmanual = %{mmn}
+#Obsoletes: 
+
+%description manual
+This contains the manpages for doxygen.  The information can also be
+found at http://www.doxygen.org/.
+
+%prep
+%setup -q -n %{name}-%{version}_%{revision}
+./configure --with-doxywizard --prefix $RPM_BUILD_ROOT/usr
+
+%build
+make %{?_smp_mflags}
+make pdf %{?_smp_mflags}
+
+%install
+rm -rf $RPM_BUILD_ROOT
+
+make install
+mkdir -p $RPM_BUILD_ROOT/usr/share/doxygen
+cp -f ./latex/*.pdf $RPM_BUILD_ROOT/usr/share/doxygen
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+
+%doc README LICENSE LANGUAGE.HOWTO examples
+
+%{_bindir}/doxygen
+%{_bindir}/doxytag
+
+%files doxywizard
+%defattr(-,root,root)
+%{_bindir}/doxywizard
+
+%files manual
+%defattr(-,root,root)
+/usr/share/doxygen/*.pdf
+%doc /usr/man/man1/doxy*
+
+%changelog
+* Mon Oct 10 2005 Kevin McBride <kevin@planetsaphire.com> 1.4.5
+- fixed versioning bugs.
+
+* Tue Oct 4 2005 Kevin McBride <kevin@planetsaphire.com> 1.4.5
+- added obsoletes and proides sections.
+
+* Sun Sep 20 2005 Kevin McBride <kevin@planetsaphire.com> 1.4.4
+- modified rpm spec file for Fedora Core acceptance criteria.
+
+* Sun Aug 7 2005 Kevin McBride <kevin@planetsaphire.com> 1.4.4
+- created initial rpm spec file for doxygen-1.4.4
+

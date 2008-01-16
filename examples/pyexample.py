@@ -1,4 +1,5 @@
-## Documentation for this module.
+## @package pyexample
+#  Documentation for this module.
 #
 #  More details.
 

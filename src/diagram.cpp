@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -968,7 +968,7 @@ ClassDiagram::~ClassDiagram()
 }
 
 void ClassDiagram::writeFigure(QTextStream &output,const char *path,
-                               const char *fileName)
+                               const char *fileName) const
 {
   uint baseRows=base->computeRows();
   uint superRows=super->computeRows();
@@ -1263,7 +1263,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 
 void ClassDiagram::writeImage(QTextStream &t,const char *path,
                               const char *relPath,const char *fileName, 
-                              bool generateMap)
+                              bool generateMap) const
 {
   uint baseRows=base->computeRows();
   uint superRows=super->computeRows();

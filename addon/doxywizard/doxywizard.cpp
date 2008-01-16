@@ -1103,9 +1103,13 @@ void MainWidget::launchWizard()
         break;
     }
 #if defined(Q_OS_MACX)
-    if (Config_getBool("HAVE_DOT"))
+    if (Config_getString("DOT_PATH").isEmpty())
     {
       setDotPath();
+    }
+    if (Config_getString("MSCGEN_PATH").isEmpty())
+    {
+      setMscgenPath();
     }
 #endif
     setConfigSaved(FALSE);
@@ -1142,6 +1146,18 @@ void MainWidget::loadConfigFromFile(const QString &fn)
     addRecentFile(fn);
     m_workingDir->setText(QFileInfo(fn).dirPath(TRUE));
     m_configFileName = fn;
+#if defined(Q_OS_MACX)
+    if (Config_getString("DOT_PATH").isEmpty())
+    {
+      setDotPath();
+      setConfigSaved(FALSE);
+    }
+    if (Config_getString("MSCGEN_PATH").isEmpty())
+    {
+      setMscgenPath();
+      setConfigSaved(FALSE);
+    }
+#endif
     statusBar()->message("New configuration loaded",messageTimeout);
   }
 }
@@ -1228,6 +1244,7 @@ void MainWidget::resetConfig()
     Config::instance()->init();
 #if defined(Q_OS_MACX)
     setDotPath();
+    setMscgenPath();
 #endif
 
     m_configFileName = "";

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -108,7 +108,8 @@ void XmlDocVisitor::visit(DocURL *u)
   if (m_hide) return;
   m_t << "<ulink url=\""; 
   if (u->isEmail()) m_t << "mailto:";
-  m_t << u->url() << "\">";
+  filter(u->url());
+  m_t << "\">";
   filter(u->url());
   m_t << "</ulink>";
 }

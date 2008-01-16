@@ -1,12 +1,9 @@
 TEMPLATE	= lib
 CONFIG		= warn_on staticlib $extraopts
 HEADERS		= deflate.h \
-		  infblock.h \
-		  infcodes.h \
 		  inffast.h \
 		  inffixed.h \
 		  inftrees.h \
-		  infutil.h \
 		  png.h \
 		  pngasmrd.h \
 		  pngconf.h \
@@ -19,12 +16,9 @@ SOURCES		= adler32.c \
 		  crc32.c \
 		  deflate.c \
 		  gzio.c \
-		  infblock.c \
-		  infcodes.c \
 		  inffast.c \
 		  inflate.c \
 		  inftrees.c \
-		  infutil.c \
 		  png.c \
 		  pngerror.c \
 		  pnggccrd.c \

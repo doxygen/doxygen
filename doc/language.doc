@@ -172,9 +172,9 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Korean</td>
-    <td>SooYoung Jung<br>Richard Kim</td>
-    <td>jung5000 at gmail dot com<br>ryk at dspwiz dot com</td>
-    <td>1.4.6</td>
+    <td>Kim Taedong<br>SooYoung Jung<br>Richard Kim</td>
+    <td>fly1004 at gmail dot com<br>jung5000 at gmail dot com<br>ryk at dspwiz dot com</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>KoreanEn</td>
@@ -322,7 +322,8 @@ when the translator was updated.
   \hline
   JapaneseEn & see the Japanese language & {\tt\tiny ~} & English based \\
   \hline
-  Korean & SooYoung Jung & {\tt\tiny jung5000@gmail.com} & 1.4.6 \\
+  Korean & Kim Taedong & {\tt\tiny fly1004@gmail.com} & up-to-date \\
+  ~ & SooYoung Jung & {\tt\tiny jung5000@gmail.com} & ~ \\
   ~ & Richard Kim & {\tt\tiny ryk@dspwiz.com} & ~ \\
   \hline
   KoreanEn & see the Korean language & {\tt\tiny ~} & English based \\

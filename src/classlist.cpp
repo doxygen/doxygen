@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -99,7 +99,8 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.startMemberList();
             found=TRUE;
           }
-          if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+          if (!Config_getString("GENERATE_TAGFILE").isEmpty() &&
+              !cd->isReference())  // skip classes found in tag files
           {
             Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
                     << "\">" << convertToXML(cd->name()) << "</class>" << endl;

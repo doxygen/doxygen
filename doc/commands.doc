@@ -84,6 +84,8 @@ documentation:
 \refitem cmdfdollar \\f\$
 \refitem cmdfbropen \\f[
 \refitem cmdfbrclose \\f]
+\refitem cmdfcurlyopen \\f{
+\refitem cmdfcurlyclose \\f}
 \refitem cmdfile \\file
 \refitem cmdfn \\fn
 \refitem cmdhideinitializer \\hideinitializer
@@ -1973,6 +1975,19 @@ class Receiver
   Marks the end of a long formula that is displayed
   centered on a separate line.
   \sa section \ref cmdfbropen "\\f[" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfcurlyopen \\f{environment}{
+
+  Marks the start of a formula that is in a specific environment.
+  \note The second \{ is optional and is only to help editors (such as Vim) to
+  do proper syntax highlighting by making the number of opening and closing braces
+  the same.
+
+<hr>
+\section cmdfcurlyclose \\f}
+
+  Marks the end of a formula that is in a specific environment.
 
 <hr>
 \section cmdhtmlonly \\htmlonly

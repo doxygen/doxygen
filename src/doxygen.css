@@ -299,6 +299,7 @@ HR { height: 1px;
   font-size: 80%;
   color: #606060;
   font-weight: normal;
+  margin-left: 3px;
 } 
 .memnav { 
   background-color: #e8eef2;

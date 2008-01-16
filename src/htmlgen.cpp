@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -658,6 +658,7 @@ static void generateDynamicSections(QTextStream &t,const QCString &relPath)
       "      button.src='" << relPath << "closed.gif';\n"
       "      section.id='dynsection'+sectionCounter;\n"
       "      section.style.display='none';\n"
+      "      section.style.marginLeft='14px';\n"
       "      sectionCounter++;\n"
       "    }\n"
       "  }\n"
@@ -682,10 +683,11 @@ void HtmlGenerator::startFile(const char *name,const char *,
     fileName+=Doxygen::htmlFileExtension;
   }
   startPlainFile(fileName);
-  if (Config_getBool("GENERATE_HTMLHELP"))
-  {
-    HtmlHelp::getInstance()->addIndexFile(fileName);
-  }
+  Doxygen::indexList.addIndexFile(fileName);
+  //if (Config_getBool("GENERATE_HTMLHELP"))
+  //{
+  //  HtmlHelp::getInstance()->addIndexFile(fileName);
+  //}
   
   QCString dispTitle = title;
   QCString projName = Config_getString("PROJECT_NAME");
@@ -1118,7 +1120,7 @@ void HtmlGenerator::startClassDiagram()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endClassDiagram(ClassDiagram &d,
+void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
   t << "</div>" << endl;
@@ -1490,7 +1492,7 @@ void HtmlGenerator::startDotGraph()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endDotGraph(DotClassGraph &g)
+void HtmlGenerator::endDotGraph(const DotClassGraph &g)
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
@@ -1511,7 +1513,7 @@ void HtmlGenerator::startInclDepGraph()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
+void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
@@ -1524,7 +1526,7 @@ void HtmlGenerator::startGroupCollaboration()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
+void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
@@ -1537,7 +1539,7 @@ void HtmlGenerator::startCallGraph()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endCallGraph(DotCallGraph &g)
+void HtmlGenerator::endCallGraph(const DotCallGraph &g)
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
@@ -1550,7 +1552,7 @@ void HtmlGenerator::startDirDepGraph()
   t << "<div class=\"dynheader\">" << endl;
 }
 
-void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
+void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
@@ -1558,7 +1560,7 @@ void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
   t << "</div>" << endl;
 }
 
-void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
+void HtmlGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &g)
 {
   g.writeGraph(t,dir);
 }

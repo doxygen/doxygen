@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -29,7 +29,6 @@
 #include "dot.h"
 #include "message.h"
 #include "docparser.h"
-#include "ftvhelp.h"
 #include "searchindex.h"
 #include "htags.h"
 #include "parserintf.h"
@@ -1235,8 +1234,6 @@ static void addDirsAsGroups(Directory *root,GroupDef *parent,int level)
 
 void generateFileTree()
 {
-  FTVHelp::generateTreeViewImages();
-  
   Directory *root=new Directory(0,"root");
   root->setLast(TRUE);
   FileNameListIterator fnli(*Doxygen::inputNameList); 

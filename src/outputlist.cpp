@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -278,12 +278,12 @@ void OutputList::forall(void (OutputGenerator::*func)(a1,a2,a3,a4,a5),a1,a2,a3,a
 FORALL1(const char *a1,a1)
 FORALL1(char a1,a1)
 FORALL1(int a1,a1)
-FORALL1(DotClassGraph &a1,a1)
-FORALL1(DotInclDepGraph &a1,a1)
-FORALL1(DotCallGraph &a1,a1)
-FORALL1(DotDirDeps &a1,a1)
-FORALL1(DotGfxHierarchyTable &a1,a1)
-FORALL1(DotGroupCollaboration &a1,a1)
+FORALL1(const DotClassGraph &a1,a1)
+FORALL1(const DotInclDepGraph &a1,a1)
+FORALL1(const DotCallGraph &a1,a1)
+FORALL1(const DotDirDeps &a1,a1)
+FORALL1(const DotGfxHierarchyTable &a1,a1)
+FORALL1(const DotGroupCollaboration &a1,a1)
 FORALL1(SectionTypes a1,a1)
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
 FORALL1(bool a1,a1)
@@ -300,7 +300,7 @@ FORALL2(const char *a1,const char *a2,a1,a2)
 FORALL2(const char *a1,bool a2,a1,a2)
 FORALL2(const char *a1,SectionInfo::SectionType a2,a1,a2)
 FORALL3(bool a1,bool a2,bool a3,a1,a2,a3)
-FORALL3(ClassDiagram &a1,const char *a2,const char *a3,a1,a2,a3)
+FORALL3(const ClassDiagram &a1,const char *a2,const char *a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,const char *a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,bool a3,a1,a2,a3)
 FORALL3(const char *a1,const char *a2,SectionInfo::SectionType a3,a1,a2,a3)

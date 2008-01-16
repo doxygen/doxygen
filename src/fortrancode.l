@@ -107,6 +107,7 @@ static Definition *  g_currentDefinition;
 static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 
+static char          stringStartSymbol; // single or double quote
 
 static void endFontClass()
 {
@@ -831,6 +832,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 					}
 
 <*>"!"[^>\n].*|"!"$ 			{ // normal comment
+					  if(YY_START == String) REJECT; // ignore in strings
   					  startFontClass("comment");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -846,26 +848,26 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
                                             generateLink(*g_code, yytext);
 					    g_insideBody=FALSE;
                                         }
-
  /*------ strings --------------------------------------------------*/ 
 <*>"\\\\"                               { str+=yytext; /* ignore \\  */}
-<*>"\\\""                               { str+=yytext; /* ignore \"  */}
+<*>"\\\""|\\\'                          { str+=yytext; /* ignore \"  */}
 
-<String>\"                              { // string ends with next quote without previous backspace 
+<String>\"|\'                           { // string ends with next quote without previous backspace 
+                                          if(yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
                                           str+=yytext;
   					  startFontClass("stringliteral");
   					  codifyLines(str);
 					  endFontClass();
                                           yy_pop_state();
                                         }           
-<*>\"                                   { /* string starts */
+<*>\"|\'                                { /* string starts */
+					  /* if(YY_START == StrIgnore) REJECT; // ignore in simple comments */
                                           yy_push_state(YY_START);
-                                          BEGIN(String); 
+                                          stringStartSymbol=yytext[0]; // single or double quote
+                                          BEGIN(String);
 					  str=yytext;
                                         }
-<String>.                               {str+=yytext;} 
-
-
+<String>.                               {str+=yytext;}
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{

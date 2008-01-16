@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -173,11 +173,9 @@ class HtmlGenerator : public OutputGenerator
     void endIndent();
     void writeSynopsis() {}
     void startClassDiagram();
-    void endClassDiagram(ClassDiagram &,const char *,const char *);
+    void endClassDiagram(const ClassDiagram &,const char *,const char *);
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
-    //void startQuickIndexItem(const char *,const char *);
-    //void endQuickIndexItem();
     void writeQuickLinks(bool compact,HighlightedItem hli);
     void writeNonBreakableSpace(int);
     
@@ -195,16 +193,16 @@ class HtmlGenerator : public OutputGenerator
     { t << "</td></tr>" << endl; }
     
     void startDotGraph();
-    void endDotGraph(DotClassGraph &g);
+    void endDotGraph(const DotClassGraph &g);
     void startInclDepGraph();
-    void endInclDepGraph(DotInclDepGraph &g);
+    void endInclDepGraph(const DotInclDepGraph &g);
     void startGroupCollaboration();
-    void endGroupCollaboration(DotGroupCollaboration &g);
+    void endGroupCollaboration(const DotGroupCollaboration &g);
     void startCallGraph();
-    void endCallGraph(DotCallGraph &g);
+    void endCallGraph(const DotCallGraph &g);
     void startDirDepGraph();
-    void endDirDepGraph(DotDirDeps &g);
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &g);
+    void endDirDepGraph(const DotDirDeps &g);
+    void writeGraphicalHierarchy(const DotGfxHierarchyTable &g);
 
     void startTextBlock(bool) {}
     void endTextBlock(bool) {}

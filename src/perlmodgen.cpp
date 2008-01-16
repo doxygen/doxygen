@@ -484,16 +484,24 @@ void PerlModDocVisitor::closeSubBlock()
 
 void PerlModDocVisitor::openOther()
 {
+  // Using a secondary text stream will corrupt the perl file. Instead of
+  // printing doc => [ data => [] ], it will print doc => [] data => [].
+  /*
   leaveText();
   m_output.openSave();
+  */
 }
 
 void PerlModDocVisitor::closeOther()
 {
+  // Using a secondary text stream will corrupt the perl file. Instead of
+  // printing doc => [ data => [] ], it will print doc => [] data => [].
+  /*
   QString other;
   leaveText();
   m_output.closeSave(other);
   m_other += other;
+  */
 }
 
 void PerlModDocVisitor::visit(DocWord *w)
@@ -1414,7 +1422,7 @@ void PerlModGenerator::generatePerlModForMember(MemberDef *md,Definition *)
   switch (md->memberType())
   {
   case MemberDef::Define:      memType="define";    break;
-  case MemberDef::EnumValue:   ASSERT(0);           break;
+  case MemberDef::EnumValue:   memType="enumvalue"; break;
   case MemberDef::Property:    memType="property";  break;
   case MemberDef::Variable:    memType="variable";  break;
   case MemberDef::Typedef:     memType="typedef";   break;

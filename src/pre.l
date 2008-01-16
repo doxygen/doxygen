@@ -564,6 +564,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
     // substitution of all formal arguments
     QCString resExpr;
     const QCString d=def->definition.stripWhiteSpace();
+    //printf("Macro definition: %s\n",d.data());
     bool inString=FALSE;
     while (k<d.length())
     {
@@ -912,7 +913,10 @@ QCString removeMarkers(const char *s)
 	    { 
 	      while (*p && !(pc=='*' && c=='/')) // search end of comment
 	      {
-		result+=c;
+		if (*p=='@' && *(p+1)=='@') 
+		  result+=c,p++;
+		else 
+		  result+=c;
 		pc=c;
 		c=*++p;
 	      }
@@ -1190,6 +1194,37 @@ static void endCondSection()
   }
 }
 
+static QCString escapeAt(const char *text)
+{
+  QCString result;
+  if (text)
+  {
+    char c;
+    const char *p=text;
+    while ((c=*p++))
+    {
+      if (c=='@') result+="@@"; else result+=c;
+    }
+  }
+  return result;
+}
+
+static char resolveTrigraph(char c)
+{
+  switch (c)
+  {
+    case '=': return '#';
+    case '/': return '\\';
+    case '\'': return '^';
+    case '(': return '[';
+    case ')': return ']';
+    case '!': return '|';
+    case '<': return '{';
+    case '>': return '}';
+    case '-': return '~';
+  }
+  return '?';
+}
 
 /* ----------------------------------------------------------------- */
 
@@ -1255,6 +1290,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <*>\x06					
 <*>\x00
 <*>\r
+<*>"??"[=/'()!<>-]			{ // Trigraph
+  					  unput(resolveTrigraph(yytext[2]));
+  					}
 <Start>^{B}*"#"				{ BEGIN(Command); }
 <Start>^{B}*/[^#]			{
  					  outputArray(yytext,yyleng); 
@@ -1360,7 +1398,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    if (def->nargs==-1) // no function macro
 					    {
 					      QCString result = expandMacro(g_defArgsStr);
-					      //printf("result=`%s'\n",result.data());
 					      outputArray(result,result.length());
 					    }
 					    else // zero or more arguments
@@ -1585,8 +1622,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <Guard>{ID}				{ g_guardExpr+=yytext; }
 <Guard>.				{ g_guardExpr+=*yytext; }
 <Guard>\n				{
-  					  outputChar('\n');
-					  g_yyLineNr++;
+  					  unput(*yytext);
   					  //printf("Guard: `%s'\n",
 					  //    g_guardExpr.data());
 					  bool guard=computeExpression(g_guardExpr);
@@ -1619,6 +1655,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_lastGuardName.resize(0);
   					}
 <DefinedExpr1,DefinedExpr2>\n		{ // should not happen, handle anyway
+                                          g_yyLineNr++;
   					  g_ifcount=0;
  					  BEGIN(SkipCPPBlock); 
 					}
@@ -1628,6 +1665,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefinedExpr1,DefinedExpr2>.
 <SkipCPPBlock>^{B}*"#"			{ BEGIN(SkipCommand); }
 <SkipCPPBlock>^{B}*/[^#]		{ BEGIN(SkipLine); }
+<SkipCPPBlock>\n			{ g_yyLineNr++; }
 <SkipCPPBlock>.
 <SkipCommand>"if"(("n")?("def"))?/[ \t(!]	{ 
   					  incrLevel();
@@ -1899,6 +1937,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*\n  |
 <CondLine>.				{
   					  outputArray(yytext,yyleng);
+  					  g_yyLineNr+=QCString(yytext).contains('\n');
   					  startCondSection(" ");
 					  if (YY_START==CondLine) BEGIN(g_condCtx);
   					}
@@ -1932,7 +1971,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyCComment>[^*]+			{
 					  g_defLitText+=yytext;
-					  g_defText+=yytext;
+					  g_defText+=escapeAt(yytext);
   					}
 <CopyCComment>"*/"			{
 					  g_defLitText+=yytext;

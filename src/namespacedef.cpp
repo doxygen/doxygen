@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -663,7 +663,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
         name = nd->displayName();
       }
       ol.writeObjectLink(nd->getReference(),nd->getOutputFileBase(),0,name);
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !nd->isReference()) 
       {
         Doxygen::tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
       }

@@ -959,7 +959,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 				            BEGIN(SkipLang);
 				          }
   					}
-<Comment>{CMD}"f{"[^}\n]+"}"		{ // start of a formula with custom environment
+<Comment>{CMD}"f{"[^}\n]+"}"("{"?)      { // start of a formula with custom environment
 					  formulaText="\\begin";
 					  formulaEnv=&yytext[2];
 					  formulaText+=formulaEnv;

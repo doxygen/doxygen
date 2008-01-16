@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -1013,7 +1013,7 @@ const DotNode *DotNode::findDocNode() const
 
 int DotGfxHierarchyTable::m_curNodeNumber;
 
-void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path)
+void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -1793,7 +1793,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
                                const char *path,
                                const char *relPath,
                                bool /*isTBRank*/,
-                               bool generateImageMap)
+                               bool generateImageMap) const
 {
   QDir d(path);
   // store the original directory
@@ -2012,8 +2012,12 @@ void DotInclDepGraph::buildGraph(DotNode *n,FileDef *fd,int distance)
         else
         {
           QCString tmp_url;
-          if (bfd) tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
-          QCString tooltip = fd->briefDescriptionAsTooltip();
+          QCString tooltip;
+          if (bfd) 
+          {
+            tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+            tooltip = bfd->briefDescriptionAsTooltip();
+          }
           bn = new DotNode(
               m_curNodeNumber++, // n
               ii->includeName,   // label
@@ -2135,7 +2139,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
                                  const char *path,
                                  const char *relPath,
                                  bool generateImageMap
-                                )
+                                ) const
 {
   QDir d(path);
   // store the original directory
@@ -2432,7 +2436,7 @@ DotCallGraph::~DotCallGraph()
 }
 
 QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
-                        const char *path,const char *relPath,bool generateImageMap)
+                        const char *path,const char *relPath,bool generateImageMap) const
 {
   QDir d(path);
   // store the original directory
@@ -2571,7 +2575,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
                             GraphOutputFormat format,
                             const char *path,
                             const char *relPath,
-                            bool generateImageMap)
+                            bool generateImageMap) const
 {
   QDir d(path);
   // store the original directory
@@ -2820,6 +2824,7 @@ error:
  *  \param inFile just the basename part of the filename
  *  \param outDir output directory
  *  \param relPath relative path the to root of the output dir
+ *  \param context the scope in which this graph is found (for resolving links)
  *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
 QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
@@ -3066,7 +3071,7 @@ void DotGroupCollaboration::addCollaborationMember(
 
 QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat format,
     const char *path, const char *relPath,
-    bool writeImageMap)
+    bool writeImageMap) const
 {
   QDir d(path);
   // store the original directory
@@ -3105,7 +3110,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
     Edge* edge;
     for (eli.toFirst();(edge=eli.current());++eli)
     {
-      edge->write( tdot, m_curNodeId );
+      edge->write( tdot );
     }
 
     writeGraphFooter(tdot);
@@ -3189,7 +3194,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
   return baseName;
 }
 
-void DotGroupCollaboration::Edge::write( QTextStream &t, int& )
+void DotGroupCollaboration::Edge::write( QTextStream &t ) const
 {
   const char* linkTypeColor[] = {
     "darkorchid3"
@@ -3253,7 +3258,7 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes->count() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(QTextStream &t)
+void DotGroupCollaboration::writeGraphHeader(QTextStream &t) const
 {
   t << "digraph structs" << endl;
   t << "{" << endl;

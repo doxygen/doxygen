@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -139,7 +139,7 @@ class DotGfxHierarchyTable
   public:
     DotGfxHierarchyTable();
    ~DotGfxHierarchyTable();
-    void writeGraph(QTextStream &t,const char *path);
+    void writeGraph(QTextStream &t,const char *path) const;
   
   private:
     void addHierarchy(DotNode *n,ClassDef *cd,bool hide);
@@ -160,7 +160,7 @@ class DotClassGraph
     bool isTrivial() const;
     bool isTooBig() const;
     QCString writeGraph(QTextStream &t,GraphOutputFormat f,const char *path,
-                    const char *relPath, bool TBRank=TRUE,bool imageMap=TRUE);
+                    const char *relPath, bool TBRank=TRUE,bool imageMap=TRUE) const;
 
     void writeXML(QTextStream &t);
     void writeDEF(QTextStream &t);
@@ -190,7 +190,7 @@ class DotInclDepGraph
    ~DotInclDepGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,const char *path,
                     const char *relPath,
-                    bool writeImageMap=TRUE);
+                    bool writeImageMap=TRUE) const;
     bool isTrivial() const;
     bool isTooBig() const;
     QCString diskName() const;
@@ -216,7 +216,7 @@ class DotCallGraph
     DotCallGraph(MemberDef *md,bool inverse);
    ~DotCallGraph();
     QCString writeGraph(QTextStream &t, GraphOutputFormat f,
-                        const char *path,const char *relPath,bool writeImageMap=TRUE);
+                        const char *path,const char *relPath,bool writeImageMap=TRUE) const;
     void buildGraph(DotNode *n,MemberDef *md,int distance);
     bool isTrivial() const;
     bool isTooBig() const;
@@ -245,7 +245,7 @@ class DotDirDeps
                         GraphOutputFormat format,
                         const char *path,
                         const char *relPath,
-                        bool writeImageMap=TRUE);
+                        bool writeImageMap=TRUE) const;
   private:
     DirDef *m_dir;
 };
@@ -284,20 +284,20 @@ class DotGroupCollaboration
         EdgeType eType;
 
         QList<Link> links;
-        void write( QTextStream &t, int& curNodeId );
+        void write( QTextStream &t ) const;
     };
 
     DotGroupCollaboration(GroupDef* gd);
     ~DotGroupCollaboration();
     QCString writeGraph(QTextStream &t, GraphOutputFormat format,
                     const char *path,const char *relPath,
-                    bool writeImageMap=TRUE);
+                    bool writeImageMap=TRUE) const;
     void buildGraph(GroupDef* gd);
     bool isTrivial() const;
   private :
     void addCollaborationMember( Definition* def, QCString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
-    void writeGraphHeader(QTextStream &t);
+    void writeGraphHeader(QTextStream &t) const;
     Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
                    const QCString& _label, const QCString& _url );
 

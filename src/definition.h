@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -164,7 +164,7 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! returns the file in which this definition was found */
     QCString getDefFileName() const;
 
-    /*! returns the file in which this definition was found */
+    /*! returns the extension of the file in which this definition was found */
     QCString getDefFileExtension() const;
 
     /*! returns the line number at which the definition was found */

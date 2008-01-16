@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -4825,7 +4825,6 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
 
 /*! Strips the scope from a name. Examples: A::B will return A
  *  and A<T>::B<N::C<D> > will return A<T>.
- *  \todo deal with cases like A< s<<2 >::B
  */
 QCString stripScope(const char *name)
 {
@@ -4868,8 +4867,85 @@ QCString stripScope(const char *name)
   }
   //printf("stripScope(%s)=%s\n",name,name);
   return name;
-
 }
+
+#if 0 // original version
+// new version by Davide Cesari which also works for Fortran
+QCString stripScope(const char *name)
+{
+  QCString result = name;
+  int l=result.length();
+  int p;
+  bool done;
+  bool skipBracket=FALSE; // if brackets do not match properly, ignore them altogether
+  int count=0;
+
+  do
+  {
+    p=l-1; // start at the end of the string
+    while (p>=0 && count>=0)
+    {
+      char c=result.at(p);
+      switch (c)
+      {
+        case ':': 
+          //printf("stripScope(%s)=%s\n",name,result.right(l-p-1).data());
+          return result.right(l-p-1);
+        case '>':
+          if (skipBracket) // we don't care about brackets
+          {
+            p--;
+          }
+          else // count open/close brackets
+          {
+            if (p>0 && result.at(p-1)=='>') // skip >> operator
+            {
+              p-=2;
+              break;
+            }
+            count=1;
+            //printf("pos < = %d\n",p);
+            p--;
+            while (p>=0 && !done)
+            {
+              c=result.at(p--);
+              switch (c)
+              {
+                case '>': 
+                  count++; 
+                  break;
+                case '<': 
+                  if (p>0)
+                  {
+                    if (result.at(p-1) == '<') // skip << operator
+                    {
+                      p--;
+                      break;
+                    }
+                  }
+                  count--; 
+                  break;
+                default: 
+                  //printf("c=%c count=%d\n",c,count);
+                  break;
+              }
+            }
+          }
+          //printf("pos > = %d\n",p+1);
+          break;
+        default:
+          p--;
+      }
+    }
+    done = count==0 || skipBracket; // reparse if brackets do not match
+    skipBracket=TRUE;
+  }
+  while (!done); // if < > unbalanced repeat ignoring them
+  //printf("stripScope(%s)=%s\n",name,name);
+  return name;
+}
+#endif
+
 
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -123,9 +123,9 @@ class ClassDiagram
     ClassDiagram(ClassDef *root);
    ~ClassDiagram();
     void writeFigure(QTextStream &t,const char *path,
-                     const char *file);
+                     const char *file) const;
     void writeImage(QTextStream &t,const char *path,const char *relPath,
-                     const char *file,bool generateMap=TRUE);
+                     const char *file,bool generateMap=TRUE) const;
   private:
     TreeDiagram *base;
     TreeDiagram *super;

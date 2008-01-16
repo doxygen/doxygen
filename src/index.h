@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -20,9 +20,74 @@
 
 #include "qtbc.h"
 #include <qfile.h>
+#include <qlist.h>
 
 class MemberDef;
 class OutputList;
+
+
+class IndexIntf
+{
+  public:
+    virtual ~IndexIntf() {}
+    virtual void initialize() = 0;
+    virtual void finalize() = 0;
+    virtual void incContentsDepth() = 0;
+    virtual void decContentsDepth() = 0;
+    virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
+                                 const char *file = 0, const char *anchor = 0) = 0;
+    virtual void addIndexItem(const char *level1, const char *level2, const char *contRef, 
+                              const char *memRef, const char *anchor) = 0;
+    virtual void addIndexFile(const char *name) = 0;
+};
+
+class IndexList : public IndexIntf
+{
+    void foreach(void (IndexIntf::*methodPtr)())
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)();
+    };
+    template<typename A1>
+    void foreach(void (IndexIntf::*methodPtr)(A1),A1 a1)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1);
+    };
+    template<typename A1,typename A2,typename A3,typename A4,typename A5>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5);
+    };
+
+  public:
+    IndexList() { m_intfs.setAutoDelete(TRUE); }
+    void addIndex(IndexIntf *intf) 
+    { m_intfs.append(intf); }
+    void initialize() 
+    { foreach(&IndexIntf::initialize); }
+    void finalize() 
+    { foreach(&IndexIntf::finalize); }
+    void incContentsDepth()
+    { foreach(&IndexIntf::incContentsDepth); }
+    void decContentsDepth()
+    { foreach(&IndexIntf::decContentsDepth); }
+    void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
+                         const char *file = 0, const char *anchor = 0)
+    { foreach<bool,const char *,const char *,const char *,const char*>
+             (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor); }
+    void addIndexItem(const char *level1, const char *level2, const char *contRef, 
+                      const char *memRef, const char *anchor)
+    { foreach<const char *,const char *,const char *,const char *,const char *>
+             (&IndexIntf::addIndexItem,level1,level2,contRef,memRef,anchor); }
+    void addIndexFile(const char *name) 
+    { foreach<const char *>(&IndexIntf::addIndexFile,name); }
+
+  private:
+    QList<IndexIntf> m_intfs;
+};
+
 
 enum IndexSections
 {

@@ -214,6 +214,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_template_relations TEMPLATE_RELATIONS
 \refitem cfg_toc_expand TOC_EXPAND
 \refitem cfg_treeview_width TREEVIEW_WIDTH
+\refitem cfg_typedef_hides_struct TYPEDEF_HIDES_STRUCT
 \refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_htags USE_HTAGS
 \refitem cfg_use_pdflatex USE_PDFLATEX
@@ -521,6 +522,17 @@ followed by the descriptions of the tags grouped by category.
  subgroup of that type (e.g. under the Public Functions section). Set it to
  \c NO to prevent subgrouping. Alternatively, this can be done per class using
  the \ref cmdnosubgrouping "\\nosubgrouping" command. 
+
+\anchor cfg_typedef_hides_struct 
+<dt>\c TYPEDEF_HIDES_STRUCT <dd>
+ \addindex TYPEDEF_HIDES_STRUCT
+ When \c TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct (or union) is 
+ documented as struct with the name of the typedef. So
+ <code>typedef struct TypeS {} TypeT</code>, will appear in the documentation as a struct
+ with name \c TypeT. When disabled the typedef will appear as a member of a file,
+ namespace, or class. And the struct will be named \c TypeS. This can typically
+ be useful for C code where the coding convention is that all structs are
+ typedef'ed and only the typedef is referenced never the struct's name.
 
 </dl>
 

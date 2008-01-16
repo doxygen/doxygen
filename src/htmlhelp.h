@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -24,6 +24,7 @@
 #include "qtbc.h"
 #include <qtextstream.h>
 #include <qstrlist.h>
+#include "index.h"
 
 class QFile;
 class HtmlHelpIndex;
@@ -32,7 +33,7 @@ class HtmlHelpIndex;
  *  These files can be used with the Microsoft HTML Help workshop
  *  to generate compressed HTML files (.chm).
  */
-class HtmlHelp 
+class HtmlHelp  : public IndexIntf
 {
     /*! used in imageNumber param of HTMLHelp::addContentsItem() function 
         to specify document icon in tree view.  
@@ -61,28 +62,25 @@ class HtmlHelp
       TOOL,             TOOL_NEW
     };
   public:
-    static HtmlHelp *getInstance();
+    //static HtmlHelp *getInstance();
+    HtmlHelp();
     void initialize();
     void finalize();
-    int  incContentsDepth();
-    int  decContentsDepth();
-    /*! return the current depth of the contents tree */ 
-    int  contentsDepth() { return dc; }
-    // added imageNumber - KPW
+    void incContentsDepth();
+    void decContentsDepth();
     void addContentsItem(bool isDir,
                          const char *name, 
                          const char *ref = 0, 
+                         const char *file = 0,
                          const char *anchor = 0);
     void addIndexItem(const char *level1, const char *level2, 
                       const char *contRef, const char *memRef,
                       const char *anchor);
     void addIndexFile(const char *name);
 
-
   private:
     void createProjectFile();
 
-    HtmlHelp();
     QFile *cf,*kf; 
     QTextStream cts,kts;
     HtmlHelpIndex *index;

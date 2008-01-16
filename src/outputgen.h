@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -352,20 +352,18 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;
     virtual void startClassDiagram() = 0;
-    virtual void endClassDiagram(ClassDiagram &,const char *,const char *) = 0;
+    virtual void endClassDiagram(const ClassDiagram &,const char *,const char *) = 0;
     virtual void startDotGraph() = 0;
-    virtual void endDotGraph(DotClassGraph &g) = 0;
+    virtual void endDotGraph(const DotClassGraph &g) = 0;
     virtual void startInclDepGraph() = 0;
-    virtual void endInclDepGraph(DotInclDepGraph &g) = 0;
+    virtual void endInclDepGraph(const DotInclDepGraph &g) = 0;
     virtual void startGroupCollaboration() = 0;
-    virtual void endGroupCollaboration(DotGroupCollaboration &g) = 0;
+    virtual void endGroupCollaboration(const DotGroupCollaboration &g) = 0;
     virtual void startCallGraph() = 0;
-    virtual void endCallGraph(DotCallGraph &g) = 0;
+    virtual void endCallGraph(const DotCallGraph &g) = 0;
     virtual void startDirDepGraph() = 0;
-    virtual void endDirDepGraph(DotDirDeps &g) = 0;
-    virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
-    //virtual void startQuickIndexItem(const char *s,const char *l) = 0;
-    //virtual void endQuickIndexItem() = 0;
+    virtual void endDirDepGraph(const DotDirDeps &g) = 0;
+    virtual void writeGraphicalHierarchy(const DotGfxHierarchyTable &g) = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
     virtual void startTextBlock(bool) = 0;
     virtual void endTextBlock(bool) = 0;

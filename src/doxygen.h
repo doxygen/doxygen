@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -36,6 +36,7 @@
 #include "membergroup.h"
 #include "reflist.h"
 #include "dirdef.h"
+#include "index.h"
 
 class PageSList;
 class PageSDict;
@@ -126,6 +127,8 @@ class Doxygen
     static QCString                  objDBFileName;
     static QCString                  entryDBFileName;
     static bool                      gatherDefines;
+    static bool                      userComments;
+    static IndexList                 indexList;
 };
 
 void initDoxygen();

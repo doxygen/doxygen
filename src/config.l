@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -29,6 +29,7 @@
 #include <qtextstream.h>
 #include <qregexp.h>
 #include <qstack.h>
+#include <qglobal.h>
   
 #include "config.h"
 #include "version.h"
@@ -1211,6 +1212,7 @@ void Config::check()
     filePatternList.append("*.mm");
     filePatternList.append("*.dox");
     filePatternList.append("*.py");
+    filePatternList.append("*.f90");
     if (portable_fileSystemIsCaseSensitive())
     {
       // unix => case sensitive match => also include useful uppercase versions
@@ -1228,6 +1230,7 @@ void Config::check()
       filePatternList.append("*.M");
       filePatternList.append("*.MM");
       filePatternList.append("*.PY");
+      filePatternList.append("*.F90");
     }
   }
 
@@ -1692,6 +1695,16 @@ void Config::create()
 		    "the \\nosubgrouping command. \n",
 		    TRUE
                 );
+  cb = addBool(     "TYPEDEF_HIDES_STRUCT",
+                    "When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct (or union) is \n"
+		    "documented as struct with the name of the typedef. So \n"
+		    "typedef struct TypeS {} TypeT, will appear in the documentation as a struct \n"
+		    "with name TypeT. When disabled the typedef will appear as a member of a file, \n"
+		    "namespace, or class. And the struct will be named TypeS. This can typically \n"
+		    "be useful for C code where the coding convention is that all structs are \n"
+		    "typedef'ed and only the typedef is referenced never the struct's name.\n",
+		    FALSE
+                );
   //-----------------------------------------------------------------------------------------------
   addInfo("Build","Build related configuration options");
   //-----------------------------------------------------------------------------------------------
@@ -1987,7 +2000,7 @@ void Config::create()
                     "and *.h) to filter out the source-files in the directories. If left \n"
                     "blank the following patterns are tested: \n"
 		    "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx \n"
-		    "*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py\n"
+		    "*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90\n"
                  );
   cb = addBool(
                     "RECURSIVE",
@@ -2953,7 +2966,7 @@ void Config::create()
 		    "Warning: Depending on the platform used, enabling this option may lead to \n"
 		    "badly anti-aliased labels on the edges of a graph (i.e. they become hard to \n"
 		    "read). \n",
-		    FALSE
+		    TRUE
               );
   cb->addDependency("HAVE_DOT");
   cb = addBool(

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -303,19 +303,6 @@ static bool classHasVisibleChildren(ClassDef *cd)
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 {
   if (bcl==0) return;
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp=0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
   BaseClassListIterator bcli(*bcl);
   bool started=FALSE;
   for ( ; bcli.current() ; ++bcli)
@@ -326,8 +313,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
       if (!started)
       {
         startIndexHierarchy(ol,level);
-        if (hasHtmlHelp) htmlHelp->incContentsDepth();
-        if (hasFtvHelp)  ftvHelp->incContentsDepth();
+        Doxygen::indexList.incContentsDepth();
         started=TRUE;
       }
       //printf("Passed...\n");
@@ -345,28 +331,18 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
           ol.docify(" [external]");
           ol.endTypewriter();
         }
-        if (hasHtmlHelp)
-        {
-          htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
-        }
-        if (hasFtvHelp)
-        {
-          ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-        }
+        Doxygen::indexList.addContentsItem(hasChildren,
+                                           cd->displayName(),
+                                           cd->getReference(),
+                                           cd->getOutputFileBase(),
+                                           0);
       }
       else
       {
         ol.startIndexItem(0,0);
         ol.parseText(cd->name());
         ol.endIndexItem(0,0);
-        if (hasHtmlHelp)
-        {
-          htmlHelp->addContentsItem(hasChildren,cd->displayName(),0);
-        }
-        if (hasFtvHelp)
-        {
-          ftvHelp->addContentsItem(hasChildren,0,0,0,cd->displayName());
-        }
+        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),0,0,0);
       }
       if (hasChildren)
       {
@@ -380,8 +356,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
   if (started) 
   {
     endIndexHierarchy(ol,level);
-    if (hasHtmlHelp) htmlHelp->decContentsDepth();
-    if (hasFtvHelp)  ftvHelp->decContentsDepth();
+    Doxygen::indexList.decContentsDepth();
   }
 }
 
@@ -392,19 +367,6 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level)
 void writeClassTree(BaseClassList *cl,int level)
 {
   if (cl==0) return;
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp=0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
   BaseClassListIterator cli(*cl);
   bool started=FALSE;
   for ( ; cli.current() ; ++cli)
@@ -415,22 +377,14 @@ void writeClassTree(BaseClassList *cl,int level)
     {
       if (!started)
       {
-        if (hasHtmlHelp) htmlHelp->incContentsDepth();
-        if (hasFtvHelp)  ftvHelp->incContentsDepth();
+        Doxygen::indexList.incContentsDepth();
         started=TRUE;
       }
       bool hasChildren = !cd->visited && classHasVisibleChildren(cd);
       //printf("tree2: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
-        if (hasHtmlHelp)
-        {
-            htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
-        }
-        if (hasFtvHelp)
-        {
-            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-        }
+        Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
       }
       if (hasChildren)
       {
@@ -441,15 +395,14 @@ void writeClassTree(BaseClassList *cl,int level)
   }
   if (started) 
   {
-    if (hasHtmlHelp) htmlHelp->decContentsDepth();
-    if (hasFtvHelp)  ftvHelp->decContentsDepth();
+    Doxygen::indexList.decContentsDepth();
   }
 }
 
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &started,int level)
+void writeClassTreeNode(ClassDef *cd,bool &started,int level)
 {
   //printf("writeClassTreeNode(%s) visited=%d\n",cd->name().data(),cd->visited);
   if (cd->isVisibleInHierarchy() && !cd->visited)
@@ -462,14 +415,7 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
     //printf("node: Has children %s: %d\n",cd->name().data(),hasChildren);
     if (cd->isLinkable())
     {
-      if (hasHtmlHelp)
-      {
-        HtmlHelp::getInstance()->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
-      }
-      if (hasFtvHelp)
-      {
-        FTVHelp::getInstance()->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-      }
+      Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
     }
     if (hasChildren)
     {
@@ -482,9 +428,6 @@ void writeClassTreeNode(ClassDef *cd,bool hasHtmlHelp,bool hasFtvHelp,bool &star
 void writeClassTree(ClassList *cl,int level)
 {
   if (cl==0) return;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ClassListIterator cli(*cl);
   bool started=FALSE;
   for ( cli.toFirst() ; cli.current() ; ++cli)
@@ -493,16 +436,13 @@ void writeClassTree(ClassList *cl,int level)
   }
   for ( cli.toFirst() ; cli.current() ; ++cli)
   {
-    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
+    writeClassTreeNode(cli.current(),started,level);
   }
 }
 
 void writeClassTree(ClassSDict *d,int level)
 {
   if (d==0) return;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ClassSDict::Iterator cli(*d);
   bool started=FALSE;
   for ( cli.toFirst() ; cli.current() ; ++cli)
@@ -511,7 +451,7 @@ void writeClassTree(ClassSDict *d,int level)
   }
   for ( cli.toFirst() ; cli.current() ; ++cli)
   {
-    writeClassTreeNode(cli.current(),hasHtmlHelp,hasFtvHelp,started,level);
+    writeClassTreeNode(cli.current(),started,level);
   }
 }
 
@@ -519,20 +459,6 @@ void writeClassTree(ClassSDict *d,int level)
 
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
 {
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp=0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
-
   ClassSDict::Iterator cli(*cl);
   for (;cli.current(); ++cli)
   {
@@ -549,8 +475,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
         if (!started)
         {
           startIndexHierarchy(ol,0);
-          if (hasHtmlHelp) htmlHelp->incContentsDepth();
-          if (hasFtvHelp)  ftvHelp->incContentsDepth();
+          Doxygen::indexList.incContentsDepth();
           started=TRUE;
         }
         bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
@@ -568,28 +493,14 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
             ol.docify(" [external]");
             ol.endTypewriter();
           }
-          if (hasHtmlHelp)
-          {
-            htmlHelp->addContentsItem(hasChildren,cd->displayName(),cd->getOutputFileBase());
-          }
-          if (hasFtvHelp)
-          {
-            ftvHelp->addContentsItem(hasChildren,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-          }
+          Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
         }
         else
         {
           ol.startIndexItem(0,0);
           ol.parseText(cd->displayName());
           ol.endIndexItem(0,0);
-          if (hasHtmlHelp)
-          {
-            htmlHelp->addContentsItem(hasChildren,cd->displayName(),0);
-          }
-          if (hasFtvHelp)
-          {
-            ftvHelp->addContentsItem(hasChildren,0,0,0,cd->displayName());
-          }
+          Doxygen::indexList.addContentsItem(hasChildren,cd->displayName(),0,0,0);
         }
         if (hasChildren) 
         {
@@ -603,20 +514,6 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started)
 
 void writeClassHierarchy(OutputList &ol)
 {
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp=0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
-
   initClassHierarchy(Doxygen::classSDict);
   initClassHierarchy(Doxygen::hiddenClasses);
 
@@ -626,8 +523,7 @@ void writeClassHierarchy(OutputList &ol)
   if (started) 
   {
     endIndexHierarchy(ol,0);
-    if (hasHtmlHelp) htmlHelp->decContentsDepth();
-    if (hasFtvHelp)  ftvHelp->decContentsDepth();
+    Doxygen::indexList.decContentsDepth();
   }
 }
 
@@ -675,8 +571,6 @@ void writeHierarchicalIndex(OutputList &ol)
             HLI_Hierarchy);
   startTitle(ol,0);
   QCString title = theTranslator->trClassHierarchy();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) 
   {
     title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -684,21 +578,7 @@ void writeHierarchicalIndex(OutputList &ol)
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"hierarchy"); 
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"hierarchy",0,ftvHelpTitle); 
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"hierarchy",0); 
   if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))
   {
     ol.disable(OutputGenerator::Latex);
@@ -726,27 +606,11 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   QCString title = theTranslator->trGraphicalHierarchy();
   startFile(ol,"inherits",0,title.data(),HLI_Hierarchy);
   startTitle(ol,0);
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(FALSE,htmlHelpTitle,"inherits"); 
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(FALSE,0,"inherits",0,ftvHelpTitle); 
-  }
+  Doxygen::indexList.addContentsItem(FALSE,title,0,"inherits",0); 
   ol.startTextLink("hierarchy",0);
   ol.parseText(theTranslator->trGotoTextualHierarchy());
   ol.endTextLink();
@@ -803,29 +667,12 @@ void writeFileIndex(OutputList &ol)
   startFile(ol,"files",0,theTranslator->trFileIndex().data(),HLI_Files);
   startTitle(ol,0);
   QCString title = theTranslator->trFileList();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"files"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"files",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"files",0); 
+  Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trFileListDescription(Config_getBool("EXTRACT_ALL")));
   ol.endTextBlock();
 
@@ -903,28 +750,14 @@ void writeFileIndex(OutputList &ol)
         if (doc)
         {
           ol.writeObjectLink(0,fd->getOutputFileBase(),0,fd->name());
-          if (hasHtmlHelp)
-          {
-            htmlHelp->addContentsItem(FALSE,fullName,fd->getOutputFileBase());
-          }
-          if (hasFtvHelp)
-          {
-            ftvHelp->addContentsItem(FALSE,fd->getReference(),fd->getOutputFileBase(),0,fullName);
-          }
+          Doxygen::indexList.addContentsItem(FALSE,fullName,fd->getReference(),fd->getOutputFileBase(),0);
         }
         else
         {
           ol.startBold();
           ol.docify(fd->name());
           ol.endBold();
-          if (hasHtmlHelp)
-          {
-            htmlHelp->addContentsItem(FALSE,fullName,0);
-          }
-          if (hasFtvHelp)
-          {
-            ftvHelp->addContentsItem(FALSE,0,0,0,fullName);
-          }
+          Doxygen::indexList.addContentsItem(FALSE,fullName,0,0,0);
         }
         if (src)
         {
@@ -972,14 +805,7 @@ void writeFileIndex(OutputList &ol)
     }
   }
   ol.endIndexList();
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -1016,29 +842,12 @@ void writeNamespaceIndex(OutputList &ol)
     title = theTranslator->trNamespaceList();
   }
   startTitle(ol,0);
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp  = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"namespaces"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"namespaces",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"namespaces",0); 
+  Doxygen::indexList.incContentsDepth();
   //ol.newParagraph();
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
@@ -1087,25 +896,11 @@ void writeNamespaceIndex(OutputList &ol)
       }
       ol.endIndexValue(nd->getOutputFileBase(),hasBrief);
       //ol.writeEndAnnoItem(nd->getOutputFileBase());
-      if (hasHtmlHelp)
-      {
-        htmlHelp->addContentsItem(FALSE,nd->displayName(),nd->getOutputFileBase());
-      }
-      if (hasFtvHelp)
-      {
-        ftvHelp->addContentsItem(FALSE,nd->getReference(),nd->getOutputFileBase(),0,nd->displayName());
-      }
+      Doxygen::indexList.addContentsItem(FALSE,nd->displayName(),nd->getReference(),nd->getOutputFileBase(),0);
     }
   }
   if (!first) ol.endIndexList();
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -1133,9 +928,6 @@ int countAnnotatedClasses()
 
 void writeAnnotatedClassList(OutputList &ol)
 {
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
   ol.startIndexList(); 
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDef *cd;
@@ -1210,14 +1002,7 @@ void writeAnnotatedClassList(OutputList &ol)
       }
       ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
       //ol.writeEndAnnoItem(cd->getOutputFileBase());
-      if (hasHtmlHelp)
-      {
-        HtmlHelp::getInstance()->addContentsItem(FALSE,cd->displayName(),cd->getOutputFileBase());
-      }
-      if (hasFtvHelp)
-      {
-        FTVHelp::getInstance()->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
-      }
+      Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
     }
   }
   ol.endIndexList();
@@ -1473,10 +1258,6 @@ void writeAlphabeticalIndex(OutputList &ol)
 
 void writeAnnotatedIndex(OutputList &ol)
 {
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-
   if (annotatedClasses==0) return;
   
   ol.pushGeneratorState();
@@ -1484,37 +1265,16 @@ void writeAnnotatedIndex(OutputList &ol)
   QCString title = theTranslator->trCompoundList();
   startFile(ol,"annotated",0,title.data(),HLI_Annotated);
   startTitle(ol,0);
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle =  title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"annotated"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"annotated",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"annotated",0); 
+  Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trCompoundListDescription());
   ol.endTextBlock();
   writeAnnotatedClassList(ol);
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   
   endFile(ol);
   ol.popGeneratorState();
@@ -2007,19 +1767,7 @@ void writeClassMemberIndex(OutputList &ol)
   if (documentedClassMembers[CMHL_All]>0)
   {
     QCString title = theTranslator->trCompoundMembers();
-    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-    if (hasHtmlHelp)
-    {
-      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-      htmlHelp->addContentsItem(FALSE,title,"functions"); 
-    }
-    if (hasFtvHelp)
-    {
-      FTVHelp *ftvHelp = FTVHelp::getInstance();
-      ftvHelp->addContentsItem(FALSE,0,"functions",0,title); 
-    }
+    Doxygen::indexList.addContentsItem(FALSE,title,0,"functions",0); 
   }
 }
 
@@ -2139,19 +1887,7 @@ void writeFileMemberIndex(OutputList &ol)
   if (documentedFileMembers[FMHL_All]>0)
   {
     QCString title = theTranslator->trFileMembers();
-    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-    if (hasHtmlHelp)
-    {
-      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-      htmlHelp->addContentsItem(FALSE,title,"globals"); 
-    }
-    if (hasFtvHelp)
-    {
-      FTVHelp *ftvHelp = FTVHelp::getInstance();
-      ftvHelp->addContentsItem(FALSE,0,"globals",0,title); 
-    }
+    Doxygen::indexList.addContentsItem(FALSE,title,0,"globals",0); 
   }
 }
 
@@ -2268,19 +2004,7 @@ void writeNamespaceMemberIndex(OutputList &ol)
   if (documentedNamespaceMembers[NMHL_All]>0)
   {
     QCString title = theTranslator->trNamespaceMembers();
-    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-    bool hasFtvHelp =  generateHtml && Config_getBool("GENERATE_TREEVIEW");
-    if (hasHtmlHelp)
-    {
-      HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-      htmlHelp->addContentsItem(FALSE,title,"namespacemembers"); 
-    }
-    if (hasFtvHelp)
-    {
-      FTVHelp *ftvHelp = FTVHelp::getInstance();
-      ftvHelp->addContentsItem(FALSE,0,"namespacemembers",0,title); 
-    }
+    Doxygen::indexList.addContentsItem(FALSE,title,0,"namespacemembers",0); 
   }
 }
 
@@ -2294,29 +2018,12 @@ void writeExampleIndex(OutputList &ol)
   QCString title = theTranslator->trExamples();
   startFile(ol,"examples",0,title.data(),HLI_Examples);
   startTitle(ol,0);
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"examples"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"examples",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"examples",0); 
+  Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trExamplesDescription());
   //ol.newParagraph();
   ol.endTextBlock();
@@ -2330,26 +2037,17 @@ void writeExampleIndex(OutputList &ol)
     if (!pd->title().isEmpty())
     {
       ol.writeObjectLink(0,n,0,pd->title());
-      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pd->title(),n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pd->getReference(),n,0,pd->title());
+      Doxygen::indexList.addContentsItem(FALSE,pd->title(),pd->getReference(),n,0);
     }
     else
     {
       ol.writeObjectLink(0,n,0,pd->name());
-      if (hasHtmlHelp) htmlHelp->addContentsItem(FALSE,pd->name(),n);
-      if (hasFtvHelp)  ftvHelp->addContentsItem(FALSE,pd->getReference(),n,0,pd->name());
+      Doxygen::indexList.addContentsItem(FALSE,pd->name(),pd->getReference(),n,0);
     }
     ol.writeString("\n");
   }
   ol.endItemList();
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -2379,21 +2077,7 @@ void countRelatedPages(int &docPages,int &indexPages)
 static void writeSubPages(PageDef *pd)
 {
   //printf("Write subpages(%s #=%d)\n",pd->name().data(),pd->getSubPages() ? pd->getSubPages()->count() : 0 );
-  static bool generateHtml = Config_getBool("GENERATE_HTML") ;
-  static bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  static bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  HtmlHelp *htmlHelp = 0;
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->incContentsDepth();
-  }
-  FTVHelp  *ftvHelp = 0;
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.incContentsDepth();
 
   PageSDict *subPages = pd->getSubPages();
   if (subPages)
@@ -2411,25 +2095,12 @@ static void writeSubPages(PageDef *pd)
 
       bool hasSubPages = subPage->hasSubPages();
 
-      if (hasHtmlHelp) 
-      {
-        htmlHelp->addContentsItem(hasSubPages,pageTitle,subPage->getOutputFileBase());
-      }
-      if (hasFtvHelp)  
-      {
-        ftvHelp->addContentsItem(hasSubPages,subPage->getReference(),subPage->getOutputFileBase(),0,pageTitle);
-      }
+      Doxygen::indexList.addContentsItem(hasSubPages,pageTitle,subPage->getReference(),subPage->getOutputFileBase(),0);
       writeSubPages(subPage);
     }
   }
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
+
 }
 
 void writePageIndex(OutputList &ol)
@@ -2440,29 +2111,12 @@ void writePageIndex(OutputList &ol)
   startFile(ol,"pages",0,theTranslator->trPageIndex().data(),HLI_Pages);
   startTitle(ol,0);
   QCString title = theTranslator->trRelatedPages();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  static bool generateHtml = Config_getBool("GENERATE_HTML") ;
-  static bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  static bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"pages"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"pages",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"pages",0); 
+  Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trRelatedPagesDescription());
   ol.endTextBlock();
   startIndexHierarchy(ol,0);
@@ -2491,26 +2145,12 @@ void writePageIndex(OutputList &ol)
         ol.endTypewriter();
       }
       ol.writeString("\n");
-      if (hasHtmlHelp) 
-      {
-        htmlHelp->addContentsItem(hasSubPages,pageTitle,pd->getOutputFileBase());
-      }
-      if (hasFtvHelp)  
-      {
-        ftvHelp->addContentsItem(hasSubPages,pd->getReference(),pd->getOutputFileBase(),0,pageTitle);
-      }
+      Doxygen::indexList.addContentsItem(hasSubPages,pageTitle,pd->getReference(),pd->getOutputFileBase(),0);
       writeSubPages(pd);
     }
   }
   endIndexHierarchy(ol,0);
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -2573,8 +2213,7 @@ void writeGraphInfo(OutputList &ol)
   ol.popGeneratorState();
 }
 
-void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title,
-                         HtmlHelp *htmlHelp,FTVHelp *ftvHelp)
+void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title)
 {
   if (ml && ml->count()>0)
   {
@@ -2587,33 +2226,18 @@ void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title,
         if (first)
         {
           first=FALSE;
-          if (htmlHelp)
-          {
-            htmlHelp->addContentsItem(TRUE, convertToHtml(title,TRUE), gd->getOutputFileBase(),0);
-            htmlHelp->incContentsDepth();
-          }
-          if (ftvHelp)
-          {
-
-            ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, title);
-            ftvHelp->incContentsDepth();
-          }
+          Doxygen::indexList.addContentsItem(TRUE, convertToHtml(title,TRUE), gd->getReference(), gd->getOutputFileBase(), 0);
+          Doxygen::indexList.incContentsDepth();
         }
-        if (htmlHelp)
-        {
-          htmlHelp->addContentsItem(FALSE,md->name(),md->getOutputFileBase(),md->anchor()); 
-        }
-        if (ftvHelp)
-        {
-          ftvHelp->addContentsItem(FALSE,md->getReference(),md->getOutputFileBase(),md->anchor(),md->name()); 
-        }
+        Doxygen::indexList.addContentsItem(FALSE,md->name(),md->getReference(),md->getOutputFileBase(),md->anchor()); 
       }
       md=ml->next();
     }
 
-    if (htmlHelp && !first) htmlHelp->decContentsDepth();
-    if (ftvHelp && !first)  ftvHelp->decContentsDepth();
-
+    if (!first)
+    {
+      Doxygen::indexList.decContentsDepth();
+    }
   }
 }
 
@@ -2624,25 +2248,12 @@ void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title,
  */
 void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 {
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp = 0;
   if (level>20)
   {
     warn(gd->getDefFileName(),gd->getDefLine(),
         "Warning: maximum nesting level exceeded for group %s: check for possible recursive group relation!\n",gd->name().data()
         );
     return;
-  }
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
   }
 
   /* Some groups should appear twice under different parent-groups.
@@ -2676,17 +2287,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
     //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
-    if (htmlHelp)
-    {
-        htmlHelp->addContentsItem(isDir,gd->groupTitle(),gd->getOutputFileBase()); 
-        htmlHelp->incContentsDepth();
-    }
-    if (ftvHelp)
-    {
-        ftvHelp->addContentsItem(isDir,gd->getReference(),gd->getOutputFileBase(),
-                                 0,gd->groupTitle()); 
-        ftvHelp->incContentsDepth();
-    }
+    Doxygen::indexList.addContentsItem(isDir,gd->groupTitle(),gd->getReference(),gd->getOutputFileBase(),0); 
+    Doxygen::indexList.incContentsDepth();
 
     //ol.writeListItem();
     //ol.startTextLink(gd->getOutputFileBase(),0);
@@ -2714,16 +2316,11 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     {
       SectionInfo *si=0;
       if (!pd->name().isEmpty()) si=Doxygen::sectionDict[pd->name()];
-      if (htmlHelp) htmlHelp->addContentsItem(FALSE,
+      Doxygen::indexList.addContentsItem(FALSE,
                                    convertToHtml(pd->title(),TRUE),
-                                   gd->getOutputFileBase(),
-                                   si ? si->label.data() : 0
-                                  ); 
-      if (ftvHelp)  ftvHelp->addContentsItem(FALSE,
                                    gd->getReference(),
                                    gd->getOutputFileBase(),
-                                   si ? si->label.data() : 0,
-                                   convertToHtml(pd->title(),TRUE)
+                                   si ? si->label.data() : 0
                                   ); 
     }
 
@@ -2744,67 +2341,39 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     if (Config_getBool("TOC_EXPAND"))
     {
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docDefineMembers),
-                         theTranslator->trDefines(),htmlHelp,ftvHelp);
+                         theTranslator->trDefines());
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docTypedefMembers),
-                         theTranslator->trTypedefs(),htmlHelp,ftvHelp);
+                         theTranslator->trTypedefs());
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docEnumMembers),
-                         theTranslator->trEnumerations(),htmlHelp,ftvHelp);
+                         theTranslator->trEnumerations());
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docFuncMembers),
-                         theTranslator->trFunctions(),htmlHelp,ftvHelp);
+                         theTranslator->trFunctions());
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docVarMembers),
-                         theTranslator->trVariables(),htmlHelp,ftvHelp);
+                         theTranslator->trVariables());
        writeGroupIndexItem(gd,gd->getMemberList(MemberList::docProtoMembers),
-                         theTranslator->trFuncProtos(),htmlHelp,ftvHelp);
+                         theTranslator->trFuncProtos());
 
       // write namespaces
       NamespaceSDict *namespaceSDict=gd->namespaceSDict;
       if (namespaceSDict->count()>0)
       {
-        if (htmlHelp)
-        {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces(),TRUE), gd->getOutputFileBase(), 0);
-          htmlHelp->incContentsDepth();
-        }
-
-        if (ftvHelp)
-        {
-
-          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trNamespaces());
-          ftvHelp->incContentsDepth();
-        }
+        Doxygen::indexList.addContentsItem(TRUE, convertToHtml(theTranslator->trNamespaces(),TRUE),gd->getReference(), gd->getOutputFileBase(), 0);
+        Doxygen::indexList.incContentsDepth();
 
         NamespaceSDict::Iterator ni(*namespaceSDict);
         NamespaceDef *nsd;
         for (ni.toFirst();(nsd=ni.current());++ni)
         {
-          if (htmlHelp)
-          {
-            htmlHelp->addContentsItem(FALSE, convertToHtml(nsd->name(),TRUE), nsd->getOutputFileBase());
-          }
-          if (ftvHelp)
-          {
-            ftvHelp->addContentsItem(FALSE, nsd->getReference(), nsd->getOutputFileBase(), 0, convertToHtml(nsd->name(),TRUE));
-          }
+          Doxygen::indexList.addContentsItem(FALSE, convertToHtml(nsd->name(),TRUE), nsd->getReference(), nsd->getOutputFileBase(), 0);
         }
-        if (htmlHelp) htmlHelp->decContentsDepth();
-        if (ftvHelp)  ftvHelp->decContentsDepth();
+        Doxygen::indexList.decContentsDepth();
       }
 
       // write classes
       if (gd->classSDict->count()>0)
       {
-        if (htmlHelp)
-        {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trClasses(),TRUE), gd->getOutputFileBase(), 0);
-          htmlHelp->incContentsDepth();
-        }
-
-        if (ftvHelp)
-        {
-
-          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trClasses());
-          ftvHelp->incContentsDepth();
-        }
+        Doxygen::indexList.addContentsItem(TRUE, convertToHtml(theTranslator->trClasses(),TRUE), gd->getReference(), gd->getOutputFileBase(), 0);
+        Doxygen::indexList.incContentsDepth();
 
         ClassDef *cd;
         ClassSDict::Iterator cdi(*gd->classSDict);
@@ -2813,91 +2382,52 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
           if (cd->isLinkable())
           {
             //printf("node: Has children %s\n",cd->name().data());
-            if (htmlHelp)
-              htmlHelp->addContentsItem(FALSE,cd->displayName(),cd->getOutputFileBase());
-            if (ftvHelp)
-              ftvHelp->addContentsItem(FALSE,cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+            Doxygen::indexList.addContentsItem(FALSE,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),0);
           }
         }
 
         //writeClassTree(gd->classSDict,1);
-        if (htmlHelp) htmlHelp->decContentsDepth();
-        if (ftvHelp)  ftvHelp->decContentsDepth();
+        Doxygen::indexList.decContentsDepth();
       }
 
       // write file list
       FileList *fileList=gd->fileList;
       if (fileList->count()>0)
       {
-        if (htmlHelp)
-        {
-          htmlHelp->addContentsItem(TRUE, 
-              convertToHtml(theTranslator->trFile(TRUE,FALSE),TRUE), 
+        Doxygen::indexList.addContentsItem(TRUE, 
+              theTranslator->trFile(TRUE,FALSE),
+              gd->getReference(), 
               gd->getOutputFileBase(), 0);
-          htmlHelp->incContentsDepth();
-        }
-
-        if (ftvHelp)
-        {
-
-          ftvHelp->addContentsItem(TRUE, gd->getReference(), 
-              gd->getOutputFileBase(), 0, 
-              theTranslator->trFile(TRUE,FALSE));
-          ftvHelp->incContentsDepth();
-        }
+        Doxygen::indexList.incContentsDepth();
 
         FileDef *fd=fileList->first();
         while (fd)
         {
-          if (htmlHelp)
-            htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name(),TRUE),fd->getOutputFileBase());
-          if (ftvHelp)
-            ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name(),TRUE));
+          Doxygen::indexList.addContentsItem(FALSE, convertToHtml(fd->name(),TRUE),fd->getReference(), fd->getOutputFileBase(), 0);
           fd=fileList->next();
         }
-        if (htmlHelp)
-          htmlHelp->decContentsDepth();
-        if (ftvHelp)
-          ftvHelp->decContentsDepth();
+        Doxygen::indexList.decContentsDepth();
       }
 
       // write examples
       if (gd->exampleDict->count()>0)
       {
-        if (htmlHelp)
-        {
-          htmlHelp->addContentsItem(TRUE, convertToHtml(theTranslator->trExamples(),TRUE), gd->getOutputFileBase(), 0);
-          htmlHelp->incContentsDepth();
-        }
-
-        if (ftvHelp)
-        {
-          ftvHelp->addContentsItem(TRUE, gd->getReference(), gd->getOutputFileBase(), 0, theTranslator->trExamples());
-          ftvHelp->incContentsDepth();
-        }
+        Doxygen::indexList.addContentsItem(TRUE, convertToHtml(theTranslator->trExamples(),TRUE),gd->getReference(), gd->getOutputFileBase(), 0);
+        Doxygen::indexList.incContentsDepth();
 
         PageSDict::Iterator eli(*(gd->exampleDict));
         PageDef *pd=eli.toFirst();
         while (pd)
         {
-          if (htmlHelp)
-          {
-            htmlHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase()); 
-          }
-          if (ftvHelp)
-          {
-            ftvHelp->addContentsItem(FALSE,pd->getReference(),pd->getOutputFileBase(),0,pd->name()); 
-          }
+          Doxygen::indexList.addContentsItem(FALSE,pd->name(),pd->getReference(),pd->getOutputFileBase(),0); 
           pd=++eli;
         }
 
-        if (htmlHelp) htmlHelp->decContentsDepth();
-        if (ftvHelp)  ftvHelp->decContentsDepth();
+        Doxygen::indexList.decContentsDepth();
       }
     }
     
-    if (htmlHelp) htmlHelp->decContentsDepth();
-    if (ftvHelp)  ftvHelp->decContentsDepth();
+    Doxygen::indexList.decContentsDepth();
     
     //gd->visited=TRUE;
   }
@@ -2918,8 +2448,6 @@ void writeGroupHierarchy(OutputList &ol)
 //----------------------------------------------------------------------------
 void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
 {
-  HtmlHelp *htmlHelp=0;
-  FTVHelp  *ftvHelp = 0;
   if (level>20)
   {
     warn(dd->getDefFileName(),dd->getDefLine(),
@@ -2928,17 +2456,6 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
         );
     return;
   }
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-  }
 
   static bool tocExpand = Config_getBool("TOC_EXPAND");
   bool isDir = dd->subDirs().count()>0 || // there are subdirs
@@ -2946,17 +2463,8 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
                 dd->getFiles() && dd->getFiles()->count()>0 // there are files
                );
   //printf("gd=`%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
-  if (htmlHelp)
-  {
-    htmlHelp->addContentsItem(isDir,dd->shortName(),dd->getOutputFileBase()); 
-    htmlHelp->incContentsDepth();
-  }
-  if (ftvHelp)
-  {
-    ftvHelp->addContentsItem(isDir,dd->getReference(),dd->getOutputFileBase(),
-        0,dd->shortName()); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(isDir,dd->shortName(),dd->getReference(),dd->getOutputFileBase(),0); 
+  Doxygen::indexList.incContentsDepth();
 
   ol.startIndexItem(dd->getReference(),dd->getOutputFileBase());
   ol.parseText(dd->shortName());
@@ -2990,17 +2498,13 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd,int level)
       FileDef *fd=fileList->first();
       while (fd)
       {
-        if (htmlHelp)
-          htmlHelp->addContentsItem(FALSE,convertToHtml(fd->name(),TRUE),fd->getOutputFileBase());
-        if (ftvHelp)
-          ftvHelp->addContentsItem(FALSE, fd->getReference(), fd->getOutputFileBase(), 0, convertToHtml(fd->name(),TRUE));
+        Doxygen::indexList.addContentsItem(FALSE, convertToHtml(fd->name(),TRUE),fd->getReference(), fd->getOutputFileBase(), 0);
         fd=fileList->next();
       }
     }
   }
 
-  if (htmlHelp) htmlHelp->decContentsDepth();
-  if (ftvHelp)  ftvHelp->decContentsDepth();
+  Doxygen::indexList.decContentsDepth();
 }
 
 void writeDirHierarchy(OutputList &ol)
@@ -3025,40 +2529,17 @@ void writeGroupIndex(OutputList &ol)
   startFile(ol,"modules",0,theTranslator->trModuleIndex().data(),HLI_Modules);
   startTitle(ol,0);
   QCString title = theTranslator->trModules();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) title.prepend(Config_getString("PROJECT_NAME")+" ");
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"modules"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"modules",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"modules",0); 
+  Doxygen::indexList.incContentsDepth();
+
   ol.parseText(theTranslator->trModulesDescription());
   ol.endTextBlock();
   writeGroupHierarchy(ol);
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -3073,8 +2554,6 @@ void writeDirIndex(OutputList &ol)
   startFile(ol,"dirs",0,theTranslator->trDirIndex().data(),HLI_Directories);
   startTitle(ol,0);
   QCString title = theTranslator->trDirectories();
-  QCString htmlHelpTitle = title;
-  QCString ftvHelpTitle  = title;
   if (!Config_getString("PROJECT_NAME").isEmpty()) 
   {
     title.prepend(Config_getString("PROJECT_NAME")+" ");
@@ -3082,36 +2561,14 @@ void writeDirIndex(OutputList &ol)
   ol.parseText(title);
   endTitle(ol,0,0);
   ol.startTextBlock();
-  HtmlHelp *htmlHelp = 0;
-  FTVHelp  *ftvHelp = 0;
-  bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-  bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-  bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-  if (hasHtmlHelp)
-  {
-    htmlHelp = HtmlHelp::getInstance();
-    htmlHelp->addContentsItem(TRUE,htmlHelpTitle,"dirs"); 
-    htmlHelp->incContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp = FTVHelp::getInstance();
-    ftvHelp->addContentsItem(TRUE,0,"dirs",0,ftvHelpTitle); 
-    ftvHelp->incContentsDepth();
-  }
+  Doxygen::indexList.addContentsItem(TRUE,title,0,"dirs",0); 
+  Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trDirDescription());
   ol.endTextBlock();
 
   writeDirHierarchy(ol);
 
-  if (hasHtmlHelp)
-  {
-    htmlHelp->decContentsDepth();
-  }
-  if (hasFtvHelp)
-  {
-    ftvHelp->decContentsDepth();
-  }
+  Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -3165,17 +2622,7 @@ void writeIndex(OutputList &ol)
   
   if (Doxygen::mainPage)
   {
-    bool &generateHtml = Config_getBool("GENERATE_HTML") ;
-    bool hasHtmlHelp = generateHtml && Config_getBool("GENERATE_HTMLHELP");
-    bool hasFtvHelp  = generateHtml && Config_getBool("GENERATE_TREEVIEW");
-    if (hasHtmlHelp)
-    {
-      HtmlHelp::getInstance()->addContentsItem(Doxygen::mainPage->hasSubPages(),title,indexName); 
-    }
-    if (hasFtvHelp)
-    {
-      FTVHelp::getInstance()->addContentsItem(Doxygen::mainPage->hasSubPages(),0,indexName,0,title); 
-    }
+    Doxygen::indexList.addContentsItem(Doxygen::mainPage->hasSubPages(),title,0,indexName,0); 
 
     if (Doxygen::mainPage->hasSubPages())
     {

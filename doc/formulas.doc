@@ -75,7 +75,7 @@ There are three ways to include formulas in the documentation.
     the corresponding end command is \\f}. Here is an example for an 
     equation array
 \verbatim
-   \f{eqnarray*}
+   \f{eqnarray*}{
         g &=& \frac{Gm_2}{r^2} \\ 
           &=& \frac{(6.673 \times 10^{-11}\,\mbox{m}^3\,\mbox{kg}^{-1}\,
               \mbox{s}^{-2})(5.9736 \times 10^{24}\,\mbox{kg})}{(6371.01\,\mbox{km})^2} \\ 
