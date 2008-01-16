@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -1325,6 +1325,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->bodyLine  = yyLineNr;
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
+					  if (insidePHP && current->spec&Entry::Abstract)
+					  {
+					    // convert Abstract to AbstractClass
+					    current->spec=(current->spec&~Entry::Abstract)|Entry::AbstractClass;
+					  }
 					  BEGIN( CompoundName ) ;
 					}
 <FindMembers>{B}*"value class{" |         // C++/CLI extension
@@ -2928,6 +2933,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 						else
 						{
+						  current->doc.resize(0);
+						  current->brief.resize(0);
 						  BEGIN( MemberSpec ) ;
 						}
 					      }
@@ -3059,10 +3066,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
 					  if (!msName.isEmpty() && msName!=current->name) // skip typedef T {} T;
 					  {
-					    static bool optimizeForC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
+					    static bool typedefHidesStruct = Config_getBool("TYPEDEF_HIDES_STRUCT");
 					    // case 1: typedef struct _S { ... } S_t; 
 					    // -> omit typedef and use S_t as the struct name
-					    if (optimizeForC && 
+					    if (typedefHidesStruct && 
 						isTypedef && 
 						(current->spec&(Entry::Struct|Entry::Union)) &&
 						msType.stripWhiteSpace().isEmpty() && 
@@ -3086,7 +3093,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						varEntry->type.prepend("typedef ");
 						//  //printf("current->name = %s %s\n",current->name.data(),msName.data());
 					      }
-					      if (optimizeForC &&
+					      if (typedefHidesStruct &&
 						  isTypedef &&
 						  (current->spec&(Entry::Struct|Entry::Union)) &&
 						  memspecEntry
@@ -3138,6 +3145,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->reset();
 					    initEntry();
 					    BEGIN( FindMembers );
+					  }
+					  else
+					  {
+					    current->doc.resize(0);
+					    current->brief.resize(0);
 					  }
   					}
 <MemberSpec>"="				{ 
@@ -4907,6 +4919,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <DocLine>[^\n]*"\n"[ \t]*"//"[/!]       { // continuation of multiline C++-style comment
 				           docBlock+=yytext;
           		                   docBlock.resize(docBlock.size() - 3);
+					   yyLineNr++;
                                         }
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -134,6 +134,9 @@ Store           *Doxygen::symbolStorage;
 QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
 bool             Doxygen::gatherDefines = TRUE;
+IndexList        Doxygen::indexList;
+
+bool             Doxygen::userComments = FALSE;
 
 // locally accessible globals
 static QDict<EntryNav>   classEntries(1009);
@@ -149,6 +152,7 @@ FileStorage *g_storage = 0;
 QCString       spaces;
 
 static bool g_successfulRun = FALSE;
+static bool g_dumpSymbolMap = FALSE;
 
 
 
@@ -1255,100 +1259,60 @@ static void resolveClassNestingRelations()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
 
-  int nestingLevel=0;
   bool done=FALSE;
+  int iteration=0;
   while (!done)
   {
-    // iterate over all classes searching for a class with right nesting
-    // level (starting with 0 and going up until no more classes are found)
-    //
-    // we start with all classes that are inside a namespace and then
-    // do the ones outside the namespace to avoid an "internal inconsistency" for the
-    // following:
-    // File A:
-    //    using namespace N;
-    //    class C::P {}
-    // File B:
-    //    namespace N { class C { class P {}; }; }
-    //
-    // If file A is parsed before file B then without it C::P would not be related to N.
     done=TRUE;
-    ClassSDict::Iterator cli(*Doxygen::classSDict);
+    ++iteration;
     ClassDef *cd=0;
-    // first handle any class inside a namespace
     for (cli.toFirst();(cd=cli.current());++cli)
     {
-      QCString c,n;
-      extractNamespaceName(cd->name(),c,n,TRUE);
-      n = stripAnonymousNamespaceScope(n);
-      if (cd->name().contains("::")==nestingLevel && !n.isEmpty())
+      if (!cd->visited)
       {
-        cd->visited=TRUE;
-        //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
-        // also add class to the correct structural context 
-        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
-                                                 cd->name(),cd->getFileDef());
-        if (d==0) // we didn't find anything, create the scope artificially
-                  // anyway, so we can at least relate scopes properly.
-        {
-          Definition *d = buildScopeFromQualifiedName(cd->name(),cd->name().contains("::"));
-          if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
-                     // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
-          {
-            d->addInnerCompound(cd);
-            cd->setOuterScope(d);
-            warn(cd->getDefFileName(),cd->getDefLine(),
-                "Warning: Internal inconsistency: scope for class %s not "
-                "found!",cd->name().data()
-                );
-          }
-        }
-        else
-        {
-          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
-          d->addInnerCompound(cd);
-          cd->setOuterScope(d);
-        }
-      }
-      if (!cd->visited) done=FALSE;
-    }
-    // and now the same for classes outside any namespace
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      if (cd->name().contains("::")==nestingLevel && !cd->visited)
-      {
-        cd->visited=TRUE;
         QCString name = stripAnonymousNamespaceScope(cd->name());
-        //printf("Level=%d processing=%s\n",nestingLevel,cd->name().data());
+        //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
         // also add class to the correct structural context 
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
                                                  name,cd->getFileDef());
-        if (d==0) // we didn't find anything, create the scope artificially
-                  // anyway, so we can at least relate scopes properly.
+        if (d)
         {
-          Definition *d = buildScopeFromQualifiedName(name,name.contains("::"));
-          if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
-                     // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
-          {
-            d->addInnerCompound(cd);
-            cd->setOuterScope(d);
-            warn(cd->getDefFileName(),cd->getDefLine(),
-                "Warning: Internal inconsistency: scope for class %s not "
-                "found while looking in the global scope!",name.data()
-                );
-          }
-        }
-        else
-        {
-          //printf("****** adding %s to scope %s\n",cd->name().data(),d->name().data());
+          //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
           cd->setOuterScope(d);
+          cd->visited=TRUE;
+          done=FALSE;
         }
+        //else
+        //{
+        //  printf("****** ignoring %s: scope not (yet) found in iteration %d\n",cd->name().data(),iteration);
+        //}
       }
-      if (!cd->visited) done=FALSE;
     }
-    nestingLevel++;
-    //printf("nestingLevel=%d\n",nestingLevel);
+  }
+
+  //give warnings for unresolved compounds
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    if (!cd->visited)
+    {
+      QCString name = stripAnonymousNamespaceScope(cd->name());
+      //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
+      /// create the scope artificially
+      // anyway, so we can at least relate scopes properly.
+      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"));
+      if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
+                 // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+      {
+        d->addInnerCompound(cd);
+        cd->setOuterScope(d);
+        warn(cd->getDefFileName(),cd->getDefLine(),
+            "Warning: Internal inconsistency: scope for class %s not "
+            "found!",name.data()
+            );
+      }
+    }
   }
 }
 
@@ -2604,7 +2568,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   Entry *root = rootNav->entry();
   FileDef *fd=rootNav->fileDef();
 
-  int l,i;
+  int l,i=-1;
   static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
 
   if (!root->type.isEmpty() && (i=re.match(root->type,0,&l))!=-1) // function variable
@@ -3388,6 +3352,7 @@ static void transferFunctionDocumentation()
                                   mdec
                                  );
               }
+
 
               mdec->mergeRefItems(mdef);
               mdef->mergeRefItems(mdec);
@@ -8779,6 +8744,60 @@ void readAliases()
 }
 
 //----------------------------------------------------------------------------
+
+static void dumpSymbol(QTextStream &t,Definition *d)
+{
+  QCString anchor;
+  if (d->definitionType()==Definition::TypeMember)
+  {
+    MemberDef *md = (MemberDef *)d;
+    anchor=":"+md->anchor();
+  }
+  QCString scope;
+  if (d->getOuterScope() && d->getOuterScope()!=Doxygen::globalScope) 
+  {
+    scope = d->getOuterScope()->getOutputFileBase()+Doxygen::htmlFileExtension;
+  }
+  t << "REPLACE INTO symbols (symbol_id,scope_id,name,file,line) VALUES('"
+    << d->getOutputFileBase()+Doxygen::htmlFileExtension+anchor << "','"
+    << scope << "','"
+    << d->name() << "','"
+    << d->getDefFileName() << "','"
+    << d->getDefLine()
+    << "');" << endl;
+}
+
+static void dumpSymbolMap()
+{ 
+  QFile f("symbols.sql");
+  if (f.open(IO_WriteOnly))
+  {
+    QTextStream t(&f);
+    QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
+    DefinitionIntf *intf;
+    for (;(intf=di.current());++di)
+    {
+      if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
+      {
+        DefinitionListIterator dli(*(DefinitionList*)intf);
+        Definition *d;
+        // for each symbol
+        for (dli.toFirst();(d=dli.current());++dli)
+        {
+          dumpSymbol(t,d);
+        }
+      }
+      else // single symbol
+      {
+        Definition *d = (Definition *)intf;
+        if (d!=Doxygen::globalScope) dumpSymbol(t,d);
+      }
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // print the usage of doxygen
 
 static void usage(const char *name)
@@ -9092,6 +9111,9 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
+        break;
+      case 'm':
+        g_dumpSymbolMap = TRUE;
         break;
       case '-':
         if (strcmp(&argv[optind][2],"help")==0)
@@ -9846,6 +9868,11 @@ void generateOutput()
   //  }
   //  printf("\n");
   //}
+  if (g_dumpSymbolMap)
+  {
+     dumpSymbolMap();
+     exit(0);
+  }
 
   initDocParser();
 
@@ -9854,8 +9881,11 @@ void generateOutput()
   {
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
-    if (Config_getBool("GENERATE_HTMLHELP")) HtmlHelp::getInstance()->initialize();
-    if (Config_getBool("GENERATE_TREEVIEW")) FTVHelp::getInstance()->initialize();
+    if (Config_getBool("GENERATE_HTMLHELP")) Doxygen::indexList.addIndex(new HtmlHelp);
+    //HtmlHelp::getInstance()->initialize();
+    if (Config_getBool("GENERATE_TREEVIEW")) Doxygen::indexList.addIndex(new FTVHelp);
+    //FTVHelp::getInstance()->initialize();
+    Doxygen::indexList.initialize();
     if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
   }
@@ -10020,14 +10050,17 @@ void generateOutput()
     Doxygen::formulaList.generateBitmaps(Config_getString("HTML_OUTPUT"));
   }
   
-  if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))  
-  {
-    HtmlHelp::getInstance()->finalize();
-  }
-  if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_TREEVIEW"))  
-  {
-    FTVHelp::getInstance()->finalize();
-  }
+  //if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP"))  
+  //{
+  //  HtmlHelp::getInstance()->finalize();
+  //}
+  //if (Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_TREEVIEW"))  
+  //{
+  //  FTVHelp::getInstance()->finalize();
+  //}
+
+  Doxygen::indexList.finalize();
+
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
     Doxygen::tagFile << "</tagfile>" << endl;

@@ -347,6 +347,7 @@ FTVHelp::~FTVHelp()
   delete[] m_indentNodes;
 }
 
+#if 0
 /*! return a reference to the one and only instance of this class. 
  */
 FTVHelp *FTVHelp::getInstance()
@@ -354,6 +355,7 @@ FTVHelp *FTVHelp::getInstance()
   if (m_theInstance==0) m_theInstance = new FTVHelp;
   return m_theInstance;
 }
+#endif
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()
@@ -369,6 +371,7 @@ void FTVHelp::initialize()
 void FTVHelp::finalize()
 {
   generateTreeView();
+  generateTreeViewImages();
   delete m_theInstance;
   m_theInstance=0;
 }
@@ -377,19 +380,19 @@ void FTVHelp::finalize()
  *  This will start a new sublist in contents file.
  *  \sa decContentsDepth()
  */
-int FTVHelp::incContentsDepth()
+void FTVHelp::incContentsDepth()
 {
   //int i; for (i=0;i<m_dc+1;i++) m_cts << "  ";
   m_indent++;
   ASSERT(m_indent<MAX_INDENT);
-  return m_indent;
+  //return m_indent;
 }
 
 /*! Decrease the level of the contents hierarchy.
  *  This will end the current sublist.
  *  \sa incContentsDepth()
  */
-int FTVHelp::decContentsDepth()
+void FTVHelp::decContentsDepth()
 {
   //int i; for (i=0;i<m_dc;i++) m_cts << "  ";
 
@@ -405,7 +408,7 @@ int FTVHelp::decContentsDepth()
       parent->children.append(children->take(0));
     }
   }
-  return m_indent;
+  //return m_indent;
 }
 
 /*! Add a list item to the contents file.
@@ -416,10 +419,10 @@ int FTVHelp::decContentsDepth()
  *  \param name the name of the item.
  */
 void FTVHelp::addContentsItem(bool isDir,
+                              const char *name,
                               const char *ref,
                               const char *file,
-                              const char *anchor, 
-                              const char *name
+                              const char *anchor
                              )
 {
   QList<FTVNode> *nl = &m_indentNodes[m_indent];
@@ -611,7 +614,7 @@ void FTVHelp::generateTreeView()
     t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
     t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
     t << "  <noframes>" << endl;
-    t << "    <a href=\"main.html\">Frames are disabled. Click here to go to the main page.</a>" << endl;
+    t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
     t << "  </noframes>" << endl;
     t << "</frameset>" << endl;
     t << "</html>" << endl;

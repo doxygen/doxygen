@@ -8,7 +8,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
 Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
 
-Of them, 15 translators are up-to-date, 18 translators are based on
+Of them, 16 translators are up-to-date, 17 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -17,7 +17,7 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 194 of the required methods. Anyway, there
 still may be some details listed even for them:
 
-  TranslatorBrazilian -- The "translate me!" found in a comment.
+  TranslatorBrazilian
   TranslatorCatalan
   TranslatorChinese
   TranslatorCroatian -- The "translate me!" found in a comment.
@@ -30,6 +30,7 @@ still may be some details listed even for them:
   TranslatorGreek -- The "translate me!" found in a comment.
   TranslatorItalian -- The "translate me!" found in a comment.
   TranslatorJapanese -- Remove the obsolete methods (never used).
+  TranslatorKorean
   TranslatorRussian -- The "translate me!" found in a comment.
   TranslatorSpanish
 
@@ -45,7 +46,6 @@ must be implemented to become up-to-date:
   TranslatorPersian               1.4.6 	 1 method to implement
   TranslatorNorwegian             1.4.6 	 1 method to implement
   TranslatorLithuanian            1.4.6 	 2 methods to implement
-  TranslatorKorean                1.4.6 	 2 methods to implement
   TranslatorIndonesian            1.4.6 	 1 method to implement
   TranslatorHungarian             1.4.6 	 2 methods to implement
   TranslatorChinesetraditional    1.4.6 	 1 method to implement
@@ -103,12 +103,6 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorBrazilian   (Translator)
--------------------
-
-  Implements 194 of the required methods.
 
 
 TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
@@ -354,17 +348,6 @@ TranslatorJapaneseEn   (TranslatorEnglish)  189 methods to implement
     virtual QCString trRTFCharSet()
     virtual QCString idLanguageCharset()
     virtual QCString latexLanguageSupportCommand()
-
-
-TranslatorKorean   (TranslatorAdapter_1_4_6)  2 methods to implement
-----------------
-
-  Implements 192 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCallerGraph()
-    virtual QCString trEnumerationValueDocumentation()
 
 
 TranslatorKoreanEn   (TranslatorEnglish)  189 methods to implement

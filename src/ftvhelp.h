@@ -14,6 +14,7 @@
 #include "qtbc.h"
 #include <qtextstream.h>
 #include <qlist.h>
+#include "index.h"
 
 class QFile;
 struct FTVNode;
@@ -54,33 +55,32 @@ extern FTVImageInfo image_info[];
 
 /*! A class that generates a dynamic tree view side panel.
  */
-class FTVHelp 
+class FTVHelp : public IndexIntf
 {
   public:
-    static FTVHelp *getInstance();
+    FTVHelp();
+    //static FTVHelp *getInstance();
     void initialize();
     void finalize();
-    int  incContentsDepth();
-    int  decContentsDepth();
-    /*! return the current depth of the contents tree */ 
-    int  contentsDepth() const { return m_indent; }
+    void incContentsDepth();
+    void decContentsDepth();
     void addContentsItem(bool isDir,
+                         const char *name,
                          const char *ref,
                          const char *file,
-                         const char *anchor, 
-                         const char *name);
-    static void generateTreeViewImages();
+                         const char *anchor);
+    void addIndexItem(const char *, const char *, 
+                      const char *, const char *,
+                      const char *) {}
+    void addIndexFile(const char *) {}
 
   private:
+    void generateTreeViewImages();
     void generateTreeView();
     void generateTree(QTextStream &t,const QList<FTVNode> &nl,int level);
     void generateIndent(QTextStream &t,FTVNode *n,int level);
     void generateLink(QTextStream &t,FTVNode *n);
-    FTVHelp();
    ~FTVHelp();
-    //QFile *m_cf; 
-    //QTextStream m_cts;
-    //int m_dc;
     static FTVHelp *m_theInstance;
     QList<FTVNode> *m_indentNodes;
     int m_indent;

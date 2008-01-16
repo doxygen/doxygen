@@ -301,7 +301,17 @@ void marshalMemberList(StorageIntf *s,MemberList *ml)
   }
   else
   {
-    marshalUInt(s,1); // not a null pointer
+    marshalUInt(s,ml->count());
+    MemberListIterator mli(*ml);
+    MemberDef *md;
+    uint count=0;
+    for (mli.toFirst();(md=mli.current());++mli)
+    {
+      marshalObjPointer(s,md);
+      count++;
+    }
+    assert(count==ml->count());
+
     ml->marshal(s);
   }
 }
@@ -690,11 +700,18 @@ GroupList *unmarshalGroupList(StorageIntf *s)
 
 MemberList *unmarshalMemberList(StorageIntf *s)
 {
+  uint i;
   uint count = unmarshalUInt(s); 
   if (count==NULL_LIST) return 0;
-  MemberList *ml = new MemberList;
-  ml->unmarshal(s);
-  return ml;
+  MemberList *result = new MemberList;
+  assert(count<1000000);
+  for (i=0;i<count;i++)
+  {
+    MemberDef *md = (MemberDef*)unmarshalObjPointer(s);
+    result->append(md);
+  }
+  result->unmarshal(s);
+  return result;
 }
 
 ExampleSDict *unmarshalExampleSDict(StorageIntf *s)

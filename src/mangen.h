@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -48,7 +48,6 @@ class ManGenerator : public OutputGenerator
     void endFile();
     void clearBuffer();
 
-    //void writeIndex();
     void startIndexSection(IndexSections) {}
     void endIndexSection(IndexSections) {}
     void startProjectNumber() {}
@@ -71,11 +70,6 @@ class ManGenerator : public OutputGenerator
     void endIndexValue(const char *,bool)   {} 
     void startItemList()  {}
     void endItemList()    { newParagraph(); }
-    //void startEnumList()  {}
-    //void endEnumList()    { newParagraph(); }
-    //void startAlphabeticalIndexList() {}
-    //void endAlphabeticalIndexList() {} 
-    //void writeIndexHeading(const char *) {}
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
@@ -89,7 +83,6 @@ class ManGenerator : public OutputGenerator
     void endTextLink() {}
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    //void writeMailLink(const char *url);
     void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
     void endTypewriter()   { t << "\\fP"; firstCol=FALSE; }
     void startGroupHeader();
@@ -124,15 +117,9 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
-    //void startPreFragment()      { startCodeFragment(); }
-    //void endPreFragment()        { endCodeFragment(); }
-    //void startVerbatimFragment() { startCodeFragment(); }
-    //void endVerbatimFragment()   { endCodeFragment(); }
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
     void startCodeLine() {}
     void endCodeLine() { codify("\n"); col=0; }
-    //void writeBoldString(const char *text) 
-    //                     { t << "\\fB"; docify(text); t << "\\fP"; firstCol=FALSE; }
     void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
     void endEmphasis()   { t << "\\fP"; firstCol=FALSE; }
     void startBold()     { t << "\\fB"; firstCol=FALSE; }
@@ -150,7 +137,6 @@ class ManGenerator : public OutputGenerator
     void startCodeAnchor(const char *) {}
     void endCodeAnchor() {}
     void writeLatexSpacing() {}
-    //void writeLatexLabel(const char *,const char *) {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
@@ -162,33 +148,6 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    //void startSubscript()     { t << "\\*<"; firstCol=FALSE; }
-    //void endSubscript()       { t << "\\*>"; firstCol=FALSE; }
-    //void startSuperscript()   { t << "\\*{"; firstCol=FALSE; }
-    //void endSuperscript()     { t << "\\*}"; firstCol=FALSE; }
-    //void startTable(bool,int) {}
-    //void endTable(bool)       {}
-    //void startCaption()       {}
-    //void endCaption()         {}
-    //void nextTableRow()       {}
-    //void endTableRow()        {}
-    //void nextTableColumn()    {}
-    //void endTableColumn()     {}
-    //void writeCopyright()     { t << "(c)"; firstCol=FALSE; }
-    //void writeQuote()         { t << "`"; firstCol=FALSE; }
-    //void writeUmlaut(char c)  { t << c << "\\*'"; firstCol=FALSE; }
-    //void writeAcute(char c)   { t << c << "\\*`"; firstCol=FALSE; }
-    //void writeGrave(char c)   { t << c << "\\*:"; firstCol=FALSE; }
-    //void writeCirc(char c)    { t << c << "\\*^"; firstCol=FALSE; }
-    //void writeTilde(char c)   { t << c << "\\*~"; firstCol=FALSE; } 
-    //void writeRing(char c)    { t << c << "\\*0"; /* just a wild guess, 
-    //                                                 need to check! */ 
-    //                                              firstCol=FALSE; }
-    //void writeSharpS()        { t << "s\\*:";     /* just a wild guess,
-    //                                                 need to check! */
-    //                                              firstCol=FALSE; }
-    //void writeCCedil(char c)  { t << c;           /* TODO: fix this */
-    //                            firstCol=FALSE; }
     void startMemberDescription() { t << "\n.RI \"\\fI"; firstCol=FALSE; }
     void endMemberDescription()   { t << "\\fP\""; firstCol=FALSE; }
     void startDescList(SectionTypes);
@@ -197,33 +156,19 @@ class ManGenerator : public OutputGenerator
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
-    //void endDescTitle();
     void writeDescItem();
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
-    //void writeSectionRef(const char *,const char *,const char *,const char *) {}
-    //void writeSectionRefItem(const char *,const char *,const char *) {}
-    //void writeSectionRefAnchor(const char *,const char *,const char *) {}
     void addIndexItem(const char *,const char *) {}
     void startIndent()        {}
     void endIndent()          {}
     void writeSynopsis();
-    //void generateExternalIndex() {}
     void startClassDiagram() {}
-    void endClassDiagram(ClassDiagram &,const char *,const char *) {}
-    //void startColorFont(uchar,uchar,uchar) {}
-    //void endColorFont()   {}
+    void endClassDiagram(const ClassDiagram &,const char *,const char *) {}
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
-    //void startQuickIndexItem(const char *,const char *) {}
-    //void endQuickIndexItem() {}
     void writeQuickLinks(bool,HighlightedItem) {}
-    //void writeFormula(const char *,const char *) {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
-    //void startImage(const char *,const char *,bool) {}
-    //void endImage(bool) {}
-    //void startDotFile(const char *,bool) {}
-    //void endDotFile(bool) {}
     
     void startDescTable() {}
     void endDescTable() {}
@@ -233,16 +178,16 @@ class ManGenerator : public OutputGenerator
     void endDescTableData() {}
 
     void startDotGraph() {}
-    void endDotGraph(DotClassGraph &) {}
+    void endDotGraph(const DotClassGraph &) {}
     void startInclDepGraph() {}
-    void endInclDepGraph(DotInclDepGraph &) {}
+    void endInclDepGraph(const DotInclDepGraph &) {}
     void startGroupCollaboration() {}
-    void endGroupCollaboration(DotGroupCollaboration &) {}
+    void endGroupCollaboration(const DotGroupCollaboration &) {}
     void startCallGraph() {}
-    void endCallGraph(DotCallGraph &) {}
+    void endCallGraph(const DotCallGraph &) {}
     void startDirDepGraph() {} 
-    void endDirDepGraph(DotDirDeps &) {}
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
+    void endDirDepGraph(const DotDirDeps &) {}
+    void writeGraphicalHierarchy(const DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
     void endTextBlock(bool) {}
@@ -261,14 +206,6 @@ class ManGenerator : public OutputGenerator
 
     void startFontClass(const char *) {}
     void endFontClass() {}
-
-    //void startHtmlOnly()  {}
-    //void endHtmlOnly()    {}
-    //void startLatexOnly() {}
-    //void endLatexOnly()   {}
-
-    //void startSectionRefList() {}
-    //void endSectionRefList() {}
 
     void startConstraintList(const char *);
     void startConstraintParam();

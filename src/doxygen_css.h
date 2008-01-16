@@ -299,6 +299,7 @@
 "  font-size: 80%;\n"
 "  color: #606060;\n"
 "  font-weight: normal;\n"
+"  margin-left: 3px;\n"
 "} \n"
 ".memnav { \n"
 "  background-color: #e8eef2;\n"

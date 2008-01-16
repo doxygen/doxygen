@@ -184,7 +184,7 @@ B         [ \t]
 BS        [ \t]*
 BS_       [ \t]+
 COMMA     {BS},{BS}
-ARGS      {BS}("("[^)]*")"){BS}
+ARGS      {BS}("("[^)]*")")
 NOARGS    {BS}"\n"
 
 NUM_TYPE  (complex|integer|logical|real)
@@ -196,7 +196,7 @@ INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET)
 ACCESS_SPEC (PRIVATE|PUBLIC)
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION
+ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
 %option noyywrap
 %option stack
@@ -311,7 +311,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION
                                         }
 
  /*------ ignore special fortran statements */
-<Start,ModuleBody,SubprogBody>(^|[ \t])interface({BS_}{ID})?/[ \t\n] { // handle interface block
+<Start,ModuleBody,SubprogBody>^[ \t]*interface({BS_}{ID}({BS}\({BS}[^ \t()]+{BS}\))?)? { // handle interface block
 					  QString name = yytext;
 					  int index = name.find("interface", 0, FALSE);
 					  index = name.find(QRegExp("[^ \\t]"), index+9);
@@ -379,7 +379,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
-<Start,ModuleBody>"type"({BS_}|({COMMA}{ACCESS_SPEC})) { /* type definition found : TYPE , access-spec::type-name |*/
+<Start,ModuleBody>^{BS}"type"({BS_}|({COMMA}{ACCESS_SPEC})) { /* type definition found : TYPE , access-spec::type-name |*/
  					    yy_push_state(YY_START);
                                             BEGIN(Typedef);
 					    current->protection = defaultProtection;
@@ -419,7 +419,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION
 <Start,ModuleBody,TypedefBody,SubprogBody>{
 {TYPE_SPEC}/{SEPARATE}			{
                                           /* variable declaration starts */
-                                          //cout << "4=========> got variable type: " << yytext << endl;
+                                          //fprintf(stderr,"4=========> got variable type: %s\n",yytext);
  					  QString help=yytext;
 					  help= help.simplifyWhiteSpace();
 					  argType= help.latin1();
@@ -444,9 +444,9 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION
 					    REJECT;
 					  }
 					}
-{ATTR_STMT}{BS}/{ID}	         	{ 
+{ATTR_STMT}/{BS_}{ID}|{BS}"::"	        { 
                                           /* attribute statement starts */
-                                          //cout << "5=========> Attribute statement: "<< yytext << endl;
+                                          //fprintf(stderr,"5=========> Attribute statement: %s\n", yytext); 
                                           QString tmp = yytext;
                                           currentModifiers |= tmp.stripWhiteSpace();
 					  argType="";

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -1311,7 +1311,7 @@ void LatexGenerator::startClassDiagram()
   //t << "{";
 }
 
-void LatexGenerator::endClassDiagram(ClassDiagram &d,
+void LatexGenerator::endClassDiagram(const ClassDiagram &d,
                                        const char *fileName,const char *)
 {
   d.writeFigure(t,dir,fileName);
@@ -1465,7 +1465,7 @@ void LatexGenerator::startDotGraph()
 {
 }
 
-void LatexGenerator::endDotGraph(DotClassGraph &g) 
+void LatexGenerator::endDotGraph(const DotClassGraph &g) 
 {
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
@@ -1474,7 +1474,7 @@ void LatexGenerator::startInclDepGraph()
 {
 }
 
-void LatexGenerator::endInclDepGraph(DotInclDepGraph &g) 
+void LatexGenerator::endInclDepGraph(const DotInclDepGraph &g) 
 {
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
@@ -1483,7 +1483,7 @@ void LatexGenerator::startGroupCollaboration()
 {
 }
 
-void LatexGenerator::endGroupCollaboration(DotGroupCollaboration &g) 
+void LatexGenerator::endGroupCollaboration(const DotGroupCollaboration &g) 
 {
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
@@ -1492,7 +1492,7 @@ void LatexGenerator::startCallGraph()
 {
 }
 
-void LatexGenerator::endCallGraph(DotCallGraph &g) 
+void LatexGenerator::endCallGraph(const DotCallGraph &g) 
 {
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }
@@ -1501,7 +1501,7 @@ void LatexGenerator::startDirDepGraph()
 {
 }
 
-void LatexGenerator::endDirDepGraph(DotDirDeps &g) 
+void LatexGenerator::endDirDepGraph(const DotDirDeps &g) 
 {
   g.writeGraph(t,EPS,Config_getString("LATEX_OUTPUT"),relPath);
 }

@@ -1,4 +1,5 @@
-"""Documentation for this module.
+"""@package docstring
+Documentation for this module.
 
 More details.
 """

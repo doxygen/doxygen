@@ -1080,7 +1080,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
 
   // write tag file information of this member
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !isReference())
   {
     Doxygen::tagFile << "    <member kind=\"";
     switch (m_impl->mtype)
@@ -1127,7 +1127,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   // write search index info
-  if (Config_getBool("SEARCHENGINE"))
+  if (Config_getBool("SEARCHENGINE") && !isReference())
   {
     Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
     Doxygen::searchIndex->addWord(localName(),TRUE);
@@ -1141,9 +1141,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
   // differs from the cname.
   //if (getOuterScope()) osname=getOuterScope()->name();
 
-  HtmlHelp *htmlHelp=0;
-  bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
+  //HtmlHelp *htmlHelp=0;
+  //bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
+  //if (hasHtmlHelp) htmlHelp = HtmlHelp::getInstance();
 
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=getClassDefOfAnonymousType();
@@ -1487,7 +1487,10 @@ bool MemberDef::isDetailedSectionLinkable() const
          //(initLines>0 && initLines<maxInitLines) || 
          (hasMultiLineInitializer() && !hideUndocMembers) ||
          // has one or more documented arguments
-         (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()); 
+         (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()) ||
+         // has user comments
+         Doxygen::userComments
+         ; 
          
   // this is not a global static or global statics should be extracted
   bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic; 
@@ -1570,23 +1573,24 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cfname = getOutputFileBase();
   QCString cfiname = container->getOutputFileBase();
 
-  static bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-  if (hasHtmlHelp)
-  {
+  //static bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
+  //HtmlHelp *htmlHelp = HtmlHelp::getInstance();
+  //if (hasHtmlHelp)
+  //{
     if (isEnumerate() && name().at(0)=='@')
     {
       // don't add to index
     }
     else
     {
-      htmlHelp->addIndexItem(ciname,                                // level1
+      Doxygen::indexList.addIndexItem(
+                             ciname,                                // level1
                              name(),                                // level2
                              separateMemPages ? cfname : cfiname,   // contRef
                              cfname,                                // memRef
                              memAnchor);                            // anchor
     }
-  }
+  //}
 
   // get member name
   QCString doxyName=name();
@@ -1973,14 +1977,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.addIndexItem(fmd->name(),cname);
           ol.addIndexItem(cname,fmd->name());
 
-          if (hasHtmlHelp)
-          {
-             htmlHelp->addIndexItem(ciname,                                // level1
-                                    fmd->name(),                           // level2
-                                    separateMemPages ? cfname : cfiname,   // contRef
-                                    cfname,                                // memRef
-                                    fmd->anchor());                        // anchor
-          }
+          //if (hasHtmlHelp)
+          //{
+          //   htmlHelp->addIndexItem(ciname,                                // level1
+          //                          fmd->name(),                           // level2
+          //                          separateMemPages ? cfname : cfiname,   // contRef
+          //                          cfname,                                // memRef
+          //                          fmd->anchor());                        // anchor
+          //}
+          Doxygen::indexList.addIndexItem(
+                                 ciname,                                // level1
+                                 fmd->name(),                           // level2
+                                 separateMemPages ? cfname : cfiname,   // contRef
+                                 cfname,                                // memRef
+                                 fmd->anchor());                        // anchor
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
           ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
@@ -2207,6 +2217,17 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       ol.endCallGraph(callerGraph);
       ol.enableAll();
     }
+  }
+
+  if (Doxygen::userComments)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    QCString cmd = "<? $root=$_SERVER['DOCUMENT_ROOT']; "
+                   "passthru(\"$root/doxynotes --lookup "+
+                   getOutputFileBase()+":"+anchor()+"\") ?>";
+    ol.writeString(cmd);
+    ol.popGeneratorState();
   }
 
   ol.endIndent();
@@ -2689,7 +2710,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
   {
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
-      if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+      if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !isReference())
       {
         Doxygen::tagFile << "    <member kind=\"enumeration\">" << endl;
         Doxygen::tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl; 
@@ -2738,7 +2759,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
 
           if (fmd->hasDocumentation()) // enum value has docs
           {
-            if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+            if (!Config_getString("GENERATE_TAGFILE").isEmpty() && !fmd->isReference())
             {
               Doxygen::tagFile << "    <member kind=\"enumvalue\">" << endl;
               Doxygen::tagFile << "      <name>" << convertToXML(fmd->name()) << "</name>" << endl; 

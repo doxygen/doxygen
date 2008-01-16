@@ -773,12 +773,32 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
      )
   {
     dst->addSourceReferencedBy(src);
+    MemberDef *mdDef = dst->memberDefinition();
+    if (mdDef)
+    {
+      mdDef->addSourceReferencedBy(src);
+    }
+    MemberDef *mdDecl = dst->memberDeclaration();
+    if (mdDecl)
+    {
+      mdDecl->addSourceReferencedBy(src);
+    }
   }
   if ((referencesRelation || callGraph) && 
       (src->isFunction() || src->isSlot())
      )
   {
     src->addSourceReferences(dst);
+    MemberDef *mdDef = src->memberDefinition();
+    if (mdDef)
+    {
+      mdDef->addSourceReferences(dst);
+    }
+    MemberDef *mdDecl = src->memberDeclaration();
+    if (mdDecl)
+    {
+      mdDecl->addSourceReferences(dst);
+    }
   }
 
 }

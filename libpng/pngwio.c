@@ -1,9 +1,9 @@
 
 /* pngwio.c - functions for data output
  *
- * libpng 1.2.1 - December 12, 2001
+ * Last changed in libpng 1.2.13 November 13, 2006
  * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2001 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2006 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -40,11 +40,12 @@ png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
    write_data function and use it at run time with png_set_write_fn(), rather
    than changing the library. */
 #ifndef USE_FAR_KEYWORD
-static void /* PRIVATE */
+void PNGAPI
 png_default_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
    png_uint_32 check;
 
+   if(png_ptr == NULL) return;
 #if defined(_WIN32_WCE)
    if ( !WriteFile((HANDLE)(png_ptr->io_ptr), data, length, &check, NULL) )
       check = 0;
@@ -63,13 +64,14 @@ png_default_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 #define NEAR_BUF_SIZE 1024
 #define MIN(a,b) (a <= b ? a : b)
 
-static void /* PRIVATE */
+void PNGAPI
 png_default_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
 {
    png_uint_32 check;
    png_byte *near_data;  /* Needs to be "png_byte *" instead of "png_bytep" */
    png_FILE_p io_ptr;
 
+   if(png_ptr == NULL) return;
    /* Check if data really is near. If so, use usual code. */
    near_data = (png_byte *)CVT_PTR_NOCHECK(data);
    io_ptr = (png_FILE_p)CVT_PTR(png_ptr->io_ptr);
@@ -126,11 +128,14 @@ png_flush(png_structp png_ptr)
 }
 
 #if !defined(PNG_NO_STDIO)
-static void /* PRIVATE */
+void PNGAPI
 png_default_flush(png_structp png_ptr)
 {
 #if !defined(_WIN32_WCE)
    png_FILE_p io_ptr;
+#endif
+   if(png_ptr == NULL) return;
+#if !defined(_WIN32_WCE)
    io_ptr = (png_FILE_p)CVT_PTR((png_ptr->io_ptr));
    if (io_ptr != NULL)
       fflush(io_ptr);
@@ -165,6 +170,7 @@ void PNGAPI
 png_set_write_fn(png_structp png_ptr, png_voidp io_ptr,
    png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn)
 {
+   if(png_ptr == NULL) return;
    png_ptr->io_ptr = io_ptr;
 
 #if !defined(PNG_NO_STDIO)

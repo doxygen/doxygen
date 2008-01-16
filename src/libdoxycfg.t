@@ -1,5 +1,5 @@
 #
-# 
+# $Id$
 #
 # Copyright (C) 1997-2007 by Dimitri van Heesch.
 #

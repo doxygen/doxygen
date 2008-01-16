@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
@@ -772,7 +772,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 <St_XRefItem>" "       {
                          BEGIN(St_XRefItem2);
                        }
-<St_XRefItem2>[0-9]+\n {
+<St_XRefItem2>[0-9]+{WS} {
   			 QString numStr=yytext;
 			 numStr=numStr.left(yyleng-1);
 			 g_token->id=numStr.toInt();

@@ -175,6 +175,7 @@ Thanks go to:
     given me a good start in writing doxygen.
 <li>All people at Troll Tech, for creating a beautiful GUI Toolkit
     (which is very useful as a Windows/Unix platform abstraction layer :-)
+<li>Kevin McBride for maintaining the subversion reporsitory for doxygen.
 <li>My brother Frank
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.

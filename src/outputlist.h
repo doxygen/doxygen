@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -300,16 +300,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeSynopsis); }
     void startClassDiagram()
     { forall(&OutputGenerator::startClassDiagram); }
-    void endClassDiagram(ClassDiagram &d,const char *f,const char *n)
+    void endClassDiagram(const ClassDiagram &d,const char *f,const char *n)
     { forall(&OutputGenerator::endClassDiagram,d,f,n); }
     void startPageRef()
     { forall(&OutputGenerator::startPageRef); }
     void endPageRef(const char *c,const char *a)
     { forall(&OutputGenerator::endPageRef,c,a); }
-    //void startQuickIndexItem(const char *s,const char *l)
-    //{ forall(&OutputGenerator::startQuickIndexItem,s,l); }
-    //void endQuickIndexItem()
-    //{ forall(&OutputGenerator::endQuickIndexItem); }
     void writeQuickLinks(bool compact,HighlightedItem hli)
     { forall(&OutputGenerator::writeQuickLinks,compact,hli); }
     void writeNonBreakableSpace(int num)
@@ -328,25 +324,25 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endDescTableData); }
     void startDotGraph()
     { forall(&OutputGenerator::startDotGraph); }
-    void endDotGraph(DotClassGraph &g)
+    void endDotGraph(const DotClassGraph &g)
     { forall(&OutputGenerator::endDotGraph,g); }
     void startInclDepGraph()
     { forall(&OutputGenerator::startInclDepGraph); }
-    void endInclDepGraph(DotInclDepGraph &g)
+    void endInclDepGraph(const DotInclDepGraph &g)
     { forall(&OutputGenerator::endInclDepGraph,g); }
     void startCallGraph()
     { forall(&OutputGenerator::startCallGraph); }
-    void endCallGraph(DotCallGraph &g)
+    void endCallGraph(const DotCallGraph &g)
     { forall(&OutputGenerator::endCallGraph,g); }
     void startDirDepGraph()
     { forall(&OutputGenerator::startDirDepGraph); }
-    void endDirDepGraph(DotDirDeps &g)
+    void endDirDepGraph(const DotDirDeps &g)
     { forall(&OutputGenerator::endDirDepGraph,g); }
     void startGroupCollaboration()
     { forall(&OutputGenerator::startGroupCollaboration); }
-    void endGroupCollaboration(DotGroupCollaboration &g)
+    void endGroupCollaboration(const DotGroupCollaboration &g)
     { forall(&OutputGenerator::endGroupCollaboration,g); }
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &g)
+    void writeGraphicalHierarchy(const DotGfxHierarchyTable &g)
     { forall(&OutputGenerator::writeGraphicalHierarchy,g); }
     void startTextBlock(bool dense=FALSE)
     { forall(&OutputGenerator::startTextBlock,dense); }
@@ -391,8 +387,6 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endConstraintDocs); }
     void endConstraintList()
     { forall(&OutputGenerator::endConstraintList); }
-
-
     void startFontClass(const char *c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()
@@ -430,12 +424,12 @@ class OutputList : public OutputDocInterface
     FORALLPROTO1(char);
     FORALLPROTO1(IndexSections);
     FORALLPROTO1(int);
-    FORALLPROTO1(DotClassGraph &);
-    FORALLPROTO1(DotInclDepGraph &);
-    FORALLPROTO1(DotCallGraph &);
-    FORALLPROTO1(DotGroupCollaboration &);
-    FORALLPROTO1(DotDirDeps &);
-    FORALLPROTO1(DotGfxHierarchyTable &);
+    FORALLPROTO1(const DotClassGraph &);
+    FORALLPROTO1(const DotInclDepGraph &);
+    FORALLPROTO1(const DotCallGraph &);
+    FORALLPROTO1(const DotGroupCollaboration &);
+    FORALLPROTO1(const DotDirDeps &);
+    FORALLPROTO1(const DotGfxHierarchyTable &);
     FORALLPROTO1(SectionTypes);
 #if defined(HAS_BOOL_TYPE) || defined(Q_HAS_BOOL_TYPE)
     FORALLPROTO1(bool);
@@ -455,7 +449,7 @@ class OutputList : public OutputDocInterface
     FORALLPROTO3(const char *,const char *,SectionInfo::SectionType);
     FORALLPROTO3(uchar,uchar,uchar);
     FORALLPROTO3(const char *,const char *,const char *);
-    FORALLPROTO3(ClassDiagram &,const char *,const char *);
+    FORALLPROTO3(const ClassDiagram &,const char *,const char *);
     FORALLPROTO4(SectionTypes,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,const char *);
     FORALLPROTO4(const char *,const char *,const char *,bool);

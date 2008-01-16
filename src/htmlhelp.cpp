@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -270,6 +270,7 @@ HtmlHelp::HtmlHelp() : indexFileDict(1009)
   index = new HtmlHelpIndex;
 }
 
+#if 0
 /*! return a reference to the one and only instance of this class. 
  */
 HtmlHelp *HtmlHelp::getInstance()
@@ -277,6 +278,7 @@ HtmlHelp *HtmlHelp::getInstance()
   if (theInstance==0) theInstance = new HtmlHelp;
   return theInstance;
 }
+#endif
 
 static QDict<QCString> s_languageDict;
 
@@ -504,47 +506,50 @@ void HtmlHelp::finalize()
  *  This will start a new unnumbered HTML list in contents file.
  *  \sa decContentsDepth()
  */
-int HtmlHelp::incContentsDepth()
+void HtmlHelp::incContentsDepth()
 {
   int i; for (i=0;i<dc+1;i++) cts << "  ";
   cts << "<UL>\n";
-  return ++dc;
+  ++dc;
 }
 
 /*! Decrease the level of the contents hierarchy.
  *  This will end the unnumber HTML list.
  *  \sa incContentsDepth()
  */
-int HtmlHelp::decContentsDepth()
+void HtmlHelp::decContentsDepth()
 {
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "</UL>\n";
-  return --dc;
+  --dc;
 }
 
 /*! Add an list item to the contents file.
  *  \param isDir boolean indicating if this is a dir or file entry
  *  \param name the name of the item.
  *  \param ref  the URL of to the item.
+ *  \param file the file in which the item is defined.
  *  \param anchor the anchor of the item.
  */
 void HtmlHelp::addContentsItem(bool isDir,
-                               const char *name,const char *ref, 
+                               const char *name,
+                               const char * /*ref*/, 
+                               const char *file,
                                const char *anchor)
 {
   // If we're using a binary toc then folders cannot have links. 
   if(Config_getBool("BINARY_TOC") && isDir) 
   {
-    ref = 0;
+    file = 0;
     anchor = 0;
   }
   
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
   cts << "<param name=\"Name\" value=\"" << name << "\">";
-  if (ref)      // made ref optional param - KPW
+  if (file)      // made file optional param - KPW
   {
-    cts << "<param name=\"Local\" value=\"" << ref << Doxygen::htmlFileExtension;
+    cts << "<param name=\"Local\" value=\"" << file << Doxygen::htmlFileExtension;
     if (anchor) cts << "#" << anchor;  
     cts << "\">";
   }

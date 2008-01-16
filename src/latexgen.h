@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * 
+ * $Id$
  *
  * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
@@ -168,7 +168,7 @@ class LatexGenerator : public OutputGenerator
     void endIndent()         {}
     void writeSynopsis()     {}
     void startClassDiagram();
-    void endClassDiagram(ClassDiagram &,const char *,const char *);
+    void endClassDiagram(const ClassDiagram &,const char *,const char *);
     void startPageRef();
     void endPageRef(const char *,const char *);
     void writeQuickLinks(bool,HighlightedItem) {}
@@ -187,16 +187,16 @@ class LatexGenerator : public OutputGenerator
     void lastIndexPage() {}
 
     void startDotGraph();
-    void endDotGraph(DotClassGraph &);
+    void endDotGraph(const DotClassGraph &);
     void startInclDepGraph();
-    void endInclDepGraph(DotInclDepGraph &);
+    void endInclDepGraph(const DotInclDepGraph &);
     void startCallGraph();
     void startGroupCollaboration();
-    void endGroupCollaboration(DotGroupCollaboration &g);
-    void endCallGraph(DotCallGraph &);
+    void endGroupCollaboration(const DotGroupCollaboration &g);
+    void endCallGraph(const DotCallGraph &);
     void startDirDepGraph();
-    void endDirDepGraph(DotDirDeps &g);
-    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
+    void endDirDepGraph(const DotDirDeps &g);
+    void writeGraphicalHierarchy(const DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
     void endTextBlock(bool) {}
