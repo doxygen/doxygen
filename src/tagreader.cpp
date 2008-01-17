@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -237,12 +237,13 @@ class TagFileParser : public QXmlDefaultHandler
       m_inputFileName = fileName;
     }
 
-    void warn(const char *fmt,...)
+    void warn(const char *fmt)
     {
-      va_list args;
-      va_start(args, fmt);
-      ::warn(m_inputFileName,m_locator->lineNumber(),fmt,args);
-      va_end(args); 
+      ::warn(m_inputFileName,m_locator->lineNumber(),fmt);
+    }
+    void warn(const char *fmt,const char *s)
+    {
+      ::warn(m_inputFileName,m_locator->lineNumber(),fmt,s);
     }
 
     void startCompound( const QXmlAttributes& attrib )
@@ -1395,6 +1396,7 @@ void parseTagFile(Entry *root,const char *fullName,const char *tagName)
   reader.parse( source );
   handler.buildLists(root);
   handler.addIncludes();
+  //handler.dump();
 }
 
 

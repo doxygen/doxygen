@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -86,7 +86,6 @@ static bool             docBlockSpecial;
 
 static bool             g_doubleQuote;
 static bool             g_specialBlock;
-//static bool             g_expectModuleDocs;
 static int              g_stringContext;
 static QGString *       g_copyString;
 static int              g_indent = 0;
@@ -110,6 +109,7 @@ static QCString         g_defVal;
 static int              g_braceCount;
 
 static bool             g_lexInit = FALSE;
+static bool             g_packageCommentAllowed;
 
 //-----------------------------------------------------------------------------
 
@@ -121,6 +121,7 @@ static void initParser()
   gstat = FALSE;
   virt = Normal;
   previous = 0;
+  g_packageCommentAllowed = TRUE;
   g_packageNameCache.setAutoDelete(TRUE);
 }
 
@@ -150,7 +151,7 @@ static void newVariable()
   {
     current->protection=Private;
   }
-  if (current_root->section&Entry::SCOPE_MASK) // mark as class variable
+  if (current_root->section&Entry::COMPOUND_MASK) // mark as class variable
   {
     current->stat = TRUE;
   }
@@ -494,7 +495,6 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     ^{B}"def"{BB}       |
     "def"{BB}           { // start of a function/method definition
       			  g_indent=computeIndent(yytext);
-                          //g_expectModuleDocs = FALSE;
 			  current->fileName  = yyFileName;
 			  current->startLine = yyLineNr;
 			  current->bodyLine  = yyLineNr;
@@ -508,28 +508,31 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  current->name.resize(0);
 			  current->args.resize(0);
 			  current->argList->clear();
+			  g_packageCommentAllowed = FALSE;
 			  BEGIN( FunctionDec );
                        }
 
      ^{B}"class"{BB}	|
      "class"{BB}        {  // start of a class definition
       			  g_indent=computeIndent(yytext);
-                          //g_expectModuleDocs = FALSE;
 			  current->section = Entry::CLASS_SEC;
 			  current->argList->clear();
 			  current->type += "class" ;
 			  current->fileName  = yyFileName;
 			  current->bodyLine  = yyLineNr;
+			  g_packageCommentAllowed = FALSE;
 
 			  BEGIN( ClassDec ) ;
                        }
      ^{B}"from"{BB}    |
      "from"{BB}	       { // start of an from import
+			  g_packageCommentAllowed = FALSE;
                           BEGIN( FromMod );
                        }
 
      ^{B}"import"{BB}  |
      "import"{BB}      { // start of an import statement
+			  g_packageCommentAllowed = FALSE;
                           BEGIN( Import );
                        }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
@@ -539,22 +542,27 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			current->fileName  = yyFileName;
 			current->startLine = yyLineNr;
 			current->bodyLine  = yyLineNr;
+			g_packageCommentAllowed = FALSE;
 			BEGIN(VariableDec);
       		      }
-     "'"	       { // start of a single quoted string
-       			  g_stringContext=YY_START;
-			  g_copyString=0;
-                          BEGIN( SingleQuoteString );
-                       }
-     "\""	       { // start of a double quoted string
-       			  g_stringContext=YY_START;
-			  g_copyString=0;
-                          BEGIN( DoubleQuoteString );
-                       }
+     "'"	      { // start of a single quoted string
+       		        g_stringContext=YY_START;
+		        g_copyString=0;
+			g_packageCommentAllowed = FALSE;
+                        BEGIN( SingleQuoteString );
+                      }
+     "\""	      { // start of a double quoted string
+       	                g_stringContext=YY_START;
+			g_copyString=0;
+			g_packageCommentAllowed = FALSE;
+                        BEGIN( DoubleQuoteString );
+                      }
 
     {POUNDCOMMENT}    { // normal comment 
+			g_packageCommentAllowed = FALSE;
       		      }
     {IDENTIFIER}      { // some other identifier
+			g_packageCommentAllowed = FALSE;
 		      }
     ^{BB}	      {
       			g_curIndent=computeIndent(yytext);
@@ -580,6 +588,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                       }
 
     {STARTDOCSYMS}    {  // start of a special comment
+			g_packageCommentAllowed = FALSE;
 			initSpecialBlock();
 			BEGIN(SpecialComment);
                       }
@@ -868,7 +877,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  bodyEntry = current;
                           BEGIN( FunctionBody );
                         }
-
+    {POUNDCOMMENT}	{ // a comment
+			}
     {PARAMNONEMPTY}     { // Default rule inside arguments.
                         }
 
@@ -1103,6 +1113,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
      		      }
    {TRIDOUBLEQUOTE}   { // start of a comment block
 			current->type = "string";
+			current->initializer = yytext;
 			g_doubleQuote=TRUE;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;
@@ -1111,6 +1122,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
    {TRISINGLEQUOTE}   { // start of a comment block
 			current->type = "string";
+			current->initializer = yytext;
 			g_doubleQuote=FALSE;
 			g_copyString=&current->initializer;
        			g_stringContext=VariableEnd;
@@ -1215,7 +1227,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  // printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
-			    if (g_specialBlock)
+			    if (g_specialBlock) // expecting a docstring
 			    {
 			      QCString actualDoc=docBlock;
 			      if (!docBlockSpecial) // legacy unformatted docstring
@@ -1223,14 +1235,20 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			        actualDoc.prepend("\\verbatim ");
 			        actualDoc.append("\\endverbatim ");
 			      }
-			      //if (g_expectModuleDocs)
-			      //{
-			      //  actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
-			      //}
 			      //printf("-------> current=%p bodyEntry=%p\n",current,bodyEntry);
 			      handleCommentBlock(actualDoc, FALSE);
 			    }
-		    	    //g_expectModuleDocs=FALSE;
+			    else if (g_packageCommentAllowed) // expecting module docs
+			    {
+			      QCString actualDoc=docBlock;
+			      if (!docBlockSpecial) // legacy unformatted docstring
+			      {
+			        actualDoc.prepend("\\verbatim ");
+			        actualDoc.append("\\endverbatim ");
+			      }
+			      actualDoc.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
+			      handleCommentBlock(actualDoc, FALSE);
+			    }
 			    if ((docBlockContext==ClassBody && !g_hideClassDocs) ||
 				docBlockContext==FunctionBody)
 			    {
@@ -1246,6 +1264,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  {
                             docBlock += yytext;
                           }
+			  g_packageCommentAllowed = FALSE;
                         }
 
 
@@ -1288,11 +1307,6 @@ STARTDOCSYMS      ^{B}"##"/[^#]
       			  docBlock+=yytext;
       			}
     \n			{ // new line that ends the comment
-			  //if (g_expectModuleDocs)
-			  //{
-			  //  docBlock.prepend("\\namespace "+g_moduleScope+"\\_linebr ");
-			  //}
-		    	  //g_expectModuleDocs=FALSE;
 			  handleCommentBlock(docBlock, docBrief);
       			  yyLineNr++;
 			  BEGIN(docBlockContext);
@@ -1352,10 +1366,9 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     {TRIDOUBLEQUOTE}    | 
     {TRISINGLEQUOTE}    {
                           *g_copyString += yytext;
-			  //printf("Expected module block %d special=%d\n",g_expectModuleDocs,g_specialBlock);
 			  if (g_doubleQuote==(yytext[0]=='"')) 
 			  {
-			    BEGIN(docBlockContext);
+			    BEGIN(g_stringContext);
 			  }
                         }
 
@@ -1462,9 +1475,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   gstat         = FALSE;
   virt          = Normal;
   current_root  = rt;
-  //g_expectModuleDocs = TRUE;
   g_specialBlock = FALSE;
-  //g_insideConstructor = FALSE;
 
 
   inputFile.setName(fileName);
@@ -1532,9 +1543,8 @@ static void parsePrototype(const QCString &text)
     return;
   }
 
-  //g_expectModuleDocs = FALSE;
   g_specialBlock = FALSE;
-  //g_insideConstructor = FALSE;
+  g_packageCommentAllowed = FALSE;
 
   const char *orgInputString;
   int orgInputPosition;

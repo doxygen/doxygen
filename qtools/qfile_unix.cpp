@@ -40,7 +40,7 @@
 #include "qfile.h"
 #include "qfiledefs_p.h"
 
-#if defined(_OS_MAC_) || defined(_OS_MSDOS_) || defined(_OS_WIN32_) || defined(_OS_OS2_) || defined(_OS_CYGWIN_)
+#if (defined(_OS_MAC_) && (!defined(_OS_UNIX_))) || defined(_OS_MSDOS_) || defined(_OS_WIN32_) || defined(_OS_OS2_) || defined(_OS_CYGWIN_)
 # define HAS_TEXT_FILEMODE			// has translate/text filemode
 #endif
 #if defined(O_NONBLOCK)

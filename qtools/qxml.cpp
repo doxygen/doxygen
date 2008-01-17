@@ -4772,7 +4772,7 @@ bool QXmlSimpleReader::parseChoiceSeq()
 {
     const signed char Init             = 0;
     const signed char Ws1              = 1; // eat whitespace
-    const signed char CS               = 2; // choice or set
+    const signed char CS_              = 2; // choice or set
     const signed char Ws2              = 3; // eat whitespace
     const signed char More             = 4; // more cp to read
     const signed char Name             = 5; // read name
@@ -4792,11 +4792,11 @@ bool QXmlSimpleReader::parseChoiceSeq()
     static signed char table[6][9] = {
      /*  InpWs   InpOp  InpCp  InpQm  InpAst  InpPlus  InpPipe  InpComm  InpUnknown */
 	{ -1,     Ws1,   -1,    -1,    -1,     -1,      -1,      -1,      Name  }, // Init
-	{ -1,     CS,    -1,    -1,    -1,     -1,      -1,      -1,      CS    }, // Ws1
-	{ Ws2,    -1,    Done,  Ws2,   Ws2,    Ws2,     More,    More,    -1    }, // CS
+	{ -1,     CS_,   -1,    -1,    -1,     -1,      -1,      -1,      CS_    }, // Ws1
+	{ Ws2,    -1,    Done,  Ws2,   Ws2,    Ws2,     More,    More,    -1    }, // CS_
 	{ -1,     -1,    Done,  -1,    -1,     -1,      More,    More,    -1    }, // Ws2
 	{ -1,     Ws1,   -1,    -1,    -1,     -1,      -1,      -1,      Name  }, // More (same as Init)
-	{ Ws2,    -1,    Done,  Ws2,   Ws2,    Ws2,     More,    More,    -1    }  // Name (same as CS)
+	{ Ws2,    -1,    Done,  Ws2,   Ws2,    Ws2,     More,    More,    -1    }  // Name (same as CS_)
     };
     signed char state = Init;
     signed char input;
@@ -4837,7 +4837,7 @@ bool QXmlSimpleReader::parseChoiceSeq()
 	    case Ws1:
 		next_eat_ws();
 		break;
-	    case CS:
+	    case CS_:
 		parseOk = parseChoiceSeq();
 		break;
 	    case Ws2:
@@ -4855,7 +4855,7 @@ bool QXmlSimpleReader::parseChoiceSeq()
 	}
 	// no input is read after this
 	switch ( state ) {
-	    case CS:
+	    case CS_:
 		if ( !parseOk ) {
 		    d->error = XMLERR_ERRORPARSINGCHOICE;
 		    goto parseError;

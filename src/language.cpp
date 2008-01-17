@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -128,6 +128,9 @@
 #ifdef LANG_FA
 #include "translator_fa.h"
 #endif
+#ifdef LANG_MK
+#include "translator_mk.h"
+#endif
 #endif // !ENGLISH_ONLY
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -184,7 +187,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_IT  
   else if (L_EQUAL("italian"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorItalian);
+    theTranslator=new TranslatorItalian;
   }
 #endif
 #ifdef LANG_DE
@@ -355,6 +358,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("persian"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorPersian);
+  }
+#endif
+#ifdef LANG_MK
+  else if (L_EQUAL("macedonian"))
+  {
+    theTranslator=new TranslatorMacedonian;
   }
 #endif
 #endif // ENGLISH_ONLY

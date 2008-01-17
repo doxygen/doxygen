@@ -17,7 +17,6 @@ BuildRoot: %{buildroot}
 BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips
 Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv, libstdc++ >= 2.96
 Provides: doxygen = %{mmn}
-#Obsoletes: doxygen-20050927
 
 %description
 Doxygen can generate an online class browser (in HTML) and/or a
@@ -26,30 +25,17 @@ documentation is extracted directly from the sources. Doxygen can
 also be configured to extract the code structure from undocumented
 source files.
 
-%package manual
-Group: Documentation
-Summary: Documentation for doxygen.
-Provides: doxygenmanual = %{mmn}
-#Obsoletes: 
-
-%description manual
-This contains the manpages for doxygen.  The information can also be
-found at http://www.doxygen.org/.
-
 %prep
 %setup -q -n %{name}-%{version}_%{revision}
 ./configure --prefix $RPM_BUILD_ROOT/usr
 
 %build
 make %{?_smp_mflags}
-make pdf %{?_smp_mflags}
+make %{?_smp_mflags} pdf
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
 make install
-mkdir -p $RPM_BUILD_ROOT/usr/share/doxygen
-cp -f ./latex/*.pdf $RPM_BUILD_ROOT/usr/share/doxygen
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -57,17 +43,17 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 
-%doc README LICENSE LANGUAGE.HOWTO examples
+%doc README LICENSE LANGUAGE.HOWTO examples ./latex/*.pdf
+%doc /usr/man/man1/doxygen.1.gz
+%doc /usr/man/man1/doxytag.1.gz
 
 %{_bindir}/doxygen
 %{_bindir}/doxytag
 
-%files manual
-%defattr(-,root,root)
-/usr/share/doxygen/*.pdf
-%doc /usr/man/man1/doxy*
-
 %changelog
+* Sun Nov 18 2007 Kevin McBride <kevin@planetsaphire.com> 1.5.4
+- consolidated manual package in lieu of --excludedocs flag for rpm --install
+
 * Fri Oct 21 2005 Kevin McBride <kevin@planetsaphire.com> 1.4.5
 - made .spec file compatible with tmake
 

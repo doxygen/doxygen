@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Parker Waechter & Dimitri van Heesch.
  *
  * Style sheet additions by Alexander Bartolich
  *
@@ -37,6 +37,7 @@
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 #include "dirdef.h"
+#include "vhdldocgen.h"
 
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
@@ -514,6 +515,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //Page Documentation
         beginRTFChapter();
+        t << "{\\tc \\v ";
       }
       break;
     case isEndIndex:
@@ -523,6 +525,8 @@ void RTFGenerator::startIndexSection(IndexSections is)
 
 void RTFGenerator::endIndexSection(IndexSections is)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
   switch (is)
   {
     case isTitlePageStart:
@@ -623,7 +627,15 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceIndex:
       t << "\\par " << rtf_Style_Reset << endl;
-      t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
+      if (fortranOpt)
+      {
+          t << "{\\tc \\v " << theTranslator->trModulesIndex() << "}"<< endl;
+      }
+      else
+      {
+          t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
+      }
+      
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isClassHierarchyIndex:
@@ -633,7 +645,18 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isCompoundIndex:
       t << "\\par " << rtf_Style_Reset << endl;
-      t << "{\\tc \\v " << theTranslator->trCompoundIndex() << "}"<< endl;
+      if (fortranOpt)
+      {
+        t << "{\\tc \\v " << theTranslator->trCompoundIndexFortran() << "}"<< endl;
+      }
+      else if (vhdlOpt)
+      {
+        t << "{\\tc \\v " << VhdlDocGen::trDesignUnitIndex() << "}"<< endl;
+      }
+      else
+      {
+        t << "{\\tc \\v " << theTranslator->trCompoundIndex() << "}"<< endl;
+      }
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"annotated.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     case isFileIndex:
@@ -715,8 +738,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
         ClassSDict::Iterator cli(*Doxygen::classSDict);
         ClassDef *cd=0;
         bool found=FALSE;
-
-        t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
+        if (fortranOpt)
+        {
+          t << "{\\tc \\v " << theTranslator->trTypeDocumentation() << "}"<< endl;
+        }
+        else
+        {
+          t << "{\\tc \\v " << theTranslator->trClassDocumentation() << "}"<< endl;
+        }
         for (cli.toFirst();(cd=cli.current()) && !found;++cli)
         {
           if (cd->isLinkableInProject() && cd->templateMaster()==0)
@@ -802,21 +831,23 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isPageDocumentation:
       {
-        t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
-        PageSDict::Iterator pdi(*Doxygen::pageSDict);
-        PageDef *pd=pdi.toFirst();
-        bool first=TRUE;
-        for (pdi.toFirst();(pd=pdi.current());++pdi)
-        {
-          if (!pd->getGroupDef() && !pd->isReference())
-          {
-            if (first) t << "\\par " << rtf_Style_Reset << endl;
-            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << pd->getOutputFileBase();
-            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-            first=FALSE;
-          }
-        }
+//#error "fix me in the same way as the latex index..."
+        //t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
+        t << "}"<< endl;
+        //PageSDict::Iterator pdi(*Doxygen::pageSDict);
+        //PageDef *pd=pdi.toFirst();
+        //bool first=TRUE;
+        //for (pdi.toFirst();(pd=pdi.current());++pdi)
+        //{
+        //  if (!pd->getGroupDef() && !pd->isReference())
+        //  {
+        //    if (first) t << "\\par " << rtf_Style_Reset << endl;
+        //    t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+        //    t << pd->getOutputFileBase();
+        //    t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+        //    first=FALSE;
+        //  }
+        //}
       }
       break;
     case isEndIndex:
@@ -829,6 +860,14 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
       break;
    }
+}
+
+void RTFGenerator::writePageLink(const char *name,bool first)
+{
+   if (first) t << "\\par " << rtf_Style_Reset << endl;
+   t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+   t << name;
+   t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
 }
 
 void RTFGenerator::lastIndexPage()
@@ -2393,9 +2432,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
     return FALSE;
   }
   QTextStream outt(&outf);
-#if QT_VERSION >= 200
-  outt.setEncoding(QTextStream::Latin1);
-#endif
+  outt.setEncoding(QTextStream::UnicodeUTF8);
 
   if (!PreProcessFile(thisDir,mainRTFName,outt))
   {
@@ -2511,6 +2548,15 @@ void RTFGenerator::endParamList()
   decrementIndentLevel();
   m_omitParagraph = TRUE;
   t << "}";
+}
+
+void RTFGenerator::startParameterType(bool first,const char *key)
+{
+  DBG_RTF(t << "{\\comment (startParameterList)}"    << endl)
+  if (!first)
+  {
+    t << " " << key << " ";
+  }
 }
 
 void RTFGenerator::printDoc(DocNode *n,const char *langExt)

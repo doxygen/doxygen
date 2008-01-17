@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -79,6 +79,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_directory_graph DIRECTORY_GRAPH
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
+\refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
+\refitem cfg_docset_feedname DOCSET_FEEDNAME
 \refitem cfg_dot_graph_max_nodes DOT_GRAPH_MAX_NODES
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
 \refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
@@ -114,6 +116,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_buglist GENERATE_BUGLIST
 \refitem cfg_generate_chi GENERATE_CHI
 \refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
+\refitem cfg_generate_docset GENERATE_DOCSET
 \refitem cfg_generate_html GENERATE_HTML
 \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 \refitem cfg_generate_latex GENERATE_LATEX
@@ -169,8 +172,10 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
 \refitem cfg_mscgen_path MSCGEN_PATH
 \refitem cfg_multiline_cpp_is_brief MULTILINE_CPP_IS_BRIEF
+\refitem cfg_optimize_for_fortran OPTIMIZE_FOR_FORTRAN
 \refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
 \refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
+\refitem cfg_optimize_output_vhdl OPTIMIZE_OUTPUT_VHDL
 \refitem cfg_output_directory OUTPUT_DIRECTORY
 \refitem cfg_output_language OUTPUT_LANGUAGE
 \refitem cfg_paper_type PAPER_TYPE
@@ -513,6 +518,18 @@ followed by the descriptions of the tags grouped by category.
  Python sources only. Doxygen will then generate output that is more tailored 
  for that language. For instance, namespaces will be presented as packages, 
  qualified scopes will look different, etc. 
+
+\anchor cfg_optimize_for_fortran
+<dt>\c OPTIMIZE_FOR_FORTRAN <dd>
+ \addindex OPTIMIZE_FOR_FORTRAN
+Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
+sources. Doxygen will then generate output that is tailored for Fortran.
+
+\anchor cfg_optimize_output_vhdl
+<dt>\c OPTIMIZE_OUTPUT_VHDL <dd>
+ \addindex OPTIMIZE_OUTPUT_VHDL
+Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
+sources. Doxygen will then generate output that is tailored for VHDL.
 
 \anchor cfg_subgrouping
 <dt>\c SUBGROUPING <dd>
@@ -1179,6 +1196,35 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  and you can search for words in the documentation.
  The HTML workshop also contains a viewer for compressed HTML files.
 
+\anchor cfg_generate_docset
+<dt>\c GENERATE_DOCSET <dd>
+ \addindex GENERATE_DOCSET
+ If the \c GENERATE_DOCSET tag is set to \c YES, additional index files
+ will be generated that can be used as input for 
+ <a href="http://developer.apple.com/tools/xcode/">Apple's Xcode 3
+ integrated development environment</a>, introduced with OSX 10.5 (Leopard).
+ To create a documentation set, doxygen will generate a Makefile in the
+ HTML output directory. Running \c make will produce the docset in that
+ directory and running <code>make install</code> will install the docset in 
+ <code>~/Library/Developer/Shared/Documentation/DocSets</code> 
+ so that Xcode will find it at startup.
+
+
+\anchor cfg_docset_feedname 
+<dt>\c DOCSET_FEEDNAME <dd>
+ \addindex DOCSET_FEEDNAME
+ When \c GENERATE_DOCSET tag is set to \c YES, this tag determines the name of the
+ feed. A documentation feed provides an umbrella under which multiple
+ documentation sets from a single provider (such as a company or product suite) 
+ can be grouped.
+
+\anchor cfg_docset_bundle_id
+<dt>\c DOCSET_BUNDLE_ID <dd>
+ When \c GENERATE_DOCSET tag is set to \c YES, this tag specifies a string that
+ should uniquely identify the documentation set bundle. This should be a
+ reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>. 
+ Doxygen will append <code>.docset</code> to the name.
+
 \anchor cfg_html_dynamic_sections
 <dt>\c HTML_DYNAMIC_SECTIONS <dd>
  \addindex HTML_DYNAMIC_SECTIONS
@@ -1817,7 +1863,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  becomes larger than this value, doxygen will truncate the graph, which is 
  visualized by representing a node as a red box. Note that doxygen if the number
  of direct children of the root node in a graph is already larger than
- \c MAX_DOT_GRAPH_NOTES then the graph will not be shown at all. Also note
+ \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
  that the size of a graph can be further restricted by \c MAX_DOT_GRAPH_DEPTH.
 
 \anchor cfg_max_dot_graph_depth
@@ -1855,7 +1901,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 <dt>\c DOT_TRANSPARENT <dd>
  \addindex DOT_TRANSPARENT
  Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent 
- background. This is disabled by default, which results in a white background. 
+ background. This is enabled by default, which results in a transparent background. 
  Warning: Depending on the platform used, enabling this option may lead to badly
  anti-aliased labels on the edges of a graph (i.e. they become hard to read).
  

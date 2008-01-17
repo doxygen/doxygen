@@ -669,6 +669,28 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\docsets.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\doctokenizer.cpp"
 				>
 			</File>
@@ -821,6 +843,54 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\fortrancode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortrancode.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1505,30 +1575,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\fortrancode.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\fortrancode.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PfcodeYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\src\pyscanner.cpp"
 				>
 			</File>
@@ -1549,30 +1595,6 @@
 					<Tool
 						Name="Lex"
 						CommandLine="flex -PpyscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\src\fortranscanner.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\fortranscanner.l"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="Lex"
-						CommandLine="flex -PfscanYY [AllOptions] [AdditionalOptions] [inputs]"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1807,6 +1829,50 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\vhdlcode.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PvhdlcodeYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\vhdldocgen.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdlscanner.l"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PvhdlscanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="Lex"
+						CommandLine="flex -i -PvhdlscanYY [AllOptions] [AdditionalOptions] [inputs]"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\xmldocvisitor.cpp"
 				>
 				<FileConfiguration
@@ -1940,6 +2006,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\docsets.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\doctokenizer.h"
 				>
 			</File>
@@ -1977,6 +2047,14 @@
 			</File>
 			<File
 				RelativePath="..\src\formula.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortrancode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\fortranscanner.h"
 				>
 			</File>
 			<File
@@ -2144,15 +2222,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\fortrancode.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\pyscanner.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\fortranscanner.h"
 				>
 			</File>
 			<File
@@ -2304,6 +2374,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\translator_mk.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\translator_nl.h"
 				>
 			</File>
@@ -2389,6 +2463,26 @@
 			</File>
 			<File
 				RelativePath="..\src\version.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdlcode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdlcode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdldocgen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdlscanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\vhdlscanner.h"
 				>
 			</File>
 			<File

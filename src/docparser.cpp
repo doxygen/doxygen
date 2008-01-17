@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3621,7 +3621,9 @@ endlist:
   DBG(("DocHtmlList::parseXml() end retval=%x\n",retval));
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
-  return retval==RetVal_EndList ? RetVal_OK : retval;
+  return retval==RetVal_EndList || 
+         (retval==RetVal_CloseXml || g_token->name=="list") ? 
+         RetVal_OK : retval;
 }
 
 //---------------------------------------------------------------------------
@@ -5972,6 +5974,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //g_token = new TokenInfo;
 
   // store parser state so we can re-enter this function if needed
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   docParserPushContext();
 
   if (ctx &&
@@ -5999,9 +6002,10 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   if (indexWords && md && Config_getBool("SEARCHENGINE"))
   {
+      
     g_searchUrl=md->getOutputFileBase();
     Doxygen::searchIndex->setCurrentDoc(
-        theTranslator->trMember(TRUE,TRUE)+" "+md->qualifiedName(),
+        (fortranOpt?theTranslator->trSubprogram(TRUE,TRUE):theTranslator->trMember(TRUE,TRUE))+" "+md->qualifiedName(),
         g_searchUrl,
         md->anchor());
   }
@@ -6040,7 +6044,11 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
           {
             name = theTranslator->trPackage(name);
           }
-          else
+          else if(fortranOpt)
+          {
+            name.prepend(theTranslator->trModule(TRUE,TRUE)+" ");
+          }
+            else
           {
             name.prepend(theTranslator->trNamespace(TRUE,TRUE)+" ");
           }

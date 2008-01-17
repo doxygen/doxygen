@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -38,6 +38,8 @@
 #include "parserintf.h"
 #include "marshal.h"
 #include "objcache.h"
+#include "vhdlscanner.h"
+#include "vhdldocgen.h"
 
 #define START_MARKER 0x4D454D5B // MEM[
 #define END_MARKER   0x4D454D5D // MEM]
@@ -1043,7 +1045,7 @@ bool MemberDef::isBriefSectionVisible() const
                                    !hasDocs
                                   );
 
-  //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d"
+  //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d "
   //       "visibleIfPrivate=%d visibltIfNotDefaultCDTor=%d "
   //       "visibleIfFriendCompound=%d\n",visibleIfStatic,visibleIfDocumented,
   //       visibleIfEnabled,visibleIfPrivate,visibleIfNotDefaultCDTor,
@@ -1325,6 +1327,25 @@ void MemberDef::writeDeclaration(OutputList &ol,
     }
   }
 
+  // add to index
+  if (isEnumerate() && name().at(0)=='@')
+  {
+    // don't add to index
+  }
+  else // index member
+  {
+    static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+    QCString cfname = getOutputFileBase();
+    QCString cfiname = d->getOutputFileBase();
+    Doxygen::indexList.addIndexItem(
+        cname,                                 // level1
+        name(),                                // level2
+        separateMemPages ? cfname : cfiname,   // contRef
+        cfname,                                // memRef
+        anchor(),                              // anchor
+        this);                                 // memberdef
+  }
+
   // *** write arguments
   if (argsString() && !isObjCMethod()) 
   {
@@ -1545,6 +1566,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool inFile = container->definitionType()==Definition::TypeFile;
   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
   static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+  static bool optVhdl          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
   if ( !hasDocs ) return;
@@ -1573,23 +1595,20 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cfname = getOutputFileBase();
   QCString cfiname = container->getOutputFileBase();
 
-  //static bool hasHtmlHelp = Config_getBool("GENERATE_HTML") && Config_getBool("GENERATE_HTMLHELP");
-  //HtmlHelp *htmlHelp = HtmlHelp::getInstance();
-  //if (hasHtmlHelp)
+  // the next part is moved to declaration
+  //if (isEnumerate() && name().at(0)=='@')
   //{
-    if (isEnumerate() && name().at(0)=='@')
-    {
-      // don't add to index
-    }
-    else
-    {
-      Doxygen::indexList.addIndexItem(
-                             ciname,                                // level1
-                             name(),                                // level2
-                             separateMemPages ? cfname : cfiname,   // contRef
-                             cfname,                                // memRef
-                             memAnchor);                            // anchor
-    }
+  //  // don't add to index
+  //}
+  //else
+  //{
+  //  Doxygen::indexList.addIndexItem(
+  //      ciname,                                // level1
+  //      name(),                                // level2
+  //      separateMemPages ? cfname : cfiname,   // contRef
+  //      cfname,                                // memRef
+  //      memAnchor,                             // anchor
+  //      this);                                 // memberdef
   //}
 
   // get member name
@@ -1753,9 +1772,16 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       if (isStatic()) ldef.prepend("+ "); else ldef.prepend("- ");
     }
 
-    linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
+    if (optVhdl)
+    {
+      VhdlDocGen::writeVHDLTypeDocumentation(this,container,ol);
+    }
+    else
+    {
+      linkifyText(TextGeneratorOLImpl(ol),container,getBodyDef(),name(),ldef);
+      hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
+    }
 
-    hasParameterList=writeDefArgumentList(ol,cd,scopeName,this);
     if (hasOneLineInitializer()) // add initializer
     {
       if (!isDefine()) 
@@ -1793,36 +1819,48 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ol.startTypewriter();
     ol.docify(" [");
     QStrList sl;
-    if (isFriend()) sl.append("friend");
-    else if (isRelated()) sl.append("related");
+    if (optVhdl)
+    {
+      sl.append(VhdlDocGen::trTypeString(getMemberSpecifiers()));
+    }
     else
     {
-      if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
-      if      (isExplicit())            sl.append("explicit");
-      if      (isMutable())             sl.append("mutable");
-      if      (isStatic())              sl.append("static");
-      if      (isGettable())            sl.append("get");
-      if      (isSettable())            sl.append("set");
-      if      (isAddable())             sl.append("add");
-      if      (isRemovable())           sl.append("remove");
-      if      (isRaisable())            sl.append("raise");
-      if      (isReadable())            sl.append("read");
-      if      (isWritable())            sl.append("write");
-      if      (isFinal())               sl.append("final");
-      if      (isAbstract())            sl.append("abstract");
-      if      (isOverride())            sl.append("override");
-      if      (isInitonly())            sl.append("initonly");
-      if      (isSealed())              sl.append("sealed");
-      if      (isNew())                 sl.append("new");
-      if      (protection()==Protected) sl.append("protected");
-      else if (protection()==Private)   sl.append("private");
-      else if (protection()==Package)   sl.append("package");
-      if      (lvirt==Virtual)          sl.append("virtual");
-      else if (lvirt==Pure)             sl.append("pure virtual");
-      if      (isSignal())             sl.append("signal");
-      if      (isSlot())                sl.append("slot");
+      if (isFriend()) sl.append("friend");
+      else if (isRelated()) sl.append("related");
+      else
+      {
+        if      (Config_getBool("INLINE_INFO") && isInline()) sl.append("inline");
+        if      (isExplicit())            sl.append("explicit");
+        if      (isMutable())             sl.append("mutable");
+        if      (isStatic())              sl.append("static");
+        if      (isGettable())            sl.append("get");
+        if      (isSettable())            sl.append("set");
+        if      (isAddable())             sl.append("add");
+        if      (isRemovable())           sl.append("remove");
+        if      (isRaisable())            sl.append("raise");
+        if      (isReadable())            sl.append("read");
+        if      (isWritable())            sl.append("write");
+        if      (isFinal())               sl.append("final");
+        if      (isAbstract())            sl.append("abstract");
+        if      (isOverride())            sl.append("override");
+        if      (isInitonly())            sl.append("initonly");
+        if      (isSealed())              sl.append("sealed");
+        if      (isNew())                 sl.append("new");
+        if      (isOptional())            sl.append("optional");
+        if      (isRequired())            sl.append("required");
+        if      (isAssign())              sl.append("assign");
+        else if (isCopy())                sl.append("copy");
+        else if (isRetain())              sl.append("retain");
+        if      (protection()==Protected) sl.append("protected");
+        else if (protection()==Private)   sl.append("private");
+        else if (protection()==Package)   sl.append("package");
+        if      (lvirt==Virtual)          sl.append("virtual");
+        else if (lvirt==Pure)             sl.append("pure virtual");
+        if      (isSignal())              sl.append("signal");
+        if      (isSlot())                sl.append("slot");
+      }
+      if (m_impl->classDef && m_impl->classDef!=container) sl.append("inherited");
     }
-    if (m_impl->classDef && m_impl->classDef!=container) sl.append("inherited");
     const char *s=sl.first();
     while (s)
     {
@@ -1990,7 +2028,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
                                  fmd->name(),                           // level2
                                  separateMemPages ? cfname : cfiname,   // contRef
                                  cfname,                                // memRef
-                                 fmd->anchor());                        // anchor
+                                 fmd->anchor(),                         // anchor
+                                 fmd);                                  // memberdef
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
           ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
@@ -2346,6 +2385,14 @@ bool MemberDef::hasDocumentation() const
          (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()); // has doc arguments
 }
 
+bool MemberDef::hasUserDocumentation() const
+{
+  bool hasDocs = Definition::hasUserDocumentation() ||
+         (m_impl->inbodyDocs  && !m_impl->inbodyDocs.isEmpty());
+  return hasDocs;
+}
+
+
 void MemberDef::setMemberGroup(MemberGroup *grp)
 {
   makeResident();
@@ -2540,12 +2587,17 @@ void MemberDef::addListReference(Definition *)
   static bool optimizeOutputForC = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
   static bool hideScopeNames     = Config_getBool("HIDE_SCOPE_NAMES");
   static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");  
   visited=TRUE;
   if (!isLinkableInProject()) return;
   QCString memLabel;
   if (optimizeOutputForC) 
   {
     memLabel=theTranslator->trGlobal(TRUE,TRUE);
+  }
+  else if (fortranOpt)
+  {
+    memLabel=theTranslator->trSubprogram(TRUE,TRUE);
   }
   else
   {
@@ -2884,7 +2936,7 @@ bool MemberDef::isObjCMethod() const
   return FALSE; 
 }
 
-QCString MemberDef::qualifiedName()
+QCString MemberDef::qualifiedName() const
 {
   makeResident();
   if (isObjCMethod())
@@ -3244,6 +3296,43 @@ bool MemberDef::isAbstract() const
   makeResident();
   return (m_impl->memSpec&Entry::Abstract)!=0; 
 }
+
+bool MemberDef::isOptional() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Optional)!=0; 
+}
+
+bool MemberDef::isRequired() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Required)!=0; 
+}
+
+bool MemberDef::isNonAtomic() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::NonAtomic)!=0; 
+}
+
+bool MemberDef::isCopy() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Copy)!=0; 
+}
+
+bool MemberDef::isAssign() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Assign)!=0; 
+}
+
+bool MemberDef::isRetain() const
+{ 
+  makeResident();
+  return (m_impl->memSpec&Entry::Retain)!=0; 
+}
+
 
 bool MemberDef::isImplementation() const
 { 
@@ -3953,7 +4042,7 @@ void MemberDef::copyArgumentNames(MemberDef *bmd)
   }
   {
     LockingPtr<ArgumentList> arguments = bmd->declArgumentList();
-    if (m_impl->defArgList && arguments!=0)
+    if (m_impl->declArgList && arguments!=0)
     {
       ArgumentListIterator aliDst(*m_impl->declArgList);
       ArgumentListIterator aliSrc(*arguments);

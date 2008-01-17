@@ -74,11 +74,11 @@ struct SymbolModifiers {
   enum Direction {NONE_D, IN, OUT, INOUT};
 
   //!< This is only used with function return value.
-  QString type, returnName;
+  QCString type, returnName;
   Protection protection;
   Direction direction;
   bool optional;
-  QString dimension;
+  QCString dimension;
   bool allocatable;
   bool external;
   bool intrinsic;
@@ -93,7 +93,7 @@ struct SymbolModifiers {
     pointer(FALSE), target(FALSE), save(FALSE) {}
 
   SymbolModifiers& operator|=(const SymbolModifiers &mdfs);
-  SymbolModifiers& operator|=(QString mdfrString);
+  SymbolModifiers& operator|=(QCString mdfrString);
 };
 
 //ostream& operator<<(ostream& out, const SymbolModifiers& mdfs);
@@ -132,7 +132,7 @@ static MethodTypes 	mtype;
 static bool    		gstat;
 static Specifier 	virt;
 
-static QString           debugStr;
+static QCString          debugStr;
 static QCString          result; // function result
 static Argument          *parameter; // element of parameter list
 static QCString          argType;  // fortran type of an argument of a parameter list
@@ -146,7 +146,7 @@ static char              stringStartSymbol; // single or double quote
 //! Accumulated modifiers of current statement, eg variable declaration.
 static SymbolModifiers currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
-static QMap<Entry*,QMap<QString,SymbolModifiers> > modifiers;
+static QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
 
 //-----------------------------------------------------------------------------
 
@@ -154,14 +154,14 @@ static int yyread(char *buf,int max_size);
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void addCurrentEntry();
-static void addInterface(QString name);
-static Argument *addFortranParameter(const QCString &type,const QCString &name, const QString docs);
+static void addInterface(QCString name);
+static Argument *addFortranParameter(const QCString &type,const QCString &name, const QCString docs);
 static void scanner_abort();
 
 static void startScope(Entry *scope);
 static bool endScope(Entry *scope);
-static QString getFullName(Entry *e);
-static bool isTypeName(QString name);
+static QCString getFullName(Entry *e);
+static bool isTypeName(QCString name);
 static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root);
 
 //-----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *curre
 IDSYM	  [a-z_A-Z0-9]
 NOTIDSYM  [^a-z_A-Z0-9]
 SEPARATE  [:, \t]
-ID        [a-z_A-Z]+{IDSYM}*
+ID        [a-z_A-Z%]+{IDSYM}*
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
 SUBPROG   (subroutine|function)
@@ -245,15 +245,15 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
 <String>\"|\'                           { // string ends with next quote without previous backspace
                                           if(yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
-                                          // cout << "string end: " << debugStr << endl;
+                                          // fprintf(stderr,"string end: %s\n",debugStr.data());
                                           yy_pop_state();
                                         }           
 
-<String>.                               {debugStr+=yytext;} // ignore String contents (especially '!') 
+<String>.                               { debugStr+=yytext; } // ignore String contents (especially '!') 
 
 <*>\"|\'                                { /* string starts */
 					  if(YY_START == StrIgnore) REJECT; // ignore in simple comments
-                                          // cout << "string start: " << yytext[0] << yyLineNr << endl;
+                                          // fprintf(stderr,"string start: %c %d\n",yytext[0],yyLineNr);
                                           yy_push_state(YY_START);
                                           stringStartSymbol=yytext[0]; // single or double quote
                                           BEGIN(String); debugStr="!^!";
@@ -268,11 +268,11 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
                                             yy_push_state(YY_START);
                                             BEGIN(StrIgnore); 
                                             debugStr="*!";
-                                            //cout << "start comment "<< yyLineNr << endl;
+                                            //fprintf(stderr,"start comment %d\n",yyLineNr);
                                            }      
                                         }
 <StrIgnore>.?/\n                        { yy_pop_state(); // comment ends with endline character
-                                          //cout << "end comment " << yyLineNr <<" "<< debugStr << endl;
+                                          //fprintf(stderr,"end comment %d %s\n",yyLineNr,debugStr.data());
                                         } // comment line ends
 <StrIgnore>.                            { debugStr+=yytext; } 
 
@@ -284,7 +284,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  BEGIN(Use);     
                                         }
 <Use>{ID}                               { 
-                                          //cout << "using dir "<< yytext << endl;
+                                          //fprintf(stderr,"using dir %s\n",yytext);
                                           current->name=yytext;
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
@@ -312,10 +312,10 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
  /*------ ignore special fortran statements */
 <Start,ModuleBody,SubprogBody>^[ \t]*interface({BS_}{ID}({BS}\({BS}[^ \t()]+{BS}\))?)? { // handle interface block
-					  QString name = yytext;
+					  QCString name = yytext;
 					  int index = name.find("interface", 0, FALSE);
 					  index = name.find(QRegExp("[^ \\t]"), index+9);
-					  //cout<<name<<", "<<index<<endl;
+					  //printf(stderr,"%s,%d\n",name.data(),index);
 					  if(index!=-1)
 					    name = name.right(name.length()-index);
 					  else // interface without name, must be inside subprog
@@ -328,8 +328,6 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  if(!endScope(current_root))
 					    yyterminate();
 					  yy_pop_state();
-                                          //cout << "end interface " << yyLineNr
-					  //  <<", "<<Interface<<endl;
                                         }
 <InterfaceBody>module{BS}procedure      { yy_push_state(YY_START);
                                           BEGIN(ModuleProcedure);
@@ -379,13 +377,13 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
  /*------- type definition  -------------------------------------------------------------------------------*/
 
-<Start,ModuleBody>^{BS}"type"({BS_}|({COMMA}{ACCESS_SPEC})) { /* type definition found : TYPE , access-spec::type-name |*/
+<Start,ModuleBody>"type"({BS_}|({COMMA}{ACCESS_SPEC})) { /* type definition found : TYPE , access-spec::type-name |*/
  					    yy_push_state(YY_START);
                                             BEGIN(Typedef);
 					    current->protection = defaultProtection;
                                         }
 <Typedef>{ACCESS_SPEC}          	{ 	
-                                            QString type= yytext;				    
+                                            QCString type= yytext;				    
                                         }
 <Typedef>{ID}                        	{ /* type name found */
                                             //cout << "=========> got typedef " << yytext << ": " << yyLineNr << endl; 
@@ -420,16 +418,16 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 {TYPE_SPEC}/{SEPARATE}			{
                                           /* variable declaration starts */
                                           //fprintf(stderr,"4=========> got variable type: %s\n",yytext);
- 					  QString help=yytext;
+ 					  QCString help=yytext;
 					  help= help.simplifyWhiteSpace();
-					  argType= help.latin1();
+					  argType= help;
 					  yy_push_state(AttributeList);
                                         }
 ^{BS}{PP_ID}{KIND}?			{ /* check for preprocessor symbol expand to type */
-					  QString str = yytext;
+					  QCString str = yytext;
 					  str = str.stripWhiteSpace();
 					  DefineDict* defines = getFileDefineDict();
-					  QString name;
+					  QCString name;
 					  int index = str.find("(");
 					  if(index != -1)
 					    name = str.left(index).stripWhiteSpace();
@@ -437,30 +435,29 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					    name = str;
 
 					  Define *define = (*defines)[name];
-					  if(define != NULL && isTypeName(define->definition)) {
+					  if(define != 0 && isTypeName(define->definition)) {
 					    argType = str;
 					    yy_push_state(AttributeList);
 					  } else {
 					    REJECT;
 					  }
 					}
-{ATTR_STMT}/{BS_}{ID}|{BS}"::"	        { 
+{ATTR_STMT}/{BS_}{ID}		       |
+{ATTR_STMT}/{BS}"::"                   { 
                                           /* attribute statement starts */
                                           //fprintf(stderr,"5=========> Attribute statement: %s\n", yytext); 
-                                          QString tmp = yytext;
+                                          QCString tmp = yytext;
                                           currentModifiers |= tmp.stripWhiteSpace();
 					  argType="";
 					  yy_push_state(YY_START);
-					  /* goto attribute parsing, however there must not be one,
-					     just catch "::" if it is there. */
 					  BEGIN( AttributeList ) ;
-                                        }
+  				       }
 }
 <AttributeList>{
 {COMMA}					{}
 {BS}					{}
 {ATTR_SPEC}				{ /* update current modifiers */
-                                          QString tmp = yytext;
+                                          QCString tmp = yytext;
                                           currentModifiers |= (tmp);
 					}
 "::"					{ /* end attribute list */
@@ -476,11 +473,11 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 <Variable>{BS}				{}
 <Variable>{ID}				{ /* parse variable declaration */
                                           //cout << "5=========> got variable: " << argType << "::" << yytext << endl;
- 					  /* work around for bug in QCString.replace (QString works) */
-					  QString name=yytext;
+ 					  /* work around for bug in QCString.replace (QCString works) */
+					  QCString name=yytext;
 					  /* remember attributes for the symbol */
 					  modifiers[current_root][name.lower()] |= currentModifiers;
-					  argName= name.latin1();
+					  argName= name;
 					  int last= yy_top_state();
 
 					  v_type= V_IGNORE;
@@ -505,8 +502,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
                                           } 
   					}
 <Variable>{ARGS}			{ /* dimension of the previous entry. */
-					  QString name(argName);
-					  QString attr("dimension");
+					  QCString name(argName);
+					  QCString attr("dimension");
 					  attr += yytext;
 					  modifiers[current_root][name] |= attr;
 					}
@@ -542,14 +539,14 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
  /*------ fortran subroutine/function handling ------------------------------------------------------------*/
  /*       Start is initial condition                                                                       */
  
-<Start,ModuleBody,InterfaceBody>{TYPE_SPEC}{BS}/{SUBPROG}{BS_} {   
+<Start,ModuleBody,SubprogBody,InterfaceBody>{TYPE_SPEC}{BS}/{SUBPROG}{BS_} {   
 		                           // TYPE_SPEC is for old function style function result
                                            result= yytext; 
                                            result= result.stripWhiteSpace();
   					   current->type = result;
                                        }              
 <Start,ModuleBody,SubprogBody,InterfaceBody>{BS}{SUBPROG}{BS_} {   // Fortran subroutine or function found
- 					   //cout << "1=========> got subprog, type:" << yytext  <<endl; 
+ 					   //fprintf(stderr,"1=========> got subprog, type: %s\n",yytext); 
                                            current->section = Entry::FUNCTION_SEC ;
                                            QCString subtype = yytext; subtype=subtype.lower().stripWhiteSpace();
 	                                   if (!current->type) current->type = subtype;
@@ -569,7 +566,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
                                        } 
 <Parameterlist>{ARGS}                  {   
 				           //current->type not yet available
-                                           QString arglist= yytext;
+                                           QCString arglist= yytext;
 					   //cout << "3=========> got parameterlist " << yytext << endl;
                                            yyLineNr+= arglist.contains('\n');
                                            arglist = arglist.replace(QRegExp("&[^\n]*\n"),"");
@@ -716,7 +713,7 @@ void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root
   moduleProcedures.clear();
 }
 
-static bool isTypeName(QString name)
+static bool isTypeName(QCString name)
 {
   name = name.lower();
   return name=="integer" || name == "real" || 
@@ -724,9 +721,9 @@ static bool isTypeName(QString name)
 }
 
 /*! Extracts string which resides within parentheses of provided string. */
-static QString extractFromParens(const QString name)
+static QCString extractFromParens(const QCString name)
 {
-  QString extracted = name;
+  QCString extracted = name;
   int start = extracted.find("(");
   if(start != -1) 
   {
@@ -761,18 +758,18 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 }
 
 /*! Extracts  and adds passed modifier to these modifiers.*/
-SymbolModifiers& SymbolModifiers::operator|=(QString mdfString)
+SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
 {
   mdfString = mdfString.lower();
   SymbolModifiers newMdf;
 
-  if (mdfString.startsWith("dimension")) 
+  if (mdfString.find("dimension")==0) 
   {
     newMdf.dimension=mdfString;
   }
   else if (mdfString.contains("intent")) 
   {
-    QString tmp = extractFromParens(mdfString);
+    QCString tmp = extractFromParens(mdfString);
     bool isin = tmp.contains("in");
     bool isout = tmp.contains("out");
     if(isin && isout) newMdf.direction = SymbolModifiers::INOUT;
@@ -835,7 +832,7 @@ SymbolModifiers& SymbolModifiers::operator|=(QString mdfString)
 //}
 
 /*! Find argument with given name in \a subprog entry. */
-static Argument *findArgument(Entry* subprog, QString name, bool byTypeName = FALSE)
+static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = FALSE)
 {
   QCString cname(name.lower());
   for (unsigned int i=0; i<subprog->argList->count(); i++) 
@@ -846,12 +843,12 @@ static Argument *findArgument(Entry* subprog, QString name, bool byTypeName = FA
       return arg;
   }
 
-  return NULL;
+  return 0;
 }
 
 /*! Find function with given name in \a entry. */
 #if 0
-static Entry *findFunction(Entry* entry, QString name)
+static Entry *findFunction(Entry* entry, QCString name)
 {
   QCString cname(name.lower());
 
@@ -866,12 +863,12 @@ static Entry *findFunction(Entry* entry, QString name)
       return ce;
   }
 
-  return NULL;
+  return 0;
 }
 #endif
 
 /*! Apply modifiers stored in \a mdfs to the \a typeName string. */
-static QString applyModifiers(QString typeName, SymbolModifiers& mdfs) 
+static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs) 
 {
   if(!mdfs.dimension.isNull()) 
   {
@@ -930,14 +927,14 @@ static QString applyModifiers(QString typeName, SymbolModifiers& mdfs)
 /*! Apply modifiers stored in \a mdfs to the \a arg argument. */
 static void applyModifiers(Argument *arg, SymbolModifiers& mdfs)
 {
-  QString tmp = arg->type;
+  QCString tmp = arg->type;
   arg->type = applyModifiers(tmp, mdfs);
 }
 
 /*! Apply modifiers stored in \a mdfs to the \a ent entry. */
 static void applyModifiers(Entry *ent, SymbolModifiers& mdfs)
 {
-  QString tmp = ent->type;
+  QCString tmp = ent->type;
   ent->type = applyModifiers(tmp, mdfs);
 
   if(mdfs.protection == SymbolModifiers::PUBLIC)
@@ -955,7 +952,7 @@ static void startScope(Entry *scope)
   //cout<<"start scope: "<<scope->name<<endl;
   current_root= scope; /* start substructure */
 
-  QMap<QString,SymbolModifiers> mdfMap;
+  QMap<QCString,SymbolModifiers> mdfMap;
   modifiers.insert(scope, mdfMap);
 }
 
@@ -977,32 +974,33 @@ static bool endScope(Entry *scope)
   }
 
   // update variables or subprogram arguments with modifiers
-  QMap<QString,SymbolModifiers>& mdfsMap = modifiers[scope];
+  QMap<QCString,SymbolModifiers>& mdfsMap = modifiers[scope];
 
-  if(scope->section == Entry::FUNCTION_SEC) 
+  if (scope->section == Entry::FUNCTION_SEC) 
   {
     // iterate all symbol modifiers of the scope
-    for(QMap<QString,SymbolModifiers>::Iterator it=mdfsMap.begin(); it!=mdfsMap.end(); it++) {
+    for (QMap<QCString,SymbolModifiers>::Iterator it=mdfsMap.begin(); it!=mdfsMap.end(); it++) 
+    {
       //cout<<it.key()<<": "<<it.data()<<endl;
       Argument *arg = findArgument(scope, it.key());
 
-      if(arg)
+      if (arg)
         applyModifiers(arg, it.data());
     }
 
     // find return type for function
     //cout<<"RETURN NAME "<<modifiers[current_root][scope->name.lower()].returnName<<endl;
-    QString returnName = modifiers[current_root][scope->name.lower()].returnName.lower();
-    if(modifiers[scope].contains(returnName)) 
+    QCString returnName = modifiers[current_root][scope->name.lower()].returnName.lower();
+    if (modifiers[scope].contains(returnName)) 
     {
       scope->type = modifiers[scope][returnName].type; // returning type works
       applyModifiers(scope, modifiers[scope][returnName]); // returning array works
     }
 
   } 
-  else if(scope->section == Entry::CLASS_SEC) 
+  if (scope->section == Entry::CLASS_SEC) 
   { // was INTERFACE_SEC
-    if(scope->parent()->section == Entry::FUNCTION_SEC) 
+    if (scope->parent()->section == Entry::FUNCTION_SEC) 
     { // interface within function
       // iterate functions of interface and 
       // try to find types for dummy(ie. argument) procedures.
@@ -1011,11 +1009,11 @@ static bool endScope(Entry *scope)
       Entry *ce;
       for (;(ce=eli.current());++eli) 
       {
-        if(ce->section != Entry::FUNCTION_SEC)
+        if (ce->section != Entry::FUNCTION_SEC)
           continue;
 
         Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
-        if(arg != NULL) 
+        if(arg != 0) 
 	{
           // set type of dummy procedure argument to interface
 	  arg->name = arg->type;
@@ -1023,10 +1021,9 @@ static bool endScope(Entry *scope)
         }
       }
     }
-
   } 
-  else 
-  { // not function section or interface
+  if (scope->section!=Entry::FUNCTION_SEC) 
+  { // not function section 
     // iterate variables: get and apply modifiers
     EntryListIterator eli(*scope->children());
     Entry *ce;
@@ -1048,10 +1045,10 @@ static bool endScope(Entry *scope)
 }
 
 //! Return full name of the entry. Sometimes we must combine several names recursively.
-static QString getFullName(Entry *e) 
+static QCString getFullName(Entry *e) 
 {
-  QString name = e->name;
-  if(e->section == Entry::CLASS_SEC //  || e->section == Entry::INTERFACE_SEC
+  QCString name = e->name;
+  if (e->section == Entry::CLASS_SEC //  || e->section == Entry::INTERFACE_SEC
      || !e->parent() || e->parent()->name.isEmpty())
     return name;
 
@@ -1061,7 +1058,7 @@ static QString getFullName(Entry *e)
 static int yyread(char *buf,int max_size)
 {
   int c=0;
-  while( c < max_size && inputString[inputPosition] )
+  while ( c < max_size && inputString[inputPosition] )
   {
     *buf = inputString[inputPosition++] ;
     c++; buf++;
@@ -1099,7 +1096,7 @@ static void addCurrentEntry()
  * \note Code was brought to this procedure from the parser,
  * because there was/is idea to use it in several parts of the parser.
  */ 
-static void addInterface(QString name) 
+static void addInterface(QCString name) 
 {
   current->section = Entry::CLASS_SEC; // was Entry::INTERFACE_SEC;
   current->spec = Entry::Interface;
@@ -1115,7 +1112,7 @@ static void addInterface(QString name)
   if ((current_root) &&
       (current_root->section ==  Entry::FUNCTION_SEC)) 
   {
-    current->name = getFullName(current_root) + "__" + QString(current->name);
+    current->name = getFullName(current_root) + "__" + QCString(current->name);
   }
 
   current->fileName = yyFileName;
@@ -1128,11 +1125,11 @@ static void addInterface(QString name)
 
 /*! Update the argument \a name with additional \a type info. 
  */
-static Argument *addFortranParameter(const QCString &type,const QCString &name, const QString docs)
+static Argument *addFortranParameter(const QCString &type,const QCString &name, const QCString docs)
 {
-  //cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QString("null"):docs)<<endl;
+  //cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<endl;
   Argument *ret = 0;
-  if (current_root->argList==0) return FALSE;
+  if (current_root->argList==0) return 0;
   ArgumentListIterator ali(*current_root->argList);
   Argument *a;
   for (ali.toFirst();(a=ali.current());++ali)
@@ -1143,7 +1140,7 @@ static Argument *addFortranParameter(const QCString &type,const QCString &name, 
 //cout << "addParameter found:   " << type << " , " << name << endl;
       a->type=type.stripWhiteSpace();
       a->name=name.stripWhiteSpace();
-      if(!docs.isNull())
+      if (!docs.isNull())
         a->docs = docs;
       break;
     }
@@ -1327,7 +1324,7 @@ static void scanner_abort()
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void fscannerYYdummy() { yy_flex_realloc(0,0); } 
+  void fscannerYYdummy() { yy_flex_realloc(0,0); yy_top_state(); } 
 }
 #endif
 

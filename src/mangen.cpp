@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -416,9 +416,7 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
         {
 	      QTextStream linkstream;
 	      linkstream.setDevice(&linkfile);
-#if QT_VERSION >= 200
-	      linkstream.setEncoding(QTextStream::Latin1);
-#endif
+	      linkstream.setEncoding(QTextStream::UnicodeUTF8);
 	      linkstream << ".so man" << getExtension() << "/" << buildFileName( manName ) << endl;
 	}
     }

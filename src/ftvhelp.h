@@ -71,7 +71,7 @@ class FTVHelp : public IndexIntf
                          const char *anchor);
     void addIndexItem(const char *, const char *, 
                       const char *, const char *,
-                      const char *) {}
+                      const char *, const MemberDef *) {}
     void addIndexFile(const char *) {}
 
   private:

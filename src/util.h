@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -85,14 +85,17 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 enum SrcLangExt
 {
-  SrcLangExt_IDL    = 0x008,
-  SrcLangExt_Java   = 0x010,
-  SrcLangExt_CSharp = 0x020,
-  SrcLangExt_D      = 0x040,
-  SrcLangExt_PHP    = 0x080,
-  SrcLangExt_ObjC   = 0x100,
-  SrcLangExt_Cpp    = 0x200,
-  SrcLangExt_JS     = 0x400,
+  SrcLangExt_IDL    = 0x0008,
+  SrcLangExt_Java   = 0x0010,
+  SrcLangExt_CSharp = 0x0020,
+  SrcLangExt_D      = 0x0040,
+  SrcLangExt_PHP    = 0x0080,
+  SrcLangExt_ObjC   = 0x0100,
+  SrcLangExt_Cpp    = 0x0200,
+  SrcLangExt_JS     = 0x0400,
+  SrcLangExt_Python = 0x0800,
+  SrcLangExt_F90    = 0x1000,
+  SrcLangExt_VHDL   = 0x2000
 };
 
 //--------------------------------------------------------------------
@@ -346,6 +349,7 @@ QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
 
 void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al);
 
+QCString convertCharEntitiesToUTF8(const QCString &s);
 
 #endif
 

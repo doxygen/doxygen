@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -215,15 +215,20 @@ static FILE *checkAndOpenFile(const QCString &absName)
 
 static FILE *findFile(const char *fileName,bool localInclude)
 {
-  if (localInclude && g_yyFileDef)
+  //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
+  if (localInclude && !g_yyFileName.isEmpty())
   {
-    QCString absName = g_yyFileDef->getPath()+"/"+fileName;
-    FILE *f = checkAndOpenFile(absName);
-    if (f)
+    QFileInfo fi(g_yyFileName);
+    if (fi.exists())
     {
-      setFileName(absName);
-      g_yyLineNr=1;
-      return f;
+      QCString absName = QCString(fi.dirPath().data())+"/"+fileName;
+      FILE *f = checkAndOpenFile(absName);
+      if (f)
+      {
+	setFileName(absName);
+	g_yyLineNr=1;
+	return f;
+      }
     }
   }
   if (g_pathList==0) 
@@ -1665,7 +1670,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefinedExpr1,DefinedExpr2>.
 <SkipCPPBlock>^{B}*"#"			{ BEGIN(SkipCommand); }
 <SkipCPPBlock>^{B}*/[^#]		{ BEGIN(SkipLine); }
-<SkipCPPBlock>\n			{ g_yyLineNr++; }
+<SkipCPPBlock>\n			{ g_yyLineNr++; outputChar('\n'); }
 <SkipCPPBlock>.
 <SkipCommand>"if"(("n")?("def"))?/[ \t(!]	{ 
   					  incrLevel();
@@ -1757,6 +1762,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <EndImport>\\[\r]?"\n"			{ 
 					  outputChar('\n');
+					  g_yyLineNr++;
 					}
 <EndImport>.				{
   					}

@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -121,6 +121,7 @@ Entry::Entry(const Entry &e)
   objc        = e.objc;
   tagInfo     = e.tagInfo;
   hidden      = e.hidden;
+  artificial  = e.artificial;
   m_sublist   = new QList<Entry>;
   m_sublist->setAutoDelete(TRUE);
   extends     = new QList<BaseInfo>;
@@ -280,6 +281,7 @@ void Entry::reset()
   spec  = 0;
   objc = FALSE;
   hidden = FALSE;
+  artificial = FALSE;
   subGrouping = TRUE;
   protection = Public;
   groupDocType = GROUPDOC_NORMAL;

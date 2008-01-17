@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -37,29 +37,38 @@ class IndexIntf
     virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
                                  const char *file = 0, const char *anchor = 0) = 0;
     virtual void addIndexItem(const char *level1, const char *level2, const char *contRef, 
-                              const char *memRef, const char *anchor) = 0;
+                              const char *memRef, const char *anchor,const MemberDef *md) = 0;
     virtual void addIndexFile(const char *name) = 0;
 };
 
 class IndexList : public IndexIntf
 {
+  private:
+    QList<IndexIntf> m_intfs;
+
     void foreach(void (IndexIntf::*methodPtr)())
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)();
-    };
+    }
     template<typename A1>
     void foreach(void (IndexIntf::*methodPtr)(A1),A1 a1)
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1);
-    };
+    }
     template<typename A1,typename A2,typename A3,typename A4,typename A5>
     void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5)
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5);
-    };
+    }
+    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6);
+    }
 
   public:
     IndexList() { m_intfs.setAutoDelete(TRUE); }
@@ -78,14 +87,12 @@ class IndexList : public IndexIntf
     { foreach<bool,const char *,const char *,const char *,const char*>
              (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor); }
     void addIndexItem(const char *level1, const char *level2, const char *contRef, 
-                      const char *memRef, const char *anchor)
-    { foreach<const char *,const char *,const char *,const char *,const char *>
-             (&IndexIntf::addIndexItem,level1,level2,contRef,memRef,anchor); }
+                      const char *memRef, const char *anchor,const MemberDef *md)
+    { foreach<const char *,const char *,const char *,const char *,const char *,const MemberDef *>
+             (&IndexIntf::addIndexItem,level1,level2,contRef,memRef,anchor,md); }
     void addIndexFile(const char *name) 
     { foreach<const char *>(&IndexIntf::addIndexFile,name); }
 
-  private:
-    QList<IndexIntf> m_intfs;
 };
 
 
@@ -225,7 +232,8 @@ extern int documentedDirs;
 void startTitle(OutputList &ol,const char *fileName);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,HighlightedItem hli=HLI_None);
+               const char *title,HighlightedItem hli=HLI_None,
+               bool additionalIndices=FALSE);
 void endFile(OutputList &ol,bool external=FALSE);
 
 void initClassMemberIndices();

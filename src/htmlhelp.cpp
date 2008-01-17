@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -299,9 +299,7 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   cts.setDevice(cf);
-#if QT_VERSION >= 200
-  cts.setEncoding(QTextStream::Latin1);
-#endif
+  cts.setEncoding(QTextStream::UnicodeUTF8);
   cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -319,9 +317,7 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   kts.setDevice(kf);
-#if QT_VERSION >= 200
-  kts.setEncoding(QTextStream::Latin1);
-#endif
+  kts.setEncoding(QTextStream::UnicodeUTF8);
   kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -413,7 +409,7 @@ void HtmlHelp::createProjectFile()
   {
     QTextStream t(&f);
 #if QT_VERSION >= 200
-    t.setEncoding(QTextStream::Latin1);
+    t.setEncoding(QTextStream::UnicodeUTF8);
 #endif
 
    
@@ -572,12 +568,14 @@ void HtmlHelp::addContentsItem(bool isDir,
  *  \param contRef the output file refering to the container.
  *  \param memRef  the output file containing to the member documentation.
  *  \param anchor  the anchor of the item.
+ *  \param md      the member definition corresponding to this item.
  *  \sa HtmlHelpIndex
  */
 void HtmlHelp::addIndexItem(const char *level1, const char *level2,
                             const char *contRef, const char *memRef, 
-                            const char *anchor)
+                            const char *anchor,const MemberDef *md)
 {
+  (void)md;
   index->addItem(level1,level2,contRef,anchor,TRUE,FALSE);
   index->addItem(level2,level1,memRef,anchor,TRUE,TRUE);
 }

@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -116,13 +116,14 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
   if (p)
   {
     while ((c=*p++)!=0 && !needsEscaping) 
-      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"');
+      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"' || c=='#');
     if (needsEscaping)
     { 
       t << "\"";
       p=se.data();
       while (*p)
       {
+	if (*p==' ' && *(p+1)=='\0') break; // skip inserted space at the end
 	if (*p=='"') t << "\\"; // escape quotes
 	t << *p++;
       }
@@ -333,7 +334,7 @@ static int yyread(char *buf,int max_size)
     else 
     {
         //assert(includeStack.current()->newState==YY_CURRENT_BUFFER);
-	return fread(buf,1,max_size,includeStack.current()->filePtr);
+	return (int)fread(buf,1,max_size,includeStack.current()->filePtr);
     }
 }
 
@@ -347,7 +348,7 @@ static QCString configStringRecode(
   QCString outputEncoding = toEncoding;
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   int inputSize=str.length();
-  int outputSize=inputSize*4+1;
+  size_t outputSize=inputSize*4+1;
   QCString output(outputSize);
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
@@ -1213,6 +1214,8 @@ void Config::check()
     filePatternList.append("*.dox");
     filePatternList.append("*.py");
     filePatternList.append("*.f90");
+    filePatternList.append("*.vhd");
+    filePatternList.append("*.vhdl");
     if (portable_fileSystemIsCaseSensitive())
     {
       // unix => case sensitive match => also include useful uppercase versions
@@ -1231,6 +1234,8 @@ void Config::check()
       filePatternList.append("*.MM");
       filePatternList.append("*.PY");
       filePatternList.append("*.F90");
+      filePatternList.append("*.VHD");
+      filePatternList.append("*.VHDL");
     }
   }
 
@@ -1304,6 +1309,35 @@ void Config::check()
       Config_getBool("SOURCE_BROWSER")=TRUE;
       Config_getBool("REFERENCED_BY_RELATION")=TRUE;
   }
+  // some default settings for vhdl
+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
+      (Config_getBool("INLINE_INHERITED_MEMB") || 
+       Config_getBool("INHERIT_DOCS") || 
+       !Config_getBool("HIDE_SCOPE_NAMES") ||
+       !Config_getBool("EXTRACT_PRIVATE")
+      )
+     )
+  {
+    bool b1 = Config_getBool("INLINE_INHERITED_MEMB");
+    bool b2 = Config_getBool("INHERIT_DOCS");
+    bool b3 = Config_getBool("HIDE_SCOPE_NAMES");
+    bool b4 = Config_getBool("EXTRACT_PRIVATE");
+    char *s1,*s2,*s3,*s4;
+    if (b1)  s1="  INLINDE_INHERITED_MEMB = NO (was YES)\n"; else s1="";
+    if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
+    if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
+    if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
+
+    config_err("Warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
+	       "%s%s%s%s",s1,s2,s3,s4
+	      );
+
+    Config_getBool("INLINE_INHERITED_MEMB") = FALSE;
+    Config_getBool("INHERIT_DOCS")          = FALSE;
+    Config_getBool("HIDE_SCOPE_NAMES")      = TRUE;
+    Config_getBool("EXTRACT_PRIVATE")       = TRUE;
+  }
+
 }
 
 void Config::init()
@@ -1334,11 +1368,11 @@ void Config::create()
   
   cs = addString(
                   "DOXYFILE_ENCODING",
-		  "This tag specifies the encoding used for all characters in the config file that \n"
-		  "follow. The default is UTF-8 which is also the encoding used for all text before \n"
-		  "the first occurrence of this tag. Doxygen uses libiconv (or the iconv built into \n"
-		  "libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of \n"
-		  "possible encodings.\n"
+		  "This tag specifies the encoding used for all characters in the config file \n"
+		  "that follow. The default is UTF-8 which is also the encoding used for all \n"
+		  "text before the first occurrence of this tag. Doxygen uses libiconv (or the \n"
+		  "iconv built into libc) for the transcoding. See \n"
+		  "http://www.gnu.org/software/libiconv for the list of possible encodings.\n"
                 );
   cs->setDefaultValue("UTF-8");
   cs = addString(
@@ -1379,8 +1413,8 @@ void Config::create()
 		 "Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional, \n"
 		 "Croatian, Czech, Danish, Dutch, Finnish, French, German, Greek, Hungarian, \n"
 		 "Italian, Japanese, Japanese-en (Japanese with English messages), Korean, \n"
-		 "Korean-en, Lithuanian, Norwegian, Polish, Portuguese, Romanian, Russian, \n"
-		 "Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.\n", 
+		 "Korean-en, Lithuanian, Norwegian, Macedonian, Polish, Portuguese, Romanian, \n"
+		 "Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.\n", 
 		 "English"
                 );
 #ifdef LANG_ZA
@@ -1445,6 +1479,9 @@ void Config::create()
 #endif
 #ifdef LANG_NO
   ce->addValue("Norwegian");
+#endif
+#ifdef LANG_MK
+  ce->addValue("Macedonian");
 #endif
 #ifdef LANG_FA
   ce->addValue("Persian");
@@ -1650,15 +1687,29 @@ void Config::create()
   cb = addBool(
                     "OPTIMIZE_OUTPUT_JAVA",
                     "Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java \n"
-		    "sources only. Doxygen will then generate output that is more tailored for Java. \n"
-                    "For instance, namespaces will be presented as packages, qualified scopes \n"
-                    "will look different, etc. \n",
+		    "sources only. Doxygen will then generate output that is more tailored for \n"
+		    "Java. For instance, namespaces will be presented as packages, qualified \n"
+		    "scopes will look different, etc. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "OPTIMIZE_FOR_FORTRAN",
+                    "Set the OPTIMIZE_FOR_FORTRAN tag to YES if your project consists of Fortran \n"
+                    "sources only. Doxygen will then generate output that is more tailored for \n"
+		    "Fortran. \n",
+                    FALSE
+                 );
+  cb = addBool(
+                    "OPTIMIZE_OUTPUT_VHDL",
+                    "Set the OPTIMIZE_OUTPUT_VHDL tag to YES if your project consists of VHDL \n"
+                    "sources. Doxygen will then generate output that is tailored for \n"
+		    "VHDL. \n",
                     FALSE
                  );
   cb = addBool(  
                     "BUILTIN_STL_SUPPORT",
-		    "If you use STL classes (i.e. std::string, std::vector, etc.) but do not want to \n"
-		    "include (a tag file for) the STL sources as input, then you should \n"
+		    "If you use STL classes (i.e. std::string, std::vector, etc.) but do not want \n"
+		    "to include (a tag file for) the STL sources as input, then you should \n"
 		    "set this tag to YES in order to let doxygen match functions declarations and \n"
 		    "definitions whose arguments contain STL classes (e.g. func(std::string); v.s. \n"
 		    "func(std::string) {}). This also make the inheritance and collaboration \n"
@@ -1745,10 +1796,11 @@ void Config::create()
                  );
   cb = addBool(
                     "EXTRACT_ANON_NSPACES",
-                    "If this flag is set to YES, the members of anonymous namespaces will be extracted \n"
-                    "and appear in the documentation as a namespace called 'anonymous_namespace{file}', \n"
-                    "where file will be replaced with the base name of the file that contains the anonymous \n"
-                    "namespace. By default anonymous namespace are hidden. \n",
+                    "If this flag is set to YES, the members of anonymous namespaces will be \n"
+		    "extracted and appear in the documentation as a namespace called \n"
+		    "'anonymous_namespace{file}', where file will be replaced with the base \n"
+		    "name of the file that contains the anonymous namespace. By default \n"
+		    "anonymous namespace are hidden. \n",
                    FALSE 
                  );
   cb = addBool(
@@ -1909,8 +1961,8 @@ void Config::create()
               );
   cs = addString(  "FILE_VERSION_FILTER",
                    "The FILE_VERSION_FILTER tag can be used to specify a program or script that \n"
-		   "doxygen should invoke to get the current version for each file (typically from the \n"
-		   "version control system). Doxygen will invoke the program by executing (via \n"
+		   "doxygen should invoke to get the current version for each file (typically from \n"
+		   "the version control system). Doxygen will invoke the program by executing (via \n"
 		   "popen()) the command <command> <input-file>, where <command> is the value of \n"
 		   "the FILE_VERSION_FILTER tag, and <input-file> is the name of an input file \n"
 		   "provided by doxygen. Whatever the program writes to standard output \n"
@@ -1987,10 +2039,11 @@ void Config::create()
                  );
   cl->setWidgetType(ConfigList::FileAndDir);
   cs = addString(   "INPUT_ENCODING",
-                    "This tag can be used to specify the character encoding of the source files that \n"
-		    "doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default \n"
-		    "input encoding. Doxygen uses libiconv (or the iconv built into libc) for the transcoding. \n"
-		    "See http://www.gnu.org/software/libiconv for the list of possible encodings.\n"
+                    "This tag can be used to specify the character encoding of the source files \n"
+		    "that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is \n"
+		    "also the default input encoding. Doxygen uses libiconv (or the iconv built \n"
+		    "into libc) for the transcoding. See http://www.gnu.org/software/libiconv for \n"
+		    "the list of possible encodings.\n"
                 );
   cs->setDefaultValue("UTF-8");
   cl = addList(
@@ -2034,9 +2087,10 @@ void Config::create()
   cl = addList(
                     "EXCLUDE_SYMBOLS",
                     "The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names \n"
-		    "(namespaces, classes, functions, etc.) that should be excluded from the output. \n"
-		    "The symbol name can be a fully qualified name, a word, or if the wildcard * is used, \n"
-		    "a substring. Examples: ANamespace, AClass, AClass::ANamespace, ANamespace::*Test \n"
+		    "(namespaces, classes, functions, etc.) that should be excluded from the \n"
+		    "output. The symbol name can be a fully qualified name, a word, or if the \n"
+		    "wildcard * is used, a substring. Examples: ANamespace, AClass, \n"
+		    "AClass::ANamespace, ANamespace::*Test \n"
                  );
   cl = addList(
                     "EXAMPLE_PATH",
@@ -2255,7 +2309,38 @@ void Config::create()
                     "of the generated HTML documentation. \n",
                     FALSE
                  );
+  cb = addBool(
+                    "GENERATE_DOCSET",
+                    "If the GENERATE_DOCSET tag is set to YES, additional index files \n"
+                    "will be generated that can be used as input for Apple's Xcode 3 \n"
+                    "integrated development environment, introduced with OSX 10.5 (Leopard). \n"
+		    "To create a documentation set, doxygen will generate a Makefile in the \n"
+		    "HTML output directory. Running make will produce the docset in that \n"
+		    "directory and running \"make install\" will install the docset in \n"
+		    "~/Library/Developer/Shared/Documentation/DocSets so that Xcode will find \n"
+		    "it at startup.",
+                    FALSE
+                 );
   cb->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "DOCSET_FEEDNAME",
+                    "When GENERATE_DOCSET tag is set to YES, this tag determines the name of the \n"
+                    "feed. A documentation feed provides an umbrella under which multiple \n"
+		    "documentation sets from a single provider (such as a company or product suite) \n"
+		    "can be grouped. \n"
+                );
+  cs->setDefaultValue("Doxygen generated docs");
+  cb->addDependency("GENERATE_DOCSET");
+  cs = addString(
+                    "DOCSET_BUNDLE_ID",
+                    "When GENERATE_DOCSET tag is set to YES, this tag specifies a string that \n"
+		    "should uniquely identify the documentation set bundle. This should be a \n"
+		    "reverse domain-name style string, e.g. com.mycompany.MyDocSet. Doxygen \n"
+		    "will append .docset to the name. \n"
+		);
+  cs->setDefaultValue("org.doxygen.Project");
+  cb->addDependency("GENERATE_DOCSET");
+
   cb = addBool(
                     "HTML_DYNAMIC_SECTIONS",
                     "If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML \n"
@@ -2429,7 +2514,7 @@ void Config::create()
                     "is prepared for conversion to pdf (using ps2pdf). The pdf file will \n"
                     "contain links (just like the HTML output) instead of page references \n"
                     "This makes the output suitable for online browsing using a pdf viewer. \n",
-                    FALSE
+                    TRUE
                  );
   cb->addDependency("GENERATE_LATEX");
   cb = addBool(
@@ -2437,7 +2522,7 @@ void Config::create()
                     "If the USE_PDFLATEX tag is set to YES, pdflatex will be used instead of \n"
                     "plain latex in the generated Makefile. Set this option to YES to get a \n"
                     "higher quality PDF documentation. \n",
-                    FALSE
+                    TRUE
                  );   
   cb->addDependency("GENERATE_LATEX");
   cb = addBool(
@@ -2793,10 +2878,11 @@ void Config::create()
                  );
   cs = addString(   "MSCGEN_PATH",
                     "You can define message sequence charts within doxygen comments using the \\msc \n"
-		    "command. Doxygen will then run the mscgen tool (see http://www.mcternan.me.uk/mscgen/) to \n"
-		    "produce the chart and insert it in the documentation. The MSCGEN_PATH tag allows you to \n"
-		    "specify the directory where the mscgen tool resides. If left empty the tool is assumed to \n"
-		    "be found in the default search path. \n"
+		    "command. Doxygen will then run the mscgen tool (see \n"
+		    "http://www.mcternan.me.uk/mscgen/) to produce the chart and insert it in the \n"
+		    "documentation. The MSCGEN_PATH tag allows you to specify the directory where \n"
+		    "the mscgen tool resides. If left empty the tool is assumed to be found in the \n"
+		    "default search path. \n"
                 );
   cb = addBool(
                     "HIDE_UNDOC_RELATIONS",
@@ -2873,21 +2959,21 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALL_GRAPH",
-                    "If the CALL_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then doxygen will \n"
-		    "generate a call dependency graph for every global function or class method. \n"
-                    "Note that enabling this option will significantly increase the time of a run. \n"
-		    "So in most cases it will be better to enable call graphs for selected \n"
-		    "functions only using the \\callgraph command.\n",
+                    "If the CALL_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then \n"
+		    "doxygen will generate a call dependency graph for every global function \n"
+		    "or class method. Note that enabling this option will significantly increase \n"
+		    "the time of a run. So in most cases it will be better to enable call graphs \n"
+		    "for selected functions only using the \\callgraph command.\n",
                     FALSE
                  );
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALLER_GRAPH",
-                    "If the CALLER_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then doxygen will \n"
-		    "generate a caller dependency graph for every global function or class method. \n"
-                    "Note that enabling this option will significantly increase the time of a run. \n"
-		    "So in most cases it will be better to enable caller graphs for selected \n"
-		    "functions only using the \\callergraph command.\n",
+                    "If the CALLER_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then \n"
+		    "doxygen will generate a caller dependency graph for every global function \n"
+		    "or class method. Note that enabling this option will significantly increase \n"
+		    "the time of a run. So in most cases it will be better to enable caller \n"
+		    "graphs for selected functions only using the \\callergraph command.\n",
                     FALSE
                  );
   cb->addDependency("HAVE_DOT");
@@ -2938,9 +3024,9 @@ void Config::create()
                     "The MAX_DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of \n"
                     "nodes that will be shown in the graph. If the number of nodes in a graph \n"
                     "becomes larger than this value, doxygen will truncate the graph, which is \n"
-                    "visualized by representing a node as a red box. Note that doxygen if the number \n"
-                    "of direct children of the root node in a graph is already larger than \n"
-		    "MAX_DOT_GRAPH_NOTES then the graph will not be shown at all. Also note \n"
+                    "visualized by representing a node as a red box. Note that doxygen if the \n"
+		    "number of direct children of the root node in a graph is already larger than \n"
+		    "DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note \n"
                     "that the size of a graph can be further restricted by MAX_DOT_GRAPH_DEPTH. \n",
                     0,10000, 50
                 );
@@ -2962,10 +3048,10 @@ void Config::create()
   cb = addBool(
                     "DOT_TRANSPARENT",
 		    "Set the DOT_TRANSPARENT tag to YES to generate images with a transparent \n"
-		    "background. This is disabled by default, which results in a white background. \n"
-		    "Warning: Depending on the platform used, enabling this option may lead to \n"
-		    "badly anti-aliased labels on the edges of a graph (i.e. they become hard to \n"
-		    "read). \n",
+		    "background. This is enabled by default, which results in a transparent \n"
+		    "background. Warning: Depending on the platform used, enabling this option \n"
+		    "may lead to badly anti-aliased labels on the edges of a graph (i.e. they \n"
+		    "become hard to read). \n",
 		    TRUE
               );
   cb->addDependency("HAVE_DOT");

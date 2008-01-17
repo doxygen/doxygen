@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -33,6 +33,7 @@
 #include "htags.h"
 #include "parserintf.h"
 #include "portable.h"
+#include "vhdldocgen.h"
 
 class DevNullCodeDocInterface : public CodeOutputInterface
 {
@@ -214,6 +215,8 @@ void FileDef::writeDetailedDocumentation(OutputList &ol)
 */
 void FileDef::writeDocumentation(OutputList &ol)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   //funcList->countDecMembers();
   
   //QCString fn = name();
@@ -231,11 +234,13 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   QCString title = docname+versionTitle;
   QCString pageTitle=theTranslator->trFileReference(docname);
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible);
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible,TRUE);
     getDirDef()->writeNavigationPath(ol);
+    ol.endQuickIndices();
+    ol.startContents();
     QCString pageTitleShort=theTranslator->trFileReference(name());
     startTitle(ol,getOutputFileBase());
     ol.pushGeneratorState();
@@ -250,6 +255,7 @@ void FileDef::writeDocumentation(OutputList &ol)
   }
   else
   {
+    startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_FileVisible);
     startTitle(ol,getOutputFileBase());
     ol.parseText(pageTitle);
     addGroupListToTitle(ol,this);
@@ -445,18 +451,32 @@ void FileDef::writeDocumentation(OutputList &ol)
     bool found=FALSE;
     for (ndi.toFirst();(nd=ndi.current());++ndi)
     {
-      if (nd->name().find('@')==-1)
+      if (nd->name().find('@')==-1 && !nd->isArtificial())
       {
         if (!found)
         {
           ol.startMemberHeader();
-          ol.parseText(theTranslator->trNamespaces());
+          if (fortranOpt)
+          {
+            ol.parseText(theTranslator->trModules());
+          }
+          else
+          {
+            ol.parseText(theTranslator->trNamespaces());
+          }
           ol.endMemberHeader();
           ol.startMemberList();
           found=TRUE;
         }
         ol.startMemberItem(0);
-        ol.writeString("namespace ");
+        if (fortranOpt) 
+        {
+          ol.writeString("module ");
+        }
+        else
+        {
+          ol.writeString("namespace ");
+        }
         ol.insertMemberAlign();
         if (nd->isLinkable()) 
         {
@@ -504,7 +524,10 @@ void FileDef::writeDocumentation(OutputList &ol)
   writeMemberDeclarations(ol,MemberList::decProtoMembers,theTranslator->trFuncProtos());
   writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
   writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  writeMemberDeclarations(ol,MemberList::decFuncMembers,theTranslator->trFunctions());
+  writeMemberDeclarations(ol,MemberList::decFuncMembers,
+      fortranOpt ? theTranslator->trSubprograms()  : 
+      vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
+                   theTranslator->trFunctions())   ;
   writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
   ol.endMemberSections();
 
@@ -541,13 +564,14 @@ void FileDef::writeDocumentation(OutputList &ol)
 
 void FileDef::writeMemberDocumentation(OutputList &ol)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
   }
 
   writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  writeMemberDocumentation(ol,MemberList::docProtoMembers,theTranslator->trFunctionPrototypeDocumentation());
+  writeMemberDocumentation(ol,MemberList::docProtoMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionPrototypeDocumentation());
   writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
   writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
   writeMemberDocumentation(ol,MemberList::docFuncMembers,theTranslator->trFunctionDocumentation());
@@ -631,17 +655,20 @@ void FileDef::writeSource(OutputList &ol)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disableAllBut(OutputGenerator::Html);
-  startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible);
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
+    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
     getDirDef()->writeNavigationPath(ol);
+    ol.endQuickIndices();
+    ol.endContents();
     startTitle(ol,getOutputFileBase());
     ol.parseText(name());
     endTitle(ol,getOutputFileBase(),title);
   }
   else
   {
+    startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
     startTitle(ol,0);
     ol.parseText(title);
     endTitle(ol,0,0);

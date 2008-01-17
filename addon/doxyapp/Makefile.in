@@ -1,5 +1,5 @@
 
-all clean depend: Makefile.doxyapp 
+all clean depend distclean: Makefile.doxyapp 
 	$(MAKE) -f Makefile.doxyapp $@
 
 distclean: clean

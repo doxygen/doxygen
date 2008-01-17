@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -36,6 +36,7 @@
 #include "debug.h"
 #include "docparser.h"
 #include "searchindex.h"
+#include "vhdldocgen.h"
 
 //static inline MemberList *createNewMemberList(MemberList::ListType lt)
 //{
@@ -142,13 +143,6 @@ class ClassDefImpl
     /* user defined member groups */
     MemberGroupSDict *memberGroupSDict;
 
-    /*! Indicated whether this class exists because it is used by
-     *  some other class only (TRUE) or if some class inherits from
-     *  it (FALSE). This is need to remove used-only classes from
-     *  the inheritance tree.
-     */
-    bool artificial;
-
     /*! Is this an abstact class? */
     bool isAbstract;
 
@@ -206,7 +200,6 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   variableInstances = 0;
   templateMaster =0;
   templBaseClassNames = 0;
-  artificial = FALSE;
   isAbstract = FALSE;
   isStatic = FALSE;
   isTemplArg = FALSE;
@@ -283,8 +276,13 @@ QCString ClassDef::displayName() const
 {
   static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
   static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString n;
-  if (hideScopeNames)
+  if (vhdlOpt)
+  {
+    n = VhdlDocGen::getClassName(this);
+  }
+  else if (hideScopeNames)
   {
     n=m_impl->className;
   }
@@ -364,9 +362,9 @@ void ClassDef::internalInsertMember(MemberDef *md,
                                     bool addToAllList
                                    )
 {
+  //printf("insertInternalMember(%s) isHidden()=%d\n",md->name().data(),md->isHidden());
   if (md->isHidden()) return;
 
-  //printf("adding %s::%s\n",name().data(),md->name().data());
   if (!isReference())
   {
     static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
@@ -912,12 +910,23 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     
 void ClassDef::showUsedFiles(OutputList &ol)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (Config_getBool("SHOW_USED_FILES"))
   {
     ol.writeRuler();
-    ol.parseText(theTranslator->trGeneratedFromFiles(
+    if (fortranOpt)
+    {
+      ol.parseText(theTranslator->trGeneratedFromFilesFortran(
           m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));
+    }
+    else
+    {
+      ol.parseText(theTranslator->trGeneratedFromFiles(
+          m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          m_impl->files.count()==1));  
+    }
+    
 
     bool first=TRUE;
     const char *file = m_impl->files.first();
@@ -1083,9 +1092,13 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
             {
               Doxygen::tagFile << " virtualness=\"virtual\"";
             }
-            Doxygen::tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+            Doxygen::tagFile << ">" << convertToXML(cd->name()) 
+                             << "</base>" << endl;
           }
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName()+bcd->templSpecifiers);
+          ol.writeObjectLink(cd->getReference(),
+                             cd->getOutputFileBase(),
+                             0,
+                             cd->displayName()+bcd->templSpecifiers);
         }
         else
         {
@@ -1158,18 +1171,38 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString pageType = " ";
+  QCString pageTitle = " ";
+    
   pageType += compoundTypeString();
   toupper(pageType.at(1));
-  QCString pageTitle = theTranslator->trCompoundReference(displayName(),
+  if (fortranOpt)
+  {
+    pageTitle = theTranslator->trCompoundReferenceFortran(displayName(),
+              m_impl->compType,
+              m_impl->tempArgs != 0);  
+  }
+  else if (vhdlOpt)
+  {
+    // TODO: translate
+    pageTitle = VhdlDocGen::getClassTitle(this)+" Reference";
+  }
+  else
+  {
+    pageTitle = theTranslator->trCompoundReference(displayName(),
               m_impl->compType == Interface && m_impl->isObjC ? Class : m_impl->compType,
               m_impl->tempArgs != 0);
+  }
   
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible);  
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_ClassVisible,TRUE);  
   if (getOuterScope()!=Doxygen::globalScope)
   {
     writeNavigationPath(ol);
   }
+  ol.endQuickIndices();
+  ol.startContents();
   startTitle(ol,getOutputFileBase());
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
@@ -1437,12 +1470,16 @@ void ClassDef::writeDocumentation(OutputList &ol)
   //               ); 
 
   // nested classes
-  if (m_impl->innerClasses) m_impl->innerClasses->writeDeclaration(ol,0,0,TRUE);
+  if (m_impl->innerClasses) 
+  {
+    m_impl->innerClasses->writeDeclaration(ol,0,0,TRUE);
+  }
 
   ol.endMemberSections();
     
   // write detailed description
-  if (!Config_getBool("DETAILS_AT_TOP")) {
+  if (!Config_getBool("DETAILS_AT_TOP")) 
+  {
     writeDetailedDescription(ol,pageType,exampleFlag);
   }
   
@@ -1489,7 +1526,8 @@ void ClassDef::writeMemberDocumentation(OutputList &ol)
   ///////////////////////////////////////////////////////////////////////////
   //// Member definitions + detailed documentation
   ///////////////////////////////////////////////////////////////////////////
-
+  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
+    
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
@@ -1499,7 +1537,14 @@ void ClassDef::writeMemberDocumentation(OutputList &ol)
   writeMemberDocumentation(ol,MemberList::typedefMembers,theTranslator->trMemberTypedefDocumentation());
   writeMemberDocumentation(ol,MemberList::enumMembers,theTranslator->trMemberEnumerationDocumentation());
   writeMemberDocumentation(ol,MemberList::constructors,theTranslator->trConstructorDocumentation());
-  writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentation());
+  if (fortranOpt)
+  {
+    writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentationFortran());
+  }
+  else
+  {
+    writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentation());
+  }
   writeMemberDocumentation(ol,MemberList::relatedMembers,theTranslator->trRelatedFunctionDocumentation());
   writeMemberDocumentation(ol,MemberList::variableMembers,theTranslator->trMemberDataDocumentation());
   writeMemberDocumentation(ol,MemberList::propertyMembers,theTranslator->trPropertyDocumentation());
@@ -1610,8 +1655,9 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
 // write the list of all (inherited) members for this class
 void ClassDef::writeMemberList(OutputList &ol)
 {
-  if (m_impl->allMemberNameInfoSDict==0 || 
-      Config_getBool("OPTIMIZE_OUTPUT_FOR_C")) return;
+  static bool cOpt    = Config_getBool("OPTIMIZE_OUTPUT_FOR_C");
+  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  if (m_impl->allMemberNameInfoSDict==0 || cOpt) return;
   // only for HTML
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -1734,7 +1780,11 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.parseText(theTranslator->trDefinedIn()+" ");
           if (cd->isLinkable())
           {
-            ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,cd->displayName());
+            ol.writeObjectLink(
+                cd->getReference(),
+                cd->getOutputFileBase(),
+                0,
+                cd->displayName());
           }
           else
           {
@@ -1749,8 +1799,10 @@ void ClassDef::writeMemberList(OutputList &ol)
         if (memberWritten)
         {
           ol.writeString("<td>");
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),
-                             0,cd->displayName());
+          ol.writeObjectLink(cd->getReference(),
+                             cd->getOutputFileBase(),
+                             0,
+                             cd->displayName());
           ol.writeString("</td>");
           ol.writeString("<td>");
         }
@@ -1759,14 +1811,16 @@ void ClassDef::writeMemberList(OutputList &ol)
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
-             md->isStatic()
+             md->isStatic() || vhdlOpt
             )
             && memberWritten)
         {
           ol.startTypewriter();
           ol.docify(" [");
           QStrList sl;
-          if (md->isFriend()) sl.append("friend");
+          if (vhdlOpt) sl.append(VhdlDocGen::trVhdlType(
+                          md->getMemberSpecifiers())); //append vhdl type
+          else if (md->isFriend()) sl.append("friend");
           else if (md->isRelated()) sl.append("related");
           else
           {
@@ -1993,7 +2047,7 @@ bool ClassDef::isLinkableInProject() const
   else
   {
     return !name().isEmpty() &&    /* no name */
-      !m_impl->artificial && !isHidden() &&
+      !isArtificial() && !isHidden() &&
       name().find('@')==-1 && /* anonymous compound */
       (m_impl->prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
       (!m_impl->isLocal || Config_getBool("EXTRACT_LOCAL_CLASSES")) && /* local */
@@ -2029,7 +2083,7 @@ bool ClassDef::isVisibleInHierarchy()
       // and not an annonymous compound
       name().find('@')==-1 &&
       // not an artifically introduced class
-      !m_impl->artificial &&
+      !isArtificial() &&
       // and not privately inherited
       (m_impl->prot!=Private || extractPrivate) &&
       // documented or shown anyway or documentation is external 
@@ -2097,6 +2151,13 @@ static bool isStandardFunc(MemberDef *md)
 void ClassDef::mergeMembers()
 {
   if (m_impl->membersMerged) return;
+
+  static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  QCString sep="::";
+  if (optimizeOutputForJava || vhdlOpt) sep=".";
+  int sepLen = sep.length();
+
   m_impl->membersMerged=TRUE;
   //printf("  mergeMembers for %s\n",name().data());
   bool inlineInheritedMembers = Config_getBool("INLINE_INHERITED_MEMB" );
@@ -2171,7 +2232,7 @@ void ClassDef::mergeMembers()
                     //    dstMd->name().data(),
                     //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
 
-                    QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
+                    QCString scope=dstMi->scopePath.left(dstMi->scopePath.find(sep)+sepLen);
                     if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
                       dstMi->ambiguityResolutionScope.prepend(scope);
                     ambigue=TRUE;
@@ -2184,7 +2245,7 @@ void ClassDef::mergeMembers()
                   // if base class is an interface (and thus implicitly virtual).
                   //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
                   if ((srcMi->virt!=Normal && dstMi->virt!=Normal) ||
-                      bClass->name()+"::"+srcMi->scopePath == dstMi->scopePath ||
+                      bClass->name()+sep+srcMi->scopePath == dstMi->scopePath ||
                       dstMd->getClassDef()->compoundType()==Interface
                      ) 
                   {
@@ -2198,7 +2259,7 @@ void ClassDef::mergeMembers()
                     //    dstMd->name().data(),
                     //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
 
-                    QCString scope=dstMi->scopePath.left(dstMi->scopePath.find("::")+2);
+                    QCString scope=dstMi->scopePath.left(dstMi->scopePath.find(sep)+sepLen);
                     if (scope!=dstMi->ambiguityResolutionScope.left(scope.length()))
                     {
                       dstMi->ambiguityResolutionScope.prepend(scope);
@@ -2236,7 +2297,7 @@ void ClassDef::mergeMembers()
                 if (srcMi->virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
 
                 MemberInfo *newMi = new MemberInfo(srcMd,prot,virt,TRUE);
-                newMi->scopePath=bClass->name()+"::"+srcMi->scopePath;
+                newMi->scopePath=bClass->name()+sep+srcMi->scopePath;
                 if (ambigue)
                 {
                   //printf("$$ New member %s %s add scope %s::\n",
@@ -2244,7 +2305,7 @@ void ClassDef::mergeMembers()
                   //     srcMd->name().data(),
                   //     bClass->name().data());
 
-                  QCString scope=bClass->name()+"::";
+                  QCString scope=bClass->name()+sep;
                   if (scope!=srcMi->ambiguityResolutionScope.left(scope.length()))
                   {
                     newMi->ambiguityResolutionScope=
@@ -2256,12 +2317,12 @@ void ClassDef::mergeMembers()
                   if (srcMi->ambigClass==0)
                   {
                     newMi->ambigClass=bClass;
-                    newMi->ambiguityResolutionScope=bClass->name()+"::";
+                    newMi->ambiguityResolutionScope=bClass->name()+sep;
                   }
                   else
                   {
                     newMi->ambigClass=srcMi->ambigClass;
-                    newMi->ambiguityResolutionScope=srcMi->ambigClass->name()+"::";
+                    newMi->ambiguityResolutionScope=srcMi->ambigClass->name()+sep;
                   }
                 }
                 dstMni->append(newMi);
@@ -2308,7 +2369,7 @@ void ClassDef::mergeMembers()
                 }
                 //printf("Adding!\n");
                 MemberInfo *newMi=new MemberInfo(mi->memberDef,prot,virt,TRUE);
-                newMi->scopePath=bClass->name()+"::"+mi->scopePath;
+                newMi->scopePath=bClass->name()+sep+mi->scopePath;
                 newMi->ambigClass=mi->ambigClass;
                 newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
                 newMni->append(newMi);
@@ -2620,16 +2681,33 @@ void ClassDef::determineIntfUsageRelation()
 QCString ClassDef::compoundTypeString() const
 {
   if (m_impl->compType==Interface && m_impl->isObjC) return "class";
-  switch (m_impl->compType)
+  if (Config_getBool("OPTIMIZE_FOR_FORTRAN"))
   {
-    case Class:     return "class";
-    case Struct:    return "struct";
-    case Union:     return "union";
-    case Interface: return "interface";
-    case Protocol:  return "protocol";
-    case Category:  return "category";
-    case Exception: return "exception";
-    default:        return "unknown";
+    switch (m_impl->compType)
+    {
+      case Class:     return "module";
+      case Struct:    return "type";
+      case Union:     return "union";
+      case Interface: return "interface";
+      case Protocol:  return "protocol";
+      case Category:  return "category";
+      case Exception: return "exception";
+      default:        return "unknown";
+    } 
+  }
+  else
+  {
+    switch (m_impl->compType)
+    {
+      case Class:     return "class";
+      case Struct:    return "struct";
+      case Union:     return "union";
+      case Interface: return "interface";
+      case Protocol:  return "protocol";
+      case Category:  return "category";
+      case Exception: return "exception";
+      default:        return "unknown";
+    }
   }
 }
 
@@ -2785,7 +2863,7 @@ ClassDef *ClassDef::insertTemplateInstance(const QCString &fileName,
   {
     Debug::print(Debug::Classes,0,"      New template instance class `%s'`%s'\n",name().data(),templSpec.data());
     templateClass = new ClassDef(
-        fileName,startLine,name()+templSpec,ClassDef::Class);
+        fileName,startLine,localName()+templSpec,ClassDef::Class);
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     templateClass->setHidden(isHidden());
@@ -2982,12 +3060,13 @@ QCString ClassDef::className() const
 
 void ClassDef::addListReferences()
 {
+  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (!isLinkableInProject()) return;
   //printf("ClassDef(%s)::addListReferences()\n",name().data());
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
-             theTranslator->trClass(TRUE,TRUE),
+             fortranOpt?theTranslator->trType(TRUE,TRUE):theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),displayName()
             );
   }
@@ -3094,8 +3173,19 @@ void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
 void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
                const char *subTitle)
 {
+  static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,this,0,0,0,title,subTitle); 
+  if (ml) 
+  {
+    if (optimizeVhdl) // use specific declarations function
+    {
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this);
+    }
+    else // ise generic declaration function
+    {
+      ml->writeDeclarations(ol,this,0,0,0,title,subTitle); 
+    }
+  }
 }
 
 void ClassDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)
@@ -3117,11 +3207,6 @@ void ClassDef::writePlainMemberDeclaration(OutputList &ol,MemberList::ListType l
 bool ClassDef::isLocal() const 
 { 
   return m_impl->isLocal; 
-}
-
-bool ClassDef::isArtificial() const 
-{ 
-  return m_impl->artificial; 
 }
 
 ClassSDict *ClassDef::getInnerClasses() 
@@ -3252,11 +3337,6 @@ void ClassDef::setSubGrouping(bool enabled)
 void ClassDef::setProtection(Protection p) 
 { 
   m_impl->prot=p; 
-}
-
-void ClassDef::setClassIsArtificial() 
-{ 
-  m_impl->artificial = TRUE; 
 }
 
 void ClassDef::setIsStatic(bool b) 

@@ -24,14 +24,15 @@ all: class/html/index.html \
      diagrams/html/index.html \
      memgrp/html/index.html \
      docstring/html/index.html \
-     pyexample/html/index.html
+     pyexample/html/index.html \
+     mux/html/index.html
 
 clean:
-	deltree /y class define enum file pyexample docstring
-	deltree /y func page relates author
-	deltree /y par overload example include qtstyle 
-	deltree /y jdstyle structcmd autolink resdefine 
-	deltree /y restypedef afterdoc template tag group diagrams memgrp
+	del /s/y class define enum file pyexample docstring
+	del /s/y func page relates author
+	del /s/y par overload example include qtstyle 
+	del /s/y jdstyle structcmd autolink resdefine mux
+	del /s/y restypedef afterdoc template tag group diagrams memgrp
 
 class/html/index.html: class.h class.cfg
 	$(DOXYDIR)\doxygen class.cfg
@@ -101,6 +102,9 @@ memgrp/html/index.html: memgrp.cpp memgrp.cfg
 
 pyexample/html/index.html: pyexample.py pyexample.cfg
 	$(DOXYDIR)\doxygen pyexample.cfg
+
+mux/html/index.html: mux.vhdl mux.cfg
+	$(DOXYDIR)\doxygen mux.cfg
 
 docstring/html/index.html: docstring.py docstring.cfg
 	$(DOXYDIR)\doxygen docstring.cfg

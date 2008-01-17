@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1665,6 +1665,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 %option noyywrap
 
 %x      SkipString
+%x      SkipStringS
 %x      SkipVerbString
 %x	SkipCPP
 %x	SkipComment
@@ -2334,18 +2335,33 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_inForEachExpression = FALSE;
   					  BEGIN( SkipString );
   					}
+<FuncCall,Body,MemberCall,MemberCall2,SkipInits>\'	{
+					  startFontClass("stringliteral");
+  					  g_code->codify(yytext);
+  					  g_lastStringContext=YY_START;
+					  g_inForEachExpression = FALSE;
+  					  BEGIN( SkipStringS );
+  					}
 <SkipString>[^\"\\\r\n]*		{ 
   					  g_code->codify(yytext);
 					}
-<SkipString>"//"|"/*"			{
+<SkipStringS>[^\'\\\r\n]*		{
   					  g_code->codify(yytext);
   					}
-<SkipString>@?\"				{
+<SkipString,SkipStringS>"//"|"/*"	{
+  					  g_code->codify(yytext);
+  					}
+<SkipString>@?\"			{
   					  g_code->codify(yytext);
 					  endFontClass();
   					  BEGIN( g_lastStringContext );
   					}
-<SkipString>\\.				{
+<SkipStringS>\'				{
+  					  g_code->codify(yytext);
+					  endFontClass();
+  					  BEGIN( g_lastStringContext );
+  					}
+<SkipString,SkipStringS>\\.		{
   					  g_code->codify(yytext);
 					}
 <SkipVerbString>[^"\n]+			{

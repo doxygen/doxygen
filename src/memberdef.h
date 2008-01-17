@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -110,7 +110,7 @@ class MemberDef : public Definition
     const char *getGroupFileName() const;
     int getGroupStartLine() const;
     bool getGroupHasDocs() const;
-    QCString qualifiedName();
+    QCString qualifiedName() const;
     QCString objCMethodName(bool localLink,bool showStatic) const; 
 
     // direct kind info 
@@ -148,6 +148,12 @@ class MemberDef : public Definition
     bool isAbstract() const;
     bool isOverride() const;
     bool isInitonly() const;
+    bool isOptional() const;
+    bool isRequired() const;
+    bool isNonAtomic() const;
+    bool isCopy() const;
+    bool isAssign() const;
+    bool isRetain() const;
     bool isNew() const;
     bool isSealed() const;
     bool isImplementation() const;
@@ -166,6 +172,7 @@ class MemberDef : public Definition
     bool isLinkableInProject() const;
     bool isLinkable() const;
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
+    bool hasUserDocumentation() const; // overrides hasUserDocumentation
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
     bool isDetailedSectionLinkable() const;

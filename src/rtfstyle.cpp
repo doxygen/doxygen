@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -438,9 +438,7 @@ void loadStylesheet(const char *name, QDict<StyleData>& dict)
   static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
   QTextStream t(&file);
-#if QT_VERSION >= 200
-  t.setEncoding(QTextStream::Latin1);
-#endif
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   while (!t.eof())
   {
@@ -487,9 +485,7 @@ void loadExtensions(const char *name)
   static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
   QTextStream t(&file);
-#if QT_VERSION >= 200
-  t.setEncoding(QTextStream::Latin1);
-#endif
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   while (!t.eof())
   {

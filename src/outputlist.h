@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -75,6 +75,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startIndexSection,is); }
     void endIndexSection(IndexSections is)
     { forall(&OutputGenerator::endIndexSection,is); }
+    void writePageLink(const char *name,bool first)
+    { forall(&OutputGenerator::writePageLink,name,first); }
     void startProjectNumber()
     { forall(&OutputGenerator::startProjectNumber); }
     void endProjectNumber()
@@ -306,8 +308,16 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startPageRef); }
     void endPageRef(const char *c,const char *a)
     { forall(&OutputGenerator::endPageRef,c,a); }
+    void startQuickIndices()
+    { forall(&OutputGenerator::startQuickIndices); }
+    void endQuickIndices()
+    { forall(&OutputGenerator::endQuickIndices); }
     void writeQuickLinks(bool compact,HighlightedItem hli)
     { forall(&OutputGenerator::writeQuickLinks,compact,hli); }
+    void startContents()
+    { forall(&OutputGenerator::startContents); }
+    void endContents()
+    { forall(&OutputGenerator::endContents); }
     void writeNonBreakableSpace(int num)
     { forall(&OutputGenerator::writeNonBreakableSpace,num); }
     void startDescTable()

@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -21,6 +21,7 @@
 #include "outputlist.h"
 #include "language.h"
 #include "doxygen.h"
+#include "vhdldocgen.h"
 
 ClassList::ClassList() : QList<ClassDef>()
 {
@@ -66,6 +67,8 @@ ClassListIterator::ClassListIterator(const ClassList &cllist) :
 void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
                                   const char *header,bool localNames)
 {
+  static bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  static bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   if (count()>0)
   {
     ClassSDict::Iterator sdi(*this);
@@ -91,9 +94,14 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             {
               ol.parseText(header);
             }
+            else if (vhdlOpt)
+            {
+              ol.parseText(VhdlDocGen::trVhdlType(VhdlDocGen::ARCHITECTURE,FALSE));
+            }
             else
             {
-              ol.parseText(theTranslator->trCompounds());
+              ol.parseText(fortranOpt ? theTranslator->trDataTypes() :
+                                        theTranslator->trCompounds());
             }
             ol.endMemberHeader();
             ol.startMemberList();
@@ -103,7 +111,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
               !cd->isReference())  // skip classes found in tag files
           {
             Doxygen::tagFile << "    <class kind=\"" << cd->compoundTypeString() 
-                    << "\">" << convertToXML(cd->name()) << "</class>" << endl;
+              << "\">" << convertToXML(cd->name()) << "</class>" << endl;
           }
           ol.startMemberItem(FALSE);
           QCString tmp = cd->compoundTypeString();
@@ -116,16 +124,20 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           {
             cname = cd->displayName();
           }
-          ol.writeString(tmp);
-          ol.writeString(" ");
-          ol.insertMemberAlign();
+
+          if (!vhdlOpt) // for VHDL we swap the name and the type
+          {
+            ol.writeString(tmp);
+            ol.writeString(" ");
+            ol.insertMemberAlign();
+          }
           if (isLink) 
           {
             ol.writeObjectLink(cd->getReference(),
                 cd->getOutputFileBase(),
                 0,
                 cname
-               );
+                );
           }
           else 
           {
@@ -133,16 +145,21 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
             ol.docify(cname);
             ol.endBold();
           }
+          if (vhdlOpt) // now write the type
+          {
+            ol.insertMemberAlign();
+            VhdlDocGen::writeClassType(cd,ol,cname);
+          }
           ol.endMemberItem();
           if (!cd->briefDescription().isEmpty())
           {
             ol.startMemberDescription();
             ol.parseDoc(cd->briefFile(),cd->briefLine(),cd,0,
-                        cd->briefDescription(),FALSE,FALSE);
+                cd->briefDescription(),FALSE,FALSE);
             if (//(!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
                 //!cd->documentation().isEmpty())
                 cd->isLinkableInProject()
-               )
+                )
             {
               ol.pushGeneratorState();
               ol.disableAllBut(OutputGenerator::Html);

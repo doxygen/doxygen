@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -86,18 +86,32 @@ class MemberList : public QList<MemberDef>
       decFuncMembers          = 43 + declarationLists,
       decVarMembers           = 44 + declarationLists,
       decEnumValMembers       = 45 + declarationLists,
+      decPubSlotMembers       = 46 + declarationLists,
+      decProSlotMembers       = 47 + declarationLists,
+      decPriSlotMembers       = 48 + declarationLists,
+      decSignalMembers        = 49 + declarationLists,
+      decEventMembers         = 50 + declarationLists,
+      decFriendMembers        = 51 + declarationLists,
+      decPropMembers          = 52 + declarationLists,
+      
+      docDefineMembers        = 53 + documentationLists,
+      docProtoMembers         = 54 + documentationLists,
+      docTypedefMembers       = 55 + documentationLists,
+      docEnumMembers          = 56 + documentationLists,
+      docFuncMembers          = 57 + documentationLists,
+      docVarMembers           = 58 + documentationLists,
+      docEnumValMembers       = 59 + documentationLists,
+      docPubSlotMembers       = 60 + documentationLists,
+      docProSlotMembers       = 61 + documentationLists,
+      docPriSlotMembers       = 62 + documentationLists,
+      docSignalMembers        = 63 + documentationLists,
+      docEventMembers         = 64 + documentationLists,
+      docFriendMembers        = 65 + documentationLists,
+      docPropMembers          = 66 + documentationLists,
 
-      docDefineMembers        = 46 + documentationLists,
-      docProtoMembers         = 47 + documentationLists,
-      docTypedefMembers       = 48 + documentationLists,
-      docEnumMembers          = 49 + documentationLists,
-      docFuncMembers          = 50 + documentationLists,
-      docVarMembers           = 51 + documentationLists,
-      docEnumValMembers       = 52 + documentationLists,
-
-      redefinedBy             = 53,
-      enumFields              = 54,
-      memberGroup             = 55
+      redefinedBy             = 67,
+      enumFields              = 68,
+      memberGroup             = 69
     };
 
     MemberList();

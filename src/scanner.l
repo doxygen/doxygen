@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -653,6 +653,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x      ObjCParams
 %x      ObjCParamType
 %x      ObjCProtocolList
+%x 	ObjCPropAttr
+%x 	ObjCSkipStatement
 %x	QtPropType
 %x	QtPropName
 %x	QtPropAttr
@@ -1109,20 +1111,72 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    roundCount=1;
 					    BEGIN( SkipRound );
 					  }
+					  else if (strncmp(yytext,"@property",9)==0) // ObjC 2.0 property
+					  {
+  					    current->mtype = mtype = Property;
+					    current->spec|=Entry::Readable | Entry::Writable | Entry::Assign;
+					    current->protection = Public ;
+					    unput('(');
+					    BEGIN( ObjCPropAttr );
+					  }
 					  else
 					  {
 					    REJECT;
 					  }
                                         }
+<ObjCPropAttr>"getter="{ID}		{ 
+                                          current->read = yytext+7;
+					}
+<ObjCPropAttr>"setter="{ID}		{ 
+                                          current->write = yytext+7;
+					}
+<ObjCPropAttr>"readonly"		{
+					  current->spec&=~Entry::Writable;
+  					}
+<ObjCPropAttr>"readwrite"		{ // default
+  					}
+<ObjCPropAttr>"assign"			{ // default
+  					}
+<ObjCPropAttr>"retain"			{
+					  current->spec&=~Entry::Assign;
+					  current->spec|=Entry::Retain;
+  					}
+<ObjCPropAttr>"copy"			{
+					  current->spec&=~Entry::Assign;
+					  current->spec|=Entry::Copy;
+  					}
+<ObjCPropAttr>"nonatmic"		{
+					  current->spec|=Entry::NonAtomic;
+  					}
+<ObjCPropAttr>")"			{
+  					  BEGIN(FindMembers);
+  					}
 <FindMembers>"@"{ID}			{
   					  if (insideJava) // Java annotation
 					  {
 					    // skip annotation
 					  }
+					  else if (strcmp(yytext,"@property")==0) // ObjC 2.0 property
+					  {
+  					    current->mtype = mtype = Property;
+					    current->spec|=Entry::Writable | Entry::Readable | Entry::Assign;
+					    current->protection = Public ;
+					  }
+					  else if (strcmp(yytext,"@synthesize")==0)
+					  {
+					    BEGIN( ObjCSkipStatement );
+					  }
+					  else if (strcmp(yytext,"@dynamic")==0)
+					  {
+					    BEGIN( ObjCSkipStatement );
+					  }
 					  else
 					  {
 					    REJECT;
 					  }
+  					}
+<ObjCSkipStatement>";"			{
+  					  BEGIN(FindMembers);
   					}
 <PackageName>{ID}("."{ID})*		{
   					  isTypedef=FALSE;
@@ -1181,6 +1235,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           lineCount(); 
                                         }
 <FindMembers>{B}*"explicit"{BN}+	{ current->spec|=Entry::Explicit;
+                                          lineCount(); 
+                                        }
+<FindMembers>{B}*"@required"{BN}+	{ current->spec|=Entry::Required;
+                                          lineCount(); 
+                                        }
+<FindMembers>{B}*"@optional"{BN}+	{ current->spec|=Entry::Optional;
                                           lineCount(); 
                                         }
   /*
@@ -2487,6 +2547,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 
   /* generic curly bracket list copy rules for growable strings */
+<GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"1"{B}*\n? { // start of included file marker
+                                        }
+<GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"2"{B}*\n? { // end of included file marker
+					  QCString line = QCString(yytext);
+					  int s = line.find(' ');
+					  int e = line.find('"',s);
+					  yyLineNr = line.mid(s,e-s).toInt();
+					  if (yytext[yyleng-1]=='\n')
+					  {
+					    yyLineNr++;
+					  }
+  					}
 <GCopyCurly>\"				{
 					  *pCopyCurlyGString+=*yytext;
   					  pCopyQuotedGString=pCopyCurlyGString;
@@ -2520,7 +2592,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    *pCopyCurlyGString+=yytext; 
 					  }
                                         }
-<GCopyCurly>[^"'{}\/\n]+			{
+<GCopyCurly>[^"'{}\/\n]+		{
   					  *pCopyCurlyGString+=yytext;
   					}
 <GCopyCurly>"/"				{ *pCopyCurlyGString+=yytext; }
@@ -3182,13 +3254,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
 <FindMembers>"("/{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
 <FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*[*&]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[] */
-  					  current->bodyLine = yyLineNr;
-  					  lineCount();
-  					  addType(current);
-					  funcPtrType=yytext;
-					  roundCount=0;
-					  //current->type += yytext;
-					  BEGIN( FuncPtr );
+  					  if (insidePHP) // reference parameter
+					  {
+					    REJECT
+					  }
+					  else
+					  {
+					    current->bodyLine = yyLineNr;
+					    lineCount();
+					    addType(current);
+					    funcPtrType=yytext;
+					    roundCount=0;
+					    //current->type += yytext;
+					    BEGIN( FuncPtr );
+					  }
   					}
 <FuncPtr>{SCOPENAME}			{
   					  current->name = yytext;

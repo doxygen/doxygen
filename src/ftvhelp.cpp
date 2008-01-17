@@ -595,7 +595,7 @@ void FTVHelp::generateTreeView()
   {
     QTextStream t(&f);
 #if QT_VERSION >= 200
-    t.setEncoding(QTextStream::Latin1);
+    t.setEncoding(QTextStream::UnicodeUTF8);
 #endif
     t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
     t << "<html><head>";
@@ -632,9 +632,7 @@ void FTVHelp::generateTreeView()
   else
   {
     QTextStream t(&f);
-#if QT_VERSION >= 200
-    t.setEncoding(QTextStream::Latin1);
-#endif
+    t.setEncoding(QTextStream::UnicodeUTF8);
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
     t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\" />\n";

@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -27,6 +27,7 @@
 #include "message.h"
 #include "docparser.h"
 #include "searchindex.h"
+#include "vhdldocgen.h"
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref,
@@ -267,20 +268,29 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
   
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+
   QCString pageTitle;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
   {
     pageTitle = theTranslator->trPackage(displayName());
   }
+  else if (fortranOpt)
+  {
+    pageTitle = theTranslator->trModuleReference(displayName());
+  }
   else
   {
     pageTitle = theTranslator->trNamespaceReference(displayName());
   }
-  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible);
+  startFile(ol,getOutputFileBase(),name(),pageTitle,HLI_NamespaceVisible,TRUE);
   if (getOuterScope()!=Doxygen::globalScope)
   {
     writeNavigationPath(ol);
   }
+  ol.endQuickIndices();
+  ol.startContents();
   startTitle(ol,getOutputFileBase());
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
@@ -353,7 +363,10 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   writeMemberDeclarations(ol,MemberList::decProtoMembers,theTranslator->trFuncProtos());
   writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
   writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  writeMemberDeclarations(ol,MemberList::decFuncMembers,theTranslator->trFunctions());
+  writeMemberDeclarations(ol,MemberList::decFuncMembers,
+      fortranOpt ? theTranslator->trSubprograms()  : 
+      vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
+                   theTranslator->trFunctions());
   writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
   ol.endMemberSections();
   
@@ -391,6 +404,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
 void NamespaceDef::writeMemberDocumentation(OutputList &ol)
 {
+  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
@@ -400,7 +414,7 @@ void NamespaceDef::writeMemberDocumentation(OutputList &ol)
   writeMemberDocumentation(ol,MemberList::docProtoMembers,theTranslator->trFunctionPrototypeDocumentation());
   writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
   writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,theTranslator->trFunctionDocumentation());
+  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
   writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
@@ -539,10 +553,11 @@ Definition *NamespaceDef::findInnerCompound(const char *n)
 
 void NamespaceDef::addListReferences()
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
-        theTranslator->trNamespace(TRUE,TRUE),
+        fortranOpt?theTranslator->trModule(TRUE,TRUE):theTranslator->trNamespace(TRUE,TRUE),
         getOutputFileBase(),displayName()
         );
   }
@@ -629,9 +644,14 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
   // write list of namespaces
   ol.startMemberHeader();
   bool javaOpt = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (javaOpt)
   {
     ol.parseText(theTranslator->trPackages());
+  }
+  else if (fortranOpt)
+  {
+    ol.parseText(theTranslator->trModules());
   }
   else
   {
@@ -647,6 +667,10 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
       if (javaOpt)
       {
         ol.docify("package ");
+      }
+      else if (fortranOpt)
+      {
+        ol.docify("module ");
       }
       else
       {
@@ -744,8 +768,13 @@ bool NamespaceDef::isLinkableInProject() const
 {
   int i = name().findRev("::");
   if (i==-1) i=0; else i+=2;
+  static bool extractAnonNs = Config_getBool("EXTRACT_ANON_NSPACES");
+  if (extractAnonNs && name().mid(i,20)=="anonymous_namespace{")
+  {
+    return TRUE;
+  }
   return !name().isEmpty() && name().at(i)!='@' &&
-    hasDocumentation() && !isReference() && !isHidden();
+    hasDocumentation() && !isReference() && !isHidden() && !isArtificial();
 }
 
 bool NamespaceDef::isLinkable() const
