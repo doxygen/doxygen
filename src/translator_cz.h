@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -18,58 +18,57 @@
 #ifndef TRANSLATOR_CZ_H
 #define TRANSLATOR_CZ_H
 
+// Updates:
+// --------
+// 2007/11/13 - Update for "new since 1.5.4 (mainly for Fortran)".
+// 2007/03/20 - removing decode(), conversion of literals to UTF-8.
+// 2006/06/13 - translation of the trEnumerationValueDocumentation().
+//              and clear in the Czech language.
+//              modified trCallGraph() to make the meaning unambiguous
+// 2006/05/10 - Update for "new since 1.4.6" -- trCallerGraph(), 
+// 2005/03/08 - Update for "new since 1.4.1" (trOverloadText())  
+// 2005/02/11 - The "never used" methods removed.
+// 2004/09/14 - The new methods "since 1.3.9" implemented. 
+// 2004/06/16 - The new method "since 1.3.8" implemented. 
+// 2004/02/27 - Text inside the trCallGraph() corrected.
+// 2004/02/26 - trLegendDocs() updated.
+// 2003/08/13 - Four new methods "since 1.3.3" implemented. 
+// 2003/06/10 - Two new methods "since 1.3.1" implemented.
+// 2003/04/28 - Five new methods "since 1.3" implemented.
+// 2002/10/15 - The new trEvents() and trEventDocumentation() implemented.
+// 2002/07/29 - The new trDeprecatedList() implemented.
+// 2002/07/08 - The new trRTFTableOfContents() implemented. (my birthday! ;) 
+// 2002/03/05 - ... forgot to replace TranslatorAdapter... by Translator.
+// 2002/01/23 - Two new methods "since 1.2.13" implemented.
+// 2001/11/06 - trReferences() implemented.
+// 2001/07/16 - trClassDocumentation() updated as in the English translator.
+// 2001/05/25 - Corrections.
+// 2001/05/18 - Updates, corrections.
+// 2001/05/02 - Decode() inline changed to decode(); cleaning.
+//              level as other translators.
+//              class Translator.  The English translator is now on the same
+//              introducing TranslatorAdapter class and the abstract base
+// 2001/04/20 - Update for "new since 1.2.6-20010422". Experimental version
+// 2001/04/10 - Updates (1.2.6-20010408), cleaning.
+// 2001/03/12 - Minor correction of comments (synchronous with translator.h).
+// 2001/02/26 - Update for "new since 1.2.5" version (trBug(), trBugList()).
+// 2001/02/15 - trMore() now returns only "..." (ellipsis).
+// 2001/01/09 - Update for "new since 1.2.4" version.
+// 2000/10/17 - Update for "new since 1.2.2" version. 
+// 2000/09/11 - Update for "new since 1.2.1" version.
+// 2000/09/06 - Reimplementation of trInheritsList().
+// 2000/08/31 - ISOToWin() and WinToISO() moved to the base class.
+// 2000/08/30 - Macro DECODE replaced by the inline (thanks to Boris Bralo).
+// 2000/08/24 - Corrections, updates.
+// 2000/08/02 - Updated for 1.2.0
+// 2000/07/19 - Updates for "new since 1.1.5"; encoding conversion separated.
+// 2000/07/10 - Update to 1.1.5; conditionally decoding to iso-8859-2 for UNIX.
+// 2000/06/20 - Prototype: with diacritics; based on ver. 1.1.4 (from scratch).
 // 
-//
 // The first translation from English to Czech was started by
 // Vlastimil Havran (1999--2000). The prototype version of Czech strings 
 // with diacritics was implemented by Petr Prikryl (prikrylp@skil.cz), 
 // 2000/06/20. Vlastimil agreed that Petr be the new maintainer.
-//
-// Updates:
-// --------
-// 2000/06/20 - Prototype: with diacritics; based on ver. 1.1.4 (from scratch).
-// 2000/07/10 - Update to 1.1.5; conditionally decoding to iso-8859-2 for UNIX.
-// 2000/07/19 - Updates for "new since 1.1.5"; encoding conversion separated.
-// 2000/08/02 - Updated for 1.2.0
-// 2000/08/24 - Corrections, updates.
-// 2000/08/30 - Macro DECODE replaced by the inline (thanks to Boris Bralo).
-// 2000/08/31 - ISOToWin() and WinToISO() moved to the base class.
-// 2000/09/06 - Reimplementation of trInheritsList().
-// 2000/09/11 - Update for "new since 1.2.1" version.
-// 2000/10/17 - Update for "new since 1.2.2" version. 
-// 2001/01/09 - Update for "new since 1.2.4" version.
-// 2001/02/15 - trMore() now returns only "..." (ellipsis).
-// 2001/02/26 - Update for "new since 1.2.5" version (trBug(), trBugList()).
-// 2001/03/12 - Minor correction of comments (synchronous with translator.h).
-// 2001/04/10 - Updates (1.2.6-20010408), cleaning.
-// 2001/04/20 - Update for "new since 1.2.6-20010422". Experimental version
-//              introducing TranslatorAdapter class and the abstract base
-//              class Translator.  The English translator is now on the same
-//              level as other translators.
-// 2001/05/02 - ) inline changed to ); cleaning.
-// 2001/05/18 - Updates, corrections.
-// 2001/05/25 - Corrections.
-// 2001/07/16 - trClassDocumentation() updated as in the English translator.
-// 2001/11/06 - trReferences() implemented.
-// 2002/01/23 - Two new methods "since 1.2.13" implemented.
-// 2002/03/05 - ... forgot to replace TranslatorAdapter... by Translator.
-// 2002/07/08 - The new trRTFTableOfContents() implemented. (my birthday! ;) 
-// 2002/07/29 - The new trDeprecatedList() implemented.
-// 2002/10/15 - The new trEvents() and trEventDocumentation() implemented.
-// 2003/04/28 - Five new methods "since 1.3" implemented.
-// 2003/06/10 - Two new methods "since 1.3.1" implemented.
-// 2003/08/13 - Four new methods "since 1.3.3" implemented. 
-// 2004/02/26 - trLegendDocs() updated.
-// 2004/02/27 - Text inside the trCallGraph() corrected.
-// 2004/06/16 - The new method "since 1.3.8" implemented. 
-// 2004/09/14 - The new methods "since 1.3.9" implemented. 
-// 2005/02/11 - The "never used" methods removed.
-// 2005/03/08 - Update for "new since 1.4.1" (trOverloadText()) 
-// 2006/05/10 - Update for "new since 1.4.6" -- trCallerGraph(), 
-//              modified trCallGraph() to make the meaning unambiguous
-//              and clear in the Czech language.
-// 2006/06/13 - translation of the trEnumerationValueDocumentation().
-// 2007/03/20 - removing ), conversion of literals to UTF-8.
 
 // Todo
 // ----
@@ -77,17 +76,6 @@
 //    reimplemented element.  It can be method, typedef or possibly 
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
-// 
-// Notices:
-// -------- 
-// The conditional compilation ensures or the neutral functionality
-// of the private inline ), or calling the WinToISO() method
-// for on-line encoding conversion. If you want to maintain the
-// source in the iso-8859-2, do convert the encoding of the source,
-// change the conditional definition of the inline ) using the
-// method ISO88592ToWin1250() -- for conversion of strings for the
-// Windows version. The version which does not call the function is
-// probably slightly faster.
 
 class TranslatorCzech : public Translator
 {
@@ -106,14 +94,7 @@ class TranslatorCzech : public Translator
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      //if (Config_getBool("USE_WINDOWS_ENCODING"))
-      //{
         return "utf-8";
-      //}
-      //else
-      //{
-      //  return "iso-8859-2";
-      //}
     }
 
     // --- Language translation methods -------------------
@@ -1633,6 +1614,208 @@ class TranslatorCzech : public Translator
     { 
       return "Dokumentace výčtových hodnot"; 
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Dokumentace členských funkcí/podprogramů"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Seznam datových typů"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Datová pole"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Datové typy se stručnými popisy:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+
+      QCString result="Následuje seznam všech ";
+      if (!extractAll)
+      {
+        result+="dokumentovaných ";
+      }
+      result+="složek datových typů";
+      result+=" s odkazy na ";
+      if (!extractAll) 
+      {
+         result+="dokumentaci datové struktury pro každou složku:";
+      }
+      else 
+      {
+          result+="příslušné datové typy:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Rejstřík datových typů"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Dokumentace k datovým typům"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Funkce/podprogramy"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Dokumentace funkce/podprogramu"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Datové typy"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Seznam modulů"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Následuje seznam všech ";
+      if (!extractAll) result+="dokumentovaných ";
+      result+="modulů se stručnými popisy:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result("Dokumentace ");
+      if (isTemplate) result += "šablony ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result += "třídy "; break;
+        case ClassDef::Struct:     result += "typu "; break;
+        case ClassDef::Union:      result += "unie "; break;
+        case ClassDef::Interface:  result += "rozhraní "; break;
+        case ClassDef::Protocol:   result += "protokolu "; break;
+        case ClassDef::Category:   result += "kategorie "; break;
+        case ClassDef::Exception:  result += "výjimky "; break;
+      }
+      result += clName;
+      return result;
+
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result="Dokumentace modulu ";
+      result += namespaceName;        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Části modulu"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Následuje seznam všech ";
+      if (!extractAll) result+="dokumentovaných ";
+      result+="částí modulů s odkazy ";
+      if (extractAll) 
+      {
+        result+="na dokumentaci modulu pro danou část:";
+      }
+      else 
+      {
+        result+="na moduly, ke kterým část patří:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Rejstřík modulů"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Modul" : "modul"));
+      if (!singular)  result+="y";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Dokumentace ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="k tomuto modulu"; break;
+        case ClassDef::Struct:     result+="k tomuto typu"; break;
+        case ClassDef::Union:      result+="k této unii"; break;
+        case ClassDef::Interface:  result+="k tomuto rozhraní"; break;
+        case ClassDef::Protocol:   result+="k tomuto protokolu"; break;
+        case ClassDef::Category:   result+="k této kategorii"; break;
+        case ClassDef::Exception:  result+="k této výjimce"; break;
+      }
+      result+=" byla vygenerována z ";
+      if (single) result+="následujícího souboru:"; 
+      else result+="následujících souborů:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Typ" : "typ"));
+      if (!singular)  result+="y";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Podprogram" : "podprogram"));
+      if (!singular)  result+="y";
+      return result; 
+    }
+
+    /*! C# Type Contraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Omezení typů (Type Constraints)";
+    }
+
 };
 
 #endif // TRANSLATOR_CZ_H

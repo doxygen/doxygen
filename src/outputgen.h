@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -297,6 +297,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endFile() = 0;
     virtual void startIndexSection(IndexSections) = 0;
     virtual void endIndexSection(IndexSections) = 0;
+    virtual void writePageLink(const char *,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;
     virtual void writeStyleInfo(int part) = 0;
@@ -364,7 +365,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startDirDepGraph() = 0;
     virtual void endDirDepGraph(const DotDirDeps &g) = 0;
     virtual void writeGraphicalHierarchy(const DotGfxHierarchyTable &g) = 0;
+    virtual void startQuickIndices() = 0;
+    virtual void endQuickIndices() = 0;
     virtual void writeQuickLinks(bool compact,HighlightedItem hli) = 0;
+    virtual void startContents() = 0;
+    virtual void endContents() = 0;
     virtual void startTextBlock(bool) = 0;
     virtual void endTextBlock(bool) = 0;
     virtual void lastIndexPage() = 0;

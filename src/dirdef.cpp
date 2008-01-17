@@ -142,10 +142,13 @@ void DirDef::writeDocumentation(OutputList &ol)
   
   QCString shortTitle=theTranslator->trDirReference(m_shortName);
   QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title);
+  startFile(ol,getOutputFileBase(),name(),title,HLI_None,TRUE);
 
   // write navigation path
   writeNavigationPath(ol);
+
+  ol.endQuickIndices();
+  ol.startContents();
 
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();

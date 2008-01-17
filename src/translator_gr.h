@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public Translator
+class TranslatorGreek : public TranslatorAdapter_1_5_4
 {
   protected:
     friend class TranslatorAdapterBase;

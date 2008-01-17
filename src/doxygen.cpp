@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -74,6 +74,7 @@
 #include "store.h"
 #include "marshal.h"
 #include "portable.h"
+#include "vhdlscanner.h"
 
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
@@ -240,6 +241,7 @@ struct STLInfo
 static STLInfo g_stlinfo[] =
 {
   // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
+#if 0
   { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE },
   { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
@@ -282,7 +284,9 @@ static STLInfo g_stlinfo[] =
   { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
   { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
   { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
+#endif
   { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
+#if 0
   { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
@@ -302,6 +306,7 @@ static STLInfo g_stlinfo[] =
   { "range_error",          "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
   { "overflow_error",       "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
   { "underflow_error",      "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
+#endif
   { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
 };
 
@@ -313,7 +318,8 @@ static void addSTLMember(EntryNav *rootNav,const char *type,const char *name)
   memEntry->protection = Private;
   memEntry->section    = Entry::VARIABLE_SEC;
   memEntry->brief      = "STL member";
-  memEntry->hidden     = TRUE;
+  memEntry->hidden     = FALSE; 
+  memEntry->artificial = TRUE;
   //memEntry->parent     = root;
   //root->addSubEntry(memEntry);
   EntryNav *memEntryNav = new EntryNav(rootNav,memEntry);
@@ -329,7 +335,8 @@ static void addSTLIterator(EntryNav *classEntryNav,const char *name)
   iteratorClassEntry->name      = name;
   iteratorClassEntry->section   = Entry::CLASS_SEC;
   iteratorClassEntry->brief     = "STL iterator class";
-  iteratorClassEntry->hidden    = TRUE;
+  iteratorClassEntry->hidden    = FALSE;
+  iteratorClassEntry->artificial= TRUE;
   EntryNav *iteratorClassEntryNav = new EntryNav(classEntryNav,iteratorClassEntry);
   iteratorClassEntryNav->setEntry(iteratorClassEntry);
   classEntryNav->addChild(iteratorClassEntryNav);
@@ -345,7 +352,8 @@ static void addSTLClasses(EntryNav *rootNav)
   namespaceEntry->name      = "std";
   namespaceEntry->section   = Entry::NAMESPACE_SEC;
   namespaceEntry->brief     = "STL namespace";
-  namespaceEntry->hidden    = TRUE;
+  namespaceEntry->hidden    = FALSE;
+  namespaceEntry->artificial= TRUE;
   //root->addSubEntry(namespaceEntry);
   EntryNav *namespaceEntryNav = new EntryNav(rootNav,namespaceEntry);
   namespaceEntryNav->setEntry(namespaceEntry);
@@ -366,7 +374,8 @@ static void addSTLClasses(EntryNav *rootNav)
     //classEntry->parent    = namespaceEntry;
     classEntry->section   = Entry::CLASS_SEC;
     classEntry->brief     = "STL class";
-    classEntry->hidden    = TRUE;
+    classEntry->hidden    = FALSE;
+    classEntry->artificial= TRUE;
     //namespaceEntry->addSubEntry(classEntry);
     EntryNav *classEntryNav = new EntryNav(namespaceEntryNav,classEntry);
     classEntryNav->setEntry(classEntry);
@@ -855,6 +864,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
   {
     int idx=getScopeFragment(name,p,&l);
     QCString nsName = name.mid(idx,l);
+    if (nsName.isEmpty()) return prevScope;
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
     NamespaceDef *nd=Doxygen::namespaceSDict->find(fullScope);
@@ -1159,8 +1169,8 @@ static void addClassToContext(EntryNav *rootNav)
     QCString namespaceName;
     extractNamespaceName(fullName,className,namespaceName);
 
-    //printf("New class: namespace `%s' name=`%s' brief=`%s' docs=`%s'\n",
-    //    className.data(),namespaceName.data(),root->brief.data(),root->doc.data());
+    //printf("New class: fullname %s namespace `%s' name=`%s' brief=`%s' docs=`%s'\n",
+    //    fullName.data(),namespaceName.data(),className.data(),root->brief.data(),root->doc.data());
 
     QCString tagName;
     QCString refFileName;
@@ -1177,6 +1187,7 @@ static void addClassToContext(EntryNav *rootNav)
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setIsObjectiveC(root->objc);
     cd->setHidden(root->hidden);
+    cd->setArtificial(root->artificial);
     cd->setTypeConstraints(root->typeConstr);
     //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
 
@@ -1407,6 +1418,7 @@ static void buildNamespaceList(EntryNav *rootNav)
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
         nd->setHidden(root->hidden);
+        nd->setArtificial(root->artificial);
 
         //printf("Adding namespace to group\n");
         addNamespaceToGroups(root,nd);
@@ -1572,7 +1584,9 @@ static void findUsingDirectives(EntryNav *rootNav)
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
+        //printf("** Adding namespace %s hidden=%d\n",name.data(),root->hidden);
         nd->setHidden(root->hidden);
+        nd->setArtificial(TRUE);
 
         QListIterator<Grouping> gli(*root->groups);
         Grouping *g;
@@ -1685,7 +1699,7 @@ static void findUsingDeclarations(EntryNav *rootNav)
                      "<using>",1,
                      name,ClassDef::Class);
         Doxygen::hiddenClasses->append(root->name,usingCd);
-        usingCd->setClassIsArtificial();
+        usingCd->setArtificial(TRUE);
       }
       else
       {
@@ -1930,6 +1944,7 @@ static MemberDef *addVariableToClass(
         // member already in the scope
       {
         addMemberDocs(rootNav,md,def,0,FALSE);
+        //printf("    Member already found!\n");
         return md;
       }
     } 
@@ -1963,6 +1978,7 @@ static MemberDef *addVariableToClass(
   md->enableCallGraph(root->callGraph);
   md->enableCallerGraph(root->callerGraph);
   md->setHidden(root->hidden);
+  md->setArtificial(root->artificial);
   addMemberToGroups(root,md);
   //if (root->mGrpId!=-1) 
   //{
@@ -1987,6 +2003,7 @@ static MemberDef *addVariableToClass(
     Doxygen::memberNameSDict->append(name,mn);
     // add the member to the class
   }
+  //printf("    New member adding to %s (%p)!\n",cd->name().data(),cd);
   cd->insertMember(md);
   md->setRefItems(root->sli);
 
@@ -2112,7 +2129,7 @@ static MemberDef *addVariableToFile(
     } 
   }
   Debug::print(Debug::Variables,0,
-    "    new variable!\n");
+    "    new variable, nd=%s!\n",nd?nd->name().data():"<global>");
   // new global variable, enum value or typedef
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
@@ -2328,6 +2345,7 @@ done:
 
 static void buildVarList(EntryNav *rootNav)
 {
+  //printf("buildVarList(%s)\n",rootNav->name().data());
   int isFuncPtr=-1;
   if (!rootNav->name().isEmpty() &&
       (rootNav->type().isEmpty() || compoundKeywordDict.find(rootNav->type())==0) &&
@@ -2487,6 +2505,7 @@ static void buildVarList(EntryNav *rootNav)
       int si=scope.find('@');
       //int anonyScopes = 0;
       bool added=FALSE;
+      
       if (si!=-1) // anonymous scope
       {
         QCString pScope;
@@ -2521,11 +2540,9 @@ static void buildVarList(EntryNav *rootNav)
           }
         }
       }
-      //printf("name=`%s' scope=%s scope.right=%s indentDepth=%d anonyScopes=%d\n",
+      //printf("name=`%s' scope=%s scope.right=%s\n",
       //                   name.data(),scope.data(),
-      //                   scope.right(scope.length()-si).data(),
-      //                   indentDepth,
-      //                   anonyScopes);
+      //                   scope.right(scope.length()-si).data());
       addVariableToClass(rootNav,   // entry
                          cd,     // class to add member to
                          mtype,  // member type
@@ -3556,11 +3573,11 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   ClassDef *result=0;
   if (context && cd!=context)
   {
-    result = getResolvedClass(context,0,name,0,0,FALSE,TRUE);
+    result = getResolvedClass(context,0,name,0,0,TRUE,TRUE);
   }
   if (result==0)
   {
-    result = getResolvedClass(cd,fd,name,0,0,FALSE,TRUE);
+    result = getResolvedClass(cd,fd,name,0,0,TRUE,TRUE);
   }
   //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
@@ -3617,6 +3634,11 @@ static void findUsedClassesForClass(EntryNav *rootNav,
         {
           //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
           QCString type=removeRedundantWhiteSpace(md->typeString());
+          QCString typedefValue = resolveTypeDef(masterCd,type);
+          if (!typedefValue.isEmpty())
+          {
+            type = typedefValue;
+          }
           int pos=0;
           QCString usedClassName;
           QCString templSpec;
@@ -3690,7 +3712,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
                   }
                   if (usedCd)
                   {
-                    if (isArtificial) usedCd->setClassIsArtificial();
+                    if (isArtificial) usedCd->setArtificial(TRUE);
                     Debug::print(Debug::Classes,0,"      Adding used class `%s' (1)\n", usedCd->name().data());
                     instanceCd->addUsedClass(usedCd,md->name());
                     usedCd->addUsedByClass(instanceCd,md->name());
@@ -3737,7 +3759,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
             }
             if (usedCd)
             {
-              if (isArtificial) usedCd->setClassIsArtificial();
+              if (isArtificial) usedCd->setArtificial(TRUE);
               Debug::print(Debug::Classes,0,"    Adding used class `%s' (3)\n", usedCd->name().data());
               instanceCd->addUsedClass(usedCd,md->name()); 
               usedCd->addUsedByClass(instanceCd,md->name());
@@ -3746,6 +3768,10 @@ static void findUsedClassesForClass(EntryNav *rootNav,
         }
       }
     }
+  }
+  else
+  {
+    //printf("no members for class %s (%p)\n",masterCd->name().data(),masterCd);
   }
 }
 
@@ -3837,7 +3863,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   bool freshInstance=FALSE;
   ClassDef *instanceClass = templateClass->insertTemplateInstance(
                      root->fileName,root->startLine,templSpec,freshInstance);
-  if (isArtificial) instanceClass->setClassIsArtificial();
+  if (isArtificial) instanceClass->setArtificial(TRUE);
   instanceClass->setIsObjectiveC(root->objc);
 
   if (freshInstance)
@@ -4197,7 +4223,7 @@ static bool findClassRelation(
               baseClass=new ClassDef(root->fileName,root->startLine,
                                  baseClassName,ClassDef::Class);
               Doxygen::hiddenClasses->append(baseClassName,baseClass);
-              if (isArtificial) baseClass->setClassIsArtificial();
+              if (isArtificial) baseClass->setArtificial(TRUE);
             }
           }
           else
@@ -4210,7 +4236,7 @@ static bool findClassRelation(
               baseClass=new ClassDef(root->fileName,root->startLine,
                   baseClassName,ClassDef::Class);
               Doxygen::classSDict->append(baseClassName,baseClass);
-              if (isArtificial) baseClass->setClassIsArtificial();
+              if (isArtificial) baseClass->setArtificial(TRUE);
             }
           }
           // add base class to this class
@@ -7792,7 +7818,9 @@ static void generatePageDocs()
     if (!pd->getGroupDef() && !pd->isReference())
     {
       msg("Generating docs for page %s...\n",pd->name().data());
+      Doxygen::insideMainPage=TRUE;
       pd->writeDocumentation(*outputList);
+      Doxygen::insideMainPage=FALSE;
     }
   }
 }
@@ -8131,7 +8159,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   if (fileOpened)
   {
     QTextStream t(&f);
-    t.setEncoding(QTextStream::Latin1);
+    t.setEncoding(QTextStream::UnicodeUTF8);
     Config::instance()->writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -8802,7 +8830,7 @@ static void dumpSymbolMap()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2007\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2008\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -8858,7 +8886,7 @@ void initDoxygen()
   Doxygen::parserManager = new ParserManager(defaultParser);
   Doxygen::parserManager->registerParser(".py",new PythonLanguageScanner);
   Doxygen::parserManager->registerParser(".f90", new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser(".F90", new FortranLanguageScanner);
+  Doxygen::parserManager->registerParser(".vhd", new VHDLLanguageScanner);
 
 
   // register any additional parsers here...
@@ -9747,7 +9775,14 @@ void parseInput()
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
-  computeClassRelations();        
+  //if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
+  //{
+  //  VhdlDocGen::computeVhdlComponentRelations(classEntries,g_storage);
+  //}
+  //else
+  //{
+    computeClassRelations();        
+  //}
   classEntries.clear();          
 
   addEnumValuesToEnums(rootNav);
@@ -9882,9 +9917,8 @@ void generateOutput()
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
     if (Config_getBool("GENERATE_HTMLHELP")) Doxygen::indexList.addIndex(new HtmlHelp);
-    //HtmlHelp::getInstance()->initialize();
     if (Config_getBool("GENERATE_TREEVIEW")) Doxygen::indexList.addIndex(new FTVHelp);
-    //FTVHelp::getInstance()->initialize();
+    if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
@@ -9933,7 +9967,7 @@ void generateOutput()
       exit(1);
     }
     Doxygen::tagFile.setDevice(tag);
-    Doxygen::tagFile.setEncoding(QTextStream::Latin1);
+    Doxygen::tagFile.setEncoding(QTextStream::UnicodeUTF8);
     Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>" << endl;
     Doxygen::tagFile << "<tagfile>" << endl;
   }
@@ -9966,6 +10000,9 @@ void generateOutput()
   msg("Generating index page...\n"); 
   writeIndex(*outputList);
 
+  msg("Generating page index...\n");
+  writePageIndex(*outputList);
+  
   msg("Generating example documentation...\n");
   generateExampleDocs();
 
@@ -10029,9 +10066,6 @@ void generateOutput()
   
   msg("Generating file member index...\n");
   writeFileMemberIndex(*outputList);
-  
-  msg("Generating page index...\n");
-  writePageIndex(*outputList);
   
   //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
   

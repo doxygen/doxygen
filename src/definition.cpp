@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -72,6 +72,7 @@ class DefinitionImpl
     QCString ref;   // reference to external documentation
 
     bool hidden;
+    bool isArtificial;
 
     Definition *outerScope;  // not owner
 
@@ -133,6 +134,7 @@ void DefinitionImpl::init(const char *df,int dl,
   partOfGroups=0;
   xrefListItems=0;
   hidden = FALSE;
+  isArtificial = FALSE;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -283,7 +285,10 @@ Definition::Definition(const char *df,int dl,
   if (isSymbol) addToMap(name,this);
   _setBriefDescription(b,df,dl);
   _setDocumentation(d,df,dl,TRUE,FALSE);
-  if (matchExcludedSymbols(name)) m_impl->hidden = TRUE;
+  if (matchExcludedSymbols(name)) 
+  {
+    m_impl->hidden = TRUE;
+  }
 }
 
 Definition::~Definition()
@@ -479,11 +484,12 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
 static bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
+  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
   QCString cmd=getFileFilter(fileName)+" \""+fileName+"\"";
   FILE *f = Config_getBool("FILTER_SOURCE_FILES") ? popen(cmd,"r") : fopen(fileName,"r");
-  bool found=FALSE;
+  bool found=vhdlOpt;  // for VHDL not bracket search is possible
   if (f)
   {
     int c=0;
@@ -709,6 +715,8 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
           actualStart,actualEnd,codeFragment)
        )
     {
+      //printf("Adding code fragement '%s' ext='%s'\n",
+      //    codeFragment.data(),m_impl->defFileExt.data());
       ParserInterface *pIntf = Doxygen::parserManager->getParser(m_impl->defFileExt);
       pIntf->resetCodeParserState();
       //printf("Read:\n`%s'\n\n",codeFragment.data());
@@ -929,16 +937,43 @@ void Definition::addInnerCompound(Definition *)
   err("Error: Definition::addInnerCompound() called\n");
 }
 
-QCString Definition::qualifiedName() 
+QCString Definition::qualifiedName() const
 {
+  static int count=0;
+  count++;
   makeResident();
-  if (!m_impl->qualifiedName.isEmpty()) return m_impl->qualifiedName;
+  if (!m_impl->qualifiedName.isEmpty()) 
+  {
+    count--;
+    return m_impl->qualifiedName;
+  }
+#if 0
+  if (count>20)
+  {
+    printf("Definition::qualifiedName() Infinite recursion detected! Type=%d\n",definitionType());
+    printf("Trace:\n");
+    Definition *d = (Definition *)this;
+    for (int i=0;d && i<20;i++)
+    {
+      printf("  %s\n",d->name().data());
+      d = d->getOuterScope();
+    }
+  }
+#endif
   
-  //printf("start Definition::qualifiedName() localName=%s\n",m_localName.data());
+  //printf("start %s::qualifiedName() localName=%s\n",name().data(),m_impl->localName.data());
   if (m_impl->outerScope==0) 
   {
-    if (m_impl->localName=="<globalScope>") return "";
-    else return m_impl->localName; 
+    if (m_impl->localName=="<globalScope>") 
+    {
+      count--;
+      return "";
+    }
+    else 
+    {
+      count--;
+      return m_impl->localName; 
+    }
   }
 
   if (m_impl->outerScope->name()=="<globalScope>")
@@ -949,7 +984,8 @@ QCString Definition::qualifiedName()
   {
     m_impl->qualifiedName = m_impl->outerScope->qualifiedName()+"::"+m_impl->localName;
   }
-  //printf("end Definition::qualifiedName()=%s\n",m_qualifiedName.data());
+  //printf("end %s::qualifiedName()=%s\n",name().data(),m_impl->qualifiedName.data());
+  count--;
   return m_impl->qualifiedName;
 };
 
@@ -1068,7 +1104,9 @@ void Definition::writePathFragment(OutputList &ol) const
     if (m_impl->outerScope->definitionType()==Definition::TypeClass ||
         m_impl->outerScope->definitionType()==Definition::TypeNamespace)
     {
-      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
+      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") ||
+          Config_getBool("OPTIMIZE_OUTPUT_VHDL")
+         )
       {
         ol.writeString(".");
       }
@@ -1112,9 +1150,9 @@ void Definition::writeNavigationPath(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  ol.writeString("<div class=\"nav\">\n");
+  ol.writeString("  <div class=\"navpath\">");
   writePathFragment(ol);
-  ol.writeString("</div>\n");
+  ol.writeString("\n  </div>\n");
 
   ol.popGeneratorState();
 }
@@ -1217,6 +1255,11 @@ bool Definition::isVisible() const
   return isLinkable() && !m_impl->hidden; 
 }
 
+bool Definition::isArtificial() const
+{
+  return m_impl->isArtificial;
+}
+
 QCString Definition::getReference() const 
 { 
   makeResident();
@@ -1288,6 +1331,12 @@ void Definition::setHidden(bool b)
   m_impl->hidden = m_impl->hidden || b; 
 }
 
+void Definition::setArtificial(bool b)
+{
+  makeResident();
+  m_impl->isArtificial = b;
+}
+
 void Definition::setLocalName(const QCString name) 
 { 
   makeResident();
@@ -1318,6 +1367,7 @@ void Definition::flushToDisk() const
   marshalQCString     (Doxygen::symbolStorage,m_impl->qualifiedName);
   marshalQCString     (Doxygen::symbolStorage,m_impl->ref);
   marshalBool         (Doxygen::symbolStorage,m_impl->hidden);
+  marshalBool         (Doxygen::symbolStorage,m_impl->isArtificial);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->outerScope);
   marshalQCString     (Doxygen::symbolStorage,m_impl->defFileName);
   marshalInt          (Doxygen::symbolStorage,m_impl->defLine);
@@ -1348,6 +1398,7 @@ void Definition::loadFromDisk() const
   m_impl->qualifiedName   = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->ref             = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->hidden          = unmarshalBool         (Doxygen::symbolStorage);
+  m_impl->isArtificial    = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->outerScope      = (Definition *)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->defFileName     = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->defLine         = unmarshalInt          (Doxygen::symbolStorage);

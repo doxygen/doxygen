@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -29,9 +29,7 @@ OutputGenerator::OutputGenerator()
   b.setBuffer(a);
   b.open( IO_WriteOnly );
   t.setDevice(&b);
-#if QT_VERSION >= 200
-  t.setEncoding(QTextStream::Latin1);
-#endif
+  t.setEncoding(QTextStream::UnicodeUTF8);
   active=TRUE;
   genStack = new QStack<bool>;
   genStack->setAutoDelete(TRUE);

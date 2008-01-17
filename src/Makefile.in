@@ -1,8 +1,8 @@
 
 #
-# $Id$
+# 
 #
-# Copyright (C) 1997-2007 by Dimitri van Heesch.
+# Copyright (C) 1997-2008 by Dimitri van Heesch.
 # 
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -48,6 +48,7 @@ distclean: clean
 	-$(RM) scanner.cpp code.cpp config.cpp pre.cpp ce_lex.cpp \
                ce_parse.cpp ce_parse.h doxytag.cpp tag.cpp commentscan.cpp \
 	       declinfo.cpp defargs.cpp commentcnv.cpp doctokenizer.cpp \
-	       pycode.cpp pyscanner.cpp fortrancode.cpp fortranscanner.cpp
+	       pycode.cpp pyscanner.cpp fortrancode.cpp fortranscanner.cpp \
+	       vhdlscanner.cpp vhdlcode.cpp
 
 FORCE:

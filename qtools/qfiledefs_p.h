@@ -49,14 +49,17 @@
 // or even be removed.
 //
 //
-
-
 #if defined(_CC_MWERKS_)
 # include <stdlib.h>
 # include <stat.h>
-#elif !defined(_OS_MAC_)
+#elif !defined(_OS_MAC_) 
 # include <sys/types.h>
 # include <sys/stat.h>
+#elif defined(_OS_MAC_) \
+  && (MAC_OS_X_VERSION_MAX_ALLOWED==MAC_OS_X_VERSION_10_5)
+# include <sys/types.h>
+# include <sys/stat.h>
+# define _OS_UNIX_
 #endif
 #include <fcntl.h>
 #include <errno.h>
@@ -243,7 +246,7 @@
 # define R_OK	4
 #endif
 
-#if defined(_OS_MAC_)
+#if defined(_OS_MAC_) && !defined(_OS_UNIX_)
 # define F_OK	0
 # define X_OK	1
 # define W_OK	2

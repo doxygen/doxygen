@@ -1,7 +1,7 @@
 #
-# $Id$
+# 
 #
-# Copyright (C) 1997-2007 by Dimitri van Heesch.
+# Copyright (C) 1997-2008 by Dimitri van Heesch.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -62,6 +62,12 @@ sub GenerateDep {
 
 #$ GenerateDep("fortrancode.cpp","fortrancode.l");
 	$(LEX) -i -PfcodeYY -t fortrancode.l | $(INCBUFSIZE) >fortrancode.cpp
+
+#$ GenerateDep("vhdlscanner.cpp","vhdlscanner.l");
+	$(LEX) -i -PvhdlscanYY -t vhdlscanner.l | $(INCBUFSIZE) >vhdlscanner.cpp
+
+#$ GenerateDep("vhdlcode.cpp","vhdlcode.l");
+	$(LEX) -i -PvhdlcodeYY -t vhdlcode.l | $(INCBUFSIZE) >vhdlcode.cpp
 
 #$ GenerateDep("pre.cpp","pre.l");
 	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 

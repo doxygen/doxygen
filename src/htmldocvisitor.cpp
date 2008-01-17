@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -28,6 +28,7 @@
 #include "htmlgen.h"
 #include "parserintf.h"
 #include "msc.h"
+#include "util.h"
 
 
 static const int NUM_HTML_LIST_TYPES = 4;
@@ -574,7 +575,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   m_t << "<h" << s->level()+1 << ">";
   m_t << "<a class=\"anchor\" name=\"" << s->anchor();
   m_t << "\">" << endl;
-  filter(s->title());
+  filter(convertCharEntitiesToUTF8(s->title().data()));
   m_t << "</a></h" << s->level()+1 << ">\n";
 }
 

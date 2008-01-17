@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -588,7 +588,7 @@ void LatexDocVisitor::visitPre(DocSection *s)
     m_t << "\\hypertarget{" << s->file() << "_" << s->anchor() << "}{}";
   }
   m_t << "\\" << getSectionName(s->level()) << "{";
-  filter(s->title());
+  filter(convertCharEntitiesToUTF8(s->title().data()));
   m_t << "}\\label{" << s->file() << "_" << s->anchor() << "}" << endl;
 }
 

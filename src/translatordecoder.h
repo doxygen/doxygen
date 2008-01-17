@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -100,6 +100,7 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trMemberTypedefDocumentation()); }
     QCString trMemberEnumerationDocumentation()  
     { return toUtf8(m_translator->trMemberEnumerationDocumentation()); }
+        
     QCString trMemberFunctionDocumentation()  
     { return toUtf8(m_translator->trMemberFunctionDocumentation()); }
     QCString trMemberDataDocumentation()  
@@ -131,6 +132,7 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trClassHierarchy()); }
     QCString trCompoundList()  
     { return toUtf8(m_translator->trCompoundList()); }
+    
     QCString trFileList()  
     { return toUtf8(m_translator->trFileList()); }
     QCString trCompoundMembers()  
@@ -264,6 +266,7 @@ class TranslatorDecoder : public Translator
                                  bool isTemplate)  
     { return toUtf8(m_translator->trCompoundReference(clName,compType,isTemplate)); }
 
+    
     QCString trFileReference(const char *fileName)  
     { return toUtf8(m_translator->trFileReference(fromUtf8(fileName))); }
     QCString trNamespaceReference(const char *namespaceName)  
@@ -303,6 +306,7 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trNamespaceMembers()); }
     QCString trNamespaceMemberDescription(bool extractAll)  
     { return toUtf8(m_translator->trNamespaceMemberDescription(extractAll)); }
+    
     QCString trNamespaceIndex()  
     { return toUtf8(m_translator->trNamespaceIndex()); }
     QCString trNamespaceDocumentation()  
@@ -322,6 +326,8 @@ class TranslatorDecoder : public Translator
     QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
                                           bool single)  
     { return toUtf8(m_translator->trGeneratedFromFiles(compType,single)); }
+    
+    
     QCString trAlphabeticalList()  
     { return toUtf8(m_translator->trAlphabeticalList()); }
 
@@ -516,6 +522,7 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trFile(first_capital,singular)); }
     QCString trNamespace(bool first_capital, bool singular)  
     { return toUtf8(m_translator->trNamespace(first_capital,singular)); }
+    
     QCString trGroup(bool first_capital, bool singular)  
     { return toUtf8(m_translator->trGroup(first_capital,singular)); }
     QCString trPage(bool first_capital, bool singular)  
@@ -648,6 +655,60 @@ class TranslatorDecoder : public Translator
     QCString trEnumerationValueDocumentation()  
     { return toUtf8(m_translator->trEnumerationValueDocumentation()); }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trMemberFunctionDocumentationFortran()  
+    { return toUtf8(m_translator->trMemberFunctionDocumentationFortran()); }
+    QCString trCompoundListFortran()  
+    { return toUtf8(m_translator->trCompoundListFortran()); }
+    QCString trCompoundMembersFortran()  
+    { return toUtf8(m_translator->trCompoundMembersFortran()); }
+    QCString trCompoundListDescriptionFortran()  
+    { return toUtf8(m_translator->trCompoundListDescriptionFortran()); }
+    QCString trCompoundMembersDescriptionFortran(bool extractAll)  
+    { return toUtf8(m_translator->trCompoundMembersDescriptionFortran(extractAll)); }
+    QCString trCompoundIndexFortran()  
+    { return toUtf8(m_translator->trCompoundIndexFortran()); }
+    QCString trTypeDocumentation()  
+    { return toUtf8(m_translator->trTypeDocumentation()); }
+    QCString trSubprograms()  
+    { return toUtf8(m_translator->trSubprograms()); }
+    QCString trSubprogramDocumentation()  
+    { return toUtf8(m_translator->trSubprogramDocumentation()); }
+    QCString trDataTypes()  
+    { return toUtf8(m_translator->trDataTypes()); }
+    QCString trModulesList()  
+    { return toUtf8(m_translator->trModulesList()); }
+    QCString trModulesListDescription(bool extractAll)  
+    { return toUtf8(m_translator->trModulesListDescription(extractAll)); }
+    QCString trCompoundReferenceFortran(const char *clName,
+                                 ClassDef::CompoundType compType,
+                                 bool isTemplate)  
+    { return toUtf8(m_translator->trCompoundReferenceFortran(clName,compType,isTemplate)); }
+    QCString trModuleReference(const char *namespaceName)  
+    { return toUtf8(m_translator->trModuleReference(namespaceName)); }
+    QCString trModulesMembers()  
+    { return toUtf8(m_translator->trModulesMembers()); }
+    QCString trModulesMemberDescription(bool extractAll)  
+    { return toUtf8(m_translator->trModulesMemberDescription(extractAll)); }
+    QCString trModulesIndex()  
+    { return toUtf8(m_translator->trModulesIndex()); }
+    QCString trModule(bool first_capital, bool singular)  
+    { return toUtf8(m_translator->trModule(first_capital,singular)); }
+    QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+                                          bool single)  
+    { return toUtf8(m_translator->trGeneratedFromFilesFortran(compType,single)); }
+    QCString trType(bool first_capital, bool singular)  
+    { return toUtf8(m_translator->trType(first_capital,singular)); }
+    QCString trSubprogram(bool first_capital, bool singular)  
+    { return toUtf8(m_translator->trSubprogram(first_capital,singular)); }
+    QCString trTypeConstraints()
+    { return toUtf8(m_translator->trTypeConstraints()); }
+
+
+//////////////////////////////////////////////////////////////////////////
   private:
     Translator *m_translator;
     void *m_toUtf8;

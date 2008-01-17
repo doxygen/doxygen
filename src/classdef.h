@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -110,11 +110,6 @@ class ClassDef : public Definition
 
     /*! Returns TRUE if this is a local class definition, see EXTRACT_LOCAL_CLASSES */
     bool isLocal() const;
-
-    /*! returns TRUE if this class was artificially introduced, for instance because
-     *  it is used to show a template instantiation relation. 
-     */
-    bool isArtificial() const;
 
     /*! returns the classes nested into this class */
     ClassSDict *getInnerClasses();
@@ -286,7 +281,6 @@ class ClassDef : public Definition
                                 const QCString &templSpec,bool &freshInstance);
     void addUsedClass(ClassDef *cd,const char *accessName);
     void addUsedByClass(ClassDef *cd,const char *accessName);
-    void setClassIsArtificial();
     void setIsStatic(bool b);
     void setIsObjectiveC(bool b);
     void setCompoundType(CompoundType t);
@@ -339,126 +333,6 @@ class ClassDef : public Definition
     void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup);
     
     ClassDefImpl *m_impl;
-
-#if 0
-    /*! file name that forms the base for the output file containing the
-     *  class documentation. For compatibility with Qt (e.g. links via tag 
-     *  files) this name cannot be derived from the class name directly.
-     */
-    QCString m_fileName;                   
-
-    /*! Include information about the header file should be included
-     *  in the documentation. 0 by default, set by setIncludeFile().
-     */
-    IncludeInfo *m_incInfo;                
-
-    /*! List of base class (or super-classes) from which this class derives
-     *  directly. 
-     */
-    BaseClassList *m_inherits;
-
-    /*! List of sub-classes that directly derive from this class 
-     */
-    BaseClassList *m_inheritedBy;
-
-    /*! Namespace this class is part of 
-     *  (this is the inner most namespace in case of nested namespaces)
-     */
-    NamespaceDef  *m_nspace;              
-
-    /*! File this class is defined in */
-    FileDef *m_fileDef;
-
-    /*! List of all members (including inherited members) */
-    MemberNameInfoSDict *m_allMemberNameInfoSDict;
-
-    /*! Template arguments of this class */
-    ArgumentList *m_tempArgs;
-
-    /*! Files that were used for generating the class documentation. */
-    QStrList m_files;
-
-    /*! Examples that use this class */
-    ExampleSDict *m_exampleSDict;
-
-    /*! Holds the kind of "class" this is. */
-    CompoundType m_compType;
-
-    /*! The protection level in which this class was found. 
-     *  Typically Public, but for nested classes this can also be Protected
-     *  or Private.
-     */ 
-    Protection m_prot;
-
-    /*! The inner classes contained in this class. Will be 0 if there are
-     *  no inner classes.
-     */
-    ClassSDict *m_innerClasses;
-
-    /* classes for the collaboration diagram */
-    UsesClassDict *m_usesImplClassDict;
-    UsesClassDict *m_usedByImplClassDict;
-    UsesClassDict *m_usesIntfClassDict;
-
-    /*! Template instances that exists of this class, the key in the
-     *  dictionary is the template argument list.
-     */ 
-    QDict<ClassDef> *m_templateInstances;
-
-    /*! Template instances that exists of this class, as defined by variables.
-     *  We do NOT want to document these individually. The key in the
-     *  dictionary is the template argument list.
-     */ 
-    QDict<ClassDef> *m_variableInstances;
-
-    QDict<int> *m_templBaseClassNames;
-
-    /*! The class this class is an instance of. */
-    ClassDef *m_templateMaster;
-
-    /*! class name with outer class scope, but without namespace scope. */
-    QCString m_className;
-
-    /*! If this class is a Objective-C category, then this points to the
-     *  class which is extended.
-     */
-    ClassDef *m_categoryOf;
-
-    QList<MemberList> m_memberLists;
-
-    /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict;
-
-    /*! Indicated whether this class exists because it is used by
-     *  some other class only (TRUE) or if some class inherits from
-     *  it (FALSE). This is need to remove used-only classes from
-     *  the inheritance tree.
-     */
-    bool m_artificial;
-
-    /*! Is this an abstact class? */
-    bool m_isAbstract;
-
-    /*! Is the class part of an unnamed namespace? */
-    bool m_isStatic;
-
-    /*! Is the class part implemented in Objective C? */
-    bool m_isObjC;
-
-    /*! TRUE if classes members are merged with those of the base classes. */
-    bool m_membersMerged;
-
-    /*! TRUE if the class is defined in a source file rather than a header file. */
-    bool m_isLocal;
-
-    bool m_isTemplArg;
-
-    /*! Does this class group its user-grouped members
-     *  as a sub-section of the normal (public/protected/..) 
-     *  groups?
-     */
-    bool m_subGrouping; 
-#endif
 
 };
 

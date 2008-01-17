@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -247,16 +247,22 @@ QCString generateMarker(int id)
 
 static QCString stripFromPath(const QCString &path,QStrList &l)
 {
+  // look at all the strings in the list and strip the longest match  
   const char *s=l.first();
+  QCString potential;
+  unsigned int length = 0;
   while (s)
   {
     QCString prefix = s;
-    if (stricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
+    if (prefix.length() > length &&
+        stricmp(path.left(prefix.length()),prefix)==0) // case insensitive compare
     {
-      return path.right(path.length()-prefix.length());
+      length = prefix.length();
+      potential = path.right(path.length()-prefix.length());
     }
     s = l.next();
   }
+  if (length) return potential;
   return path;
 }
 
@@ -313,7 +319,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
   //printf("<<resolveTypeDef(%s,%s)\n",
   //          context ? context->name().data() : "<none>",qualifiedName.data());
   QCString result;
-  if (qualifiedName.isEmpty()) return result;
+  if (qualifiedName.isEmpty()) 
+  {
+    //printf("  qualified name empty!\n");
+    return result;
+  }
 
   Definition *mContext=context;
   if (typedefContext) *typedefContext=context;
@@ -327,6 +337,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
     if (resName.isEmpty())
     {
       // qualifiedName was of form A:: !
+      //printf("  qualified name of form A::!\n");
       return result;
     }
   }
@@ -1624,6 +1635,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
 {
   //printf("`%s'\n",text);
   static QRegExp regExp("[a-z_A-Z][~!a-z_A-Z0-9.:]*");
+  static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
   int strLen = txtStr.length();
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d\n",
@@ -1656,7 +1668,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
       QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
       int splitLength = splitText.length();
       int offset=1;
-      i=splitText.find(',');
+      i=splitText.find(regExpSplit,0);
       if (i==-1) { i=splitText.find('<'); if (i!=-1) offset=0; }
       if (i==-1) i=splitText.find('>');
       if (i==-1) i=splitText.find(' ');
@@ -4433,9 +4445,11 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       FileNameIterator fni(*fn);
       FileDef *fd;
       FileDef *lastMatch=0;
+      QCString pathStripped = stripFromIncludePath(path);
       for (fni.toFirst();(fd=fni.current());++fni)
       {
-        if (path.isEmpty() || fd->getPath().right(path.length())==path) 
+        QCString fdStripPath = stripFromIncludePath(fd->getPath());
+        if (path.isEmpty() || fdStripPath==pathStripped) 
         { 
           count++; 
           lastMatch=fd; 
@@ -4823,6 +4837,7 @@ QCString insertTemplateSpecifierInScope(const QCString &scope,const QCString &te
   return result;
 }
 
+#if 0 // original version
 /*! Strips the scope from a name. Examples: A::B will return A
  *  and A<T>::B<N::C<D> > will return A<T>.
  */
@@ -4868,15 +4883,15 @@ QCString stripScope(const char *name)
   //printf("stripScope(%s)=%s\n",name,name);
   return name;
 }
+#endif
 
-#if 0 // original version
 // new version by Davide Cesari which also works for Fortran
 QCString stripScope(const char *name)
 {
   QCString result = name;
   int l=result.length();
   int p;
-  bool done;
+  bool done = FALSE;
   bool skipBracket=FALSE; // if brackets do not match properly, ignore them altogether
   int count=0;
 
@@ -4906,7 +4921,7 @@ QCString stripScope(const char *name)
             count=1;
             //printf("pos < = %d\n",p);
             p--;
-            while (p>=0 && !done)
+            while (p>=0)
             {
               c=result.at(p--);
               switch (c)
@@ -4944,7 +4959,6 @@ QCString stripScope(const char *name)
   //printf("stripScope(%s)=%s\n",name,name);
   return name;
 }
-#endif
 
 
 /*! Converts a string to an XML-encoded string */
@@ -5011,6 +5025,103 @@ QCString convertToHtml(const char *s,bool keepEntities)
       default:   result+=c;        break;
     }
   }
+  return result;
+}
+
+QCString convertCharEntitiesToUTF8(const QCString &s)
+{
+  static QDict<char> entityMap(67);
+  static bool init=TRUE;
+  QCString result;
+  static QRegExp entityPat("&[a-zA-Z]+;");
+
+  if (init)
+  {
+    entityMap.insert("copy",  "\xC2\xA9");
+    entityMap.insert("tm",    "\xE2\x84\xA2");
+    entityMap.insert("trade", "\xE2\x84\xA2");
+    entityMap.insert("reg",   "\xC2\xAE");
+    entityMap.insert("lsquo", "\xE2\x80\x98");
+    entityMap.insert("rsquo", "\xE2\x80\x99");
+    entityMap.insert("ldquo", "\xE2\x80\x9C");
+    entityMap.insert("rdquo", "\xE2\x80\x9D");
+    entityMap.insert("ndash", "\xE2\x80\x93");
+    entityMap.insert("mdash", "\xE2\x80\x94");
+    entityMap.insert("Auml",  "\xC3\x84");
+    entityMap.insert("Euml",  "\xC3\x8B");
+    entityMap.insert("Iuml",  "\xC3\x8F");
+    entityMap.insert("Ouml",  "\xC3\x96");
+    entityMap.insert("Uuml",  "\xC3\x9C");
+    entityMap.insert("Yuml",  "\xC5\xB8");
+    entityMap.insert("auml",  "\xC3\xA4");
+    entityMap.insert("euml",  "\xC3\xAB");
+    entityMap.insert("iuml",  "\xC3\xAF");
+    entityMap.insert("ouml",  "\xC3\xB6");
+    entityMap.insert("uuml",  "\xC3\xBC");
+    entityMap.insert("yuml",  "\xC3\xBF");
+    entityMap.insert("Aacute","\xC3\x81");
+    entityMap.insert("Eacute","\xC3\x89");
+    entityMap.insert("Iacute","\xC3\x8D");
+    entityMap.insert("Oacute","\xC3\x93");
+    entityMap.insert("Uacute","\xC3\x9A");
+    entityMap.insert("aacute","\xC3\xA1");
+    entityMap.insert("eacute","\xC3\xA9");
+    entityMap.insert("iacute","\xC3\xAD");
+    entityMap.insert("oacute","\xC3\xB3");
+    entityMap.insert("uacute","\xC3\xBA");
+    entityMap.insert("Agrave","\xC3\x80");
+    entityMap.insert("Egrave","\xC3\x88");
+    entityMap.insert("Igrave","\xC3\x8C");
+    entityMap.insert("Ograve","\xC3\x92");
+    entityMap.insert("Ugrave","\xC3\x99");
+    entityMap.insert("agrave","\xC3\xA0");
+    entityMap.insert("egrave","\xC3\xA8");
+    entityMap.insert("igrave","\xC3\xAC");
+    entityMap.insert("ograve","\xC3\xB2");
+    entityMap.insert("ugrave","\xC3\xB9");
+    entityMap.insert("Acirc", "\xC3\x82");
+    entityMap.insert("Ecirc", "\xC3\x8A");
+    entityMap.insert("Icirc", "\xC3\x8E");
+    entityMap.insert("Ocirc", "\xC3\x94");
+    entityMap.insert("Ucirc", "\xC3\x9B");
+    entityMap.insert("acirc", "\xC3\xA2");
+    entityMap.insert("ecirc", "\xC3\xAA");
+    entityMap.insert("icirc", "\xC3\xAE");
+    entityMap.insert("ocirc", "\xC3\xB4");
+    entityMap.insert("ucirc", "\xC3\xBB");
+    entityMap.insert("Atilde","\xC3\x83");
+    entityMap.insert("Ntilde","\xC3\x91");
+    entityMap.insert("Otilde","\xC3\x95");
+    entityMap.insert("atilde","\xC3\xA3");
+    entityMap.insert("ntilde","\xC3\xB1");
+    entityMap.insert("otilde","\xC3\xB5");
+    entityMap.insert("szlig", "\xC3\x9F");
+    entityMap.insert("Ccedil","\xC3\x87");
+    entityMap.insert("ccedil","\xC3\xA7");
+    entityMap.insert("Aring", "\xC3\x85");
+    entityMap.insert("aring", "\xC3\xA5");
+    entityMap.insert("nbsp",  "\xC2\xA0");
+    init=FALSE;
+  }
+
+  if (s==0) return result;
+  int p,i=0,l;
+  while ((p=entityPat.match(s,i,&l))!=-1)
+  {
+    if (p>i) result+=s.mid(i,p-i);
+    QCString entity = s.mid(p+1,l-2);
+    char *code = entityMap.find(entity);
+    if (code)
+    {
+      result+=code;
+    }
+    else
+    {
+      result+=s.mid(p,l);
+    }
+    i=p+l;
+  }
+  result+=s.mid(i,s.length()-i);
   return result;
 }
 
@@ -6158,6 +6269,10 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".m",     new int(SrcLangExt_ObjC));
     extLookup.insert(".M",     new int(SrcLangExt_ObjC));
     extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
+    extLookup.insert(".py",    new int(SrcLangExt_Python));
+    extLookup.insert(".f90",   new int(SrcLangExt_F90));
+    extLookup.insert(".vhd",   new int(SrcLangExt_VHDL));
+    extLookup.insert(".vhdl",  new int(SrcLangExt_VHDL));
     init=TRUE;
   }
   if (i!=-1) // name has an extension
@@ -6439,7 +6554,7 @@ QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
 void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
 {
   if (al==0) return;
-  ol.startConstraintList("Type constraints"); // TODO: add to translator!
+  ol.startConstraintList(theTranslator->trTypeConstraints()); 
   ArgumentListIterator ali(*al);
   Argument *a;
   for (;(a=ali.current());++ali)

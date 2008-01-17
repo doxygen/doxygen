@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -36,6 +36,7 @@
 #include "pagedef.h"
 #include "debug.h"
 #include "dirdef.h"
+#include "vhdldocgen.h"
 
 // #define GROUP_COLOR "#ff8080"
 
@@ -443,7 +444,7 @@ static const char tabs_css[] =
 "   padding-bottom   : 6px;\n"
 "}\n"
 "\n"
-"DIV.nav\n"
+"DIV.navpath\n"
 "{\n"
 "   background       : none;\n"
 "   border           : none;\n"
@@ -600,9 +601,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
 void HtmlGenerator::writeHeaderFile(QFile &file)
 {
   QTextStream t(&file);
-#if QT_VERSION >= 200
-  t.setEncoding(QTextStream::Latin1);
-#endif
+  t.setEncoding(QTextStream::UnicodeUTF8);
   writeDefaultHeaderFile(t,"$title",relativePathToRoot(0),TRUE);
 }
 
@@ -840,7 +839,7 @@ void HtmlGenerator::writeString(const char *text)
 
 void HtmlGenerator::startIndexItem(const char *ref,const char *f)
 {
-  //printf("HtmlGenerator::startIndexItem(%s,%s,%s)\n",ref,f,name);
+  //printf("HtmlGenerator::startIndexItem(%s,%s)\n",ref,f);
   QCString *dest;
   t << "<li>";
   if (ref || f)
@@ -1688,8 +1687,8 @@ static void startQuickIndexList(QTextStream &t,bool compact)
 {
   if (compact) 
   {
-    t << "<div class=\"tabs\">\n";
-    t << "  <ul>\n"; 
+    t << "  <div class=\"tabs\">\n";
+    t << "    <ul>\n"; 
   }
   else 
   {
@@ -1701,8 +1700,8 @@ static void endQuickIndexList(QTextStream &t,bool compact)
 {
   if (compact) 
   {
-    t << "  </ul>\n";
-    t << "</div>\n";
+    t << "    </ul>\n";
+    t << "  </div>\n";
   }
   else 
   {
@@ -1714,7 +1713,7 @@ static void startQuickIndexItem(QTextStream &t,const char *l,
                                 bool hl,bool /*compact*/,
                                 const QCString &relPath)
 {
-  t << "    <li"; if (hl) t << " class=\"current\"";
+  t << "      <li"; if (hl) t << " class=\"current\"";
   t << "><a ";
   t << "href=\"" << relPath << l << "\">";
   t << "<span>";
@@ -1736,6 +1735,7 @@ static void writeNamespaceSubIndex(QTextStream &t,bool compact,
                                   HighlightedItem hli,const QCString &relPath
                                  )
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   startQuickIndexList(t,compact);
   if (documentedNamespaces>0)
   {
@@ -1745,7 +1745,11 @@ static void writeNamespaceSubIndex(QTextStream &t,bool compact,
     {
       t << fixSpaces(theTranslator->trPackages());
     }
-    else
+    else if(fortranOpt)
+    {
+      t << theTranslator->trModulesList();
+    }
+      else
     {
       t << theTranslator->trNamespaceList();
     }
@@ -1759,7 +1763,11 @@ static void writeNamespaceSubIndex(QTextStream &t,bool compact,
     {
       t << fixSpaces(theTranslator->trPackageMembers());
     }
-    else
+    else if(fortranOpt)
+    {
+      t << fixSpaces(theTranslator->trModulesMembers());
+    }
+      else
     {
       t << fixSpaces(theTranslator->trNamespaceMembers());
     }
@@ -1772,6 +1780,8 @@ static void writeClassSubIndex(QTextStream &t,bool compact,
                                HighlightedItem hli,const QCString &relPath
                               )
 {
+  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool vhdlOpt=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   startQuickIndexList(t,compact);
   if (annotatedClasses>0)
   {
@@ -1784,21 +1794,46 @@ static void writeClassSubIndex(QTextStream &t,bool compact,
     }
     startQuickIndexItem(t,"annotated"+Doxygen::htmlFileExtension,
         hli==HLI_Annotated,compact,relPath);
-    t << fixSpaces(theTranslator->trCompoundList());
+      if (fortranOpt)
+      {
+        t << fixSpaces(theTranslator->trCompoundListFortran());
+      }
+      else if (vhdlOpt)
+      {
+        t << fixSpaces(VhdlDocGen::trDesignUnitList());
+      }
+      else
+      {
+        t << fixSpaces(theTranslator->trCompoundList());
+      }
+    
     endQuickIndexItem(t);
   } 
   if (hierarchyClasses>0)
   {
+    QCString title = theTranslator->trClassHierarchy();
+    if (vhdlOpt) title = VhdlDocGen::trDesignUnitHierarchy();
     startQuickIndexItem(t,"hierarchy"+Doxygen::htmlFileExtension,
         hli==HLI_Hierarchy,compact,relPath);
-    t << fixSpaces(theTranslator->trClassHierarchy());
+    t << fixSpaces(title);
     endQuickIndexItem(t);
   } 
   if (documentedClassMembers[CMHL_All]>0)
   {
     startQuickIndexItem(t,"functions"+Doxygen::htmlFileExtension,
         hli==HLI_Functions,compact,relPath);
-    t << fixSpaces(theTranslator->trCompoundMembers());
+    if (fortranOpt)
+    {
+      t << fixSpaces(theTranslator->trCompoundMembersFortran());
+    }
+    else if (vhdlOpt)
+    {
+      t << fixSpaces(VhdlDocGen::trDesignUnitMembers());
+    }
+    else
+    {
+      t << fixSpaces(theTranslator->trCompoundMembers());
+    }
     endQuickIndexItem(t);
   } 
   endQuickIndexList(t,compact);
@@ -1828,6 +1863,8 @@ static void writeFileSubIndex(QTextStream &t,bool compact,
 static void writeDefaultQuickLinks(QTextStream &t,bool compact,
                                    HighlightedItem hli,const QCString &relPath)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   startQuickIndexList(t,compact);
 
   if (Config_getBool("GENERATE_TREEVIEW"))
@@ -1842,6 +1879,18 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   }
   t << fixSpaces(theTranslator->trMainPage());
   endQuickIndexItem(t);
+
+  // -------------- Related pages
+  
+  if (indexedPages>0)
+  {
+    startQuickIndexItem(t,"pages"+Doxygen::htmlFileExtension,
+                        hli==HLI_Pages,compact,relPath);
+    t << fixSpaces(theTranslator->trRelatedPages());
+    endQuickIndexItem(t);
+  } 
+
+  // --------------- Modules
 
   if (documentedGroups>0)
   {
@@ -1861,6 +1910,10 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
     {
       t << fixSpaces(theTranslator->trPackages());
+    }
+    else if (fortranOpt)
+    {
+      t << theTranslator->trModules();
     }
     else
     {
@@ -1885,7 +1938,18 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
           hli==HLI_Annotated || hli==HLI_Functions || hli==HLI_ClassVisible,
           compact,relPath);
     }
-    t << fixSpaces(theTranslator->trClasses());
+    if (fortranOpt)
+    {
+      t << fixSpaces(theTranslator->trDataTypes());
+    }
+    else if (vhdlOpt)
+    {
+      t << fixSpaces(VhdlDocGen::trDesignUnits());
+    }
+    else
+    {
+      t << fixSpaces(theTranslator->trClasses());
+    }
     endQuickIndexItem(t);
     if (!compact)
     {
@@ -1916,16 +1980,6 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     startQuickIndexItem(t,"dirs"+Doxygen::htmlFileExtension,
                         hli==HLI_Directories,compact,relPath);
     t << fixSpaces(theTranslator->trDirectories());
-    endQuickIndexItem(t);
-  } 
-
-  // -------------- Related pages
-  
-  if (indexedPages>0)
-  {
-    startQuickIndexItem(t,"pages"+Doxygen::htmlFileExtension,
-                        hli==HLI_Pages,compact,relPath);
-    t << fixSpaces(theTranslator->trRelatedPages());
     endQuickIndexItem(t);
   } 
 
@@ -1994,6 +2048,32 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   
 }
 
+void HtmlGenerator::startQuickIndices()
+{
+  if (!Config_getBool("DISABLE_INDEX"))
+  {
+    t << "<div class=\"navigation\" id=\"top\">" << endl;
+  }
+}
+
+void HtmlGenerator::endQuickIndices()
+{
+  if (!Config_getBool("DISABLE_INDEX"))
+  {
+    t << "</div>" << endl;
+  }
+}
+
+void HtmlGenerator::startContents()
+{
+  t << "<div class=\"contents\">" << endl;
+}
+
+void HtmlGenerator::endContents()
+{
+  t << "</div>" << endl;
+}
+
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
 {
   writeDefaultQuickLinks(t,compact,hli,relPath);
@@ -2008,9 +2088,7 @@ void HtmlGenerator::writeSearchPage()
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
-#if QT_VERSION >= 200
-      t.setEncoding(QTextStream::Latin1);
-#endif
+      t.setEncoding(QTextStream::UnicodeUTF8);
       if (g_header.isEmpty()) 
       {
         writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE);

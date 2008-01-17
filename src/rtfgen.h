@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -50,6 +50,7 @@ class RTFGenerator : public OutputGenerator
     
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
+    void writePageLink(const char *,bool);
     void startProjectNumber();
     void endProjectNumber();
     void writeStyleInfo(int part);
@@ -162,7 +163,11 @@ class RTFGenerator : public OutputGenerator
     void endClassDiagram(const ClassDiagram &,const char *filename,const char *name);
     void startPageRef();
     void endPageRef(const char *,const char *);
+    void startQuickIndices() {}
+    void endQuickIndices() {}
     void writeQuickLinks(bool,HighlightedItem) {}
+    void startContents() {}
+    void endContents() {}
     void writeNonBreakableSpace(int);
 	
     void startDescTable();
@@ -199,7 +204,7 @@ class RTFGenerator : public OutputGenerator
     void endMemberDocPrefixItem() {}
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
-    void startParameterType(bool,const char *) {}
+    void startParameterType(bool,const char *);
     void endParameterType() {}
     void startParameterName(bool) {}
     void endParameterName(bool,bool,bool) {}

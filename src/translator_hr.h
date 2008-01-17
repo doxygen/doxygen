@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -108,7 +108,7 @@ class TranslatorCroatian : public Translator
     QCString trRelatedSubscript()
     { return "(To nisu member funkcije.)"; }
     QCString trDetailedDescription()
-    { return decode("Detaljno obja¹njenje"); }
+    { return decode("Detaljno objašnjenje"); }
     QCString trMemberTypedefDocumentation()
     { return decode("Dokumentacija typedef èlanova"); }
     QCString trMemberEnumerationDocumentation()
@@ -118,7 +118,7 @@ class TranslatorCroatian : public Translator
     QCString trMemberDataDocumentation()
     { return "Documentacija varijabli"; }
     QCString trMore()
-    { return decode("Op¹irnije..."); }
+    { return decode("Opširnije..."); }
     QCString trListOfAllMembers()
     { return decode("Popis svih èlanova."); }
     QCString trMemberList()
@@ -170,10 +170,10 @@ class TranslatorCroatian : public Translator
     QCString trExamples()
     { return "Primjeri"; }
     QCString trSearch()
-    { return decode("Tra¾i"); }
+    { return decode("Traži"); }
     QCString trClassHierarchyDescription()
-    { return decode("Stablo naslijeðivanja je slo¾eno "
-                                        "pribli¾no po abecedi:");
+    { return decode("Stablo naslijeðivanja je složeno "
+                                        "približno po abecedi:");
     }
     QCString trFileListDescription(bool extractAll)
     {
@@ -371,8 +371,8 @@ class TranslatorCroatian : public Translator
         case ClassDef::Struct: result+=" strukture "; break;
         case ClassDef::Union:  result+=" unije "; break;
         case ClassDef::Interface:  result+=" suèelja (interface) "; break;
-        case ClassDef::Protocol:   result+=" protocol "; break; // translate me!
-        case ClassDef::Category:   result+=" category "; break; // translate me!
+        case ClassDef::Protocol:   result+=" protokola "; break; 
+        case ClassDef::Category:   result+=" kategorije "; break; 
         case ClassDef::Exception:  result+=" iznimke (exception) "; break;
       }
           result += clName;
@@ -411,11 +411,11 @@ class TranslatorCroatian : public Translator
     QCString trStaticProtectedMembers()
     { return decode("Static protected èlanovi"); }
     QCString trPrivateMembers()
-    { return decode("Private èlanovi"); }
+    { return decode("Privatni èlanovi"); }
     QCString trPrivateSlots()
-    { return decode("Private slotovi"); }
+    { return decode("Privatni slotovi"); }
     QCString trStaticPrivateMembers()
-    { return decode("Static private èlanovi"); }
+    { return decode("Statièni privatni èlanovi"); }
     // end of member sections 
     
     QCString trWriteList(int numEntries)
@@ -514,15 +514,15 @@ class TranslatorCroatian : public Translator
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result="Dokumentacija ove ";
+      QCString result="Dokumentacija ";
       switch(compType)
       {
         case ClassDef::Class:      result+="klase"; break;
         case ClassDef::Struct:     result+="strukture"; break;
         case ClassDef::Union:      result+="unije"; break;
         case ClassDef::Interface:  result+="suèelja (interface)"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="protokola"; break; 
+        case ClassDef::Category:   result+="kategorije"; break; 
         case ClassDef::Exception:  result+="iznimke (exception)"; break;
       }
       result+=" je generirana iz " + trFile(FALSE, single) + ": ";
@@ -720,7 +720,7 @@ class TranslatorCroatian : public Translator
     }
     virtual QCString trAttention()
     {
-        return decode("Pa¾nja");
+        return decode("Pažnja");
     }
     virtual QCString trInclByDepGraph()
     {
@@ -745,7 +745,7 @@ class TranslatorCroatian : public Translator
     virtual QCString trLegendDocs()
     {
       return 
-        decode( "Ova stranica obja¹njava kako interpretirati grafikone koje je generirao "
+        decode( "Ova stranica objašnjava kako interpretirati grafikone koje je generirao "
         "doxygen.<p>\n"
         "Na primjer:\n"
         "\\code\n"
@@ -908,7 +908,7 @@ class TranslatorCroatian : public Translator
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return decode("Sadr¾aj");
+      return decode("Sadržaj");
     }
    
     /*! This is used for translation of the word that will possibly
@@ -1046,7 +1046,7 @@ class TranslatorCroatian : public Translator
      */
     virtual QCString trRTFTableOfContents()
     {
-      return decode("Sadr¾aj");
+      return decode("Sadržaj");
     }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.17
@@ -1274,6 +1274,202 @@ class TranslatorCroatian : public Translator
      */
     virtual QCString trEnumerationValueDocumentation()
     { return "Dokumentacija enumeracija"; }
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Dokumentacija member funkcija/subrutina"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Lista tipova podataka"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Polja"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Tipovi podataka s kratkim opisom:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Lista svih ";
+      if (!extractAll)
+      {
+        result+="dokumentiranih ";
+      }
+      result+="polja";
+      result+=" s linkovima na ";
+      if (!extractAll) 
+      {
+        result+="dokumentaciju struktura podataka za svako polje";
+      }
+      else 
+      {
+        result+="strukture kojima pripadaju:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+    * annotated compound index (Fortran).
+    */
+    virtual QCString trCompoundIndexFortran()
+    { return "Kazalo data tipova"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+    *  the documentation of all data types (Fortran).
+    */
+    virtual QCString trTypeDocumentation()
+    { return "Dokumentacija tipova podataka"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+    *  list of (global) subprograms (Fortran).
+    */
+    virtual QCString trSubprograms()
+    { return "Funkcije/Subrutine"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+    *  of documentation blocks for subprograms (Fortran)
+    */
+    virtual QCString trSubprogramDocumentation()
+    { return "Documentacija funkcija/subrutina"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+    *  the list of links to documented compounds (Fortran)
+    */
+    virtual QCString trDataTypes()
+    { return "Tipovi podataka"; }
+
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Popis modula"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Lista svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="modula s kratkim opisom:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+      ClassDef::CompoundType compType,
+      bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+      case ClassDef::Class:      result+=" Modul"; break;
+      case ClassDef::Struct:     result+=" Tip"; break;
+      case ClassDef::Union:      result+=" Unija"; break;
+      case ClassDef::Interface:  result+=" Suèelje"; break;
+      case ClassDef::Protocol:   result+=" Protokol"; break;
+      case ClassDef::Category:   result+=" Kategorija"; break;
+      case ClassDef::Exception:  result+=" Iznimka"; break;
+      }
+      if (isTemplate) result+=" Predložak";
+      result+=" Referenca";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" - Sadržaj modula";        
+      return result;
+    }
+
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Èlanovi modula"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Lista svih ";
+      if (!extractAll) result+="dokumentiranih ";
+      result+="èlanova modula s linkovima na ";
+      if (extractAll) 
+      {
+        result+="dokumentaciju modula za svaki èlan:";
+      }
+      else 
+      {
+        result+="modul kojem pripadaju:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+    *  index of all modules (Fortran).
+    */
+    virtual QCString trModulesIndex()
+    { return "Kazalo modula"; }
+
+    /*! This is used for translation of the word that will possibly
+    *  be followed by a single name or by a list of names 
+    *  of the category.
+    */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Modul" : "modul"));
+      if (!singular)  result+="i";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+    *  followed by a list of files that were used to generate the page.
+    */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+      bool)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Dokumentacija ovog ";
+      switch(compType)
+      {
+      case ClassDef::Class:      result+="modula"; break;
+      case ClassDef::Struct:     result+="tipa"; break;
+      case ClassDef::Union:      result+="unije"; break;
+      case ClassDef::Interface:  result+="suèelja"; break;
+      case ClassDef::Protocol:   result+="protokola"; break;
+      case ClassDef::Category:   result+="kategorije"; break;
+      case ClassDef::Exception:  result+="iznimke"; break;
+      }
+      result+=" je generirana iz :";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+    *  be followed by a single name or by a list of names 
+    *  of the category.
+    */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Tip" : "tip"));
+      if (!singular)  result+="ovi";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+    *  be followed by a single name or by a list of names 
+    *  of the category.
+    */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Subprogram" : "subprogram"));
+      if (!singular)  result+="i";
+      return result; 
+    }
+
+    /*! C# Type Contraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Ogranièenja za tip podataka";
+    }
 };
 
 #endif

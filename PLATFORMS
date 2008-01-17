@@ -23,6 +23,7 @@ osf1-g++
 qnx-g++
 sco-g++
 solaris-cc
+solaris-cc-64
 solaris-g++
 sunos-g++
 ultrix-g++

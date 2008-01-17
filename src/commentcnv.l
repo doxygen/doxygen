@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -64,6 +64,8 @@ static bool     g_inSpecialComment;
 static QCString g_aliasString;
 static int      g_blockCount;
 static int      g_lastBlockContext;
+
+static SrcLangExt g_lang;
 
 static void replaceCommentMarker(const char *s,int len)
 {
@@ -268,7 +270,7 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^"'\/\n\\]*                 { /* eat anything that is not " / or \n */ 
+<Scan>[^"'\/\n\\#\\-]*             { /* eat anything that is not " / or \n */ 
                                      copyToOutput(yytext,yyleng); 
 				   }
 <Scan>"\""                         { /* start of a string */ 
@@ -312,6 +314,28 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
+<Scan>"##"		           {
+                                     if (g_lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       copyToOutput(yytext,yyleng); 
+				       BEGIN(CComment);
+				     }
+  				   }
+<Scan>"--!"		           {
+                                     if (g_lang!=SrcLangExt_VHDL)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       copyToOutput(yytext,yyleng); 
+				       BEGIN(CComment);
+				     }
+  				   }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     g_lastCommentContext = YY_START;
@@ -414,6 +438,28 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(Scan); 
                                    }
+<CComment>"\n"/[ \t]*[^#]	   { /* end of Python comment */
+                                     if (g_lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
+  				   }
+<CComment>"\n"/[ \t]*[^\-]	   { /* end of VHDL comment */
+                                     if (g_lang!=SrcLangExt_VHDL)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
+  				   }
 <CComment>.			   {
                                      copyToOutput(yytext,yyleng); 
   				   }
@@ -480,8 +526,12 @@ void replaceComment(int offset);
 				     if (YY_START==CComment && oldSkip && !g_skip) 
     			             {
 				       //printf("** Adding start of comment!\n");
- 				       ADDCHAR('/');
-     				       ADDCHAR('*');
+				       if (g_lang!=SrcLangExt_Python &&
+					   g_lang!=SrcLangExt_VHDL)
+				       {
+ 				         ADDCHAR('/');
+     				         ADDCHAR('*');
+				       }
     				     }
 				    }
 <CondLine>[a-z_A-Z][a-z_A-Z0-9.\-]* {
@@ -490,8 +540,12 @@ void replaceComment(int offset);
 				     if (g_condCtx==CComment && !oldSkip && g_skip) 
     			             {
 				       //printf("** Adding terminator for comment!\n");
- 				       ADDCHAR('*');
-     				       ADDCHAR('/');
+				       if (g_lang!=SrcLangExt_Python &&
+					   g_lang!=SrcLangExt_VHDL)
+				       {
+ 				         ADDCHAR('*');
+     				         ADDCHAR('/');
+				       }
     				     }
   				     BEGIN(g_condCtx);
   				   }
@@ -504,8 +558,12 @@ void replaceComment(int offset);
 				     if (g_condCtx==CComment && !oldSkip && g_skip) 
     			             {
 				       //printf("** Adding terminator for comment!\n");
- 				       ADDCHAR('*');
-     				       ADDCHAR('/');
+				       if (g_lang!=SrcLangExt_Python &&
+					   g_lang!=SrcLangExt_VHDL)
+				       {
+ 				         ADDCHAR('*');
+     				         ADDCHAR('/');
+				       }
     				     }
 				     if (*yytext=='\n') g_lineNr++;
 				     BEGIN(g_condCtx);
@@ -587,6 +645,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_mlBrief = Config_getBool("MULTILINE_CPP_IS_BRIEF");
   g_skip     = FALSE;
   g_fileName = fileName;
+  g_lang = getLanguageFromFileName(fileName);
   g_lineNr   = 0;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);

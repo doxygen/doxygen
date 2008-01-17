@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 1997-2005 by Dimitri van Heesch.
+# Copyright (C) 1997-2008 by Dimitri van Heesch.
 # 
 # Permission to use, copy, modify, and distribute this software and its
 # documentation under the terms of the GNU General Public License is hereby 
@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=4
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=NO
+doxygen_version_mmn=20080101
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -158,9 +158,6 @@ if test -z "$f_platform"; then
       f_platform=macosx-c++
       if test "$f_insttool" = NO; then
         f_insttool=/usr/bin/install
-      fi
-      if test -n "`ls /Developer/SDKs/MacOSX10.*u.sdk`"; then
-        f_platform=macosx-uni-c++
       fi
       ;;
     FreeBSD:*)
@@ -516,6 +513,21 @@ if test "$f_platform" = "hpux-g++"; then
     TMAKE_CXXFLAGS += -D_LARGEFILE_SOURCE
 EOF
 fi
+if test "$f_platform" = "macosx-uni-c++"; then
+  if test -n "`ls /Developer/SDKs/MacOSX10.*.sdk`"; then
+    mac_sdk=MacOSX10.4u.sdk
+  fi
+  if test -n "`ls /Developer/SDKs/MacOSX10.5*.sdk`"; then
+    mac_sdk=MacOSX10.5.sdk
+  fi
+  if test -n $mac_sdk; then
+  cat >> .tmakeconfig <<EOF
+    TMAKE_CFLAGS   += -isysroot /Developer/SDKs/$mac_sdk
+    TMAKE_CXXFLAGS += -isysroot /Developer/SDKs/$mac_sdk
+    TMAKE_LFLAGS   += -Wl,-syslibroot,/Developer/SDKs/$mac_sdk
+EOF
+  fi
+fi
 if test "$f_wizard" = YES; then
   cat >> .tmakeconfig <<EOF
 TMAKE_MOC = $QTDIR/bin/moc
@@ -597,7 +609,7 @@ fi
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA"));
+	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA"));
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

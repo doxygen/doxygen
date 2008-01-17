@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -241,26 +241,32 @@ class Entry
       PACKAGE_SEC      = 0x15000000,
       PACKAGEDOC_SEC   = 0x16000000,
       OBJCIMPL_SEC     = 0x17000000,
-      DIRDOC_SEC       = 0x18000000,
+      DIRDOC_SEC       = 0x18000000
     };
     enum MemberSpecifier
     {
-      Inline    = 0x0001,
-      Explicit  = 0x0002,
-      Mutable   = 0x0004,
-      Settable  = 0x0008,
-      Gettable  = 0x0010,
-      Readable  = 0x0020,
-      Writable  = 0x0040,
-      Final     = 0x0080,
-      Abstract  = 0x0100,
-      Addable   = 0x0200,
-      Removable = 0x0400,
-      Raisable  = 0x0800,
-      Override  = 0x1000,
-      New       = 0x2000,
-      Sealed    = 0x4000,
-      Initonly  = 0x8000
+      Inline    = 0x000001,
+      Explicit  = 0x000002,
+      Mutable   = 0x000004,
+      Settable  = 0x000008,
+      Gettable  = 0x000010,
+      Readable  = 0x000020,
+      Writable  = 0x000040,
+      Final     = 0x000080,
+      Abstract  = 0x000100,
+      Addable   = 0x000200,
+      Removable = 0x000400,
+      Raisable  = 0x000800,
+      Override  = 0x001000,
+      New       = 0x002000,
+      Sealed    = 0x004000,
+      Initonly  = 0x008000,
+      Optional  = 0x010000,
+      Required  = 0x020000,
+      NonAtomic = 0x040000,
+      Copy      = 0x080000,
+      Retain    = 0x100000,
+      Assign    = 0x200000,
     };
     enum ClassSpecifier
     {
@@ -361,6 +367,7 @@ class Entry
     QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
     bool        objc;         //!< Objective-C construct
     bool        hidden;       //!< does this represent an entity that is hidden from the output
+    bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;
 
     static int  num;          //!< counts the total number of entries

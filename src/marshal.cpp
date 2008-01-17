@@ -412,6 +412,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalItemInfoList(s,e->sli);
   marshalBool(s,e->objc);
   marshalBool(s,e->hidden);
+  marshalBool(s,e->artificial);
   marshalInt(s,(int)e->groupDocType);
 }
 
@@ -725,9 +726,9 @@ ExampleSDict *unmarshalExampleSDict(StorageIntf *s)
   {
     QCString key = unmarshalQCString(s);
     Example *e = new Example;
-    marshalQCString(s,e->anchor);
-    marshalQCString(s,e->name);
-    marshalQCString(s,e->file);
+    e->anchor = unmarshalQCString(s);
+    e->name   = unmarshalQCString(s);
+    e->file   = unmarshalQCString(s);
     result->inSort(key,e);
   }
   return result;
@@ -807,6 +808,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->sli              = unmarshalItemInfoList(s);
   e->objc             = unmarshalBool(s);
   e->hidden           = unmarshalBool(s);
+  e->artificial       = unmarshalBool(s);
   e->groupDocType     = (Entry::GroupDocType)unmarshalInt(s);
   return e;
 }

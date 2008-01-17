@@ -377,7 +377,12 @@ void * portable_iconv_open(const char* tocode, const char* fromcode)
 size_t portable_iconv (void *cd, const char** inbuf,  size_t *inbytesleft, 
                                        char** outbuf, size_t *outbytesleft)
 {
-#if ((defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION>=0x0109)) || defined(_OS_SOLARIS_))
+// libiconv is a mess. For some platforms/version the prototype of inbuf is
+// "const char **", for others it is "char **". C++ requires the proper cast to
+// avoid a compile error, that is were the CASTNEEDED is for.
+#if ((defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION>=0x0109) && \
+      !((defined(_OS_MAC_) || defined(Q_OS_MACX) )&& (_LIBICONV_VERSION==0x010B))) \
+    || defined(_OS_SOLARIS_))
 #define CASTNEEDED(x) (x)
 #else
 #define CASTNEEDED(x) (char **)(x)

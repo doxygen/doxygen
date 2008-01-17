@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -34,6 +34,7 @@
 #include "docparser.h"
 #include "searchindex.h"
 #include "dot.h"
+#include "vhdldocgen.h"
 
 GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : Definition(df,dl,na)
@@ -290,107 +291,104 @@ bool GroupDef::insertMember(MemberDef *md,bool docOnly)
       if (!docOnly)
       {
         addMemberToList(MemberList::decVarMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decVarMembers.inSort(md);
-        //else
-        //  decVarMembers.append(md);
       }
       addMemberToList(MemberList::docVarMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docVarMembers.inSort(md); 
-      //else
-      //  docVarMembers.append(md);
       break;
     case MemberDef::Function: 
       if (!docOnly)
       {
         addMemberToList(MemberList::decFuncMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decFuncMembers.inSort(md);
-        //else
-        //  decFuncMembers.append(md);
       }
       addMemberToList(MemberList::docFuncMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))    
-      //  docFuncMembers.inSort(md); 
-      //else
-      //  docFuncMembers.append(md);
       break;
     case MemberDef::Typedef:      
       if (!docOnly)
       {
         addMemberToList(MemberList::decTypedefMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decTypedefMembers.inSort(md);
-        //else
-        //  decTypedefMembers.append(md);
       }
       addMemberToList(MemberList::docTypedefMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docTypedefMembers.inSort(md); 
-      //else
-      //  docTypedefMembers.append(md);
       break;
     case MemberDef::Enumeration:  
       if (!docOnly)
       {
         addMemberToList(MemberList::decEnumMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decEnumMembers.inSort(md);
-        //else
-        //  decEnumMembers.append(md);
       }
       addMemberToList(MemberList::docEnumMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docEnumMembers.inSort(md); 
-      //else
-      //  docEnumMembers.append(md);
       break;
     case MemberDef::EnumValue:    
       if (!docOnly)
       {
         addMemberToList(MemberList::decEnumValMembers,md);
-        //printf("enum value %s!\n",md->name().data());
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decEnumValMembers.inSort(md);
-        //else
-        //  decEnumValMembers.append(md);
       }
       addMemberToList(MemberList::docEnumValMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docEnumValMembers.inSort(md); 
-      //else
-      //  docEnumValMembers.append(md);
       break;
     case MemberDef::Prototype:    
       if (!docOnly)
       {
         addMemberToList(MemberList::decProtoMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decProtoMembers.inSort(md);
-        //else
-        //  decProtoMembers.append(md);
       }
       addMemberToList(MemberList::docProtoMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docProtoMembers.inSort(md); 
-      //else
-      //  docProtoMembers.append(md);
       break;
     case MemberDef::Define:       
       if (!docOnly)
       {
         addMemberToList(MemberList::decDefineMembers,md);
-        //if (Config_getBool("SORT_BRIEF_DOCS"))
-        //  decDefineMembers.inSort(md);
-        //else
-        //  decDefineMembers.append(md);
       }
       addMemberToList(MemberList::docDefineMembers,md);
-      //if (Config_getBool("SORT_MEMBER_DOCS"))
-      //  docDefineMembers.inSort(md); 
-      //else
-      //  docDefineMembers.append(md);
+      break;
+    case MemberDef::Signal:       
+      if (!docOnly)
+      {
+        addMemberToList(MemberList::decSignalMembers,md);
+      }
+      addMemberToList(MemberList::docSignalMembers,md);
+      break;
+    case MemberDef::Slot:       
+      if (md->protection()==Public)
+      {
+        if (!docOnly)
+        {
+          addMemberToList(MemberList::decPubSlotMembers,md);
+        }
+        addMemberToList(MemberList::docPubSlotMembers,md);
+      }
+      else if (md->protection()==Protected)
+      {
+        if (!docOnly)
+        {
+          addMemberToList(MemberList::decProSlotMembers,md);
+        }
+        addMemberToList(MemberList::docProSlotMembers,md);
+      }
+      else
+      {
+        if (!docOnly)
+        {
+          addMemberToList(MemberList::decPriSlotMembers,md);
+        }
+        addMemberToList(MemberList::docPriSlotMembers,md);
+      }
+      break;
+    case MemberDef::Event:       
+      if (!docOnly)
+      {
+        addMemberToList(MemberList::decEventMembers,md);
+      }
+      addMemberToList(MemberList::docEventMembers,md);
+      break;
+    case MemberDef::Property:       
+      if (!docOnly)
+      {
+        addMemberToList(MemberList::decPropMembers,md);
+      }
+      addMemberToList(MemberList::docPropMembers,md);
+      break;
+    case MemberDef::Friend:       
+      if (!docOnly)
+      {
+        addMemberToList(MemberList::decFriendMembers,md);
+      }
+      addMemberToList(MemberList::docFriendMembers,md);
       break;
     default:
       err("GroupDef::insertMembers(): "
@@ -454,6 +452,39 @@ void GroupDef::removeMember(MemberDef *md)
       case MemberDef::Define:       
         removeMemberFromList(MemberList::decDefineMembers,md);
         removeMemberFromList(MemberList::docDefineMembers,md);
+        break;
+      case MemberDef::Signal:       
+        removeMemberFromList(MemberList::decSignalMembers,md);
+        removeMemberFromList(MemberList::docSignalMembers,md);
+        break;
+      case MemberDef::Slot:       
+        if (md->protection()==Public)
+        {
+          removeMemberFromList(MemberList::decPubSlotMembers,md);
+          removeMemberFromList(MemberList::docPubSlotMembers,md);
+        }
+        else if (md->protection()==Protected)
+        {
+          removeMemberFromList(MemberList::decProSlotMembers,md);
+          removeMemberFromList(MemberList::docProSlotMembers,md);
+        }
+        else
+        {
+          removeMemberFromList(MemberList::decPriSlotMembers,md);
+          removeMemberFromList(MemberList::docPriSlotMembers,md);
+        }
+        break;
+      case MemberDef::Event:       
+        removeMemberFromList(MemberList::decEventMembers,md);
+        removeMemberFromList(MemberList::docEventMembers,md);
+        break;
+      case MemberDef::Property:       
+        removeMemberFromList(MemberList::decPropMembers,md);
+        removeMemberFromList(MemberList::docPropMembers,md);
+        break;
+      case MemberDef::Friend:       
+        removeMemberFromList(MemberList::decFriendMembers,md);
+        removeMemberFromList(MemberList::docFriendMembers,md);
         break;
       default:
         err("GroupDef::removeMember(): unexpected member remove in file!\n");
@@ -535,6 +566,8 @@ void GroupDef::writeDetailedDocumentation(OutputList &ol)
 
 void GroupDef::writeDocumentation(OutputList &ol)
 {
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");  
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
   ol.pushGeneratorState();
   startFile(ol,getOutputFileBase(),name(),title);
   startTitle(ol,getOutputFileBase());
@@ -715,21 +748,23 @@ void GroupDef::writeDocumentation(OutputList &ol)
       mg->writeDeclarations(ol,0,0,0,this);
     }
 
-    //allMemberList->writeDeclarations(ol,0,0,0,this,0,0); 
     writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-    //decDefineMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trDefines(),0);
     writeMemberDeclarations(ol,MemberList::decProtoMembers,theTranslator->trFuncProtos());
-    //decProtoMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFuncProtos(),0);
     writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
-    //decTypedefMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trTypedefs(),0);
     writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-    //decEnumMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trEnumerations(),0);
     writeMemberDeclarations(ol,MemberList::decEnumValMembers,theTranslator->trEnumerationValues());
-    //decEnumValMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trEnumerationValues(),0,TRUE);
-    writeMemberDeclarations(ol,MemberList::decFuncMembers,theTranslator->trFunctions());
-    //decFuncMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trFunctions(),0);
+    writeMemberDeclarations(ol,MemberList::decFuncMembers,
+                 fortranOpt ? theTranslator->trSubprograms()  : 
+                 vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
+                              theTranslator->trFunctions());
     writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-    //decVarMembers.writeDeclarations(ol,0,0,0,this,theTranslator->trVariables(),0);
+    writeMemberDeclarations(ol,MemberList::decSignalMembers,theTranslator->trSignals());
+    writeMemberDeclarations(ol,MemberList::decPubSlotMembers,theTranslator->trPublicSlots());
+    writeMemberDeclarations(ol,MemberList::decProSlotMembers,theTranslator->trProtectedSlots());
+    writeMemberDeclarations(ol,MemberList::decPriSlotMembers,theTranslator->trPrivateSlots());
+    writeMemberDeclarations(ol,MemberList::decEventMembers,theTranslator->trEvents());
+    writeMemberDeclarations(ol,MemberList::decPropMembers,theTranslator->trProperties());
+    writeMemberDeclarations(ol,MemberList::decFriendMembers,theTranslator->trFriends());
   }
   ol.endMemberSections();
 
@@ -786,38 +821,26 @@ void GroupDef::writeDocumentation(OutputList &ol)
 
 void GroupDef::writeMemberDocumentation(OutputList &ol)
 {
+  bool  fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     ol.disable(OutputGenerator::Html);
   }
   
   writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  //docDefineMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trDefineDocumentation());
-  
   writeMemberDocumentation(ol,MemberList::docProtoMembers,theTranslator->trFunctionPrototypeDocumentation());
-  //docProtoMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trFunctionPrototypeDocumentation());
-
   writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  //docTypedefMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trTypedefDocumentation());
-  
   writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  //docEnumMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trEnumerationTypeDocumentation());
-
   writeMemberDocumentation(ol,MemberList::docEnumValMembers,theTranslator->trEnumerationValueDocumentation());
-  //docEnumValMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trEnumerationValueDocumentation(),TRUE);
-
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,theTranslator->trFunctionDocumentation());
-  //docFuncMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trFunctionDocumentation());
-  
+  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
   writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-  //docVarMembers.writeDocumentation(ol,name(),this,
-  //                           theTranslator->trVariableDocumentation());
+  writeMemberDocumentation(ol,MemberList::docSignalMembers,theTranslator->trSignals());   // todo: add trSignalDocumentation()
+  writeMemberDocumentation(ol,MemberList::docPubSlotMembers,theTranslator->trPublicSlots()); // todo: add trSlotDocumentation()
+  writeMemberDocumentation(ol,MemberList::docProSlotMembers,theTranslator->trProtectedSlots()); // todo: add trSlotDocumentation()
+  writeMemberDocumentation(ol,MemberList::docPriSlotMembers,theTranslator->trPrivateSlots()); // todo: add trSlotDocumentation()
+  writeMemberDocumentation(ol,MemberList::docEventMembers,theTranslator->trEvents());     // todo: add trEventDocumentation()
+  writeMemberDocumentation(ol,MemberList::docPropMembers,theTranslator->trProperties());  // todo: add trPropertyDocumentation()
+  writeMemberDocumentation(ol,MemberList::docFriendMembers,theTranslator->trFriends());   // todo: add trFriendDocumentation()
 
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {

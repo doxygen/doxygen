@@ -60,12 +60,15 @@ void PageDef::writeDocumentation(OutputList &ol)
   else
     pageName=name().lower();
 
-  startFile(ol,pageName,pageName,title());
+  startFile(ol,pageName,pageName,title(),HLI_None,TRUE);
 
   if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
   {
     getOuterScope()->writeNavigationPath(ol);
   }
+
+  ol.endQuickIndices();
+  ol.startContents();
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
@@ -74,6 +77,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.endTitleHead(pageName, pageName);
   ol.popGeneratorState();
 
+  // for Latex the section is already generated as a chapter in the index!
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Latex);
   SectionInfo *si=0;
   if (!title().isEmpty() && !name().isEmpty() &&
       (si=Doxygen::sectionDict.find(pageName))!=0)
@@ -85,6 +91,8 @@ void PageDef::writeDocumentation(OutputList &ol)
                         si->title);
     ol.endSection(si->label,si->type);
   }
+  ol.popGeneratorState();
+
   ol.startTextBlock();
   ol.parseDoc(docFile(),       // fileName
       docLine(),           // startLine

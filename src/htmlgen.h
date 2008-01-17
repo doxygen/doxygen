@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -54,6 +54,7 @@ class HtmlGenerator : public OutputGenerator
 
     void startIndexSection(IndexSections) {}
     void endIndexSection(IndexSections) {}
+    void writePageLink(const char *,bool) {}
     void startProjectNumber();
     void endProjectNumber();
     void writeStyleInfo(int part);
@@ -176,7 +177,11 @@ class HtmlGenerator : public OutputGenerator
     void endClassDiagram(const ClassDiagram &,const char *,const char *);
     void startPageRef() {}
     void endPageRef(const char *,const char *) {}
+    void startQuickIndices();
+    void endQuickIndices();
     void writeQuickLinks(bool compact,HighlightedItem hli);
+    void startContents();
+    void endContents();
     void writeNonBreakableSpace(int);
     
     void startDescTable()

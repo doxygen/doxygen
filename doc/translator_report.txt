@@ -1,38 +1,29 @@
-(1.5.3)
+(1.5.4)
 
-Doxygen supports the following 33 languages (sorted alphabetically):
+Doxygen supports the following 34 languages (sorted alphabetically):
 
 Afrikaans, Arabic, Brazilian Portuguese, Catalan, Chinese, Chinese
 Traditional, Croatian, Czech, Danish, Dutch, English, Finnish, French,
 German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
-(+En), Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian,
-Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+(+En), Lithuanian, Macedonian, Norwegian, Persian, Polish, Portuguese,
+Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and
+Ukrainian.
 
-Of them, 16 translators are up-to-date, 17 translators are based on
+Of them, 6 translators are up-to-date, 28 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
 The following translator classes are up-to-date (sorted
 alphabetically). This means that they derive from the Translator class
-and they implement all 194 of the required methods. Anyway, there
+and they implement all 216 of the required methods. Anyway, there
 still may be some details listed even for them:
 
-  TranslatorBrazilian
-  TranslatorCatalan
-  TranslatorChinese
-  TranslatorCroatian -- The "translate me!" found in a comment.
+  TranslatorCroatian
   TranslatorCzech
-  TranslatorDanish -- The "translate me!" found in a comment.
   TranslatorDutch
   TranslatorEnglish
-  TranslatorFrench
-  TranslatorGerman -- The "translate me!" found in a comment.
-  TranslatorGreek -- The "translate me!" found in a comment.
-  TranslatorItalian -- The "translate me!" found in a comment.
-  TranslatorJapanese -- Remove the obsolete methods (never used).
+  TranslatorItalian
   TranslatorKorean
-  TranslatorRussian -- The "translate me!" found in a comment.
-  TranslatorSpanish
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -40,23 +31,36 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorSwedish               1.4.6 	 2 methods to implement
-  TranslatorSlovene               1.4.6 	 2 methods to implement
-  TranslatorPolish                1.4.6 	 1 method to implement
-  TranslatorPersian               1.4.6 	 1 method to implement
-  TranslatorNorwegian             1.4.6 	 1 method to implement
-  TranslatorLithuanian            1.4.6 	 2 methods to implement
-  TranslatorIndonesian            1.4.6 	 1 method to implement
-  TranslatorHungarian             1.4.6 	 2 methods to implement
-  TranslatorChinesetraditional    1.4.6 	 1 method to implement
-  TranslatorArabic                1.4.6 	 1 method to implement
-  TranslatorAfrikaans             1.4.6 	 2 methods to implement
-  TranslatorUkrainian             1.4.1 	 2 methods to implement
-  TranslatorSerbian               1.4.1 	 2 methods to implement
-  TranslatorRomanian              1.4.1 	 2 methods to implement
-  TranslatorPortuguese            1.3.3 	13 methods to implement
-  TranslatorSlovak                1.2.18	22 methods to implement
-  TranslatorFinnish               obsolete	96 methods to implement
+  TranslatorSpanish               1.5.4 	22 methods to implement
+  TranslatorRussian               1.5.4 	22 methods to implement
+  TranslatorMacedonian            1.5.04	22 methods to implement
+	Note: Change the base class to TranslatorAdapter_1_5_4.
+
+  TranslatorJapanese              1.5.4 	22 methods to implement
+  TranslatorGreek                 1.5.4 	22 methods to implement
+  TranslatorGerman                1.5.4 	22 methods to implement
+  TranslatorFrench                1.5.4 	22 methods to implement
+  TranslatorDanish                1.5.4 	22 methods to implement
+  TranslatorChinese               1.5.4 	22 methods to implement
+  TranslatorCatalan               1.5.4 	22 methods to implement
+  TranslatorBrazilian             1.5.4 	 1 method to implement
+  TranslatorSwedish               1.4.6 	24 methods to implement
+  TranslatorSlovene               1.4.6 	24 methods to implement
+  TranslatorPolish                1.4.6 	23 methods to implement
+  TranslatorPersian               1.4.6 	23 methods to implement
+  TranslatorNorwegian             1.4.6 	23 methods to implement
+  TranslatorLithuanian            1.4.6 	24 methods to implement
+  TranslatorIndonesian            1.4.6 	23 methods to implement
+  TranslatorHungarian             1.4.6 	24 methods to implement
+  TranslatorChinesetraditional    1.4.6 	23 methods to implement
+  TranslatorArabic                1.4.6 	23 methods to implement
+  TranslatorAfrikaans             1.4.6 	24 methods to implement
+  TranslatorUkrainian             1.4.1 	24 methods to implement
+  TranslatorSerbian               1.4.1 	24 methods to implement
+  TranslatorRomanian              1.4.1 	24 methods to implement
+  TranslatorPortuguese            1.3.3 	35 methods to implement
+  TranslatorSlovak                1.2.18	44 methods to implement
+  TranslatorFinnish               obsolete	118 methods to implement
 
 ----------------------------------------------------------------------
 The following translator classes derive directly from the
@@ -72,25 +76,69 @@ Details for translators (classes sorted alphabetically):
 
 
 
-TranslatorAfrikaans   (TranslatorAdapter_1_4_6)  2 methods to implement
+TranslatorAfrikaans   (TranslatorAdapter_1_4_6)  24 methods to implement
 -------------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorArabic   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorArabic   (TranslatorAdapter_1_4_6)  23 methods to implement
 ----------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -105,14 +153,112 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorBrazilian   (TranslatorAdapter_1_5_4)  1 method to implement
+-------------------
+
+  Implements 215 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trTypeConstraints()
+
+  Obsolete methods (should be removed, never used):
+
+    virtual QCString trTypeContraints()
+
+
+TranslatorCatalan   (TranslatorAdapter_1_5_4)  22 methods to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorChinese   (TranslatorAdapter_1_5_4)  22 methods to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  23 methods to implement
 ----------------------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -127,19 +273,38 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorCroatian   (Translator)
-------------------
-
-  Implements 194 of the required methods.
-
-
-TranslatorDanish   (Translator)
+TranslatorDanish   (TranslatorAdapter_1_5_4)  22 methods to implement
 ----------------
 
   Implements 194 of the required methods.
 
+  Missing methods (should be implemented):
 
-TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorFinnish   (TranslatorEnglish)  118 methods to implement
 -----------------
 
   Implements 98 of the required methods.
@@ -150,42 +315,54 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     virtual QCString trPropertyDocumentation()
     virtual QCString trMember(bool first_capital, bool singular)
     virtual QCString trPageIndex()
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
     virtual QCString trSince()
     virtual QCString trEventDocumentation()
     virtual QCString trDirIndex()
     virtual QCString trRemarks()
     virtual QCString trProtectedTypes()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
     virtual QCString trFile(bool first_capital, bool singular)
     virtual QCString trPackages()
     virtual QCString trInclByDepGraph()
     virtual QCString trRTFansicp()
     virtual QCString trImplementedFromList(int numEntries)
+    virtual QCString trSubprograms()
     virtual QCString trCollaborationDiagram(const char * clName)
     virtual QCString trPackageListDescription()
     virtual QCString trDefineValue()
     virtual QCString trPackageMembers()
     virtual QCString trStaticPackageMembers()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
     virtual QCString trDirDocumentation()
     virtual QCString trPackage(const char * name)
     virtual QCString trPublicTypes()
     virtual QCString trSearchResultsTitle()
     virtual QCString trDirectories()
     virtual QCString trTest()
+    virtual QCString trTypeConstraints()
     virtual QCString trInvariant()
     virtual QCString trDeprecatedList()
     virtual QCString trGraphicalHierarchy()
     virtual QCString trPostcondition()
     virtual QCString trGotoGraphicalHierarchy()
     virtual QCString trPageAbbreviation()
+    virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trDirDescription()
     virtual QCString trGotoSourceCode()
     virtual QCString trStaticPackageAttribs()
+    virtual QCString trCompoundListDescriptionFortran()
     virtual QCString trCallGraph()
     virtual QCString trStaticPublicAttribs()
     virtual QCString trCode()
     virtual QCString trTodo()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trRTFCharSet()
+    virtual QCString trModulesMembers()
     virtual QCString trInitialValue()
     virtual QCString trAlphabeticalList()
     virtual QCString trBug()
@@ -193,12 +370,15 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     virtual QCString trStaticPrivateAttribs()
     virtual QCString trAttention()
     virtual QCString trGotoTextualHierarchy()
+    virtual QCString trModulesIndex()
     virtual QCString trPackageTypes()
     virtual QCString trMainPage()
     virtual QCString trDeprecated()
+    virtual QCString trCompoundListFortran()
     virtual QCString trClass(bool first_capital, bool singular)
     virtual QCString trImplementedInList(int numEntries)
     virtual QCString trPrivateTypes()
+    virtual QCString trDataTypes()
     virtual QCString trInclDepGraph(const char * fName)
     virtual QCString trSearchResults(int numDocuments)
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType, bool single)
@@ -213,6 +393,8 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     virtual QCString trClasses()
     virtual QCString trProtectedAttribs()
     virtual QCString trLegendTitle()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trEvents()
     virtual QCString trGlobal(bool first_capital, bool singular)
     virtual QCString trDCOPMethods()
@@ -223,13 +405,17 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     virtual QCString trNamespace(bool first_capital, bool singular)
     virtual QCString trTestList()
     virtual QCString trPrecondition()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
     virtual QCString trReturnValues()
     virtual QCString trReferences()
+    virtual QCString trType(bool first_capital, bool singular)
     virtual QCString trAuthor(bool first_capital, bool singular)
     virtual QCString trLegendDocs()
+    virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trPackageList()
     virtual QCString trTodoList()
     virtual QCString trPage(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
     virtual QCString trSourceFile(QCString & filename)
     virtual QCString trGotoDocumentation()
     virtual QCString trDefinedAtLineInSourceFile()
@@ -237,6 +423,7 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     virtual QCString trDir(bool first_capital, bool singular)
     virtual QCString trSearchForIndex()
     virtual QCString trAll()
+    virtual QCString trSubprogramDocumentation()
     virtual QCString trRTFTableOfContents()
     virtual QCString trGroup(bool first_capital, bool singular)
     virtual QCString trReferencedBy()
@@ -255,16 +442,97 @@ TranslatorFinnish   (TranslatorEnglish)  96 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorGerman   (Translator)
+TranslatorFrench   (TranslatorAdapter_1_5_4)  22 methods to implement
 ----------------
 
   Implements 194 of the required methods.
 
+  Missing methods (should be implemented):
 
-TranslatorGreek   (Translator)
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorGerman   (TranslatorAdapter_1_5_4)  22 methods to implement
+----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorGreek   (TranslatorAdapter_1_5_4)  22 methods to implement
 ---------------
 
   Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -279,25 +547,69 @@ TranslatorGreek   (Translator)
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorHungarian   (TranslatorAdapter_1_4_6)  2 methods to implement
+TranslatorHungarian   (TranslatorAdapter_1_4_6)  24 methods to implement
 -------------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorIndonesian   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorIndonesian   (TranslatorAdapter_1_4_6)  23 methods to implement
 --------------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -312,16 +624,35 @@ TranslatorIndonesian   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorItalian   (Translator)
------------------
-
-  Implements 194 of the required methods.
-
-
-TranslatorJapanese   (Translator)
+TranslatorJapanese   (TranslatorAdapter_1_5_4)  22 methods to implement
 ------------------
 
   Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -336,7 +667,7 @@ TranslatorJapanese   (Translator)
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorJapaneseEn   (TranslatorEnglish)  189 methods to implement
+TranslatorJapaneseEn   (TranslatorEnglish)  211 methods to implement
 --------------------
 
   Implements 5 of the required methods.
@@ -350,7 +681,7 @@ TranslatorJapaneseEn   (TranslatorEnglish)  189 methods to implement
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorKoreanEn   (TranslatorEnglish)  189 methods to implement
+TranslatorKoreanEn   (TranslatorEnglish)  211 methods to implement
 ------------------
 
   Implements 5 of the required methods.
@@ -364,25 +695,100 @@ TranslatorKoreanEn   (TranslatorEnglish)  189 methods to implement
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorLithuanian   (TranslatorAdapter_1_4_6)  2 methods to implement
+TranslatorLithuanian   (TranslatorAdapter_1_4_6)  24 methods to implement
 --------------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorNorwegian   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorMacedonian   (TranslatorAdapter_1_4_6)  22 methods to implement
+--------------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorNorwegian   (TranslatorAdapter_1_4_6)  23 methods to implement
 -------------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -397,14 +803,36 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorPersian   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorPersian   (TranslatorAdapter_1_4_6)  23 methods to implement
 -----------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -419,14 +847,36 @@ TranslatorPersian   (TranslatorAdapter_1_4_6)  1 method to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorPolish   (TranslatorAdapter_1_4_6)  1 method to implement
+TranslatorPolish   (TranslatorAdapter_1_4_6)  23 methods to implement
 ----------------
 
   Implements 193 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -441,26 +891,48 @@ TranslatorPolish   (TranslatorAdapter_1_4_6)  1 method to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorPortuguese   (TranslatorAdapter_1_3_3)  13 methods to implement
+TranslatorPortuguese   (TranslatorAdapter_1_3_3)  35 methods to implement
 --------------------
 
   Implements 181 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
     virtual QCString trDirIndex()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
     virtual QCString trDirDocumentation()
     virtual QCString trSearchResultsTitle()
     virtual QCString trDirectories()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trDirDescription()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
     virtual QCString trSearchResults(int numDocuments)
     virtual QCString trSearchMatches()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
     virtual QCString trSourceFile(QCString & filename)
     virtual QCString trDirReference(const char * dirName)
     virtual QCString trDir(bool first_capital, bool singular)
     virtual QCString trSearchForIndex()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -475,15 +947,37 @@ TranslatorPortuguese   (TranslatorAdapter_1_3_3)  13 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorRomanian   (TranslatorAdapter_1_4_1)  2 methods to implement
+TranslatorRomanian   (TranslatorAdapter_1_4_1)  24 methods to implement
 ------------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -498,21 +992,68 @@ TranslatorRomanian   (TranslatorAdapter_1_4_1)  2 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorRussian   (Translator)
+TranslatorRussian   (TranslatorAdapter_1_5_4)  22 methods to implement
 -----------------
 
   Implements 194 of the required methods.
 
+  Missing methods (should be implemented):
 
-TranslatorSerbian   (TranslatorAdapter_1_4_1)  2 methods to implement
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorSerbian   (TranslatorAdapter_1_4_1)  24 methods to implement
 -----------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -527,35 +1068,57 @@ TranslatorSerbian   (TranslatorAdapter_1_4_1)  2 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorSlovak   (TranslatorAdapter_1_2_18)  22 methods to implement
+TranslatorSlovak   (TranslatorAdapter_1_2_18)  44 methods to implement
 ----------------
 
   Implements 172 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
     virtual QCString trEventDocumentation()
     virtual QCString trDirIndex()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
     virtual QCString trPackageMembers()
     virtual QCString trStaticPackageMembers()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
     virtual QCString trDirDocumentation()
     virtual QCString trSearchResultsTitle()
     virtual QCString trDirectories()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trDirDescription()
     virtual QCString trStaticPackageAttribs()
+    virtual QCString trCompoundListDescriptionFortran()
     virtual QCString trCallGraph()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
     virtual QCString trPackageTypes()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
     virtual QCString trSearchResults(int numDocuments)
     virtual QCString trPackageAttribs()
     virtual QCString trSearchMatches()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trEvents()
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
     virtual QCString trSourceFile(QCString & filename)
     virtual QCString trDirReference(const char * dirName)
     virtual QCString trDir(bool first_capital, bool singular)
     virtual QCString trSearchForIndex()
     virtual QCString trAll()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 
@@ -570,37 +1133,134 @@ TranslatorSlovak   (TranslatorAdapter_1_2_18)  22 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorSlovene   (TranslatorAdapter_1_4_6)  2 methods to implement
+TranslatorSlovene   (TranslatorAdapter_1_4_6)  24 methods to implement
 -----------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorSwedish   (TranslatorAdapter_1_4_6)  2 methods to implement
+TranslatorSpanish   (TranslatorAdapter_1_5_4)  22 methods to implement
+-----------------
+
+  Implements 194 of the required methods.
+
+  Missing methods (should be implemented):
+
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
+
+
+TranslatorSwedish   (TranslatorAdapter_1_4_6)  24 methods to implement
 -----------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
     virtual QCString trEnumerationValueDocumentation()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorUkrainian   (TranslatorAdapter_1_4_1)  2 methods to implement
+TranslatorUkrainian   (TranslatorAdapter_1_4_1)  24 methods to implement
 -------------------
 
   Implements 192 of the required methods.
 
   Missing methods (should be implemented):
 
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trOverloadText()
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
+    virtual QCString trSubprograms()
+    virtual QCString trModulesListDescription(bool extractAll)
+    virtual QCString trModulesList()
+    virtual QCString trTypeConstraints()
+    virtual QCString trMemberFunctionDocumentationFortran()
+    virtual QCString trCompoundListDescriptionFortran()
+    virtual QCString trTypeDocumentation()
+    virtual QCString trModuleReference(const char * namespaceName)
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    virtual QCString trModulesMembers()
+    virtual QCString trModulesIndex()
+    virtual QCString trCompoundListFortran()
+    virtual QCString trDataTypes()
+    virtual QCString trCompoundIndexFortran()
+    virtual QCString trSubprogram(bool first_capital, bool singular)
     virtual QCString trCallerGraph()
+    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
+    virtual QCString trType(bool first_capital, bool singular)
+    virtual QCString trModule(bool first_capital, bool singular)
+    virtual QCString trCompoundMembersFortran()
+    virtual QCString trSubprogramDocumentation()
 
   Obsolete methods (should be removed, never used):
 

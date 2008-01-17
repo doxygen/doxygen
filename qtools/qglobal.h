@@ -70,8 +70,25 @@
 //   UNIX	- Any UNIX bsd/sysv system
 //
 
-#if defined(macintosh)
+#if defined(__APPLE__) || defined(macintosh)
 #define _OS_MAC_
+#  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
+#    undef MAC_OS_X_VERSION_MIN_REQUIRED
+#  endif
+#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_3
+#  include <AvailabilityMacros.h>
+#  if !defined(MAC_OS_X_VERSION_10_3)
+#     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_4)
+#       define MAC_OS_X_VERSION_10_4 MAC_OS_X_VERSION_10_3 + 1
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_5)
+#       define MAC_OS_X_VERSION_10_5 MAC_OS_X_VERSION_10_4 + 1
+#  endif
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5)
+#    error "This version of Mac OS X is unsupported"
+#  endif
 #elif defined(MSDOS) || defined(_MSDOS) || defined(__MSDOS__)
 #define _OS_MSDOS_
 #elif defined(OS2) || defined(_OS2) || defined(__OS2__)

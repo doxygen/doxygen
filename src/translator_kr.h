@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -20,8 +20,8 @@
 
 
 /* Korean translators
- * doxygen-cvs
- *   * fly1004
+ * doxygen-svn
+ *   * fly1004@gmail.com
  * doxygen-1.5.3
  *   * Astromaker(http://ngps.net/)
  *   * gpgiki(http://www.gpgstudy.com/gpgiki/)
@@ -1574,7 +1574,7 @@ class TranslatorKorean : public Translator
      */
     virtual QCString trOverloadText()
     {
-       return "이 함수는 편의 제공하기 위해 오버로드된 멤버 함수입니다. "
+       return "이 함수는 편의를 제공하기 위해 오버로드된 멤버 함수입니다. "
               "위의 함수와 틀린 점은 단지 받아들이는 아규먼트(argument)가 다르다는 것입니다.";
     }
 
@@ -1594,6 +1594,205 @@ class TranslatorKorean : public Translator
     virtual QCString trEnumerationValueDocumentation()
     { return "열거형 문서화"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "멤버 함수/서브루틴 문서화"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "데이타 타입 목록"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "데이타 필드"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "대략적인 설명과 함께 데이타 타입들의 목록입니다.:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Here is a list of all ";
+      if (!extractAll)
+      {
+        result+="documented ";
+      }
+      result+="data types members";
+      result+=" with links to ";
+      if (!extractAll) 
+      {
+         result+="the data structure documentation for each member";
+      }
+      else 
+      {
+         result+="the data types they belong to:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "데이타 타입 색인"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "데이타 타입 문서화"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "함수/서브루틴"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "함수/서브루틴 문서화"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "데이타 타입들"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "모듈 목록"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+      result+="모든 모듈에 대한 목록입니다. (간략한 설명만을 보여줍니다) :";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" 모듈"; break;
+        case ClassDef::Struct:     result+=" 타입"; break;
+        case ClassDef::Union:      result+=" 공용체"; break;
+        case ClassDef::Interface:  result+=" 인터페이스"; break;
+        case ClassDef::Protocol:   result+=" 프로토콜"; break;
+        case ClassDef::Category:   result+=" 카테고리"; break;
+        case ClassDef::Exception:  result+=" 예외"; break;
+      }
+      if (isTemplate) result+=" 템플릿";
+      result+=" 참조";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" 모듈 참조";        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "모듈 멤버들"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="다음은 ";
+      if (!extractAll) result+="문서화된 ";
+      result+="모든 모듈 멤버의 목록입니다. ";
+      if (extractAll) 
+      {
+        result+="각 항목은 각 멤버의 모듈 문서화 페이지의 링크를 가지고 있습니다. :";
+      }
+      else 
+      {
+        result+="각 항목은 그들이 속한 모듈의 링크를 가지고 있습니다. :";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "모듈 색인"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "모듈" : "모듈"));
+      if (!singular)  result+="들";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"다음 파일";
+      if (single) result+=""; else result+="들";
+      result+="로부터 생성된 ";
+      result+="이 ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="모듈"; break;
+        case ClassDef::Struct:     result+="타입"; break;
+        case ClassDef::Union:      result+="공용체"; break;
+        case ClassDef::Interface:  result+="인터페이스"; break;
+        case ClassDef::Protocol:   result+="프로토콜"; break;
+        case ClassDef::Category:   result+="카테고리"; break;
+        case ClassDef::Exception:  result+="예외"; break;
+      }
+      result+="의 문서화 페이지:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "타입" : "타입"));
+      if (!singular)  result+="들";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "서브프로그램" : "서브프로그램"));
+      if (!singular)  result+="들";
+      return result; 
+    }
+
+    /*! C# Type Contraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "타입 한정자들";
+    }
 
 };
 

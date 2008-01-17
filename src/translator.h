@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -22,7 +22,6 @@
 #include "classdef.h"
 #include "util.h"
 #include "config.h"
-
 
 class Translator
 {
@@ -344,7 +343,7 @@ class Translator
    
     // Translation of the word
 
-   virtual QCString trClass(bool first_capital, bool singular) = 0;
+    virtual QCString trClass(bool first_capital, bool singular) = 0;
     virtual QCString trFile(bool first_capital, bool singular) = 0;
     virtual QCString trNamespace(bool first_capital, bool singular) = 0;
     virtual QCString trGroup(bool first_capital, bool singular) = 0;
@@ -446,6 +445,36 @@ class Translator
     
     virtual QCString trCallerGraph() = 0;
     virtual QCString trEnumerationValueDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4
+//////////////////////////////////////////////////////////////////////////
+    
+    virtual QCString trMemberFunctionDocumentationFortran() = 0;
+    virtual QCString trCompoundListFortran() = 0;
+    virtual QCString trCompoundMembersFortran() = 0;
+    virtual QCString trCompoundListDescriptionFortran() = 0;
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll) = 0;
+    virtual QCString trCompoundIndexFortran() = 0;
+    virtual QCString trTypeDocumentation() = 0;
+    virtual QCString trSubprograms() = 0;
+    virtual QCString trSubprogramDocumentation() = 0;
+    virtual QCString trDataTypes() = 0;
+    virtual QCString trModulesList() = 0;
+    virtual QCString trModulesListDescription(bool extractAll) = 0;
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                 ClassDef::CompoundType compType,
+                                 bool isTemplate) = 0;
+    virtual QCString trModuleReference(const char *namespaceName) = 0;
+    virtual QCString trModulesMembers() = 0;
+    virtual QCString trModulesMemberDescription(bool extractAll) = 0;
+    virtual QCString trModulesIndex() = 0;
+    virtual QCString trModule(bool first_capital, bool singular) = 0;
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+                     bool single) = 0;
+    virtual QCString trType(bool first_capital, bool singular) = 0;
+    virtual QCString trSubprogram(bool first_capital, bool singular) = 0;
+    virtual QCString trTypeConstraints() = 0;
 
 };
 

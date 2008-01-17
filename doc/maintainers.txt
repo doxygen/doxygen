@@ -86,6 +86,9 @@ Aidas Berukstis: aidasber@takas.lt
 TranslatorNorwegian
 Lars Erik Jordet: lejordet@gmail.com
 
+TranslatorMacedonian
+Slave Jovanovski: slavejovanovski@yahoo.com
+
 TranslatorPersian
 Ali Nadalizadeh: nadalisoft@yahoo.com
 
@@ -120,5 +123,4 @@ Mikael Hallin: mikaelhallin@yahoo.se
 
 TranslatorUkrainian
 Olexij Tkatchenko: olexij.tkatchenko@parcs.de
-
 

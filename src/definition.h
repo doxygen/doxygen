@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -120,7 +120,7 @@ class Definition : public DefinitionIntf, public LockableObj
 
     /*! Returns the fully qualified name of this definition
      */
-    virtual QCString qualifiedName();
+    virtual QCString qualifiedName() const;
 
     /*! Returns the name of this definition as it appears in the symbol map.
      */
@@ -200,6 +200,11 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! Returns TRUE iff this item is supposed to be hidden from the output. */
     bool isHidden() const;
 
+    /*! returns TRUE if this entity was artificially introduced, for 
+     *  instance because it is used to show a template instantiation relation. 
+     */
+    bool isArtificial() const;
+
     /*! If this definition was imported via a tag file, this function
      *  returns the tagfile for the external project. This can be
      *  translated into an external link target via 
@@ -270,6 +275,8 @@ class Definition : public DefinitionIntf, public LockableObj
     virtual void setOuterScope(Definition *d);
 
     void setHidden(bool b);
+
+    void setArtificial(bool b);
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

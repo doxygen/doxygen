@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -380,9 +380,7 @@ void LatexGenerator::writeHeaderFile(QFile &f)
 void LatexGenerator::writeStyleSheetFile(QFile &f)
 {
   QTextStream t(&f);
-#if QT_VERSION >= 200
-  t.setEncoding(QTextStream::Latin1);
-#endif
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   writeDefaultStyleSheetPart1(t);
   QCString &projectName = Config_getString("PROJECT_NAME");
@@ -390,12 +388,12 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2007";
+  //t << "Dimitri van Heesch \\copyright~1997-2008";
   writeDefaultStyleSheetPart2(t);
   t << theTranslator->trGeneratedAt( dateToString(TRUE), projectName );
   t << " doxygen";
   //t << " << theTranslator->trWrittenBy() << " ";
-  //t << "Dimitri van Heesch \\copyright~1997-2007";
+  //t << "Dimitri van Heesch \\copyright~1997-2008";
   writeDefaultStyleSheetPart3(t);
 }
 
@@ -776,6 +774,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation:
       {
         t << "}\n";
+#if 0
         PageSDict::Iterator pdi(*Doxygen::pageSDict);
         PageDef *pd=pdi.toFirst();
         bool first=TRUE;
@@ -783,11 +782,16 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (!pd->getGroupDef() && !pd->isReference())
           {
+             if (compactLatex) t << "\\section"; else t << "\\chapter";
+             t << "{" << pd->title();
+             t << "}\n";
+            
             if (compactLatex || first) t << "\\input" ; else t << "\\include";
             t << "{" << pd->getOutputFileBase() << "}\n";
             first=FALSE;
           }
         }
+#endif
       }
       break;
     case isEndIndex:
@@ -796,6 +800,15 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
   }
 }
+
+void LatexGenerator::writePageLink(const char *name, bool first)
+{
+  bool &compactLatex = Config_getBool("COMPACT_LATEX");
+  if (compactLatex || first) t << "\\input" ; else t << "\\include";
+  t << "{" << name << "}\n";
+}
+
+
 void LatexGenerator::writeStyleInfo(int part)
 {
   switch(part)
@@ -813,14 +826,14 @@ void LatexGenerator::writeStyleInfo(int part)
       break;
     case 2:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2007";
+        //t << " Dimitri van Heesch \\copyright~1997-2008";
         t << "}]{}\n";
         writeDefaultStyleSheetPart2(t);
       }
       break;
     case 4:
       {
-        //t << " Dimitri van Heesch \\copyright~1997-2007";
+        //t << " Dimitri van Heesch \\copyright~1997-2008";
         writeDefaultStyleSheetPart3(t);
         endPlainFile();
       }
@@ -1568,6 +1581,13 @@ void LatexGenerator::endParamList()
   t << "\\end{Desc}" << endl;
 }
 
+void LatexGenerator::startParameterType(bool first,const char *key)
+{
+  if (!first)
+  {
+    t << "\\/ " << key << " ";
+  }
+}
 
 void LatexGenerator::printDoc(DocNode *n,const char *langExt)
 {

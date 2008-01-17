@@ -1,0 +1,1566 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/******************************************************************************
+ * Parser for syntax hightlighting and references for vhdl subset
+ * written by M. Kreis
+ * supports VHDL-87
+ * does not support all keywords of VHDL '93 (impure function/shared variables grouping ..)
+ * and VHDL-AMS 
+ ******************************************************************************/
+
+%{
+
+/*
+ *        includes
+ */
+#include <stdio.h>
+#include <assert.h>
+#include <ctype.h>
+#include <qregexp.h>
+#include <qdir.h>
+#include <qstringlist.h>
+
+#include "qtbc.h"
+#include "entry.h"
+#include "doxygen.h"
+#include "message.h"
+#include "outputlist.h"
+#include "util.h"
+#include "membername.h"
+#include "searchindex.h"
+#include "vhdldocgen.h"
+
+#define YY_NEVER_INTERACTIVE 1
+  
+// Toggle for some debugging info
+//#define DBG_CTX(x) fprintf x
+#define DBG_CTX(x) do { } while(0)
+  
+
+/* -----------------------------------------------------------------
+ *        statics
+ */
+
+// ----------------- <vhdl> ----------------------------------
+
+//static bool isPackBody=FALSE;
+static bool isFuncProto=FALSE;
+static bool isComponent=FALSE;
+static bool isPackageBody=FALSE;
+static bool isStartMap;
+static bool isProto = FALSE;
+static bool isStripCode = FALSE;
+
+static QCString   g_PrevString;
+static QCString   g_CurrClass;
+static QDict<QCString>g_vhdlKeyDict;   
+static QCString   g_tempClass;
+static QCString   g_tempComp;
+static QCString   g_PortMapComp;
+static MemberDef *g_vhdlMember;
+static QCString   g_FuncProto;
+
+//-----------------------------------------------------------
+  
+static CodeOutputInterface * g_code;
+static QCString      g_curClassName;
+static QCString      g_parmType;
+static QCString      g_parmName;
+static const char *  g_inputString;     //!< the code fragment as text
+static int           g_inputPosition;   //!< read offset during parsing 
+static int           g_inputLines;      //!< number of line in the code fragment
+static int           g_yyLineNr;        //!< current line number
+static bool          g_needsTermination;
+
+static QCString      g_exampleName;
+static QCString      g_exampleFile;
+
+static QCString      g_type;
+static QCString      g_name;
+static QCString      g_args;
+static QCString      g_classScope;
+   
+static QCString      g_CurrScope;
+   
+static FileDef *     g_sourceFileDef;
+static Definition *  g_currentDefinition;
+static MemberDef *   g_currentMemberDef;
+static bool          g_includeCodeFragment;
+static const char *  g_currentFontClass;
+
+static bool          g_lexInit = FALSE;
+static int           g_braceCount=0;
+
+
+static void writeFont(const char *s,const char* text);
+static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& memberName);
+static bool writeColoredWord(QCString& word );
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool typeOnly=FALSE);
+static void endFontClass();
+
+//-------------------------------------------------------------------
+
+
+static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
+{
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  if (searchEngineEnabled)
+  {
+    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  }
+}
+
+
+static void addToSearchIndex(const char *text)
+{
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  if (searchEngineEnabled)
+  {
+    Doxygen::searchIndex->addWord(text,FALSE);
+  }
+}
+
+
+/*! start a new line of code, inserting a line number if g_sourceFileDef
+ * is TRUE. If a definition starts at the current line, then the line
+ * number is linked to the documentation of that definition.
+ */
+static void startCodeLine()
+{
+  //if (g_currentFontClass) { g_code->endFontClass(); }
+  if (g_sourceFileDef)
+  {
+    //QCString lineNumber,lineAnchor;
+    //lineNumber.sprintf("%05d",g_yyLineNr);
+    //lineAnchor.sprintf("l%05d",g_yyLineNr);
+    //  if ((g_yyLineNr % 500) == 0) 
+    //         fprintf(stderr,"\n starting Line %d:",g_yyLineNr);
+    Definition *d   = g_sourceFileDef->getSourceDefinition(g_yyLineNr);
+    //printf("startCodeLine %d d=%s\n", g_yyLineNr,d ? d->name().data() : "<null>");
+    if (!g_includeCodeFragment && d)
+    {
+      g_currentDefinition = d;
+      g_currentMemberDef = g_sourceFileDef->getSourceMember(g_yyLineNr);
+      if (!g_tempComp.isEmpty() && g_currentMemberDef )
+      {
+        //ClassDef *cf=VhdlDocGen::getClass(g_tempComp.data());
+        QCString nn=g_currentMemberDef->name();
+        MemberDef* mdeff=VhdlDocGen::findMember(g_tempComp,nn);
+        if (mdeff)
+        {
+          g_currentMemberDef=mdeff;
+        }
+      }
+
+      g_parmType.resize(0);
+      g_parmName.resize(0);
+      QCString lineAnchor;
+      lineAnchor.sprintf("l%05d",g_yyLineNr);
+      if (g_currentMemberDef)
+      {
+        g_code->writeLineNumber(g_currentMemberDef->getReference(),
+                                g_currentMemberDef->getOutputFileBase(),
+                                g_currentMemberDef->anchor(),g_yyLineNr);
+        setCurrentDoc(g_currentMemberDef->qualifiedName(),
+                      g_sourceFileDef->getSourceFileBase(),
+                      lineAnchor);
+      }
+      else if (d->isLinkableInProject())
+      {
+        g_code->writeLineNumber(d->getReference(),
+                                d->getOutputFileBase(),
+                                0,g_yyLineNr);
+        setCurrentDoc(d->qualifiedName(),
+                      g_sourceFileDef->getSourceFileBase(),
+                      lineAnchor);
+      }
+    }
+    else
+    {
+      g_code->writeLineNumber(0,0,0,g_yyLineNr);
+    }
+  }
+  g_code->startCodeLine(); 
+  if (g_currentFontClass)
+  {
+    g_code->startFontClass(g_currentFontClass);
+  }
+}
+
+static void endCodeLine()
+{
+  if (g_currentFontClass) { g_code->endFontClass(); }
+  g_code->endCodeLine();
+}
+
+/*! writes a word to the output.
+ *  If curr_class is defined, the word belongs to a class
+ *  and will be linked.
+ */
+
+static void writeWord(const char *word,const char* curr_class=0,bool classLink=FALSE)
+{
+  bool found=FALSE;
+  QCString temp; 
+  QCString tclass(curr_class);
+  QCString ttt(word);
+  if (ttt.isEmpty()) return;
+  for (unsigned int j=0;j<ttt.length();j++)
+  {
+    char c=ttt.at(j);
+    if (c==' '|| c==',' || c==';' || c==':' || c=='(' || c==')' || c=='\r' || c=='\t')
+    {
+      if (found)
+      {
+        if (!writeColoredWord(temp)) // is it a keyword ?
+        {
+          //if (VhdlDocGen::findKeyWord(temp))
+          // writeFont("vhdlkeyword",temp.data());
+	  //printf("writeWord: %s\n",temp.data());
+          if (!tclass.isEmpty())
+          {
+            if (!classLink)
+	    {
+              generateMemLink(*g_code,tclass,temp);
+	    }
+            else
+            {
+              generateClassOrGlobalLink(*g_code,temp);
+            }
+          }
+          else                                                                          
+	  {
+            g_code->codify(temp.data());
+	  }
+        }
+        temp.resize(0);
+        found=FALSE;
+      }
+
+      char cc[2];
+      cc[0]=c;
+      cc[1]=0;
+      g_code->codify(cc);
+    }
+    else
+    {
+      found=TRUE;
+      temp+=c;
+    }
+  } // for
+
+  if (!temp.isEmpty())
+  {
+    if (!writeColoredWord(temp))
+    {
+      if (!tclass.isEmpty())
+      {
+        if (!classLink)
+        {
+          generateMemLink(*g_code,tclass,temp); // generateMemLink(*g_code,g_CurrClass,left); 
+        }
+        else
+        {
+          generateClassOrGlobalLink(*g_code,temp);
+        }
+      }
+      else                 
+      {
+        g_code->codify(temp.data());
+      }
+    }
+  }
+}// writeWord
+
+
+/*! write a code fragment `text' that may span multiple lines, inserting
+ * line numbers for each line.
+ */
+static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
+{
+ // printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
+  const char *p=text,*sp=p;
+  char c;
+  bool done=FALSE;
+  while (!done)
+  {
+    sp=p;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      g_yyLineNr++;
+      QCString line = sp;
+      line = line.left(p-sp-1);
+      //*(p-1)='\0';
+      //g_code->codify(sp);
+      writeWord(line,cl,classlink);
+      endCodeLine();
+      if (g_yyLineNr<g_inputLines) 
+      {
+        startCodeLine();
+      }
+    }
+    else
+    {
+      //g_code->codify(sp);
+      writeWord(sp,cl,classlink);
+      done=TRUE;
+    }
+  }
+}
+
+/*! writes a link to a fragment \a text that may span multiple lines, inserting
+ * line numbers for each line. If \a text contains newlines, the link will be 
+ * split into multiple links with the same destination, one for each line.
+ */
+static void writeMultiLineCodeLink(CodeOutputInterface &ol,
+                  const char *ref,const char *file,
+                  const char *anchor,const char *text,
+		  const char *tooltip)
+{
+  bool done=FALSE;
+  char *p=(char *)text;
+  while (!done)
+  {
+    char *sp=p;
+    char c;
+    while ((c=*p++) && c!='\n');
+    if (c=='\n')
+    {
+      g_yyLineNr++;
+      *(p-1)='\0';
+      // printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      endCodeLine();
+      if (g_yyLineNr<g_inputLines) 
+      {
+        startCodeLine();
+      }
+    }
+    else
+    {
+      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      done=TRUE;
+    }
+  }
+}
+
+static void setParameterList(MemberDef *md)
+{
+  g_classScope = md->getClassDef() ? md->getClassDef()->name().data() : "";
+  LockingPtr<ArgumentList> al = md->argumentList();
+  if (al==0) return; 
+  Argument *a = al->first();
+  while (a)
+  {
+    g_parmName = a->name.copy();
+    g_parmType = a->type.copy();
+    int i = g_parmType.find('*');
+    if (i!=-1) g_parmType = g_parmType.left(i);
+    i = g_parmType.find('&');
+    if (i!=-1) g_parmType = g_parmType.left(i);
+    g_parmType.stripPrefix("const ");
+    g_parmType=g_parmType.stripWhiteSpace();
+   // g_theVarContext.addVariable(g_parmType,g_parmName);
+    a = al->next();
+  }
+}
+
+
+/*! writes a link to a function or procedure
+ */
+
+static void generateFuncLink(CodeOutputInterface &ol,MemberDef* mdef)
+{
+
+  //printf("generateFuncLink(FuncName=%s)\n",mdef->name().data());
+  QCString memberName=mdef->name();
+
+  if (mdef && mdef->isLinkable()) // is it a linkable class
+  {
+    writeMultiLineCodeLink(ol,mdef->getReference(),
+	                      mdef->getOutputFileBase(),
+			      mdef->anchor(),
+			      mdef->name(),
+			      mdef->briefDescriptionAsTooltip());
+    addToSearchIndex(memberName);
+    return;
+  }
+  ol.linkableSymbol(g_yyLineNr,memberName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
+  codifyLines(memberName.data());
+  addToSearchIndex(memberName);
+} // generateFuncLink
+
+
+static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& memberName)
+{
+  if (clName.isEmpty() || memberName.isEmpty()) return; 
+  QCString className=clName;
+
+  MemberDef *md=0;
+  //MemberDef *comp=0;
+  //bool isLocal=FALSE;
+
+  md=VhdlDocGen::findMember(className,memberName);
+  ClassDef *po=VhdlDocGen::getClass(className.data());
+
+  if (md==0 && po && (VhdlDocGen::VhdlClasses)po->protection()==VhdlDocGen::PACKBODYCLASS) 
+  {
+    QCString temp=className;//.stripPrefix("_");
+    temp.stripPrefix("_");
+    md=VhdlDocGen::findMember(temp,memberName);
+  }
+
+  if (md && md->isLinkable()) // is it a linkable class
+  {
+    writeMultiLineCodeLink(ol,md->getReference(),
+	                      md->getOutputFileBase(),
+			      md->anchor(),
+			      memberName,
+			      md->briefDescriptionAsTooltip());
+    addToSearchIndex(memberName);
+    return;
+  }
+  // nothing found, just write out the word
+  ol.linkableSymbol(g_yyLineNr,memberName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
+  codifyLines(memberName.data());
+  addToSearchIndex(memberName);
+}// generateMemLink
+
+
+static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool /*typeOnly*/)
+{
+  QCString className=clName;
+
+  if (className.isEmpty()) return;
+
+  ClassDef *cd=0;
+  //MemberDef *md=0;
+  //bool isLocal=FALSE;
+  className.stripPrefix("_");
+  cd = getClass(className.data()); 
+  while (cd)
+  {
+    //className.stripPrefix("_");
+    QCString temp(clName);
+    temp.stripPrefix("_");
+    if (cd && cd->isLinkable()) // is it a linkable class
+    {
+      //if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+      //{
+      //  temp=VhdlDocGen::getClassName(cd);
+      //}
+      ol.linkableSymbol(g_yyLineNr,temp,cd,
+                        g_currentMemberDef ? 
+			g_currentMemberDef : 
+			g_currentDefinition);
+      writeMultiLineCodeLink(ol,cd->getReference(),
+	                        cd->getOutputFileBase(),
+				0,
+				temp,
+				cd->briefDescriptionAsTooltip());
+      addToSearchIndex(className);
+      return;
+    }
+    Definition *d = cd->getOuterScope();
+    if (d && d->definitionType()==Definition::TypeClass)
+    {
+      cd = (ClassDef*)d;
+    }
+    else
+    {
+      cd = 0;
+    }
+  }
+
+  // nothing found, just write out the word
+  ol.linkableSymbol(g_yyLineNr,clName,0,g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
+  codifyLines(clName);
+  addToSearchIndex(clName);
+}// generateClasss or global link
+
+
+/*! counts the number of lines in the input */
+static int countLines()
+{
+  const char *p=g_inputString;
+  char c;
+  int count=1;
+  while ((c=*p)) 
+  { 
+    p++ ; 
+    if (c=='\n') count++;  
+  }
+  if (p>g_inputString && *(p-1)!='\n') 
+  { // last line does not end with a \n, so we add an extra
+    // line and explicitly terminate the line after parsing.
+    count++, 
+    g_needsTermination=TRUE; 
+  } 
+  return count;
+}
+
+static void endFontClass()
+{
+  if (g_currentFontClass)
+  {
+    g_code->endFontClass();
+    g_currentFontClass=0;
+  }
+}
+
+static void startFontClass(const char *s)
+{
+  if (s==0) return;
+  endFontClass();
+  g_code->startFontClass(s);
+  g_currentFontClass=s;
+}
+
+static void writeFont(const char *s,const char* text)
+{
+  if (s==0) return;
+  g_code->startFontClass(s);
+  g_code->codify(text);
+  g_code->endFontClass();
+}
+
+//----------------------------------------------------------------------------
+
+static void appStringLower(QCString& qcs,const char* text)
+{
+  qcs.resize(0);
+  qcs.append(text);
+  //qcs=qcs.lower();
+  qcs=qcs.stripWhiteSpace();
+}
+
+//static void appString(QCString& qcs,const char* text)
+//{
+//  qcs.resize(0);
+//  qcs.append(text);
+//}
+
+static QCString g_temp;
+
+/* writes and links a port map statement */
+static void codifyMapLines(char *text)
+{
+  g_temp.resize(0);       
+  bool dot=FALSE;
+  //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
+  char *p=text,*sp=p;
+  char c;
+  bool done=FALSE;
+  while (!done)
+  {
+    sp=p;
+    while ((c=*p++) && c!='\n' && c!=':' && c != ' ' && c != '(')
+    { 
+      g_temp+=c; 
+    }
+    //printf("--> g_temp='%s'\n",g_temp.data());
+    if (c=='\n')
+    {
+      g_yyLineNr++;
+      *(p-1)='\0';
+      //if (dot==TRUE)
+      //{
+        QCString tt=g_temp;
+        tt=tt.lower();
+        tt=tt.stripWhiteSpace();
+	QCString *ss;
+        if ((ss=VhdlDocGen::findKeyWord(tt)))
+        {
+	  writeFont(ss->data(),g_temp);
+        }
+        else 
+        {
+          generateClassOrGlobalLink(*g_code,sp);
+          g_PortMapComp=tt;
+        }
+        dot=FALSE;
+        g_temp.resize(0);
+      //}
+      //else 
+      //{ 
+      //  g_code->codify(g_temp); 
+      //  g_temp.resize(0); 
+      //}
+      endCodeLine();
+      if (g_yyLineNr<g_inputLines) 
+      {
+        startCodeLine();
+      }
+    }
+    else
+    {
+      if (c==':') 
+      { 
+        dot = TRUE;
+        g_code->codify(g_temp);
+        g_code->codify(":");
+        g_temp.resize(0);
+      }
+
+      if (c==' ' && !g_temp.isEmpty())
+      {
+        //if (dot==TRUE)
+        //{
+          QCString tt=g_temp;
+          tt=tt.lower();
+
+	  QCString *ss;
+          if ((ss=VhdlDocGen::findKeyWord(tt)))
+          {
+	    writeFont(ss->data(),g_temp);
+          }
+          else 
+          {
+            g_PortMapComp=tt;
+            generateClassOrGlobalLink(*g_code,g_temp);
+          }
+          dot=FALSE;
+          g_temp.resize(0);
+          g_temp+=c;
+        //}
+        //else
+	//{ 
+        //  g_temp+=c;
+        //  g_code->codify(g_temp.data()); 
+        //  g_temp.resize(0); 
+        //}
+
+      }
+      else if (!g_temp.isEmpty()) 
+      { 
+        if (c!='(' && c!=' ') 
+        {
+          g_temp+=c;
+        }
+	QCString *ss;
+        if ((ss=VhdlDocGen::findKeyWord(g_temp.lower().stripWhiteSpace())))
+        {
+	  writeFont(ss->data(),g_temp);
+        }
+        else 
+        {
+          g_code->codify(g_temp); 
+	}
+        g_temp.resize(0); 
+      }
+      else 
+      {
+	g_code->codify(" ");
+      }
+      if (c=='(')
+      { 
+        g_code->codify("(");  
+        done=TRUE; 
+      }
+    }
+  }//while
+}//codifymaplines
+
+/*
+* writes a function|procedure prototype  and links the function|procedure name 
+*/
+
+static void writeFuncProto()
+{
+  QList<Argument> ql;
+  QCString name,ret;
+  VhdlDocGen::parseFuncProto(g_FuncProto.data(),ql,name,ret,FALSE);
+
+  QStringList qlist=QStringList::split(name.data(),g_FuncProto,FALSE);
+  QCString temp=(QCString)qlist[0];
+  codifyLines(temp.data());
+  g_FuncProto.stripPrefix(temp.data());
+  temp.resize(0);
+  temp=g_CurrClass;
+  if (isPackageBody) 
+  {
+    temp.stripPrefix("_");
+  }
+  MemberDef *mdef=VhdlDocGen::findFunction(ql,name,temp,FALSE);
+
+  if (mdef)
+  {
+    generateFuncLink(*g_code,mdef);
+    g_FuncProto.stripPrefix(name.data());
+    codifyLines(g_FuncProto.data());
+  }
+  else
+  {
+    codifyLines(g_FuncProto.data());
+  }
+}// writeFuncProto
+
+/* writes a process prototype to the ouput */
+
+ static void writeProcessProto(){
+ codifyLines(g_FuncProto.data(),g_CurrClass.data());
+ g_vhdlKeyDict.clear();
+}// writeProcessProto
+
+/* writes a keyword */
+
+static bool writeColoredWord(QCString& word )
+{
+  QCString qcs=word.lower();
+  QCString *ss=VhdlDocGen::findKeyWord(qcs);
+  if (ss) 
+  {
+    writeFont(ss->data(),word.data());
+    return TRUE;
+  }
+  return FALSE;
+}
+
+#undef        YY_INPUT
+#define       YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+
+static int yyread(char *buf,int max_size)
+{
+  int c=0;
+  while( c < max_size && g_inputString[g_inputPosition] )
+  {
+    *buf = g_inputString[g_inputPosition++] ;
+    c++; buf++;
+  }
+  return c;
+}
+
+%}
+
+
+B             [ \t]
+BN            [ \t\n\r]
+
+NAME          [a-z_A-Z][ a-z_A-Z0-9]*
+FUNCNAME      [a-z_A-Z"][a-z_A-Z0-9+*"/=<>-]*
+ID            "$"?[a-z_A-Z][a-z_A-Z0-9]*
+SPECSIGN      [:;, "+*&\/=<>'\t]*
+DIGITSS       [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
+ALLTYPESMAP   {B}*[_a-zA-Z0-9. ]+{B}*
+ALLTYPESMAP1  {B}*[_a-zA-Z0-9.() ]+{B}*
+
+ARCHITECTURE  ^{B}*("architecture"){BN}+{FUNCNAME}{BN}+("of"){BN}+{FUNCNAME}
+PROCESS       ({BN}*{FUNCNAME}{B}*[:]+{BN}*("process"){BN}*[(]*)|[^a-zA-Z]("process "|"process("){BN}*[ (]*|[^a-zA-Z]("process"){BN}+
+
+END1          {B}*("end "){BN}+("if"|"case"|"loop"|"generate")
+END2          [^a-zA-Z_]("end"){BN}*[;]
+END3          {BN}*[^a-zA-Z]("end"){BN}+{FUNCNAME}{BN}*[;]
+END4          {B}*("end"){BN}+"function"{BN}+{FUNCNAME}{BN}*[;]
+ENDEFUNC      {END3}|{END4}|{END2}
+
+KEYWORD       ("new"|"event"|"break"|"case"|"end"|"loop"|"else"|"for"|"goto"|"if"|"return"|"generate"|"is"|"while"|"in")
+TYPEKW        ^{B}*("type"|"subtype"|"constant"|"attribute"|"signal"|"variable")
+FUNC          ^{B}*("function"|"procedure"){BN}*{FUNCNAME}{BN}*("(")
+
+ARITHOP       "+"|"-"|"/"|"*"|"%"|"/="|":="
+ASSIGNOP      "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
+LOGICOP       "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"
+BITOP         "&"|"|"|"^"|"<<"|">>"|"~"
+OPERATOR      {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
+
+PORT          {B}*("port"){BN}*("(")
+GENERIC       {B}*("generic"){BN}*("(")
+
+BRACEOPEN     [(]{1}
+BRACECLOSE    [)]{1}
+
+TEXTT         {B}*"--"[^\n]*
+
+MAPCOMPONENT1 ({ALLTYPESMAP}[:]{ALLTYPESMAP}{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
+MAPCOMPONENT2 {BN}*("port"|"generic"){BN}+("map"){BN}*("("){1}
+MAPCOMPONENT3 ({ALLTYPESMAP}[:]{ALLTYPESMAP1}{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
+
+MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
+
+%option noyywrap
+%option nounput
+
+%x Bases
+%x ParseType
+%x ParseFuncProto
+%x ParseComponent
+%x ParsePackage
+%x ParseProcessProto
+%x ClassName
+%x PackageName
+%x ClassVar
+%x ClassesName
+%x Map
+%x Body
+        
+%%
+
+.                     { 
+                        BEGIN(Bases); 
+                      }
+
+<Map>{BRACEOPEN}      {
+                        g_braceCount++;
+                        writeFont("vhdlchar",yytext);
+                        BEGIN(Map);
+                      }
+
+<Map>[^()\n,]*        { /* write and link a port map lines */
+                        QCString tt(yytext);
+                        VhdlDocGen::deleteAllChars(tt,',');
+                        QRegExp r("=>");
+			QStringList ql=QStringList::split(r,tt,FALSE);
+			if (ql.count()>=2)
+			{
+			  unsigned int index=0;
+			  QCString t1=(QCString)ql[0];
+			  char cc=t1.at(index);
+			  while (cc==' ' || cc=='\t') 
+			  {
+			    char c2[2];
+			    c2[0]=cc;
+			    c2[1]=0;
+			    g_code->codify(c2);
+			    index++;
+			    if (index>=t1.size()) break;
+			    cc=t1.at(index);
+			  }        
+
+			  QCString s1=(QCString)ql[0];
+			  s1=s1.stripWhiteSpace();
+
+			  //         if (!g_PortMapComp.isEmpty())
+			  generateMemLink(*g_code,g_PortMapComp,s1); 
+			  while (index++<t1.size()) 
+			  { 
+			    char cc=t1.at(index);
+			    if (cc==' ' || cc=='\t')
+			    {
+			      char c2[2];
+			      c2[0]=cc;
+			      c2[1]=0;
+			      g_code->codify(c2);
+			    }
+			  }        
+			  codifyLines("=>");
+			  index=0;
+			  QCString s2=(QCString)ql[1];
+			  t1=s2;
+			  cc=t1.at(index);
+			  while (cc==' ' || cc=='\t') 
+			  {
+			    char c2[2];
+			    c2[0]=cc;
+			    c2[1]=0;
+			    g_code->codify(c2);
+			    index++;
+			    if (index>=t1.size()) break;
+			    cc=t1.at(index);
+			  }        
+			  s2=s2.stripWhiteSpace();
+			  generateMemLink(*g_code,g_CurrClass,s2); 
+			  while (index++<t1.size()) 
+			  { 
+			    if (t1.at(index)==' ')
+			    {
+			      g_code->codify(" "); 
+			    }
+			  }        
+			}
+			else
+			{
+			  codifyLines(yytext,g_CurrClass.data());
+			}
+			BEGIN(Map);
+                      }
+
+<Map>"\n"|","         {
+                        codifyLines(yytext);
+                        BEGIN(Map);
+                      }
+
+<Map>{BRACECLOSE}     {
+                        g_braceCount--;
+                        writeFont("vhdlchar",yytext);
+                        if (g_braceCount==0)
+			{
+                          BEGIN(Bases);
+			}
+                      }
+
+<ParseFuncProto>{NAME} {
+                         QCString tmp(yytext);
+                         tmp=tmp.stripWhiteSpace();
+                         appStringLower(g_PrevString,yytext);
+                         g_vhdlKeyDict.insert(g_PrevString,new QCString(g_PrevString.data()));
+                         if (!writeColoredWord(tmp))
+			 {
+                           generateMemLink(*g_code,g_CurrClass,tmp); 
+			 }
+                         BEGIN(Bases);
+                       }
+
+<ParseType>"\n"       {
+                        g_FuncProto.append(yytext);
+                        if (isProto)
+			{
+                          codifyLines(yytext);
+			}
+                        BEGIN(ParseType);
+                      }
+
+
+<ParseType>{TEXTT}    {
+                        if (!isStripCode) 
+			{
+                          g_FuncProto.append(yytext);                
+                          if (isProto)                                                                 
+			  {
+                            writeFont("keyword",yytext);
+			  }
+                          BEGIN(ParseType); 
+                         }
+                       }
+
+<ParseType>{ENDEFUNC} {
+                        QCString tt(yytext);
+                        codifyLines(yytext);
+                        tt=tt.lower();
+                        VhdlDocGen::deleteAllChars(tt,';');
+                        tt.stripWhiteSpace();
+                        QStringList ql=QStringList::split(" ",tt,FALSE);
+                        int index=ql.findIndex(QCString("if"))+1;
+                        index+=ql.findIndex(QCString("case"))+1;
+                        index+=ql.findIndex(QCString("loop"))+1;
+                        index+=ql.findIndex(QCString("generate"))+1;                        
+                        if (index==0)
+		        {
+                          BEGIN(Bases);
+		        }
+                        else
+		        {
+                          BEGIN(ParseType);
+	        	}
+                      }
+
+<ParseType>{END1}     {
+                        codifyLines(yytext);
+                        g_vhdlKeyDict.clear();
+                      }
+
+<ParseType>^{B}*("begin "|"begin") {
+                        codifyLines(yytext);
+                        isFuncProto=FALSE;
+                      }
+
+<ParseType>{SPECSIGN} {
+                        g_FuncProto.append(yytext);
+                        if (isProto)
+			{
+                          codifyLines(yytext);
+			}
+                      }
+
+<ParseType>[_a-zA_Z"]["_a-zA-Z0-9]* {
+                        QCString val(yytext);
+                        g_FuncProto.append(yytext);
+                        appStringLower(g_PrevString,yytext);
+                                                        
+                        if (isFuncProto && g_braceCount==0)
+                        {
+                          g_vhdlKeyDict.insert(g_PrevString,new QCString(g_PrevString.data()));
+		        }
+                                
+                        if (isProto) 
+		        { 
+                          if (!writeColoredWord(val))
+                          {
+                            if (!isFuncProto && !g_vhdlKeyDict.find(g_PrevString))
+                            {
+                              val=val.stripWhiteSpace();
+                              generateMemLink(*g_code,g_CurrClass,val); 
+                            }
+                            else
+			    {
+                              codifyLines(yytext);
+			    }
+                          }
+                        }
+                        BEGIN(ParseType); 
+                      }
+
+<ParseType>{BRACEOPEN} {
+                        g_braceCount++;
+                        g_FuncProto+='(';
+                        if (isProto)
+		        {
+                          writeFont("vhdlchar",yytext);
+		        }
+                        BEGIN(ParseType);
+                      }
+
+<ParseType>{BRACECLOSE} {
+                        g_braceCount--;
+                        g_FuncProto+=')';
+                        if (isProto)
+			{
+                          writeFont("vhdlchar",yytext);
+			}
+                        if (g_braceCount==0 && !isProto)// && !isPackageBody)
+                        {
+                          isProto=TRUE;
+                          appStringLower(g_PrevString,yytext);
+                          writeFuncProto();
+                          BEGIN(Bases);
+                        }
+                        if (isPackageBody)
+			{
+                          BEGIN(ParseType);
+			}
+                      }
+
+
+<ClassesName>{FUNCNAME} {
+                         QDict<QCString> mem;
+                         appStringLower(g_PrevString,yytext);
+                         g_CurrClass.resize(0);
+                         g_CurrClass.append(yytext);
+                         g_CurrClass=g_CurrClass.stripWhiteSpace();
+                                                  
+                         if (!writeColoredWord(g_CurrScope))
+			 {
+                           generateClassOrGlobalLink(*g_code,yytext);
+			 }
+                         else
+		         {
+                           g_code->codify(yytext);
+		         }
+                         BEGIN(Bases);
+                       }
+
+
+<ParseComponent>{BRACEOPEN} {
+                         g_braceCount++;
+                         g_code->codify(yytext);
+                       }
+
+
+<ParseComponent>{BRACECLOSE} {
+                         g_braceCount--;
+                         g_code->codify(yytext);  
+                         if (g_braceCount==0 && !isComponent)
+                         {
+                           g_tempComp.resize(0);
+                           BEGIN(Bases);
+                         }
+                         else
+			 {
+                           BEGIN(ParseComponent);
+			 }
+                       }
+
+<ParseComponent>{B}*"-" {    
+                         if (strlen(yytext)>=2) // found text ?
+			 {
+                           writeFont("keyword",yytext);
+			 }
+                         else
+			 {
+                           writeFont("vhdlchar",yytext); 
+			 }
+                       }
+
+<ParseComponent>{SPECSIGN} {
+                         codifyLines(yytext);
+                       }
+
+<ParseComponent>"\n"|" " {
+                         if (!isStripCode)
+			 {
+                           codifyLines(yytext);
+			 }
+                      	 else
+			 {
+                           g_yyLineNr++;
+			 }
+                       }
+
+<ParseComponent>{TEXTT} {
+                         QCString text(yytext);
+                         if (!isStripCode) 
+			 {
+                           writeFont("keyword",yytext);
+                         }
+                       }
+
+<ParseComponent>{DIGITSS} { 
+                         startFontClass("vhdllogic");
+                         codifyLines(yytext);
+                         endFontClass();
+                       }
+
+<ParseComponent>{PORT} { 
+                         codifyLines(yytext);
+                         g_braceCount=1;
+                         isComponent=FALSE;
+                       }
+
+<ParseComponent>{GENERIC} { 
+                         codifyLines(yytext);
+                         g_braceCount=1;
+                       }
+
+<ParseComponent>[_a-zA_Z][_a-zA-Z0-9]*  {
+                         QCString temp(yytext);
+                         appStringLower(g_PrevString,yytext);
+                         if (!writeColoredWord(g_PrevString))
+		         {
+                           generateMemLink(*g_code,g_tempComp,temp); 
+		         }
+                       }
+
+<ParseProcessProto>[^()]* { 
+                         g_FuncProto.append(yytext);
+                       }
+
+<ParseProcessProto>{BRACEOPEN} {
+                         g_FuncProto.append(yytext);
+                         g_braceCount++;
+                       }
+
+<ParseProcessProto>{BRACECLOSE} {
+                         g_FuncProto.append(yytext);
+                         g_braceCount--;
+                         if (g_braceCount==0) 
+			 {
+                            writeProcessProto();
+                            BEGIN(Bases);
+                          }
+                        }
+
+<ParsePackage>[^:;]*    { //found package 
+                          QCString temp(yytext);
+                          QStringList strl=QStringList::split(".",temp,FALSE);
+                                
+                          if (strl.count()>2) 
+			  {
+                             QCString s1=(QCString)strl[0];  
+                             QCString s2=(QCString)strl[1];  
+                             QCString s3=(QCString)strl[2];  
+                             s1.append(".");
+                             s3.prepend(".");
+                             codifyLines(s1.data());  
+                             ClassDef *cd=VhdlDocGen::getPackageName(s2);
+                             if (cd)
+			     {
+                               generateClassOrGlobalLink(*g_code,s2.data());
+			     }
+                             else 
+			     {
+                               codifyLines(s2.data());
+			     }
+                             codifyLines(s3.data());
+                           }
+                           else
+			   {
+                             writeFont("keywordflow",yytext);
+			   }
+                           BEGIN(Bases);
+                         }
+
+<Bases>{MAPCOMPONENT1}|{MAPCOMPONENT2}|{MAPCOMPONENT3}  { // found port or generic map
+                           QCString tt(yytext);
+                           if (tt.contains(':',FALSE))
+			   {
+                             isStartMap=TRUE;
+			   }
+                           else
+			   {
+                             isStartMap=FALSE;                                        
+			   }
+			   int j=tt.find('.');
+                                                    
+                           if (j>0)
+                           {
+                             QCString left=tt.left(j+1); 
+                             codifyLines(left.data());
+                             tt=tt.right(tt.length()-j-1);
+                             left=VhdlDocGen::getIndexWord(tt.data(),0);
+                             if (!left.isEmpty())
+                             {          
+                               if (left.contains('('))
+			       {
+                                 j=left.find('(',FALSE);
+                                 QCString name=left.left(j);
+                                 generateClassOrGlobalLink(*g_code,name.data()); 
+                                 g_PortMapComp=name;
+                                 name=tt.right(tt.length()-name.length());
+                                 codifyLines(name.data());
+                               }
+                               else
+			       {
+                                 generateClassOrGlobalLink(*g_code,left.data()); 
+                                 tt=tt.right(tt.length()-left.length()-1);
+                                 tt.prepend(" ");
+                                 g_PortMapComp=left;
+                                 codifyLines(tt.data());
+                               }
+                             }
+                           }
+                           else
+			   {
+                             codifyMapLines(tt.data());
+			   }
+                           g_braceCount=1;
+                           BEGIN(Map);
+                         }
+
+<Bases>^{B}*("component"){BN}+{FUNCNAME}  { // found component
+                           appStringLower(g_PrevString,yytext);
+                           //  writeFont("keywordflow",VhdlDocGen::getIndexWord(yytext,0).data());
+                           //  writeFont("vhdlkeyword"," ");
+                           QCString temp=VhdlDocGen::getIndexWord(yytext,1);
+                           temp=temp.stripWhiteSpace();
+                           VhdlDocGen::deleteAllChars(temp,'\n');
+                           g_tempComp=temp;
+                           codifyLines(yytext,temp.data(),TRUE);
+			   g_braceCount=0;
+                         
+                           //if (getClass(temp.data()))
+                           //  generateClassOrGlobalLink(*g_code,temp.data());
+                           //else
+                           //  generateMemLink(*g_code,g_CurrClass,temp);
+                         
+                           isComponent=TRUE;
+                           BEGIN(ParseComponent);
+                         }
+                                                
+
+
+<Bases>{ARCHITECTURE}    { // found architecture
+                           g_PortMapComp.resize(0);
+                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(yytext,0).data());
+                           //        writeFont("vhdlkeyword"," ");
+                           //        writeFont("vhdlchar",VhdlDocGen::getIndexWord(yytext,1).data());
+                           //        writeFont("vhdlkeyword"," ");
+                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(yytext,2).data());
+                           //        writeFont("vhdlkeyword"," ");
+                           //QCString temp=VhdlDocGen::getIndexWord(yytext,1);
+                           //temp=temp.stripWhiteSpace();
+                           //temp+=("-");
+                           //temp+=VhdlDocGen::getIndexWord(yytext,3);
+			   QCString temp = VhdlDocGen::getIndexWord(yytext,3);
+			   temp+="::";
+			   temp+=VhdlDocGen::getIndexWord(yytext,1);
+                           g_CurrClass=temp;
+                           VhdlDocGen::deleteAllChars(temp,'\n');
+                           codifyLines(yytext,temp.data(),TRUE);
+                           //generateClassOrGlobalLink(*g_code,temp.data());
+                           isPackageBody=FALSE;
+                           BEGIN(ClassName);
+                         }
+
+
+<Bases>^{B}*("package "){BN}*("body"){BN}*{FUNCNAME}  { // found package body  
+                           QCString ss(yytext);
+                           QCString temp=VhdlDocGen::getIndexWord(yytext,2);
+                           QStringList ql=QStringList::split(temp,ss,FALSE);
+                           QCString ll=(QCString)ql[0];
+                           codifyLines(ll.data());
+                           temp=temp.stripWhiteSpace();
+                           //          temp.prepend("_");
+                           generateClassOrGlobalLink(*g_code,temp.data());
+                           g_CurrClass.resize(0);
+                           g_CurrClass=temp;
+                           isProto=FALSE;
+                           isPackageBody=TRUE;
+                           // BEGIN(ClassesName);
+                         }
+
+<Bases>{PROCESS}         { // found process
+                           isFuncProto=TRUE;
+                           g_FuncProto.resize(0);
+                           g_FuncProto.append(yytext);
+                           g_vhdlKeyDict.clear();
+                           appStringLower(g_PrevString,yytext);
+                           if (g_PrevString.contains('(')) 
+                           {
+                             g_braceCount=1;
+                             BEGIN(ParseProcessProto);
+                           }
+                           else
+			   {
+			     writeProcessProto();
+			   }
+                         }
+
+<Bases>("end"){BN}+("process") { // end of process
+                           isFuncProto=FALSE;
+                           codifyLines(yytext);
+                           BEGIN(Bases);
+                         }
+
+
+<Bases>^{B}*("begin "|"begin") { 
+                           isFuncProto=FALSE;
+                           writeFont("vhdlkeyword",yytext);
+                         }
+
+<Bases>^{B}*("use"|"library"){BN}+ { //found including package or library
+                           writeFont("vhdlkeyword",yytext);
+                           BEGIN(ParsePackage);
+                         }
+
+
+
+<Bases>{FUNC}            {  // founc function|procedure
+                           g_vhdlKeyDict.clear();
+                           g_FuncProto.resize(0);
+                           isProto=FALSE;
+                           g_FuncProto.append(yytext);
+                           g_braceCount=1;
+                           BEGIN(ParseType);
+                         }
+                                        
+
+
+<Bases>^{B}*("entity"|"package"){BN}+ { 
+                           appStringLower(g_PrevString,yytext);
+                           writeFont("keywordflow",yytext);
+                           isPackageBody=FALSE;
+                           BEGIN(ClassesName);
+                         }
+                                        
+
+<Bases>{KEYWORD}         { // found keyword
+                           QCString qcs(yytext);
+                           if (!writeColoredWord(qcs))
+                           {
+                             startFontClass("vhdlchar");
+                             g_code->codify(yytext);
+                             endFontClass();
+                           }
+                         }
+
+
+<Bases>{ID}              {
+                           appStringLower(g_PrevString,yytext);
+                           QCString temp(yytext);
+                           temp=temp.stripWhiteSpace();
+                        
+                           if (!writeColoredWord(temp))
+                           {
+                             startFontClass("vhdlchar");
+                             generateMemLink(*g_code,g_CurrClass,temp);
+                             endFontClass();
+                           }
+                         }
+
+<Bases,ParseComponent>{DIGITSS} { 
+                           startFontClass("vhdllogic");
+                           codifyLines(yytext);
+                           endFontClass();
+                         }
+
+
+
+<Bases>{TYPEKW}          { 
+                           codifyLines(yytext);
+                           if (isFuncProto)
+			   {
+                             BEGIN(ParseFuncProto);
+			   }
+                           else 
+			   {
+                             BEGIN(Bases);
+			   }
+                         }
+
+<Bases>{OPERATOR}        {                            
+                           startFontClass("vhdlchar");
+                           g_code->codify(yytext);
+                           endFontClass();
+                         }
+   
+<Bases>","|"."|":"|"'"|"("|")" { 
+                           startFontClass("vhdlchar");
+                           g_code->codify(yytext);
+                           endFontClass();
+                         }
+                                          
+
+
+
+<*>\n                    {
+                           if (!isStripCode)
+			   {
+			     codifyLines(yytext);
+			   }
+			   else
+			   {
+			     g_yyLineNr++;
+			   }
+			   BEGIN(Bases);
+                         }
+
+<*>.                     {
+                           g_code->codify(yytext);
+                         }
+
+<*>{TEXTT}               { // found text
+                           bool stripLine=FALSE;
+			   QCString text(yytext);
+			   if (Config_getBool("STRIP_CODE_COMMENTS")) 
+			   {  
+			     if (text.contains("--!"))
+			     {
+			       stripLine=TRUE;
+			     }
+			   }  
+			   if (!isStripCode && !stripLine) 
+			   {
+			     writeFont("keyword",yytext);
+			     BEGIN(Bases);
+			   }
+                         }
+    /*
+<*>{B}*"--#"[^\n]*       { // found one line comment
+                           if (!Config_getBool("STRIP_CODE_COMMENTS"))
+                           {
+                             startFontClass("keyword");
+                             codifyLines(yytext);
+                             endFontClass(); 
+                           }
+                         }
+    */
+
+
+
+%%
+
+/*@ ----------------------------------------------------------------------------
+ */
+
+void resetVhdlCodeParserState()
+{
+  g_vhdlKeyDict.setAutoDelete(TRUE);
+  g_vhdlKeyDict.clear();
+}
+
+void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString &s, 
+                  bool exBlock, const char *exName,FileDef *fd,
+                  int startLine,int endLine,bool inlineFragment,
+                  MemberDef *memberDef)
+{
+  //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
+  if (s.isEmpty()) return;
+  if (memberDef)
+  {
+    ClassDef *dd=memberDef->getClassDef();
+    if (dd) g_CurrClass=dd->className();
+    startLine--;
+  }
+  resetVhdlCodeParserState();
+  g_code = &od;
+  g_inputString   = s;
+  g_inputPosition = 0;
+  g_currentFontClass = 0;
+  g_needsTermination = FALSE;
+
+  if (endLine!=-1)
+    g_inputLines  = endLine+1;
+  else
+    g_inputLines  = countLines();
+
+  if (startLine!=-1)
+    g_yyLineNr    = startLine;
+  else
+    g_yyLineNr    = 1;
+
+
+  // g_theCallContext.clear();
+  g_classScope    = className;
+  g_exampleName   = exName;
+  g_sourceFileDef = fd;
+  if (exBlock && fd==0)
+  {
+    // create a dummy filedef for the example
+    g_sourceFileDef = new FileDef("",exName);
+  }
+  if (g_sourceFileDef) 
+  {
+    setCurrentDoc(g_sourceFileDef->name(),g_sourceFileDef->getSourceFileBase());
+  }
+  g_currentDefinition = 0;
+  g_currentMemberDef = 0;
+  g_vhdlMember=0;
+  if (!g_exampleName.isEmpty())
+  {
+    g_exampleFile = convertNameToFile(g_exampleName+"-example");
+  }
+  g_includeCodeFragment = inlineFragment;
+  if (!memberDef)
+  {
+    startCodeLine();
+  }
+  // g_type.resize(0);
+  // g_name.resize(0);
+  // g_args.resize(0);
+  g_parmName.resize(0);
+  g_parmType.resize(0);
+  if (memberDef) 
+  {
+    setParameterList(memberDef);
+  }
+  vhdlcodeYYrestart( vhdlcodeYYin );
+  BEGIN( Bases );
+  vhdlcodeYYlex();
+  g_lexInit=TRUE;
+  if (g_needsTermination)
+  {
+    endFontClass();
+    g_code->endCodeLine();
+  }
+  if (exBlock && g_sourceFileDef)
+  {
+    // delete the temporary file definition used for this example
+    delete g_sourceFileDef;
+    g_sourceFileDef=0;
+  }
+  return;
+}
+
+void codeFreeVhdlScanner()
+{
+#if defined(YY_FLEX_SUBMINOR_VERSION) 
+  if (g_lexInit)
+  {
+    vhdlcodeYYlex_destroy();
+  }
+#endif
+}
+
+#if !defined(YY_FLEX_SUBMINOR_VERSION) 
+extern "C" { // some bogus code to keep the compiler happy
+  void vhdlcodeYYdummy() { yy_flex_realloc(0,0); } 
+}
+#elif YY_FLEX_SUBMINOR_VERSION<33
+#error "You seem to be using a version of flex newer than 2.5.4 but older than 2.5.33. These versions do NOT work with doxygen! Please use version <=2.5.4 or >=2.5.33 or expect things to be parsed wrongly!"
+#endif
+
+
+
+

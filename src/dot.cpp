@@ -1,9 +1,9 @@
 /*****************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1537,7 +1537,9 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
         QDictIterator<void> dvi(*ucd->accessors);
         const char *s;
         bool first=TRUE;
-        for (;(s=dvi.currentKey());++dvi)
+        int count=0;
+        int maxLabels=10;
+        for (;(s=dvi.currentKey()) && count<maxLabels;++dvi,++count)
         {
           if (first) 
           {
@@ -1549,6 +1551,8 @@ void DotClassGraph::buildGraph(ClassDef *cd,DotNode *n,bool base,int distance)
             label+=QCString("\n")+s;
           }
         }
+        if (count==maxLabels) label+="\n...";
+        //printf("addClass: %s templSpec=%s\n",ucd->classDef->name().data(),ucd->templSpecifiers.data());
         addClass(ucd->classDef,n,EdgeInfo::Purple,label,0,
             ucd->templSpecifiers,base,distance);
       }
@@ -3233,11 +3237,14 @@ void DotGroupCollaboration::Edge::write( QTextStream &t ) const
     QListIterator<Link> lli(links);
     Link *link;
     bool first=TRUE;
-    for( lli.toFirst(); (link=lli.current()); ++lli)
+    int count=0;
+    const int maxLabels = 10;
+    for( lli.toFirst(); (link=lli.current()) && count<maxLabels; ++lli,++count)
     {
       if (first) first=FALSE; else t << "\\n"; 
       t << convertLabel(link->label);
     }
+    if (count==maxLabels) t << "\\n...";
     t << "\"";
 
   }

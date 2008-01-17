@@ -1,9 +1,9 @@
 /******************************************************************************
  *
- * $Id$
+ * 
  *
  *
- * Copyright (C) 1997-2007 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -159,7 +159,7 @@ static void writeCombineScript()
     return;
   }
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   t <<
   "<!-- XSLT script to combine the generated output into a single file. \n"
@@ -1190,7 +1190,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -1416,7 +1416,7 @@ static void generateXMLForNamespace(NamespaceDef *nd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
   
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -1503,7 +1503,7 @@ static void generateXMLForFile(FileDef *fd,QTextStream &ti)
     return;
   }
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
@@ -1648,7 +1648,7 @@ static void generateXMLForGroup(GroupDef *gd,QTextStream &ti)
   }
 
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
@@ -1719,7 +1719,7 @@ static void generateXMLForDir(DirDef *dd,QTextStream &ti)
   }
 
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" 
     << dd->getOutputFileBase() << "\" kind=\"dir\">" << endl;
@@ -1772,7 +1772,7 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
   }
 
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
   t << "\" kind=\"" << kindName << "\">" << endl;
@@ -1880,7 +1880,7 @@ void generateXML()
     return;
   }
   QTextStream t(&f);
-  t.setEncoding(QTextStream::Latin1);
+  t.setEncoding(QTextStream::UnicodeUTF8);
 
   // write index header
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
