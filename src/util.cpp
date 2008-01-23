@@ -1465,6 +1465,20 @@ static bool findOperator(const QCString &s,int i)
   return TRUE;
 }
 
+static bool findOperator2(const QCString &s,int i)
+{
+  int b = s.findRev("operator",i);
+  if (b==-1) return FALSE; // not found
+  b+=8;
+  while (b<i) // check if there are only non-ascii
+              // characters in front of the operator
+  {
+    if (isId((uchar)s.at(b))) return FALSE;
+    b++;
+  }
+  return TRUE;
+}
+
 static const char constScope[] = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
@@ -1599,7 +1613,12 @@ nextChar:
       if (c=='*' || c=='&' || c=='@' || c=='$')
       {  
         uint rl=result.length();
-        if (rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) result+=' ';
+        if ((rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) &&
+            (c!='*' || !findOperator2(s,i)) // avoid splitting operator* and operator->*
+           ) 
+        {
+          result+=' ';
+        }
       }
       result+=c;
       if (cliSupport && (c=='^' || c=='%') && i>1 && isId(s.at(i-1))) result+=' '; // C++/CLI: Type^ name and Type% name
@@ -2141,6 +2160,7 @@ QCString fileToString(const char *name,bool filter)
     else // filter the input
     {
       QCString cmd=filterName+" \""+name+"\"";
+      Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
       FILE *f=portable_popen(cmd,"r");
       if (!f)
       {
@@ -6270,6 +6290,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".M",     new int(SrcLangExt_ObjC));
     extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
     extLookup.insert(".py",    new int(SrcLangExt_Python));
+    extLookup.insert(".f",     new int(SrcLangExt_F90));
     extLookup.insert(".f90",   new int(SrcLangExt_F90));
     extLookup.insert(".vhd",   new int(SrcLangExt_VHDL));
     extLookup.insert(".vhdl",  new int(SrcLangExt_VHDL));

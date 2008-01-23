@@ -3143,7 +3143,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    // -> omit typedef and use S_t as the struct name
 					    if (typedefHidesStruct && 
 						isTypedef && 
-						(current->spec&(Entry::Struct|Entry::Union)) &&
+						((current->spec&(Entry::Struct|Entry::Union)) ||
+						 current->section==Entry::ENUM_SEC )&&
 						msType.stripWhiteSpace().isEmpty() && 
 						memspecEntry)
 					    {

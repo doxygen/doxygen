@@ -149,13 +149,18 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 <ReadFuncArgPtr>{ID}			{
 					  g_curArgName=yytext;
   					}
-<ReadFuncArgPtr>")"{B}*"("		{
+<ReadFuncArgPtr>")"{B}*"("		{ // function pointer
 					  g_curArgTypeName+=yytext;
 					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
 					  g_readArgContext = ReadFuncArgType;
 					  g_copyArgValue=&g_curArgTypeName;
 					  g_argRoundCount=0;
 					  BEGIN( CopyArgRound2 );
+					}
+<ReadFuncArgPtr>")"/{B}*"["		{ // pointer to fixed size array
+					  g_curArgTypeName+=yytext;
+					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
+					  BEGIN( ReadFuncArgType );
 					}
 <ReadFuncArgPtr>")"			{ // redundant braces detected / remove them
 					  int i=g_curArgTypeName.findRev('('),l=g_curArgTypeName.length();

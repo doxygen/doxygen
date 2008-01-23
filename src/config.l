@@ -1214,6 +1214,7 @@ void Config::check()
     filePatternList.append("*.dox");
     filePatternList.append("*.py");
     filePatternList.append("*.f90");
+    filePatternList.append("*.f");
     filePatternList.append("*.vhd");
     filePatternList.append("*.vhdl");
     if (portable_fileSystemIsCaseSensitive())
@@ -1234,6 +1235,7 @@ void Config::check()
       filePatternList.append("*.MM");
       filePatternList.append("*.PY");
       filePatternList.append("*.F90");
+      filePatternList.append("*.F");
       filePatternList.append("*.VHD");
       filePatternList.append("*.VHDL");
     }
@@ -1747,13 +1749,13 @@ void Config::create()
 		    TRUE
                 );
   cb = addBool(     "TYPEDEF_HIDES_STRUCT",
-                    "When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct (or union) is \n"
-		    "documented as struct with the name of the typedef. So \n"
+                    "When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum \n"
+		    "is documented as struct, union, or enum with the name of the typedef. So \n"
 		    "typedef struct TypeS {} TypeT, will appear in the documentation as a struct \n"
 		    "with name TypeT. When disabled the typedef will appear as a member of a file, \n"
 		    "namespace, or class. And the struct will be named TypeS. This can typically \n"
-		    "be useful for C code where the coding convention is that all structs are \n"
-		    "typedef'ed and only the typedef is referenced never the struct's name.\n",
+		    "be useful for C code in case the coding convention dictates that all compound \n"
+		    "types are typedef'ed and only the typedef is referenced, never the tag name.\n",
 		    FALSE
                 );
   //-----------------------------------------------------------------------------------------------
@@ -2305,7 +2307,7 @@ void Config::create()
                     "GENERATE_HTMLHELP",
                     "If the GENERATE_HTMLHELP tag is set to YES, additional index files \n"
                     "will be generated that can be used as input for tools like the \n"
-                    "Microsoft HTML help workshop to generate a compressed HTML help file (.chm) \n"
+                    "Microsoft HTML help workshop to generate a compiled HTML help file (.chm) \n"
                     "of the generated HTML documentation. \n",
                     FALSE
                  );

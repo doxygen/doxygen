@@ -466,7 +466,7 @@ QCString QCString::simplifyWhiteSpace() const
 
 QCString &QCString::insert( uint index, const char *s )
 {   
-  int len = qstrlen(s);
+  int len = s ? qstrlen(s) : 0;
   if ( len == 0 )
     return *this;
   uint olen = length();

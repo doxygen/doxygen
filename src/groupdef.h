@@ -51,8 +51,8 @@ class GroupDef : public Definition
     void setGroupTitle( const char *newtitle );
     bool hasGroupTitle( ) { return titleSet; }
     void addFile(const FileDef *def); 
-    void addClass(const ClassDef *def);
-    void addNamespace(const NamespaceDef *def);
+    bool addClass(const ClassDef *def);
+    bool addNamespace(const NamespaceDef *def);
     void addGroup(const GroupDef *def);
     void addParentGroup(const GroupDef *def);
     void addPage(PageDef *def);

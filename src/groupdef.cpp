@@ -161,22 +161,32 @@ void GroupDef::addFile(const FileDef *def)
     fileList->append(def);
 }
 
-void GroupDef::addClass(const ClassDef *cd)
+bool GroupDef::addClass(const ClassDef *cd)
 {
-  if (cd->isHidden()) return;
-  if (Config_getBool("SORT_BRIEF_DOCS"))
-    classSDict->inSort(cd->name(),cd);
-  else
-    classSDict->append(cd->name(),cd);
+  if (cd->isHidden()) return FALSE;
+  if (classSDict->find(cd->name())==0)
+  {
+    if (Config_getBool("SORT_BRIEF_DOCS"))
+      classSDict->inSort(cd->name(),cd);
+    else
+      classSDict->append(cd->name(),cd);
+    return TRUE;
+  }
+  return FALSE;
 }
 
-void GroupDef::addNamespace(const NamespaceDef *def)
+bool GroupDef::addNamespace(const NamespaceDef *def)
 {
-  if (def->isHidden()) return;
-  if (Config_getBool("SORT_BRIEF_DOCS"))
-    namespaceSDict->inSort(def->name(),def);  
-  else
-    namespaceSDict->append(def->name(),def);
+  if (def->isHidden()) return FALSE;
+  if (namespaceSDict->find(def->name())==0)
+  {
+    if (Config_getBool("SORT_BRIEF_DOCS"))
+      namespaceSDict->inSort(def->name(),def);  
+    else
+      namespaceSDict->append(def->name(),def);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void GroupDef::addDir(const DirDef *def)
@@ -926,8 +936,7 @@ void addClassToGroups(Entry *root,ClassDef *cd)
     GroupDef *gd=0;
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
-      gd->addClass(cd);
-      cd->makePartOfGroup(gd);
+      if (gd->addClass(cd)) cd->makePartOfGroup(gd);
       //printf("Compound %s: in group %s\n",cd->name().data(),s->data());
     }
   }
@@ -944,8 +953,7 @@ void addNamespaceToGroups(Entry *root,NamespaceDef *nd)
     //printf("group `%s'\n",s->data());
     if (!g->groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g->groupname)))
     {
-      gd->addNamespace(nd);
-      nd->makePartOfGroup(gd);
+      if (gd->addNamespace(nd)) nd->makePartOfGroup(gd);
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
     }
   }

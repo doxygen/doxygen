@@ -1975,7 +1975,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment,SkipVerbatim>.		{
   					  outputChar(*yytext);
   					}
-<CopyCComment>[^*]+			{
+<CopyCComment>[^*a-z_A-Z]+		{
 					  g_defLitText+=yytext;
 					  g_defText+=escapeAt(yytext);
   					}
@@ -1986,10 +1986,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyCComment>\n			{ 
   					  g_yyLineNr++;
-					  g_defLitText+=yytext;
-					  g_defText+=yytext;
-  					}
-<CopyCComment>.				{
 					  g_defLitText+=yytext;
 					  g_defText+=yytext;
   					}
@@ -2026,7 +2022,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  g_quoteArg=TRUE;
 					  g_defLitText+=yytext;
   					}
-<DefineText>{ID}			{
+<DefineText,CopyCComment>{ID}		{
 					  g_defLitText+=yytext;
   					  if (g_quoteArg)
 					  {
@@ -2058,6 +2054,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    g_defText+="\"";
 					  }
 					  g_quoteArg=FALSE;
+  					}
+<CopyCComment>.				{
+					  g_defLitText+=yytext;
+					  g_defText+=yytext;
   					}
 <DefineText>\\[\r]?\n			{ 
 					  g_defLitText+=yytext;

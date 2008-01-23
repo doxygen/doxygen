@@ -2253,7 +2253,7 @@ void writePageIndex(OutputList &ol)
     }
   }
   endIndexHierarchy(ol,0);
-  Doxygen::indexList.decContentsDepth();
+  //Doxygen::indexList.decContentsDepth();
   endFile(ol);
   ol.popGeneratorState();
 }
