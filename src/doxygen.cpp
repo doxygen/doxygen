@@ -734,7 +734,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     { // explicit request
       QCString text;
       text.sprintf("Warning: the name `%s' supplied as "
-                  "the second argument in the \\class, \\struct, or \\union statement ",
+                  "the argument of the \\class, \\struct, \\union, or \\include command ",
                   root->includeFile.data()
                  );
       if (ambig) // name is ambigious
@@ -8337,6 +8337,7 @@ void copyAndFilterFile(const char *fileName,BufStr &dest)
   else
   {
     QCString cmd=filterName+" \""+fileName+"\"";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
     FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
@@ -8884,7 +8885,8 @@ void initDoxygen()
 
   ParserInterface *defaultParser = new CLanguageScanner;
   Doxygen::parserManager = new ParserManager(defaultParser);
-  Doxygen::parserManager->registerParser(".py",new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser(".py",  new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser(".f",   new FortranLanguageScanner);
   Doxygen::parserManager->registerParser(".f90", new FortranLanguageScanner);
   Doxygen::parserManager->registerParser(".vhd", new VHDLLanguageScanner);
 

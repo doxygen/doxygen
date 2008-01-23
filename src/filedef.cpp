@@ -34,6 +34,7 @@
 #include "parserintf.h"
 #include "portable.h"
 #include "vhdldocgen.h"
+#include "debug.h"
 
 class DevNullCodeDocInterface : public CodeOutputInterface
 {
@@ -1336,7 +1337,9 @@ void FileDef::acquireFileVersion()
   if (!vercmd.isEmpty()) 
   {
     msg("Version of %s : ",filepath.data());
-    FILE *f=portable_popen(vercmd+" \""+filepath+"\"","r");
+    QCString cmd = vercmd+" \""+filepath+"\"";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
       err("Error: could not execute %s\n",vercmd.data());

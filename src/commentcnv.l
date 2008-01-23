@@ -64,6 +64,7 @@ static bool     g_inSpecialComment;
 static QCString g_aliasString;
 static int      g_blockCount;
 static int      g_lastBlockContext;
+static bool     g_PythonDocString;
 
 static SrcLangExt g_lang;
 
@@ -273,6 +274,18 @@ void replaceComment(int offset);
 <Scan>[^"'\/\n\\#\\-]*             { /* eat anything that is not " / or \n */ 
                                      copyToOutput(yytext,yyleng); 
 				   }
+<Scan>"\"\"\""!                     { /* start of python long comment */
+                                     if (g_lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       g_PythonDocString = TRUE;
+                                       copyToOutput(yytext,yyleng); 
+				       BEGIN(CComment);
+				     }
+                                   }
 <Scan>"\""                         { /* start of a string */ 
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(SkipString); 
@@ -431,15 +444,34 @@ void replaceComment(int offset);
 <CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */
                                      copyToOutput(yytext,yyleng); 
                                    }
+<CComment>"\"\"\""                 { /* end of Python docstring */
+                                     if (g_lang!=SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       g_PythonDocString = FALSE;
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
+  				   }
 <CComment>\n                       { /* new line in comment */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"*"+"/"                  { /* end of C comment */
-                                     copyToOutput(yytext,yyleng); 
-				     BEGIN(Scan); 
+                                     if (g_lang==SrcLangExt_Python)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
                                    }
 <CComment>"\n"/[ \t]*[^#]	   { /* end of Python comment */
-                                     if (g_lang!=SrcLangExt_Python)
+                                     if (g_lang!=SrcLangExt_Python || g_PythonDocString)
 				     {
 				       REJECT;
 				     }
@@ -646,6 +678,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_skip     = FALSE;
   g_fileName = fileName;
   g_lang = getLanguageFromFileName(fileName);
+  g_PythonDocString = FALSE;
   g_lineNr   = 0;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);

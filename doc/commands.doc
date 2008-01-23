@@ -88,6 +88,7 @@ documentation:
 \refitem cmdfcurlyclose \\f}
 \refitem cmdfile \\file
 \refitem cmdfn \\fn
+\refitem cmdheaderfile \\headerfile
 \refitem cmdhideinitializer \\hideinitializer
 \refitem cmdhtmlinclude \\htmlinclude
 \refitem cmdhtmlonly \\htmlonly
@@ -259,7 +260,9 @@ doxygen. Unrecognized commands are treated as normal text.
   on the default include path (like \<X11/X.h\>). With the \<header-name\>
   argument you can also specify how the include statement should look like, 
   by adding either quotes or sharp brackets around the name. 
-  Sharp brackets are used if just the name is given.
+  Sharp brackets are used if just the name is given. Note that the 
+  last two arguments can also specified using 
+  the \ref cmdheaderfile "\\headerfile" command.
   
   \par Example: 
   \verbinclude class.h  
@@ -419,6 +422,24 @@ doxygen. Unrecognized commands are treated as normal text.
 
 
   \sa section \ref cmdvar "\\var" and \ref cmdtypedef "\\typedef".
+
+<hr>
+\section cmdheaderfile \\headerfile <header-file> [<header-name>]
+
+  \addindex \\headerfile
+  Intended to be used for class, struct, or union documentation, where
+  the documentation is in front of the definition. The arguments of
+  this command are the same as the second and third argument of 
+  \ref cmdclass "\\cmdclass".
+  The header-file name refers to the file that should by included by the 
+  application to obtain the definition of the class, struct, or union.
+  The \<header-name\> argument can be used to overwrite the 
+  name of the link that is used in the class documentation to something other 
+  than \<header-file\>. This can be useful if the include name is not located 
+  on the default include path (like \<X11/X.h\>). With the \<header-name\>
+  argument you can also specify how the include statement should look like, 
+  by adding either quotes or sharp brackets around the name. 
+  Sharp brackets are used if just the name is given.
 
 <hr>
 \section cmdhideinitializer \\hideinitializer

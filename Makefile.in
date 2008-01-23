@@ -41,9 +41,12 @@ distclean: clean
 	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/Makefile.doxywizard
 	-rm -f addon/doxywizard/doxywizard.pro
-	-rm -f addon/doxywizard/obj/*.o
 	-rm -f addon/doxywizard/moc/moc_*
 	-rm -f addon/doxywizard/config.cpp
+	-rm -f addon/doxywizard/lib
+	-rm -f addon/doxywizard/objects
+	-rm -f VERSION
+	-rm -f packages/rpm/doxygen.spec
 
 DATE=$(shell date "+%B %Y")
 

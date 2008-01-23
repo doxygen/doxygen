@@ -189,8 +189,8 @@ NOARGS    {BS}"\n"
 
 NUM_TYPE  (complex|integer|logical|real)
 KIND      {ARGS}
-CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"([0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}("*"[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}PRECISION|{CHAR}|TYPE{ARGS})
+CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS_}PRECISION|{CHAR}|TYPE{ARGS})
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET)
@@ -244,7 +244,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 <*>"\\\""|\\\'                          { /* ignore \" and \'  */}
 
 <String>\"|\'                           { // string ends with next quote without previous backspace
-                                          if(yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
+                                          if (yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
                                           // fprintf(stderr,"string end: %s\n",debugStr.data());
                                           yy_pop_state();
                                         }           
@@ -252,7 +252,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 <String>.                               { debugStr+=yytext; } // ignore String contents (especially '!') 
 
 <*>\"|\'                                { /* string starts */
-					  if(YY_START == StrIgnore) REJECT; // ignore in simple comments
+					  if (YY_START == StrIgnore) REJECT; // ignore in simple comments
                                           // fprintf(stderr,"string start: %c %d\n",yytext[0],yyLineNr);
                                           yy_push_state(YY_START);
                                           stringStartSymbol=yytext[0]; // single or double quote
@@ -264,7 +264,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 <*>"!"/[^<>\n]                         {  if (YY_START == String) REJECT; // "!" is ignored in strings
                                           // skip comment line (without docu comments "!>" "!<" ) 
                                           /* ignore further "!" and ignore comments in Strings */
-                                          if ((YY_START != StrIgnore) && (YY_START != String)) {
+                                          if ((YY_START != StrIgnore) && (YY_START != String)) 
+					  {
                                             yy_push_state(YY_START);
                                             BEGIN(StrIgnore); 
                                             debugStr="*!";
@@ -316,7 +317,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  int index = name.find("interface", 0, FALSE);
 					  index = name.find(QRegExp("[^ \\t]"), index+9);
 					  //printf(stderr,"%s,%d\n",name.data(),index);
-					  if(index!=-1)
+					  if (index!=-1)
 					    name = name.right(name.length()-index);
 					  else // interface without name, must be inside subprog
 					    name = "interface"; 
@@ -324,8 +325,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  yy_push_state(InterfaceBody);
  					  startScope(last_entry);
                                         }
-<InterfaceBody>"end"{BS}"interface".*   {
-					  if(!endScope(current_root))
+<InterfaceBody>"end"({BS_}"interface")?.*   {
+					  if (!endScope(current_root))
 					    yyterminate();
 					  yy_pop_state();
                                         }
@@ -348,9 +349,9 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					    BEGIN(Module);
                                             defaultProtection = Public;
                                        }
-<Start,ModuleBody>"end"{BS}(module|program).* { // end module	
+<Start,ModuleBody>"end"({BS_}(module|program))?.* { // end module	
 					    resolveModuleProcedures(moduleProcedures, current_root);
-					    if(!endScope(current_root))
+					    if (!endScope(current_root))
 					      yyterminate();
                                             defaultProtection = Public;
 					    BEGIN(Start);
@@ -405,15 +406,26 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					    startScope(last_entry); 
                                             BEGIN(TypedefBody);
                                         }
-<TypedefBody>"end"{BS}"type".*          { /* end type definition */
+<TypedefBody>"end"{BS_}"type".*         { /* end type definition */
                                            //cout << "=========> got typedef end "<< endl; 
-					   if(!endScope(current_root))
+					   if (!endScope(current_root))
 					     yyterminate();
                                            yy_pop_state();
                                         } 
 
  /*------- module/global/typedef variable ---------------------------------------------------*/
 
+<SubprogBody>"end"({BS_}{SUBPROG})?.*  {  
+                                           //cout << "1e=========> got end subprog: " << yytext << endl;
+
+                                           /* args is used for parameters in list of functions, argList for 
+                                             parameters in detailed function descripttion */
+                                           //current->args = argListToString(current->argList); 
+					   //current->endBodyLine  = yyLineNr; // ??? what ist endBodyLine for
+					   if (!endScope(current_root))
+					     yyterminate();
+					   yy_pop_state() ;
+				       } 
 <Start,ModuleBody,TypedefBody,SubprogBody>{
 {TYPE_SPEC}/{SEPARATE}			{
                                           /* variable declaration starts */
@@ -429,16 +441,19 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  DefineDict* defines = getFileDefineDict();
 					  QCString name;
 					  int index = str.find("(");
-					  if(index != -1)
+					  if (index != -1)
 					    name = str.left(index).stripWhiteSpace();
 					  else
 					    name = str;
 
 					  Define *define = (*defines)[name];
-					  if(define != 0 && isTypeName(define->definition)) {
+					  if (define != 0 && isTypeName(define->definition)) 
+					  {
 					    argType = str;
 					    yy_push_state(AttributeList);
-					  } else {
+					  } 
+					  else 
+					  {
 					    REJECT;
 					  }
 					}
@@ -452,6 +467,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  yy_push_state(YY_START);
 					  BEGIN( AttributeList ) ;
   				       }
+{ID}	                               {
+                                       }  
 }
 <AttributeList>{
 {COMMA}					{}
@@ -481,7 +498,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  int last= yy_top_state();
 
 					  v_type= V_IGNORE;
-  					  if (!argType.isEmpty() && last != SubprogBody) { // new variable entry
+  					  if (!argType.isEmpty() && last != SubprogBody) 
+					  { // new variable entry
 					    v_type = V_VARIABLE;
                                             current->section = Entry::VARIABLE_SEC;
  					    current->name = argName;
@@ -489,7 +507,9 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					    current->fileName = yyFileName;
 					    current->bodyLine  = yyLineNr; // used for source reference
                                             addCurrentEntry();
-                                          } else if(!argType.isEmpty()){ // deklaration of parameter list: add type for corr. parameter 
+                                          } 
+					  else if (!argType.isEmpty())
+					  { // deklaration of parameter list: add type for corr. parameter 
 					    parameter= addFortranParameter(argType,argName,docBlock);
 					    if (parameter) v_type= V_PARAMETER;
 					    // save, it may be function return type
@@ -518,14 +538,13 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
                                           docBlock.resize(0);
                                         }
 
-<Initialization>"(/"                    { initializer+=yytext; 
+<Initialization>"("                     { initializer+=yytext; 
                                           BEGIN(ArrayInitializer); // initializer may contain comma
                                         }
-<ArrayInitializer>.                     { initializer+=yytext; }
-<ArrayInitializer>"/)"                  { initializer+=yytext;
-                                          yy_pop_state(); // end initialization
-                                          if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+<ArrayInitializer>")"                   { initializer+=yytext;
+                                          BEGIN(Initialization);
                                         }
+<ArrayInitializer>.                     { initializer+=yytext; }
 <Initialization>{COMMA}                 { yy_pop_state(); // end initialization
                                           if (v_type == V_VARIABLE) last_entry->initializer= initializer;
                                         }
@@ -569,7 +588,8 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
                                            QCString arglist= yytext;
 					   //cout << "3=========> got parameterlist " << yytext << endl;
                                            yyLineNr+= arglist.contains('\n');
-                                           arglist = arglist.replace(QRegExp("&[^\n]*\n"),"");
+					   static QRegExp re("&[^\n]*\n");
+                                           arglist = arglist.replace(re,"");
 					   //cout << "3=========> got parameterlist " << arglist << endl;
 					   current->args = arglist;
 					   current->args = removeRedundantWhiteSpace(current->args);
@@ -593,17 +613,6 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
  					   modifiers[current_root->parent()][current_root->name.lower()].returnName = result;
                                            //cout << "=====> got result " <<  result << endl;
  				       } 
-<SubprogBody>"end"{BS}{SUBPROG}.*      {  
-                                           //cout << "1e=========> got end subprog: " << yytext << endl;
-
-                                           /* args is used for parameters in list of functions, argList for 
-                                             parameters in detailed function descripttion */
-                                           //current->args = argListToString(current->argList); 
-					   //current->endBodyLine  = yyLineNr; // ??? what ist endBodyLine for
-					   if(!endScope(current_root))
-					     yyterminate();
-					   yy_pop_state() ;
-				       } 
 
  /*---- documentation comments --------------------------------------------------------------------*/
 
@@ -620,13 +629,15 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
   					 }
 <DocBackLine>.*    			 { // contents of current comment line
                                           docBlock=yytext;
-					  if (v_type == V_VARIABLE) {
+					  if (v_type == V_VARIABLE) 
+					  {
 					    Entry *tmp_entry = current; 
 					    current = last_entry; // temporarily switch to the previous entry
   					    handleCommentBlock(docBlock,TRUE);
  					    current=tmp_entry;
                                           }
-					  else if (v_type == V_PARAMETER) {
+					  else if (v_type == V_PARAMETER) 
+					  {
 					    parameter->docs=docBlock;
                                           }
                                           yy_pop_state();
@@ -659,9 +670,10 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
  /*------------------------------------------------------------------------------------------------*/
 
-<*>"\n"                                 {yyLineNr++;
-                                         //if (debugStr.stripWhiteSpace().length() > 0) cout << "ignored text: " << debugStr << " state: " <<YY_START << endl;
-                                         debugStr="";
+<*>"\n"                                 {
+                                          yyLineNr++;
+                                          //if (debugStr.stripWhiteSpace().length() > 0) cout << "ignored text: " << debugStr << " state: " <<YY_START << endl;
+                                          debugStr="";
                                         }
 
  /*---- error: EOF in wrong state --------------------------------------------------------------------*/
@@ -670,7 +682,9 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  scanner_abort();
 					  yyterminate();
                                         }
- <*>.                 	                {debugStr+=yytext;} // ignore remaining text 
+ <*>.                 	                {
+                                          debugStr+=yytext;
+                                        } // ignore remaining text 
 
  /**********************************************************************************/
  /**********************************************************************************/
@@ -725,12 +739,12 @@ static QCString extractFromParens(const QCString name)
 {
   QCString extracted = name;
   int start = extracted.find("(");
-  if(start != -1) 
+  if (start != -1) 
   {
     extracted.remove(0, start+1);
   }
   int end = extracted.findRev(")");
-  if(end != -1) 
+  if (end != -1) 
   {
     int length = extracted.length();
     extracted.remove(end, length);
@@ -743,10 +757,10 @@ static QCString extractFromParens(const QCString name)
 /*! Adds passed modifiers to these modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 {
-  if(mdfs.protection!=NONE_P) protection = mdfs.protection;
-  if(mdfs.direction!=NONE_D) direction = mdfs.direction;
+  if (mdfs.protection!=NONE_P) protection = mdfs.protection;
+  if (mdfs.direction!=NONE_D) direction = mdfs.direction;
   optional |= mdfs.optional;
-  if(!mdfs.dimension.isNull()) dimension = mdfs.dimension;
+  if (!mdfs.dimension.isNull()) dimension = mdfs.dimension;
   allocatable |= mdfs.allocatable;
   external |= mdfs.external;
   intrinsic |= mdfs.intrinsic;
@@ -772,9 +786,9 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
     QCString tmp = extractFromParens(mdfString);
     bool isin = tmp.contains("in");
     bool isout = tmp.contains("out");
-    if(isin && isout) newMdf.direction = SymbolModifiers::INOUT;
-    else if(isin) newMdf.direction = SymbolModifiers::IN;
-    else if(isout) newMdf.direction = SymbolModifiers::OUT;
+    if (isin && isout) newMdf.direction = SymbolModifiers::INOUT;
+    else if (isin) newMdf.direction = SymbolModifiers::IN;
+    else if (isout) newMdf.direction = SymbolModifiers::OUT;
   }
   else if (mdfString=="public") 
   {
@@ -796,23 +810,23 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfString)
   {
     newMdf.external = TRUE;
   }
-  else if(mdfString=="intrinsic") 
+  else if (mdfString=="intrinsic") 
   {
     newMdf.intrinsic = TRUE;
   }
-  else if(mdfString=="parameter") 
+  else if (mdfString=="parameter") 
   {
     newMdf.parameter = TRUE;
   }
-  else if(mdfString=="pointer") 
+  else if (mdfString=="pointer") 
   {
     newMdf.pointer = TRUE;
   }
-  else if(mdfString=="target") 
+  else if (mdfString=="target") 
   {
     newMdf.target = TRUE;
   }
-  else if(mdfString=="save") 
+  else if (mdfString=="save") 
   {
     newMdf.save = TRUE;
   }
@@ -838,7 +852,7 @@ static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = F
   for (unsigned int i=0; i<subprog->argList->count(); i++) 
   {
     Argument *arg = subprog->argList->at(i);
-    if(!byTypeName && arg->name.lower() == cname ||
+    if (!byTypeName && arg->name.lower() == cname ||
 	byTypeName && arg->type.lower() == cname)
       return arg;
   }
@@ -856,10 +870,10 @@ static Entry *findFunction(Entry* entry, QCString name)
   Entry *ce;
   for (;(ce=eli.current());++eli) 
   {
-    if(ce->section != Entry::FUNCTION_SEC)
+    if (ce->section != Entry::FUNCTION_SEC)
       continue;
 
-    if(ce->name.lower() == cname)
+    if (ce->name.lower() == cname)
       return ce;
   }
 
@@ -870,52 +884,52 @@ static Entry *findFunction(Entry* entry, QCString name)
 /*! Apply modifiers stored in \a mdfs to the \a typeName string. */
 static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs) 
 {
-  if(!mdfs.dimension.isNull()) 
+  if (!mdfs.dimension.isNull()) 
   {
     typeName += ",";
     typeName += mdfs.dimension;
   }
-  if(mdfs.direction!=SymbolModifiers::NONE_D) 
+  if (mdfs.direction!=SymbolModifiers::NONE_D) 
   {
     typeName += ",";
     typeName += directionStrs[mdfs.direction];
   }
-  if(mdfs.optional) 
+  if (mdfs.optional) 
   {
     typeName += ",";
     typeName += "optional";
   }
-  if(mdfs.allocatable) 
+  if (mdfs.allocatable) 
   {
     typeName += ",";
     typeName += "allocatable";
   }
-  if(mdfs.external) 
+  if (mdfs.external) 
   {
     typeName += ",";
     typeName += "external";
   }
-  if(mdfs.intrinsic) 
+  if (mdfs.intrinsic) 
   {
     typeName += ",";
     typeName += "intrinsic";
   }
-  if(mdfs.parameter) 
+  if (mdfs.parameter) 
   {
     typeName += ",";
     typeName += "parameter";
   }
-  if(mdfs.pointer) 
+  if (mdfs.pointer) 
   {
     typeName += ",";
     typeName += "pointer";
   }
-  if(mdfs.target) 
+  if (mdfs.target) 
   {
     typeName += ",";
     typeName += "target";
   }
-  if(mdfs.save) 
+  if (mdfs.save) 
   {
     typeName += ",";
     typeName += "save";
@@ -937,9 +951,9 @@ static void applyModifiers(Entry *ent, SymbolModifiers& mdfs)
   QCString tmp = ent->type;
   ent->type = applyModifiers(tmp, mdfs);
 
-  if(mdfs.protection == SymbolModifiers::PUBLIC)
+  if (mdfs.protection == SymbolModifiers::PUBLIC)
     ent->protection = Public;
-  else if(mdfs.protection == SymbolModifiers::PRIVATE)
+  else if (mdfs.protection == SymbolModifiers::PRIVATE)
     ent->protection = Private;
 }
 
@@ -1013,7 +1027,7 @@ static bool endScope(Entry *scope)
           continue;
 
         Argument *arg = findArgument(scope->parent(), ce->name, TRUE);
-        if(arg != 0) 
+        if (arg != 0) 
 	{
           // set type of dummy procedure argument to interface
 	  arg->name = arg->type;
@@ -1029,11 +1043,11 @@ static bool endScope(Entry *scope)
     Entry *ce;
     for (;(ce=eli.current());++eli) 
     {
-      if(ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
+      if (ce->section != Entry::VARIABLE_SEC && ce->section != Entry::FUNCTION_SEC)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
-      if(mdfsMap.contains(ce->name.lower()))
+      if (mdfsMap.contains(ce->name.lower()))
         applyModifiers(ce, mdfsMap[ce->name.lower()]);
     }
   }

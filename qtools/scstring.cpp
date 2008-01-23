@@ -84,6 +84,7 @@ SCString::~SCString()
 
 SCString &SCString::assign( const char *str )
 {
+  if (m_data==str) return *this;
   if (m_data) free(m_data);
   duplicate(str);
   return *this;
@@ -562,8 +563,7 @@ SCString &SCString::replace( const QRegExp &rx, const char *str )
   QString d = QString::fromLatin1( m_data );
   QString r = QString::fromLatin1( str );
   d.replace( rx, r );
-  operator=( d.ascii() );
-  return *this;
+  return assign(d.ascii());
 }
 
 long  SCString::toLong( bool *ok ) const

@@ -36,15 +36,12 @@
 #include "htags.h"
 #include "parserintf.h"
 #include "marshal.h"
-
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#define popen _popen
-#define pclose _pclose
-#endif
+#include "debug.h"
 
 #define START_MARKER 0x4445465B // DEF[
 #define END_MARKER   0x4445465D // DEF]
 
+//-----------------------------------------------------------------------------------------
 
 class DefinitionImpl
 {
@@ -476,20 +473,33 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
  * stored in \a result. If FALSE is returned the code fragment could not be
  * found.
  *
- * The file is scanned for a opening bracket ('{') from \a startLine onward.
+ * The file is scanned for a opening bracket ('{') from \a startLine onward
  * The line actually containing the bracket is returned via startLine.
  * The file is scanned for a closing bracket ('}') from \a endLine backward.
  * The line actually containing the bracket is returned via endLine.
+ * Note that for VHDL code the bracket search is not done.
  */
 static bool readCodeFragment(const char *fileName,
                       int &startLine,int &endLine,QCString &result)
 {
-  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static bool vhdlOpt           = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+  static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
   //printf("readCodeFragment(%s,%d,%d)\n",fileName,startLine,endLine);
   if (fileName==0 || fileName[0]==0) return FALSE; // not a valid file name
-  QCString cmd=getFileFilter(fileName)+" \""+fileName+"\"";
-  FILE *f = Config_getBool("FILTER_SOURCE_FILES") ? popen(cmd,"r") : fopen(fileName,"r");
-  bool found=vhdlOpt;  // for VHDL not bracket search is possible
+  QCString filter = getFileFilter(fileName);
+  FILE *f=0;
+  bool usePipe = !filter.isEmpty() && filterSourceFiles;
+  if (!usePipe) // no filter given or wanted
+  {
+    f = fopen(fileName,"r");
+  }
+  else // use filter
+  {
+    QCString cmd=filter+" \""+fileName+"\"";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    f = portable_popen(cmd,"r");
+  }
+  bool found=vhdlOpt;  // for VHDL no bracket search is possible
   if (f)
   {
     int c=0;
@@ -584,7 +594,14 @@ static bool readCodeFragment(const char *fileName,
         endLine=lineNr-1;
       }
     }
-    if (Config_getBool("FILTER_SOURCE_FILES")) pclose(f); else fclose(f);
+    if (usePipe) 
+    {
+      portable_pclose(f); 
+    }
+    else 
+    {
+      fclose(f);
+    }
   }
   result = transcodeCharacterStringToUTF8(result);
   return found;

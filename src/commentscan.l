@@ -57,6 +57,7 @@ static bool handleWeakGroup(const QCString &);
 static bool handleNamespace(const QCString &);
 static bool handlePackage(const QCString &);
 static bool handleClass(const QCString &);
+static bool handleHeaderFile(const QCString &);
 static bool handleProtocol(const QCString &);
 static bool handleCategory(const QCString &);
 static bool handleUnion(const QCString &);
@@ -134,6 +135,7 @@ static DocCmdMap docCmdMap[] =
   { "namespace",       &handleNamespace,        TRUE  },
   { "package",         &handlePackage,          TRUE  },
   { "class",           &handleClass,            TRUE  },
+  { "headerfile",      &handleHeaderFile,       TRUE  },
   { "protocol",        &handleProtocol,         TRUE  },
   { "category",        &handleCategory,         TRUE  },
   { "union",           &handleUnion,            TRUE  },
@@ -1898,6 +1900,12 @@ static bool handleClass(const QCString &)
   bool stop=makeStructuralIndicator(Entry::CLASSDOC_SEC);
   BEGIN( ClassDocArg1 ); 
   return stop;
+}
+
+static bool handleHeaderFile(const QCString &)
+{
+  BEGIN( ClassDocArg2 );
+  return FALSE;
 }
 
 static bool handleProtocol(const QCString &)

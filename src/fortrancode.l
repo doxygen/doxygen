@@ -581,8 +581,8 @@ ARGS      {BS}("("[^)]*")"){BS}
 
 NUM_TYPE  (complex|integer|logical|real)
 KIND      {ARGS}
-CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"([0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}("*"[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}PRECISION|{CHAR})
+CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
+TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{B}PRECISION|{CHAR})
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
 ATTR_SPEC (ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PRIVATE|PUBLIC|SAVE|TARGET)
@@ -630,7 +630,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>"end"{BS}{COMMANDS}/[ \t\n].*    { 
+<Start>"end"({BS_}{COMMANDS})?/[ \t\n].*    { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -687,11 +687,11 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
                                           yy_pop_state();
 					  REJECT;
 					}
-<Start>"end"{BS}"module".*              { // just reset currentModule, rest is done in following rule
+<Start>"end"({BS_}"module")?.*          { // just reset currentModule, rest is done in following rule
                                           currentModule=0;
 					  REJECT;
                                         }
-<Start>"end"{BS}("program"|"module"|"type"|"interface") {  //
+<Start>"end"({BS_}("program"|"module"|"type"|"interface"))? {  //
                                           endUseScope();
  					  startFontClass("keyword"); 
   					  codifyLines(yytext);
@@ -722,7 +722,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 <Subprog>"\n"                           { codifyLines(yytext);
                                           yy_pop_state();
                                         }
-<Start>"end"{BS}{SUBPROG}.*             {  // Fortran subroutine or function ends
+<Start>"end"({BS_}{SUBPROG})?           {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endUseScope();
    					  startFontClass("keyword");

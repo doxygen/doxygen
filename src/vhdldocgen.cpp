@@ -144,13 +144,13 @@ QCString* VhdlDocGen::findKeyWord(const QCString& word)
   if (word.isEmpty() || word.at(0)=='\0') return 0;
   //printf("VhdlDocGen::findKeyWord(%s)\n",word.data());
 
-  if (g_vhdlKeyDict0.find(word))
+  if (g_vhdlKeyDict0.find(word.lower()))
     return &g_vhdlkeyword;
 
-  if (g_vhdlKeyDict1.find(word))
+  if (g_vhdlKeyDict1.find(word.lower()))
     return &g_vhdltype;
 
-  if (g_vhdlKeyDict2.find(word))
+  if (g_vhdlKeyDict2.find(word.lower()))
     return &g_vhdllogic;
 
   return 0;
@@ -832,21 +832,23 @@ bool VhdlDocGen::getSigTypeName(QList<QCString>& ql, const char* str,QCString& b
 bool VhdlDocGen::getSigName(QList<QCString>& ql, 
                             const char* str,QCString& buffer)
 {
-  int len,j,ll,index;
+  int j,ll,index;
   char *signal = "signal ";
   QCString qmem;
   QCString temp(str);
   QCString st(str);
 
-  QRegExp semi(",");
-  QRegExp r(":");
-  j = r.match(temp.data(),0,&len);
+  //QRegExp semi(",");
+  //QRegExp r(":");
+
+  // colon position
+  j = temp.find(':');
   if (j < 0) return FALSE; // no input definition
-  st=st.left(j);
+  st=st.left(j); // name only
   index=st.find(signal,0,FALSE);
-  if (index > -1)
+  if (index > -1) // found "signal "
   {
-    qmem=st.remove(index,strlen(signal));
+    qmem=st.remove(index,strlen(signal)); // strip it
     temp=qmem;
     st=qmem;
   }
@@ -855,40 +857,45 @@ bool VhdlDocGen::getSigName(QList<QCString>& ql,
     qmem=temp;
   }
 
-  ll=semi.match(st.data(),0,&len);
+  ll=st.find(',');
 
-  if (ll>0)
+  if (ll>0) // multiple names
   {
     while (TRUE)
     {
-      st=st.left(ll);
+      st=st.left(ll).stripWhiteSpace(); // one name
+
       QCString *sig =new QCString(st);
       ql.insert(0,sig);
-      qmem=qmem.right(qmem.length()-ll-1);
-      st=qmem;
-      ll=semi.match(st.data(),0,&len);
-      if (ll<0)
+      qmem=qmem.right(qmem.length()-ll-1); // strip from list
+      st=qmem; // remainder
+      ll=st.find(',');
+      if (ll<0) // last name
       {
-	ll = r.match(st.data(),0,&len);
-	st=st.left(ll);
+	ll = st.find(':');
+	st=st.left(ll).stripWhiteSpace();
 	ql.insert(0,new QCString(st));
 	break;
       }
     }
   }
-  else 
+  else // single name
   {
-    st=st.left(j);
+    st=st.stripWhiteSpace();
     ql.insert(0,new QCString(st));
   }
   QCString *qdir=new QCString(str);
-  st=qdir->mid(j+1);
-  //st=st.lower();
-  st=st.stripWhiteSpace();
+  st=qdir->mid(j+1); // part after :
+  st=st.lower().stripWhiteSpace();
   *qdir=st;
-
   ql.insert(0,qdir);
+
   if (st.stripPrefix("inout"))
+  {
+    buffer+="inout";
+    return TRUE;
+  }
+  if (st.stripPrefix("INOUT"))
   {
     buffer+="inout";
     return TRUE;
@@ -899,8 +906,18 @@ bool VhdlDocGen::getSigName(QList<QCString>& ql,
     buffer+="out";
     return TRUE;
   }
+  if (st.stripPrefix("OUT"))
+  {
+    buffer+="out";
+    return TRUE;
+  }
 
   if (st.stripPrefix("in"))
+  {
+    buffer+="in";
+    return TRUE;
+  }
+  if (st.stripPrefix("IN"))
   {
     buffer+="in";
     return TRUE;

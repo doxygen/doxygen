@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(QTDIR)\lib\qt-mt.lib $(QTDIR)\lib\qtmain.lib iconv.lib ws2_32.lib winmm.lib imm32.lib"
+				AdditionalDependencies="$(QTDIR)\lib\qt-mt.lib $(QTDIR)\lib\qtmain.lib iconv.lib ws2_32.lib winmm.lib gdi32.lib imm32.lib advapi32.lib comdlg32.lib shell32.lib winspool.lib"
 				OutputFile="..\bin\Debug\doxywizard.exe"
 				LinkIncremental="2"
 				GenerateManifest="false"
@@ -158,7 +158,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(QTDIR)\lib\qt-mt.lib $(QTDIR)\lib\qtmain.lib iconv.lib ws2_32.lib winmm.lib imm32.lib"
+				AdditionalDependencies="$(QTDIR)\lib\qt-mt.lib $(QTDIR)\lib\qtmain.lib iconv.lib ws2_32.lib winmm.lib gdi32.lib imm32.lib advapi32.lib comdlg32.lib shell32.lib winspool.lib"
 				OutputFile="..\bin\doxywizard.exe"
 				LinkIncremental="1"
 				GenerateManifest="false"

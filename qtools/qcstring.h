@@ -295,6 +295,7 @@ inline void QCString::duplicate( const char *str)
 
 inline QCString &QCString::duplicate( const char *str, int)
 {
+  if (m_data==str) return *this;
   if (m_data) free(m_data);
   duplicate(str);
   return *this;
