@@ -1291,6 +1291,7 @@ void Config::check()
     annotationFromBrief.append("the");
   }
 
+#if 0
   if (Config_getBool("CALL_GRAPH") && 
       (!Config_getBool("SOURCE_BROWSER") || !Config_getBool("REFERENCES_RELATION"))
      )
@@ -1311,6 +1312,7 @@ void Config::check()
       Config_getBool("SOURCE_BROWSER")=TRUE;
       Config_getBool("REFERENCED_BY_RELATION")=TRUE;
   }
+#endif
   // some default settings for vhdl
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
       (Config_getBool("INLINE_INHERITED_MEMB") || 
@@ -1413,10 +1415,11 @@ void Config::create()
                  "information to generate all constant output in the proper language. \n"
                  "The default language is English, other supported languages are: \n"
 		 "Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional, \n"
-		 "Croatian, Czech, Danish, Dutch, Finnish, French, German, Greek, Hungarian, \n"
-		 "Italian, Japanese, Japanese-en (Japanese with English messages), Korean, \n"
-		 "Korean-en, Lithuanian, Norwegian, Macedonian, Polish, Portuguese, Romanian, \n"
-		 "Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and Ukrainian.\n", 
+		 "Croatian, Czech, Danish, Dutch, Farsi, Finnish, French, German, Greek, \n"
+		 "Hungarian, Italian, Japanese, Japanese-en (Japanese with English messages), \n"
+		 "Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian, Polish, \n"
+		 "Portuguese, Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, \n"
+		 "and Ukrainian.\n", 
 		 "English"
                 );
 #ifdef LANG_ZA
@@ -1486,6 +1489,7 @@ void Config::create()
   ce->addValue("Macedonian");
 #endif
 #ifdef LANG_FA
+  ce->addValue("Farsi");
   ce->addValue("Persian");
 #endif
 #ifdef LANG_PL
@@ -1892,6 +1896,13 @@ void Config::create()
                     FALSE
                  );
   cb = addBool(
+                    "SORT_GROUP_NAMES",
+                    "If the SORT_GROUP_NAMES tag is set to YES then doxygen will sort the \n"
+                    "hierarchy of group names into alphabetical order. If set to NO (the default) \n"
+                    "the group names will appear in their defined order. \n",
+                    FALSE
+                 );
+  cb = addBool(
                     "SORT_BY_SCOPE_NAME",
                     "If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be \n"
                     "sorted by fully-qualified names, including namespaces. If set to \n"
@@ -2159,9 +2170,7 @@ void Config::create()
                     "If the SOURCE_BROWSER tag is set to YES then a list of source files will \n"
                     "be generated. Documented entities will be cross-referenced with these sources. \n"
 		    "Note: To get rid of all source code in the generated output, make sure also \n"
-		    "VERBATIM_HEADERS is set to NO. If you have enabled CALL_GRAPH or CALLER_GRAPH \n"
-		    "then you must also enable this option. If you don't then doxygen will produce \n"
-		    "a warning and turn it on anyway \n",
+		    "VERBATIM_HEADERS is set to NO. \n",
                     FALSE
                  );
   cb = addBool(
@@ -2181,16 +2190,14 @@ void Config::create()
                     "If the REFERENCED_BY_RELATION tag is set to YES (the default) \n"
 		    "then for each documented function all documented \n"
 		    "functions referencing it will be listed. \n",
-                    TRUE
+                    FALSE
               );
-  cb->addDependency("SOURCE_BROWSER");
   cb = addBool(     "REFERENCES_RELATION",
                     "If the REFERENCES_RELATION tag is set to YES (the default) \n"
 		    "then for each documented function all documented entities \n"
 		    "called/used by that function will be listed. \n",
-                    TRUE
+                    FALSE
               );
-  cb->addDependency("SOURCE_BROWSER");
   cb = addBool(     "REFERENCES_LINK_SOURCE",
                     "If the REFERENCES_LINK_SOURCE tag is set to YES (the default)\n"
                     "and SOURCE_BROWSER tag is set to YES, then the hyperlinks from\n"
@@ -2198,7 +2205,6 @@ void Config::create()
                     "link to the source code.  Otherwise they will link to the documentstion.\n",
                     TRUE
               );
-  cb->addDependency("SOURCE_BROWSER");
   cb = addBool(
                     "USE_HTAGS",
 		    "If the USE_HTAGS tag is set to YES then the references to source code \n"
@@ -2961,7 +2967,7 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALL_GRAPH",
-                    "If the CALL_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then \n"
+                    "If the CALL_GRAPH and HAVE_DOT options are set to YES then \n"
 		    "doxygen will generate a call dependency graph for every global function \n"
 		    "or class method. Note that enabling this option will significantly increase \n"
 		    "the time of a run. So in most cases it will be better to enable call graphs \n"
@@ -2971,7 +2977,7 @@ void Config::create()
   cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALLER_GRAPH",
-                    "If the CALLER_GRAPH, SOURCE_BROWSER and HAVE_DOT tags are set to YES then \n"
+                    "If the CALLER_GRAPH and HAVE_DOT tags are set to YES then \n"
 		    "doxygen will generate a caller dependency graph for every global function \n"
 		    "or class method. Note that enabling this option will significantly increase \n"
 		    "the time of a run. So in most cases it will be better to enable caller \n"

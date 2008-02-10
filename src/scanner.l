@@ -2773,7 +2773,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  initEntry();
 					  BEGIN( FindMembers );
 					}
-<IDLProp>.				{
+<IDLProp>.				{ // spaces, *, or other stuff
+  					  idlProp+=yytext;
  					}
 <Array>"]"		                { current->args += *yytext ;
 					  if (--squareCount<=0)

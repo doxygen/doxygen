@@ -24,7 +24,7 @@
 */
 #define CN_SPC
 
-class TranslatorChinese : public TranslatorAdapter_1_5_4
+class TranslatorChinese : public Translator
 {
   public:
 		/*! Used for identification of the language. The identification
@@ -1535,7 +1535,258 @@ class TranslatorChinese : public TranslatorAdapter_1_5_4
       return "枚举变量文档";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    // { return "Member Function/Subroutine Documentation"; }
+    { return "成员函数及过程文档"; }
 
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    // { return "Data Types List"; }
+    { return "数据类型列表"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    // { return "Data Fields"; }
+    { return "数据项"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    // { return "Here are the data types with brief descriptions:"; }
+    { return "带简要描述的数据类型列表:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+    //   QCString result="Here is a list of all ";
+    //   if (!extractAll)
+    //   {
+    //     result+="documented ";
+    //   }
+    //   result+="data types members";
+    //   result+=" with links to ";
+    //   if (!extractAll) 
+    //   {
+    //      result+="the data structure documentation for each member";
+    //   }
+    //   else 
+    //   {
+    //      result+="the data types they belong to:";
+    //   }
+    //   return result;
+      if(!extractAll) {
+        return "这里是有文档的数据类型成员列表，含有到每个成员的数据结构文档的链接";
+      } else {
+        return "这里是数据类型成员列表，含有到成员所属的数据类型的链接:";
+      }
+
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    // { return "Data Type Index"; }
+    { return "数据类型索引"; }
+
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    // { return "Data Type Documentation"; }
+    { return "数据类型文档"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    //{ return "Functions/Subroutines"; }
+    { return "函数/过程"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    //{ return "Function/Subroutine Documentation"; }
+    { return "函数/过程文档"; }
+
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    // { return "Data Types"; }
+    { return "数据类型"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    // { return "Modules List"; }
+    { return "模块列表"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      // QCString result="Here is a list of all ";
+      // if (!extractAll) result+="documented ";
+      // result+="modules with brief descriptions:";
+      // return result;
+      if(!extractAll) {
+        return "带简要描述的有文档的模块列表:";
+      } else {
+        return "带简要描述的模块列表:";
+      }
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      // QCString result=(QCString)clName;
+      // switch(compType)
+      // {
+      //   case ClassDef::Class:      result+=" Module"; break;
+      //   case ClassDef::Struct:     result+=" Type"; break;
+      //   case ClassDef::Union:      result+=" Union"; break;
+      //   case ClassDef::Interface:  result+=" Interface"; break;
+      //   case ClassDef::Protocol:   result+=" Protocol"; break;
+      //   case ClassDef::Category:   result+=" Category"; break;
+      //   case ClassDef::Exception:  result+=" Exception"; break;
+      // }
+      // if (isTemplate) result+=" Template";
+      // result+=" Reference";
+      // return result;
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=CN_SPC"模块"; break;
+        case ClassDef::Struct:     result+=CN_SPC"类型"; break;
+        case ClassDef::Union:      result+=CN_SPC"联合"; break;
+        case ClassDef::Interface:  result+=CN_SPC"界面"; break;
+        case ClassDef::Protocol:   result+=CN_SPC"接口"; break;
+        case ClassDef::Category:   result+=CN_SPC"目录"; break;
+        case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+      }
+      if (isTemplate) result+="模板";
+      result+="参考手册";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      // result+=" Module Reference";        
+      result += CN_SPC"模块参考手册";
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    // { return "Module Members"; }
+    { return "模块成员"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      // QCString result="Here is a list of all ";
+      // if (!extractAll) result+="documented ";
+      // result+="module members with links to ";
+      // if (extractAll) 
+      // {
+      //   result+="the module documentation for each member:";
+      // }
+      // else 
+      // {
+      //   result+="the modules they belong to:";
+      // }
+      // return result;
+      if(!extractAll) {
+        return "这里是有文档的模块成员列表，含有到每个成员所在模块的文档的链接";
+      } else {
+        return "这里是模块成员列表，含有到成员所属的模块的链接:";
+      }
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    // { return "Modules Index"; }
+    { return "模块索引"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool, bool)
+    {       
+      // QCString result((first_capital ? "Module" : "module"));
+      // if (!singular)  result+="s";
+      // return result; 
+      return "模块";
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      // QCString result=(QCString)"The documentation for this ";
+      // switch(compType)
+      // {
+      //   case ClassDef::Class:      result+="module"; break;
+      //   case ClassDef::Struct:     result+="type"; break;
+      //   case ClassDef::Union:      result+="union"; break;
+      //   case ClassDef::Interface:  result+="interface"; break;
+      //   case ClassDef::Protocol:   result+="protocol"; break;
+      //   case ClassDef::Category:   result+="category"; break;
+      //   case ClassDef::Exception:  result+="exception"; break;
+      // }
+      // result+=" was generated from the following file";
+      // if (single) result+=":"; else result+="s:";
+      // return result;
+      QCString result="该";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=CN_SPC"模块"; break;
+        case ClassDef::Struct:     result+=CN_SPC"类型"; break;
+        case ClassDef::Union:      result+=CN_SPC"联合"; break;
+        case ClassDef::Interface:  result+=CN_SPC"界面"; break;
+        case ClassDef::Protocol:   result+=CN_SPC"接口"; break;
+        case ClassDef::Category:   result+=CN_SPC"目录"; break;
+        case ClassDef::Exception:  result+=CN_SPC"异常"; break;
+      }
+      result+="的文档由以下文件生成:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool, bool)
+    { 
+      return "类型";
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool, bool)
+    { 
+      return "子程序";
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "类型限制";
+    }
 };
 
 #endif

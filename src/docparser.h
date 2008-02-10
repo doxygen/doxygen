@@ -939,7 +939,7 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
   public:
     enum Type 
     {  
-       Unknown, Param, RetVal, Exception 
+       Unknown, Param, RetVal, Exception, TemplateParam
     };
     enum Direction
     {

@@ -998,7 +998,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of constructor/destructors. */
        virtual QCString trConstructorDocumentation()
       {
-         return "Documentation des contructeurs et destructeur"; 
+         return "Documentation des constructeurs et destructeur"; 
       }
     /*! Used in the file documentation to point to the corresponding sources. */
        virtual QCString trGotoSourceCode()

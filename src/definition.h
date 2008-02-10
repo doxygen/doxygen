@@ -245,7 +245,7 @@ class Definition : public DefinitionIntf, public LockableObj
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    void setName(const char *name) { m_name = name; }
+    void setName(const char *name);
 
     /*! Sets the documentation of this definition to \a d. */
     void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);

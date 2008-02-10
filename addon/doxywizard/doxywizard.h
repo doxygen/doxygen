@@ -225,10 +225,6 @@ class Wizard : public QTabDialog
     void setInheritanceGraph(bool enable)     { m_step4->setInheritanceGraph(enable); }
     void setCallGraph(bool enable)            { m_step4->setCallGraph(enable); }
 
-  public slots:
-    void changeCallGraphState(int state);
-    void changeCrossRefState(int state);
-
   private:
     Step1 *m_step1;
     Step2 *m_step2;

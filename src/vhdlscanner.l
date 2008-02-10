@@ -247,7 +247,7 @@ void addSignals(const char* str,int line, Entry *e,const char *comment=0)
  
   for (int k=1;k<count;k++)
   {
-    printf("adding '%s' '%s'\n",ql.at(0)->data(),ql.at(k)->data());
+    //printf("adding '%s' '%s'\n",ql.at(0)->data(),ql.at(k)->data());
     Entry *pTemp=new Entry;
     initEntry(pTemp);
     pTemp->startLine = line;

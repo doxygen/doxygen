@@ -91,6 +91,7 @@ CommandMap cmdMap[] =
   { "version",       CMD_VERSION },
   { "warning",       CMD_WARNING },
   { "throws",        CMD_EXCEPTION },
+  { "tparam",        CMD_TPARAM },
   { "\\",            CMD_BSLASH },
   { "@",             CMD_AT },
   { "<",             CMD_LESS },
@@ -154,27 +155,29 @@ CommandMap htmlTagMap[] =
   { "span",       HTML_SPAN },
   { "div",        HTML_DIV },
 
-  { "c",          XML_C },
+  { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambigious <code> is also a HTML tag
-  { "description",XML_DESCRIPTION },
-  { "example",    XML_EXAMPLE },
-  { "exception",  XML_EXCEPTION },
-  { "include",    XML_INCLUDE },
-  { "item",       XML_ITEM },
-  { "list",       XML_LIST }, // type="table|bullet|number"
-  { "listheader", XML_LISTHEADER },
-  { "para",       XML_PARA },
-  { "param",      XML_PARAM },
-  { "paramref",   XML_PARAMREF },
-  { "permission", XML_PERMISSION },
-  { "remarks",    XML_REMARKS },
-  { "returns",    XML_RETURNS },
-  { "see",        XML_SEE },
-  { "seealso",    XML_SEEALSO },
-  { "summary",    XML_SUMMARY },
-  { "term",       XML_TERM },
-  { "value",      XML_VALUE },
-  { 0,            0 }
+  { "description",  XML_DESCRIPTION },
+  { "example",      XML_EXAMPLE },
+  { "exception",    XML_EXCEPTION },
+  { "include",      XML_INCLUDE },
+  { "item",         XML_ITEM },
+  { "list",         XML_LIST }, // type="table|bullet|number"
+  { "listheader",   XML_LISTHEADER },
+  { "para",         XML_PARA },
+  { "param",        XML_PARAM },
+  { "paramref",     XML_PARAMREF },
+  { "typeparam",    XML_TYPEPARAM },
+  { "typeparamref", XML_TYPEPARAMREF },
+  { "permission",   XML_PERMISSION },
+  { "remarks",      XML_REMARKS },
+  { "returns",      XML_RETURNS },
+  { "see",          XML_SEE },
+  { "seealso",      XML_SEEALSO },
+  { "summary",      XML_SUMMARY },
+  { "term",         XML_TERM },
+  { "value",        XML_VALUE },
+  { 0,              0 }
 };
 
 //----------------------------------------------------------------------------

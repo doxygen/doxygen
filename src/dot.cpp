@@ -34,6 +34,7 @@
 #include "debug.h"
 #include "pagedef.h"
 #include "portable.h"
+#include "dirdef.h"
 
 #include <qdir.h>
 #include <qfile.h>
@@ -41,6 +42,8 @@
 #include <md5.h>
 
 #define MAP_CMD "cmap"
+
+#define FONTNAME "FreeSans"
 
 //--------------------------------------------------------------------
 
@@ -81,9 +84,9 @@ static void writeGraphHeader(QTextStream &t)
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"FreeSans.ttf\",fontsize=10,"
-       "labelfontname=\"FreeSans.ttf\",labelfontsize=10];\n";
-  t << "  node [fontname=\"FreeSans.ttf\",fontsize=10,shape=record];\n";
+  t << "  edge [fontname=\"" << FONTNAME << "\",fontsize=10,"
+       "labelfontname=\"" << FONTNAME << "\",labelfontsize=10];\n";
+  t << "  node [fontname=\"" << FONTNAME << "\",fontsize=10,shape=record];\n";
 }
 
 static void writeGraphFooter(QTextStream &t)
@@ -528,6 +531,8 @@ static QCString convertLabel(const QCString &l)
       case '<':  result+="\\<"; break;
       case '>':  result+="\\>"; break;
       case '|':  result+="\\|"; break;
+      case '{':  result+="\\{"; break;
+      case '}':  result+="\\}"; break;
       case '"':  result+="\\\""; break;
       default:   result+=c; break;
     }
@@ -715,7 +720,7 @@ void DotNode::writeArrow(QTextStream &t,
       t << ",arrowhead=\"" << arrowStyle[ei->m_color] << "\"";
   }
 
-  if (format==BITMAP) t << ",fontname=\"FreeSans.ttf\"";
+  if (format==BITMAP) t << ",fontname=\"" << FONTNAME << "\"";
   t << "];" << endl; 
 }
 
@@ -2717,23 +2722,23 @@ void generateGraphLegend(const char *path)
   }
   QTextStream dotText(&dotFile); 
   writeGraphHeader(dotText);
-  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
-  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"grey75\"];\n";
-  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"FreeSans.ttf\"];\n";
-  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"FreeSans.ttf\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"grey75\"];\n";
+  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=10,style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=10,style=\"dashed\",label=\"< int >\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=10,style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
+  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=10,height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
   writeGraphFooter(dotText);
   dotFile.close();
 
@@ -3273,8 +3278,152 @@ void DotGroupCollaboration::writeGraphHeader(QTextStream &t) const
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
-  t << "  edge [fontname=\"FreeSans.ttf\",fontsize=8,"
-    "labelfontname=\"FreeSans.ttf\",labelfontsize=8];\n";
-  t << "  node [fontname=\"FreeSans.ttf\",fontsize=10,shape=record];\n";
+  t << "  edge [fontname=\"" << FONTNAME << "\",fontsize=8,"
+    "labelfontname=\"" << FONTNAME << "\",labelfontsize=8];\n";
+  t << "  node [fontname=\"" << FONTNAME << "\",fontsize=10,shape=record];\n";
   t << "  rankdir=LR;\n";
+}
+
+void writeDotDirDepGraph(QTextStream &t,DirDef *dd)
+{
+    t << "digraph G {\n";
+    if (Config_getBool("DOT_TRANSPARENT"))
+    {
+      t << "  bgcolor=transparent;\n";
+    }
+    t << "  compound=true\n";
+    t << "  node [ fontsize=10, fontname=\"" << FONTNAME << "\"];\n";
+    t << "  edge [ labelfontsize=9, labelfontname=\"" << FONTNAME << "\"];\n";
+
+    QDict<DirDef> dirsInGraph(257);
+    
+    dirsInGraph.insert(dd->getOutputFileBase(),dd);
+    if (dd->parent())
+    {
+      t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
+      t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
+        << dd->parent()->shortName() 
+        << "\" fontname=\"" << FONTNAME << "\", fontsize=10, URL=\"";
+      t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
+      t << "\"]\n";
+    }
+    if (dd->isCluster())
+    {
+      t << "  subgraph cluster" << dd->getOutputFileBase() << " {\n";
+      t << "    graph [ bgcolor=\"#eeeeff\", pencolor=\"black\", label=\"\""
+        << " URL=\"" << dd->getOutputFileBase() << Doxygen::htmlFileExtension 
+        << "\"];\n";
+      t << "    " << dd->getOutputFileBase() << " [shape=plaintext label=\"" 
+        << dd->shortName() << "\"];\n";
+
+      // add nodes for sub directories
+      QListIterator<DirDef> sdi(dd->subDirs());
+      DirDef *sdir;
+      for (sdi.toFirst();(sdir=sdi.current());++sdi)
+      {
+        t << "    " << sdir->getOutputFileBase() << " [shape=box label=\"" 
+          << sdir->shortName() << "\"";
+        if (sdir->isCluster())
+        {
+          t << " color=\"red\"";
+        }
+        else
+        {
+          t << " color=\"black\"";
+        }
+        t << " fillcolor=\"white\" style=\"filled\"";
+        t << " URL=\"" << sdir->getOutputFileBase() 
+          << Doxygen::htmlFileExtension << "\"";
+        t << "];\n";
+        dirsInGraph.insert(sdir->getOutputFileBase(),sdir);
+      }
+      t << "  }\n";
+    }
+    else
+    {
+      t << "  " << dd->getOutputFileBase() << " [shape=box, label=\"" 
+        << dd->shortName() << "\", style=\"filled\", fillcolor=\"#eeeeff\","
+        << " pencolor=\"black\", URL=\"" << dd->getOutputFileBase() 
+        << Doxygen::htmlFileExtension << "\"];\n";
+    }
+    if (dd->parent())
+    {
+      t << "  }\n";
+    }
+
+    // add nodes for other used directories
+    QDictIterator<UsedDir> udi(*dd->usedDirs());
+    UsedDir *udir;
+    //printf("*** For dir %s\n",shortName().data());
+    for (udi.toFirst();(udir=udi.current());++udi) 
+      // for each used dir (=directly used or a parent of a directly used dir)
+    {
+      const DirDef *usedDir=udir->dir();
+      DirDef *dir=dd;
+      while (dir)
+      {
+        //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
+        //    dir->shortName().data(),usedDir->shortName().data(),
+        //    dir->parent()==usedDir->parent(),
+        //    usedDir->shortName().data(),
+        //    shortName().data(),
+        //    !usedDir->isParentOf(this)
+        //    );
+        if (dir!=usedDir && dir->parent()==usedDir->parent() && 
+            !usedDir->isParentOf(dd))
+          // include if both have the same parent (or no parent)
+        {
+          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\"" 
+            << usedDir->shortName() << "\"";
+          if (usedDir->isCluster())
+          {
+            if (!Config_getBool("DOT_TRANSPARENT"))
+            {
+              t << " fillcolor=\"white\" style=\"filled\"";
+            }
+            t << " color=\"red\"";
+          }
+          t << " URL=\"" << usedDir->getOutputFileBase() 
+            << Doxygen::htmlFileExtension << "\"];\n";
+          dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
+          break;
+        }
+        dir=dir->parent();
+      }
+    }
+
+    // add relations between all selected directories
+    DirDef *dir;
+    QDictIterator<DirDef> di(dirsInGraph);
+    for (di.toFirst();(dir=di.current());++di) // foreach dir in the graph
+    {
+      QDictIterator<UsedDir> udi(*dir->usedDirs());
+      UsedDir *udir;
+      for (udi.toFirst();(udir=udi.current());++udi) // foreach used dir
+      {
+        const DirDef *usedDir=udir->dir();
+        if ((dir!=dd || !udir->inherited()) &&     // only show direct dependendies for this dir
+            (usedDir!=dd || !udir->inherited()) && // only show direct dependendies for this dir
+            !usedDir->isParentOf(dir) &&             // don't point to own parent
+            dirsInGraph.find(usedDir->getOutputFileBase())) // only point to nodes that are in the graph
+        {
+          QCString relationName;
+          relationName.sprintf("dir_%06d_%06d",dir->dirCount(),usedDir->dirCount());
+          if (Doxygen::dirRelations.find(relationName)==0)
+          {
+            // new relation
+            Doxygen::dirRelations.append(relationName,
+                new DirRelation(relationName,dir,udir));
+          }
+          int nrefs = udir->filePairs().count();
+          t << "  " << dir->getOutputFileBase() << "->" 
+                    << usedDir->getOutputFileBase();
+          t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
+          t << " headhref=\"" << relationName << Doxygen::htmlFileExtension 
+            << "\"];\n";
+        }
+      }
+    }
+
+    t << "}\n";
 }

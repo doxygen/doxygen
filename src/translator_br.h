@@ -15,8 +15,10 @@
  *    Thanks to Jorge Ramos and others for their contributions.
  *
  * History:
+ *   20080206:
+ *      - Method trTypeContraints() renamed to trTypeConstraints().
  *   20071216:
- * 		- New methods since 1.5.4 updated. 
+ * 	- New methods since 1.5.4 updated. 
  *   20070914
  *      - "Translate me" fixed
  *      - Revision number changed from doxygen version to a date string.
@@ -30,7 +32,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_5_4
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -1768,7 +1770,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_5_4
     }
 
     /*! C# Type Contraint list */
-    virtual QCString trTypeContraints()
+    virtual QCString trTypeConstraints()
     {
       return "Restrições do Tipo";
     }    

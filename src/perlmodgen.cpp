@@ -1161,6 +1161,7 @@ void PerlModDocVisitor::visitPre(DocParamSect *s)
   case DocParamSect::Param:     type = "params"; break;
   case DocParamSect::RetVal:    type = "retvals"; break;
   case DocParamSect::Exception: type = "exceptions"; break;
+  case DocParamSect::TemplateParam: type = "templateparam"; break;
   case DocParamSect::Unknown:
     err("Error: unknown parameter section found\n");
     break;

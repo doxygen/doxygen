@@ -3058,6 +3058,11 @@ QCString ClassDef::className() const
   return m_impl->className;
 };
 
+void ClassDef::setClassName(const char *name)
+{
+  m_impl->className = name;
+}
+
 void ClassDef::addListReferences()
 {
   bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");

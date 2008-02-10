@@ -159,6 +159,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					}
 <ReadFuncArgPtr>")"/{B}*"["		{ // pointer to fixed size array
 					  g_curArgTypeName+=yytext;
+					  g_curArgTypeName+=g_curArgName;
 					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
 					  BEGIN( ReadFuncArgType );
 					}
@@ -307,6 +308,19 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 						a->type = removeRedundantWhiteSpace(g_curArgTypeName);  
 					      }
 					      a->array  += removeRedundantWhiteSpace(g_curArgArray);
+					      //printf("array=%s\n",a->array.data());
+					      int alen = a->array.length();
+					      if (alen>2 && a->array.at(0)=='(' && 
+						            a->array.at(alen-1)==')') // fix-up for int *(a[10])
+					      {
+						int i=a->array.find('[')-1;
+						a->array = a->array.mid(1,alen-2);
+						if (i>0 && a->name.isEmpty())
+						{
+						  a->name  = a->array.left(i);
+						  a->array = a->array.mid(i);
+						}
+					      }
 					      a->defval = g_curArgDefValue.copy();
 					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
 					      a->docs   = g_curArgDocs.stripWhiteSpace();

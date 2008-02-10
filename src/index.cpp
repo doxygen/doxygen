@@ -152,7 +152,7 @@ QCString abbreviate(const char *s,const char *name)
 {
   QCString scopelessName=name;
   int i=scopelessName.findRev("::");
-  if (i!=-1) scopelessName=scopelessName.mid(i);
+  if (i!=-1) scopelessName=scopelessName.mid(i+2);
   QCString result=s;
   result=result.stripWhiteSpace();
   // strip trailing .
@@ -2433,6 +2433,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
     if (hasSubGroups)
     {
       startIndexHierarchy(ol,level+1);
+      if (Config_getBool("SORT_GROUP_NAMES"))
+        gd->groupList->sort();
       QListIterator<GroupDef> gli(*gd->groupList);
       GroupDef *subgd = 0;
       for (gli.toFirst();(subgd=gli.current());++gli)
@@ -2544,6 +2546,8 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd,int level)
 void writeGroupHierarchy(OutputList &ol)
 {
   startIndexHierarchy(ol,0);
+  if (Config_getBool("SORT_GROUP_NAMES"))
+    Doxygen::groupSDict->sort();
   GroupSDict::Iterator gli(*Doxygen::groupSDict);
   GroupDef *gd;
   for (gli.toFirst();(gd=gli.current());++gli)

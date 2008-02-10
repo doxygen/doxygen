@@ -835,7 +835,7 @@ void FileDef::addSourceRef(int line,Definition *d,MemberDef *md)
     srcDefDict->insert(line,d);
     if (md) srcMemberDict->insert(line,md);
     //printf("Adding member %s with anchor %s at line %d to file %s\n",
-    //    d->name().data(),anchor,line,name().data());
+    //    md->name().data(),md->anchor().data(),line,name().data());
   }
 }
 
