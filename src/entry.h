@@ -266,7 +266,7 @@ class Entry
       NonAtomic = 0x040000,
       Copy      = 0x080000,
       Retain    = 0x100000,
-      Assign    = 0x200000,
+      Assign    = 0x200000
     };
     enum ClassSpecifier
     {

@@ -142,10 +142,19 @@ class GroupSDict : public SDict<GroupDef>
   public:
     GroupSDict(uint size) : SDict<GroupDef>(size) {}
     virtual ~GroupSDict() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      return strcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
+    }
 };
 
 class GroupList : public QList<GroupDef>
 {
+  public:
+    int compareItems(GCI item1,GCI item2)
+    {
+      return strcmp(((GroupDef*)item1)->groupTitle(),((GroupDef*)item2)->groupTitle());
+    }
 };
 
 class GroupListIterator : public QListIterator<GroupDef>

@@ -1617,20 +1617,21 @@ class TranslatorKorean : public Translator
     /*! This is an introduction to the page with all data types (Fortran). */
     virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     {
-      QCString result="Here is a list of all ";
+      QCString result="다음은 ";
       if (!extractAll)
       {
-        result+="documented ";
+        result+="문서화된 ";
       }
-      result+="data types members";
-      result+=" with links to ";
+      result+="모든 데이타 타입 멤버들의 목록입니다. ";
+
+      result+="각 항목은 ";
       if (!extractAll) 
       {
-         result+="the data structure documentation for each member";
+         result+="각 멤버에 대한 데이타 구조 문서화 페이지의 링크를 가지고 있습니다.";
       }
       else 
       {
-         result+="the data types they belong to:";
+         result+="그들이 속한 데이타 타입의 링크를 가지고 있습니다. :";
       }
       return result;
     }

@@ -61,6 +61,11 @@ Here is the list of tags supported by doxygen:
 <li><tt>\<summary\></tt> Identifies the brief description.
                          Similar to using \ref cmdbrief "\\brief".
 <li><tt>\<term\></tt>    Part of a <tt>\<list\></tt> command.
+<li><tt>\<typeparam name="paramName"\></tt> Marks a piece of text as the documentation
+                         for type parameter "paramName". Similar to 
+                         using \ref cmdparam "\\param".
+<li><tt>\<typeparamref name="paramName"\></tt> Refers to a parameter with name
+                         "paramName". Similar to using \ref cmda "\\a".
 <li><tt>\<value\></tt>   Identifies a property. Ignored by doxygen.
 </ul>
 

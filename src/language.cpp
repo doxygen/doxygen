@@ -355,7 +355,7 @@ bool setTranslator(const char *langName)
   }
 #endif
 #ifdef LANG_FA
-  else if (L_EQUAL("persian"))
+  else if (L_EQUAL("persian") || L_EQUAL("farsi"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorPersian);
   }

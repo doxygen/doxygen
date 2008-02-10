@@ -221,9 +221,6 @@ Step2::Step2(QWidget *parent) : QWidget(parent,"Step2")
   layout->addWidget(m_optimizeLang);
 
   layout->addStretch(1);
-
-  connect(m_crossRef,SIGNAL(stateChanged(int)),
-          parent,SLOT(changeCrossRefState(int)));
 }
 
 bool Step2::crossReferencingEnabled() const
@@ -619,44 +616,6 @@ Wizard::Wizard(QWidget *parent=0) : QTabDialog(parent)
   addTab( m_step3 = new Step3(this),"Output");
   addTab( m_step4 = new Step4(this),"Diagrams");
   setCancelButton();
-}
-
-void Wizard::changeCallGraphState(int state)
-{
-  if (state==QButton::On && !m_step2->crossReferencingEnabled())
-  {
-    if (QMessageBox::question(this,"This option depends on another option",
-                              "The call graph option requires that cross-referencing "
-                              "of source code is enabled.\nDo you want to enable this "
-                              "option?",QMessageBox::Yes,QMessageBox::No)==QMessageBox::Yes)
-    {
-      m_step2->enableCrossReferencing();
-    }
-    else
-    {
-      m_step4->disableCallGraphs();
-    }
-  }
-}
-
-void Wizard::changeCrossRefState(int state)
-{
-  if (state==QButton::Off && m_step4->callGraphEnabled())
-  {
-    if (QMessageBox::question(this,"Another option depends on this one",
-                              "The call graph option requires that cross-referencing "
-                              "of source code is enabled.\nDo you want to disable the call "
-                              "graph option?",QMessageBox::Yes,QMessageBox::No
-                             )==QMessageBox::Yes
-       )
-    {
-      m_step4->disableCallGraphs();
-    }
-    else
-    {
-      m_step2->enableCrossReferencing();
-    }
-  }
 }
 
 //==========================================================================
@@ -1339,7 +1298,7 @@ void MainWidget::about()
   QTextStream t(&msg,IO_WriteOnly);
   t << QString("<qt><center>A tool to configure and run doxygen version ")+versionString+
        " on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2006</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2008</center><p>"
        "</qt>";
   QMessageBox::about(this,"Doxygen GUI",msg);
 }

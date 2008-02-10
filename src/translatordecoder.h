@@ -215,11 +215,11 @@ class TranslatorDecoder : public Translator
     QCString trCompounds()  
     { return toUtf8(m_translator->trCompounds()); }
     QCString trGeneratedAt(const char *date,const char *projName)  
-    { return toUtf8(m_translator->trGeneratedAt(date,fromUtf8(projName))); }
+    { return toUtf8(m_translator->trGeneratedAt(fromUtf8(date),fromUtf8(projName))); }
     QCString trWrittenBy()  
     { return toUtf8(m_translator->trWrittenBy()); }
     QCString trClassDiagram(const char *clName)  
-    { return toUtf8(m_translator->trClassDiagram(clName)); }
+    { return toUtf8(m_translator->trClassDiagram(fromUtf8(clName))); }
     QCString trForInternalUseOnly()  
     { return toUtf8(m_translator->trForInternalUseOnly()); }
     QCString trWarning()  
@@ -264,13 +264,13 @@ class TranslatorDecoder : public Translator
     QCString trCompoundReference(const char *clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)  
-    { return toUtf8(m_translator->trCompoundReference(clName,compType,isTemplate)); }
+    { return toUtf8(m_translator->trCompoundReference(fromUtf8(clName),compType,isTemplate)); }
 
     
     QCString trFileReference(const char *fileName)  
     { return toUtf8(m_translator->trFileReference(fromUtf8(fileName))); }
     QCString trNamespaceReference(const char *namespaceName)  
-    { return toUtf8(m_translator->trNamespaceReference(namespaceName)); }
+    { return toUtf8(m_translator->trNamespaceReference(fromUtf8(namespaceName))); }
     
     QCString trPublicMembers()  
     { return toUtf8(m_translator->trPublicMembers()); }
@@ -363,7 +363,7 @@ class TranslatorDecoder : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     QCString trCollaborationDiagram(const char *clName)  
-    { return toUtf8(m_translator->trCollaborationDiagram(clName)); }
+    { return toUtf8(m_translator->trCollaborationDiagram(fromUtf8(clName))); }
     QCString trInclDepGraph(const char *fName)  
     { return toUtf8(m_translator->trInclDepGraph(fromUtf8(fName))); }
     QCString trConstructorDocumentation()  
@@ -484,7 +484,7 @@ class TranslatorDecoder : public Translator
     QCString trClasses()  
     { return toUtf8(m_translator->trClasses()); }
     QCString trPackage(const char *name)  
-    { return toUtf8(m_translator->trPackage(name)); }
+    { return toUtf8(m_translator->trPackage(fromUtf8(name))); }
     QCString trPackageList()  
     { return toUtf8(m_translator->trPackageList()); }
     QCString trPackageListDescription()  
@@ -686,9 +686,9 @@ class TranslatorDecoder : public Translator
     QCString trCompoundReferenceFortran(const char *clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)  
-    { return toUtf8(m_translator->trCompoundReferenceFortran(clName,compType,isTemplate)); }
+    { return toUtf8(m_translator->trCompoundReferenceFortran(fromUtf8(clName),compType,isTemplate)); }
     QCString trModuleReference(const char *namespaceName)  
-    { return toUtf8(m_translator->trModuleReference(namespaceName)); }
+    { return toUtf8(m_translator->trModuleReference(fromUtf8(namespaceName))); }
     QCString trModulesMembers()  
     { return toUtf8(m_translator->trModulesMembers()); }
     QCString trModulesMemberDescription(bool extractAll)  

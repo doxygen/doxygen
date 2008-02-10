@@ -62,6 +62,7 @@ class DirDef : public Definition
     bool isCluster() const { return m_subdirs.count()>0; }
     int level() const { return m_level; }
     DirDef *parent() const { return m_parent; }
+    int dirCount() const { return m_dirCount; }
     const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
     bool isParentOf(DirDef *dir) const;
     bool depGraphIsTrivial() const;

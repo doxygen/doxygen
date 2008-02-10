@@ -589,6 +589,7 @@ class PrintDocVisitor : public DocVisitor
 	case DocParamSect::Param: printf("param"); break;
 	case DocParamSect::RetVal: printf("retval"); break;
 	case DocParamSect::Exception: printf("exception"); break;
+	case DocParamSect::TemplateParam: printf("templateparam"); break;
 	case DocParamSect::Unknown: printf("unknown"); break;
       }
       printf(">\n");

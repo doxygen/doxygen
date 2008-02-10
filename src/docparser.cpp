@@ -162,7 +162,7 @@ static void docParserPushContext()
   g_parserStack.push(ctx);
 }
 
-static void docParserPopContext()
+static void docParserPopContext(bool keepParamInfo=FALSE)
 {
   DocParserContext *ctx = g_parserStack.pop();
   g_context             = ctx->context;
@@ -175,10 +175,13 @@ static void docParserPopContext()
   g_fileName            = ctx->fileName;
   g_relPath             = ctx->relPath;
 
-  g_hasParamCommand     = ctx->hasParamCommand;
-  g_hasReturnCommand    = ctx->hasReturnCommand;
+  if (!keepParamInfo)
+  {
+    g_hasParamCommand     = ctx->hasParamCommand;
+    g_hasReturnCommand    = ctx->hasReturnCommand;
+    g_paramsFound         = ctx->paramsFound;
+  }
   g_memberDef           = ctx->memberDef;
-  g_paramsFound         = ctx->paramsFound;
   g_isExample           = ctx->isExample;
   g_exampleName         = ctx->exampleName;
   g_sectionDict         = ctx->sectionDict;
@@ -1754,6 +1757,8 @@ void DocCopy::parse()
       g_copyStack.append(def);
       // make sure the descriptions end with a newline, so the parser will correctly
       // handle them in all cases.
+      //printf("doc='%s'\n",doc.data());
+      //printf("brief='%s'\n",brief.data());
       brief+='\n';
       doc+='\n';
       internalValidatingParseDoc(this,m_children,brief);
@@ -1761,7 +1766,7 @@ void DocCopy::parse()
       g_copyStack.remove(def);
       ASSERT(g_styleStack.isEmpty());
       ASSERT(g_nodeStack.isEmpty());
-      docParserPopContext();
+      docParserPopContext(TRUE);
     }
     else // oops, recursion
     {
@@ -4001,6 +4006,7 @@ int DocParamList::parseXml(const QString &paramName)
 
   } while (retval==RetVal_CloseXml && 
            Mappers::htmlTagMapper->map(g_token->name)!=XML_PARAM &&
+           Mappers::htmlTagMapper->map(g_token->name)!=XML_TYPEPARAM &&
            Mappers::htmlTagMapper->map(g_token->name)!=XML_EXCEPTION);
   
 
@@ -4419,7 +4425,7 @@ void DocPara::handleInheritDoc()
       internalValidatingParseDoc(this,m_children,reMd->briefDescription());
       internalValidatingParseDoc(this,m_children,reMd->documentation());
       g_copyStack.remove(reMd);
-      docParserPopContext();
+      docParserPopContext(TRUE);
       g_memberDef = thisMd;
     }
   }
@@ -4640,6 +4646,9 @@ int DocPara::handleCommand(const QString &cmdName)
       break; 
     case CMD_PARAM:
       retval = handleParamSection(cmdName,DocParamSect::Param,FALSE,g_token->paramDir);
+      break;
+    case CMD_TPARAM:
+      retval = handleParamSection(cmdName,DocParamSect::TemplateParam,FALSE,g_token->paramDir);
       break;
     case CMD_RETVAL:
       retval = handleParamSection(cmdName,DocParamSect::RetVal);
@@ -5012,11 +5021,14 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       handleStyleEnter(this,m_children,DocStyleChange::Code,&g_token->attribs);
       break;
     case XML_PARAM:
+    case XML_TYPEPARAM:
       {
         QString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
 	{
-          retval = handleParamSection(paramName,DocParamSect::Param,TRUE);
+          retval = handleParamSection(paramName,
+              tagId==XML_PARAM ? DocParamSect::Param : DocParamSect::TemplateParam,
+              TRUE);
         }
         else
         {
@@ -5025,6 +5037,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       }
       break;
     case XML_PARAMREF:
+    case XML_TYPEPARAMREF:
       {
         QString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
@@ -5037,7 +5050,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
         }
         else
         {
-          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'name' attribute from <paramref> tag.");
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Missing 'name' attribute from <param%sref> tag.",tagId==XML_PARAMREF?"":"type");
         }
       }
       break;
@@ -5330,6 +5343,7 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
     case XML_LIST:
     case XML_EXAMPLE:
     case XML_PARAM:
+    case XML_TYPEPARAM:
     case XML_RETURNS:
     case XML_SEEALSO:
     case XML_EXCEPTION:
@@ -5344,6 +5358,7 @@ int DocPara::handleHtmlEndTag(const QString &tagName)
     case XML_PERMISSION:
     case XML_DESCRIPTION:
     case XML_PARAMREF:
+    case XML_TYPEPARAMREF:
       // These tags are defined in .Net but are currently unsupported
       break;
     case HTML_UNKNOWN:

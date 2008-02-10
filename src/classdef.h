@@ -284,6 +284,7 @@ class ClassDef : public Definition
     void setIsStatic(bool b);
     void setIsObjectiveC(bool b);
     void setCompoundType(CompoundType t);
+    void setClassName(const char *name);
 
     void setTemplateArguments(ArgumentList *al);
     void setTemplateBaseClassNames(QDict<int> *templateNames);

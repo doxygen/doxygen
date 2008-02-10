@@ -630,7 +630,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
   					  codifyLines(yytext);
 					  endFontClass();
 					}
-<Start>"end"({BS_}{COMMANDS})?/[ \t\n].*    { 
+<Start>"end"({BS_}{COMMANDS})?/[ \t\n]  { 
   					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();

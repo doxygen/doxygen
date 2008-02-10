@@ -109,7 +109,8 @@ enum CommandType
   CMD_MANONLY      = 75,
   CMD_ENDMANONLY   = 76,
   CMD_INCWITHLINES = 77,
-  CMD_INHERITDOC   = 78
+  CMD_INHERITDOC   = 78,
+  CMD_TPARAM       = 79 | SIMPLESECT_BIT
 };
 
 enum HtmlTagType
@@ -150,27 +151,28 @@ enum HtmlTagType
 
   XML_CmdMask    = 0x100,
 
-  XML_C          = XML_CmdMask + 0,
-  XML_CODE       = XML_CmdMask + 1,
-  XML_DESCRIPTION= XML_CmdMask + 2,
-  XML_EXAMPLE    = XML_CmdMask + 3,
-  XML_EXCEPTION  = XML_CmdMask + 4,
-  XML_INCLUDE    = XML_CmdMask + 5,
-  XML_ITEM       = XML_CmdMask + 6,
-  XML_LIST       = XML_CmdMask + 7,
-  XML_LISTHEADER = XML_CmdMask + 8,
-  XML_PARA       = XML_CmdMask + 9,
-  XML_PARAM      = XML_CmdMask + 10,
-  XML_PARAMREF   = XML_CmdMask + 11,
-  XML_PERMISSION = XML_CmdMask + 12,
-  XML_REMARKS    = XML_CmdMask + 13,
-  XML_RETURNS    = XML_CmdMask + 14,
-  XML_SEE        = XML_CmdMask + 15,
-  XML_SEEALSO    = XML_CmdMask + 16,
-  XML_SUMMARY    = XML_CmdMask + 17,
-  XML_TERM       = XML_CmdMask + 18,
-  XML_VALUE      = XML_CmdMask + 19
-
+  XML_C            = XML_CmdMask + 0,
+  XML_CODE         = XML_CmdMask + 1,
+  XML_DESCRIPTION  = XML_CmdMask + 2,
+  XML_EXAMPLE      = XML_CmdMask + 3,
+  XML_EXCEPTION    = XML_CmdMask + 4,
+  XML_INCLUDE      = XML_CmdMask + 5,
+  XML_ITEM         = XML_CmdMask + 6,
+  XML_LIST         = XML_CmdMask + 7,
+  XML_LISTHEADER   = XML_CmdMask + 8,
+  XML_PARA         = XML_CmdMask + 9,
+  XML_PARAM        = XML_CmdMask + 10,
+  XML_PARAMREF     = XML_CmdMask + 11,
+  XML_PERMISSION   = XML_CmdMask + 12,
+  XML_REMARKS      = XML_CmdMask + 13,
+  XML_RETURNS      = XML_CmdMask + 14,
+  XML_SEE          = XML_CmdMask + 15,
+  XML_SEEALSO      = XML_CmdMask + 16,
+  XML_SUMMARY      = XML_CmdMask + 17,
+  XML_TERM         = XML_CmdMask + 18,
+  XML_TYPEPARAM    = XML_CmdMask + 19,
+  XML_TYPEPARAMREF = XML_CmdMask + 20,
+  XML_VALUE        = XML_CmdMask + 21
 };
 
 class Mapper

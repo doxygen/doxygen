@@ -778,6 +778,8 @@ void XmlDocVisitor::visitPre(DocParamSect *s)
       m_t << "retval"; break;
     case DocParamSect::Exception: 
       m_t << "exception"; break;
+    case DocParamSect::TemplateParam: 
+      m_t << "templateparam"; break;
     default:
       ASSERT(0);
   }

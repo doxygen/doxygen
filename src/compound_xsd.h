@@ -775,6 +775,7 @@
 "      <xsd:enumeration value=\"param\" />\n"
 "      <xsd:enumeration value=\"retval\" />\n"
 "      <xsd:enumeration value=\"exception\" />\n"
+"      <xsd:enumeration value=\"templateparam\" />\n"
 "    </xsd:restriction>\n"
 "  </xsd:simpleType>\n"
 "\n"

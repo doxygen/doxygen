@@ -927,6 +927,11 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
       filter(theTranslator->trReturnValues()); break;
     case DocParamSect::Exception: 
       filter(theTranslator->trExceptions()); break;
+    case DocParamSect::TemplateParam: 
+      /* TODO: add this 
+      filter(theTranslator->trTemplateParam()); break;
+      */
+      filter("Template Parameters"); break;
     default:
       ASSERT(0);
   }

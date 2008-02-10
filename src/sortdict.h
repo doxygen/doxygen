@@ -168,6 +168,18 @@ class SDict
       return item ? m_list->remove(item) : FALSE;
     }
 
+    /*! Take an item out of the dictionary without deleting it */
+    T *take(const char *key)
+    {
+      T *item = m_dict->take(key);
+      if (item)
+      {
+        int i = m_list->find(item);
+        m_list->take(i);
+      }
+      return item;
+    }
+
     /*! Sorts the members of the dictionary. First appending a number
      *  of members and then sorting them is faster (O(NlogN) than using 
      *  inSort() for each member (O(N^2)).

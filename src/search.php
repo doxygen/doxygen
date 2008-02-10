@@ -288,7 +288,7 @@ function main()
   {
     $query=$_GET["query"];
   }
-  end_form($query);
+  end_form(ereg_replace("[^[:alnum:]:\\.\\t ]", " ", $query ));
   echo "&nbsp;\n<div class=\"searchresults\">\n";
   $results = array();
   $requiredWords = array();

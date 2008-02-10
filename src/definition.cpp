@@ -301,6 +301,32 @@ Definition::~Definition()
   }
 }
 
+void Definition::setName(const char *name)
+{
+  if (name==0) return;
+  m_name = name;
+#if 0
+  makeResident();
+  if (m_isSymbol) 
+  {
+    removeFromMap(this);
+  }
+  if (m_name!="<globalScope>") 
+  {
+    //extractNamespaceName(m_name,m_localName,ns);
+    m_impl->localName=stripScope(m_name);
+  }
+  else
+  {
+    m_impl->localName=m_name;
+  }
+  if (m_isSymbol) 
+  {
+    addToMap(m_name,this);
+  }
+#endif
+}
+
 void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
 {
   if (!anchorList) return;
@@ -765,7 +791,7 @@ void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
   ol.pushGeneratorState();
-  if (Config_getBool("SOURCE_BROWSER") && members)
+  if (/*Config_getBool("SOURCE_BROWSER") &&*/ members)
   {
     ol.startParagraph();
     ol.parseText(text);
@@ -938,7 +964,6 @@ void Definition::addSourceReferences(MemberDef *md)
     }
     if (m_impl->sourceRefsDict->find(name)==0)
     {
-      //printf("Adding reference %s->%s\n",md->name().data(),name.data());
       m_impl->sourceRefsDict->inSort(name,md);
     }
   }

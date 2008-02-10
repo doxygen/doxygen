@@ -2482,6 +2482,44 @@ static void buildVarList(EntryNav *rootNav)
     else
       mtype=MemberDef::Variable;
 
+#if 0 // does not work correctly
+    //static bool typedefHidesStruct = Config_getBool("TYPEDEF_HIDES_STRUCT");
+    if (typedefHidesStruct) // substitute names with typedef'ed names
+    {
+      QCString baseType = type;
+      baseType.stripPrefix("typedef ");
+      if (baseType.stripPrefix("enum "))
+      {
+        MemberName *mn=Doxygen::functionNameSDict->find(baseType.stripWhiteSpace());
+        MemberNameIterator mni(*mn);
+        MemberDef *md;
+        for (mni.toFirst();(md=mni.current());++mni)
+        {
+          if (md->isEnumerate())
+          {
+            md->setName(name);
+            md->setDefinition(name);
+            goto nextMember;
+          }
+        }
+      }
+      else
+      {
+        baseType.stripPrefix("struct ");
+        baseType.stripPrefix("union ");
+        {
+          ClassDef *typedefClass = Doxygen::classSDict->find(baseType);
+          if (typedefClass)
+          {
+            typedefClass->setName(name);
+            typedefClass->setClassName(name);
+            goto nextMember;
+          }
+        }
+      }
+    }
+#endif
+
     if (!root->relates.isEmpty()) // related variable
     {
       isRelated=TRUE;
@@ -7019,7 +7057,8 @@ static void addSourceReferences()
       if (fd && 
           md->getStartBodyLine()!=-1 &&
           md->isLinkableInProject() &&
-          fd->generateSourceFile())
+          (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
+         )
       {
         //printf("Found member `%s' in file `%s' at line `%d' def=%s\n",
         //    md->name().data(),fd->name().data(),md->getStartBodyLine(),md->getOuterScope()->name().data()); 
@@ -7035,12 +7074,15 @@ static void addSourceReferences()
     for (mni.toFirst();(md=mni.current());++mni)
     {
       FileDef *fd=md->getBodyDef();
-      //printf("member %s body=[%d,%d] fd=%p\n",md->name().data(),
-      //    md->getStartBodyLine(),md->getEndBodyLine(),fd);
+      //printf("member %s body=[%d,%d] fd=%p link=%d parseSources=%d\n",
+      //    md->name().data(),
+      //    md->getStartBodyLine(),md->getEndBodyLine(),fd,
+      //    md->isLinkableInProject(),
+      //    Doxygen::parseSourcesNeeded);
       if (fd && 
           md->getStartBodyLine()!=-1 && 
           md->isLinkableInProject() && 
-          fd->generateSourceFile()
+          (fd->generateSourceFile() || Doxygen::parseSourcesNeeded)
          )
       {
         //printf("Found member `%s' in file `%s' at line `%d' def=%s\n",
@@ -9267,7 +9309,9 @@ void checkConfiguration()
   Doxygen::xrefLists->setAutoDelete(TRUE);
 
   Doxygen::parseSourcesNeeded = Config_getBool("CALL_GRAPH") || 
-                                Config_getBool("CALLER_GRAPH");
+                                Config_getBool("CALLER_GRAPH") ||
+                                Config_getBool("REFERENCES_RELATION") ||
+                                Config_getBool("REFERENCED_BY_RELATION");
   
 
 }

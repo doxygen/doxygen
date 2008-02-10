@@ -208,6 +208,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 \refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
+\refitem cfg_sort_by_scope_name SORT_BY_SCOPE_NAME
+\refitem cfg_sort_group_names SORT_GROUP_NAMES
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 \refitem cfg_source_browser SOURCE_BROWSER
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
@@ -682,6 +684,26 @@ function's detailed documentation block.
  by member name. If set to \c NO (the default) the members will appear in
  declaration order.
 
+
+\anchor cfg_sort_group_names
+<dt>\c SORT_GROUP_NAMES <dd>
+ \addindex SORT_GROUP_NAMES
+ If the \c SORT_GROUP_NAMES tag is set to \c YES then doxygen will sort the 
+ hierarchy of group names into alphabetical order. If set to \c NO (the default)
+ the group names will appear in their defined order. 
+
+\anchor cfg_sort_by_scope_name
+<dt>\c SORT_BY_SCOPE_NAME <dd>
+ \addindex SORT_BY_SCOPE_NAME
+ If the \c SORT_BY_SCOPE_NAME tag is set to \c YES, the class list will be
+ sorted by fully-qualified names, including namespaces. If set to
+ NO (the default), the class list will be sorted only by class name,
+ not including the namespace part.
+ @note This option is not very useful if \c HIDE_SCOPE_NAMES is set to \c YES.
+ @note This option applies only to the class list, not to the 
+       alphabetical list.
+
+
 \anchor cfg_generate_deprecatedlist
 <dt>\c GENERATE_DEPRECATEDLIST <dd>
  \addindex GENERATE_DEPRECATEDLIST
@@ -977,8 +999,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 
 <dt>\c SOURCE_BROWSER <dd>
  \addindex SOURCE_BROWSER
- If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will
- be generated. Documented entities will be cross-referenced with these sources.
+ If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will \n"
+ be generated. Documented entities will be cross-referenced with these sources. \n"
+ Note: To get rid of all source code in the generated output, make sure also \n"
+ \c VERBATIM_HEADERS is set to NO. \n"
 
 \anchor cfg_inline_sources
 <dt>\c INLINE_SOURCES <dd>

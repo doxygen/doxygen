@@ -766,9 +766,9 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
   static bool callerGraph          = Config_getBool("CALLER_GRAPH");
   static bool callGraph            = Config_getBool("CALL_GRAPH");
 
+  //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  //printf("addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if ((referencedByRelation || callerGraph) && 
+  if ((referencedByRelation || callerGraph || dst->hasCallerGraph()) && 
       (src->isFunction() || src->isSlot()) 
      )
   {
@@ -784,7 +784,7 @@ static void addDocCrossReference(MemberDef *src,MemberDef *dst)
       mdDecl->addSourceReferencedBy(src);
     }
   }
-  if ((referencesRelation || callGraph) && 
+  if ((referencesRelation || callGraph || src->hasCallGraph()) && 
       (src->isFunction() || src->isSlot())
      )
   {
@@ -2407,7 +2407,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
   					}
-<Body>"$"?"this->"			{ g_code->codify(yytext); }
+<Body,FuncCall>"$"?"this->"		{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
   					  g_code->codify(yytext);
 					  g_memCallContext = YY_START;

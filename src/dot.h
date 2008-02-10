@@ -337,5 +337,6 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
                                const QCString& relPath,const QString &context);
 
+void writeDotDirDepGraph(QTextStream &t,DirDef *dd);
 
 #endif

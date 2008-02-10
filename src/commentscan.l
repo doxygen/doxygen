@@ -122,33 +122,33 @@ static DocCmdMap docCmdMap[] =
   // command name      handler function         ends brief description
   { "brief",           &handleBrief,            FALSE },
   { "short",           &handleBrief,            FALSE },
-  { "fn",              &handleFn,               TRUE  },
-  { "var",             &handleFn,               TRUE  },
-  { "typedef",         &handleFn,               TRUE  },
-  { "property",        &handleFn,               TRUE  },
-  { "def",             &handleDef,              TRUE  },
-  { "overload",        &handleOverload,         TRUE  },
-  { "enum",            &handleEnum,             TRUE  },
-  { "defgroup",        &handleDefGroup,         TRUE  },
-  { "addtogroup",      &handleAddToGroup,       TRUE  },
-  { "weakgroup",       &handleWeakGroup,        TRUE  },
-  { "namespace",       &handleNamespace,        TRUE  },
-  { "package",         &handlePackage,          TRUE  },
-  { "class",           &handleClass,            TRUE  },
-  { "headerfile",      &handleHeaderFile,       TRUE  },
-  { "protocol",        &handleProtocol,         TRUE  },
-  { "category",        &handleCategory,         TRUE  },
-  { "union",           &handleUnion,            TRUE  },
-  { "struct",          &handleStruct,           TRUE  },
-  { "interface",       &handleInterface,        TRUE  },
-  { "idlexcept",       &handleIdlException,     TRUE  },
-  { "page",            &handlePage,             TRUE  },
-  { "mainpage",        &handleMainpage,         TRUE  },
-  { "file",            &handleFile,             TRUE  },
-  { "dir",             &handleDir,              TRUE  },
-  { "example",         &handleExample,          TRUE  },
+  { "fn",              &handleFn,               FALSE },
+  { "var",             &handleFn,               FALSE },
+  { "typedef",         &handleFn,               FALSE },
+  { "property",        &handleFn,               FALSE },
+  { "def",             &handleDef,              FALSE },
+  { "overload",        &handleOverload,         FALSE },
+  { "enum",            &handleEnum,             FALSE },
+  { "defgroup",        &handleDefGroup,         FALSE },
+  { "addtogroup",      &handleAddToGroup,       FALSE },
+  { "weakgroup",       &handleWeakGroup,        FALSE },
+  { "namespace",       &handleNamespace,        FALSE },
+  { "package",         &handlePackage,          FALSE },
+  { "class",           &handleClass,            FALSE },
+  { "headerfile",      &handleHeaderFile,       FALSE },
+  { "protocol",        &handleProtocol,         FALSE },
+  { "category",        &handleCategory,         FALSE },
+  { "union",           &handleUnion,            FALSE },
+  { "struct",          &handleStruct,           FALSE },
+  { "interface",       &handleInterface,        FALSE },
+  { "idlexcept",       &handleIdlException,     FALSE },
+  { "page",            &handlePage,             FALSE },
+  { "mainpage",        &handleMainpage,         FALSE },
+  { "file",            &handleFile,             FALSE },
+  { "dir",             &handleDir,              FALSE },
+  { "example",         &handleExample,          FALSE },
   { "details",         &handleDetails,          TRUE  },
-  { "name",            &handleName,             TRUE  },
+  { "name",            &handleName,             FALSE },
   { "todo",            &handleTodo,             TRUE  },
   { "test",            &handleTest,             TRUE  },
   { "bug",             &handleBug,              TRUE  },
@@ -174,28 +174,28 @@ static DocCmdMap docCmdMap[] =
   { "dot",             &handleFormatBlock,      TRUE  },
   { "msc",             &handleFormatBlock,      TRUE  },
   { "code",            &handleFormatBlock,      TRUE  },
-  { "addindex",        &handleAddIndex,         TRUE  },
+  { "addindex",        &handleAddIndex,         FALSE },
   { "if",              &handleIf,               FALSE },
   { "ifnot",           &handleIfNot,            FALSE },
   { "elseif",          &handleElseIf,           FALSE },
   { "else",            &handleElse,             FALSE },
   { "endif",           &handleEndIf,            FALSE },
-  { "ingroup",         &handleIngroup,          TRUE  },
-  { "nosubgrouping",   &handleNoSubGrouping,    TRUE  },
-  { "showinitializer", &handleShowInitializer,  TRUE  },
-  { "hideinitializer", &handleHideInitializer,  TRUE  },
-  { "callgraph",       &handleCallgraph,        TRUE  },
-  { "callergraph",     &handleCallergraph,      TRUE  },
+  { "ingroup",         &handleIngroup,          FALSE },
+  { "nosubgrouping",   &handleNoSubGrouping,    FALSE },
+  { "showinitializer", &handleShowInitializer,  FALSE },
+  { "hideinitializer", &handleHideInitializer,  FALSE },
+  { "callgraph",       &handleCallgraph,        FALSE },
+  { "callergraph",     &handleCallergraph,      FALSE },
   { "internal",        &handleInternal,         TRUE  },
   { "_linebr",         &handleLineBr,           FALSE },
-  { "static",          &handleStatic,           TRUE  },
-  { "pure",            &handlePure,             TRUE  },
-  { "private",         &handlePrivate,          TRUE  },
-  { "privatesection",  &handlePrivateSection,   TRUE  },
-  { "protected",       &handleProtected,        TRUE  },
-  { "protectedsection",&handleProtectedSection, TRUE  },
-  { "public",          &handlePublic,           TRUE  },
-  { "publicsection",   &handlePublicSection,    TRUE  },
+  { "static",          &handleStatic,           FALSE },
+  { "pure",            &handlePure,             FALSE },
+  { "private",         &handlePrivate,          FALSE },
+  { "privatesection",  &handlePrivateSection,   FALSE },
+  { "protected",       &handleProtected,        FALSE },
+  { "protectedsection",&handleProtectedSection, FALSE },
+  { "public",          &handlePublic,           FALSE },
+  { "publicsection",   &handlePublicSection,    FALSE },
   { "inherit",         &handleInherit,          TRUE  },
   { "arg",             0,                       TRUE  },
   { "attention",       0,                       TRUE  },
@@ -213,6 +213,7 @@ static DocCmdMap docCmdMap[] =
   { "note",            0,                       TRUE  },
   { "par",             0,                       TRUE  },
   { "param",           0,                       TRUE  },
+  { "tparam",          0,                       TRUE  },
   { "post",            0,                       TRUE  },
   { "pre",             0,                       TRUE  },
   { "remark",          0,                       TRUE  },
@@ -728,14 +729,14 @@ static inline void addOutput(char c)
   *pOutputString+=c;
 }
 
-static void endBrief()
+static void endBrief(bool addToOutput=TRUE)
 {
   if (!current->brief.stripWhiteSpace().isEmpty())
   { // only go to the detailed description if we have
     // found some brief description and not just whitespace
     briefEndsAtDot=FALSE;
     setOutput(OutputDoc);
-    addOutput(yytext);
+    if (addToOutput) addOutput(yytext);
   }
 }
 
@@ -1009,13 +1010,13 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
   					  if (inContext!=OutputBrief)
 					  {
-  					    addOutput(yytext);
+  					    addOutput("\n\n");
 					    setOutput(OutputDoc);
 					  }
 					  else 
 					  { // only go to the detailed description if we have
 					    // found some brief description and not just whitespace
-					    endBrief();
+					    endBrief(FALSE);
 					  }
   					  lineCount();
   					}
@@ -2216,6 +2217,12 @@ static bool handleInternal(const QCString &)
 {
   if (!Config_getBool("INTERNAL_DOCS"))
   {
+    // make sure some whitespace before a \internal command
+    // is not treated as "documentation"
+    if (current->doc.stripWhiteSpace().isEmpty())
+    { 
+      current->doc.resize(0);
+    }
     BEGIN( SkipInternal );
   }
   else
