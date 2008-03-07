@@ -170,14 +170,17 @@ void InputString::init()
 {
   if (sm==StringFixed)
   {
-    int *itemIndex = m_values->find(str);
-    if (itemIndex)
+    if (m_values)
     {
-      com->setCurrentItem(*itemIndex);
-    } 
-    else
-    {
-      com->setCurrentItem(0);
+      int *itemIndex = m_values->find(str);
+      if (itemIndex)
+      {
+        com->setCurrentItem(*itemIndex);
+      } 
+      else
+      {
+        com->setCurrentItem(0);
+      }
     }
   }
   else

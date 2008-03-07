@@ -1,11 +1,24 @@
 /******************************************************************************
+ *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+/******************************************************************************
  * ftvhelp.h,v 1.0 2000/09/06 16:09:00
  *
  * Kenney Wong <kwong@ea.com>
  *
  * Folder Tree View for offline help on browsers that do not support HTML Help.
- * Uses the FTV structure from: 
- * http://www.geocities.com/Paris/LeftBank/2178/ftexample.html
  */
 
 #ifndef FTVHELP_H
@@ -58,8 +71,8 @@ extern FTVImageInfo image_info[];
 class FTVHelp : public IndexIntf
 {
   public:
-    FTVHelp();
-    //static FTVHelp *getInstance();
+    FTVHelp(bool topLevelIndex = true);
+    ~FTVHelp();
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -73,17 +86,15 @@ class FTVHelp : public IndexIntf
                       const char *, const char *,
                       const char *, const MemberDef *) {}
     void addIndexFile(const char *) {}
-
+    void generateTreeView(QString* = NULL);
   private:
     void generateTreeViewImages();
-    void generateTreeView();
     void generateTree(QTextStream &t,const QList<FTVNode> &nl,int level);
     void generateIndent(QTextStream &t,FTVNode *n,int level);
     void generateLink(QTextStream &t,FTVNode *n);
-   ~FTVHelp();
-    static FTVHelp *m_theInstance;
     QList<FTVNode> *m_indentNodes;
     int m_indent;
+    bool m_topLevelIndex;
 };
 
 

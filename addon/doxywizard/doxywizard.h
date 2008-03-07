@@ -126,8 +126,8 @@ class Step4 : public QWidget
 
   public:
     Step4(QWidget *parent);
-    void disableCallGraphs();
-    bool callGraphEnabled() const;
+    //void disableCallGraphs();
+    //bool callGraphEnabled() const;
 
     DiagramMode diagramMode() const;
     bool classDiagram() const;
@@ -165,7 +165,7 @@ class Wizard : public QTabDialog
 
   public:
     Wizard(QWidget *parent);
-    void disableCallGraphs();
+    //void disableCallGraphs();
 
     // step1
     QString getProjectName() const    { return m_step1->getProjectName(); }

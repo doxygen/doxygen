@@ -73,22 +73,22 @@ sub GenerateDep {
 	$(LEX) -PpreYY -t pre.l | $(INCBUFSIZE) >pre.cpp 
 
 #$ GenerateDep("declinfo.cpp","declinfo.l");
-	$(LEX) -PdeclinfoYY -t declinfo.l >declinfo.cpp
+	$(LEX) -PdeclinfoYY -t declinfo.l | $(INCBUFSIZE) >declinfo.cpp
 
 #$ GenerateDep("defargs.cpp","defargs.l");
-	$(LEX) -PdefargsYY -t defargs.l >defargs.cpp
+	$(LEX) -PdefargsYY -t defargs.l | $(INCBUFSIZE) >defargs.cpp
 
 #$ GenerateDep("doctokenizer.cpp","doctokenizer.l");
-	$(LEX) -PdoctokenizerYY -t doctokenizer.l >doctokenizer.cpp
+	$(LEX) -PdoctokenizerYY -t doctokenizer.l | $(INCBUFSIZE) >doctokenizer.cpp
 
 #$ GenerateDep("commentcnv.cpp","commentcnv.l");
-	$(LEX) -PcommentcnvYY -t commentcnv.l >commentcnv.cpp
+	$(LEX) -PcommentcnvYY -t commentcnv.l | $(INCBUFSIZE) >commentcnv.cpp
 
 #$GenerateDep("commentscan.cpp","commentscan.l");
-	$(LEX) -PcommentScanYY -t commentscan.l >commentscan.cpp
+	$(LEX) -PcommentScanYY -t commentscan.l | $(INCBUFSIZE) >commentscan.cpp
 
 #$ GenerateDep("ce_lex.cpp","constexp.l","ce_parse.h");
-	$(LEX) -PcppExpYY -t constexp.l >ce_lex.cpp 
+	$(LEX) -PcppExpYY -t constexp.l | $(INCBUFSIZE) >ce_lex.cpp 
 
 #$ GenerateDep("ce_parse.cpp","constexp.y");
 	$(YACC) -l -p cppExpYY constexp.y -o ce_parse.cpp 

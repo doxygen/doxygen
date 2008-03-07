@@ -833,7 +833,7 @@ bool MemberDef::isLinkableInProject() const
     //printf("private and invisible!\n");
     return FALSE; // hidden due to protection
   }
-  if (isStatic() && m_impl->classDef==0 && !extractStatic) 
+  if (m_impl->stat && m_impl->classDef==0 && !extractStatic) 
   {
     //printf("static and invisible!\n");
     return FALSE; // hidden due to staticness

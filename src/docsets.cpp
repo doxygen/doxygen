@@ -129,8 +129,7 @@ void DocSets::initialize()
     err("Could not open file %s for writing\n",notes.data());
     exit(1);
   }
-  QCString indexName="index";
-  if (Config_getBool("GENERATE_TREEVIEW")) indexName="main";
+  QCString indexName=usingTreeIndex()?"main":"index";
   m_nts.setDevice(m_nf);
   m_nts.setEncoding(QTextStream::UnicodeUTF8);
   m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;

@@ -39,6 +39,7 @@ class PageSDict;
 class PageDef;
 class DirDef;
 class DirList;
+class FTVHelp;
 
 class GroupDef : public Definition
 {
@@ -86,7 +87,7 @@ class GroupDef : public Definition
 
     bool visited;    // number of times accessed for output - KPW
 
-    friend void writeGroupTreeNode(OutputList&, GroupDef*, int);      
+    friend void writeGroupTreeNode(OutputList&, GroupDef*, int, FTVHelp*);      
                     // make accessible for writing tree view of group in index.cpp - KPW
 
     void setGroupScope(Definition *d) { groupScope = d; }

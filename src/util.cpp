@@ -3069,8 +3069,8 @@ static QCString getCanonicalTypeForIdentifier(
   //printf("  >>>> word '%s' => '%s' templSpec=%s ts=%s tSpec=%s isTemplate=%d resolvedType=%s\n",
   //    (word+templSpec).data(),
   //    cd?cd->qualifiedName().data():"<none>",
-  //   templSpec.data(),ts.data(),
-  //   tSpec?tSpec->data():"<null>",
+  //    templSpec.data(),ts.data(),
+  //    tSpec?tSpec->data():"<null>",
   //    cd?cd->isTemplate():FALSE,
   //    resolvedType.data());
 
@@ -3400,6 +3400,7 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
 
     if (srcA->type==dstA->type)
     {
+      //printf("1. merging %s:%s <-> %s:%s\n",srcA->type.data(),srcA->name.data(),dstA->type.data(),dstA->name.data());
       if (srcA->name.isEmpty() && !dstA->name.isEmpty())
       {
         //printf("type: `%s':=`%s'\n",srcA->type.data(),dstA->type.data());
@@ -3436,7 +3437,9 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
     }
     else
     {
-      //printf("merging %s:%s <-> %s:%s\n",srcA->type.data(),srcA->name.data(),dstA->type.data(),dstA->name.data());
+      //printf("2. merging '%s':'%s' <-> '%s':'%s'\n",srcA->type.data(),srcA->name.data(),dstA->type.data(),dstA->name.data());
+      srcA->type=srcA->type.stripWhiteSpace();
+      dstA->type=dstA->type.stripWhiteSpace();
       if (srcA->type+" "+srcA->name==dstA->type) // "unsigned long:int" <-> "unsigned long int:bla"
       {
         srcA->type+=" "+srcA->name;
@@ -3833,7 +3836,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         //    md->name().data(),args,fd,gd);
         if (
             ((gd && gd->isLinkable()) || (fd && fd->isLinkable())) && 
-            md->getNamespaceDef()==0
+            md->getNamespaceDef()==0 && md->isLinkable()
            )
         {
           //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
@@ -3905,7 +3908,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
         if (bmd) md=bmd;
       }
-      if (md && !md->isLinkable()) md=0; // ignore things we cannot link to
       if (md) // found a matching global member
       {
         fd=md->getFileDef();
@@ -4469,12 +4471,13 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
       for (fni.toFirst();(fd=fni.current());++fni)
       {
         QCString fdStripPath = stripFromIncludePath(fd->getPath());
-        if (path.isEmpty() || fdStripPath==pathStripped) 
+        if (path.isEmpty() || fdStripPath.right(pathStripped.length())==pathStripped) 
         { 
           count++; 
           lastMatch=fd; 
         }
       }
+
       ambig=(count>1);
       cachedResult->isAmbig = ambig;
       cachedResult->fileDef = lastMatch;
@@ -6591,5 +6594,11 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
     ol.endConstraintDocs();
   }
   ol.endConstraintList();
+}
+
+bool usingTreeIndex()
+{
+  QCString& TreeView=Config_getEnum("GENERATE_TREEVIEW");
+  return TreeView=="FRAME" || TreeView=="ALL" || TreeView=="YES";
 }
 

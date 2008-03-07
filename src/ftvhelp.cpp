@@ -326,36 +326,23 @@ struct FTVNode
 
 //----------------------------------------------------------------------------
 
-FTVHelp *FTVHelp::m_theInstance = 0;
-
-/*! Construm_cts an ftv help object. 
+/*! Constructs an ftv help object. 
  *  The object has to be \link initialize() initialized\endlink before it can 
  *  be used.
  */
-FTVHelp::FTVHelp() 
+FTVHelp::FTVHelp(bool TLI) 
 {
   /* initial depth */
-  //m_dc = 0;
-  //m_cf = 0;
   m_indentNodes = new QList<FTVNode>[MAX_INDENT];
   m_indentNodes[0].setAutoDelete(TRUE);
   m_indent=0;
+  m_topLevelIndex = TLI;
 }
 
 FTVHelp::~FTVHelp()
 {
   delete[] m_indentNodes;
 }
-
-#if 0
-/*! return a reference to the one and only instance of this class. 
- */
-FTVHelp *FTVHelp::getInstance()
-{
-  if (m_theInstance==0) m_theInstance = new FTVHelp;
-  return m_theInstance;
-}
-#endif
 
 /*! This will create a folder tree view table of contents file (tree.js).
  *  \sa finalize()
@@ -371,9 +358,6 @@ void FTVHelp::initialize()
 void FTVHelp::finalize()
 {
   generateTreeView();
-  generateTreeViewImages();
-  delete m_theInstance;
-  m_theInstance=0;
 }
 
 /*! Increase the level of the contents hierarchy. 
@@ -382,10 +366,8 @@ void FTVHelp::finalize()
  */
 void FTVHelp::incContentsDepth()
 {
-  //int i; for (i=0;i<m_dc+1;i++) m_cts << "  ";
   m_indent++;
   ASSERT(m_indent<MAX_INDENT);
-  //return m_indent;
 }
 
 /*! Decrease the level of the contents hierarchy.
@@ -394,8 +376,6 @@ void FTVHelp::incContentsDepth()
  */
 void FTVHelp::decContentsDepth()
 {
-  //int i; for (i=0;i<m_dc;i++) m_cts << "  ";
-
   ASSERT(m_indent>0);
   if (m_indent>0)
   {
@@ -408,7 +388,6 @@ void FTVHelp::decContentsDepth()
       parent->children.append(children->take(0));
     }
   }
-  //return m_indent;
 }
 
 /*! Add a list item to the contents file.
@@ -423,7 +402,7 @@ void FTVHelp::addContentsItem(bool isDir,
                               const char *ref,
                               const char *file,
                               const char *anchor
-                             )
+                              )
 {
   QList<FTVNode> *nl = &m_indentNodes[m_indent];
   FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name);
@@ -516,7 +495,10 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
     }
     t << n->file << Doxygen::htmlFileExtension;
     if (!n->anchor.isEmpty()) t << "#" << n->anchor;
-    t << "\" target=\"basefrm\">";
+    if (m_topLevelIndex)
+      t << "\" target=\"basefrm\">";
+    else
+      t << "\" target=\"_self\">";
     t << n->name;
     t << "</a>";
     if (!n->ref.isEmpty())
@@ -580,59 +562,62 @@ void FTVHelp::generateTreeViewImages()
   }
 } 
 
-void FTVHelp::generateTreeView()
+void FTVHelp::generateTreeView(QString* OutString)
 {
-  // Generate alternative index.html as a frame
-  QCString fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
+  QCString fileName;
   QFile f;
-  f.setName(fileName);
-  if (!f.open(IO_WriteOnly))
+  
+  generateTreeViewImages();
+  
+  // If top level index, generate alternative index.html as a frame
+  if (m_topLevelIndex)
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  else
-  {
-    QTextStream t(&f);
-#if QT_VERSION >= 200
-    t.setEncoding(QTextStream::UnicodeUTF8);
-#endif
-    t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
-    t << "<html><head>";
-    t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n";
-    t << "<title>"; 
-    if (Config_getString("PROJECT_NAME").isEmpty())
+    fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
+    f.setName(fileName);
+    if (!f.open(IO_WriteOnly))
     {
-      t << "Doxygen Documentation";
+      err("Cannot open file %s for writing!\n",fileName.data());
+      return;
     }
     else
     {
-      t << Config_getString("PROJECT_NAME");
+      QTextStream t(&f);
+#if QT_VERSION >= 200
+      t.setEncoding(QTextStream::UnicodeUTF8);
+#endif
+      t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
+      t << "<html><head>";
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n";
+      t << "<title>"; 
+      if (Config_getString("PROJECT_NAME").isEmpty())
+      {
+        t << "Doxygen Documentation";
+      }
+      else
+      {
+        t << Config_getString("PROJECT_NAME");
+      }
+      t << "</title></head>" << endl;
+      t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
+      t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
+      t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
+      t << "  <noframes>" << endl;
+      t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
+      t << "  </noframes>" << endl;
+      t << "</frameset>" << endl;
+      t << "</html>" << endl;
+      f.close();
     }
-    t << "</title></head>" << endl;
-    t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
-    t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
-    t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
-    t << "  <noframes>" << endl;
-    t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
-    t << "  </noframes>" << endl;
-    t << "</frameset>" << endl;
-    t << "</html>" << endl;
-    f.close();
   }
 
-  // Generate tree view frame
-  fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
-  f.setName(fileName);
-  if (!f.open(IO_WriteOnly))
+  // Generate tree view
+  if (!OutString)
+    OutString = new QString;
+  QTextOStream t(OutString);
+  t.setEncoding(QTextStream::UnicodeUTF8);
+
+  if (m_topLevelIndex)
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
-    return;
-  }
-  else
-  {
-    QTextStream t(&f);
-    t.setEncoding(QTextStream::UnicodeUTF8);
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
     t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\" />\n";
@@ -655,64 +640,67 @@ void FTVHelp::generateTreeView()
     }
     t << "\">" << endl;
     t << "    <title>TreeView</title>\n";
-    t << "    <script type=\"text/javascript\">\n";
-    t << "    <!-- // Hide script from old browsers\n";
-    t << "    \n";
+  }
+  t << "    <script type=\"text/javascript\">\n";
+  t << "    <!-- // Hide script from old browsers\n";
+  t << "    \n";
 
-            /* User has clicked on a node (folder or +/-) in the tree */
-    t << "    function toggleFolder(id, imageNode) \n";
-    t << "    {\n";
-    t << "      var folder = document.getElementById(id);\n";
-    t << "      var l = imageNode.src.length;\n";
-                /* If the user clicks on the book icon, we move left one image so 
-                 * the code (below) will also adjust the '+' icon. 
-                 */
-    t << "      if (imageNode.src.substring(l-20,l)==\"" FTV_ICON_FILE(folderclosed) "\" || \n";
-    t << "          imageNode.src.substring(l-18,l)==\"" FTV_ICON_FILE(folderopen)  "\")\n";
-    t << "      {\n";
-    t << "        imageNode = imageNode.previousSibling;\n";
-    t << "        l = imageNode.src.length;\n";
-    t << "      }\n";
-    t << "      if (folder == null) \n";
-    t << "      {\n";
-    t << "      } \n";
-                /* Node controls a open section, we need to close it */
-    t << "      else if (folder.style.display == \"block\") \n";
-    t << "      {\n";
-    t << "        if (imageNode != null) \n";
-    t << "        {\n";
-    t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
-    t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
-    t << "          {\n";
-    t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
-    t << "          }\n";
-    t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
-    t << "          {\n";
-    t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
-    t << "          }\n";
-    t << "        }\n";
-    t << "        folder.style.display = \"none\";\n";
-    t << "      } \n";
-    t << "      else \n"; /* section is closed, we need to open it */
-    t << "      {\n";
-    t << "        if (imageNode != null) \n";
-    t << "        {\n";
-    t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderopen) "\";\n";
-    t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(pnode) "\")\n";
-    t << "          {\n";
-    t << "            imageNode.src = \"" FTV_ICON_FILE(mnode) "\";\n";
-    t << "          }\n";
-    t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(plastnode) "\")\n";
-    t << "          {\n";
-    t << "            imageNode.src = \"" FTV_ICON_FILE(mlastnode) "\";\n";
-    t << "          }\n";
-    t << "        }\n";
-    t << "        folder.style.display = \"block\";\n";
-    t << "      }\n";
-    t << "    }\n";
-    t << "\n";
-    t << "    // End script hiding -->        \n";
-    t << "    </script>\n";
+  /* User has clicked on a node (folder or +/-) in the tree */
+  t << "    function toggleFolder(id, imageNode) \n";
+  t << "    {\n";
+  t << "      var folder = document.getElementById(id);\n";
+  t << "      var l = imageNode.src.length;\n";
+  /* If the user clicks on the book icon, we move left one image so 
+   * the code (below) will also adjust the '+' icon. 
+   */
+  t << "      if (imageNode.src.substring(l-20,l)==\"" FTV_ICON_FILE(folderclosed) "\" || \n";
+  t << "          imageNode.src.substring(l-18,l)==\"" FTV_ICON_FILE(folderopen)  "\")\n";
+  t << "      {\n";
+  t << "        imageNode = imageNode.previousSibling;\n";
+  t << "        l = imageNode.src.length;\n";
+  t << "      }\n";
+  t << "      if (folder == null) \n";
+  t << "      {\n";
+  t << "      } \n";
+  /* Node controls a open section, we need to close it */
+  t << "      else if (folder.style.display == \"block\") \n";
+  t << "      {\n";
+  t << "        if (imageNode != null) \n";
+  t << "        {\n";
+  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderclosed) "\";\n";
+  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(mnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(pnode) "\";\n";
+  t << "          }\n";
+  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(mlastnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(plastnode) "\";\n";
+  t << "          }\n";
+  t << "        }\n";
+  t << "        folder.style.display = \"none\";\n";
+  t << "      } \n";
+  t << "      else \n"; /* section is closed, we need to open it */
+  t << "      {\n";
+  t << "        if (imageNode != null) \n";
+  t << "        {\n";
+  t << "          imageNode.nextSibling.src = \"" FTV_ICON_FILE(folderopen) "\";\n";
+  t << "          if (imageNode.src.substring(l-13,l) == \"" FTV_ICON_FILE(pnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(mnode) "\";\n";
+  t << "          }\n";
+  t << "          else if (imageNode.src.substring(l-17,l) == \"" FTV_ICON_FILE(plastnode) "\")\n";
+  t << "          {\n";
+  t << "            imageNode.src = \"" FTV_ICON_FILE(mlastnode) "\";\n";
+  t << "          }\n";
+  t << "        }\n";
+  t << "        folder.style.display = \"block\";\n";
+  t << "      }\n";
+  t << "    }\n";
+  t << "\n";
+  t << "    // End script hiding -->        \n";
+  t << "    </script>\n";
+  if (m_topLevelIndex)
+  {
     t << "  </head>\n";
     t << "\n";
     t << "  <body class=\"ftvtree\">\n";
@@ -728,16 +716,40 @@ void FTVHelp::generateTreeView()
       t << projName;
     }
     t << "</h3>\n";
-    t << "      <div style=\"display: block;\">\n";
+  }
+  else
+  {
+    t << "    <div class=\"directory-alt\">\n";
+    t << "      <br>\n";
+  }
+  t << "      <div style=\"display: block;\">\n";
 
-    generateTree(t,m_indentNodes[0],0);
+  generateTree(t,m_indentNodes[0],0);
 
-    t << "      </div>\n";
-    t << "    </div>\n";
+  t << "      </div>\n";
+  t << "    </div>\n";
+  
+  if (!m_topLevelIndex)
+  {
     t << "  </body>\n";
     t << "</html>\n";
   }
-  generateTreeViewImages();
-
+  
+  if (m_topLevelIndex)
+  {
+    fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
+    f.setName(fileName);
+    if (!f.open(IO_WriteOnly))
+    {
+      err("Cannot open file %s for writing!\n",fileName.data());
+      return;
+    }
+    else
+    {
+      QTextStream t(&f);
+      t << *OutString << endl;
+      f.close();
+    }
+  }
 }
 

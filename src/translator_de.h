@@ -672,8 +672,8 @@ class TranslatorGerman : public Translator
         case ClassDef::Struct: result+="Struktur"; break;
         case ClassDef::Union:  result+="Varianten"; break;
         case ClassDef::Interface:  result+="Schnittstellen"; break;
-        case ClassDef::Protocol:  result+="Protocol"; break; // translate me!
-        case ClassDef::Category:  result+="Category"; break; // translate me!
+        case ClassDef::Protocol:  result+="Protokoll"; break;
+        case ClassDef::Category:  result+="Kategorie"; break; 
         case ClassDef::Exception:  result+="Ausnahmen"; break;
       }
       result+="referenz";
@@ -840,8 +840,8 @@ class TranslatorGerman : public Translator
         case ClassDef::Struct:     result+=" Struktur"; break;
         case ClassDef::Union:      result+=" Variante"; break;
         case ClassDef::Interface:  result+=" Schnittstelle"; break;
-        case ClassDef::Protocol:   result+=" Protocol"; break; // translate me!
-        case ClassDef::Category:   result+=" Category"; break; // translate me!
+        case ClassDef::Protocol:   result+="s Protokoll"; break; 
+        case ClassDef::Category:   result+=" Kategorie"; break;
         case ClassDef::Exception:  result+=" Ausnahme"; break;
       }
       result+=" wurde erzeugt aufgrund der Datei";

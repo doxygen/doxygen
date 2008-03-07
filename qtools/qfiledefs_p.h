@@ -55,8 +55,7 @@
 #elif !defined(_OS_MAC_) 
 # include <sys/types.h>
 # include <sys/stat.h>
-#elif defined(_OS_MAC_) \
-  && (MAC_OS_X_VERSION_MAX_ALLOWED==MAC_OS_X_VERSION_10_5)
+#elif defined(_OS_MAC_)
 # include <sys/types.h>
 # include <sys/stat.h>
 # define _OS_UNIX_

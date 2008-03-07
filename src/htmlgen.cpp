@@ -978,7 +978,7 @@ void HtmlGenerator::endTextLink()
 void HtmlGenerator::startHtmlLink(const char *url)
 {
   t << "<a ";
-  if (Config_getBool("GENERATE_TREEVIEW")) t << "target=\"top\" ";
+  if (usingTreeIndex()) t << "target=\"top\" ";
   t << "href=\"";
   if (url) t << url;
   t << "\">"; 
@@ -1618,17 +1618,17 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   }
 }
 
-void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
+void HtmlGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
   QCString lineNumber,lineAnchor;
   lineNumber.sprintf("%05d",l);
   lineAnchor.sprintf("l%05d",l);
 
-  if (file)
+  if (filename)
   {
     startCodeAnchor(lineAnchor);
-    writeCodeLink(ref,file,anchor,lineNumber,0);
+    writeCodeLink(ref,filename,anchor,lineNumber,0);
     endCodeAnchor();
   }
   else
@@ -1641,13 +1641,13 @@ void HtmlGenerator::writeLineNumber(const char *ref,const char *file,
 }
 
 void HtmlGenerator::startSimpleSect(SectionTypes,
-                                const char *file,const char *anchor,
+                                const char *filename,const char *anchor,
                                 const char *title)
 {
   t << "<dl compact><dt><b>";
-  if (file)
+  if (filename)
   {
-    writeObjectLink(0,file,anchor,title);
+    writeObjectLink(0,filename,anchor,title);
   }
   else
   {
@@ -1867,7 +1867,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   startQuickIndexList(t,compact);
 
-  if (Config_getBool("GENERATE_TREEVIEW"))
+  if (usingTreeIndex())
   {
     startQuickIndexItem(t,"main"+Doxygen::htmlFileExtension,
                         hli==HLI_Main,compact,relPath);

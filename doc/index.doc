@@ -27,7 +27,7 @@ Version: $(VERSION)
 
 <h2>Introduction</h2>
 Doxygen is a documentation system for C++, C, Java, Objective-C, Python, IDL 
-(Corba and Microsoft flavors), Fortran, VHDL, PHP, C#, and to some extend D.
+(Corba and Microsoft flavors), Fortran, VHDL, PHP, C#, and to some extent D.
 
 It can help you in three ways:
 <ol>

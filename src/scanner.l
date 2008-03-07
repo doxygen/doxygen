@@ -170,6 +170,7 @@ static QCString         idlAttr;
 static QCString         idlProp;
 
 static bool             g_lexInit = FALSE;
+static bool             externC;
 
 
 //-----------------------------------------------------------------------------
@@ -901,6 +902,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->bodyLine = yyLineNr;
 					    curlyCount=0;
 					    BEGIN( CliPropertyType );
+					  }
+					  else if (insideCS)
+					  {
+					    lineCount() ;
+  					    current->mtype = Event;
+					    current->bodyLine = yyLineNr;
 					  }
 					  else
 					  {
@@ -3006,8 +3013,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 						else
 						{
-						  current->doc.resize(0);
-						  current->brief.resize(0);
+						  //current->doc.resize(0);
+						  //current->brief.resize(0);
 						  BEGIN( MemberSpec ) ;
 						}
 					      }
@@ -4324,7 +4331,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    current->name += "-p";
 					  }
-					  if ((current->section & Entry::Protocol) ||
+					  if ((current->spec & Entry::Protocol) ||
 					      current->section == Entry::OBJCIMPL_SEC)
 					  {
 					    unput('{'); // fake start of body
@@ -4453,6 +4460,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  unput('{');
 					  BEGIN( lastCSConstraint );
 					}
+<CSConstraintType,CSConstraintName>";"  {
+                                          handleParametersCommentBlocks(current->typeConstr);
+					  unput(';');
+					  BEGIN( lastCSConstraint );
+  					}
 <CSConstraintName>":"                   {
                                           BEGIN( CSConstraintType );
                                         }
@@ -4719,6 +4731,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           if (*yytext=='>')
 					  { // end of a ObjC protocol list
   					    insideProtocolList=FALSE;
+					    unput('{'); // dummy start body
 					  }
 					  else
 					  {
@@ -4831,6 +4844,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
   					  removeSlashes=(yytext[1]=='/');
 					  lastDocContext = YY_START;
+
 					  //printf("Found comment block at %s:%d\n",yyFileName,yyLineNr);
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -4918,9 +4932,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
 					  lineCount();
+					  externC=TRUE;
 					}
 <FindMembers>"{"			{
-                                          if (insideCS &&    
+                                          if (externC) 
+					  {
+					    externC=FALSE;
+					  }
+                                          else if (insideCS &&    
 					      !current->name.isEmpty() && 
 					      !current->type.isEmpty())
 					  {

@@ -241,7 +241,6 @@ struct STLInfo
 static STLInfo g_stlinfo[] =
 {
   // className              baseClass1                      baseClass2             templType1     templName1     templType2    templName2     virtInheritance  // iterators
-#if 0
   { "allocator",            0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "auto_ptr",             0,                              0,                     "T",           "ptr",         0,            0,             FALSE,              FALSE },
   { "ios_base",             0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE },
@@ -284,9 +283,7 @@ static STLInfo g_stlinfo[] =
   { "multimap",             0,                              0,                     "K",           "keys",        "T",          "elements",    FALSE,              TRUE  },
   { "set",                  0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
   { "multiset",             0,                              0,                     "K",           "keys",        0,            0,             FALSE,              TRUE  },
-#endif
   { "vector",               0,                              0,                     "T",           "elements",    0,            0,             FALSE,              TRUE  },
-#if 0
   { "queue",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "priority_queue",       0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
   { "stack",                0,                              0,                     "T",           "elements",    0,            0,             FALSE,              FALSE },
@@ -306,7 +303,6 @@ static STLInfo g_stlinfo[] =
   { "range_error",          "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
   { "overflow_error",       "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
   { "underflow_error",      "runtime_error",                0,                     0,             0,             0,            0,             FALSE,              FALSE },
-#endif
   { 0,                      0,                              0,                     0,             0,             0,            0,             FALSE,              FALSE }
 };
 
@@ -2237,8 +2233,8 @@ static bool isVarWithConstructor(EntryNav *rootNav)
     goto done;
   }
   else if ((fd = rootNav->fileDef()) &&
-       fd->name().right(2)==".c"
-     )
+            (fd->name().right(2)==".c" || fd->name().right(2)==".h")
+          )
   { // inside a .c file
     result=FALSE;
     goto done;
@@ -2333,9 +2329,9 @@ static bool isVarWithConstructor(EntryNav *rootNav)
   }
 
 done:
+  //printf("isVarWithConstructor(%s,%s)=%d\n",rootNav->parent()->name().data(),
+  //                                          root->type.data(),result);
   rootNav->releaseEntry();
-  //printf("isVarWithConstructor(%s,%s)=%d\n",root->parent->name.data(),
-  //                                       root->type.data(),result);
   return result;
 }
 
@@ -6828,53 +6824,56 @@ static void computeMemberRelations()
   {
     MemberNameIterator mdi(*mn);
     MemberDef *md;
-    for ( ; (md=mdi.current()) ; ++mdi ) // for each member with a specific arg list
+    for ( ; (md=mdi.current()) ; ++mdi ) // for each member with a specific name
     {
-      MemberNameIterator bmdi(*mn);
-      MemberDef *bmd;
-      for ( ; (bmd=bmdi.current()) ; ++bmdi ) // for each other member with that signature
+      MemberDef *bmd = mn->first(); // for each other member with the same name
+      while (bmd)
       {
-        ClassDef *bmcd = bmd->getClassDef();
         ClassDef *mcd  = md->getClassDef();
-        //printf("Check relation between `%s'::`%s' (%p) and `%s'::`%s' (%p)\n",
-        //       mcd->name().data(),md->name().data(),md,
-        //       bmcd->name().data(),bmd->name().data(),bmd
-        //      );
-        if (md!=bmd && bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd,TRUE))
+        if (mcd && mcd->baseClasses())
         {
-          //printf(" Base argList=`%s'\n Super argList=`%s'\n",
-          //        argListToString(bmd->argumentList()).data(),
-          //        argListToString(md->argumentList()).data()
+          ClassDef *bmcd = bmd->getClassDef();
+          //printf("Check relation between `%s'::`%s' (%p) and `%s'::`%s' (%p)\n",
+          //       mcd->name().data(),md->name().data(),md,
+          //       bmcd->name().data(),bmd->name().data(),bmd
           //      );
-          LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
-          LockingPtr<ArgumentList>  mdAl =  md->argumentList();
-          if ( 
-              matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl.pointer(),
-                               md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
-                              TRUE
-                             ) 
-             )
+          if (md!=bmd && bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd,TRUE))
           {
-            //printf("  match found!\n");
-            if (mcd && bmcd && 
-                mcd->isLinkable() && bmcd->isLinkable()
+            //printf(" Base argList=`%s'\n Super argList=`%s'\n",
+            //        argListToString(bmd->argumentList()).data(),
+            //        argListToString(md->argumentList()).data()
+            //      );
+            LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
+            LockingPtr<ArgumentList>  mdAl =  md->argumentList();
+            if ( 
+                matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl.pointer(),
+                  md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
+                  TRUE
+                  ) 
                )
             {
-              MemberDef *rmd;
-              if ((rmd=md->reimplements())==0 ||
-                  minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef())
+              //printf("  match found!\n");
+              if (mcd && bmcd && 
+                  mcd->isLinkable() && bmcd->isLinkable()
                  )
               {
-                //printf("setting (new) reimplements member\n");
-                md->setReimplements(bmd);
+                MemberDef *rmd;
+                if ((rmd=md->reimplements())==0 ||
+                    minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef())
+                   )
+                {
+                  //printf("setting (new) reimplements member\n");
+                  md->setReimplements(bmd);
+                }
+                //printf("%s: add reimplements member %s\n",mcd->name().data(),bmcd->name().data());
+                //md->setImplements(bmd);
+                //printf("%s: add reimplementedBy member %s\n",bmcd->name().data(),mcd->name().data());
+                bmd->insertReimplementedBy(md);
               }
-              //printf("%s: add reimplements member %s\n",mcd->name().data(),bmcd->name().data());
-              //md->setImplements(bmd);
-              //printf("%s: add reimplementedBy member %s\n",bmcd->name().data(),mcd->name().data());
-              bmd->insertReimplementedBy(md);
-            }
-          }  
+            }  
+          }
         }
+        bmd = mn->next();
       }
     }
   }  
@@ -7671,9 +7670,9 @@ static void buildPageList(EntryNav *rootNav)
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
     addRefItem(root->sli,"page",
-               Config_getBool("GENERATE_TREEVIEW")?"main":"index",
+               usingTreeIndex()?"main":"index",
                title
-              );
+               );
 
     rootNav->releaseEntry();
   }
@@ -7691,7 +7690,7 @@ static void findMainPage(EntryNav *rootNav)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
-      QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+      QCString indexName=usingTreeIndex()?"main":"index";
       Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
                               indexName, root->brief+root->doc,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
@@ -9963,7 +9962,7 @@ void generateOutput()
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
     if (Config_getBool("GENERATE_HTMLHELP")) Doxygen::indexList.addIndex(new HtmlHelp);
-    if (Config_getBool("GENERATE_TREEVIEW")) Doxygen::indexList.addIndex(new FTVHelp);
+    if (usingTreeIndex()) Doxygen::indexList.addIndex(new FTVHelp);
     if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();

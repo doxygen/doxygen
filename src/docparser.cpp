@@ -320,6 +320,7 @@ static void checkArgumentName(const QString &name,bool isParam)
   LockingPtr<ArgumentList> al=g_memberDef->isDocsForDefinition() ? 
 		   g_memberDef->argumentList() :
                    g_memberDef->declArgumentList();
+  //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al==0) return; // no argument list
 
   static QRegExp re("[a-zA-Z0-9_]+\\.*");

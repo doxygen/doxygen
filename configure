@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=5
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=NO
+doxygen_version_mmn=20080307
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -36,6 +36,8 @@ f_english=NO
 f_wizard=NO
 f_app=NO
 f_thread=NO
+f_flex=NO
+f_bison=NO
 f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa
 
 while test -n "$1";  do
@@ -76,6 +78,12 @@ while test -n "$1";  do
     --perl | -perl)
        shift; f_perl=$1
        ;;
+    --flex | -flex)
+       shift; f_flex=$1
+       ;;
+    --bison | -bison)
+       shift; f_bison=$1
+       ;;
     --install | -install)
        shift; f_insttool=$1
        ;;
@@ -100,9 +108,10 @@ done
 if test "$f_help" = y; then
   cat <<EOF
 Usage: $0 [--help] [--shared] [--static] [--release] [--debug] 
-          [--perl name] [--make name] [--dot name] [--platform target] 
-          [--prefix dir] [--docdir dir] [--install name] [--english-only] 
-          [----enable-langs list] [--with-doxywizard] 
+          [--perl name] [--flex name] [--bison name] [--make name] 
+          [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
+          [--install name] [--english-only] [----enable-langs list] 
+          [--with-doxywizard]
 
 Options: 
 
@@ -112,6 +121,10 @@ Options:
   --release | --debug   Build for release or debug 
 		        [default: release]
   --perl name           Use \`name' as the name of the perl interpreter 
+		        [default: autodetect]
+  --flex name           Use \`name' as the name of the GNU lexical scanner 
+		        [default: autodetect]
+  --bison name          Use \`name' as the name of the GNU compiler generator 
 		        [default: autodetect]
   --make name           Use \`name' as the name of the GNU make tool
 		        [default: autodetect]
@@ -299,7 +312,7 @@ fi
 echo -n "  Checking for GNU make tool... "
 if test "$f_make" = NO; then
   make_names="gmake make"
-  make_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  make_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   make_prog=NO
   for i in $make_names; do
     for j in $make_dirs; do
@@ -326,7 +339,7 @@ echo "using $f_make"
 echo -n "  Checking for GNU install tool... "
 if test "$f_insttool" = NO; then
   install_names="ginstall install"
-  install_dirs="/usr/bin /usr/local/bin /bin /sbin /usr/ucb $bin_dirs"
+  install_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin /usr/ucb"
   install_prog=NO
   install_found=NO
   for i in $install_names; do
@@ -362,7 +375,7 @@ echo "using $f_insttool";
 
 echo -n "  Checking for dot (part of GraphViz)... "
 if test "$f_dot" = NO; then
-  dot_dirs="$bin_dirs"
+  dot_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   dot_prog=NO
   for j in $dot_dirs; do
     if test -x "$j/dot"; then
@@ -384,7 +397,7 @@ fi
 echo -n "  Checking for perl... "
 if test "$f_perl" = NO; then
   perl_names="perl perl5"
-  perl_dirs="/usr/bin /usr/local/bin /bin /sbin $bin_dirs"
+  perl_dirs="$bin_dirs /usr/bin /usr/local/bin /bin /sbin"
   perl_prog=NO
   perl_found=NO
   for i in $perl_names; do
@@ -412,6 +425,53 @@ if test "$f_perl" = NO; then
 fi
 echo "using $f_perl";
 
+# - check for flex ------------------------------------------------------------
+
+echo -n "  Checking for flex... "
+if test "$f_flex" = NO; then
+  flex_dirs="$bin_dirs /usr/bin /usr/local/bin /bin"
+  flex_prog=NO
+  flex_found=NO
+  for j in $flex_dirs; do
+    if test -x "$j/flex"; then
+      flex_found=YES
+      flex_prog="$j/flex"
+      break
+    fi
+  done
+  f_flex="$flex_prog" 
+fi
+
+if test "$f_flex" = NO; then
+  echo "not found!";
+  exit 2
+else
+  echo "using $f_flex"
+fi
+
+# - check for bison ------------------------------------------------------------
+
+echo -n "  Checking for bison... "
+if test "$f_bison" = NO; then
+  bison_dirs="$bin_dirs /usr/bin /usr/local/bin /bin"
+  bison_prog=NO
+  bison_found=NO
+  for j in $bison_dirs; do
+    if test -x "$j/bison"; then
+      bison_found=YES
+      bison_prog="$j/bison"
+      break
+    fi
+  done
+  f_bison="$bison_prog" 
+fi
+
+if test "$f_bison" = NO; then
+  echo "not found!";
+  exit 2
+else
+  echo "using $f_bison"
+fi
 
 # -----------------------------------------------------------------------------
 
@@ -514,10 +574,10 @@ if test "$f_platform" = "hpux-g++"; then
 EOF
 fi
 if test "$f_platform" = "macosx-uni-c++"; then
-  if test -n "`ls /Developer/SDKs/MacOSX10.*.sdk`"; then
+  if test -n "`ls /Developer/SDKs/MacOSX10.*.sdk 2>/dev/null`"; then
     mac_sdk=MacOSX10.4u.sdk
   fi
-  if test -n "`ls /Developer/SDKs/MacOSX10.5*.sdk`"; then
+  if test -n "`ls /Developer/SDKs/MacOSX10.5*.sdk 2>/dev/null`"; then
     mac_sdk=MacOSX10.5.sdk
   fi
   if test -n $mac_sdk; then

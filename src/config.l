@@ -1326,7 +1326,7 @@ void Config::check()
     bool b2 = Config_getBool("INHERIT_DOCS");
     bool b3 = Config_getBool("HIDE_SCOPE_NAMES");
     bool b4 = Config_getBool("EXTRACT_PRIVATE");
-    char *s1,*s2,*s3,*s4;
+    const char *s1,*s2,*s3,*s4;
     if (b1)  s1="  INLINDE_INHERITED_MEMB = NO (was YES)\n"; else s1="";
     if (b2)  s2="  INHERIT_DOCS           = NO (was YES)\n"; else s2="";
     if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
@@ -2415,16 +2415,28 @@ void Config::create()
                     1,20,4
                 );
   ci->addDependency("GENERATE_HTML");
-  cb = addBool(
+  ce = addEnum(
                     "GENERATE_TREEVIEW",
-                    "If the GENERATE_TREEVIEW tag is set to YES, a side panel will be\n"
-                    "generated containing a tree-like index structure (just like the one that \n"
+                    "The GENERATE_TREEVIEW tag is used to specify whether a tree-like index\n"
+                    "structure should be generated to display hierarchical information.\n"
+                    "If the tag value is set to FRAME, a side panel will be generated\n"
+                    "containing a tree-like index structure (just like the one that \n"
                     "is generated for HTML Help). For this to work a browser that supports \n"
                     "JavaScript, DHTML, CSS and frames is required (for instance Mozilla 1.0+, \n"
 		    "Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are \n"
-		    "probably better off using the HTML help feature. \n",
-                    FALSE
+		    "probably better off using the HTML help feature. Other possible values \n"
+		    "for this tag are: HIERARCHIES, which will generate the Groups, Directories,\n"
+                    "and Class Hiererachy pages using a tree view instead of an ordered list;\n"
+                    "ALL, which combines the behavior of FRAME and HIERARCHIES; and NONE, which\n"
+                    "disables this behavior completely. For backwards compatibility with previous\n"
+                    "releases of Doxygen, the values YES and NO are equivalent to FRAME and NONE\n"
+                    "respectively.\n",
+                    "NONE"
                  );
+  ce->addValue("NONE");
+  ce->addValue("FRAME");
+  ce->addValue("HIERARCHIES");
+  ce->addValue("ALL");
   cb->addDependency("GENERATE_HTML");
   ci = addInt(
                     "TREEVIEW_WIDTH",

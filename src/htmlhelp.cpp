@@ -415,7 +415,7 @@ void HtmlHelp::createProjectFile()
    
     
     QCString indexName="index"+Doxygen::htmlFileExtension;
-    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+Doxygen::htmlFileExtension;
+    if (usingTreeIndex()) indexName="main"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
     if (!Config_getString("CHM_FILE").isEmpty())
     {
@@ -433,9 +433,16 @@ void HtmlHelp::createProjectFile()
     t << "Title=" << Config_getString("PROJECT_NAME") << endl << endl;
     
     t << "[WINDOWS]" << endl;
+
+    // NOTE: the 0x10387e number is a set of bits specifying the buttons
+    //       which should appear in the CHM viewer; that specific value
+    //       means "show all buttons including the font-size one";
+    //       the font-size one is not normally settable by the HTML Help Workshop
+    //       utility but the way to set it is described here:
+    //          http://support.microsoft.com/?scid=kb%3Ben-us%3B240062&x=17&y=18
     t << "main=\"" << Config_getString("PROJECT_NAME") << "\",\"index.hhc\","
          "\"index.hhk\",\"" << indexName << "\",\"" << 
-         indexName << "\",,,,,0x23520,,0x387e,,,,,,,,0" << endl << endl;
+         indexName << "\",,,,,0x23520,,0x10387e,,,,,,,,0" << endl << endl;
     
     t << "[FILES]" << endl;
     char *s = indexFiles.first();
