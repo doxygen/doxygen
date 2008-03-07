@@ -506,8 +506,8 @@ Step4::Step4(QWidget *parent) : QWidget(parent,"Step4")
 
   connect(m_diagramMode,SIGNAL(clicked(int)),
           this,SLOT(diagramModeChanged(int)));
-  connect(m_dotCall,SIGNAL(stateChanged(int)),
-          parent,SLOT(changeCallGraphState(int)));
+  //connect(m_dotCall,SIGNAL(stateChanged(int)),
+  //        parent,SLOT(changeCallGraphState(int)));
 }
 
 void Step4::diagramModeChanged(int buttonId)
@@ -515,15 +515,15 @@ void Step4::diagramModeChanged(int buttonId)
   m_dotOptions->setEnabled(buttonId==2);
 }
 
-void Step4::disableCallGraphs()
-{
-  m_dotCall->setChecked(FALSE);
-}
+//void Step4::disableCallGraphs()
+//{
+//  m_dotCall->setChecked(FALSE);
+//}
 
-bool Step4::callGraphEnabled() const
-{
-  return m_dotCall->isOn();
-}
+//bool Step4::callGraphEnabled() const
+//{
+//  return m_dotCall->isOn();
+//}
 
 DiagramMode Step4::diagramMode() const
 {
@@ -880,7 +880,7 @@ void MainWidget::launchWizard()
   {
     wizard.setHtmlStyle(HS_CHM);
   }
-  else if (Config_getBool("GENERATE_TREEVIEW"))
+  else if (Config_getEnum("GENERATE_TREEVIEW")!="NONE")
   {
     wizard.setHtmlStyle(HS_TreeView);
   }
@@ -1008,15 +1008,15 @@ void MainWidget::launchWizard()
       {
         case HS_Plain:
           Config_getBool("GENERATE_HTMLHELP")=FALSE;
-          Config_getBool("GENERATE_TREEVIEW")=FALSE;
+          Config_getEnum("GENERATE_TREEVIEW")="NONE";
           break;
         case HS_TreeView:
           Config_getBool("GENERATE_HTMLHELP")=FALSE;
-          Config_getBool("GENERATE_TREEVIEW")=TRUE;
+          Config_getEnum("GENERATE_TREEVIEW")="ALL";
           break;
         case HS_CHM:
           Config_getBool("GENERATE_HTMLHELP")=TRUE;
-          Config_getBool("GENERATE_TREEVIEW")=FALSE;
+          Config_getEnum("GENERATE_TREEVIEW")="NONE";
           break;
       }
     }

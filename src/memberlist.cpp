@@ -320,6 +320,11 @@ void MemberList::writeDeclarations(OutputList &ol,
 {
   //printf("----- writeDeclaration() this=%p ----\n",this);
   countDecMembers(showEnumValues); // count member not in group
+  Definition *ctx = cd;
+  if (ctx==0 && nd) ctx = nd;
+  if (ctx==0 && gd) ctx = gd;
+  if (ctx==0 && fd) ctx = fd;
+
   if (numDecMembers()==0) return;
   //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
   //    this,title,subtitle,numDecMembers());
@@ -333,7 +338,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   {
     //printf("subtitle=`%s'\n",subtitle);
     ol.startMemberSubtitle();
-    ol.parseDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE);
+    ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE);
     ol.endMemberSubtitle();
   }
 
@@ -358,7 +363,7 @@ void MemberList::writeDeclarations(OutputList &ol,
       {
         //printf("Member group has docs!\n");
         ol.startMemberGroupDocs();
-        ol.parseDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE);
+        ol.parseDoc("[generated]",-1,ctx,0,mg->documentation()+"\n",FALSE,FALSE);
         ol.endMemberGroupDocs();
       }
       ol.startMemberGroup();

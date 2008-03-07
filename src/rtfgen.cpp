@@ -607,7 +607,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         t << "{\\tc \\v " << substitute(Doxygen::mainPage->title(),"%","") << "}"<< endl;
       }
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-      if (Config_getBool("GENERATE_TREEVIEW")) t << "main"; else t << "index";
+      if (usingTreeIndex()) t << "main"; else t << "index";
       t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
     //case isPackageIndex:

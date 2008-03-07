@@ -351,5 +351,7 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al);
 
 QCString convertCharEntitiesToUTF8(const QCString &s);
 
+bool usingTreeIndex();
+
 #endif
 

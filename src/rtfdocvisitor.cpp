@@ -895,7 +895,7 @@ void RTFDocVisitor::visitPre(DocHtmlRow *r)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlRow)}\n");
-  uint i,columnWidth=rtf_pageWidth/r->numCells();
+  uint i,columnWidth=r->numCells()>0 ? rtf_pageWidth/r->numCells() : 10;
   m_t << "\\trowd \\trgaph108\\trleft-108"
          "\\trbrdrt\\brdrs\\brdrw10 "
          "\\trbrdrl\\brdrs\\brdrw10 "

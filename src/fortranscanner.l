@@ -325,7 +325,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					  yy_push_state(InterfaceBody);
  					  startScope(last_entry);
                                         }
-<InterfaceBody>"end"({BS_}"interface")?.*   {
+<InterfaceBody>^{BS}"end"({BS_}"interface")?   {
 					  if (!endScope(current_root))
 					    yyterminate();
 					  yy_pop_state();
@@ -349,7 +349,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 					    BEGIN(Module);
                                             defaultProtection = Public;
                                        }
-<Start,ModuleBody>"end"({BS_}(module|program))?.* { // end module	
+<Start,ModuleBody>^{BS}"end"({BS_}(module|program))?{BS} { // end module	
 					    resolveModuleProcedures(moduleProcedures, current_root);
 					    if (!endScope(current_root))
 					      yyterminate();
@@ -415,7 +415,7 @@ ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
 
  /*------- module/global/typedef variable ---------------------------------------------------*/
 
-<SubprogBody>"end"({BS_}{SUBPROG})?.*  {  
+<SubprogBody>^{BS}"end"({BS_}{SUBPROG})?{BS} {  
                                            //cout << "1e=========> got end subprog: " << yytext << endl;
 
                                            /* args is used for parameters in list of functions, argList for 

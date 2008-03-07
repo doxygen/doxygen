@@ -606,8 +606,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isMainPage:
       {
-        QCString indexName="index";
-        if (Config_getBool("GENERATE_TREEVIEW")) indexName="main";
+        QCString indexName=usingTreeIndex()?"main":"index";
         t << "}\n\\label{index}";
         if (Config_getBool("PDF_HYPERLINKS")) t << "\\hypertarget{index}{}";
         t << "\\input{" << indexName << "}\n";
