@@ -1449,3 +1449,10 @@ void FileDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,co
   MemberList * ml = getMemberList(lt);
   if (ml) ml->writeDocumentation(ol,name(),this,title);
 }
+
+bool FileDef::isLinkableInProject() const
+{
+  static bool showFiles = Config_getBool("SHOW_FILES");
+  return hasDocumentation() && !isReference() && showFiles;
+}
+

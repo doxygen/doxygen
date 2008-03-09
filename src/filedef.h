@@ -116,10 +116,7 @@ class FileDef : public Definition
     /*! Returns version of this file. */
     QCString getVersion() const { return fileVersion; }
     
-    bool isLinkableInProject() const
-    {
-      return hasDocumentation() && !isReference();
-    }
+    bool isLinkableInProject() const;
 
     bool isLinkable() const
     {

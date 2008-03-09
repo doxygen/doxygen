@@ -203,7 +203,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_dirs SHOW_DIRECTORIES
+\refitem cfg_show_files SHOW_FILES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
+\refitem cfg_show_namespaces SHOW_NAMESPACES
 \refitem cfg_show_used_files SHOW_USED_FILES
 \refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
@@ -765,6 +767,20 @@ function's detailed documentation block.
  If the sources in your project are distributed over multiple directories
  then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy
  in the documentation.
+
+\anchor cfg_show_files
+<dt>\c SHOW_FILES <dd>
+ \addindex SHOW_FILES
+ Set the \c SHOW_FILES tag to \c NO to disable the generation of the Files page.
+ This will remove the Files entry from the Quick Index and from the
+ Folder Tree View (if specified). The default is \c YES.
+
+\anchor cfg_show_namespaces
+<dt>\c SHOW_NAMESPACES <dd>
+ \addindex SHOW_NAMESPACES
+ Set the \c SHOW_NAMESPACES tag to \c NO to disable the generation of the
+ Namespaces page.  This will remove the Namespaces entry from the Quick Index
+ and from the Folder Tree View (if specified). The default is \c YES.
 
 </dl>
 

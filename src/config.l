@@ -1972,6 +1972,20 @@ void Config::create()
 		    "in the documentation. The default is NO.\n",
 		    FALSE
               );
+  cb = addBool(
+                    "SHOW_FILES",
+                    "Set the SHOW_FILES tag to NO to disable the generation of the Files page.\n"
+                    "This will remove the Files entry from the Quick Index and from the \n"
+                    "Folder Tree View (if specified). The default is YES.\n",
+                    TRUE
+                );
+  cb = addBool(
+                    "SHOW_NAMESPACES",
+                    "Set the SHOW_NAMESPACES tag to NO to disable the generation of the \n"
+                    "Namespaces page.  This will remove the Namespaces entry from the Quick Index\n"
+                    "and from the Folder Tree View (if specified). The default is YES.\n",
+                    TRUE
+                );
   cs = addString(  "FILE_VERSION_FILTER",
                    "The FILE_VERSION_FILTER tag can be used to specify a program or script that \n"
 		   "doxygen should invoke to get the current version for each file (typically from \n"

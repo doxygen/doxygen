@@ -542,7 +542,7 @@ void endUseScope()
   currentUseNames= useStack.pop(); 
   if (currentUseNames == 0) 
   {
-     fprintf(stderr,"fortrancode.l: stack empty!"); 
+     fprintf(stderr,"WARNING: fortrancode.l: stack empty!"); 
      //exit(-1);
   }
 }
@@ -691,7 +691,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
                                           currentModule=0;
 					  REJECT;
                                         }
-<Start>"end"({BS_}("program"|"module"|"type"|"interface"))? {  //
+<Start>^{BS}"end"({BS}("program"|"module"|"type"|"interface")({BS_}{ID})?)?{BS}/(\n|!) {  //
                                           endUseScope();
  					  startFontClass("keyword"); 
   					  codifyLines(yytext);
@@ -722,7 +722,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 <Subprog>"\n"                           { codifyLines(yytext);
                                           yy_pop_state();
                                         }
-<Start>"end"({BS_}{SUBPROG})?           {  // Fortran subroutine or function ends
+<Start>"^{BS}end"({BS}{SUBPROG}({BS_}{ID})?)?{BS}/(\n|!) {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endUseScope();
    					  startFontClass("keyword");
@@ -860,6 +860,8 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 					  endFontClass();
                                           yy_pop_state();
                                         }           
+<String>.                               {str+=yytext;}
+
 <*>\"|\'                                { /* string starts */
 					  /* if(YY_START == StrIgnore) REJECT; // ignore in simple comments */
                                           yy_push_state(YY_START);
@@ -867,7 +869,6 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
                                           BEGIN(String);
 					  str=yytext;
                                         }
-<String>.                               {str+=yytext;}
  /*-----------------------------------------------------------------------------*/
 
 <*>\n					{
