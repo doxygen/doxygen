@@ -3008,7 +3008,8 @@ void writeIndex(OutputList &ol)
     {
       ol.startIndexSection(isCompoundIndex);
       ol.parseText(/*projPrefix+*/
-          (vhdlOpt ? VhdlDocGen::trDesignUnitIndex() : 
+          (fortranOpt ? theTranslator->trCompoundIndexFortran() :
+           vhdlOpt ? VhdlDocGen::trDesignUnitIndex() : 
                      theTranslator->trCompoundIndex()
           ));
       ol.endIndexSection(isCompoundIndex);
