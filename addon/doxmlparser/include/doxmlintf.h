@@ -35,11 +35,14 @@ class INode;
 class IDocInternal;
 class IDocRoot;
 
+#define VIRTUAL_DESTRUCTOR(x) virtual ~x() {}
+
 /*! \brief Read only interface to a string. 
  */
 class IString
 {
   public:
+    VIRTUAL_DESTRUCTOR(IString)
     /*! Returns a latin1 character representation of the string. */
     virtual const char *latin1() const = 0;
     /*! Returns a 16-bit unicode character representation of the character at 
@@ -60,6 +63,7 @@ class IString
 class ILinkedText
 {
   public:
+    VIRTUAL_DESTRUCTOR(ILinkedText)
     enum Kind { Kind_Text, Kind_Ref };
     virtual Kind kind() const = 0;
 };
@@ -69,6 +73,7 @@ class ILinkedText
 class ILT_Text : public ILinkedText
 {
   public:
+    VIRTUAL_DESTRUCTOR(ILT_Text)
     virtual const IString *text() const = 0;
 };
 
@@ -77,6 +82,7 @@ class ILT_Text : public ILinkedText
 class ILT_Ref : public ILinkedText
 {
   public:
+    VIRTUAL_DESTRUCTOR(ILT_Ref)
     enum TargetKind { Member, Compound };
     virtual const IString *id() const = 0;
     virtual TargetKind targetKind() const = 0;
@@ -89,6 +95,7 @@ class ILT_Ref : public ILinkedText
 class ILinkedTextIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(ILinkedTextIterator)
     virtual ILinkedText *toFirst() = 0;
     virtual ILinkedText *toLast() = 0;
     virtual ILinkedText *toNext() = 0;
@@ -101,6 +108,7 @@ class ILinkedTextIterator
 class IParam 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IParam)
     virtual ILinkedTextIterator *type() const = 0;
     virtual const IString * declarationName() const = 0;
     virtual const IString * definitionName() const = 0;
@@ -113,6 +121,7 @@ class IParam
 class IParamIterator
 {
   public:
+    VIRTUAL_DESTRUCTOR(IParamIterator)
     virtual IParam *toFirst() = 0;
     virtual IParam *toLast() = 0;
     virtual IParam *toNext() = 0;
@@ -124,6 +133,7 @@ class IParamIterator
 class IMemberReference 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IMemberReference)
     virtual IMember *member() const = 0;
     virtual const IString * name() const = 0;
     virtual const IString * scope() const = 0;
@@ -135,6 +145,7 @@ class IMemberReference
 class IMemberReferenceIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IMemberReferenceIterator)
     virtual IMemberReference *toFirst() = 0;
     virtual IMemberReference *toLast() = 0;
     virtual IMemberReference *toNext() = 0;
@@ -146,6 +157,7 @@ class IMemberReferenceIterator
 class IDoc
 {
   public:
+    VIRTUAL_DESTRUCTOR(IDoc)
     enum Kind 
     { 
       Invalid = 0,        //  0
@@ -492,6 +504,7 @@ class IDocRoot : public IDoc
 class IDocIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IDocIterator)
     virtual IDoc *toFirst() = 0;
     virtual IDoc *toLast() = 0;
     virtual IDoc *toNext() = 0;
@@ -503,12 +516,14 @@ class IDocIterator
 class IEdgeLabel
 {
   public:
+    VIRTUAL_DESTRUCTOR(IEdgeLabel)
     virtual const IString * label() const = 0;
 };
 
 class IEdgeLabelIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IEdgeLabelIterator)
     virtual IEdgeLabel *toFirst() = 0;
     virtual IEdgeLabel *toLast() = 0;
     virtual IEdgeLabel *toNext() = 0;
@@ -520,6 +535,7 @@ class IEdgeLabelIterator
 class IChildNode
 {
   public:
+    VIRTUAL_DESTRUCTOR(IChildNode)
     enum NodeRelation { PublicInheritance, ProtectedInheritance,
                         PrivateInheritance, Usage, TemplateInstance
                       };
@@ -532,6 +548,7 @@ class IChildNode
 class IChildNodeIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IChildNodeIterator)
     virtual IChildNode *toFirst() = 0;
     virtual IChildNode *toLast() = 0;
     virtual IChildNode *toNext() = 0;
@@ -543,6 +560,7 @@ class IChildNodeIterator
 class INode
 {
   public:
+    VIRTUAL_DESTRUCTOR(INode)
     virtual const IString * id() const = 0;
     virtual const IString * label() const = 0;
     virtual const IString * linkId() const = 0;
@@ -552,6 +570,7 @@ class INode
 class INodeIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(INodeIterator)
     virtual INode *toFirst() = 0;
     virtual INode *toLast() = 0;
     virtual INode *toNext() = 0;
@@ -563,12 +582,14 @@ class INodeIterator
 class IGraph
 {
   public:
+    VIRTUAL_DESTRUCTOR(IGraph)
     virtual INodeIterator *nodes() const = 0;
 };
 
 class IMember 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IMember)
     enum MemberKind { Invalid=0,
                       Define, Property, Variable, Typedef, Enum,
                       Function, Signal, Prototype, Friend, DCOP, Slot, 
@@ -675,6 +696,7 @@ class IEnumValue : public IMember
 class IInclude 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IInclude)
     virtual const IString * name() const = 0;
     virtual const IString * refId() const = 0;
     virtual bool isLocal() const = 0;
@@ -683,6 +705,7 @@ class IInclude
 class IIncludeIterator
 {
   public:
+    VIRTUAL_DESTRUCTOR(IIncludeIterator)
     virtual IInclude *toFirst() = 0;
     virtual IInclude *toLast() = 0;
     virtual IInclude *toNext() = 0;
@@ -694,6 +717,7 @@ class IIncludeIterator
 class IMemberIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IMemberIterator)
     virtual IMember *toFirst() = 0;
     virtual IMember *toLast() = 0;
     virtual IMember *toNext() = 0;
@@ -721,6 +745,7 @@ class IEnum : public IMember
 class ISection 
 {
   public:
+    VIRTUAL_DESTRUCTOR(ISection)
     /*! Possible section types */
     enum SectionKind 
     { Invalid=0,
@@ -804,6 +829,7 @@ class IUserDefined : public ISection
 class ISectionIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(ISectionIterator)
     virtual ISection *toFirst() = 0;
     virtual ISection *toLast() = 0;
     virtual ISection *toNext() = 0;
@@ -840,6 +866,7 @@ class ISectionIterator
 class ICompound 
 {
   public:
+    VIRTUAL_DESTRUCTOR(ICompound)
     /*! Represents the kind of compounds recognised by doxygen. */
     enum CompoundKind { Invalid=0,
                         Class, Struct, Union, Interface, Protocol, Category,
@@ -900,6 +927,7 @@ class ICompound
 class ICompoundIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(ICompoundIterator)
     virtual void toFirst() = 0;
     virtual void toLast() = 0;
     virtual void toNext() = 0;
@@ -911,6 +939,7 @@ class ICompoundIterator
 class IRelatedCompound
 {
   public:
+    VIRTUAL_DESTRUCTOR(IRelatedCompound)
     enum Protection { Public, Protected, Private };
     enum Kind { Normal, Virtual };
     virtual ICompound *compound() const = 0;
@@ -923,6 +952,7 @@ class IRelatedCompound
 class IRelatedCompoundIterator 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IRelatedCompoundIterator)
     virtual IRelatedCompound *toFirst() = 0;
     virtual IRelatedCompound *toLast() = 0;
     virtual IRelatedCompound *toNext() = 0;
@@ -1042,6 +1072,7 @@ class IPage : public ICompound
 class IDoxygen 
 {
   public:
+    VIRTUAL_DESTRUCTOR(IDoxygen)
 
     /*! Returns an iterator that can be used to iterate over the list
      *  of compounds found in the project.

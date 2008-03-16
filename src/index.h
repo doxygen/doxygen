@@ -115,6 +115,7 @@ enum IndexSections
   isFileDocumentation,
   isExampleDocumentation,
   isPageDocumentation,
+  isPageDocumentation2,
   isEndIndex
 };
 
