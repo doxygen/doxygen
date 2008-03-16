@@ -39,8 +39,8 @@
 #include "dirdef.h"
 #include "vhdldocgen.h"
 
-//#define DBG_RTF(x) x;
-#define DBG_RTF(x)
+#define DBG_RTF(x) x;
+//#define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {
@@ -515,6 +515,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
       {
         //Page Documentation
         beginRTFChapter();
+      }
+      break;
+    case isPageDocumentation2:
+      {
         t << "{\\tc \\v ";
       }
       break;
@@ -833,7 +837,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
 //#error "fix me in the same way as the latex index..."
         //t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
-        t << "}"<< endl;
+        //t << "}"<< endl;
         //PageSDict::Iterator pdi(*Doxygen::pageSDict);
         //PageDef *pd=pdi.toFirst();
         //bool first=TRUE;
@@ -848,6 +852,12 @@ void RTFGenerator::endIndexSection(IndexSections is)
         //    first=FALSE;
         //  }
         //}
+      }
+      break;
+    case isPageDocumentation2:
+      {
+        t << "}";
+        t << "\\par " << rtf_Style_Reset << endl;
       }
       break;
     case isEndIndex:
@@ -1607,8 +1617,9 @@ void RTFGenerator::startSection(const char *,const char *title,SectionInfo::Sect
 void RTFGenerator::endSection(const char *lab,SectionInfo::SectionType)
 {
   DBG_RTF(t << "{\\comment (endSection)}"    << endl)
-  newParagraph();
   // make bookmark
+  m_omitParagraph=FALSE;
+  newParagraph();
   writeAnchor(0,lab);
   t << "}";
 }
@@ -1813,7 +1824,7 @@ void RTFGenerator::writeAnchor(const char *fileName,const char *name)
     anchor+=name;
   }
 
-  DBG_RTF(t <<"{\\comment writeAncheor (" << anchor << ")}" << endl)
+  DBG_RTF(t <<"{\\comment writeAnchor (" << anchor << ")}" << endl)
   t << "{\\bkmkstart " << rtfFormatBmkStr(anchor) << "}" << endl;
   t << "{\\bkmkend " << rtfFormatBmkStr(anchor) << "}" << endl;
 }

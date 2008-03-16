@@ -35,7 +35,6 @@ class PageDef : public Definition
     {
       return isLinkableInProject() || isReference();
     } 
-    void addSubPage(PageDef *def);
     void writeDocumentation(OutputList &ol);
 
     // functions to get a uniform interface with Definitions
@@ -43,21 +42,25 @@ class PageDef : public Definition
     void findSectionsInDocumentation();
     QCString title() const { return m_title; }
     GroupDef *  getGroupDef() const;
-    PageSDict * getSubPages() const { return subPageDict; }
+    PageSDict * getSubPages() const { return m_subPageDict; }
     void setFileName(const char *name) { m_fileName = name; }
     void addInnerCompound(Definition *d);
     bool visibleInIndex() const;
     bool documentedPage() const;
     bool hasSubPages() const;
-    void setPageScope(Definition *d){ pageScope = d; }
-    Definition *getPageScope() const { return pageScope; }
+    bool hasParentPage() const;
+    void setPageScope(Definition *d){ m_pageScope = d; }
+    Definition *getPageScope() const { return m_pageScope; }
 
   private:
+    void setNestingLevel(int l);
+    void writePageDocumentation(OutputList &ol);
     QCString m_fileName;
     QCString m_title;
     GroupDef *m_inGroup;
-    PageSDict *subPageDict;                 // list of pages in the group
-    Definition *pageScope;
+    PageSDict *m_subPageDict;                 // list of pages in the group
+    Definition *m_pageScope;
+    int m_nestingLevel;
 };
 
 class PageSDict : public SDict<PageDef>

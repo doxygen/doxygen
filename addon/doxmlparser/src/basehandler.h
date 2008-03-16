@@ -165,7 +165,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
         return TRUE; 
       }
 
-      StartElementHandlerT *handler = m_startHandlers[name];
+      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name];
       if (handler)
       {
         (*handler)(attrib);
@@ -205,7 +205,7 @@ template<class T> class BaseHandler : public QXmlDefaultHandler,
       }
       else if (m_skipUntil.isEmpty())
       {
-        EndElementHandlerT *handler = m_endHandlers[name];
+        EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name];
         if (handler)
         {
           (*handler)();
@@ -301,7 +301,7 @@ template<class T> class BaseFallBackHandler : public ElementMapper<T>,
     bool handleStartElement(const QString & name, 
                                     const QXmlAttributes & attrib)
     {
-      StartElementHandlerT *handler = m_startHandlers[name];
+      StartElementHandlerT *handler = ElementMapper<T>::m_startHandlers[name];
       if (handler)
       {
         (*handler)(attrib);
@@ -311,7 +311,7 @@ template<class T> class BaseFallBackHandler : public ElementMapper<T>,
     }
     bool handleEndElement(const QString &name)
     {
-      EndElementHandlerT *handler = m_endHandlers[name];
+      EndElementHandlerT *handler = ElementMapper<T>::m_endHandlers[name];
       if (handler)
       {
         (*handler)();

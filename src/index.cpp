@@ -2937,7 +2937,7 @@ void writeIndex(OutputList &ol)
     ol.startIndexSection(isMainPage);
     if (mainPageHasTitle())
     {
-      ol.parseDoc(defFileName,defLine,Doxygen::mainPage,0,Doxygen::mainPage->title(),FALSE,FALSE);
+      ol.parseText(Doxygen::mainPage->title());
     }
     else
     {
@@ -2954,13 +2954,22 @@ void writeIndex(OutputList &ol)
     bool first=Doxygen::mainPage==0;
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
-      if (!pd->getGroupDef() && !pd->isReference())
+      if (!pd->getGroupDef() && !pd->isReference() && 
+          !pd->hasParentPage()
+         )
       {
         QCString title = pd->title();
         if (title.isEmpty()) title=pd->name();
         ol.startIndexSection(isPageDocumentation);
         ol.parseText(title);
         ol.endIndexSection(isPageDocumentation);
+        ol.pushGeneratorState(); // write TOC title (RTF only)
+          ol.disableAllBut(OutputGenerator::RTF);
+          ol.startIndexSection(isPageDocumentation2);
+          ol.parseText(title);
+          ol.endIndexSection(isPageDocumentation2);
+          ol.popGeneratorState();
+        ol.writeAnchor(0,pd->name());
 
         ol.writePageLink(pd->getOutputFileBase(),first);
         first=FALSE;

@@ -13,13 +13,14 @@ PageDef::PageDef(const char *f,int l,const char *n,
  : Definition(f,l,n), m_title(t)
 {
   setDocumentation(d,f,l);
-  subPageDict = new PageSDict(7);
-  pageScope = 0;
+  m_subPageDict = new PageSDict(7);
+  m_pageScope = 0;
+  m_nestingLevel = 0;
 }
 
 PageDef::~PageDef()
 {
-  delete subPageDict;
+  delete m_subPageDict;
 }
 
 void PageDef::findSectionsInDocumentation()
@@ -46,9 +47,16 @@ void PageDef::addInnerCompound(Definition *def)
   if (def->definitionType()==Definition::TypePage)
   {
     PageDef *pd = (PageDef*)def;
-    subPageDict->append(pd->name(),pd);
+    m_subPageDict->append(pd->name(),pd);
     def->setOuterScope(this);
+    pd->setNestingLevel(m_nestingLevel+1);
   }
+}
+
+bool PageDef::hasParentPage() const
+{
+  return getOuterScope() && 
+         getOuterScope()->definitionType()==Definition::TypePage;
 }
 
 void PageDef::writeDocumentation(OutputList &ol)
@@ -61,6 +69,17 @@ void PageDef::writeDocumentation(OutputList &ol)
     pageName=name().lower();
 
   startFile(ol,pageName,pageName,title(),HLI_None,TRUE);
+
+  ol.pushGeneratorState();
+
+  if (m_nestingLevel>0) // a sub page
+  {
+    // do not generate sub page output for RTF and LaTeX, as these are
+    // part of their parent page
+    ol.disableAll();
+    ol.enable(OutputGenerator::Man);
+    ol.enable(OutputGenerator::Html);
+  }
 
   if (getOuterScope()!=Doxygen::globalScope && !Config_getBool("DISABLE_INDEX"))
   {
@@ -80,6 +99,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   // for Latex the section is already generated as a chapter in the index!
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Latex);
+  ol.disable(OutputGenerator::RTF);
   SectionInfo *si=0;
   if (!title().isEmpty() && !name().isEmpty() &&
       (si=Doxygen::sectionDict.find(pageName))!=0)
@@ -93,18 +113,11 @@ void PageDef::writeDocumentation(OutputList &ol)
   }
   ol.popGeneratorState();
 
-  ol.startTextBlock();
-  ol.parseDoc(docFile(),       // fileName
-      docLine(),           // startLine
-      this,                // context
-      0,                   // memberdef
-      documentation(),     // docStr
-      TRUE,                // index words
-      FALSE                // not an example
-      );
-  ol.endTextBlock();
+  writePageDocumentation(ol);
+
+  ol.popGeneratorState();
+
   endFile(ol);
-  //outputList->enable(OutputGenerator::Man);
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
   {
@@ -131,6 +144,53 @@ void PageDef::writeDocumentation(OutputList &ol)
   }
 }
 
+void PageDef::writePageDocumentation(OutputList &ol)
+{
+  ol.startTextBlock();
+  ol.parseDoc(docFile(),   // fileName
+      docLine(),           // startLine
+      this,                // context
+      0,                   // memberdef
+      documentation(),     // docStr
+      TRUE,                // index words
+      FALSE                // not an example
+      );
+  ol.endTextBlock();
+
+  if (hasSubPages())
+  {
+    // for printed documentation we write subpages as section's of the
+    // parent page.
+    ol.pushGeneratorState();
+    ol.disableAll();
+    ol.enable(OutputGenerator::Latex);
+    ol.enable(OutputGenerator::RTF);
+
+    PageSDict::Iterator pdi(*m_subPageDict);
+    PageDef *subPage=pdi.toFirst();
+    for (pdi.toFirst();(subPage=pdi.current());++pdi)
+    {
+      SectionInfo::SectionType sectionType = SectionInfo::Paragraph;
+      switch (m_nestingLevel)
+      {
+        case  0: sectionType = SectionInfo::Page;          break;
+        case  1: sectionType = SectionInfo::Section;       break;
+        case  2: sectionType = SectionInfo::Subsection;    break;
+        case  3: sectionType = SectionInfo::Subsubsection; break;
+        default: sectionType = SectionInfo::Paragraph;     break;
+      }
+      QCString title = subPage->title();
+      if (title.isEmpty()) title = subPage->name();
+      ol.startSection(subPage->name(),title,sectionType);
+      ol.parseText(title);
+      ol.endSection(subPage->name(),sectionType);
+      subPage->writePageDocumentation(ol);
+    }
+
+    ol.popGeneratorState();
+  }
+}
+
 bool PageDef::visibleInIndex() const
 {
    return // not part of a group
@@ -153,7 +213,11 @@ bool PageDef::documentedPage() const
 
 bool PageDef::hasSubPages() const
 {
-  return subPageDict->count()>0;
+  return m_subPageDict->count()>0;
 }
 
+void PageDef::setNestingLevel(int l)
+{
+  m_nestingLevel = l;
+}
 

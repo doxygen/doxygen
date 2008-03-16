@@ -236,7 +236,7 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     s=extraPackages.next();
   }
   t << "\\makeindex\n"
-    "\\setcounter{tocdepth}{1}\n"
+    "\\setcounter{tocdepth}{3}\n"
     "\\renewcommand{\\footrulewidth}{0.4pt}\n"
     "\\begin{document}\n";
   if (theTranslator->idLanguage()=="greek") t << "\\selectlanguage{greek}\n";
@@ -585,6 +585,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         t << "{"; //Page Documentation}\n";
       }
       break;
+    case isPageDocumentation2:
+      break;
     case isEndIndex:
       break;
   }
@@ -792,6 +794,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
 #endif
       }
+      break;
+    case isPageDocumentation2:
       break;
     case isEndIndex:
       t << "\\printindex\n";
@@ -1104,7 +1108,7 @@ void LatexGenerator::endMemberHeader()
 void LatexGenerator::startMemberDoc(const char *clname,
                                     const char *memname,
                                     const char *,
-                                    const char *)
+                                    const char *title)
 { 
   if (memname && memname[0]!='@')
   {
@@ -1141,6 +1145,9 @@ void LatexGenerator::startMemberDoc(const char *clname,
   //  escapeMakeIndexChars(this,t,memname);
   //  t << "]";
   //}
+  t << "[";
+  escapeMakeIndexChars(title);
+  t << "]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
   disableLinks=TRUE;
 }
@@ -1181,9 +1188,16 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 { 
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
   t << "\\label{" << name << "}" << endl; 
-  if (fName && Config_getBool("PDF_HYPERLINKS"))
+  if (Config_getBool("PDF_HYPERLINKS"))
   {
-    t << "\\hypertarget{" << stripPath(fName) << "_" << name << "}{}" << endl;
+    if (fName)
+    {
+      t << "\\hypertarget{" << stripPath(fName) << "_" << name << "}{}" << endl;
+    }
+    else
+    {
+      t << "\\hypertarget{" << name << "}{}" << endl;
+    }
   }
 }
 
