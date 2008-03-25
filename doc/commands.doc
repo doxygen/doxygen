@@ -53,6 +53,8 @@ documentation:
 \refitem cmdclass \\class
 \refitem cmdcode \\code
 \refitem cmdcond \\cond
+\refitem cmdcopybrief \\copybrief
+\refitem cmdcopydefails \\copydetails
 \refitem cmdcopydoc \\copydoc
 \refitem cmddate \\date
 \refitem cmddef \\def
@@ -1777,6 +1779,23 @@ Make sure you have first read \ref intro "the introduction".
 
   The copydoc command can be used recursively, but cycles in the copydoc
   relation will be broken and flagged as an error.
+
+  Note that both the brief description and the detailed documentation
+  will be copied. See \ref cmdcopybrief "\\cmdcopybrief" and
+  \ref cmdcopydetails "\\cmdcopydetails" for copying only the brief or
+  detailed part of the comment block.
+
+<hr>
+\section cmdcopybrief \\copybrief <link-object>
+
+Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
+only copy the brief description, not the detailed documentation.
+
+<hr>
+\section cmdcopydetails \\copydetails <link-object>
+
+Works in a similar way as \ref cmdcopydoc "\\copydoc" but will
+only copy the detailed documentation, not the brief description.
 
 <hr>
 \section cmddot \\dot

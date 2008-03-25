@@ -4944,7 +4944,8 @@ QCString stripScope(const char *name)
             count=1;
             //printf("pos < = %d\n",p);
             p--;
-            while (p>=0)
+            bool foundMatch=false;
+            while (p>=0 && !foundMatch)
             {
               c=result.at(p--);
               switch (c)
@@ -4962,6 +4963,7 @@ QCString stripScope(const char *name)
                     }
                   }
                   count--; 
+                  foundMatch = count==0;
                   break;
                 default: 
                   //printf("c=%c count=%d\n",c,count);

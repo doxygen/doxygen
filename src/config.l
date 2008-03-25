@@ -1250,14 +1250,22 @@ void Config::check()
 
   if (Config_getBool("HAVE_DOT")) 
   {
-    QCString curFontPath = portable_getenv("DOTFONTPATH");
-    QCString newFontPath = ".";
-    if (!curFontPath.isEmpty())
-    {
-      newFontPath+=portable_pathListSeparator();
-      newFontPath+=curFontPath;
+    QCString curFontPath = Config_getString("DOT_FONTPATH");
+    if (curFontPath.isEmpty())
+    {  
+      portable_getenv("DOTFONTPATH");
+      QCString newFontPath = ".";
+      if (!curFontPath.isEmpty())
+      {
+        newFontPath+=portable_pathListSeparator();
+        newFontPath+=curFontPath;
+      }
+      portable_setenv("DOTFONTPATH",newFontPath);
     }
-    portable_setenv("DOTFONTPATH",newFontPath);
+    else
+    {
+      portable_setenv("DOTFONTPATH",curFontPath);
+    }
   }
 
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
@@ -2933,6 +2941,23 @@ void Config::create()
                     "have no effect if this option is set to NO (the default) \n",
                     FALSE
                  );
+  cs = addString(   "DOT_FONTNAME",
+                    "By default doxygen will write a font called FreeSans.ttf to the output \n"
+		    "directory and reference it in all dot files that doxygen generates. This \n"
+		    "font does not include all possible unicode characters however, so when you need \n"
+		    "these (or just want a differently looking font) you can specify the font name \n"
+		    "using DOT_FONTNAME. You need need to make sure dot is able to find the font, \n"
+		    "which can be done by putting it in a standard location or by setting the \n"
+		    "DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory \n"
+		    "containing the font. \n"
+                 );
+  cs->setDefaultValue("FreeSans");
+  cs = addString(   "DOT_FONTPATH",
+      		    "By default doxygen will tell dot to use the output directory to look for the \n"
+		    "FreeSans.ttf font (which doxygen will put there itself). If you specify a \n"
+		    "different font using DOT_FONTNAME you can set the path where dot \n"
+		    "can find it using this tag. \n"
+                );
   cb = addBool(
                     "CLASS_GRAPH",
                     "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
