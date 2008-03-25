@@ -43,7 +43,8 @@
 
 #define MAP_CMD "cmap"
 
-#define FONTNAME "FreeSans"
+//#define FONTNAME "FreeSans"
+#define FONTNAME getDotFontName()
 
 //--------------------------------------------------------------------
 
@@ -75,6 +76,13 @@ static const char *edgeStyleMap[] =
   "solid",         // inheritance
   "dashed"         // usage
 };
+
+static QCString getDotFontName()
+{
+  static QCString dotFontName = Config_getString("DOT_FONTNAME");
+  if (dotFontName.isEmpty()) dotFontName="FreeSans";
+  return dotFontName;
+}
 
 static void writeGraphHeader(QTextStream &t)
 {

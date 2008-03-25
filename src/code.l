@@ -410,7 +410,8 @@ static void popScope()
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
+                                  Config_getBool("SOURCE_BROWSER");
   if (searchEngineEnabled)
   {
     Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
@@ -419,7 +420,8 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
 
 static void addToSearchIndex(const char *text)
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
+                                  Config_getBool("SOURCE_BROWSER");
   if (searchEngineEnabled)
   {
     Doxygen::searchIndex->addWord(text,FALSE);

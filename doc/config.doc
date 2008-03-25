@@ -81,6 +81,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
 \refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
 \refitem cfg_docset_feedname DOCSET_FEEDNAME
+\refitem cfg_dot_fontname DOT_FONTNAME
+\refitem cfg_dot_fontpath DOT_FONTPATH
 \refitem cfg_dot_graph_max_nodes DOT_GRAPH_MAX_NODES
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
 \refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
@@ -1814,6 +1816,24 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
  
+<dt>\c DOT_FONTNAME <dd>
+ \addindex DOT_FONTNAME
+ By default doxygen will write a font called FreeSans.ttf to the output 
+ directory and reference it in all dot files that doxygen generates. This 
+ font does not include all possible unicode characters however, so when you need 
+ these (or just want a differently looking font) you can specify the font name 
+ using \c DOT_FONTNAME. You need need to make sure dot is able to find the font, 
+ which can be done by putting it in a standard location or by setting the \c DOTFONTPATH
+ environment variable or by setting \c DOT_FONTPATH to the directory containing
+ the font.
+
+<dt>\c DOT_FONTPATH <dd>
+ \addindex DOT_FONTPATH
+ By default doxygen will tell dot to use the output directory to look for the
+ FreeSans.ttf font (which doxygen will put there itself). If you specify a 
+ different font using \c DOT_FONTNAME you can set the path where dot 
+ can find it using this tag. 
+
 \anchor cfg_class_graph
 <dt>\c CLASS_GRAPH <dd>
  \addindex CLASS_GRAPH

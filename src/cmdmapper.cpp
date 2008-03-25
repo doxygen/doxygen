@@ -31,6 +31,8 @@ CommandMap cmdMap[] =
   { "c",             CMD_CODE },
   { "code",          CMD_STARTCODE },
   { "copydoc",       CMD_COPYDOC },
+  { "copybrief",     CMD_COPYBRIEF },
+  { "copydetails",   CMD_COPYDETAILS },
   { "date",          CMD_DATE },
   { "dontinclude",   CMD_DONTINCLUDE },
   { "dotfile",       CMD_DOTFILE },

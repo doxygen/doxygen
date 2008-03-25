@@ -1020,7 +1020,7 @@ QCString Definition::qualifiedName() const
 
   if (m_impl->outerScope->name()=="<globalScope>")
   {
-    m_impl->qualifiedName = m_impl->localName.copy();
+    m_impl->qualifiedName = m_impl->localName;
   }
   else
   {

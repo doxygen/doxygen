@@ -500,12 +500,13 @@ class DocIndexEntry : public DocNode
 
 //-----------------------------------------------------------------------
 
-/*! @brief Node representing a entry in the index. */
+/*! @brief Node representing a copy of documentation block. */
 class DocCopy : public CompAccept<DocCopy>, public DocNode
 {
   public:
-    DocCopy(DocNode *parent,const QString &link) 
-      : m_parent(parent), m_link(link) { }
+    DocCopy(DocNode *parent,const QString &link,bool copyBrief,bool copyDetails) 
+      : m_parent(parent), m_link(link), 
+        m_copyBrief(copyBrief), m_copyDetails(copyDetails) { }
     Kind kind() const          { return Kind_IndexEntry; }
     QString link() const       { return m_link; }
     DocNode *parent() const    { return m_parent; }
@@ -515,6 +516,8 @@ class DocCopy : public CompAccept<DocCopy>, public DocNode
   private:
     DocNode *m_parent;
     QString  m_link;
+    bool     m_copyBrief;
+    bool     m_copyDetails;
 };
 
 /*! @brief Node representing an auto List */

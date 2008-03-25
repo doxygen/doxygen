@@ -874,7 +874,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,int level)
     else if (nd==0 && cd==0) // scope is not known!
     {
       // introduce bogus namespace
-      //printf("adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
+      //printf("++ adding dummy namespace %s to %s\n",nsName.data(),prevScope->name().data());
       nd=new NamespaceDef(
         "[generated]",1,fullScope);
 
@@ -1409,6 +1409,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           tagName=rootNav->tagInfo()->tagName;
           tagFileName=rootNav->tagInfo()->fileName;
         }
+        //printf("++ new namespace %d\n",fullName.data());
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName,tagFileName);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -1576,6 +1577,7 @@ static void findUsingDirectives(EntryNav *rootNav)
       }
       else // unknown namespace, but add it anyway.
       {
+        //printf("++ new unknown namespace %s\n",name.data());
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);

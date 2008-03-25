@@ -81,8 +81,8 @@ static QString                g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
-static MemberDef *            g_memberDef;
 static QDict<void>            g_paramsFound;
+static MemberDef *            g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
@@ -125,7 +125,7 @@ static QStack<DocParserContext> g_parserStack;
 
 //---------------------------------------------------------------------------
 
-static void docParserPushContext()
+static void docParserPushContext(bool saveParamInfo=TRUE)
 {
   //QCString indent;
   //indent.fill(' ',g_parserStack.count()*2+2);
@@ -143,10 +143,14 @@ static void docParserPushContext()
   ctx->fileName           = g_fileName;
   ctx->relPath            = g_relPath;
 
-  ctx->hasParamCommand    = g_hasParamCommand;
-  ctx->hasReturnCommand   = g_hasReturnCommand;
+  if (saveParamInfo)
+  {
+    ctx->hasParamCommand    = g_hasParamCommand;
+    ctx->hasReturnCommand   = g_hasReturnCommand;
+    ctx->paramsFound        = g_paramsFound;
+  }
+
   ctx->memberDef          = g_memberDef;
-  ctx->paramsFound        = g_paramsFound;
   ctx->isExample          = g_isExample;
   ctx->exampleName        = g_exampleName;
   ctx->sectionDict        = g_sectionDict;
@@ -1744,7 +1748,13 @@ void DocCopy::parse()
   {
     if (g_copyStack.findRef(def)==-1) // definition not parsed earlier
     {
-      docParserPushContext();
+      bool         hasParamCommand  = g_hasParamCommand;
+      bool         hasReturnCommand = g_hasReturnCommand;
+      QDict<void>  paramsFound      = g_paramsFound;
+      //printf("..1 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
+      //      g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
+
+      docParserPushContext(FALSE);
       if (def->definitionType()==Definition::TypeMember && def->getOuterScope())
       {
         g_context=def->getOuterScope()->name();
@@ -1760,14 +1770,49 @@ void DocCopy::parse()
       // handle them in all cases.
       //printf("doc='%s'\n",doc.data());
       //printf("brief='%s'\n",brief.data());
-      brief+='\n';
-      doc+='\n';
-      internalValidatingParseDoc(this,m_children,brief);
-      internalValidatingParseDoc(this,m_children,doc);
+      if (m_copyBrief)
+      {
+        brief+='\n';
+        internalValidatingParseDoc(this,m_children,brief);
+
+        //printf("..2 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
+        //    g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
+        hasParamCommand  = hasParamCommand  || g_hasParamCommand;
+        hasReturnCommand = hasReturnCommand || g_hasReturnCommand;
+        QDictIterator<void> it(g_paramsFound);
+        void *item;
+        for (;(item=it.current());++it)
+        {
+          paramsFound.insert(it.currentKey(),it.current());
+        }
+      }
+      if (m_copyDetails)
+      {
+        doc+='\n';
+        internalValidatingParseDoc(this,m_children,doc);
+
+        //printf("..3 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
+        //    g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
+        hasParamCommand  = hasParamCommand  || g_hasParamCommand;
+        hasReturnCommand = hasReturnCommand || g_hasReturnCommand;
+        QDictIterator<void> it(g_paramsFound);
+        void *item;
+        for (;(item=it.current());++it)
+        {
+          paramsFound.insert(it.currentKey(),it.current());
+        }
+      }
       g_copyStack.remove(def);
       ASSERT(g_styleStack.isEmpty());
       ASSERT(g_nodeStack.isEmpty());
       docParserPopContext(TRUE);
+
+      g_hasParamCommand  = hasParamCommand;
+      g_hasReturnCommand = hasReturnCommand;
+      g_paramsFound      = paramsFound;
+
+      //printf("..4 hasParamCommand=%d hasReturnCommand=%d paramsFound=%d\n",
+      //      g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
     }
     else // oops, recursion
     {
@@ -4437,7 +4482,8 @@ int DocPara::handleCommand(const QString &cmdName)
 {
   DBG(("handleCommand(%s)\n",cmdName.data()));
   int retval = RetVal_OK;
-  switch (Mappers::cmdMapper->map(cmdName))
+  int cmdId = Mappers::cmdMapper->map(cmdName);
+  switch (cmdId)
   {
     case CMD_UNKNOWN:
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Found unknown command `\\%s'",cmdName.data());
@@ -4702,7 +4748,9 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_INTERNAL:
       retval = RetVal_Internal;
       break;
-    case CMD_COPYDOC:
+    case CMD_COPYDOC:   // fall through
+    case CMD_COPYBRIEF: // fall through
+    case CMD_COPYDETAILS:
       {
 	int tok=doctokenizerYYlex();
 	if (tok!=TK_WHITESPACE)
@@ -4724,7 +4772,9 @@ int DocPara::handleCommand(const QString &cmdName)
 	      tokToString(tok),cmdName.data());
 	  break;
 	}
-        DocCopy *cpy = new DocCopy(this,g_token->name);
+        DocCopy *cpy = new DocCopy(this,g_token->name,
+            cmdId==CMD_COPYDOC || cmdId==CMD_COPYBRIEF,
+            cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
         m_children.append(cpy);
         cpy->parse();
       }
@@ -5983,8 +6033,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
                             bool isExample, const char *exampleName,
                             bool singleLine, bool linkFromIndex)
 {
-  //printf("validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
-  //                                     md?md->name().data():"<none>");
+  //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?ctx->name().data():"<none>",
+  //                                     md?md->name().data():"<none>",
+  //                                     input);
   //printf("========== validating %s at line %d\n",fileName,startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
   //g_token = new TokenInfo;
@@ -6145,6 +6196,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   // restore original parser state
   docParserPopContext();
 
+  //printf("end validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
+  //                                     md?md->name().data():"<none>");
+  
   return root;
 }
 
