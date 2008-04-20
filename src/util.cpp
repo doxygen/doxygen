@@ -1909,6 +1909,10 @@ QCString tempArgListToString(ArgumentList *al)
       {
         result+=a->type.right(a->type.length()-i-1);
       }
+      else // nothing found -> take whole name
+      {
+        result+=a->type;
+      }
     }
     a=al->next();
     if (a) result+=", ";

@@ -83,6 +83,7 @@ static int              scantype      = 0;
 static int              g_lastCommentContext = 0;
 static bool             docBlockAutoBrief;
 static char             docBlockTerm;
+static int              iDocLine      = -1;
 
 //#define YY_A_INTERACTIVE 1
 #define YY_NEVER_INTERACTIVE 1
@@ -122,8 +123,7 @@ static void  addText (char *word, int llen)
 {
   while (llen>0)
   {
-    g_buf[iCounter]=*word;
-    *word++;
+    g_buf[iCounter]=*word++;
     iCounter++;
     llen--;
   }    
@@ -384,7 +384,7 @@ static void parseFunctionProto()
     {
       current->args+=",";
     }
-    Argument *arg=new Argument();
+    Argument *arg=new Argument;
     Argument *hh=(Argument*)ql.at(k);
     arg->name=hh->name;
     arg->type=hh->type;
@@ -437,6 +437,7 @@ void parserInit()
   lastEntity=0;
   bropen=0;
   openGroups=0;
+  iDocLine=-1;
   //isPrevDoc=FALSE;
   //prevDocEntry.reset();
   qrl.clear();
@@ -446,10 +447,9 @@ void parserInit()
     VhdlDocGen::init();
   }
 
-
   uint SSIZE=inputFile.size()+1024;
-  if (g_buf==0)  
-    g_buf=(char*)(calloc(SSIZE,sizeof(char)));
+  if (g_buf==0) free(g_buf);
+  g_buf=(char*)(calloc(SSIZE,sizeof(char)));
 
   if (g_buf==0)
   {
@@ -1367,6 +1367,7 @@ ALLID        [^;()\t ]
    */
 
 <*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
+  if (iDocLine==-1) iDocLine=yyLineNr;
   if (YY_START!=Comment) // Start of the comment block
   {
     iTextCounter=iCounter;
@@ -1379,6 +1380,7 @@ ALLID        [^;()\t ]
 }
 
 <Comment>^{B}*"--!"[^\n]* {
+  if (iDocLine==-1) iDocLine=yyLineNr;
   addText(vhdlscanYYtext,vhdlscanYYleng);
   lineCount();
 }
@@ -1395,6 +1397,7 @@ ALLID        [^;()\t ]
 }
 
 <*>^{B}*"--!"[^\n]* { // one line comment
+  if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qcs(yytext);
   int j=qcs.find("--!");
   qcs=qcs.right(qcs.length()-3-j);
@@ -1451,13 +1454,18 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   Protection protection=Public;
+  if (brief) 
+    current->briefLine = iDocLine; 
+  else 
+    current->docLine = iDocLine;
+
   //printf("parseCommentBlock %p [%s]\n",current,doc.data());
   while (parseCommentBlock(
 	g_thisParser,
 	current,
 	doc,        // text
 	yyFileName, // file
-	brief ? current->briefLine : current->docLine,   // line of block start
+	iDocLine,   // line of block start
 	brief, 
 	docBlockAutoBrief,
 	FALSE,
@@ -1480,6 +1488,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
     unput(docBlockTerm);
     docBlockTerm=0;
   }
+  iDocLine=-1;
 }
 
 #if 0
@@ -1668,6 +1677,7 @@ void VHDLLanguageScanner::parseInput(const char *fileName,const char *fileBuf,En
   current=0;
 
   groupLeaveFile(yyFileName,yyLineNr);
+  inputFile.close();
 
   //mergeBrief(current_root);
   //mergeGrouping(current_root,0);

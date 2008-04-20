@@ -662,7 +662,7 @@ void FileDef::writeSource(OutputList &ol)
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
     getDirDef()->writeNavigationPath(ol);
     ol.endQuickIndices();
-    ol.endContents();
+    ol.startContents();
     startTitle(ol,getOutputFileBase());
     ol.parseText(name());
     endTitle(ol,getOutputFileBase(),title);

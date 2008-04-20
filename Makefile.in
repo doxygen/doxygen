@@ -63,9 +63,6 @@ install: doxywizard_install
 	cat doc/doxytag.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > doxytag.1
 	$(INSTTOOL) -m 644 doxytag.1 $(INSTALL)/$(MAN1DIR)/doxytag.1
 	rm doxytag.1
-	cat doc/doxywizard.1 | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > doxywizard.1
-	$(INSTTOOL) -m 644 doxywizard.1 $(INSTALL)/$(MAN1DIR)/doxywizard.1
-	rm doxywizard.1
 
 install_docs: 
 	$(INSTTOOL) -d $(DOCDIR)
@@ -118,7 +115,7 @@ rpm: dist
 	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
 	rm -rf $(DISTDIR)
 	gzip -9v $(DISTDIR).src.tar
-	rpmbuild -ta $(DISTDIR).src.tar.gz
+	rpmbuild -ta %%WITHDOXYWIZARD%% $(DISTDIR).src.tar.gz
 
 rpmsrc: dist
 	gzip -df $(DISTDIR).src.tar.gz
@@ -129,7 +126,7 @@ rpmsrc: dist
 	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
 	rm -rf $(DISTDIR)
 	gzip -9v $(DISTDIR).src.tar
-	rpmbuild -ts $(DISTDIR).src.tar.gz
+	rpmbuild -ts %%WITHDOXYWIZARD%% $(DISTDIR).src.tar.gz
 
 rpmbinary: dist
 	gzip -df $(DISTDIR).src.tar.gz
@@ -140,7 +137,7 @@ rpmbinary: dist
 	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
 	rm -rf $(DISTDIR)
 	gzip -9v $(DISTDIR).src.tar
-	rpmbuild -tb $(DISTDIR).src.tar.gz
+	rpmbuild -tb %%WITHDOXYWIZARD%% $(DISTDIR).src.tar.gz
 
 
 ctags:

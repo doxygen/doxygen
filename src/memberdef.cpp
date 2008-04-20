@@ -533,8 +533,8 @@ void MemberDefImpl::init(Definition *def,
   {
     declArgList = new ArgumentList;
     stringToArgumentList(args,declArgList,&extraTypeChars);
-    //printf("setDeclArgList %s to %p const=%d\n",args.data(),
-    //    declArgList,declArgList->constSpecifier);
+    //printf("setDeclArgList %s to %s const=%d\n",args.data(),
+    //    argListToString(declArgList).data(),declArgList->constSpecifier);
   }
   else
   {
@@ -766,7 +766,10 @@ QCString MemberDef::anchor() const
   QCString result=m_impl->anc;
   if (m_impl->groupAlias)     return m_impl->groupAlias->anchor();
   if (m_impl->templateMaster) return m_impl->templateMaster->anchor();
-  if (m_impl->enumScope) result.prepend(m_impl->enumScope->anchor());
+  if (m_impl->enumScope && m_impl->enumScope!=this) // avoid recursion for C#'s public enum E { E, F }
+  {
+    result.prepend(m_impl->enumScope->anchor());
+  }
   if (m_impl->group) 
   {
     if (m_impl->groupMember)
@@ -1047,9 +1050,10 @@ bool MemberDef::isBriefSectionVisible() const
 
   //printf("visibleIfStatic=%d visibleIfDocumented=%d visibleIfEnabled=%d "
   //       "visibleIfPrivate=%d visibltIfNotDefaultCDTor=%d "
-  //       "visibleIfFriendCompound=%d\n",visibleIfStatic,visibleIfDocumented,
+  //       "visibleIfFriendCompound=%d !annScope=%d\n",
+  //       visibleIfStatic,visibleIfDocumented,
   //       visibleIfEnabled,visibleIfPrivate,visibleIfNotDefaultCDTor,
-  //       visibleIfFriendCompound);
+  //       visibleIfFriendCompound,!m_impl->annScope);
   
   bool visible = visibleIfStatic     && visibleIfDocumented      && 
                  visibleIfEnabled    && visibleIfPrivate         &&

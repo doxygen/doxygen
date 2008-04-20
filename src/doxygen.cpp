@@ -1938,15 +1938,27 @@ static MemberDef *addVariableToClass(
     MemberDef *md;
     for (mni.toFirst();(md=mni.current());++mni)
     {
-      if (md->getClassDef()==cd && root->type==md->typeString()) 
+      //printf("md->getClassDef()=%p cd=%p type=[%s] md->typeString()=[%s]\n",
+      //    md->getClassDef(),cd,root->type.data(),md->typeString());
+      if (md->getClassDef()==cd && 
+          removeRedundantWhiteSpace(root->type)==md->typeString()) 
         // member already in the scope
       {
+
+        if (root->objc && 
+            root->mtype==Property && 
+            md->memberType()==MemberDef::Variable)
+        { // Objective-C 2.0 property
+          // turn variable into a property
+          cd->reclassifyMember(md,MemberDef::Property);
+        }
         addMemberDocs(rootNav,md,def,0,FALSE);
         //printf("    Member already found!\n");
         return md;
       }
     } 
   }
+
   // new member variable, typedef or enum value
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
@@ -1985,7 +1997,7 @@ static MemberDef *addVariableToClass(
   //
   md->setBodyDef(rootNav->fileDef());
 
-  //printf("Adding member=%s\n",md->name().data());
+  //printf("    Adding member=%s\n",md->name().data());
   // add the member to the global list
   if (mn)
   {
@@ -2104,6 +2116,7 @@ static MemberDef *addVariableToFile(
            || (nd!=0 && md->getNamespaceDef()==nd) // both in same namespace
           )
           && !md->isDefine() // function style #define's can be "overloaded" by typedefs or variables
+          && !md->isEnumerate() // in C# an enum value and enum can have the same name
          )
         // variable already in the scope
       {
@@ -6510,7 +6523,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                 e->loadEntry(g_storage);
                 MemberDef *fmd = addVariableToFile(e,MemberDef::EnumValue,
                                  md->getOuterScope() ? md->getOuterScope()->name() : QCString(),
-                                 e->name(),TRUE,0); 
+                                 e->name(),FALSE,0); 
                 md->insertEnumField(fmd);
                 fmd->setEnumScope(md);
                 e->releaseEntry();
@@ -9832,6 +9845,7 @@ void parseInput()
   //}
   classEntries.clear();          
 
+  msg("Add enum values to enums...\n");
   addEnumValuesToEnums(rootNav);
   findEnumDocumentation(rootNav);
 
@@ -10166,7 +10180,9 @@ void generateOutput()
     msg("Generating Perl module output...\n");
     generatePerlMod();
   }
-  if (Config_getBool("GENERATE_HTMLHELP") && !Config_getString("HHC_LOCATION").isEmpty())
+  if (Config_getBool("GENERATE_HTML") &&
+      Config_getBool("GENERATE_HTMLHELP") && 
+      !Config_getString("HHC_LOCATION").isEmpty())
   {
     msg("Running html help compiler...\n");
     QString oldDir = QDir::currentDirPath();

@@ -46,7 +46,7 @@ TranslatorEnglish
 Dimitri van Heesch: dimitri@stack.nl
 
 TranslatorFinnish
-Olli Korhonen: olli.korhonen lost@cyberspace
+Antti Laine: antti.a.laine@tut.fi
 
 TranslatorFrench
 Xavier Outhier: xouthier@yahoo.fr

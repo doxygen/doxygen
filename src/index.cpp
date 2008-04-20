@@ -1736,7 +1736,6 @@ void writeQuickMemberIndex(OutputList &ol,
     }
   }
   endQuickIndexList(ol);
-  ol.newParagraph();
 }
 
 //----------------------------------------------------------------------------

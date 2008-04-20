@@ -314,6 +314,7 @@ class ClassDef : public Definition
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
+    void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
     
     bool visited;
 

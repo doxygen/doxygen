@@ -81,7 +81,7 @@ produce. For HTML and LaTeX there are additional options.
 Doxygen can produce a number of diagrams. Using the diagrams tab you
 can select which ones to generate. For most diagrams the 
 dot tool of the <a href="http://www.graphviz.org">GraphViz</a> package
-is needed (if you use the binary packages for Mac or Windows this
+is needed (if you use the binary packages for MacOSX this
 tool is already included).
 
 <h3>Expert dialog</h3>

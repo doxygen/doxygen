@@ -546,7 +546,7 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   case DocSymbol::Rdquo:   c = '"'; break;
   case DocSymbol::Ndash:   c = '-'; break;
   case DocSymbol::Mdash:   s = "--"; break;
-  case DocSymbol::Nbsp:    c = ' '; break;
+  case DocSymbol::Nbsp:    c = ' '; break;
   case DocSymbol::Uml:     accent = "umlaut"; break;
   case DocSymbol::Acute:   accent = "acute"; break;
   case DocSymbol::Grave:   accent = "grave"; break;

@@ -1238,7 +1238,7 @@ static void generateXMLForClass(ClassDef *cd,QTextStream &ti)
       {
         t << convertToXML(
               insertTemplateSpecifierInScope(
-              bcd->classDef->displayName(),bcd->templSpecifiers)
+              bcd->classDef->name(),bcd->templSpecifiers)
            );
       }
       else

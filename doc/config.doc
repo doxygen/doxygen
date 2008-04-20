@@ -113,6 +113,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_file_version_filter FILE_VERSION_FILTER
 \refitem cfg_filter_patterns FILTER_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
+\refitem cfg_formula_fontsize FORMULA_FONTSIZE
 \refitem cfg_full_path_names FULL_PATH_NAMES
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
 \refitem cfg_generate_buglist GENERATE_BUGLIST
@@ -147,6 +148,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_html_header HTML_HEADER
 \refitem cfg_html_output HTML_OUTPUT
 \refitem cfg_html_stylesheet HTML_STYLESHEET
+\refitem cfg_idl_property_support IDL_PROPERTY_SUPPORT
 \refitem cfg_ignore_prefix IGNORE_PREFIX
 \refitem cfg_image_path IMAGE_PATH
 \refitem cfg_include_graph INCLUDE_GRAPH
@@ -444,6 +446,16 @@ followed by the descriptions of the tags grouped by category.
  of <a href="http://www.riverbankcomputing.co.uk/sip/">sip</a> sources only. 
  Doxygen will parse them like normal C++ but will assume all classes use public 
  instead of private inheritance when no explicit protection keyword is present. 
+
+\anchor cfg_idl_property_support
+<dt>\c IDL_PROPERTY_SUPPORT <dd>
+ \addindex IDL_PROPERTY_SUPPORT
+ For Microsoft's IDL there are propget and propput attributes to indicate getter
+ and setter methods for a property. Setting this option to \c YES (the default)
+ will make doxygen to replace the get and set methods by a property in the
+ documentation. This will only work if the methods are indeed getting or 
+ setting a simple type. If this is not the case, or you want to show the 
+ methods anyway, you should set this option to \c NO.
 
 \anchor cfg_distribute_group_doc
 <dt>\c DISTRIBUTE_GROUP_DOC <dd>
@@ -1038,14 +1050,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \anchor cfg_referenced_by_relation
 <dt>\c REFERENCED_BY_RELATION <dd>
  \addindex REFERENCED_BY_RELATION
- If the \c REFERENCED_BY_RELATION tag is set to \c YES (the default)
+ If the \c REFERENCED_BY_RELATION tag is set to \c YES
  then for each documented function all documented
  functions referencing it will be listed. 
 
 \anchor cfg_references_relation
 <dt>\c REFERENCES_RELATION <dd>
  \addindex REFERENCES_RELATION
- If the \c REFERENCES_RELATION tag is set to \c YES (the default)
+ If the \c REFERENCES_RELATION tag is set to \c YES
  then for each documented function all documented entities
  called/used by that function will be listed. 
 
@@ -1353,6 +1365,15 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  used to set the initial width (in pixels) of the frame in which the tree
  is shown.
 
+\anchor cfg_formula_fontsize
+<dt>\c FORMULA_FONTSIZE <dd>
+ \addindex FORMULA_FONTSIZE
+ Use this tag to change the font size of Latex formulas included
+ as images in the HTML documentation. The default is 10.
+ when you change the font size after a successful doxygen run you need
+ to manually remove any <code>form_*.png</code> images from the HTML 
+ output directory to force them to be regenerated.
+ 
 </dl>
 \section latex_output LaTeX related options
 \anchor cfg_generate_latex
@@ -1815,6 +1836,26 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
  visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
+
+\anchor cfg_dot_fontname
+<dt>\c DOT_FONTNAME <dd>
+ \addindex DOT_FONTNAME
+ By default doxygen will write a font called \c FreeSans.ttf to the output
+ directory and reference it in all dot files that doxygen generates. This
+ font does not include all possible unicode characters however, so when you need 
+ these (or just want a differently looking font) you can specify the font name
+ using \c DOT_FONTNAME. You need need to make sure dot is able to find the font,
+ which can be done by putting it in a standard location or by setting the
+ \c DOTFONTPATH environment variable or by setting \c DOT_FONTPATH to the directory
+ containing the font.
+
+\anchor cfg_dot_fontpath
+<dt>\c DOT_FONTPATH <dd>
+ \addindex DOT_FONTPATH
+ By default doxygen will tell dot to use the output directory to look for the 
+ \c FreeSans.ttf font (which doxygen will put there itself). If you specify a 
+ different font using \c DOT_FONTNAME you can set the path where dot 
+ can find it using this tag.
  
 <dt>\c DOT_FONTNAME <dd>
  \addindex DOT_FONTNAME
@@ -1927,7 +1968,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_dot_graph_max_nodes 
 <dt>\c DOT_GRAPH_MAX_NODES <dd>
  \addindex DOT_GRAPH_MAX_NODES
- The \c MAX_DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of 
+ The \c DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of 
  nodes that will be shown in the graph. If the number of nodes in a graph
  becomes larger than this value, doxygen will truncate the graph, which is 
  visualized by representing a node as a red box. Note that doxygen if the number

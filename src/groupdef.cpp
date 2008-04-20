@@ -60,24 +60,6 @@ GroupDef::GroupDef(const char *df,int dl,const char *na,const char *t,
   memberGroupSDict->setAutoDelete(TRUE);
 
   allMemberList = new MemberList(MemberList::allMembersList);
-#if 0
-
-  decDefineMembers.setInGroup(TRUE);
-  decProtoMembers.setInGroup(TRUE);
-  decTypedefMembers.setInGroup(TRUE);
-  decEnumMembers.setInGroup(TRUE);
-  decEnumValMembers.setInGroup(TRUE);
-  decFuncMembers.setInGroup(TRUE);
-  decVarMembers.setInGroup(TRUE);
-
-  docDefineMembers.setInGroup(TRUE);
-  docProtoMembers.setInGroup(TRUE);
-  docTypedefMembers.setInGroup(TRUE);
-  docEnumMembers.setInGroup(TRUE);
-  docEnumValMembers.setInGroup(TRUE);
-  docFuncMembers.setInGroup(TRUE);
-  docVarMembers.setInGroup(TRUE);
-#endif
 
   visited = 0;
   groupScope = 0;
@@ -142,14 +124,6 @@ void GroupDef::findSectionsInDocumentation()
       ml->findSectionsInDocumentation();
     }
   }
-#if 0
-  decDefineMembers.findSectionsInDocumentation();
-  decProtoMembers.findSectionsInDocumentation();
-  decTypedefMembers.findSectionsInDocumentation();
-  decEnumMembers.findSectionsInDocumentation();
-  decFuncMembers.findSectionsInDocumentation();
-  decVarMembers.findSectionsInDocumentation();
-#endif
 }
 
 void GroupDef::addFile(const FileDef *def)
@@ -224,15 +198,6 @@ void GroupDef::addMembersToMemberGroup()
       ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
     }
   }
-#if 0
-  ::addMembersToMemberGroup(&decDefineMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decProtoMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decTypedefMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decEnumValMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decFuncMembers,&memberGroupSDict,this);
-  ::addMembersToMemberGroup(&decVarMembers,&memberGroupSDict,this);
-#endif
 
   //printf("GroupDef::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
@@ -872,14 +837,6 @@ void GroupDef::writeMemberPages(OutputList &ol)
        ml->writeDocumentationPage(ol,name(),this);
     }
   }
-#if 0
-  docDefineMembers.writeDocumentationPage(ol,name(),this);
-  docProtoMembers.writeDocumentationPage(ol,name(),this);
-  docTypedefMembers.writeDocumentationPage(ol,name(),this);
-  docEnumMembers.writeDocumentationPage(ol,name(),this);
-  docFuncMembers.writeDocumentationPage(ol,name(),this);
-  docVarMembers.writeDocumentationPage(ol,name(),this);
-#endif
 
   ol.popGeneratorState();
 }
@@ -1154,14 +1111,6 @@ void GroupDef::addListReferences()
       ml->addListReferences(this);
     }
   }
-#if 0
-  docDefineMembers.addListReferences(this);
-  docProtoMembers.addListReferences(this);
-  docTypedefMembers.addListReferences(this);
-  docEnumMembers.addListReferences(this);
-  docFuncMembers.addListReferences(this);
-  docVarMembers.addListReferences(this);
-#endif
 }
 
 MemberList *GroupDef::createMemberList(MemberList::ListType lt)
