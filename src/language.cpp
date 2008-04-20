@@ -54,7 +54,7 @@
 #include "translator_es.h"
 #endif
 #ifdef LANG_FI
-//#include "translator_fi.h"
+#include "translator_fi.h"
 #endif
 #ifdef LANG_RU
 #include "translator_ru.h"

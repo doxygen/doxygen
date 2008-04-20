@@ -961,7 +961,7 @@ void Config::check()
   //}
 
   QCString &warnFormat = Config_getString("WARN_FORMAT");
-  if (warnFormat.isEmpty())
+  if (warnFormat.stripWhiteSpace().isEmpty())
   {
     warnFormat="$file:$line $text";
   }
@@ -969,18 +969,15 @@ void Config::check()
   {
     if (warnFormat.find("$file")==-1)
     {
-      config_err("Error: warning format does not contain a $file tag!\n");
-      exit(1);
+      config_err("Warning: warning format does not contain a $file tag!\n");
     }
     if (warnFormat.find("$line")==-1)
     {
-      config_err("Error: warning format does not contain a $line tag!\n");
-      exit(1);
+      config_err("Warning: warning format does not contain a $line tag!\n");
     }
     if (warnFormat.find("$text")==-1)
     {
-      config_err("Error: wanring format foes not contain a $text tag!\n");
-      exit(1);
+      config_err("Warning: warning format foes not contain a $text tag!\n");
     }
   }
 
@@ -1248,6 +1245,28 @@ void Config::check()
     examplePatternList.append("*");
   }
 
+  // if no output format is enabled, warn the user
+  if (!Config_getBool("GENERATE_HTML")    && 
+      !Config_getBool("GENERATE_LATEX")   &&
+      !Config_getBool("GENERATE_MAN")     && 
+      !Config_getBool("GENERATE_RTF")     &&
+      !Config_getBool("GENERATE_XML")     &&
+      !Config_getBool("GENERATE_PERLMOD") &&
+      !Config_getBool("GENERATE_RTF")     &&
+      !Config_getBool("GENERATE_AUTOGEN_DEF") &&
+      Config_getString("GENERATE_TAGFILE").isEmpty()
+     )
+  {
+    config_err("Warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
+  }
+
+  // you can't generate HTMLHELP without HTML enabled!
+  if (!Config_getBool("GENERATE_HTML") && 
+      Config_getBool("GENERATE_HTMLHELP"))
+  {
+    config_err("Warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
+  }
+
   if (Config_getBool("HAVE_DOT")) 
   {
     QCString curFontPath = Config_getString("DOT_FONTPATH");
@@ -1299,28 +1318,6 @@ void Config::check()
     annotationFromBrief.append("the");
   }
 
-#if 0
-  if (Config_getBool("CALL_GRAPH") && 
-      (!Config_getBool("SOURCE_BROWSER") || !Config_getBool("REFERENCES_RELATION"))
-     )
-  {
-      config_err("Warning: turning on CALL_GRAPH requires turning "
-	         "SOURCE_BROWSER and\nREFERENCES_RELATION on as well!\n"
-		 "Assuming SOURCE_BROWSER=YES and REFERENCES_RELATION=YES\n");
-      Config_getBool("SOURCE_BROWSER")=TRUE;
-      Config_getBool("REFERENCES_RELATION")=TRUE;
-  }
-  if (Config_getBool("CALLER_GRAPH") && 
-      (!Config_getBool("SOURCE_BROWSER") || !Config_getBool("REFERENCED_BY_RELATION"))
-     )
-  {
-      config_err("Warning: turning on CALLER_GRAPH requires turning "
-	         "SOURCE_BROWSER and\nREFERENCEDBY_RELATION on as well!\n"
-		 "Assuming SOURCE_BROWSER=YES and REFERENCED_BY_RELATION=YES\n");
-      Config_getBool("SOURCE_BROWSER")=TRUE;
-      Config_getBool("REFERENCED_BY_RELATION")=TRUE;
-  }
-#endif
   // some default settings for vhdl
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL") && 
       (Config_getBool("INLINE_INHERITED_MEMB") || 
@@ -1743,6 +1740,15 @@ void Config::create()
 		    "instead of private inheritance when no explicit protection keyword is present. \n",
                     FALSE
                  );
+  cb = addBool(    "IDL_PROPERTY_SUPPORT",
+                   "For Microsoft's IDL there are propget and propput attributes to indicate getter \n"
+		   "and setter methods for a property. Setting this option to YES (the default) \n"
+		   "will make doxygen to replace the get and set methods by a property in the \n"
+		   "documentation. This will only work if the methods are indeed getting or \n"
+		   "setting a simple type. If this is not the case, or you want to show the \n"
+		   "methods anyway, you should set this option to NO. \n",
+		   TRUE
+		  );
   cb = addBool(
                     "DISTRIBUTE_GROUP_DOC",
                     "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
@@ -2209,13 +2215,13 @@ void Config::create()
                     TRUE
                  );
   cb = addBool(     "REFERENCED_BY_RELATION",
-                    "If the REFERENCED_BY_RELATION tag is set to YES (the default) \n"
+                    "If the REFERENCED_BY_RELATION tag is set to YES \n"
 		    "then for each documented function all documented \n"
 		    "functions referencing it will be listed. \n",
                     FALSE
               );
   cb = addBool(     "REFERENCES_RELATION",
-                    "If the REFERENCES_RELATION tag is set to YES (the default) \n"
+                    "If the REFERENCES_RELATION tag is set to YES \n"
 		    "then for each documented function all documented entities \n"
 		    "called/used by that function will be listed. \n",
                     FALSE
@@ -2339,8 +2345,8 @@ void Config::create()
                     "of the generated HTML documentation. \n",
                     FALSE
                  );
-  cb = addBool(
-                    "GENERATE_DOCSET",
+  cb->addDependency("GENERATE_HTML");
+  cb = addBool( "GENERATE_DOCSET",
                     "If the GENERATE_DOCSET tag is set to YES, additional index files \n"
                     "will be generated that can be used as input for Apple's Xcode 3 \n"
                     "integrated development environment, introduced with OSX 10.5 (Leopard). \n"
@@ -2360,7 +2366,7 @@ void Config::create()
 		    "can be grouped. \n"
                 );
   cs->setDefaultValue("Doxygen generated docs");
-  cb->addDependency("GENERATE_DOCSET");
+  cs->addDependency("GENERATE_DOCSET");
   cs = addString(
                     "DOCSET_BUNDLE_ID",
                     "When GENERATE_DOCSET tag is set to YES, this tag specifies a string that \n"
@@ -2369,7 +2375,7 @@ void Config::create()
 		    "will append .docset to the name. \n"
 		);
   cs->setDefaultValue("org.doxygen.Project");
-  cb->addDependency("GENERATE_DOCSET");
+  cs->addDependency("GENERATE_DOCSET");
 
   cb = addBool(
                     "HTML_DYNAMIC_SECTIONS",
@@ -2466,6 +2472,16 @@ void Config::create()
                     "used to set the initial width (in pixels) of the frame in which the tree \n"
                     "is shown. \n",
                     0,1500,250
+                 );
+  ci->addDependency("GENERATE_HTML");
+  ci = addInt(
+                    "FORMULA_FONTSIZE",
+                    "Use this tag to change the font size of Latex formulas included \n"
+                    "as images in the HTML documentation. The default is 10. Note that \n"
+		    "when you change the font size after a successful doxygen run you need \n"
+		    "to manually remove any form_*.png images from the HTML output directory \n"
+		    "to force them to be regenerated. \n",
+                    8,50,10
                  );
   ci->addDependency("GENERATE_HTML");
 
@@ -3080,7 +3096,7 @@ void Config::create()
   cl->addDependency("HAVE_DOT");
   ci = addInt(
                     "DOT_GRAPH_MAX_NODES",
-                    "The MAX_DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of \n"
+                    "The DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of \n"
                     "nodes that will be shown in the graph. If the number of nodes in a graph \n"
                     "becomes larger than this value, doxygen will truncate the graph, which is \n"
                     "visualized by representing a node as a red box. Note that doxygen if the \n"

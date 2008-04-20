@@ -644,6 +644,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	PackageName
 %x	JavaImport
 %x	CSAccessorDecl
+%x	CSGeneric
 %x	PreLineCtrl
 %x	DefinePHP
 %x	DefinePHPEnd
@@ -2725,11 +2726,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					}
 <IDLAttribute>"propput"	                {
-					  current->mtype = Property;
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
 					  current->spec |= Entry::Settable;
 					}
 <IDLAttribute>"propget" 		{
-					  current->mtype = Property;
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
 					  current->spec |= Entry::Gettable;
 					}
 <IDLAttribute>.				{
@@ -2744,7 +2751,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( IDLProp );
 					}
 <IDLProp>{BN}*"["[^\]]*"]"{BN}*		{  // attribute of a parameter
-					   idlAttr += yytext;
+					   idlAttr = yytext;
+					   idlAttr=idlAttr.stripWhiteSpace();
 					}
 <IDLProp>{ID}				{  // property type
 					   idlProp = yytext;
@@ -2781,7 +2789,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( FindMembers );
 					}
 <IDLProp>.				{ // spaces, *, or other stuff
-  					  idlProp+=yytext;
+  					  //idlProp+=yytext;
  					}
 <Array>"]"		                { current->args += *yytext ;
 					  if (--squareCount<=0)
@@ -4273,11 +4281,31 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    BEGIN( ObjCProtocolList );
 					  }
+					  else if (insideCS) // C# generic class
+					  {
+					    BEGIN( CSGeneric );
+					  }
 					  else // C++ template specialization
 					  {
 					    BEGIN( ClassTemplSpec );
 					  }
 					}
+<CSGeneric>"<"				{
+					  if (current->tArgLists==0)
+					  {
+					    current->tArgLists = new QList<ArgumentList>;
+					    current->tArgLists->setAutoDelete(TRUE);
+					  }
+					  ArgumentList *al = new ArgumentList;
+					  current->spec |= Entry::Template;
+					  current->tArgLists->append(al);
+					  currentArgumentList = al;
+					  templateStr="<";
+					  fullArgString = templateStr;
+					  copyArgString = &templateStr;
+					  currentArgumentContext = CompoundName;
+					  BEGIN( ReadTempArgs );
+  					}
 <ObjCProtocolList>"<"			{
   					  insideProtocolList=TRUE;
   					  BEGIN( Bases );

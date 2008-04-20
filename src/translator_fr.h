@@ -158,7 +158,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of typedefs. */
        virtual QCString trMemberTypedefDocumentation()
       { 
-         return "Documentation des définition de type membres"; }
+         return "Documentation des définitions de type membres"; }
     
     /*! header that is put before the list of enumerations. */
        virtual QCString trMemberEnumerationDocumentation()

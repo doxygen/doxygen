@@ -208,7 +208,9 @@ QCString DiagramItem::label() const
   QCString result;
   if (!templSpec.isEmpty())
   {
-    result=insertTemplateSpecifierInScope(classDef->displayName(),templSpec);
+    // we use classDef->name() here and not diplayName() in order
+    // to get the name used in the inheritance relation.
+    result=insertTemplateSpecifierInScope(classDef->name(),templSpec);
   }
   else
   {

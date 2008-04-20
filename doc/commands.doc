@@ -54,7 +54,7 @@ documentation:
 \refitem cmdcode \\code
 \refitem cmdcond \\cond
 \refitem cmdcopybrief \\copybrief
-\refitem cmdcopydefails \\copydetails
+\refitem cmdcopydetails \\copydetails
 \refitem cmdcopydoc \\copydoc
 \refitem cmddate \\date
 \refitem cmddef \\def
@@ -152,6 +152,7 @@ documentation:
 \refitem cmdtest \\test
 \refitem cmdthrow \\throw
 \refitem cmdtodo \\todo
+\refitem cmdtparam \\tparam
 \refitem cmdtypedef \\typedef
 \refitem cmdunion \\union
 \refitem cmduntil \\until
@@ -1087,7 +1088,7 @@ ALIASES  = "english=\if english" \
 
   \addindex \\param
   Starts a parameter description for a function parameter with name 
-  \<parameter-name\>. Followed by a description of the parameter. 
+  \<parameter-name\>, followed by a description of the parameter. 
   The existence of the parameter is checked and a warning is given if
   the documentation of this (or any other) parameter is missing or not
   present in the function declaration or definition.
@@ -1115,6 +1116,16 @@ void memcpy(void *dest, const void *src, size_t n);
   The \\param description ends when a blank line or some other 
   sectioning command is encountered. See section \ref cmdfn "\\fn" for an 
   example.
+
+<hr>
+\section cmdtparam \\tparam <template-parameter-name> { description }
+
+  \addindex \\tparam
+  Starts a template parameters for a class or function template parameter
+  with name \<template-parameter-name\>, followed by a description of the
+  template parameter.
+
+  Otherwise similar to \ref cmdparam "\\cmdparam".
 
 <hr>
 \section cmdpost \\post { description of the postcondition }

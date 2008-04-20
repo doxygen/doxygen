@@ -1153,7 +1153,7 @@ void VhdlDocGen::getFuncParams(QList<Argument>& ql, const char* str)
       arg->attrib=s1.stripWhiteSpace();
       arg->name=(tt.last()).stripWhiteSpace();
 
-      //     printf("--proto \n [%s] [%s] [%s] [%s] [%s]",ttype.data(),arg->type.data(),arg->attrib.data(),arg->name.data(),s1.data());
+      // printf("--proto \n [%s] [%s] [%s] [%s] [%s]",ttype.data(),arg->type.data(),arg->attrib.data(),arg->name.data(),s1.data());
       ql.append(arg);
     }
     kk--;
@@ -1438,7 +1438,7 @@ void VhdlDocGen::writeProcedureProto(OutputList& ol,const ArgumentList* al,const
   ol.docify(" )");    
 
 
-}// writePorcedure
+}
 
 /*!
  * writes a function prototype to the output

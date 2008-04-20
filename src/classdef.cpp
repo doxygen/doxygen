@@ -1075,6 +1075,12 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
       if (ok && bcd)
       {
         ClassDef *cd=bcd->classDef;
+
+        // use the class name but with the template arguments as given
+        // in the inheritance relation
+        QCString displayName = insertTemplateSpecifierInScope(
+            cd->name(),bcd->templSpecifiers);
+
         if (cd->isLinkable())
         {
           if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
@@ -1098,11 +1104,11 @@ void ClassDef::writeClassDiagrams(OutputList &ol)
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
                              0,
-                             cd->displayName()+bcd->templSpecifiers);
+                             displayName);
         }
         else
         {
-          ol.docify(cd->displayName());
+          ol.docify(displayName);
         }
       }
       else
@@ -3382,5 +3388,17 @@ void ClassDef::setUsedOnly(bool b)
 bool ClassDef::isUsedOnly() const
 {
   return m_impl->usedOnly;
+}
+
+void ClassDef::reclassifyMember(MemberDef *md,MemberDef::MemberType t)
+{
+  md->setMemberType(t);
+  MemberList *ml = m_impl->memberLists.first();
+  while (ml)
+  {
+    ml->remove(md);
+    ml = m_impl->memberLists.next();
+  }
+  insertMember(md);
 }
 

@@ -1,5 +1,7 @@
 %define name doxygen
 
+# optionally pass --with-doxywizard to rpmbuild
+
 %define contentdir /var/www
 %define suexec_caller doxygen
 %define buildroot /var/tmp/%{name}-%{version}-%{revision}root
@@ -14,7 +16,7 @@ License: GNU General Public License
 Group: Development/Tools
 Source: %{name}-%{version}_%{revision}.src.tar.gz
 BuildRoot: %{buildroot}
-BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips
+BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips, /usr/bin/gs
 Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv, libstdc++ >= 2.96
 Provides: doxygen = %{mmn}
 
@@ -25,6 +27,7 @@ documentation is extracted directly from the sources. Doxygen can
 also be configured to extract the code structure from undocumented
 source files.
 
+%if %{?_with_doxywizard:1}%{!?_with_doxywizard:0}
 %package doxywizard
 Group: Development/Libraries
 Summary: GUI Interface for doxygen.
@@ -42,10 +45,11 @@ source files.
 
 This is the GUI interface for doxygen.  It requires qt and X11 to
 install.
+%endif
 
 %prep
 %setup -q -n %{name}-%{version}_%{revision}
-./configure --with-doxywizard --prefix $RPM_BUILD_ROOT/usr
+./configure %{?_with_doxywizard} --prefix $RPM_BUILD_ROOT/usr
 
 %build
 make %{?_smp_mflags}
@@ -68,12 +72,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/doxygen
 %{_bindir}/doxytag
 
+%if %{?_with_doxywizard:1}%{!?_with_doxywizard:0}
 %files doxywizard
 %defattr(-,root,root)
 %{_bindir}/doxywizard
 %doc /usr/man/man1/doxywizard.1.gz
+%endif
 
 %changelog
+* Fri Apr 18 2008 Kenneth Porter <shiva+doxygenspec@sewingwitch.com> 1.5.5-1
+- consolidate with and without doxywizard spec files with rpm macro
+- add gs BuildPrereq
+
 * Sun Nov 18 2007 Kevin McBride <kevin@planetsaphire.com> 1.5.4
 - consolidated manual package in lieu of --excludedocs flag for rpm --install
 

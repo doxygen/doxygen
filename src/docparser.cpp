@@ -339,6 +339,7 @@ static void checkArgumentName(const QString &name,bool isParam)
     for (ali.toFirst();(a=ali.current());++ali)
     {
       QString argName = g_memberDef->isDefine() ? a->type : a->name;
+      argName=argName.stripWhiteSpace();
       //printf("argName=`%s'\n",argName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName) 
@@ -368,7 +369,7 @@ static void checkArgumentName(const QString &name,bool isParam)
         
       }
       warn_doc_error(docFile,docLine,
-	  "Warning: argument `%s' of command @param "
+	  "Warning: argument '%s' of command @param "
 	  "is not found in the argument list of %s%s%s%s",
 	  aName.data(),scope.data(),g_memberDef->name().data(),
 	  argListToString(al.pointer()).data(),inheritedFrom.data());
@@ -397,6 +398,7 @@ static void checkUndocumentedParams()
       for (ali.toFirst();(a=ali.current());++ali)
       {
         QString argName = g_memberDef->isDefine() ? a->type : a->name;
+        argName=argName.stripWhiteSpace();
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
         if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
@@ -415,6 +417,7 @@ static void checkUndocumentedParams()
         for (ali.toFirst();(a=ali.current());++ali)
         {
           QString argName = g_memberDef->isDefine() ? a->type : a->name;
+          argName=argName.stripWhiteSpace();
           if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
           {
             if (!first)
@@ -425,7 +428,7 @@ static void checkUndocumentedParams()
             {
               first=FALSE;
             }
-            errMsg+="  parameter "+argName;
+            errMsg+="  parameter '"+argName+"'";
           }
         }
         if (g_memberDef->inheritsDocsFrom())

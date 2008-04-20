@@ -479,7 +479,7 @@ void generateDEFSection(Definition *d,
     MemberList *ml,
     const char *kind)
 {
-  if (ml->count()>0)
+  if (ml && ml->count()>0)
   {
     t << "    " << kind << " = {" << endl;
     MemberListIterator mli(*ml);

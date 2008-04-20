@@ -317,7 +317,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 						a->array = a->array.mid(1,alen-2);
 						if (i>0 && a->name.isEmpty())
 						{
-						  a->name  = a->array.left(i);
+						  a->name  = a->array.left(i).stripWhiteSpace();
 						  a->array = a->array.mid(i);
 						}
 					      }
