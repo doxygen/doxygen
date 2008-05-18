@@ -589,7 +589,7 @@ static void codifyMapLines(char *text)
         else 
         {
           generateClassOrGlobalLink(*g_code,sp);
-          g_PortMapComp=tt;
+          if (dot) g_PortMapComp=tt;
         }
         dot=FALSE;
         g_temp.resize(0);
@@ -620,7 +620,7 @@ static void codifyMapLines(char *text)
         //if (dot==TRUE)
         //{
           QCString tt=g_temp;
-          tt=tt.lower();
+          // tt=tt.lower();
 
 	  QCString *ss;
           if ((ss=VhdlDocGen::findKeyWord(tt)))

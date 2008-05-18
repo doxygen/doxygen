@@ -69,7 +69,10 @@ class VhdlDocGen
       DOCUMENT, //18 0x12
       UNITS,	  
       GENERIC,
-      PORTMAP
+      PORTMAP,
+      GROUP,
+      VFILE,   
+      SHAREDVARIABLE
     };
 
     VhdlDocGen();
@@ -171,6 +174,12 @@ class VhdlDocGen
     { return mdef->getMemberSpecifiers()==VhdlDocGen::UNITS; }
     static bool isPackageBody(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::PACKAGE_BODY; }
+    static bool isVariable(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::SHAREDVARIABLE; }
+    static bool isFile(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::VFILE; }
+    static bool isGroup(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
 
     //-----------------------------------------------------
     // translatable items

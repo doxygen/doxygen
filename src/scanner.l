@@ -598,6 +598,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	ClassCategory
 %x	ClassTemplSpec
 %x      CliPropertyType
+%x      CliPropertyIndex
 %x      CliOverride
 %x	Bases
 %x	BasesProt
@@ -934,8 +935,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  addType( current );
   					  current->name = yytext;
   					}
-<CliPropertyType>"["{ID}"]"		{ // C++/CLI indexed property
-  					  current->args = yytext;
+<CliPropertyType>"["		        { // C++/CLI indexed property
+  					  current->name += yytext;
+					  BEGIN( CliPropertyIndex );
   					}
 <CliPropertyType>"{"			{
 					  curlyCount=0;
@@ -954,6 +956,13 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <CliPropertyType>.			{
   					  addType( current );
   					  current->type += yytext;
+  					}
+<CliPropertyIndex>"]"			{
+                                          BEGIN( CliPropertyType );
+  					  current->name+=yytext;
+  					}
+<CliPropertyIndex>.			{
+  					  current->name+=yytext;
   					}
 <FindMembers>{B}*"property"{BN}+        { 
                                           if (!current->type.isEmpty())
@@ -1719,7 +1728,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  sharpCount++; 
 					}
 <EndTemplate>">>"			{
-  					  if (insideJava || insideCS)
+  					  if (insideJava || insideCS || insideCli)
 					  {
 					    unput('>');
 					    unput(' ');
@@ -4034,6 +4043,16 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if ( insidePHP && !containsWord(current->type,"function"))
 					  {
 					    initEntry();
+					    if ( *yytext == '{' )
+					    {
+					      lastCurlyContext = FindMembers;
+					      curlyCount=0;
+					      BEGIN( SkipCurly );
+					    }
+					    else
+					    {
+					      BEGIN( FindMembers );
+					    }
 					  }
 					  else
 					  {
@@ -4543,7 +4562,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <ClassVar>":"				{ 
   					  current->type.resize(0);
 					  if ((current->spec & Entry::Interface) || 
-					      (current->spec & Entry::Struct) || 
+					      (current->spec & Entry::Struct)    || 
+					      (current->spec & Entry::Ref)       || 
+					      (current->spec & Entry::Value)     || 
 					      insidePHP || insideCS || insideD || insideObjC
 					     )
 					    baseProt=Public;
@@ -4704,6 +4725,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <Specialization>{BN}+			{ lineCount(); *specName +=' '; }
 <Specialization>"<<"			{ *specName += yytext; }
+<Specialization>">>"/{B}*"::"		{ // M$ C++ extension to allow >> to close a template...
+  					  unput('>');
+  					  unput(' ');
+  					  unput('>');
+                                        }
 <Specialization>">>"			{
                                           if (insideCS) // for C# >> ends a nested template
 					  {

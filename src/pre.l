@@ -726,6 +726,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
   //printf("expandExpression(%s,%s)\n",expr.data(),rest ? rest->data() : 0);
   QCString macroName;
   QCString expMacro;
+  bool definedTest=FALSE;
   int i=pos,l,p,len;
   while ((p=getNextId(expr,i,&l))!=-1) // search for an macro name
   {
@@ -737,7 +738,14 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
       if (g_expandedDict->find(macroName)==0) // expand macro
       {
 	Define *def=isDefined(macroName);
-	if (def && def->nargs==-1) // simple macro
+	if (definedTest) // macro name was found after defined 
+	{
+	  if (def) expMacro = " 1 "; else expMacro = " 0 ";
+	  replaced=TRUE;
+	  len=l;
+	  definedTest=FALSE;
+	}
+	else if (def && def->nargs==-1) // simple macro
 	{
 	  // substitute the definition of the macro
 	  //printf("macro `%s'->`%s'\n",macroName.data(),def->definition.data());
@@ -759,6 +767,11 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	  replaced=replaceFunctionMacro(expr,rest,p+l,len,def,expMacro);
 	  len+=l;
 	}
+        else if (macroName=="defined")
+        {
+  	  //printf("found defined inside macro definition '%s'\n",expr.right(expr.length()-p).data());
+	  definedTest=TRUE;
+        }
 
 	if (replaced) // expand the macro and rescan the expression
 	{
@@ -767,7 +780,7 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
 	  QCString resultExpr=expMacro;
 	  QCString restExpr=expr.right(expr.length()-len-p);
 	  processConcatOperators(resultExpr);
-	  if (!def->nonRecursive)
+	  if (def && !def->nonRecursive)
 	  {
 	    g_expandedDict->insert(macroName,def);
 	    expandExpression(resultExpr,&restExpr,0);
@@ -1900,6 +1913,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  outputChar('*');outputChar('/');
 					  if (--g_commentCount<=0)
 					  {
+					    if (g_lastCContext==Start) 
+					      // small hack to make sure that ^... rule will
+					      // match when going to Start... Example: "/*...*/ some stuff..."
+					    {
+					      YY_CURRENT_BUFFER->yy_at_bol=1;
+					    }
   					    BEGIN(g_lastCContext);  
 					  }
   					}

@@ -400,7 +400,11 @@ static void checkUndocumentedParams()
         QString argName = g_memberDef->isDefine() ? a->type : a->name;
         argName=argName.stripWhiteSpace();
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
-        if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
+        if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
+        { 
+          // allow undocumented self parameter for Python
+        }
+        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a->docs.isEmpty()) 
         {
           found = TRUE;
           break;
@@ -418,7 +422,11 @@ static void checkUndocumentedParams()
         {
           QString argName = g_memberDef->isDefine() ? a->type : a->name;
           argName=argName.stripWhiteSpace();
-          if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
+          if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
+          { 
+            // allow undocumented self parameter for Python
+          }
+          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0) 
           {
             if (!first)
             {

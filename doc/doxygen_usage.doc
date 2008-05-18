@@ -54,6 +54,7 @@ to the new configuration file. Any new options will have their default value.
 Note that comments that you may have added in the original configuration file 
 will be lost.
 
+\anchor doxygen_finetune
 If you want to fine-tune the way the output looks, doxygen allows you 
 generate default style sheet, header, and footer files that you can edit
 afterwards:

@@ -2170,6 +2170,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
                                         }
 <UsingName>\n				{ codifyLines(yytext); BEGIN(Body); }
 <UsingName>.				{ codifyLines(yytext); BEGIN(Body); }
+<Body,FuncCall>"$"?"this"("->"|".")	{ g_code->codify(yytext); // this-> for C++, this. for C#
+                                        }
 <Body>{KEYWORD}/([^a-z_A-Z0-9]) 	{
   					  startFontClass("keyword");
   					  codifyLines(yytext);
@@ -2409,7 +2411,6 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
   					}
-<Body,FuncCall>"$"?"this->"		{ g_code->codify(yytext); }
 <Body>"."|"->"				{ 
   					  g_code->codify(yytext);
 					  g_memCallContext = YY_START;

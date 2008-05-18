@@ -1165,28 +1165,31 @@ QCString VhdlDocGen::trTypeString(int type)
 {
   switch(type)
   {
-    case VhdlDocGen::LIBRARY:      return "Library"; 
-    case VhdlDocGen::ENTITY:       return "Entity";
-    case VhdlDocGen::PACKAGE_BODY: return "Package Body";
-    case VhdlDocGen::ATTRIBUTE:    return "Attribute";
-    case VhdlDocGen::PACKAGE:      return "Package";
-    case VhdlDocGen::SIGNAL:       return "Signal";
-    case VhdlDocGen::COMPONENT:    return "Component";
-    case VhdlDocGen::CONSTANT:     return "Constant";
-    case VhdlDocGen::TYPE:         return "Type";
-    case VhdlDocGen::SUBTYPE:      return "Subtype";
-    case VhdlDocGen::FUNCTION:     return "Function";
-    case VhdlDocGen::RECORD:       return "Record";
-    case VhdlDocGen::PROCEDURE:    return "Procedure";
-    case VhdlDocGen::ARCHITECTURE: return "Architecture";
-    case VhdlDocGen::USE:          return "Package";
-    case VhdlDocGen::PROCESS:      return "Process";
-    case VhdlDocGen::PORT:         return "Port";
-    case VhdlDocGen::GENERIC:      return "Generic";
-    case VhdlDocGen::DOCUMENT:     return "Doc"; 
-    case VhdlDocGen::UNITS:        return "Units"; 
-    case VhdlDocGen::PORTMAP:      return "Port Map"; 
-    default:                       return "";
+    case VhdlDocGen::LIBRARY:        return "Library"; 
+    case VhdlDocGen::ENTITY:         return "Entity";
+    case VhdlDocGen::PACKAGE_BODY:   return "Package Body";
+    case VhdlDocGen::ATTRIBUTE:      return "Attribute";
+    case VhdlDocGen::PACKAGE:        return "Package";
+    case VhdlDocGen::SIGNAL:         return "Signal";
+    case VhdlDocGen::COMPONENT:      return "Component";
+    case VhdlDocGen::CONSTANT:       return "Constant";
+    case VhdlDocGen::TYPE:           return "Type";
+    case VhdlDocGen::SUBTYPE:        return "Subtype";
+    case VhdlDocGen::FUNCTION:       return "Function";
+    case VhdlDocGen::RECORD:         return "Record";
+    case VhdlDocGen::PROCEDURE:      return "Procedure";
+    case VhdlDocGen::ARCHITECTURE:   return "Architecture";
+    case VhdlDocGen::USE:            return "Package";
+    case VhdlDocGen::PROCESS:        return "Process";
+    case VhdlDocGen::PORT:           return "Port";
+    case VhdlDocGen::GENERIC:        return "Generic";
+    case VhdlDocGen::DOCUMENT:       return "Doc"; 
+    case VhdlDocGen::UNITS:          return "Units"; 
+    case VhdlDocGen::PORTMAP:        return "Port Map"; 
+    case VhdlDocGen::SHAREDVARIABLE: return "Shared Variable"; 
+    case VhdlDocGen::GROUP:          return "Group"; 
+    case VhdlDocGen::VFILE:          return "File"; 
+    default:                         return "";
   }
 } // convertType
 
@@ -1497,6 +1500,14 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList* al,const 
   }
   ol.startBold();    
   ol.docify(" )");    
+  const char *exp=mdef->excpString();
+  if(exp)
+  {
+    ol.insertMemberAlign();
+    ol.docify("[ ");
+    ol.docify(exp);
+    ol.docify(" ]");
+  }
   ol.endBold();  
 }
 
@@ -1542,16 +1553,18 @@ void VhdlDocGen::writeFuncProcDocu(
 
   ArgumentListIterator ali(*al);
   int index=ali.count();
-  if (index==0){
+  if (index==0)
+  {
     ol.docify(" ( ) ");
     return;
   }
-  ol.startParameterList(TRUE); 
+  ol.startParameterList(FALSE); 
   Argument *arg;
   bool first=TRUE;
   for (;(arg=ali.current());++ali)
   { 
     ol.startParameterType(first,"");  
+    if (first) ol.writeChar('(');
     if (!VhdlDocGen::isProcess(md))
     {
       if (TRUE) //VhdlDocGen::isProcedure(md))
@@ -1685,6 +1698,9 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::PROCEDURE,FALSE),0,FALSE,VhdlDocGen::PROCEDURE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::RECORD,FALSE),0,FALSE,VhdlDocGen::RECORD);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::UNITS,FALSE),0,FALSE,VhdlDocGen::UNITS);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::SHAREDVARIABLE,FALSE),0,FALSE,VhdlDocGen::SHAREDVARIABLE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::VFILE,FALSE),0,FALSE,VhdlDocGen::VFILE);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),0,FALSE,VhdlDocGen::GROUP);
 
 
 }
@@ -1764,6 +1780,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     if      (VhdlDocGen::isRecord(mdef))       Doxygen::tagFile << "record";
     if      (VhdlDocGen::isLibrary(mdef))      Doxygen::tagFile << "library";
     if      (VhdlDocGen::isPackage(mdef))      Doxygen::tagFile << "package";
+    if      (VhdlDocGen::isVariable(mdef))     Doxygen::tagFile << "shared variable";
+    if      (VhdlDocGen::isFile(mdef))         Doxygen::tagFile << "file";
+    if      (VhdlDocGen::isGroup(mdef))        Doxygen::tagFile << "group";
 
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
@@ -1940,6 +1959,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::TYPE:
     case VhdlDocGen::SUBTYPE:
     case VhdlDocGen::CONSTANT:      
+    case VhdlDocGen::SHAREDVARIABLE:    
+    case VhdlDocGen::VFILE:
+    case VhdlDocGen::GROUP: 
       writeLink(mdef,ol);
       ol.docify(" ");
       ol.insertMemberAlign();
@@ -2236,6 +2258,15 @@ QCString VhdlDocGen::trVhdlType(int type,bool sing)
       return "Doc"; 
     case VhdlDocGen::UNITS:        
       return "Units"; 
+    case VhdlDocGen::SHAREDVARIABLE:     
+      if (sing) return "Shared Variable";       
+      return "Shared Variables"; 
+    case VhdlDocGen::VFILE:        
+      if (sing) return "File";       
+      return "Files"; 
+    case VhdlDocGen::GROUP:        
+      if (sing) return "Group";       
+      return "Groups";
     default:                       
       return "Class";
   }

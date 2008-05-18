@@ -9,7 +9,7 @@ German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, and
 Ukrainian.
 
-Of them, 13 translators are up-to-date, 21 translators are based on
+Of them, 14 translators are up-to-date, 20 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -30,6 +30,7 @@ still may be some details listed even for them:
   TranslatorItalian
   TranslatorKorean
   TranslatorPersian
+  TranslatorRussian
   TranslatorSpanish -- Change the base class to Translator.
 
 ----------------------------------------------------------------------
@@ -38,7 +39,6 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorRussian               1.5.4 	22 methods to implement
   TranslatorMacedonian            1.5.04	22 methods to implement
 	Note: Change the base class to TranslatorAdapter_1_5_4.
 
@@ -688,37 +688,6 @@ TranslatorRomanian   (TranslatorAdapter_1_4_1)  24 methods to implement
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorRussian   (TranslatorAdapter_1_5_4)  22 methods to implement
------------------
-
-  Implements 194 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trSubprograms()
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trModulesIndex()
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
 
 
 TranslatorSerbian   (TranslatorAdapter_1_4_1)  24 methods to implement

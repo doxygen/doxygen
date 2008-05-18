@@ -348,8 +348,8 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
   searches for definition of function memberName
   @param memberName the name of the function/variable
   @param moduleName name of enclosing module or null, if global entry
-  @param memberDef the entry, if found or null
-  @param useList array of data of USE-statement
+  @param md the entry, if found or null
+  @param usedict array of data of USE-statement
   @returns true, if found 
 */
 static bool getFortranDefs(const QCString &memberName, const QCString &moduleName, 

@@ -943,7 +943,7 @@ void ClassDef::showUsedFiles(OutputList &ol)
         }
 
         ol.writeListItem();
-        QCString path=fd->getPath().copy();
+        QCString path=fd->getPath();
         if (Config_getBool("FULL_PATH_NAMES"))
         {
           ol.docify(stripFromPath(path));

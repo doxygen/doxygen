@@ -22,12 +22,14 @@
 #include <stdlib.h>
 #include <qlist.h>
 #include <qdict.h>
+#include "qtextcodec.h"
 
 #include "htmlhelp.h"
 #include "config.h"
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
+#include "portable.h"
 
 //----------------------------------------------------------------------------
 
@@ -268,8 +270,13 @@ HtmlHelp::HtmlHelp() : indexFileDict(1009)
   dc = 0;
   cf = kf = 0;
   index = new HtmlHelpIndex;
+  m_fromUtf8 = (void *)(-1);
 }
 
+HtmlHelp::~HtmlHelp()
+{
+  if (m_fromUtf8!=(void *)(-1))   portable_iconv_close(m_fromUtf8);
+}
 #if 0
 /*! return a reference to the one and only instance of this class. 
  */
@@ -289,6 +296,10 @@ static QDict<QCString> s_languageDict;
  */
 void HtmlHelp::initialize()
 {
+  const char *str = Config_getString("CHM_INDEX_ENCODING");
+  if(!str) str = "Windows-1250";
+  m_fromUtf8 = portable_iconv_open(str,"UTF-8"); 
+
   /* open the contents file */
   QCString fName = Config_getString("HTML_OUTPUT") + "/index.hhc";
   cf = new QFile(fName);
@@ -299,7 +310,7 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   cts.setDevice(cf);
-  cts.setEncoding(QTextStream::UnicodeUTF8);
+  cts.setEncoding(QTextStream::Latin1);
   cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -317,7 +328,7 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   kts.setDevice(kf);
-  kts.setEncoding(QTextStream::UnicodeUTF8);
+  kts.setEncoding(QTextStream::Latin1);
   kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -409,7 +420,7 @@ void HtmlHelp::createProjectFile()
   {
     QTextStream t(&f);
 #if QT_VERSION >= 200
-    t.setEncoding(QTextStream::UnicodeUTF8);
+    t.setEncoding(QTextStream::Latin1);
 #endif
 
    
@@ -430,7 +441,7 @@ void HtmlHelp::createProjectFile()
          "Language=" << getLanguageString() << endl;
     if (Config_getBool("BINARY_TOC")) t << "Binary TOC=YES\n";
     if (Config_getBool("GENERATE_CHI")) t << "Create CHI file=YES\n";
-    t << "Title=" << Config_getString("PROJECT_NAME") << endl << endl;
+    t << "Title=" << recode(Config_getString("PROJECT_NAME")) << endl << endl;
     
     t << "[WINDOWS]" << endl;
 
@@ -440,7 +451,7 @@ void HtmlHelp::createProjectFile()
     //       the font-size one is not normally settable by the HTML Help Workshop
     //       utility but the way to set it is described here:
     //          http://support.microsoft.com/?scid=kb%3Ben-us%3B240062&x=17&y=18
-    t << "main=\"" << Config_getString("PROJECT_NAME") << "\",\"index.hhc\","
+    t << "main=\"" << recode(Config_getString("PROJECT_NAME")) << "\",\"index.hhc\","
          "\"index.hhk\",\"" << indexName << "\",\"" << 
          indexName << "\",,,,,0x23520,,0x10387e,,,,,,,,0" << endl << endl;
     
@@ -527,6 +538,28 @@ void HtmlHelp::decContentsDepth()
   --dc;
 }
 
+QCString HtmlHelp::recode(const QCString &s) 
+{
+  int iSize        = s.length();
+  int oSize        = iSize*4+1;
+  QCString output(oSize);
+  size_t iLeft     = iSize;
+  size_t oLeft     = oSize;
+  const char *iPtr = s.data();
+  char *oPtr       = output.data();
+  if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
+  {
+    oSize -= oLeft;
+    output.resize(oSize+1);
+    output.at(oSize)='\0';
+    return output;
+  }
+  else
+  {
+    return s;
+  }
+}
+
 /*! Add an list item to the contents file.
  *  \param isDir boolean indicating if this is a dir or file entry
  *  \param name the name of the item.
@@ -546,10 +579,9 @@ void HtmlHelp::addContentsItem(bool isDir,
     file = 0;
     anchor = 0;
   }
-  
   int i; for (i=0;i<dc;i++) cts << "  ";
   cts << "<LI><OBJECT type=\"text/sitemap\">";
-  cts << "<param name=\"Name\" value=\"" << name << "\">";
+  cts << "<param name=\"Name\" value=\"" << recode(name) << "\">";
   if (file)      // made file optional param - KPW
   {
     cts << "<param name=\"Local\" value=\"" << file << Doxygen::htmlFileExtension;
