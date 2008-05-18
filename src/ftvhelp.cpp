@@ -705,7 +705,7 @@ void FTVHelp::generateTreeView(QString* OutString)
     t << "\n";
     t << "  <body class=\"ftvtree\">\n";
     t << "    <div class=\"directory\">\n";
-    t << "      <h3>";
+    t << "      <h3 class=\"swap\"><span>";
     QCString &projName = Config_getString("PROJECT_NAME");
     if (projName.isEmpty())
     {
@@ -715,7 +715,7 @@ void FTVHelp::generateTreeView(QString* OutString)
     {
       t << projName;
     }
-    t << "</h3>\n";
+    t << "</span></h3>\n";
   }
   else
   {

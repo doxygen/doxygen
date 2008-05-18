@@ -199,6 +199,18 @@ void getType(Entry* p,char* text)
   {
     p->spec=VhdlDocGen::UNITS;
   }
+  else if (name.contains("shared",false) && name.contains("variable",false))
+  {
+    p->spec=VhdlDocGen::SHAREDVARIABLE;
+  }
+  else if (stricmp(name.data(),"file" )==0) 
+  {
+    p->spec=VhdlDocGen::VFILE;
+  }
+  else if (stricmp(name.data(),"group" )==0) 
+  {
+    p->spec=VhdlDocGen::GROUP; 
+  }
   else 
   {
     err("wrong type");
@@ -369,6 +381,11 @@ static void parseFunctionProto()
   if (qcs.contains("function",FALSE)==0 && qcs.contains("procedure",FALSE)==0) 
     return; 
   //Entry* ppEntry=new Entry;
+  while (qcs.stripPrefix(" "));
+  if (qcs.stripPrefix("impure"))
+    current->exception="impure";
+  else if (qcs.stripPrefix("pure")) 
+    current->exception="pure";
 
   VhdlDocGen::parseFuncProto(qcs.data(),ql,name,ret); 
   current->name=name;
@@ -541,15 +558,18 @@ ENDEFF       ("if"|"case"|"loop"|"generate"){BR}*[;]
 ENDE3        {BR}*[^a-zA-Z]("end"){BR}+{FUNCNAME}{BR}*[;]
 ENDFUNC      {B}*"end"{BR}+"function"{BR}+{FUNCNAME}{BR}*[;]
 
-FUNCPROC     ^{B}*("function"|"procedure"){B}*
+FUNCIMPURE   "impure"|"pure"
+FUNCPROC     ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
 ARCHITECTURE ("architecture"){BR}+{NAME}{BR}*("of")
-PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
+POST         "postponed"
+PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*{POST}{BR}("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
 
 ENDPROCESS   ("end"){BR}*("process")
 LIBUSE       ^{B}*("use"|"library"){BR}+
 ENTITY       ^{B}*("component"|"entity"|"package"){BR}+
 PBODY        ("package"){B}+("body"){BR}+{NAME}
-SIGTYPES     ^{B}*("subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
+SHARED       ("shared"){BR}+("variable")
+SIGTYPES     ^{B}*({SHARED}|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
 
 ALLTYPESMAP  {B}*[_a-zA-ZA_Z0-9. ]*{B}*
 
@@ -691,6 +711,7 @@ ALLID        [^;()\t ]
   {
     isBody=0;
     scantype=0;                                    
+    lastCompound=0;
     current->section=Entry::CLASS_SEC;
     current->spec=VhdlDocGen::ENTITY;
     current->protection=Public;
@@ -1443,7 +1464,41 @@ static void initEntry(Entry *e)
 
 static void newEntry()
 {
-  current_root->addSubEntry(current);
+  // Add only enties/architectures/packages to root 
+  // and signals to  classes where they were found
+  // ENTITY dlatch_93 IS -- VHDL'93-Syntax !!!
+  //      PORT (d, clk : IN bit;
+  //      q, qbar : OUT bit);
+  //      GROUP path IS (SIGNAL, SIGNAL);
+  //      GROUP d_to_q : path (d, q);
+  //      ATTRIBUTE propagation : time;
+  //  END dlatch_93;
+
+  if (current->spec==VhdlDocGen::ENTITY || 
+      current->spec==VhdlDocGen::PACKAGE || 
+      current->spec==VhdlDocGen::ARCHITECTURE || 
+      current->spec==VhdlDocGen::PACKAGE_BODY)
+  {
+    current_root->addSubEntry(current);
+  }
+  else
+  {
+    if (lastCompound) 
+    {
+      lastCompound->addSubEntry(current);
+    }
+    else
+    {
+      if (lastEntity)
+      {
+	lastEntity->addSubEntry(current);
+      }
+      else 
+      {
+	current_root->addSubEntry(current); // should not happen!
+      }
+    }
+  }
   previous = current;
   current = new Entry ;
   initEntry(current);

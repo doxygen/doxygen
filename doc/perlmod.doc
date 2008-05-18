@@ -168,10 +168,13 @@ tree.
 
 <p>As you can see, the documentation contained in <b>$doxydocs</b>
 does not present any special impediment to be processed by a simple
-Perl script.  To be able to generate meaningful output using the
+Perl script.  
+<!--
+To be able to generate meaningful output using the
 documentation contained in <b>$doxydocs</b> you'll probably need to
 know the semantics of the nodes of the documentation tree, which we
 present in \ref perlmod_tree "this page".
+-->
 
 \section doxymodel_format Data structure describing the Perl Module documentation tree.
 

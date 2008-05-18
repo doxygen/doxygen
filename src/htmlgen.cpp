@@ -1444,7 +1444,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
       t << "          <td>";
       if (closeBracket) t << "&nbsp;)";
       t << "&nbsp;</td>" << endl;
-      t << "          <td width=\"100%\">";
+      t << "          <td>";
     }
     else
     {
@@ -1455,7 +1455,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
       t << "          <td>";
       if (closeBracket) t << ")";
       t << "</td>" << endl;
-      t << "          <td></td><td></td><td width=\"100%\">";
+      t << "          <td></td><td></td><td>";
     }
   }
   else

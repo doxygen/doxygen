@@ -2413,6 +2413,13 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "CHM_INDEX_ENCODING",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the CHM_INDEX_ENCODING\n"
+                    "is used to encode HtmlHelp index (hhk), content (hhc) and project file\n"
+                    "content.\n" 
+                 );
+  cs->addDependency("GENERATE_HTML");
   cb = addBool(
                     "BINARY_TOC",
                     "If the GENERATE_HTMLHELP tag is set to YES, the BINARY_TOC flag \n"

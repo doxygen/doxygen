@@ -64,6 +64,7 @@ class HtmlHelp  : public IndexIntf
   public:
     //static HtmlHelp *getInstance();
     HtmlHelp();
+    ~HtmlHelp();
     void initialize();
     void finalize();
     void incContentsDepth();
@@ -88,6 +89,8 @@ class HtmlHelp  : public IndexIntf
     QStrList indexFiles;
     QDict<void> indexFileDict;
     static HtmlHelp *theInstance;
+    QCString recode(const QCString &s);
+    void *m_fromUtf8;
 };
 
 #endif /* HTMLHELP_H */
