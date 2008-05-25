@@ -384,7 +384,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 
  /*------ ignore special fortran statements */
-<Start,ModuleBody,SubprogBody>^[ \t]*interface({BS_}{ID}({BS}\({BS}[^ \t()]+{BS}\))?)? { // handle interface block
+<Start,ModuleBody,SubprogBody>^[ \t]*interface({BS_}{ID}({BS}\({BS}[^ \t()]+{BS}\))?)?/{BS}(!|\n) { // handle interface block
                                           if(YY_START == Start)
                                           {
                                             addModule(NULL); 
