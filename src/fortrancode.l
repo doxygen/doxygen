@@ -94,6 +94,7 @@ static int	     g_inputPosition;   //!< read offset during parsing
 static int           g_inputLines;      //!< number of line in the code fragment
 static int	     g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
+static bool          g_isFixedForm;
 
 static bool          g_insideBody;      //!< inside subprog/program body? => create links
 static const char *  g_currentFontClass;
@@ -108,6 +109,44 @@ static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 
 static char          stringStartSymbol; // single or double quote
+
+// simplified way to know if this is fixed form
+// duplicate in fortranscanner.l
+static bool recognizeFixedForm(const char* contents)
+{
+  int column=0;
+  bool skipLine=FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case 'C':
+      case 'c':
+      case '*':
+        if(column==1) return TRUE;
+        if(skipLine) break;
+        return FALSE;
+      case '!':
+        if(column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if(skipLine) break;
+        if(column==7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
 
 static void endFontClass()
 {
@@ -837,6 +876,15 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
   					  codifyLines(yytext);
 					  endFontClass();
 					}
+
+<*>^[Cc*].*              		{ // normal comment
+                                          if(! g_isFixedForm) REJECT;
+
+  					  startFontClass("comment");
+  					  codifyLines(yytext);
+					  endFontClass();
+					}
+
  /*------ preprocessor  --------------------------------------------*/ 
 <Start>"#".*\n                          { startFontClass("preprocessor");
   					  codifyLines(yytext);
@@ -884,6 +932,7 @@ IGNORE (IMPLICIT{BS}NONE|CONTAINS|WRITE|READ|ALLOCATE|DEALLOCATE|SIZE)
 
 /*===================================================================*/
 
+
 void resetFortranCodeParserState() {}
 
 void parseFortranCode(CodeOutputInterface &od,const char *className,const QCString &s, 
@@ -901,6 +950,7 @@ void parseFortranCode(CodeOutputInterface &od,const char *className,const QCStri
   g_code = &od;
   g_inputString   = s;
   g_inputPosition = 0;
+  g_isFixedForm = recognizeFixedForm((const char*)s);
   g_currentFontClass = 0;
   g_needsTermination = FALSE;
   if (endLine!=-1)
