@@ -112,9 +112,17 @@ static const char *directionStrs[] =
 static ParserInterface *g_thisParser; 
 static const char *     inputString;
 static int		inputPosition;
+static bool             isFixedForm;
 static QCString         inputStringPrepass; ///< Input string for prepass of line cont. '&'
 static unsigned int     inputPositionPrepass;
 static int              lineCountPrepass = 0;
+
+struct CommentInPrepass {
+  int column;
+  QCString str;
+  CommentInPrepass(int column, QCString str) : column(column), str(str) {}
+};
+static QList<CommentInPrepass>  comments;
 
 #define MAX_INCLUDE_DEPTH 10
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
@@ -174,9 +182,12 @@ static bool endScope(Entry *scope, bool isGlobalRoot=FALSE);
 static QCString getFullName(Entry *e);
 static bool isTypeName(QCString name);
 static void resolveModuleProcedures(QList<Entry> &moduleProcedures, Entry *current_root);
-static int getAmpersandAtTheEnd(const char *buf, int length);
+static int getAmpersandAtTheStart(const char *buf, int length);
+static int getAmpOrExclAtTheEnd(const char *buf, int length);
+static void truncatePrepass(int index);
 static void pushBuffer(QCString &buffer);
 static void popBuffer();
+static void extractPrefix(QCString& text);
 
 //-----------------------------------------------------------------------------
 #undef	YY_INPUT
@@ -257,36 +268,44 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*-----------------------------------------------------------------------------------*/
 
-<*>^.*"&"{BS}(!.*)?\n                   { // ampersand is somewhere in line
+<*>^.*\n                                { // prepass: look for line continuations
+
                                           //fprintf(stderr, "---%s", yytext);
 
-                                          int index = getAmpersandAtTheEnd(yytext, yyleng);
-                                          if(index<0){ // ampersand is not line continuation
-                                             if(YY_START == Prepass) { // last line in "continuation"
-                                               inputStringPrepass+=(const char*)yytext;
-                                               pushBuffer(inputStringPrepass);
-                                               yy_pop_state();
-                                             } else { // simple line
-                                               REJECT;
-                                             }
-                                          } else { // line with continuation
-                                            inputStringPrepass+=(const char*)yytext;
-                                            lineCountPrepass ++;
+                                            int indexStart = getAmpersandAtTheStart(yytext, yyleng);                              
+                                            int indexEnd = getAmpOrExclAtTheEnd(yytext, yyleng);
+					    if (indexEnd>=0 && yytext[indexEnd]!='&') //we are only interested in amp
+					      indexEnd=-1;
 
-                                            // replace & with space and remove the following chars
-                                            int length = inputStringPrepass.length();
-                                            inputStringPrepass[length-yyleng+index] = ' ';
-                                            inputStringPrepass.truncate(length-yyleng+index+1);
-                                            if(YY_START != Prepass)
-					      yy_push_state(Prepass);
-                                          }
+                                            if(indexEnd<0){ // ----- no ampersand as line continuation
+                                               if(YY_START == Prepass) { // last line in "continuation"
+                                                 inputStringPrepass+=(const char*)yytext;
+                                                 if(indexStart>=0) inputStringPrepass[yyleng-indexStart]=' ';
+                                                 // @todo: remove all symbols instead of replacing W blank?
+
+                                                 pushBuffer(inputStringPrepass);
+                                                 yy_pop_state();
+                                               } else { // simple line
+                                                 REJECT;
+                                               }
+
+                                            } else { // ----- line with continuation
+                                              if(YY_START != Prepass) {
+                                                comments.setAutoDelete(TRUE);
+						comments.clear();
+                                                yy_push_state(Prepass);
+                                              }
+
+                                              inputStringPrepass+=(const char*)yytext;
+                                              lineCountPrepass ++;
+  
+                                              // replace & with space and remove following comment if present
+                                              int length = inputStringPrepass.length();
+					      truncatePrepass(length-yyleng+indexEnd);
+                                            }
+
                                         }
 
-<Prepass>^.*\n                          {
-                                          inputStringPrepass+=(const char*)yytext;
-                                          pushBuffer(inputStringPrepass);
-                                          yy_pop_state();
-                                        }
 
  /*------ ignore strings */ 
 <*>"\\\\"                               { /* ignore \\  */}
@@ -472,7 +491,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                             BEGIN(TypedefBody);
                                         }
 <TypedefBody>^{BS}"end"{BS}"type"({BS_}{ID})?{BS}/(\n|!)         { /* end type definition */
-                                           //cout << "=========> got typedef end "<< endl; 
+                                           //printf("=========> got typedef end \n"); 
 					   if (!endScope(current_root))
 					     yyterminate();
                                            yy_pop_state();
@@ -639,23 +658,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 		                           // TYPE_SPEC is for old function style function result
                                            result= yytext;
                                            result= result.stripWhiteSpace();
-                                           int prefixIndex = 0;
-                                           int curIndex = 0;
-                                           bool cont = TRUE;
-                                           const char* pre[] = {"RECURSIVE","PURE","ELEMENTAL"};
-                                           while(cont)
-                                           {
-                                             cont = FALSE;
-                                             for(unsigned int i=0; i<3; i++)
-                                             {
-                                               if((prefixIndex=result.find(pre[i], curIndex, FALSE))==0)
-                                               {
-                                                 result.remove(0,strlen(pre[i]));
-                                                 result.stripWhiteSpace();
-                                                 cont = TRUE;
-                                               }
-                                             }
-                                           }
+                                           extractPrefix(result);
                                            //fprintf(stderr, "===%s\n", (const char*)result);
   					   current->type = result;
                                            yy_push_state(SubprogPrefix);
@@ -667,9 +670,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                          BEGIN(Subprog);
                                        }
 
-<Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}{SUBPROG}{BS_} {
+<Start,ModuleBody,SubprogBody,InterfaceBody,ModuleBodyContains,SubprogBodyContains>^{BS}({PREFIX}{BS_})?{SUBPROG}{BS_} {
                                          // Fortran subroutine or function found
-                                         addSubprogram(yytext);
+                                         result= yytext;
+                                         result= result.stripWhiteSpace();
+                                         extractPrefix(result);
+                                         addSubprogram(result);
                                          yy_push_state(Subprog);
                                        }
 
@@ -788,6 +794,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
  <*>.                 	                {
                                           //debugStr+=yytext;
+					  //printf("I:%c\n", *yytext);
                                         } // ignore remaining text 
 
  /**********************************************************************************/
@@ -796,12 +803,50 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 %%
 //----------------------------------------------------------------------------
 
-static int getAmpersandAtTheEnd(const char *buf, int length)
+static void extractPrefix(QCString &text) {
+  int prefixIndex = 0;
+  int curIndex = 0;
+  bool cont = TRUE;
+  const char* pre[] = {"RECURSIVE","PURE","ELEMENTAL"};
+  while(cont)
+  {
+    cont = FALSE;
+    for(unsigned int i=0; i<3; i++)
+    {
+      if((prefixIndex=text.find(pre[i], curIndex, FALSE))==0)
+      {
+        text.remove(0,strlen(pre[i]));
+        text.stripWhiteSpace();
+        cont = TRUE;
+      }
+    }
+  }
+}
+
+static int getAmpersandAtTheStart(const char *buf, int length)
+{
+  for(int i=0; i<length; i++) {
+    switch(buf[i]) {
+      case ' ':
+      case '\t':
+        break;
+      case '&':
+        return i;
+      default:
+        return -1;
+    }
+  }
+  return -1;
+}
+
+/* Returns ampersand index, comment start index or -1 if neither exist.*/ 
+static int getAmpOrExclAtTheEnd(const char *buf, int length)
 {
   // Avoid ampersands in string and comments
   int parseState = Start;
   char quoteSymbol = 0;
   int ampIndex = -1;
+  int commentIndex = -1;
 
   for(int i=0; i<length && parseState!=Comment; i++)
   {
@@ -824,6 +869,7 @@ static int getAmpersandAtTheEnd(const char *buf, int length)
           break;
         case '!':
           parseState = Comment;
+          commentIndex = i;
           break;
         case ' ':  // ignore whitespace
         case '\t':
@@ -837,7 +883,138 @@ static int getAmpersandAtTheEnd(const char *buf, int length)
       }
     }
   }
-  return ampIndex;
+
+  if (ampIndex>=0)
+    return ampIndex;
+  else
+   return commentIndex;
+}
+
+/* Although comments at the end of continuation line are grabbed by this function,
+* we still do not know how to use them later in parsing.
+*/
+void truncatePrepass(int index)
+{
+  int length = inputStringPrepass.length();
+  for (int i=index+1; i<length; i++) {
+    if (inputStringPrepass[i]=='!') { // save comment 
+      //printf("-----SAVE----- %d:%s", i, (const char*)inputStringPrepass.right(length-i));
+      struct CommentInPrepass *c=new CommentInPrepass(index, inputStringPrepass.right(length-i));
+      comments.append(c);
+    }
+  }
+  inputStringPrepass[index] = ' ';
+  inputStringPrepass.truncate(index+1);
+}
+
+// simplified way to know if this is fixed form
+// duplicate in fortrancode.l
+static bool recognizeFixedForm(const char* contents)
+{
+  int column=0;
+  bool skipLine=FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case 'C':
+      case 'c':
+      case '*':
+        if(column==1) return TRUE;
+        if(skipLine) break;
+        return FALSE;
+      case '!':
+        if(column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if(skipLine) break;
+        if(column==7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+/* This function assumes that contents has at least size=length+1 */
+static void insertCharacter(char *contents, int length, int pos, char c)
+{
+  // shift tail by one character
+  for(int i=length; i>pos; i--)
+    contents[i]=contents[i-1];
+  // set the character
+  contents[pos] = c;
+}
+
+/* change comments and bring line continuation character to previous line */
+static const char* prepassFixedForm(const char* contents)
+{
+  int column=0;
+  int prevLineLength=0;
+  int prevLineAmpOrExclIndex=-1;
+  bool emptyLabel=TRUE;
+  int newContentsSize = strlen(contents)+2; // \000 and one spare character (to avoid reallocation)
+  char* newContents = (char*)malloc(newContentsSize);
+
+  for(int i=0, j=0;;i++,j++) {
+    if(j>=newContentsSize-1) { // check for one spare character, which may be eventually used below (by &)
+      newContents = (char*)realloc(newContents, newContentsSize+1000);
+      newContentsSize = newContentsSize+1000;
+    }
+
+    column++;
+    char c = contents[i];
+    switch(c) {
+      case '\n':
+        prevLineLength=column;
+        prevLineAmpOrExclIndex=getAmpOrExclAtTheEnd(&contents[i-prevLineLength+1], prevLineLength);
+        column=0;
+	emptyLabel=TRUE;
+        newContents[j]=c;
+        break;
+      case ' ':
+        newContents[j]=c;
+        break;
+      case '\000':
+        newContents[j]='\000';
+        return newContents;
+      case 'C':
+      case 'c':
+      case '*':
+	emptyLabel=FALSE;
+        if(column==1)
+	  newContents[j]='!';
+        else
+          newContents[j]=c;
+        break;
+      default:
+        if(column==6 && emptyLabel) { // continuation
+          newContents[j]=' ';
+
+          if(prevLineAmpOrExclIndex==-1) { // add & just before end of previous line
+            insertCharacter(newContents, j+1, (j+1)-6-1, '&');
+            j++;
+          } else { // add & just before end of previous line comment
+            insertCharacter(newContents, j+1, (j+1)-6-prevLineLength+prevLineAmpOrExclIndex, '&');
+            j++;
+          }
+	} else {
+	  newContents[j]=c;
+	  emptyLabel=FALSE;
+	}
+        break;
+    }
+  }
+  return newContents;
 }
 
 static void pushBuffer(QCString& buffer)
@@ -850,11 +1027,12 @@ static void pushBuffer(QCString& buffer)
   include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
   yy_switch_to_buffer(yy_scan_string(buffer));
 
-  //fprintf(stderr, "--POP--%s", (const char *)buffer);
+  //fprintf(stderr, "--PUSH--%s", (const char *)buffer);
   buffer = NULL;
 }
 
 static void popBuffer() {
+  //fprintf(stderr, "--POP--");
   include_stack_ptr --;
   yy_delete_buffer( YY_CURRENT_BUFFER );
   yy_switch_to_buffer( include_stack[include_stack_ptr] );
@@ -1454,6 +1632,19 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   inputFile.setName(fileName);
   if (inputFile.open(IO_ReadOnly))
   {
+    isFixedForm = recognizeFixedForm(fileBuf);
+
+    if (isFixedForm) {
+      printf("Prepassing fixed form of %s\n", yyFileName.data());
+      //printf("---strlen=%d\n", strlen(fileBuf));
+      //clock_t start=clock();
+
+      inputString = prepassFixedForm(fileBuf);
+
+      //clock_t end=clock();
+      //printf("CPU time used=%f\n", ((double) (end-start))/CLOCKS_PER_SEC);
+    }
+
     yyLineNr= 1 ; 
     yyFileName = fileName;
     msg("Parsing file %s...\n",yyFileName.data());
@@ -1484,6 +1675,10 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     rt->program.resize(0);
     delete current; current=0;
     moduleProcedures.clear();
+    if (isFixedForm) {
+      free((char*)inputString);
+      inputString=NULL;
+    }
 
     inputFile.close();
   }
