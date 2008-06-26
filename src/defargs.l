@@ -426,7 +426,7 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
  *  \param al a reference to resulting argument list pointer.
  */
  
-void stringToArgumentList(const char *argsString,ArgumentList* &al,QCString *extraTypeChars)
+void stringToArgumentList(const char *argsString,ArgumentList* al,QCString *extraTypeChars)
 {
   if (al==0) return; 
   if (argsString==0) return;

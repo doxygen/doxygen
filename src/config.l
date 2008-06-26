@@ -1423,8 +1423,8 @@ void Config::create()
 		 "Croatian, Czech, Danish, Dutch, Farsi, Finnish, French, German, Greek, \n"
 		 "Hungarian, Italian, Japanese, Japanese-en (Japanese with English messages), \n"
 		 "Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian, Polish, \n"
-		 "Portuguese, Romanian, Russian, Serbian, Slovak, Slovene, Spanish, Swedish, \n"
-		 "and Ukrainian.\n", 
+		 "Portuguese, Romanian, Russian, Serbian, Serbian-Cyrilic, Slovak, Slovene, \n"
+		 "Spanish, Swedish, and Ukrainian.\n", 
 		 "English"
                 );
 #ifdef LANG_ZA
@@ -1511,6 +1511,9 @@ void Config::create()
 #endif
 #ifdef LANG_SR
   ce->addValue("Serbian");
+#endif
+#ifdef LANG_SC
+  ce->addValue("Serbian-Cyrilic");
 #endif
 #ifdef LANG_SK
   ce->addValue("Slovak");
@@ -2354,7 +2357,9 @@ void Config::create()
 		    "HTML output directory. Running make will produce the docset in that \n"
 		    "directory and running \"make install\" will install the docset in \n"
 		    "~/Library/Developer/Shared/Documentation/DocSets so that Xcode will find \n"
-		    "it at startup.",
+		    "it at startup. \n"
+		    "See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html "
+		    "for more information. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");

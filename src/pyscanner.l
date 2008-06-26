@@ -535,6 +535,16 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  g_packageCommentAllowed = FALSE;
                           BEGIN( Import );
                        }
+     ^{B}{IDENTIFIER}/{B}"="{B}"property" { // property
+      			current->section   = Entry::VARIABLE_SEC;
+  			current->mtype     = Property;
+			current->name      = QCString(yytext).stripWhiteSpace();
+			current->fileName  = yyFileName;
+			current->startLine = yyLineNr;
+			current->bodyLine  = yyLineNr;
+			g_packageCommentAllowed = FALSE;
+			BEGIN(VariableDec);
+       	              }
      ^{B}{IDENTIFIER}/{B}"="[^=] { // variable
       			g_indent=computeIndent(yytext);
       			current->section   = Entry::VARIABLE_SEC;
@@ -1129,7 +1139,10 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			BEGIN(TripleString);
                       }
    "("		      { // tuple
-			current->type = "tuple";
+                        if (current->mtype!=Property)
+			{
+			  current->type = "tuple";
+			}
       		        current->initializer+=*yytext;
                         g_atomStart='(';
 			g_atomEnd=')';

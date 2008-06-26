@@ -1285,69 +1285,71 @@ static void startFontClass(const char *s)
 static void writeObjCMethodCall(ObjCCallCtx *ctx)
 {
   if (ctx==0) return;
-  if (ctx->methodName.isEmpty()) return;
-  const char *p = ctx->format.data();
-  //printf("writeObjCMethodCall(%s) obj=%s method=%s\n",
-  //    ctx->format.data(),ctx->objectTypeOrName.data(),ctx->methodName.data());
   char c;
-  if (!ctx->objectTypeOrName.isEmpty() && ctx->objectTypeOrName.at(0)!='$')
+  const char *p = ctx->format.data();
+  if (!ctx->methodName.isEmpty())
   {
-    //printf("Looking for object=%s method=%s\n",ctx->objectTypeOrName.data(),
-    //	ctx->methodName.data());
-    ClassDef *cd = g_theVarContext.findVariable(ctx->objectTypeOrName);
-    if (cd==0) // not a local variable
+    //printf("writeObjCMethodCall(%s) obj=%s method=%s\n",
+    //    ctx->format.data(),ctx->objectTypeOrName.data(),ctx->methodName.data());
+    if (!ctx->objectTypeOrName.isEmpty() && ctx->objectTypeOrName.at(0)!='$')
     {
-      if (ctx->objectTypeOrName=="self")
+      //printf("Looking for object=%s method=%s\n",ctx->objectTypeOrName.data(),
+      //	ctx->methodName.data());
+      ClassDef *cd = g_theVarContext.findVariable(ctx->objectTypeOrName);
+      if (cd==0) // not a local variable
       {
-	if (g_currentDefinition && 
-	    g_currentDefinition->definitionType()==Definition::TypeClass)
+	if (ctx->objectTypeOrName=="self")
 	{
-	  ctx->objectType = (ClassDef *)g_currentDefinition;
-	}
-      }
-      else
-      {
-        ctx->objectType = getResolvedClass(
-  	  g_currentDefinition,
-	  g_sourceFileDef,
-	  ctx->objectTypeOrName,
-	  &ctx->method);
-      }
-      //printf("  object is class? %p\n",ctx->objectType);
-      if (ctx->objectType) // found class
-      {
-	ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
-        //printf("    yes->method=%s\n",ctx->method?ctx->method->name().data():"<none>");
-      }
-      else if (ctx->method==0) // search for class variable with the same name
-      {
-        //printf("    no\n");
-	//printf("g_currentDefinition=%p\n",g_currentDefinition);
-	if (g_currentDefinition && 
-	    g_currentDefinition->definitionType()==Definition::TypeClass)
-	{
-	  ctx->objectVar = ((ClassDef *)g_currentDefinition)->getMemberByName(ctx->objectTypeOrName);
-	  //printf("      ctx->objectVar=%p\n",ctx->objectVar);
-	  if (ctx->objectVar)
+	  if (g_currentDefinition && 
+	      g_currentDefinition->definitionType()==Definition::TypeClass)
 	  {
-	    ctx->objectType = stripClassName(ctx->objectVar->typeString());
-	    //printf("        ctx->objectType=%p\n",ctx->objectType);
-	    if (ctx->objectType)
+	    ctx->objectType = (ClassDef *)g_currentDefinition;
+	  }
+	}
+	else
+	{
+	  ctx->objectType = getResolvedClass(
+	      g_currentDefinition,
+	      g_sourceFileDef,
+	      ctx->objectTypeOrName,
+	      &ctx->method);
+	}
+	//printf("  object is class? %p\n",ctx->objectType);
+	if (ctx->objectType) // found class
+	{
+	  ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+	  //printf("    yes->method=%s\n",ctx->method?ctx->method->name().data():"<none>");
+	}
+	else if (ctx->method==0) // search for class variable with the same name
+	{
+	  //printf("    no\n");
+	  //printf("g_currentDefinition=%p\n",g_currentDefinition);
+	  if (g_currentDefinition && 
+	      g_currentDefinition->definitionType()==Definition::TypeClass)
+	  {
+	    ctx->objectVar = ((ClassDef *)g_currentDefinition)->getMemberByName(ctx->objectTypeOrName);
+	    //printf("      ctx->objectVar=%p\n",ctx->objectVar);
+	    if (ctx->objectVar)
 	    {
-	      ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
-	      //printf("          ctx->method=%p\n",ctx->method);
+	      ctx->objectType = stripClassName(ctx->objectVar->typeString());
+	      //printf("        ctx->objectType=%p\n",ctx->objectType);
+	      if (ctx->objectType)
+	      {
+		ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
+		//printf("          ctx->method=%p\n",ctx->method);
+	      }
 	    }
 	  }
 	}
       }
-    }
-    else // local variable
-    {
-      //printf("  object is local variable\n");
-      if (cd!=VariableContext::dummyContext)
+      else // local variable
       {
-        ctx->method = cd->getMemberByName(ctx->methodName);
-        //printf("   class=%p method=%p\n",cd,ctx->method);
+	//printf("  object is local variable\n");
+	if (cd!=VariableContext::dummyContext)
+	{
+	  ctx->method = cd->getMemberByName(ctx->methodName);
+	  //printf("   class=%p method=%p\n",cd,ctx->method);
+	}
       }
     }
   }
@@ -1653,8 +1655,8 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
-KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol")
-KEYWORD ("add"|"asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|KEYWORD_OBJC)
+KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw")
+KEYWORD ("add"|"asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")

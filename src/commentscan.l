@@ -2486,7 +2486,7 @@ void closeGroup(Entry *e,const char *fileName,int)
   if (g_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(g_memberGroupId);
-    if (info) // know group
+    if (info) // known group
     {
       info->doc = g_memberGroupDocs;
       info->docFile = fileName;

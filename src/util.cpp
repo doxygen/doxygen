@@ -488,7 +488,8 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,Definition
  */
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                             MemberDef **pMemType,QCString *pTemplSpec,
-                            QCString *pResolvedType)
+                            QCString *pResolvedType,
+                            ArgumentList *actTemplParams)
 {
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
@@ -509,7 +510,13 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
 
   g_resolvedTypedefs.insert(qname,md); // put on the trace list
   
+  ClassDef *typeClass = md->getClassDef();
   QCString type = md->typeString(); // get the "value" of the typedef
+  if (typeClass && typeClass->isTemplate() && actTemplParams->count()>0)
+  {
+    type = substituteTemplateArgumentsInString(type,
+            typeClass->templateArguments(),actTemplParams);
+  }
   QCString typedefValue = type;
   int tl=type.length();
   int ip=tl-1; // remove * and & at the end
@@ -947,7 +954,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
     Definition *itemScope = item->getOuterScope();
-    //printf("    scope traversal successful %s<->%s!\n",item->getOuterScope()->name().data(),newScope->name().data());
+    //printf("    scope traversal successful %s<->%s!\n",itemScope->name().data(),newScope->name().data());
     //if (newScope && newScope->definitionType()==Definition::TypeClass)
     //{
     //  ClassDef *cd = (ClassDef *)newScope;
@@ -975,7 +982,7 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
       //printf("scope(%s) is base class of newScope(%s)\n",
       //    scope->name().data(),newScope->name().data());
     }
-    else 
+    else
     {
       int i=-1;
       if (newScope->definitionType()==Definition::TypeNamespace)
@@ -1027,13 +1034,13 @@ int isAccessibleFromWithExpScope(Definition *scope,FileDef *fileScope,
         i = isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
             item,explicitScopePart);
       }
-      //printf("> result=%d\n",i);
+      //printf("  | result=%d\n",i);
       result = (i==-1) ? -1 : i+2;
     }
   }
   else // failed to resolve explicitScope
   {
-    //printf("failed to resolve: scope=%s\n",scope->name().data());
+    //printf("    failed to resolve: scope=%s\n",scope->name().data());
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       NamespaceDef *nscope = (NamespaceDef*)scope;
@@ -1083,6 +1090,7 @@ static void getResolvedSymbol(Definition *scope,
                        FileDef *fileScope,
                        Definition *d, 
                        const QCString &explicitScopePart,
+                       ArgumentList *actTemplParams,
                        int &minDistance,
                        ClassDef *&bestMatch,
                        MemberDef *&bestTypedef,
@@ -1103,7 +1111,7 @@ static void getResolvedSymbol(Definition *scope,
     g_visitedNamespaces.clear();
     // test accessibility of definition within scope.
     int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
-    //printf("  distance %s (%p) is %d\n",d->name().data(),d,distance);
+    //printf("  %s; distance %s (%p) is %d\n",scope->name().data(),d->name().data(),d,distance);
     if (distance!=-1) // definition is accessible
     {
       // see if we are dealing with a class or a typedef
@@ -1173,7 +1181,7 @@ static void getResolvedSymbol(Definition *scope,
               QCString type;
               minDistance=distance;
               MemberDef *enumType = 0;
-              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec,&type);
+              ClassDef *cd = newResolveTypedef(fileScope,md,&enumType,&spec,&type,actTemplParams);
               if (cd)  // type resolves to a class
               {
                 //printf("      bestTypeDef=%p spec=%s type=%s\n",md,spec.data(),type.data());
@@ -1248,8 +1256,17 @@ ClassDef *getResolvedClassRec(Definition *scope,
     )
 {
   //printf("[getResolvedClassRec(%s,%s)\n",scope?scope->name().data():"<global>",n);
-  QCString name=n;
+  QCString name;
   QCString explicitScopePart;
+  QCString strippedTemplateParams;
+  name=stripTemplateSpecifiersFromScope
+                     (removeRedundantWhiteSpace(n),TRUE,
+                      &strippedTemplateParams);
+  ArgumentList actTemplParams;
+  if (!strippedTemplateParams.isEmpty()) // template part that was stripped
+  {
+    stringToArgumentList(strippedTemplateParams,&actTemplParams);
+  }
 
   int qualifierIndex = computeQualifiedIndex(name);
   //printf("name=%s qualifierIndex=%d\n",name.data(),qualifierIndex);
@@ -1354,7 +1371,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
     int count=0;
     for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
     {
-      getResolvedSymbol(scope,fileScope,d,explicitScopePart,
+      getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
                         minDistance,bestMatch,bestTypedef,bestTemplSpec,
                         bestResolvedType);
     }
@@ -1363,7 +1380,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   {
     //printf("  name is unique\n");
     Definition *d = (Definition *)di;
-    getResolvedSymbol(scope,fileScope,d,explicitScopePart,
+    getResolvedSymbol(scope,fileScope,d,explicitScopePart,&actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,
                       bestResolvedType);
   }
@@ -3127,9 +3144,10 @@ static QCString getCanonicalTypeForIdentifier(
   {
     result = mType->qualifiedName();
   }
-  else
+  else // fallback
   {
     resolvedType = resolveTypeDef(d,word);
+    //printf("typedef [%s]->[%s]\n",word.data(),resolvedType.data());
     if (resolvedType.isEmpty()) // not known as a typedef either
     {
       result = word;
@@ -5476,6 +5494,7 @@ QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
     }
     else if (pLastScopeStripped)
     {
+      //printf("  last stripped scope '%s'\n",fullName.mid(i,e-i).data());
       *pLastScopeStripped=fullName.mid(i,e-i);
     }
     p=e;

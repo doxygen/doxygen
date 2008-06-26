@@ -2350,28 +2350,8 @@ done:
   return result;
 }
 
-//----------------------------------------------------------------------
-// Searches the Entry tree for Variable documentation sections.
-// If found they are stored in their class or in the global list.
-
-static void buildVarList(EntryNav *rootNav)
+static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
 {
-  //printf("buildVarList(%s)\n",rootNav->name().data());
-  int isFuncPtr=-1;
-  if (!rootNav->name().isEmpty() &&
-      (rootNav->type().isEmpty() || compoundKeywordDict.find(rootNav->type())==0) &&
-      (
-       (rootNav->section()==Entry::VARIABLE_SEC    // it's a variable
-       ) ||
-       (rootNav->section()==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
-        (isFuncPtr=findFunctionPtr(rootNav->type()))!=-1
-       ) ||
-       (rootNav->section()==Entry::FUNCTION_SEC && // class variable initialized by constructor
-        isVarWithConstructor(rootNav)
-       )
-      ) 
-     ) // documented variable
-  {
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
 
@@ -2493,44 +2473,6 @@ static void buildVarList(EntryNav *rootNav)
     else
       mtype=MemberDef::Variable;
 
-#if 0 // does not work correctly
-    //static bool typedefHidesStruct = Config_getBool("TYPEDEF_HIDES_STRUCT");
-    if (typedefHidesStruct) // substitute names with typedef'ed names
-    {
-      QCString baseType = type;
-      baseType.stripPrefix("typedef ");
-      if (baseType.stripPrefix("enum "))
-      {
-        MemberName *mn=Doxygen::functionNameSDict->find(baseType.stripWhiteSpace());
-        MemberNameIterator mni(*mn);
-        MemberDef *md;
-        for (mni.toFirst();(md=mni.current());++mni)
-        {
-          if (md->isEnumerate())
-          {
-            md->setName(name);
-            md->setDefinition(name);
-            goto nextMember;
-          }
-        }
-      }
-      else
-      {
-        baseType.stripPrefix("struct ");
-        baseType.stripPrefix("union ");
-        {
-          ClassDef *typedefClass = Doxygen::classSDict->find(baseType);
-          if (typedefClass)
-          {
-            typedefClass->setName(name);
-            typedefClass->setClassName(name);
-            goto nextMember;
-          }
-        }
-      }
-    }
-#endif
-
     if (!root->relates.isEmpty()) // related variable
     {
       isRelated=TRUE;
@@ -2606,9 +2548,61 @@ static void buildVarList(EntryNav *rootNav)
       //printf("Inserting member in global scope %s!\n",scope.data());
       addVariableToFile(rootNav,mtype,scope,name,FALSE,/*0,*/0);
     }
-nextMember:
 
+nextMember:
     rootNav->releaseEntry();
+}
+
+//----------------------------------------------------------------------
+// Searches the Entry tree for typedef documentation sections.
+// If found they are stored in their class or in the global list.
+static void buildTypedefList(EntryNav *rootNav)
+{
+  //printf("buildVarList(%s)\n",rootNav->name().data());
+  if (!rootNav->name().isEmpty() &&
+      rootNav->section()==Entry::VARIABLE_SEC &&
+      rootNav->type().find("typedef ")!=-1 // its a typedef
+     ) 
+  {
+    addVariable(rootNav);
+  }
+  if (rootNav->children())
+  {
+    EntryNavListIterator eli(*rootNav->children());
+    EntryNav *e;
+    for (;(e=eli.current());++eli)
+    {
+      if (e->section()!=Entry::ENUM_SEC) 
+      {
+        buildTypedefList(e);
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------
+// Searches the Entry tree for Variable documentation sections.
+// If found they are stored in their class or in the global list.
+
+static void buildVarList(EntryNav *rootNav)
+{
+  //printf("buildVarList(%s)\n",rootNav->name().data());
+  int isFuncPtr=-1;
+  if (!rootNav->name().isEmpty() &&
+      (rootNav->type().isEmpty() || compoundKeywordDict.find(rootNav->type())==0) &&
+      (
+       (rootNav->section()==Entry::VARIABLE_SEC    // it's a variable
+       ) ||
+       (rootNav->section()==Entry::FUNCTION_SEC && // or maybe a function pointer variable 
+        (isFuncPtr=findFunctionPtr(rootNav->type()))!=-1
+       ) ||
+       (rootNav->section()==Entry::FUNCTION_SEC && // class variable initialized by constructor
+        isVarWithConstructor(rootNav)
+       )
+      ) 
+     ) // documented variable
+  {
+    addVariable(rootNav,isFuncPtr);
   }
   if (rootNav->children())
   {
@@ -4110,8 +4104,10 @@ static bool findClassRelation(
       {
         baseClassName.prepend(scopeName.left(scopeOffset)+"::");
       }
-      baseClassName=stripTemplateSpecifiersFromScope
-                          (removeRedundantWhiteSpace(baseClassName));
+      //QCString stripped;
+      //baseClassName=stripTemplateSpecifiersFromScope
+      //                    (removeRedundantWhiteSpace(baseClassName),TRUE,
+      //                    &stripped);
       MemberDef *baseClassTypeDef=0;
       QCString templSpec;
       ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,
@@ -9808,6 +9804,13 @@ void parseInput()
   msg("Searching for enumerations...\n");
   findEnums(rootNav);
   
+  // Since buildVarList calls isVarWithConstructor
+  // and this calls getResolvedClass we need to process
+  // typedefs first so the relations between classes via typedefs
+  // are properly resolved. See bug 536385 for an example.
+  msg("Searching for documented typedefs...\n");
+  buildTypedefList(rootNav);
+
   msg("Searching for documented variables...\n");
   buildVarList(rootNav);
 

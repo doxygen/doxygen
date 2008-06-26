@@ -1261,8 +1261,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  HTML output directory. Running \c make will produce the docset in that
  directory and running <code>make install</code> will install the docset in 
  <code>~/Library/Developer/Shared/Documentation/DocSets</code> 
- so that Xcode will find it at startup.
-
+ so that Xcode will find it at startup. See
+ <a href="http://developer.apple.com/tools/creatingdocsetswithdoxygen.html">
+ this article</a> for more information.
 
 \anchor cfg_docset_feedname 
 <dt>\c DOCSET_FEEDNAME <dd>

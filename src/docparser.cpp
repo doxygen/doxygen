@@ -468,6 +468,7 @@ static void detectNoDocumentedParams()
     LockingPtr<ArgumentList> al     = g_memberDef->argumentList();
     LockingPtr<ArgumentList> declAl = g_memberDef->declArgumentList();
     QString returnType   = g_memberDef->typeString();
+    bool isPython = getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python;
 
     if (!g_memberDef->hasDocumentedParams() &&
         g_hasParamCommand)
@@ -489,7 +490,9 @@ static void detectNoDocumentedParams()
         // see if all parameters have documentation
         for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
         {
-          if (!a->name.isEmpty() && a->type!="void")
+          if (!a->name.isEmpty() && a->type!="void" &&
+              !(isPython && a->name=="self")
+             )
           {
             allDoc = !a->docs.isEmpty();
           }
@@ -503,7 +506,9 @@ static void detectNoDocumentedParams()
           Argument *a;
           for (ali.toFirst();(a=ali.current()) && allDoc;++ali)
           {
-            if (!a->name.isEmpty() && a->type!="void")
+            if (!a->name.isEmpty() && a->type!="void" &&
+                !(isPython && a->name=="self")
+               )
             {
               allDoc = !a->docs.isEmpty();
             }
