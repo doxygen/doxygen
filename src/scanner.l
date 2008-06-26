@@ -1254,10 +1254,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*"explicit"{BN}+	{ current->spec|=Entry::Explicit;
                                           lineCount(); 
                                         }
-<FindMembers>{B}*"@required"{BN}+	{ current->spec|=Entry::Required;
+<FindMembers>{B}*"@required"{BN}+	{ // Objective C 2.0 protocol required section
+                                          current->spec=(current->spec & ~Entry::Optional) | Entry::Required;
                                           lineCount(); 
                                         }
-<FindMembers>{B}*"@optional"{BN}+	{ current->spec|=Entry::Optional;
+<FindMembers>{B}*"@optional"{BN}+	{  // Objective C 2.0 protocol optional section
+                                          current->spec=(current->spec & ~Entry::Required) | Entry::Optional;
                                           lineCount(); 
                                         }
   /*
@@ -4064,6 +4066,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current_root->addSubEntry(current);
 					    current = new Entry ;
 					    initEntry();
+					    // Objective C 2.0: Required/Optional section
+					    if (previous->spec & (Entry::Optional | Entry::Required))
+					    {
+					      current->spec |= previous->spec & (Entry::Optional|Entry::Required);
+					    }
 					    lastCurlyContext = FindMembers;
 					    if ( *yytext == ',' )
 					    {
@@ -4754,7 +4761,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <SkipRound>")"				{ if (--roundCount<=0)
 					    BEGIN ( lastSkipRoundContext );
 					}
-<Bases>","|">"|({BN}+"implements"{BN}*)	{ lineCount();
+<Bases>","|(">"({BN}*"{")?)|({BN}+"implements"{BN}*)	{ lineCount();
                                           if (insideProtocolList)
 					  {
 					    baseName+="-p";
@@ -4785,7 +4792,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           if (*yytext=='>')
 					  { // end of a ObjC protocol list
   					    insideProtocolList=FALSE;
-					    unput('{'); // dummy start body
+					    if (yyleng==1)
+					    {
+					      unput('{'); // dummy start body
+					    }
+					    else
+					    {
+					      yyless(1);
+					    }
 					  }
 					  else
 					  {

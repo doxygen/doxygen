@@ -108,6 +108,9 @@ Alexandr Chelpanov: cav@cryptopro.ru
 TranslatorSerbian
 Dejan Milosavljevic: dmilos@email.com
 
+TranslatorSerbianCyrilic
+Nedeljko Stefanovic: stenedjo@yahoo.com
+
 TranslatorSlovak
 Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
 

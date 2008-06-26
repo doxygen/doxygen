@@ -131,6 +131,9 @@
 #ifdef LANG_MK
 #include "translator_mk.h"
 #endif
+#ifdef LANG_SC
+#include "translator_sc.h"
+#endif
 #endif // !ENGLISH_ONLY
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -217,9 +220,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_FI
   else if (L_EQUAL("finnish"))
   {
-    //theTranslator=new TranslatorFinnish;
-    theTranslator=new TranslatorEnglish;
-    err(obsoleteMsg);
+    theTranslator=new TranslatorDecoder(new TranslatorFinnish);
   }
 #endif
 #ifdef LANG_RU
@@ -328,6 +329,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("serbian"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorSerbian);
+  }
+#endif
+#ifdef LANG_SC
+  else if (L_EQUAL("serbian-cyrilic"))
+  {
+    theTranslator=new TranslatorSerbian;
   }
 #endif
 #ifdef LANG_CA

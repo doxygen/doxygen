@@ -1808,7 +1808,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   Specifier lvirt=virtualness();
 
-  if (!isObjCMethod() &&
+  if ((!isObjCMethod() || isOptional() || isRequired()) &&
       (protection()!=Public || lvirt!=Normal ||
        isFriend() || isRelated() || 
        (isInline() && Config_getBool("INLINE_INFO")) ||
@@ -1855,13 +1855,18 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         if      (isAssign())              sl.append("assign");
         else if (isCopy())                sl.append("copy");
         else if (isRetain())              sl.append("retain");
-        if      (protection()==Protected) sl.append("protected");
-        else if (protection()==Private)   sl.append("private");
-        else if (protection()==Package)   sl.append("package");
-        if      (lvirt==Virtual)          sl.append("virtual");
-        else if (lvirt==Pure)             sl.append("pure virtual");
-        if      (isSignal())              sl.append("signal");
-        if      (isSlot())                sl.append("slot");
+
+        if (!isObjCMethod())
+        {
+          if      (protection()==Protected) sl.append("protected");
+          else if (protection()==Private)   sl.append("private");
+          else if (protection()==Package)   sl.append("package");
+
+          if      (lvirt==Virtual)          sl.append("virtual");
+          else if (lvirt==Pure)             sl.append("pure virtual");
+          if      (isSignal())              sl.append("signal");
+          if      (isSlot())                sl.append("slot");
+        }
       }
       if (m_impl->classDef && m_impl->classDef!=container) sl.append("inherited");
     }

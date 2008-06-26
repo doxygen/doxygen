@@ -330,7 +330,8 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 
 ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                             MemberDef **pMemType=0,QCString *pTemplSpec=0,
-                            QCString *pResolvedType=0);
+                            QCString *pResolvedType=0,
+                            ArgumentList *actTemplParams=0);
 
 QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr);
 

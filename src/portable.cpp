@@ -382,7 +382,9 @@ size_t portable_iconv (void *cd, const char** inbuf,  size_t *inbytesleft,
 // avoid a compile error, that is were the CASTNEEDED is for.
 #if ((defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION>=0x0109) && \
       !((defined(_OS_MAC_) || defined(Q_OS_MACX) )&& (_LIBICONV_VERSION==0x010B))) \
-    || defined(_OS_SOLARIS_))
+    || defined(_OS_SOLARIS_) \
+    || defined(_OS_NETBSD_)  \
+    ) 
 #define CASTNEEDED(x) (x)
 #else
 #define CASTNEEDED(x) (char **)(x)

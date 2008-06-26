@@ -24,12 +24,15 @@
 // 2007/12/09 
 //  - Initial translation to Macedonian.
 //
+// 2008/05/22
+//	- Translation for 1.5.4.
+//
 //
 
 #ifndef TRANSLATOR_MK_H
 #define TRANSLATOR_MK_H
 
-class TranslatorMacedonian : public TranslatorAdapter_1_4_6
+class TranslatorMacedonian : public Translator
 {
   public:
 
@@ -1558,7 +1561,207 @@ class TranslatorMacedonian : public TranslatorAdapter_1_4_6
     virtual QCString trEnumerationValueDocumentation()
     { return "Документија на Набројувања"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Документација на функции/процедури членови"; }
 
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Список на Типови"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Членови"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Список на типови со кратки описи:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Список на сите ";
+      if (!extractAll)
+      {
+        result+="документирани ";
+      }
+      result+="членови на типови";
+      result+=" со врски до ";
+      if (!extractAll) 
+      {
+         result+="документацијата за секој член:";
+      }
+      else 
+      {
+         result+="типовите на кои што припаѓаат:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Попис на Типови"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Документација на Типови"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Функции/Процедури"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Документација на Функции/Процедури"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Типови"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Попис на Модули"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Список на сите ";
+      if (!extractAll) result+="документирани ";
+      result+="модули со кратки описи:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName + " - Повикување на";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Класа"; break;
+        case ClassDef::Struct:     result+=" Тип"; break;
+        case ClassDef::Union:      result+=" Унија"; break;
+        case ClassDef::Interface:  result+=" Интерфејс"; break;
+        case ClassDef::Protocol:   result+=" Протокол"; break;
+        case ClassDef::Category:   result+=" Категорија"; break;
+        case ClassDef::Exception:  result+=" Исклучок"; break;
+      }
+      if (isTemplate) result+=" Образец";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" - Содржина на Модул";        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Членови на Модул"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Список на сите ";
+      if (!extractAll) result+="документирани ";
+      result+="членови на модулот со врски до ";
+      if (extractAll) 
+      {
+        result+="документацијата за секој член:";
+      }
+      else 
+      {
+        result+="модулите на кои што припаѓаат:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Попис на Модули"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Модул" : "модул"));
+      if (!singular)  result+="и";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Документацијата за ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="оваа класа"; break;
+        case ClassDef::Struct:     result+="овој тип"; break;
+        case ClassDef::Union:      result+="оваа унија"; break;
+        case ClassDef::Interface:  result+="овој интерфејс"; break;
+        case ClassDef::Protocol:   result+="овој протокол"; break;
+        case ClassDef::Category:   result+="оваа категорија"; break;
+        case ClassDef::Exception:  result+="овој исклучок"; break;
+      }
+      result+=" беше создадена од ";
+      if (single) result+="следнава датотека:"; else result+="следниве датотеки:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Тип" : "тип"));
+      if (!singular)  result+="ови";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Потпрограм" : "потпрограм"));
+      if (singular){
+		result+="а";
+      }else{
+      	result+="и";
+      }
+      
+      return result; 
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Ограничувања на Тип";
+    }
 };
 
 #endif

@@ -234,8 +234,8 @@ void addSignals(const char* str,int line, Entry *e,const char *comment=0)
   VhdlDocGen::getSigName(ql,str,bufio);
   int count = ql.count();
 
-  QCString brief = current->brief;
-  QCString doc   = current->doc;
+  QCString brief  = current->brief;
+  QCString doc    = current->doc;
   Entry *tmpEntry = current;
   current = new Entry;
   initEntry(current);
@@ -257,55 +257,67 @@ void addSignals(const char* str,int line, Entry *e,const char *comment=0)
   current->brief.resize(0);
   current->doc.resize(0);
  
-  for (int k=1;k<count;k++)
+  if (genPort!=3) // not a unit
   {
-    //printf("adding '%s' '%s'\n",ql.at(0)->data(),ql.at(k)->data());
-    Entry *pTemp=new Entry;
-    initEntry(pTemp);
-    pTemp->startLine = line;
-    pTemp->bodyLine  = line;
-    pTemp->name      = ql.at(k)->data();
-    pTemp->section   = Entry::VARIABLE_SEC;
-    pTemp->brief     = brief;
-    pTemp->doc       = doc;
-    QCString stSpec  = ql.at(0)->data();
-    if (genPort==1)
+    for (int k=1;k<count;k++)
     {
-      pTemp->spec    = VhdlDocGen::PORT;
-      stSpec.stripPrefix(bufio.data()); 
-      stSpec=stSpec.stripWhiteSpace();
-      pTemp->args    = stSpec;
-      pTemp->type    = bufio;
-    }
-    else if (genPort==2) // found record
-    {
-      pTemp->spec    = VhdlDocGen::RECORD;
-      pTemp->type    = stSpec;
-      pTemp->name.prepend(VhdlDocGen::getRecordNumber());
-    }
-    else 
-    {
-      pTemp->spec    = VhdlDocGen::GENERIC;
-      pTemp->type    = stSpec;
-    }
-    addSubEntry(e,pTemp);
-  }// for
-
-  /*  found a unit */
-  if (genPort==3)
+      //printf("adding '%s' '%s'\n",ql.at(0)->data(),ql.at(k)->data());
+      Entry *pTemp=new Entry;
+      initEntry(pTemp);
+      pTemp->startLine = line;
+      pTemp->bodyLine  = line;
+      pTemp->name      = ql.at(k)->data();
+      pTemp->section   = Entry::VARIABLE_SEC;
+      pTemp->brief     = brief;
+      pTemp->doc       = doc;
+      pTemp->mGrpId    = current->mGrpId; // copy member group id
+      QCString stSpec  = ql.at(0)->data();
+      if (genPort==1) // found port
+      {
+	pTemp->spec    = VhdlDocGen::PORT;
+	stSpec.stripPrefix(bufio.data()); 
+	stSpec=stSpec.stripWhiteSpace();
+	pTemp->args    = stSpec;
+	pTemp->type    = bufio;
+	addSubEntry(e,pTemp);
+      }
+      else if (genPort==2) // found record
+      {
+	pTemp->spec    = VhdlDocGen::RECORD;
+	pTemp->type    = stSpec;
+	pTemp->name.prepend(VhdlDocGen::getRecordNumber());
+	delete current;
+	current = new Entry(*pTemp); // make a deep copy of pTemp
+	newEntry();                  // add it to lastCompound and make a new current
+	delete pTemp;
+      }
+      else 
+      {
+	pTemp->spec    = VhdlDocGen::GENERIC;
+	pTemp->type    = stSpec;
+	addSubEntry(e,pTemp);
+      }
+    }// for
+  }
+  else // found a unit 
   {
     Entry *pTemp=new Entry;
     initEntry(pTemp);
     QCString tt(str);
     QStringList ql=QStringList::split("=",tt,FALSE);
-    pTemp->spec=VhdlDocGen::UNITS;
-    pTemp->section=Entry::VARIABLE_SEC;
-    pTemp->startLine=line;
-    pTemp->bodyLine=line;
-    pTemp->type=(QCString)ql[1];
-    pTemp->name=(QCString)ql[0].stripWhiteSpace();
+    pTemp->spec      = VhdlDocGen::UNITS;
+    pTemp->section   = Entry::VARIABLE_SEC;
+    pTemp->startLine = line;
+    pTemp->bodyLine  = line;
+    pTemp->brief     = brief; // adds brief description to the unit member
+    pTemp->doc       = doc;   // adds doc to the unit member
+    pTemp->type      = ql[1];
+    pTemp->name      = ql[0].stripWhiteSpace();
     pTemp->name.prepend(VhdlDocGen::getRecordNumber());
-    addSubEntry(e,pTemp);                           
+    delete current;
+    current = new Entry(*pTemp); // make a deep copy
+    newEntry();                  // add it to lastCompound
+    delete pTemp;
   }
 }                                              
 
@@ -561,8 +573,11 @@ ENDFUNC      {B}*"end"{BR}+"function"{BR}+{FUNCNAME}{BR}*[;]
 FUNCIMPURE   "impure"|"pure"
 FUNCPROC     ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
 ARCHITECTURE ("architecture"){BR}+{NAME}{BR}*("of")
-POST         "postponed"
-PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*{POST}{BR}("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
+   /* Removed due to bug 538239
+      POST         "postponed"
+      PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*({POST}{BR}+)?("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
+   */
+PROCESS      ({B}*{FUNCNAME}{B}*:{BR}*)?({B}*("postponed"){BR}+)?{B}*("process"){BR}*{PROTO}
 
 ENDPROCESS   ("end"){BR}*("process")
 LIBUSE       ^{B}*("use"|"library"){BR}+
@@ -614,6 +629,7 @@ ALLID        [^;()\t ]
       //addSubEntry(current,pEntry);
       current->startLine=yyLineNr;
       current->bodyLine=yyLineNr;
+      newEntry(); // adds the unit to the lastCompound
       genPort=3;
       BEGIN(ParseRecord);
     }
@@ -915,9 +931,7 @@ ALLID        [^;()\t ]
   current->section=Entry::VARIABLE_SEC;
   current->spec=VhdlDocGen::RECORD;
   addText(vhdlscanYYtext,vhdlscanYYleng); 
-  addSubEntry(current_root,current);
-  current = new Entry;
-  initEntry(current);
+  newEntry(); // adds the record to the last compound
   BEGIN(ParseRecord);
 }
 
@@ -932,10 +946,18 @@ ALLID        [^;()\t ]
   BEGIN(Start);
 }
 
-<ParseRecord>[a-z_][^\n;]* { // parse record body
+<ParseRecord>[a-z_A-Z0-9][^\n;]*";"({B}*{COMMENT})* { // parse record body
   lineCount();
+  QCString comment;
   QCString zz(vhdlscanYYtext);
-  addSignals(zz.data(),yyLineNr,current);
+  if (zz.contains("--!"))
+  {
+    QStringList ql=QStringList::split("--!",zz,FALSE);
+    comment = ql[1];
+    zz = ql[0];
+  }
+  initEntry(current);
+  addSignals(zz,yyLineNr,current,comment);
   addText(vhdlscanYYtext,vhdlscanYYleng); 
   BEGIN(ParseRecord);
 }
@@ -1094,10 +1116,11 @@ ALLID        [^;()\t ]
       current->section=Entry::VARIABLE_SEC;
       current->type+=qcs.data();  
 
-      if ((current->spec==VhdlDocGen::SIGNAL || 
+      if ((current->spec==VhdlDocGen::SIGNAL   || 
 	   current->spec==VhdlDocGen::CONSTANT || 
-	   current->spec==VhdlDocGen::TYPE || 
-	   current->spec==VhdlDocGen::SUBTYPE
+	   current->spec==VhdlDocGen::TYPE     || 
+	   current->spec==VhdlDocGen::SUBTYPE  ||
+	   current->spec==VhdlDocGen::SHAREDVARIABLE
 	  ) &&  
 	  qcs.stripPrefix(","))
       {
@@ -1105,7 +1128,8 @@ ALLID        [^;()\t ]
 	ql.setAutoDelete(TRUE);
 	QCString buffer;
 	if (current->spec==VhdlDocGen::SUBTYPE || 
-	    current->spec==VhdlDocGen::TYPE)
+	    current->spec==VhdlDocGen::TYPE
+	   )
 	{
 	  VhdlDocGen::getSigTypeName(ql,qcs.data(),buffer);
 	}
@@ -1316,7 +1340,6 @@ ALLID        [^;()\t ]
   {
     //printf("no ; or --: pos=%d semi=%d\n",pos,semi);
   }
-
   int diff=openCount-closeCount;
   if (diff<0)
   {
