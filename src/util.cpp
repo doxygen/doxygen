@@ -512,7 +512,8 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
   
   ClassDef *typeClass = md->getClassDef();
   QCString type = md->typeString(); // get the "value" of the typedef
-  if (typeClass && typeClass->isTemplate() && actTemplParams->count()>0)
+  if (typeClass && typeClass->isTemplate() && 
+      actTemplParams && actTemplParams->count()>0)
   {
     type = substituteTemplateArgumentsInString(type,
             typeClass->templateArguments(),actTemplParams);
