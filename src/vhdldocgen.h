@@ -80,7 +80,6 @@ class VhdlDocGen
     static void init();
 
     // --- used by vhdlscanner.l -----------
-    static Entry*   getEntryAtLine(const Entry* e,int line);
     static QCString getIndexWord(const char* ,int index);
     static  bool    foundInsertedComponent(const QCString& name,Entry* root);
     static bool     deleteCharRev(QCString &s,char c);

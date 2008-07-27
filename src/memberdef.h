@@ -69,7 +69,7 @@ class MemberDef : public Definition
     MemberDef(const char *defFileName,int defLine,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
-              bool related,MemberType t,const ArgumentList *tal,
+              Relationship related,MemberType t,const ArgumentList *tal,
               const ArgumentList *al);
    ~MemberDef(); 
     DefType definitionType() const        { return TypeMember; }
@@ -133,6 +133,7 @@ class MemberDef : public Definition
     bool isProperty() const;
     bool isEvent() const;
     bool isRelated() const;
+    bool isForeign() const;
     bool isStatic() const;
     bool isInline() const;
     bool isExplicit() const;
@@ -257,6 +258,7 @@ class MemberDef : public Definition
     void setTemplateSpecialization(bool b);
     
     void makeRelated();
+    void makeForeign();
     void setHasDocumentedParams(bool b);
     void setHasDocumentedReturnType(bool b);
     void setInheritsDocsFrom(MemberDef *md);

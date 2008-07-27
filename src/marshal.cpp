@@ -395,7 +395,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalInt(s,e->inbodyLine);
   marshalQCString(s,e->inbodyFile);
   marshalQCString(s,e->relates);
-  marshalBool(s,e->relatesDup);
+  marshalInt(s,e->relatesType);
   marshalQCString(s,e->read);
   marshalQCString(s,e->write);
   marshalQCString(s,e->inside);
@@ -788,7 +788,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->inbodyLine       = unmarshalInt(s);
   e->inbodyFile       = unmarshalQCString(s);
   e->relates          = unmarshalQCString(s);
-  e->relatesDup       = unmarshalBool(s);
+  e->relatesType      = (RelatesType)unmarshalInt(s);
   e->read             = unmarshalQCString(s);
   e->write            = unmarshalQCString(s);
   e->inside           = unmarshalQCString(s);

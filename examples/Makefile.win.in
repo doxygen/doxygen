@@ -25,13 +25,14 @@ all: class/html/index.html \
      memgrp/html/index.html \
      docstring/html/index.html \
      pyexample/html/index.html \
-     mux/html/index.html
+     mux/html/index.html \
+     manual/html/index.html
 
 clean:
 	del /s/y class define enum file pyexample docstring
 	del /s/y func page relates author
 	del /s/y par overload example include qtstyle 
-	del /s/y jdstyle structcmd autolink resdefine mux
+	del /s/y jdstyle structcmd autolink resdefine mux manual
 	del /s/y restypedef afterdoc template tag group diagrams memgrp
 
 class/html/index.html: class.h class.cfg
@@ -105,6 +106,9 @@ pyexample/html/index.html: pyexample.py pyexample.cfg
 
 mux/html/index.html: mux.vhdl mux.cfg
 	$(DOXYDIR)\doxygen mux.cfg
+
+manual/html/index.html: manual.c manual.cfg
+	$(DOXYDIR)\doxygen manual.cfg
 
 docstring/html/index.html: docstring.py docstring.cfg
 	$(DOXYDIR)\doxygen docstring.cfg

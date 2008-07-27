@@ -1040,7 +1040,7 @@ void addDefine()
   MemberDef *md=new MemberDef(
       g_yyFileName,g_yyLineNr,
       "#define",g_defName,g_defArgsStr,0,
-      Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
+      Public,Normal,FALSE,Member,MemberDef::Define,0,0);
   if (!g_defArgsStr.isEmpty())
   {
     ArgumentList *argList = new ArgumentList;

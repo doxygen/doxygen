@@ -974,7 +974,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 			}
                       }
 
-<ParseType>[_a-zA_Z"]["_a-zA-Z0-9]* {
+<ParseType>["_a-zA-Z0-9]* {
                         QCString val(yytext);
                         g_FuncProto.append(yytext);
                         appStringLower(g_PrevString,yytext);

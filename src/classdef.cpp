@@ -374,40 +374,40 @@ void ClassDef::internalInsertMember(MemberDef *md,
     /********************************************/
     if (md->isRelated() && (extractPrivate || prot!=Private))
     {
-      addMemberToList(MemberList::related,md);
+      addMemberToList(MemberList::related,md,true);
     }
     else if (md->isFriend())
     {
-      addMemberToList(MemberList::friends,md);
+      addMemberToList(MemberList::friends,md,true);
     }
     else
     {
       switch (md->memberType())
       {
         case MemberDef::Signal: // Qt specific
-          addMemberToList(MemberList::signals,md);
+          addMemberToList(MemberList::signals,md,true);
           break;
         case MemberDef::DCOP:   // KDE2 specific
-          addMemberToList(MemberList::dcopMethods,md);
+          addMemberToList(MemberList::dcopMethods,md,true);
           break;
         case MemberDef::Property:
-          addMemberToList(MemberList::properties,md);
+          addMemberToList(MemberList::properties,md,true);
           break;
         case MemberDef::Event:
-          addMemberToList(MemberList::events,md);
+          addMemberToList(MemberList::events,md,true);
           break;
         case MemberDef::Slot:   // Qt specific
           switch (prot)
           {
             case Protected: 
             case Package: // slots in packages are not possible!
-              addMemberToList(MemberList::proSlots,md);
+              addMemberToList(MemberList::proSlots,md,true);
               break;
             case Public:    
-              addMemberToList(MemberList::pubSlots,md);
+              addMemberToList(MemberList::pubSlots,md,true);
               break;
             case Private:   
-              addMemberToList(MemberList::priSlots,md);
+              addMemberToList(MemberList::priSlots,md,true);
               break;
           }
           break;
@@ -419,16 +419,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  addMemberToList(MemberList::proStaticAttribs,md);
+                  addMemberToList(MemberList::proStaticAttribs,md,true);
                   break;
                 case Package: 
-                  addMemberToList(MemberList::pacStaticAttribs,md);
+                  addMemberToList(MemberList::pacStaticAttribs,md,true);
                   break;
                 case Public:    
-                  addMemberToList(MemberList::pubStaticAttribs,md);
+                  addMemberToList(MemberList::pubStaticAttribs,md,true);
                   break;
                 case Private:   
-                  addMemberToList(MemberList::priStaticAttribs,md);
+                  addMemberToList(MemberList::priStaticAttribs,md,true);
                   break;
               }
             }
@@ -437,16 +437,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  addMemberToList(MemberList::proStaticMethods,md);
+                  addMemberToList(MemberList::proStaticMethods,md,true);
                   break;
                 case Package: 
-                  addMemberToList(MemberList::pacStaticMethods,md);
+                  addMemberToList(MemberList::pacStaticMethods,md,true);
                   break;
                 case Public:    
-                  addMemberToList(MemberList::pubStaticMethods,md);
+                  addMemberToList(MemberList::pubStaticMethods,md,true);
                   break;
                 case Private:   
-                  addMemberToList(MemberList::priStaticMethods,md);
+                  addMemberToList(MemberList::priStaticMethods,md,true);
                   break;
               }
             }
@@ -458,16 +458,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  addMemberToList(MemberList::proAttribs,md);
+                  addMemberToList(MemberList::proAttribs,md,true);
                   break;
                 case Package:
-                  addMemberToList(MemberList::pacAttribs,md);
+                  addMemberToList(MemberList::pacAttribs,md,true);
                   break;
                 case Public:    
-                  addMemberToList(MemberList::pubAttribs,md);
+                  addMemberToList(MemberList::pubAttribs,md,true);
                   break;
                 case Private:   
-                  addMemberToList(MemberList::priAttribs,md);
+                  addMemberToList(MemberList::priAttribs,md,true);
                   break;
               }
             }
@@ -476,16 +476,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  addMemberToList(MemberList::proTypes,md);
+                  addMemberToList(MemberList::proTypes,md,true);
                   break;
                 case Package: 
-                  addMemberToList(MemberList::pacTypes,md);
+                  addMemberToList(MemberList::pacTypes,md,true);
                   break;
                 case Public:    
-                  addMemberToList(MemberList::pubTypes,md);
+                  addMemberToList(MemberList::pubTypes,md,true);
                   break;
                 case Private:   
-                  addMemberToList(MemberList::priTypes,md);
+                  addMemberToList(MemberList::priTypes,md,true);
                   break;
               }
             }
@@ -494,16 +494,16 @@ void ClassDef::internalInsertMember(MemberDef *md,
               switch (prot)
               {
                 case Protected: 
-                  addMemberToList(MemberList::proMethods,md);
+                  addMemberToList(MemberList::proMethods,md,true);
                   break;
                 case Package: 
-                  addMemberToList(MemberList::pacMethods,md);
+                  addMemberToList(MemberList::pacMethods,md,true);
                   break;
                 case Public:    
-                  addMemberToList(MemberList::pubMethods,md);
+                  addMemberToList(MemberList::pubMethods,md,true);
                   break;
                 case Private:   
-                  addMemberToList(MemberList::priMethods,md);
+                  addMemberToList(MemberList::priMethods,md,true);
                   break;
               }
             }
@@ -517,21 +517,21 @@ void ClassDef::internalInsertMember(MemberDef *md,
     /*******************************************************/
     if ((md->isRelated() && (extractPrivate || prot!=Private)) || md->isFriend())
     {
-      addMemberToList(MemberList::relatedMembers,md);
+      addMemberToList(MemberList::relatedMembers,md,false);
     }
     else
     {
       switch (md->memberType())
       {
         case MemberDef::Property:
-          addMemberToList(MemberList::propertyMembers,md);
+          addMemberToList(MemberList::propertyMembers,md,false);
           break;
         case MemberDef::Event:
-          addMemberToList(MemberList::eventMembers,md);
+          addMemberToList(MemberList::eventMembers,md,false);
           break;
         case MemberDef::Signal: // fall through
         case MemberDef::DCOP:
-          addMemberToList(MemberList::functionMembers,md);
+          addMemberToList(MemberList::functionMembers,md,false);
           break;
         case MemberDef::Slot:
           switch (prot)
@@ -539,12 +539,12 @@ void ClassDef::internalInsertMember(MemberDef *md,
             case Protected: 
             case Package: 
             case Public:    
-              addMemberToList(MemberList::functionMembers,md);
+              addMemberToList(MemberList::functionMembers,md,false);
               break;
             case Private:   
               if (extractPrivate)
               {
-                addMemberToList(MemberList::functionMembers,md);
+                addMemberToList(MemberList::functionMembers,md,false);
               }
               break;
           }
@@ -555,13 +555,13 @@ void ClassDef::internalInsertMember(MemberDef *md,
             switch (md->memberType())
             {
               case MemberDef::Typedef:
-                addMemberToList(MemberList::typedefMembers,md);
+                addMemberToList(MemberList::typedefMembers,md,false);
                 break;
               case MemberDef::Enumeration:
-                addMemberToList(MemberList::enumMembers,md);
+                addMemberToList(MemberList::enumMembers,md,false);
                 break;
               case MemberDef::EnumValue:
-                addMemberToList(MemberList::enumValMembers,md);
+                addMemberToList(MemberList::enumValMembers,md,false);
                 break;
               case MemberDef::Function:
                 if (md->isConstructor() || md->isDestructor())
@@ -571,11 +571,11 @@ void ClassDef::internalInsertMember(MemberDef *md,
                 }
                 else
                 {
-                  addMemberToList(MemberList::functionMembers,md);
+                  addMemberToList(MemberList::functionMembers,md,false);
                 }
                 break;
               case MemberDef::Variable:
-                addMemberToList(MemberList::variableMembers,md);
+                addMemberToList(MemberList::variableMembers,md,false);
                 break;
               default:
                 err("Unexpected member type %d found!\n",md->memberType());
@@ -3168,11 +3168,14 @@ MemberList *ClassDef::getMemberList(MemberList::ListType lt)
   return 0;
 }
 
-void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
+void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrief)
 {
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
+  static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
-  if (sortBriefDocs)
+  if (( isBrief && sortBriefDocs ) ||
+      (!isBrief && sortMemberDocs)
+     )
     ml->inSort(md);
   else
     ml->append(md);

@@ -141,7 +141,7 @@ static void getBufText(QCString& qc,int start)
 
 static void lineCount()
 {
-  for ( const char* c = vhdlscanYYtext ; *c ; ++c )
+  for ( const char* c = yytext ; *c ; ++c )
   {
     yyLineNr += (*c == '\n') ;
   }
@@ -446,6 +446,24 @@ static void parseFunctionProto()
   bufferClear();
 }//parseFunctionProto
 
+static Entry* getEntryAtLine(const Entry* ce,int line)
+{
+  EntryListIterator eli(*ce->children());
+  Entry *found=0;
+  Entry *rt;
+  for (;(rt=eli.current());++eli)
+  {
+    if (rt->bodyLine==line)
+    {
+      found=rt;
+    } // if
+    if (!found) 
+    {
+      found=getEntryAtLine(rt,line);
+    }
+  }
+  return found;
+}// getEntryAtLine
 
 //-------------------------------------------------------------------------
 
@@ -534,7 +552,7 @@ static void addOneTextLine(QCString& ss )
   //else if (pEntry && pEntry->bodyLine==yyLineNr)
   //  pTemp=pEntry;
   else 
-    pTemp=VhdlDocGen::getEntryAtLine(current_root,yyLineNr) ;
+    pTemp=getEntryAtLine(current_root,yyLineNr) ;
 
   if (pTemp)
   {
@@ -622,7 +640,7 @@ ALLID        [^;()\t ]
 
     bufferClear();
     //pEntry=current;
-    getType(current,vhdlscanYYtext);
+    getType(current,yytext);
     current->bodyLine=yyLineNr;
     if (current->spec==VhdlDocGen::UNITS)
     {
@@ -645,7 +663,7 @@ ALLID        [^;()\t ]
   bufferClear();
   isBody=0;
   lastCompound = current;
-  QCString curName=VhdlDocGen::getIndexWord(vhdlscanYYtext,1);
+  QCString curName=VhdlDocGen::getIndexWord(yytext,1);
   current->section=Entry::CLASS_SEC; //Entry::CLASS_SEC;
   current->spec=VhdlDocGen::ARCHITECTURE;
   current->protection=Private;
@@ -684,7 +702,7 @@ ALLID        [^;()\t ]
   bropen=0;
   bufferClear();
   isBody=0;
-  QCString qcs=QCString(vhdlscanYYtext);
+  QCString qcs=QCString(yytext);
   // lowerString(qcs);
   qcs=qcs.stripWhiteSpace();
   if (stricmp(qcs.data(),"use")==0)
@@ -709,7 +727,7 @@ ALLID        [^;()\t ]
   bropen=0;
   bufferClear();
   isFunc=1;
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   BEGIN(FindFuncName);
 }
 
@@ -719,7 +737,7 @@ ALLID        [^;()\t ]
 
   bropen=0;  
   bufferClear();
-  QCString word(vhdlscanYYtext);
+  QCString word(yytext);
   word=word.lower();  
   word=word.stripWhiteSpace();
 
@@ -764,7 +782,7 @@ ALLID        [^;()\t ]
 
   lineCount();
   QCString type;
-  QCString tt(vhdlscanYYtext);
+  QCString tt(yytext);
   tt = tt.stripWhiteSpace();
   //printf("  tt=%s\n",tt.data());
   //VhdlDocGen::deleteAllChars(tt,'\n');
@@ -821,7 +839,7 @@ ALLID        [^;()\t ]
 
 <Start>{CR}*    {
   lineCount();
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   BEGIN(Start); 
 }
 
@@ -855,7 +873,7 @@ ALLID        [^;()\t ]
 
 <ParseUnits>{B}*[a-z_][^\n;]* { // parse record|unit body
   lineCount();
-  QCString zz(vhdlscanYYtext);
+  QCString zz(yytext);
   addSignals(zz.data(),yyLineNr,current);
   BEGIN(ParseUnits);
 }
@@ -863,8 +881,8 @@ ALLID        [^;()\t ]
 <FindName>{NAME} {  // found entity|architecture|component name
   lineCount();
 
-  QCString qcs(vhdlscanYYtext);
-  QCString qreal=QCString(vhdlscanYYtext);
+  QCString qcs(yytext);
+  QCString qreal=QCString(yytext);
   qcs=qcs.stripWhiteSpace();
   if (current->spec==VhdlDocGen::USE)
   {
@@ -910,13 +928,13 @@ ALLID        [^;()\t ]
 <FindFuncName>{FUNCNAME}    { // found name of a process|function|procedure
   lineCount();
 
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   BEGIN(ParseType);
 }
 
 <FindTypeName>{NAME}{BR}* {
   lineCount();                                                            
-  current->name=QCString(vhdlscanYYtext);
+  current->name=QCString(yytext);
   BEGIN(ParseType);
 }
 
@@ -930,7 +948,7 @@ ALLID        [^;()\t ]
   genPort=2;
   current->section=Entry::VARIABLE_SEC;
   current->spec=VhdlDocGen::RECORD;
-  addText(vhdlscanYYtext,vhdlscanYYleng); 
+  addText(yytext,yyleng); 
   newEntry(); // adds the record to the last compound
   BEGIN(ParseRecord);
 }
@@ -949,21 +967,26 @@ ALLID        [^;()\t ]
 <ParseRecord>[a-z_A-Z0-9][^\n;]*";"({B}*{COMMENT})* { // parse record body
   lineCount();
   QCString comment;
-  QCString zz(vhdlscanYYtext);
+  QCString zz(yytext);
   if (zz.contains("--!"))
   {
     QStringList ql=QStringList::split("--!",zz,FALSE);
     comment = ql[1];
     zz = ql[0];
   }
+  else if (zz.contains("--"))
+  {
+    QStringList ql=QStringList::split("--",zz,FALSE);
+    zz = ql[0];
+  }
   initEntry(current);
   addSignals(zz,yyLineNr,current,comment);
-  addText(vhdlscanYYtext,vhdlscanYYleng); 
+  addText(yytext,yyleng); 
   BEGIN(ParseRecord);
 }
 
 <ParseType>{B}+("is"){B}*{CR}|{B}+("is"){B}*"--" { // found a new function  in an architecture ?
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
   QCString ttt;
   bool bb=TRUE;
@@ -1024,21 +1047,21 @@ ALLID        [^;()\t ]
 
 <ParseType>[^;()\t ] {
   lineCount();      
-  addText(vhdlscanYYtext,vhdlscanYYleng); 
+  addText(yytext,yyleng); 
   BEGIN(ParseType);
 }
 
 <ParseType>{BRACEOPEN} {
   lineCount();
   bropen++;
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   BEGIN(ParseType);
 }
 
 <ParseType>{BRACECLOSE} {
   lineCount();
   bropen--;
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   if (bropen==0 && scantype==2) // process
   {
     ::parseProcessProto();
@@ -1072,7 +1095,7 @@ ALLID        [^;()\t ]
 
 <ParseType>{ENDE3} {
   lineCount();
-  QCString tt(vhdlscanYYtext);
+  QCString tt(yytext);
   tt=tt.lower();
   VhdlDocGen::deleteAllChars(tt,';');
   tt.stripWhiteSpace();
@@ -1101,7 +1124,7 @@ ALLID        [^;()\t ]
 
 <ParseType>";" {
   lineCount();
-  addText(vhdlscanYYtext,vhdlscanYYleng);    
+  addText(yytext,yyleng);    
   if (bropen==0 && !(isFunc==1 && isBody==1) )
   {
     if (isFunc)
@@ -1194,13 +1217,13 @@ ALLID        [^;()\t ]
 
 <ParseType>{BR}* {
   lineCount();
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   BEGIN(ParseType);
 }
 
 <FindEntityName>{NAME} {    // found name of an entity/architecture/package
   lineCount();
-  QCString qcs(vhdlscanYYtext);
+  QCString qcs(yytext);
   qcs=qcs.stripWhiteSpace();
   qcs=qcs.lower();
   if (strcmp(qcs.data(),"body")==0) // found package body
@@ -1214,7 +1237,7 @@ ALLID        [^;()\t ]
   }
   else if (scantype==1) // found a component
   {
-    QCString qq(vhdlscanYYtext);
+    QCString qq(yytext);
     qq=qq.stripWhiteSpace();
     //qq=qq.lower();
 
@@ -1242,18 +1265,18 @@ ALLID        [^;()\t ]
   } 
   else
   {
-    QCString qq(vhdlscanYYtext);
+    QCString qq(yytext);
     qq=qq.stripWhiteSpace();
     current->name=qq;
     newEntry();
-    //QCString qreal=QCString(vhdlscanYYtext);
+    //QCString qreal=QCString(yytext);
     BEGIN(Start);
   }
 }
 
 <Start>{B}*("generic"|"port"){BR}*[(]+ { // found generic|port in entity
-    QCString genp(vhdlscanYYleng+1);
-    deleteSpecChars(vhdlscanYYtext,genp.data());
+    QCString genp(yyleng+1);
+    deleteSpecChars(yytext,genp.data());
     VhdlDocGen::deleteCharRev(genp,'(');
 
     if (stricmp(genp.data(),"port" )==0)
@@ -1274,7 +1297,7 @@ ALLID        [^;()\t ]
 <FindSigName>{BRACECLOSE} { 
     lineCount();
     bropen--;
-    addText(vhdlscanYYtext,vhdlscanYYleng); 
+    addText(yytext,yyleng); 
     if (bropen==0)
     {
       bufferClear();
@@ -1287,7 +1310,7 @@ ALLID        [^;()\t ]
 }
 
 <FindSigName>{LABELID} {  // found signals in entity
-  QCString line(vhdlscanYYtext);
+  QCString line(yytext);
 
   // note that line can be something like:
   // "var1, var2, var3 : in std_logic_vector(8 downto 0); --! Some comment"
@@ -1307,9 +1330,14 @@ ALLID        [^;()\t ]
   int openCount=line.contains('(');
   int closeCount=line.contains(')');
   int semi = line.find(';');
-  int pos;
+  int pos  = line.find("--");
+  int pos1 = line.find("--!");
+  if (pos!=-1 && pos<pos1) // strip normal comment before special one
+  {
+    line = line.remove(pos,pos1-pos);
+  }
   //printf("=> signal: line='%s'\n",line.data());
-  if (semi!=-1 && (pos=line.find("--"))!=-1)
+  if (semi!=-1 && pos!=-1)
   {
     int eol = line.findRev('\n');
     //printf("pos=%d eol=%d\n",pos,eol);
@@ -1348,7 +1376,7 @@ ALLID        [^;()\t ]
 
   if (scantype!=1) // not a component
   {  
-    addText(vhdlscanYYtext,vhdlscanYYleng);
+    addText(yytext,yyleng);
     addSignals(line,yyLineNr,lastEntity,comment);
   } 
 
@@ -1365,24 +1393,24 @@ ALLID        [^;()\t ]
 <FindSigName>{BRACEOPEN} { 
   lineCount();
   bropen++;
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
 }
 
 
 <FindSigName>{CR}        { 
   lineCount();
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   //BEGIN(FindSigName);
 }
 
 
 <*>^{B}*("for ")[^;]* {
-  //printf("\n found for[%s] [%d]",vhdlscanYYtext,yyLineNr);
+  //printf("\n found for[%s] [%d]",yytext,yyLineNr);
   lineCount();
 }
 
 <*>{DIGITS}                {   // found digit
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
 }
 
@@ -1412,20 +1440,39 @@ ALLID        [^;()\t ]
 
 <*>{BR}*"--!"[^{}\n][^\n]*\n/{B}*"--!" { // multi line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
+  // signal clk :in std_logic; --!@brief global clock
+  // --!@brief  global reset
+  // signal reset:in std_logic;
+  // these two comments are detected as a multi line comment
+  QCString qc(yytext);
+  int len=qc.contains('\n')+yyLineNr-1;
+
   if (YY_START!=Comment) // Start of the comment block
   {
-    iTextCounter=iCounter;
+    bufferClear();
+    iTextCounter=0;
     startComment=yyLineNr;
     g_lastCommentContext=YY_START;
   }
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+
+  Entry* pTemp=getEntryAtLine(current_root,len);
+  if (pTemp)
+  { // found one line comment, add it to the entry on this line
+    pTemp->briefLine=yyLineNr;
+    pTemp->brief+=yytext;
+    VhdlDocGen::prepareComment(pTemp->brief);
+  }
+  else 
+  {
+    addText(yytext,yyleng);
+  }
   lineCount();
   BEGIN(Comment);
 }
 
 <Comment>^{B}*"--!"[^\n]* {
   if (iDocLine==-1) iDocLine=yyLineNr;
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
 }
 
@@ -1436,17 +1483,27 @@ ALLID        [^;()\t ]
   VhdlDocGen::prepareComment(qcs);
   handleCommentBlock(qcs,FALSE);
   bufferClear();
-  unput(*vhdlscanYYtext);
+  unput(*yytext);
   BEGIN(g_lastCommentContext);
 }
 
-<*>^{B}*"--!"[^\n]* { // one line comment
+<*>"--!"[^\n]* { // one line comment
   if (iDocLine==-1) iDocLine=yyLineNr;
   QCString qcs(yytext);
   int j=qcs.find("--!");
   qcs=qcs.right(qcs.length()-3-j);
   //printf("--> handleCommentBlock line %d\n",yyLineNr);
-  handleCommentBlock(qcs,TRUE);
+  Entry* pTemp=getEntryAtLine(current_root,yyLineNr);
+  if (pTemp)
+  {
+    pTemp->briefLine=yyLineNr;
+    pTemp->brief+=qcs;
+    iDocLine=-1;
+  }
+  else
+  {
+    handleCommentBlock(qcs,TRUE);
+  }
   //printf("--> end: handleCommentBlock line %d\n",yyLineNr);
   bufferClear();
 } 
@@ -1456,23 +1513,23 @@ ALLID        [^;()\t ]
 
 <*>\n                    {
   lineCount();
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   //         printf("\n new-line [%d]",yyLineNr);
   BEGIN(Start);
 }
 
 <*>{NAME} {
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
 }
 
 <*>{B}*	{
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
 }
 
 <*>.                    {
-  addText(vhdlscanYYtext,vhdlscanYYleng);
+  addText(yytext,yyleng);
   lineCount();
 }
 

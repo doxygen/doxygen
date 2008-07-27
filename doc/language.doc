@@ -73,7 +73,7 @@ when the translator was updated.
     <td>Catalan</td>
     <td>Maximiliano Pin<br>Albert Mora</td>
     <td>max.pin at bitroit dot com<br>amora at iua dot upf dot es</td>
-    <td>1.5.4</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Chinese</td>
@@ -235,7 +235,7 @@ when the translator was updated.
     <td>Serbian</td>
     <td>Dejan Milosavljevic</td>
     <td>dmilos at email dot com</td>
-    <td>1.4.1</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>SerbianCyrilic</td>
@@ -294,7 +294,7 @@ when the translator was updated.
   \hline
   Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino@uol.com.br} & up-to-date \\
   \hline
-  Catalan & Maximiliano Pin & {\tt\tiny max.pin@bitroit.com} & 1.5.4 \\
+  Catalan & Maximiliano Pin & {\tt\tiny max.pin@bitroit.com} & up-to-date \\
   ~ & Albert Mora & {\tt\tiny amora@iua.upf.es} & ~ \\
   \hline
   Chinese & Li Daobing & {\tt\tiny lidaobing@gmail.com} & up-to-date \\
@@ -360,7 +360,7 @@ when the translator was updated.
   \hline
   Russian & Alexandr Chelpanov & {\tt\tiny cav@cryptopro.ru} & up-to-date \\
   \hline
-  Serbian & Dejan Milosavljevic & {\tt\tiny dmilos@email.com} & 1.4.1 \\
+  Serbian & Dejan Milosavljevic & {\tt\tiny dmilos@email.com} & up-to-date \\
   \hline
   SerbianCyrilic & Nedeljko Stefanovic & {\tt\tiny stenedjo@yahoo.com} & up-to-date \\
   \hline

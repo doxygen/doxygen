@@ -1779,6 +1779,24 @@ void Config::create()
 		    "types are typedef'ed and only the typedef is referenced, never the tag name.\n",
 		    FALSE
                 );
+  ci = addInt(
+                    "SYMBOL_CACHE_SIZE",
+                    "The SYMBOL_CACHE_SIZE determines the size of the internal cache use to \n"
+		    "determine which symbols to keep in memory and which to flush to disk.\n"
+		    "When the cache is full, less often used symbols will be written to disk.\n"
+		    "For small to medium size projects (<1000 input files) the default value is \n"
+		    "probably good enough. For larger projects a too small cache size can cause \n"
+		    "doxygen to be busy swapping symbols to and from disk most of the time \n"
+		    "causing a significant performance penality. \n"
+		    "If the system has enough physical memory increasing the cache will improve the \n"
+		    "performance by keeping more symbols in memory. Note that the value works on \n"
+		    "a logarithmic scale so increasing the size by one will rougly double the \n"
+		    "memory usage. The cache size is given by this formula: \n"
+		    "2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, \n"
+		    "corresponding to a cache size of 2^16 = 65536 symbols\n",
+                    0,9,0
+             );
+
   //-----------------------------------------------------------------------------------------------
   addInfo("Build","Build related configuration options");
   //-----------------------------------------------------------------------------------------------
@@ -2407,6 +2425,31 @@ void Config::create()
                     "be used to specify the location (absolute path including file name) of \n"
 		    "the HTML help compiler (hhc.exe). If non-empty doxygen will try to run \n"
 		    "the HTML help compiler on the generated index.hhp.\n"
+                   );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "QTHELP_FILE",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the QTHELP_FILE tag can \n"
+                    "be used to specify the file name of the resulting .(qch|qhp) file. \n"
+                    "You can add a path in front of the file if the result should not be \n"
+                    "written to the html output directory. \n"
+                   );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "QTHELP_CONFIG",
+                    "If DOXYGEN2QTHELP_LOC is set, QTHELP_CONFIG must specify the file name \n"
+                    "of a config file to pass to doxygen2qthelp. \n"
+                   );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "DOXYGEN2QTHELP_LOC",
+                    "If the GENERATE_HTMLHELP tag is set to YES, the DOXYGEN2QTHELP_LOC tag \n"
+                    "can be used to specify the location (absolute path including file name) of \n"
+                    "the doxygen2qthelp tool. If non-empty doxygen will try to run doxygen2qthelp \n"
+                    "on the generated index.hhp.\n"
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");

@@ -1794,7 +1794,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                       root->fileName,root->startLine,
                       md->typeString(),memName,md->argsString(),
                       md->excpString(),root->protection,root->virt,
-                      md->isStatic(),FALSE,md->memberType(),
+                      md->isStatic(),Member,md->memberType(),
                       templAl.pointer(),al.pointer()
                       );
                   }
@@ -1880,7 +1880,7 @@ static MemberDef *addVariableToClass(
     bool fromAnnScope,
     MemberDef *fromAnnMemb,
     Protection prot,
-    bool related)
+    Relationship related)
 {
   Entry *root = rootNav->entry();
 
@@ -2145,7 +2145,7 @@ static MemberDef *addVariableToFile(
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
       root->type,name,root->args,0,
-      Public, Normal,root->stat,FALSE,
+      Public, Normal,root->stat,Member,
       mtype,0,0);
   md->setTagInfo(rootNav->tagInfo());
   md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -2427,6 +2427,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
     QCString type=root->type.stripWhiteSpace();
     ClassDef *cd=0;
     bool isRelated=FALSE;
+    bool isMemberOf=FALSE;
 
     QCString classScope=stripAnonymousNamespaceScope(scope);
     classScope=stripTemplateSpecifiersFromScope(classScope,FALSE);
@@ -2447,7 +2448,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                               FALSE,  // from Anonymous scope
                               0,      // anonymous member
                               Public, // protection
-                              FALSE   // related to a class
+                              Member  // related to a class
                              );
          }
       }
@@ -2476,6 +2477,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
     if (!root->relates.isEmpty()) // related variable
     {
       isRelated=TRUE;
+      isMemberOf=(root->relatesType == MemberOf);
       if (getClass(root->relates)==0 && !scope.isEmpty())
         scope=mergeScopes(scope,root->relates);
       else 
@@ -2517,7 +2519,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                                   TRUE,  // from anonymous scope
                                   0,     // from anonymous member
                                   root->protection,
-                                  isRelated
+                                  isMemberOf ? Foreign : isRelated ? Related : Member
                                  );
             added=TRUE;
           }
@@ -2541,7 +2543,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                          FALSE,  // from anonymous scope
                          md,     // from anonymous member
                          root->protection, 
-                         isRelated);
+                         isMemberOf ? Foreign : isRelated ? Related : Member);
     }
     else if (!name.isEmpty()) // global variable
     {
@@ -2662,7 +2664,10 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   MemberDef *md=new MemberDef(
       root->fileName,root->startLine,
       root->type,name,root->args,root->exception,
-      root->protection,root->virt,root->stat,!root->relates.isEmpty(),
+      root->protection,root->virt,
+      root->stat && root->relatesType != MemberOf,
+      root->relates.isEmpty() ? Member :
+          root->relatesType == MemberOf ? Foreign : Related,
       mtype,root->tArgLists ? root->tArgLists->last() : 0,root->argList);
   md->setTagInfo(rootNav->tagInfo());
   md->setMemberClass(cd);
@@ -2787,13 +2792,13 @@ static void buildFunctionList(EntryNav *rootNav)
 
     Debug::print(Debug::Functions,0,
                  "FUNCTION_SEC:\n"
-                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesDup=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%d proto=%d docFile=%s\n",
+                 "  `%s' `%s'::`%s' `%s' relates=`%s' relatesType=`%d' file=`%s' line=`%d' bodyLine=`%d' #tArgLists=%d mGrpId=%d spec=%d proto=%d docFile=%s\n",
                  root->type.data(),
                  rootNav->parent()->name().data(),
                  root->name.data(),
                  root->args.data(),
                  root->relates.data(),
-                 root->relatesDup,
+                 root->relatesType,
                  root->fileName.data(),
                  root->startLine,
                  root->bodyLine,
@@ -2870,7 +2875,7 @@ static void buildFunctionList(EntryNav *rootNav)
                  || rootNav->parent()->section()==Entry::OBJCIMPL_SEC
                 ) &&
                !isMember &&
-               (root->relates.isEmpty() || root->relatesDup) &&
+               (root->relates.isEmpty() || root->relatesType == Duplicate) &&
                root->type.left(7)!="extern " && root->type.left(8)!="typedef " 
               )
       // no member => unrelated function 
@@ -3013,7 +3018,7 @@ static void buildFunctionList(EntryNav *rootNav)
           md=new MemberDef(
               root->fileName,root->startLine,
               root->type,name,root->args,root->exception,
-              root->protection,root->virt,root->stat,FALSE,
+              root->protection,root->virt,root->stat,Member,
               MemberDef::Function,tArgList,root->argList);
 
           md->setTagInfo(rootNav->tagInfo());
@@ -3127,8 +3132,8 @@ static void buildFunctionList(EntryNav *rootNav)
             Doxygen::functionNameSDict->append(name,mn);
           }
           addMemberToGroups(root,md);
-          if (!root->relatesDup) // if this is a relatesalso command, allow find
-                                 // Member to pick it up
+          if (root->relatesType == Simple) // if this is a relatesalso command,
+                                           // allow find Member to pick it up
           {
             rootNav->changeSection(Entry::EMPTY_SEC); // Otherwise we have finished 
                                                       // with this entry.
@@ -3551,7 +3556,7 @@ static void transferRelatedFunctionDocumentation()
           LockingPtr<ArgumentList>  mdAl = md->argumentList();
           LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
           //printf("  Member found: related=`%d'\n",rmd->isRelated());
-          if (rmd->isRelated() && // related function
+          if ((rmd->isRelated() || rmd->isForeign()) && // related function
               matchArguments2( md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
                               rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                               TRUE
@@ -3561,6 +3566,8 @@ static void transferRelatedFunctionDocumentation()
             //printf("  Found related member `%s'\n",md->name().data());
             if (rmd->relatedAlso())
               md->setRelatedAlso(rmd->relatedAlso());
+            else if (rmd->isForeign())
+              md->makeForeign();
             else
               md->makeRelated();
           } 
@@ -4928,7 +4935,7 @@ static bool findGlobalMember(EntryNav *rootNav,
         }
       }
     } 
-    if (!found && !root->relatesDup) // no match
+    if (!found && root->relatesType != Duplicate) // no match
     {
       QCString fullFuncDecl=decl;
       if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
@@ -5114,6 +5121,7 @@ static void findMember(EntryNav *rootNav,
   QCString exceptions;
   QCString funcSpec;
   bool isRelated=FALSE;
+  bool isMemberOf=FALSE;
   bool isFriend=FALSE;
   bool done;
   do
@@ -5195,6 +5203,7 @@ static void findMember(EntryNav *rootNav,
   if (!root->relates.isEmpty()) 
   {                             // related member, prefix user specified scope
     isRelated=TRUE;
+    isMemberOf=(root->relatesType == MemberOf);
     if (getClass(root->relates)==0 && !scopeName.isEmpty())
       scopeName= mergeScopes(scopeName,root->relates);
     else 
@@ -5375,11 +5384,12 @@ static void findMember(EntryNav *rootNav,
            "  related=`%s'\n" 
            "  exceptions=`%s'\n"
            "  isRelated=%d\n"
+           "  isMemberOf=%d\n"
            "  isFriend=%d\n"
            "  isFunc=%d\n\n",
            namespaceName.data(),className.data(),
            funcType.data(),funcSpec.data(),funcName.data(),funcArgs.data(),funcTempList.data(),
-           funcDecl.data(),root->relates.data(),exceptions.data(),isRelated,isFriend,
+           funcDecl.data(),root->relates.data(),exceptions.data(),isRelated,isMemberOf,isFriend,
            isFunc
           );
 
@@ -5621,7 +5631,7 @@ static void findMember(EntryNav *rootNav,
           MemberDef *md=new MemberDef(
               root->fileName,root->startLine,
               funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,root->stat,FALSE,
+              root->protection,root->virt,root->stat,Member,
               mtype,tArgList,root->argList);
           //printf("new specialized member %s args=`%s'\n",md->name().data(),funcArgs.data());
           md->setTagInfo(rootNav->tagInfo());
@@ -5685,7 +5695,7 @@ static void findMember(EntryNav *rootNav,
           MemberDef *md=new MemberDef(
               root->fileName,root->startLine,
               funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,root->stat,TRUE,
+              root->protection,root->virt,root->stat,Related,
               mtype,tArgList,root->argList);
           md->setTagInfo(rootNav->tagInfo());
           md->setTypeConstraints(root->typeConstr);
@@ -5814,7 +5824,9 @@ static void findMember(EntryNav *rootNav,
           MemberDef *md=new MemberDef(
               root->fileName,root->startLine,
               funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,root->stat,TRUE,
+              root->protection,root->virt,
+              root->stat && !isMemberOf,
+              isMemberOf ? Foreign : isRelated ? Related : Member,
               mtype,
               (root->tArgLists ? root->tArgLists->last() : 0),
               funcArgs.isEmpty() ? 0 : root->argList);
@@ -5897,7 +5909,7 @@ static void findMember(EntryNav *rootNav,
           cd->insertMember(md);
           cd->insertUsedFile(root->fileName);
           md->setRefItems(root->sli);
-          if (root->relatesDup) md->setRelatedAlso(cd);
+          if (root->relatesType == Duplicate) md->setRelatedAlso(cd);
           addMemberToGroups(root,md);
           //printf("Adding member=%s\n",md->name().data());
           if (newMemberName)
@@ -5907,7 +5919,7 @@ static void findMember(EntryNav *rootNav,
             Doxygen::memberNameSDict->append(funcName,mn);
           }
         }
-        if (root->relatesDup)
+        if (root->relatesType == Duplicate)
         {
           if (!findGlobalMember(rootNav,namespaceName,funcName,funcTempList,funcArgs,funcDecl))
           {
@@ -5940,7 +5952,7 @@ localObjCMethod:
         MemberDef *md=new MemberDef(
             root->fileName,root->startLine,
             funcType,funcName,funcArgs,exceptions,
-            root->protection,root->virt,root->stat,FALSE,
+            root->protection,root->virt,root->stat,Member,
             MemberDef::Function,0,root->argList);
         md->setTagInfo(rootNav->tagInfo());
         md->makeImplementationDetail();
@@ -6020,7 +6032,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
   //printf("rootNav->parent()->name()=%s\n",rootNav->parent()->name().data());
   bool isFunc=TRUE;
 
-  if (root->relatesDup && !root->relates.isEmpty())
+  if (root->relatesType == Duplicate && !root->relates.isEmpty())
   {
     QCString tmp = root->relates;
     root->relates.resize(0);
@@ -6205,6 +6217,7 @@ static void findEnums(EntryNav *rootNav)
     MemberNameSDict *mnsd=0;
     bool isGlobal;
     bool isRelated=FALSE;
+    bool isMemberOf=FALSE;
     //printf("Found enum with name `%s' relates=%s\n",root->name.data(),root->relates.data());
     int i;
 
@@ -6232,6 +6245,7 @@ static void findEnums(EntryNav *rootNav)
     if (!root->relates.isEmpty()) 
     {   // related member, prefix user specified scope
       isRelated=TRUE;
+      isMemberOf=(root->relatesType == MemberOf);
       if (getClass(root->relates)==0 && !scope.isEmpty())
         scope=mergeScopes(scope,root->relates);
       else 
@@ -6264,7 +6278,9 @@ static void findEnums(EntryNav *rootNav)
       md = new MemberDef(
           root->fileName,root->startLine,
           0,name,0,0,
-          root->protection,Normal,FALSE,isRelated,MemberDef::Enumeration,
+          root->protection,Normal,FALSE,
+          isMemberOf ? Foreign : isRelated ? Related : Member,
+          MemberDef::Enumeration,
           0,0);
       md->setTagInfo(rootNav->tagInfo());
       if (!isGlobal) md->setMemberClass(cd); else md->setFileDef(fd);
@@ -7463,7 +7479,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
     {
       MemberDef *md=new MemberDef("<tagfile>",1,
                     "#define",root->name,root->args,0,
-                    Public,Normal,FALSE,FALSE,MemberDef::Define,0,0);
+                    Public,Normal,FALSE,Member,MemberDef::Define,0,0);
       md->setTagInfo(rootNav->tagInfo());
       //printf("Searching for `%s' fd=%p\n",filePathName.data(),fd);
       md->setFileDef(rootNav->parent()->fileDef());
@@ -8925,10 +8941,9 @@ extern void commentScanTest();
 
 void initDoxygen()
 {
-#if QT_VERSION >= 200
   setlocale(LC_ALL,"");
+  setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   setlocale(LC_NUMERIC,"C");
-#endif 
 
   //Doxygen::symbolMap->setAutoDelete(TRUE);
 
@@ -9400,8 +9415,11 @@ void parseInput()
    **************************************************************************/
 
   Doxygen::symbolMap     = new QDict<DefinitionIntf>(1000);
-  Doxygen::symbolCache   = new ObjCache(16); // 16 -> room for 65536 elements, 
-                                             //       ~2.0 MByte "overhead"
+  int cacheSize = Config_getInt("SYMBOL_CACHE_SIZE");
+  if (cacheSize<0) cacheSize=0;
+  if (cacheSize>9) cacheSize=9;
+  Doxygen::symbolCache   = new ObjCache(16+cacheSize); // 16 -> room for 65536 elements, 
+                                                //       ~2.0 MByte "overhead"
   Doxygen::symbolStorage = new Store;
 
 #ifdef HAS_SIGNALS
@@ -10193,6 +10211,24 @@ void generateOutput()
     if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
     {
       err("Error: failed to run html help compiler on index.hhp\n");
+    }
+    QDir::setCurrent(oldDir);
+  }
+  if ( Config_getBool("GENERATE_HTMLHELP") && 
+      !Config_getString("DOXYGEN2QTHELP_LOC").isEmpty() && 
+      !Config_getString("QTHELP_CONFIG").isEmpty())
+  {
+    msg("Running doxygen2qthelp...\n");
+    const QCString qtHelpFile = Config_getString("QTHELP_FILE");
+    const QCString args = QCString().sprintf("--config=%s index.hhp%s%s",
+        Config_getString("QTHELP_CONFIG").data(),
+        (qtHelpFile.isEmpty() ? "" : " "), (qtHelpFile.isEmpty() ? "" : qtHelpFile.data()));
+    
+    const QString oldDir = QDir::currentDirPath();
+    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    if (portable_system(Config_getString("DOXYGEN2QTHELP_LOC"), args.data(), FALSE))
+    {
+      err("Error: failed to run doxygen2qthelp on index.hhp\n");
     }
     QDir::setCurrent(oldDir);
   }

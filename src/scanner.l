@@ -1594,7 +1594,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
 					  templateStr="<";
-					  fullArgString = templateStr.copy();
+					  fullArgString = templateStr;
 					  copyArgString = &templateStr;
 					  currentArgumentContext = FindMembers;
 					  BEGIN( ReadTempArgs );
@@ -4326,9 +4326,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->spec |= Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
+					  current->name+="<";
 					  templateStr="<";
 					  fullArgString = templateStr;
-					  copyArgString = &templateStr;
+					  copyArgString = &current->name;
 					  currentArgumentContext = CompoundName;
 					  BEGIN( ReadTempArgs );
   					}

@@ -166,23 +166,19 @@ for this case.
 
 </ol>
 
-As you can see doxygen is quite flexible. The following however is
-not legal
+As you can see doxygen is quite flexible. If you have multiple
+detailed descriptions, like in the following example:
 
 \verbatim
 //! Brief description, which is
 //! really a detailed description since it spans multiple lines.
-/*! Oops, another detailed description!
+/*! Another detailed description!
  */
 \endverbatim
 
-because doxygen only allows one brief and one detailed description. 
-
-Furthermore, if there is one brief description before a declaration 
-and one before a definition of a code item, only the one before 
-the \e declaration will be used. If the same situation occurs for a 
-detailed description, the one before the \e definition is preferred 
-and the one before the declaration will be ignored.
+They will be joined. Note that this is also the case if the descriptions
+are at different places in the code! In this case the order will depend
+on the order in which doxygen parses the code.
 
 Here is an example of a documented piece of C++ code using the Qt style:
 \include qtstyle.cpp

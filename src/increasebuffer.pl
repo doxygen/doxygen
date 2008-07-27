@@ -4,5 +4,6 @@
 while (<>)
 {
 	s/YY_BUF_SIZE 16384/YY_BUF_SIZE 262144/g; 
+        s/YY_READ_BUF_SIZE 8192/YY_READ_BUF_SIZE 262144/g;
 	print $_;
 }
