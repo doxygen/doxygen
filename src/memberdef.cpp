@@ -306,8 +306,9 @@ class MemberDefImpl
     MemberDefImpl();
    ~MemberDefImpl();
     void init(Definition *def,const char *t,const char *a,const char *e,
-              Protection p,Specifier v,bool s,bool r,MemberDef::MemberType mt,
-              const ArgumentList *tal,const ArgumentList *al
+              Protection p,Specifier v,bool s,Relationship r,
+              MemberDef::MemberType mt,const ArgumentList *tal,
+              const ArgumentList *al
              );
 
     ClassDef     *classDef;   // member of or related to 
@@ -395,7 +396,7 @@ class MemberDefImpl
     bool hasDocumentedParams;
     bool hasDocumentedReturnType;
     bool isDMember;
-    bool related;             // is this a member that is only related to a class
+    Relationship related;     // relationship of this to the class
     bool stat;                // is it a static function?
     bool proto;               // is it a prototype;
     bool docEnumValues;       // is an enum with documented enum values.
@@ -439,8 +440,9 @@ MemberDefImpl::~MemberDefImpl()
 
 void MemberDefImpl::init(Definition *def,
                      const char *t,const char *a,const char *e,
-                     Protection p,Specifier v,bool s,bool r,MemberDef::MemberType mt,
-                     const ArgumentList *tal,const ArgumentList *al
+                     Protection p,Specifier v,bool s,Relationship r,
+                     MemberDef::MemberType mt,const ArgumentList *tal,
+                     const ArgumentList *al
                     )
 {
   classDef=0;
@@ -572,7 +574,7 @@ void MemberDefImpl::init(Definition *def,
  * \param v  The degree of `virtualness' of the member, possible values are:
  *           \c Normal, \c Virtual, \c Pure.
  * \param s  A boolean that is true iff the member is static.
- * \param r  A boolean that is true iff the member is only related.
+ * \param r  The relationship between the class and the member.
  * \param mt The kind of member. See #MemberDef::MemberType for a list of 
  *           all types.
  * \param tal The template arguments of this member.
@@ -582,7 +584,7 @@ void MemberDefImpl::init(Definition *def,
 
 MemberDef::MemberDef(const char *df,int dl,
                      const char *t,const char *na,const char *a,const char *e,
-                     Protection p,Specifier v,bool s,bool r,MemberType mt,
+                     Protection p,Specifier v,bool s,Relationship r,MemberType mt,
                      const ArgumentList *tal,const ArgumentList *al
                     ) : Definition(df,dl,removeRedundantWhiteSpace(na))
 {
@@ -3201,7 +3203,13 @@ bool MemberDef::isEvent() const
 bool MemberDef::isRelated() const
 { 
   makeResident();
-  return m_impl->related; 
+  return m_impl->related == Related;
+}
+
+bool MemberDef::isForeign() const
+{ 
+  makeResident();
+  return m_impl->related == Foreign; 
 }
 
 bool MemberDef::isStatic() const
@@ -3638,7 +3646,13 @@ void MemberDef::setTemplateSpecialization(bool b)
 void MemberDef::makeRelated()
 { 
   makeResident();
-  m_impl->related=TRUE; 
+  m_impl->related = Related; 
+}
+
+void MemberDef::makeForeign()
+{ 
+  makeResident();
+  m_impl->related = Foreign; 
 }
 
 void MemberDef::setHasDocumentedParams(bool b)
@@ -3838,7 +3852,7 @@ void MemberDef::flushToDisk() const
   marshalBool         (Doxygen::symbolStorage,m_impl->hasDocumentedParams);
   marshalBool         (Doxygen::symbolStorage,m_impl->hasDocumentedReturnType);
   marshalBool         (Doxygen::symbolStorage,m_impl->isDMember);
-  marshalBool         (Doxygen::symbolStorage,m_impl->related);
+  marshalInt          (Doxygen::symbolStorage,(int)m_impl->related);
   marshalBool         (Doxygen::symbolStorage,m_impl->stat);
   marshalBool         (Doxygen::symbolStorage,m_impl->proto);
   marshalBool         (Doxygen::symbolStorage,m_impl->docEnumValues);
@@ -3938,7 +3952,7 @@ void MemberDef::loadFromDisk() const
   m_impl->hasDocumentedParams     = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->hasDocumentedReturnType = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->isDMember               = unmarshalBool         (Doxygen::symbolStorage);
-  m_impl->related                 = unmarshalBool         (Doxygen::symbolStorage);
+  m_impl->related                 = (Relationship)unmarshalInt(Doxygen::symbolStorage);
   m_impl->stat                    = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->proto                   = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->docEnumValues           = unmarshalBool         (Doxygen::symbolStorage);

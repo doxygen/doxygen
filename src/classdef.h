@@ -327,7 +327,7 @@ class ClassDef : public Definition
   private: 
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     QCString getMemberListFileName() const;
-    void addMemberToList(MemberList::ListType lt,MemberDef *md);
+    void addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrief);
     MemberList *createMemberList(MemberList::ListType lt);
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title,
                                  const char *subTitle=0);

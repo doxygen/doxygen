@@ -1577,7 +1577,8 @@ void addClassMemberNameToIndex(MemberDef *md)
         g_memberIndexLetterUsed[CMHL_Events][letter].append(md);
         documentedClassMembers[CMHL_Events]++;
       }
-      else if (md->isRelated() || (md->isFriend() && !isFriendToHide))
+      else if (md->isRelated() || md->isForeign() ||
+               (md->isFriend() && !isFriendToHide))
       {
         g_memberIndexLetterUsed[CMHL_Related][letter].append(md);
         documentedClassMembers[CMHL_Related]++;
@@ -2954,7 +2955,8 @@ void writeIndex(OutputList &ol)
     for (pdi.toFirst();(pd=pdi.current());++pdi)
     {
       if (!pd->getGroupDef() && !pd->isReference() && 
-          !pd->hasParentPage()
+          (!pd->hasParentPage() ||                    // not inside other page
+           (Doxygen::mainPage==pd->getOuterScope()))  // or inside main page
          )
       {
         QCString title = pd->title();

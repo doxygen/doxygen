@@ -3715,7 +3715,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
 
     for (mmli.toFirst(); (mmd = mmli.current()); ++mmli)
     {
-      if (!mmd->isLinkable() || !mmd->isRelated() || !mmd->getClassDef())
+      if (!mmd->isLinkable() || (!mmd->isRelated() && !mmd->isForeign()) ||
+           !mmd->getClassDef())
         continue;
 
       if (!args) break;

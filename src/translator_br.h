@@ -15,6 +15,8 @@
  *    Thanks to Jorge Ramos and others for their contributions.
  *
  * History:
+ *   20080709:
+ *	- References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
  *   20080206:
  *      - Method trTypeContraints() renamed to trTypeConstraints().
  *   20071216:
@@ -1028,9 +1030,7 @@ class TranslatorBrazilian : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-
-        "Se a tag \\c MAX_DOT_GRAPH_HEIGHT no arquivo de configuração tem o valor"
-        "200, o seguinte gráfo será gerado:"
+        "Isto irá gerar o seguinte gráfo:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "As caixas no grafo acima tem as seguintes interpretações:\n"

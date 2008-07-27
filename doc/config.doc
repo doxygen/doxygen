@@ -90,6 +90,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_dot_transparent DOT_TRANSPARENT
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
 \refitem cfg_doxyfile_encoding DOXYFILE_ENCODING
+\refitem cfg_doxygen2qthelp_loc DOXYGEN2QTHELP_LOC
 \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 \refitem cfg_enabled_sections ENABLED_SECTIONS
@@ -192,6 +193,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_project_name PROJECT_NAME
 \refitem cfg_project_number PROJECT_NUMBER
 \refitem cfg_qt_autobrief QT_AUTOBRIEF
+\refitem cfg_qthelp_config QTHELP_CONFIG
+\refitem cfg_qthelp_file QTHELP_FILE
 \refitem cfg_quiet QUIET
 \refitem cfg_recursive RECURSIVE
 \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
@@ -222,6 +225,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_strip_from_inc_path STRIP_FROM_INC_PATH
 \refitem cfg_strip_from_path STRIP_FROM_PATH
 \refitem cfg_subgrouping SUBGROUPING
+\refitem cfg_symbol_cache_size SYMBOL_CACHE_SIZE
 \refitem cfg_tab_size TAB_SIZE
 \refitem cfg_tagfiles TAGFILES
 \refitem cfg_template_relations TEMPLATE_RELATIONS
@@ -568,6 +572,23 @@ sources. Doxygen will then generate output that is tailored for VHDL.
  namespace, or class. And the struct will be named \c TypeS. This can typically 
  be useful for C code in case the coding convention dictates that all compound 
  types are typedef'ed and only the typedef is referenced, never the tag name.
+
+\anchor cfg_symbol_cache_size
+<dt>\c SYMBOL_CACHE_SIZE <dd>
+ \addindex SYMBOL_CACHE_SIZE
+ The \c SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
+ determine which symbols to keep in memory and which to flush to disk.
+ When the cache is full, less often used symbols will be written to disk.
+ For small to medium size projects (<1000 input files) the default value is
+ probably good enough. For larger projects a too small cache size can cause 
+ doxygen to be busy swapping symbols to and from disk most of the time
+ causing a significant performance penality.
+ If the system has enough physical memory increasing the cache will improve the
+ performance by keeping more symbols in memory. Note that the value works on
+ a logarithmic scale so increasing the size by one will rougly double the
+ memory usage. The cache size is given by this formula: 
+ \f$2^{(16+\mbox{SYMBOL\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
+ corresponding to a cache size of \f$2^{16} = 65536\f$ symbols.
 
 </dl>
 
@@ -1302,8 +1323,30 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  \addindex HHC_LOCATION
   If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c HHC_LOCATION tag can
   be used to specify the location (absolute path including file name) of 
-  the HTML help compiler (hhc.exe). If non empty doxygen will try to run
+  the HTML help compiler (hhc.exe). If non-empty doxygen will try to run
   the HTML help compiler on the generated index.hhp.
+
+\anchor cfg_qthelp_file 
+<dt>\c QTHELP_FILE <dd>
+ \addindex QTHELP_FILE
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c QTHELP_FILE tag can
+  be used to specify the file name of the resulting .(qch|qhp) file. 
+  You can add a path in front of the file if the result should not be
+  written to the html output directory.
+
+\anchor cfg_qthelp_config 
+<dt>\c QTHELP_CONFIG <dd>
+ \addindex QTHELP_CONFIG
+  If \c DOXYGEN2QTHELP_LOC is set, \c QTHELP_CONFIG must specify the file name
+  of a config file to pass to doxygen2qthelp.
+
+\anchor cfg_doxygen2qthelp_loc 
+<dt>\c DOXYGEN2QTHELP_LOC <dd>
+ \addindex DOXYGEN2QTHELP_LOC
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c DOXYGEN2QTHELP_LOC tag
+  can be used to specify the location (absolute path including file name) of 
+  the doxygen2qthelp tool. If non-empty doxygen will try to run doxygen2qthelp 
+  on the generated index.hhp.
 
 \anchor cfg_generate_chi
 <dt>\c GENERATE_CHI <dd>

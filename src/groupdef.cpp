@@ -1162,8 +1162,16 @@ MemberList *GroupDef::getMemberList(MemberList::ListType lt) const
 
 void GroupDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
 {
+   static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+ 
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,0,0,0,this,title,0);
+    if (optimizeVhdl && ml) 
+    {
+         VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0);
+        return;
+    }
+  if (ml) 
+  ml->writeDeclarations(ol,0,0,0,this,title,0);
 }
 
 void GroupDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)

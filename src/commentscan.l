@@ -79,6 +79,7 @@ static bool handleDeprecated(const QCString &);
 static bool handleXRefItem(const QCString &);
 static bool handleRelated(const QCString &);
 static bool handleRelatedAlso(const QCString &);
+static bool handleMemberOf(const QCString &);
 static bool handleRefItem(const QCString &);
 static bool handleSection(const QCString &);
 static bool handleAnchor(const QCString &);
@@ -106,6 +107,7 @@ static bool handleProtectedSection(const QCString &);
 static bool handlePublic(const QCString &s);
 static bool handlePublicSection(const QCString &s);
 static bool handleInherit(const QCString &);
+static bool handleExtends(const QCString &);
 
 typedef bool (*DocCmdFunc)(const QCString &name);
 
@@ -197,6 +199,9 @@ static DocCmdMap docCmdMap[] =
   { "public",          &handlePublic,           FALSE },
   { "publicsection",   &handlePublicSection,    FALSE },
   { "inherit",         &handleInherit,          TRUE  },
+  { "extends",         &handleExtends,          TRUE  },
+  { "implements",      &handleExtends,          TRUE  },
+  { "memberof",        &handleMemberOf,         TRUE  },
   { "arg",             0,                       TRUE  },
   { "attention",       0,                       TRUE  },
   { "author",          0,                       TRUE  },
@@ -840,6 +845,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	FnParam
 %x	OverloadParam
 %x	InheritParam
+%x	ExtendsParam
 %x      ReadFormulaShort
 %x	ReadFormulaLong
 %x	AnchorLabel
@@ -920,7 +926,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    if (cmdPtr->endsBrief)
 					    { 
-				              briefEndsAtDot=FALSE;
+					      briefEndsAtDot=FALSE;
 					      // this command forces the end of brief description
 					      setOutput(OutputDoc);
 					    }
@@ -1366,7 +1372,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 
 
-  /* --------- handle arguments of the relates(also) command ------------ */
+  /* ----- handle arguments of the relates(also)/memberof command ------- */
 
 <RelatesParam1>({ID}("::"|"."))*{ID}	{ // argument
   					  current->relates = yytext;
@@ -1382,7 +1388,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <RelatesParam1>{DOCNL}			{ // missing argument
   					  warn(yyFileName,yyLineNr,
-					      "Warning: Missing argument of \\relates command"
+					      "Warning: Missing argument of \\relates or \\memberof command"
 					      );
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
@@ -1800,6 +1806,25 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  BEGIN(Comment);
   					}
 
+  /* ----- handle argument of extends and implements commands ------- */
+
+<ExtendsParam>({ID}("::"|"."))*{ID}	{ // found argument
+					  current->extends->append(
+					    new BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+					  );
+					  BEGIN( Comment );
+  					}
+<ExtendsParam>{DOCNL}			{ // missing argument
+  					  warn(yyFileName,yyLineNr,
+					      "Warning: \\extends or \\implements command has no argument"
+					      );
+  					  if (*yytext=='\n') yyLineNr++;
+					  addOutput('\n');
+					  BEGIN( Comment );
+  					}
+<ExtendsParam>.				{ // ignore other stuff
+  					}
+
   /* ----- handle language specific sections ------- */
 
 <SkipLang>[\\@]"~"[a-zA-Z]*        { /* language switch */
@@ -2060,7 +2085,14 @@ static bool handleRelated(const QCString &)
 
 static bool handleRelatedAlso(const QCString &)
 {
-  current->relatesDup = TRUE;
+  current->relatesType = Duplicate;
+  BEGIN(RelatesParam1);
+  return FALSE;
+}
+
+static bool handleMemberOf(const QCString &)
+{
+  current->relatesType = MemberOf;
   BEGIN(RelatesParam1);
   return FALSE;
 }
@@ -2257,50 +2289,49 @@ static bool handlePure(const QCString &)
 
 static bool handlePrivate(const QCString &)
 {
-  endBrief();
-  current->protection = Private; 
+  current->protection = Private;
   return FALSE;
 }
 
 static bool handlePrivateSection(const QCString &)
 {
-  endBrief();
-  current->protection = protection = Private; 
+  current->protection = protection = Private;
   return FALSE;
 }
 
 static bool handleProtected(const QCString &)
 {
-  endBrief();
-  current->protection = Protected; 
+  current->protection = Protected;
   return FALSE;
 }
 
 static bool handleProtectedSection(const QCString &)
 {
-  endBrief();
   current->protection = protection = Protected ;
   return FALSE;
 }
 
 static bool handlePublic(const QCString &)
 {
-  endBrief();
   current->protection = Public;
   return FALSE;
 }
 
 static bool handlePublicSection(const QCString &)
 {
-  endBrief();
-  current->protection = protection = Public; 
+  current->protection = protection = Public;
   return FALSE;
 }
 
 static bool handleInherit(const QCString &)
 {
-  endBrief();
   BEGIN(InheritParam);
+  return FALSE;
+}
+
+static bool handleExtends(const QCString &)
+{
+  BEGIN(ExtendsParam);
   return FALSE;
 }
 

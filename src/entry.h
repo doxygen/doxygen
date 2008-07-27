@@ -33,6 +33,8 @@ class StorageIntf;
 enum Protection { Public, Protected, Private, Package } ;
 enum Specifier { Normal, Virtual, Pure } ;
 enum MethodTypes { Method, Signal, Slot, DCOP, Property, Event };
+enum RelatesType { Simple, Duplicate, MemberOf };
+enum Relationship { Member, Related, Foreign };
 
 struct ListItemInfo
 {
@@ -350,7 +352,7 @@ class Entry
     int          inbodyLine;  //!< line number at which the body doc was found
     QCString     inbodyFile;  //!< file in which the body doc was found
     QCString     relates;     //!< related class (doc block)
-    bool         relatesDup;  //!< keep duplicate doc in original file also
+    RelatesType  relatesType; //!< how relates is handled
     QCString     read;        //!< property read accessor
     QCString     write;       //!< property write accessor
     QCString     inside;      //!< name of the class in which documents are found

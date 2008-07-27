@@ -160,24 +160,6 @@ QCString* VhdlDocGen::findKeyWord(const QCString& word)
  * returns the parsed entry at line xxx
  */
 
-Entry* VhdlDocGen::getEntryAtLine(const Entry* ce,int line)
-{
-  EntryListIterator eli(*ce->children());
-  Entry *found=0;
-  Entry *rt;
-  for (;(rt=eli.current());++eli)
-  {
-    if (rt->bodyLine==line)
-    {
-      found=rt;
-    } // if
-    if (!found) 
-    {
-      found=getEntryAtLine(rt,line);
-    }
-  }
-  return found;
-}// getEntryAtLine
 
 void VhdlDocGen::debugClassName(ClassSDict* mDict)
 {
@@ -1360,7 +1342,7 @@ void VhdlDocGen::formatString(QCString & qcs, OutputList& ol,const MemberDef* md
       {
 	temp+=" ";
       }
-      temp+=QCString(&c,1);
+      temp+=c;
       temp+=" "; 
     }
     else if (c=='=') 
@@ -1373,13 +1355,13 @@ void VhdlDocGen::formatString(QCString & qcs, OutputList& ol,const MemberDef* md
       else // = operator
       {
 	temp+=" ";      
-	temp+=QCString(&c,1);
+	temp+=c;
 	temp+=" "; 
       }
     }
     else      
     {
-      temp+=QCString(&c,1);
+      temp+=c;
     }
 
     index=temp.length();
@@ -1670,19 +1652,20 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
                              OutputList& ol,GroupDef* gd,ClassDef* cd)
 {
   static ClassDef *cdef;
-  static GroupDef* gdef;
+  //static GroupDef* gdef;
   if (cd && cdef!=cd)
   { // only one inline link
     VhdlDocGen::writeInlineClassLink(cd,ol);
     cdef=cd;
   }
 
+  /*
   if (gd && gdef==gd) return;
   if (gd && gdef!=gd)
   {
     gdef=gd;
   }
-
+*/
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::LIBRARY,FALSE),0,FALSE,VhdlDocGen::LIBRARY);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::USE,FALSE),0,FALSE,VhdlDocGen::USE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::FUNCTION,FALSE),0,FALSE,VhdlDocGen::FUNCTION);

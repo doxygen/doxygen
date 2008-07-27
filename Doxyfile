@@ -7,7 +7,7 @@ DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = Doxygen
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = doxygen_docs
-CREATE_SUBDIRS         = YES
+CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
@@ -144,7 +144,7 @@ HTML_HEADER            =
 HTML_FOOTER            = 
 HTML_STYLESHEET        = 
 HTML_ALIGN_MEMBERS     = YES
-GENERATE_HTMLHELP      = NO
+GENERATE_HTMLHELP      = YES
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen docs"
 DOCSET_BUNDLE_ID       = org.doxygen.Doxygen
@@ -161,7 +161,7 @@ TREEVIEW_WIDTH         = 250
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 LATEX_OUTPUT           = 
 LATEX_CMD_NAME         = latex
 MAKEINDEX_CMD_NAME     = makeindex

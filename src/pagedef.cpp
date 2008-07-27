@@ -49,7 +49,14 @@ void PageDef::addInnerCompound(Definition *def)
     PageDef *pd = (PageDef*)def;
     m_subPageDict->append(pd->name(),pd);
     def->setOuterScope(this);
-    pd->setNestingLevel(m_nestingLevel+1);
+    if (this==Doxygen::mainPage)
+    {
+      pd->setNestingLevel(m_nestingLevel);
+    }
+    else
+    {
+      pd->setNestingLevel(m_nestingLevel+1);
+    }
   }
 }
 
@@ -71,8 +78,12 @@ void PageDef::writeDocumentation(OutputList &ol)
   startFile(ol,pageName,pageName,title(),HLI_None,TRUE);
 
   ol.pushGeneratorState();
+  //1.{ 
 
-  if (m_nestingLevel>0) // a sub page
+  if (m_nestingLevel>0 
+      //&& // a sub page
+      //(Doxygen::mainPage==0 || getOuterScope()!=Doxygen::mainPage) // and not a subpage of the mainpage
+     )
   {
     // do not generate sub page output for RTF and LaTeX, as these are
     // part of their parent page
@@ -91,13 +102,16 @@ void PageDef::writeDocumentation(OutputList &ol)
 
   // save old generator state and write title only to Man generator
   ol.pushGeneratorState();
+  //2.{
   ol.disableAllBut(OutputGenerator::Man);
   ol.startTitleHead(pageName);
   ol.endTitleHead(pageName, pageName);
   ol.popGeneratorState();
+  //2.}
 
   // for Latex the section is already generated as a chapter in the index!
   ol.pushGeneratorState();
+  //2.{
   ol.disable(OutputGenerator::Latex);
   ol.disable(OutputGenerator::RTF);
   SectionInfo *si=0;
@@ -112,10 +126,12 @@ void PageDef::writeDocumentation(OutputList &ol)
     ol.endSection(si->label,si->type);
   }
   ol.popGeneratorState();
+  //2.}
 
   writePageDocumentation(ol);
 
   ol.popGeneratorState();
+  //1.}
 
   endFile(ol);
 
