@@ -329,8 +329,8 @@ void DocSets::addIndexItem(const char *, const char *,
       type="enum"; break;
     case MemberDef::EnumValue:
       type="econst"; break;
-    case MemberDef::Prototype:
-      type="prototype"; break;
+    //case MemberDef::Prototype:
+    //  type="prototype"; break;
     case MemberDef::Signal:
       type="signal"; break;
     case MemberDef::Slot:

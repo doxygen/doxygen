@@ -32,7 +32,7 @@
 
 #include <qcstring.h>
 #include <qstring.h>
-inline QCString convertToQCString(const QString &s) { return s.latin1(); }
+inline QCString convertToQCString(const QString &s) { return s.utf8(); }
 
 #else /* QT_VERSION < 200 */
 

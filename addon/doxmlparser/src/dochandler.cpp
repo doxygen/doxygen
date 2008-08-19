@@ -1118,7 +1118,6 @@ void HighlightHandler::startSpace(const QXmlAttributes&)
 
 void HighlightHandler::addTextNode()
 {
-  printf("m_curString=`%s'\n",m_curString.data());
   if (!m_curString.isEmpty())
   {
     m_children.append(new TextNode(m_curString,IDocMarkup::Normal,0));

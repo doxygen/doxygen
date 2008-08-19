@@ -105,6 +105,9 @@ index_xsd.h: index.xsd
 compound_xsd.h: compound.xsd
 	cat compound.xsd | $(TO_C_CMD) >compound_xsd.h 
 
+layout_default.h: layout_default.xml
+	cat layout_default.xml | $(TO_C_CMD) >layout_default.h 
+
 search_php.h: search.php
 	cat search.php | $(TO_C_CMD) >search_php.h 
 

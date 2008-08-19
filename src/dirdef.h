@@ -68,7 +68,6 @@ class DirDef : public Definition
     bool depGraphIsTrivial() const;
 
     // generate output
-    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
     void writeDepGraph(QTextStream &t);
 
@@ -77,6 +76,15 @@ class DirDef : public Definition
 
   private:
     friend void computeDirDependencies();
+
+    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeBriefDescription(OutputList &ol);
+    void writeDirectoryGraph(OutputList &ol);
+    void writeSubDirList(OutputList &ol);
+    void writeFileList(OutputList &ol);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+
     void setLevel();
     static DirDef *createNewDir(const char *path);
     static bool matchPath(const QCString &path,QStrList &l);

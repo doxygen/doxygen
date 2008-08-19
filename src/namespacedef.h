@@ -45,9 +45,7 @@ class NamespaceDef : public Definition
     QCString getOutputFileBase() const;
     void insertUsedFile(const char *fname);
     
-    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
-    void writeMemberDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
 
@@ -93,6 +91,16 @@ class NamespaceDef : public Definition
     void addMemberToList(MemberList::ListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeBriefDescription(OutputList &ol);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+    void writeClassDeclarations(OutputList &ol,const QCString &title);
+    void writeNamespaceDeclarations(OutputList &ol,const QCString &title);
+    void writeMemberGroups(OutputList &ol);
+    void writeAuthorSection(OutputList &ol);
+    void startMemberDocumentation(OutputList &ol);
+    void endMemberDocumentation(OutputList &ol);
 
     QCString              fileName;
     QStrList              files;
@@ -146,7 +154,7 @@ class NamespaceSDict : public SDict<NamespaceDef>
                     ((NamespaceDef *)item2)->name()
                    );
     }
-    void writeDeclaration(OutputList &ol,bool localName=FALSE);
+    void writeDeclaration(OutputList &ol,const char *title,bool localName=FALSE);
 };
 
 

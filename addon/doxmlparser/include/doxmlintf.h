@@ -45,6 +45,8 @@ class IString
     VIRTUAL_DESTRUCTOR(IString)
     /*! Returns a latin1 character representation of the string. */
     virtual const char *latin1() const = 0;
+    /*! Returns a utf8 character representation of the string. */
+    virtual const char *utf8() const = 0;
     /*! Returns a 16-bit unicode character representation of the character at 
      *  position \a index in the string. The first character is at index 0.
      */

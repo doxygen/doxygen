@@ -62,9 +62,7 @@ class GroupDef : public Definition
     bool insertMember(MemberDef *def,bool docOnly=FALSE);
     void removeMember(MemberDef *md);
     bool containsGroup(const GroupDef *def);    // true if def is already a subgroup
-    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
-    void writeMemberDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
     int countMembers() const;
@@ -116,6 +114,21 @@ class GroupDef : public Definition
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void removeMemberFromList(MemberList::ListType lt,MemberDef *md);
+    void writeGroupGraph(OutputList &ol);
+    void writeFiles(OutputList &ol,const QCString &title);
+    void writeNamespaces(OutputList &ol,const QCString &title);
+    void writeNestedGroups(OutputList &ol,const QCString &title);
+    void writeDirs(OutputList &ol,const QCString &title);
+    void writeClasses(OutputList &ol,const QCString &title);
+    void writePageDocumentation(OutputList &ol);
+    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeBriefDescription(OutputList &ol);
+    void writeMemberGroups(OutputList &ol);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+    void startMemberDocumentation(OutputList &ol);
+    void endMemberDocumentation(OutputList &ol);
+    void writeAuthorSection(OutputList &ol);
 
     QCString title;                      // title of the group
     bool titleSet;                       // true if title is not the same as the name

@@ -220,7 +220,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_FI
   else if (L_EQUAL("finnish"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorFinnish);
+    theTranslator=new TranslatorFinnish;
   }
 #endif
 #ifdef LANG_RU

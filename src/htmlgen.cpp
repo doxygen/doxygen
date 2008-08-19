@@ -37,6 +37,7 @@
 #include "debug.h"
 #include "dirdef.h"
 #include "vhdldocgen.h"
+#include "layout.h"
 
 // #define GROUP_COLOR "#ff8080"
 
@@ -1731,6 +1732,178 @@ static QCString fixSpaces(const QCString &s)
   return substitute(s," ","&nbsp;");
 }
 
+#define NEW_LAYOUT
+#ifdef NEW_LAYOUT
+
+static bool quickLinkVisible(LayoutNavEntry::Kind kind)
+{
+  switch (kind)
+  {
+    case LayoutNavEntry::MainPage:         return TRUE; 
+    case LayoutNavEntry::Pages:            return indexedPages>0;
+    case LayoutNavEntry::Modules:          return documentedGroups>0;
+    case LayoutNavEntry::Namespaces:       return documentedNamespaces>0;
+    case LayoutNavEntry::NamespaceMembers: return documentedNamespaceMembers[NMHL_All]>0;
+    case LayoutNavEntry::Classes:          return annotatedClasses>0;
+    case LayoutNavEntry::ClassAnnotated:   return annotatedClasses>0; 
+    case LayoutNavEntry::ClassHierarchy:   return hierarchyClasses>0;
+    case LayoutNavEntry::ClassMembers:     return documentedClassMembers[CMHL_All]>0;
+    case LayoutNavEntry::Files:            return documentedHtmlFiles>0;
+    case LayoutNavEntry::FileGlobals:      return documentedFileMembers[FMHL_All]>0;
+    case LayoutNavEntry::Dirs:             return documentedDirs>0;
+    case LayoutNavEntry::Examples:         return Doxygen::exampleSDict->count()>0;
+  }
+  return FALSE;
+}
+
+static void renderQuickLinksAsTree(QTextStream &t,const QCString &relPath,LayoutNavEntry *root)
+
+{
+  QListIterator<LayoutNavEntry> li(root->children());
+  LayoutNavEntry *entry;
+  int count=0;
+  for (li.toFirst();(entry=li.current());++li)
+  {
+    if (entry->visible() && quickLinkVisible(entry->kind())) count++;
+  }
+  if (count>0) // at least one item is visible
+  {
+    startQuickIndexList(t,FALSE);
+    for (li.toFirst();(entry=li.current());++li)
+    {
+      if (entry->visible() && quickLinkVisible(entry->kind()))
+      {
+        startQuickIndexItem(t,entry->baseFile()+Doxygen::htmlFileExtension,
+                            FALSE,FALSE,relPath);
+        t << fixSpaces(entry->title());
+        endQuickIndexItem(t);
+        // recursive into child list
+        renderQuickLinksAsTree(t,relPath,entry);
+      }
+    }
+    endQuickIndexList(t,FALSE);
+  }
+}
+
+
+static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
+                             LayoutNavEntry *hlEntry,LayoutNavEntry::Kind kind,
+                             bool highlightParent,bool highlightSearch)
+{
+  if (hlEntry->parent()) // first draw the tabs for the parent of hlEntry
+  {
+    renderQuickLinksAsTabs(t,relPath,hlEntry->parent(),kind,highlightParent,highlightSearch);
+  }
+  if (hlEntry->parent() && hlEntry->parent()->children().count()>0) // draw tabs for row containing hlEntry
+  {
+    QListIterator<LayoutNavEntry> li(hlEntry->parent()->children());
+    LayoutNavEntry *entry;
+
+    int count=0;
+    for (li.toFirst();(entry=li.current());++li)
+    {
+      if (entry->visible() && quickLinkVisible(entry->kind())) count++;
+    }
+    if (count>0) // at least one item is visible
+    {
+      startQuickIndexList(t,TRUE);
+      for (li.toFirst();(entry=li.current());++li)
+      {
+        if (entry->visible() && quickLinkVisible(entry->kind()))
+        {
+          startQuickIndexItem(t,entry->baseFile()+Doxygen::htmlFileExtension,
+              entry==hlEntry  && (entry->children().count()>0 || (entry->kind()==kind && !highlightParent)),
+              TRUE,relPath);
+          t << fixSpaces(entry->title());
+          endQuickIndexItem(t);
+        }
+      }
+      if (hlEntry->parent()==LayoutDocManager::instance().rootNavEntry())
+      {
+        // last item of the top row -> special case for search engine
+        if (Config_getBool("SEARCHENGINE"))
+        {
+          QCString searchFor = fixSpaces(theTranslator->trSearchForIndex());
+          if (searchFor.at(0)=='S') searchFor="<u>S</u>"+searchFor.mid(1);
+          t << "    <li>\n";
+          t << "      <form action=\"" << relPath << "search.php\" method=\"get\">\n";
+          t << "        <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n";
+          t << "          <tr>\n";
+          t << "            <td><label>&nbsp;" << searchFor << "&nbsp;</label></td>\n";
+          if (!highlightSearch)
+          {
+            t << "            <td><input type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/></td>\n";
+            t << "          </tr>\n";
+            t << "        </table>\n";
+            t << "      </form>\n";
+            t << "    </li>\n";
+          }
+        } 
+        if (!highlightSearch) // on the search page the page will be ended by the
+                              // page itself
+        {
+          endQuickIndexList(t,TRUE);
+        }
+      }
+      else // normal case
+      {
+        endQuickIndexList(t,TRUE);
+      }
+    }
+  }
+}
+
+static void writeDefaultQuickLinks(QTextStream &t,bool compact,
+                                   HighlightedItem hli,const QCString &relPath)
+{
+  LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
+  LayoutNavEntry::Kind kind = (LayoutNavEntry::Kind)-1;
+  bool highlightParent=FALSE;
+  switch (hli) // map HLI enums to LayoutNavEntry::Kind enums
+  {
+    case HLI_Main:             kind = LayoutNavEntry::MainPage;         break;
+    case HLI_Modules:          kind = LayoutNavEntry::Modules;          break;
+    case HLI_Directories:      kind = LayoutNavEntry::Dirs;             break;
+    case HLI_Namespaces:       kind = LayoutNavEntry::Namespaces;       break;
+    case HLI_Hierarchy:        kind = LayoutNavEntry::ClassHierarchy;   break;
+    case HLI_Classes:          kind = LayoutNavEntry::Classes;          break;
+    case HLI_Annotated:        kind = LayoutNavEntry::ClassAnnotated;   break;
+    case HLI_Files:            kind = LayoutNavEntry::Files;            break;
+    case HLI_NamespaceMembers: kind = LayoutNavEntry::NamespaceMembers; break;
+    case HLI_Functions:        kind = LayoutNavEntry::ClassMembers;     break;
+    case HLI_Globals:          kind = LayoutNavEntry::FileGlobals;      break;
+    case HLI_Pages:            kind = LayoutNavEntry::Pages;            break;
+    case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
+    case HLI_ClassVisible:     kind = LayoutNavEntry::Classes;    highlightParent = TRUE; break;
+    case HLI_NamespaceVisible: kind = LayoutNavEntry::Namespaces; highlightParent = TRUE; break;
+    case HLI_FileVisible:      kind = LayoutNavEntry::Files;      highlightParent = TRUE; break;
+    case HLI_None:   break;
+    case HLI_Search: break;
+  }
+  
+  if (compact)
+  {
+    // find highlighted index item
+    LayoutNavEntry *hlEntry = root->find(kind);
+    if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
+    {
+      highlightParent=TRUE;
+      hlEntry = root->children().getFirst();
+      if (hlEntry==0) 
+      {
+        return; // argl, empty index!
+      }
+    }
+    renderQuickLinksAsTabs(t,relPath,hlEntry,kind,highlightParent,hli==HLI_Search);
+  }
+  else
+  {
+    renderQuickLinksAsTree(t,relPath,root);
+  }
+}
+
+#else // old fixed layout
+
 static void writeNamespaceSubIndex(QTextStream &t,bool compact,
                                   HighlightedItem hli,const QCString &relPath
                                  )
@@ -1957,7 +2130,6 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
     }
   }
 
-
   // -------------- File
 
   if (documentedHtmlFiles>0)
@@ -2047,6 +2219,7 @@ static void writeDefaultQuickLinks(QTextStream &t,bool compact,
   }
   
 }
+#endif
 
 void HtmlGenerator::startQuickIndices()
 {

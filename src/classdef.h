@@ -306,13 +306,10 @@ class ClassDef : public Definition
     void mergeMembers();
     void distributeMemberGroupDocumentation();
     void writeDocumentation(OutputList &ol);
-    void writeClassDiagrams(OutputList &ol);
     void writeDocumentationForInnerClasses(OutputList &ol);
-    void writeMemberDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
-    void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
     void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
     
@@ -333,6 +330,20 @@ class ClassDef : public Definition
                                  const char *subTitle=0);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void writePlainMemberDeclaration(OutputList &ol,MemberList::ListType lt,bool inGroup);
+    void writeBriefDescription(OutputList &ol,bool exampleFlag);
+    void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
+                                  const QCString &title);
+    void writeIncludeFiles(OutputList &ol);
+    void writeAllMembersLink(OutputList &ol);
+    void writeInheritanceGraph(OutputList &ol);
+    void writeCollaborationGraph(OutputList &ol);
+    void writeMemberGroups(OutputList &ol);
+    void writeNestedClasses(OutputList &ol,const QCString &title);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+    void startMemberDocumentation(OutputList &ol);
+    void endMemberDocumentation(OutputList &ol);
+    void writeAuthorSection(OutputList &ol);
     
     ClassDefImpl *m_impl;
 

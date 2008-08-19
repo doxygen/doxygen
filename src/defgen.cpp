@@ -94,7 +94,6 @@ void generateDEFForMember(MemberDef *md,
     case MemberDef::Enumeration: memType="enum";      break;
     case MemberDef::Function:    memType="function";  isFunc=TRUE; break;
     case MemberDef::Signal:      memType="signal";    isFunc=TRUE; break;
-    case MemberDef::Prototype:   memType="prototype"; isFunc=TRUE; break;
     case MemberDef::Friend:      memType="friend";    isFunc=TRUE; break;
     case MemberDef::DCOP:        memType="dcop";      isFunc=TRUE; break;
     case MemberDef::Slot:        memType="slot";      isFunc=TRUE; break;

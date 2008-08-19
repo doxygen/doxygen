@@ -58,7 +58,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_abbreviate_brief ABBREVIATE_BRIEF
 \refitem cfg_aliases ALIASES
 \refitem cfg_allexternals ALLEXTERNALS 
-\refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 \refitem cfg_binary_toc BINARY_TOC
 \refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
@@ -68,14 +67,11 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 \refitem cfg_chm_file CHM_FILE
 \refitem cfg_class_diagrams CLASS_DIAGRAMS 
-\refitem cfg_class_graph CLASS_GRAPH
-\refitem cfg_collaboration_graph COLLABORATION_GRAPH
 \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 \refitem cfg_compact_latex COMPACT_LATEX 
 \refitem cfg_compact_rtf COMPACT_RTF
 \refitem cfg_cpp_cli_support CPP_CLI_SUPPORT
 \refitem cfg_create_subdirs CREATE_SUBDIRS
-\refitem cfg_details_at_top DETAILS_AT_TOP 
 \refitem cfg_directory_graph DIRECTORY_GRAPH
 \refitem cfg_disable_index DISABLE_INDEX 
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
@@ -134,7 +130,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_treeview GENERATE_TREEVIEW
 \refitem cfg_generate_xml GENERATE_XML
 \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
-\refitem cfg_group_graphs GROUP_GRAPHS
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
 \refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
@@ -152,7 +147,6 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_idl_property_support IDL_PROPERTY_SUPPORT
 \refitem cfg_ignore_prefix IGNORE_PREFIX
 \refitem cfg_image_path IMAGE_PATH
-\refitem cfg_include_graph INCLUDE_GRAPH
 \refitem cfg_include_path INCLUDE_PATH
 \refitem cfg_inherit_docs INHERIT_DOCS
 \refitem cfg_inline_info INLINE_INFO
@@ -168,6 +162,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_latex_header LATEX_HEADER
 \refitem cfg_latex_hide_indices LATEX_HIDE_INDICES
 \refitem cfg_latex_output LATEX_OUTPUT
+\refitem cfg_layout_file LAYOUT_FILE
 \refitem cfg_macro_expansion MACRO_EXPANSION
 \refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
 \refitem cfg_man_extension MAN_EXTENSION
@@ -211,9 +206,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_files SHOW_FILES
-\refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_namespaces SHOW_NAMESPACES
-\refitem cfg_show_used_files SHOW_USED_FILES
 \refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 \refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
@@ -480,6 +473,7 @@ followed by the descriptions of the tags grouped by category.
   Note that setting this tag to YES also means that rational rose comments
   are not recognized any more.
 
+<!--
 \anchor cfg_details_at_top
 <dt>\c DETAILS_AT_TOP <dd>
  \addindex DETAILS_AT_TOP
@@ -487,6 +481,7 @@ followed by the descriptions of the tags grouped by category.
   will output the detailed description near the top, like JavaDoc.
   If set to NO, the detailed description appears after the member
   documentation.
+-->
 
 \anchor cfg_inherit_docs
 <dt>\c INHERIT_DOCS <dd>
@@ -692,12 +687,14 @@ function's detailed documentation block.
  will show members with their full class and namespace scopes in the
  documentation. If set to \c YES the scope will be hidden. 
 
+<!--
 \anchor cfg_show_include_files
 <dt>\c SHOW_INCLUDE_FILES <dd>
  \addindex SHOW_INCLUDE_FILES
  If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
  will put a list of the files that are included by a file in the documentation 
  of that file.
+-->
 
 \anchor cfg_inline_info
 <dt>\c INLINE_INFO <dd>
@@ -789,12 +786,14 @@ function's detailed documentation block.
  individual variables and defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation.
 
+<!--
 \anchor cfg_show_used_files
 <dt>\c SHOW_USED_FILES <dd>
  \addindex SHOW_USED_FILES
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
+-->
 
 \anchor cfg_show_dirs
 <dt>\c SHOW_DIRECTORIES <dd>
@@ -948,6 +947,17 @@ Example filter for ClearCase:
 \verbatim
 FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \endverbatim
+
+\anchor cfg_layout_file
+<dt>\c LAYOUT_FILE <dd>
+ The \c LAYOUT_FILE tag can be used to specify a layout file which will be parsed by
+ doxygen. The layout file controls the global structure of the generated output files
+ in an output format independent way. The create the layout file that represents
+ doxygen's defaults, run doxygen with the -l option. You can optionally specify a
+ file name after the option, if omitted doxygenlayout.xml will be used as the name
+ of the layout file. Note that if you run doxygen from a directory containing 
+ a file called doxygenlayout.xml, doxygen will parse it automatically even if 
+ the \c LAYOUT_FILE tag is left empty.
 
 \anchor cfg_recursive
 <dt>\c RECURSIVE <dd>
@@ -1124,14 +1134,16 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \anchor cfg_alphabetical_index
 <dl>
 
+<!--
 <dt>\c ALPHABETICAL_INDEX <dd>
  \addindex ALPHABETICAL_INDEX
  If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
  of all compounds will be generated. Enable this if the project contains 
  a lot of classes, structs, unions or interfaces.
+-->
 
-\anchor cfg_cols_in_alpha_index
 <dt>\c COLS_IN_ALPHA_INDEX <dd>
+ \anchor cfg_cols_in_alpha_index
  \addindex COLS_IN_ALPHA_INDEX
  If the alphabetical index is enabled 
  (see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
@@ -1925,6 +1937,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  different font using \c DOT_FONTNAME you can set the path where dot 
  can find it using this tag. 
 
+<!--
 \anchor cfg_class_graph
 <dt>\c CLASS_GRAPH <dd>
  \addindex CLASS_GRAPH
@@ -1946,6 +1959,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex GROUP_GRAPHS
  If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
+-->
 
 \anchor cfg_uml_look
 <dt>\c UML_LOOK <dd>
@@ -1967,6 +1981,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  inheritance and usage relations if the target is undocumented
  or is not a class.
 
+<!--
 \anchor cfg_include_graph
 <dt>\c INCLUDE_GRAPH <dd>
  \addindex INCLUDE_GRAPH 
@@ -1982,6 +1997,7 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \c HAVE_DOT tags are set to \c YES then doxygen will generate a graph for each
  documented header file showing the documented files that directly or indirectly
  include this file.
+-->
 
 \anchor cfg_call_graph
 <dt>\c CALL_GRAPH <dd>
@@ -2060,10 +2076,11 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
 \anchor cfg_dot_transparent
 <dt>\c DOT_TRANSPARENT <dd>
  \addindex DOT_TRANSPARENT
- Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent 
- background. This is enabled by default, which results in a transparent background. 
- Warning: Depending on the platform used, enabling this option may lead to badly
- anti-aliased labels on the edges of a graph (i.e. they become hard to read).
+ Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent
+ background. This is disabled by default, because dot on Windows does not 
+ seem to support this out of the box. Warning: Depending on the platform used, 
+ enabling this option may lead to badly anti-aliased labels on the edges of 
+ a graph (i.e. they become hard to read). 
  
 \anchor cfg_dot_multi_targets
 <dt>\c DOT_MULTI_TARGETS <dd>

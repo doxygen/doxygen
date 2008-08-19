@@ -28,6 +28,9 @@
 #include "docparser.h"
 #include "searchindex.h"
 #include "vhdldocgen.h"
+#include "layout.h"
+
+//------------------------------------------------------------------
 
 NamespaceDef::NamespaceDef(const char *df,int dl,
                            const char *name,const char *lref,
@@ -202,10 +205,6 @@ void NamespaceDef::insertMember(MemberDef *md)
       break;
     case MemberDef::EnumValue:    
       break;
-    case MemberDef::Prototype:    
-      addMemberToList(MemberList::decProtoMembers,md);
-      addMemberToList(MemberList::docProtoMembers,md);
-      break;
     case MemberDef::Define:       
       addMemberToList(MemberList::decDefineMembers,md);
       addMemberToList(MemberList::docDefineMembers,md);
@@ -225,22 +224,21 @@ void NamespaceDef::computeAnchors()
   if (allMemberList) setAnchors(0,'a',allMemberList);
 }
 
-void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
+void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
-      !documentation().isEmpty())
+      !documentation().isEmpty()
+     )
   {
     ol.writeRuler();
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    //bool latexOn = ol.isEnabled(OutputGenerator::Latex);
-    //if (latexOn) ol.disable(OutputGenerator::Latex);
-    ol.writeAnchor(0,"_details"); 
-    //if (latexOn) ol.enable(OutputGenerator::Latex);
+      ol.writeAnchor(0,"_details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
-    ol.parseText(theTranslator->trDetailedDescription());
+    ol.parseText(title);
     ol.endGroupHeader();
+
     ol.startTextBlock();
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
@@ -251,6 +249,7 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
+        ol.disable(OutputGenerator::RTF);
         ol.newParagraph();
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
@@ -260,16 +259,112 @@ void NamespaceDef::writeDetailedDocumentation(OutputList &ol)
     if (!documentation().isEmpty())
     {
       ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
-      //ol.newParagraph();
     }
     ol.endTextBlock();
+    ol.newParagraph();
+  }
+}
+
+void NamespaceDef::writeBriefDescription(OutputList &ol)
+{
+  if (!briefDescription().isEmpty()) 
+  {
+    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::RTF);
+    ol.writeString(" \n");
+    ol.enable(OutputGenerator::RTF);
+
+    if (Config_getBool("REPEAT_BRIEF") ||
+        !documentation().isEmpty()
+       )
+    {
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.startTextLink(0,"_details");
+      ol.parseText(theTranslator->trMore());
+      ol.endTextLink();
+    }
+    ol.popGeneratorState();
+
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::RTF);
+    ol.newParagraph();
+    ol.popGeneratorState();
+  }
+  ol.writeSynopsis();
+}
+
+void NamespaceDef::startMemberDeclarations(OutputList &ol)
+{
+  ol.startMemberSections();
+}
+
+void NamespaceDef::endMemberDeclarations(OutputList &ol)
+{
+  ol.endMemberSections();
+}
+
+void NamespaceDef::startMemberDocumentation(OutputList &ol)
+{
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    ol.disable(OutputGenerator::Html);
+    Doxygen::suppressDocWarnings = TRUE;
+  }
+}
+
+void NamespaceDef::endMemberDocumentation(OutputList &ol)
+{
+  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
+  {
+    ol.enable(OutputGenerator::Html);
+    Doxygen::suppressDocWarnings = FALSE;
+  }
+}
+
+void NamespaceDef::writeClassDeclarations(OutputList &ol,const QCString &title)
+{
+  if (classSDict) classSDict->writeDeclaration(ol,0,title,TRUE);
+}
+
+void NamespaceDef::writeNamespaceDeclarations(OutputList &ol,const QCString &title)
+{
+  if (namespaceSDict) namespaceSDict->writeDeclaration(ol,title,TRUE);
+}
+
+void NamespaceDef::writeMemberGroups(OutputList &ol)
+{
+  /* write user defined member groups */
+  if (memberGroupSDict)
+  {
+    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
+    MemberGroup *mg;
+    for (;(mg=mgli.current());++mgli)
+    {
+      if ((!mg->allMembersInSameSection() || !m_subGrouping) 
+          && mg->header()!="[NOHEADER]")
+      {
+        mg->writeDeclarations(ol,0,this,0,0);
+      }
+    }
   }
 }
   
+void NamespaceDef::writeAuthorSection(OutputList &ol)
+{
+  // write Author section (Man only)
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Man);
+  ol.startGroupHeader();
+  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
+  ol.endGroupHeader();
+  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  ol.popGeneratorState();
+}
+
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
 
   QCString pageTitle;
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA"))
@@ -308,59 +403,123 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
-  
-  ol.startTextBlock();
-    
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDocumentation(ol);
-    ol.newParagraph();
-  }
-  else if (!briefDescription().isEmpty()) 
-  {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
-    ol.writeString(" \n");
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.startTextLink(0,"_details");
-    ol.parseText(theTranslator->trMore());
-    ol.endTextLink();
-    ol.enableAll();
-    ol.disableAllBut(OutputGenerator::Man);
-    ol.newParagraph();
-    ol.popGeneratorState();
-  }
-  ol.disable(OutputGenerator::Man);
-  ol.disable(OutputGenerator::RTF);
-  ol.newParagraph();
-  ol.enable(OutputGenerator::Man);
-  ol.enable(OutputGenerator::RTF);
-  ol.writeSynopsis();
+ 
+  //---------------------------------------- start flexible part -------------------------------
 
-  ol.endTextBlock();
-  
-  ol.startMemberSections();
-  classSDict->writeDeclaration(ol,0,0,TRUE);
+#define NEW_LAYOUT
+#ifdef NEW_LAYOUT // new flexible layout
 
-  namespaceSDict->writeDeclaration(ol,TRUE);
-
-  /* write user defined member groups */
-  if (memberGroupSDict)
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
   {
-    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    switch (lde->kind())
     {
-      if ((!mg->allMembersInSameSection() || !m_subGrouping) 
-          && mg->header()!="[NOHEADER]")
-      {
-        mg->writeDeclarations(ol,0,this,0,0);
-      }
+      case LayoutDocEntry::BriefDesc: 
+        writeBriefDescription(ol);
+        break; 
+      case LayoutDocEntry::MemberDeclStart: 
+        startMemberDeclarations(ol);
+        break; 
+      case LayoutDocEntry::NamespaceClasses: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeClassDeclarations(ol,ls->title);
+        }
+        break; 
+      case LayoutDocEntry::NamespaceNestedNamespaces: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeNamespaceDeclarations(ol,ls->title);
+        }
+        break; 
+      case LayoutDocEntry::MemberGroups: 
+        writeMemberGroups(ol);
+        break; 
+      case LayoutDocEntry::MemberDecl: 
+        {
+          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          writeMemberDeclarations(ol,lmd->type,lmd->title);
+        }
+        break; 
+      case LayoutDocEntry::MemberDeclEnd: 
+        endMemberDeclarations(ol);
+        break;
+      case LayoutDocEntry::DetailedDesc: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeDetailedDescription(ol,ls->title);
+        }
+        break;
+      case LayoutDocEntry::MemberDefStart: 
+        startMemberDocumentation(ol);
+        break; 
+      case LayoutDocEntry::MemberDef: 
+        {
+          LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+          writeMemberDocumentation(ol,lmd->type,lmd->title);
+        }
+        break;
+      case LayoutDocEntry::MemberDefEnd: 
+        endMemberDocumentation(ol);
+        break;
+      case LayoutDocEntry::AuthorSection: 
+        writeAuthorSection(ol);
+        break;
+      case LayoutDocEntry::ClassIncludes:
+      case LayoutDocEntry::ClassInheritanceGraph:
+      case LayoutDocEntry::ClassNestedClasses:
+      case LayoutDocEntry::ClassCollaborationGraph:
+      case LayoutDocEntry::ClassAllMembersLink:
+      case LayoutDocEntry::ClassUsedFiles:
+      case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileNamespaces:
+      case LayoutDocEntry::FileIncludes:
+      case LayoutDocEntry::FileIncludeGraph:
+      case LayoutDocEntry::FileIncludedByGraph: 
+      case LayoutDocEntry::FileSourceLink:
+      case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupNamespaces:
+      case LayoutDocEntry::GroupDirs: 
+      case LayoutDocEntry::GroupNestedGroups: 
+      case LayoutDocEntry::GroupFiles:
+      case LayoutDocEntry::GroupGraph: 
+      case LayoutDocEntry::GroupPageDocs:
+      case LayoutDocEntry::DirSubDirs:
+      case LayoutDocEntry::DirFiles:
+      case LayoutDocEntry::DirGraph:
+        err("Internal inconsistency: member %d should not be part of "
+            "LayoutDocManager::Namespace entry list\n",lde->kind());
+        break;
     }
   }
 
+#else // old fixed layout
+
+  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
+
+  //ol.startTextBlock();
+    
+  if (Config_getBool("DETAILS_AT_TOP"))
+  {
+    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
+  }
+
+  if (!Config_getBool("DETAILS_AT_TOP"))
+  {
+    writeBriefDescription(ol);
+  }
+
+  //ol.endTextBlock();
+  
+  startMemberDeclarations(ol);
+
+  writeClassDeclarations(ol);
+  writeNamespaceDeclarations(ol);
+  writeMemberGroups(ol);
+
   writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-  writeMemberDeclarations(ol,MemberList::decProtoMembers,theTranslator->trFuncProtos());
   writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
   writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
   writeMemberDeclarations(ol,MemberList::decFuncMembers,
@@ -368,22 +527,31 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
       vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
                    theTranslator->trFunctions());
   writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-  ol.endMemberSections();
+  endMemberDeclarations(ol);
   
   if (!Config_getBool("DETAILS_AT_TOP"))
   {
-    writeDetailedDocumentation(ol);
+    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
   }
 
-  writeMemberDocumentation(ol);
+  startMemberDocumentation(ol);
+  
+  writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
+  writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
+  writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
+  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
+  writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
 
-  // write Author section (Man only)
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Man);
-  ol.startGroupHeader();
-  ol.parseText(theTranslator->trAuthor(TRUE,TRUE));
-  ol.endGroupHeader();
-  ol.parseText(theTranslator->trGeneratedAutomatically(Config_getString("PROJECT_NAME")));
+  endMemberDocumentation(ol);
+
+  writeAuthorSection(ol);
+
+#endif
+
+  //---------------------------------------- end flexible part -------------------------------
+
+  endFile(ol);
+
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -391,35 +559,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  </compound>" << endl;
   }
 
-  ol.popGeneratorState();
-  endFile(ol);
-
   if (Config_getBool("SEPARATE_MEMBER_PAGES"))
   {
     MemberList *allMemberList = getMemberList(MemberList::allMembersList);
     if (allMemberList) allMemberList->sort();
     writeMemberPages(ol);
-  }
-}
-
-void NamespaceDef::writeMemberDocumentation(OutputList &ol)
-{
-  bool fortranOpt=Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
-  {
-    ol.disable(OutputGenerator::Html);
-  }
-  
-  writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  writeMemberDocumentation(ol,MemberList::docProtoMembers,theTranslator->trFunctionPrototypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
-  writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-
-  if (Config_getBool("SEPARATE_MEMBER_PAGES"))
-  {
-    ol.enable(OutputGenerator::Html);
   }
 }
 
@@ -628,7 +772,7 @@ void NamespaceDef::combineUsingRelations()
   }
 }
 
-void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
+void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool localName)
 {
   if (count()==0) return; // no namespaces in the list
 
@@ -643,8 +787,9 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
 
   // write list of namespaces
   ol.startMemberHeader();
-  bool javaOpt = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+#if 0
   if (javaOpt)
   {
     ol.parseText(theTranslator->trPackages());
@@ -657,6 +802,8 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,bool localName)
   {
     ol.parseText(theTranslator->trNamespaces());
   }
+#endif
+  ol.parseText(title);
   ol.endMemberHeader();
   ol.startMemberList();
   for (ni.toFirst();(nd=ni.current());++ni)

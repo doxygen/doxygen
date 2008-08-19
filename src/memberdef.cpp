@@ -1102,7 +1102,7 @@ void MemberDef::writeDeclaration(OutputList &ol,
       case Enumeration: Doxygen::tagFile << "enumeration"; break;
       case Function:    Doxygen::tagFile << "function";    break;
       case Signal:      Doxygen::tagFile << "signal";      break;
-      case Prototype:   Doxygen::tagFile << "prototype";   break;
+      //case Prototype:   Doxygen::tagFile << "prototype";   break;
       case Friend:      Doxygen::tagFile << "friend";      break;
       case DCOP:        Doxygen::tagFile << "dcop";        break;
       case Slot:        Doxygen::tagFile << "slot";        break;
@@ -2320,7 +2320,6 @@ QCString MemberDef::memberTypeName() const
     case Typedef:     return "typedef";
     case Enumeration: return "enumeration"; 
     case EnumValue:   return "enumvalue";
-    case Prototype:   return "prototype";   
     case Signal:      return "signal";
     case Slot:        return "slot";
     case Friend:      return "friend";

@@ -126,9 +126,7 @@ class FileDef : public Definition
 
     bool isJava() const { return m_isJava; }
 
-    void writeDetailedDocumentation(OutputList &ol);
     void writeDocumentation(OutputList &ol);
-    void writeMemberDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
 
@@ -188,6 +186,20 @@ class FileDef : public Definition
     void addMemberToList(MemberList::ListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title);
+    void writeIncludeFiles(OutputList &ol);
+    void writeIncludeGraph(OutputList &ol);
+    void writeIncludedByGraph(OutputList &ol);
+    void writeMemberGroups(OutputList &ol);
+    void writeAuthorSection(OutputList &ol);
+    void writeSourceLink(OutputList &ol);
+    void writeNamespaceDeclarations(OutputList &ol,const QCString &title);
+    void writeClassDeclarations(OutputList &ol,const QCString &title);
+    void startMemberDeclarations(OutputList &ol);
+    void endMemberDeclarations(OutputList &ol);
+    void startMemberDocumentation(OutputList &ol);
+    void endMemberDocumentation(OutputList &ol);
+    void writeDetailedDescription(OutputList &ol,const QCString &title);
+    void writeBriefDescription(OutputList &ol);
 
     QDict<IncludeInfo>   *includeDict;
     QList<IncludeInfo>   *includeList;

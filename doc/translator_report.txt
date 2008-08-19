@@ -26,7 +26,7 @@ still may be some details listed even for them:
   TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
-  TranslatorFinnish
+  TranslatorFinnish -- Change the base class to Translator.
   TranslatorGerman
   TranslatorItalian
   TranslatorKorean
@@ -69,6 +69,16 @@ version of the translator for the language:
 
   TranslatorJapaneseEn	implements 5 methods
   TranslatorKoreanEn	implements 5 methods
+
+======================================================================
+WARNING: The following translator methods are declared in the
+Translator class but their identifiers do not appear in source files.
+The situation should be checked. The .cpp files and .h files excluding
+the '*translator*' files in doxygen/src directory were simply searched
+for occurence of the method identifiers:
+
+  QCString trFunctionPrototypeDocumentation()
+
 
 ======================================================================
 Details for translators (classes sorted alphabetically):
@@ -181,6 +191,12 @@ TranslatorDanish   (TranslatorAdapter_1_5_4)  22 methods to implement
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
+
+
+TranslatorFinnish   (TranslatorEnglish)
+-----------------
+
+  Implements 216 of the required methods.
 
 
 TranslatorFrench   (TranslatorAdapter_1_5_4)  22 methods to implement

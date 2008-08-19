@@ -22,6 +22,7 @@
 #include "docvisitor.h"
 #include <qstack.h>
 #include <qcstring.h>
+#include <qmap.h>
 
 class QTextStream;
 class CodeOutputInterface;
@@ -160,6 +161,9 @@ class LatexDocVisitor : public DocVisitor
     bool m_insideTabbing;
     QStack<bool> m_enabled;
     QCString m_langExt;
+	QMap<int, int> m_rowspanIndices;
+	int m_currentColumn;
+	bool m_inRowspan;
 };
 
 #endif

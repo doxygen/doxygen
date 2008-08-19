@@ -57,7 +57,6 @@ class MemberDef : public Definition
       Typedef, 
       Enumeration, 
       EnumValue,
-      Prototype,
       Signal,
       Slot,
       Friend,
