@@ -8,6 +8,7 @@
 #include "language.h"
 #include "message.h"
 #include "dot.h"
+#include "layout.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -107,25 +108,37 @@ QCString DirDef::getOutputFileBase() const
   //return QCString().sprintf("dir_%06d",m_dirCount);
 }
 
-void DirDef::writeDetailedDocumentation(OutputList &ol)
+void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
-  if (!briefDescription().isEmpty() || !documentation().isEmpty())
+  if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) || 
+      !documentation().isEmpty())
   {
     ol.writeRuler();
     ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-    ol.writeAnchor(0,"_details");
+    ol.disableAllBut(OutputGenerator::Html);
+      ol.writeAnchor(0,"_details");
     ol.popGeneratorState();
     ol.startGroupHeader();
-    ol.parseText(theTranslator->trDetailedDescription());
+    ol.parseText(title);
     ol.endGroupHeader();
 
     // repeat brief description
     if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
     {
       ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
-      ol.newParagraph();
+    }
+    // separator between brief and details
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") && 
+        !documentation().isEmpty())
+    {
+      ol.pushGeneratorState();
+        ol.disable(OutputGenerator::Man);
+        ol.disable(OutputGenerator::RTF);
+        ol.newParagraph();
+        ol.enableAll();
+        ol.disableAllBut(OutputGenerator::Man);
+        ol.writeString("\n\n");
+      ol.popGeneratorState();
     }
 
     // write documentation
@@ -136,63 +149,39 @@ void DirDef::writeDetailedDocumentation(OutputList &ol)
   }
 }
 
-void DirDef::writeDocumentation(OutputList &ol)
+void DirDef::writeBriefDescription(OutputList &ol)
 {
-  ol.pushGeneratorState();
-  
-  QCString shortTitle=theTranslator->trDirReference(m_shortName);
-  QCString title=theTranslator->trDirReference(m_dispName);
-  startFile(ol,getOutputFileBase(),name(),title,HLI_None,TRUE);
-
-  // write navigation path
-  writeNavigationPath(ol);
-
-  ol.endQuickIndices();
-  ol.startContents();
-
-  startTitle(ol,getOutputFileBase());
-  ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.parseText(shortTitle);
-    ol.enableAll();
-    ol.disable(OutputGenerator::Html);
-    ol.parseText(title);
-  ol.popGeneratorState();
-  endTitle(ol,getOutputFileBase(),title);
-
-  // write brief or details (if DETAILS_AT_TOP)
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDocumentation(ol);
-    ol.newParagraph();
-  }
-  else if (!briefDescription().isEmpty())
+  if (!briefDescription().isEmpty()) 
   {
     ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
-    ol.writeString(" \n");
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
-    ol.disable(OutputGenerator::Man);
-    ol.startTextLink(0,"_details");
-    ol.parseText(theTranslator->trMore());
-    ol.endTextLink();
-    ol.enableAll();
-    ol.disableAllBut(OutputGenerator::Man);
+    ol.writeString(" \n");
+    ol.enable(OutputGenerator::RTF);
+
+    if (Config_getBool("REPEAT_BRIEF") ||
+        !documentation().isEmpty()
+       )
+    {
+      ol.disableAllBut(OutputGenerator::Html);
+      ol.startTextLink(0,"_details");
+      ol.parseText(theTranslator->trMore());
+      ol.endTextLink();
+    }
+    ol.popGeneratorState();
+
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::RTF);
     ol.newParagraph();
     ol.popGeneratorState();
   }
+  ol.writeSynopsis();
+}
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
-  {
-    Doxygen::tagFile << "  <compound kind=\"dir\">" << endl;
-    Doxygen::tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
-    Doxygen::tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
-    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-  }
-  
+void DirDef::writeDirectoryGraph(OutputList &ol)
+{
   // write graph dependency graph
-  if (Config_getBool("DIRECTORY_GRAPH") && Config_getBool("HAVE_DOT"))
+  if (/*Config_getBool("DIRECTORY_GRAPH") &&*/ Config_getBool("HAVE_DOT"))
   {
     DotDirDeps dirDep(this);
     if (!dirDep.isTrivial())
@@ -206,8 +195,10 @@ void DirDef::writeDocumentation(OutputList &ol)
       ol.enableAll();
     }
   }
+}
 
-  ol.startMemberSections();
+void DirDef::writeSubDirList(OutputList &ol)
+{
   // write subdir list
   if (m_subdirs.count()>0)
   {
@@ -245,7 +236,10 @@ void DirDef::writeDocumentation(OutputList &ol)
 
     ol.endMemberList();
   }
-  
+}
+
+void DirDef::writeFileList(OutputList &ol)
+{
   // write file list
   if (m_fileList->count()>0)
   {
@@ -303,7 +297,149 @@ void DirDef::writeDocumentation(OutputList &ol)
     }
     ol.endMemberList();
   }
+}
+
+void DirDef::startMemberDeclarations(OutputList &ol)
+{
+  ol.startMemberSections();
+}
+
+void DirDef::endMemberDeclarations(OutputList &ol)
+{
   ol.endMemberSections();
+}
+
+void DirDef::writeDocumentation(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  
+  QCString shortTitle=theTranslator->trDirReference(m_shortName);
+  QCString title=theTranslator->trDirReference(m_dispName);
+  startFile(ol,getOutputFileBase(),name(),title,HLI_None,TRUE);
+
+  // write navigation path
+  writeNavigationPath(ol);
+
+  ol.endQuickIndices();
+  ol.startContents();
+
+  startTitle(ol,getOutputFileBase());
+  ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Html);
+    ol.parseText(shortTitle);
+    ol.enableAll();
+    ol.disable(OutputGenerator::Html);
+    ol.parseText(title);
+  ol.popGeneratorState();
+  endTitle(ol,getOutputFileBase(),title);
+
+  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  {
+    Doxygen::tagFile << "  <compound kind=\"dir\">" << endl;
+    Doxygen::tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
+    Doxygen::tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
+    Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  }
+  
+  //---------------------------------------- start flexible part -------------------------------
+
+#define NEW_LAYOUT
+#ifdef NEW_LAYOUT // new flexible layout
+
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
+  LayoutDocEntry *lde;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    switch (lde->kind())
+    {
+      case LayoutDocEntry::BriefDesc: 
+        writeBriefDescription(ol);
+        break; 
+      case LayoutDocEntry::DirGraph: 
+        writeDirectoryGraph(ol);
+        break; 
+      case LayoutDocEntry::MemberDeclStart: 
+        startMemberDeclarations(ol);
+        break; 
+      case LayoutDocEntry::DirSubDirs: 
+        writeSubDirList(ol);
+        break; 
+      case LayoutDocEntry::DirFiles: 
+        writeFileList(ol);
+        break; 
+      case LayoutDocEntry::MemberDeclEnd: 
+        endMemberDeclarations(ol);
+        break;
+      case LayoutDocEntry::DetailedDesc: 
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          writeDetailedDescription(ol,ls->title);
+        }
+        break;
+      case LayoutDocEntry::ClassIncludes:
+      case LayoutDocEntry::ClassInheritanceGraph:
+      case LayoutDocEntry::ClassNestedClasses:
+      case LayoutDocEntry::ClassCollaborationGraph:
+      case LayoutDocEntry::ClassAllMembersLink:
+      case LayoutDocEntry::ClassUsedFiles:
+      case LayoutDocEntry::NamespaceNestedNamespaces:
+      case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileNamespaces:
+      case LayoutDocEntry::FileIncludes:
+      case LayoutDocEntry::FileIncludeGraph:
+      case LayoutDocEntry::FileIncludedByGraph: 
+      case LayoutDocEntry::FileSourceLink:
+      case LayoutDocEntry::GroupClasses: 
+      case LayoutDocEntry::GroupNamespaces:
+      case LayoutDocEntry::GroupDirs: 
+      case LayoutDocEntry::GroupNestedGroups: 
+      case LayoutDocEntry::GroupFiles:
+      case LayoutDocEntry::GroupGraph: 
+      case LayoutDocEntry::GroupPageDocs:
+      case LayoutDocEntry::AuthorSection:
+      case LayoutDocEntry::MemberGroups:
+      case LayoutDocEntry::MemberDecl:
+      case LayoutDocEntry::MemberDef:
+      case LayoutDocEntry::MemberDefStart:
+      case LayoutDocEntry::MemberDefEnd:
+        err("Internal inconsistency: member %d should not be part of "
+            "LayoutDocManager::Directory entry list\n",lde->kind());
+        break;
+    }
+  }
+
+
+#else
+
+  // write brief or details (if DETAILS_AT_TOP)
+  if (Config_getBool("DETAILS_AT_TOP"))
+  {
+    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
+  }
+  else if (!briefDescription().isEmpty())
+  {
+    writeBriefDescription(ol);
+  }
+
+  writeDirectoryGraph(ol);
+
+  startMemberDeclarations(ol);
+
+  writeSubDirList(ol);
+  writeFileList(ol);
+  
+  endMemberDeclarations(ol);
+
+  if (!Config_getBool("DETAILS_AT_TOP"))
+  {
+    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
+  }
+
+#endif
+  
+  //---------------------------------------- end flexible part -------------------------------
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -311,14 +447,10 @@ void DirDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "  </compound>" << endl;
   }
 
-
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDocumentation(ol);
-  }
-  
   endFile(ol); 
   ol.popGeneratorState();
+
+
 }
 
 #if 0

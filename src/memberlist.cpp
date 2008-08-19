@@ -87,7 +87,7 @@ void MemberList::countDecMembers(bool countEnumValues)
                                        m_enumValCnt++,m_numDecMembers++; 
                                      break;
         case MemberDef::Typedef:     m_typeCnt++,m_numDecMembers++; break;
-        case MemberDef::Prototype:   m_protoCnt++,m_numDecMembers++; break;
+        //case MemberDef::Prototype:   m_protoCnt++,m_numDecMembers++; break;
         case MemberDef::Define:      if (Config_getBool("EXTRACT_ALL") || 
                                          md->argsString() || 
                                          !md->initializer().isEmpty() ||
@@ -200,7 +200,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
       switch(md->memberType())
       {
         case MemberDef::Define:    // fall through
-        case MemberDef::Prototype: // fall through
+        //case MemberDef::Prototype: // fall through
         case MemberDef::Typedef:   // fall through
         case MemberDef::Variable:  // fall through
         case MemberDef::Function:  // fall through

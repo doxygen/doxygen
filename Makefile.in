@@ -94,8 +94,7 @@ dist: clean
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	cp -a $(DISTFILES) README $(DISTDIR)
-	find $(DISTDIR) \( -name "CVS" -o -name ".cvsignore" \) \
-  	               -print0 | xargs -0 rm -rf
+	find $(DISTDIR) \( -name ".svn" \) -print0 | xargs -0 rm -rf
 	tar zcvf $(DISTDIR).src.tar.gz $(DISTDIR)
 	rm -rf $(DISTDIR)
 

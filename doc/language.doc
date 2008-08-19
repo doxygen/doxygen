@@ -221,8 +221,8 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Romanian</td>
-    <td>Alexandru Iosup</td>
-    <td>aiosup at yahoo dot com</td>
+    <td>Ionut Dumitrascu<br>Alexandru Iosup</td>
+    <td>reddumy at yahoo dot com<br>aiosup at yahoo dot com</td>
     <td>1.4.1</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -356,7 +356,8 @@ when the translator was updated.
   \hline
   Portuguese & Rui Godinho Lopes & {\tt\tiny ruiglopes@yahoo.com} & 1.3.3 \\
   \hline
-  Romanian & Alexandru Iosup & {\tt\tiny aiosup@yahoo.com} & 1.4.1 \\
+  Romanian & Ionut Dumitrascu & {\tt\tiny reddumy@yahoo.com} & 1.4.1 \\
+  ~ & Alexandru Iosup & {\tt\tiny aiosup@yahoo.com} & ~ \\
   \hline
   Russian & Alexandr Chelpanov & {\tt\tiny cav@cryptopro.ru} & up-to-date \\
   \hline

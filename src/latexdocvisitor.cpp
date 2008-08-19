@@ -26,6 +26,7 @@
 #include "message.h"
 #include "parserintf.h"
 #include "msc.h"
+#include "htmlattrib.h"
 
 static QString escapeLabelName(const char *s)
 {
@@ -57,6 +58,21 @@ static const char *getSectionName(int level)
   return secLabels[QMIN(maxLevels-1,l)];
 }
 
+static int rowspan(DocHtmlCell *cell)
+{
+  int retval = 0;
+  HtmlAttribList attrs = cell->attribs ();
+  for (unsigned int i = 0; i < attrs.count(); ++i) 
+  {
+    if ("rowspan" == attrs.at(i)->name.lower())
+    {
+      retval = attrs.at(i)->value.toInt();
+      break;
+    }
+  }
+  return retval;
+}
+
 QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 {
   QString result;
@@ -84,7 +100,7 @@ LatexDocVisitor::LatexDocVisitor(QTextStream &t,CodeOutputInterface &ci,
                                  const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
-    m_langExt(langExt)
+    m_langExt(langExt), m_currentColumn(0), m_inRowspan(FALSE)
 {
 }
 
@@ -672,6 +688,7 @@ void LatexDocVisitor::visitPost(DocHtmlDescData *)
 
 void LatexDocVisitor::visitPre(DocHtmlTable *t)
 {
+  m_rowspanIndices.clear();
   if (m_hide) return;
   if (t->hasCaption()) 
   {
@@ -707,21 +724,65 @@ void LatexDocVisitor::visitPost(DocHtmlCaption *)
 
 void LatexDocVisitor::visitPre(DocHtmlRow *)
 {
+  m_currentColumn = 0;
 }
 
 void LatexDocVisitor::visitPost(DocHtmlRow *) 
 {
   if (m_hide) return;
-  m_t << "\\\\\\hline\n";
+
+  m_t << "\\\\";
+  
+  QMap<int, int>::Iterator it;
+  int col = 1;
+    for (it = m_rowspanIndices.begin(); it != m_rowspanIndices.end(); ++it) 
+  {
+    it.data()--;
+    if (it.data () <= 0)
+      m_rowspanIndices.remove (it);
+    else if (0 < it.data() - col)
+      m_t << "\\cline{" << col << "-" << it.data() - col << "}";
+      
+    col = 1 + it.data ();
+    }
+
+  if (col <= m_currentColumn)
+    m_t << "\\cline{" << col << "-" << m_currentColumn << "}";
+
+  m_t << "\n";
 }
 
-void LatexDocVisitor::visitPre(DocHtmlCell *)
+void LatexDocVisitor::visitPre(DocHtmlCell *cell)
 {
+  if (m_hide) return;
+  
+  m_currentColumn++;
+  //Skip columns that span from above.
+  QMap<int, int>::Iterator it = m_rowspanIndices.find(m_currentColumn);
+  while (0 < it.data() && it != m_rowspanIndices.end())
+  {
+    m_t << "&";
+    m_currentColumn++;
+    it++;
+  }
+
+  int rs = rowspan(cell);
+  if (0 < rs)
+  {
+    m_inRowspan = TRUE;
+    m_rowspanIndices[m_currentColumn] = rs;
+    m_t << "\\multirow{" << rs << "}{\\linewidth}{";
+  }
 }
 
 void LatexDocVisitor::visitPost(DocHtmlCell *c) 
 {
   if (m_hide) return;
+  if (m_inRowspan)
+  {
+    m_inRowspan = FALSE;
+    m_t << "}";
+  }
   if (!c->isLast()) m_t << "&";
 }
 

@@ -842,12 +842,12 @@ void DotNode::writeXML(QTextStream &t,bool isClassGraph)
       {
         int p=0;
         int ni;
-        while ((ni=edgeInfo->m_label.find("\\n",p))!=-1)
+        while ((ni=edgeInfo->m_label.find('\n',p))!=-1)
         {
           t << "          <edgelabel>" 
             << convertToXML(edgeInfo->m_label.mid(p,ni-p))
             << "</edgelabel>" << endl;
-          p=ni+2;
+          p=ni+1;
         }
         t << "          <edgelabel>" 
           << convertToXML(edgeInfo->m_label.right(edgeInfo->m_label.length()-p))

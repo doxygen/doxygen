@@ -61,6 +61,8 @@ HEADERS      =	bufstr.h \
 		language.h \
                 latexdocvisitor.h \
 		latexgen.h \
+                layout.h \
+                layout_default.h \
                 lockingptr.h \
 		logos.h \
 		mandocvisitor.h \
@@ -178,6 +180,7 @@ SOURCES      =	ce_lex.cpp \
 		language.cpp \
                 latexdocvisitor.cpp \
 		latexgen.cpp \
+                layout.cpp \
 		logos.cpp \
 		mandocvisitor.cpp \
 		mangen.cpp \

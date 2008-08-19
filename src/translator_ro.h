@@ -16,6 +16,7 @@
  */
 
 /* The translation from English to Romanian by Alexandru Iosup [aiosup@yahoo.com].
+ * Updated by Ionut Dumitrascu [reddumy@yahoo.com]
  *
  * Disclaimer: I hope I translated these to Romanian keeping
  * the meaning of the sentences intact. I used C-words were possible,
@@ -33,6 +34,7 @@
  *
  * Revision history
  * ----------------
+ * 28.07.2008 - Updated version - covering Doxygen 1.5.6 - and some minor changes
  * 01.Mar.2k5  Third revision, covering Doxygen 1.4.1
  *
  * 07.Mar.2k2  Second revision, covering Doxygen 1.2.14
@@ -657,13 +659,13 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
 	  QCString result="Referinþã la ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="clasa"; break;
-        case ClassDef::Struct:     result+="structura"; break;
-        case ClassDef::Union:      result+="uniunea"; break;
-        case ClassDef::Interface:  result+="interfaþa"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
-        case ClassDef::Exception:  result+="excepþia"; break;
+        case ClassDef::Class:      result+="clasa "; break;
+        case ClassDef::Struct:     result+="structura "; break;
+        case ClassDef::Union:      result+="uniunea "; break;
+        case ClassDef::Interface:  result+="interfaþa "; break;
+        case ClassDef::Protocol:   result+="protocolul "; break;
+        case ClassDef::Category:   result+="categoria "; break;
+        case ClassDef::Exception:  result+="excepþia "; break;
       }
 	  if (isTemplate) result+=" (Template) ";
 	  result+=(QCString)clName;
@@ -674,7 +676,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
     /*! used as the title of the HTML page of a file */
     virtual QCString trFileReference(const char *fileName)
     {
-      QCString result="Referinþã la fiºierul";
+      QCString result="Referinþã la fiºierul ";
       result+=fileName;
       return result;
     }
@@ -823,8 +825,8 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
         case ClassDef::Struct:     result+="structurã"; break;
         case ClassDef::Union:      result+="uniune"; break;
         case ClassDef::Interface:  result+="interfaþã"; break;
-        case ClassDef::Protocol:   result+="protocol"; break; // translate me!
-        case ClassDef::Category:   result+="category"; break; // translate me!
+        case ClassDef::Protocol:   result+="protocol"; break;
+        case ClassDef::Category:   result+="categorie"; break;
         case ClassDef::Exception:  result+="excepþie"; break;
       }
       result+=" a fost generatã din fiºier";
@@ -1073,7 +1075,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
         "class Undocumented { };\n\n"
         "/*! Clasã care este moºtenitã în mod public */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! A template class */\n"
+        "/*! Clasã template */\n"
         "template<class T> class Templ { };\n\n"
         "/*! Clasã care este moºtenitã în mod protejat */\n"
         "class ProtectedBase { };\n\n"
@@ -1093,7 +1095,7 @@ class TranslatorRomanian : public TranslatorAdapter_1_4_1
         "};\n"
         "\\endcode\n"
         "Dacã tagul \\c MAX_DOT_GRAPH_HEIGHT din fiºierul de configuraþie "
-        "Este setat la 200 acesta este graful rezultat:"
+        "este setat la 200, acesta este graful rezultat:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Cãsuþele din partea de sus au urmãtoarea semnificaþie:\n"

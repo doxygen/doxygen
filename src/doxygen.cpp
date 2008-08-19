@@ -76,6 +76,8 @@
 #include "portable.h"
 #include "vhdlscanner.h"
 
+#include "layout.h"
+
 #define RECURSE_ENTRYTREE(func,var) \
   do { if (var->children()) { \
     EntryNavListIterator eli(*var->children()); \
@@ -7165,11 +7167,11 @@ static void generateClassDocs()
   msg("Generating annotated compound index...\n");
   writeAnnotatedIndex(*outputList);
 
-  if (Config_getBool("ALPHABETICAL_INDEX"))
-  {
+  //if (Config_getBool("ALPHABETICAL_INDEX"))
+  //{
     msg("Generating alphabetical compound index...\n");
     writeAlphabeticalIndex(*outputList);
-  }
+  //}
 
   msg("Generating hierarchical class index...\n");
   writeHierarchicalIndex(*outputList);
@@ -8910,11 +8912,14 @@ static void usage(const char *name)
   msg("configuration file:\n");
   msg("    %s [configName]\n\n",name);
   msg("    If - is used for configName doxygen will read from standard input.\n\n");
-  msg("4) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
+  msg("4) Use doxygen to generate a template file controlling the layout of the\n");
+  msg("   generated documentation:\n");
+  msg("    %s -l layoutFileName.xml\n\n",name);
+  msg("5) Use doxygen to generate a template style sheet file for RTF, HTML or Latex.\n");
   msg("    RTF:   %s -w rtf styleSheetFile\n",name);
   msg("    HTML:  %s -w html headerFile footerFile styleSheetFile [configFile]\n",name);
   msg("    LaTeX: %s -w latex headerFile styleSheetFile [configFile]\n\n",name);
-  msg("5) Use doxygen to generate an rtf extensions file\n");
+  msg("6) Use doxygen to generate an rtf extensions file\n");
   msg("    RTF:   %s -e rtf extensionsFile\n\n",name);
   msg("If -s is specified the comments in the config file will be omitted.\n");
   msg("If configName is omitted `Doxyfile' will be used as a default.\n\n");
@@ -8957,9 +8962,7 @@ void initDoxygen()
   Doxygen::parserManager->registerParser(".f90", new FortranLanguageScanner);
   Doxygen::parserManager->registerParser(".vhd", new VHDLLanguageScanner);
 
-
   // register any additional parsers here...
-
 
   initClassMemberIndices();
   initNamespaceMemberIndices();
@@ -9028,11 +9031,13 @@ void readConfiguration(int argc, char **argv)
 
   int optind=1;
   const char *configName=0;
+  const char *layoutName=0;
   const char *debugLabel;
   const char *formatName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
   bool updateConfig=FALSE;
+  bool genLayout=FALSE;
   while (optind<argc && argv[optind][0]=='-' && 
                (isalpha(argv[optind][1]) || argv[optind][1]=='?' || 
                 argv[optind][1]=='-')
@@ -9047,6 +9052,12 @@ void readConfiguration(int argc, char **argv)
         { configName="-"; optind++; }
         if (!configName) 
         { configName="Doxyfile"; }
+        break;
+      case 'l':
+        genLayout=TRUE;
+        layoutName=getArg(argc,argv,optind);
+        if (!layoutName)
+        { layoutName="doxygenlayout.xml"; }
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
@@ -9251,6 +9262,12 @@ void readConfiguration(int argc, char **argv)
     cleanUpDoxygen();
     exit(0);
   }
+  if (genLayout)
+  {
+    writeDefaultLayoutFile(layoutName);
+    cleanUpDoxygen();
+    exit(0);
+  }
 
   QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
   if (optind>=argc)
@@ -9301,6 +9318,7 @@ void readConfiguration(int argc, char **argv)
   /* Perlmod wants to know the path to the config file.*/
   QFileInfo configFileInfo(configName);
   setPerlModDoxyfile(configFileInfo.absFilePath());
+
 }
 
 void checkConfiguration()
@@ -9584,6 +9602,31 @@ void parseInput()
     cleanUpDoxygen();
     exit(1);
   }
+  /**************************************************************************
+   *             Handle layout file                                         *
+   **************************************************************************/
+
+  LayoutDocManager::instance().init();
+  QCString layoutFileName = Config_getString("LAYOUT_FILE");
+  bool defaultLayoutUsed = FALSE;
+  if (layoutFileName.isEmpty())
+  {
+    layoutFileName = "doxygenlayout.xml";
+    defaultLayoutUsed = TRUE;
+  }
+
+  QFile layoutFile(layoutFileName);
+  if (layoutFile.open(IO_ReadOnly))
+  {
+    msg("Parsing layout file %s...\n",layoutFileName.data());
+    QTextStream t(&layoutFile); 
+    LayoutDocManager::instance().parse(t);
+  }
+  else if (!defaultLayoutUsed)
+  {
+    err("Warning: failed to open layout file '%s' for reading!\n",layoutFileName.data());
+  }
+
   /**************************************************************************
    *             Read and preprocess input                                  *
    **************************************************************************/
@@ -9963,6 +10006,8 @@ void parseInput()
   msg("Combining using relations...\n");
   combineUsingRelations();
 
+  msg("Adding members to index pages...\n");
+  addMembersToIndex();
 }
 
 void generateOutput()
@@ -10107,7 +10152,6 @@ void generateOutput()
   writeGroupIndex(*outputList);
  
   msg("Generating class documentation...\n");
-  addMembersToIndex();
   generateClassDocs();
   
   if (Config_getBool("HAVE_DOT") && Config_getBool("GRAPHICAL_HIERARCHY"))

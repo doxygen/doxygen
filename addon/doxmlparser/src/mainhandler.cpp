@@ -148,12 +148,12 @@ void MainHandler::startMember(const QXmlAttributes& attrib)
 
 void MainHandler::endMember()
 {
-  m_curCompound->memberDict.insert(m_curString,m_curMember);
+  m_curCompound->memberDict.insert(m_curMember->name,m_curMember);
   QList<CompoundEntry> *cel=0;
-  if ((cel=m_memberNameDict.find(m_curString))==0)
+  if ((cel=m_memberNameDict.find(m_curMember->name))==0)
   {
     cel = new QList<CompoundEntry>;
-    m_memberNameDict.insert(m_curString,cel);
+    m_memberNameDict.insert(m_curMember->name,cel);
   }
   cel->append(m_curCompound);
   m_insideMember = FALSE;

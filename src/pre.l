@@ -170,14 +170,15 @@ static Define *isDefined(const char *name)
   return 0;
 }
 
-static FILE *checkAndOpenFile(const QCString &absName)
+static FILE *checkAndOpenFile(const QCString &fileName)
 {
   FILE *f = 0;
   //printf("checkAndOpenFile(%s)\n",absName.data());
-  QFileInfo fi(absName);
+  QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
   {
-    // check include stack for absFileName
+    QCString absName = convertToQCString(fi.absFilePath());
+    // check include stack for absName
 
     QStack<FileState> tmpStack;
     g_includeStack.setAutoDelete(FALSE);

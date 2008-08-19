@@ -100,6 +100,7 @@ TranslatorPortuguese
 Rui Godinho Lopes: ruiglopes@yahoo.com
 
 TranslatorRomanian
+Ionut Dumitrascu: reddumy@yahoo.com
 Alexandru Iosup: aiosup@yahoo.com
 
 TranslatorRussian

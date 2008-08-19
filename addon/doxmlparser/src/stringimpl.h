@@ -16,6 +16,8 @@ class StringImpl : public QString, public IString
     // IString 
     const char *latin1() const 
     { return QString::latin1(); }
+    const char *utf8() const 
+    { return QString::utf8(); }
     unsigned short unicodeCharAt(int index) const 
     { return QString::unicode()[index].unicode(); } 
     bool isEmpty() const 

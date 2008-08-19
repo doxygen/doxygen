@@ -19,33 +19,31 @@
   Doxygen has built-in support to generate inheritance diagrams for C++
   classes. 
 
-  Doxygen can use the "dot" tool from graphviz 1.5 to generate
-  more advanced diagrams and graphs. Graphviz is an "open-sourced", 
+  Doxygen can use the "dot" tool from graphviz to generate
+  more advanced diagrams and graphs. Graphviz is an open-source, 
   cross-platform graph drawing toolkit and can be found 
   at http://www.graphviz.org/
 
-  If you have the "dot" tool available in the path, you can set
+  If you have the "dot" tool in the path, you can set
   \ref cfg_have_dot "HAVE_DOT" to \c YES in the configuration file to 
   let doxygen use it.
 
   Doxygen uses the "dot" tool to generate the following graphs:
   <ul>
-  <li>if \ref cfg_graphical_hierarchy "GRAPHICAL_HIERARCHY" is set to \c YES, 
-      a graphical representation of the class hierarchy will be drawn, along 
+  <li>A graphical representation of the class hierarchy will be drawn, along 
       with the textual one. Currently this feature is supported for HTML only.\n
       <b>Warning:</b> When you have a very large class hierarchy where many 
       classes derive from a common base class, the resulting image may become 
       too big to handle for some browsers.
-  <li>if \ref cfg_class_graph "CLASS_GRAPH" is set to \c YES,
-      a graph will be generated for each documented class showing the 
+  <li>An inheritance graph will be generated for each documented class showing the 
       direct and indirect inheritance relations. This disables the
       generation of the built-in class inheritance diagrams.
-  <li>if \ref cfg_include_graph "INCLUDE_GRAPH" is set to \c YES, an include 
-      dependency graph is generated for each documented file that includes at 
-      least one other file. This feature is currently supported for HTML and RTF 
-      only.
-  <li>if \ref cfg_collaboration_graph "COLLABORATION_GRAPH" is set to YES, a 
-      graph is drawn for each documented class and struct that shows:
+  <li>An include dependency graph is generated for each documented file that 
+      includes at least one other file. This feature is currently supported 
+      for HTML and RTF only.
+  <li>An inverse include dependency graph is also generated showing for
+      a (header) file, which other files include it.
+  <li>A graph is drawn for each documented class and struct that shows:
       <ul>
       <li> the inheritance relations with base classes.
       <li> the usage relations with other structs and classes (e.g. 
@@ -59,6 +57,13 @@
       graphical caller graph is drawn for each function showing the 
       functions that the function is directly or indirectly called by.
   </ul>
+
+  Using a \ref customize "layout file" you can determine which of the
+  graphs are actually shown.
+
+  The options \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES" and
+  \ref cfg_max_dot_graph_depth "MAX_DOT_GRAPH_DEPTH" can be used to 
+  limit the size of the various graphs.
 
   The elements in the class diagrams in HTML and RTF 
   have the following meaning:

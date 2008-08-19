@@ -245,6 +245,7 @@ QCString unhtmlify(const char *str)
 				   } 
 <Start>^"<td"[^\n]*"<h1 align=center>" | // Qt-3.x.x
 <Start>"</table><h1 align=\"center\">" | // Qt-4
+<Start>"</table><h1 class=\"title\">"  | // >Qt-4.4.0
 <Start>^"<h1 align=center>"	   { // Qt variant
   				     BEGIN( ReadClassName );
 			           }
