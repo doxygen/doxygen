@@ -1159,6 +1159,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\layout.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\logos.cpp"
 				>
 				<FileConfiguration
@@ -2119,6 +2123,10 @@
 			</File>
 			<File
 				RelativePath="..\src\latexgen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\layout.h"
 				>
 			</File>
 			<File
