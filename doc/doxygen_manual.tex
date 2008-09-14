@@ -12,7 +12,7 @@
 % Documents produced by Doxygen are derivative works derived from the
 % input used in their production; they are not affected by this license.
 
-\documentclass[a4paper]{article}
+\documentclass[a4paper]{report}
 \usepackage{a4wide}
 \usepackage{makeidx}
 \usepackage{fancyhdr}
@@ -23,6 +23,7 @@
 \usepackage{multicol}
 \usepackage{times}
 \usepackage{alltt}
+\usepackage{tocloft}
 \usepackage[pdftex,
             pagebackref=true,
             colorlinks=true,
@@ -31,6 +32,9 @@
 \makeindex
 \setcounter{tocdepth}{1}
 \renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\cftsecindent}{0 em}
+\renewcommand{\cftsecnumwidth}{3.2 em}
+\renewcommand{\cftsubsecindent}{3.2 em}
 \begin{document}
 \begin{titlepage}
 \includegraphics[width=\textwidth]{doxygen_logo}

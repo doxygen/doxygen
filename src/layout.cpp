@@ -32,6 +32,27 @@ static const char layout_default[] =
 #include "layout_default.h"
 ;
 
+static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
+{
+  QCString visible = convertToQCString(attrib.value("visible"));
+  if (visible.isEmpty()) return defVal;
+  if (visible.at(0)=='$' && visible.length()>1)
+  {
+    QCString id = visible.mid(1);
+    ConfigOption *opt = Config::instance()->get(id);
+    if (opt && opt->kind()==ConfigOption::O_Bool)
+    {
+      return *((ConfigBool *)opt)->valueRef();
+    }
+    else if (!opt)
+    {
+      err("Warning: found unsupported value %s for visible attribute in layout file\n",
+          visible.data());
+    }
+  }
+  return visible!="no" && visible!="0";
+}
+
 //---------------------------------------------------------------------------------
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind) const
@@ -658,8 +679,7 @@ class LayoutParser : public QXmlDefaultHandler
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const QXmlAttributes &attrib)
     {
-      QCString visible = convertToQCString(attrib.value("visible"));
-      bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
+      bool isVisible = elemIsVisible(attrib);
       if (m_part!=-1 && isVisible)
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
@@ -670,8 +690,7 @@ class LayoutParser : public QXmlDefaultHandler
     void startSectionEntry(LayoutDocEntry::Kind k,const QXmlAttributes &attrib,
                            const QCString &title)
     {
-      QCString visible = convertToQCString(attrib.value("visible"));
-      bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
+      bool isVisible = elemIsVisible(attrib);
       QCString userTitle = convertToQCString(attrib.value("title"));
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
       //    title.data(),userTitle.data());
@@ -704,8 +723,6 @@ class LayoutParser : public QXmlDefaultHandler
     void startMemberDefEntry(const QXmlAttributes &attrib,MemberList::ListType type,
                              const QCString &title,const QCString &)
     {
-      //QCString visible = convertToQCString(attrib.value("visible"));
-      //bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
       QCString userTitle = convertToQCString(attrib.value("title"));
       if (userTitle.isEmpty()) userTitle = title;
       //printf("memberdef: %s\n",userTitle.data());

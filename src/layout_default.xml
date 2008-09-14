@@ -25,9 +25,9 @@
   <!-- Layout definition for a class page -->
   <class>
     <briefdescription visible="yes"/>
-    <includes visible="yes"/>
-    <inheritancegraph visible="yes"/>
-    <collaborationgraph visible="yes"/>
+    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <inheritancegraph visible="$CLASS_GRAPH"/>
+    <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
       <membergroups visible="yes"/>
@@ -72,7 +72,7 @@
       <properties title=""/>
       <events title=""/>
     </memberdef>
-    <usedfiles visible="yes"/>
+    <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
   </class>
 
@@ -101,9 +101,9 @@
   <!-- Layout definition for a file page -->
   <file>
     <briefdescription visible="yes"/>
-    <includes visible="yes"/>
-    <includegraph visible="yes"/>
-    <includedbygraph visible="yes"/>
+    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <includegraph visible="$INCLUDE_GRAPH"/>
+    <includedbygraph visible="$INCLUDED_BY_GRAPH"/>
     <sourcelink visible="yes"/>
     <memberdecl>
       <classes visible="yes" title=""/>
@@ -128,7 +128,7 @@
   <!-- Layout definition for a group page -->
   <group>
     <briefdescription visible="yes"/>
-    <groupgraph visible="yes"/>
+    <groupgraph visible="$GROUP_GRAPHS"/>
     <memberdecl>
       <classes visible="yes" title=""/>
       <namespaces visible="yes" title=""/>

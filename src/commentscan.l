@@ -801,13 +801,13 @@ ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\_linebr"
 LC        "\\"{B}*"\n"
 NW	  [^a-z_A-Z0-9]
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
-FILEECHAR [a-z_A-Z0-9\-\+]
+FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+"\"")
-ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
-LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
+ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
-SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
+SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 MAILADR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+ 
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
@@ -1111,7 +1111,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}		{ // handle argument
-  					  current->name = yytext;
+  					  current->name = substitute(yytext,".","::");
 					  BEGIN( Comment );
   					}
 <NameSpaceDocArg1>{LC}			{ // line continuation
@@ -1155,7 +1155,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}		{ // first argument
-					  current->name = yytext;
+  					  current->name = substitute(yytext,".","::");
 					  if (current->section==Entry::PROTOCOLDOC_SEC)
 					  {
 					    current->name+="-p";
@@ -1164,7 +1164,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  BEGIN( ClassDocArg2 );
 					}
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
-					  current->name = yytext;
+  					  current->name = substitute(yytext,".","::");
 					  BEGIN( ClassDocArg2 );
    					}
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation

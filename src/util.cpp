@@ -116,13 +116,6 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 // an inheritance tree of depth of 100000 should be enough for everyone :-)
 const int maxInheritanceDepth = 100000; 
 
-bool isId(int c)
-{
-  if (c<0 || c>255) return FALSE;
-  return c=='_' || isalnum(c);
-}
-
-
 /*! 
   Removes all anoymous scopes from string s
   Possible examples:
@@ -1504,7 +1497,13 @@ QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
   if (s.isEmpty()) return s;
-  QCString result;
+  int resultLen = 1024;
+  int resultPos = 0;
+  QCString result(resultLen);
+  // we use ADD_CHAR(c) instead of result+=c to 
+  // improve the performance of this function
+#define ADD_CHAR(c) if (resultPos>=resultLen) { resultLen+=1024; result.resize(resultLen); } \
+                    result[resultPos++]=(c)
   uint i;
   uint l=s.length();
   uint csp=0;
@@ -1539,13 +1538,16 @@ nextChar:
     if (c=='"') // quoted string
     {
       i++;
-      result+=c;
+      ADD_CHAR(c);
       while (i<l)
       {
         char cc=s.at(i);
-        result+=cc;
+        ADD_CHAR(cc);
         if (cc=='\\') // escaped character
-        { result+=s.at(i+1); i+=2; }
+        { 
+          ADD_CHAR(s.at(i+1));
+          i+=2; 
+        }
         else if (cc=='"') // end of string
         { i++; goto nextChar; }
         else // any other character
@@ -1557,21 +1559,24 @@ nextChar:
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      result+="< "; // insert extra space for layouting (nested) templates
+      ADD_CHAR('<');
+      ADD_CHAR(' ');
     }
     else if (i>0 && c=='>' && // current char is a >
         (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      result+=" >"; // insert extra space for layouting (nested) templates
+      ADD_CHAR(' ');
+      ADD_CHAR('>');
     }
     else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
         && ((i<l-1 && isId(s.at(i+1)))
           || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
           || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
     {
-      result+=", ";
+      ADD_CHAR(',');
+      ADD_CHAR(' ');
     }
     else if (i>0 && 
         ((isId(s.at(i)) && s.at(i-1)==')') || 
@@ -1579,8 +1584,8 @@ nextChar:
         )
         )
     {
-      result+=' ';
-      result+=s.at(i);
+      ADD_CHAR(' ');
+      ADD_CHAR(s.at(i));
     }
     else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
              !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
@@ -1591,14 +1596,16 @@ nextChar:
             ) 
       // prevent const ::A from being converted to const::A
     {
-      result+="t ";
+      ADD_CHAR('t');
+      ADD_CHAR(' ');
       if (s.at(i+1)==' ') i++;
       csp=0;
     }
     else if (c==':' && csp==6 /*&& (i<6 || !isId(s.at(i-6)))*/) 
       // replace const::A by const ::A
     {
-      result+=" :";
+      ADD_CHAR(' ');
+      ADD_CHAR(':');
       csp=0;
     }
     else if (c=='l' && vsp==7 /*&& (i<7 || !isId(s.at(i-7)))*/ &&
@@ -1610,14 +1617,16 @@ nextChar:
             ) 
       // prevent virtual ::A from being converted to virtual::A
     {
-      result+="l ";
+      ADD_CHAR('l');
+      ADD_CHAR(' ');
       if (s.at(i+1)==' ') i++;
       vsp=0;
     }
     else if (c==':' && vsp==8 /*&& (i<8 || !isId(s.at(i-8)))*/) 
       // replace virtual::A by virtual ::A
     {
-      result+=" :";
+      ADD_CHAR(' ');
+      ADD_CHAR(':');
       vsp=0;
     }
     else if (!isspace((uchar)c) || // not a space
@@ -1630,19 +1639,25 @@ nextChar:
     {
       if (c=='*' || c=='&' || c=='@' || c=='$')
       {  
-        uint rl=result.length();
+        //uint rl=result.length();
+        uint rl=resultPos;
         if ((rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) &&
             (c!='*' || !findOperator2(s,i)) // avoid splitting operator* and operator->*
            ) 
         {
-          result+=' ';
+          ADD_CHAR(' ');
         }
       }
-      result+=c;
-      if (cliSupport && (c=='^' || c=='%') && i>1 && isId(s.at(i-1))) result+=' '; // C++/CLI: Type^ name and Type% name
+      ADD_CHAR(c);
+      if (cliSupport && (c=='^' || c=='%') && i>1 && isId(s.at(i-1))) 
+      {
+        ADD_CHAR(' '); // C++/CLI: Type^ name and Type% name
+      }
     }
   }
   //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
+  ADD_CHAR(0);
+  result.resize(resultPos);
   return result;
 }  
 
@@ -1671,7 +1686,7 @@ void linkifyText(const TextGeneratorIntf &out,Definition *scope,
     bool keepSpaces)
 {
   //printf("`%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z][~!a-z_A-Z0-9.:]*");
+  static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9.:\\x80-\\xFF]*");
   static QRegExp regExpSplit("(?!:),");
   QCString txtStr=text;
   int strLen = txtStr.length();
@@ -3180,7 +3195,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
   //printf("extractCanonicalType(type=%s) start: def=%s file=%s\n",type.data(),
   //    d ? d->name().data() : "<null>",fs ? fs->name().data() : "<null>");
 
-  static QRegExp id("[a-z_A-Z][:a-z_A-Z0-9]*");
+  static QRegExp id("[a-z_A-Z\\x80-\\xFF][:a-z_A-Z0-9\\x80-\\xFF]*");
 
   QCString canType,templSpec,word;
   int i,p=0,pp=0;
@@ -3197,7 +3212,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside. 
     {
-      static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+      static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
       int tp=0,tl,ti;
       // for each identifier template specifier
       //printf("adding resolved %s to %s\n",templSpec.data(),canType.data());
@@ -3304,6 +3319,7 @@ bool matchArguments2(Definition *srcScope,FileDef *srcFileScope,ArgumentList *sr
     bool checkCV
     )
 {
+  //printf("*** matchArguments2\n");
   ASSERT(srcScope!=0 && dstScope!=0);
 
   if (srcAl==0 || dstAl==0)
@@ -4024,7 +4040,8 @@ bool resolveRef(/* in */  const char *scName,
     /* in */  const char *name,
     /* in */  bool inSeeBlock,
     /* out */ Definition **resContext,
-    /* out */ MemberDef  **resMember
+    /* out */ MemberDef  **resMember,
+    bool lookForSpecialization
     )
 {
   QCString tsName = name;
@@ -4087,10 +4104,21 @@ bool resolveRef(/* in */  const char *scName,
   // strip template specifier
   // TODO: match against the correct partial template instantiation 
   int templPos=nameStr.find('<');
+  bool tryUnspecializedVersion = FALSE;
   if (templPos!=-1 && nameStr.find("operator")==-1)
   {
     int endTemplPos=nameStr.findRev('>');
-    nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+    if (endTemplPos!=-1)
+    {
+      if (!lookForSpecialization)
+      {
+        nameStr=nameStr.left(templPos)+nameStr.right(nameStr.length()-endTemplPos-1);
+      }
+      else
+      {
+        tryUnspecializedVersion = TRUE;
+      }
+    }
   }
 
   QCString scopeStr=scName;
@@ -4136,6 +4164,11 @@ bool resolveRef(/* in */  const char *scName,
       *resContext=fd;
       return TRUE;
     }
+  }
+
+  if (tryUnspecializedVersion)
+  {
+    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE);
   }
 
   return FALSE;
@@ -4414,18 +4447,34 @@ QCString substituteClassNames(const QCString &s)
 
 QCString substitute(const char *s,const char *src,const char *dst)
 {
-  // TODO: optimize by using strstr() instead of find
-  QCString input=s;
-  QCString output;
-  int i=0,p;
-  while ((p=input.find(src,i))!=-1)
+  if (s==0 || src==0 || dst==0) return s;
+  const char *p, *q;
+  int srcLen = strlen(src);
+  int dstLen = strlen(dst);
+  int resLen;
+  if (srcLen!=dstLen)
   {
-    output+=input.mid(i,p-i);
-    output+=dst;
-    i=p+strlen(src);
+    int count;
+    for (count=0, p=s; (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    resLen = p-s+strlen(p)+count*(dstLen-srcLen);
   }
-  output+=input.mid(i,input.length()-i);
-  return output;
+  else // result has same size as s
+  {
+    resLen = strlen(s);
+  }
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.data(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  {
+    int l = (int)(q-p);
+    memcpy(r,p,l);
+    r+=l;
+    memcpy(r,dst,dstLen);
+    r+=dstLen;
+  }
+  strcpy(r,p);
+  //printf("substitute(%s,%s,%s)->%s\n",s,src,dst,result.data());
+  return result;
 }
 
 //----------------------------------------------------------------------
@@ -4667,7 +4716,19 @@ QCString escapeCharsInString(const char *name,bool allowDots)
       case '+': result+="_09"; break;
       case '=': result+="_0A"; break;
       default: 
-                if (caseSenseNames || !isupper(c))
+                if (c<0)
+                {
+                  static char map[] = "0123456789ABCDEF";
+                  char ids[5];
+                  unsigned char id = (unsigned char)c;
+                  ids[0]='_';
+                  ids[1]='x';
+                  ids[2]=map[id>>4];
+                  ids[3]=map[id&0xF];
+                  ids[4]=0;
+                  result+=ids;
+                }
+                else if (caseSenseNames || !isupper(c))
                 {
                   result+=c;
                 }
@@ -5280,7 +5341,7 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec)
 {
-  static const QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
+  static const QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
   name.resize(0);
   templSpec.resize(0);
   int i,l;
@@ -5347,7 +5408,7 @@ QCString substituteTemplateArgumentsInString(
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
   if (formalArgs==0) return name;
   QCString result;
-  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
+  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
   int p=0,l,i;
   // for each identifier in the base class name (e.g. B<T> -> B and T)
   while ((i=re.match(name,p,&l))!=-1)
@@ -6208,7 +6269,7 @@ QCString stripPath(const char *s)
 /** returns \c TRUE iff string \a s contains word \a w */
 bool containsWord(const QCString &s,const QCString &word)
 {
-  static QRegExp wordExp("[a-z_A-Z]+");
+  static QRegExp wordExp("[a-z_A-Z\\x80-\\xFF]+");
   int p=0,i,l;
   while ((i=wordExp.match(s,p,&l))!=-1)
   {
@@ -6220,7 +6281,7 @@ bool containsWord(const QCString &s,const QCString &word)
 
 bool findAndRemoveWord(QCString &s,const QCString &word)
 {
-  static QRegExp wordExp("[a-z_A-Z]+");
+  static QRegExp wordExp("[a-z_A-Z\\x80-\\xFF]+");
   int p=0,i,l;
   while ((i=wordExp.match(s,p,&l))!=-1)
   {
@@ -6284,7 +6345,7 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
   if (searchEngine)
   {
     Doxygen::searchIndex->setCurrentDoc(title,docBaseUrl,anchor);
-    static QRegExp wordPattern("[a-z_A-Z][a-z_A-Z0-9]*");
+    static QRegExp wordPattern("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
     int i,p=0,l;
     while ((i=wordPattern.match(str,p,&l))!=-1)
     {

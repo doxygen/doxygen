@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <qlist.h>
 #include <qdict.h>
+#include <qregexp.h>
 #include "qtextcodec.h"
 
 #include "htmlhelp.h"
@@ -117,6 +118,10 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
 {
   QCString key = level1; 
   if (level2) key+= (QCString)"?" + level2;
+  if (key.find(QRegExp("@[0-9]+"))!=-1) // skip anonymous stuff
+  {
+    return;
+  }
   if (dict->find(key)==0) // new key
   {
     //printf(">>>>>>>>> HtmlHelpIndex::addItem(%s,%s,%s,%s)\n",

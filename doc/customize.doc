@@ -85,7 +85,7 @@ by doxygen using the following command:
 doxygen -l 
 \endverbatim
 optionally the name of the layout file can be specified, if omitted
-\c doxygenlayout.xml will be used.
+\c DoxygenLayout.xml will be used.
 
 The toplevel structure of the file looks as follows:
 \verbatim
@@ -149,10 +149,19 @@ Doxygen will list the pieces in the order in which they appear
 in the XML file. 
 
 Some tags have a \c visible attribute which can be 
-used to hide the fragment from the generated output. 
+used to hide the fragment from the generated output, by setting the attribute's
+value to "no". You can also use the value of a configuration option to 
+determine the visibility, by using 
+its name prefixed with a dollar sign, e.g.
+\verbatim
+  ...
+  <includes visible="$SHOW_INCLUDE_FILES"/>
+  ...
+\endverbatim
+This was mainly added for backward compatibility.
 Note that the \c visible attribute is just a hint for doxygen. 
 If no relevant information is available for a certain piece it is 
-omitted even if it is set to \c yes.
+omitted even if it is set to \c yes (i.e. no empty sections are generated). 
 
 Some tags have a \c title attribute. This attribute can be used
 to customize the title doxygen will use as a header for the piece.

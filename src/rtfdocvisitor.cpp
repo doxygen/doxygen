@@ -1203,6 +1203,26 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocParamList)}\n");
+
+  // Put in the direction: in/out/in,out if specified.
+  if (pl->direction()!=DocParamSect::Unspecified)
+  {
+    m_t << "[";
+    if (pl->direction()==DocParamSect::In)
+    {
+      m_t << "in";
+    }
+    else if (pl->direction()==DocParamSect::Out)
+    {
+      m_t << "out";
+    }
+    else if (pl->direction()==DocParamSect::InOut)
+    {
+      m_t << "in,out";
+    }
+    m_t << "] ";
+  }
+
   m_t << "{\\i ";
   //QStrListIterator li(pl->parameters());
   //const char *s;

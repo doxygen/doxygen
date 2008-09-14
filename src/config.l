@@ -1901,13 +1901,13 @@ void Config::create()
                     "documentation. If set to YES the scope will be hidden. \n",
                     FALSE
                  );
-  //cb = addBool(
-  //                  "SHOW_INCLUDE_FILES",
-  //                  "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
-  //                  "will put a list of the files that are included by a file in the documentation \n"
-  //                  "of that file. \n",
-  //                  TRUE
-  //               );
+  cb = addBool(
+                    "SHOW_INCLUDE_FILES",
+                    "If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen \n"
+                    "will put a list of the files that are included by a file in the documentation \n"
+                    "of that file. \n",
+                    TRUE
+                 );
   cb = addBool(
                     "INLINE_INFO",
                     "If the INLINE_INFO tag is set to YES (the default) then a tag [inline] \n"
@@ -1993,13 +1993,13 @@ void Config::create()
                     "command in the documentation regardless of this setting. \n",
                     0,10000,30
                  );
-  //cb = addBool(
-  //                  "SHOW_USED_FILES",
-  //                  "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
-  //                  "at the bottom of the documentation of classes and structs. If set to YES the \n"
-  //                  "list will mention the files that were used to generate the documentation. \n",
-  //                  TRUE
-  //              );
+  cb = addBool(
+                    "SHOW_USED_FILES",
+                    "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
+                    "at the bottom of the documentation of classes and structs. If set to YES the \n"
+                    "list will mention the files that were used to generate the documentation. \n",
+                    TRUE
+                );
   cb = addBool(
                     "SHOW_DIRECTORIES",
 		    "If the sources in your project are distributed over multiple directories \n"
@@ -2036,19 +2036,12 @@ void Config::create()
 		   "doxygen. The layout file controls the global structure of the generated output files \n"
 		   "in an output format independent way. The create the layout file that represents \n"
 		   "doxygen's defaults, run doxygen with the -l option. You can optionally specify a \n"
-		   "file name after the option, if omitted doxygenlayout.xml will be used as the name \n"
+		   "file name after the option, if omitted DoxygenLayout.xml will be used as the name \n"
 		   "of the layout file.\n"
 	      );
   cs->setWidgetType(ConfigString::File);
   addObsolete("DETAILS_AT_TOP");
-  addObsolete("SHOW_INCLUDE_FILES");
-  addObsolete("SHOW_USED_FILES");
   addObsolete("ALPHABETICAL_INDEX");
-  addObsolete("CLASS_GRAPH");
-  addObsolete("COLLABORATION_GRAPH");
-  addObsolete("GROUP_GRAPHS");
-  addObsolete("INCLUDE_GRAPH");
-  addObsolete("INCLUDED_BY_GRAPH");
 
   
   //-----------------------------------------------------------------------------------------------
@@ -2528,7 +2521,7 @@ void Config::create()
 		    "Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are \n"
 		    "probably better off using the HTML help feature. Other possible values \n"
 		    "for this tag are: HIERARCHIES, which will generate the Groups, Directories,\n"
-                    "and Class Hiererachy pages using a tree view instead of an ordered list;\n"
+                    "and Class Hierarchy pages using a tree view instead of an ordered list;\n"
                     "ALL, which combines the behavior of FRAME and HIERARCHIES; and NONE, which\n"
                     "disables this behavior completely. For backwards compatibility with previous\n"
                     "releases of Doxygen, the values YES and NO are equivalent to FRAME and NONE\n"
@@ -3048,31 +3041,31 @@ void Config::create()
 		    "different font using DOT_FONTNAME you can set the path where dot \n"
 		    "can find it using this tag. \n"
                 );
-  //cb = addBool(
-  //                  "CLASS_GRAPH",
-  //                  "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
-  //                  "will generate a graph for each documented class showing the direct and \n"
-  //                  "indirect inheritance relations. Setting this tag to YES will force the \n"
-  //                  "the CLASS_DIAGRAMS tag to NO.\n",
-  //                  TRUE
-  //               );
-  //cb->addDependency("HAVE_DOT");
-  //cb = addBool(
-  //                  "COLLABORATION_GRAPH",
-  //                  "If the COLLABORATION_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
-  //                  "will generate a graph for each documented class showing the direct and \n"
-  //                  "indirect implementation dependencies (inheritance, containment, and \n"
-  //                  "class references variables) of the class with other documented classes. \n",
-  //                  TRUE
-  //               );
-  //cb->addDependency("HAVE_DOT");
-  //cb = addBool(
-  //                  "GROUP_GRAPHS",
-  //                  "If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen \n"
-  //                  "will generate a graph for groups, showing the direct groups dependencies\n",
-  //                  TRUE
-  //               );                 
-  //cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "CLASS_GRAPH",
+                    "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
+                    "will generate a graph for each documented class showing the direct and \n"
+                    "indirect inheritance relations. Setting this tag to YES will force the \n"
+                    "the CLASS_DIAGRAMS tag to NO.\n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "COLLABORATION_GRAPH",
+                    "If the COLLABORATION_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"
+                    "will generate a graph for each documented class showing the direct and \n"
+                    "indirect implementation dependencies (inheritance, containment, and \n"
+                    "class references variables) of the class with other documented classes. \n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "GROUP_GRAPHS",
+                    "If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen \n"
+                    "will generate a graph for groups, showing the direct groups dependencies\n",
+                    TRUE
+                 );                 
+  cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "UML_LOOK",
                     "If the UML_LOOK tag is set to YES doxygen will generate inheritance and \n"
@@ -3088,24 +3081,24 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("HAVE_DOT");
-  //cb = addBool(
-  //                  "INCLUDE_GRAPH",
-  //                  "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDE_GRAPH, and HAVE_DOT \n"
-  //                  "tags are set to YES then doxygen will generate a graph for each documented \n"
-  //                  "file showing the direct and indirect include dependencies of the file with \n"
-  //                  "other documented files. \n",
-  //                  TRUE
-  //               );
-  //cb->addDependency("HAVE_DOT");
-  //cb = addBool(
-  //                  "INCLUDED_BY_GRAPH",
-  //                  "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDED_BY_GRAPH, and \n"
-  //                  "HAVE_DOT tags are set to YES then doxygen will generate a graph for each \n"
-  //                  "documented header file showing the documented files that directly or \n"
-  //                  "indirectly include this file. \n",
-  //                  TRUE
-  //               );
-  //cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "INCLUDE_GRAPH",
+                    "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDE_GRAPH, and HAVE_DOT \n"
+                    "tags are set to YES then doxygen will generate a graph for each documented \n"
+                    "file showing the direct and indirect include dependencies of the file with \n"
+                    "other documented files. \n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
+  cb = addBool(
+                    "INCLUDED_BY_GRAPH",
+                    "If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDED_BY_GRAPH, and \n"
+                    "HAVE_DOT tags are set to YES then doxygen will generate a graph for each \n"
+                    "documented header file showing the documented files that directly or \n"
+                    "indirectly include this file. \n",
+                    TRUE
+                 );
+  cb->addDependency("HAVE_DOT");
   cb = addBool(
                     "CALL_GRAPH",
                     "If the CALL_GRAPH and HAVE_DOT options are set to YES then \n"

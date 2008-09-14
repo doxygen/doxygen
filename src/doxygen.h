@@ -43,7 +43,6 @@ class PageSList;
 class PageSDict;
 class PageDef;
 class SearchIndex;
-class DirDef;
 class ParserManager;
 class ObjCache;
 class Store;
@@ -130,6 +129,7 @@ class Doxygen
     static bool                      gatherDefines;
     static bool                      userComments;
     static IndexList                 indexList;
+    static int                       subpageNestingLevel;
 };
 
 void initDoxygen();

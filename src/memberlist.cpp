@@ -26,6 +26,7 @@
 #include "outputlist.h"
 #include "groupdef.h"
 #include "marshal.h"
+#include "vhdldocgen.h"
 
 MemberList::MemberList()
 {
@@ -319,6 +320,8 @@ void MemberList::writeDeclarations(OutputList &ol,
              /*, bool inGroup,bool countSubGroups*/)
 {
   //printf("----- writeDeclaration() this=%p ----\n",this);
+  static bool optimizeVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+
   countDecMembers(showEnumValues); // count member not in group
   Definition *ctx = cd;
   if (ctx==0 && nd) ctx = nd;
@@ -342,7 +345,21 @@ void MemberList::writeDeclarations(OutputList &ol,
     ol.endMemberSubtitle();
   }
 
-  writePlainDeclarations(ol,cd,nd,fd,gd);
+  // TODO: Two things need to be worked out for proper VHDL output:
+  // 1. Signals and types under the group need to be
+  //    formatted to associate them with the group somehow
+  //    indentation, or at the very least, extra space after
+  //    the group is done
+  // 2. This might need to be repeated below for memberGroupLists
+  if (optimizeVhdl) // use specific declarations function
+  {
+    VhdlDocGen::writeVhdlDeclarations(this,ol,0,cd);
+  }
+  else
+  {
+    writePlainDeclarations(ol,cd,nd,fd,gd);
+  }
+ 
   
   //printf("memberGroupList=%p\n",memberGroupList);
   if (memberGroupList)

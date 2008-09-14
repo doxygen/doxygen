@@ -327,7 +327,7 @@ static void checkArgumentName(const QString &name,bool isParam)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al==0) return; // no argument list
 
-  static QRegExp re("[a-zA-Z0-9_]+\\.*");
+  static QRegExp re("[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
   int p=0,i=0,l;
   while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
   {
@@ -2135,8 +2135,8 @@ DocRef::DocRef(DocNode *parent,const QString &target,const QString &context) :
     if (sec->type!=SectionInfo::Page) m_anchor = sec->label;
     m_refToAnchor  = sec->type==SectionInfo::Anchor;
     m_refToSection = sec->type!=SectionInfo::Anchor;
-    //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d\n",
-    //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor);
+    //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d type=%d\n",
+    //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor,sec->type);
     return;
   }
   else if (resolveLink(context,target,TRUE,&compound,anchor))
@@ -2760,7 +2760,8 @@ int DocInternal::parse(int level)
          (level==4 && retval==RetVal_Paragraph)
         )
   {
-    DocSection *s=new DocSection(this,level,g_token->sectionId);
+    DocSection *s=new DocSection(this,
+        QMIN(level+Doxygen::subpageNestingLevel,4),g_token->sectionId);
     m_children.append(s);
     retval = s->parse();
   }
@@ -5817,7 +5818,8 @@ int DocSection::parse()
     while (retval==RetVal_Subsection) // more sections follow
     {
       //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,2,g_token->sectionId);
+      DocSection *s=new DocSection(this,
+          QMIN(2+Doxygen::subpageNestingLevel,4),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
@@ -5828,7 +5830,8 @@ int DocSection::parse()
     while (retval==RetVal_Subsubsection) // more sections follow
     {
       //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,3,g_token->sectionId);
+      DocSection *s=new DocSection(this,
+          QMIN(3+Doxygen::subpageNestingLevel,4),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
@@ -6015,7 +6018,8 @@ void DocRoot::parse()
     SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
     if (sec)
     {
-      DocSection *s=new DocSection(this,1,g_token->sectionId);
+      DocSection *s=new DocSection(this,
+          QMIN(1+Doxygen::subpageNestingLevel,4),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
