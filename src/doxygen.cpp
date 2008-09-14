@@ -138,7 +138,7 @@ QCString         Doxygen::objDBFileName;
 QCString         Doxygen::entryDBFileName;
 bool             Doxygen::gatherDefines = TRUE;
 IndexList        Doxygen::indexList;
-
+int              Doxygen::subpageNestingLevel = 0;
 bool             Doxygen::userComments = FALSE;
 
 // locally accessible globals
@@ -1952,6 +1952,7 @@ static MemberDef *addVariableToClass(
             md->memberType()==MemberDef::Variable)
         { // Objective-C 2.0 property
           // turn variable into a property
+          md->setProtection(root->protection);
           cd->reclassifyMember(md,MemberDef::Property);
         }
         addMemberDocs(rootNav,md,def,0,FALSE);
@@ -2842,14 +2843,18 @@ static void buildFunctionList(EntryNav *rootNav)
         int te=rname.find('>');
         if (memIndex>0 && (ts==-1 || te==-1))
         {
-          nd = Doxygen::namespaceSDict->find(rname.left(memIndex));
-          isMember = nd==0;
-          if (nd)
-          {
-            // strip namespace scope from name
-            scope=rname.left(memIndex);
-            rname=rname.right(rname.length()-memIndex-2);
-          }
+          // note: the following code was replaced by inMember=TRUE to deal with a 
+          // function rname='X::foo' of class X inside a namespace also called X...
+          // bug id 548175
+          //nd = Doxygen::namespaceSDict->find(rname.left(memIndex));
+          //isMember = nd==0;
+          //if (nd)
+          //{
+          //  // strip namespace scope from name
+          //  scope=rname.left(memIndex);
+          //  rname=rname.right(rname.length()-memIndex-2);
+          //}
+          isMember = TRUE;
         }
         else
         {
@@ -2962,13 +2967,7 @@ static void buildFunctionList(EntryNav *rootNav)
                     md->setArgumentList(argList);
                   }
                 }
-#if 0
-                else if (!md->documentation().isEmpty() && !root->doc.isEmpty() && mnd==rnd)
-                {
-                  warn(root->docFile,root->docLine,"Warning: member %s: ignoring the detailed description found here, since another one was found at line %d of file %s!",md->name().data(),md->docLine(),md->docFile().data());
-                  //printf("md->docs=[%s] root->docs=[%s]\n",md->documentation().data(),root->doc.data());
-                }
-#endif
+
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 md->setDocsForDefinition(!root->proto);
@@ -2977,12 +2976,6 @@ static void buildFunctionList(EntryNav *rootNav)
                 {
                   md->setArgsString(root->args);
                 }
-#if 0
-                else if (!md->briefDescription().isEmpty() && !root->brief.isEmpty() && mnd==rnd)
-                {
-                  warn(root->briefFile,root->briefLine,"Warning: member %s: ignoring the brief description found here, since another one was found at line %d of file %s!",md->name().data(),md->briefLine(),md->briefFile().data());
-                }
-#endif
                 md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
                 md->addSectionsToDefinition(root->anchors);
@@ -4160,6 +4153,7 @@ static bool findClassRelation(
           // TODO: here we should try to find the correct template specialization
           // but for now, we only look for the unspecializated base class.
           int e=findEndOfTemplate(baseClassName,i+1);
+          //printf("baseClass==0 i=%d e=%d\n",i,e);
           if (e!=-1) // end of template was found at e
           {
             templSpec=baseClassName.mid(i,e-i);
@@ -4182,6 +4176,7 @@ static bool findClassRelation(
                                                     // instance (for instance if a class
                                                     // derived from a template argument)
         {
+          //printf("baseClass=%p templSpec=%s\n",baseClass,templSpec.data());
           ClassDef *templClass=getClass(baseClass->name()+templSpec);
           if (templClass)
           {
@@ -4193,6 +4188,7 @@ static bool findClassRelation(
 
         //printf("cd=%p baseClass=%p\n",cd,baseClass);
         bool found=baseClass!=0 && (baseClass!=cd || mode==TemplateInstances);
+        //printf("1. found=%d\n",found);
         if (!found && si!=-1)
         {
           QCString tmpTemplSpec;
@@ -4209,12 +4205,11 @@ static bool findClassRelation(
           found=baseClass!=0 && baseClass!=cd;
           if (found) templSpec = tmpTemplSpec;
         }
+        //printf("2. found=%d\n",found);
         
         //printf("root->name=%s biName=%s baseClassName=%s\n",
         //        root->name.data(),biName.data(),baseClassName.data());
 
-        //FileDef *fd=cd->getFileDef();
-        //NamespaceDef *nd=cd->getNamespaceDef();
         if (!found)
         {
           baseClass=findClassWithinClassContext(context,cd,baseClassName);
@@ -4227,6 +4222,7 @@ static bool findClassRelation(
         // make templSpec canonical
         templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
 
+        //printf("3. found=%d\n",found);
         if (found)
         {
           Debug::print(Debug::Classes,0,"    Documented base class `%s' templSpec=%s\n",biName.data(),templSpec.isEmpty()?"":templSpec.data());
@@ -4650,7 +4646,7 @@ static void addListReferences()
     QCString name = pd->name();
     if (pd->getGroupDef())
     {
-      name = pd->getGroupDef()->getOutputFileBase().copy();
+      name = pd->getGroupDef()->getOutputFileBase();
     }
     {
       LockingPtr< QList<ListItemInfo> > xrefItems = pd->xrefListItems();
@@ -4658,6 +4654,20 @@ static void addListReferences()
           theTranslator->trPage(TRUE,TRUE),
           name,pd->title());
     }
+  }
+  DirSDict::Iterator ddi(*Doxygen::directories);
+  DirDef *dd = 0;
+  for (ddi.toFirst();(dd=ddi.current());++ddi)
+  {
+    QCString name = dd->getOutputFileBase();
+    //if (dd->getGroupDef())
+    //{
+    //  name = dd->getGroupDef()->getOutputFileBase();
+    //}
+    LockingPtr< QList<ListItemInfo> > xrefItems = dd->xrefListItems();
+    addRefItem(xrefItems.pointer(),
+        theTranslator->trDir(TRUE,TRUE),
+        name,dd->displayName());
   }
 }
 
@@ -5207,9 +5217,13 @@ static void findMember(EntryNav *rootNav,
     isRelated=TRUE;
     isMemberOf=(root->relatesType == MemberOf);
     if (getClass(root->relates)==0 && !scopeName.isEmpty())
+    {
       scopeName= mergeScopes(scopeName,root->relates);
+    }
     else 
+    {
       scopeName = root->relates;
+    }
   }
 
   if (root->relates.isEmpty() && rootNav->parent() && 
@@ -5285,7 +5299,8 @@ static void findMember(EntryNav *rootNav,
     {
       scopeName=namespaceName;
     }
-    else if (!getClass(className)) // class name only exists in a namespace
+    else if (!root->relates.isEmpty() || // relates command with explicit scope
+             !getClass(className)) // class name only exists in a namespace
     {
       scopeName=namespaceName+"::"+className;
     }
@@ -5741,7 +5756,7 @@ static void findMember(EntryNav *rootNav,
     {
       Debug::print(Debug::FindMembers,0,"2. related function\n"
               "  scopeName=%s className=%s\n",scopeName.data(),className.data());
-      if (className.isEmpty()) className=root->relates.copy();
+      if (className.isEmpty()) className=root->relates;
       ClassDef *cd;
       //printf("scopeName=`%s' className=`%s'\n",scopeName.data(),className.data());
       if ((cd=getClass(scopeName)))
@@ -7661,6 +7676,7 @@ static void findDirDocumentation(EntryNav *rootNav)
       //printf("Match for with dir %s\n",matchingDir->name().data());
       matchingDir->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       matchingDir->setDocumentation(root->doc,root->docFile,root->docLine);
+      matchingDir->setRefItems(root->sli);
       addDirToGroups(root,matchingDir);
     }
     else
@@ -7731,7 +7747,7 @@ static void findMainPage(EntryNav *rootNav)
           indexName,
           Doxygen::mainPage->name(),
           Doxygen::mainPage->title(),
-          SectionInfo::Section);
+          SectionInfo::Page);
       Doxygen::sectionDict.insert(indexName,si);
       Doxygen::mainPage->addSectionsToDefinition(root->anchors);
     }
@@ -9057,7 +9073,7 @@ void readConfiguration(int argc, char **argv)
         genLayout=TRUE;
         layoutName=getArg(argc,argv,optind);
         if (!layoutName)
-        { layoutName="doxygenlayout.xml"; }
+        { layoutName="DoxygenLayout.xml"; }
         break;
       case 'd':
         debugLabel=getArg(argc,argv,optind);
@@ -9611,7 +9627,7 @@ void parseInput()
   bool defaultLayoutUsed = FALSE;
   if (layoutFileName.isEmpty())
   {
-    layoutFileName = "doxygenlayout.xml";
+    layoutFileName = "DoxygenLayout.xml";
     defaultLayoutUsed = TRUE;
   }
 

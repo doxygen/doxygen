@@ -67,6 +67,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
 \refitem cfg_chm_file CHM_FILE
 \refitem cfg_class_diagrams CLASS_DIAGRAMS 
+\refitem cfg_class_graph CLASS_GRAPH
+\refitem cfg_collaboration_graph COLLABORATION_GRAPH
 \refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
 \refitem cfg_compact_latex COMPACT_LATEX 
 \refitem cfg_compact_rtf COMPACT_RTF
@@ -130,6 +132,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_treeview GENERATE_TREEVIEW
 \refitem cfg_generate_xml GENERATE_XML
 \refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
+\refitem cfg_group_graphs GROUP_GRAPHS
 \refitem cfg_have_dot HAVE_DOT
 \refitem cfg_hhc_location HHC_LOCATION
 \refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
@@ -147,6 +150,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_idl_property_support IDL_PROPERTY_SUPPORT
 \refitem cfg_ignore_prefix IGNORE_PREFIX
 \refitem cfg_image_path IMAGE_PATH
+\refitem cfg_include_graph INCLUDE_GRAPH
 \refitem cfg_include_path INCLUDE_PATH
 \refitem cfg_inherit_docs INHERIT_DOCS
 \refitem cfg_inline_info INLINE_INFO
@@ -206,6 +210,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_files SHOW_FILES
+\refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_namespaces SHOW_NAMESPACES
 \refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
@@ -687,14 +692,12 @@ function's detailed documentation block.
  will show members with their full class and namespace scopes in the
  documentation. If set to \c YES the scope will be hidden. 
 
-<!--
 \anchor cfg_show_include_files
 <dt>\c SHOW_INCLUDE_FILES <dd>
  \addindex SHOW_INCLUDE_FILES
  If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
  will put a list of the files that are included by a file in the documentation 
  of that file.
--->
 
 \anchor cfg_inline_info
 <dt>\c INLINE_INFO <dd>
@@ -786,14 +789,12 @@ function's detailed documentation block.
  individual variables and defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
  or \ref cmdhideinitializer "\\hideinitializer" command in the documentation.
 
-<!--
 \anchor cfg_show_used_files
 <dt>\c SHOW_USED_FILES <dd>
  \addindex SHOW_USED_FILES
  Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
  at the bottom of the documentation of classes and structs. If set to \c YES the
  list will mention the files that were used to generate the documentation.
--->
 
 \anchor cfg_show_dirs
 <dt>\c SHOW_DIRECTORIES <dd>
@@ -954,9 +955,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  doxygen. The layout file controls the global structure of the generated output files
  in an output format independent way. The create the layout file that represents
  doxygen's defaults, run doxygen with the -l option. You can optionally specify a
- file name after the option, if omitted doxygenlayout.xml will be used as the name
+ file name after the option, if omitted DoxygenLayout.xml will be used as the name
  of the layout file. Note that if you run doxygen from a directory containing 
- a file called doxygenlayout.xml, doxygen will parse it automatically even if 
+ a file called DoxygenLayout.xml, doxygen will parse it automatically even if 
  the \c LAYOUT_FILE tag is left empty.
 
 \anchor cfg_recursive
@@ -1408,7 +1409,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are
  probably better off using the HTML help feature. Other possible values
  for this tag are: \c HIERARCHIES, which will generate the Groups, Directories,
- and Class Hiererachy pages using a tree view instead of an ordered list;
+ and Class Hierarchy pages using a tree view instead of an ordered list;
  ALL, which combines the behavior of \c FRAME and \c HIERARCHIES, and \c NONE, 
  which disables this behavior completely. For backwards compatibility 
  with previous releases of Doxygen, the values YES and NO are equivalent 
@@ -1937,7 +1938,6 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  different font using \c DOT_FONTNAME you can set the path where dot 
  can find it using this tag. 
 
-<!--
 \anchor cfg_class_graph
 <dt>\c CLASS_GRAPH <dd>
  \addindex CLASS_GRAPH
@@ -1959,7 +1959,6 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \addindex GROUP_GRAPHS
  If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen
  will generate a graph for groups, showing the direct groups dependencies.
--->
 
 \anchor cfg_uml_look
 <dt>\c UML_LOOK <dd>
@@ -1981,7 +1980,6 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  inheritance and usage relations if the target is undocumented
  or is not a class.
 
-<!--
 \anchor cfg_include_graph
 <dt>\c INCLUDE_GRAPH <dd>
  \addindex INCLUDE_GRAPH 
@@ -1997,7 +1995,6 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  \c HAVE_DOT tags are set to \c YES then doxygen will generate a graph for each
  documented header file showing the documented files that directly or indirectly
  include this file.
--->
 
 \anchor cfg_call_graph
 <dt>\c CALL_GRAPH <dd>

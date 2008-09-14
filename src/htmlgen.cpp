@@ -806,11 +806,11 @@ void HtmlGenerator::startDoxyAnchor(const char *,const char *,
 {
   t << "<a class=\"anchor\" name=\"" << anchor << "\"></a>";
   t << "<!-- doxytag: member=\"";
-  docify(name); 
+  docify(name,TRUE); 
   t << "\" ref=\""; 
-  docify(anchor); 
+  docify(anchor,TRUE); 
   t << "\" args=\"";
-  docify(args);
+  docify(args,TRUE);
   t << "\" -->";
 }
 
@@ -1030,6 +1030,11 @@ void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
 
 void HtmlGenerator::docify(const char *str)
 {
+  docify(str,FALSE);
+}
+
+void HtmlGenerator::docify(const char *str,bool inHtmlComment)
+{
   if (str)
   {
     const char *p=str;
@@ -1043,6 +1048,7 @@ void HtmlGenerator::docify(const char *str)
         case '>':  t << "&gt;"; break;
         case '&':  t << "&amp;"; break;
         case '"':  t << "&quot;"; break;
+        case '-':  if (inHtmlComment) t << "&#45;"; else t << "-"; break;
         case '\\':
                    if (*p=='<')
                      { t << "&lt;"; p++; }

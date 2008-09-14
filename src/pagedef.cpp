@@ -75,7 +75,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   else
     pageName=name().lower();
 
-  startFile(ol,pageName,pageName,title(),HLI_None,TRUE);
+  startFile(ol,pageName,pageName,title(),HLI_Pages,TRUE);
 
   ol.pushGeneratorState();
   //1.{ 
@@ -200,7 +200,9 @@ void PageDef::writePageDocumentation(OutputList &ol)
       ol.startSection(subPage->name(),title,sectionType);
       ol.parseText(title);
       ol.endSection(subPage->name(),sectionType);
+      Doxygen::subpageNestingLevel++;
       subPage->writePageDocumentation(ol);
+      Doxygen::subpageNestingLevel--;
     }
 
     ol.popGeneratorState();

@@ -247,6 +247,7 @@ class HtmlGenerator : public OutputGenerator
     QCString lastTitle;
     QCString lastFile;
     QCString relPath;
+    void docify(const char *text,bool inHtmlComment);
 
     HtmlGenerator &operator=(const HtmlGenerator &g);
     HtmlGenerator(const HtmlGenerator &g);

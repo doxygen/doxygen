@@ -559,27 +559,17 @@ BN        [ \t\n\r]
 BL        [ \t\r]*"\n" 
 B         [ \t]
 BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
-FILEECHAR [a-z_A-Z0-9\-\+]
+FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+]
+FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+"\"")
-ID        "$"?[a-z_A-Z][a-z_A-Z0-9]*
-LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
+ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
 FTSCOPE   {ID}("<"[a-z_A-Z0-9\*\&,]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
-ATTR      ({B}+[^>\n]*)?
-A         [aA]
-BR	  [bB][rR]
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
-TABLE	  [tT][aA][bB][lL][eE]
-P	  [pP]
-UL        [uU][lL]
-OL	  [oO][lL]
-DL	  [dD][lL]
-TITLE     [tT][iI][tT][lL][eE]
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
 PHPKW	  ("require"|"require_once"|"include"|"include_once"|"echo")[^a-zA-Z0-9_;]
 IDLATTR   ("["[^\]]*"]"){BN}*
@@ -795,10 +785,17 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    REJECT;
                                         }
-
 <FindMembers>{PHPKW}			{ if (insidePHP)
 					    BEGIN( NextSemi );
 					  else
+					    REJECT;
+					}
+<FindMembers>"%{"[^\n]*			{ // Mozilla XPIDL lang-specific block
+					  if (!insideIDL)
+					    REJECT;
+					}
+<FindMembers>"%}"			{ // Mozilla XPIDL lang-specific block end
+					  if (!insideIDL)
 					    REJECT;
 					}
 <FindMembers>{B}*("properties"){BN}*":"{BN}*  { // IDL or Borland C++ builder property 
@@ -4326,11 +4323,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->spec |= Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
-					  current->name+="<";
+					  //current->name+="<";
 					  templateStr="<";
 					  fullArgString = templateStr;
-					  copyArgString = &current->name;
-					  currentArgumentContext = CompoundName;
+					  copyArgString = &current->args;
+					  currentArgumentContext = ClassVar;
 					  BEGIN( ReadTempArgs );
   					}
 <ObjCProtocolList>"<"			{
@@ -4463,6 +4460,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->typeConstr->append(new Argument);
 					    lastCSConstraint = YY_START;
 					    BEGIN( CSConstraintName );
+					  }
+					  else if (insideCli &&  strcmp(yytext,"abstract"))
+					  {
+					    current->spec|=Entry::Abstract;
+					  }
+					  else if (insideCli &&  strcmp(yytext,"sealed"))
+					  {
+					    current->spec|=Entry::Sealed;
 					  }
 					  else
 					  {
@@ -4672,9 +4677,22 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
-  					  baseName+=yytext;
-					  current->args += ' ';
-					  current->args += yytext;
+                                          QCString baseScope = yytext;
+                                          if (insideCS && baseScope.stripWhiteSpace()=="where")
+					  { 
+					    // type contraint for a class
+                                            delete current->typeConstr;
+                                            current->typeConstr = new ArgumentList;
+					    current->typeConstr->append(new Argument);
+					    lastCSConstraint = YY_START;
+					    BEGIN( CSConstraintName );
+					  }
+					  else
+					  {
+  					    baseName+=yytext;
+					    current->args += ' ';
+					    current->args += yytext;
+					  }
 					}
 <Bases>{BN}*{ID}("."{ID})*		{ // Java style class
     					  QCString name = substitute(yytext,".","::");

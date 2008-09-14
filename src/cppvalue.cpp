@@ -71,7 +71,15 @@ CPPValue parseCharacter() // does not work for '\n' and the alike
       case '?':  return CPPValue((long)'\?');
       case '\'': return CPPValue((long)'\'');
       case '"':  return CPPValue((long)'"');
-      case '0':  return parseOctal();
+      case '0':  // fall through
+      case '1':  // fall through
+      case '2':  // fall through
+      case '3':  // fall through
+      case '4':  // fall through
+      case '5':  // fall through
+      case '6':  // fall through
+      case '7':  // fall through
+                 return parseOctal();
       case 'x': 
       case 'X':  return parseHexadecimal();
       default:   printf("Invalid escape sequence %s found!\n",g_strToken.data()); 

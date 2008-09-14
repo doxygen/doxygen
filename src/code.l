@@ -389,7 +389,7 @@ static void pushScope(const char *s)
     g_classScope += "::";
     g_classScope += s;
   }
-  //printf("pushScope() result: `%s'\n",g_classScope.data());
+  //printf("pushScope(%s) result: `%s'\n",s,g_classScope.data());
 }
 
 /*! remove the top class/namespace name from the scope */
@@ -441,7 +441,18 @@ static void setClassScope(const QCString &name)
     // remove template from scope
     n=n.left(ts)+n.right(n.length()-te-1);
   }
-  g_classScope = n;
+  while (!g_classScopeLengthStack.isEmpty())
+  {
+    popScope();
+  }
+  g_classScope.resize(0);
+  int i;
+  while ((i=n.find("::"))!=-1)
+  {
+    pushScope(n.left(i));
+    n = n.mid(i+2);
+  }
+  pushScope(n);
   //printf("--->New class scope `%s'\n",g_classScope.data());
 }
 
@@ -821,7 +832,6 @@ static bool getLinkInScope(const QCString &c,  // scope
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
   {
-    //printf("Found!\n");
     if (g_exampleBlock)
     {
       QCString anchor;
@@ -871,7 +881,7 @@ static bool getLink(const char *className,
 		    CodeOutputInterface &ol,
 		    const char *text=0)
 {
-  //printf("getLink(%s,%s)\n",className,memberName);
+  //printf("getLink(%s,%s) g_curClassName=%s\n",className,memberName,g_curClassName.data());
   QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
   if (!getLinkInScope(c,m,memberName,ol,text))
@@ -1201,7 +1211,7 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
 {
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
-  QCString locScope=g_classScope.copy();
+  QCString locScope=g_classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
   //fprintf(stdout,"*** locScope=%s locFunc=%s\n",locScope.data(),locFunc.data());
   int len=2;
@@ -1209,7 +1219,14 @@ static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
   if (i==-1) i=locFunc.findRev("."),len=1;
   if (i>0)
   {
-    locScope=locFunc.left(i);
+    if (locScope.isEmpty())
+    {
+      locScope=locFunc.left(i);
+    }
+    else
+    {
+      locScope+="::"+locFunc.left(i);
+    }
     locFunc=locFunc.right(locFunc.length()-i-len).stripWhiteSpace();
     int ts=locScope.find('<'); // start of template
     int te=locScope.findRev('>'); // end of template
@@ -1650,7 +1667,7 @@ static int yyread(char *buf,int max_size)
 
 B       [ \t]
 BN      [ \t\n\r]
-ID	"$"?[a-z_A-Z][a-z_A-Z0-9]*
+ID	"$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
@@ -2200,6 +2217,10 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  startFontClass("keywordflow");
   					  codifyLines(yytext);
 					  endFontClass();
+					  // insert the variable in the parent scope, see bug 546158
+					  g_theVarContext.popScope();
+					  g_theVarContext.addVariable(g_parmType,g_parmName);
+					  g_theVarContext.pushScope();
   				          g_name.resize(0);g_type.resize(0);
 					}
 <Body>{FLOWKW}/{BN}*"(" 			{
@@ -2328,6 +2349,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <Body>{SCOPETNAME}/{BN}*"("		{ // a() or c::a() or t<A,B>::a()
   					  addType();
 					  generateFunctionLink(*g_code,yytext);
+					  //printf("---> g_classScope=%s\n",g_classScope.data());
 					  //g_theVarContext.addVariable(g_type,yytext);
   					  g_bracketCount=0;
 					  g_args.resize(0);
@@ -2770,7 +2792,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  int index = g_name.findRev("::");
 					  if (index!=-1) 
 					  {
-					    ClassDef *cd=getResolvedClass(Doxygen::globalScope,g_sourceFileDef,g_name.left(index));
+					    QCString scope = g_name.left(index);
+					    if (!g_classScope.isEmpty()) scope.prepend(g_classScope+"::");
+					    ClassDef *cd=getResolvedClass(Doxygen::globalScope,g_sourceFileDef,scope);
 					    if (cd)
 					    {
 					      setClassScope(cd->name());
@@ -2885,22 +2909,22 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipInits>{ID}				{
 					  generateClassOrGlobalLink(*g_code,yytext);
   					}
-<FuncCall>([a-z_A-Z][a-z_A-Z0-9]*)/"("	{
+<FuncCall>{ID}/"("			{
 					  generateFunctionLink(*g_code,yytext);
 					}
-<FuncCall>([a-z_A-Z][a-z_A-Z0-9]*)/("."|"->") { 
+<FuncCall>{ID}/("."|"->")               { 
 					  g_name=yytext; 
 					  generateClassOrGlobalLink(*g_code,yytext);
 					  BEGIN( MemberCall2 ); 
 					}
-<FuncCall,MemberCall2>("("{B}*("*"{B}*)+[a-z_A-Z][a-z_A-Z0-9]*{B}*")"{B}*)/("."|"->") { 
+<FuncCall,MemberCall2>("("{B}*("*"{B}*)+{ID}*{B}*")"{B}*)/("."|"->") { 
   					  g_code->codify(yytext);
 					  int s=0;while (!isId(yytext[s])) s++;
                                           int e=yyleng-1;while (!isId(yytext[e])) e--;
 					  g_name=((QCString)yytext).mid(s,e-s+1); 
 					  BEGIN( MemberCall2 ); 
 					}
-<MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*"(") { 
+<MemberCall2>{ID}/([ \t\n]*"(")         { 
   					  if (!g_args.isEmpty())
 					    generateMemberLink(*g_code,g_args,yytext);
 					  else
@@ -2908,7 +2932,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  g_args.resize(0);
 					  BEGIN( FuncCall );
 					}
-<MemberCall2>([a-z_A-Z][a-z_A-Z0-9]*)/([ \t\n]*("."|"->")) {
+<MemberCall2>{ID}/([ \t\n]*("."|"->"))  {
   					  //g_code->codify(yytext);
 					  g_name=yytext; 
 					  generateClassOrGlobalLink(*g_code,yytext);

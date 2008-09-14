@@ -135,7 +135,8 @@ bool resolveRef(/* in */  const char *scName,
                 /* in */  const char *name,
                 /* in */  bool inSeeBlock,
                 /* out */ Definition **resContext,
-                /* out */ MemberDef  **resMember
+                /* out */ MemberDef  **resMember,
+                /* in */  bool lookForSpecializations = TRUE
                );
 
 bool resolveLink(/* in */  const char *scName,
@@ -191,7 +192,10 @@ QCString showFileDefMatches(const FileNameDict *fnDict,const char *n);
 
 int guessSection(const char *name);
 
-bool isId(int c);
+inline bool isId(int c)
+{
+  return c=='_' || isalnum(c) || c>=128 || c<0;
+}
 
 QCString removeRedundantWhiteSpace(const QCString &s);
 

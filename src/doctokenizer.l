@@ -240,8 +240,8 @@ static void handleHtmlTag()
       else // value without any quotes
       {
 	startAttrib=i;
-	// search for separator
-        while (i<yyleng && !isspace(c)) { c=tagText.at(++i); } 
+	// search for separator or end symbol
+        while (i<yyleng && !isspace(c) && c!='>') { c=tagText.at(++i); } 
 	endAttrib=i;
 	if (i<yyleng) c=tagText.at(++i);
       }
@@ -312,7 +312,8 @@ PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 TEMPCHAR  [a-z_A-Z0-9,: \t\*\&]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\*\&]
 SCOPESEP  "::"|"#"|"."
-SCOPEPRE  {ID}("<"{TEMPCHAR}*">")?{SCOPESEP}
+TEMPLPART "<"{TEMPCHAR}*">"
+SCOPEPRE  {ID}{TEMPLPART}?{SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
 SCOPECPP  {SCOPEPRE}*(~)?{ID}("<"{TEMPCHAR}*">")?
 SCOPEOBJC {SCOPEPRE}?{ID}{SCOPEKEYS}?
@@ -339,7 +340,7 @@ HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
 LABELID   [a-z_A-Z][a-z_A-Z0-9\-]*
-REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
+REFWORD   ("#"|"::")?({ID}{TEMPLPART}?("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
 
 %option noyywrap
 %option yylineno
@@ -810,7 +811,7 @@ REFWORD   ("#"|"::")?({ID}("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCARG}?
                          g_token->name = g_token->name.stripWhiteSpace();
 			 return TK_WORD;
   		       }
-<St_Link>{LINKMASK}    {
+<St_Link>{LINKMASK}|{REFWORD}    {
                          g_token->name = yytext;
 			 return TK_WORD;
                        }

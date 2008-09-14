@@ -98,7 +98,7 @@ static int yyread(char *buf,int max_size)
 %}
 
 B       [ \t]
-ID	[a-z_A-Z][a-z_A-Z0-9]*
+ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 
 %option noyywrap
 
@@ -302,6 +302,22 @@ ID	[a-z_A-Z][a-z_A-Z0-9]*
 					      { // type contains a name
 						a->type = removeRedundantWhiteSpace(g_curArgTypeName.left(i+1));
 						a->name = g_curArgTypeName.right(l-i-1).stripWhiteSpace();
+
+						// if the type becomes a type specifier only then we make a mistake
+						// and need to correct it to avoid seeing a nameless parameter
+						// "struct A" as a parameter with type "struct" and name "A".
+						int sv=0;
+						if (a->type.left(6)=="const ") sv=6;
+						else if (a->type.left(8)=="volatile ") sv=9;
+						if (a->type.mid(sv)=="struct"    || 
+						    a->type.mid(sv)=="union"     || 
+						    a->type.mid(sv)=="class"     || 
+						    a->type.mid(sv)=="typename"  || 
+						    a->type=="const" || a->type=="volatile")
+						{ 
+						  a->type = a->type + " " + a->name;
+						  a->name.resize(0);
+						}
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {

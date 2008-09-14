@@ -222,7 +222,7 @@ static FILE *findFile(const char *fileName,bool localInclude)
     QFileInfo fi(g_yyFileName);
     if (fi.exists())
     {
-      QCString absName = QCString(fi.dirPath().data())+"/"+fileName;
+      QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
       FILE *f = checkAndOpenFile(absName);
       if (f)
       {
@@ -1152,7 +1152,7 @@ static void readIncludeFile(const QCString &inc)
 
       // Deal with file changes due to 
       // #include's within { .. } blocks
-      QCString lineStr;
+      QCString lineStr(g_yyFileName.length()+20);
       lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
       outputArray(lineStr.data(),lineStr.length());
       
