@@ -267,8 +267,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startSmall); }
     void endSmall() 
     { forall(&OutputGenerator::endSmall); }
-    void lineBreak() 
-    { forall(&OutputGenerator::lineBreak); }
+    void lineBreak(const char *style=0) 
+    { forall(&OutputGenerator::lineBreak,style); }
     void startBold() 
     { forall(&OutputGenerator::startBold); }
     void endBold() 

@@ -1145,9 +1145,9 @@ void LatexGenerator::startMemberDoc(const char *clname,
   //  escapeMakeIndexChars(this,t,memname);
   //  t << "]";
   //}
-  t << "[";
+  t << "[{";
   escapeMakeIndexChars(title);
-  t << "]";
+  t << "}]";
   t << "{\\setlength{\\rightskip}{0pt plus 5cm}";
   disableLinks=TRUE;
 }
@@ -1661,8 +1661,8 @@ void LatexGenerator::escapeLabelName(const char *s)
     switch (c)
     {
       case '%': t << "\\%";       break;
-      case '|': t << "\\tt{\"|}"; break;
-      case '!': t << "\"!";       break;
+      //case '|': t << "\\tt{\"|}"; break;
+      //case '!': t << "\"!";       break;
       default:  str[0]=c; docify(str); break;
     }
   }
@@ -1678,10 +1678,10 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
   {
     switch (c)
     {
-      case '!': t << "\"!"; break;
+      //case '!': t << "\"!"; break;
       case '"': t << "\"\""; break;
       case '@': t << "\"@"; break;
-      case '|': t << "\\tt{\"|}"; break;
+      //case '|': t << "\\tt{\"|}"; break;
       case '[': t << "["; break;
       case ']': t << "]"; break;
       default:  str[0]=c; docify(str); break;

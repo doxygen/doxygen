@@ -138,7 +138,7 @@ class HtmlGenerator : public OutputGenerator
     void endDescription()   { t << endl << "</dl>" << endl; }
     void startDescItem()    { t << "<dt>"; }
     void endDescItem()      { t << "<dd>"; }
-    void lineBreak() { t << "<br>" << endl; }
+    void lineBreak(const char *style);
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(bool); 

@@ -53,6 +53,8 @@
 #include "language.h"
 #include "debug.h"
 #include "htmlhelp.h"
+#include "qhp.h"
+#include "indexlog.h"
 #include "ftvhelp.h"
 #include "defargs.h"
 #include "rtfgen.h"
@@ -1311,8 +1313,10 @@ static void resolveClassNestingRelations()
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
       Definition *d = buildScopeFromQualifiedName(name,name.contains("::"));
-      if (d!=cd) // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
+      if (d!=cd && !cd->getDefFileName().isEmpty()) 
+                 // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the exitance of a namespace N::N in which C is to be found!
+                 // also avoid warning for stuff imported via a tagfile.
       {
         d->addInnerCompound(cd);
         cd->setOuterScope(d);
@@ -8042,11 +8046,13 @@ static void generateNamespaceDocs()
   // for each namespace...
   for (;(nd=nli.current());++nli)
   {
+
     if (nd->isLinkableInProject())
     {
       msg("Generating docs for namespace %s\n",nd->name().data());
       nd->writeDocumentation(*outputList);
     }
+
     // for each class in the namespace...
     ClassSDict::Iterator cli(*nd->getClassSDict());
     for ( ; cli.current() ; ++cli )
@@ -9409,6 +9415,47 @@ static void exitDoxygen()
   }
 }
 
+static QCString createOutputDirectory(const QCString &baseDirName,
+                                  const char *formatDirOption,
+                                  const char *defaultDirName)
+{
+  // Note the & on the next line, we modify the formatDirOption!
+  QCString &formatDirName = Config_getString(formatDirOption);
+  if (formatDirName.isEmpty())
+  {
+    formatDirName = baseDirName + defaultDirName;
+  }
+  else if (formatDirName[0]!='/' && (formatDirName.length()==1 || formatDirName[1]!=':'))
+  {
+    formatDirName.prepend(baseDirName+'/');
+  }
+  QDir formatDir(formatDirName);
+  if (!formatDir.exists() && !formatDir.mkdir(formatDirName))
+  {
+    err("Could not create output directory %s\n", formatDirName.data());
+    cleanUpDoxygen();
+    exit(1);
+  }
+  return formatDirName;
+}
+
+static QCString getQchFileName()
+{
+  QCString const & qchFile = Config_getString("QCH_FILE");
+  if (!qchFile.isEmpty())
+  {
+    return qchFile;
+  }
+
+  QCString const & projectName = Config_getString("PROJECT_NAME");
+  QCString const & versionText = Config_getString("PROJECT_NUMBER");
+
+  return QCString("../qch/")
+      + (projectName.isEmpty() ? QCString("index") : projectName)
+      + (versionText.isEmpty() ? QCString("") : QCString("-") + versionText)
+      + QCString(".qch");
+}
+
 void parseInput()
 {
   atexit(exitDoxygen);
@@ -9529,95 +9576,31 @@ void parseInput()
    *            Check/create output directorties                            *
    **************************************************************************/
 
-  QCString &htmlOutput = Config_getString("HTML_OUTPUT");
+  QCString htmlOutput;
   bool &generateHtml = Config_getBool("GENERATE_HTML");
-  if (htmlOutput.isEmpty() && generateHtml)
-  {
-    htmlOutput=outputDirectory+"/html";
-  }
-  else if (htmlOutput && htmlOutput[0]!='/' && htmlOutput[1]!=':')
-  {
-    htmlOutput.prepend(outputDirectory+'/');
-  }
-  QDir htmlDir(htmlOutput);
-  if (generateHtml && !htmlDir.exists() && !htmlDir.mkdir(htmlOutput))
-  {
-    err("Could not create output directory %s\n",htmlOutput.data());
-    cleanUpDoxygen();
-    exit(1);
-  }
+  if (generateHtml)
+    htmlOutput = createOutputDirectory(outputDirectory,"HTML_OUTPUT","/html");
 
-  QCString &xmlOutput = Config_getString("XML_OUTPUT");
+  QCString xmlOutput;
   bool &generateXml = Config_getBool("GENERATE_XML");
-  if (xmlOutput.isEmpty() && generateXml)
-  {
-    xmlOutput=outputDirectory+"/xml";
-  }
-  else if (xmlOutput && xmlOutput[0]!='/' && xmlOutput[1]!=':')
-  {
-    xmlOutput.prepend(outputDirectory+'/');
-  }
-  QDir xmlDir(xmlOutput);
-  if (generateXml && !xmlDir.exists() && !xmlDir.mkdir(xmlOutput))
-  {
-    err("Could not create output directory %s\n",xmlOutput.data());
-    cleanUpDoxygen();
-    exit(1);
-  }
-  
-  QCString &latexOutput = Config_getString("LATEX_OUTPUT");
+  if (generateXml)
+    xmlOutput = createOutputDirectory(outputDirectory,"XML_OUTPUT","/xml");
+    
+  QCString latexOutput;
   bool &generateLatex = Config_getBool("GENERATE_LATEX");
-  if (latexOutput.isEmpty() && generateLatex)
-  {
-    latexOutput=outputDirectory+"/latex";
-  }
-  else if (latexOutput && latexOutput[0]!='/' && latexOutput[1]!=':')
-  {
-    latexOutput.prepend(outputDirectory+'/');
-  }
-  QDir latexDir(latexOutput);
-  if (generateLatex && !latexDir.exists() && !latexDir.mkdir(latexOutput))
-  {
-    err("Could not create output directory %s\n",latexOutput.data());
-    cleanUpDoxygen();
-    exit(1);
-  }
-  
-  QCString &rtfOutput = Config_getString("RTF_OUTPUT");
-  bool &generateRtf = Config_getBool("GENERATE_RTF");
-  if (rtfOutput.isEmpty() && generateRtf)
-  {
-    rtfOutput=outputDirectory+"/rtf";
-  }
-  else if (rtfOutput && rtfOutput[0]!='/' && rtfOutput[1]!=':')
-  {
-    rtfOutput.prepend(outputDirectory+'/');
-  }
-  QDir rtfDir(rtfOutput);
-  if (generateRtf && !rtfDir.exists() && !rtfDir.mkdir(rtfOutput))
-  {
-    err("Could not create output directory %s\n",rtfOutput.data());
-    cleanUpDoxygen();
-    exit(1);
-  }
+  if (generateLatex)
+    latexOutput = createOutputDirectory(outputDirectory,"LATEX_OUTPUT","/latex");
 
-  QCString &manOutput = Config_getString("MAN_OUTPUT");
+  QCString rtfOutput;
+  bool &generateRtf = Config_getBool("GENERATE_RTF");
+  if (generateRtf)
+    rtfOutput = createOutputDirectory(outputDirectory,"RTF_OUTPUT","/rtf");
+
+  QCString manOutput;
   bool &generateMan = Config_getBool("GENERATE_MAN");
-  if (manOutput.isEmpty() && generateMan)
-  {
-    manOutput=outputDirectory+"/man";
-  }
-  else if (manOutput && manOutput[0]!='/' && manOutput[1]!=':')
-  {
-    manOutput.prepend(outputDirectory+'/');
-  }
-  QDir manDir(manOutput);
-  if (generateMan && !manDir.exists() && !manDir.mkdir(manOutput))
-  {
-    err("Could not create output directory %s\n",manOutput.data());
-    cleanUpDoxygen();
-    exit(1);
-  }
+  if (generateMan)
+    manOutput = createOutputDirectory(outputDirectory,"MAN_OUTPUT","/man");
+
   /**************************************************************************
    *             Handle layout file                                         *
    **************************************************************************/
@@ -10060,6 +10043,10 @@ void generateOutput()
     outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
     if (Config_getBool("GENERATE_HTMLHELP")) Doxygen::indexList.addIndex(new HtmlHelp);
+    if (Config_getBool("GENERATE_QHP")) Doxygen::indexList.addIndex(new Qhp);
+#if 0
+    if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
+#endif
     if (usingTreeIndex()) Doxygen::indexList.addIndex(new FTVHelp);
     if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
@@ -10274,6 +10261,7 @@ void generateOutput()
     }
     QDir::setCurrent(oldDir);
   }
+#if 0
   if ( Config_getBool("GENERATE_HTMLHELP") && 
       !Config_getString("DOXYGEN2QTHELP_LOC").isEmpty() && 
       !Config_getString("QTHELP_CONFIG").isEmpty())
@@ -10289,6 +10277,24 @@ void generateOutput()
     if (portable_system(Config_getString("DOXYGEN2QTHELP_LOC"), args.data(), FALSE))
     {
       err("Error: failed to run doxygen2qthelp on index.hhp\n");
+    }
+    QDir::setCurrent(oldDir);
+  }
+#endif
+  if ( Config_getBool("GENERATE_HTML") &&
+       Config_getBool("GENERATE_QHP") && 
+      !Config_getString("QHG_LOCATION").isEmpty())
+  {
+    msg("Running qhelpgenerator...\n");
+    QCString const qhpFileName = Qhp::getQhpFileName();
+    QCString const qchFileName = getQchFileName();
+
+    QCString const args = QCString().sprintf("%s -o %s", qhpFileName.data(), qchFileName.data());
+    QString const oldDir = QDir::currentDirPath();
+    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))
+    {
+      err("Error: failed to run qhelpgenerator on index.qhp\n");
     }
     QDir::setCurrent(oldDir);
   }

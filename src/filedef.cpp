@@ -1553,8 +1553,19 @@ MemberList *FileDef::getMemberList(MemberList::ListType lt) const
 
 void FileDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,const QCString &title)
 {
+  static bool optVhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   MemberList * ml = getMemberList(lt);
-  if (ml) ml->writeDeclarations(ol,0,0,this,0,title,0);
+  if (ml) 
+  {
+    if (optVhdl) // use specific declarations function
+    {
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,0,this);
+    }
+    else
+    {
+      ml->writeDeclarations(ol,0,0,this,0,title,0);
+    }
+  }
 }
 
 void FileDef::writeMemberDocumentation(OutputList &ol,MemberList::ListType lt,const QCString &title)

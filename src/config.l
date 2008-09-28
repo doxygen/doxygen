@@ -1260,11 +1260,49 @@ void Config::check()
     config_err("Warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
   }
 
-  // you can't generate HTMLHELP without HTML enabled!
+  // check HTMLHELP creation requirements
   if (!Config_getBool("GENERATE_HTML") && 
       Config_getBool("GENERATE_HTMLHELP"))
   {
     config_err("Warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
+  }
+
+  // check QHP creation requirements
+  if (Config_getBool("GENERATE_QHP"))
+  {
+    if (!Config_getBool("GENERATE_HTML"))
+    {
+      config_err("Warning: GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
+    }
+
+    if (Config_getString("QHP_NAMESPACE").isEmpty())
+    {
+      config_err("Warning: GENERATE_QHP=YES requires QHP_NAMESPACE to be set.\n");
+    }
+
+    if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
+    {
+      config_err("Warning: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set.\n");
+    }
+  }
+
+  // check QCH creation requirements
+  if (!Config_getString("QHG_LOCATION").isEmpty() &&
+      !Config_getBool("GENERATE_QHP"))
+  {
+    config_err("Warning: Specifying QHG_LOCATION requires GENERATE_QHP=YES.\n");
+  }
+  if (!Config_getString("QCH_FILE").isEmpty() &&
+      Config_getString("QHG_LOCATION").isEmpty())
+  {
+    config_err("Warning: Specifying QCH_FILE requires QHG_LOCATION to be set.\n");
+  }
+
+  // check INDEXLOG creation requirements
+  if (!Config_getBool("GENERATE_HTML") && 
+      Config_getBool("GENERATE_INDEXLOG"))
+  {
+    config_err("Warning: GENERATE_INDEXLOG=YES requires GENERATE_HTML=YES.\n");
   }
 
   if (Config_getBool("HAVE_DOT")) 
@@ -2371,14 +2409,20 @@ void Config::create()
                  );
   cb->addDependency("GENERATE_HTML");
   cb = addBool(
-                    "GENERATE_HTMLHELP",
-                    "If the GENERATE_HTMLHELP tag is set to YES, additional index files \n"
-                    "will be generated that can be used as input for tools like the \n"
-                    "Microsoft HTML help workshop to generate a compiled HTML help file (.chm) \n"
-                    "of the generated HTML documentation. \n",
+                    "HTML_DYNAMIC_SECTIONS",
+                    "If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML \n"
+		    "documentation will contain sections that can be hidden and shown after the \n"
+		    "page has loaded. For this to work a browser that supports \n"
+                    "JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox \n"
+		    "Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
+
+  /////////////////////////////////////////////////////////
+  // Docsets //////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+
   cb = addBool( "GENERATE_DOCSET",
                     "If the GENERATE_DOCSET tag is set to YES, additional index files \n"
                     "will be generated that can be used as input for Apple's Xcode 3 \n"
@@ -2412,13 +2456,16 @@ void Config::create()
   cs->setDefaultValue("org.doxygen.Project");
   cs->addDependency("GENERATE_DOCSET");
 
+  /////////////////////////////////////////////////////////
+  // HTMLHELP /////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+
   cb = addBool(
-                    "HTML_DYNAMIC_SECTIONS",
-                    "If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML \n"
-		    "documentation will contain sections that can be hidden and shown after the \n"
-		    "page has loaded. For this to work a browser that supports \n"
-                    "JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox \n"
-		    "Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). \n",
+                    "GENERATE_HTMLHELP",
+                    "If the GENERATE_HTMLHELP tag is set to YES, additional index files \n"
+                    "will be generated that can be used as input for tools like the \n"
+                    "Microsoft HTML help workshop to generate a compiled HTML help file (.chm) \n"
+                    "of the generated HTML documentation. \n",
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
@@ -2440,6 +2487,7 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
+#if 0
   cs = addString(
                     "QTHELP_FILE",
                     "If the GENERATE_HTMLHELP tag is set to YES, the QTHELP_FILE tag can \n"
@@ -2465,6 +2513,10 @@ void Config::create()
                    );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
+#endif
+  addObsolete("QTHELP_FILE");
+  addObsolete("QTHELP_CONFIG");
+  addObsolete("DOXYGEN2QTHELP_LOC");
   cb = addBool(
                     "GENERATE_CHI",
                     "If the GENERATE_HTMLHELP tag is set to YES, the GENERATE_CHI flag \n"
@@ -2495,6 +2547,58 @@ void Config::create()
                     FALSE
                  );
   cb->addDependency("GENERATE_HTML");
+
+  /////////////////////////////////////////////////////////
+  // QT HELP //////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+
+  cb = addBool(
+                    "GENERATE_QHP",
+                    "If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and QHP_VIRTUAL_FOLDER \n"
+                    "are set, an additional index file will be generated that can be used as input for \n"
+                    "Qt's qhelpgenerator to generate a Qt Compressed Help (.qch) of the generated \n"
+                    "HTML documentation. \n",
+                    FALSE
+                 );
+  cb->addDependency("GENERATE_HTML");
+  cs = addString(
+                    "QCH_FILE",
+                    "If the QHG_LOCATION tag is specified, the QCH_FILE tag can \n"
+                    "be used to specify the file name of the resulting .qch file. \n"
+                    "The path specified is relative to the HTML output folder. \n"
+                   );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_QHP");
+  cs = addString(
+                    "QHP_NAMESPACE",
+                    "The QHP_NAMESPACE tag specifies the namespace to use when generating \n"
+                    "Qt Help Project output. For more information please see \n"
+                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#namespace\">Qt Help Project / Namespace</a>. \n"
+                   );
+  cs->setDefaultValue("org.doxygen.Project");
+  cs->addDependency("GENERATE_QHP");
+  cs = addString(
+                    "QHP_VIRTUAL_FOLDER",
+                    "The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating \n"
+                    "Qt Help Project output. For more information please see \n"
+                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#virtual-folders\">Qt Help Project / Virtual Folders</a>. \n"
+                   );
+  cs->setDefaultValue("doc");
+  cs->addDependency("GENERATE_QHP");
+  cs = addString(
+                    "QHG_LOCATION",
+                    "If the GENERATE_QHP tag is set to YES, the QHG_LOCATION tag can \n"
+                    "be used to specify the location of Qt's qhelpgenerator. \n"
+                    "If non-empty doxygen will try to run qhelpgenerator on the generated \n"
+                    ".qhp file .\n"
+                   );
+  cs->setWidgetType(ConfigString::File);
+  cs->addDependency("GENERATE_QHP");
+
+  /////////////////////////////////////////////////////////
+  // MISC /////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+
   cb = addBool(
                     "DISABLE_INDEX",
                     "The DISABLE_INDEX tag can be used to turn on/off the condensed index at \n"
@@ -2551,6 +2655,16 @@ void Config::create()
                     8,50,10
                  );
   ci->addDependency("GENERATE_HTML");
+#if 0
+  cb = addBool(
+                    "GENERATE_INDEXLOG",
+                    "If the GENERATE_INDEXLOG tag is set to YES, an additional log file \n"
+                    "will be generated that can be used to create new index formats using XSLT \n"
+                    "instead of writing C++ code. \n",
+                    FALSE
+                 );
+  cb->addDependency("GENERATE_HTML");
+#endif
 
   //-----------------------------------------------------------------------------------------------
   addInfo(  "LaTeX","configuration options related to the LaTeX output");

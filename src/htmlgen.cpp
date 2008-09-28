@@ -2400,4 +2400,15 @@ void HtmlGenerator::endConstraintList()
   t << "</div>" << endl;
 }
 
+void HtmlGenerator::lineBreak(const char *style)
+{
+  if (style)
+  {
+    t << "<br class=\"" << style << "\">" << endl;
+  }
+  else
+  {
+    t << "<br>" << endl;
+  }
+}
 

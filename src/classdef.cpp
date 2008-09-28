@@ -3336,7 +3336,7 @@ void ClassDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
   {
     if (optimizeVhdl) // use specific declarations function
     {
-      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this);
+      VhdlDocGen::writeVhdlDeclarations(ml,ol,0,this,0);
     }
     else // ise generic declaration function
     {

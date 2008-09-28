@@ -15,9 +15,8 @@
 /******************************************************************************
  * Parser for VHDL subset
  * written by M. Kreis
- * supports VHDL-87
- * does not support all keywords of VHDL '93 (impure function/shared variables ..)
- * and VHDL-AMS 
+ * supports VHDL-87/93
+ * does not support VHDL-AMS 
  ******************************************************************************/
 %{
 
@@ -76,6 +75,7 @@ static int              isBody=0;
 static int              isFunc=0;
 static int              yyLineNr      = 1;
 static char *           g_buf         = 0;
+static uint             g_bufSize     = 0;
 static int              iTextCounter  = 0;
 static int              iCounter      = 0;
 static int              bropen        = 0;
@@ -121,6 +121,19 @@ static void bufferClear()
 
 static void  addText (char *word, int llen)
 {
+  if ((uint)(iCounter + llen) > g_bufSize)
+  {
+    char *pTmp = (char*)realloc(g_buf,iCounter+llen+2048);
+    if (pTmp)
+    {
+      g_buf = pTmp;
+    }
+    else
+    {
+      fprintf(stderr,"\n not enough memory for realloc\n");
+      return; 
+    }
+  }
   while (llen>0)
   {
     g_buf[iCounter]=*word++;
@@ -210,6 +223,10 @@ void getType(Entry* p,char* text)
   else if (stricmp(name.data(),"group" )==0) 
   {
     p->spec=VhdlDocGen::GROUP; 
+  }
+  else if (stricmp(name.data(),"alias" )==0) 
+  {
+    p->spec=VhdlDocGen::ALIAS; 
   }
   else 
   {
@@ -494,16 +511,16 @@ void parserInit()
     VhdlDocGen::init();
   }
 
-  uint SSIZE=inputFile.size()+1024;
+  g_bufSize=inputFile.size()+1024;
   if (g_buf==0) free(g_buf);
-  g_buf=(char*)(calloc(SSIZE,sizeof(char)));
+  g_buf=(char*)(calloc(g_bufSize,sizeof(char)));
 
   if (g_buf==0)
   {
     fprintf(stderr,"\n no enough memory");
     return;
   }
-  g_buf[SSIZE-1]='\0';
+  g_buf[g_bufSize-1]='\0';
 }
 
 bool VHDLLanguageScanner::needsPreprocessing(const QCString &)
@@ -575,19 +592,17 @@ CR           [\r\n]
 BR           [ \t\n\r]
 LETTER       [a-zA-Z_0-9]
 NAME         {LETTER}[a-zA-Z0-9_.]*
-FUNCNAME     [a-zA-Z"][*+\-_a-zA-Z0-9"\/]*
+FUNCNAME     [a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*
 DIGITS       [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
 COMMENT      "--"[^\n]*
 LABELID      [a-z_A-Z][^\;]*";"({B}*{COMMENT})*
 PROTO        [ (]*
 TEXTT        "--"[^\/\@\*\#][^\n]*
-
-ENDE         ({BR}*("end"){BR}*[;]{1})
+PROC         ("function"|"procedure")
+ENDE         ({BR}*("end"){BR}*{PROC}*{BR}*[;]{1})
 ENDEFF       ("if"|"case"|"loop"|"generate"){BR}*[;]
-
-ENDE3        {BR}*[^a-zA-Z]("end"){BR}+{FUNCNAME}{BR}*[;]
-ENDFUNC      {B}*"end"{BR}+"function"{BR}+{FUNCNAME}{BR}*[;]
-
+ENDE3        ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|(ENDE)
+ENDFUNC      {B}*"end"{BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;]
 FUNCIMPURE   "impure"|"pure"
 FUNCPROC     ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
 ARCHITECTURE ("architecture"){BR}+{NAME}{BR}*("of")
@@ -597,16 +612,17 @@ ARCHITECTURE ("architecture"){BR}+{NAME}{BR}*("of")
    */
 PROCESS      ({B}*{FUNCNAME}{B}*:{BR}*)?({B}*("postponed"){BR}+)?{B}*("process"){BR}*{PROTO}
 
-ENDPROCESS   ("end"){BR}*("process")
+ENDPROCESS   ("end"){BR}*("postponed")*("process"){BR}*{FUNCNAME}*{BR}*[;]
 LIBUSE       ^{B}*("use"|"library"){BR}+
 ENTITY       ^{B}*("component"|"entity"|"package"){BR}+
 PBODY        ("package"){B}+("body"){BR}+{NAME}
 SHARED       ("shared"){BR}+("variable")
-SIGTYPES     ^{B}*({SHARED}|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
+SIGTYPES     ^{B}*({SHARED}|"alias"|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
+CONFIG       ("configuration"){BR}+{NAME}{BR}*("of"){BR}+{NAME}{BR}+"is"
 
 ALLTYPESMAP  {B}*[_a-zA-ZA_Z0-9. ]*{B}*
 
-MAPCOMPONENT ({ALLTYPESMAP}{BR}*[:]{BR}*{ALLTYPESMAP}{BR}*("port"|"generic"){BR}+("map"){BR}*("("){1})
+MAPCOMPONENT ({ALLTYPESMAP}{BR}*[:]{BR}*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}+("map"){BR}*("("){1})
 
 BRACEOPEN    [(]{1}
 BRACECLOSE   [)]{1}
@@ -624,6 +640,7 @@ ALLID        [^;()\t ]
 %x ParseRecord
 %x ParseUnits
 %x ParseProcess
+%x ParseFunc
 %x FindName
 %x FindEntityName
 %x FindGenPort
@@ -633,6 +650,20 @@ ALLID        [^;()\t ]
 %x FindBegin
 
 %%
+
+<Start>{CONFIG} { // found configuration
+ 
+  QCString qcs(vhdlscanYYtext);
+  current->name=VhdlDocGen::getIndexWord(qcs,1);
+  current->type=VhdlDocGen::getIndexWord(qcs,3);
+  current->startLine=yyLineNr;
+  current->bodyLine=yyLineNr;
+  current->section=Entry::VARIABLE_SEC; 
+  current->spec=VhdlDocGen::CONFIG;
+  current->args="configuration";
+  newEntry();
+  BEGIN(Start);
+}
 
 <Start>{SIGTYPES}  { // found type constant|type|attribute and so on..
     bropen=0;
@@ -783,37 +814,14 @@ ALLID        [^;()\t ]
   lineCount();
   QCString type;
   QCString tt(yytext);
-  tt = tt.stripWhiteSpace();
-  //printf("  tt=%s\n",tt.data());
-  //VhdlDocGen::deleteAllChars(tt,'\n');
-  QCString name = VhdlDocGen::getIndexWord(tt,0);
-  int i=name.find(':');
-  if (i!=-1) 
-  {
-    name = name.left(i);
-    tt = tt.right(tt.length()-i-1);
-  }
-  int j = tt.find('.');
-  if (j!=-1)
-  {
-    int k=tt.find(" ",j,FALSE);
-    if (k>(j+1))
-      type=tt.mid(j+1,k-j-1);
-  }
-  else
-  {
-    type=VhdlDocGen::getIndexWord(tt,1);
-    if (type==":") type=VhdlDocGen::getIndexWord(tt,2);
-    if (type=="component") type=VhdlDocGen::getIndexWord(tt,3);
-  }
-  //printf("Add mapping %s->%s\n",type.data(),name.data());
-
-  current->spec=VhdlDocGen::PORTMAP;
+  QRegExp regg("[ \n\t:-]");
+  QStringList qsl=QStringList::split(regg,tt,false);
+  current->spec=VhdlDocGen::COMPONENT_INST;
   current->section=Entry::VARIABLE_SEC;
   current->startLine=yyLineNr;
   current->bodyLine=yyLineNr;
-  current->type=type;
-  current->name=name;
+  current->type=QCString(qsl[1]);
+  current->name=QCString(qsl[0]);
   if (lastCompound)
   {
     lastCompound->addSubEntry(current);
@@ -985,7 +993,7 @@ ALLID        [^;()\t ]
   BEGIN(ParseRecord);
 }
 
-<ParseType>{B}+("is"){B}*{CR}|{B}+("is"){B}*"--" { // found a new function  in an architecture ?
+<ParseType>{BR}+("is"){BR}+|{BR}+("is"){B}*"--" { // found a new function  in an architecture ?
   addText(yytext,yyleng);
   lineCount();
   QCString ttt;
@@ -1075,50 +1083,57 @@ ALLID        [^;()\t ]
 
 
 <ParseType>{ENDE}|{ENDFUNC} { // found end of function|process
-  lineCount();
-  if (functionEntry)
-  {
-    functionEntry->endBodyLine=yyLineNr;
-    functionEntry=0;
-  }
-
-  if (isBody==1 && isFunc==1 && bropen==0)
-  {
-    isFunc=0;
-  }
-
-  bufferClear();
-  BEGIN(Start);
-
-}
-
-
-<ParseType>{ENDE3} {
+  QRegExp regg("[ \n\t;]");
   lineCount();
   QCString tt(yytext);
   tt=tt.lower();
-  VhdlDocGen::deleteAllChars(tt,';');
-  tt.stripWhiteSpace();
-  QStringList ql=QStringList::split(" ",tt,FALSE);
+  QStringList ql=QStringList::split(regg,tt,FALSE);
   int index=ql.findIndex(QCString("if"))+1;
   index+=ql.findIndex(QCString("case"))+1;
   index+=ql.findIndex(QCString("loop"))+1;
   index+=ql.findIndex(QCString("generate"))+1;
   bufferClear();
-  if (functionEntry && index==0)
+  if (index==0)
   {
-    functionEntry->endBodyLine=yyLineNr;
-    functionEntry=0;
+    if (isFunc)
+    {
+      Entry* pFunc=getEntryAtLine(current_root,iFuncLine);
+      if (pFunc && pFunc->section==Entry::FUNCTION_SEC)
+      {
+	pFunc->endBodyLine=yyLineNr;
+      }
+      isFunc=0;
+      BEGIN(Start);
+    }
+  }
+}
+
+<ParseFunc>[^;()] {
+  // eat process body
+  lineCount();
+  BEGIN(ParseFunc);
+ }
+
+<ParseFunc>{ENDE3} {
+  QRegExp regg("[ \n\t;]");
+  lineCount();
+  QCString tt(yytext);
+  tt=tt.lower();
+  QStringList ql=QStringList::split(regg,tt,FALSE);
+  int index=ql.findIndex(QCString("if"))+1;
+  index+=ql.findIndex(QCString("case"))+1;
+  index+=ql.findIndex(QCString("loop"))+1;
+  index+=ql.findIndex(QCString("generate"))+1;
+  bufferClear();
+  if (index==0 && isFunc)
+  {
+    Entry* pFunc=getEntryAtLine(current_root,iFuncLine);
+    if (pFunc && pFunc->section==Entry::FUNCTION_SEC)
+    {
+      pFunc->endBodyLine=yyLineNr;
+    }
     isFunc=0;
     BEGIN(Start);
-  }
-  else if (index==0)
-  {
-    BEGIN(Start);
-  }
-  else 
-  {
-    BEGIN(ParseType);
   }
 }
 
@@ -1130,6 +1145,16 @@ ALLID        [^;()\t ]
     if (isFunc)
     {
       parseFunctionProto();
+      bufferClear();
+      if (lastCompound && lastCompound->spec==VhdlDocGen::PACKAGE) 
+      {
+        isFunc=0;
+        BEGIN(Start);
+      }
+      else
+      {
+        BEGIN(ParseFunc); 
+      }
     }//if
     else
     {
@@ -1199,10 +1224,10 @@ ALLID        [^;()\t ]
       {
 	newEntry();
       }
+      isFunc=0;
+      bufferClear();
+      BEGIN(Start);
     }
-    isFunc=0;
-    //bufferClear();
-    BEGIN(Start);
   }
   else
   {

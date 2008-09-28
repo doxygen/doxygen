@@ -69,10 +69,13 @@ class VhdlDocGen
       DOCUMENT, //18 0x12
       UNITS,	  
       GENERIC,
-      PORTMAP,
+      PORTMAP, // obsolete
+      COMPONENT_INST,
       GROUP,
       VFILE,   
-      SHAREDVARIABLE
+      SHAREDVARIABLE,
+      CONFIG,
+      ALIAS
     };
 
     VhdlDocGen();
@@ -135,6 +138,10 @@ class VhdlDocGen
 
     //static void writeVhdlComponentList(OutputList &ol,int type);
 
+    static bool isConfig(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::CONFIG; }
+    static bool isAlias(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::ALIAS; }
     static bool isLibrary(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY; }
     static bool isGeneric(const MemberDef *mdef) 
@@ -179,6 +186,8 @@ class VhdlDocGen
     { return mdef->getMemberSpecifiers()==VhdlDocGen::VFILE; }
     static bool isGroup(const MemberDef *mdef) 
     { return mdef->getMemberSpecifiers()==VhdlDocGen::GROUP; }
+    static bool isCompInst(const MemberDef *mdef) 
+    { return mdef->getMemberSpecifiers()==VhdlDocGen::COMPONENT_INST; }
 
     //-----------------------------------------------------
     // translatable items
@@ -232,7 +241,7 @@ class VhdlDocGen
 
     static void writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition* d, OutputList &ol);
 
-    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*);
+    static void writeVhdlDeclarations(MemberList*,OutputList&,GroupDef*,ClassDef*,FileDef*);
 
     static void writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
         ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
@@ -250,14 +259,17 @@ class VhdlDocGen
     static void adjustRecordMember(MemberDef *mdef);
     static bool writeDoc(EntryNav* rootNav);
 
+    static void writeLink(const MemberDef* mdef,OutputList &ol);
+    static void adjustMemberName(QCString& nn);
+    static bool membersHaveSpecificType(MemberList *ml,int type);
+    static void startFonts(const QCString& q, char *keyword,OutputList& ol);
+    static bool isNumber(const QCString& s);
+
   private:
     static void getFuncParams(QList<Argument>&, const char* str);
-    static bool isNumber(const QCString& s);
-    static void startFonts(const QCString& q, char *keyword,OutputList& ol);
     static bool compareArgList(ArgumentList*,ArgumentList*);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
-    static void writeLink(const MemberDef* mdef,OutputList &ol);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
 };
 

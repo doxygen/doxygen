@@ -136,7 +136,6 @@
 "\n"
 "td.indexvalue {\n"
 "	background-color: #e8eef2;\n"
-"//	font-style: italic;\n"
 "	border: 1px solid #CCCCCC;\n"
 "	padding: 2px 10px;\n"
 "	margin: 2px 0px;\n"

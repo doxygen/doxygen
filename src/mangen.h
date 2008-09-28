@@ -129,7 +129,7 @@ class ManGenerator : public OutputGenerator
     void endDescription()   {}
     void startDescItem();
     void endDescItem();
-    void lineBreak() { t << "\n.br" << endl; }
+    void lineBreak(const char *) { t << "\n.br" << endl; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(bool);

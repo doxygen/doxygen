@@ -124,7 +124,7 @@ class RTFGenerator : public OutputGenerator
     void endDescription();
     void startDescItem();
     void endDescItem();
-    void lineBreak();
+    void lineBreak(const char *style=0);
     void startMemberDoc(const char *,const char *,const char *,const char *);
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);

@@ -16,8 +16,7 @@
  * Parser for VHDL subset
  * written by M. Kreis
  * supports VHDL-87
- * does not support all keywords of VHDL '93 (impure function/shared variables ..)
- * and VHDL-AMS 
+ * does not support VHDL-AMS 
  ******************************************************************************/
 
 // global includes
@@ -1167,10 +1166,13 @@ QCString VhdlDocGen::trTypeString(int type)
     case VhdlDocGen::GENERIC:        return "Generic";
     case VhdlDocGen::DOCUMENT:       return "Doc"; 
     case VhdlDocGen::UNITS:          return "Units"; 
-    case VhdlDocGen::PORTMAP:        return "Port Map"; 
+    //case VhdlDocGen::PORTMAP:        return "Port Map"; 
     case VhdlDocGen::SHAREDVARIABLE: return "Shared Variable"; 
     case VhdlDocGen::GROUP:          return "Group"; 
     case VhdlDocGen::VFILE:          return "File"; 
+    case VhdlDocGen::COMPONENT_INST: return "Component Instantination"; 
+    case VhdlDocGen::ALIAS:          return "Alias";
+    case VhdlDocGen::CONFIG:         return "Configuration";                                     
     default:                         return "";
   }
 } // convertType
@@ -1649,7 +1651,7 @@ QCString VhdlDocGen::convertArgumentListToString(const ArgumentList* al,bool fun
 
 
 void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
-                             OutputList& ol,GroupDef* gd,ClassDef* cd)
+                        OutputList& ol,GroupDef* gd,ClassDef* cd,FileDef *fd)
 {
   static ClassDef *cdef;
   //static GroupDef* gdef;
@@ -1684,8 +1686,25 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::SHAREDVARIABLE,FALSE),0,FALSE,VhdlDocGen::SHAREDVARIABLE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::VFILE,FALSE),0,FALSE,VhdlDocGen::VFILE);
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::GROUP,FALSE),0,FALSE,VhdlDocGen::GROUP);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::COMPONENT_INST,FALSE),0,FALSE,VhdlDocGen::COMPONENT_INST);
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,0,gd,theTranslator_vhdlType(VhdlDocGen::ALIAS,FALSE),0,FALSE,VhdlDocGen::ALIAS);
+  
+  // configurations must be added to global file definitions.  
+  VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),0,FALSE,VhdlDocGen::CONFIG);
+}
 
-
+static void setConfigurationType(MemberList *ml)
+{
+  if (ml==0) return;
+  MemberDef *mdd=0;
+  MemberListIterator mmli(*ml);
+  for ( ; (mdd=mmli.current()); ++mmli )
+  {
+    if (strcmp(mdd->argsString(),"configuration")==0)
+    {
+      mdd->setMemberSpecifiers(VhdlDocGen::CONFIG);        
+    }
+  }
 }
 
 /* writes a vhdl type documentation */
@@ -1766,6 +1785,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     if      (VhdlDocGen::isVariable(mdef))     Doxygen::tagFile << "shared variable";
     if      (VhdlDocGen::isFile(mdef))         Doxygen::tagFile << "file";
     if      (VhdlDocGen::isGroup(mdef))        Doxygen::tagFile << "group";
+    if      (VhdlDocGen::isCompInst(mdef))     Doxygen::tagFile << "component instantiation";
+    if      (VhdlDocGen::isAlias(mdef))        Doxygen::tagFile << "alias";
+    if      (VhdlDocGen::isCompInst(mdef))     Doxygen::tagFile << "configuration";
 
     Doxygen::tagFile << "\">" << endl;
     Doxygen::tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
@@ -1882,60 +1904,47 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::PACKAGE:
     case VhdlDocGen::ENTITY:
     case VhdlDocGen::COMPONENT:
+    case VhdlDocGen::COMPONENT_INST:
+    case VhdlDocGen::CONFIG:
       writeLink(mdef,ol);
       ol.insertMemberAlign();
+      ol.startBold();
       ol.docify(ltype);
+      ol.endBold();
       ol.docify("  ");
-      if (VhdlDocGen::isComponent(mdef))
+      if (VhdlDocGen::isComponent(mdef) || 
+          VhdlDocGen::isConfig(mdef)    ||
+          VhdlDocGen::isCompInst(mdef))
       {
-	nn=mdef->name();
+        if (VhdlDocGen::isConfig(mdef) || VhdlDocGen::isCompInst(mdef))
+        {
+          nn=ltype;
+        }
+        else
+        {
+	  nn=mdef->name();
+        }
 	kl=getClass(nn.data());
 	if (kl) 
 	{
 	  nn=kl->getOutputFileBase();
 	  ol.pushGeneratorState();
 	  ol.disableAllBut(OutputGenerator::Html);
-	  ol.docify(" ");
-	  QCString name=theTranslator_vhdlType(VhdlDocGen::ENTITY,TRUE);
-	  ol.startBold();
-	  ol.docify(name.data());
-	  ol.endBold();
 	  ol.startEmphasis();
-	  name.resize(0);
-	  name+="  <"+mdef->name()+"> ";
+          QCString name("<Entity ");
+          if (VhdlDocGen::isConfig(mdef) || VhdlDocGen::isCompInst(mdef))
+          {
+            name+=ltype+">";
+          }
+          else
+          {
+            name+=mdef->name()+"> ";
+          }
 	  ol.writeObjectLink(kl->getReference(),kl->getOutputFileBase(),0,name.data());
 	  ol.endEmphasis();
 	  ol.popGeneratorState();
 	}
       } 
-      break;
-    case VhdlDocGen::USE:
-      kl=VhdlDocGen::getClass(mdef->name());
-      if (kl && ((VhdlDocGen::VhdlClasses)kl->protection()==VhdlDocGen::ENTITYCLASS)) break;
-      writeLink(mdef,ol);  
-      ol.insertMemberAlign();
-      ol.docify("  ");
-
-      if (kl)
-      {
-	nn=kl->getOutputFileBase();
-	ol.pushGeneratorState();
-	ol.disableAllBut(OutputGenerator::Html);
-	ol.docify(" ");
-	QCString name=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
-	ol.startBold();
-	ol.docify(name.data()); 
-	name.resize(0);
-	ol.endBold();
-	name+=" <"+mdef->name()+">";
-	ol.startEmphasis();
-	ol.writeObjectLink(kl->getReference(),kl->getOutputFileBase(),0,name.data());
-	ol.popGeneratorState();
-      }
-      break;
-    case VhdlDocGen::LIBRARY:
-      writeLink(mdef,ol);
-      ol.insertMemberAlign();
       break;
     case VhdlDocGen::SIGNAL:
     case VhdlDocGen::ATTRIBUTE:
@@ -1945,6 +1954,7 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
     case VhdlDocGen::SHAREDVARIABLE:    
     case VhdlDocGen::VFILE:
     case VhdlDocGen::GROUP: 
+    case VhdlDocGen::ALIAS: 
       writeLink(mdef,ol);
       ol.docify(" ");
       ol.insertMemberAlign();
@@ -2063,7 +2073,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   pack.clear();
 }//plainDeclaration
 
-static bool membersHaveSpecificType(MemberList *ml,int type)
+bool VhdlDocGen::membersHaveSpecificType(MemberList *ml,int type)
 {
   if (ml==0) return FALSE;
   MemberDef *mdd=0;
@@ -2095,7 +2105,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
     const char *title,const char *subtitle,bool /*showEnumValues*/,int type) 
 {
-
+  setConfigurationType(ml);
   if (!membersHaveSpecificType(ml,type)) return;
 
   if (title) 
@@ -2250,6 +2260,16 @@ QCString VhdlDocGen::trVhdlType(int type,bool sing)
     case VhdlDocGen::GROUP:        
       if (sing) return "Group";       
       return "Groups";
+    case VhdlDocGen::COMPONENT_INST:       
+      if (sing) return "Component Instantiation";       
+      else      return "Component Instantiations";
+    case VhdlDocGen::ALIAS:        
+      if (sing) return "Alias";       
+      return "Aliases";
+    case VhdlDocGen::CONFIG:        
+      if (sing) return "Configuration";       
+      return "Configurations";
+      
     default:                       
       return "Class";
   }
