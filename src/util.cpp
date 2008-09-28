@@ -99,7 +99,7 @@ void TextGeneratorOLImpl::writeBreak() const
 { 
   m_od.pushGeneratorState();
   m_od.disableAllBut(OutputGenerator::Html);
-  m_od.lineBreak();
+  m_od.lineBreak("typebreak");
   m_od.popGeneratorState();
 }
 
@@ -1642,7 +1642,7 @@ nextChar:
         //uint rl=result.length();
         uint rl=resultPos;
         if ((rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) &&
-            (c!='*' || !findOperator2(s,i)) // avoid splitting operator* and operator->*
+            ((c!='*' && c!='&') || !findOperator2(s,i)) // avoid splitting operator* and operator->* and operator&
            ) 
         {
           ADD_CHAR(' ');

@@ -897,7 +897,7 @@ void RTFGenerator::writeStyleInfo(int)
 {
 }
 
-void RTFGenerator::lineBreak()
+void RTFGenerator::lineBreak(const char *)
 {
   DBG_RTF(t << "{\\comment (lineBreak)}"    << endl)
   t << "\\par" << endl;

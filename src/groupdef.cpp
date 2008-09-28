@@ -1365,7 +1365,7 @@ void GroupDef::writeMemberDeclarations(OutputList &ol,MemberList::ListType lt,co
   MemberList * ml = getMemberList(lt);
     if (optimizeVhdl && ml) 
     {
-         VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0);
+         VhdlDocGen::writeVhdlDeclarations(ml,ol,this,0,0);
         return;
     }
   if (ml) 

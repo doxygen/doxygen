@@ -1042,6 +1042,61 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
 }
 
+static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const char *memName)
+{
+  // extract class definition of the return type in order to resolve
+  // a->b()->c() like call chains
+
+  //printf("type=`%s' args=`%s' class=%s\n",
+  //  xmd->typeString(),xmd->argsString(),
+  //  xmd->getClassDef()->name().data());
+
+  if (g_exampleBlock)
+  {
+    QCString anchor;
+    anchor.sprintf("a%d",g_anchorCount);
+    //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
+    //                                  g_exampleFile.data());
+    if (xmd->addExample(anchor,g_exampleName,g_exampleFile))
+    {
+      ol.writeCodeAnchor(anchor);
+      g_anchorCount++;
+    }
+  }
+
+  ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()));
+  //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
+  g_theCallContext.setClass(typeClass);
+
+  Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
+    xmd->getBodyDef() : xmd->getOuterScope();
+  if (xmd->getGroupDef()) xd = xmd->getGroupDef();
+  if (xd)
+  {
+
+    //printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
+
+    if (xmd->templateMaster()) xmd = xmd->templateMaster();
+
+    // add usage reference
+    if (g_currentDefinition && g_currentMemberDef &&
+	/*xmd!=g_currentMemberDef &&*/ g_insideBody)
+    {
+      addDocCrossReference(g_currentMemberDef,xmd);
+    }
+
+    // write the actual link
+    ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
+	g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
+    writeMultiLineCodeLink(ol,xmd->getReference(),
+	xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
+    addToSearchIndex(memName);
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const char *memName)
 {
   if (mcd)
@@ -1050,56 +1105,7 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,ClassDef *mcd,const 
     //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",mcd->name().data(),memName,xmd);
     if (xmd)
     {
-      // extract class definition of the return type in order to resolve
-      // a->b()->c() like call chains
-      
-      //printf("type=`%s' args=`%s' class=%s\n",
-      //  xmd->typeString(),xmd->argsString(),
-      //  xmd->getClassDef()->name().data());
-
-      if (g_exampleBlock)
-      {
-	QCString anchor;
-	anchor.sprintf("a%d",g_anchorCount);
-	//printf("addExampleFile(%s,%s,%s)\n",anchor.data(),g_exampleName.data(),
-	//                                  g_exampleFile.data());
-	if (xmd->addExample(anchor,g_exampleName,g_exampleFile))
-	{
-	  ol.writeCodeAnchor(anchor);
-	  g_anchorCount++;
-	}
-      }
-
-      ClassDef *typeClass = stripClassName(removeAnonymousScopes(xmd->typeString()));
-      //fprintf(stderr,"%s -> typeName=%p\n",xmd->typeString(),typeClass);
-      g_theCallContext.setClass(typeClass);
-
-      Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
-	               xmd->getBodyDef() : xmd->getOuterScope();
-      if (xmd->getGroupDef()) xd = xmd->getGroupDef();
-      if (xd)
-      {
-
-	//printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
-
-	if (xmd->templateMaster()) xmd = xmd->templateMaster();
-
-	// add usage reference
-	if (g_currentDefinition && g_currentMemberDef &&
-	    /*xmd!=g_currentMemberDef &&*/ g_insideBody)
-	{
-	  addDocCrossReference(g_currentMemberDef,xmd);
-	}
-
-	// write the actual link
-        ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
-                          g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-	writeMultiLineCodeLink(ol,xmd->getReference(),
-	    xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
-        addToSearchIndex(memName);
-	return TRUE;
-      }
-
+      return generateClassMemberLink(ol,xmd,memName);
     }
   }
   
@@ -1209,6 +1215,20 @@ static void generateMemberLink(CodeOutputInterface &ol,const QCString &varName,
 
 static void generateFunctionLink(CodeOutputInterface &ol,char *funcName)
 {
+  if (g_currentMemberDef && g_currentMemberDef->getClassDef() &&
+      funcName==g_currentMemberDef->localName() && 
+      g_currentMemberDef->getDefLine()==g_yyLineNr &&
+      generateClassMemberLink(ol,g_currentMemberDef,funcName)
+     )
+  {
+    // special case where funcName is the name of a method that is also
+    // defined on this line. In this case we can directly link to 
+    // g_currentMemberDef, which is not only faster, but
+    // in case of overloaded methods, this will make sure that we link to
+    // the correct method, and thereby get the correct reimplemented relations.
+    // See also bug 549022.
+    return;
+  }
   //CodeClassDef *ccd=0;
   ClassDef *ccd=0;
   QCString locScope=g_classScope;
@@ -1672,9 +1692,9 @@ SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
-KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw")
+KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize")
 KEYWORD ("add"|"asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
-FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while")
+FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))

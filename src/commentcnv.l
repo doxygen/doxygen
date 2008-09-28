@@ -31,6 +31,7 @@
 #include "message.h"
 #include "config.h"
 #include "doxygen.h"
+#include "util.h"
 
 
 #define ADDCHAR(c)    g_outBuf->addChar(c)
@@ -64,7 +65,7 @@ static bool     g_inSpecialComment;
 static QCString g_aliasString;
 static int      g_blockCount;
 static int      g_lastBlockContext;
-static bool     g_PythonDocString;
+static bool     g_pythonDocString;
 
 static SrcLangExt g_lang;
 
@@ -123,6 +124,7 @@ static inline void copyToOutput(const char *s,int len)
       if (s[i]=='\n') 
       {
 	ADDCHAR('\n');
+	//fprintf(stderr,"---> skip %d\n",g_lineNr);
 	g_lineNr++;
       }
     }
@@ -135,7 +137,9 @@ static inline void copyToOutput(const char *s,int len)
     {
       switch (s[i])
       {
-	case '\n': g_col=0; g_lineNr++; break;
+	case '\n': g_col=0; 
+	           //fprintf(stderr,"---> copy %d\n",g_lineNr);
+		   g_lineNr++; break;
 	case '\t': g_col+=tabSize-(g_col%tabSize); break;
 	default:   g_col++; break;
       }
@@ -271,7 +275,7 @@ void replaceComment(int offset);
 
 %%
 
-<Scan>[^"'\/\n\\#\\-]*             { /* eat anything that is not " / or \n */ 
+<Scan>[^"'!\/\n\\#\\-]*           { /* eat anything that is not " / or \n */ 
                                      copyToOutput(yytext,yyleng); 
 				   }
 <Scan>"\"\"\""!                     { /* start of python long comment */
@@ -281,7 +285,18 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       g_PythonDocString = TRUE;
+                                       g_pythonDocString = TRUE;
+                                       copyToOutput(yytext,yyleng); 
+				       BEGIN(CComment);
+				     }
+                                   }
+<Scan>"!>"			   {
+  			             if (g_lang!=SrcLangExt_F90)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
                                        copyToOutput(yytext,yyleng); 
 				       BEGIN(CComment);
 				     }
@@ -438,7 +453,7 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
                                    }
 
-<CComment>[^\\@*\n]*	           { /* anything that is not a '*' or command */ 
+<CComment>[^\\!@*\n]*	           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */
@@ -451,7 +466,7 @@ void replaceComment(int offset);
 				     }
 				     else
 				     {
-                                       g_PythonDocString = FALSE;
+                                       g_pythonDocString = FALSE;
 				       copyToOutput(yytext,yyleng);
 				       BEGIN(Scan);
 				     }
@@ -471,7 +486,7 @@ void replaceComment(int offset);
 				     }
                                    }
 <CComment>"\n"/[ \t]*[^#]	   { /* end of Python comment */
-                                     if (g_lang!=SrcLangExt_Python || g_PythonDocString)
+                                     if (g_lang!=SrcLangExt_Python || g_pythonDocString)
 				     {
 				       REJECT;
 				     }
@@ -483,6 +498,17 @@ void replaceComment(int offset);
   				   }
 <CComment>"\n"/[ \t]*[^\-]	   { /* end of VHDL comment */
                                      if (g_lang!=SrcLangExt_VHDL)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       copyToOutput(yytext,yyleng);
+				       BEGIN(Scan);
+				     }
+  				   }
+<CComment>"\n"/[ \t]*[^!]	   { /* end of Fortran comment */
+  				     if (g_lang!=SrcLangExt_F90)
 				     {
 				       REJECT;
 				     }
@@ -582,7 +608,7 @@ void replaceComment(int offset);
   				     BEGIN(g_condCtx);
   				   }
 <CondLine>[ \t]*
-<CComment,ReadLine>[\\@]"cond"[ \t\r]*\n |
+<CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n |
 <CondLine>.			   { // forgot section id?
   				     if (YY_START!=CondLine) g_condCtx=YY_START;
   				     bool oldSkip=g_skip;
@@ -678,8 +704,8 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   g_skip     = FALSE;
   g_fileName = fileName;
   g_lang = getLanguageFromFileName(fileName);
-  g_PythonDocString = FALSE;
-  g_lineNr   = 0;
+  g_pythonDocString = FALSE;
+  g_lineNr   = 1;
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
   BEGIN(Scan);

@@ -397,13 +397,14 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::searchIndex->addWord(localName(),TRUE);
   }
 
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty())
+  bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
+  if (generateTagFile)
   {
     Doxygen::tagFile << "  <compound kind=\"namespace\">" << endl;
     Doxygen::tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
- 
+
   //---------------------------------------- start flexible part -------------------------------
 
 #define NEW_LAYOUT
@@ -552,8 +553,7 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   endFile(ol);
 
-
-  if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
+  if (generateTagFile)
   {
     writeDocAnchorsToTagFile();
     Doxygen::tagFile << "  </compound>" << endl;

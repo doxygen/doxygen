@@ -54,6 +54,7 @@ HEADERS      =	bufstr.h \
                 htmldocvisitor.h \
 		htmlgen.h \
 		htmlhelp.h \
+		indexlog.h \
 		image.h \
 		index.h \
                 index_xsd.h \
@@ -87,6 +88,8 @@ HEADERS      =	bufstr.h \
                 pyscanner.h \
                 fortrancode.h \
                 fortranscanner.h \
+		qhp.h \
+		qhpxmlwriter.h \
 		qtbc.h \
 		reflist.h \
                 rtfdocvisitor.h \
@@ -143,6 +146,7 @@ HEADERS      =	bufstr.h \
 		vhdlscanner.h \
 		xmldocvisitor.h \
                 xmlgen.h
+
 SOURCES      =	ce_lex.cpp \
                 ce_parse.cpp \
 		classdef.cpp \
@@ -150,6 +154,7 @@ SOURCES      =	ce_lex.cpp \
                 cmdmapper.cpp \
 		code.cpp \
 		commentcnv.cpp \
+		commentscan.cpp \
 		cppvalue.cpp \
 		debug.cpp \
                 defgen.cpp \
@@ -169,11 +174,14 @@ SOURCES      =	ce_lex.cpp \
 		filename.cpp \
 		formula.cpp \
 		ftvhelp.cpp \
+		fortrancode.cpp \
+		fortranscanner.cpp \    
 		groupdef.cpp \
 		htags.cpp \
                 htmldocvisitor.cpp \
 		htmlgen.cpp \
 		htmlhelp.cpp \
+		indexlog.cpp \
 		image.cpp \
 		index.cpp \
 		instdox.cpp \
@@ -201,8 +209,8 @@ SOURCES      =	ce_lex.cpp \
 		pre.cpp \
 		pycode.cpp \
 		pyscanner.cpp \    
-		fortrancode.cpp \
-		fortranscanner.cpp \    
+		qhp.cpp \
+		qhpxmlwriter.cpp \
 		reflist.cpp \
                 rtfdocvisitor.cpp \
 		rtfgen.cpp \
@@ -220,7 +228,6 @@ SOURCES      =	ce_lex.cpp \
 		vhdlscanner.cpp \
 		xmldocvisitor.cpp \
                 xmlgen.cpp \
-		commentscan.cpp
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200

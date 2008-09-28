@@ -207,7 +207,7 @@ static DocCmdMap docCmdMap[] =
   { "author",          0,                       TRUE  },
   { "authors",         0,                       TRUE  },
   { "copydoc",         0,                       TRUE  },
-  { "copybrief",       0,                       TRUE  },
+  { "copybrief",       0,                       FALSE },
   { "copydetails",     0,                       TRUE  },
   { "date",            0,                       TRUE  },
   { "dotfile",         0,                       TRUE  },
@@ -974,6 +974,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>{CMD}"f{"[^}\n]+"}"("{"?)      { // start of a formula with custom environment
 					  formulaText="\\begin";
 					  formulaEnv=&yytext[2];
+					  if (formulaEnv.at(formulaEnv.length()-1)=='{')
+					  {
+					    // remove trailing open brace
+					    formulaEnv=formulaEnv.left(formulaEnv.length()-1);
+					  }
 					  formulaText+=formulaEnv;
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);

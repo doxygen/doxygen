@@ -235,7 +235,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void startSection(const char *,const char *,SectionInfo::SectionType) = 0;
     virtual void endSection(const char *,SectionInfo::SectionType) = 0;
 
-    virtual void lineBreak() = 0;
+    virtual void lineBreak(const char *style) = 0;
     virtual void addIndexItem(const char *s1,const char *s2) = 0;
 
     virtual void writeNonBreakableSpace(int) = 0;
