@@ -6366,7 +6366,6 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     extLookup.insert(".idl",   new int(SrcLangExt_IDL));
     extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".odl",   new int(SrcLangExt_IDL));
-    extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
     extLookup.insert(".java",  new int(SrcLangExt_Java));
     extLookup.insert(".as",    new int(SrcLangExt_JS));
     extLookup.insert(".js",    new int(SrcLangExt_JS));

@@ -10,7 +10,7 @@
 "    </tab>\n"
 "    <tab type=\"classes\" visible=\"yes\" title=\"\">\n"
 "      <tab type=\"classes\" visible=\"yes\" title=\"\"/>\n"
-"      <tab type=\"classindex\" visible=\"no\" title=\"\"/> \n"
+"      <tab type=\"classindex\" visible=\"$ALPHABETICAL_INDEX\" title=\"\"/> \n"
 "      <tab type=\"hierarchy\" visible=\"yes\" title=\"\"/>\n"
 "      <tab type=\"classmembers\" visible=\"yes\" title=\"\"/>\n"
 "    </tab>\n"

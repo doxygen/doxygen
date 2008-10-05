@@ -16,8 +16,7 @@
  * Parser for syntax hightlighting and references for vhdl subset
  * written by M. Kreis
  * supports VHDL-87
- * does not support all keywords of VHDL '93 (impure function/shared variables grouping ..)
- * and VHDL-AMS 
+ * does not support VHDL-AMS 
  ******************************************************************************/
 
 %{
@@ -56,10 +55,10 @@
 // ----------------- <vhdl> ----------------------------------
 
 //static bool isPackBody=FALSE;
+//static bool isStartMap;
 static bool isFuncProto=FALSE;
 static bool isComponent=FALSE;
 static bool isPackageBody=FALSE;
-static bool isStartMap;
 static bool isProto = FALSE;
 static bool isStripCode = FALSE;
 
@@ -109,7 +108,7 @@ static void generateMemLink(CodeOutputInterface &ol,QCString &clName,QCString& m
 static bool writeColoredWord(QCString& word );
 static void generateClassOrGlobalLink(CodeOutputInterface &ol,const char *clName, bool typeOnly=FALSE);
 static void endFontClass();
-
+static void startFontClass(const char *s);
 //-------------------------------------------------------------------
 
 
@@ -122,6 +121,42 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
   }
 }
 
+static bool checkString(QCString &name)
+{
+  if (name.isEmpty()) return FALSE;
+  static QRegExp regg("[ \t\"]");
+
+  int len=name.length();
+  if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
+  {
+    QStringList qrl=QStringList::split(regg,name,FALSE);
+    if (VhdlDocGen::isNumber((QCString)qrl[0]))
+    {
+      g_code->codify("\""); 
+      startFontClass("vhdllogic");
+      QCString mid=name.mid(1,len-2); //" 1223 "
+      g_code->codify(mid.data());
+      endFontClass();
+      g_code->codify("\""); 
+    }
+    else
+    {
+      startFontClass("keyword");
+      g_code->codify(name.data());
+      endFontClass();
+    }
+    return TRUE;
+  }
+
+  if (VhdlDocGen::isNumber(name))
+  {
+    startFontClass("vhdllogic");
+    g_code->codify(name.data());
+    endFontClass();
+    return TRUE;
+  }
+  return FALSE;
+}
 
 static void addToSearchIndex(const char *text)
 {
@@ -220,7 +255,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
   for (unsigned int j=0;j<ttt.length();j++)
   {
     char c=ttt.at(j);
-    if (c==' '|| c==',' || c==';' || c==':' || c=='(' || c==')' || c=='\r' || c=='\t')
+    if (c==' '|| c==',' || c==';' || c==':' || c=='(' || c==')' || c=='\r' || c=='\t' || c=='.')
     {
       if (found)
       {
@@ -242,6 +277,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
           }
           else                                                                          
 	  {
+          if (!checkString(temp))
             g_code->codify(temp.data());
 	  }
         }
@@ -278,6 +314,13 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
       }
       else                 
       {
+         QCString qc(temp.data());
+         if (VhdlDocGen::isNumber(qc)){
+                         startFontClass("vhdllogic");
+                         g_code->codify(temp.data());
+                         endFontClass();
+                              }
+         else     
         g_code->codify(temp.data());
       }
     }
@@ -558,8 +601,11 @@ static QCString g_temp;
 /* writes and links a port map statement */
 static void codifyMapLines(char *text)
 {
+  if (text==NULL) return;
   g_temp.resize(0);       
-  bool dot=FALSE;
+  //bool dot=FALSE;
+  int wordCounter=0;
+  QCString ctemp;
   //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
   char *p=text,*sp=p;
   char c;
@@ -567,110 +613,42 @@ static void codifyMapLines(char *text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n' && c!=':' && c != ' ' && c != '(')
+    while ((c=*p++) &&  c!='\n' && c!=':' && c != ' ' && c != '(' && c!='\0' && c!='\t')
     { 
-      g_temp+=c; 
+      if (c!=0x9)
+	g_temp+=c; 
     }
-    //printf("--> g_temp='%s'\n",g_temp.data());
-    if (c=='\n')
+    if (c=='\0') return;
+    if (!g_temp.isEmpty()) wordCounter++;
+
+    if (!g_temp.isEmpty())
     {
-      g_yyLineNr++;
-      *(p-1)='\0';
-      //if (dot==TRUE)
-      //{
-        QCString tt=g_temp;
-        tt=tt.lower();
-        tt=tt.stripWhiteSpace();
-	QCString *ss;
-        if ((ss=VhdlDocGen::findKeyWord(tt)))
-        {
-	  writeFont(ss->data(),g_temp);
-        }
-        else 
-        {
-          generateClassOrGlobalLink(*g_code,sp);
-          if (dot) g_PortMapComp=tt;
-        }
-        dot=FALSE;
-        g_temp.resize(0);
-      //}
-      //else 
-      //{ 
-      //  g_code->codify(g_temp); 
-      //  g_temp.resize(0); 
-      //}
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
+      // different kinds of component instantiations
+      // xxx:yyy (generic/port) map(
+      // xxx:(entity/component/configuration) yyy (generic/port) map(
+      // xxx: entity yyy(zzz) (generic/port) map(
+      if (wordCounter==2 || wordCounter==3)
       {
-        startCodeLine();
-      }
-    }
-    else
-    {
-      if (c==':') 
-      { 
-        dot = TRUE;
-        g_code->codify(g_temp);
-        g_code->codify(":");
-        g_temp.resize(0);
-      }
-
-      if (c==' ' && !g_temp.isEmpty())
-      {
-        //if (dot==TRUE)
-        //{
-          QCString tt=g_temp;
-          // tt=tt.lower();
-
-	  QCString *ss;
-          if ((ss=VhdlDocGen::findKeyWord(tt)))
-          {
-	    writeFont(ss->data(),g_temp);
-          }
-          else 
-          {
-            g_PortMapComp=tt;
-            generateClassOrGlobalLink(*g_code,g_temp);
-          }
-          dot=FALSE;
-          g_temp.resize(0);
-          g_temp+=c;
-        //}
-        //else
-	//{ 
-        //  g_temp+=c;
-        //  g_code->codify(g_temp.data()); 
-        //  g_temp.resize(0); 
-        //}
-
-      }
-      else if (!g_temp.isEmpty()) 
-      { 
-        if (c!='(' && c!=' ') 
-        {
-          g_temp+=c;
-        }
-	QCString *ss;
-        if ((ss=VhdlDocGen::findKeyWord(g_temp.lower().stripWhiteSpace())))
-        {
-	  writeFont(ss->data(),g_temp);
-        }
-        else 
-        {
-          g_code->codify(g_temp); 
+	QCString q=g_temp.lower(); // consider (upper/lower) cases
+	if (q=="entity" || q=="component" || q=="configuration" || q=="port" || q=="generic")
+	{
+	  generateMemLink(*g_code,g_CurrClass,g_temp); 
 	}
-        g_temp.resize(0); 
+	else
+	{
+	  g_PortMapComp=g_temp;
+	  generateClassOrGlobalLink(*g_code,g_temp);
+	}
       }
       else 
       {
-	g_code->codify(" ");
-      }
-      if (c=='(')
-      { 
-        g_code->codify("(");  
-        done=TRUE; 
+	generateMemLink(*g_code,g_CurrClass,g_temp); 
       }
     }
+    ctemp.fill(c,1);
+    codifyLines(ctemp.data()); 
+    ctemp.resize(0);
+    g_temp.resize(0); 
   }//while
 }//codifymaplines
 
@@ -686,13 +664,13 @@ static void writeFuncProto()
 
   QStringList qlist=QStringList::split(name.data(),g_FuncProto,FALSE);
   QCString temp=(QCString)qlist[0];
-  codifyLines(temp.data());
+  codifyLines(temp.data(),g_CurrClass.data());
   g_FuncProto.stripPrefix(temp.data());
   temp.resize(0);
   temp=g_CurrClass;
   if (isPackageBody) 
   {
-    temp.stripPrefix("_");
+    temp.stripPrefix("_");// _{package body name}
   }
   MemberDef *mdef=VhdlDocGen::findFunction(ql,name,temp,FALSE);
 
@@ -700,11 +678,11 @@ static void writeFuncProto()
   {
     generateFuncLink(*g_code,mdef);
     g_FuncProto.stripPrefix(name.data());
-    codifyLines(g_FuncProto.data());
+    codifyLines(g_FuncProto.data(),g_CurrClass.data());
   }
   else
   {
-    codifyLines(g_FuncProto.data());
+    codifyLines(g_FuncProto.data(),g_CurrClass.data());
   }
 }// writeFuncProto
 
@@ -748,26 +726,26 @@ static int yyread(char *buf,int max_size)
 
 B             [ \t]
 BN            [ \t\n\r]
-
+STRING      ["][^"\n]*["]
 NAME          [a-z_A-Z][ a-z_A-Z0-9]*
 FUNCNAME      [a-z_A-Z"][a-z_A-Z0-9+*"/=<>-]*
 ID            "$"?[a-z_A-Z][a-z_A-Z0-9]*
-SPECSIGN      [:;, "+*&\/=<>'\t]*
-DIGITSS       [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
-ALLTYPESMAP   {B}*[_a-zA-Z0-9. ]+{B}*
-ALLTYPESMAP1  {B}*[_a-zA-Z0-9.() ]+{B}*
+SPECSIGN      [:;, +*&\/=<>'\t]*
+DIGITSS       [0-9]+|[0-9]+("#")*[0-9_a-fA-F\+\.\-]+("#")*
+ALLTYPESMAP   {B}*[_a-zA-Z0-9. ]+{BN}*
+ALLTYPESMAP1  {BN}*[_a-zA-Z0-9.() ]+{BN}*
 
 ARCHITECTURE  ^{B}*("architecture"){BN}+{FUNCNAME}{BN}+("of"){BN}+{FUNCNAME}
-PROCESS       ({BN}*{FUNCNAME}{B}*[:]+{BN}*("process"){BN}*[(]*)|[^a-zA-Z]("process "|"process("){BN}*[ (]*|[^a-zA-Z]("process"){BN}+
+PROCESS       ({BN}*{FUNCNAME}{BN}*[:]+{BN}*("process"){BN}*[(]*)|[^a-zA-Z]("process "|"process("){BN}*[ (]*|[^a-zA-Z]("process"){BN}+
 
-END1          {B}*("end "){BN}+("if"|"case"|"loop"|"generate")
+END1          {B}*("end "){BN}+("if"|"case"|"loop"|"generate"|"for")
 END2          [^a-zA-Z_]("end"){BN}*[;]
 END3          {BN}*[^a-zA-Z]("end"){BN}+{FUNCNAME}{BN}*[;]
 END4          {B}*("end"){BN}+"function"{BN}+{FUNCNAME}{BN}*[;]
 ENDEFUNC      {END3}|{END4}|{END2}
 
 KEYWORD       ("new"|"event"|"break"|"case"|"end"|"loop"|"else"|"for"|"goto"|"if"|"return"|"generate"|"is"|"while"|"in")
-TYPEKW        ^{B}*("type"|"subtype"|"constant"|"attribute"|"signal"|"variable")
+TYPEKW        ^{B}*("type"|"subtype"|"constant"|"attribute"|"signal"|"variable","alias","configuration")
 FUNC          ^{B}*("function"|"procedure"){BN}*{FUNCNAME}{BN}*("(")
 
 ARITHOP       "+"|"-"|"/"|"*"|"%"|"/="|":="
@@ -784,11 +762,10 @@ BRACECLOSE    [)]{1}
 
 TEXTT         {B}*"--"[^\n]*
 
-MAPCOMPONENT1 ({ALLTYPESMAP}[:]{ALLTYPESMAP}{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
+MAPCOMPONENT1 ({ALLTYPESMAP}[:]{ALLTYPESMAP}{TEXTT}*{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
 MAPCOMPONENT2 {BN}*("port"|"generic"){BN}+("map"){BN}*("("){1}
-MAPCOMPONENT3 ({ALLTYPESMAP}[:]{ALLTYPESMAP1}{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
-
-MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
+MAPCOMPONENT3 ({ALLTYPESMAP}[:]{BN}*{ALLTYPESMAP1}{TEXTT}*{BN}+("port"|"generic"){BN}+("map"){BN}*("("){1})
+MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{ALLTYPESMAP1}{TEXTT}*{BN}*("port"|"generic"){BN}*("map"){BN}*("("){1})
 
 %option noyywrap
 %option nounput
@@ -814,12 +791,12 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <Map>{BRACEOPEN}      {
                         g_braceCount++;
-                        writeFont("vhdlchar",yytext);
+                        writeFont("vhdlchar",vhdlcodeYYtext);
                         BEGIN(Map);
                       }
 
-<Map>[^()\n,]*        { /* write and link a port map lines */
-                        QCString tt(yytext);
+<Map>[^()\n,--]*        { /* write and link a port map lines */
+                        QCString tt(vhdlcodeYYtext);
                         VhdlDocGen::deleteAllChars(tt,',');
                         QRegExp r("=>");
 			QStringList ql=QStringList::split(r,tt,FALSE);
@@ -871,6 +848,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 			    cc=t1.at(index);
 			  }        
 			  s2=s2.stripWhiteSpace();
+			    if (!checkString(s2))
 			  generateMemLink(*g_code,g_CurrClass,s2); 
 			  while (index++<t1.size()) 
 			  { 
@@ -882,19 +860,22 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 			}
 			else
 			{
-			  codifyLines(yytext,g_CurrClass.data());
+			  codifyLines(vhdlcodeYYtext,g_CurrClass.data());
 			}
 			BEGIN(Map);
                       }
+<Map>{TEXTT} {
+                            writeFont("keyword",vhdlcodeYYtext);
+                       }
 
 <Map>"\n"|","         {
-                        codifyLines(yytext);
+                        codifyLines(vhdlcodeYYtext);
                         BEGIN(Map);
                       }
 
 <Map>{BRACECLOSE}     {
                         g_braceCount--;
-                        writeFont("vhdlchar",yytext);
+                        writeFont("vhdlchar",vhdlcodeYYtext);
                         if (g_braceCount==0)
 			{
                           BEGIN(Bases);
@@ -902,9 +883,9 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                       }
 
 <ParseFuncProto>{NAME} {
-                         QCString tmp(yytext);
+                         QCString tmp(vhdlcodeYYtext);
                          tmp=tmp.stripWhiteSpace();
-                         appStringLower(g_PrevString,yytext);
+                         appStringLower(g_PrevString,vhdlcodeYYtext);
                          g_vhdlKeyDict.insert(g_PrevString,new QCString(g_PrevString.data()));
                          if (!writeColoredWord(tmp))
 			 {
@@ -913,11 +894,21 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                          BEGIN(Bases);
                        }
 
+<ParseType>{STRING} {
+                       QCString qcs(vhdlcodeYYtext);
+                       VhdlDocGen::deleteAllChars(qcs,'"');
+                       VhdlDocGen::deleteAllChars(qcs,' ');
+                        if (VhdlDocGen::isNumber(qcs))
+                       writeFont("vhdllogic",vhdlcodeYYtext);
+                       else
+                       writeFont("keyword",vhdlcodeYYtext);
+                }
+
 <ParseType>"\n"       {
-                        g_FuncProto.append(yytext);
+                        g_FuncProto.append(vhdlcodeYYtext);
                         if (isProto)
 			{
-                          codifyLines(yytext);
+                          codifyLines(vhdlcodeYYtext);
 			}
                         BEGIN(ParseType);
                       }
@@ -926,18 +917,18 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 <ParseType>{TEXTT}    {
                         if (!isStripCode) 
 			{
-                          g_FuncProto.append(yytext);                
+                          g_FuncProto.append(vhdlcodeYYtext);                
                           if (isProto)                                                                 
 			  {
-                            writeFont("keyword",yytext);
+                            writeFont("keyword",vhdlcodeYYtext);
 			  }
                           BEGIN(ParseType); 
                          }
                        }
 
 <ParseType>{ENDEFUNC} {
-                        QCString tt(yytext);
-                        codifyLines(yytext);
+                        QCString tt(vhdlcodeYYtext);
+                        codifyLines(vhdlcodeYYtext,g_CurrClass.data());
                         tt=tt.lower();
                         VhdlDocGen::deleteAllChars(tt,';');
                         tt.stripWhiteSpace();
@@ -957,27 +948,27 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                       }
 
 <ParseType>{END1}     {
-                        codifyLines(yytext);
+                        codifyLines(vhdlcodeYYtext,g_CurrClass.data());
                         g_vhdlKeyDict.clear();
                       }
 
 <ParseType>^{B}*("begin "|"begin") {
-                        codifyLines(yytext);
+                        codifyLines(vhdlcodeYYtext,g_CurrClass.data());
                         isFuncProto=FALSE;
                       }
 
 <ParseType>{SPECSIGN} {
-                        g_FuncProto.append(yytext);
+                        g_FuncProto.append(vhdlcodeYYtext);
                         if (isProto)
 			{
-                          codifyLines(yytext);
+                          codifyLines(vhdlcodeYYtext,g_CurrClass.data());
 			}
                       }
 
 <ParseType>["_a-zA-Z0-9]* {
-                        QCString val(yytext);
-                        g_FuncProto.append(yytext);
-                        appStringLower(g_PrevString,yytext);
+                        QCString val(vhdlcodeYYtext);
+                        g_FuncProto.append(vhdlcodeYYtext);
+                        appStringLower(g_PrevString,vhdlcodeYYtext);
                                                         
                         if (isFuncProto && g_braceCount==0)
                         {
@@ -991,11 +982,18 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                             if (!isFuncProto && !g_vhdlKeyDict.find(g_PrevString))
                             {
                               val=val.stripWhiteSpace();
+			      if (VhdlDocGen::isNumber(val))
+			      {
+				startFontClass("vhdllogic");
+				codifyLines(vhdlcodeYYtext,g_CurrClass.data());
+				endFontClass();
+			      }
+                             else
                               generateMemLink(*g_code,g_CurrClass,val); 
                             }
                             else
 			    {
-                              codifyLines(yytext);
+                              codifyLines(vhdlcodeYYtext,g_CurrClass.data());
 			    }
                           }
                         }
@@ -1007,7 +1005,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                         g_FuncProto+='(';
                         if (isProto)
 		        {
-                          writeFont("vhdlchar",yytext);
+                          writeFont("vhdlchar",vhdlcodeYYtext);
 		        }
                         BEGIN(ParseType);
                       }
@@ -1017,12 +1015,12 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                         g_FuncProto+=')';
                         if (isProto)
 			{
-                          writeFont("vhdlchar",yytext);
+                          writeFont("vhdlchar",vhdlcodeYYtext);
 			}
                         if (g_braceCount==0 && !isProto)// && !isPackageBody)
                         {
                           isProto=TRUE;
-                          appStringLower(g_PrevString,yytext);
+                          appStringLower(g_PrevString,vhdlcodeYYtext);
                           writeFuncProto();
                           BEGIN(Bases);
                         }
@@ -1035,18 +1033,18 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <ClassesName>{FUNCNAME} {
                          QDict<QCString> mem;
-                         appStringLower(g_PrevString,yytext);
+                         appStringLower(g_PrevString,vhdlcodeYYtext);
                          g_CurrClass.resize(0);
-                         g_CurrClass.append(yytext);
+                         g_CurrClass.append(vhdlcodeYYtext);
                          g_CurrClass=g_CurrClass.stripWhiteSpace();
                                                   
                          if (!writeColoredWord(g_CurrScope))
 			 {
-                           generateClassOrGlobalLink(*g_code,yytext);
+                           generateClassOrGlobalLink(*g_code,vhdlcodeYYtext);
 			 }
                          else
 		         {
-                           g_code->codify(yytext);
+                           codifyLines(vhdlcodeYYtext,g_CurrClass.data());
 		         }
                          BEGIN(Bases);
                        }
@@ -1054,13 +1052,13 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <ParseComponent>{BRACEOPEN} {
                          g_braceCount++;
-                         g_code->codify(yytext);
+                         g_code->codify(vhdlcodeYYtext);
                        }
 
 
 <ParseComponent>{BRACECLOSE} {
                          g_braceCount--;
-                         g_code->codify(yytext);  
+                         g_code->codify(vhdlcodeYYtext);  
                          if (g_braceCount==0 && !isComponent)
                          {
                            g_tempComp.resize(0);
@@ -1073,24 +1071,26 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                        }
 
 <ParseComponent>{B}*"-" {    
-                         if (strlen(yytext)>=2) // found text ?
+                         if (strlen(vhdlcodeYYtext)>=2) // found text ?
 			 {
-                           writeFont("keyword",yytext);
+                           writeFont("keyword",vhdlcodeYYtext);
 			 }
                          else
 			 {
-                           writeFont("vhdlchar",yytext); 
+                           writeFont("vhdlchar",vhdlcodeYYtext); 
 			 }
                        }
 
 <ParseComponent>{SPECSIGN} {
-                         codifyLines(yytext);
+                         codifyLines(vhdlcodeYYtext);
                        }
+
+
 
 <ParseComponent>"\n"|" " {
                          if (!isStripCode)
 			 {
-                           codifyLines(yytext);
+                           codifyLines(vhdlcodeYYtext);
 			 }
                       	 else
 			 {
@@ -1099,50 +1099,61 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                        }
 
 <ParseComponent>{TEXTT} {
-                         QCString text(yytext);
+                         QCString text(vhdlcodeYYtext);
                          if (!isStripCode) 
 			 {
-                           writeFont("keyword",yytext);
+                           writeFont("keyword",vhdlcodeYYtext);
                          }
                        }
 
 <ParseComponent>{DIGITSS} { 
                          startFontClass("vhdllogic");
-                         codifyLines(yytext);
+                         codifyLines(vhdlcodeYYtext);
                          endFontClass();
                        }
 
 <ParseComponent>{PORT} { 
-                         codifyLines(yytext);
+                         codifyLines(vhdlcodeYYtext);
                          g_braceCount=1;
                          isComponent=FALSE;
                        }
 
 <ParseComponent>{GENERIC} { 
-                         codifyLines(yytext);
+                         codifyLines(vhdlcodeYYtext);
                          g_braceCount=1;
                        }
 
 <ParseComponent>[_a-zA_Z][_a-zA-Z0-9]*  {
-                         QCString temp(yytext);
-                         appStringLower(g_PrevString,yytext);
+                         QCString temp(vhdlcodeYYtext);
+                         appStringLower(g_PrevString,vhdlcodeYYtext);
+                         if (!checkString(temp)){
                          if (!writeColoredWord(g_PrevString))
 		         {
                            generateMemLink(*g_code,g_tempComp,temp); 
 		         }
                        }
-
-<ParseProcessProto>[^()]* { 
-                         g_FuncProto.append(yytext);
                        }
 
+<ParseComponent>{STRING} { 
+                            QCString temp(vhdlcodeYYtext);
+                        if (!checkString(temp))
+                         codifyLines(vhdlcodeYYtext);
+                        }
+
+
+<ParseProcessProto>[^()]* { 
+                         g_FuncProto.append(vhdlcodeYYtext);
+                       }
+
+
+
 <ParseProcessProto>{BRACEOPEN} {
-                         g_FuncProto.append(yytext);
+                         g_FuncProto.append(vhdlcodeYYtext);
                          g_braceCount++;
                        }
 
 <ParseProcessProto>{BRACECLOSE} {
-                         g_FuncProto.append(yytext);
+                         g_FuncProto.append(vhdlcodeYYtext);
                          g_braceCount--;
                          if (g_braceCount==0) 
 			 {
@@ -1152,7 +1163,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                         }
 
 <ParsePackage>[^:;]*    { //found package 
-                          QCString temp(yytext);
+                          QCString temp(vhdlcodeYYtext);
                           QStringList strl=QStringList::split(".",temp,FALSE);
                                 
                           if (strl.count()>2) 
@@ -1162,7 +1173,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                              QCString s3=(QCString)strl[2];  
                              s1.append(".");
                              s3.prepend(".");
-                             codifyLines(s1.data());  
+                             codifyLines(s1.data(),g_CurrClass.data());  
                              ClassDef *cd=VhdlDocGen::getPackageName(s2);
                              if (cd)
 			     {
@@ -1176,13 +1187,14 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                            }
                            else
 			   {
-                             writeFont("keywordflow",yytext);
+                             writeFont("keywordflow",vhdlcodeYYtext);
 			   }
                            BEGIN(Bases);
                          }
 
-<Bases>{MAPCOMPONENT1}|{MAPCOMPONENT2}|{MAPCOMPONENT3}  { // found port or generic map
-                           QCString tt(yytext);
+<Bases>{MAPCOMPONENT1}|{MAPCOMPONENT2}|{MAPCOMPONENT3}|{MAPCOMPONENT4}  { // found port or generic map
+                           QCString tt(vhdlcodeYYtext);
+             /*
                            if (tt.contains(':',FALSE))
 			   {
                              isStartMap=TRUE;
@@ -1191,6 +1203,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 			   {
                              isStartMap=FALSE;                                        
 			   }
+			   */
 			   int j=tt.find('.');
                                                     
                            if (j>0)
@@ -1222,21 +1235,24 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                            }
                            else
 			   {
+                           if (tt.contains(':',FALSE)) 
                              codifyMapLines(tt.data());
+                              else
+                             codifyLines(tt.data()); 
 			   }
                            g_braceCount=1;
                            BEGIN(Map);
                          }
 
 <Bases>^{B}*("component"){BN}+{FUNCNAME}  { // found component
-                           appStringLower(g_PrevString,yytext);
-                           //  writeFont("keywordflow",VhdlDocGen::getIndexWord(yytext,0).data());
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
+                           //  writeFont("keywordflow",VhdlDocGen::getIndexWord(vhdlcodeYYtext,0).data());
                            //  writeFont("vhdlkeyword"," ");
-                           QCString temp=VhdlDocGen::getIndexWord(yytext,1);
+                           QCString temp=VhdlDocGen::getIndexWord(vhdlcodeYYtext,1);
                            temp=temp.stripWhiteSpace();
                            VhdlDocGen::deleteAllChars(temp,'\n');
                            g_tempComp=temp;
-                           codifyLines(yytext,temp.data(),TRUE);
+                           codifyLines(vhdlcodeYYtext,temp.data(),TRUE);
 			   g_braceCount=0;
                          
                            //if (getClass(temp.data()))
@@ -1252,22 +1268,22 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <Bases>{ARCHITECTURE}    { // found architecture
                            g_PortMapComp.resize(0);
-                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(yytext,0).data());
+                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(vhdlcodeYYtext,0).data());
                            //        writeFont("vhdlkeyword"," ");
-                           //        writeFont("vhdlchar",VhdlDocGen::getIndexWord(yytext,1).data());
+                           //        writeFont("vhdlchar",VhdlDocGen::getIndexWord(vhdlcodeYYtext,1).data());
                            //        writeFont("vhdlkeyword"," ");
-                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(yytext,2).data());
+                           //        writeFont("vhdlkeyword",VhdlDocGen::getIndexWord(vhdlcodeYYtext,2).data());
                            //        writeFont("vhdlkeyword"," ");
-                           //QCString temp=VhdlDocGen::getIndexWord(yytext,1);
+                           //QCString temp=VhdlDocGen::getIndexWord(vhdlcodeYYtext,1);
                            //temp=temp.stripWhiteSpace();
                            //temp+=("-");
-                           //temp+=VhdlDocGen::getIndexWord(yytext,3);
-			   QCString temp = VhdlDocGen::getIndexWord(yytext,3);
+                           //temp+=VhdlDocGen::getIndexWord(vhdlcodeYYtext,3);
+			   QCString temp = VhdlDocGen::getIndexWord(vhdlcodeYYtext,3);
 			   temp+="::";
-			   temp+=VhdlDocGen::getIndexWord(yytext,1);
+			   temp+=VhdlDocGen::getIndexWord(vhdlcodeYYtext,1);
                            g_CurrClass=temp;
                            VhdlDocGen::deleteAllChars(temp,'\n');
-                           codifyLines(yytext,temp.data(),TRUE);
+                           codifyLines(vhdlcodeYYtext,temp.data(),TRUE);
                            //generateClassOrGlobalLink(*g_code,temp.data());
                            isPackageBody=FALSE;
                            BEGIN(ClassName);
@@ -1275,13 +1291,13 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 
 <Bases>^{B}*("package "){BN}*("body"){BN}*{FUNCNAME}  { // found package body  
-                           QCString ss(yytext);
-                           QCString temp=VhdlDocGen::getIndexWord(yytext,2);
+                           QCString ss(vhdlcodeYYtext);
+                           QCString temp=VhdlDocGen::getIndexWord(vhdlcodeYYtext,2);
                            QStringList ql=QStringList::split(temp,ss,FALSE);
                            QCString ll=(QCString)ql[0];
-                           codifyLines(ll.data());
+                           codifyLines(ll.data(),g_CurrClass.data());
                            temp=temp.stripWhiteSpace();
-                           //          temp.prepend("_");
+                                     temp.prepend("_");
                            generateClassOrGlobalLink(*g_code,temp.data());
                            g_CurrClass.resize(0);
                            g_CurrClass=temp;
@@ -1293,9 +1309,9 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 <Bases>{PROCESS}         { // found process
                            isFuncProto=TRUE;
                            g_FuncProto.resize(0);
-                           g_FuncProto.append(yytext);
+                           g_FuncProto.append(vhdlcodeYYtext);
                            g_vhdlKeyDict.clear();
-                           appStringLower(g_PrevString,yytext);
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
                            if (g_PrevString.contains('(')) 
                            {
                              g_braceCount=1;
@@ -1309,28 +1325,33 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <Bases>("end"){BN}+("process") { // end of process
                            isFuncProto=FALSE;
-                           codifyLines(yytext);
+                           codifyLines(vhdlcodeYYtext);
                            BEGIN(Bases);
                          }
 
 
 <Bases>^{B}*("begin "|"begin") { 
                            isFuncProto=FALSE;
-                           writeFont("vhdlkeyword",yytext);
+                           writeFont("vhdlkeyword",vhdlcodeYYtext);
                          }
 
-<Bases>^{B}*("use"|"library"){BN}+ { //found including package or library
-                           writeFont("vhdlkeyword",yytext);
+<Bases>^{B}*("use"|"library"){BN}+ { //found  package or library
+                           writeFont("vhdlkeyword",vhdlcodeYYtext);
                            BEGIN(ParsePackage);
                          }
 
 
+<Bases>^{B}*("use"){BN}+("configuration")[^\n]* { 
+                           codifyLines(vhdlcodeYYtext);
+                         }
 
-<Bases>{FUNC}            {  // founc function|procedure
+
+
+<Bases>{FUNC}            {  // found function|procedure
                            g_vhdlKeyDict.clear();
                            g_FuncProto.resize(0);
                            isProto=FALSE;
-                           g_FuncProto.append(yytext);
+                           g_FuncProto.append(vhdlcodeYYtext);
                            g_braceCount=1;
                            BEGIN(ParseType);
                          }
@@ -1338,27 +1359,27 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 
 <Bases>^{B}*("entity"|"package"){BN}+ { 
-                           appStringLower(g_PrevString,yytext);
-                           writeFont("keywordflow",yytext);
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
+                           writeFont("keywordflow",vhdlcodeYYtext);
                            isPackageBody=FALSE;
                            BEGIN(ClassesName);
                          }
                                         
 
 <Bases>{KEYWORD}         { // found keyword
-                           QCString qcs(yytext);
+                           QCString qcs(vhdlcodeYYtext);
                            if (!writeColoredWord(qcs))
                            {
                              startFontClass("vhdlchar");
-                             g_code->codify(yytext);
+                             g_code->codify(vhdlcodeYYtext);
                              endFontClass();
                            }
                          }
 
 
 <Bases>{ID}              {
-                           appStringLower(g_PrevString,yytext);
-                           QCString temp(yytext);
+                           appStringLower(g_PrevString,vhdlcodeYYtext);
+                           QCString temp(vhdlcodeYYtext);
                            temp=temp.stripWhiteSpace();
                         
                            if (!writeColoredWord(temp))
@@ -1371,14 +1392,17 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <Bases,ParseComponent>{DIGITSS} { 
                            startFontClass("vhdllogic");
-                           codifyLines(yytext);
+                           codifyLines(vhdlcodeYYtext);
                            endFontClass();
                          }
 
+<Bases>^{B}*("use"){BN}+("entity"|"component")[^\n]* { 
+                            codifyLines(vhdlcodeYYtext,g_CurrClass.data(),TRUE);
+                         }
 
 
 <Bases>{TYPEKW}          { 
-                           codifyLines(yytext);
+                           codifyLines(vhdlcodeYYtext);
                            if (isFuncProto)
 			   {
                              BEGIN(ParseFuncProto);
@@ -1391,23 +1415,31 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 
 <Bases>{OPERATOR}        {                            
                            startFontClass("vhdlchar");
-                           g_code->codify(yytext);
+                           g_code->codify(vhdlcodeYYtext);
                            endFontClass();
                          }
    
 <Bases>","|"."|":"|"'"|"("|")" { 
                            startFontClass("vhdlchar");
-                           g_code->codify(yytext);
+                           g_code->codify(vhdlcodeYYtext);
                            endFontClass();
                          }
                                           
-
-
+<Bases>{STRING} {
+                       QCString qcs(vhdlcodeYYtext);
+                       VhdlDocGen::deleteAllChars(qcs,'"');
+                       VhdlDocGen::deleteAllChars(qcs,' ');
+                    
+                       if (VhdlDocGen::isNumber(qcs))
+                       writeFont("vhdllogic",vhdlcodeYYtext);
+                       else
+                       writeFont("keyword",vhdlcodeYYtext);
+                }
 
 <*>\n                    {
                            if (!isStripCode)
 			   {
-			     codifyLines(yytext);
+			     codifyLines(vhdlcodeYYtext);
 			   }
 			   else
 			   {
@@ -1417,12 +1449,12 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                          }
 
 <*>.                     {
-                           g_code->codify(yytext);
+                           g_code->codify(vhdlcodeYYtext);
                          }
 
 <*>{TEXTT}               { // found text
                            bool stripLine=FALSE;
-			   QCString text(yytext);
+			   QCString text(vhdlcodeYYtext);
 			   if (Config_getBool("STRIP_CODE_COMMENTS")) 
 			   {  
 			     if (text.contains("--!"))
@@ -1432,7 +1464,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
 			   }  
 			   if (!isStripCode && !stripLine) 
 			   {
-			     writeFont("keyword",yytext);
+			     writeFont("keyword",vhdlcodeYYtext);
 			     BEGIN(Bases);
 			   }
                          }
@@ -1441,7 +1473,7 @@ MAPPORT       {BN}*("port"|"generic"){BN}*("map"){BN}*("("){1}
                            if (!Config_getBool("STRIP_CODE_COMMENTS"))
                            {
                              startFontClass("keyword");
-                             codifyLines(yytext);
+                             codifyLines(vhdlcodeYYtext);
                              endFontClass(); 
                            }
                          }

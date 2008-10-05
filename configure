@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=5
-doxygen_version_revision=7
+doxygen_version_revision=7.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
@@ -46,7 +46,7 @@ while test -n "$1";  do
        shift; f_prefix=$1
        ;;
     --docdir | -docdir)
-       shift; f_docdir=$1/doxygen
+       shift; f_docdir=$1
        ;;
     --shared | -shared)
        f_shared=YES
@@ -136,8 +136,8 @@ Options:
   --prefix dir          Installation prefix directory (doxygen will be
                         put in PREFIX/bin/doxygen)
                         [default: $f_prefix]
-  --docdir dir          Documentation is installed in DOCDIR/doxygen/
-                        [default: PREFIX/share/doc/packages]
+  --docdir dir          Documentation is installed in DOCDIR/
+                        [default: PREFIX/share/doc/packages/doxygen]
   --install name        Use \`name' as the name of the GNU install tool
                         [default: autodetect]
   --english-only        Include support for English only.
@@ -224,7 +224,7 @@ if test -z "$f_platform"; then
     UNIX_SV:4.2*)
       f_platform=unixware-g++
       ;;
-    Cygwin:*|CYGWIN:*)
+    Cygwin:*|CYGWIN*)
       f_platform=win32-g++
       ;;
     *MiNT:*)
