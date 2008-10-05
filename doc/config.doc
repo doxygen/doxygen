@@ -58,6 +58,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_abbreviate_brief ABBREVIATE_BRIEF
 \refitem cfg_aliases ALIASES
 \refitem cfg_allexternals ALLEXTERNALS 
+\refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 \refitem cfg_binary_toc BINARY_TOC
 \refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
@@ -81,6 +82,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_docset_feedname DOCSET_FEEDNAME
 \refitem cfg_dot_fontname DOT_FONTNAME
 \refitem cfg_dot_fontpath DOT_FONTPATH
+\refitem cfg_dot_fontsize DOT_FONTSIZE
 \refitem cfg_dot_graph_max_nodes DOT_GRAPH_MAX_NODES
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
 \refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
@@ -1136,13 +1138,11 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \anchor cfg_alphabetical_index
 <dl>
 
-<!--
 <dt>\c ALPHABETICAL_INDEX <dd>
  \addindex ALPHABETICAL_INDEX
  If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
  of all compounds will be generated. Enable this if the project contains 
  a lot of classes, structs, unions or interfaces.
--->
 
 <dt>\c COLS_IN_ALPHA_INDEX <dd>
  \anchor cfg_cols_in_alpha_index
@@ -1945,6 +1945,11 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  which can be done by putting it in a standard location or by setting the
  \c DOTFONTPATH environment variable or by setting \c DOT_FONTPATH to the directory
  containing the font.
+
+\anchor cfg_dot_fontsize
+<dt>\c DOT_FONTSIZE <dd>
+The \c DOT_FONTSIZE tag can be used to set the size of the font of dot graphs.
+The default size is 10pt. 
 
 \anchor cfg_dot_fontpath
 <dt>\c DOT_FONTPATH <dd>

@@ -358,7 +358,7 @@ static void parseProcessProto()
   VhdlDocGen::deleteAllChars(qcs,'\n');
   VhdlDocGen::parseProcessProto(qcs.data(),name,ql);
   current->section=Entry::FUNCTION_SEC;
-  current->stat=TRUE;
+  //current->stat=TRUE;
   current->spec=VhdlDocGen::PROCESS;
   current->startLine=iFuncLine;
   current->bodyLine=iFuncLine;
@@ -517,7 +517,7 @@ void parserInit()
 
   if (g_buf==0)
   {
-    fprintf(stderr,"\n no enough memory");
+    fprintf(stderr,"\n not enough memory");
     return;
   }
   g_buf[g_bufSize-1]='\0';
@@ -601,7 +601,7 @@ TEXTT        "--"[^\/\@\*\#][^\n]*
 PROC         ("function"|"procedure")
 ENDE         ({BR}*("end"){BR}*{PROC}*{BR}*[;]{1})
 ENDEFF       ("if"|"case"|"loop"|"generate"){BR}*[;]
-ENDE3        ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|(ENDE)
+ENDE3        ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|{ENDE}
 ENDFUNC      {B}*"end"{BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;]
 FUNCIMPURE   "impure"|"pure"
 FUNCPROC     ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
@@ -620,9 +620,9 @@ SHARED       ("shared"){BR}+("variable")
 SIGTYPES     ^{B}*({SHARED}|"alias"|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
 CONFIG       ("configuration"){BR}+{NAME}{BR}*("of"){BR}+{NAME}{BR}+"is"
 
-ALLTYPESMAP  {B}*[_a-zA-ZA_Z0-9. ]*{B}*
-
-MAPCOMPONENT ({ALLTYPESMAP}{BR}*[:]{BR}*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}+("map"){BR}*("("){1})
+ALLTYPESMAP  {B}*[_a-zA-ZA_Z0-9.() ]*{B}*
+MAPCOMPONENT ({ALLTYPESMAP}{BR}*[:]{BR}*("component"|"configuration")*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
+MAPCOMPONENT1 ({ALLTYPESMAP}{BR}*[:]{BR}*("entity"){BR}*{ALLTYPESMAP}{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
 
 BRACEOPEN    [(]{1}
 BRACECLOSE   [)]{1}
@@ -787,7 +787,7 @@ ALLID        [^;()\t ]
   else if (strcmp(word.data(),"component")==0)
   {
     current->section=Entry::VARIABLE_SEC;
-    current->stat=TRUE;
+   // current->stat=TRUE;
     current->spec=VhdlDocGen::COMPONENT;
     current->bodyLine=yyLineNr;
     scantype=1;  
@@ -809,18 +809,39 @@ ALLID        [^;()\t ]
   BEGIN(FindEntityName);
 }
 
-<Start>{MAPCOMPONENT}  { // found new mapped component aaa: bbb port map 
+<Start>{MAPCOMPONENT}|{MAPCOMPONENT1}  { // found new mapped component aaa: bbb port map 
 
   lineCount();
   QCString type;
   QCString tt(yytext);
-  QRegExp regg("[ \n\t:-]");
+  QRegExp regg("[ \n\t:.()-]");
   QStringList qsl=QStringList::split(regg,tt,false);
+
+  // consider upper/lower-case letters
+  QStringList qsltemp=QStringList::split(regg,tt.lower(),false);
+  int index=qsltemp.findIndex(QCString("entity"))+1;
+  index+=qsltemp.findIndex(QCString("component"))+1;
+  index+=qsltemp.findIndex(QCString("configuration"))+1;
+  int len=qsltemp.count();
+
   current->spec=VhdlDocGen::COMPONENT_INST;
   current->section=Entry::VARIABLE_SEC;
   current->startLine=yyLineNr;
   current->bodyLine=yyLineNr;
-  current->type=QCString(qsl[1]);
+
+  if (index!=0 && tt.contains(')')==0)     // found component instantiation xxx: configuration/component/entity yyy
+  {
+    current->type=(QCString)qsl[len-3];
+  }
+  else if (index!=0 && tt.contains(')'))   // found component instantiation xxx: entity www.yyy(zzz)
+  {
+    current->type=(QCString)qsl[len-4];
+  }
+  else
+  {
+    current->type=(QCString)qsl[1];          // found component instantiation xxx:yyy
+  }
+
   current->name=QCString(qsl[0]);
   if (lastCompound)
   {
@@ -832,17 +853,8 @@ ALLID        [^;()\t ]
   {
     newEntry();
   }
+ lineCount();
 
-#if 0    
-  if (current && current->spec==VhdlDocGen::ARCHITECTURE)
-  {
-    if (!VhdlDocGen::foundInsertedComponent(name,current) && !name.isEmpty())
-    {
-      BaseInfo *bb=new BaseInfo(name,Private,Normal);
-      current->extends->append(bb);    
-    }
-  }                         
-#endif
 } 
 
 <Start>{CR}*    {
@@ -890,19 +902,36 @@ ALLID        [^;()\t ]
   lineCount();
 
   QCString qcs(yytext);
-  QCString qreal=QCString(yytext);
   qcs=qcs.stripWhiteSpace();
-  if (current->spec==VhdlDocGen::USE)
+  if (current->spec==VhdlDocGen::USE || current->spec==VhdlDocGen::LIBRARY)
   {
     int j=qcs.length();
     int i=qcs.find(".");
     if (i>0)
       qcs=qcs.right(j-i-1);
-    j=qcs.length();
     i=qcs.find(".");
     if (i>0)
       qcs=qcs.left(i);            
+  /*  
+    -- Consider the case we have more than one entity in one file.Each entity has its own package/library
+    -- declaration. In this case package yyy will be added [with newEntry()] to architecture aaa !! instead to entity
+    -- bbb. We must place these constructs to current_root and the function mapLibPackage() will finish the rest.
+    
+    -- package xxx;
+    -- entity aaa
+    --  ....
+    -- end entity aaa;
+    -- architecture aaa
+    --     ...
+    -- end architecture aaa;
+    -- package yyy;
+    -- entity bbb;
+    */
+      
     current->name=qcs;                 
+    Entry *copy=new Entry(*current);
+    current->reset();
+    addSubEntry(current_root,copy);   //  insert into entry list  with mapLibPackage()           
   }
   else if (current->spec==VhdlDocGen::ARCHITECTURE)
   {
@@ -928,6 +957,7 @@ ALLID        [^;()\t ]
   {
     current->name+=qcs;
   }
+  if (!(current->spec==VhdlDocGen::USE || current->spec==VhdlDocGen::LIBRARY))
   newEntry();
 
   BEGIN(Start);
@@ -976,6 +1006,7 @@ ALLID        [^;()\t ]
   lineCount();
   QCString comment;
   QCString zz(yytext);
+  VhdlDocGen::deleteAllChars(zz,';'); //delete ; in unit construct
   if (zz.contains("--!"))
   {
     QStringList ql=QStringList::split("--!",zz,FALSE);

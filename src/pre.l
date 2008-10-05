@@ -111,7 +111,8 @@ DefineDict* getFileDefineDict() {
 static void setFileName(const char *name)
 {
   bool ambig;
-  g_yyFileName=name;
+  QFileInfo fi(name);
+  g_yyFileName=convertToQCString(fi.absFilePath());
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
   if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
 }

@@ -75,7 +75,7 @@ static const char* g_vhdlKeyWordMap0[] =
   "range", "record", "register", "reject", "report", "return","select", 
   "severity", "shared", "signal", "subtype", "then", "to", "transport", 
   "type","unaffected", "units", "until", "use","variable", "wait", "when", 
-  "while", "with",0
+  "while", "with","true","false",0
 };
 
 // type
@@ -302,11 +302,28 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
       (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
   {
     Definition *d = cd->getOuterScope();
-    if (d && d->definitionType()==Definition::TypeClass)
+     // searching upper/lower case names
+ 
+    QCString tt=d->name();   
+    ClassDef *ecd =getClass(tt);
+    if (!ecd)
     {
-      ClassDef *ecd = (ClassDef*)d;
+      tt=tt.upper();
+      ecd =getClass(tt);
+    }
+    else if (!ecd)
+    {
+      tt=tt.lower();
+      ecd =getClass(tt);  
+    }
+
+    if (ecd) //d && d->definitionType()==Definition::TypeClass)
+    {
+      //ClassDef *ecd = (ClassDef*)d;
       mdef=VhdlDocGen::findMemberDef(ecd,memName,MemberList::variableMembers);
       if (mdef) return mdef;
+       mdef=VhdlDocGen::findMemberDef(cd,memName,MemberList::pubMethods);
+       if (mdef) return mdef;
     }
     //cd=getClass(getClassName(cd));
     //if (!cd) return 0;
@@ -317,11 +334,23 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
   if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS || 
       (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
   {
-    //QCString tempClass=getClassName(cd);
     Definition *d = cd->getOuterScope();
-    if (d && d->definitionType()==Definition::TypeClass)
+   
+    QCString tt=d->name();
+    ClassDef *ecd =getClass(tt);
+    if (!ecd)
     {
-      ClassDef *ecd = (ClassDef*)d;
+      tt=tt.upper();
+      ecd =getClass(tt);
+    }
+    if (!ecd)
+    {
+      tt=tt.lower();
+      ecd =getClass(tt);  
+    }
+
+    if (ecd) //d && d->definitionType()==Definition::TypeClass)
+    {
       VhdlDocGen::findAllPackages(ecd->className(),packages); 
     }
   }
@@ -333,6 +362,16 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     if (curString)
     {
       cd=VhdlDocGen::getPackageName(*curString);
+      if (!cd)
+      {
+        *curString=curString->upper();
+        cd=VhdlDocGen::getPackageName(*curString);
+      }
+      if (!cd)
+      {
+        *curString=curString->lower();
+        cd=VhdlDocGen::getPackageName(*curString);  
+      }
     }
     if (cd)
     {    
@@ -1296,6 +1335,16 @@ void VhdlDocGen::writeFormatString(QCString& qcs,OutputList&ol,const MemberDef* 
 
 bool VhdlDocGen::isNumber(const QCString& s)
 {
+ // static bool veriOpt=Config_getBool("OPTIMIZE_OUTPUT_VERILOG");
+  static QRegExp regg("[0-9][0-9eEfFbBcCdDaA_.#-]*");
+ 
+  if (s.isEmpty()) return false;
+  int j,len;
+  j = regg.match(s.data(),0,&len);
+  if ((j==0) && (len==(int)s.length())) return true; 
+  return false;
+ 
+  #if 0
   int len=s.length();
   if (len==0) return FALSE;
   for (int j=0;j<len;j++)
@@ -1304,8 +1353,8 @@ bool VhdlDocGen::isNumber(const QCString& s)
       return FALSE;
   }
   return TRUE;
+  #endif 
 }// isNumber
-
 
 void VhdlDocGen::startFonts(const QCString& q, char *keyword,OutputList& ol)
 {
@@ -1485,7 +1534,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList* al,const 
   ol.startBold();    
   ol.docify(" )");    
   const char *exp=mdef->excpString();
-  if(exp)
+  if (exp)
   {
     ol.insertMemberAlign();
     ol.docify("[ ");
@@ -1721,7 +1770,8 @@ void VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
     if (memdef && memdef->isLinkable()) 
     { 
       ol.startBold();
-      ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,mdef->typeString());                
+      //ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),0,mdef->typeString());                
+       writeLink(memdef,ol);
       ol.endBold();
       ol.docify(" ");
     }
@@ -1736,7 +1786,8 @@ void VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
 
   if (mdef->isVariable())
   { 
-    ol.docify(mdef->name().data());
+    //ol.docify(mdef->name().data());
+     writeLink(mdef,ol);
     ol.docify(" ");
     QCString ttype=mdef->typeString();
     VhdlDocGen::formatString(ttype,ol,mdef);

@@ -10,7 +10,7 @@
     </tab>
     <tab type="classes" visible="yes" title="">
       <tab type="classes" visible="yes" title=""/>
-      <tab type="classindex" visible="no" title=""/> 
+      <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
       <tab type="hierarchy" visible="yes" title=""/>
       <tab type="classmembers" visible="yes" title=""/>
     </tab>

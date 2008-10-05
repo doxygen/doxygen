@@ -831,8 +831,7 @@ class LayoutParser : public QXmlDefaultHandler
       }
       QCString baseFile = mapping[i].baseFile;
       QCString title = convertToQCString(attrib.value("title"));
-      QCString visible = convertToQCString(attrib.value("visible"));
-      bool isVisible = visible.isEmpty() || (visible!="no" && visible!="0");
+      bool isVisible = elemIsVisible(attrib);
       if (title.isEmpty()) // use default title
       { 
         title = mapping[i].mainName; // use title for main row

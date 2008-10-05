@@ -2,6 +2,8 @@
 #	cd qtools ; $(MAKE)
 #	cd src ; $(MAKE)
 
+DESTDIR = 
+
 clean: FORCE
 	cd examples ; $(MAKE) clean
 	cd doc ; $(MAKE) clean
@@ -53,25 +55,25 @@ DATE=$(shell date "+%B %Y")
 MAN1DIR = man/man1
 
 install: doxywizard_install 
-	$(INSTTOOL) -d $(INSTALL)/bin
-	$(INSTTOOL) -m 755 bin/doxygen    $(INSTALL)/bin
-	$(INSTTOOL) -m 755 bin/doxytag    $(INSTALL)/bin
-	$(INSTTOOL) -d $(INSTALL)/$(MAN1DIR)
+	$(INSTTOOL) -d $(DESTDIR)/$(INSTALL)/bin
+	$(INSTTOOL) -m 755 bin/doxygen    $(DESTDIR)/$(INSTALL)/bin
+	$(INSTTOOL) -m 755 bin/doxytag    $(DESTDIR)/$(INSTALL)/bin
+	$(INSTTOOL) -d $(DESTDIR)/$(INSTALL)/$(MAN1DIR)
 	cat doc/doxygen.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > doxygen.1 
-	$(INSTTOOL) -m 644 doxygen.1 $(INSTALL)/$(MAN1DIR)/doxygen.1
+	$(INSTTOOL) -m 644 doxygen.1 $(DESTDIR)/$(INSTALL)/$(MAN1DIR)/doxygen.1
 	rm doxygen.1
 	cat doc/doxytag.1    | sed -e "s/DATE/$(DATE)/g" -e "s/VERSION/$(VERSION)/g" > doxytag.1
-	$(INSTTOOL) -m 644 doxytag.1 $(INSTALL)/$(MAN1DIR)/doxytag.1
+	$(INSTTOOL) -m 644 doxytag.1 $(DESTDIR)/$(INSTALL)/$(MAN1DIR)/doxytag.1
 	rm doxytag.1
 
 install_docs: 
-	$(INSTTOOL) -d $(DOCDIR)
+	$(INSTTOOL) -d $(DESTDIR)/$(DOCDIR)
 	$(MAKE) -C examples
 	$(MAKE) -C doc 
 	$(MAKE) -C latex 
-	$(INSTTOOL) -m 644 latex/doxygen_manual.pdf $(DOCDIR)
-	cp -r examples $(DOCDIR)
-	cp -r html $(DOCDIR)
+	$(INSTTOOL) -m 644 latex/doxygen_manual.pdf $(DESTDIR)/$(DOCDIR)
+	cp -r examples $(DESTDIR)/$(DOCDIR)
+	cp -r html $(DESTDIR)/$(DOCDIR)
 
 docs: FORCE
 	cd examples ; $(MAKE)

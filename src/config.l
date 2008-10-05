@@ -1298,13 +1298,6 @@ void Config::check()
     config_err("Warning: Specifying QCH_FILE requires QHG_LOCATION to be set.\n");
   }
 
-  // check INDEXLOG creation requirements
-  if (!Config_getBool("GENERATE_HTML") && 
-      Config_getBool("GENERATE_INDEXLOG"))
-  {
-    config_err("Warning: GENERATE_INDEXLOG=YES requires GENERATE_HTML=YES.\n");
-  }
-
   if (Config_getBool("HAVE_DOT")) 
   {
     QCString curFontPath = Config_getString("DOT_FONTPATH");
@@ -2079,7 +2072,6 @@ void Config::create()
 	      );
   cs->setWidgetType(ConfigString::File);
   addObsolete("DETAILS_AT_TOP");
-  addObsolete("ALPHABETICAL_INDEX");
 
   
   //-----------------------------------------------------------------------------------------------
@@ -2326,13 +2318,13 @@ void Config::create()
   addInfo(  "Index","configuration options related to the alphabetical class index");
   //-----------------------------------------------------------------------------------------------
   
-  //cb = addBool(
-  //                  "ALPHABETICAL_INDEX",
-  //                  "If the ALPHABETICAL_INDEX tag is set to YES, an alphabetical index \n"
-  //                  "of all compounds will be generated. Enable this if the project \n"
-  //                  "contains a lot of classes, structs, unions or interfaces. \n",
-  //                  FALSE
-  //               );
+  cb = addBool(
+                    "ALPHABETICAL_INDEX",
+                    "If the ALPHABETICAL_INDEX tag is set to YES, an alphabetical index \n"
+                    "of all compounds will be generated. Enable this if the project \n"
+                    "contains a lot of classes, structs, unions or interfaces. \n",
+                    FALSE
+                 );
   ci = addInt(
                     "COLS_IN_ALPHA_INDEX",
                     "If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then \n"
@@ -2655,16 +2647,6 @@ void Config::create()
                     8,50,10
                  );
   ci->addDependency("GENERATE_HTML");
-#if 0
-  cb = addBool(
-                    "GENERATE_INDEXLOG",
-                    "If the GENERATE_INDEXLOG tag is set to YES, an additional log file \n"
-                    "will be generated that can be used to create new index formats using XSLT \n"
-                    "instead of writing C++ code. \n",
-                    FALSE
-                 );
-  cb->addDependency("GENERATE_HTML");
-#endif
 
   //-----------------------------------------------------------------------------------------------
   addInfo(  "LaTeX","configuration options related to the LaTeX output");
@@ -3149,12 +3131,20 @@ void Config::create()
 		    "containing the font. \n"
                  );
   cs->setDefaultValue("FreeSans");
+  cb->addDependency("HAVE_DOT");
+  ci = addInt(      "DOT_FONTSIZE",
+                    "The DOT_FONTSIZE tag can be used to set the size of the font of dot graphs. \n"
+		    "The default size is 10pt. \n",
+		    4,24,10
+	     );
+  ci->addDependency("HAVE_DOT");
   cs = addString(   "DOT_FONTPATH",
       		    "By default doxygen will tell dot to use the output directory to look for the \n"
 		    "FreeSans.ttf font (which doxygen will put there itself). If you specify a \n"
 		    "different font using DOT_FONTNAME you can set the path where dot \n"
 		    "can find it using this tag. \n"
                 );
+  cs->addDependency("HAVE_DOT");
   cb = addBool(
                     "CLASS_GRAPH",
                     "If the CLASS_GRAPH and HAVE_DOT tags are set to YES then doxygen \n"

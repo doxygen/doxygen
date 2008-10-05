@@ -49,12 +49,18 @@ QCString getResourcePath()
 
 void setDotPath()
 {
-  Config_getString("DOT_PATH")=getResourcePath();
+  // TODO: enable this if we ship dot with doxygen again...
+//  Config_getString("DOT_PATH")=getResourcePath();
 }
 
-void setMscgenPath()
+bool setMscgenPath()
 {
-  Config_getString("MSCGEN_PATH")=getResourcePath();
+  if (Config_getString("MSCGEN_PATH")!=getResourcePath())
+  {
+    Config_getString("MSCGEN_PATH")=getResourcePath();
+    return TRUE;
+  }
+  return FALSE;
 }
 
 #endif
@@ -496,11 +502,11 @@ Step4::Step4(QWidget *parent) : QWidget(parent,"Step4")
     m_dotOptions->setEnabled(FALSE);
   gbox->addWidget(w,4,0);
 
-#if defined(Q_OS_MACX) // we bundle dot with the mac package
-  m_diagramMode->setButton(2);
-#else
+//#if defined(Q_OS_MACX) // we bundle dot with the mac package
+//  m_diagramMode->setButton(2);
+//#else
   m_diagramMode->setButton(1);
-#endif
+//#endif
   layout->addWidget(m_diagramMode);
   layout->addStretch(1);
 
@@ -1106,11 +1112,11 @@ void MainWidget::loadConfigFromFile(const QString &fn)
     m_workingDir->setText(QFileInfo(fn).dirPath(TRUE));
     m_configFileName = fn;
 #if defined(Q_OS_MACX)
-    if (Config_getString("DOT_PATH").isEmpty())
-    {
-      setDotPath();
-      setConfigSaved(FALSE);
-    }
+    //if (Config_getString("DOT_PATH").isEmpty())
+    //{
+    //  setDotPath();
+    //  setConfigSaved(FALSE);
+    //}
     if (Config_getString("MSCGEN_PATH").isEmpty())
     {
       setMscgenPath();

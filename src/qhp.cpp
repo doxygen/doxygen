@@ -37,8 +37,8 @@ static QCString makeRef(char const * withoutExtension, char const * anchor)
 
 Qhp::Qhp() : m_prevSectionLevel(0), m_sectionLevel(0)
 {
-  m_toc.setIndentLevel(0);
-  m_doc.setIndentLevel(2);
+  m_doc.setIndentLevel(0);
+  m_toc.setIndentLevel(2);
   m_index.setIndentLevel(2);
   m_files.setIndentLevel(2);
 }
