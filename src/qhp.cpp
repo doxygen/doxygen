@@ -19,15 +19,16 @@
 #include "message.h"
 #include "config.h"
 
+#include <qstringlist.h>
 #include <string.h>
 
-static QCString makeFileName(char const * withoutExtension)
+static QCString makeFileName(const char * withoutExtension)
 {
   if (!withoutExtension) return QCString();
   return QCString(withoutExtension)+".html";
 }
 
-static QCString makeRef(char const * withoutExtension, char const * anchor)
+static QCString makeRef(const char * withoutExtension, const char * anchor)
 {
   if (!withoutExtension) return QCString(); 
   QCString result = makeFileName(withoutExtension);
@@ -65,26 +66,57 @@ void Qhp::initialize()
   */
   QCString nameSpace       = Config_getString("QHP_NAMESPACE");
   QCString virtualFolder   = Config_getString("QHP_VIRTUAL_FOLDER");
-  QCString projectTitle    = getFullProjectName();
-  QCString filterIdent     = projectTitle;
-  QCString filterAttribute = projectTitle;
 
-  char const * rootAttributes[] = 
+  const char * rootAttributes[] =
   { "version", "1.0", 0 };
-  char const * customFilterAttributes[] = 
-  { "name", filterIdent, 0 };
 
   m_doc.open("QtHelpProject", rootAttributes);
   m_doc.openCloseContent("namespace", nameSpace);
   m_doc.openCloseContent("virtualFolder", virtualFolder);
 
-  m_doc.open("customFilter", customFilterAttributes);
-  m_doc.openCloseContent("filterAttribute", filterAttribute);
-  m_doc.close("customFilter");
+  // Add custom filter
+  QCString filterName = Config_getString("QHP_CUSTOM_FILTER_NAME");
+  if (!filterName.isEmpty())
+  {
+    const char * tagAttributes[] = 
+    { "name", filterName, 0 };
+    m_doc.open("customFilter", tagAttributes);
+
+    QStringList customFilterAttributes = QStringList::split(' ', Config_getString("QHP_CUST_FILTER_ATTRS"));
+    for (int i = 0; i < (int)customFilterAttributes.count(); i++)
+    {
+      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i]);
+    }
+    m_doc.close("customFilter");
+  }
+
   m_doc.open("filterSection");
-  m_doc.openCloseContent("filterAttribute", filterAttribute);
+
+  // Add section attributes
+  QStringList sectionFilterAttributes = QStringList::split(' ',
+      Config_getString("QHP_SECT_FILTER_ATTRS"));
+  if (!sectionFilterAttributes.contains(QString("doxygen")))
+  {
+    sectionFilterAttributes << "doxygen";
+  }
+  for (int i = 0; i < (int)sectionFilterAttributes.count(); i++)
+  {
+    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i]);
+  }
 
   m_toc.open("toc");
+
+  // Add extra root node
+  QCString fullProjectname = getFullProjectName();
+  const char * const attributes[] =
+  { "title", fullProjectname,
+    "ref",   "index.html",
+    NULL
+  };
+  m_toc.open("section", attributes);
+  m_prevSectionLevel = 1;
+  m_sectionLevel = 1;
+
   m_index.open("keywords");
   m_files.open("files");
 }
@@ -93,6 +125,10 @@ void Qhp::finalize()
 {
   // Finish TOC
   handlePrevSection();
+  for (int i = m_prevSectionLevel; i > 0; i--)
+  {
+    m_toc.close("section");
+  }
   m_toc.close("toc");
   m_doc.insert(m_toc);
 
@@ -101,12 +137,6 @@ void Qhp::finalize()
   m_doc.insert(m_index);
 
   // Finish files
-  addFile("doxygen.css");
-  addFile("doxygen.png");
-  addFile("tab_b.gif");
-  addFile("tab_l.gif");
-  addFile("tab_r.gif");
-  addFile("tabs.css");
   m_files.close("files");
   m_doc.insert(m_files);
 
@@ -137,9 +167,9 @@ void Qhp::decContentsDepth()
   m_sectionLevel--;
 }
 
-void Qhp::addContentsItem(bool /*isDir*/, char const * name, 
-                          char const * /*ref*/, char const * file, 
-                          char const * /*anchor*/)
+void Qhp::addContentsItem(bool /*isDir*/, const char * name, 
+                          const char * /*ref*/, const char * file, 
+                          const char * /*anchor*/)
 {
   // Backup difference before modification
   int diff = m_prevSectionLevel - m_sectionLevel;
@@ -154,9 +184,9 @@ void Qhp::addContentsItem(bool /*isDir*/, char const * name,
   }
 }
 
-void Qhp::addIndexItem(char const * level1, char const * level2,
-                       char const * contRef, char const * /*memRef*/, 
-                       char const * anchor, const MemberDef * /*md*/)
+void Qhp::addIndexItem(const char * level1, const char * level2,
+                       const char * contRef, const char * /*memRef*/, 
+                       const char * anchor, const MemberDef * /*md*/)
 {
   /*
   <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
@@ -165,7 +195,7 @@ void Qhp::addIndexItem(char const * level1, char const * level2,
   QCString id(level1);
   id += "::";
   id += level2;
-  char const * attributes[] =
+  const char * attributes[] =
   { "name", level2, 
     "id",   id, 
     "ref",  ref, 
@@ -175,7 +205,7 @@ void Qhp::addIndexItem(char const * level1, char const * level2,
 }
 
 void
-Qhp::addIndexFile(char const * name)
+Qhp::addIndexFile(const char * name)
 {
   addFile(name);
 }
@@ -183,7 +213,6 @@ Qhp::addIndexFile(char const * name)
 /*static*/ QCString
 Qhp::getQhpFileName()
 {
-
   return "index.qhp";
 }
 
@@ -215,39 +244,33 @@ Qhp::handlePrevSection()
     return;
   }
 
-  // Replace "Main Page" with <project_name> in TOC
-  QCString finalTitle;
-  if (m_prevSectionLevel==0 && m_prevSectionTitle=="Main Page")
+  // We skip "Main Page" as our extra root is pointing to that
+  if (!((m_prevSectionLevel==1) && (m_prevSectionTitle=="Main Page")))
   {
-    finalTitle = getFullProjectName();
-  }
-  if (finalTitle.isEmpty())
-  {
-    finalTitle = m_prevSectionTitle;
-  }
-  QCString finalRef = makeFileName(m_prevSectionRef);
+    QCString finalRef = makeFileName(m_prevSectionRef);
 
-  char const * const attributes[] =
-  { "title", finalTitle,
-    "ref",   finalRef,
-    NULL
-  };
+    const char * const attributes[] =
+    { "title", m_prevSectionTitle,
+      "ref",   finalRef,
+      NULL
+    };
 
-  if (m_prevSectionLevel < m_sectionLevel)
-  {
-    // Section with children
-    m_toc.open("section", attributes);
-  }
-  else
-  {
-    // Section without children
-    m_toc.openClose("section", attributes);
+    if (m_prevSectionLevel < m_sectionLevel)
+    {
+      // Section with children
+      m_toc.open("section", attributes);
+    }
+    else
+    {
+      // Section without children
+      m_toc.openClose("section", attributes);
+    }
   }
 
   clearPrevSection();
 }
 
-void Qhp::setPrevSection(char const * title, char const * ref, int level)
+void Qhp::setPrevSection(const char * title, const char * ref, int level)
 {
   m_prevSectionTitle = title;
   m_prevSectionRef   = ref;
@@ -258,10 +281,20 @@ void Qhp::clearPrevSection()
 {
   m_prevSectionTitle.resize(0);
   m_prevSectionRef.resize(0);
-  m_prevSectionLevel = m_sectionLevel;
 }
 
-void Qhp::addFile(char const * fileName)
+void Qhp::addFile(const char * fileName)
 {
   m_files.openCloseContent("file", fileName);
 }
+
+void Qhp::addImageFile(const char *fileName)
+{
+  addFile(fileName);
+}
+
+void Qhp::addStyleSheetFile(const char *fileName)
+{
+  addFile(fileName);
+}
+

@@ -50,6 +50,8 @@ class DocSets  : public IndexIntf
                       const char *contRef, const char *memRef,
                       const char *anchor,const MemberDef *md);
     void addIndexFile(const char *name);
+    void addImageFile(const char *) {}
+    void addStyleSheetFile(const char *) {}
 
   private:
     void writeToken(QTextStream &t, const Definition *d,

@@ -1123,6 +1123,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
       checkDotResult(imgName);
       if (Config_getBool("DOT_CLEANUP")) thisDir.remove(dotName);
     }
+    Doxygen::indexList.addImageFile(imgName);
     // write image and map in a table row
     QCString mapLabel = convertNameToFile(n->m_label);
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#" 
@@ -1908,6 +1909,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
     }
     if (Config_getBool("DOT_CLEANUP")) thisDir.remove(baseName+".dot");
   }
+  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap) // produce HTML to include the image
   {
@@ -2238,6 +2240,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
       }
     }
   }
+  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -2531,6 +2534,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
       }
     }
   }
+  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -2672,6 +2676,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
       }
     }
   }
+  Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
   if (format==BITMAP && generateImageMap)
   {
@@ -2784,6 +2789,7 @@ void generateGraphLegend(const char *path)
       return;
   }
   checkDotResult(imgName);
+  Doxygen::indexList.addImageFile(imgName);
   QDir::setCurrent(oldDir);
 }
   
@@ -2836,6 +2842,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   }
 
   if (format==BITMAP) checkDotResult(imgName);
+  Doxygen::indexList.addImageFile(imgName);
 
   if (env==".")
   {

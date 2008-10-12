@@ -39,6 +39,8 @@ class IndexIntf
     virtual void addIndexItem(const char *level1, const char *level2, const char *contRef, 
                               const char *memRef, const char *anchor,const MemberDef *md) = 0;
     virtual void addIndexFile(const char *name) = 0;
+    virtual void addImageFile(const char *name) = 0;
+    virtual void addStyleSheetFile(const char *name) = 0;
 };
 
 class IndexList : public IndexIntf
@@ -92,6 +94,10 @@ class IndexList : public IndexIntf
              (&IndexIntf::addIndexItem,level1,level2,contRef,memRef,anchor,md); }
     void addIndexFile(const char *name) 
     { foreach<const char *>(&IndexIntf::addIndexFile,name); }
+    void addImageFile(const char *name) 
+    { foreach<const char *>(&IndexIntf::addImageFile,name); }
+    void addStyleSheetFile(const char *name) 
+    { foreach<const char *>(&IndexIntf::addStyleSheetFile,name); }
 
 };
 

@@ -322,10 +322,6 @@ hr {
 	-moz-border-radius-bottomright: 8px;
 }
 
-.memdoc p, .memdoc dl, .memdoc ul {
-	margin: 6px 0;
-}
-
 .paramkey {
 	text-align: right;
 }

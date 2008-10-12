@@ -86,6 +86,8 @@ class FTVHelp : public IndexIntf
                       const char *, const char *,
                       const char *, const MemberDef *) {}
     void addIndexFile(const char *) {}
+    void addImageFile(const char *) {}
+    void addStyleSheetFile(const char *) {}
     void generateTreeView(QString* = NULL);
   private:
     void generateTreeViewImages();

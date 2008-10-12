@@ -31,12 +31,14 @@ class Qhp : public IndexIntf
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
-    void addContentsItem(bool isDir, char const * name, char const * ref,
-                         char const * file, char const * anchor);
-    void addIndexItem(char const * level1, char const * level2,
-                      char const * contRef, char const * memRef, 
-                      char const * anchor, const MemberDef * md);
-    void addIndexFile(char const * name);
+    void addContentsItem(bool isDir, const char * name, const char * ref,
+                         const char * file, const char * anchor);
+    void addIndexItem(const char * level1, const char * level2,
+                      const char * contRef, const char * memRef, 
+                      const char * anchor, const MemberDef * md);
+    void addIndexFile(const char * name);
+    void addImageFile(const char * name);
+    void addStyleSheetFile(const char * name);
     // END IndexIntf
 
     static QCString getQhpFileName();
@@ -44,8 +46,8 @@ class Qhp : public IndexIntf
   private:
     void handlePrevSection();
     void clearPrevSection();
-    void setPrevSection(char const * title, char const * ref, int level);
-    void addFile(char const * fileName);
+    void setPrevSection(const char * title, const char * ref, int level);
+    void addFile(const char * fileName);
 
     static QCString getFullProjectName();
 

@@ -547,10 +547,7 @@ void HtmlGenerator::init()
   }
   createSubDirs(d);
 
-  //if (Config_getBool("HTML_FANCY_TABS"))
-  {
-    writeTabData(dname);
-  }
+  writeTabData(dname);
 }
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
@@ -778,6 +775,7 @@ void HtmlGenerator::writeStyleInfo(int part)
 
       t << defaultStyleSheet;
       endPlainFile();
+      Doxygen::indexList.addStyleSheetFile("doxygen.css");
     }
     else // write user defined style sheet
     {
@@ -796,6 +794,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         t << fileStr;
         endPlainFile();
       }
+      Doxygen::indexList.addStyleSheetFile(cssfi.fileName());
     }
   }
 }
@@ -2345,6 +2344,7 @@ void HtmlGenerator::generateSectionImages()
     {
       f.writeBlock((char*)open_gif,open_gif_len);
     }
+    Doxygen::indexList.addImageFile("open.gif");
   }
   {
     QCString fileName = Config_getString("HTML_OUTPUT")+"/closed.gif";
@@ -2353,6 +2353,7 @@ void HtmlGenerator::generateSectionImages()
     {
       f.writeBlock((char*)closed_gif,closed_gif_len);
     }
+    Doxygen::indexList.addImageFile("closed.gif");
   }
 }
 

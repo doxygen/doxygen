@@ -74,6 +74,7 @@ class NamespaceDef : public Definition
     
     MemberList *getMemberList(MemberList::ListType lt) const;
     const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    MemberDef    *getMemberByName(const QCString &) const;
 
     /*! Returns the user defined member groups */
     MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
@@ -109,7 +110,7 @@ class NamespaceDef : public Definition
     SDict<Definition>    *usingDeclList;
     SDict<Definition>    *m_innerCompounds;
 
-    //MemberList           *allMemberList;
+    MemberSDict          *m_allMembersDict;
     QList<MemberList>     m_memberLists;
     MemberGroupSDict     *memberGroupSDict;
     ClassSDict           *classSDict;

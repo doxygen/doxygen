@@ -2122,6 +2122,7 @@ DocRef::DocRef(DocNode *parent,const QString &target,const QString &context) :
 {
   Definition  *compound = 0;
   QCString     anchor;
+  //printf("DocRef::DocRef(target=%s,context=%s\n",target.data(),context.data());
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   SectionInfo *sec = Doxygen::sectionDict[target];
@@ -6086,6 +6087,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_context = "";
   }
+  //printf("g_context=%s\n",g_context.data());
 
   if (indexWords && md && Config_getBool("SEARCHENGINE"))
   {
@@ -6216,7 +6218,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   // restore original parser state
   docParserPopContext();
 
-  //printf("end validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
+  //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
   //                                     md?md->name().data():"<none>");
   
   return root;

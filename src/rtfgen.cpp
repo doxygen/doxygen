@@ -922,10 +922,13 @@ void RTFGenerator::startIndexList()
 void RTFGenerator::endIndexList()
 {
   DBG_RTF(t << "{\\comment (endIndexList)}" << endl)
-  t << "\\par";
+  if (!m_omitParagraph)
+  {
+    t << "\\par";
+    m_omitParagraph = TRUE;
+  }
   t << "}";
   decrementIndentLevel();
-  m_omitParagraph = TRUE;
 }
 
 /*! start bullet list */
@@ -990,6 +993,12 @@ void RTFGenerator::writeListItem()
 void RTFGenerator::startIndexItem(const char *,const char *)
 {
   DBG_RTF(t << "{\\comment (startIndexItem)}" << endl)
+
+  if (!m_omitParagraph)
+  {
+    t << "\\par" << endl;
+    m_omitParagraph = TRUE;
+  }
 }
 
 void RTFGenerator::endIndexItem(const char *ref,const char *fn)
@@ -1006,7 +1015,6 @@ void RTFGenerator::endIndexItem(const char *ref,const char *fn)
     t << endl;
   }
   m_omitParagraph = TRUE;
-  newParagraph();
 }
 
 //void RTFGenerator::writeIndexFileItem(const char *,const char *text)
@@ -2607,15 +2615,17 @@ void RTFGenerator::postProcess(QByteArray &a)
   QByteArray enc(a.size()*4); // worst case
   int off=0;
   uint i;
+  bool mbFlag=FALSE;
   for (i=0;i<a.size();i++)
   {
     unsigned char c = (unsigned char)a.at(i);
-    if (c>0x80)
+    if (c>0x80 || mbFlag)
     {
       char s[10];
       sprintf(s,"\\'%X",c);
       qstrcpy(enc.data()+off,s);
       off+=qstrlen(s);
+      mbFlag=c>0x80;
     }
     else
     {

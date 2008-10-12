@@ -1209,7 +1209,7 @@ QCString VhdlDocGen::trTypeString(int type)
     case VhdlDocGen::SHAREDVARIABLE: return "Shared Variable"; 
     case VhdlDocGen::GROUP:          return "Group"; 
     case VhdlDocGen::VFILE:          return "File"; 
-    case VhdlDocGen::COMPONENT_INST: return "Component Instantination"; 
+    case VhdlDocGen::COMPONENT_INST: return "Component Instantiation"; 
     case VhdlDocGen::ALIAS:          return "Alias";
     case VhdlDocGen::CONFIG:         return "Configuration";                                     
     default:                         return "";
@@ -1925,6 +1925,34 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
       if (alp!=0 && mm==VhdlDocGen::PROCEDURE)
 	VhdlDocGen::writeProcedureProto(ol,alp.pointer(),mdef);
 
+      break;
+    case VhdlDocGen::USE:
+      kl=VhdlDocGen::getClass(mdef->name());
+      if (kl && ((VhdlDocGen::VhdlClasses)kl->protection()==VhdlDocGen::ENTITYCLASS)) break;
+      writeLink(mdef,ol);  
+      ol.insertMemberAlign();
+      ol.docify("  ");
+
+      if (kl)
+      {
+        nn=kl->getOutputFileBase();
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.docify(" ");
+        QCString name=theTranslator_vhdlType(VhdlDocGen::PACKAGE,TRUE);
+        ol.startBold();
+        ol.docify(name.data()); 
+        name.resize(0);
+        ol.endBold();
+        name+=" <"+mdef->name()+">";
+        ol.startEmphasis();
+        ol.writeObjectLink(kl->getReference(),kl->getOutputFileBase(),0,name.data());
+        ol.popGeneratorState();
+      }
+      break;
+    case VhdlDocGen::LIBRARY:
+      writeLink(mdef,ol);
+      ol.insertMemberAlign();
       break;
     case VhdlDocGen::GENERIC:
     case VhdlDocGen::PORT:

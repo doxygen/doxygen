@@ -328,6 +328,7 @@ void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
                          const QCString &str, bool priority=FALSE,
                          const QCString &anchor="");
 
+bool updateLanguageMapping(const QCString &extension,const QCString &parser);
 SrcLangExt getLanguageFromFileName(const QCString fileName);
 
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
@@ -337,7 +338,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                             QCString *pResolvedType=0,
                             ArgumentList *actTemplParams=0);
 
-QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr);
+QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QString &doc,const QCString &fileName,int lineNr);
 
 QCString transcodeCharacterStringToUTF8(const QCString &input);
 
@@ -357,6 +358,7 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al);
 QCString convertCharEntitiesToUTF8(const QCString &s);
 
 bool usingTreeIndex();
+void stackTrace();
 
 #endif
 

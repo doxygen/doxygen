@@ -49,6 +49,18 @@
 #include "textdocvisitor.h"
 #include "portable.h"
 
+#define ENABLE_TRACINGSUPPORT 0
+
+#if defined(_OS_MAC_) && ENABLE_TRACINGSUPPORT
+#define TRACINGSUPPORT
+#endif
+
+#ifdef TRACINGSUPPORT
+#include <execinfo.h>
+#include <unistd.h>
+#endif
+
+
 //------------------------------------------------------------------------
 
 // selects one of the name to sub-dir mapping algorithms that is used
@@ -6355,35 +6367,85 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
   }
 }
 
+//--------------------------------------------------------------------------
+
+static QDict<int> g_extLookup;
+
+static struct Lang2ExtMap
+{
+  const char *langName;
+  SrcLangExt parserId;
+} 
+g_lang2extMap[] =
+{
+  { "idl",         SrcLangExt_IDL    },
+  { "java",        SrcLangExt_Java   },
+  { "javascript",  SrcLangExt_JS     },
+  { "c#",          SrcLangExt_CSharp },
+  { "d",           SrcLangExt_D      },
+  { "php",         SrcLangExt_PHP    },
+  { "objective-c", SrcLangExt_ObjC   },
+  { "python",      SrcLangExt_Python },
+  { "fortran",     SrcLangExt_F90    },
+  { "vhdl",        SrcLangExt_VHDL   },
+  { "c",           SrcLangExt_Cpp    },
+  { "c++",         SrcLangExt_Cpp    },
+  { 0,            (SrcLangExt)0      }
+};
+
+bool updateLanguageMapping(const QCString &extension,const QCString &parser)
+{
+  getLanguageFromFileName("dummy"); // force initializion of the g_extLookup map
+  const Lang2ExtMap *p = g_lang2extMap;
+  QCString langName = parser.lower();
+  while (p->langName)
+  {
+    if (langName==p->langName) break;
+    p++;
+  }
+  if (!p->langName) return FALSE;
+
+  // found the parser
+  SrcLangExt parserId = p->parserId;
+  QCString extName = extension;
+  if (extName.isEmpty()) return FALSE;
+  if (extName.at(0)!='.') extName.prepend(".");
+  if (g_extLookup.find(extension)!=0) // parser was already register for this ext
+  {
+    g_extLookup.remove(extension);
+  }
+  g_extLookup.insert(extension,new int(parserId));
+  return TRUE;
+}
+
 SrcLangExt getLanguageFromFileName(const QCString fileName)
 {
   int i = fileName.findRev('.');
   static bool init=FALSE;
-  static QDict<int> extLookup;
-  extLookup.setAutoDelete(TRUE);
+  g_extLookup.setAutoDelete(TRUE);
   if (!init) // one time initialization
   {
-    extLookup.insert(".idl",   new int(SrcLangExt_IDL));
-    extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
-    extLookup.insert(".odl",   new int(SrcLangExt_IDL));
-    extLookup.insert(".java",  new int(SrcLangExt_Java));
-    extLookup.insert(".as",    new int(SrcLangExt_JS));
-    extLookup.insert(".js",    new int(SrcLangExt_JS));
-    extLookup.insert(".cs",    new int(SrcLangExt_CSharp));
-    extLookup.insert(".d",     new int(SrcLangExt_D));
-    extLookup.insert(".php",   new int(SrcLangExt_PHP));
-    extLookup.insert(".php4",  new int(SrcLangExt_PHP));
-    extLookup.insert(".php5",  new int(SrcLangExt_PHP));
-    extLookup.insert(".inc",   new int(SrcLangExt_PHP));
-    extLookup.insert(".phtml", new int(SrcLangExt_PHP));
-    extLookup.insert(".m",     new int(SrcLangExt_ObjC));
-    extLookup.insert(".M",     new int(SrcLangExt_ObjC));
-    extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
-    extLookup.insert(".py",    new int(SrcLangExt_Python));
-    extLookup.insert(".f",     new int(SrcLangExt_F90));
-    extLookup.insert(".f90",   new int(SrcLangExt_F90));
-    extLookup.insert(".vhd",   new int(SrcLangExt_VHDL));
-    extLookup.insert(".vhdl",  new int(SrcLangExt_VHDL));
+    g_extLookup.insert(".idl",   new int(SrcLangExt_IDL));
+    g_extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
+    g_extLookup.insert(".odl",   new int(SrcLangExt_IDL));
+    g_extLookup.insert(".java",  new int(SrcLangExt_Java));
+    g_extLookup.insert(".as",    new int(SrcLangExt_JS));
+    g_extLookup.insert(".js",    new int(SrcLangExt_JS));
+    g_extLookup.insert(".cs",    new int(SrcLangExt_CSharp));
+    g_extLookup.insert(".d",     new int(SrcLangExt_D));
+    g_extLookup.insert(".php",   new int(SrcLangExt_PHP));
+    g_extLookup.insert(".php4",  new int(SrcLangExt_PHP));
+    g_extLookup.insert(".php5",  new int(SrcLangExt_PHP));
+    g_extLookup.insert(".inc",   new int(SrcLangExt_PHP));
+    g_extLookup.insert(".phtml", new int(SrcLangExt_PHP));
+    g_extLookup.insert(".m",     new int(SrcLangExt_ObjC));
+    g_extLookup.insert(".M",     new int(SrcLangExt_ObjC));
+    g_extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
+    g_extLookup.insert(".py",    new int(SrcLangExt_Python));
+    g_extLookup.insert(".f",     new int(SrcLangExt_F90));
+    g_extLookup.insert(".f90",   new int(SrcLangExt_F90));
+    g_extLookup.insert(".vhd",   new int(SrcLangExt_VHDL));
+    g_extLookup.insert(".vhdl",  new int(SrcLangExt_VHDL));
     init=TRUE;
   }
   if (i!=-1) // name has an extension
@@ -6391,7 +6453,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
     QCString extStr=fileName.right(fileName.length()-i);
     if (!extStr.isEmpty()) // non-empty extension
     {
-      int *pVal=extLookup.find(extStr);
+      int *pVal=g_extLookup.find(extStr);
       if (pVal) // listed extension
       {
         return (SrcLangExt)*pVal; // cast void* address to enum value
@@ -6400,6 +6462,8 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
   }
   return SrcLangExt_Cpp; // not listed => assume C-ish language.
 }
+
+//--------------------------------------------------------------------------
 
 /*! Returns true iff the given name string appears to be a typedef in scope. */
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
@@ -6471,12 +6535,14 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
     return FALSE;
 }
 
-QCString parseCommentAsText(const QString &doc,const QCString &fileName,int lineNr)
+QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
+    const QString &doc,const QCString &fileName,int lineNr)
 {
   QString result;
   if (doc.isEmpty()) return result.data();
   QTextStream t(&result,IO_WriteOnly);
-  DocNode *root = validatingParseDoc(fileName,lineNr,Doxygen::globalScope,0,doc,FALSE,FALSE);
+  DocNode *root = validatingParseDoc(fileName,lineNr,
+      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE);
   TextDocVisitor *visitor = new TextDocVisitor(t);
   root->accept(visitor);
   delete visitor;
@@ -6687,5 +6753,32 @@ bool usingTreeIndex()
 {
   QCString& TreeView=Config_getEnum("GENERATE_TREEVIEW");
   return TreeView=="FRAME" || TreeView=="ALL" || TreeView=="YES";
+}
+
+void stackTrace()
+{
+#ifdef TRACINGSUPPORT
+  void *backtraceFrames[128];
+  int frameCount = backtrace(backtraceFrames, 128);
+  static char cmd[40960];
+  char *p = cmd;
+  p += sprintf(p,"/usr/bin/atos -p %d ", (int)getpid());
+  for (int x = 0; x < frameCount; x++) 
+  {
+    p += sprintf(p,"%p ", backtraceFrames[x]);
+  }
+  fprintf(stderr,"========== STACKTRACE START ==============\n");
+  if (FILE *fp = popen(cmd, "r"))
+  {
+    char resBuf[512];
+    while (size_t len = fread(resBuf, 1, sizeof(resBuf), fp))
+    {
+      fwrite(resBuf, 1, len, stderr);
+    }
+    pclose(fp);
+  }
+  fprintf(stderr,"============ STACKTRACE END ==============\n");
+  //fprintf(stderr,"%s\n", frameStrings[x]);
+#endif
 }
 

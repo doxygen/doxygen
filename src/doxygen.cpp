@@ -10050,6 +10050,11 @@ void generateOutput()
     if (usingTreeIndex()) Doxygen::indexList.addIndex(new FTVHelp);
     if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
+    Doxygen::indexList.addImageFile("tab_r.gif");
+    Doxygen::indexList.addImageFile("tab_l.gif");
+    Doxygen::indexList.addImageFile("tab_b.gif");
+    Doxygen::indexList.addStyleSheetFile("tabs.css");
+    Doxygen::indexList.addImageFile("doxygen.png");
     if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
   }

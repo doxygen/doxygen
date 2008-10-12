@@ -809,9 +809,9 @@ ALLID        [^;()\t ]
   BEGIN(FindEntityName);
 }
 
-<Start>{MAPCOMPONENT}|{MAPCOMPONENT1}  { // found new mapped component aaa: bbb port map 
+<Start>{MAPCOMPONENT}|{MAPCOMPONENT1}  { // found component instantiation 
 
-  lineCount();
+ // lineCount();
   QCString type;
   QCString tt(yytext);
   QRegExp regg("[ \n\t:.()-]");
