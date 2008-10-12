@@ -51,6 +51,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   m_innerCompounds = new SDict<Definition>(17);
   usingDirList = 0;
   usingDeclList = 0;
+  m_allMembersDict = 0;
   setReference(lref);
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
@@ -183,6 +184,12 @@ void NamespaceDef::insertMember(MemberDef *md)
     m_memberLists.append(allMemberList);
   }
   allMemberList->append(md); 
+  if (m_allMembersDict==0)
+  {
+    m_allMembersDict = new MemberSDict;
+  }
+  //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
+  m_allMembersDict->append(md->localName(),md); 
   //::addNamespaceMemberNameToIndex(md);
   //static bool sortBriefDocs=Config_getBool("SORT_BRIEF_DOCS");
   switch(md->memberType())
@@ -935,3 +942,16 @@ bool NamespaceDef::isLinkable() const
 {
   return isLinkableInProject() || isReference();
 }
+
+
+MemberDef * NamespaceDef::getMemberByName(const QCString &n) const
+{
+  MemberDef *md = 0;
+  if (m_allMembersDict && !n.isEmpty())
+  {
+    md = m_allMembersDict->find(n);
+    //printf("%s::m_allMembersDict->find(%s)=%p\n",name().data(),n.data(),md);
+  }
+  return md;
+}
+

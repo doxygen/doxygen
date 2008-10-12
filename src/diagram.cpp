@@ -30,10 +30,9 @@
 #include "config.h"
 #include "message.h"
 #include "util.h"
-//#include "latexgen.h"
-//#include "htmlgen.h"
 #include "doxygen.h"
 #include "portable.h"
+#include "index.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1291,6 +1290,7 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
   image.save((QCString)path+"/"+fileName+".png");
+  Doxygen::indexList.addImageFile(QCString(fileName)+".png");
   
   if (generateMap) t << "</map>" << endl;
 }

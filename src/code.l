@@ -687,7 +687,7 @@ static MemberDef *setCallContextForVar(const QCString &name)
     QCString scope   = name.left(scopeEnd);
     QCString locName = name.right(name.length()-scopeEnd-2);
     //printf("explicit scope: name=%s scope=%s\n",locName.data(),scope.data());
-    ClassDef *mcd = getClass(scope); // TODO: check namespace as well
+    ClassDef *mcd = getClass(scope); 
     if (mcd && !locName.isEmpty())
     {
       MemberDef *md=mcd->getMemberByName(locName);
@@ -696,6 +696,20 @@ static MemberDef *setCallContextForVar(const QCString &name)
         //printf("name=%s scope=%s\n",locName.data(),scope.data());
         g_theCallContext.setClass(stripClassName(md->typeString()));
         return md;
+      }
+    }
+    else // check namespace as well
+    {
+      NamespaceDef *mnd = getResolvedNamespace(scope);
+      if (mnd && !locName.isEmpty())
+      {
+	MemberDef *md=mnd->getMemberByName(locName);
+	if (md)
+	{
+	  //printf("name=%s scope=%s\n",locName.data(),scope.data());
+	  g_theCallContext.setClass(stripClassName(md->typeString()));
+	  return md;
+	}
       }
     }
   }

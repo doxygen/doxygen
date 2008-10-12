@@ -5383,7 +5383,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   //printf("parseCommentBlock [%s]\n",doc.data());
   while (parseCommentBlock(
 	g_thisParser,
-	docBlockInBody ? previous : current,
+	docBlockInBody && previous ? previous : current,
 	doc,        // text
 	yyFileName, // file
 	brief ? current->briefLine : current->docLine,   // line of block start

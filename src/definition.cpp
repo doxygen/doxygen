@@ -1238,8 +1238,11 @@ QCString Definition::briefDescriptionAsTooltip() const
       static bool reentering=FALSE; 
       if (!reentering)
       {
+        MemberDef *md = definitionType()==TypeMember ? (MemberDef*)this : 0;
+        const Definition *scope = definitionType()==TypeMember ? getOuterScope() : this;
         reentering=TRUE; // prevent requests for tooltips while parsing a tooltip
         m_impl->brief->tooltip = parseCommentAsText(
+            scope,md,
             m_impl->brief->doc,
             m_impl->brief->file,
             m_impl->brief->line);

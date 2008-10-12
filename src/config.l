@@ -1270,19 +1270,28 @@ void Config::check()
   // check QHP creation requirements
   if (Config_getBool("GENERATE_QHP"))
   {
+    bool quit = false;
     if (!Config_getBool("GENERATE_HTML"))
     {
       config_err("Warning: GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
+      quit = true;
     }
 
     if (Config_getString("QHP_NAMESPACE").isEmpty())
     {
       config_err("Warning: GENERATE_QHP=YES requires QHP_NAMESPACE to be set.\n");
+      quit = true;
     }
 
     if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
     {
       config_err("Warning: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set.\n");
+      quit = true;
+    }
+
+    if (quit)
+    {
+      exit(1);
     }
   }
 
@@ -1751,6 +1760,16 @@ void Config::create()
 		    "VHDL. \n",
                     FALSE
                  );
+  cl = addList(     "EXTENSION_MAPPING",
+                    "Doxygen selects the parser to use depending on the extension of the files it parses. \n"
+		    "With this tag you can assign which parser to use for a given extension. \n"
+		    "Doxygen has a built-in mapping, but you can override or extend it using this tag. \n"
+		    "The format is ext=language, where ext is a file extension, and language is one of \n"
+		    "the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP, \n"
+		    "Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat \n"
+		    ".inc files as Fortran files (default is PHP), and .f files as C (default is Fortran), \n"
+		    "use: inc=Fortran f=C\n"
+                 );
   cb = addBool(  
                     "BUILTIN_STL_SUPPORT",
 		    "If you use STL classes (i.e. std::string, std::vector, etc.) but do not want \n"
@@ -1774,15 +1793,15 @@ void Config::create()
 		    "instead of private inheritance when no explicit protection keyword is present. \n",
                     FALSE
                  );
-  cb = addBool(    "IDL_PROPERTY_SUPPORT",
-                   "For Microsoft's IDL there are propget and propput attributes to indicate getter \n"
-		   "and setter methods for a property. Setting this option to YES (the default) \n"
-		   "will make doxygen to replace the get and set methods by a property in the \n"
-		   "documentation. This will only work if the methods are indeed getting or \n"
-		   "setting a simple type. If this is not the case, or you want to show the \n"
-		   "methods anyway, you should set this option to NO. \n",
-		   TRUE
-		  );
+  cb = addBool(     "IDL_PROPERTY_SUPPORT",
+                    "For Microsoft's IDL there are propget and propput attributes to indicate getter \n"
+		    "and setter methods for a property. Setting this option to YES (the default) \n"
+		    "will make doxygen to replace the get and set methods by a property in the \n"
+		    "documentation. This will only work if the methods are indeed getting or \n"
+		    "setting a simple type. If this is not the case, or you want to show the \n"
+		    "methods anyway, you should set this option to NO. \n",
+		    TRUE
+		 );
   cb = addBool(
                     "DISTRIBUTE_GROUP_DOC",
                     "If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC \n"
@@ -2565,18 +2584,42 @@ void Config::create()
                     "QHP_NAMESPACE",
                     "The QHP_NAMESPACE tag specifies the namespace to use when generating \n"
                     "Qt Help Project output. For more information please see \n"
-                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#namespace\">Qt Help Project / Namespace</a>. \n"
+                    "http://doc.trolltech.com/qthelpproject.html#namespace \n"
                    );
-  cs->setDefaultValue("org.doxygen.Project");
   cs->addDependency("GENERATE_QHP");
   cs = addString(
                     "QHP_VIRTUAL_FOLDER",
                     "The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating \n"
                     "Qt Help Project output. For more information please see \n"
-                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#virtual-folders\">Qt Help Project / Virtual Folders</a>. \n"
+                    "http://doc.trolltech.com/qthelpproject.html#virtual-folders \n"
                    );
   cs->setDefaultValue("doc");
   cs->addDependency("GENERATE_QHP");
+
+  cs = addString(
+                    "QHP_CUSTOM_FILTER_NAME",
+                    "If QHP_CUSTOM_FILTER_NAME is set, it specifies the name of a custom filter to add. \n"
+                    "For more information please see \n"
+                    "http://doc.trolltech.com/qthelpproject.html#custom-filters \n"
+                   );
+  cs->addDependency("GENERATE_QHP");
+
+  cs = addString(
+                    "QHP_CUST_FILTER_ATTRS",
+                    "The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the custom filter to add."
+                    "For more information please see \n"
+                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#custom-filters\">Qt Help Project / Custom Filters</a>. \n"
+                   );
+  cs->addDependency("GENERATE_QHP");
+
+  cs = addString(
+                    "QHP_SECT_FILTER_ATTRS",
+                    "The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's \n"
+                    "filter section matches. \n"
+                    "<a href=\"http://doc.trolltech.com/qthelpproject.html#filter-attributes\">Qt Help Project / Filter Attributes</a>. \n"
+                   );
+  cs->addDependency("GENERATE_QHP");
+
   cs = addString(
                     "QHG_LOCATION",
                     "If the GENERATE_QHP tag is set to YES, the QHG_LOCATION tag can \n"

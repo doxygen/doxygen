@@ -151,11 +151,11 @@ static DocCmdMap docCmdMap[] =
   { "example",         &handleExample,          FALSE },
   { "details",         &handleDetails,          TRUE  },
   { "name",            &handleName,             FALSE },
-  { "todo",            &handleTodo,             TRUE  },
-  { "test",            &handleTest,             TRUE  },
-  { "bug",             &handleBug,              TRUE  },
-  { "deprecated",      &handleDeprecated,       TRUE  },
-  { "xrefitem",        &handleXRefItem,         TRUE  },
+  { "todo",            &handleTodo,             FALSE }, // end brief will be done differently
+  { "test",            &handleTest,             FALSE }, // end brief will be done differently
+  { "bug",             &handleBug,              FALSE }, // end brief will be done differently
+  { "deprecated",      &handleDeprecated,       FALSE }, // end brief will be done differently
+  { "xrefitem",        &handleXRefItem,         FALSE }, // end brief will be done differently
   { "related",         &handleRelated,          TRUE  },
   { "relates",         &handleRelated,          TRUE  },
   { "relatedalso",     &handleRelatedAlso,      TRUE  },
@@ -624,6 +624,13 @@ static inline void setOutput(OutputContext ctx)
                    newXRefKind==xrefKind &&                    // of the same kind
                    (xrefKind!=XRef_Item || 
 		    newXRefItemKey==xrefItemKey);              // with the same key if \xrefitem
+  //printf("%d && %d && %d && (%d || %d)\n",
+  //                 inContext==OutputXRef,
+  //                 ctx==OutputXRef,
+  //                 newXRefKind==xrefKind,
+  //                 xrefKind!=XRef_Item,
+  //	  	     newXRefItemKey==xrefItemKey);
+      
   //printf("refKind=%d newXRefKind=%d xrefAppendToPrev=%d xrefAppendFlag=%d\n",
   //   	  xrefKind,newXRefKind,xrefAppendToPrev,xrefAppendFlag);
 

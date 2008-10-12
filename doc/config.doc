@@ -195,6 +195,9 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_project_number PROJECT_NUMBER
 \refitem cfg_qhp_namespace QHP_NAMESPACE
 \refitem cfg_qhp_virtual_folder QHP_VIRTUAL_FOLDER
+\refitem cfg_qhp_custom_filter_name QHP_CUSTOM_FILTER_NAME
+\refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
+\refitem cfg_qhp_sect_filter_attrs QHP_SECT_FILTER_ATTRS
 \refitem cfg_qhg_location QHG_LOCATION
 \refitem cfg_qt_autobrief QT_AUTOBRIEF
 \refitem cfg_quiet QUIET
@@ -1383,6 +1386,25 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when
  generating Qt Help Project output. For more information please see
  <a href="http://doc.trolltech.com/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
+
+\anchor cfg_qhp_custom_filter_name
+<dt>\c QHP_CUSTOM_FILTER_NAME <dd>
+  \addindex QHP_CUSTOM_FILTER_NAME
+  If QHP_CUSTOM_FILTER_NAME is set, it specifies the name of a custom filter to add. For more information please see
+  <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+
+\anchor cfg_qhp_cust_filter_attrs
+<dt>\c QHP_CUST_FILTER_ATTRS <dd>
+  \addindex QHP_CUST_FILTER_ATTRS
+  The QHP_CUST_FILTER_ATTRIBUTES tag specifies the list of the attributes of the custom filter to add.
+  For more information please see
+  <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+
+\anchor cfg_qhp_sect_filter_attrs
+<dt>\c QHP_SECT_FILTER_ATTRS <dd>
+  \addindex QHP_SECT_FILTER_ATTRS
+  The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's filter section matches.
+  <a href="http://doc.trolltech.com/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
 
 \anchor cfg_qhg_location
 <dt>\c QHG_LOCATION <dd>

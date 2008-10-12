@@ -55,7 +55,7 @@ To take full advantage of doxygen's features the following additional
 tools should be installed.
 
 <ul>
-<li>Troll Tech's GUI toolkit 
+<li>Qt Software's GUI toolkit 
     <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
     \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
     \addindex Qt
@@ -505,7 +505,7 @@ Here is what is required:
     For doxywizard, a complete Qt library is 
     still a requirement however. A commercial license to build
     doxywizard with the latest Qt library was kindly donated to me
-    by the nice people at <a href="http://www.trolltech.com">TrollTech</a>. 
+    by the nice people at <a href="http://www.trolltech.com">Qt Software</a>. 
     See doxygen download page for a link. 
    
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
@@ -589,7 +589,7 @@ You can download it from
 If you want to produce Qt Compressed Help files (see \ref 
 cfg_qhg_location "QHG_LOCATION") in the config file, then 
 you need qhelpgenerator which is part of Qt. 
-You can download Qt from <a href="http://trolltech.com/downloads/">Trolltech Downloads</a>.
+You can download Qt from <a href="http://trolltech.com/downloads/">Qt Software Downloads</a>.
 
 In order to generate PDF output or use scientific formulas you will also need to
 install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
@@ -662,7 +662,7 @@ features:
     cfg_qhelgenerator_loc "QHG_LOCATION") in the config file,
     then you need qhelpgenerator which is part of Qt. 
     You can download Qt from
-    <a href="http://trolltech.com/downloads/">Trolltech Downloads</a>.
+    <a href="http://trolltech.com/downloads/">Qt Software Downloads</a>.
 
 <li><a href="http://www.graphviz.org/">
     the Graph visualization toolkit version 1.8.10</a><br>
