@@ -258,6 +258,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
           outImage.writeBlock(buffer,inImage.size());
           outImage.flush();
           delete buffer;
+          if (type==DocImage::Html) Doxygen::indexList.addImageFile(result);
         }
         else
         {
@@ -2762,7 +2763,7 @@ int DocInternal::parse(int level)
         )
   {
     DocSection *s=new DocSection(this,
-        QMIN(level+Doxygen::subpageNestingLevel,4),g_token->sectionId);
+        QMIN(level+Doxygen::subpageNestingLevel,5),g_token->sectionId);
     m_children.append(s);
     retval = s->parse();
   }
@@ -5813,43 +5814,46 @@ int DocSection::parse()
 
   if (lastPar) lastPar->markLast();
 
-  if (retval==RetVal_Subsection && m_level==1)
+  //printf("m_level=%d <-> %d\n",m_level,Doxygen::subpageNestingLevel);
+
+  if (retval==RetVal_Subsection && m_level==Doxygen::subpageNestingLevel+1)
   {
     // then parse any number of nested sections
     while (retval==RetVal_Subsection) // more sections follow
     {
       //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
       DocSection *s=new DocSection(this,
-          QMIN(2+Doxygen::subpageNestingLevel,4),g_token->sectionId);
+          QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
   }
-  else if (retval==RetVal_Subsubsection && m_level==2)
+  else if (retval==RetVal_Subsubsection && m_level==Doxygen::subpageNestingLevel+2)
   {
     // then parse any number of nested sections
     while (retval==RetVal_Subsubsection) // more sections follow
     {
       //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
       DocSection *s=new DocSection(this,
-          QMIN(3+Doxygen::subpageNestingLevel,4),g_token->sectionId);
+          QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
   }
-  else if (retval==RetVal_Paragraph && m_level==3)
+  else if (retval==RetVal_Paragraph && m_level==QMIN(5,Doxygen::subpageNestingLevel+3))
   {
     // then parse any number of nested sections
     while (retval==RetVal_Paragraph) // more sections follow
     {
       //SectionInfo *sec=Doxygen::sectionDict[g_token->sectionId];
-      DocSection *s=new DocSection(this,4,g_token->sectionId);
+      DocSection *s=new DocSection(this,
+          QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }
   }
-  else if ((m_level<=1 && retval==RetVal_Subsubsection) ||
-           (m_level<=2 && retval==RetVal_Paragraph)
+  else if ((m_level<=1+Doxygen::subpageNestingLevel && retval==RetVal_Subsubsection) ||
+           (m_level<=2+Doxygen::subpageNestingLevel && retval==RetVal_Paragraph)
           ) 
   {
     int level; 
@@ -6013,6 +6017,7 @@ void DocRoot::parse()
   } while (retval!=0 && retval!=RetVal_Section && retval!=RetVal_Internal);
   if (lastPar) lastPar->markLast();
 
+  //printf("DocRoot::parse() retval=%d %d\n",retval,RetVal_Section);
   // then parse any number of level1 sections
   while (retval==RetVal_Section)
   {
@@ -6020,7 +6025,7 @@ void DocRoot::parse()
     if (sec)
     {
       DocSection *s=new DocSection(this,
-          QMIN(1+Doxygen::subpageNestingLevel,4),g_token->sectionId);
+          QMIN(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
       m_children.append(s);
       retval = s->parse();
     }

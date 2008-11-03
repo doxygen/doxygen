@@ -158,6 +158,7 @@ QCString       spaces;
 
 static bool g_successfulRun = FALSE;
 static bool g_dumpSymbolMap = FALSE;
+static bool g_dumpConfigAsXML = FALSE;
 
 
 
@@ -8917,6 +8918,17 @@ static void dumpSymbolMap()
   }
 }
 
+//----------------------------------------------------------------------------
+
+void dumpConfigAsXML()
+{
+  QFile f("config.xml");
+  if (f.open(IO_WriteOnly))
+  {
+    QTextStream t(&f);
+    Config::instance()->writeXML(t);
+  }
+}
 
 //----------------------------------------------------------------------------
 // print the usage of doxygen
@@ -8977,15 +8989,15 @@ void initDoxygen()
   Doxygen::runningTime.start();
   initPreprocessor();
 
-  ParserInterface *defaultParser = new CLanguageScanner;
-  Doxygen::parserManager = new ParserManager(defaultParser);
-  Doxygen::parserManager->registerParser(".py",  new PythonLanguageScanner);
-  Doxygen::parserManager->registerParser(".f",   new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser(".f90", new FortranLanguageScanner);
-  Doxygen::parserManager->registerParser(".vhd", new VHDLLanguageScanner);
+  Doxygen::parserManager = new ParserManager;
+  Doxygen::parserManager->registerParser("c",       new CLanguageScanner, TRUE);
+  Doxygen::parserManager->registerParser("python",  new PythonLanguageScanner);
+  Doxygen::parserManager->registerParser("fortran", new FortranLanguageScanner);
+  Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
 
   // register any additional parsers here...
 
+  initDefaultExtensionMapping();
   initClassMemberIndices();
   initNamespaceMemberIndices();
   initFileMemberIndices();
@@ -9245,6 +9257,9 @@ void readConfiguration(int argc, char **argv)
       case 'm':
         g_dumpSymbolMap = TRUE;
         break;
+      case 'x':
+        g_dumpConfigAsXML = TRUE;
+        break;
       case '-':
         if (strcmp(&argv[optind][2],"help")==0)
         {
@@ -9280,7 +9295,13 @@ void readConfiguration(int argc, char **argv)
 
   if (genConfig)
   {
+    checkConfiguration();
     generateConfigFile(configName,shortList);
+    if (g_dumpConfigAsXML)
+    {
+      dumpConfigAsXML();
+      exit(0); 
+    }
     cleanUpDoxygen();
     exit(0);
   }
@@ -9459,6 +9480,37 @@ static QCString getQchFileName()
 void parseInput()
 {
   atexit(exitDoxygen);
+
+  /**************************************************************************
+   *            Add custom extension mappings
+   **************************************************************************/
+
+  QStrList &extMaps = Config_getList("EXTENSION_MAPPING");
+  char *mapping = extMaps.first();
+  while (mapping)
+  {
+    QCString mapStr = mapping;
+    int i;
+    if ((i=mapStr.find('='))!=-1)
+    {
+      QCString ext=mapStr.left(i).stripWhiteSpace().lower();
+      QCString language=mapStr.mid(i+1).stripWhiteSpace().lower();
+      if (!updateLanguageMapping(ext,language))
+      {
+        err("Failed to map file extension '%s' to unsupported language '%s'.\n"
+            "Check the EXTENSION_MAPPING setting in the config file.\n", 
+            ext.data(),language.data());
+      }
+      else
+      {
+        msg("Adding custom extension mapping: .%s will be treated as language %s\n",
+            ext.data(),language.data());
+      }
+    }
+    mapping = extMaps.next();
+  }
+
+
 
   /**************************************************************************
    *            Make sure the output directory exists
@@ -10031,8 +10083,8 @@ void generateOutput()
   //}
   if (g_dumpSymbolMap)
   {
-     dumpSymbolMap();
-     exit(0);
+    dumpSymbolMap();
+    exit(0);
   }
 
   initDocParser();

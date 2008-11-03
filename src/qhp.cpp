@@ -75,7 +75,7 @@ void Qhp::initialize()
   m_doc.openCloseContent("virtualFolder", virtualFolder);
 
   // Add custom filter
-  QCString filterName = Config_getString("QHP_CUSTOM_FILTER_NAME");
+  QCString filterName = Config_getString("QHP_CUST_FILTER_NAME");
   if (!filterName.isEmpty())
   {
     const char * tagAttributes[] = 

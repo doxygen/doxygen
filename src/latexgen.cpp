@@ -365,6 +365,14 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "\\addtocounter{secnumdepth}{1}\n";
   t << "\\sloppy\n";
   t << "\\usepackage[T1]{fontenc}\n";
+  t << "\\makeatletter\n";
+  t << "\\renewcommand{\\paragraph}{\\@startsection{paragraph}{4}{0ex}%\n";
+  t << "   {-3.25ex plus -1ex minus -0.2ex}%\n";
+  t << "   {1.5ex plus 0.2ex}%\n";
+  t << "   {\\normalfont\\normalsize\\bfseries}}\n";
+  t << "\\makeatother\n";
+  t << "\\stepcounter{secnumdepth}\n";
+  t << "\\stepcounter{tocdepth}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)

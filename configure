@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=7.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20081012
+doxygen_version_mmn=20081103
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -38,7 +38,7 @@ f_app=NO
 f_thread=NO
 f_flex=NO
 f_bison=NO
-f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa
+f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,vi
 
 while test -n "$1";  do
   case $1 in
@@ -669,7 +669,7 @@ fi
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC"));
+	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC,VI"));
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

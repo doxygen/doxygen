@@ -383,7 +383,7 @@ static const char tabs_css[] =
 "   float            : left;\n"
 "   background       : url(\"tab_r.gif\") no-repeat right top;\n"
 "   border-bottom    : 1px solid #84B0C7;\n"
-"   font-size        : 8px;\n"
+"   font-size        : 80%;\n"
 "   font-weight      : bold;\n"
 "   text-decoration  : none;\n"
 "}\n"
@@ -417,7 +417,7 @@ static const char tabs_css[] =
 "\n"
 "DIV.tabs TD\n"
 "{\n"
-"   font-size        : 8px;\n"
+"   font-size        : 80%;\n"
 "   font-weight      : bold;\n"
 "   text-decoration  : none;\n"
 "}\n"
@@ -450,6 +450,9 @@ static const char tabs_css[] =
 "   background       : none;\n"
 "   border           : none;\n"
 "   border-bottom    : 1px solid #84B0C7;\n"
+"   text-align       : center;\n"
+"   margin           : 2px;\n"
+"   padding          : 2px;\n"
 "}\n"
 ;
 
@@ -573,6 +576,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
     "<title>"; 
   t << convertToHtml(title);
   t << "</title>\n";
+  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\">\n";
   t << "<link ";
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
@@ -591,7 +595,6 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   }
   
   t << "\" rel=\"stylesheet\" type=\"text/css\">\n";
-  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\">\n";
   t << "</head><body>\n";
 }
 

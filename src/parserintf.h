@@ -109,22 +109,38 @@ class ParserManager
 {
   public:
     /** Creates the parser manager object. 
-     *  @param defaultParser The default parser that is used when
-     *                       no explicit extension has been registered for
-     *                       a given input file.
      */
-    ParserManager(ParserInterface *defaultParser)
-      : m_defaultParser(defaultParser) { m_parsers.setAutoDelete(TRUE); }
+    ParserManager()
+      : m_defaultParser(0) { m_parsers.setAutoDelete(TRUE); }
 
     /** Registers an additional parser.
-     *  @param[in] extension The file extension that will trigger
-     *             the use of this parser (e.g. ".py", or ".bas").
+     *  @param[in] name      A symbolic name of the parser, i.e. "c",
+     *                       "python", "fortran", "vhdl", ...
      *  @param[in] parser    The parser that is to be used for the
      *             given extension.
+     *  @param[in] defParser Use this parser as the default parser, using
+     *                       for unregistered file extensions.
      */
-    void registerParser(const char *extension,ParserInterface *parser)
+    void registerParser(const char *name,ParserInterface *parser,bool defParser=FALSE)
     {
-      m_parsers.insert(extension,parser);
+      if (defParser && m_defaultParser==0) m_defaultParser=parser;
+      m_parsers.insert(name,parser);
+    }
+
+    /** Registers a file \a extension with a parser with name \a parserName. 
+     *  Returns TRUE if the extension was successfully registered.
+     */
+    bool registerExtension(const char *extension, const char *parserName)
+    {
+      if (parserName==0 || extension==0) return FALSE;
+      ParserInterface *intf = m_parsers.find(parserName);
+      if (intf==0) return FALSE;
+      if (m_extensions.find(extension)!=0) // extension already exists
+      {
+        m_extensions.remove(extension); // remove it
+      }
+      m_extensions.insert(extension,intf); // add new mapping
+      return TRUE;
     }
 
     /** Gets the interface to the parser associated with given \a extension.
@@ -135,16 +151,17 @@ class ParserManager
     {
       if (extension==0) return m_defaultParser;
       QCString ext = QCString(extension).lower();
-      ParserInterface *intf = m_parsers.find(ext);
+      ParserInterface *intf = m_extensions.find(ext);
       if (intf==0 && ext.length()>4)
       {
-        intf = m_parsers.find(ext.left(4));
+        intf = m_extensions.find(ext.left(4));
       }
       return intf ? intf : m_defaultParser;
     }
 
   private:
     QDict<ParserInterface> m_parsers;
+    QDict<ParserInterface> m_extensions;
     ParserInterface *m_defaultParser;
 };
 

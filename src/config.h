@@ -1,3 +1,21 @@
+/******************************************************************************
+ *
+ * 
+ *
+ *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -56,6 +74,7 @@ class ConfigOption
     virtual void writeTemplate(QTextStream &t,bool sl,bool upd) = 0;
     virtual void convertStrToVal() {}
     virtual void substEnvVars() = 0;
+    virtual void writeXML(QTextStream&) {}
     virtual void init() {}
 
     QCString convertToComment(const QCString &s);
@@ -128,6 +147,7 @@ class ConfigList : public ConfigOption
       t << "\n";
     }
     void substEnvVars();
+    void writeXML(QTextStream&);
     void init() { m_value.clear(); }
   private:
     QStrList m_value;
@@ -167,6 +187,7 @@ class ConfigEnum : public ConfigOption
       writeStringValue(t,m_value);
       t << "\n";
     }
+    void writeXML(QTextStream&);
     void init() { m_value = m_defValue.copy(); }
 
   private:
@@ -209,6 +230,7 @@ class ConfigString : public ConfigOption
       t << "\n";
     }
     void substEnvVars();
+    void writeXML(QTextStream&);
     void init() { m_value = m_defValue.copy(); }
   
   private:
@@ -258,6 +280,7 @@ class ConfigInt : public ConfigOption
       }
       t << "\n";
     }
+    void writeXML(QTextStream&);
     void init() { m_value = m_defValue; }
   private:
     int m_value;
@@ -305,6 +328,7 @@ class ConfigBool : public ConfigOption
       }
       t << "\n";
     }
+    void writeXML(QTextStream&);
     void init() { m_value = m_defValue; }
   private:
     bool m_value;
@@ -321,6 +345,7 @@ class ConfigObsolete : public ConfigOption
     ConfigObsolete(OptionType t) : ConfigOption(t)  {}
     void writeTemplate(QTextStream &,bool,bool) {}
     void substEnvVars() {}
+    void writeXML(QTextStream&);
 };
 
 
@@ -510,6 +535,9 @@ class Config
      *  be omitted.
      */
     void writeTemplate(QTextStream &t,bool shortIndex,bool updateOnly);
+
+    /** Write XML representation of the config file */
+    void writeXML(QTextStream &t);
 
     /////////////////////////////
     // internal API

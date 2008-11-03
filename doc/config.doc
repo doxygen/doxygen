@@ -101,6 +101,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
 \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
 \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
+\refitem cfg_extension_mapping EXTENSION_MAPPING
 \refitem cfg_external_groups EXTERNAL_GROUPS
 \refitem cfg_extra_packages EXTRA_PACKAGES
 \refitem cfg_extract_all EXTRACT_ALL
@@ -195,7 +196,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_project_number PROJECT_NUMBER
 \refitem cfg_qhp_namespace QHP_NAMESPACE
 \refitem cfg_qhp_virtual_folder QHP_VIRTUAL_FOLDER
-\refitem cfg_qhp_custom_filter_name QHP_CUSTOM_FILTER_NAME
+\refitem cfg_qhp_cust_filter_name QHP_CUST_FILTER_NAME
 \refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
 \refitem cfg_qhp_sect_filter_attrs QHP_SECT_FILTER_ATTRS
 \refitem cfg_qhg_location QHG_LOCATION
@@ -550,14 +551,26 @@ followed by the descriptions of the tags grouped by category.
 \anchor cfg_optimize_for_fortran
 <dt>\c OPTIMIZE_FOR_FORTRAN <dd>
  \addindex OPTIMIZE_FOR_FORTRAN
-Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
-sources. Doxygen will then generate output that is tailored for Fortran.
+ Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
+ sources. Doxygen will then generate output that is tailored for Fortran.
 
 \anchor cfg_optimize_output_vhdl
 <dt>\c OPTIMIZE_OUTPUT_VHDL <dd>
  \addindex OPTIMIZE_OUTPUT_VHDL
-Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
-sources. Doxygen will then generate output that is tailored for VHDL.
+ Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
+ sources. Doxygen will then generate output that is tailored for VHDL.
+
+\anchor cfg_extension_mapping
+<dt>\c EXTENSION_MAPPING <dd>
+ \addindex EXTENSION_MAPPING
+ Doxygen selects the parser to use depending on the extension of the files it parses.
+ With this tag you can assign which parser to use for a given extension.
+ Doxygen has a built-in mapping, but you can override or extend it using this tag.
+ The format is ext=language, where ext is a file extension, and language is one of
+ the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
+ Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat
+ .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),
+ use: inc=Fortran f=C
 
 \anchor cfg_subgrouping
 <dt>\c SUBGROUPING <dd>
@@ -1387,10 +1400,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  generating Qt Help Project output. For more information please see
  <a href="http://doc.trolltech.com/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
 
-\anchor cfg_qhp_custom_filter_name
-<dt>\c QHP_CUSTOM_FILTER_NAME <dd>
-  \addindex QHP_CUSTOM_FILTER_NAME
-  If QHP_CUSTOM_FILTER_NAME is set, it specifies the name of a custom filter to add. For more information please see
+\anchor cfg_qhp_cust_filter_name
+<dt>\c QHP_CUST_FILTER_NAME <dd>
+  \addindex QHP_CUST_FILTER_NAME
+  If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add. For more information please see
   <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 
 \anchor cfg_qhp_cust_filter_attrs
