@@ -473,7 +473,7 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
   //    n->ref.data(),n->file.data(),n->anchor.data());
   if (n->file.isEmpty()) // no link
   {
-    t << "<b>" << n->name << "</b>";
+    t << "<b>" << convertToHtml(n->name) << "</b>";
   }
   else // link into other frame
   {
@@ -499,7 +499,7 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
       t << "\" target=\"basefrm\">";
     else
       t << "\" target=\"_self\">";
-    t << n->name;
+    t << convertToHtml(n->name);
     t << "</a>";
     if (!n->ref.isEmpty())
     {

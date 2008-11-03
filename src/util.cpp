@@ -48,6 +48,7 @@
 #include "doxygen.h"
 #include "textdocvisitor.h"
 #include "portable.h"
+#include "parserintf.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -4459,10 +4460,10 @@ QCString substituteClassNames(const QCString &s)
 
 QCString substitute(const char *s,const char *src,const char *dst)
 {
-  if (s==0 || src==0 || dst==0) return s;
+  if (s==0 || src==0) return s;
   const char *p, *q;
   int srcLen = strlen(src);
-  int dstLen = strlen(dst);
+  int dstLen = dst ? strlen(dst) : 0;
   int resLen;
   if (srcLen!=dstLen)
   {
@@ -4481,7 +4482,7 @@ QCString substitute(const char *s,const char *src,const char *dst)
     int l = (int)(q-p);
     memcpy(r,p,l);
     r+=l;
-    memcpy(r,dst,dstLen);
+    if (dst) memcpy(r,dst,dstLen);
     r+=dstLen;
   }
   strcpy(r,p);
@@ -6374,30 +6375,32 @@ static QDict<int> g_extLookup;
 static struct Lang2ExtMap
 {
   const char *langName;
+  const char *parserName;
   SrcLangExt parserId;
 } 
 g_lang2extMap[] =
 {
-  { "idl",         SrcLangExt_IDL    },
-  { "java",        SrcLangExt_Java   },
-  { "javascript",  SrcLangExt_JS     },
-  { "c#",          SrcLangExt_CSharp },
-  { "d",           SrcLangExt_D      },
-  { "php",         SrcLangExt_PHP    },
-  { "objective-c", SrcLangExt_ObjC   },
-  { "python",      SrcLangExt_Python },
-  { "fortran",     SrcLangExt_F90    },
-  { "vhdl",        SrcLangExt_VHDL   },
-  { "c",           SrcLangExt_Cpp    },
-  { "c++",         SrcLangExt_Cpp    },
-  { 0,            (SrcLangExt)0      }
+//  language       parser     parser option
+  { "idl",         "c",       SrcLangExt_IDL    },
+  { "java",        "c",       SrcLangExt_Java   },
+  { "javascript",  "c",       SrcLangExt_JS     },
+  { "c#",          "c",       SrcLangExt_CSharp },
+  { "d",           "c",       SrcLangExt_D      },
+  { "php",         "c",       SrcLangExt_PHP    },
+  { "objective-c", "c",       SrcLangExt_ObjC   },
+  { "c",           "c",       SrcLangExt_Cpp    },
+  { "c++",         "c",       SrcLangExt_Cpp    },
+  { "python",      "python",  SrcLangExt_Python },
+  { "fortran",     "fortran", SrcLangExt_F90    },
+  { "vhdl",        "vhdl",    SrcLangExt_VHDL   },
+  { 0,             0,        (SrcLangExt)0      }
 };
 
-bool updateLanguageMapping(const QCString &extension,const QCString &parser)
+bool updateLanguageMapping(const QCString &extension,const QCString &language)
 {
-  getLanguageFromFileName("dummy"); // force initializion of the g_extLookup map
+  //getLanguageFromFileName("dummy"); // force initializion of the g_extLookup map
   const Lang2ExtMap *p = g_lang2extMap;
-  QCString langName = parser.lower();
+  QCString langName = language.lower();
   while (p->langName)
   {
     if (langName==p->langName) break;
@@ -6405,49 +6408,58 @@ bool updateLanguageMapping(const QCString &extension,const QCString &parser)
   }
   if (!p->langName) return FALSE;
 
-  // found the parser
+  // found the language
   SrcLangExt parserId = p->parserId;
   QCString extName = extension;
   if (extName.isEmpty()) return FALSE;
   if (extName.at(0)!='.') extName.prepend(".");
-  if (g_extLookup.find(extension)!=0) // parser was already register for this ext
+  if (g_extLookup.find(extension)!=0) // language was already register for this ext
   {
     g_extLookup.remove(extension);
   }
   g_extLookup.insert(extension,new int(parserId));
+  if (!Doxygen::parserManager->registerExtension(extName,p->parserName))
+  {
+    err("Failed to assign extension %s to parser %s for language %s\n",
+        extName.data(),p->parserName,language.data());
+  }
+  else
+  {
+    //msg("Registered extension %s to language parser %s...\n",
+    //    extName.data(),language.data());
+  }
   return TRUE;
+}
+
+void initDefaultExtensionMapping()
+{
+  g_extLookup.setAutoDelete(TRUE);
+  updateLanguageMapping(".idl",   "idl"); 
+  updateLanguageMapping(".ddl",   "idl"); 
+  updateLanguageMapping(".odl",   "idl"); 
+  updateLanguageMapping(".java",  "java");
+  updateLanguageMapping(".as",    "javascript"); 
+  updateLanguageMapping(".js",    "javascript");
+  updateLanguageMapping(".cs",    "c#");
+  updateLanguageMapping(".d",     "d");
+  updateLanguageMapping(".php",   "php"); 
+  updateLanguageMapping(".php4",  "php");
+  updateLanguageMapping(".php5",  "php");
+  updateLanguageMapping(".inc",   "php");
+  updateLanguageMapping(".phtml", "php");
+  updateLanguageMapping(".m",     "objective-c");
+  updateLanguageMapping(".M",     "objective-c");
+  updateLanguageMapping(".mm",    "objective-c");
+  updateLanguageMapping(".py",    "python");
+  updateLanguageMapping(".f",     "fortran");
+  updateLanguageMapping(".f90",   "fortran");
+  updateLanguageMapping(".vhd",   "vhdl");
+  updateLanguageMapping(".vhdl",  "vhdl");
 }
 
 SrcLangExt getLanguageFromFileName(const QCString fileName)
 {
   int i = fileName.findRev('.');
-  static bool init=FALSE;
-  g_extLookup.setAutoDelete(TRUE);
-  if (!init) // one time initialization
-  {
-    g_extLookup.insert(".idl",   new int(SrcLangExt_IDL));
-    g_extLookup.insert(".ddl",   new int(SrcLangExt_IDL));
-    g_extLookup.insert(".odl",   new int(SrcLangExt_IDL));
-    g_extLookup.insert(".java",  new int(SrcLangExt_Java));
-    g_extLookup.insert(".as",    new int(SrcLangExt_JS));
-    g_extLookup.insert(".js",    new int(SrcLangExt_JS));
-    g_extLookup.insert(".cs",    new int(SrcLangExt_CSharp));
-    g_extLookup.insert(".d",     new int(SrcLangExt_D));
-    g_extLookup.insert(".php",   new int(SrcLangExt_PHP));
-    g_extLookup.insert(".php4",  new int(SrcLangExt_PHP));
-    g_extLookup.insert(".php5",  new int(SrcLangExt_PHP));
-    g_extLookup.insert(".inc",   new int(SrcLangExt_PHP));
-    g_extLookup.insert(".phtml", new int(SrcLangExt_PHP));
-    g_extLookup.insert(".m",     new int(SrcLangExt_ObjC));
-    g_extLookup.insert(".M",     new int(SrcLangExt_ObjC));
-    g_extLookup.insert(".mm",    new int(SrcLangExt_ObjC));
-    g_extLookup.insert(".py",    new int(SrcLangExt_Python));
-    g_extLookup.insert(".f",     new int(SrcLangExt_F90));
-    g_extLookup.insert(".f90",   new int(SrcLangExt_F90));
-    g_extLookup.insert(".vhd",   new int(SrcLangExt_VHDL));
-    g_extLookup.insert(".vhdl",  new int(SrcLangExt_VHDL));
-    init=TRUE;
-  }
   if (i!=-1) // name has an extension
   {
     QCString extStr=fileName.right(fileName.length()-i);
@@ -6456,7 +6468,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
       int *pVal=g_extLookup.find(extStr);
       if (pVal) // listed extension
       {
-        return (SrcLangExt)*pVal; // cast void* address to enum value
+        return (SrcLangExt)*pVal; 
       }
     }
   }

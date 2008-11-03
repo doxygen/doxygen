@@ -4613,7 +4613,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <Bases,ClassVar>("//"{B}*)?"/**"/[^/*]  |
 <Bases,ClassVar>("//"{B}*)?"/*!"        |
 <Bases,ClassVar>"//!"                   |
-<Bases,ClassVar>[\-+]{BN}+		{
+<Bases,ClassVar>[\-+]{BN}*		{
   					  if (!insideObjC)
 					  {
 					    REJECT;

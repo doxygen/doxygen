@@ -280,8 +280,10 @@ void DocSets::addIndexItem(const char *, const char *,
     scope = cd->qualifiedName();
     if (cd->isTemplate()) 
       type="tmplt";
-    else if (cd->compoundType()==ClassDef::Interface) 
+    else if (cd->compoundType()==ClassDef::Protocol) 
       type="intf";
+    else if (cd->compoundType()==ClassDef::Interface) 
+      type="cl";
     else if (cd->compoundType()==ClassDef::Category)
       type="cat";
     else 
@@ -357,7 +359,9 @@ void DocSets::writeToken(QTextStream &t,
 {
   t << "  <Token>" << endl;
   t << "    <TokenIdentifier>" << endl;
-  t << "      <Name>" << convertToXML(d->name()) << "</Name>" << endl;
+  QString name = d->name();
+  if (name.right(2)=="-p")  name=name.left(name.length()-2);
+  t << "      <Name>" << convertToXML(name) << "</Name>" << endl;
   t << "      <APILanguage>" << lang << "</APILanguage>" << endl;
   t << "      <Type>" << type << "</Type>" << endl;
   t << "      <Scope>" << convertToXML(scope) << "</Scope>" << endl;

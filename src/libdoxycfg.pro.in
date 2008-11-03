@@ -16,8 +16,8 @@
 
 TEMPLATE     =	libdoxycfg.t
 CONFIG       =	console warn_on staticlib $extraopts
-HEADERS      =  config.h portable.h
-SOURCES      =	config.cpp portable.cpp
+HEADERS      =  config.h configoptions.h portable.h
+SOURCES      =	config.cpp configoptions.cpp portable.cpp
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools

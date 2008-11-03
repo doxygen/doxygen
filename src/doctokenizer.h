@@ -47,18 +47,19 @@ enum Tokens
   RetVal_Subsection     = 0x10004,
   RetVal_Subsubsection  = 0x10005,
   RetVal_Paragraph      = 0x10006,
-  RetVal_EndList        = 0x10007,
-  RetVal_EndPre         = 0x10008,
-  RetVal_DescData       = 0x10009,
-  RetVal_DescTitle      = 0x1000A,
-  RetVal_EndDesc        = 0x1000B,
-  RetVal_TableRow       = 0x1000C,
-  RetVal_TableCell      = 0x1000D,
-  RetVal_TableHCell     = 0x1000E,
-  RetVal_EndTable       = 0x1000F,
-  RetVal_Internal       = 0x10010,
-  RetVal_SwitchLang     = 0x10011,
-  RetVal_CloseXml       = 0x10012
+  RetVal_SubParagraph   = 0x10007,
+  RetVal_EndList        = 0x10008,
+  RetVal_EndPre         = 0x10009,
+  RetVal_DescData       = 0x1000A,
+  RetVal_DescTitle      = 0x1000B,
+  RetVal_EndDesc        = 0x1000C,
+  RetVal_TableRow       = 0x1000D,
+  RetVal_TableCell      = 0x1000E,
+  RetVal_TableHCell     = 0x1000F,
+  RetVal_EndTable       = 0x10010,
+  RetVal_Internal       = 0x10011,
+  RetVal_SwitchLang     = 0x10012,
+  RetVal_CloseXml       = 0x10013
 };
 
 struct TokenInfo

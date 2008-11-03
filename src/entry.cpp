@@ -225,6 +225,7 @@ Entry::~Entry()
   delete argList;
   delete tArgLists;
   delete tagInfo;
+  delete typeConstr;
   delete sli;
   num--;
 }

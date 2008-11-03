@@ -24,7 +24,7 @@
 "	font-weight: bold;\n"
 "}\n"
 "\n"
-"div.qindex, div.navpath, div.navtab{\n"
+"div.qindex, div.navtab{\n"
 "	background-color: #e8eef2;\n"
 "	border: 1px solid #84b0c7;\n"
 "	text-align: center;\n"

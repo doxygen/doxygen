@@ -32,3 +32,4 @@
 #define LANG_ZA
 #define LANG_AR
 #define LANG_FA
+#define LANG_VI

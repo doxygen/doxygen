@@ -128,3 +128,5 @@ Mikael Hallin: mikaelhallin@yahoo.se
 TranslatorUkrainian
 Olexij Tkatchenko: olexij.tkatchenko@parcs.de
 
+TranslatorVietnamese
+Dang Minh Tuan: tuanvietkey@gmail.com

@@ -330,6 +330,7 @@ void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
 SrcLangExt getLanguageFromFileName(const QCString fileName);
+void initDefaultExtensionMapping();
 
 bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n);
 

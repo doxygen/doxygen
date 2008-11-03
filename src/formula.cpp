@@ -30,6 +30,8 @@
 #include "message.h"
 #include "config.h"
 #include "portable.h"
+#include "index.h"
+#include "doxygen.h"
 
 Formula::Formula(const char *text)
 {
@@ -92,6 +94,7 @@ void FormulaList::generateBitmaps(const char *path)
         t << formula->getFormulaText() << endl << "\\pagebreak\n\n";
         pagesToGenerate.append(new int(page));
       }
+      Doxygen::indexList.addImageFile(resultName);
       page++;
     }
     t << "\\end{document}" << endl;

@@ -397,6 +397,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\configoptions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\constexp.l"
 				>
 				<FileConfiguration
@@ -1026,72 +1030,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-                        <File
-                               RelativePath="..\src\qhp.cpp"
-                               >
-                               <FileConfiguration
-                                       Name="Debug|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                               <FileConfiguration
-                                       Name="Release|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                       </File>
-                       <File
-                               RelativePath="..\src\indexlog.cpp"
-                               >
-                               <FileConfiguration
-                                       Name="Debug|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                               <FileConfiguration
-                                       Name="Release|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                       </File>
-                       <File
-                               RelativePath="..\src\qhpxmlwriter.cpp"
-                               >
-                               <FileConfiguration
-                                       Name="Debug|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                               <FileConfiguration
-                                       Name="Release|Win32"
-                                       >
-                                       <Tool
-                                               Name="VCCLCompilerTool"
-                                               AdditionalIncludeDirectories=""
-                                               PreprocessorDefinitions=""
-                                       />
-                               </FileConfiguration>
-                        </File>
 			<File
 				RelativePath="..\src\image.cpp"
 				>
@@ -1116,6 +1054,28 @@
 			</File>
 			<File
 				RelativePath="..\src\index.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\indexlog.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1669,6 +1629,50 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\qhp.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\qhpxmlwriter.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\src\reflist.cpp"
 				>
 				<FileConfiguration
@@ -2155,18 +2159,6 @@
 				RelativePath="..\src\htmlhelp.h"
 				>
 			</File>
-                        <File
-                                RelativePath="..\src\qhpxmlwriter.h"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\src\indexlog.h"
-                                >
-                        </File>
-                        <File
-                                RelativePath="..\src\qhp.h"
-                                >
-                        </File>
 			<File
 				RelativePath=".\iconv.h"
 				>
@@ -2181,6 +2173,10 @@
 			</File>
 			<File
 				RelativePath="..\src\index_xsd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\indexlog.h"
 				>
 			</File>
 			<File
@@ -2309,6 +2305,14 @@
 			</File>
 			<File
 				RelativePath="..\src\pyscanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\qhp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\qhpxmlwriter.h"
 				>
 			</File>
 			<File
@@ -2488,6 +2492,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\translator_sc.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\translator_se.h"
 				>
 			</File>
@@ -2509,6 +2517,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_ua.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translator_vi.h"
 				>
 			</File>
 			<File
