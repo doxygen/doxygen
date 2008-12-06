@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -13,178 +13,179 @@
  */
 
 #include "inputstring.h"
-//#include "pixmaps.h"
+#include "helplabel.h"
+#include "doxywizard.h"
+#include "config.h"
 
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qwindowsstyle.h>
-#include <qcstring.h>
-#include <qpushbutton.h>
-#include <qfiledialog.h>
-#include <qcombobox.h>
-#include <qtooltip.h>
+#include <QtGui>
 
-
-InputString::InputString( const QString & label, 
-                          QWidget *parent, QCString &s, StringMode m )
-  : QWidget( parent ), str(s), sm(m), m_values(0), m_index(0)
+InputString::InputString( QGridLayout *layout,int &row,
+                          const QString & id, const QString &s, 
+                          StringMode m, const QString &docs )
+  : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id)
 {
+  m_lab = new HelpLabel(id);
   if (m==StringFixed)
   {
-    QHBoxLayout *layout = new QHBoxLayout( this, 5);
-    lab = new QLabel( label, this );
-    lab->setMinimumSize( lab->sizeHint() );
-    layout->addWidget( lab );
-    com = new QComboBox( this ); 
-    com->setMinimumSize(com->sizeHint());
-    layout->addWidget( com );
-    layout->addStretch( 1 );
-    le=0;
-    br=0;
-    layout->activate();
-    setMinimumSize( sizeHint() );
+    layout->addWidget( m_lab, row, 0 );
+    m_com = new QComboBox; 
+    layout->addWidget( m_com, row, 1, 1, 3, Qt::AlignLeft );
+    m_le=0;
+    m_br=0;
+    row++;
   }
   else
   {
-    QGridLayout *layout = new QGridLayout( this, 1, m==StringFree ? 1 : 3, 5 );
-    lab = new QLabel( label, this );
-    lab->setMinimumSize( lab->sizeHint() );
-    layout->addWidget( lab,0,0 );
-    le = new QLineEdit( this );
-    le->setMinimumSize( le->sizeHint() );
-    le->setText( s );
-    layout->addWidget( le,0,1 );
+    layout->addWidget( m_lab, row, 0 );
+    m_le = new QLineEdit;
+    m_le->setText( s );
+    //layout->setColumnMinimumWidth(2,150);
     if (m==StringFile || m==StringDir)
     {
-      //QPixmap pixmap = QPixmap(m==StringFile ? 
-      //                         file_xpm :
-      //                         folder_xpm );
-      br = new QPushButton( this );
-      br->setMinimumSize( br->sizeHint() );  
+      layout->addWidget( m_le, row, 1 );
+      m_br = new QToolBar;
+      m_br->setIconSize(QSize(24,24));
       if (m==StringFile) 
       {
-        br->setText("File...");
-        QToolTip::add(br,"Browse to a file");
+        QAction *file = m_br->addAction(QIcon(QString::fromAscii(":/images/file.png")),QString(),this,SLOT(browse()));
+        file->setToolTip(tr("Browse to a file"));
       }
       else 
       {
-        br->setText("Folder...");
-        QToolTip::add(br,"Browse to a folder");
+        QAction *dir = m_br->addAction(QIcon(QString::fromAscii(":/images/folder.png")),QString(),this,SLOT(browse()));
+        dir->setToolTip(tr("Browse to a folder"));
       }
-      layout->addWidget( br,0,2 );
+      layout->addWidget( m_br,row,2 );
     }
     else
     {
-      br=0;
+      layout->addWidget( m_le, row, 1, 1, 2 );
+      m_br=0;
     }
-    com=0;
-    layout->activate();
-    setMinimumSize( sizeHint() );
+    m_com=0;
+    row++;
   }
 
-  if (le)  connect( le,   SIGNAL(textChanged(const QString&)), 
-                    this, SLOT(textChanged(const QString&)) );
-  if (br)  connect( br,   SIGNAL(clicked()), this, SLOT(browse()) );
-  if (com) connect( com,  SIGNAL(activated(const QString &)), 
-                    this, SLOT(textChanged(const QString &)) );
+  if (m_le)  connect( m_le,   SIGNAL(textChanged(const QString&)), 
+                      this,   SLOT(setValue(const QString&)) );
+  if (m_com) connect( m_com,  SIGNAL(activated(const QString &)), 
+                      this,   SLOT(setValue(const QString &)) );
+  m_str = s+QChar::fromAscii('!'); // force update
+  setValue(s);
+  connect( m_lab, SIGNAL(enter()), SLOT(help()) );
+  connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
 }
+
+void InputString::help()
+{
+  showHelp(this);
+}
+
 
 InputString::~InputString()
 {
-  if (m_values) delete m_values;
 }
 
 
-void InputString::textChanged(const QString &s)
+void InputString::setValue(const QString &s)
 {
-  if (str!=(const char *)s)
+  if (m_str!=s)
   {
-    str = s;
+    m_str = s;
+    m_value = m_str;
+    if (m_str==m_default)
+    {
+      m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+    }
+    else
+    {
+      m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+    }
+    if (m_le) m_le->setText( m_str );
     emit changed();
   }
 }
 
 void InputString::setEnabled(bool state)
 {
-  lab->setEnabled(state);
-  if (le) le->setEnabled(state);
-  if (br) br->setEnabled(state);
-  if (com) com->setEnabled(state);
+  m_lab->setEnabled(state);
+  if (m_le)  m_le->setEnabled(state);
+  if (m_br)  m_br->setEnabled(state);
+  if (m_com) m_com->setEnabled(state);
 }
 
 void InputString::browse()
 {
-  if (sm==StringFile)
+  QString path = QFileInfo(MainWindow::instance().configFileName()).path();
+  if (m_sm==StringFile)
   {
-    QString fileName = QFileDialog::getOpenFileName();
-
+    QString fileName = QFileDialog::getOpenFileName(&MainWindow::instance(),
+        tr("Select file"),path);
     if (!fileName.isNull()) 
     {
-      le->setText( fileName );
-      if (str!=(const char *)le->text())
+      QDir dir(path);
+      if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
       {
-        str = le->text(); 
-        emit changed();
+        fileName = dir.relativeFilePath(fileName);
       }
+      setValue(fileName);
     }
   }
   else // sm==StringDir
   {
-    QString dirName = QFileDialog::getExistingDirectory();
-
+    QString dirName = QFileDialog::getExistingDirectory(&MainWindow::instance(),
+        tr("Select directory"),path);
     if (!dirName.isNull())
     {
-      le->setText( dirName ); 	
-      if (str!=(const char *)le->text())
+      QDir dir(path);
+      if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
       {
-        str = le->text();
-        emit changed();
+        dirName = dir.relativeFilePath(dirName);
       }
+      setValue(dirName);
     }	
   }
 }
 
 void InputString::clear()
 {
-  le->setText("");
-  if (!str.isEmpty())
+  setValue(QString());
+}
+
+void InputString::addValue(QString s)
+{
+  if (m_sm==StringFixed)
   {
-    emit changed();
-    str = "";
+    m_values.append(s);
+    m_com->addItem(s);
   }
 }
 
-void InputString::addValue(const char *s)
+void InputString::setDefault()
 {
-  if (sm==StringFixed)
-  {
-    if (m_values==0) m_values = new QDict<int>;
-    m_values->setAutoDelete(TRUE);
-    m_values->insert(s,new int(m_index++));
-    com->insertItem(s);
-  }
+  int index = m_values.indexOf(m_str);
+  if (index!=-1 && m_com) m_com->setCurrentIndex(index);
 }
 
-void InputString::init()
+QVariant &InputString::value() 
 {
-  if (sm==StringFixed)
-  {
-    if (m_values)
-    {
-      int *itemIndex = m_values->find(str);
-      if (itemIndex)
-      {
-        com->setCurrentItem(*itemIndex);
-      } 
-      else
-      {
-        com->setCurrentItem(0);
-      }
-    }
-  }
-  else
-  {
-    le->setText(str);
-  }
+  return m_value;
 }
+
+void InputString::update()
+{
+  setValue(m_value.toString().trimmed());
+  setDefault();
+}
+
+void InputString::reset()
+{
+  setValue(m_default);
+  setDefault();
+}
+
+void InputString::writeValue(QTextStream &t,QTextCodec *codec)
+{
+  writeStringValue(t,codec,m_str);
+}
+

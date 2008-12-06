@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=7.1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20081103
+doxygen_version_mmn=NO
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -38,7 +38,7 @@ f_app=NO
 f_thread=NO
 f_flex=NO
 f_bison=NO
-f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,vi
+f_langs=nl,se,cz,fr,id,it,de,jp,je,es,fi,ru,hr,pl,pt,hu,kr,ke,ro,si,cn,no,br,dk,sk,ua,gr,tw,sr,ca,lt,za,ar,fa,vi,tr
 
 while test -n "$1";  do
   case $1 in
@@ -263,13 +263,12 @@ fi
 
 #- check for qt --------------------------------------------------------------
  
-LIBDIR=lib
 if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
     echo -n "  Checking for Qt..."
-    for d in /usr/{lib,share,qt}/{qt-3,qt3,qt,qt*,3}; do
-      if test -d "$d/lib" -a -d "$d/include" -a -x "$d/bin/moc"; then
+    for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4}; do
+      if test -x "$d/bin/qmake"; then
         QTDIR=$d
       fi
     done
@@ -280,30 +279,9 @@ if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "QTDIR not set and Qt not found at standard locations!"
     echo
-    echo "tmake requires the QTDIR environment variable to be set."
+    echo "Set the QTDIR environment variable such that \$QTDIR/bin/qmake exists."
     echo "check the Qt installation instructions!"
     exit 2
-  else
-    if test ! -d "$QTDIR/lib"; then
-      if test ! -d "$QTDIR/lib64"; then
-        echo "QTDIR is set to $QTDIR, but library directory $QTDIR/lib does not exist!"
-        exit 2
-      fi
-      LIBDIR=lib64
-    fi
-    if test ! -d "$QTDIR/include"; then
-      echo "QTDIR is set to $QTDIR, but include directory $QTDIR/include does not exist!"
-      exit 2
-    fi
-    if test ! -x "$QTDIR/bin/moc"; then
-      echo "QTDIR is set to $QTDIR, but the moc tool could not be found in $QTDIR/bin!"
-      exit 2
-    fi
-    echo " headers $QTDIR/include,"
-    echo "                     libraries $QTDIR/$LIBDIR"  
-    if test -n "`ls $QTDIR/$LIBDIR/* | grep qt-mt`"; then
-      f_thread=YES
-    fi
   fi
 fi
    
@@ -654,9 +632,9 @@ EOF
      else
        realopts="debug"
      fi
-     if test "$f_thread" = YES; then
-       realopts="$realopts thread"
-     fi
+     #if test "$f_thread" = YES; then
+     #  realopts="$realopts thread"
+     #fi
      cat $SRC .tmakeconfig | sed -e "s/\$extraopts/$realopts/g" >> $DST
      echo "  Created $DST from $SRC..."
 done
@@ -669,7 +647,7 @@ fi
 echo -n "  Generating src/lang_cfg.h..."
 echo $f_langs | $f_perl -e '@l=split(/,/,<STDIN>); 
         chomp @l; 
-	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC,VI"));
+	@allowed=(split(/,/,"NL,SE,CZ,FR,ID,IT,DE,JP,JE,ES,FI,RU,HR,PL,PT,HU,KR,KE,RO,SI,CN,NO,MK,BR,DK,SK,UA,GR,TW,SR,CA,LT,ZA,AR,FA,SC,VI,TR"));
 	foreach my $elem (@l){ 
 	     $elem =~ tr/a-z/A-Z/;
 	     $r=0;

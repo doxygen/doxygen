@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -13,162 +13,139 @@
  */
 
 #include "inputstrlist.h"
-//#include "pixmaps.h"
+#include "helplabel.h"
+#include "doxywizard.h"
+#include "config.h"
 
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlistbox.h>
-#include <qstrlist.h>
-#include <qstringlist.h>
-#include <qfiledialog.h>
-#include <qtooltip.h>
+#include <QtGui>
 
-InputStrList::InputStrList( const QString & label, 
-                            QWidget *parent, QStrList &sl, ListMode lm)
-  : QWidget(parent), strList(sl)
+InputStrList::InputStrList( QGridLayout *layout,int &row,
+                            const QString & id, 
+                            const QStringList &sl, ListMode lm,
+                            const QString & docs)
+  : m_default(sl), m_strList(sl), m_docs(docs), m_id(id)
 {
-  QGridLayout *layout = new QGridLayout( this, 2, 2, 5 );
-  lab = new QLabel( label, this );
-  lab->setMinimumSize( lab->sizeHint() );
-  layout->addWidget( lab,0,0 );
+  m_lab = new HelpLabel( id );
 
-  QWidget *dw = new QWidget(this); /* dummy widget used for layouting */
-  QHBoxLayout *boxlayout = new QHBoxLayout( dw, 0, 5 );
-  le  = new QLineEdit( dw );
-  le->setMinimumSize( le->sizeHint() );
-  boxlayout->addWidget( le, 1 );
+  m_le  = new QLineEdit;
+  m_le->clear();
 
-  add = new QPushButton( dw );
-  //add->setPixmap( QPixmap( add_xpm ));
-  add->setText( "+" );
-  add->setMinimumSize( add->sizeHint() );
-  QToolTip::add(add,"Add item");
-  boxlayout->addWidget( add );
+  QToolBar *toolBar = new QToolBar;
+  toolBar->setIconSize(QSize(24,24));
+  m_add = toolBar->addAction(QIcon(QString::fromAscii(":/images/add.png")),QString(),
+                             this,SLOT(addString()));
+  m_add->setToolTip(tr("Add item"));
+  m_del = toolBar->addAction(QIcon(QString::fromAscii(":/images/del.png")),QString(),
+                             this,SLOT(delString()));
+  m_del->setToolTip(tr("Delete selected item"));
+  m_upd = toolBar->addAction(QIcon(QString::fromAscii(":/images/refresh.png")),QString(),
+                             this,SLOT(updateString()));
+  m_upd->setToolTip(tr("Update selected item"));
 
-  del = new QPushButton( dw );
-  //del->setPixmap( QPixmap( del_xpm ));
-  del->setText( "-" );
-  del->setMinimumSize( del->sizeHint() );
-  QToolTip::add(del,"Delete selected item");
-  boxlayout->addWidget( del );
-
-  upd = new QPushButton( dw ); 
-  //upd->setPixmap( QPixmap( update_xpm ));
-  upd->setText( "*" );
-  upd->setMinimumSize( upd->sizeHint() );
-  QToolTip::add(upd,"Update selected item");
-  boxlayout->addWidget( upd );
-
-  lb  = new QListBox( this );
-  lb->setMinimumSize(400,100);
-  init();
-  lb->setVScrollBarMode(QScrollView::Auto);
-  lb->setHScrollBarMode(QScrollView::Auto);
-
-  brFile=0;
-  brDir=0;
+  m_lb  = new QListWidget;
+  //m_lb->setMinimumSize(400,100);
+  foreach (QString s, m_strList) m_lb->addItem(s);
+  
+  m_brFile=0;
+  m_brDir=0;
   if (lm!=ListString)
   {
     if (lm&ListFile)
     {
-      brFile = new QPushButton(dw);
-      //brFile->setPixmap( QPixmap(file_xpm) );
-      brFile->setText("Select...");
-      brFile->setMinimumSize(brFile->sizeHint());
-      QToolTip::add(brFile,"Browse to a file");
-      boxlayout->addWidget( brFile );
+      m_brFile = toolBar->addAction(QIcon(QString::fromAscii(":/images/file.png")),QString(),
+                                    this,SLOT(browseFiles()));
+      m_brFile->setToolTip(tr("Browse to a file"));
     } 
     if (lm&ListDir)
     {
-      brDir = new QPushButton(dw);
-      //brDir->setPixmap( QPixmap(folder_xpm) );
-      brDir->setText("Select...");
-      brDir->setMinimumSize(brDir->sizeHint());
-      QToolTip::add(brDir,"Browse to a folder");
-      boxlayout->addWidget( brDir );
+      m_brDir = toolBar->addAction(QIcon(QString::fromAscii(":/images/folder.png")),QString(),
+                                   this,SLOT(browseDir()));
+      m_brDir->setToolTip(tr("Browse to a folder"));
     }
   }
-  layout->addWidget( dw, 0,1 );
-  layout->addWidget( lb,1,1 );
-  layout->activate();
-  setMinimumSize( sizeHint() );
+  QHBoxLayout *rowLayout = new QHBoxLayout;
+  rowLayout->addWidget( m_le );
+  rowLayout->addWidget( toolBar );
+  layout->addWidget( m_lab,      row,0 );
+  layout->addLayout( rowLayout,  row,1,1,2 );
+  layout->addWidget( m_lb,       row+1,1,1,2 );
+  row+=2;
 
-  connect(le,   SIGNAL(returnPressed()), 
+  m_value = m_strList;
+
+  connect(m_le,   SIGNAL(returnPressed()), 
           this, SLOT(addString()) );
-  connect(add,  SIGNAL(clicked()), 
-          this, SLOT(addString()) );
-  connect(del,  SIGNAL(clicked()), 
-          this, SLOT(delString()) );
-  connect(upd,  SIGNAL(clicked()), 
-          this, SLOT(updateString()) );
-  if (brFile)
-  {
-    connect(brFile, SIGNAL(clicked()),
-            this, SLOT(browseFiles()));
-  }
-  if (brDir)
-  {
-    connect(brDir, SIGNAL(clicked()),
-            this, SLOT(browseDir()));
-  }
-  connect(lb,   SIGNAL(selected(const QString &)), 
+  connect(m_lb,   SIGNAL(currentTextChanged(const QString &)), 
           this, SLOT(selectText(const QString &)));
+  connect( m_lab, SIGNAL(enter()), SLOT(help()) );
+  connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
 }
+
+void InputStrList::help()
+{
+  showHelp(this);
+}
+
 
 void InputStrList::addString()
 {
-  if (!le->text().isEmpty())
+  if (!m_le->text().isEmpty())
   {
-    lb->insertItem(le->text());
-    strList.append(le->text());
+    m_lb->addItem(m_le->text());
+    m_strList.append(m_le->text());
+    m_value = m_strList;
+    updateDefault();
     emit changed();
-    le->clear();
+    m_le->clear();
   }
 }
 
 void InputStrList::delString()
 {
-  if (lb->currentItem()!=-1)
+  if (m_lb->currentRow()!=-1)
   {
-    int itemIndex = lb->currentItem();
-    lb->removeItem(itemIndex);
-    strList.remove(itemIndex);
+    int itemIndex = m_lb->currentRow();
+    delete m_lb->currentItem();
+    m_strList.removeAt(itemIndex);
+    m_value = m_strList;
+    updateDefault();
     emit changed();
   }
 }
 
 void InputStrList::updateString()
 {
-  if (lb->currentItem()!=-1 && !le->text().isEmpty())
+  if (m_lb->currentRow()!=-1 && !m_le->text().isEmpty())
   {
-    lb->changeItem(le->text(),lb->currentItem());
-    strList.insert(lb->currentItem(),le->text());
-    strList.remove(lb->currentItem()+1);
+    m_lb->currentItem()->setText(m_le->text());
+    m_strList.insert(m_lb->currentRow(),m_le->text());
+    m_strList.removeAt(m_lb->currentRow()+1);
+    m_value = m_strList;
+    updateDefault();
     emit changed();
   }
 }
 
 void InputStrList::selectText(const QString &s)
 {
-  le->setText(s);
+  m_le->setText(s);
 }
 
 void InputStrList::setEnabled(bool state)
 {
-  lab->setEnabled(state);
-  le->setEnabled(state);
-  add->setEnabled(state);
-  del->setEnabled(state);
-  upd->setEnabled(state);
-  lb->setEnabled(state);
-  if (brFile) brFile->setEnabled(state);
-  if (brDir)  brDir->setEnabled(state);
+  m_lab->setEnabled(state);
+  m_le->setEnabled(state);
+  m_add->setEnabled(state);
+  m_del->setEnabled(state);
+  m_upd->setEnabled(state);
+  m_lb->setEnabled(state);
+  if (m_brFile) m_brFile->setEnabled(state);
+  if (m_brDir)  m_brDir->setEnabled(state);
 }
 
 void InputStrList::browseFiles()
 {
+  QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   QStringList fileNames = QFileDialog::getOpenFileNames();	
 
   if (!fileNames.isEmpty()) 
@@ -176,35 +153,102 @@ void InputStrList::browseFiles()
     QStringList::Iterator it;
     for ( it= fileNames.begin(); it != fileNames.end(); ++it )
     {
-      lb->insertItem(*it);
-      strList.append(*it);
+      QString fileName;
+      QDir dir(path);
+      if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
+      {
+        fileName = dir.relativeFilePath(*it);
+      }
+      if (fileName.isEmpty())
+      {
+        fileName = *it;
+      }
+      m_lb->addItem(fileName);
+      m_strList.append(fileName);
+      m_value = m_strList;
+      updateDefault();
       emit changed();
     }
-    le->setText(*fileNames.begin());
+    m_le->setText(m_strList[0]);
   }
 }
 
 void InputStrList::browseDir()
 {	
+  QString path = QFileInfo(MainWindow::instance().configFileName()).path();
   QString dirName = QFileDialog::getExistingDirectory();	
 
   if (!dirName.isNull()) 
   {
-    lb->insertItem(dirName);
-    strList.append(dirName);
+    QDir dir(path);
+    if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
+    {
+      dirName = dir.relativeFilePath(dirName);
+    }
+    if (dirName.isEmpty())
+    {
+      dirName=QString::fromAscii(".");
+    }
+    m_lb->addItem(dirName);
+    m_strList.append(dirName);
+    m_value = m_strList;
+    updateDefault();
     emit changed();
-    le->setText(dirName);
+    m_le->setText(dirName);
   }
 }
 
-void InputStrList::init()
+void InputStrList::setValue(const QStringList &sl)
 {
-  le->clear();
-  lb->clear();
-  char *s = strList.first();
-  while (s)
+  m_le->clear();
+  m_lb->clear();
+  m_strList = sl;
+  for (int i=0;i<m_strList.size();i++)
   {
-    lb->insertItem(s);
-    s = strList.next();
+    m_lb->addItem(m_strList[i].trimmed());
+  }
+  updateDefault();
+}
+
+QVariant &InputStrList::value()
+{
+  return m_value;
+}
+
+void InputStrList::update()
+{
+  setValue(m_value.toStringList());
+}
+
+void InputStrList::updateDefault()
+{
+  if (m_strList==m_default)
+  {
+    m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+  }
+  else
+  {
+    m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
   }
 }
+
+void InputStrList::reset()
+{
+  setValue(m_default);
+}
+
+void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
+{
+  bool first=TRUE;
+  foreach (QString s, m_strList) 
+  {
+    if (!first) 
+    {
+      t << " \\" << endl;
+      t << "                         ";
+    }
+    first=FALSE;
+    writeStringValue(t,codec,s);
+  }
+}
+

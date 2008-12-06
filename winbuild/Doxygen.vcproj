@@ -180,7 +180,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib libpng.lib zlib.lib iconv.lib"
+				AdditionalDependencies="qtools.lib libpng.lib zlib.lib iconv.lib shell32.lib"
 				OutputFile="..\bin\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

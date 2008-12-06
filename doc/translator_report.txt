@@ -1,15 +1,15 @@
 (1.5.7.1)
 
-Doxygen supports the following 36 languages (sorted alphabetically):
+Doxygen supports the following 37 languages (sorted alphabetically):
 
 Afrikaans, Arabic, Brazilian Portuguese, Catalan, Chinese, Chinese
 Traditional, Croatian, Czech, Danish, Dutch, English, Finnish, French,
 German, Greek, Hungarian, Indonesian, Italian, Japanese (+En), Korean
 (+En), Lithuanian, Macedonian, Norwegian, Persian, Polish, Portuguese,
 Romanian, Russian, Serbian, SerbianCyrilic, Slovak, Slovene, Spanish,
-Swedish, Ukrainian, and Vietnamese.
+Swedish, Turkish, Ukrainian, and Vietnamese.
 
-Of them, 19 translators are up-to-date, 17 translators are based on
+Of them, 20 translators are up-to-date, 17 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -36,6 +36,7 @@ still may be some details listed even for them:
   TranslatorSerbianCyrilic
   TranslatorSerbian
   TranslatorSpanish -- Change the base class to Translator.
+  TranslatorTurkish
   TranslatorVietnamese
 
 ----------------------------------------------------------------------

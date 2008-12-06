@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "qtbc.h"
 #include <qarray.h>
@@ -53,6 +54,8 @@ struct FileState
 {
   int lineNr;
   FILE *filePtr;
+  FILE *oldYYin;
+  bool isPlainFile;
   YY_BUFFER_STATE bufState;
   QCString fileName;
 };  
@@ -171,9 +174,9 @@ static Define *isDefined(const char *name)
   return 0;
 }
 
-static FILE *checkAndOpenFile(const QCString &fileName)
+static FileState *checkAndOpenFile(const QCString &fileName)
 {
-  FILE *f = 0;
+  FileState *fs = 0;
   //printf("checkAndOpenFile(%s)\n",absName.data());
   QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
@@ -183,7 +186,6 @@ static FILE *checkAndOpenFile(const QCString &fileName)
 
     QStack<FileState> tmpStack;
     g_includeStack.setAutoDelete(FALSE);
-    FileState *fs;
     bool alreadyIncluded=FALSE;
     while ((fs=g_includeStack.pop()))
     {
@@ -198,24 +200,33 @@ static FILE *checkAndOpenFile(const QCString &fileName)
 
     if (alreadyIncluded) return 0; 
 
+    fs = new FileState;
     
     QCString filterName = getFileFilter(absName);
     if (!filterName.isEmpty())
     {
+      fs->isPlainFile = FALSE;
       QCString cmd = filterName+" \""+absName+"\"";
-      f=portable_popen(cmd,"r");
-      if (!f) err("Error: could not execute filter %s\n",cmd.data());
+      fs->filePtr=portable_popen(cmd,"r");
+      if (!fs->filePtr) err("Error: could not execute filter %s\n",cmd.data());
     }
     else
     {
-      f=fopen(absName,"r");
-      if (!f) err("Error: could not open file %s for reading\n",absName.data());
+      fs->isPlainFile = TRUE;
+      fs->filePtr=fopen(absName,"r");
+      if (!fs->filePtr) err("Error: could not open file %s for reading\n",absName.data());
     }
+    if (!fs->filePtr) // error -> cleanup
+    {
+      delete fs;
+      fs=0;
+    }
+    fs->oldYYin = preYYin;
   }
-  return f;
+  return fs;
 }
 
-static FILE *findFile(const char *fileName,bool localInclude)
+static FileState *findFile(const char *fileName,bool localInclude)
 {
   //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
   if (localInclude && !g_yyFileName.isEmpty())
@@ -224,12 +235,12 @@ static FILE *findFile(const char *fileName,bool localInclude)
     if (fi.exists())
     {
       QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
-      FILE *f = checkAndOpenFile(absName);
-      if (f)
+      FileState *fs = checkAndOpenFile(absName);
+      if (fs)
       {
 	setFileName(absName);
 	g_yyLineNr=1;
-	return f;
+	return fs;
       }
     }
   }
@@ -241,12 +252,12 @@ static FILE *findFile(const char *fileName,bool localInclude)
   while (s)
   {
     QCString absName = (QCString)s+"/"+fileName;
-    FILE *f = checkAndOpenFile(absName);
-    if (f)
+    FileState *fs = checkAndOpenFile(absName);
+    if (fs)
     {
       setFileName(absName);
       g_yyLineNr=1;
-      return f;
+      return fs;
     }
 
     s=g_pathList->next();
@@ -1116,14 +1127,14 @@ static void readIncludeFile(const QCString &inc)
     // extract include path+name
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace(); 
 
-    FILE *f;
     QCString oldFileName = g_yyFileName.copy();
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
     
     // findFile will overwrite g_yyFileDef if found
-    if ((f=findFile(incFileName,localInclude))) // see if the include file can be found
+    FileState *fs;
+    if ((fs=findFile(incFileName,localInclude))) // see if the include file can be found
     {
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
@@ -1142,11 +1153,9 @@ static void readIncludeFile(const QCString &inc)
   	  g_yyFileDef->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
       }
-      FileState *fs=new FileState;
       fs->bufState=YY_CURRENT_BUFFER;
       fs->lineNr=oldLineNr;
       fs->fileName=oldFileName;
-      fs->filePtr=f;
       // push the state on the stack
       g_includeStack.push(fs);
       // set the scanner to the include file
@@ -1158,7 +1167,7 @@ static void readIncludeFile(const QCString &inc)
       outputArray(lineStr.data(),lineStr.length());
       
       //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
-      preYYin=f;
+      preYYin=fs->filePtr;
       yy_switch_to_buffer(yy_create_buffer(preYYin, YY_BUF_SIZE));
     } 
     else
@@ -1253,7 +1262,7 @@ static char resolveTrigraph(char c)
 
 static int yyread(char *buf,int max_size)
 {
-  int len = fread( buf, 1, max_size, yyin );
+  int len = fread( buf, 1, max_size, preYYin );
   if (len==0 && ferror( yyin ))
   {
     yy_fatal_error( "input in flex scanner failed" );
@@ -2175,14 +2184,27 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    FileState *fs=g_includeStack.pop();
 					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
-					    if (getFileFilter(fs->fileName.data()).isEmpty())
-					      fclose(fs->filePtr);
+					    if (fs->isPlainFile)
+					    {
+					      if (fs->filePtr && fclose(fs->filePtr)!=0)
+					      {
+						err("Error: could not close file %s: %s\n",fs->fileName.data(),strerror(errno));
+					      }
+				              fs->filePtr=0;
+					    }
 					    else
-					      portable_pclose(fs->filePtr);
+					    {
+					      if (fs->filePtr && portable_pclose(fs->filePtr)!=0)
+					      {
+						err("Error: could not close pipe: %s\n",strerror(errno));
+					      }
+				    	      fs->filePtr=0;
+					    }
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->bufState );
 					    yy_delete_buffer( oldBuf );
 					    g_yyLineNr=fs->lineNr;
+                                            preYYin = fs->oldYYin;
 					    setFileName(fs->fileName.copy());
 					    //fprintf(stderr,"######## FileName %s\n",g_yyFileName.data());
 					    

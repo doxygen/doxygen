@@ -68,6 +68,10 @@ a.qindexHL {
 	border: 1px double #9295C2;
 }
 
+.contents a.qindexHL:visited {
+        color: #ffffff;
+}
+
 a.el {
 	font-weight: bold;
 }

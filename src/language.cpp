@@ -137,6 +137,9 @@
 #ifdef LANG_VI
 #include "translator_vi.h"
 #endif
+#ifdef LANG_TR
+#include "translator_tr.h"
+#endif
 #endif // !ENGLISH_ONLY
 
 #define L_EQUAL(a) !stricmp(langName,a)
@@ -380,6 +383,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("vietnamese"))
   {
     theTranslator=new TranslatorVietnamese;
+  }
+#endif
+#ifdef LANG_TR
+  else if (L_EQUAL("turkish"))
+  {
+    theTranslator=new TranslatorTurkish;
   }
 #endif
 #endif // ENGLISH_ONLY

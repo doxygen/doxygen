@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -13,53 +13,84 @@
  */
 
 #include "inputint.h"
+#include "helplabel.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qwindowsstyle.h>
-#include <qspinbox.h>
+#include <QtGui>
 
-InputInt::InputInt( const QString & label, QWidget *parent, int &val, int minVal,int maxVal )
-  : QWidget( parent), m_val(val), m_minVal(minVal), m_maxVal(maxVal)
+InputInt::InputInt( QGridLayout *layout,int &row,
+                    const QString & id, 
+                    int defVal, int minVal,int maxVal,
+                    const QString & docs )
+  : m_default(defVal), m_minVal(minVal), m_maxVal(maxVal), m_docs(docs), m_id(id)
 {
-  QHBoxLayout *layout = new QHBoxLayout( this, 5 );
+  m_lab = new HelpLabel(id);
+  m_sp  = new QSpinBox;
+  m_sp->setMinimum(minVal);
+  m_sp->setMaximum(maxVal);
+  m_sp->setSingleStep(1);
+  m_val=defVal-1; // force update
+  setValue(defVal);
 
-  lab = new QLabel( label, this );
-  lab->setMinimumSize( lab->sizeHint() );
+  layout->addWidget( m_lab, row, 0 );
+  layout->addWidget( m_sp, row, 1 );
 
-  sp = new QSpinBox( minVal,maxVal,1,this );
-  sp->setMinimumSize( sp->sizeHint() );
-
-  init();
-  
-  layout->addWidget( lab );
-  layout->addWidget( sp );
-  layout->addStretch(1);
-  layout->activate();
-  setMinimumSize( sizeHint() );
-
-  connect(sp,   SIGNAL(valueChanged(int)), 
-          this, SLOT(valueChanged(int)) );
-
+  connect(m_sp, SIGNAL(valueChanged(int)), 
+          this, SLOT(setValue(int)) );
+  connect( m_lab, SIGNAL(enter()), SLOT(help()) );
+  connect( m_lab, SIGNAL(reset()), SLOT(reset()) );
+  row++;
 }
 
-void InputInt::valueChanged(int val)
+void InputInt::help()
 {
-  if (val!=m_val) emit changed(); 
-  m_val = val;
+  showHelp(this);
+}
+
+
+void InputInt::setValue(int val)
+{
+  val = qMax(m_minVal,val);
+  val = qMin(m_maxVal,val);
+  if (val!=m_val) 
+  {
+    m_val = val;
+    m_sp->setValue(val);
+    m_value = m_val;
+    if (m_val==m_default)
+    {
+      m_lab->setText(QString::fromAscii("<qt>")+m_id+QString::fromAscii("</qt"));
+    }
+    else
+    {
+      m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
+    }
+    emit changed(); 
+  }
 }
 
 void InputInt::setEnabled(bool state)
 {
-  lab->setEnabled(state);
-  sp->setEnabled(state);
+  m_lab->setEnabled(state);
+  m_sp->setEnabled(state);
 }
 
-void InputInt::init()
+QVariant &InputInt::value() 
 {
-  m_val = QMAX(m_minVal,m_val);
-  m_val = QMIN(m_maxVal,m_val);
-  sp->setValue(m_val);
+  return m_value;
 }
+
+void InputInt::update()
+{
+  setValue(m_value.toInt());
+}
+
+void InputInt::reset()
+{
+  setValue(m_default);
+}
+
+void InputInt::writeValue(QTextStream &t,QTextCodec *)
+{
+  t << m_val;
+}
+

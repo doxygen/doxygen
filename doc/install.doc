@@ -390,7 +390,7 @@ Download the zip extract it to e.g. <code>c:\\tools\\unxutils</code>.
 Now you need to add/adjust the following environment variables 
 (via Control Panel/System/Advanced/Environment Variables):
 - add <code>c:\\tools\\unxutils\\usr\\local\\wbin;</code> to the start of <code>PATH</code>
-- set <code>BISON_SIMPLE</code> to <code>c:\\tools\\unxutils\\usr\\share\\bison.simple</code>
+- set <code>BISON_SIMPLE</code> to <code>c:\\tools\\unxutils\\usr\\local\\share\\bison.simple</code>
 
 Download doxygen's source tarball and put it somewhere (e.g use <code>c:\\tools</code>)
 

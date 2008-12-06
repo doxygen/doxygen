@@ -342,7 +342,8 @@ class ConfigBool : public ConfigOption
 class ConfigObsolete : public ConfigOption
 {
   public:
-    ConfigObsolete(OptionType t) : ConfigOption(t)  {}
+    ConfigObsolete(const char *name,OptionType t) : ConfigOption(t)  
+    { m_name = name; }
     void writeTemplate(QTextStream &,bool,bool) {}
     void substEnvVars() {}
     void writeXML(QTextStream&);
@@ -523,7 +524,7 @@ class Config
     /*! Adds an option that has become obsolete. */
     ConfigOption *addObsolete(const char *name)
     {
-      ConfigObsolete *option = new ConfigObsolete(ConfigOption::O_Obsolete);
+      ConfigObsolete *option = new ConfigObsolete(name,ConfigOption::O_Obsolete);
       m_dict->insert(name,option);
       m_obsolete->append(option);
       return option;

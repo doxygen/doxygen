@@ -1,3 +1,3 @@
 Doxywizard is a graphical front-end to read/edit/write doxygen configuration 
-files. It requires Qt version 3.x or higher.
+files and to launch doxygen. It requires Qt version 4.3 or higher.
 

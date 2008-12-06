@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,39 +15,56 @@
 #ifndef _INPUTINT_H
 #define _INPUTINT_H
 
-#include <qwidget.h>
-#include <qstring.h>
-
 #include "input.h"
+#include <QObject>
 
+class QGridLayout;
 class QLabel;
 class QSpinBox;
 
-class InputInt : public QWidget, public IInput
+class InputInt : public QObject, public Input
 {
   Q_OBJECT
 
   public:
-    InputInt( const QString &text, QWidget *parent, int &val, 
-              int minVal, int maxVal );
+    InputInt( QGridLayout *layout,int &row,
+              const QString &id, int defVal, 
+              int minVal, int maxVal,
+              const QString &docs );
     ~InputInt(){};
-    void setEnabled(bool);
-    void init();
-    QObject *qobject() { return this; }
 
-  private:
-    QLabel *lab;
-    QSpinBox *sp;
-    int &m_val;
-    int m_minVal;
-    int m_maxVal;
+    // Input
+    QVariant &value();
+    void update();
+    Kind kind() const { return Int; }
+    QString docs() const { return m_docs; }
+    QString id() const { return m_id; }
+    void addDependency(Input *) { Q_ASSERT(false); }
+    void setEnabled(bool);
+    void updateDependencies() {}
+    void writeValue(QTextStream &t,QTextCodec *codec);
+
+  public slots:
+    void reset();
+    void setValue(int val); 
+
+  private slots:
+    void help();
 
   signals:
     void changed();
+    void showHelp(Input *);
 
-  private slots:
-    void valueChanged(int val); 
-
+  private:
+    QLabel   *m_lab;
+    QSpinBox *m_sp;
+    int       m_val;
+    int       m_default;
+    int       m_minVal;
+    int       m_maxVal;
+    QVariant  m_value;
+    QString   m_docs;
+    QString   m_id;
 };
 
 #endif
