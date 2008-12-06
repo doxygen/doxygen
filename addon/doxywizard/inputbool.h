@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,35 +15,55 @@
 #ifndef _INPUTBOOL_H
 #define _INPUTBOOL_H
 
-#include <qwidget.h>
-#include <qcheckbox.h>
-
 #include "input.h"
+#include <QObject>
 
-class PageWidget;
+class QCheckBox;
+class QGridLayout;
+class QLabel;
 
-class InputBool : public QWidget, /*QCheckBox,*/ public IInput
+class InputBool : public QObject, public Input
 {
   Q_OBJECT
 
   public:
-    InputBool( const QString &text, QWidget *parent, bool &flag );
-    ~InputBool(){};
-    void init();
-    void setEnabled(bool b) { cb->setEnabled(b); }
-    QObject *qobject() { return this; }
-    bool getState() const { return state; }
+    InputBool(QGridLayout *layout,int &row,const QString &id, 
+              bool enabled, const QString &docs );
+
+    // Input
+    QVariant &value();
+    void update();
+    Kind kind() const { return Bool; }
+    QString docs() const { return m_docs; }
+    QString id() const { return m_id; }
+    void addDependency(Input *option) { m_dependencies+=option; }
+    void setEnabled(bool);
+    void updateDependencies();
+    void writeValue(QTextStream &t,QTextCodec *codec);
+
+  public slots:
+    void reset();
+    void setValue(bool);
 
   signals:
     void changed();
-    void toggle(const char *,bool);
+    void toggle(QString,bool);
+    void showHelp(Input *);
 
   private slots:
-    void setState(bool);
+    void help();
 
   private:
-    bool &state;
-    QCheckBox *cb;
+    void updateDefault();
+    bool m_state;
+    bool m_default;
+    bool m_enabled;
+    QVariant m_value;
+    QCheckBox *m_cb;
+    QString m_docs;
+    QList<Input*> m_dependencies;
+    QString m_id;
+    QLabel *m_lab;
 
 };
 

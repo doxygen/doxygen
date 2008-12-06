@@ -41,12 +41,7 @@ distclean: clean
 	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro qtools/qtools.pro src/libdoxycfg.pro libpng/libpng.pro libmd5/libmd5.pro
 	-rm -f src/version.cpp
 	-rm -r addon/doxywizard/Makefile
-	-rm -f addon/doxywizard/Makefile.doxywizard
 	-rm -f addon/doxywizard/doxywizard.pro
-	-rm -f addon/doxywizard/moc/moc_*
-	-rm -f addon/doxywizard/config.cpp
-	-rm -f addon/doxywizard/lib
-	-rm -f addon/doxywizard/objects
 	-rm -f VERSION
 	-rm -f packages/rpm/doxygen.spec
 

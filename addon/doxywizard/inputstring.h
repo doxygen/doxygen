@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2007 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -15,19 +15,19 @@
 #ifndef _INPUTSTRING_H
 #define _INPUTSTRING_H
 
-#include <qwidget.h>
-#include <qstring.h>
-#include <qdict.h>
-
-#include "qtbc.h"
 #include "input.h"
+
+#include <QObject>
+#include <QMap>
+#include <QStringList>
 
 class QLabel;
 class QLineEdit;
-class QPushButton;
+class QToolBar;
 class QComboBox;
+class QGridLayout;
 
-class InputString : public QWidget, public IInput
+class InputString : public QObject, public Input
 {
   Q_OBJECT
 
@@ -38,32 +38,51 @@ class InputString : public QWidget, public IInput
                       StringFixed=3
                     };
 
-    InputString( const QString &text, QWidget *parent, QCString &s, 
-                 StringMode m=StringFree );
+    InputString( QGridLayout *layout,int &row,
+                 const QString &id, const QString &s, 
+                 StringMode m,
+                 const QString &docs );
     ~InputString();
-    void setEnabled(bool);
-    void addValue(const char *s);
-    void init();
-    QObject *qobject() { return this; }
+    void addValue(QString s);
+    void setDefault();
 
-  private:
-    QLabel *lab;
-    QLineEdit *le;
-    QPushButton *br;
-    QComboBox *com;
-    QCString &str;
-    StringMode sm;
-    QDict<int> *m_values;
-    int m_index; 
+    // Input
+    QVariant &value();
+    void update();
+    Kind kind() const { return String; }
+    QString docs() const { return m_docs; }
+    QString id() const { return m_id; }
+    void addDependency(Input *) { Q_ASSERT(false); }
+    void setEnabled(bool);
+    void updateDependencies() {}
+    void writeValue(QTextStream &t,QTextCodec *codec);
+
+  public slots:
+    void reset();
+    void setValue(const QString&);
 
   signals:
     void changed();
+    void showHelp(Input *);
 
   private slots:
-    void textChanged(const QString&);
     void browse();
     void clear();
+    void help();
 
+  private:
+    QLabel       *m_lab;
+    QLineEdit    *m_le;
+    QToolBar     *m_br;
+    QComboBox    *m_com;
+    QString       m_str;
+    QString       m_default;
+    StringMode    m_sm;
+    QStringList   m_values;
+    int           m_index; 
+    QVariant      m_value;
+    QString       m_docs;
+    QString       m_id;
 };
 
 #endif

@@ -1118,7 +1118,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the \c REFERENCES_LINK_SOURCE tag is set to \c YES (the default)
  and SOURCE_BROWSER tag is set to \c YES, then the hyperlinks from 
  functions in REFERENCES_RELATION and REFERENCED_BY_RELATION lists will 
- link to the source code.  Otherwise they will link to the documentstion.
+ link to the source code.  Otherwise they will link to the documentation.
 
 \anchor cfg_verbatim_headers
 <dt>\c VERBATIM_HEADERS <dd>

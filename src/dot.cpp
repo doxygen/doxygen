@@ -1968,7 +1968,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
       }
       else
       {
-        out << "\\includegraphics[width=" << width/2 << "pt]";
+        out << "\\includegraphics[width=" << width << "pt]";
       }
       out << "{" << baseName << "}\n"
         "\\end{center}\n"

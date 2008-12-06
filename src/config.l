@@ -284,7 +284,9 @@ void ConfigInt::writeXML(QTextStream& t)
        "docs='\n" << convertToXML(docs()) << "' "
        "minval='" << m_minVal << "' "
        "maxval='" << m_maxVal << "' "
-       "defval='" << m_defValue << "'/>" << endl;
+       "defval='" << m_defValue << "'";
+  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
+  t << "/>" << endl;
 }
 
 void ConfigBool::writeXML(QTextStream& t)
@@ -292,7 +294,9 @@ void ConfigBool::writeXML(QTextStream& t)
   t << "    <option type='bool' "
        "id='" << convertToXML(name()) << "' "
        "docs='\n" << convertToXML(docs()) << "' "
-       "defval='" << m_defValue << "'/>" << endl;
+       "defval='" << m_defValue << "'";
+  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
+  t << "/>" << endl;
 }
 
 void ConfigString::writeXML(QTextStream& t)
@@ -308,7 +312,9 @@ void ConfigString::writeXML(QTextStream& t)
        "id='" << convertToXML(name()) << "' "
        "format='" << format << "' "
        "docs='\n" << convertToXML(docs()) << "' "
-       "defval='" << convertToXML(m_defValue) << "'/>" << endl;
+       "defval='" << convertToXML(m_defValue) << "'";
+  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
+  t << "/>" << endl;
 }
 
 void ConfigEnum::writeXML(QTextStream &t)
@@ -316,7 +322,9 @@ void ConfigEnum::writeXML(QTextStream &t)
   t << "    <option type='enum' "
        "id='" << convertToXML(name()) << "' "
        "defval='" << convertToXML(m_defValue) << "' "
-       "docs='\n" << convertToXML(docs()) << "'>" << endl;
+       "docs='\n" << convertToXML(docs()) << "'";
+  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
+  t << ">" << endl;
 
   char *enumVal = m_valueRange.first();
   while (enumVal)
@@ -341,7 +349,9 @@ void ConfigList::writeXML(QTextStream &t)
   t << "    <option type='list' "
        "id='" << convertToXML(name()) << "' "
        "format='" << format << "' "
-       "docs='\n" << convertToXML(docs()) << "'>" << endl;
+       "docs='\n" << convertToXML(docs()) << "'";
+  if (!m_dependency.isEmpty()) t << " depends='" << m_dependency << "'";
+  t << ">" << endl;
   char *enumVal = m_value.first();
   while (enumVal)
   {
@@ -355,8 +365,7 @@ void ConfigList::writeXML(QTextStream &t)
 void ConfigObsolete::writeXML(QTextStream &t)
 {
   t << "    <option type='obsolete' "
-       "id='" << convertToXML(name()) << "' "
-       "docs='" << convertToXML(docs()) << "'/>" << endl;
+       "id='" << convertToXML(name()) << "'/>" << endl;
 }
 
 
@@ -815,8 +824,8 @@ void Config::writeTemplate(QTextStream &t,bool sl,bool upd)
 void Config::writeXML(QTextStream &t)
 {
   t << "<doxygenconfig>" << endl;
-  ConfigOption *option = m_options->first();
   bool first=TRUE;
+  ConfigOption *option = m_options->first();
   while (option)
   {
     if (option->kind()==ConfigOption::O_Info)
@@ -831,6 +840,12 @@ void Config::writeXML(QTextStream &t)
       option->writeXML(t);
     }
     option = m_options->next();
+  }
+  option = m_obsolete->first();
+  while (option)
+  {
+    option->writeXML(t);
+    option = m_obsolete->next();
   }
   if (!first) t << "  </group>" << endl;
   t << "</doxygenconfig>" << endl;
@@ -1337,29 +1352,26 @@ void Config::check()
   // check QHP creation requirements
   if (Config_getBool("GENERATE_QHP"))
   {
-    bool quit = false;
+    bool qhp=TRUE;
     if (!Config_getBool("GENERATE_HTML"))
     {
-      config_err("Warning: GENERATE_QHP=YES requires GENERATE_HTML=YES.\n");
-      quit = true;
+      config_err("Error: GENERATE_QHP=YES requires GENERATE_HTML=YES. Disabling QHP output.\n");
+      qhp=FALSE;
     }
 
     if (Config_getString("QHP_NAMESPACE").isEmpty())
     {
-      config_err("Warning: GENERATE_QHP=YES requires QHP_NAMESPACE to be set.\n");
-      quit = true;
+      config_err("Error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Disabling QHP output.\n");
+      qhp=FALSE;
     }
 
     if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
     {
-      config_err("Warning: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set.\n");
-      quit = true;
+      config_err("Error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Disabling QHP output.\n");
+      qhp=FALSE;
     }
 
-    if (quit)
-    {
-      exit(1);
-    }
+    Config_getBool("GENERATE_QHP")=qhp;
   }
 
   // check QCH creation requirements

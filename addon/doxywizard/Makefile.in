@@ -10,38 +10,23 @@
 # See the GNU General Public License for more details.
 # 
 
-all: version.cpp config.h config.l portable.h portable.cpp Makefile.doxywizard  
-	$(MAKE) -f Makefile.doxywizard QTDIR=$(QTDIR) $@
+QMAKE = qmake
 
-version.cpp: ../../src/version.cpp
-	$(CP) ../../src/version.cpp version.cpp
+all: Makefile.doxywizard  
+	$(MAKE) -f Makefile.doxywizard 
 
-portable.cpp: ../../src/portable.cpp
-	$(CP) ../../src/portable.cpp portable.cpp
+Makefile.doxywizard: doxywizard.pro
+	$(QTDIR)/bin/qmake doxywizard.pro -o Makefile.doxywizard
 
-portable.h: ../../src/portable.h
-	$(CP) ../../src/portable.h portable.h
-
-config.h: ../../src/config.h
-	$(CP) ../../src/config.h config.h
-
-config.l: ../../src/config.l
-	$(CP) ../../src/config.l config.l
-
-Makefile.doxywizard: doxywizard.pro 
-	$(ENV) $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
-
-tmake: 
-	$(ENV) $(PERL) $(TMAKE) doxywizard.pro >Makefile.doxywizard
+qmake: 
+	$(QTDIR)/bin/qmake doxywizard.pro -o Makefile.doxywizard
 
 clean: Makefile.doxywizard 
 	$(MAKE) -f Makefile.doxywizard clean 
-	$(RM) config.cpp 
 
-distclean: clean
-	$(RM) Makefile.doxywizard version.cpp config.l config.h portable.h portable.cpp
-
-MAN1DIR = man/man1
+distclean: Makefile.doxywizard
+	$(MAKE) -f Makefile.doxywizard distclean 
+	$(RM) Makefile.doxywizard
 
 install:
 	$(INSTTOOL) -d $(INSTALL)/bin	

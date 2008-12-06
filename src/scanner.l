@@ -4700,7 +4700,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->args += ' ';
 					  current->args += name;
     					}
-<ClassVar,Bases>\n/{BN}*		{
+<ClassVar,Bases>\n/{BN}*[^{,]		{
                                           if (!insideObjC) 
 					  {
 					    REJECT;
@@ -4708,7 +4708,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					  {
 					    yyLineNr++;
-					    //unput('{');
+					    unput('{');
 					  }
 					}
 <ClassVar,Bases>"@end"			{ // empty ObjC interface

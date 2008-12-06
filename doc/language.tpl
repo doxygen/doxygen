@@ -58,16 +58,14 @@ Just follow these steps:
 <li>Create a copy of translator_en.h and name it 
     translator_\<your_2_letter_country_code\>.h
     I'll use xx in the rest of this document.
-<li>Add definition of the symbol for your language into lang_cfg.h:
-\verbatim
-#define LANG_xx
-\endverbatim
-    Use capital letters for your \c xx (to be consistent).  The \c lang_cfg.h
-    defines which language translators will be compiled into doxygen
-    executable.  It is a kind of configuration file.  If you are sure that
-    you do not need some of the languages, you can remove (comment out)
-    definitions of symbols for the languages, or you can say \c \#undef
-    instead of \c \#define for them.
+<li>Add definition of the symbol for your language in the configure 
+at two places in the script:
+  <ol>
+  <li>After the <code>f_langs=</code> is statement, in lower case.
+  <li>In the string that following <code>@allowed=</code> in upper case.
+  </ol>
+The rerun the configure script such that is generates src/lang_cfg.h.
+This file should now contain a #define for your language code.
 <li>Edit language.cpp:
     Add a 
 \verbatim

@@ -1,276 +1,553 @@
-/******************************************************************************
- *
- * 
- *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
- * for any purpose. It is provided "as is" without express or implied warranty.
- * See the GNU General Public License for more details.
- *
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <qmainwindow.h>
-#include <qpopupmenu.h>
-#include <qfileinfo.h>
-#include <qmenubar.h>
-#include <qstatusbar.h>
-#include <qfiledialog.h>
-#include <qmessagebox.h>
-#include <qapplication.h>
-#include <qwhatsthis.h>
-#include <qlayout.h>
-#include <qtabwidget.h>
-#include <qtoolbar.h>
-#include <qtoolbutton.h>
-#include <qscrollview.h>
-#include <qlayout.h>
-#include <qtooltip.h>
-
 #include "expert.h"
 #include "inputbool.h"
 #include "inputstring.h"
-#include "inputstrlist.h"
 #include "inputint.h"
+#include "inputstring.h"
+#include "inputstrlist.h"
+#include <QtGui>
+#include <QtXml>
 #include "config.h"
 #include "version.h"
 
-//-------------------------------------------------------------------------
+#undef  SA
+#define SA(x) QString::fromAscii(x)
 
-Expert::Expert( QWidget *parent ) : QTabDialog( parent )
+static QString convertToComment(const QString &s)
 {
-
-  m_dependencies = new QDict< QList<IInput> >(257);
-  m_dependencies->setAutoDelete(TRUE);
-  m_inputWidgets = new QDict< IInput >;
-  m_switches = new QDict< QObject >;
-  m_changed = FALSE;
-
-  setHelpButton();
-  
-  QListIterator<ConfigOption> options = Config::instance()->iterator();
-  QVBoxLayout *pageLayout = 0;
-  QFrame *page = 0;
-  ConfigOption *option = 0;
-  for (options.toFirst();(option=options.current());++options)
+  if (s.isEmpty()) 
   {
-    switch(option->kind())
+    return QString();
+  }
+  else
+  {
+    return SA("# ")+
+           s.trimmed().replace(SA("\n"),SA("\n# "))+
+           SA("\n");
+  }
+}
+
+//------------------------------------------------------------------------------------
+
+Expert::Expert()
+{
+  m_treeWidget = new QTreeWidget;
+  m_treeWidget->setColumnCount(1);
+  m_topicStack = new QStackedWidget;
+
+  QFile file(SA(":/config.xml"));
+  QString err;
+  int errLine,errCol;
+  QDomDocument configXml;
+  if (file.open(QIODevice::ReadOnly))
+  {
+    if (!configXml.setContent(&file,false,&err,&errLine,&errCol))
     {
-      case ConfigOption::O_Info:
-        {
-          if (pageLayout) pageLayout->addStretch(1);
-          QScrollView *view = new QScrollView(this);
-          view->setVScrollBarMode(QScrollView::Auto);
-          view->setHScrollBarMode(QScrollView::AlwaysOff);
-          view->setResizePolicy(QScrollView::AutoOneFit);
-          page = new QFrame( view->viewport(), option->name() );
-          pageLayout = new QVBoxLayout(page);
-          pageLayout->setMargin(10);
-          view->addChild(page);
-          addTab(view,option->name());
-          QWhatsThis::add(page, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(page, option->docs() );
-        }
-        break;
-      case ConfigOption::O_String:
-        {
-          ASSERT(page!=0);
-          InputString::StringMode sm=InputString::StringFree;
-          switch(((ConfigString *)option)->widgetType())
-          {
-            case ConfigString::String: sm=InputString::StringFree; break;
-            case ConfigString::File:   sm=InputString::StringFile; break;
-            case ConfigString::Dir:    sm=InputString::StringDir;  break;
-          }
-          InputString *inputString = new InputString( 
-                         option->name(),                        // name
-                         page,                                  // widget
-                         *((ConfigString *)option)->valueRef(), // variable 
-                         sm                                     // type
-                       ); 
-          pageLayout->addWidget(inputString);
-          QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(inputString,option->docs());
-          connect(inputString,SIGNAL(changed()),SLOT(changed()));
-          m_inputWidgets->insert(option->name(),inputString);
-          addDependency(m_switches,option->dependsOn(),option->name());
-        }
-        break;
-      case ConfigOption::O_Enum:
-        {
-          ASSERT(page!=0);
-          InputString *inputString = new InputString( 
-                         option->name(),                        // name
-                         page,                                  // widget
-                         *((ConfigEnum *)option)->valueRef(),   // variable 
-                         InputString::StringFixed               // type
-                       ); 
-          pageLayout->addWidget(inputString);
-          QStrListIterator sli=((ConfigEnum *)option)->iterator();
-          for (sli.toFirst();sli.current();++sli)
-          {
-            inputString->addValue(sli.current());
-          }
-          inputString->init();
-          QWhatsThis::add(inputString, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(inputString, option->docs());
-          connect(inputString,SIGNAL(changed()),SLOT(changed()));
-          m_inputWidgets->insert(option->name(),inputString);
-          addDependency(m_switches,option->dependsOn(),option->name());
-        }
-        break;
-      case ConfigOption::O_List:
-        {
-          ASSERT(page!=0);
-          InputStrList::ListMode lm=InputStrList::ListString;
-          switch(((ConfigList *)option)->widgetType())
-          {
-            case ConfigList::String:     lm=InputStrList::ListString;  break;
-            case ConfigList::File:       lm=InputStrList::ListFile;    break;
-            case ConfigList::Dir:        lm=InputStrList::ListDir;     break;
-            case ConfigList::FileAndDir: lm=InputStrList::ListFileDir; break;
-          }
-          InputStrList *inputStrList = new InputStrList(
-                          option->name(),                         // name
-                          page,                                   // widget
-                          *((ConfigList *)option)->valueRef(),    // variable
-                          lm                                      // type
-                        );
-          pageLayout->addWidget(inputStrList);
-          QWhatsThis::add(inputStrList, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(inputStrList, option->docs());
-          connect(inputStrList,SIGNAL(changed()),SLOT(changed()));
-          m_inputWidgets->insert(option->name(),inputStrList);
-          addDependency(m_switches,option->dependsOn(),option->name());
-        }
-        break;
-        break;
-      case ConfigOption::O_Bool:
-        {
-          ASSERT(page!=0);
-          InputBool *inputBool = new InputBool(
-                          option->name(),                         // name
-                          page,                                   // widget
-                          *((ConfigBool *)option)->valueRef()     // variable
-                        );
-          pageLayout->addWidget(inputBool);
-          QWhatsThis::add(inputBool, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(inputBool, option->docs() );
-          connect(inputBool,SIGNAL(changed()),SLOT(changed()));
-          m_inputWidgets->insert(option->name(),inputBool);
-          addDependency(m_switches,option->dependsOn(),option->name());
-        }
-        break;
-      case ConfigOption::O_Int:
-        {
-          ASSERT(page!=0);
-          InputInt *inputInt = new InputInt(
-                          option->name(),                         // name
-                          page,                                   // widget
-                          *((ConfigInt *)option)->valueRef(),     // variable
-                          ((ConfigInt *)option)->minVal(),        // min value
-                          ((ConfigInt *)option)->maxVal()         // max value
-                        );
-          pageLayout->addWidget(inputInt);
-          QWhatsThis::add(inputInt, option->docs().simplifyWhiteSpace() );
-          QToolTip::add(inputInt, option->docs() );
-          connect(inputInt,SIGNAL(changed()),SLOT(changed()));
-          m_inputWidgets->insert(option->name(),inputInt);
-          addDependency(m_switches,option->dependsOn(),option->name());
-        }
-        break;
-      case ConfigOption::O_Obsolete:
-        break;
-    } 
+      QString msg = tr("Error parsing internal config.xml at line %1 column %2.\n%3").
+                  arg(errLine).arg(errCol).arg(err);
+      QMessageBox::warning(this, tr("Error"), msg);
+      exit(1);
+    }
   }
-  if (pageLayout) pageLayout->addStretch(1);
+  m_rootElement = configXml.documentElement();
 
-  QDictIterator<QObject> di(*m_switches);
-  QObject *obj = 0;
-  for (di.toFirst();(obj=di.current());++di)
-  {
-    connect(obj,SIGNAL(toggle(const char *,bool)),SLOT(toggle(const char *,bool)));
-    // UGLY HACK: assumes each item depends on a boolean without checking!
-    emit toggle(di.currentKey(),((InputBool *)obj)->getState());
-  }
+  createTopics(m_rootElement);
+  m_helper = new QTextEdit;
+  m_helper->setReadOnly(true);
+  m_splitter = new QSplitter(Qt::Vertical);
+  m_splitter->addWidget(m_treeWidget);
+  m_splitter->addWidget(m_helper);
 
-  connect(this,SIGNAL(helpButtonPressed()),this,SLOT(handleHelp()));
-  
+  QWidget *rightSide = new QWidget;
+  QGridLayout *grid = new QGridLayout(rightSide);
+  m_prev = new QPushButton(tr("Previous"));
+  m_prev->setEnabled(false);
+  m_next = new QPushButton(tr("Next"));
+  grid->addWidget(m_topicStack,0,0,1,2);
+  grid->addWidget(m_prev,1,0,Qt::AlignLeft);
+  grid->addWidget(m_next,1,1,Qt::AlignRight);
+  grid->setColumnStretch(0,1);
+  grid->setRowStretch(0,1);
+
+  addWidget(m_splitter);
+  addWidget(rightSide);
+  connect(m_next,SIGNAL(clicked()),SLOT(nextTopic()));
+
+  connect(m_prev,SIGNAL(clicked()),SLOT(prevTopic()));
 }
 
 Expert::~Expert()
 {
-  delete m_dependencies;
-  delete m_inputWidgets;
-  delete m_switches;
-}
-
-void Expert::handleHelp()
-{
-  QWhatsThis::enterWhatsThisMode();
-}
-
-void Expert::addDependency(QDict<QObject> *switches,
-                               const QCString &dep,const QCString &name)
-{
-  if (!dep.isEmpty())
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext()) 
   {
-    //printf("Expert::addDependency(%s)\n",name.data());
-    IInput *parent = m_inputWidgets->find(dep);
-    ASSERT(parent!=0);
-    IInput *child = m_inputWidgets->find(name);
-    ASSERT(child!=0);
-    if (switches->find(dep)==0)
+    i.next();
+    delete i.value();
+  }
+}
+
+void Expert::createTopics(const QDomElement &rootElem)
+{
+  QList<QTreeWidgetItem*> items;
+  QDomElement childElem = rootElem.firstChildElement();
+  while (!childElem.isNull())
+  {
+    if (childElem.tagName()==SA("group"))
     {
-      switches->insert(dep,parent->qobject());
+      QString name = childElem.attribute(SA("name"));
+      items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+      QWidget *widget = createTopicWidget(childElem);
+      m_topics[name] = widget;
+      m_topicStack->addWidget(widget);
     }
-    QList<IInput> *list = m_dependencies->find(dep);
-    if (list==0)
+    childElem = childElem.nextSiblingElement();
+  }
+  m_treeWidget->setHeaderLabels(QStringList() << SA("Topics"));
+  m_treeWidget->insertTopLevelItems(0,items);
+  connect(m_treeWidget,
+          SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
+          this,
+          SLOT(activateTopic(QTreeWidgetItem *,QTreeWidgetItem *)));
+}
+
+
+QWidget *Expert::createTopicWidget(QDomElement &elem)
+{
+  QScrollArea *area   = new QScrollArea;
+  QWidget     *topic  = new QWidget;
+  QGridLayout *layout = new QGridLayout(topic);
+  QDomElement child   = elem.firstChildElement();
+  int row=0;
+  while (!child.isNull())
+  {
+    QString type = child.attribute(SA("type"));
+    if (type==SA("bool"))
     {
-      list = new QList<IInput>;
-      m_dependencies->insert(dep,list);
+      InputBool *boolOption = 
+          new InputBool(
+            layout,row,
+            child.attribute(SA("id")),
+            child.attribute(SA("defval"))==SA("1"),
+            child.attribute(SA("docs"))
+           );
+      m_options.insert(
+          child.attribute(SA("id")),
+          boolOption
+         );
+      connect(boolOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+      connect(boolOption,SIGNAL(changed()),SIGNAL(changed()));
     }
-    list->append(child);
+    else if (type==SA("string"))
+    {
+      InputString::StringMode mode;
+      QString format = child.attribute(SA("format"));
+      if (format==SA("dir"))
+      {
+        mode = InputString::StringDir;
+      }
+      else if (format==SA("file"))
+      {
+        mode = InputString::StringFile;
+      }
+      else // format=="string"
+      {
+        mode = InputString::StringFree;
+      }
+      InputString *stringOption = 
+          new InputString(
+            layout,row,
+            child.attribute(SA("id")),
+            child.attribute(SA("defval")),
+            mode,
+            child.attribute(SA("docs"))
+           );
+      m_options.insert(
+          child.attribute(SA("id")),
+          stringOption
+         );
+      connect(stringOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+      connect(stringOption,SIGNAL(changed()),SIGNAL(changed()));
+    }
+    else if (type==SA("enum"))
+    {
+      InputString *enumList = new InputString(
+            layout,row,
+            child.attribute(SA("id")),
+            child.attribute(SA("defval")),
+            InputString::StringFixed,
+            child.attribute(SA("docs"))
+           );
+      QDomElement enumVal = child.firstChildElement();
+      while (!enumVal.isNull())
+      {
+        enumList->addValue(enumVal.attribute(SA("name")));
+        enumVal = enumVal.nextSiblingElement();
+      }
+      enumList->setDefault();
+
+      m_options.insert(child.attribute(SA("id")),enumList);
+      connect(enumList,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+      connect(enumList,SIGNAL(changed()),SIGNAL(changed()));
+    }
+    else if (type==SA("int"))
+    {
+      InputInt *intOption = 
+          new InputInt(
+            layout,row,
+            child.attribute(SA("id")),
+            child.attribute(SA("defval")).toInt(),
+            child.attribute(SA("minval")).toInt(),
+            child.attribute(SA("maxval")).toInt(),
+            child.attribute(SA("docs"))
+          );
+      m_options.insert(
+          child.attribute(SA("id")),
+          intOption
+        );
+      connect(intOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+      connect(intOption,SIGNAL(changed()),SIGNAL(changed()));
+    }
+    else if (type==SA("list"))
+    {
+      InputStrList::ListMode mode;
+      QString format = child.attribute(SA("format"));
+      if (format==SA("dir"))
+      {
+        mode = InputStrList::ListDir;
+      }
+      else if (format==SA("file"))
+      {
+        mode = InputStrList::ListFile;
+      }
+      else if (format==SA("filedir"))
+      {
+        mode = InputStrList::ListFileDir;
+      }
+      else // format=="string"
+      {
+        mode = InputStrList::ListString;
+      }
+      QStringList sl;
+      QDomElement listVal = child.firstChildElement();
+      while (!listVal.isNull())
+      {
+        sl.append(listVal.attribute(SA("name")));
+        listVal = listVal.nextSiblingElement();
+      }
+      InputStrList *listOption = 
+          new InputStrList(
+            layout,row,
+            child.attribute(SA("id")),
+            sl,
+            mode,
+            child.attribute(SA("docs"))
+          );
+      m_options.insert(
+          child.attribute(SA("id")),
+          listOption
+        );
+      connect(listOption,SIGNAL(showHelp(Input*)),SLOT(showHelp(Input*)));
+      connect(listOption,SIGNAL(changed()),SIGNAL(changed()));
+    }
+    else if (type==SA("obsolete"))
+    {
+      // ignore
+    }
+    else // should not happen
+    {
+      printf("Unsupported type %s\n",qPrintable(child.attribute(SA("type"))));
+    }
+    child = child.nextSiblingElement();
+  }
+
+  // compute dependencies between options
+  child = elem.firstChildElement();
+  while (!child.isNull())
+  {
+    QString dependsOn = child.attribute(SA("depends"));
+    QString id        = child.attribute(SA("id"));
+    if (!dependsOn.isEmpty())
+    {
+       Input *parentOption = m_options[dependsOn];
+       Input *thisOption   = m_options[id];
+       Q_ASSERT(parentOption);
+       Q_ASSERT(thisOption);
+       if (parentOption && thisOption)
+       {
+         //printf("Adding dependency '%s' (%p)->'%s' (%p)\n",
+         //  qPrintable(dependsOn),parentOption,
+         //  qPrintable(id),thisOption);
+         parentOption->addDependency(thisOption);
+       }
+    }
+    child = child.nextSiblingElement();
+  }
+
+  // set initial dependencies
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext()) 
+  {
+    i.next();
+    if (i.value())
+    {
+      i.value()->updateDependencies();
+    }
+  }
+
+  layout->setRowStretch(row,1);
+  layout->setColumnStretch(1,2);
+  layout->setSpacing(5);
+  topic->setLayout(layout);
+  area->setWidget(topic);
+  area->setWidgetResizable(true);
+  return area;
+}
+
+void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
+{
+  if (item)
+  {
+    QWidget *w = m_topics[item->text(0)];
+    m_topicStack->setCurrentWidget(w);
+    m_prev->setEnabled(m_topicStack->currentIndex()!=0); 
+    m_next->setEnabled(m_topicStack->currentIndex()!=m_topicStack->count()-1); 
   }
 }
 
-void Expert::toggle(const char *name,bool state)
+void Expert::loadSettings(QSettings *s)
 {
-  QList<IInput> *inputs = m_dependencies->find(name);
-  ASSERT(inputs!=0);
-  IInput *input = inputs->first();
-  while (input)
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext()) 
   {
-    input->setEnabled(state);
-    input = inputs->next();
+    i.next();
+    QVariant var = s->value(SA("config/")+i.key());
+    //printf("Loading key %s: type=%d\n",qPrintable(i.key()),var.type());
+    if (i.value())
+    {
+      i.value()->value() = var;
+      i.value()->update();
+    }
   }
 }
 
-void Expert::init()
+void Expert::saveSettings(QSettings *s)
 {
-  QDictIterator<IInput> di(*m_inputWidgets);
-  IInput *input = 0;
-  for (di.toFirst();(input=di.current());++di)
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext()) 
   {
-    input->init();
+    i.next();
+    if (i.value())
+    {
+      s->value(SA("config/")+i.key(),i.value()->value());
+    }
   }
-  QDictIterator<QObject> dio(*m_switches);
-  QObject *obj = 0;
-  for (dio.toFirst();(obj=dio.current());++dio)
-  {
-    connect(obj,SIGNAL(toggle(const char *,bool)),SLOT(toggle(const char *,bool)));
-    // UGLY HACK: assumes each item depends on a boolean without checking!
-    emit toggle(dio.currentKey(),((InputBool *)obj)->getState());
-  }
-  
 }
 
-void Expert::changed()
+void Expert::loadConfig(const QString &fileName)
 {
-  m_changed=TRUE;  
+  //printf("Expert::loadConfig(%s)\n",qPrintable(fileName));
+  parseConfig(fileName,m_options);
+}
+
+void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
+                       bool brief)
+{
+  // write group header
+  t << endl;
+  t << "#---------------------------------------------------------------------------" << endl;
+  t << "# " << elem.attribute(SA("docs")) << endl;
+  t << "#---------------------------------------------------------------------------" << endl;
+
+  // write options...
+  QDomElement childElem = elem.firstChildElement();
+  while (!childElem.isNull())
+  {
+    QString type = childElem.attribute(SA("type"));
+    QString name = childElem.attribute(SA("id"));
+    QHash<QString,Input*>::const_iterator i = m_options.find(name);
+    if (i!=m_options.end())
+    {
+      Input *option = i.value();
+      if (!brief)
+      {
+        t << endl;
+        t << convertToComment(childElem.attribute(SA("docs")));
+        t << endl;
+      }
+      t << name.leftJustified(23) << "= ";
+      if (option)
+      {
+        option->writeValue(t,codec);
+      }
+      t << endl;
+    }
+    childElem = childElem.nextSiblingElement();
+  }
+
+}
+
+bool Expert::writeConfig(QTextStream &t,bool brief)
+{
+  if (!brief)
+  {
+    // write global header
+    t << "# Doxyfile " << versionString << endl << endl; // TODO: add version
+    t << "# This file describes the settings to be used by the documentation system\n";
+    t << "# doxygen (www.doxygen.org) for a project\n";
+    t << "#\n";
+    t << "# All text after a hash (#) is considered a comment and will be ignored\n";
+    t << "# The format is:\n";
+    t << "#       TAG = value [value, ...]\n";
+    t << "# For lists items can also be appended using:\n";
+    t << "#       TAG += value [value, ...]\n";
+    t << "# Values that contain spaces should be placed between quotes (\" \")\n";
+  }
+
+  QTextCodec *codec = 0;
+  Input *option = m_options[QString::fromAscii("DOXYFILE_ENCODING")];
+  if (option)
+  {
+    codec = QTextCodec::codecForName(option->value().toString().toAscii());
+    if (codec==0) // fallback: use UTF-8
+    {
+      codec = QTextCodec::codecForName("UTF-8");
+    }
+  }
+  QDomElement childElem = m_rootElement.firstChildElement();
+  while (!childElem.isNull())
+  {
+    saveTopic(t,childElem,codec,brief);
+    childElem = childElem.nextSiblingElement();
+  }
+  return true;
+}
+
+QByteArray Expert::saveInnerState () const
+{
+  return m_splitter->saveState();
+}
+
+bool Expert::restoreInnerState ( const QByteArray & state )
+{
+  return m_splitter->restoreState(state);
+}
+
+void Expert::showHelp(Input *option)
+{
+  m_helper->setText(
+           QString::fromAscii("<qt><b>")+option->id()+
+           QString::fromAscii("</b><br>")+
+           option->docs().
+           replace(QChar::fromAscii('\n'),QChar::fromAscii(' '))+
+           QString::fromAscii("<qt>")
+          );
+}
+
+void Expert::nextTopic()
+{
+  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()+1);
+  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
+  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+}
+
+void Expert::prevTopic()
+{
+  m_topicStack->setCurrentIndex(m_topicStack->currentIndex()-1);
+  m_next->setEnabled(m_topicStack->count()!=m_topicStack->currentIndex()+1);
+  m_prev->setEnabled(m_topicStack->currentIndex()!=0);
+  m_treeWidget->setCurrentItem(m_treeWidget->invisibleRootItem()->child(m_topicStack->currentIndex()));
+}
+
+void Expert::resetToDefaults()
+{
+  //printf("Expert::makeDefaults()\n");
+  QHashIterator<QString,Input*> i(m_options);
+  while (i.hasNext()) 
+  {
+    i.next();
+    if (i.value())
+    {
+      i.value()->reset();
+    }
+  }
+}
+
+static bool stringVariantToBool(const QVariant &v)
+{
+  QString s = v.toString().toLower();
+  return s==QString::fromAscii("yes") || s==QString::fromAscii("true") || s==QString::fromAscii("1");
+} 
+
+static bool getBoolOption(
+    const QHash<QString,Input*>&model,const QString &name)
+{
+  Input *option = model[name];
+  Q_ASSERT(option!=0);
+  return stringVariantToBool(option->value());
+} 
+
+static QString getStringOption(
+    const QHash<QString,Input*>&model,const QString &name)
+{
+  Input *option = model[name];
+  Q_ASSERT(option!=0);
+  return option->value().toString();
+}
+
+
+bool Expert::htmlOutputPresent(const QString &workingDir) const
+{
+  bool generateHtml = getBoolOption(m_options,QString::fromAscii("GENERATE_HTML"));
+  if (!generateHtml) return false;
+  QString indexFile = getHtmlOutputIndex(workingDir);
+  QFileInfo fi(indexFile);
+  return fi.exists() && fi.isFile();
+}
+
+QString Expert::getHtmlOutputIndex(const QString &workingDir) const
+{
+  QString outputDir = getStringOption(m_options,QString::fromAscii("OUTPUT_DIRECTORY"));
+  QString htmlOutputDir = getStringOption(m_options,QString::fromAscii("HTML_OUTPUT"));
+  //printf("outputDir=%s\n",qPrintable(outputDir));
+  //printf("htmlOutputDir=%s\n",qPrintable(htmlOutputDir));
+  QString indexFile = workingDir;
+  if (QFileInfo(outputDir).isAbsolute()) // override
+  {
+    indexFile = outputDir;
+  }
+  else // append
+  { 
+    indexFile += QString::fromAscii("/")+outputDir;
+  }
+  if (QFileInfo(htmlOutputDir).isAbsolute()) // override
+  {
+    indexFile = htmlOutputDir;
+  }
+  else // append
+  {
+    indexFile += QString::fromAscii("/")+htmlOutputDir;
+  }
+  indexFile+=QString::fromAscii("/index.html");
+  return indexFile;
+}
+
+bool Expert::pdfOutputPresent(const QString &workingDir) const
+{
+  bool generateLatex = getBoolOption(m_options,QString::fromAscii("GENERATE_LATEX"));
+  bool pdfLatex = getBoolOption(m_options,QString::fromAscii("USE_PDFLATEX"));
+  if (!generateLatex || !pdfLatex) return false;
+  QString latexOutput = getStringOption(m_options,QString::fromAscii("LATEX_OUTPUT"));
+  QString indexFile;
+  if (QFileInfo(latexOutput).isAbsolute())
+  {
+    indexFile = latexOutput+QString::fromAscii("/refman.pdf");
+  }
+  else
+  {
+    indexFile = workingDir+QString::fromAscii("/")+
+                latexOutput+QString::fromAscii("/refman.pdf");
+  }
+  QFileInfo fi(indexFile);
+  return fi.exists() && fi.isFile();
 }
 

@@ -130,3 +130,7 @@ Olexij Tkatchenko: olexij.tkatchenko@parcs.de
 
 TranslatorVietnamese
 Dang Minh Tuan: tuanvietkey@gmail.com
+
+TranslatorTurkish
+Emin Ilker Cetinbas: niw3@yahoo.com
+

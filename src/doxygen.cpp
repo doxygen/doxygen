@@ -9295,12 +9295,16 @@ void readConfiguration(int argc, char **argv)
 
   if (genConfig)
   {
-    checkConfiguration();
-    generateConfigFile(configName,shortList);
     if (g_dumpConfigAsXML)
     {
+      checkConfiguration();
+      generateConfigFile(configName,shortList);
       dumpConfigAsXML();
       exit(0); 
+    }
+    else
+    {
+      generateConfigFile(configName,shortList);
     }
     cleanUpDoxygen();
     exit(0);
