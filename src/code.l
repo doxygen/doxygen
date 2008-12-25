@@ -2441,7 +2441,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
   					}
 <SkipVerbString>\n			{
-  					  g_code->codify(yytext);
+  					  codifyLines(yytext);
   					}
 <Body>":"				{
   					  g_code->codify(yytext);

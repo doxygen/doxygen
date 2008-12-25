@@ -61,6 +61,8 @@ static QStack<CondCtx> g_condStack;
 static QCString g_blockName;
 static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
+static bool     g_inRoseComment;
+static int      g_javaBlock;
 
 static QCString g_aliasString;
 static int      g_blockCount;
@@ -331,6 +333,7 @@ void replaceComment(int offset);
 				     g_blockHeadCol=g_col;
 				     copyToOutput("/**",3);
 				     replaceAliases(yytext+i);
+				     g_inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
 <Scan>"//"/.*\n	                   { /* one line C++ comment */ 
@@ -364,9 +367,17 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
   				   }
+<CComment>[ \t]+"{@code"	   {
+                                     copyToOutput(" @code",6); 
+				     g_lastCommentContext = YY_START;
+				     g_javaBlock=1;
+				     g_blockName=&yytext[1];
+                                     BEGIN(VerbatimCode);
+  				   }
 <CComment,ReadLine>[\\@]("dot"|"code"|"msc")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yytext,yyleng); 
 				     g_lastCommentContext = YY_START;
+				     g_javaBlock=0;
 				     g_blockName=&yytext[1];
                                      BEGIN(VerbatimCode);
   				   }
@@ -404,6 +415,31 @@ void replaceComment(int offset);
 				       BEGIN(g_lastCommentContext);
 				     }
                                    }
+<VerbatimCode>"{"		   {
+                                     if (g_javaBlock==0)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       g_javaBlock++;
+				     }
+                                   }
+<VerbatimCode>"}"		   {
+                                     if (g_javaBlock==0)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+				       g_javaBlock--;
+				       if (g_javaBlock==0)
+				       {
+                                         copyToOutput(" @endcode ",10);
+				         BEGIN(g_lastCommentContext);
+				       }
+				     }
+  				   }
 <VerbatimCode>[\\@]("enddot"|"endcode"|"endmsc") { /* end of verbatim block */
                                      copyToOutput(yytext,yyleng);
 				     if (&yytext[4]==g_blockName)
@@ -417,7 +453,7 @@ void replaceComment(int offset);
                                        copyToOutput(yytext,yyleng); 
 				     }
   				   }
-<Verbatim,VerbatimCode>[^@\/\\\n]* { /* any character not a backslash or new line */
+<Verbatim,VerbatimCode>[^@\/\\\n{}]* { /* any character not a backslash or new line or } */
                                      copyToOutput(yytext,yyleng); 
                                    }
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
@@ -552,19 +588,34 @@ void replaceComment(int offset);
 				     BEGIN(ReadLine);
                                    }
 <SComment>^[ \t]*"//##"/.*\n       {
-  				     replaceComment(0);
-				     g_readLineCtx=YY_START;
-				     BEGIN(ReadLine);
+                                     if (!g_inRoseComment)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+  				       replaceComment(0);
+				       g_readLineCtx=YY_START;
+				       BEGIN(ReadLine);
+				     }
                                    }
 <SComment>\n[ \t]*"//##"/.*\n      {
-                                     replaceComment(1); 
-				     g_readLineCtx=YY_START;
-				     BEGIN(ReadLine);
+                                     if (!g_inRoseComment)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       replaceComment(1); 
+				       g_readLineCtx=YY_START;
+				       BEGIN(ReadLine);
+				     }
                                    }
 <SComment>\n			   { /* end of special comment */
                                      copyToOutput(" */",3); 
 				     copyToOutput(yytext,yyleng); 
 				     g_inSpecialComment=FALSE;
+				     g_inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
 <ReadLine>[^\\@\n]*/\n		   {

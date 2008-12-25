@@ -111,7 +111,7 @@ Usage: $0 [--help] [--shared] [--static] [--release] [--debug]
           [--perl name] [--flex name] [--bison name] [--make name] 
           [--dot name] [--platform target] [--prefix dir] [--docdir dir] 
           [--install name] [--english-only] [----enable-langs list] 
-          [--with-doxywizard]
+          [--with-doxywizard] [--with-doxyapp]
 
 Options: 
 
@@ -145,6 +145,7 @@ Options:
   			[default: $f_langs]
   --with-doxywizard     Build the GUI frontend for doxygen. This
                         requires Qt 3.3.x
+  --with-doxyapp        Example showing how to embed doxygen in an application.
 
 EOF
   test "$f_error" = y && exit 1

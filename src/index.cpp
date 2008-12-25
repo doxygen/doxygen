@@ -1519,15 +1519,16 @@ void addClassMemberNameToIndex(MemberDef *md)
   static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ClassDef *cd=0;
 
+  if (vhdlOpt && (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
+  {
+    VhdlDocGen::adjustRecordMember(md);
+  }
+  
   if (md->isLinkableInProject() && 
       (cd=md->getClassDef())    && 
       cd->isLinkableInProject() &&
       cd->templateMaster()==0)
   {
-    if (vhdlOpt && (VhdlDocGen::isRecord(md) || VhdlDocGen::isUnit(md)))
-    {
-      VhdlDocGen::adjustRecordMember(md);
-    }
     QCString n = md->name();
     int index = getPrefixIndex(n);
     int letter = tolower(n.at(index)) & 0x7f;

@@ -540,7 +540,7 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     item->listAnchor = anchorLabel;
     docEntry->addSpecialListItem(listName,itemId);
     QCString cmdString;
-    cmdString.sprintf("\\xrefitem %s %d\n",listName,itemId);
+    cmdString.sprintf("\\xrefitem %s %d.",listName,itemId);
     if (inBody)
     {
       docEntry->inbodyDocs += cmdString;
@@ -1237,6 +1237,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  {
 					    current->name=current->name.left(current->name.length()-5);
 					  }
+					  current->type.resize(0);
 					  BEGIN(GroupDocArg2);
   					}
 <GroupDocArg1>"\\"{B}*"\n"		{ // line continuation
@@ -2411,6 +2412,11 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   commentScanYYlex();
   setOutput( OutputDoc );
 
+  if (YY_START==OverloadParam) // comment ended with \overload
+  {
+    addOutput(getOverloadDocs());
+  }
+
   if (!guards.isEmpty())
   {
     warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
@@ -2431,8 +2437,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   }
 
   Debug::print(Debug::CommentScan,0,
-               "brief=[%s]\ndocs=[%s]\n===========\n",
-	       current->brief.data(),current->doc.data()
+               "brief=[%s]\ndocs=[%s]\ninbody=[%s]\n===========\n",
+	       current->brief.data(),current->doc.data(),current->inbodyDocs.data()
               );
   
   checkFormula();

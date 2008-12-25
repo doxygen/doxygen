@@ -167,7 +167,7 @@ void PageDef::writePageDocumentation(OutputList &ol)
       docLine(),           // startLine
       this,                // context
       0,                   // memberdef
-      documentation(),     // docStr
+      documentation()+inbodyDocumentation(), // docStr
       TRUE,                // index words
       FALSE                // not an example
       );

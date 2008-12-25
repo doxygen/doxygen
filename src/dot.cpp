@@ -587,7 +587,8 @@ static void writeBoxMemberList(QTextStream &t,char prot,MemberList *ml,ClassDef 
       if (mma->getClassDef() == scope)
       {
         t << prot << " " << convertLabel(mma->name());
-        if (!mma->isObjCMethod() && mma->isFunction()) t << "()";
+        if (!mma->isObjCMethod() && 
+            (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
         t << "\\l";
       }
     }
@@ -2323,7 +2324,7 @@ void DotCallGraph::buildGraph(DotNode *n,MemberDef *md,int distance)
     MemberDef *rmd;
     for (;(rmd=mri.current());++mri)
     {
-      if (rmd->isFunction())
+      if (rmd->isFunction() || rmd->isSlot() || rmd->isSignal())
       {
         QCString uniqueId;
         uniqueId=rmd->getReference()+"$"+

@@ -277,7 +277,6 @@ QCString ClassDef::getMemberListFileName() const
 
 QCString ClassDef::displayName() const
 {
-  static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
   static bool optimizeOutputForJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString n;
@@ -285,11 +284,7 @@ QCString ClassDef::displayName() const
   {
     n = VhdlDocGen::getClassName(this);
   }
-  else if (hideScopeNames)
-  {
-    n=m_impl->className;
-  }
-  else
+  else 
   {
     n=qualifiedNameWithTemplateParameters();
   }
@@ -1450,9 +1445,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
 
-#define NEW_LAYOUT
-#ifdef NEW_LAYOUT // new flexible layout
-
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
   LayoutDocEntry *lde;
@@ -1543,154 +1535,6 @@ void ClassDef::writeDocumentation(OutputList &ol)
         break;
     }
   }
-
-#else // old fixed layout
-  
-  //printf("Class %s brief=`%s' doc=`%s'\n",name().data(),briefDescription().data(),documentation().data());
-  
-  //ol.startTextBlock();
-
-  // write brief description
-  if (!Config_getBool("DETAILS_AT_TOP")) 
-  {
-    writeBriefDescription(ol,exampleFlag);
-  }
-  
-  writeIncludeFiles(ol);
-  writeInheritanceGraph(ol); 
-  writeCollaborationGraph(ol); 
-  writeAllMembersLink(ol);
-
-  //ol.endTextBlock();
-  
-  // write detailed description if the user wants it near the top
-  if (Config_getBool("DETAILS_AT_TOP")) 
-  {
-    writeDetailedDescription(ol,pageType,exampleFlag);
-  }
-
-  ///////////////////////////////////////////////////////////////////////////
-  //// Member declarations + brief descriptions
-  ///////////////////////////////////////////////////////////////////////////
-
-  startMemberDeclarations(ol);
-
-  // write member groups
-  writeMemberGroups(ol);
-
-  // public types
-  writeMemberDeclarations(ol,MemberList::pubTypes,theTranslator->trPublicTypes()); 
-
-  // public methods
-  writeMemberDeclarations(ol,MemberList::pubSlots,theTranslator->trPublicSlots()); 
-  writeMemberDeclarations(ol,MemberList::signals,theTranslator->trSignals()); 
-  writeMemberDeclarations(ol,MemberList::dcopMethods,theTranslator->trDCOPMethods()); 
-  writeMemberDeclarations(ol,MemberList::pubMethods,theTranslator->trPublicMembers()); 
-  writeMemberDeclarations(ol,MemberList::pubStaticMethods,theTranslator->trStaticPublicMembers()); 
-
-  // public attribs
-  writeMemberDeclarations(ol,MemberList::pubAttribs,theTranslator->trPublicAttribs()); 
-  writeMemberDeclarations(ol,MemberList::pubStaticAttribs,theTranslator->trStaticPublicAttribs()); 
-  
-  // protected types
-  writeMemberDeclarations(ol,MemberList::proTypes,theTranslator->trProtectedTypes()); 
-
-  // protected methods
-  writeMemberDeclarations(ol,MemberList::proSlots,theTranslator->trProtectedSlots()); 
-  writeMemberDeclarations(ol,MemberList::proMethods,theTranslator->trProtectedMembers()); 
-  writeMemberDeclarations(ol,MemberList::proStaticMethods,theTranslator->trStaticProtectedMembers());
-
-  // protected attribs
-  writeMemberDeclarations(ol,MemberList::proAttribs,theTranslator->trProtectedAttribs()); 
-  writeMemberDeclarations(ol,MemberList::proStaticAttribs,theTranslator->trStaticProtectedAttribs()); 
-
-  // package types
-  writeMemberDeclarations(ol,MemberList::pacTypes,theTranslator->trPackageTypes()); 
-
-  // package methods
-  writeMemberDeclarations(ol,MemberList::pacMethods,theTranslator->trPackageMembers()); 
-  writeMemberDeclarations(ol,MemberList::pacStaticMethods,theTranslator->trStaticPackageMembers()); 
-
-  // package attribs
-  writeMemberDeclarations(ol,MemberList::pacAttribs,theTranslator->trPackageAttribs()); 
-  writeMemberDeclarations(ol,MemberList::pacStaticAttribs,theTranslator->trStaticPackageAttribs()); 
-
-  // package
-  writeMemberDeclarations(ol,MemberList::properties,theTranslator->trProperties()); 
-
-  // events
-  writeMemberDeclarations(ol,MemberList::events,theTranslator->trEvents()); 
-
-  if (Config_getBool("EXTRACT_PRIVATE"))
-  {
-    // private types
-    writeMemberDeclarations(ol,MemberList::priTypes,theTranslator->trPrivateTypes()); 
-
-    // private members
-    writeMemberDeclarations(ol,MemberList::priSlots,theTranslator->trPrivateSlots()); 
-    writeMemberDeclarations(ol,MemberList::priMethods,theTranslator->trPrivateMembers()); 
-    writeMemberDeclarations(ol,MemberList::priStaticMethods,theTranslator->trStaticPrivateMembers()); 
-
-    // private attribs
-    writeMemberDeclarations(ol,MemberList::priAttribs,theTranslator->trPrivateAttribs()); 
-    writeMemberDeclarations(ol,MemberList::priStaticAttribs,theTranslator->trStaticPrivateAttribs()); 
-  }
-
-  // friends
-  writeMemberDeclarations(ol,MemberList::friends,theTranslator->trFriends());
-
-  // related functions
-  writeMemberDeclarations(ol,MemberList::related,theTranslator->trRelatedFunctions(),
-                                              theTranslator->trRelatedSubscript()
-                         ); 
-
-  writeNestedClasses(ol);
-
-  endMemberDeclarations(ol);
-    
-  // write detailed description
-  if (!Config_getBool("DETAILS_AT_TOP")) 
-  {
-    writeDetailedDescription(ol,pageType,exampleFlag);
-  }
-  
-  ///////////////////////////////////////////////////////////////////////////
-  //// Member definitions + detailed documentation
-  ///////////////////////////////////////////////////////////////////////////
-    
-  startMemberDocumentation(ol);
-  
-  writeMemberDocumentation(ol,MemberList::typedefMembers,theTranslator->trMemberTypedefDocumentation());
-  writeMemberDocumentation(ol,MemberList::enumMembers,theTranslator->trMemberEnumerationDocumentation());
-  writeMemberDocumentation(ol,MemberList::constructors,theTranslator->trConstructorDocumentation());
-  if (fortranOpt)
-  {
-    writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentationFortran());
-  }
-  else
-  {
-    writeMemberDocumentation(ol,MemberList::functionMembers,theTranslator->trMemberFunctionDocumentation());
-  }
-  writeMemberDocumentation(ol,MemberList::relatedMembers,theTranslator->trRelatedFunctionDocumentation());
-  writeMemberDocumentation(ol,MemberList::variableMembers,theTranslator->trMemberDataDocumentation());
-  writeMemberDocumentation(ol,MemberList::propertyMembers,theTranslator->trPropertyDocumentation());
-  writeMemberDocumentation(ol,MemberList::eventMembers,theTranslator->trEventDocumentation());
-
-  endMemberDocumentation(ol);
-  /////////////////////////////////////////////////////////////////////
-  //ol.startTextBlock();
-
-  // write the list of used files (not for man pages)
-  showUsedFiles(ol);
-
-  // write Author section (Man only)
-  writeAuthorSection(ol);
-
-  //ol.endTextBlock();
-  /////////////////////////////////////////////////////////////////////
-  //---------------------------------------- end flexible part -------------------------------
-
-#endif
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -3154,30 +2998,34 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
     QList<ArgumentList> *actualParams) const
 {
   static bool optimizeOutputJava = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
+  static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
   //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
   QCString scName;
-  Definition *d=getOuterScope();
-  if (d)
+  if (!hideScopeNames)
   {
-    if (d->definitionType()==Definition::TypeClass)
+    Definition *d=getOuterScope();
+    if (d)
     {
-      ClassDef *cd=(ClassDef *)d;
-      scName = cd->qualifiedNameWithTemplateParameters(actualParams);
+      if (d->definitionType()==Definition::TypeClass)
+      {
+        ClassDef *cd=(ClassDef *)d;
+        scName = cd->qualifiedNameWithTemplateParameters(actualParams);
+      }
+      else
+      {
+        scName = d->qualifiedName();
+      }
     }
+
+    QCString scopeSeparator;
+    if (optimizeOutputJava)
+      scopeSeparator=".";
     else
-    {
-      scName = d->qualifiedName();
-    }
+      scopeSeparator="::";
+
+    if (!scName.isEmpty()) scName+=scopeSeparator;
   }
-
-  QCString scopeSeparator;
-  if (optimizeOutputJava)
-    scopeSeparator=".";
-  else
-    scopeSeparator="::";
-
-  if (!scName.isEmpty()) scName+=scopeSeparator;
-  scName+=localName();
+  scName+=m_impl->className;
   ArgumentList *al=0;
   bool isSpecialization = localName().find('<')!=-1;
   if (templateArguments())

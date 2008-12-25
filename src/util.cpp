@@ -393,6 +393,7 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
       {
         MemberNameIterator mni(*mn);
         MemberDef *tmd=0;
+        int minDist=-1;
         for (;(tmd=mni.current());++mni)
         {
           //printf("Found member %s resScope=%s outerScope=%s mContext=%p\n",
@@ -400,12 +401,11 @@ QCString resolveTypeDef(Definition *context,const QCString &qualifiedName,
           //    tmd->getOuterScope()->name().data(), mContext);
           if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
           {
-            // look if resScope is visible within tmd->getOuterScope()
-            Definition *d = tmd->getOuterScope();
-            while (d && d!=resScope) d=d->getOuterScope();
-            if (d)
+            int dist=isAccessibleFrom(resScope,0,tmd);
+            if (dist!=-1 && (md==0 || dist<minDist))
             {
-              md=tmd;
+              md = tmd;
+              minDist = dist;
             }
           }
         }
@@ -771,6 +771,7 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
                              const QCString &explicitScopePart=""
                             )
 {
+  //printf("accessibleViaUsingClass(%p)\n",cl);
   if (cl) // see if the class was imported via a using statement 
   {
     SDict<Definition>::Iterator cli(*cl);
@@ -2110,6 +2111,7 @@ QCString recodeString(const QCString &str,const char *fromEncoding,const char *t
 
 QCString transcodeCharacterStringToUTF8(const QCString &input)
 {
+  bool error=FALSE;
   static QCString inputEncoding = Config_getString("INPUT_ENCODING");
   const char *outputEncoding = "UTF-8";
   if (inputEncoding.isEmpty() || qstricmp(inputEncoding,outputEncoding)==0) return input;
@@ -2121,27 +2123,30 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   {
     err("Error: unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding);
-    exit(1);
+    error=TRUE;
   }
-  size_t iLeft=inputSize;
-  size_t oLeft=outputSize;
-  const char *inputPtr = input.data();
-  char *outputPtr = output.data();
-  if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+  if (!error)
   {
-    outputSize-=oLeft;
-    output.resize(outputSize+1);
-    output.at(outputSize)='\0';
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
-  }
-  else
-  {
-    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
-        inputEncoding.data(),outputEncoding);
-    exit(1);
+    size_t iLeft=inputSize;
+    size_t oLeft=outputSize;
+    const char *inputPtr = input.data();
+    char *outputPtr = output.data();
+    if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
+    {
+      outputSize-=oLeft;
+      output.resize(outputSize+1);
+      output.at(outputSize)='\0';
+      //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+    }
+    else
+    {
+      err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\ninput=[%s]\n",
+          inputEncoding.data(),outputEncoding,input.data());
+      error=TRUE;
+    }
   }
   portable_iconv_close(cd);
-  return output;
+  return error ? input : output;
 }
 
 /*! reads a file with name \a name and returns it as a string. If \a filter
@@ -5440,7 +5445,16 @@ QCString substituteTemplateArgumentsInString(
         ++formAli,actArg=actualArgs->next()
         )
     {
-      //printf("formArg->type=%s\n",formArg->type.data());
+      if (formArg->type.left(6)=="class " && formArg->name.isEmpty())
+      {
+        formArg->name = formArg->type.mid(6);
+        formArg->type = "class";
+      }
+      if (formArg->type.left(9)=="typename " && formArg->name.isEmpty())
+      {
+        formArg->name = formArg->type.mid(9);
+        formArg->type = "typename";
+      }
       if (formArg->type=="class" || formArg->type=="typename" || formArg->type.left(8)=="template")
       {
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
@@ -5453,7 +5467,7 @@ QCString substituteTemplateArgumentsInString(
             result += actArg->type+" "; 
           }
           else // for case where the actual arg is something like "unsigned int"
-            // the "int" part is in actArg->name.
+               // the "int" part is in actArg->name.
           {
             result += actArg->type+" "+actArg->name+" "; 
           }
@@ -5481,7 +5495,7 @@ QCString substituteTemplateArgumentsInString(
   result+=name.right(name.length()-p);
   //printf("      Inheritance relation %s -> %s\n",
   //    name.data(),result.data());
-  return result;
+  return result.stripWhiteSpace();
 }
 
 

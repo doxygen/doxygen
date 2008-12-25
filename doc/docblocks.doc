@@ -238,7 +238,8 @@ If you want to document the members of a file, struct, union, class, or enum,
 and you want to put the documentation for these members inside the compound,
 it is sometimes desired to place the documentation block after the member 
 instead of before. For this purpose you have to put an additional \< marker
-in the comment block. Note that this also works for the parameters of a function.
+in the comment block. Note that this also works for the parameters 
+of a function.
 
 Here are some examples:
 \verbatim
@@ -271,6 +272,14 @@ or
 int var; ///< Brief description after the member
 \endverbatim
 
+For functions one can use \@param to document the parameters
+and then use <code>[in]</code>, <code>[out]</code>, <code>[in,out]</code> 
+to document the direction. For inline documentation this is also possible 
+by starting with the direction attribute, e.g.
+\verbatim
+void foo(int v /**< [in] docs for input parameter v. */);
+\endverbatim
+
 Note that these blocks have the same structure and meaning as the 
 special comment blocks in the previous section 
 only the \< indicates that the member is 
@@ -287,7 +296,8 @@ Here is an example of the use of these comment blocks:
          They cannot be used to document files, classes, unions, structs,
          groups, namespaces and enums themselves. Furthermore, the structural 
          commands mentioned in the next section 
-         (like <code>\\class</code>) are ignored inside these comment blocks.
+         (like <code>\\class</code>) are not allowed 
+         inside these comment blocks.
 
 \section structuralcommands Documentation at other places
 

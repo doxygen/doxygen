@@ -345,10 +345,10 @@ static void addDocCrossReference(MemberDef *src, MemberDef *dst)
 //-------------------------------------------------------------------------------
 /**
   searches for definition of a type
-  @param memberName the name of the type
+  @param tname the name of the type
   @param moduleName name of enclosing module or null, if global entry
   @param cd the entry, if found or null
-  @param useList array of data of USE-statement
+  @param useDict dictionary of data of USE-statement
   @returns true, if type is found 
 */
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName, 

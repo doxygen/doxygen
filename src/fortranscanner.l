@@ -204,7 +204,7 @@ SEPARATE  [:, \t]
 ID        [a-z_A-Z%]+{IDSYM}*
 PP_ID     {ID}
 LABELID   [a-z_A-Z]+[a-z_A-Z0-9\-]*
-SUBPROG   (subroutine|function)
+SUBPROG   (subroutine|function|block)
 B         [ \t]
 BS        [ \t]*
 BS_       [ \t]+

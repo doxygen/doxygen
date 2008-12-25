@@ -747,6 +747,7 @@ void FTVHelp::generateTreeView(QString* OutString)
     else
     {
       QTextStream t(&f);
+      t.setEncoding(QTextStream::UnicodeUTF8);
       t << *OutString << endl;
       f.close();
     }

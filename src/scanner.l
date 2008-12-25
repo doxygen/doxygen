@@ -2509,7 +2509,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             *pCopyRoundGString+=yytext; 
 					  }
                                         }
-<GCopyRound>[^"'()\n]+			{
+<GCopyRound>[^"'()\n/]+			{
   					  *pCopyRoundGString+=yytext;
   					}
 <GCopyRound>.				{
@@ -4323,10 +4323,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->spec |= Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
-					  //current->name+="<";
 					  templateStr="<";
+					  current->name += "<";
 					  fullArgString = templateStr;
-					  copyArgString = &current->args;
+					  copyArgString = &current->name;
 					  currentArgumentContext = ClassVar;
 					  BEGIN( ReadTempArgs );
   					}
@@ -4880,12 +4880,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  //printf("Start doc block at %d\n",yyLineNr);
 					  removeSlashes=(yytext[1]=='/');
 					  tmpDocType=-1;
-#if 0
-  					  if (YY_START!=SkipCurly)
-					  {
-					    current->doc.resize(0);
-					  }
-#endif
 					  if (!current->doc.isEmpty())
 					  {
 					    current->doc+="\n\n";
@@ -4895,16 +4889,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->docLine = yyLineNr;
 					    current->docFile = yyFileName;
 					  }
-//
 
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            //if (current->mGrpId!=DOX_NOGROUP)
-                                            //{
-                                            //  memberGroupInside = current->inside.copy();
-                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
@@ -4915,16 +4904,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->briefLine = yyLineNr;
 					    current->briefFile = yyFileName;
 					  }
-#if 0
-					  if (!docBlockInBody)
-					  {
-					    current->doc.resize(0);
-					    if (docBlockAutoBrief)
-					    {
-					      current->brief.resize(0);
-					    }
-					  }
-#endif
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
 					}
@@ -4936,10 +4915,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            //if (current->mGrpId!=DOX_NOGROUP)
-                                            //{
-                                            //  memberGroupInside = current->inside.copy();
-                                            //}
                                           }
 					  current->docLine = yyLineNr;
 					  current->docFile = yyFileName;
@@ -4952,37 +4927,15 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->briefLine = yyLineNr;
 					    current->briefFile = yyFileName;
 					  }
-#if 0
-					  if (!docBlockInBody)
-					  {
-					    current->doc.resize(0);
-					    if (docBlockAutoBrief)
-					    {
-					      current->brief.resize(0);
-					    }
-					  }
-#endif
 					  startCommentBlock(FALSE);
 					  BEGIN( DocBlock );
   					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" { 
-#if 0
-                                          if (YY_START!=SkipCurly)
-					  {
-  					    current->brief.resize(0);
-					    current->briefFile=yyFileName;
-					    current->briefLine=yyLineNr;
-					  }
-#endif
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            //if (current->mGrpId!=DOX_NOGROUP)
-                                            //{
-                                            //  memberGroupInside = current->inside.copy();
-                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
@@ -4992,23 +4945,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN( DocLine );
 					}
 <FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] { 
-#if 0
-                                          if (YY_START!=SkipCurly)
-					  {
-  					    current->brief.resize(0);
-					    current->briefFile=yyFileName;
-					    current->briefLine=yyLineNr;
-					  }
-#endif
 					  tmpDocType=-1;
 					  lastDocContext = YY_START;
 					  if (current_root->section & Entry::SCOPE_MASK)
                                           {
 					    current->inside = current_root->name+"::";
-                                            //if (current->mGrpId!=DOX_NOGROUP)
-                                            //{
-                                            //  memberGroupInside = current->inside.copy();
-                                            //}
                                           }
 					  docBlockContext   = YY_START;
 					  docBlockInBody    = YY_START==SkipCurly;
