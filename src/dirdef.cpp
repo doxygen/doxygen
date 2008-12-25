@@ -343,9 +343,6 @@ void DirDef::writeDocumentation(OutputList &ol)
   
   //---------------------------------------- start flexible part -------------------------------
 
-#define NEW_LAYOUT
-#ifdef NEW_LAYOUT // new flexible layout
-
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
   LayoutDocEntry *lde;
@@ -410,35 +407,6 @@ void DirDef::writeDocumentation(OutputList &ol)
     }
   }
 
-
-#else
-
-  // write brief or details (if DETAILS_AT_TOP)
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-  else if (!briefDescription().isEmpty())
-  {
-    writeBriefDescription(ol);
-  }
-
-  writeDirectoryGraph(ol);
-
-  startMemberDeclarations(ol);
-
-  writeSubDirList(ol);
-  writeFileList(ol);
-  
-  endMemberDeclarations(ol);
-
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-
-#endif
-  
   //---------------------------------------- end flexible part -------------------------------
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 

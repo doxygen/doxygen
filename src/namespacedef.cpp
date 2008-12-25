@@ -414,9 +414,6 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
 
-#define NEW_LAYOUT
-#ifdef NEW_LAYOUT // new flexible layout
-
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
   LayoutDocEntry *lde;
@@ -502,59 +499,6 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
         break;
     }
   }
-
-#else // old fixed layout
-
-  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-
-  //ol.startTextBlock();
-    
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeBriefDescription(ol);
-  }
-
-  //ol.endTextBlock();
-  
-  startMemberDeclarations(ol);
-
-  writeClassDeclarations(ol);
-  writeNamespaceDeclarations(ol);
-  writeMemberGroups(ol);
-
-  writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-  writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
-  writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  writeMemberDeclarations(ol,MemberList::decFuncMembers,
-      fortranOpt ? theTranslator->trSubprograms()  : 
-      vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
-                   theTranslator->trFunctions());
-  writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-  endMemberDeclarations(ol);
-  
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-
-  startMemberDocumentation(ol);
-  
-  writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
-  writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-
-  endMemberDocumentation(ol);
-
-  writeAuthorSection(ol);
-
-#endif
 
   //---------------------------------------- end flexible part -------------------------------
 

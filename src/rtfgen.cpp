@@ -1754,7 +1754,7 @@ void RTFGenerator::codify(const char *str)
       switch(c)
       {
         case '\t':  spacesToNextTabStop = Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
-                    t << spaces.left(spacesToNextTabStop);
+                    t << Doxygen::spaces.left(spacesToNextTabStop);
                     col+=spacesToNextTabStop;
                     break;
         case '\n':  newParagraph();

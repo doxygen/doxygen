@@ -500,7 +500,7 @@ void GroupDef::computeAnchors()
 void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
 {
   if ((!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) 
-      || !documentation().isEmpty()
+      || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()
      )
   {
     if (pageDict->count()!=countMembers()) // not only pages -> classical layout
@@ -513,31 +513,37 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.startGroupHeader();
       ol.parseText(title);
       ol.endGroupHeader();
+    }
 
-      // repeat brief description
-      if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
-      {
-        ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
-      }
-      // write separator between brief and details
-      if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
-          !documentation().isEmpty())
-      {
-        ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Man);
-          ol.disable(OutputGenerator::RTF);
-          ol.newParagraph();
-          ol.enableAll();
-          ol.disableAllBut(OutputGenerator::Man);
-          ol.writeString("\n\n");
-        ol.popGeneratorState();
-      }
+    // repeat brief description
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF"))
+    {
+      ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),FALSE,FALSE);
+    }
+    // write separator between brief and details
+    if (!briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF") &&
+        !documentation().isEmpty())
+    {
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Man);
+      ol.disable(OutputGenerator::RTF);
+      ol.newParagraph();
+      ol.enableAll();
+      ol.disableAllBut(OutputGenerator::Man);
+      ol.writeString("\n\n");
+      ol.popGeneratorState();
     }
 
     // write detailed documentation
     if (!documentation().isEmpty())
     {
       ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
+    }
+
+    // write inbody documentation
+    if (!inbodyDocumentation().isEmpty())
+    {
+      ol.parseDoc(inbodyFile(),inbodyLine(),this,0,inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
 }
@@ -729,7 +735,7 @@ void GroupDef::writePageDocumentation(OutputList &ol)
         ol.endSection(si->label,SectionInfo::Subsection);
       }
       ol.startTextBlock();
-      ol.parseDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation(),TRUE,FALSE);
+      ol.parseDoc(pd->docFile(),pd->docLine(),pd,0,pd->documentation()+pd->inbodyDocumentation(),TRUE,FALSE);
       ol.endTextBlock();
     }
   }
@@ -821,9 +827,6 @@ void GroupDef::writeDocumentation(OutputList &ol)
   
 
   //---------------------------------------- start flexible part -------------------------------
-
-#define NEW_LAYOUT
-#ifdef NEW_LAYOUT // new flexible layout
 
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
@@ -929,78 +932,6 @@ void GroupDef::writeDocumentation(OutputList &ol)
         break;
     }
   }
-
-#else
-
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");  
-  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");  
-
-
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-  else
-  {
-    writeBriefDescription(ol);
-  }
-
-  writeGroupGraph(ol);
-
-  startMemberDeclarations(ol);
-
-  writeFiles(ol);
-  writeNamespaces(ol);
-  writeNestedGroups(ol);
-  writeDirs(ol);
-  writeClasses(ol);
-  writeMemberGroups(ol);
-
-  writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-  writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
-  writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  writeMemberDeclarations(ol,MemberList::decEnumValMembers,theTranslator->trEnumerationValues());
-  writeMemberDeclarations(ol,MemberList::decFuncMembers,
-      fortranOpt ? theTranslator->trSubprograms()  : 
-      vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
-      theTranslator->trFunctions());
-  writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-  writeMemberDeclarations(ol,MemberList::decSignalMembers,theTranslator->trSignals());
-  writeMemberDeclarations(ol,MemberList::decPubSlotMembers,theTranslator->trPublicSlots());
-  writeMemberDeclarations(ol,MemberList::decProSlotMembers,theTranslator->trProtectedSlots());
-  writeMemberDeclarations(ol,MemberList::decPriSlotMembers,theTranslator->trPrivateSlots());
-  writeMemberDeclarations(ol,MemberList::decEventMembers,theTranslator->trEvents());
-  writeMemberDeclarations(ol,MemberList::decPropMembers,theTranslator->trProperties());
-  writeMemberDeclarations(ol,MemberList::decFriendMembers,theTranslator->trFriends());
-
-  endMemberDeclarations(ol);
-
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-
-  startMemberDocumentation(ol);
-  
-  writePageDocumentation(ol);
-
-  writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docEnumValMembers,theTranslator->trEnumerationValueDocumentation());
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,fortranOpt?theTranslator->trSubprogramDocumentation():theTranslator->trFunctionDocumentation());
-  writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-  writeMemberDocumentation(ol,MemberList::docSignalMembers,theTranslator->trSignals());   // todo: add trSignalDocumentation()
-  writeMemberDocumentation(ol,MemberList::docPubSlotMembers,theTranslator->trPublicSlots()); // todo: add trSlotDocumentation()
-  writeMemberDocumentation(ol,MemberList::docProSlotMembers,theTranslator->trProtectedSlots()); // todo: add trSlotDocumentation()
-  writeMemberDocumentation(ol,MemberList::docPriSlotMembers,theTranslator->trPrivateSlots()); // todo: add trSlotDocumentation()
-  writeMemberDocumentation(ol,MemberList::docEventMembers,theTranslator->trEvents());     // todo: add trEventDocumentation()
-  writeMemberDocumentation(ol,MemberList::docPropMembers,theTranslator->trProperties());  // todo: add trPropertyDocumentation()
-  writeMemberDocumentation(ol,MemberList::docFriendMembers,theTranslator->trFriends());   // todo: add trFriendDocumentation()
-
-  endMemberDocumentation(ol);
-
-#endif
 
   //---------------------------------------- end flexible part -------------------------------
 

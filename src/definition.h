@@ -156,6 +156,16 @@ class Definition : public DefinitionIntf, public LockableObj
     /*! Returns the line number at which the brief description was found. */
     int briefLine() const;
 
+    /*! Returns the documentation found inside the body of a member */
+    QCString inbodyDocumentation() const;
+
+    /*! Returns the file in which the in body documentation was found */
+    QCString inbodyFile() const;
+
+    /*! Returns the line at which the first in body documentation 
+        part was found */
+    int inbodyLine() const;
+
     /*! Returns the file in which the brief description was found. 
      *  This can differ from getDefFileName().
      */
@@ -255,6 +265,12 @@ class Definition : public DefinitionIntf, public LockableObj
      */
     void setBriefDescription(const char *b,const char *briefFile,int briefLine);
 
+    /*! Set the documentation that was found inside the body of an item.
+     *  If there was already some documentation set, the new documentation
+     *  will be appended.
+     */
+    void setInbodyDocumentation(const char *d,const char *docFile,int docLine);
+
     /*! Sets the tag file id via which this definition was imported. */
     void setReference(const char *r);
 
@@ -318,6 +334,7 @@ class Definition : public DefinitionIntf, public LockableObj
                        const QCString &text,MemberSDict *members,bool);
     void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
     void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace,bool atTop);
+    void _setInbodyDocumentation(const char *d,const char *docFile,int docLine);
     bool _docsAlreadyAdded(const QString &doc);
     DefinitionImpl *m_impl; // internal structure holding all private data
     QCString m_name;

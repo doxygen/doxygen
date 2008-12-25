@@ -304,7 +304,7 @@ void ManGenerator::codify(const char *str)
       {
         case '\t':  spacesToNextTabStop =
                           Config_getInt("TAB_SIZE") - (col%Config_getInt("TAB_SIZE"));
-                    t << spaces.left(spacesToNextTabStop); 
+                    t << Doxygen::spaces.left(spacesToNextTabStop); 
                     col+=spacesToNextTabStop; 
                     break;
         case '\n':  t << "\n"; firstCol=TRUE; col=0; break;

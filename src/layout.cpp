@@ -464,6 +464,8 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerKind(this,LayoutDocEntry::FileIncludedByGraph,&LayoutParser::startSimpleEntry));
       m_sHandler.insert("file/sourcelink", 
           new StartElementHandlerKind(this,LayoutDocEntry::FileSourceLink,&LayoutParser::startSimpleEntry));
+      m_sHandler.insert("file/memberdecl/membergroups", 
+          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
       m_sHandler.insert("file/memberdecl", 
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("file/memberdecl/classes", 
@@ -533,6 +535,8 @@ class LayoutParser : public QXmlDefaultHandler
           new StartElementHandlerKind(this,LayoutDocEntry::AuthorSection,&LayoutParser::startSimpleEntry));
       m_sHandler.insert("group/groupgraph", 
           new StartElementHandlerKind(this,LayoutDocEntry::GroupGraph,&LayoutParser::startSimpleEntry));
+      m_sHandler.insert("group/memberdecl/membergroups", 
+          new StartElementHandlerKind(this,LayoutDocEntry::MemberGroups,&LayoutParser::startSimpleEntry));
       m_sHandler.insert("group/memberdecl", 
           new StartElementHandler(this,&LayoutParser::startMemberDecl));
       m_sHandler.insert("group/memberdecl/classes", 

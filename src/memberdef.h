@@ -172,7 +172,7 @@ class MemberDef : public Definition
     bool isLinkableInProject() const;
     bool isLinkable() const;
     bool hasDocumentation() const;  // overrides hasDocumentation in definition.h
-    bool hasUserDocumentation() const; // overrides hasUserDocumentation
+    //bool hasUserDocumentation() const; // overrides hasUserDocumentation
     bool isBriefSectionVisible() const;
     bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
     bool isDetailedSectionLinkable() const;
@@ -182,9 +182,9 @@ class MemberDef : public Definition
     MemberDef *reimplements() const;
     LockingPtr<MemberList> reimplementedBy() const;
 
-    int inbodyLine() const;
-    QCString inbodyFile() const;
-    const QCString &inbodyDocumentation() const;
+    //int inbodyLine() const;
+    //QCString inbodyFile() const;
+    //const QCString &inbodyDocumentation() const;
 
     ClassDef *relatedAlso() const;
 
@@ -269,7 +269,7 @@ class MemberDef : public Definition
     void insertReimplementedBy(MemberDef *md);
 
     // in-body documentation
-    void setInbodyDocumentation(const char *docs,const char *file,int line);
+    //void setInbodyDocumentation(const char *docs,const char *file,int line);
 
     void setRelatedAlso(ClassDef *cd);
 

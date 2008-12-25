@@ -290,7 +290,7 @@ CMD   ("\\"|"@")
 WS    [ \t\r\n]
 NONWS [^ \t\r\n]
 BLANK [ \t\r]
-ID    [a-z_A-Z][a-z_A-Z0-9]*
+ID    "$"?[a-z_A-Z][a-z_A-Z0-9]*
 MAILADR  [a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 OPTSTARS ("//"{BLANK}*)?"*"*{BLANK}*
 LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
@@ -773,7 +773,7 @@ REFWORD   ("#"|"::")?({ID}{TEMPLPART}?("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCA
 <St_XRefItem>" "       {
                          BEGIN(St_XRefItem2);
                        }
-<St_XRefItem2>[0-9]+{WS} {
+<St_XRefItem2>[0-9]+"." {
   			 QString numStr=yytext;
 			 numStr=numStr.left(yyleng-1);
 			 g_token->id=numStr.toInt();

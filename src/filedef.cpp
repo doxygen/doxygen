@@ -530,9 +530,6 @@ void FileDef::writeDocumentation(OutputList &ol)
 
   //---------------------------------------- start flexible part -------------------------------
   
-#define NEW_LAYOUT
-#ifdef NEW_LAYOUT // new flexible layout
-
   QListIterator<LayoutDocEntry> eli(
       LayoutDocManager::instance().docEntries(LayoutDocManager::File));
   LayoutDocEntry *lde;
@@ -627,62 +624,6 @@ void FileDef::writeDocumentation(OutputList &ol)
     }
   }
 
-
-#else
-
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  bool vhdlOpt    = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
-
-  if (Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-  else
-  {
-    writeBriefDescription(ol);
-  }
- 
-  writeIncludeFiles(ol);
-  writeIncludeGraph(ol);
-  writeIncludedByGraph(ol);
-  writeSourceLink(ol);
-  
-  startMemberDeclarations(ol);
-
-  writeNamespaceDeclarations(ol);
-  writeClassDeclarations(ol);
-  writeMemberGroups(ol);
-  
-  writeMemberDeclarations(ol,MemberList::decDefineMembers,theTranslator->trDefines());
-  writeMemberDeclarations(ol,MemberList::decTypedefMembers,theTranslator->trTypedefs());
-  writeMemberDeclarations(ol,MemberList::decEnumMembers,theTranslator->trEnumerations());
-  writeMemberDeclarations(ol,MemberList::decFuncMembers,
-      fortranOpt ? theTranslator->trSubprograms()  : 
-      vhdlOpt    ? VhdlDocGen::trFunctionAndProc() :
-                   theTranslator->trFunctions())   ;
-  writeMemberDeclarations(ol,MemberList::decVarMembers,theTranslator->trVariables());
-
-  endMemberDeclarations(ol);
-
-  if (!Config_getBool("DETAILS_AT_TOP"))
-  {
-    writeDetailedDescription(ol,theTranslator->trDetailedDescription());
-  }
-
-  startMemberDocumentation(ol);
-
-  writeMemberDocumentation(ol,MemberList::docDefineMembers,theTranslator->trDefineDocumentation());
-  writeMemberDocumentation(ol,MemberList::docTypedefMembers,theTranslator->trTypedefDocumentation());
-  writeMemberDocumentation(ol,MemberList::docEnumMembers,theTranslator->trEnumerationTypeDocumentation());
-  writeMemberDocumentation(ol,MemberList::docFuncMembers,theTranslator->trFunctionDocumentation());
-  writeMemberDocumentation(ol,MemberList::docVarMembers,theTranslator->trVariableDocumentation());
-
-  endMemberDocumentation(ol);
-  
-  // write Author section (Man only)
-  writeAuthorSection(ol);
-
-#endif
   //---------------------------------------- end flexible part -------------------------------
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
@@ -1056,6 +997,7 @@ void FileDef::addIncludedUsingDirectives()
       {
         if (ii->fileDef && ii->fileDef!=this)
         {
+          // add using directives
           NamespaceSDict *unl = ii->fileDef->usingDirList;
           if (unl)
           {
@@ -1070,6 +1012,25 @@ void FileDef::addIncludedUsingDirectives()
               if (usingDirList->find(nd->qualifiedName())==0) // not yet added
               {
                 usingDirList->prepend(nd->qualifiedName(),nd);
+              }
+            }
+          }
+          // add using declarations
+          SDict<Definition> *udl = ii->fileDef->usingDeclList;
+          if (udl)
+          {
+            SDict<Definition>::Iterator udi(*udl);
+            Definition *d;
+            for (udi.toLast();(d=udi.current());--udi)
+            {
+              //printf("Adding using declaration %s\n",d->name().data());
+              if (usingDeclList==0)
+              {
+                usingDeclList = new SDict<Definition>(17);
+              }
+              if (usingDeclList->find(d->qualifiedName())==0)
+              {
+                usingDeclList->prepend(d->qualifiedName(),d);
               }
             }
           }

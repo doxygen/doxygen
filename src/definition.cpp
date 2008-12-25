@@ -58,13 +58,14 @@ class DefinitionImpl
     QList<ListItemInfo> *xrefListItems; 
     GroupList *partOfGroups;            
 
-    DocInfo   *details; // not exported
-    BriefInfo *brief;   // not exported
-    BodyInfo  *body;    // not exported
+    DocInfo   *details;    // not exported
+    DocInfo   *inbodyDocs; // not exported
+    BriefInfo *brief;      // not exported
+    BodyInfo  *body;       // not exported
     QCString   docSignatures;
 
     QCString localName;      // local (unqualified) name of the definition
-                               // in the future m_name should become m_localName
+                             // in the future m_name should become m_localName
     QCString qualifiedName;
     QCString ref;   // reference to external documentation
 
@@ -82,7 +83,7 @@ class DefinitionImpl
 DefinitionImpl::DefinitionImpl() 
   : sectionDict(0), sourceRefByDict(0), sourceRefsDict(0), 
     xrefListItems(0), partOfGroups(0),
-    details(0), brief(0), body(0), 
+    details(0), inbodyDocs(0), brief(0), body(0), 
     outerScope(0)
 {
 }
@@ -97,6 +98,7 @@ DefinitionImpl::~DefinitionImpl()
   delete brief;
   delete details;
   delete body;
+  delete inbodyDocs;
 }
 
 void DefinitionImpl::init(const char *df,int dl,
@@ -121,17 +123,18 @@ void DefinitionImpl::init(const char *df,int dl,
   }
   //printf("m_localName=%s\n",m_localName.data());
 
-  brief = 0;
-  details = 0;
-  body = 0;
-  sourceRefByDict=0;
-  sourceRefsDict=0;
-  sectionDict=0, 
-  outerScope=Doxygen::globalScope;
-  partOfGroups=0;
-  xrefListItems=0;
-  hidden = FALSE;
-  isArtificial = FALSE;
+  brief           = 0;
+  details         = 0;
+  body            = 0;
+  inbodyDocs      = 0;
+  sourceRefByDict = 0;
+  sourceRefsDict  = 0;
+  sectionDict     = 0, 
+  outerScope      = Doxygen::globalScope;
+  partOfGroups    = 0;
+  xrefListItems   = 0;
+  hidden          = FALSE;
+  isArtificial    = FALSE;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -305,26 +308,6 @@ void Definition::setName(const char *name)
 {
   if (name==0) return;
   m_name = name;
-#if 0
-  makeResident();
-  if (m_isSymbol) 
-  {
-    removeFromMap(this);
-  }
-  if (m_name!="<globalScope>") 
-  {
-    //extractNamespaceName(m_name,m_localName,ns);
-    m_impl->localName=stripScope(m_name);
-  }
-  else
-  {
-    m_impl->localName=m_name;
-  }
-  if (m_isSymbol) 
-  {
-    addToMap(m_name,this);
-  }
-#endif
 }
 
 void Definition::addSectionsToDefinition(QList<SectionInfo> *anchorList)
@@ -492,6 +475,31 @@ void Definition::setBriefDescription(const char *b,const char *briefFile,int bri
   if (b==0) return;
   makeResident();
   _setBriefDescription(b,briefFile,briefLine);
+}
+
+void Definition::_setInbodyDocumentation(const char *doc,const char *inbodyFile,int inbodyLine)
+{
+  if (m_impl->inbodyDocs==0)
+  {
+    m_impl->inbodyDocs = new DocInfo;
+  }
+  if (m_impl->inbodyDocs->doc.isEmpty()) // fresh inbody docs
+  {
+    m_impl->inbodyDocs->doc  = doc;
+    m_impl->inbodyDocs->file = inbodyFile;
+    m_impl->inbodyDocs->line = inbodyLine;
+  }
+  else // another inbody documentation fragment, append this to the end
+  {
+    m_impl->inbodyDocs->doc += QCString("\n\n")+doc;
+  }
+}
+
+void Definition::setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine)
+{
+  if (d==0) return;
+  makeResident();
+  _setInbodyDocumentation(d,inbodyFile,inbodyLine);
 }
 
 /*! Reads a fragment of code from file \a fileName starting at 
@@ -903,8 +911,9 @@ bool Definition::hasDocumentation() const
   //static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
   makeResident();
   bool hasDocs = 
-         (m_impl->details && !m_impl->details->doc.isEmpty()) || // has detailed docs
-         (m_impl->brief && !m_impl->brief->doc.isEmpty())     || // has brief description
+         (m_impl->details    && !m_impl->details->doc.isEmpty())    || // has detailed docs
+         (m_impl->brief      && !m_impl->brief->doc.isEmpty())      || // has brief description
+         (m_impl->inbodyDocs && !m_impl->inbodyDocs->doc.isEmpty()) || // has inbody docs
          extractAll //||                   // extract everything
   //       (sourceBrowser && m_impl->body && 
   //        m_impl->body->startLine!=-1 && m_impl->body->fileDef)
@@ -916,8 +925,9 @@ bool Definition::hasUserDocumentation() const
 {
   makeResident();
   bool hasDocs = 
-         (m_impl->details && !m_impl->details->doc.isEmpty()) ||
-         (m_impl->brief   && !m_impl->brief->doc.isEmpty());
+         (m_impl->details    && !m_impl->details->doc.isEmpty()) ||
+         (m_impl->brief      && !m_impl->brief->doc.isEmpty())   ||
+         (m_impl->inbodyDocs && !m_impl->inbodyDocs->doc.isEmpty());
   return hasDocs;
 }
 
@@ -1204,6 +1214,8 @@ QCString Definition::symbolName() const
   return m_symbolName; 
 }
 
+//----------------------
+
 QCString Definition::documentation() const 
 { 
   makeResident();
@@ -1221,6 +1233,8 @@ QCString Definition::docFile() const
   makeResident();
   return m_impl->details ? m_impl->details->file : QCString("<"+m_name+">"); 
 }
+
+//----------------------
 
 QCString Definition::briefDescription() const 
 { 
@@ -1265,6 +1279,29 @@ QCString Definition::briefFile() const
   makeResident();
   return m_impl->brief ? m_impl->brief->file : QCString("<"+m_name+">"); 
 }
+
+//----------------------
+
+QCString Definition::inbodyDocumentation() const
+{
+  makeResident();
+  return m_impl->inbodyDocs ? m_impl->inbodyDocs->doc : QCString(""); 
+}
+
+int Definition::inbodyLine() const 
+{ 
+  makeResident();
+  return m_impl->inbodyDocs ? m_impl->inbodyDocs->line : 1; 
+}
+
+QCString Definition::inbodyFile() const 
+{ 
+  makeResident();
+  return m_impl->inbodyDocs ? m_impl->inbodyDocs->file : QCString("<"+m_name+">"); 
+}
+
+
+//----------------------
 
 QCString Definition::getDefFileName() const 
 { 
@@ -1405,6 +1442,7 @@ void Definition::flushToDisk() const
   marshalItemInfoList (Doxygen::symbolStorage,m_impl->xrefListItems);
   marshalGroupList    (Doxygen::symbolStorage,m_impl->partOfGroups);
   marshalDocInfo      (Doxygen::symbolStorage,m_impl->details);
+  marshalDocInfo      (Doxygen::symbolStorage,m_impl->inbodyDocs);
   marshalBriefInfo    (Doxygen::symbolStorage,m_impl->brief);
   marshalBodyInfo     (Doxygen::symbolStorage,m_impl->body);
   marshalQCString     (Doxygen::symbolStorage,m_impl->docSignatures);
@@ -1436,6 +1474,7 @@ void Definition::loadFromDisk() const
   m_impl->xrefListItems   = unmarshalItemInfoList (Doxygen::symbolStorage);
   m_impl->partOfGroups    = unmarshalGroupList    (Doxygen::symbolStorage);
   m_impl->details         = unmarshalDocInfo      (Doxygen::symbolStorage);
+  m_impl->inbodyDocs      = unmarshalDocInfo      (Doxygen::symbolStorage);
   m_impl->brief           = unmarshalBriefInfo    (Doxygen::symbolStorage);
   m_impl->body            = unmarshalBodyInfo     (Doxygen::symbolStorage);
   m_impl->docSignatures   = unmarshalQCString     (Doxygen::symbolStorage);

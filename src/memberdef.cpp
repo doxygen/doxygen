@@ -296,6 +296,27 @@ static void writeTemplatePrefix(OutputList &ol,ArgumentList *al)
   ol.docify("> ");
 }
 
+QCString extractDirection(QCString &docs)
+{
+  QRegExp re("\\[[^\\]]+\\]"); // [...]
+  int l=0;
+  if (re.match(docs,0,&l)==0)
+  {
+    int  inPos  = docs.find("in", 1,FALSE);
+    int outPos  = docs.find("out",1,FALSE);
+    bool input  =  inPos!=-1 &&  inPos<l;
+    bool output = outPos!=-1 && outPos<l;
+    if (input || output) // in,out attributes
+    {
+      docs = docs.mid(l); // strip attributes
+      if (input && output) return "[in,out]";
+      else if (input)      return "[in]";
+      else if (output)     return "[out]";
+    }
+  }
+  return QCString();
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -380,9 +401,9 @@ class MemberDefImpl
     QCString cachedResolvedType;
     
     // inbody documentation
-    int inbodyLine;
-    QCString inbodyFile;
-    QCString inbodyDocs;
+    //int inbodyLine;
+    //QCString inbodyFile;
+    //QCString inbodyDocs;
 
     // documentation inheritance
     MemberDef *docProvider;
@@ -547,7 +568,7 @@ void MemberDefImpl::init(Definition *def,
   docsForDefinition = TRUE;
   isTypedefValCached = FALSE;
   cachedTypedefValue = 0;
-  inbodyLine = -1;
+  //inbodyLine = -1;
   implOnly=FALSE;
   groupMember = 0;
   hasDocumentedParams = FALSE;
@@ -828,7 +849,9 @@ bool MemberDef::isLinkableInProject() const
     //printf("in a namespace but namespace not linkable!\n");
     return FALSE; // in namespace but namespace not linkable
   }
-  if (!m_impl->group && !m_impl->nspace && !m_impl->related && !m_impl->classDef && m_impl->fileDef && !m_impl->fileDef->isLinkableInProject()) 
+  if (!m_impl->group && !m_impl->nspace && 
+      !m_impl->related && !m_impl->classDef && 
+      m_impl->fileDef && !m_impl->fileDef->isLinkableInProject()) 
   {
     //printf("in a file but file not linkable!\n");
     return FALSE; // in file (and not in namespace) but file not linkable
@@ -1548,7 +1571,8 @@ bool MemberDef::isDetailedSectionLinkable() const
 
 bool MemberDef::isDetailedSectionVisible(bool inGroup,bool inFile) const          
 { 
-  bool groupFilter = getGroupDef()==0 || inGroup; 
+  static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+  bool groupFilter = getGroupDef()==0 || inGroup || separateMemPages; 
   bool fileFilter  = getNamespaceDef()==0 || !inFile;
 
   bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter && 
@@ -1950,22 +1974,23 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   }
 
   /* write detailed description */
-  if (!detailed.isEmpty() || !m_impl->inbodyDocs.isEmpty())
+  if (!detailed.isEmpty() || 
+      !inbodyDocumentation().isEmpty())
   { 
     ol.parseDoc(docFile(),docLine(),getOuterScope()?getOuterScope():container,this,detailed+"\n",TRUE,FALSE);
-    if (!m_impl->inbodyDocs.isEmpty())
+    if (!inbodyDocumentation().isEmpty())
     {
       ol.newParagraph();
-      ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_impl->inbodyDocs+"\n",TRUE,FALSE);
+      ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
   else if (!brief.isEmpty() && (Config_getBool("REPEAT_BRIEF") ||
         !Config_getBool("BRIEF_MEMBER_DESC")))
   {
-    if (!m_impl->inbodyDocs.isEmpty())
+    if (!inbodyDocumentation().isEmpty())
     {
       ol.newParagraph();
-      ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,m_impl->inbodyDocs+"\n",TRUE,FALSE);
+      ol.parseDoc(inbodyFile(),inbodyLine(),getOuterScope()?getOuterScope():container,this,inbodyDocumentation()+"\n",TRUE,FALSE);
     }
   }
 
@@ -1975,6 +2000,29 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   //     defArgList?defArgList->hasDocumentation():-1);
   if (docArgList!=0 && docArgList->hasDocumentation())
   {
+    QCString paramDocs;
+    ArgumentListIterator ali(*docArgList);
+    Argument *a;
+    // convert the parameter documentation into a list of @param commands
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      if (a->hasDocumentation())
+      {
+        QCString direction = extractDirection(a->docs);
+        paramDocs+="@param"+direction+" "+a->name+" "+a->docs;
+      }
+    }
+    // feed the result to the documentation parser
+    ol.parseDoc(
+        docFile(),docLine(),
+        getOuterScope()?getOuterScope():container,
+        this,         // memberDef
+        paramDocs,    // docStr
+        TRUE,         // indexWords
+        FALSE         // isExample
+        );
+
+#if 0  // old, now obsolete way to add parameter documentation
     //printf("***** argumentList is documented\n");
     ol.startParamList(BaseOutputDocInterface::Param,theTranslator->trParameters()+": ");
     ol.writeDescItem();
@@ -1988,6 +2036,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         ol.startDescTableTitle();
         ol.docify(a->name);
         ol.endDescTableTitle();
+        QCString doc = a->docs+"\n";
         ol.startDescTableData();
         ol.parseDoc(docFile(),docLine(),
                     getOuterScope()?getOuterScope():container,
@@ -2001,6 +2050,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
     ol.endDescTable();
     ol.endParamList();
+#endif
   }
 
   // For enum, we also write the documented enum values
@@ -2013,6 +2063,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
       MemberDef *fmd=fmdl->first();
       while (fmd)
       {
+        //printf("Enum: isLinkable()=%d\n",fmd->isLinkable());
         if (fmd->isLinkable())
         {
           if (first)
@@ -2237,7 +2288,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
 
   // write call graph
   if ((m_impl->hasCallGraph || Config_getBool("CALL_GRAPH")) 
-      && isFunction() && Config_getBool("HAVE_DOT")
+      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
      )
   {
     DotCallGraph callGraph(this,FALSE);
@@ -2253,7 +2304,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     }
   }
   if ((m_impl->hasCallerGraph || Config_getBool("CALLER_GRAPH")) 
-      && isFunction() && Config_getBool("HAVE_DOT")
+      && (isFunction() || isSlot() || isSignal()) && Config_getBool("HAVE_DOT")
      )
   {
     DotCallGraph callerGraph(this, TRUE);
@@ -2390,17 +2441,17 @@ bool MemberDef::hasDocumentation() const
 { 
   makeResident();
   return Definition::hasDocumentation() || 
-         !m_impl->inbodyDocs.isEmpty() ||
          (m_impl->mtype==Enumeration && m_impl->docEnumValues) ||  // has enum values
          (m_impl->defArgList!=0 && m_impl->defArgList->hasDocumentation()); // has doc arguments
 }
 
+#if 0
 bool MemberDef::hasUserDocumentation() const
 {
-  bool hasDocs = Definition::hasUserDocumentation() ||
-         (m_impl->inbodyDocs  && !m_impl->inbodyDocs.isEmpty());
+  bool hasDocs = Definition::hasUserDocumentation();
   return hasDocs;
 }
+#endif
 
 
 void MemberDef::setMemberGroup(MemberGroup *grp)
@@ -2929,6 +2980,7 @@ bool MemberDef::protectionVisible() const
          (m_impl->prot==Package   && Config_getBool("EXTRACT_PACKAGE"));
 }
 
+#if 0
 void MemberDef::setInbodyDocumentation(const char *docs,
                   const char *docFile,int docLine)
 {
@@ -2938,6 +2990,7 @@ void MemberDef::setInbodyDocumentation(const char *docs,
   m_impl->inbodyLine = docLine;
   m_impl->inbodyFile = docFile;
 }
+#endif
 
 bool MemberDef::isObjCMethod() const
 {
@@ -3380,6 +3433,7 @@ bool MemberDef::hasDocumentedReturnType() const
   return m_impl->hasDocumentedReturnType; 
 }
 
+#if 0
 int MemberDef::inbodyLine() const
 { 
   makeResident();
@@ -3397,6 +3451,7 @@ const QCString &MemberDef::inbodyDocumentation() const
   makeResident();
   return m_impl->inbodyDocs; 
 }
+#endif
 
 ClassDef *MemberDef::relatedAlso() const
 { 
@@ -3842,9 +3897,6 @@ void MemberDef::flushToDisk() const
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->cachedTypedefValue);
   marshalQCString     (Doxygen::symbolStorage,m_impl->cachedTypedefTemplSpec);
   marshalQCString     (Doxygen::symbolStorage,m_impl->cachedResolvedType);
-  marshalInt          (Doxygen::symbolStorage,m_impl->inbodyLine);
-  marshalQCString     (Doxygen::symbolStorage,m_impl->inbodyFile);
-  marshalQCString     (Doxygen::symbolStorage,m_impl->inbodyDocs);
   marshalObjPointer   (Doxygen::symbolStorage,m_impl->docProvider);
   marshalQCString     (Doxygen::symbolStorage,m_impl->explicitOutputFileBase);
   marshalBool         (Doxygen::symbolStorage,m_impl->implOnly); 
@@ -3942,9 +3994,6 @@ void MemberDef::loadFromDisk() const
   m_impl->cachedTypedefValue      = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->cachedTypedefTemplSpec  = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->cachedResolvedType      = unmarshalQCString     (Doxygen::symbolStorage);
-  m_impl->inbodyLine              = unmarshalInt          (Doxygen::symbolStorage);
-  m_impl->inbodyFile              = unmarshalQCString     (Doxygen::symbolStorage);
-  m_impl->inbodyDocs              = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->docProvider             = (MemberDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   m_impl->explicitOutputFileBase  = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->implOnly                = unmarshalBool         (Doxygen::symbolStorage); 
@@ -3969,6 +4018,7 @@ void MemberDef::loadFromDisk() const
 
 void MemberDef::makeResident() const
 { 
+  if (Doxygen::symbolCache==0) return;
   if (m_cacheHandle==-1) // not yet in cache
   { 
     MemberDef *victim = 0;

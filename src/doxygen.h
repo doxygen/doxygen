@@ -71,7 +71,7 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
-extern QCString spaces;
+extern QCString g_spaces;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
@@ -130,11 +130,14 @@ class Doxygen
     static bool                      userComments;
     static IndexList                 indexList;
     static int                       subpageNestingLevel;
+    static QCString                  spaces;
 };
 
 void initDoxygen();
 void readConfiguration(int argc, char **argv);
 void checkConfiguration();
+void adjustConfiguration();
+void searchInputFiles(StringList &inputFiles);
 void parseInput();
 void generateOutput();
 void readAliases();

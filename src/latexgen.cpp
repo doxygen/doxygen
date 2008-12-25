@@ -1321,7 +1321,7 @@ void LatexGenerator::codify(const char *str)
         case 0x0c: break; // remove ^L
         case '\t': spacesToNextTabStop =
                          tabSize - (col%tabSize);
-                   t << spaces.left(spacesToNextTabStop); 
+                   t << Doxygen::spaces.left(spacesToNextTabStop); 
                    col+=spacesToNextTabStop;
                    break; 
         case '\n': t << '\n'; col=0;                    break;

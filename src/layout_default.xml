@@ -30,7 +30,6 @@
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <allmemberslink visible="yes"/>
     <memberdecl>
-      <membergroups visible="yes"/>
       <nestedclasses visible="yes" title=""/>
       <publictypes title=""/>
       <publicslots title=""/>
@@ -60,6 +59,7 @@
       <privatestaticattributes title=""/>
       <friends title=""/>
       <related title="" subtitle=""/>
+      <membergroups visible="yes"/>
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
@@ -82,11 +82,11 @@
     <memberdecl>
       <nestednamespaces visible="yes" title=""/>
       <classes visible="yes" title=""/>
-      <membergroups visible="yes"/>
       <typedefs title=""/>
       <enums title=""/>
       <functions title=""/>
       <variables title=""/>
+      <membergroups visible="yes"/>
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
@@ -113,6 +113,7 @@
       <enums title=""/>
       <functions title=""/>
       <variables title=""/>
+      <membergroups visible="yes"/>
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
@@ -148,6 +149,7 @@
       <events title=""/>
       <properties title=""/>
       <friends title=""/>
+      <membergroups visible="yes"/>
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>

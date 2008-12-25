@@ -2005,7 +2005,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCComment,SkipVerbatim>.		{
   					  outputChar(*yytext);
   					}
-<CopyCComment>[^*a-z_A-Z]+		{
+<CopyCComment>[^*a-z_A-Z\n]+		{
 					  g_defLitText+=yytext;
 					  g_defText+=escapeAt(yytext);
   					}
@@ -2017,7 +2017,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <CopyCComment>\n			{ 
   					  g_yyLineNr++;
 					  g_defLitText+=yytext;
-					  g_defText+=yytext;
+					  g_defText+=' ';
   					}
 <RemoveCComment>"*/"		        { BEGIN(g_lastCContext); }
 <RemoveCComment>"//"			

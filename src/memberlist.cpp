@@ -217,7 +217,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
         case MemberDef::Enumeration: 
           {
-            if (first) ol.startMemberList(),first=FALSE;
             int enumVars=0;
             MemberListIterator vmli(*this);
             MemberDef *vmd;
@@ -240,6 +239,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
             // enum type (i.e. enumVars>0), then we do not show the enum here.
             if (enumVars==0) // show enum here
             {
+              //printf("Enum!!\n");
+              if (first) ol.startMemberList(),first=FALSE;
               ol.startMemberItem(0);
               ol.writeString("enum ");
               ol.insertMemberAlign();
@@ -279,6 +280,8 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
         case MemberDef::EnumValue: 
           {
+            if (!m_inGroup) return;
+            printf("EnumValue!\n");
             if (first) ol.startMemberList(),first=FALSE;
             md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
           }
@@ -360,7 +363,6 @@ void MemberList::writeDeclarations(OutputList &ol,
     writePlainDeclarations(ol,cd,nd,fd,gd);
   }
  
-  
   //printf("memberGroupList=%p\n",memberGroupList);
   if (memberGroupList)
   {

@@ -587,47 +587,57 @@ static void addOneTextLine(QCString& ss )
   /* start command character */
   /* -------------- VHDL SECTION -----------------------------------*/
 
-B            [ \t]
-CR           [\r\n]
-BR           [ \t\n\r]
-LETTER       [a-zA-Z_0-9]
-NAME         {LETTER}[a-zA-Z0-9_.]*
-FUNCNAME     [a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*
-DIGITS       [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
-COMMENT      "--"[^\n]*
-LABELID      [a-z_A-Z][^\;]*";"({B}*{COMMENT})*
-PROTO        [ (]*
-TEXTT        "--"[^\/\@\*\#][^\n]*
-PROC         ("function"|"procedure")
-ENDE         ({BR}*("end"){BR}*{PROC}*{BR}*[;]{1})
-ENDEFF       ("if"|"case"|"loop"|"generate"){BR}*[;]
-ENDE3        ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|{ENDE}
-ENDFUNC      {B}*"end"{BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;]
-FUNCIMPURE   "impure"|"pure"
-FUNCPROC     ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
-ARCHITECTURE ("architecture"){BR}+{NAME}{BR}*("of")
+B                       [ \t]
+CR                      [\r\n]
+BR                      [ \t\n\r]
+DIGIT                   [0-9]
+LOWER_CASE_LETTER       [a-z]
+UPPER_CASE_LETTER       [A-Z]
+LETTER                  [a-zA-Z_0-9]
+SPACE_CHARACTER         [ \t]
+SPECIAL_CHARACTER       [#&'()*+,\-\./:;<=>_|]
+OTHER_SPECIAL_CHARACTER [~!$§%?@\[\\\]^{}]
+BASIC_GRAPHIC_CHARACTER {UPPER_CASE_LETTER}|{DIGIT}|{SPECIAL_CHARACTER}|{SPACE_CHARACTER}
+GRAPHIC_CHARACTER       {BASIC_GRAPHIC_CHARACTER}|{LOWER_CASE_LETTER}|{OTHER_SPECIAL_CHARACTER}
+
+NAME                    {LETTER}[a-zA-Z0-9_.]*
+STRING_LITERAL          \"{GRAPHIC_CHARACTER}*\"
+FUNCNAME                [a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*
+DIGITS                  [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
+COMMENT                 "--"[^\n]*
+LABELID                 [a-z_A-Z][^\;]*";"({B}*{COMMENT})*
+PROTO                   [ (]*
+TEXTT                   "--"[^\/\@\*\#][^\n]*
+PROC                    ("function"|"procedure")
+ENDE                    ({BR}*("end"){BR}*{PROC}*{BR}*[;]{1})
+ENDEFF                  ("if"|"case"|"loop"|"generate"){BR}*[;]
+ENDE3                   ({BR}*("end"){BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;])|{ENDE}
+ENDFUNC                 {B}*"end"{BR}*{PROC}*{BR}*{FUNCNAME}{BR}*[;]
+FUNCIMPURE              "impure"|"pure"
+FUNCPROC                ^{B}*{FUNCIMPURE}*{BR}*("function"|"procedure"){B}*
+ARCHITECTURE            ("architecture"){BR}+{NAME}{BR}*("of")
    /* Removed due to bug 538239
       POST         "postponed"
       PROCESS      ({BR}*{FUNCNAME}{B}*[:]{BR}*({POST}{BR}+)?("process"){BR}*{PROTO})|("process"){BR}*("("){BR}*{PROTO}|[^a-zA-Z]("process"){CR}|[^a-zA-Z]("process"){BR}+("is")
    */
-PROCESS      ({B}*{FUNCNAME}{B}*:{BR}*)?({B}*("postponed"){BR}+)?{B}*("process"){BR}*{PROTO}
+PROCESS                 ({B}*{FUNCNAME}{B}*:{BR}*)?({B}*("postponed"){BR}+)?{B}*("process"){BR}*{PROTO}
 
-ENDPROCESS   ("end"){BR}*("postponed")*("process"){BR}*{FUNCNAME}*{BR}*[;]
-LIBUSE       ^{B}*("use"|"library"){BR}+
-ENTITY       ^{B}*("component"|"entity"|"package"){BR}+
-PBODY        ("package"){B}+("body"){BR}+{NAME}
-SHARED       ("shared"){BR}+("variable")
-SIGTYPES     ^{B}*({SHARED}|"alias"|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
-CONFIG       ("configuration"){BR}+{NAME}{BR}*("of"){BR}+{NAME}{BR}+"is"
+ENDPROCESS              ("end"){BR}*("postponed")*("process"){BR}*{FUNCNAME}*{BR}*[;]
+LIBUSE                  ^{B}*("use"|"library"){BR}+
+ENTITY                  ^{B}*("component"|"entity"|"package"){BR}+
+PBODY                   ("package"){B}+("body"){BR}+{NAME}
+SHARED                  ("shared"){BR}+("variable")
+SIGTYPES                ^{B}*({SHARED}|"alias"|"file"|"group"|"subtype"|"type"|"constant"|"attribute"|"signal"|"units"){BR}+
+CONFIG                  ("configuration"){BR}+{NAME}{BR}*("of"){BR}+{NAME}{BR}+"is"
 
-ALLTYPESMAP  {B}*[_a-zA-ZA_Z0-9.() ]*{B}*
-MAPCOMPONENT ({ALLTYPESMAP}{BR}*[:]{BR}*("component"|"configuration")*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
-MAPCOMPONENT1 ({ALLTYPESMAP}{BR}*[:]{BR}*("entity"){BR}*{ALLTYPESMAP}{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
+ALLTYPESMAP             {B}*[_a-zA-ZA_Z0-9.() ]*{B}*
+MAPCOMPONENT            ({ALLTYPESMAP}{BR}*[:]{BR}*("component"|"configuration")*{ALLTYPESMAP}{BR}*{TEXTT}*{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
+MAPCOMPONENT1           ({ALLTYPESMAP}{BR}*[:]{BR}*("entity"){BR}*{ALLTYPESMAP}{BR}*("port"|"generic"){BR}*("map"){BR}*("("){1})
 
-BRACEOPEN    [(]{1}
-BRACECLOSE   [)]{1}
+BRACEOPEN               [(]{1}
+BRACECLOSE              [)]{1}
 
-ALLID        [^;()\t ]
+ALLID                   [^;()\t ]
 
 %option noyywrap
 
@@ -1468,6 +1478,15 @@ ALLID        [^;()\t ]
 <*>{DIGITS}                {   // found digit
   addText(yytext,yyleng);
   lineCount();
+}
+
+<*>{STRING_LITERAL} {
+  // Make sure string literals get transfered to the output
+  // We have to match these because the comment characters (--)
+  // can exist inside a string literal.
+  // We shouldn't have to call lineCount because newlines
+  // are not allowed inside string literals
+  addText(yytext,yyleng);
 }
 
    /*

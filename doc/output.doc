@@ -34,7 +34,6 @@ The following output formats are \e directly supported by doxygen:
     Word 97. If you have success with other programs, please let me know.
 <dt><b>XML</b>
 <dd>Generated if \c GENERATE_XML is set to \c YES in the configuration file.<p>
-    Note that the XML output is still under development. 
 <dt><b>Qt Help Project (.qhp)</b>
 <dd>Generated if \c GENERATE_QHP is set to \c YES in the configuration file.
 </dl>

@@ -76,6 +76,8 @@ class IndexList : public IndexIntf
     IndexList() { m_intfs.setAutoDelete(TRUE); }
     void addIndex(IndexIntf *intf) 
     { m_intfs.append(intf); }
+
+    // IndexIntf implementation
     void initialize() 
     { foreach(&IndexIntf::initialize); }
     void finalize() 

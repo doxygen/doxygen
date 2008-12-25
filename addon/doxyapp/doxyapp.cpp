@@ -270,6 +270,7 @@ int main(int argc,char **argv)
 
   // check and finialize the configuration
   checkConfiguration();
+  adjustConfiguration();
 
   // parse the files
   parseInput();
