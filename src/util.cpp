@@ -3246,7 +3246,7 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
     pp=p;
   }
   canType += type.right(type.length()-pp);
-  //printf("extractCanonicalType = %s->%s\n",type.data(),canType.data());
+  //printf("extractCanonicalType = '%s'->'%s'\n",type.data(),canType.data());
 
   return removeRedundantWhiteSpace(canType);
 }

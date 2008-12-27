@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=5
-doxygen_version_revision=7.1
+doxygen_version_revision=8
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
