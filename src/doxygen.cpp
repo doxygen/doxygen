@@ -5033,9 +5033,23 @@ static QCString substituteTemplatesInString(
       for (tsali.toFirst();(tsa=tsali.current()) && !found;++tsali)
       {
         tda = tdali.current();
+        //if (tda) printf("tsa=%s|%s tda=%s|%s\n",
+        //    tsa->type.data(),tsa->name.data(),
+        //    tda->type.data(),tda->name.data());
         if (name==tsa->name)
         {
-          if (tda)
+          if (tda && tda->name.isEmpty())
+          {
+            int vc=0;
+            if (tda->type.left(6)=="class ") vc=6;
+            else if (tda->type.left(9)=="typename ") vc=9;
+            if (vc>0) // convert type=="class T" to type=="class" name=="T"
+            {
+              tda->name = tda->type.mid(vc);
+              tda->type = tda->type.left(vc-1);
+            }
+          }
+          if (tda && !tda->name.isEmpty())
           {
             name=tda->name; // substitute
             found=TRUE;
@@ -5051,11 +5065,17 @@ static QCString substituteTemplatesInString(
         else if (fa) 
           fa=funcTempArgList->next();
       }
+      //printf("   srcList='%s' dstList='%s faList='%s'\n",
+      //  argListToString(srclali.current()).data(),
+      //  argListToString(dstlali.current()).data(),
+      //  funcTempArgList ? argListToString(funcTempArgList).data() : "<none>");
     }
     dst+=name; 
     p=i+l;
   }
   dst+=src.right(src.length()-p);
+  //printf("  substituteTemplatesInString(%s)=%s\n",
+  //    src.data(),dst.data());
   return dst;
 }
 
@@ -5098,7 +5118,8 @@ static void substituteTemplatesInArgList(
   dst->volatileSpecifier = src->volatileSpecifier;
   dst->pureSpecifier     = src->pureSpecifier;
   //printf("substituteTemplatesInArgList: replacing %s with %s\n",
-  //    argListToString(src).data(),argListToString(dst).data());
+  //    argListToString(src).data(),argListToString(dst).data()
+  //    );
 }
 
 

@@ -485,7 +485,12 @@ void MainWindow::showHtmlOutput()
 {
   QString indexFile = m_expert->getHtmlOutputIndex(m_workingDir->text());
   QFileInfo fi(indexFile);
-  QString indexUrl(QString::fromAscii("file://")+fi.absoluteFilePath());
+#ifdef WIN32
+  QString indexUrl(QString::fromAscii("file:///"));
+#else
+  QString indexUrl(QString::fromAscii("file://"));
+#endif
+  indexUrl+=fi.absoluteFilePath();
   QDesktopServices::openUrl(QUrl(indexUrl));
 }
 
