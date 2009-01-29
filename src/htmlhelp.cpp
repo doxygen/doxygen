@@ -372,6 +372,23 @@ void HtmlHelp::initialize()
      0x412 Korean
      0x804 Chinese (PRC)
      0x404 Chinese (Taiwan)
+
+     New LCIDs:
+	 0x421 Indonesian
+	 0x41A Croatian
+	 0x418 Romanian
+	 0x424 Slovenian
+	 0x41B Slovak
+	 0x422 Ukrainian
+	 0x81A Serbian (Serbia, Latin)
+	 0x403 Catalan
+	 0x427 Lithuanian
+	 0x436 Afrikaans
+	 0x42A Vietnamese
+	 0x429 Persian (Iran)
+	 0xC01 Arabic (Egypt) - I don't know which version of arabic is used inside translator_ar.h ,
+     so I have chosen Egypt at random
+
   */
   s_languageDict.setAutoDelete(TRUE);
   s_languageDict.clear();
@@ -381,22 +398,38 @@ void HtmlHelp::initialize()
   s_languageDict.insert("finnish",     new QCString("0x40B Finnish"));
   s_languageDict.insert("french",      new QCString("0x40C French"));
   s_languageDict.insert("german",      new QCString("0x407 German"));
-  s_languageDict.insert("greece",      new QCString("0x408 Greece"));
+  s_languageDict.insert("greek",       new QCString("0x408 Greece"));
   s_languageDict.insert("hungarian",   new QCString("0x40E Hungarian"));
   s_languageDict.insert("italian",     new QCString("0x410 Italian"));
   s_languageDict.insert("norwegian",   new QCString("0x814 Norwegian"));
   s_languageDict.insert("polish",      new QCString("0x415 Polish"));
-  s_languageDict.insert("portugese",   new QCString("0x816 Portuguese(Portugal)"));
+  s_languageDict.insert("portuguese",  new QCString("0x816 Portuguese(Portugal)"));
   s_languageDict.insert("brazil",      new QCString("0x416 Portuguese(Brazil)"));
   s_languageDict.insert("russian",     new QCString("0x419 Russian"));
-  s_languageDict.insert("spanish",     new QCString("0x40A Spannish(Traditional Sort)"));
+  s_languageDict.insert("spanish",     new QCString("0x40A Spanish(Traditional Sort)"));
   s_languageDict.insert("swedish",     new QCString("0x41D Swedish"));
-  s_languageDict.insert("turkey",      new QCString("0x41F Turkey"));
+  s_languageDict.insert("turkish",     new QCString("0x41F Turkey"));
   s_languageDict.insert("japanese",    new QCString("0x411 Japanese"));
   s_languageDict.insert("japanese-en", new QCString("0x411 Japanese"));
   s_languageDict.insert("korean",      new QCString("0x412 Korean"));
+  s_languageDict.insert("korean-en",   new QCString("0x412 Korean"));
   s_languageDict.insert("chinese",     new QCString("0x804 Chinese (PRC)"));
   s_languageDict.insert("chinese-traditional", new QCString("0x404 Chinese (Taiwan)"));
+
+  // new LCIDs
+  s_languageDict.insert("indonesian",  new QCString("0x412 Indonesian"));
+  s_languageDict.insert("croatian",    new QCString("0x41A Croatian"));
+  s_languageDict.insert("romanian",    new QCString("0x418 Romanian"));
+  s_languageDict.insert("slovene",     new QCString("0x424 Slovenian"));
+  s_languageDict.insert("slovak",      new QCString("0x41B Slovak"));
+  s_languageDict.insert("ukrainian",   new QCString("0x422 Ukrainian"));
+  s_languageDict.insert("serbian",     new QCString("0x81A Serbian (Serbia, Latin)"));
+  s_languageDict.insert("catalan",     new QCString("0x403 Catalan"));
+  s_languageDict.insert("lithuanian",  new QCString("0x427 Lithuanian"));
+  s_languageDict.insert("afrikaans",   new QCString("0x436 Afrikaans"));
+  s_languageDict.insert("vietnamese",  new QCString("0x42A Vietnamese"));
+  s_languageDict.insert("persian",     new QCString("0x429 Persian (Iran)"));
+  s_languageDict.insert("arabic",      new QCString("0xC01 Arabic (Egypt)"));
 }
 
 

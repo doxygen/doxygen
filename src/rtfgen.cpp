@@ -2619,7 +2619,10 @@ void RTFGenerator::postProcess(QByteArray &a)
   for (i=0;i<a.size();i++)
   {
     unsigned char c = (unsigned char)a.at(i);
-    if (c>0x80 || mbFlag)
+    
+    // treat characters > 0x80 as multibyte characters, except when they
+    // are control characters 
+    if (c>0x80 || (mbFlag && c!='\\' && c!='{' && c!='}'))
     {
       char s[10];
       sprintf(s,"\\'%X",c);

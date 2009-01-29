@@ -660,9 +660,14 @@ static void writeFuncProto()
 {
   QList<Argument> ql;
   QCString name,ret;
-  VhdlDocGen::parseFuncProto(g_FuncProto.data(),ql,name,ret,FALSE);
+  VhdlDocGen::parseFuncProto(g_FuncProto,ql,name,ret,FALSE);
 
-  QStringList qlist=QStringList::split(name.data(),g_FuncProto,FALSE);
+  if (name.isEmpty())
+  {
+    codifyLines(g_FuncProto.data(),g_CurrClass.data());
+    return;
+  }
+  QStringList qlist=QStringList::split(name,g_FuncProto,FALSE);
   QCString temp=(QCString)qlist[0];
   codifyLines(temp.data(),g_CurrClass.data());
   g_FuncProto.stripPrefix(temp.data());

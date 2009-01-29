@@ -280,10 +280,12 @@ void MemberList::writePlainDeclarations(OutputList &ol,
           }
         case MemberDef::EnumValue: 
           {
-            if (!m_inGroup) return;
-            printf("EnumValue!\n");
-            if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            if (m_inGroup)
+            {
+              //printf("EnumValue!\n");
+              if (first) ol.startMemberList(),first=FALSE;
+              md->writeDeclaration(ol,cd,nd,fd,gd,m_inGroup);
+            }
           }
           break;
       }

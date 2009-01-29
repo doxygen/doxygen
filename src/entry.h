@@ -191,17 +191,8 @@ class Entry
     /*! Kind of entries that are supported */
     enum Sections { 
       CLASS_SEC        = 0x00000001, 
-      //STRUCT_SEC       = 0x00000002,
-      //UNION_SEC        = 0x00000004, 
-      //EXCEPTION_SEC    = 0x00000008,
       NAMESPACE_SEC    = 0x00000010,
-      //INTERFACE_SEC    = 0x00000020,
-      //PROTOCOL_SEC     = 0x00000040,
-      //CATEGORY_SEC     = 0x00000080,
-      COMPOUND_MASK    = CLASS_SEC //| STRUCT_SEC | UNION_SEC | 
-                         //INTERFACE_SEC | EXCEPTION_SEC | 
-                         //PROTOCOL_SEC | CATEGORY_SEC
-                         ,
+      COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
       
       CLASSDOC_SEC     = 0x00000800, 

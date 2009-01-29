@@ -356,7 +356,7 @@ static void parseProcessProto()
   getBufText(qcs,0);
   if (qcs.contains('(') != qcs.contains(')')) return; 
   VhdlDocGen::deleteAllChars(qcs,'\n');
-  VhdlDocGen::parseProcessProto(qcs.data(),name,ql);
+  VhdlDocGen::parseProcessProto(qcs,name,ql);
   current->section=Entry::FUNCTION_SEC;
   //current->stat=TRUE;
   current->spec=VhdlDocGen::PROCESS;
@@ -409,7 +409,6 @@ static void parseFunctionProto()
     return; // function without a prototype 
   if (qcs.contains("function",FALSE)==0 && qcs.contains("procedure",FALSE)==0) 
     return; 
-  //Entry* ppEntry=new Entry;
   while (qcs.stripPrefix(" "));
   if (qcs.stripPrefix("impure"))
     current->exception="impure";
@@ -417,6 +416,7 @@ static void parseFunctionProto()
     current->exception="pure";
 
   VhdlDocGen::parseFuncProto(qcs.data(),ql,name,ret); 
+  //printf("parseFuncProto(%s)=%s,%s\n",qcs.data(),name.data(),ret.data());
   current->name=name;
   current->startLine=iFuncLine;
   current->bodyLine=iFuncLine;
@@ -442,7 +442,7 @@ static void parseFunctionProto()
   }
   current->args+" )";
 
-  if (ret.data()) 
+  if (!ret.isEmpty()) 
     current->spec=VhdlDocGen::FUNCTION;
   else
     current->spec=VhdlDocGen::PROCEDURE;
@@ -1051,6 +1051,7 @@ ALLID                   [^;()\t ]
     bb=FALSE;
   }
   bool ss = VhdlDocGen::isFunctionProto(ttt);
+  //printf("VhdlDocGen::isFunctionProto(%s)=%d\n",ttt.data(),ss);
   if (ss && bb)
   {
     bufferClear();

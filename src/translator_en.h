@@ -767,8 +767,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
+    { // single is true implies a single file
       QCString result=(QCString)"The documentation for this ";
       switch(compType)
       {
@@ -1731,7 +1730,7 @@ class TranslatorEnglish : public Translator
      */
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
         bool single)
-    { // here s is one of " Module", " Struct" or " Union"
+    {
       // single is true implies a single file
       QCString result=(QCString)"The documentation for this ";
       switch(compType)

@@ -1064,8 +1064,7 @@ class TranslatorKorean : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "만약 설정파일에서 \\c MAX_DOT_GRAPH_HEIGHT 태그가 "
-        "240으로 설정되었다면, 다음과 같은 그래프가 출력될 것입니다. :"
+        "다음과 같은 그래프가 출력될 것입니다. :"
         "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "위 그래프의 박스들은 다음과 같은 의미를 가집니다. :\n"
@@ -1789,7 +1788,7 @@ class TranslatorKorean : public Translator
       return result; 
     }
 
-    /*! C# Type Contraint list */
+    /*! C# Type Constraint list */
     virtual QCString trTypeConstraints()
     {
       return "타입 한정자들";

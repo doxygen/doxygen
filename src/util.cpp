@@ -1663,7 +1663,10 @@ nextChar:
         }
       }
       ADD_CHAR(c);
-      if (cliSupport && (c=='^' || c=='%') && i>1 && isId(s.at(i-1))) 
+      if (cliSupport &&
+          (c=='^' || c=='%') && i>1 && isId(s.at(i-1)) &&
+          !findOperator(s,i)
+         ) 
       {
         ADD_CHAR(' '); // C++/CLI: Type^ name and Type% name
       }

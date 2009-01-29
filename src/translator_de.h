@@ -114,6 +114,9 @@
 //   2008/02/04 Jens Seidel (jensseidel@users.sourceforge.net)
 //    - Updated for "new since 1.5.4" version
 //
+//   2009/01/09 Jens Seidel (jensseidel@users.sourceforge.net)
+//    - Resynced the trLegendDocs() method
+//
 //   Todo:
 //    - see FIXME
 
@@ -665,7 +668,7 @@ class TranslatorGerman : public Translator
                                  bool isTemplate)
     {
       QCString result=(QCString)clName+" ";
-      if (isTemplate) result+="Template ";
+      if (isTemplate) result+="Template-";
       switch(compType)
       {
         case ClassDef::Class:  result+="Klassen"; break;
@@ -831,8 +834,7 @@ class TranslatorGerman : public Translator
      */
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
-    { // here s is one of " Class", " Struct" or " Union"
-      // single is true implies a single file
+    { // single is true implies a single file
       QCString result=(QCString)"Die Dokumentation für diese";
       switch(compType)
       {
@@ -1117,7 +1119,7 @@ class TranslatorGerman : public Translator
         "class Undocumented { };\n\n"
         "/*! Mithilfe öffentlicher Vererbung vererbte Klasse */\n"
         "class PublicBase : public Truncated { };\n\n"
-        "/*! Eine Template Klasse */\n"
+        "/*! Eine Template-Klasse */\n"
         "template<class T> class Templ { };\n\n"
         "/*! Mithilfe geschützter Vererbung vererbte Klasse */\n"
         "class ProtectedBase { };\n\n"
@@ -1135,14 +1137,13 @@ class TranslatorGerman : public Translator
         "  private:\n"
         "    Used *m_usedClass;\n"
         "};\n"
-        "\\endcode\n\n"
-        "Setzen des Tags \\c MAX_DOT_GRAPH_HEIGHT in der Konfigurationsdatei "
-        "auf 240 liefert den folgenden Graphen:"
+        "\\endcode\n"
+        "Dies liefert den folgenden Graphen:"
         "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Die Rechtecke in obigem Graphen bedeuten:\n"
         "<ul>\n"
-        "<li>Ein schwarz gefülltes Rechteck stellt die Struktur oder "
+        "<li>Ein grau gefülltes Rechteck stellt die Struktur oder "
         "Klasse dar, für die der Graph erzeugt wurde.\n"
         "<li>Ein Rechteck mit schwarzem Rahmen kennzeichnet eine dokumentierte "
         "Struktur oder Klasse.\n"

@@ -3998,7 +3998,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    int tempArg=current->name.find('<');
 					    QCString tempName;
 					    if (tempArg==-1) tempName=current->name; else tempName=current->name.left(tempArg);
-					    if (current->type.isEmpty() &&
+					    if (!current->type.isEmpty() &&
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
 					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());

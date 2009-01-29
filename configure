@@ -543,7 +543,7 @@ EOF
 EOF
   fi
 fi
-if test "$f_platform" = "hpux-g++"; then
+if test "$f_platform" = "hpux-g++" -o "$f_platform" = "linux-g++"; then
   cat >> .tmakeconfig <<EOF
     TMAKE_CXXFLAGS += -D_LARGEFILE_SOURCE
 EOF
