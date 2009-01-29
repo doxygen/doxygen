@@ -8617,6 +8617,7 @@ static QCString resolveSymlink(QCString path)
   QDict<void> nonSymlinks;
   QDict<void> known;
   QCString result = path;
+  QCString oldPrefix = "/";
   do
   {
 #ifdef WIN32
@@ -8637,7 +8638,7 @@ static QCString resolveSymlink(QCString path)
         QString target = fi.readLink();
         if (QFileInfo(target).isRelative())
         {
-          target = QDir::cleanDirPath(prefix+"/"+target.data());
+          target = QDir::cleanDirPath(oldPrefix+"/"+target.data());
         }
         if (sepPos!=-1)
         {
@@ -8656,6 +8657,7 @@ static QCString resolveSymlink(QCString path)
       {
         nonSymlinks.insert(prefix,(void*)0x8);
       }
+      oldPrefix = prefix;
     }
   }
   while (sepPos!=-1);
@@ -8698,69 +8700,72 @@ int readDir(QFileInfo *fi,
   //printf("killDict=%p count=%d\n",killDict,killDict->count());
   
   const QFileInfoList *list = dir.entryInfoList();
-  QFileInfoListIterator it( *list );
-  QFileInfo *cfi;
-  
-  while ((cfi=it.current()))
+  if (list)
   {
-    if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
-    { // file should not be excluded
-      //printf("killDict->find(%s)\n",cfi->absFilePath().data());
-      if (!cfi->exists() || !cfi->isReadable())
-      {
-        if (errorIfNotExist)
+    QFileInfoListIterator it( *list );
+    QFileInfo *cfi;
+
+    while ((cfi=it.current()))
+    {
+      if (exclDict==0 || exclDict->find(cfi->absFilePath())==0) 
+      { // file should not be excluded
+        //printf("killDict->find(%s)\n",cfi->absFilePath().data());
+        if (!cfi->exists() || !cfi->isReadable())
         {
-          err("Warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
-        }
-      }
-      else if (cfi->isFile() && 
-          (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
-          (patList==0 || patternMatch(cfi,patList)) && 
-          !patternMatch(cfi,exclPatList) &&
-          (killDict==0 || killDict->find(cfi->absFilePath())==0)
-         )
-      {
-        totalSize+=cfi->size()+cfi->absFilePath().length()+4;
-        QCString name=convertToQCString(cfi->fileName());
-        //printf("New file %s\n",name.data());
-        if (fnDict)
-        {
-          FileDef  *fd=new FileDef(cfi->dirPath()+"/",name);
-          FileName *fn=0;
-          if (!name.isEmpty() && (fn=(*fnDict)[name]))
+          if (errorIfNotExist)
           {
-            fn->append(fd);
-          }
-          else
-          {
-            fn = new FileName(cfi->absFilePath(),name);
-            fn->append(fd);
-            if (fnList) fnList->inSort(fn);
-            fnDict->insert(name,fn);
+            err("Warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
           }
         }
-        QCString *rs=0;
-        if (resultList || resultDict)
+        else if (cfi->isFile() && 
+            (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
+            (patList==0 || patternMatch(cfi,patList)) && 
+            !patternMatch(cfi,exclPatList) &&
+            (killDict==0 || killDict->find(cfi->absFilePath())==0)
+            )
         {
-          rs=new QCString(cfi->absFilePath());
+          totalSize+=cfi->size()+cfi->absFilePath().length()+4;
+          QCString name=convertToQCString(cfi->fileName());
+          //printf("New file %s\n",name.data());
+          if (fnDict)
+          {
+            FileDef  *fd=new FileDef(cfi->dirPath()+"/",name);
+            FileName *fn=0;
+            if (!name.isEmpty() && (fn=(*fnDict)[name]))
+            {
+              fn->append(fd);
+            }
+            else
+            {
+              fn = new FileName(cfi->absFilePath(),name);
+              fn->append(fd);
+              if (fnList) fnList->inSort(fn);
+              fnDict->insert(name,fn);
+            }
+          }
+          QCString *rs=0;
+          if (resultList || resultDict)
+          {
+            rs=new QCString(cfi->absFilePath());
+          }
+          if (resultList) resultList->append(rs);
+          if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
+          if (killDict) killDict->insert(cfi->absFilePath(),(void *)0x8);
         }
-        if (resultList) resultList->append(rs);
-        if (resultDict) resultDict->insert(cfi->absFilePath(),rs);
-        if (killDict) killDict->insert(cfi->absFilePath(),(void *)0x8);
+        else if (recursive &&
+            (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
+            cfi->isDir() && cfi->fileName()!="." && 
+            !patternMatch(cfi,exclPatList) &&
+            cfi->fileName()!="..")
+        {
+          cfi->setFile(cfi->absFilePath());
+          totalSize+=readDir(cfi,fnList,fnDict,exclDict,
+              patList,exclPatList,resultList,resultDict,errorIfNotExist,
+              recursive,killDict);
+        }
       }
-      else if (recursive &&
-          (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
-          cfi->isDir() && cfi->fileName()!="." && 
-          !patternMatch(cfi,exclPatList) &&
-          cfi->fileName()!="..")
-      {
-        cfi->setFile(cfi->absFilePath());
-        totalSize+=readDir(cfi,fnList,fnDict,exclDict,
-            patList,exclPatList,resultList,resultDict,errorIfNotExist,
-            recursive,killDict);
-      }
+      ++it;
     }
-    ++it;
   }
   return totalSize;
 }
@@ -10472,7 +10477,7 @@ void generateOutput()
     QCString const qhpFileName = Qhp::getQhpFileName();
     QCString const qchFileName = getQchFileName();
 
-    QCString const args = QCString().sprintf("%s -o %s", qhpFileName.data(), qchFileName.data());
+    QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
     QString const oldDir = QDir::currentDirPath();
     QDir::setCurrent(Config_getString("HTML_OUTPUT"));
     if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))

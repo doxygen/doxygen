@@ -225,7 +225,8 @@ The format is ext=language, where ext is a file extension, and language is one o
 the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP, 
 Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat 
 .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran), 
-use: inc=Fortran f=C 
+use: inc=Fortran f=C. Note that for custom extensions you also need to set
+FILE_PATTERNS otherwise the files are not read by doxygen.
 '>
     </option>
     <option type='bool' id='BUILTIN_STL_SUPPORT' docs='

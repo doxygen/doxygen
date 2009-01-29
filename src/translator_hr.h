@@ -68,6 +68,9 @@
 // 2006/06/11
 // - Added strings for 1.4.6
 //
+// 2009/01/09
+// - Updated trLegendDocs
+//
 #ifndef TRANSLATOR_HR_H
 #define TRANSLATOR_HR_H
 
@@ -776,26 +779,29 @@ class TranslatorCroatian : public Translator
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Ako je \\c MAX_DOT_GRAPH_HEIGHT tag u konfiguracijskoj datoteci "
-        "postavljen na  200 gornje veze æe rezultirati grafikonom:"
+        "To æe rezultirati grafikonom:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Pravokutnici imaju slijedeæe znaèenje:\n"
         "<ul>\n"
-        "<li>Puni crni predstavlja klasu za koji je generiran graf.\n"
-        "<li>Pravokutnik s crnim rubom predstavlja dokumentiranu klasu.\n"
-        "<li>Pravokutnik s sivim rubom predstavlja nedokumentiranu klasu.\n"
-        "<li>Pravokutnik s crvenim rubom predstavlja dokumentiranu klasu\n"
+        "<li>%A Puni crni predstavlja klasu za koji je generiran graf.\n"
+        "<li>%A Pravokutnik s crnim rubom predstavlja dokumentiranu klasu.\n"
+        "<li>%A Pravokutnik s sivim rubom predstavlja nedokumentiranu klasu.\n"
+        "<li>%A Pravokutnik s crvenim rubom predstavlja dokumentiranu klasu\n"
         "Za koju nije prikazan graf naslijeðivanja. Graf je odrezan "
         "ako ne stane unutar odreðenih granica."
         "</ul>\n"
         "Strelice imaju slijedeæe znaèenje:\n"
         "<ul>\n"
-        "<li>Tamnoplava strelica oznaèava public naslijeðivanje.\n"
-        "<li>Tamnozelena strelica oznaèava protected naslijeðivanje.\n"
-        "<li>Tamnocrvena strelica oznaèava private naslijeðivanje.\n"
-        "<li>Ljubièasta isprekidana strelica se koristi za agregate vezu. "
+        "<li>%A Tamnoplava strelica oznaèava public naslijeðivanje.\n"
+        "<li>%A Tamnozelena strelica oznaèava protected naslijeðivanje.\n"
+        "<li>%A Tamnocrvena strelica oznaèava private naslijeðivanje.\n"
+        "<li>%A Ljubièasta isprekidana strelica se koristi ako je klasa dio "
+        "druge klase ili ako se klasa koristi u drugoj klasi. Natpis na "
+        "strelici je ime varijable u drugoj klasi\n"
         "Strelica je oznaèena imenom varijable.\n"
+        "<li>%A Žuta isprekidana strelica oznaèava relaciju izmeðu template instance "
+        "i template klase. Oznaèena je imenom template parametra\n"
         "</ul>\n");
     }
     /*! text for the link to the legend page */

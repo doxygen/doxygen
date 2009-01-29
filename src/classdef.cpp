@@ -133,7 +133,7 @@ class ClassDefImpl
     /*! The class this class is an instance of. */
     ClassDef *templateMaster;
 
-    /*! class name with outer class scope, but without namespace scope. */
+    /*! local class name which could be a typedef'ed alias name. */
     QCString className;
 
     /*! If this class is a Objective-C category, then this points to the
@@ -209,8 +209,8 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   membersMerged = FALSE;
   categoryOf = 0;
   usedOnly = FALSE;
-  QCString ns;
-  extractNamespaceName(name,className,ns);
+  //QCString ns;
+  //extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
 
   if (((QCString)defFileName).right(5)!=".java" && 
@@ -3025,7 +3025,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
     if (!scName.isEmpty()) scName+=scopeSeparator;
   }
-  scName+=m_impl->className;
+  scName+=className();
   ArgumentList *al=0;
   bool isSpecialization = localName().find('<')!=-1;
   if (templateArguments())
@@ -3052,7 +3052,14 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
 QCString ClassDef::className() const
 {
-  return m_impl->className;
+  if (m_impl->className.isEmpty())
+  {
+    return localName();
+  }
+  else
+  {
+    return m_impl->className;
+  }
 };
 
 void ClassDef::setClassName(const char *name)

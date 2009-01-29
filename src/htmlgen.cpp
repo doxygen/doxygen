@@ -916,7 +916,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   t << "href=\"";
   if (ref)
   {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << relPath << *dest << "/";
+    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
   }
   else
   {

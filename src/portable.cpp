@@ -180,7 +180,7 @@ static char **last_environ;
 
 void portable_setenv(const char *name,const char *value)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(name,value);
 #else
     register char **ep = 0;
@@ -259,7 +259,7 @@ void portable_setenv(const char *name,const char *value)
 
 void portable_unsetenv(const char *variable)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(variable,0);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
