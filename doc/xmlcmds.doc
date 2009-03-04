@@ -51,7 +51,7 @@ Here is the list of tags supported by doxygen:
 <li><tt>\<paramref name="paramName"\></tt> Refers to a parameter with name
                          "paramName". Similar to using \ref cmda "\\a".
 <li><tt>\<permission\></tt> Identifies the security accessibility of a member.
-                         Ignored by doygen.
+                         Ignored by doxygen.
 <li><tt>\<remarks\></tt> Identifies the detailed description. 
 <li><tt>\<returns\></tt> Marks a piece of text as the return value of a
                          function or method. Similar to using \ref cmdreturn "\\return".

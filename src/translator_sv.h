@@ -69,7 +69,7 @@ Problem!
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_4_6
+class TranslatorSwedish : public Translator
 {
   public:
 
@@ -1429,6 +1429,231 @@ class TranslatorSwedish : public TranslatorAdapter_1_4_6
              "tillhandahållen för bekvämlighet. Den enda som "
              "skiljer sig från ovanstående funktion är vilka "
              "argument den tar emot.";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Här är katalog-grafen för denna funktion:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    {
+      return "Uppräknings-dokumentation";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Memlems-function/Subroutins Dokumentation"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
+    virtual QCString trCompoundListFortran()
+    { return "Datatyplista"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Data fält"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Här är datatyperna med en kort beskrivning:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Här är en lista av alla ";
+      if (!extractAll)
+      {
+        result+="dokumenterade ";
+      }
+      result+="datatyps medlemmar";
+      result+=" med länkar till ";
+      if (!extractAll)
+      {
+         result+="datastrukturs documentation för varje medlem";
+      }
+      else
+      {
+         result+="klasserna de hör till:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Datatyps Index"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Dataryps Dokumentation"; }
+
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Funktions/Subroutins"; }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Funktion/Subroutin Dokumentation"; }
+
+    /*! This is used in the documentation of a file/namespace/group before
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Datatyper"; }
+
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Modullista"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Här är en lista på alla ";
+      if (!extractAll) result+="dokumenterade ";
+      result+="moduler med en kort beskrivning:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Modul"; break;
+        case ClassDef::Struct:     result+=" Typ"; break;
+        case ClassDef::Union:      result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Gränssnitt"; break;
+        case ClassDef::Protocol:   result+=" Protokoll"; break;
+        case ClassDef::Category:   result+=" Kategori"; break;
+        case ClassDef::Exception:  result+=" Undantag"; break;
+      }
+      if (isTemplate) result+=" Mall";
+      result+=" Referens";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Modul Referens";
+      return result;
+    }
+
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Modul Medlemmar"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    {
+      QCString result="Här är en lista på alla ";
+      if (!extractAll) result+="documented ";
+      result+="modul medlemmar med länkar till ";
+      if (extractAll)
+      {
+        result+="modul dokumentationen för varje medlem:";
+      }
+      else
+      {
+        result+="modulerna de hör till:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Modul Index"; }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {
+      return createNoun(first_capital, singular, "modul", "er");
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"Dokumentationen för denna ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="modul"; break;
+        case ClassDef::Struct:     result+="typ"; break;
+        case ClassDef::Union:      result+="union"; break;
+        case ClassDef::Interface:  result+="gränssnitt"; break;
+        case ClassDef::Protocol:   result+="protokoll"; break;
+        case ClassDef::Category:   result+="kategori"; break;
+        case ClassDef::Exception:  result+="undantag"; break;
+      }
+      result+=" genererades från följade fil";
+      if (single) result+=":"; else result+="er:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    {
+      return createNoun(first_capital, singular, "typ", "er");
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool /*singular*/)
+    {
+      QCString result((first_capital ? "Subprogram" : "subprogram"));
+      return result;
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Typbegränsningar";
+    }
+
+/*---------- For internal use: ----------------------------------------*/
+  protected:
+    /*! For easy flexible-noun implementation.
+     *  \internal
+     */
+    QCString createNoun(bool first_capital, bool singular,
+			const char* base, const char* plurSuffix)
+    {
+      QCString result(base);
+      if (first_capital) result.at(0) = toupper(result.at(0));
+      if (!singular)  result+=plurSuffix;
+      return result;
     }
 
 	

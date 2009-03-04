@@ -279,10 +279,10 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
                                             if(indexEnd<0){ // ----- no ampersand as line continuation
                                                if(YY_START == Prepass) { // last line in "continuation"
-                                                 inputStringPrepass+=(const char*)yytext;
-                                                 if(indexStart>=0) inputStringPrepass[yyleng-indexStart]=' ';
-                                                 // @todo: remove all symbols instead of replacing W blank?
 
+                                                 // Only take input after initial ampersand
+                                                 inputStringPrepass+=(const char*)(yytext+(indexStart+1));
+   
                                                  pushBuffer(inputStringPrepass);
                                                  yy_pop_state();
                                                } else { // simple line
@@ -296,12 +296,14 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                                 yy_push_state(Prepass);
                                               }
 
-                                              inputStringPrepass+=(const char*)yytext;
-                                              lineCountPrepass ++;
-  
-                                              // replace & with space and remove following comment if present
                                               int length = inputStringPrepass.length();
-					      truncatePrepass(length-yyleng+indexEnd);
+
+                                              // Only take input after initial ampersand
+                                              inputStringPrepass+=(const char*)(yytext+(indexStart+1));
+                                              lineCountPrepass ++;
+
+                                              // cut off & and remove following comment if present
+					      truncatePrepass(length+indexEnd-(indexStart+1));
                                             }
 
                                         }
@@ -850,26 +852,39 @@ static int getAmpOrExclAtTheEnd(const char *buf, int length)
 
   for(int i=0; i<length && parseState!=Comment; i++)
   {
+    // When in string, skip backslashes
+    // Legacy code, not sure whether this is correct?
     if(parseState==String)
     {
       if(buf[i]=='\\') i++;
-      if(buf[i]==quoteSymbol)
-      {
-        parseState = Start;
-        quoteSymbol = 0;
-      }
-    } else // not in string
+    }
+
+    switch(buf[i])
     {
-      switch(buf[i])
-      {
         case '\'':
         case '"':
-          parseState = String;
-          quoteSymbol = buf[i];
+          // Close string, if quote symbol matches.
+          // Quote symbol is set iff parseState==String
+          if(buf[i]==quoteSymbol)
+          {
+             parseState = Start;
+             quoteSymbol = 0;
+          }
+          // Start new string, if not already in string or comment
+          else if(parseState==Start)
+          {
+            parseState = String;
+            quoteSymbol = buf[i];
+          }
+          ampIndex = -1; // invalidate prev ampersand
           break;
         case '!':
-          parseState = Comment;
-          commentIndex = i;
+          // When in string or comment, ignore exclamation mark
+          if(parseState==Start)
+          {
+            parseState = Comment;
+            commentIndex = i;
+          }
           break;
         case ' ':  // ignore whitespace
         case '\t':
@@ -880,7 +895,6 @@ static int getAmpOrExclAtTheEnd(const char *buf, int length)
           break;
         default:
           ampIndex = -1; // invalidate prev ampersand
-      }
     }
   }
 
@@ -903,8 +917,7 @@ void truncatePrepass(int index)
       comments.append(c);
     }
   }
-  inputStringPrepass[index] = ' ';
-  inputStringPrepass.truncate(index+1);
+  inputStringPrepass.truncate(index);
 }
 
 // simplified way to know if this is fixed form

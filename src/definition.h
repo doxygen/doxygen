@@ -335,7 +335,7 @@ class Definition : public DefinitionIntf, public LockableObj
     void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
     void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const char *d,const char *docFile,int docLine);
-    bool _docsAlreadyAdded(const QString &doc);
+    bool _docsAlreadyAdded(const QCString &doc);
     DefinitionImpl *m_impl; // internal structure holding all private data
     QCString m_name;
     bool m_isSymbol;

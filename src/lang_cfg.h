@@ -1,5 +1,5 @@
 #define LANG_NL
-#define LANG_SE
+#define LANG_SV
 #define LANG_CZ
 #define LANG_FR
 #define LANG_ID
@@ -34,3 +34,4 @@
 #define LANG_FA
 #define LANG_VI
 #define LANG_TR
+#define LANG_EO

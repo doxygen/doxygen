@@ -498,7 +498,7 @@ static QString getStringOption(
 bool Expert::htmlOutputPresent(const QString &workingDir) const
 {
   bool generateHtml = getBoolOption(m_options,QString::fromAscii("GENERATE_HTML"));
-  if (!generateHtml) return false;
+  if (!generateHtml || workingDir.isEmpty()) return false;
   QString indexFile = getHtmlOutputIndex(workingDir);
   QFileInfo fi(indexFile);
   return fi.exists() && fi.isFile();

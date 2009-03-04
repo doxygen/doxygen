@@ -26,8 +26,8 @@
 #ifdef LANG_NL
 #include "translator_nl.h"
 #endif
-#ifdef LANG_SE
-#include "translator_se.h"
+#ifdef LANG_SV
+#include "translator_sv.h"
 #endif
 #ifdef LANG_CZ
 #include "translator_cz.h"
@@ -52,6 +52,9 @@
 #endif
 #ifdef LANG_ES
 #include "translator_es.h"
+#endif
+#ifdef LANG_EO
+#include "translator_eo.h"
 #endif
 #ifdef LANG_FI
 #include "translator_fi.h"
@@ -169,7 +172,7 @@ bool setTranslator(const char *langName)
     theTranslator=new TranslatorDutch;
   }
 #endif
-#ifdef LANG_SE
+#ifdef LANG_SV
   else if (L_EQUAL("swedish"))
   {
     theTranslator=new TranslatorDecoder(new TranslatorSwedish);
@@ -389,6 +392,12 @@ bool setTranslator(const char *langName)
   else if (L_EQUAL("turkish"))
   {
     theTranslator=new TranslatorTurkish;
+  }
+#endif
+#ifdef LANG_EO
+  else if (L_EQUAL("esperanto"))
+  {
+    theTranslator=new TranslatorEsperanto;
   }
 #endif
 #endif // ENGLISH_ONLY

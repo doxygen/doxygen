@@ -14,7 +14,6 @@ extern char **environ;
 
 #include <qglobal.h>
 #include <qdatetime.h>
-#include <iconv.h>
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #define popen _popen
@@ -367,33 +366,5 @@ FILE * portable_popen(const char *name,const char *type)
 int portable_pclose(FILE *stream)
 {
   return pclose(stream);
-}
-
-void * portable_iconv_open(const char* tocode, const char* fromcode)
-{
-  return iconv_open(tocode,fromcode);
-}
-
-size_t portable_iconv (void *cd, const char** inbuf,  size_t *inbytesleft, 
-                                       char** outbuf, size_t *outbytesleft)
-{
-// libiconv is a mess. For some platforms/version the prototype of inbuf is
-// "const char **", for others it is "char **". C++ requires the proper cast to
-// avoid a compile error, that is were the CASTNEEDED is for.
-#if ((defined(_LIBICONV_VERSION) && (_LIBICONV_VERSION>=0x0109) && \
-      !((defined(_OS_MAC_) || defined(Q_OS_MACX) )&& (_LIBICONV_VERSION==0x010B))) \
-    || defined(_OS_SOLARIS_) \
-    || defined(_OS_NETBSD_)  \
-    ) 
-#define CASTNEEDED(x) (x)
-#else
-#define CASTNEEDED(x) (char **)(x)
-#endif
-  return iconv((iconv_t)cd,CASTNEEDED(inbuf),inbytesleft,outbuf,outbytesleft);
-}
-
-int portable_iconv_close (void *cd)
-{
-  return iconv_close((iconv_t)cd);
 }
 

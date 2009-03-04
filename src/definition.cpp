@@ -361,11 +361,14 @@ void Definition::writeDocAnchorsToTagFile()
   }
 }
 
-bool Definition::_docsAlreadyAdded(const QString &doc)
+bool Definition::_docsAlreadyAdded(const QCString &doc)
 {
   uchar md5_sig[16];
   QCString sigStr(33);
-  MD5Buffer((const unsigned char *)doc.data(),doc.length(),md5_sig);
+  // to avoid mismatches due to differences in indenting, we first remove
+  // double whitespaces...
+  QCString docStr = doc.simplifyWhiteSpace();
+  MD5Buffer((const unsigned char *)docStr.data(),docStr.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
   if (m_impl->docSignatures.find(sigStr)==-1) // new docs, add signature to prevent re-adding it
   {
@@ -644,10 +647,12 @@ static bool readCodeFragment(const char *fileName,
 /*! Write a reference to the source code defining this definition */
 void Definition::writeSourceDef(OutputList &ol,const char *)
 {
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   makeResident();
   ol.pushGeneratorState();
   //printf("Definition::writeSourceRef %d %p\n",bodyLine,bodyDef);
-  if (Config_getBool("SOURCE_BROWSER") && 
+  if (sourceBrowser && 
       m_impl->body && m_impl->body->startLine!=-1 && m_impl->body->fileDef)
   {
     QCString refText = theTranslator->trDefinedAtLineInSourceFile();
@@ -663,29 +668,49 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
       {
         // write text left from linePos marker
         ol.parseText(refText.left(lineMarkerPos)); 
-        ol.disableAllBut(OutputGenerator::Html); 
-        // write line link (HTML only)
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::RTF); 
+        ol.disable(OutputGenerator::Man); 
+        if (!latexSourceCode)
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
+        // write line link (HTML, LaTeX optionally)
         ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
-        // write normal text (Latex/Man only)
+        if (latexSourceCode) 
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
+        // write normal text (Man/RTF, Latex optionally)
         ol.docify(lineStr);
-        ol.enableAll();
+        ol.popGeneratorState();
         
         // write text between markers
         ol.parseText(refText.mid(lineMarkerPos+2,
               fileMarkerPos-lineMarkerPos-2));
 
-        ol.disableAllBut(OutputGenerator::Html); 
-        // write file link (HTML only)
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::RTF); 
+        ol.disable(OutputGenerator::Man); 
+        if (!latexSourceCode)
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
+        // write line link (HTML, LaTeX optionally)
         ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
             0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
-        // write normal text (Latex/Man only)
+        if (latexSourceCode) 
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
+        // write normal text (Man/RTF, Latex optionally)
         ol.docify(m_impl->body->fileDef->name());
-        ol.enableAll();
+        ol.popGeneratorState();
         
         // write text right from file marker
         ol.parseText(refText.right(
@@ -695,29 +720,50 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
       {
         // write text left from file marker
         ol.parseText(refText.left(fileMarkerPos)); 
-        ol.disableAllBut(OutputGenerator::Html); 
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::RTF); 
+        ol.disable(OutputGenerator::Man); 
+        if (!latexSourceCode)
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
         // write file link (HTML only)
         ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
             0,m_impl->body->fileDef->name());
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
+        if (latexSourceCode) 
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
         // write normal text (Latex/Man only)
         ol.docify(m_impl->body->fileDef->name());
-        ol.enableAll();
+        ol.popGeneratorState();
         
         // write text between markers
         ol.parseText(refText.mid(fileMarkerPos+2,
               lineMarkerPos-fileMarkerPos-2)); 
 
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::RTF); 
+        ol.disable(OutputGenerator::Man); 
+        if (!latexSourceCode)
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
         ol.disableAllBut(OutputGenerator::Html); 
         // write line link (HTML only)
         ol.writeObjectLink(0,m_impl->body->fileDef->getSourceFileBase(),
             anchorStr,lineStr);
         ol.enableAll();
         ol.disable(OutputGenerator::Html);
+        if (latexSourceCode) 
+        {
+          ol.disable(OutputGenerator::Latex);
+        }
         // write normal text (Latex/Man only)
         ol.docify(lineStr);
-        ol.enableAll();
+        ol.popGeneratorState();
 
         // write text right from linePos marker
         ol.parseText(refText.right(

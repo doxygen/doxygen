@@ -62,10 +62,10 @@ Just follow these steps:
 at two places in the script:
   <ol>
   <li>After the <code>f_langs=</code> is statement, in lower case.
-  <li>In the string that following <code>@allowed=</code> in upper case.
+  <li>In the string that following <code>\@allowed=</code> in upper case.
   </ol>
 The rerun the configure script such that is generates src/lang_cfg.h.
-This file should now contain a #define for your language code.
+This file should now contain a \#define for your language code.
 <li>Edit language.cpp:
     Add a 
 \verbatim

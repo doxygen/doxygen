@@ -118,13 +118,13 @@ class LatexGenerator : public OutputGenerator
     
     void insertMemberAlign(bool) {}
 
-    void writeRuler() { t << endl << endl; /*t << "\\vspace{0.4cm}\\hrule\\vspace{0.2cm}" << endl; */ }
+    void writeRuler() { t << endl << endl; }
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment() { t << endl << endl << "\\begin{Code}\\begin{verbatim}"; }
-    void endCodeFragment()   { t << "\\end{verbatim}\n\\end{Code}" << endl; }
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
-    void startCodeLine() { col=0; }
-    void endCodeLine() { codify("\n"); }
+    void startCodeFragment();
+    void endCodeFragment();
+    void writeLineNumber(const char *,const char *,const char *,int l);
+    void startCodeLine();
+    void endCodeLine();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "\\textbf{"; }
@@ -138,8 +138,8 @@ class LatexGenerator : public OutputGenerator
     void endMemberDoc(bool);
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
+    void startCodeAnchor(const char *);
+    void endCodeAnchor();
     void writeChar(char c);
     void writeLatexSpacing() { t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const char *type,const char *file, 
@@ -226,8 +226,8 @@ class LatexGenerator : public OutputGenerator
     void endConstraintDocs();
     void endConstraintList();
 
-    void startFontClass(const char *) {}
-    void endFontClass() {}
+    void startFontClass(const char *); // {}
+    void endFontClass(); // {}
 
     void writeCodeAnchor(const char *) {}
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
@@ -242,8 +242,10 @@ class LatexGenerator : public OutputGenerator
     bool firstDescItem;
     bool disableLinks;
     QCString relPath;
+    QCString sourceFileName;
     int m_indent;
     bool templateMemberItem;
+    bool m_prettyCode;
 };
 
 #endif

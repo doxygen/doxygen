@@ -16,20 +16,23 @@
  */
 
 /*
- * translator_jp.h
- *
+ * translator_jp.h 
+ * Updates:
  * 1.2.5)
  * First Translation
  *      by Kenji Nagamatsu
  * 1.2.12)
  * Update and Shift-Jis(_WIN32)
  *      by Ryunosuke Sato (30-Dec-2001)
+ * 1.5.8)
+ * Translation for 1.5.8.
+ *      by Hiroki Iseri (18-Feb-2009)
  */
 
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public TranslatorAdapter_1_5_4
+class TranslatorJapanese : public Translator
 {
  private:
   /*! The decode() can change euc into sjis */
@@ -101,17 +104,17 @@ class TranslatorJapanese : public TranslatorAdapter_1_5_4
     virtual QCString trMemberDataDocumentation()
     {
       if( Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  return decode("構造体");
-	}
+	  {
+	    return decode("構造体");
+	  }
       else
-	{
-	  return decode("変数");
-	}
+	  {
+	    return decode("変数");
+	  }
     }
 
     /*! this is the text of a link put after brief descriptions. */
-    virtual QCString trMore()
+	virtual QCString trMore()
     { return decode("[詳細]"); }
 
     /*! put in the class documentation */
@@ -254,15 +257,15 @@ class TranslatorJapanese : public TranslatorAdapter_1_5_4
     {
       QCString result=decode("これは");
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
-	{
-	  result+=decode("フィールドの一覧でそれぞれ");
-	  if (extractAll) result+=decode("が属している構造体/共用体");
-	}
+	  {
+	    result+=decode("フィールドの一覧でそれぞれ");
+	    if (extractAll) result+=decode("が属している構造体/共用体");
+	  }
       else
-	{
-	  result+=decode("クラスメンバの一覧で、それぞれ");
-	  if (extractAll) result+=decode("が属しているクラス");
-	}
+	  {
+	    result+=decode("クラスメンバの一覧で、それぞれ");
+	    if (extractAll) result+=decode("が属しているクラス");
+	  }
       result+=decode("の説明へリンクしています。");
       return result;
     }
@@ -1582,5 +1585,188 @@ class TranslatorJapanese : public TranslatorAdapter_1_5_4
     virtual QCString trEnumerationValueDocumentation()
     { return decode("列挙型"); }
 
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return decode("関数/サブルーチン"); }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return decode("データ型"); }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return decode("データフィールド"); }
+    
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return decode("これはデータ型の一覧です"); }
+    
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+	  QCString result=decode("これは");
+	  result+=decode("フィールドの一覧です。それぞれ");
+	  if (extractAll)
+	  {
+	  	result+=decode("が属しているデータ型");
+	  }
+	  result+=decode("の説明へリンクしています。");
+	  return result;
+    }
+	
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return decode("データ型索引"); }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return decode("データ型"); }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return decode("関数/サブルーチン"); }
+
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return decode("関数/サブルーチン"); }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return decode("データ型"); }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return decode("モジュール一覧"); }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result=decode("これは");
+      if (!extractAll) result+=decode("生成された");
+      result+=decode("モジュール一覧です");
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result="";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=decode("モジュール "); break;
+        case ClassDef::Struct:     result+=decode("TYPE "); break;
+        case ClassDef::Union:      result+=decode("共用体 "); break;
+        case ClassDef::Interface:  result+=decode("インターフェース "); break;
+        case ClassDef::Protocol:   result+=decode("プロトコル "); break;
+        case ClassDef::Category:   result+=decode("カテゴリ "); break;
+        case ClassDef::Exception:  result+=decode("例外 "); break;
+      }
+      if (isTemplate) result += decode("テンプレート ");
+      result+=(QCString)clName;
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=decode("モジュール");        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return decode("モジュールメンバ"); }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result=decode("これはモジュールメンバ一覧です。それぞれ ");
+      if (extractAll) 
+      {
+        result+=decode("属しているモジュール");
+      }
+	  result+=decode("の説明へリンクしています。");
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return decode("モジュール索引"); }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool /*first_capital*/, bool /*singular*/)
+    {       
+      return decode("モジュール");
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool /*single*/)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result="";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=decode("モジュール"); break;
+        case ClassDef::Struct:     result+=decode("TYPE"); break;
+        case ClassDef::Union:      result+=decode("共用体"); break;
+        case ClassDef::Interface:  result+=decode("インターフェース"); break;
+        case ClassDef::Protocol:   result+=decode("プロトコル"); break;
+        case ClassDef::Category:   result+=decode("カテゴリ"); break;
+        case ClassDef::Exception:  result+=decode("例外"); break;
+      }
+      result+=decode(decode("の説明は次のファイルから生成されました:"));
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool /*first_capital*/, bool /*singular*/)
+    { 
+      QCString result = decode("TYPE");
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool /*first_capital*/, bool /*singular*/)
+    { 
+      QCString result = decode("サブプログラム");
+      return result; 
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return decode("型制約");
+    }
+
 };
+
 #endif

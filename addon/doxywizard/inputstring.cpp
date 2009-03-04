@@ -101,7 +101,7 @@ void InputString::setValue(const QString &s)
     {
       m_lab->setText(QString::fromAscii("<qt><font color='red'>")+m_id+QString::fromAscii("</font></qt>"));
     }
-    if (m_le) m_le->setText( m_str );
+    if (m_le && m_le->text()!=m_str) m_le->setText( m_str );
     emit changed();
   }
 }
