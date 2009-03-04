@@ -70,11 +70,11 @@ void addConfigOptions(Config *cfg)
                  "information to generate all constant output in the proper language. \n"
                  "The default language is English, other supported languages are: \n"
                  "Afrikaans, Arabic, Brazilian, Catalan, Chinese, Chinese-Traditional, \n"
-                 "Croatian, Czech, Danish, Dutch, Farsi, Finnish, French, German, Greek, \n"
-                 "Hungarian, Italian, Japanese, Japanese-en (Japanese with English messages), \n"
-                 "Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian, Polish, \n"
-                 "Portuguese, Romanian, Russian, Serbian, Serbian-Cyrilic, Slovak, Slovene, \n"
-                 "Spanish, Swedish, and Ukrainian.",
+                 "Croatian, Czech, Danish, Dutch, Esperanto, Farsi, Finnish, French, German, \n"
+                 "Greek, Hungarian, Italian, Japanese, Japanese-en (Japanese with English \n"
+                 "messages), Korean, Korean-en, Lithuanian, Norwegian, Macedonian, Persian, \n"
+                 "Polish, Portuguese, Romanian, Russian, Serbian, Serbian-Cyrilic, Slovak, \n"
+                 "Slovene, Spanish, Swedish, Ukrainian, and Vietnamese.",
                  "English"
                 );
   ce->addValue("Afrikaans");
@@ -88,6 +88,8 @@ void addConfigOptions(Config *cfg)
   ce->addValue("Danish");
   ce->addValue("Dutch");
   ce->addValue("English");
+  ce->addValue("Esperanto");
+  ce->addValue("Farsi");
   ce->addValue("Finnish");
   ce->addValue("French");
   ce->addValue("German");
@@ -99,7 +101,7 @@ void addConfigOptions(Config *cfg)
   ce->addValue("Korean");
   ce->addValue("Korean-en");
   ce->addValue("Norwegian");
-  ce->addValue("Farsi");
+  ce->addValue("Macedonian");
   ce->addValue("Persian");
   ce->addValue("Polish");
   ce->addValue("Portuguese");
@@ -110,7 +112,9 @@ void addConfigOptions(Config *cfg)
   ce->addValue("Slovene");
   ce->addValue("Spanish");
   ce->addValue("Swedish");
+  ce->addValue("Turkish");
   ce->addValue("Ukrainian");
+  ce->addValue("Vietnamese");
   //----
   cb = cfg->addBool(
                  "BRIEF_MEMBER_DESC",
@@ -315,7 +319,7 @@ void addConfigOptions(Config *cfg)
                  "the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP, \n"
                  "Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat \n"
                  ".inc files as Fortran files (default is PHP), and .f files as C (default is Fortran), \n"
-                 "use: inc=Fortran f=C"
+                 "use: inc=Fortran f=C. Note that for custom extensions you also need to set FILE_PATTERNS otherwise the files are not read by doxygen."
                 );
   //----
   cb = cfg->addBool(
@@ -1445,6 +1449,13 @@ void addConfigOptions(Config *cfg)
                  "If LATEX_HIDE_INDICES is set to YES then doxygen will not \n"
                  "include the index chapters (such as File Index, Compound Index, etc.) \n"
                  "in the output.",
+                 FALSE
+                );
+  cb->addDependency("GENERATE_LATEX");
+  //----
+  cb = cfg->addBool(
+                 "LATEX_SOURCE_CODE",
+                 "If LATEX_SOURCE_CODE is set to YES then doxygen will include source code with syntax highlighting in the LaTeX output. Note that which sources are shown also depends on other settings such as SOURCE_BROWSER.",
                  FALSE
                 );
   cb->addDependency("GENERATE_LATEX");

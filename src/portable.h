@@ -28,10 +28,13 @@ const char *   portable_commandExtension();
 bool           portable_fileSystemIsCaseSensitive();
 FILE *         portable_popen(const char *name,const char *type);
 int            portable_pclose(FILE *stream);
-void *         portable_iconv_open(const char* tocode, const char* fromcode);
-size_t         portable_iconv (void *cd, const char** inbuf, size_t *inbytesleft, 
-                                         char* * outbuf, size_t *outbytesleft);
-int            portable_iconv_close (void *cd);
+
+extern "C" {
+  void *         portable_iconv_open(const char* tocode, const char* fromcode);
+  size_t         portable_iconv (void *cd, const char** inbuf, size_t *inbytesleft, 
+                                 char* * outbuf, size_t *outbytesleft);
+  int            portable_iconv_close (void *cd);
+}
 
 
 #endif

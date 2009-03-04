@@ -1426,6 +1426,10 @@ ALLID                   [^;()\t ]
       line=line.left(pos);
     }
     comment.stripWhiteSpace();
+    // must subtract "(" and ")" in comments because they are used for determining the
+    // end of a port/generic construct
+    openCount-=comment.contains('(');
+    closeCount-=comment.contains(')');
     if (!comment.stripPrefix("!")) // not a special comment
     {
       comment.resize(0);

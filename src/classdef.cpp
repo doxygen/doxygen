@@ -942,89 +942,86 @@ void ClassDef::showUsedFiles(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
-  //if (Config_getBool("SHOW_USED_FILES"))
-  //{
-    ol.writeRuler();
-    if (fortranOpt)
-    {
-      ol.parseText(theTranslator->trGeneratedFromFilesFortran(
+
+  ol.writeRuler();
+  if (fortranOpt)
+  {
+    ol.parseText(theTranslator->trGeneratedFromFilesFortran(
           m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));
-    }
-    else
-    {
-      ol.parseText(theTranslator->trGeneratedFromFiles(
+  }
+  else
+  {
+    ol.parseText(theTranslator->trGeneratedFromFiles(
           m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));  
-    }
-    
+  }
 
-    bool first=TRUE;
-    const char *file = m_impl->files.first();
-    while (file)
+
+  bool first=TRUE;
+  const char *file = m_impl->files.first();
+  while (file)
+  {
+    bool ambig;
+    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
+    if (fd)
     {
-      bool ambig;
-      FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
-      if (fd)
+      if (first)
       {
-        if (first)
-        {
-          first=FALSE;   
-          ol.startItemList();
-        }
-
-        ol.writeListItem();
-        QCString path=fd->getPath();
-        if (Config_getBool("FULL_PATH_NAMES"))
-        {
-          ol.docify(stripFromPath(path));
-        }
-
-        QCString fname = fd->name();
-        if (!fd->getVersion().isEmpty()) // append version if available
-        {
-          fname += " (" + fd->getVersion() + ")";
-        }
-
-        // for HTML 
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        if (fd->generateSourceFile())
-        {
-          ol.writeObjectLink(0,fd->getSourceFileBase(),0,fname);
-        }
-        else if (fd->isLinkable())
-        {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-              fname);
-        }
-        else
-        {
-          ol.docify(fname);
-        }
-        ol.popGeneratorState();
-
-        // for other output formats
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Html);
-        if (fd->isLinkable())
-        {
-          ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
-              fname);
-        }
-        else
-        {
-          ol.docify(fname);
-        }
-
-        ol.popGeneratorState();
-
-        
+        first=FALSE;   
+        ol.startItemList();
       }
-      file=m_impl->files.next();
+
+      ol.writeListItem();
+      QCString path=fd->getPath();
+      if (Config_getBool("FULL_PATH_NAMES"))
+      {
+        ol.docify(stripFromPath(path));
+      }
+
+      QCString fname = fd->name();
+      if (!fd->getVersion().isEmpty()) // append version if available
+      {
+        fname += " (" + fd->getVersion() + ")";
+      }
+
+      // for HTML 
+      ol.pushGeneratorState();
+      ol.disableAllBut(OutputGenerator::Html);
+      if (fd->generateSourceFile())
+      {
+        ol.writeObjectLink(0,fd->getSourceFileBase(),0,fname);
+      }
+      else if (fd->isLinkable())
+      {
+        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+            fname);
+      }
+      else
+      {
+        ol.docify(fname);
+      }
+      ol.popGeneratorState();
+
+      // for other output formats
+      ol.pushGeneratorState();
+      ol.disable(OutputGenerator::Html);
+      if (fd->isLinkable())
+      {
+        ol.writeObjectLink(fd->getReference(),fd->getOutputFileBase(),0,
+            fname);
+      }
+      else
+      {
+        ol.docify(fname);
+      }
+
+      ol.popGeneratorState();
     }
-    if (!first) ol.endItemList();
-  //}
+    file=m_impl->files.next();
+  }
+  if (!first) ol.endItemList();
+
   ol.popGeneratorState();
 }
 
@@ -2752,7 +2749,7 @@ QCString ClassDef::getSourceFileBase() const
   }
   else
   {
-    return convertNameToFile(m_impl->fileName+"-source"); 
+    return convertNameToFile(m_impl->fileName)+"_source"; 
   }
 }
 

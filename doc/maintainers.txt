@@ -45,6 +45,9 @@ Dimitri van Heesch: dimitri@stack.nl
 TranslatorEnglish 
 Dimitri van Heesch: dimitri@stack.nl
 
+TranslatorEsperanto
+Ander Martinez: dwarfnauko@gmail.com
+
 TranslatorFinnish
 Antti Laine: antti.a.laine@tut.fi
 
@@ -69,6 +72,7 @@ Alessandro Falappa: alessandro@falappa.net
 Ahmed Aldo Faisal: aaf23@cam.ac.uk
 
 TranslatorJapanese 
+Hiroki Iseri: goyoki@gmail.com
 Ryunosuke Satoh: sun594@hotmail.com
 Kenji Nagamatsu: naga@joyful.club.ne.jp
 Iwasa Kazmi: iwasa@cosmo-system.jp
@@ -121,6 +125,7 @@ Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ostri.org
 TranslatorSpanish 
 Bartomeu: bartomeu@loteria3cornella.com
 Francisco Oltra Thennet: foltra@puc.cl
+David Vaquero: david@grupoikusnet.com
 
 TranslatorSwedish 
 Mikael Hallin: mikaelhallin@yahoo.se

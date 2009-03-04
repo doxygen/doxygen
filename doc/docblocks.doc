@@ -70,7 +70,7 @@ In both cases the intermediate *'s are optional, so
 
 is also valid.
 
-<li> A third alternative is to use a block of at least two C++ comment 
+<li> A third alternative is to use a block of <i>at least two</i> C++ comment 
 lines, where each line starts with an additional slash or an 
 exclamation mark. Here are examples of the two cases:
 
@@ -87,6 +87,8 @@ or
 //!... text ...
 //!
 \endverbatim
+
+Note that a blank line ends a documentation block in this case.
 
 <li>
 

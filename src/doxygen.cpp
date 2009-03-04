@@ -10418,8 +10418,15 @@ void generateOutput()
     delete tag;
   }
 
-  if (Config_getBool("GENERATE_HTML") && Config_getBool("DOT_CLEANUP")) removeDoxFont(Config_getString("HTML_OUTPUT"));
-  if (Config_getBool("GENERATE_RTF") && Config_getBool("DOT_CLEANUP"))  removeDoxFont(Config_getString("RTF_OUTPUT"));
+  if (Config_getBool("DOT_CLEANUP"))
+  {
+    if (Config_getBool("GENERATE_HTML"))
+      removeDoxFont(Config_getString("HTML_OUTPUT"));
+    if (Config_getBool("GENERATE_RTF"))  
+      removeDoxFont(Config_getString("RTF_OUTPUT"));
+    if (Config_getBool("GENERATE_LATEX"))  
+      removeDoxFont(Config_getString("LATEX_OUTPUT"));
+  }
 
   if (Config_getBool("GENERATE_XML"))
   {

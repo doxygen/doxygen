@@ -1219,18 +1219,22 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the tag is left blank doxygen will generate a 
  standard header. 
 
- The following commands have a special meaning inside the header:
- <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
- <code>\$doxygenversion</code>, <code>\$projectname</code>, and
- <code>\$projectnumber</code>. 
- Doxygen will replace them by respectively 
- the title of the page, the current date and time, only the current date,
- the version number of doxygen, the project name (see \c PROJECT_NAME), or the
- project number (see \c PROJECT_NUMBER). 
-
+ The following markers have a special meaning inside the header and footer:
+ <dl>
+ <dt><code>\$title</code><dd>will be replaced with the title of the page.
+ <dt><code>\$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>\$date</code><dd>will be replaced with the current date.
+ <dt><code>\$year</code><dd>will be replaces with the current year.
+ <dt><code>\$doxygenversion</code><dd>will be replaced with the version of doxygen
+ <dt><code>\$projectname</code><dd>will be replaced with the name of 
+            the project (see \c PROJECT_NAME)
+ <dt><code>\$projectnumber</code><dd>will be replaced with the project number
+            (see \c PROJECT_NUMBER)
+ <dt><code>\$relpath\$</code><dd>
  If \c CREATE_SUBDIRS is enabled, the command <code>\$relpath\$</code> can be 
  used to produce a relative path to the root of the HTML output directory,
  e.g. use \$relpath\$doxygen.css, to refer to the standard style sheet.
+ </dl>
    
  See also section \ref doxygen_usage for information on how to generate
  the default header that doxygen normally uses.

@@ -1399,6 +1399,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->fileName  = yyFileName;
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
+					  current->objc = insideObjC = yytext[0]=='@';
 					  lineCount() ;
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  if (insidePHP && current->spec&Entry::Abstract)
@@ -1476,6 +1477,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC ;
                                           current->spec    = Entry::Struct;
+					  current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
@@ -1532,6 +1534,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Union;
+					  current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;
@@ -1986,12 +1989,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  insideCppQuote=FALSE;
 					  BEGIN(FindMembers);
   					}
-<FindMembers>{B}*"#"			{ if (insidePHP)
+<FindMembers,FindFields>{B}*"#"		{ if (insidePHP)
 					    REJECT;
 					  lastCPPContext = YY_START;
 					  BEGIN( SkipCPP ) ;
 					}
-<FindMembers>{B}*"#"{B}*"define"	{ if (insidePHP)
+<FindMembers,FindFields>{B}*"#"{B}*"define"	{ if (insidePHP)
 					    REJECT;
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
@@ -4376,6 +4379,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  BEGIN( ClassVar );
 					}
+<CompoundName>{SCOPENAME}/{BN}*","	{  // multiple forward declarations on one line
+                                           // e.g. @protocol A,B;
+					  current->reset();
+  					}
 <CompoundName>{SCOPENAME}		{ 
 					  current->name = yytext ;
 					  lineCount();
@@ -5246,6 +5253,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   /* ------------ Generic rules -------------- */
 
 
+<SkipCxxComment>.*"\\\n"		{  // line continuation
+  					  yyLineNr++; 
+  					}
 <SkipCxxComment>.*/\n			{ 
 					  BEGIN( lastCContext ) ;
 					}

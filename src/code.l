@@ -842,7 +842,7 @@ static bool getLinkInScope(const QCString &c,  // scope
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  //printf("getLinkInScope: trying `%s'::`%s'\n",c.data(),m.data());
+  //fprintf(stderr,"getLinkInScope: trying `%s'::`%s'\n",c.data(),m.data());
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
       md->isLinkable())
   {
@@ -862,7 +862,7 @@ static bool getLinkInScope(const QCString &c,  // scope
     Definition *d = md->getOuterScope()==Doxygen::globalScope ?
 	            md->getBodyDef() : md->getOuterScope();
     if (md->getGroupDef()) d = md->getGroupDef();
-    //printf("d=%p linkable=%d\n",d,d?d->isLinkable():0);
+    //fprintf(stderr,"d=%p linkable=%d\n",d,d?d->isLinkable():0);
     if (d && d->isLinkable())
     {
       g_theCallContext.setClass(stripClassName(md->typeString()));
@@ -1009,7 +1009,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
   }
   else // not a class, maybe a global member
   {
-    //printf("class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
+    //fprintf(stderr,"class %s not linkable! cd=%p md=%p typeOnly=%d\n",clName,cd,md,typeOnly);
     if (!isLocal && (md!=0 || (cd==0 && !typeOnly))) // not a class, see if it is a global enum/variable/typedef.
     {
       if (md==0) // not found as a typedef
@@ -1032,7 +1032,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
       }
       if (md)
       {
-        //printf("is a global md=%p g_currentDefinition=%s\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>");
+        //fprintf(stderr,"is a global md=%p g_currentDefinition=%s linkable=%d\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>",md->isLinkable());
 	if (md->isLinkable())
 	{
           ol.linkableSymbol(g_yyLineNr,md->name(),md,
@@ -1049,6 +1049,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     }
     
     // nothing found, just write out the word
+    //fprintf(stderr,"not found!\n");
     ol.linkableSymbol(g_yyLineNr,clName,0,
 	              g_currentMemberDef?g_currentMemberDef:g_currentDefinition);
     codifyLines(clName);
@@ -1085,27 +1086,30 @@ static bool generateClassMemberLink(CodeOutputInterface &ol,MemberDef *xmd,const
   Definition *xd = xmd->getOuterScope()==Doxygen::globalScope ?
     xmd->getBodyDef() : xmd->getOuterScope();
   if (xmd->getGroupDef()) xd = xmd->getGroupDef();
-  if (xd)
+  if (xd && xd->isLinkable())
   {
 
     //printf("g_currentDefiniton=%p g_currentMemberDef=%p xmd=%p g_insideBody=%d\n",g_currentDefinition,g_currentMemberDef,xmd,g_insideBody);
 
     if (xmd->templateMaster()) xmd = xmd->templateMaster();
 
-    // add usage reference
-    if (g_currentDefinition && g_currentMemberDef &&
-	/*xmd!=g_currentMemberDef &&*/ g_insideBody)
+    if (xmd->isLinkable())
     {
-      addDocCrossReference(g_currentMemberDef,xmd);
-    }
+      // add usage reference
+      if (g_currentDefinition && g_currentMemberDef &&
+	  /*xmd!=g_currentMemberDef &&*/ g_insideBody)
+      {
+	addDocCrossReference(g_currentMemberDef,xmd);
+      }
 
-    // write the actual link
-    ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
-	g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
-    writeMultiLineCodeLink(ol,xmd->getReference(),
-	xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
-    addToSearchIndex(memName);
-    return TRUE;
+      // write the actual link
+      ol.linkableSymbol(g_yyLineNr,xmd->name(),xmd,
+	  g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
+      writeMultiLineCodeLink(ol,xmd->getReference(),
+	  xmd->getOutputFileBase(),xmd->anchor(),memName,xmd->briefDescriptionAsTooltip());
+      addToSearchIndex(memName);
+      return TRUE;
+    }
   }
 
   return FALSE;
@@ -2992,6 +2996,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  g_code->codify(yytext);
 					  endFontClass();
   					  BEGIN( g_lastCContext ) ; 
+					}
+<SkipCxxComment>[^\r\n]*"\\"[\r]?\n	{ // line continuation
+  					  codifyLines(yytext);
 					}
 <SkipCxxComment>[^\r\n]+		{ 
   					  g_code->codify(yytext);

@@ -564,7 +564,7 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
   // enum values are written as part of the enum
   if (md->memberType()==MemberDef::EnumValue) return;
   if (md->isHidden()) return;
-  if (md->name().at(0)=='@') return; // anonymous member
+  //if (md->name().at(0)=='@') return; // anonymous member
 
   // group members are only visible in their group
   //if (def->definitionType()!=Definition::TypeGroup && md->getGroupDef()) return;

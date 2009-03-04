@@ -64,6 +64,7 @@ LatexGenerator::LatexGenerator() : OutputGenerator()
   disableLinks=FALSE;
   m_indent=0;
   templateMemberItem = FALSE;
+  m_prettyCode=Config_getBool("LATEX_SOURCE_CODE");
 }
 
 LatexGenerator::~LatexGenerator()
@@ -187,6 +188,8 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\usepackage{graphicx}\n"
     "\\usepackage{multicol}\n"
     "\\usepackage{float}\n"
+    "\\usepackage{listings}\n"
+    "\\usepackage{color}\n"
     "\\usepackage{textcomp}\n"
     "\\usepackage{alltt}\n"
     //"\\usepackage{ae,aecompl,aeguill}\n"
@@ -228,6 +231,16 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     t << sLanguageSupportCommand << endl;
   }
   t << "\\usepackage{doxygen}\n";
+
+  // define option for listings
+  t << "\\lstset{language=C++,"
+                "inputencoding=utf8,"
+                "basicstyle=\\footnotesize,"
+                "breaklines=true,"
+                "breakatwhitespace=true,"
+                "tabsize=" << Config_getInt("TAB_SIZE") <<","
+                "numbers=left }" << endl;
+
   QStrList &extraPackages = Config_getList("EXTRA_PACKAGES");
   const char *s=extraPackages.first();
   while (s)
@@ -239,11 +252,20 @@ static void writeDefaultHeaderPart1(QTextStream &t)
     "\\setcounter{tocdepth}{3}\n"
     "\\renewcommand{\\footrulewidth}{0.4pt}\n"
     "\\begin{document}\n";
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (pdfHyperlinks && usePDFLatex)
+  {
+    // to avoid duplicate page anchors due to reuse of same numbers for
+    // the index (be it as roman numbers)
+    t << "\\hypersetup{pageanchor=false}" << endl;
+  }
   if (theTranslator->idLanguage()=="greek") t << "\\selectlanguage{greek}\n";
   t << "\\begin{titlepage}\n"
     "\\vspace*{7cm}\n"
     "\\begin{center}\n"
     "{\\Large ";
+
 }
 
 static void writeDefaultHeaderPart2(QTextStream &t)
@@ -267,6 +289,12 @@ static void writeDefaultHeaderPart3(QTextStream &t)
   t << "\\tableofcontents\n";
   if (!Config_getBool("COMPACT_LATEX")) t << "\\clearemptydoublepage\n";
   t << "\\pagenumbering{arabic}\n";
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (pdfHyperlinks && usePDFLatex)
+  {
+    t << "\\hypersetup{pageanchor=true}" << endl;
+  }
 }
 
 static void writeDefaultStyleSheetPart1(QTextStream &t)
@@ -373,6 +401,16 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "\\makeatother\n";
   t << "\\stepcounter{secnumdepth}\n";
   t << "\\stepcounter{tocdepth}\n";
+  t << "\\definecolor{comment}{rgb}{0.5,0.0,0.0}\n";
+  t << "\\definecolor{keyword}{rgb}{0.0,0.5,0.0}\n";
+  t << "\\definecolor{keywordtype}{rgb}{0.38,0.25,0.125}\n";
+  t << "\\definecolor{keywordflow}{rgb}{0.88,0.5,0.0}\n";
+  t << "\\definecolor{preprocessor}{rgb}{0.5,0.38,0.125}\n";
+  t << "\\definecolor{stringliteral}{rgb}{0.0,0.125,0.25}\n";
+  t << "\\definecolor{charliteral}{rgb}{0.0,0.5,0.5}\n";
+  t << "\\definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}\n";
+  t << "\\definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}\n";
+  t << "\\definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)
@@ -412,6 +450,7 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 #endif
   QCString fileName=name;
   relPath = relativePathToRoot(fileName);
+  sourceFileName = stripPath(fileName);
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
 }
@@ -419,6 +458,7 @@ void LatexGenerator::startFile(const char *name,const char *,const char *)
 void LatexGenerator::endFile()
 {
   endPlainFile();
+  sourceFileName.resize(0);
 }
 
 //void LatexGenerator::writeIndex()
@@ -602,8 +642,9 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
-  bool &compactLatex = Config_getBool("COMPACT_LATEX");
-  QCString &latexHeader = Config_getString("LATEX_HEADER");
+  static bool compactLatex = Config_getBool("COMPACT_LATEX");
+  static bool sourceBrowser = Config_getBool("SOURCE_BROWSER");
+  static QCString latexHeader = Config_getString("LATEX_HEADER");
   switch (is)
   {
     case isTitlePageStart:
@@ -750,12 +791,21 @@ void LatexGenerator::endIndexSection(IndexSections is)
               if (isFirst)
               {
                 t << "}\n\\input{" << fd->getOutputFileBase() << "}\n";
+                if (sourceBrowser && m_prettyCode)
+                {
+                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
+                }
                 isFirst=FALSE;
               }
               else
               {
                 if (compactLatex) t << "\\input" ; else t << "\\include";
                 t << "{" << fd->getOutputFileBase() << "}\n";
+                if (sourceBrowser && m_prettyCode)
+                {
+                  if (compactLatex) t << "\\input" ; else t << "\\include";
+                  t << "{" << fd->getSourceFileBase() << "}\n";
+                }
               }
             }
             fd=fn->next();
@@ -1022,17 +1072,38 @@ void LatexGenerator::endPageRef(const char *clname, const char *anchor)
   t << "}";
 }
 
-void LatexGenerator::writeCodeLink(const char *,const char *,
-                                   const char *,const char *name,
+void LatexGenerator::writeCodeLink(const char *ref,const char *f,
+                                   const char *anchor,const char *name,
                                    const char *)
 {
-  t << name;
-  col+=strlen(name);
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  int l = strlen(name);
+  if (col+l>80)
+  {
+    t << "\n      ";
+    col=0;
+  }
+  if (m_prettyCode && !disableLinks && !ref && usePDFLatex && pdfHyperlinks)
+  {
+    t << "\\hyperlink{";
+    if (f) t << stripPath(f);
+    if (f && anchor) t << "_"; 
+    if (anchor) t << anchor; 
+    t << "}{" << name << "}";
+  }
+  else
+  {
+    t << name;
+  }
+  col+=l;
 }
 
 void LatexGenerator::startTitleHead(const char *fileName)
 {
-  if (Config_getBool("PDF_HYPERLINKS") && fileName)
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (usePDFLatex && pdfHyperlinks && fileName)
   {
     t << "\\hypertarget{" << stripPath(fileName) << "}{" << endl;
   }
@@ -1048,6 +1119,8 @@ void LatexGenerator::startTitleHead(const char *fileName)
 
 void LatexGenerator::endTitleHead(const char *fileName,const char *name)
 {
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
   t << "}" << endl;
   if (name)
   {
@@ -1057,7 +1130,7 @@ void LatexGenerator::endTitleHead(const char *fileName,const char *name)
     escapeMakeIndexChars(name);
     t << "}}" << endl;
   }
-  if (Config_getBool("PDF_HYPERLINKS") && fileName)
+  if (usePDFLatex && pdfHyperlinks && fileName)
   {
     t << "}" << endl;
   }
@@ -1171,7 +1244,9 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
                                      const char *anchor, const char *,
                                      const char *)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (usePDFLatex && pdfHyperlinks)
   {
     t << "\\hypertarget{";
     if (fName) t << stripPath(fName);
@@ -1182,7 +1257,9 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
 
 void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (usePDFLatex && pdfHyperlinks)
   {
     t << "}" << endl;
   }
@@ -1196,7 +1273,9 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 { 
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
   t << "\\label{" << name << "}" << endl; 
-  if (Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (usePDFLatex && pdfHyperlinks)
   {
     if (fName)
     {
@@ -1239,7 +1318,9 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 
 void LatexGenerator::startSection(const char *lab,const char *,SectionInfo::SectionType type)
 {
-  if (Config_getBool("PDF_HYPERLINKS"))
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  static bool usePDFLatex   = Config_getBool("USE_PDFLATEX");
+  if (usePDFLatex && pdfHyperlinks)
   {
     t << "\\hypertarget{" << stripPath(lab) << "}{}";
   }
@@ -1293,8 +1374,10 @@ void LatexGenerator::codify(const char *str)
   { 
     const char *p=str;
     char c;
+    char cs[2];
+    cs[1]='\0';
     int spacesToNextTabStop;
-    int &tabSize = Config_getInt("TAB_SIZE");
+    static int tabSize = Config_getInt("TAB_SIZE");
     while (*p)
     {
       static bool MultiByte = FALSE;
@@ -1325,7 +1408,25 @@ void LatexGenerator::codify(const char *str)
                    col+=spacesToNextTabStop;
                    break; 
         case '\n': t << '\n'; col=0;                    break;
-        default:   t << c;    col++;                    break;
+        default:   if (m_prettyCode)
+                   {
+                     cs[0]=c; 
+                     filterLatexString(t,cs,insideTabbing,TRUE);
+                   }
+                   else
+                   {
+                     t << c;
+                   }
+                   if (col>=80)
+                   {
+                     t << "\n      ";
+                     col=0;
+                   }
+                   else
+                   {
+                     col++;                    
+                   }
+                   break;
       }
     }
   }
@@ -1697,4 +1798,93 @@ void LatexGenerator::escapeMakeIndexChars(const char *s)
   }
 }
 
+void LatexGenerator::startCodeFragment()
+{
+  if (m_prettyCode)
+  {
+    t << endl << endl;
+    t << "\\begin{footnotesize}\\begin{alltt}\n";
+  }
+  else
+  {
+    t << endl << endl << "\\begin{Code}\\begin{verbatim}";
+  }
+}
+
+void LatexGenerator::endCodeFragment()
+{
+  if (m_prettyCode)
+  {
+    t << "\\end{alltt}\\end{footnotesize}" << endl; 
+  }
+  else
+  {
+    t << "\\end{verbatim}\n\\end{Code}" << endl;
+  }
+}
+
+void LatexGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
+{
+  if (m_prettyCode)
+  {
+    QCString lineNumber;
+    lineNumber.sprintf("%05d",l);
+
+    if (fileName && !sourceFileName.isEmpty())
+    {
+      QCString lineAnchor;
+      lineAnchor.sprintf("_l%05d",l);
+      lineAnchor.prepend(sourceFileName);
+      startCodeAnchor(lineAnchor);
+      writeCodeLink(ref,fileName,anchor,lineNumber,0);
+      endCodeAnchor();
+    }
+    else
+    { 
+      codify(lineNumber);
+    }
+    t << " ";
+  }
+  else
+  {
+    t << l << " ";
+  }
+}
+
+void LatexGenerator::startCodeLine()
+{
+  col=0;
+}
+
+void LatexGenerator::endCodeLine()
+{
+  codify("\n");
+}
+
+void LatexGenerator::startFontClass(const char *name)
+{
+  if (!m_prettyCode) return;
+  t << "\\textcolor{" << name << "}{";
+}
+
+void LatexGenerator::endFontClass()
+{
+  if (!m_prettyCode) return;
+  t << "}";
+}
+
+void LatexGenerator::startCodeAnchor(const char *name) 
+{
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
+  static bool pdfHyperlinks = Config_getBool("PDF_HYPERLINKS");
+  if (!m_prettyCode) return;
+  if (usePDFLatex && pdfHyperlinks)
+  {
+    t << "\\hypertarget{" << stripPath(name) << "}{}";
+  }
+}
+
+void LatexGenerator::endCodeAnchor() 
+{
+}
 

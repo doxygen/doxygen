@@ -168,7 +168,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
   {
     ol.writeRuler();
     ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
+    ol.disable(OutputGenerator::Html);
       ol.writeAnchor(0,"_details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -707,13 +707,16 @@ void FileDef::writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const
 void FileDef::writeSource(OutputList &ol)
 {
   static bool filterSourceFiles = Config_getBool("FILTER_SOURCE_FILES");
+  static bool latexSourceCode   = Config_getBool("LATEX_SOURCE_CODE");
   QCString title = docname;
   if (!fileVersion.isEmpty())
   {
     title+=(" ("+fileVersion+")");
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
-  ol.disableAllBut(OutputGenerator::Html);
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::RTF);
+  if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
 
   if (Config_getBool("SHOW_DIRECTORIES") && getDirDef())
   {
@@ -728,16 +731,18 @@ void FileDef::writeSource(OutputList &ol)
   else
   {
     startFile(ol,getSourceFileBase(),0,pageTitle,HLI_FileVisible,TRUE);
-    startTitle(ol,0);
+    startTitle(ol,getSourceFileBase());
     ol.parseText(title);
-    endTitle(ol,0,0);
+    endTitle(ol,getSourceFileBase(),0);
   }
 
   if (isLinkable())
   {
+    if (latexSourceCode) ol.disable(OutputGenerator::Latex);
     ol.startTextLink(getOutputFileBase(),0);
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
+    if (latexSourceCode) ol.enable(OutputGenerator::Latex);
   }
 
   ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
@@ -1444,7 +1449,7 @@ QCString FileDef::getSourceFileBase() const
   }
   else
   {
-    return convertNameToFile(diskname+"-source"); 
+    return convertNameToFile(diskname)+"_source"; 
   }
 }
 
@@ -1457,7 +1462,7 @@ QCString FileDef::includeName() const
   }
   else
   {
-    return convertNameToFile(diskname+"-source"); 
+    return convertNameToFile(diskname)+"_source"; 
   }
 }
 

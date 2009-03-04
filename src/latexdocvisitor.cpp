@@ -270,20 +270,35 @@ void LatexDocVisitor::visit(DocStyleChange *s)
 
 void LatexDocVisitor::visit(DocVerbatim *s)
 {
+  static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   if (m_hide) return;
   switch(s->type())
   {
     case DocVerbatim::Code: 
-      m_t << "\n\n\\begin{Code}\\begin{verbatim}"; 
+      if (latexSourceCode)
+      {
+        m_t << "\n\n\\begin{footnotesize}\\begin{alltt}" << endl; 
+      }
+      else
+      {
+        m_t << "\n\n\\begin{Code}\\begin{verbatim}"; 
+      }
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,s->context(),s->text().latin1(),
                                         s->isExample(),s->exampleFile());
-      m_t << "\\end{verbatim}\n\\end{Code}\n" << endl; 
+      if (latexSourceCode)
+      {
+        m_t << "\\end{alltt}\\end{footnotesize}" << endl; 
+      }
+      else
+      {
+        m_t << "\\end{verbatim}\n\\end{Code}\n" << endl; 
+      }
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "\n\n\\footnotesize\\begin{verbatim}"; 
+      m_t << "\n\n\\begin{footnotesize}\\begin{verbatim}"; 
       m_t << s->text();
-      m_t << "\\end{verbatim}\n\\normalsize" << endl; 
+      m_t << "\\end{verbatim}\n\\end{footnotesize}" << endl; 
       break;
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
