@@ -978,9 +978,11 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   QString name = linkToText(g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
+  bool ambig;
+  FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
   //printf("handleLinkedWord(%s) g_context=%s\n",name.data(),g_context.data());
   if (!g_insideHtmlLink && 
-      (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member)
+      (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd)
        || (!g_context.isEmpty() &&  // also try with global scope
            resolveRef("",g_token->name,g_inSeeBlock,&compound,&member))
       )
@@ -1412,7 +1414,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
   DBG(("decodeSymbol(%s) l=%d\n",symName.data(),l));
   if      (symName=="&copy;")  return DocSymbol::Copy;
   else if (symName=="&trade;") return DocSymbol::Tm;
-  else if (symName=="&tm;")    return DocSymbol::Tm; // alias for &trace;
+  else if (symName=="&tm;")    return DocSymbol::Tm; // alias for &trade;
   else if (symName=="&reg;")   return DocSymbol::Reg;
   else if (symName=="&lt;")    return DocSymbol::Less;
   else if (symName=="&gt;")    return DocSymbol::Greater;
@@ -1427,6 +1429,8 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
   else if (symName=="&mdash;") return DocSymbol::Mdash;
   else if (symName=="&szlig;") return DocSymbol::Szlig;
   else if (symName=="&nbsp;")  return DocSymbol::Nbsp;
+  else if (symName=="&AElig;") return DocSymbol::AElig;
+  else if (symName=="&aelig;") return DocSymbol::Aelig;
   else if (l==6 && symName.right(4)=="uml;")  
   {
     *letter=symName.at(1);

@@ -417,6 +417,7 @@ static void parseFunctionProto()
 
   VhdlDocGen::parseFuncProto(qcs.data(),ql,name,ret); 
   //printf("parseFuncProto(%s)=%s,%s\n",qcs.data(),name.data(),ret.data());
+  VhdlDocGen::deleteAllChars(name,';');
   current->name=name;
   current->startLine=iFuncLine;
   current->bodyLine=iFuncLine;
@@ -639,6 +640,11 @@ BRACECLOSE              [)]{1}
 
 ALLID                   [^;()\t ]
 
+/* VHDL 2001 */
+ENDPROTECTED            ("end"{BR}+"protected"{BR}+{NAME}{BR}*";")|("end"{BR}+"protected"{BR}*";")
+ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
+
+
 %option noyywrap
 
   /* language parsing states */
@@ -660,6 +666,12 @@ ALLID                   [^;()\t ]
 %x FindBegin
 
 %%
+
+<Start>{ENDPROTECTED}|{ENDPROTECEDBODY}  {
+ lineCount();
+}
+
+
 
 <Start>{CONFIG} { // found configuration
  
@@ -985,6 +997,21 @@ ALLID                   [^;()\t ]
   current->name=QCString(yytext);
   BEGIN(ParseType);
 }
+
+
+<ParseType>("is"){BR}+("protected"){BR}+("body") {lineCount(); BEGIN(Start); }
+
+<ParseType>("is"){BR}+("protected"){BR}+ { 
+ lineCount();
+ current->section=Entry::VARIABLE_SEC;
+ current->spec=VhdlDocGen::TYPE;
+ current->type="protected"; 
+ newEntry(); 
+  BEGIN(Start);
+}
+
+
+
 
 <ParseType>("is"){BR}*("record") { // find record
   lineCount();

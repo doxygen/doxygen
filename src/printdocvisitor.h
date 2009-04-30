@@ -83,6 +83,8 @@ class PrintDocVisitor : public DocVisitor
 	case DocSymbol::Cedil:   printf("&%ccedul;",s->letter()); break;
 	case DocSymbol::Ring:    printf("&%cring;",s->letter()); break;
 	case DocSymbol::Nbsp:    printf("&nbsp;"); break;
+	case DocSymbol::Aelig:   printf("&aelig;"); break;
+	case DocSymbol::AElig:   printf("&AElig;"); break;
 	default:
 	  printf("Error: unknown symbol found\n");
       }

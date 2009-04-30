@@ -561,6 +561,8 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   case DocSymbol::Reg:     symbol = "registered"; break;
   case DocSymbol::Szlig:   symbol = "szlig"; break;
   case DocSymbol::Apos:    s = "\\\'"; break;
+  case DocSymbol::Aelig:   symbol = "aelig"; break;
+  case DocSymbol::AElig:   symbol = "AElig"; break;
   case DocSymbol::Unknown:
     err("Error: unknown symbol found\n");
     break;

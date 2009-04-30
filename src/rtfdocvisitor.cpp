@@ -219,6 +219,8 @@ void RTFDocVisitor::visit(DocSymbol *s)
                              break;
     case DocSymbol::Szlig:   m_t << "\337"; break;
     case DocSymbol::Nbsp:    m_t << "\\~ "; break;
+    case DocSymbol::Aelig:   m_t << "\346"; break;
+    case DocSymbol::AElig:   m_t << "\306"; break;
     default:
                              err("Error: unknown symbol found\n");
   }

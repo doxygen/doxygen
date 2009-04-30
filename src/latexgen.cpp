@@ -304,6 +304,7 @@ static void writeDefaultStyleSheetPart1(QTextStream &t)
   t << "\\ProvidesPackage{doxygen}\n";
   t << "\\RequirePackage{calc}\n";
   t << "\\RequirePackage{array}\n";
+  t << "\\RequirePackage{color}\n";
   t << "\\pagestyle{fancyplain}\n";
   //t << "\\addtolength{\\headwidth}{\\marginparsep}\n";
   //t << "\\addtolength{\\headwidth}{\\marginparwidth}\n";

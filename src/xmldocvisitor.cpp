@@ -98,6 +98,8 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Ring:    m_t << "<ring char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Slash:   m_t << "<slash char=\"" << s->letter() << "\"/>"; break;
     case DocSymbol::Nbsp:    m_t << "<nonbreakablespace/>"; break;
+    case DocSymbol::Aelig:   m_t << "<aelig/>"; break;
+    case DocSymbol::AElig:   m_t << "<AElig/>"; break;
     default:
                              err("Error: unknown symbol found\n");
   }

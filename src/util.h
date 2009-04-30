@@ -136,7 +136,8 @@ bool resolveRef(/* in */  const char *scName,
                 /* in */  bool inSeeBlock,
                 /* out */ Definition **resContext,
                 /* out */ MemberDef  **resMember,
-                /* in */  bool lookForSpecializations = TRUE
+                /* in */  bool lookForSpecializations = TRUE,
+                /* in */  FileDef *currentFile = 0
                );
 
 bool resolveLink(/* in */  const char *scName,

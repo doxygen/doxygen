@@ -55,6 +55,8 @@ void TextDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedil;"; break;
     case DocSymbol::Ring:    m_t << "&" << s->letter() << "ring;"; break;
     case DocSymbol::Nbsp:    m_t << "&nbsp;"; break;
+    case DocSymbol::Aelig:   m_t << "&aelig;"; break;
+    case DocSymbol::AElig:   m_t << "&AElig;"; break;
     default:
                              err("Error: unknown symbol found\n");
   }

@@ -326,7 +326,7 @@ class DocSymbol : public DocNode
     enum SymType { Unknown=0, BSlash,At,Less,Greater,Amp,Dollar,Hash,Percent, 
                    Copy, Tm, Reg, Apos, Quot, Uml, Acute, Grave, Circ, Tilde, 
                    Szlig, Cedil, Ring, Nbsp, Slash, Lsquo, Rsquo, Ldquo, Rdquo, 
-                   Ndash, Mdash
+                   Ndash, Mdash, Aelig, AElig
                  };
     DocSymbol(DocNode *parent,SymType s,char letter='\0') : 
       m_parent(parent), m_symbol(s), m_letter(letter) {}
