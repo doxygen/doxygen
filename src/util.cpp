@@ -3551,6 +3551,51 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
   }
 }
 
+static void findMembersWithSpecificName(MemberName *mn,
+                                        const char *args,
+                                        bool checkStatics,
+                                        FileDef *currentFile,
+                                        bool checkCV,
+                                        QList<MemberDef> &members)
+{
+  //printf("  Function with global scope name `%s' args=`%s'\n",memberName.data(),args);
+  MemberListIterator mli(*mn);
+  MemberDef *md;
+  for (mli.toFirst();(md=mli.current());++mli)
+  {
+    FileDef  *fd=md->getFileDef();
+    GroupDef *gd=md->getGroupDef();
+    //printf("  md->name()=`%s' md->args=`%s' fd=%p gd=%p\n",
+    //    md->name().data(),args,fd,gd);
+    if (
+        ((gd && gd->isLinkable()) || (fd && fd->isLinkable())) && 
+        md->getNamespaceDef()==0 && md->isLinkable() &&
+        (!checkStatics || !md->isStatic() || currentFile==0 || fd==currentFile) // statics must appear in the same file
+       )
+    {
+      //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
+      bool match=TRUE;
+      ArgumentList *argList=0;
+      if (args && !md->isDefine() && strcmp(args,"()")!=0)
+      {
+        argList=new ArgumentList;
+        LockingPtr<ArgumentList> mdAl = md->argumentList();
+        stringToArgumentList(args,argList);
+        match=matchArguments2(
+            md->getOuterScope(),fd,mdAl.pointer(),
+            Doxygen::globalScope,fd,argList,
+            checkCV); 
+        delete argList; argList=0;
+      }
+      if (match) 
+      {
+        //printf("Found match!\n");
+        members.append(md);
+      }
+    }
+  }
+}
+
 /*!
  * Searches for a member definition given its name `memberName' as a string.
  * memberName may also include a (partial) scope to indicate the scope
@@ -3886,7 +3931,15 @@ bool getDefs(const QCString &scName,const QCString &memberName,
     //else // no scope => global function
     {
       QList<MemberDef> members;
+      // search for matches with strict static checking
+      findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,members);
+      if (members.count()==0) // nothing found
+      {
+        // search again without strict static checking
+        findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,members);
+      }
 
+#if 0
       //printf("  Function with global scope name `%s' args=`%s'\n",memberName.data(),args);
       MemberListIterator mli(*mn);
       for (mli.toFirst();(md=mli.current());++mli)
@@ -3897,7 +3950,8 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         //    md->name().data(),args,fd,gd);
         if (
             ((gd && gd->isLinkable()) || (fd && fd->isLinkable())) && 
-            md->getNamespaceDef()==0 && md->isLinkable()
+            md->getNamespaceDef()==0 && md->isLinkable() &&
+            (!md->isStatic() || fd==currentFile) // statics must appear in the same file
            )
         {
           //printf("    fd=%p gd=%p args=`%s'\n",fd,gd,args);
@@ -3921,6 +3975,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
           }
         }
       }
+#endif
       if (members.count()!=1 && args && !strcmp(args,"()"))
       {
         // no exact match found, but if args="()" an arbitrary 
@@ -3942,32 +3997,9 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
       }
       //printf("found %d candidate members\n",members.count());
-      if (members.count()==1 || currentFile!=0)
+      if (members.count()>0) // at least one match
       {
-        md=members.first();
-      }
-      else if (members.count()>1)
-      {
-        //printf("Found more than one matching member!\n");
-        // use some C scoping rules to determine the correct link
-        // 1. member in current file
-        // 2. non-static member in different file
-        if (currentFile==0)
-        {
-          bool ambig;
-          currentFile = findFileDef(Doxygen::inputNameDict,0/*namespaceName*/,ambig);
-        }
-        MemberDef *bmd = 0;
-        for (md=members.first(); md; md=members.next())
-        {
-          if (currentFile && md->getBodyDef()==currentFile)
-          {
-            bmd = 0;
-            break;
-          }
-          if (!md->isStatic() || Config_getBool("EXTRACT_STATIC")) bmd = md;     
-        }
-        if (bmd) md=bmd;
+        md=members.last();
       }
       if (md) // found a matching global member
       {
@@ -4062,7 +4094,8 @@ bool resolveRef(/* in */  const char *scName,
     /* in */  bool inSeeBlock,
     /* out */ Definition **resContext,
     /* out */ MemberDef  **resMember,
-    bool lookForSpecialization
+    bool lookForSpecialization,
+    FileDef *currentFile
     )
 {
   QCString tsName = name;
@@ -4155,7 +4188,7 @@ bool resolveRef(/* in */  const char *scName,
   if (getDefs(scopeStr,nameStr,argsStr,
         md,cd,fd,nd,gd,
         scopePos==0 && !memberScopeFirst,
-        0,
+        currentFile,
         TRUE
         )
      )

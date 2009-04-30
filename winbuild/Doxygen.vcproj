@@ -1557,6 +1557,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\portable_c.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\pre.cpp"
 				>
 			</File>

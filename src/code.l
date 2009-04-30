@@ -1711,7 +1711,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME ((({ID}{TEMPLIST}?){BN}*"::"{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*"::"{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize")
-KEYWORD ("add"|"asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"set"|"sizeof"|"static"|"struct"|"__super"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"case"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"for"|"foreach"|"for each"|"goto"|"if"|"return"|"switch"|"throw"|"throws"|"try"|"while"|"@try"|"@catch"|"@finally")
 TYPEKW  ("bool"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")

@@ -75,7 +75,7 @@ static const char* g_vhdlKeyWordMap0[] =
   "range", "record", "register", "reject", "report", "return","select", 
   "severity", "shared", "signal", "subtype", "then", "to", "transport", 
   "type","unaffected", "units", "until", "use","variable", "wait", "when", 
-  "while", "with","true","false",0
+  "while", "with","true","false","protected",0
 };
 
 // type

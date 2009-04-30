@@ -123,6 +123,8 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedil;"; break;
     case DocSymbol::Ring:    m_t << "&" << s->letter() << "ring;"; break;
     case DocSymbol::Nbsp:    m_t << "&nbsp;"; break;
+    case DocSymbol::AElig:   m_t << "&AElig;"; break;
+    case DocSymbol::Aelig:   m_t << "&aelig;"; break;
     default:
                              err("Error: unknown symbol found\n");
   }
@@ -1009,13 +1011,13 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
   bool anonymousEnum = x->file()=="@";
   if (!anonymousEnum)
   {
-    m_t << "<dl compact><dt><b><a class=\"el\" href=\"" 
+    m_t << "<dl class=\"" << x->key() << "\" compact><dt><b><a class=\"el\" href=\"" 
         << x->relPath() << x->file() << Doxygen::htmlFileExtension 
         << "#" << x->anchor() << "\">";
   }
   else 
   {
-    m_t << "<dl compact><dt><b>";
+    m_t << "<dl class=\"" << x->key() << "\" compact><dt><b>";
   }
   filter(x->title());
   m_t << ":";
