@@ -1,0 +1,13 @@
+all clean depend: Makefile.metrics 
+	$(MAKE) -f Makefile.metrics $@
+
+distclean: clean
+	$(RM) -rf Makefile.metrics metrics.pro Makefile obj
+
+tmake:
+	$(ENV) $(PERL) $(TMAKE) metrics.pro >Makefile.metrics
+
+Makefile.metrics: metrics.pro
+	$(ENV) $(PERL) $(TMAKE) metrics.pro >Makefile.metrics
+
+install:

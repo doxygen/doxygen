@@ -1,0 +1,86 @@
+%
+% 
+%
+% Copyright (C) 1997-2006 by Dimitri van Heesch.
+%
+% Permission to use, copy, modify, and distribute this software and its
+% documentation under the terms of the GNU General Public License is hereby 
+% granted. No representations are made about the suitability of this software 
+% for any purpose. It is provided "as is" without express or implied warranty.
+% See the GNU General Public License for more details.
+%
+% Documents produced by Doxygen are derivative works derived from the
+% input used in their production; they are not affected by this license.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{doxygen}
+\RequirePackage{calc}
+\RequirePackage{array}
+\pagestyle{fancyplain}
+\addtolength{\headwidth}{\marginparsep}
+\addtolength{\headwidth}{\marginparwidth}
+\newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}\cleardoublepage}}
+\lhead[\fancyplain{}{\bfseries\thepage}]
+        {\fancyplain{}{\bfseries\rightmark}}
+\rhead[\fancyplain{}{\bfseries\leftmark}]
+        {\fancyplain{}{\bfseries\thepage}}
+\rfoot[\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2006}]{}
+\lfoot[]{\fancyplain{}{\bfseries\scriptsize User Manual for Doxygen $VERSION, written by Dimitri van Heesch \copyright 1997-2006}}
+\cfoot{}
+\newenvironment{Code}
+{\footnotesize}
+{\normalsize}
+\newcommand{\doxyref}[3]{\textbf{#1} (\textnormal{#2}\,\pageref{#3})}
+\newenvironment{DocInclude}
+{\footnotesize}
+{\normalsize}
+\newenvironment{VerbInclude}
+{\footnotesize}
+{\normalsize}
+\newenvironment{Image}
+{\begin{figure}[H]}
+{\end{figure}}
+\newenvironment{ImageNoCaption}{}{}
+\newenvironment{CompactList}
+{\begin{list}{}{
+  \setlength{\leftmargin}{0.5cm}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \renewcommand{\makelabel}{}}}
+{\end{list}}
+\newenvironment{CompactItemize}
+{
+  \begin{itemize}
+  \setlength{\itemsep}{-4pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \setlength{\partopsep}{0pt}
+}
+{\end{itemize}}
+\newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}
+\newlength{\tmplength}
+\newenvironment{TabularC}[1]
+{
+\setlength{\tmplength}
+     {\linewidth/(#1)-\tabcolsep*2-\arrayrulewidth*(#1+1)/(#1)}
+      \par\begin{tabular*}{\linewidth}
+             {*{#1}{|>{\PBS\raggedright\hspace{0pt}}p{\the\tmplength}}|}
+}
+{\end{tabular*}\par}
+\newcommand{\entrylabel}[1]{
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\\}}}
+\newenvironment{Desc}
+{\begin{list}{}
+  {
+    \settowidth{\labelwidth}{40pt}
+    \setlength{\leftmargin}{\labelwidth}
+    \setlength{\parsep}{0pt}
+    \setlength{\itemsep}{-4pt}
+    \renewcommand{\makelabel}{\entrylabel}
+  }
+}
+{\end{list}}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.2cm}
+\sloppy

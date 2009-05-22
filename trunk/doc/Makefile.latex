@@ -1,0 +1,25 @@
+#
+# 
+#
+# Copyright (C) 1997-2006 by Dimitri van Heesch.
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation under the terms of the GNU General Public License is hereby 
+# granted. No representations are made about the suitability of this software 
+# for any purpose. It is provided "as is" without express or implied warranty.
+# See the GNU General Public License for more details.
+#
+# Documents produced by Doxygen are derivative works derived from the
+# input used in their production; they are not affected by this license.
+
+all: doxygen_manual.pdf
+
+doxygen_manual.pdf: doxygen_manual.tex doxygen.sty
+	echo "Running latex..."
+	pdflatex doxygen_manual.tex 
+	echo "Running makeindex..."
+	makeindex doxygen_manual.idx
+	echo "Rerunning latex...."
+	pdflatex doxygen_manual.tex
+clean:
+	rm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log doxygen_manual.pdf

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="flex"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="Lex"
+			DisplayName="Lex"
+			CommandLine="flex [AllOptions] [AdditionalOptions] [inputs]"
+			Outputs="$(InputDir)/$(InputName).cpp"
+			FileExtensions="*.l"
+			ExecutionDescription="Executing Lex for $(InputDir)/$(InputName).cpp ..."
+			ShowOnlyRuleProperties="false"
+			>
+			<Properties>
+				<StringProperty
+					Name="Prefix"
+					DisplayName="Prefix"
+					Description="specify scanner prefix other than &quot;yy&quot;"
+					Switch="-P[value]"
+					Delimited="true"
+				/>
+				<BooleanProperty
+					Name="Stdout"
+					DisplayName="Redirect to stdout"
+					Description="write generated scanner on stdout instead of lex.yy.c"
+					Switch="-t"
+				/>
+				<StringProperty
+					Name="Output"
+					DisplayName="Output file name"
+					Description="Specify output filename"
+					Switch="-o[value]"
+					DefaultValue="$(InputDir)$(InputName).cpp"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

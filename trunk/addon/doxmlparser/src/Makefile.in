@@ -1,0 +1,13 @@
+all clean depend: Makefile.doxmlparser 
+	$(MAKE) -f Makefile.doxmlparser $@
+
+distclean: clean
+	$(RM) -rf Makefile.doxmlparser doxmlparser.pro Makefile obj
+
+tmake:
+	$(ENV) $(PERL) $(TMAKE) doxmlparser.pro >Makefile.doxmlparser
+
+Makefile.doxmlparser: doxmlparser.pro
+	$(ENV) $(PERL) $(TMAKE) doxmlparser.pro >Makefile.doxmlparser
+
+install:

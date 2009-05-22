@@ -1,0 +1,94 @@
+/****************************************************************************
+** 
+**
+** QSortedList documentation
+**
+** Copyright (C) 1992-2000 Trolltech AS.  All rights reserved.
+**
+** This file is part of the Qt GUI Toolkit.
+**
+** This file may be distributed under the terms of the Q Public License
+** as defined by Trolltech AS of Norway and appearing in the file
+** LICENSE.QPL included in the packaging of this file.
+**
+** This file may be distributed and/or modified under the terms of the
+** GNU General Public License version 2 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.
+**
+** Licensees holding valid Qt Enterprise Edition or Qt Professional Edition
+** licenses may use this file in accordance with the Qt Commercial License
+** Agreement provided with the Software.
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+** See http://www.trolltech.com/pricing.html or email sales@trolltech.com for
+**   information about Qt Commercial License Agreements.
+** See http://www.trolltech.com/qpl/ for QPL licensing information.
+** See http://www.trolltech.com/gpl/ for GPL licensing information.
+**
+** Contact info@trolltech.com if any conditions of this licensing are
+** not clear to you.
+**
+**********************************************************************/
+
+
+/*****************************************************************************
+  QSortedList documentation
+ *****************************************************************************/
+
+/*!
+  \class QSortedList qsortedlist.h
+  \brief The QSortedList class provides a list sorted by operator< and operator==
+
+  \ingroup collection
+  \ingroup tools
+
+  If you want to sort a QList you have to reimplement the
+  QGList::compareItems() method.  If the elements of your list support
+  operator<() and operator==() then you can use QSortedList instead.
+  Its compareItems() calls operator<() and operator==() and returns an
+  appropriate result.
+
+  Otherwise, this is as QList.
+
+  \sa QList, \link collection.html Collection Classes\endlink
+*/
+
+
+/*!
+  \fn QSortedList::QSortedList()
+  Constructs an empty list.
+*/
+
+/*!
+  \fn QSortedList::QSortedList( const QSortedList<type> &list )
+  Constructs a copy of \e list.
+
+  Each item in \e list is copied to this new list.
+*/
+
+/*!
+  \fn QSortedList::~QSortedList()
+  Removes all items from the list and destroys the list.
+
+  All list iterators that access this list will be reset.
+*/
+
+/*!
+  \fn QSortedList<type>& QSortedList::operator=(const QSortedList<type>& list)
+  Assigns \e list to this list and returns a reference to this list.
+
+  This list is first cleared, then each item in \e list is
+  appended to this list.  Only the pointers are copied
+  (shallow copy), unless newItem() has been reimplemented().
+*/
+
+/*!
+   \fn int QSortedList::compareItems( QCollection::Item s1, QCollection::Item s2 )
+
+   \reimp
+
+   This reimplementation uses operator< and operator== to compare.
+*/

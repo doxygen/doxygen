@@ -1,0 +1,142 @@
+% $Id$
+%
+% Comments start with % sign at the beginning.
+% XML entities like &auml; are used for special characters.
+% There is one record for each language. The records are separated
+% by the empty line and they do not contain empty lines.
+% First line of the record identifies the translator class for the language.
+% The following one or more lines contain information about 
+% the maintainer(s) for the language (one line, one maintainer)
+% in the form: <readable name><colon><e-mail>
+
+TranslatorAfrikaans
+Johan Prinsloo: johan@zippysnoek.com
+
+TranslatorArabic
+Moaz Reyad: moazreyad@yahoo.com
+
+TranslatorBrazilian
+Fabio "FJTC" Jun Takada Chino: jun-chino@uol.com.br
+
+TranslatorCatalan
+Maximiliano Pin: max.pin@bitroit.com
+Albert Mora: amora@iua.upf.es
+
+TranslatorChinese
+Li Daobing: lidaobing@gmail.com
+Wei Liu: liuwei@asiainfo.com
+
+TranslatorChinesetraditional
+Daniel YC Lin: dlin.tw@gmail.com
+Gary Lee: garywlee@gmail.com
+
+TranslatorCroatian
+Boris Bralo: boris.bralo@zg.htnet.hr
+
+TranslatorCzech 
+Petr P&rcaron;ikryl: prikrylp@skil.cz
+
+TranslatorDanish
+Erik S&oslash;e S&oslash;rensen: eriksoe+doxygen@daimi.au.dk
+
+TranslatorDutch 
+Dimitri van Heesch: dimitri@stack.nl
+
+TranslatorEnglish 
+Dimitri van Heesch: dimitri@stack.nl
+
+TranslatorEsperanto
+Ander Martinez: dwarfnauko@gmail.com
+
+TranslatorFinnish
+Antti Laine: antti.a.laine@tut.fi
+
+TranslatorFrench
+Xavier Outhier: xouthier@yahoo.fr
+
+TranslatorGerman  
+Jens Seidel: jensseidel@users.sf.net
+
+TranslatorGreek
+Paul Gessos: nickreserved@yahoo.com
+
+TranslatorHungarian
+&Aacute;kos Kiss: akiss@users.sourceforge.net
+F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari lost@cyberspace
+
+TranslatorIndonesian
+Hendy Irawan: ceefour@gauldong.net
+
+TranslatorItalian 
+Alessandro Falappa: alessandro@falappa.net 
+Ahmed Aldo Faisal: aaf23@cam.ac.uk
+
+TranslatorJapanese 
+Hiroki Iseri: goyoki@gmail.com
+Ryunosuke Satoh: sun594@hotmail.com
+Kenji Nagamatsu: naga@joyful.club.ne.jp
+Iwasa Kazmi: iwasa@cosmo-system.jp
+
+TranslatorKorean
+Kim Taedong: fly1004@gmail.com
+SooYoung Jung: jung5000@gmail.com
+Richard Kim: ryk@dspwiz.com
+
+TranslatorLithuanian
+Tomas Simonaitis: haden@homelan.lt
+Mindaugas Radzius: mindaugasradzius@takas.lt
+Aidas Berukstis: aidasber@takas.lt
+
+TranslatorNorwegian
+Lars Erik Jordet: lejordet@gmail.com
+
+TranslatorMacedonian
+Slave Jovanovski: slavejovanovski@yahoo.com
+
+TranslatorPersian
+Ali Nadalizadeh: nadalizadeh@gmail.com
+
+TranslatorPolish 
+Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl
+Grzegorz Kowal:  g_kowal@poczta.onet.pl
+Krzysztof Kral: krzysztof.kral@gmail.com
+
+TranslatorPortuguese
+Rui Godinho Lopes: ruiglopes@yahoo.com
+
+TranslatorRomanian
+Ionut Dumitrascu: reddumy@yahoo.com
+Alexandru Iosup: aiosup@yahoo.com
+
+TranslatorRussian
+Alexandr Chelpanov: cav@cryptopro.ru
+
+TranslatorSerbian
+Dejan Milosavljevic: dmilos@email.com
+
+TranslatorSerbianCyrilic
+Nedeljko Stefanovic: stenedjo@yahoo.com
+
+TranslatorSlovak
+Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
+
+TranslatorSlovene
+Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ostri.org
+
+TranslatorSpanish 
+Bartomeu: bartomeu@loteria3cornella.com
+Francisco Oltra Thennet: foltra@puc.cl
+David Vaquero: david@grupoikusnet.com
+
+TranslatorSwedish 
+Mikael Hallin: mikaelhallin@yahoo.se
+
+TranslatorUkrainian
+Olexij Tkatchenko: olexij.tkatchenko@parcs.de
+
+TranslatorVietnamese
+Dang Minh Tuan: tuanvietkey@gmail.com
+
+TranslatorTurkish
+Emin Ilker Cetinbas: niw3@yahoo.com
+

@@ -1,0 +1,49 @@
+		     Changes from version 1.2 to 1.3
+
+* Improved Qt 2.0 support.
+
+* INCLUDEPATH can have directories containing whitespace (use semicolon)
+  as separator.
+
+* Many, many code fixes and doc improvements.
+
+
+		     Changes from version 1.1 to 1.2
+
+* tmake is no longer restricted to C++ only.  You can now use both C++
+  and C files in your project.  Thanks to Ulrich Ring for valuable feed-
+  back and comments.
+
+* Added support for building DLL libraries under Windows.
+  NOTE: Qt 1.42 and later now uses qtmain.lib in addition to qt.lib
+  when your application uses the Qt DLL.  Add "DEFINES = QT_DLL" to
+  your project file to use the Qt DLL.
+
+* New dist target added in the app and lib templates.
+  Run "make dist" to pack all files in your project using tar/gzip or zip.
+  Thanks to Kalle Dalheimer for this patch.
+
+* Fixed bad command line interpretation bug in tmake.exe and progen.exe.
+
+* Added support for Borland C++ builder 3.
+
+* Initial support for QNX/g++ and the IBM Visual Age compiler on Win32.
+  Thanks to Igor Kovalenko and Joost Kraaijeveld.
+
+* Many fixes in tmake.conf for several Unix configurations.
+
+
+		     Changes from version 1.0 to 1.1
+
+* Provides tmake.exe and progen.exe for Windows users without perl.
+
+* Added many new Unix templates.
+
+* Added subdirs.t templates.
+
+* Added system-dependent project settings
+  (e.g. solaris-cc:TMAKE_CFLAGS = -pts)
+
+* Many bug fixes and improvements for existing templates.
+
+* Improved documentation.

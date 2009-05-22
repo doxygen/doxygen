@@ -1,0 +1,451 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page docblocks Documenting the code
+
+\section specialblock Special documentation blocks
+
+A special documentation block is a C or C++ style comment block with some 
+additional markings, so doxygen knows it is a piece of documentation that
+needs to end up in the generated documentation. For Python and VHDL
+code there are a different comment conventions, which can be found in section 
+\ref pythonblocks and \ref vhdlblocks respectively.
+
+For each code item there are two (or in some cases three) types of descriptions, 
+which together form the documentation: a \e brief description and \e detailed
+description, both are optional. For methods and functions there is also a third
+type of description, the so called "in body" description, which consists of 
+the concatenation of all comment blocks found within the body of the method or function.
+
+Having more than one brief or detailed description is allowed (but not recommended,
+as the order in which the descriptions will appear is not specified).
+
+As the name suggest, a brief description is
+a short one-liner, whereas the detailed description provides longer, 
+more detailed documentation. An "in body" description can also act as a detailed
+description or can describe a collection of implementation details.
+For the HTML output brief descriptions are also
+use to provide tooltips at places where an item is referenced.
+
+There are several ways to mark a comment block as a detailed description:
+<ol>
+<li> You can use the JavaDoc style, which consist of a C-style comment
+block starting with two *'s, like this:
+
+\verbatim
+/**
+ * ... text ...
+ */
+\endverbatim
+
+<li> or you can use the Qt style and add an exclamation mark (!) 
+after the opening of a C-style comment block, as shown in this example:
+
+\verbatim
+/*!
+ * ... text ...
+ */
+\endverbatim
+
+In both cases the intermediate *'s are optional, so
+
+\verbatim
+/*!
+ ... text ...
+*/
+\endverbatim
+
+is also valid.
+
+<li> A third alternative is to use a block of <i>at least two</i> C++ comment 
+lines, where each line starts with an additional slash or an 
+exclamation mark. Here are examples of the two cases:
+
+\verbatim
+///
+/// ... text ...
+///
+\endverbatim
+
+or
+
+\verbatim
+//!
+//!... text ...
+//!
+\endverbatim
+
+Note that a blank line ends a documentation block in this case.
+
+<li>
+
+Some people like to make their comment blocks more visible in the
+documentation. For this purpose you can use the following:
+
+\verbatim
+/********************************************//**
+ *  ... text
+ ***********************************************/
+\endverbatim
+(note the 2 slashes to end the normal comment block and start a special comment block).
+
+or
+
+\verbatim
+/////////////////////////////////////////////////
+/// ... text ...
+/////////////////////////////////////////////////
+\endverbatim
+
+</ol>
+
+For the brief description there are also several posibilities:
+<ol>
+<li>One could use the \ref cmdbrief "\\brief" command with one of the 
+above comment blocks. This command ends at the end of a paragraph, 
+so the detailed description follows after an empty line.
+
+Here is an example:
+
+\verbatim
+/*! \brief Brief description.
+ *         Brief description continued.
+ *
+ *  Detailed description starts here.
+ */
+\endverbatim
+
+<li>If \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" is set to \c YES 
+    in the configuration file, 
+    then using JavaDoc style comment
+    blocks will automatically start a brief description which ends at the
+    first dot followed by a space or new line. Here is an example:
+
+\verbatim
+/** Brief description which ends at this dot. Details follow
+ *  here.
+ */
+\endverbatim
+The option has the same effect for multi-line special C++ comments:
+\verbatim
+/// Brief description which ends at this dot. Details follow
+/// here.
+\endverbatim
+
+<li>A third option is to use a special C++ style comment which does not 
+    span more than one line. Here are two examples:
+\verbatim
+/// Brief description.
+/** Detailed description. */
+\endverbatim
+
+or
+
+\verbatim
+//! Brief descripion.
+
+//! Detailed description 
+//! starts here.
+\endverbatim
+
+Note the blank line in the last example, which is required to separate the 
+brief description from the block containing the detailed description. The
+\ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" should also be set to \c NO
+for this case.
+
+</ol>
+
+As you can see doxygen is quite flexible. If you have multiple
+detailed descriptions, like in the following example:
+
+\verbatim
+//! Brief description, which is
+//! really a detailed description since it spans multiple lines.
+/*! Another detailed description!
+ */
+\endverbatim
+
+They will be joined. Note that this is also the case if the descriptions
+are at different places in the code! In this case the order will depend
+on the order in which doxygen parses the code.
+
+Here is an example of a documented piece of C++ code using the Qt style:
+\include qtstyle.cpp
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/qtstyle/html/class_test.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+The one-line comments contain a brief description, 
+whereas the multi-line comment blocks contain a more detailed description.
+
+The brief descriptions are included in the member overview of a 
+class, namespace or file and are printed using a small italic font 
+(this description can be hidden by setting 
+\ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" to \c NO in 
+the config file). By default the brief descriptions become the first 
+sentence of the detailed descriptions 
+(but this can be changed by setting the \ref cfg_repeat_brief "REPEAT_BRIEF" 
+tag to \c NO). Both the brief and the detailed descriptions are optional 
+for the Qt style. 
+
+By default a JavaDoc style documentation block behaves the same way as a
+Qt style documentation block. This is not according the JavaDoc specification
+however, where the first sentence of the documentation block is automatically
+treated as a brief description. To enable this behaviour you should set
+\ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" to YES in the configuration
+file. If you enable this option and want to put a dot in the middle of a
+sentence without ending it, you should put a backslash and a space after it.
+Here is an example:
+\verbatim
+  /** Brief description (e.g.\ using only a few words). Details follow. */
+\endverbatim
+
+Here is the same piece of code as shown above, this time documented using the 
+JavaDoc style and \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" set to YES:
+\include jdstyle.cpp
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/jdstyle/html/class_test.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+Similarly, if one wishes the first sentence of a Qt style documentation
+block to automatically be treated as a brief description, one may set
+\ref cfg_qt_autobrief "QT_AUTOBRIEF" to YES in the configuration file.
+
+Unlike most other documentation systems, doxygen also allows you to put
+the documentation of members (including global functions) in front of 
+the \e definition. This way the documentation can be placed in the source 
+file instead of the header file. This keeps the header file compact, and allows the 
+implementer of the members more direct access to the documentation.
+As a compromise the brief description could be placed before the
+declaration and the detailed description before the member definition.
+
+\section memberdoc Putting documentation after members 
+
+If you want to document the members of a file, struct, union, class, or enum,
+and you want to put the documentation for these members inside the compound,
+it is sometimes desired to place the documentation block after the member 
+instead of before. For this purpose you have to put an additional \< marker
+in the comment block. Note that this also works for the parameters 
+of a function.
+
+Here are some examples:
+\verbatim
+int var; /*!< Detailed description after the member */
+\endverbatim
+This block can be used to put a Qt style detailed 
+documentation block \e after a member. Other ways to do the
+same are:
+\verbatim
+int var; /**< Detailed description after the member */
+\endverbatim
+or 
+\verbatim
+int var; //!< Detailed description after the member
+         //!< 
+\endverbatim
+or 
+\verbatim
+int var; ///< Detailed description after the member
+         ///< 
+\endverbatim
+
+Most often one only wants to put a brief description after a member.
+This is done as follows:
+\verbatim
+int var; //!< Brief description after the member
+\endverbatim
+or
+\verbatim
+int var; ///< Brief description after the member
+\endverbatim
+
+For functions one can use \@param to document the parameters
+and then use <code>[in]</code>, <code>[out]</code>, <code>[in,out]</code> 
+to document the direction. For inline documentation this is also possible 
+by starting with the direction attribute, e.g.
+\verbatim
+void foo(int v /**< [in] docs for input parameter v. */);
+\endverbatim
+
+Note that these blocks have the same structure and meaning as the 
+special comment blocks in the previous section 
+only the \< indicates that the member is 
+located in front of the block instead of after the block.
+
+Here is an example of the use of these comment blocks:
+\include afterdoc.h
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/afterdoc/html/class_test.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+\warning These blocks can only be used to document \e members and \e parameters.
+         They cannot be used to document files, classes, unions, structs,
+         groups, namespaces and enums themselves. Furthermore, the structural 
+         commands mentioned in the next section 
+         (like <code>\\class</code>) are not allowed 
+         inside these comment blocks.
+
+\section structuralcommands Documentation at other places
+
+So far we have assumed that the documentation blocks are always located \e in 
+\e front of the declaration or definition of a file, class or namespace or in
+front or after one of its members. 
+Although this is often comfortable, there may sometimes be reasons to put the 
+documentation somewhere else. For documenting a file this is even 
+required since there is no such thing as "in front of a file". 
+
+Doxygen allows you to put your documentation blocks practically 
+anywhere (the exception is inside the body of a function or inside a 
+normal C style comment block). 
+
+The price you pay for not putting the
+documentation block directly before (or after) an item is the need to put a  
+structural command inside the documentation block, which leads to some
+duplication of information. So in practice you should \e avoid the use of
+structural commands \e unless other requirements force you to do so.
+
+Structural commands (like all other commands) start with a backslash 
+(<tt>\\</tt>), or an at-sign (<tt>\@</tt>) if you prefer JavaDoc style, 
+followed by a command name and one or more parameters.
+For instance, if you want to document the class \c Test in the example
+above, you could have also put the following documentation block somewhere
+in the input that is read by doxygen:
+\verbatim
+/*! \class Test
+    \brief A test class.
+
+    A more detailed class description.
+*/
+\endverbatim
+
+Here the special command \c \\class is used to indicate that the
+comment block contains documentation for the class \c Test.
+Other structural commands are:
+<ul>
+<li>\c \\struct to document a C-struct.
+<li>\c \\union to document a union.
+<li>\c \\enum to document an enumeration type.
+<li>\c \\fn to document a function.
+<li>\c \\var to document a variable or typedef or enum value.
+<li>\c \\def to document a \#define.
+<li>\c \\typedef to document a type definition.
+<li>\c \\file to document a file.
+<li>\c \\namespace to document a namespace.
+<li>\c \\package to document a Java package.
+<li>\c \\interface to document an IDL interface.
+</ul>
+See section \ref commands for detailed information about these and many other 
+commands. 
+
+To document a member of a C++ class, you must also document the class 
+itself. The same holds for namespaces. To document a global C function, 
+typedef, enum or preprocessor definition you must first document the file 
+that contains it (usually this will be a header file, because that file 
+contains the information that is exported to other source files).
+
+Let's repeat that, because it is often overlooked:
+to document global objects (functions, typedefs, enum, macros, etc), you
+<em>must</em> document the file in which they are defined. In other words, 
+there <em>must</em> at least be a \verbatim /*! \file */ \endverbatim
+or a \verbatim /** @file */ \endverbatim line in this file.
+
+Here is an example of a C header named \c structcmd.h that is documented 
+using structural commands:
+\include structcmd.h
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/structcmd/html/structcmd_8h.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+ Because each comment block in the example above contains a structural command, all
+ the comment blocks could be moved to another location or input file 
+ (the source file for instance), without affecting the generated 
+ documentation. The disadvantage of this approach is that prototypes are
+ duplicated, so all changes have to be made twice! Because of this you
+ should first consider if this is really needed, and avoid structural
+ commands if possible. I often receive examples that contain \\fn command
+ in comment blocks which are place in front of a function. This is clearly
+ a case where the \\fn command is redundant and will only lead to problems.
+
+\section pythonblocks Special documentation blocks in Python
+
+For Python there is a standard way of documenting the code using 
+so called documentation strings. Such strings are stored in \c __doc__
+and can be retrieved at runtime. Doxygen will extract such comments
+and assume they have to be represented in a preformatted way.
+
+\include docstring.py
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/docstring/html/index.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+Note that in this case none of doxygen's \ref cmd_intro "special commands" 
+are supported.
+
+There is also another way to document Python code using comments that 
+start with "##". These type of comment blocks are more in line with the 
+way documentation blocks work for the other languages supported by doxygen 
+and this also allows the use of special commands. 
+
+Here is the same example again but now using doxygen style comments:
+
+\include pyexample.py
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/pyexample/html/index.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+Since python looks more like Java than like C or C++, you should set 
+\ref cfg_optimize_output_java "OPTMIZE_OUTPUT_JAVA" to \c YES in the
+config file. 
+
+
+\htmlonly
+Go to the <a href="lists.html">next</a> section or return to the
+ <a href="index.html">index</a>.
+\endhtmlonly
+
+\section vhdlblocks Special documentation blocks in VHDL
+
+For VHDL a comment normally start with "--". Doxygen will extract comments
+starting with "--!". There are only two types of comment blocks in VHDL;
+a one line --! comment representing a brief description, and a multiline
+--! comment (where the --! prefix is repeated for each line) representing
+a detailed description.
+
+Comments are always located in front of the item that is being documented
+with one exception: for ports the comment can also be after the item
+and is then treated as a brief description for the port.
+
+Here is an example VHDL file with doxygen comments:
+
+\include  mux.vhdl
+ \htmlonly
+ Click <a href="$(DOXYGEN_DOCDIR)/examples/mux/html/index.html">here</a>
+ for the corresponding HTML documentation that is generated by doxygen.
+ \endhtmlonly
+
+To get proper looking output you need to set
+\ref cfg_optimize_output_vhdl "OPTIMIZE_OUTPUT_VHDL" to \c YES in the
+config file. This will also affect a number of other settings. When they
+were not already set correctly doxygen will produce a warning telling which
+settings where overruled.
+
+*/

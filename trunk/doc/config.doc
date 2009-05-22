@@ -1,0 +1,2307 @@
+/******************************************************************************
+ *
+ * 
+ *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+/*! \page config Configuration
+
+\section config_format Format
+
+A configuration file is a free-form ASCII text file with a structure
+that is similar to that of a Makefile, with the default name \c Doxyfile. It is
+parsed by \c doxygen.  The file may contain tabs and newlines for
+formatting purposes.  The statements in the file are case-sensitive.
+Comments may be placed anywhere within the file (except within quotes).
+Comments begin with the \# character and end at the end of the line.
+
+The file essentially consists of a list of assignment statements.
+Each statement consists of a \c TAG_NAME written in capitals,
+followed by the <code>=</code> character and one or more values. If the same tag
+is assigned more than once, the last assignment overwrites any earlier
+assignment. For options that take a list as their argument,
+the <code>+=</code> operator can be used instead of <code>=</code> to append 
+new values to the list. Values are sequences of non-blanks. If the value should 
+contain one or more blanks it must be surrounded by quotes (&quot;...&quot;).
+Multiple lines can be concatenated by inserting a backslash (\\)
+as the last character of a line. Environment variables can be expanded 
+using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+
+You can also include part of a configuration file from another configuration
+file using a <code>\@INCLUDE</code> tag as follows:
+\verbatim
+@INCLUDE = config_file_name
+\endverbatim 
+The include file is searched in the current working directory. You can 
+also specify a list of directories that should be searched before looking
+in the current working directory. Do this by putting a <code>\@INCLUDE_PATH</code> tag 
+with these paths before the <code>\@INCLUDE</code> tag, e.g:
+\verbatim
+@INCLUDE_PATH = my_config_dir
+\endverbatim
+
+The configuration options can be divided into several categories.
+Below is an alphabetical index of the tags that are recognized 
+followed by the descriptions of the tags grouped by category.
+
+\secreflist
+\refitem cfg_abbreviate_brief ABBREVIATE_BRIEF
+\refitem cfg_aliases ALIASES
+\refitem cfg_allexternals ALLEXTERNALS 
+\refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
+\refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
+\refitem cfg_binary_toc BINARY_TOC
+\refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
+\refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
+\refitem cfg_call_graph CALL_GRAPH
+\refitem cfg_caller_graph CALLER_GRAPH
+\refitem cfg_case_sense_names CASE_SENSE_NAMES 
+\refitem cfg_chm_file CHM_FILE
+\refitem cfg_class_diagrams CLASS_DIAGRAMS 
+\refitem cfg_class_graph CLASS_GRAPH
+\refitem cfg_collaboration_graph COLLABORATION_GRAPH
+\refitem cfg_cols_in_alpha_index COLS_IN_ALPHA_INDEX
+\refitem cfg_compact_latex COMPACT_LATEX 
+\refitem cfg_compact_rtf COMPACT_RTF
+\refitem cfg_cpp_cli_support CPP_CLI_SUPPORT
+\refitem cfg_create_subdirs CREATE_SUBDIRS
+\refitem cfg_directory_graph DIRECTORY_GRAPH
+\refitem cfg_disable_index DISABLE_INDEX 
+\refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
+\refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
+\refitem cfg_docset_feedname DOCSET_FEEDNAME
+\refitem cfg_dot_fontname DOT_FONTNAME
+\refitem cfg_dot_fontpath DOT_FONTPATH
+\refitem cfg_dot_fontsize DOT_FONTSIZE
+\refitem cfg_dot_graph_max_nodes DOT_GRAPH_MAX_NODES
+\refitem cfg_dot_image_format DOT_IMAGE_FORMAT
+\refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
+\refitem cfg_dot_path DOT_PATH
+\refitem cfg_dot_transparent DOT_TRANSPARENT
+\refitem cfg_dotfile_dirs DOTFILE_DIRS
+\refitem cfg_doxyfile_encoding DOXYFILE_ENCODING
+\refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
+\refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
+\refitem cfg_enabled_sections ENABLED_SECTIONS
+\refitem cfg_example_path EXAMPLE_PATH
+\refitem cfg_example_patterns EXAMPLE_PATTERNS
+\refitem cfg_example_recursive EXAMPLE_RECURSIVE
+\refitem cfg_exclude EXCLUDE
+\refitem cfg_exclude_patterns EXCLUDE_PATTERNS
+\refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
+\refitem cfg_expand_as_defined EXPAND_AS_DEFINED
+\refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
+\refitem cfg_extension_mapping EXTENSION_MAPPING
+\refitem cfg_external_groups EXTERNAL_GROUPS
+\refitem cfg_extra_packages EXTRA_PACKAGES
+\refitem cfg_extract_all EXTRACT_ALL
+\refitem cfg_extract_anon_nspaces EXTRACT_ANON_NSPACES
+\refitem cfg_extract_local_classes EXTRACT_LOCAL_CLASSES
+\refitem cfg_extract_local_methods EXTRACT_LOCAL_METHODS
+\refitem cfg_extract_private EXTRACT_PRIVATE
+\refitem cfg_extract_static EXTRACT_STATIC
+\refitem cfg_file_patterns FILE_PATTERNS
+\refitem cfg_file_version_filter FILE_VERSION_FILTER
+\refitem cfg_filter_patterns FILTER_PATTERNS
+\refitem cfg_filter_source_files FILTER_SOURCE_FILES
+\refitem cfg_formula_fontsize FORMULA_FONTSIZE
+\refitem cfg_full_path_names FULL_PATH_NAMES
+\refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
+\refitem cfg_generate_buglist GENERATE_BUGLIST
+\refitem cfg_generate_chi GENERATE_CHI
+\refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
+\refitem cfg_generate_docset GENERATE_DOCSET
+\refitem cfg_generate_html GENERATE_HTML
+\refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
+\refitem cfg_generate_latex GENERATE_LATEX
+\refitem cfg_generate_legend GENERATE_LEGEND
+\refitem cfg_generate_man GENERATE_MAN
+\refitem cfg_generate_perlmod GENERATE_PERLMOD
+\refitem cfg_generate_qhp GENERATE_QHP
+\refitem cfg_generate_rtf GENERATE_RTF
+\refitem cfg_generate_tagfile GENERATE_TAGFILE
+\refitem cfg_generate_testlist GENERATE_TESTLIST
+\refitem cfg_generate_todolist GENERATE_TODOLIST
+\refitem cfg_generate_treeview GENERATE_TREEVIEW
+\refitem cfg_generate_xml GENERATE_XML
+\refitem cfg_graphical_hierarchy GRAPHICAL_HIERARCHY
+\refitem cfg_group_graphs GROUP_GRAPHS
+\refitem cfg_have_dot HAVE_DOT
+\refitem cfg_hhc_location HHC_LOCATION
+\refitem cfg_hide_friend_compounds HIDE_FRIEND_COMPOUNDS
+\refitem cfg_hide_in_body_docs HIDE_IN_BODY_DOCS
+\refitem cfg_hide_scope_names HIDE_SCOPE_NAMES
+\refitem cfg_hide_undoc_classes HIDE_UNDOC_CLASSES
+\refitem cfg_hide_undoc_members HIDE_UNDOC_MEMBERS
+\refitem cfg_hide_undoc_relations HIDE_UNDOC_RELATIONS
+\refitem cfg_html_align_members HTML_ALIGN_MEMBERS
+\refitem cfg_html_dynamic_sections HTML_DYNAMIC_SECTIONS
+\refitem cfg_html_footer HTML_FOOTER
+\refitem cfg_html_header HTML_HEADER
+\refitem cfg_html_output HTML_OUTPUT
+\refitem cfg_html_stylesheet HTML_STYLESHEET
+\refitem cfg_idl_property_support IDL_PROPERTY_SUPPORT
+\refitem cfg_ignore_prefix IGNORE_PREFIX
+\refitem cfg_image_path IMAGE_PATH
+\refitem cfg_include_graph INCLUDE_GRAPH
+\refitem cfg_include_path INCLUDE_PATH
+\refitem cfg_inherit_docs INHERIT_DOCS
+\refitem cfg_inline_info INLINE_INFO
+\refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
+\refitem cfg_inline_sources INLINE_SOURCES
+\refitem cfg_input INPUT
+\refitem cfg_input_encoding INPUT_ENCODING
+\refitem cfg_input_filter INPUT_FILTER
+\refitem cfg_internal_docs INTERNAL_DOCS
+\refitem cfg_javadoc_autobrief JAVADOC_AUTOBRIEF
+\refitem cfg_latex_batchmode LATEX_BATCHMODE
+\refitem cfg_latex_cmd_name LATEX_CMD_NAME
+\refitem cfg_latex_header LATEX_HEADER
+\refitem cfg_latex_hide_indices LATEX_HIDE_INDICES
+\refitem cfg_latex_output LATEX_OUTPUT
+\refitem cfg_layout_file LAYOUT_FILE
+\refitem cfg_macro_expansion MACRO_EXPANSION
+\refitem cfg_makeindex_cmd_name MAKEINDEX_CMD_NAME
+\refitem cfg_man_extension MAN_EXTENSION
+\refitem cfg_man_links MAN_LINKS
+\refitem cfg_man_output MAN_OUTPUT
+\refitem cfg_max_dot_graph_depth MAX_DOT_GRAPH_DEPTH
+\refitem cfg_max_initializer_lines MAX_INITIALIZER_LINES
+\refitem cfg_mscgen_path MSCGEN_PATH
+\refitem cfg_multiline_cpp_is_brief MULTILINE_CPP_IS_BRIEF
+\refitem cfg_optimize_for_fortran OPTIMIZE_FOR_FORTRAN
+\refitem cfg_optimize_output_for_c OPTIMIZE_OUTPUT_FOR_C
+\refitem cfg_optimize_output_java OPTIMIZE_OUTPUT_JAVA
+\refitem cfg_optimize_output_vhdl OPTIMIZE_OUTPUT_VHDL
+\refitem cfg_output_directory OUTPUT_DIRECTORY
+\refitem cfg_output_language OUTPUT_LANGUAGE
+\refitem cfg_paper_type PAPER_TYPE
+\refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
+\refitem cfg_perl_path PERL_PATH
+\refitem cfg_perlmod_latex PERLMOD_LATEX
+\refitem cfg_perlmod_pretty PERLMOD_PRETTY
+\refitem cfg_perlmod_makevar_prefix PERLMOD_MAKEVAR_PREFIX
+\refitem cfg_predefined PREDEFINED
+\refitem cfg_project_name PROJECT_NAME
+\refitem cfg_project_number PROJECT_NUMBER
+\refitem cfg_qhp_namespace QHP_NAMESPACE
+\refitem cfg_qhp_virtual_folder QHP_VIRTUAL_FOLDER
+\refitem cfg_qhp_cust_filter_name QHP_CUST_FILTER_NAME
+\refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
+\refitem cfg_qhp_sect_filter_attrs QHP_SECT_FILTER_ATTRS
+\refitem cfg_qhg_location QHG_LOCATION
+\refitem cfg_qt_autobrief QT_AUTOBRIEF
+\refitem cfg_quiet QUIET
+\refitem cfg_recursive RECURSIVE
+\refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
+\refitem cfg_references_relation REFERENCES_RELATION
+\refitem cfg_references_link_source REFERENCES_LINK_SOURCE
+\refitem cfg_repeat_brief REPEAT_BRIEF
+\refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
+\refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
+\refitem cfg_rtf_output RTF_OUTPUT
+\refitem cfg_rtf_stylesheet_file RTF_STYLESHEET_FILE
+\refitem cfg_search_includes SEARCH_INCLUDES
+\refitem cfg_searchengine SEARCHENGINE
+\refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
+\refitem cfg_short_names SHORT_NAMES
+\refitem cfg_show_dirs SHOW_DIRECTORIES
+\refitem cfg_show_files SHOW_FILES
+\refitem cfg_show_include_files SHOW_INCLUDE_FILES
+\refitem cfg_show_namespaces SHOW_NAMESPACES
+\refitem cfg_sip_support SIP_SUPPORT
+\refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
+\refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
+\refitem cfg_sort_by_scope_name SORT_BY_SCOPE_NAME
+\refitem cfg_sort_group_names SORT_GROUP_NAMES
+\refitem cfg_sort_member_docs SORT_MEMBER_DOCS
+\refitem cfg_source_browser SOURCE_BROWSER
+\refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
+\refitem cfg_strip_from_inc_path STRIP_FROM_INC_PATH
+\refitem cfg_strip_from_path STRIP_FROM_PATH
+\refitem cfg_subgrouping SUBGROUPING
+\refitem cfg_symbol_cache_size SYMBOL_CACHE_SIZE
+\refitem cfg_tab_size TAB_SIZE
+\refitem cfg_tagfiles TAGFILES
+\refitem cfg_template_relations TEMPLATE_RELATIONS
+\refitem cfg_toc_expand TOC_EXPAND
+\refitem cfg_treeview_width TREEVIEW_WIDTH
+\refitem cfg_typedef_hides_struct TYPEDEF_HIDES_STRUCT
+\refitem cfg_uml_look UML_LOOK
+\refitem cfg_use_htags USE_HTAGS
+\refitem cfg_use_pdflatex USE_PDFLATEX
+\refitem cfg_use_windows_encoding USE_WINDOWS_ENCODING
+\refitem cfg_verbatim_headers VERBATIM_HEADERS
+\refitem cfg_warn_format WARN_FORMAT
+\refitem cfg_warn_if_doc_error WARN_IF_DOC_ERROR
+\refitem cfg_warn_if_undocumented WARN_IF_UNDOCUMENTED
+\refitem cfg_warn_logfile WARN_LOGFILE
+\refitem cfg_warn_no_paramdoc WARN_NO_PARAMDOC
+\refitem cfg_warnings WARNINGS
+\refitem cfg_xml_dtd XML_DTD
+\refitem cfg_xml_output XML_OUTPUT
+\refitem cfg_xml_programlisting XML_PROGRAMLISTING
+\refitem cfg_xml_schema XML_SCHEMA
+\endsecreflist
+
+\section config_project Project related options
+\anchor cfg_doxyfile_encoding
+<dl>
+
+<dt>\c DOXYFILE_ENCODING <dd>
+ \addindex DOXYFILE_ENCODING
+ This tag specifies the encoding used for all characters in the config file that 
+ follow. The default is UTF-8 which is also the encoding used for all text before
+ the first occurrence of this tag. Doxygen uses libiconv (or the iconv built into
+ libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of
+ possible encodings.
+
+\anchor cfg_project_name
+<dt>\c PROJECT_NAME <dd>
+ \addindex PROJECT_NAME
+ The \c PROJECT_NAME tag is a single word (or a sequence of words
+ surrounded by double-quotes) that should identify the project for which the 
+ documentation is generated. This name is used in the title of most 
+ generated pages and in a few other places.
+
+\anchor cfg_project_number
+<dt>\c PROJECT_NUMBER <dd>
+ \addindex PROJECT_NUMBER
+ The \c PROJECT_NUMBER tag can be used to enter a project or revision number.
+ This could be handy for archiving the generated documentation or
+ if some version control system is used.
+
+\anchor cfg_output_directory
+<dt>\c OUTPUT_DIRECTORY <dd> 
+ \addindex OUTPUT_DIRECTORY
+ The \c OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
+ path into which the generated documentation will be written. 
+ If a relative path is entered, it will be relative to the location 
+ where doxygen was started. If left blank the current directory will be used.
+
+\anchor cfg_create_subdirs
+<dt>\c CREATE_SUBDIRS <dd> 
+ \addindex CREATE_SUBDIRS
+ If the \c CREATE_SUBDIRS tag is set to \c YES, then doxygen will create
+ 4096 sub-directories (in 2 levels) under the output directory of each output 
+ format and will distribute the generated files over these directories. 
+ Enabling this option can be useful when feeding doxygen a huge amount of source
+ files, where putting all generated files in the same directory would otherwise
+ causes performance problems for the file system. 
+
+\anchor cfg_output_language
+<dt>\c OUTPUT_LANGUAGE <dd>
+ \addindex OUTPUT_LANGUAGE
+ The \c OUTPUT_LANGUAGE tag is used to specify the language in which all
+ documentation generated by doxygen is written. Doxygen will use this
+ information to generate all constant output in the proper language.
+ The default language is English, other supported languages are:
+ Afrikaans, Arabic, Brazilian, Catalan, Chinese, Croatian, Czech, Danish, Dutch, 
+ Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean, 
+ Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, 
+ Slovak, Slovene, Spanish, Swedish, and Ukrainian.
+
+\anchor cfg_use_windows_encoding
+<dt>\c USE_WINDOWS_ENCODING <dd>
+ \addindex USE_WINDOWS_ENCODING
+ This tag can be used to specify the encoding used in the generated output. 
+ The encoding is not always determined by the language that is chosen, 
+ but also whether or not the output is meant for Windows or non-Windows users.
+ In case there is a difference, setting the \c USE_WINDOWS_ENCODING tag to \c YES
+ forces the Windows encoding, (this is the default for the Windows binary),
+ whereas setting the tag to \c NO uses a Unix-style encoding (the default for
+ all platforms other than Windows).
+
+\anchor cfg_brief_member_desc
+<dt>\c BRIEF_MEMBER_DESC <dd>
+ \addindex BRIEF_MEMBER_DESC
+ If the \c BRIEF_MEMBER_DESC tag is set to \c YES (the default) doxygen will
+ include brief member descriptions after the members that are listed in
+ the file and class documentation (similar to JavaDoc).
+ Set to NO to disable this.
+
+\anchor cfg_repeat_brief
+<dt>\c REPEAT_BRIEF <dd>
+ \addindex REPEAT_BRIEF
+ If the \c REPEAT_BRIEF tag is set to \c YES (the default) doxygen will 
+ prepend the brief description of a member or function before the detailed 
+ description 
+
+ \par Note: 
+ If both \c HIDE_UNDOC_MEMBERS and \c BRIEF_MEMBER_DESC are set to \c NO, the 
+ brief descriptions will be completely suppressed.
+
+\anchor cfg_abbreviate_brief
+<dt>\c ABBREVIATE_BRIEF <dd>
+ \addindex ABBREVIATE_BRIEF
+ This tag implements a quasi-intelligent brief description abbreviator
+ that is used to form the text in various listings. Each string
+ in this list, if found as the leading text of the brief description, will be
+ stripped from the text and the result after processing the whole list, is used
+ as the annotated text. Otherwise, the brief description is used as-is. If left
+ blank, the following values are used ("\$name" is automatically replaced with the
+ name of the entity): "The $name class" "The $name widget" "The $name file"
+ "is" "provides" "specifies" "contains" "represents" "a" "an" "the".
+
+\anchor cfg_always_detailed_sec
+<dt>\c ALWAYS_DETAILED_SEC <dd>
+ \addindex ALWAYS_DETAILED_SEC
+ If the \c ALWAYS_DETAILED_SEC and \c REPEAT_BRIEF tags are both set to \c YES then
+ doxygen will generate a detailed section even if there is only a brief
+ description.
+
+\anchor cfg_inline_inherited_memb
+<dt>\c INLINE_INHERITED_MEMB <dd>
+\addindex INLINE_INHERITED_MEMB
+ If the \c INLINE_INHERITED_MEMB tag is set to \c YES, doxygen will show all inherited
+ members of a class in the documentation of that class as if those members were
+ ordinary class members. Constructors, destructors and assignment operators of
+ the base classes will not be shown.
+
+\anchor cfg_full_path_names
+<dt>\c FULL_PATH_NAMES <dd>
+ \addindex FULL_PATH_NAMES
+ If the \c FULL_PATH_NAMES tag is set to \c YES doxygen will prepend the full
+ path before files name in the file list and in the header files. If set
+ to NO the shortest path that makes the file name unique will be used
+
+\anchor cfg_strip_from_path
+<dt>\c STRIP_FROM_PATH <dd>
+ \addindex STRIP_FROM_PATH
+ If the \c FULL_PATH_NAMES tag is set to \c YES then the \c STRIP_FROM_PATH tag
+ can be used to strip a user-defined part of the path. Stripping is
+ only done if one of the specified strings matches the left-hand part of the 
+ path. The tag can be used to show relative paths in the file list.
+ If left blank the directory from which doxygen is run is used as the
+ path to strip.
+
+\anchor cfg_strip_from_inc_path
+<dt>\c STRIP_FROM_INC_PATH <dd>
+ \addindex STRIP_FROM_INC_PATH
+ The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
+ the path mentioned in the documentation of a class, which tells
+ the reader which header file to include in order to use a class. 
+ If left blank only the name of the header file containing the class
+ definition is used. Otherwise one should specify the include paths that 
+ are normally passed to the compiler using the -I flag.
+
+
+
+\anchor cfg_case_sense_names
+<dt>\c CASE_SENSE_NAMES <dd>
+ \addindex CASE_SENSE_NAMES
+ If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen
+ will only generate file names in lower-case letters. If set to
+ \c YES upper-case letters are also allowed. This is useful if you have
+ classes or files whose names only differ in case and if your file system
+ supports case sensitive file names. Windows users are advised to set this
+ option to NO.
+
+\anchor cfg_short_names
+<dt>\c SHORT_NAMES <dd>
+ \addindex SHORT_NAMES
+ If the \c SHORT_NAMES tag is set to \c YES, doxygen will generate much shorter
+ (but less readable) file names. This can be useful is your file systems
+ doesn't support long names like on DOS, Mac, or CD-ROM.
+
+\anchor cfg_javadoc_autobrief
+<dt>\c JAVADOC_AUTOBRIEF <dd>
+ \addindex JAVADOC_AUTOBRIEF
+  If the \c JAVADOC_AUTOBRIEF is set to \c YES then doxygen
+  will interpret the first line (until the first dot) of a JavaDoc-style
+  comment as the brief description. If set to NO (the default), the 
+  Javadoc-style will behave just like regular Qt-style comments
+  (thus requiring an explicit \@brief command for a brief description.)
+
+\anchor cfg_qt_autobrief
+<dt>\c QT_AUTOBRIEF <dd>
+ \addindex QT_AUTOBRIEF
+  If the \c QT_AUTOBRIEF is set to \c YES then doxygen
+  will interpret the first line (until the first dot) of a Qt-style
+  comment as the brief description. If set to NO (the default), the
+  Qt-style will behave just like regular Qt-style comments (thus
+  requiring an explicit \\brief command for a brief description.)
+
+\anchor cfg_builtin_stl_support
+<dt>\c BUILTIN_STL_SUPPORT <dd>
+ \addindex BUILTIN_STL_SUPPORT
+ If you use STL classes (i.e. std::string, std::vector, etc.) but do not want to
+ include (a tag file for) the STL sources as input, then you should
+ set this tag to \c YES in order to let doxygen match functions declarations and
+ definitions whose arguments contain STL classes (e.g. func(std::string); v.s.
+ func(std::string) {}). This also make the inheritance and collaboration
+ diagrams that involve STL classes more complete and accurate.
+
+\anchor cfg_cpp_cli_support
+<dt>\c CPP_CLI_SUPPORT <dd>
+ \addindex CPP_CLI_SUPPORT
+ If you use Microsoft's C++/CLI language, you should set this option to YES to
+ enable parsing support.
+
+\anchor cfg_sip_support
+<dt>\c SIP_SUPPORT <dd>
+ \addindex OPTIMIZE_OUTPUT_SIP
+ Set the SIP_SUPPORT tag to YES if your project consists 
+ of <a href="http://www.riverbankcomputing.co.uk/sip/">sip</a> sources only. 
+ Doxygen will parse them like normal C++ but will assume all classes use public 
+ instead of private inheritance when no explicit protection keyword is present. 
+
+\anchor cfg_idl_property_support
+<dt>\c IDL_PROPERTY_SUPPORT <dd>
+ \addindex IDL_PROPERTY_SUPPORT
+ For Microsoft's IDL there are propget and propput attributes to indicate getter
+ and setter methods for a property. Setting this option to \c YES (the default)
+ will make doxygen to replace the get and set methods by a property in the
+ documentation. This will only work if the methods are indeed getting or 
+ setting a simple type. If this is not the case, or you want to show the 
+ methods anyway, you should set this option to \c NO.
+
+\anchor cfg_distribute_group_doc
+<dt>\c DISTRIBUTE_GROUP_DOC <dd>
+ \addindex DISTRIBUTE_GROUP_DOC
+ If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
+ tag is set to YES, then doxygen will reuse the documentation of the first
+ member in the group (if any) for the other members of the group. By default
+ all members of a group must be documented explicitly.
+
+\anchor cfg_multiline_cpp_is_brief
+<dt>\c MULTILINE_CPP_IS_BRIEF <dd>
+ \addindex MULTILINE_CPP_IS_BRIEF
+  The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen
+  treat a multi-line C++ special comment block (i.e. a block of //! or ///
+  comments) as a brief description. This used to be the default behaviour.
+  The new default is to treat a multi-line C++ comment block as a detailed
+  description. Set this tag to YES if you prefer the old behaviour instead.
+  Note that setting this tag to YES also means that rational rose comments
+  are not recognized any more.
+
+<!--
+\anchor cfg_details_at_top
+<dt>\c DETAILS_AT_TOP <dd>
+ \addindex DETAILS_AT_TOP
+  If the DETAILS_AT_TOP tag is set to YES then Doxygen
+  will output the detailed description near the top, like JavaDoc.
+  If set to NO, the detailed description appears after the member
+  documentation.
+-->
+
+\anchor cfg_inherit_docs
+<dt>\c INHERIT_DOCS <dd>
+ \addindex INHERIT_DOCS
+ If the \c INHERIT_DOCS tag is set to \c YES (the default) then an undocumented
+ member inherits the documentation from any documented member that it
+ re-implements.
+
+\anchor cfg_separate_member_pages
+<dt>\c SEPARATE_MEMBER_PAGES <dd>
+ \addindex SEPARATE_MEMBER_PAGES
+ If the \c SEPARATE_MEMBER_PAGES tag is set to \c YES, then doxygen will produce
+ a new page for each member. If set to \c NO, the documentation of a member will
+ be part of the file/class/namespace that contains it.
+
+\anchor cfg_tab_size
+<dt>\c TAB_SIZE <dd>
+ \addindex TAB_SIZE
+ the \c TAB_SIZE tag can be used to set the number of spaces in a tab.
+ Doxygen uses this value to replace tabs by spaces in code fragments.
+
+\anchor cfg_aliases
+<dt>\c ALIASES <dd>
+ \addindex ALIASES
+ This tag can be used to specify a number of aliases that acts 
+ as commands in the documentation. An alias has the form 
+\verbatim
+ name=value
+\endverbatim
+ For example adding 
+\verbatim
+ "sideeffect=\par Side Effects:\n" 
+\endverbatim
+ will allow you to
+ put the command \\sideeffect (or \@sideeffect) in the documentation, which 
+ will result in a user-defined paragraph with heading "Side Effects:".
+ You can put \\n's in the value part of an alias to insert newlines.
+
+\anchor cfg_optimize_output_for_c
+<dt>\c OPTIMIZE_OUTPUT_FOR_C <dd>
+ \addindex OPTIMIZE_OUTPUT_FOR_C
+ Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
+ of C sources only. Doxygen will then generate output that is more tailored 
+ for C. For instance, some of the names that are used will be different. 
+ The list of all members will be omitted, etc. 
+
+\anchor cfg_optimize_output_java
+<dt>\c OPTIMIZE_OUTPUT_JAVA <dd>
+ \addindex OPTIMIZE_OUTPUT_JAVA
+ Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java or
+ Python sources only. Doxygen will then generate output that is more tailored 
+ for that language. For instance, namespaces will be presented as packages, 
+ qualified scopes will look different, etc. 
+
+\anchor cfg_optimize_for_fortran
+<dt>\c OPTIMIZE_FOR_FORTRAN <dd>
+ \addindex OPTIMIZE_FOR_FORTRAN
+ Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
+ sources. Doxygen will then generate output that is tailored for Fortran.
+
+\anchor cfg_optimize_output_vhdl
+<dt>\c OPTIMIZE_OUTPUT_VHDL <dd>
+ \addindex OPTIMIZE_OUTPUT_VHDL
+ Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
+ sources. Doxygen will then generate output that is tailored for VHDL.
+
+\anchor cfg_extension_mapping
+<dt>\c EXTENSION_MAPPING <dd>
+ \addindex EXTENSION_MAPPING
+ Doxygen selects the parser to use depending on the extension of the files it parses.
+ With this tag you can assign which parser to use for a given extension.
+ Doxygen has a built-in mapping, but you can override or extend it using this tag.
+ The format is ext=language, where ext is a file extension, and language is one of
+ the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
+ Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat
+ .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),
+ use: inc=Fortran f=C
+
+\anchor cfg_subgrouping
+<dt>\c SUBGROUPING <dd>
+ \addindex SUBGROUPING
+ Set the \c SUBGROUPING tag to \c YES (the default) to allow class member groups of
+ the same type (for instance a group of public functions) to be put as a
+ subgroup of that type (e.g. under the Public Functions section). Set it to
+ \c NO to prevent subgrouping. Alternatively, this can be done per class using
+ the \ref cmdnosubgrouping "\\nosubgrouping" command. 
+
+\anchor cfg_typedef_hides_struct 
+<dt>\c TYPEDEF_HIDES_STRUCT <dd>
+ \addindex TYPEDEF_HIDES_STRUCT
+ When \c TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum
+ is documented as struct, union, or enum with the name of the typedef. So 
+ <code>typedef struct TypeS {} TypeT</code>, will appear in the documentation as a struct 
+ with name \c TypeT. When disabled the typedef will appear as a member of a file, 
+ namespace, or class. And the struct will be named \c TypeS. This can typically 
+ be useful for C code in case the coding convention dictates that all compound 
+ types are typedef'ed and only the typedef is referenced, never the tag name.
+
+\anchor cfg_symbol_cache_size
+<dt>\c SYMBOL_CACHE_SIZE <dd>
+ \addindex SYMBOL_CACHE_SIZE
+ The \c SYMBOL_CACHE_SIZE determines the size of the internal cache use to 
+ determine which symbols to keep in memory and which to flush to disk.
+ When the cache is full, less often used symbols will be written to disk.
+ For small to medium size projects (<1000 input files) the default value is
+ probably good enough. For larger projects a too small cache size can cause 
+ doxygen to be busy swapping symbols to and from disk most of the time
+ causing a significant performance penality.
+ If the system has enough physical memory increasing the cache will improve the
+ performance by keeping more symbols in memory. Note that the value works on
+ a logarithmic scale so increasing the size by one will rougly double the
+ memory usage. The cache size is given by this formula: 
+ \f$2^{(16+\mbox{SYMBOL\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
+ corresponding to a cache size of \f$2^{16} = 65536\f$ symbols.
+
+</dl>
+
+\section config_build Build related options
+\anchor cfg_extract_all
+<dl>
+
+<dt>\c EXTRACT_ALL <dd>
+ \addindex EXTRACT_ALL
+ If the \c EXTRACT_ALL tag is set to \c YES doxygen will assume all 
+ entities in documentation are documented, even if no documentation was 
+ available. Private class members and static file members will be hidden 
+ unless the \c EXTRACT_PRIVATE and \c EXTRACT_STATIC tags are set to \c YES
+
+ \par Note: 
+ This will also disable the warnings about undocumented members 
+ that are normally produced when \c WARNINGS is set to \c YES
+
+\anchor cfg_extract_private
+<dt>\c EXTRACT_PRIVATE <dd>
+ \addindex EXTRACT_PRIVATE
+ If the \c EXTRACT_PRIVATE tag is set to \c YES all private members of a 
+ class will be included in the documentation.
+
+\anchor cfg_extract_static
+<dt>\c EXTRACT_STATIC <dd>
+ \addindex EXTRACT_STATIC
+ If the \c EXTRACT_STATIC tag is set to \c YES all static members of a file
+ will be included in the documentation.
+
+\anchor cfg_extract_local_classes
+<dt>\c EXTRACT_LOCAL_CLASSES <dd>
+ \addindex EXTRACT_LOCAL_CLASSES
+ If the \c EXTRACT_LOCAL_CLASSES tag is set to \c YES classes (and structs) 
+ defined locally in source files will be included in the documentation. 
+ If set to NO only classes defined in header files are included. Does not
+ have any effect for Java sources.
+
+\anchor cfg_extract_anon_nspaces
+<dt>\c EXTRACT_ANON_NSPACES <dd>
+ \addindex EXTRACT_ANON_NSPACES
+ If this flag is set to YES, the members of anonymous namespaces will be extracted
+ and appear in the documentation as a namespace called 'anonymous_namespace{file}',
+ where file will be replaced with the base name of the file that contains the anonymous
+ namespace. By default anonymous namespace are hidden.
+
+\anchor cfg_extract_local_methods
+<dt>\c EXTRACT_LOCAL_METHODS <dd>
+ \addindex EXTRACT_LOCAL_METHODS
+ This flag is only useful for Objective-C code. When set to \c YES local 
+ methods, which are defined in the implementation section but not in
+ the interface are included in the documentation.
+ If set to \c NO (the default) only methods in the interface are included.
+
+\anchor cfg_hide_undoc_members
+<dt>\c HIDE_UNDOC_MEMBERS <dd>
+ \addindex HIDE_UNDOC_MEMBERS
+ If the \c HIDE_UNDOC_MEMBERS tag is set to \c YES, doxygen will hide all
+ undocumented members inside documented classes or files. 
+ If set to \c NO (the default) these members will be included in the
+ various overviews, but no documentation section is generated.
+ This option has no effect if \c EXTRACT_ALL is enabled.
+
+\anchor cfg_hide_undoc_classes
+<dt>\c HIDE_UNDOC_CLASSES <dd>
+ \addindex HIDE_UNDOC_CLASSES
+ If the \c HIDE_UNDOC_CLASSESS tag is set to \c YES, doxygen will hide all
+ undocumented classes.
+ If set to \c NO (the default) these classes will be included in the
+ various overviews.
+ This option has no effect if \c EXTRACT_ALL is enabled.
+
+\anchor cfg_hide_friend_compounds
+<dt>\c HIDE_FRIEND_COMPOUNDS <dd>
+ \addindex HIDE_FRIEND_COMPOUNDS
+ If the \c HIDE_FRIEND_COMPOUNDS tag is set to \c YES, Doxygen will hide all
+ friend (class|struct|union) declarations.
+ If set to \c NO (the default) these declarations will be included in the
+ documentation.
+ 
+\anchor cfg_hide_in_body_docs
+<dt>\c HIDE_IN_BODY_DOCS <dd>
+ \addindex HIDE_IN_BODY_DOCS
+If the \c HIDE_IN_BODY_DOCS tag is set to \c YES, Doxygen will hide any 
+documentation blocks found inside the body of a function.
+If set to \c NO (the default) these blocks will be appended to the 
+function's detailed documentation block.
+ 
+\anchor cfg_internal_docs
+<dt>\c INTERNAL_DOCS <dd>
+ \addindex INTERNAL_DOCS
+ The \c INTERNAL_DOCS tag determines if documentation
+ that is typed after a \ref cmdinternal "\\internal" command is included. If the tag is set
+ to \c NO (the default) then the documentation will be excluded.
+ Set it to \c YES to include the internal documentation.
+
+\anchor cfg_hide_scope_names
+<dt>\c HIDE_SCOPE_NAMES <dd>
+ \addindex HIDE_SCOPE_NAMES
+ If the \c HIDE_SCOPE_NAMES tag is set to \c NO (the default) then doxygen 
+ will show members with their full class and namespace scopes in the
+ documentation. If set to \c YES the scope will be hidden. 
+
+\anchor cfg_show_include_files
+<dt>\c SHOW_INCLUDE_FILES <dd>
+ \addindex SHOW_INCLUDE_FILES
+ If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
+ will put a list of the files that are included by a file in the documentation 
+ of that file.
+
+\anchor cfg_inline_info
+<dt>\c INLINE_INFO <dd>
+ \addindex INLINE_INFO 
+ If the \c INLINE_INFO tag is set to \c YES (the default) then a tag [inline]
+ is inserted in the documentation for inline members.
+
+\anchor cfg_sort_member_docs
+<dt>\c SORT_MEMBER_DOCS <dd>
+ \addindex SORT_MEMBER_DOCS
+ If the \c SORT_MEMBER_DOCS tag is set to \c YES (the default) then doxygen
+ will sort the (detailed) documentation of file and class members
+ alphabetically by member name. If set to \c NO the members will appear in
+ declaration order.
+
+\anchor cfg_sort_brief_docs
+<dt>\c SORT_BRIEF_DOCS <dd>
+ \addindex SORT_BRIEF_DOCS
+ If the \c SORT_BRIEF_DOCS tag is set to \c YES then doxygen will sort the
+ brief descriptions of file, namespace and class members alphabetically
+ by member name. If set to \c NO (the default) the members will appear in
+ declaration order.
+
+
+\anchor cfg_sort_group_names
+<dt>\c SORT_GROUP_NAMES <dd>
+ \addindex SORT_GROUP_NAMES
+ If the \c SORT_GROUP_NAMES tag is set to \c YES then doxygen will sort the 
+ hierarchy of group names into alphabetical order. If set to \c NO (the default)
+ the group names will appear in their defined order. 
+
+\anchor cfg_sort_by_scope_name
+<dt>\c SORT_BY_SCOPE_NAME <dd>
+ \addindex SORT_BY_SCOPE_NAME
+ If the \c SORT_BY_SCOPE_NAME tag is set to \c YES, the class list will be
+ sorted by fully-qualified names, including namespaces. If set to
+ NO (the default), the class list will be sorted only by class name,
+ not including the namespace part.
+ @note This option is not very useful if \c HIDE_SCOPE_NAMES is set to \c YES.
+ @note This option applies only to the class list, not to the 
+       alphabetical list.
+
+
+\anchor cfg_generate_deprecatedlist
+<dt>\c GENERATE_DEPRECATEDLIST <dd>
+ \addindex GENERATE_DEPRECATEDLIST
+ The GENERATE_DEPRECATEDLIST tag can be used to enable (YES) or
+ disable (NO) the deprecated list. This list is created by 
+ putting \ref cmddeprecated "\\deprecated"
+ commands in the documentation.
+
+\anchor cfg_generate_todolist
+<dt>\c GENERATE_TODOLIST <dd>
+ \addindex GENERATE_TODOLIST
+ The GENERATE_TODOLIST tag can be used to enable (YES) or
+ disable (NO) the todo list. This list is created by 
+ putting \ref cmdtodo "\\todo"
+ commands in the documentation.
+
+\anchor cfg_generate_testlist
+<dt>\c GENERATE_TESTLIST <dd>
+ \addindex GENERATE_TESTLIST
+ The GENERATE_TESTLIST tag can be used to enable (YES) or
+ disable (NO) the test list. This list is created by 
+ putting \ref cmdtest "\\test" commands in the documentation.
+
+\anchor cfg_generate_buglist
+<dt>\c GENERATE_BUGLIST <dd>
+ \addindex GENERATE_BUGLIST
+ The GENERATE_BUGLIST tag can be used to enable (YES) or
+ disable (NO) the bug list. This list is created by 
+ putting \ref cmdbug "\\bug" commands in the documentation.
+
+\anchor cfg_enabled_sections
+<dt>\c ENABLED_SECTIONS <dd>
+ \addindex ENABLED_SECTIONS
+ The \c ENABLED_SECTIONS tag can be used to enable conditional
+ documentation sections, marked by \ref cmdif "\\if" \<section-label\> ... 
+ \ref cmdendif "\\endif" and \ref cmdcond "\\cond" \<section-label\> ...
+ \ref cmdendcond "\\endcond" blocks.
+
+\anchor cfg_max_initializer_lines
+<dt>\c MAX_INITIALIZER_LINES <dd>
+ \addindex MAX_INITIALIZER_LINES
+ The \c MAX_INITIALIZER_LINES tag determines the maximum number of lines
+ that the initial value of a variable or define can be. If the initializer
+ consists of more lines than specified here it will be hidden. Use a value
+ of 0 to hide initializers completely. The appearance of the value of
+ individual variables and defines can be controlled using \ref cmdshowinitializer "\\showinitializer"
+ or \ref cmdhideinitializer "\\hideinitializer" command in the documentation.
+
+\anchor cfg_show_used_files
+<dt>\c SHOW_USED_FILES <dd>
+ \addindex SHOW_USED_FILES
+ Set the \c SHOW_USED_FILES tag to \c NO to disable the list of files generated
+ at the bottom of the documentation of classes and structs. If set to \c YES the
+ list will mention the files that were used to generate the documentation.
+
+\anchor cfg_show_dirs
+<dt>\c SHOW_DIRECTORIES <dd>
+ \addindex SHOW_DIRECTORIES
+ If the sources in your project are distributed over multiple directories
+ then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy
+ in the documentation.
+
+\anchor cfg_show_files
+<dt>\c SHOW_FILES <dd>
+ \addindex SHOW_FILES
+ Set the \c SHOW_FILES tag to \c NO to disable the generation of the Files page.
+ This will remove the Files entry from the Quick Index and from the
+ Folder Tree View (if specified). The default is \c YES.
+
+\anchor cfg_show_namespaces
+<dt>\c SHOW_NAMESPACES <dd>
+ \addindex SHOW_NAMESPACES
+ Set the \c SHOW_NAMESPACES tag to \c NO to disable the generation of the
+ Namespaces page.  This will remove the Namespaces entry from the Quick Index
+ and from the Folder Tree View (if specified). The default is \c YES.
+
+</dl>
+
+\section messages_input Options related to warning and progress messages 
+\anchor cfg_quiet
+<dl>
+
+<dt>\c QUIET <dd>
+ \addindex QUIET
+ The \c QUIET tag can be used to turn on/off the messages that are generated
+ to standard output by doxygen. Possible values are \c YES and \c NO, 
+ where \c YES implies that the messages are off.
+ If left blank \c NO is used.
+
+\anchor cfg_warnings
+<dt>\c WARNINGS <dd>
+ \addindex WARNINGS
+ The \c WARNINGS tag can be used to turn on/off the warning messages that are
+ generated to standard error by doxygen. Possible values are \c YES and \c NO, 
+ where \c YES implies that the warnings are on. If left blank \c NO is used.
+
+ \b Tip: Turn warnings on while writing the documentation.
+
+\anchor cfg_warn_if_undocumented
+<dt>\c WARN_IF_UNDOCUMENTED <dd>
+ \addindex WARN_IF_UNDOCUMENTED
+ If \c WARN_IF_UNDOCUMENTED is set to \c YES, then doxygen will generate warnings
+ for undocumented members. If \c EXTRACT_ALL is set to \c YES then this flag will
+ automatically be disabled.
+
+\anchor cfg_warn_if_doc_error
+<dt>\c WARN_IF_DOC_ERROR <dd>
+ \addindex WARN_IF_DOC_ERROR
+ If \c WARN_IF_DOC_ERROR is set to \c YES, doxygen will generate warnings for
+ potential errors in the documentation, such as not documenting some
+ parameters in a documented function, or documenting parameters that
+ don't exist or using markup commands wrongly. 
+
+\anchor cfg_warn_no_paramdoc
+<dt>\c WARN_NO_PARAMDOC <dd>
+ \addindex WARN_NO_PARAMDOC
+ This \c WARN_NO_PARAMDOC option can be abled to get warnings for 
+ functions that are documented, but have no documentation for their parameters
+ or return value. If set to \c NO (the default) doxygen will only warn about
+ wrong or incomplete parameter documentation, but not about the absence of
+ documentation.
+
+\anchor cfg_warn_format
+<dt>\c WARN_FORMAT <dd>
+ \addindex WARN_FORMAT
+ The \c WARN_FORMAT tag determines the format of the warning messages that
+ doxygen can produce. The string should contain the <code>\$file</code>, 
+ <code>\$line</code>, and <code>\$text</code> 
+ tags, which will be replaced by the file and line number from which the
+ warning originated and the warning text.
+
+\anchor cfg_warn_logfile
+<dt>\c WARN_LOGFILE <dd>
+ \addindex WARN_LOGFILE
+ The \c WARN_LOGFILE tag can be used to specify a file to which warning
+ and error messages should be written. If left blank the output is written 
+ to stderr.
+
+</dl>
+
+\section config_input Input related options
+\anchor cfg_input
+<dl>
+
+<dt>\c INPUT <dd>
+ \addindex INPUT
+ The \c INPUT tag is used to specify the files and/or directories that contain 
+ documented source files. You may enter file names like 
+ \c myfile.cpp or directories like \c /usr/src/myproject. 
+ Separate the files or directories with spaces.<br>
+
+ \b Note: 
+ If this tag is empty the current directory is searched.
+
+\anchor cfg_input_encoding
+<dt>\c INPUT_ENCODING <dd>
+ \addindex INPUT_ENCODING
+ This tag can be used to specify the character encoding of the source files that 
+ doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
+ input encoding. Doxygen uses libiconv (or the iconv built into libc) for the transcoding. 
+ See <a href="http://www.gnu.org/software/libiconv">the libiconv documentation</a> for 
+ the list of possible encodings.
+
+\anchor cfg_file_patterns
+<dt>\c FILE_PATTERNS <dd>
+ \addindex FILE_PATTERNS
+ If the value of the \c INPUT tag contains directories, you can use the 
+ \c FILE_PATTERNS tag to specify one or more wildcard patterns 
+ (like \c *.cpp and \c *.h ) to filter out the source-files 
+ in the directories. If left blank the following patterns are tested:
+ <code>
+ *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp 
+ *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm
+ </code>
+
+\anchor cfg_file_version_filter
+<dt>\c FILE_VERSION_FILTER <dd>
+ \addindex FILE_VERSION_FILTER
+ The \c FILE_VERSION_FILTER tag can be used to specify a program or script that
+ doxygen should invoke to get the current version for each file (typically from the
+ version control system). Doxygen will invoke the program by executing (via
+ popen()) the command <code>command input-file</code>, where \c command is 
+ the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name 
+ of an input file provided by doxygen. 
+ Whatever the program writes to standard output is used as the file version. 
+
+Example of using a shell script as a filter for Unix:
+\verbatim
+ FILE_VERSION_FILTER = "/bin/sh versionfilter.sh"
+\endverbatim
+
+Example shell script for CVS:
+\verbatim
+#!/bin/sh
+cvs status $1 | sed -n 's/^[ \]*Working revision:[ \t]*\([0-9][0-9\.]*\).*/\1/p'
+\endverbatim 
+ 
+Example shell script for Subversion:
+\verbatim
+#!/bin/sh
+svn stat -v $1 | sed -n 's/^[ A-Z?\*|!]\{1,15\}/r/;s/ \{1,15\}/\/r/;s/ .*//p'
+\endverbatim
+
+Example filter for ClearCase:
+\verbatim
+FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
+\endverbatim
+
+\anchor cfg_layout_file
+<dt>\c LAYOUT_FILE <dd>
+ The \c LAYOUT_FILE tag can be used to specify a layout file which will be parsed by
+ doxygen. The layout file controls the global structure of the generated output files
+ in an output format independent way. The create the layout file that represents
+ doxygen's defaults, run doxygen with the -l option. You can optionally specify a
+ file name after the option, if omitted DoxygenLayout.xml will be used as the name
+ of the layout file. Note that if you run doxygen from a directory containing 
+ a file called DoxygenLayout.xml, doxygen will parse it automatically even if 
+ the \c LAYOUT_FILE tag is left empty.
+
+\anchor cfg_recursive
+<dt>\c RECURSIVE <dd>
+ \addindex RECURSIVE
+ The \c RECURSIVE tag can be used to specify whether or not subdirectories
+ should be searched for input files as well. Possible values are \c YES 
+ and \c NO.  If left blank \c NO is used.
+
+\anchor cfg_exclude
+<dt>\c EXCLUDE <dd>
+ \addindex EXCLUDE
+ The \c EXCLUDE tag can be used to specify files and/or directories that should
+ excluded from the \c INPUT source files. This way you can easily exclude a
+ subdirectory from a directory tree whose root is specified with the \c INPUT tag.
+
+\anchor cfg_exclude_symlinks
+<dt>\c EXCLUDE_SYMLINKS <dd>
+ \addindex EXCLUDE_SYMLINKS
+ The \c EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
+ that are symbolic links (a Unix filesystem feature) are excluded from the input.
+
+\anchor cfg_exclude_patterns
+<dt>\c EXCLUDE_PATTERNS <dd>
+ \addindex EXCLUDE_PATTERNS
+ If the value of the \c INPUT tag contains directories, you can use the
+ \c EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
+ certain files from those directories.
+
+ Note that the wildcards are matched against the file with absolute path, 
+ so to exclude all test directories use the pattern 
+ <code>*</code><code>/test/</code><code>*</code>
+
+\anchor cfg_example_path
+<dt>\c EXAMPLE_PATH <dd>
+ \addindex EXAMPLE_PATH
+ The \c EXAMPLE_PATH tag can be used to specify one or more files or
+ directories that contain example code fragments that are included (see
+ the \\include command in section \ref cmdinclude "\\include").
+
+\anchor cfg_example_recursive
+<dt>\c EXAMPLE_RECURSIVE <dd>
+ \addindex EXAMPLE_RECURSIVE
+ If the \c EXAMPLE_RECURSIVE tag is set to \c YES then subdirectories will be
+ searched for input files to be used with the \\include or \\dontinclude 
+ commands irrespective of the value of the \c RECURSIVE tag. 
+ Possible values are \c YES and \c NO. If left blank \c NO is used. 
+
+\anchor cfg_example_patterns
+<dt>\c EXAMPLE_PATTERNS <dd>
+ \addindex EXAMPLE_PATTERNS
+ If the value of the \c EXAMPLE_PATH tag contains directories, you can use the
+ \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
+ and *.h) to filter out the source-files in the directories. If left
+ blank all files are included.
+
+\anchor cfg_image_path
+<dt>\c IMAGE_PATH <dd>
+ \addindex IMAGE_PATH
+ The \c IMAGE_PATH tag can be used to specify one or more files or
+ directories that contain images that are to be included in the 
+ documentation (see the \ref cmdimage "\\image" command).
+
+\anchor cfg_input_filter
+<dt>\c INPUT_FILTER <dd>
+ \addindex INPUT_FILTER
+ The \c INPUT_FILTER tag can be used to specify a program that doxygen should
+ invoke to filter for each input file. Doxygen will invoke the filter program
+ by executing (via popen()) the command:
+\verbatim <filter> <input-file>
+\endverbatim
+ 
+ where \<filter\>
+ is the value of the \c INPUT_FILTER tag, and \<input-file\> is the name of an
+ input file. Doxygen will then use the output that the filter program writes
+ to standard output.
+
+\anchor cfg_filter_patterns
+<dt>\c FILTER_PATTERNS <dd>
+ \addindex FILTER_PATTERNS
+ The \c FILTER_PATTERNS tag can be used to specify filters on a per file pattern
+ basis.  Doxygen will compare the file name with each pattern and apply the
+ filter if there is a match.  The filters are a list of the form:
+ pattern=filter (like <code>*.cpp=my_cpp_filter</code>). See \c INPUT_FILTER for further
+ info on how filters are used. If \c FILTER_PATTERNS is empty, \c INPUT_FILTER
+ is applied to all files. 
+
+\anchor cfg_filter_source_files
+<dt>\c FILTER_SOURCE_FILES <dd>
+ \addindex FILTER_SOURCE_FILES
+ If the \c FILTER_SOURCE_FILES tag is set to \c YES, the input filter (if set using
+ \ref cfg_input_filter "INPUT_FILTER" ) will also be used to filter the input
+ files that are used for producing the source files to browse 
+ (i.e. when SOURCE_BROWSER is set to YES).
+
+</dl>
+
+\section sourcebrowser_index Source browsing related options
+\anchor cfg_source_browser
+<dl>
+
+<dt>\c SOURCE_BROWSER <dd>
+ \addindex SOURCE_BROWSER
+ If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will \n"
+ be generated. Documented entities will be cross-referenced with these sources. \n"
+ Note: To get rid of all source code in the generated output, make sure also \n"
+ \c VERBATIM_HEADERS is set to NO. \n"
+
+\anchor cfg_inline_sources
+<dt>\c INLINE_SOURCES <dd>
+ \addindex INLINE_SOURCES
+ Setting the \c INLINE_SOURCES tag to \c YES will include the body
+ of functions, classes and enums directly into the documentation.
+
+\anchor cfg_strip_code_comments
+<dt>\c STRIP_CODE_COMMENTS <dd>
+ \addindex STRIP_CODE_COMMENTS
+ Setting the \c STRIP_CODE_COMMENTS tag to \c YES (the default) will instruct
+ doxygen to hide any special comment blocks from generated source code
+ fragments. Normal C and C++ comments will always remain visible.
+
+\anchor cfg_referenced_by_relation
+<dt>\c REFERENCED_BY_RELATION <dd>
+ \addindex REFERENCED_BY_RELATION
+ If the \c REFERENCED_BY_RELATION tag is set to \c YES
+ then for each documented function all documented
+ functions referencing it will be listed. 
+
+\anchor cfg_references_relation
+<dt>\c REFERENCES_RELATION <dd>
+ \addindex REFERENCES_RELATION
+ If the \c REFERENCES_RELATION tag is set to \c YES
+ then for each documented function all documented entities
+ called/used by that function will be listed. 
+
+\anchor cfg_references_link_source
+<dt>\c REFERENCES_LINK_SOURCE <dd>
+ \addindex REFERENCES_LINK_SOURCE
+ If the \c REFERENCES_LINK_SOURCE tag is set to \c YES (the default)
+ and SOURCE_BROWSER tag is set to \c YES, then the hyperlinks from 
+ functions in REFERENCES_RELATION and REFERENCED_BY_RELATION lists will 
+ link to the source code.  Otherwise they will link to the documentation.
+
+\anchor cfg_verbatim_headers
+<dt>\c VERBATIM_HEADERS <dd>
+ \addindex VERBATIM_HEADERS
+  If the \c VERBATIM_HEADERS tag is set the \c YES (the default) then doxygen
+  will generate a verbatim copy of the header file for each class for
+  which an include is specified. Set to NO to disable this.
+  \sa Section \ref cmdclass "\\class".
+
+\anchor cfg_use_htags
+<dt>\c USE_HTAGS <dd>
+ \addindex USE_HTAGS
+ If the \c USE_HTAGS tag is set to \c YES then the references to source code
+ will point to the HTML generated by the htags(1) tool instead of doxygen
+ built-in source browser. The htags tool is part of GNU's global source
+ tagging system (see http://www.gnu.org/software/global/global.html).
+ The use it do the following:
+
+ -# Install the latest version of global (i.e. 4.8.6 or better)
+ -# Enable SOURCE_BROWSER and USE_HTAGS in the config file
+ -# Make sure the INPUT points to the root of the source tree
+ -# Run doxygen as normal
+
+ Doxygen will invoke htags (and that will in turn invoke gtags), so these tools
+ must be available from the command line (i.e. in the search path).
+
+ The result: instead of the source browser generated by doxygen, the links to
+ source code will now point to the output of htags.
+
+</dl>
+
+\section alphabetical_index Alphabetical index options
+\anchor cfg_alphabetical_index
+<dl>
+
+<dt>\c ALPHABETICAL_INDEX <dd>
+ \addindex ALPHABETICAL_INDEX
+ If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
+ of all compounds will be generated. Enable this if the project contains 
+ a lot of classes, structs, unions or interfaces.
+
+<dt>\c COLS_IN_ALPHA_INDEX <dd>
+ \anchor cfg_cols_in_alpha_index
+ \addindex COLS_IN_ALPHA_INDEX
+ If the alphabetical index is enabled 
+ (see \c ALPHABETICAL_INDEX) then the \c COLS_IN_ALPHA_INDEX tag can be 
+ used to specify the number of columns in which this list will be split (can be a number in the range [1..20])
+
+\anchor cfg_ignore_prefix
+<dt>\c IGNORE_PREFIX <dd>
+ \addindex IGNORE_PREFIX
+ In case all classes in a project start with a common prefix, all classes will 
+ be put under the same header in the alphabetical index.
+ The \c IGNORE_PREFIX tag can be used to specify a prefix 
+ (or a list of prefixes) that should be ignored while generating the index 
+ headers.
+
+</dl>
+\section html_output HTML related options
+\anchor cfg_generate_html
+<dl>
+
+<dt>\c GENERATE_HTML <dd>
+ \addindex GENERATE_HTML
+ If the \c GENERATE_HTML tag is set to \c YES (the default) doxygen will
+ generate HTML output
+
+\anchor cfg_html_output
+<dt>\c HTML_OUTPUT <dd>
+ \addindex HTML_OUTPUT
+ The \c HTML_OUTPUT tag is used to specify where the HTML docs will be put.
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
+ put in front of it. If left blank `html' will be used as the default path.
+
+\anchor cfg_html_file_extension
+<dt>\c HTML_FILE_EXTENSION <dd>
+ \addindex HTML_FILE_EXTENSION
+ The \c HTML_FILE_EXTENSION tag can be used to specify the file extension for 
+ each generated HTML page (for example: .htm, .php, .asp). If it is left blank
+ doxygen will generate files with .html extension.
+
+\anchor cfg_html_header
+<dt>\c HTML_HEADER <dd>      
+ \addindex HTML_HEADER
+ The \c HTML_HEADER tag can be used to specify a user-defined HTML 
+ header file for each generated HTML page. To get valid HTML the header file
+ should contain at least a \c \<HTML\> and a \c \<BODY\> tag, but it is
+ good idea to include the style sheet that is generated by doxygen as well. 
+ Minimal example:
+\verbatim
+  <HTML>
+    <HEAD>
+      <TITLE>My title</TITLE>
+      <LINK HREF="doxygen.css" REL="stylesheet" TYPE="text/css">
+    </HEAD>
+    <BODY BGCOLOR="#FFFFFF">
+\endverbatim
+ If the tag is left blank doxygen will generate a 
+ standard header. 
+
+ The following markers have a special meaning inside the header and footer:
+ <dl>
+ <dt><code>\$title</code><dd>will be replaced with the title of the page.
+ <dt><code>\$datetime</code><dd>will be replaced with current the date and time.
+ <dt><code>\$date</code><dd>will be replaced with the current date.
+ <dt><code>\$year</code><dd>will be replaces with the current year.
+ <dt><code>\$doxygenversion</code><dd>will be replaced with the version of doxygen
+ <dt><code>\$projectname</code><dd>will be replaced with the name of 
+            the project (see \c PROJECT_NAME)
+ <dt><code>\$projectnumber</code><dd>will be replaced with the project number
+            (see \c PROJECT_NUMBER)
+ <dt><code>\$relpath\$</code><dd>
+ If \c CREATE_SUBDIRS is enabled, the command <code>\$relpath\$</code> can be 
+ used to produce a relative path to the root of the HTML output directory,
+ e.g. use \$relpath\$doxygen.css, to refer to the standard style sheet.
+ </dl>
+   
+ See also section \ref doxygen_usage for information on how to generate
+ the default header that doxygen normally uses.
+   
+\anchor cfg_html_footer
+<dt>\c HTML_FOOTER <dd>
+ \addindex HTML_FOOTER
+ The \c HTML_FOOTER tag can be used to specify a user-defined HTML footer for 
+ each generated HTML page. To get valid HTML the footer file should contain
+ at least a \c \</BODY\> and a \c \</HTML\> tag. A minimal example:
+\verbatim
+    </BODY>
+  </HTML>
+\endverbatim
+ If the tag is left blank doxygen will generate a standard footer.
+
+ The following commands have a special meaning inside the footer:
+ <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$projectnumber</code>. 
+ Doxygen will replace them by respectively 
+ the title of the page, the current date and time, only the current date,
+ the version number of doxygen, the project name (see \c PROJECT_NAME), or the
+ project number (see \c PROJECT_NUMBER).
+
+ See also section \ref doxygen_usage for information on how to generate
+ the default footer that doxygen normally uses.
+
+\anchor cfg_html_stylesheet
+<dt>\c HTML_STYLESHEET <dd>
+ \addindex HTML_STYLESHEET
+ The \c HTML_STYLESHEET tag can be used to specify a user-defined cascading
+ style sheet that is used by each HTML page. It can be used to
+ fine-tune the look of the HTML output. If the tag is left blank doxygen
+ will generate a default style sheet. 
+
+ See also section \ref doxygen_usage for information on how to generate
+ the style sheet that doxygen normally uses.
+
+\anchor cfg_html_align_members
+<dt>\c HTML_ALIGN_MEMBERS <dd>
+ \addindex HTML_ALIGN_MEMBERS
+ If the \c HTML_ALIGN_MEMBERS tag is set to \c YES, the members of classes,
+ files or namespaces will be aligned in HTML using tables. If set to
+ \c NO a bullet list will be used. 
+
+ <b>Note:</b>
+ Setting this tag to \c NO will become obsolete in the future, since I only
+ intent to support and test the aligned representation.
+
+\anchor cfg_html_dynamic_sections
+<dt>\c HTML_DYNAMIC_SECTIONS <dd>
+ \addindex HTML_DYNAMIC_SECTIONS
+ If the \c HTML_DYNAMIC_SECTIONS tag is set to \c YES then the generated HTML
+ documentation will contain sections that can be hidden and shown after the
+ page has loaded. For this to work a browser that supports
+ JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox
+ Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari). 
+
+\anchor cfg_generate_docset
+<dt>\c GENERATE_DOCSET <dd>
+ \addindex GENERATE_DOCSET
+ If the \c GENERATE_DOCSET tag is set to \c YES, additional index files
+ will be generated that can be used as input for 
+ <a href="http://developer.apple.com/tools/xcode/">Apple's Xcode 3
+ integrated development environment</a>, introduced with OSX 10.5 (Leopard).
+ To create a documentation set, doxygen will generate a Makefile in the
+ HTML output directory. Running \c make will produce the docset in that
+ directory and running <code>make install</code> will install the docset in 
+ <code>~/Library/Developer/Shared/Documentation/DocSets</code> 
+ so that Xcode will find it at startup. See
+ <a href="http://developer.apple.com/tools/creatingdocsetswithdoxygen.html">
+ this article</a> for more information.
+
+\anchor cfg_docset_feedname 
+<dt>\c DOCSET_FEEDNAME <dd>
+ \addindex DOCSET_FEEDNAME
+ When \c GENERATE_DOCSET tag is set to \c YES, this tag determines the name of the
+ feed. A documentation feed provides an umbrella under which multiple
+ documentation sets from a single provider (such as a company or product suite) 
+ can be grouped.
+
+\anchor cfg_docset_bundle_id
+<dt>\c DOCSET_BUNDLE_ID <dd>
+ When \c GENERATE_DOCSET tag is set to \c YES, this tag specifies a string that
+ should uniquely identify the documentation set bundle. This should be a
+ reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>. 
+ Doxygen will append <code>.docset</code> to the name.
+
+
+\anchor cfg_generate_htmlhelp
+<dt>\c GENERATE_HTMLHELP <dd>
+ \addindex GENERATE_HTMLHELP
+ If the \c GENERATE_HTMLHELP tag is set to \c YES then
+ doxygen generates three additional HTML index files: 
+ \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
+ project file that can be read by 
+ <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp">
+ Microsoft's HTML Help Workshop</a>
+ on Windows.
+
+ The HTML Help Workshop contains a compiler that can convert all HTML output 
+ generated by doxygen into a single compiled HTML file (.chm). Compiled
+ HTML files are now used as the Windows 98 help format, and will replace
+ the old Windows help format (.hlp) on all Windows platforms in the future.
+ Compressed HTML files also contain an index, a table of contents,
+ and you can search for words in the documentation.
+ The HTML workshop also contains a viewer for compressed HTML files.
+
+\anchor cfg_chm_file 
+<dt>\c CHM_FILE <dd>
+ \addindex CHM_FILE
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c CHM_FILE tag can
+  be used to specify the file name of the resulting .chm file. You
+  can add a path in front of the file if the result should not be
+  written to the html output directory.
+
+\anchor cfg_hhc_location 
+<dt>\c HHC_LOCATION <dd>
+ \addindex HHC_LOCATION
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c HHC_LOCATION tag can
+  be used to specify the location (absolute path including file name) of 
+  the HTML help compiler (hhc.exe). If non-empty doxygen will try to run
+  the HTML help compiler on the generated index.hhp.
+
+\anchor cfg_generate_chi
+<dt>\c GENERATE_CHI <dd>
+ \addindex GENERATE_CHI
+ If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c GENERATE_CHI flag
+ controls if a separate .chi index file is generated (<code>YES</code>) or that
+ it should be included in the master .chm file (<code>NO</code>).
+
+\anchor cfg_binary_toc
+<dt>\c BINARY_TOC <dd>
+ \addindex BINARY_TOC
+ If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c BINARY_TOC flag
+ controls whether a binary table of contents is generated (<code>YES</code>) or a
+ normal table of contents (<code>NO</code>) in the .chm file.
+
+\anchor cfg_toc_expand
+<dt>\c TOC_EXPAND <dd>
+ \addindex TOC_EXPAND
+ The \c TOC_EXPAND flag can be set to YES to add extra items for 
+ group members to the table of contents of the HTML help documentation 
+ and to the tree view.
+
+\anchor cfg_generate_qhp
+<dt>\c GENERATE_QHP <dd>
+ \addindex GENERATE_QHP
+ If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE
+ and QHP_VIRTUAL_FOLDER are set, an additional index file will
+ be generated that can be used as input for Qt's qhelpgenerator
+ to generate a Qt Compressed Help (.qch) of the generated HTML
+ documentation.
+
+\anchor cfg_qhp_namespace
+<dt>\c QHP_NAMESPACE <dd>
+ \addindex QHP_NAMESPACE
+ The QHP_NAMESPACE tag specifies the namespace to use when generating
+ Qt Help Project output. For more information please see
+ <a href="http://doc.trolltech.com/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
+
+\anchor cfg_qhp_virtual_folder
+<dt>\c QHP_VIRTUAL_FOLDER <dd>
+ \addindex QHP_VIRTUAL_FOLDER
+ The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when
+ generating Qt Help Project output. For more information please see
+ <a href="http://doc.trolltech.com/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
+
+\anchor cfg_qhp_cust_filter_name
+<dt>\c QHP_CUST_FILTER_NAME <dd>
+  \addindex QHP_CUST_FILTER_NAME
+  If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add. For more information please see
+  <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+
+\anchor cfg_qhp_cust_filter_attrs
+<dt>\c QHP_CUST_FILTER_ATTRS <dd>
+  \addindex QHP_CUST_FILTER_ATTRS
+  The QHP_CUST_FILTER_ATTRIBUTES tag specifies the list of the attributes of the custom filter to add.
+  For more information please see
+  <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+
+\anchor cfg_qhp_sect_filter_attrs
+<dt>\c QHP_SECT_FILTER_ATTRS <dd>
+  \addindex QHP_SECT_FILTER_ATTRS
+  The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's filter section matches.
+  <a href="http://doc.trolltech.com/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
+
+\anchor cfg_qhg_location
+<dt>\c QHG_LOCATION <dd>
+ \addindex QHG_LOCATION
+ If the GENERATE_QHP tag is set to YES, the QHG_LOCATION tag can
+ be used to specify the location of Qt's qhelpgenerator.
+ If non-empty doxygen will try to run qhelpgenerator on the generated
+ .qhp file.
+
+<!--
+\anchor cfg_qthelp_file 
+<dt>\c QTHELP_FILE <dd>
+ \addindex QTHELP_FILE
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c QTHELP_FILE tag can
+  be used to specify the file name of the resulting .(qch|qhp) file. 
+  You can add a path in front of the file if the result should not be
+  written to the html output directory.
+
+\anchor cfg_qthelp_config 
+<dt>\c QTHELP_CONFIG <dd>
+ \addindex QTHELP_CONFIG
+  If \c DOXYGEN2QTHELP_LOC is set, \c QTHELP_CONFIG must specify the file name
+  of a config file to pass to doxygen2qthelp.
+
+\anchor cfg_doxygen2qthelp_loc 
+<dt>\c DOXYGEN2QTHELP_LOC <dd>
+ \addindex DOXYGEN2QTHELP_LOC
+  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c DOXYGEN2QTHELP_LOC tag
+  can be used to specify the location (absolute path including file name) of 
+  the doxygen2qthelp tool. If non-empty doxygen will try to run doxygen2qthelp 
+  on the generated index.hhp.
+-->
+
+\anchor cfg_disable_index
+<dt>\c DISABLE_INDEX <dd>
+ \addindex DISABLE_INDEX
+ If you want full control over the layout of the generated HTML pages it
+ might be necessary to disable the index and replace it with your own.
+ The \c DISABLE_INDEX tag can be used to turn on/off the condensed index at
+ top of each page. A value of NO (the default) enables the index and the
+ value YES disables it.
+
+\anchor cfg_enum_values_per_line
+<dt>\c ENUM_VALUES_PER_LINE <dd>
+ \addindex ENUM_VALUES_PER_LINE
+ This tag can be used to set the number of enum values (range [1..20])
+ that doxygen will group on one line in the generated HTML documentation.
+
+\anchor cfg_generate_treeview
+<dt>\c GENERATE_TREEVIEW <dd>
+ \addindex GENERATE_TREEVIEW
+ The GENERATE_TREEVIEW tag is used to specify whether a tree-like index
+ structure should be generated to display hierarchical information.
+ If the tag value is set to FRAME, a side panel will be generated
+ containing a tree-like index structure (just like the one that
+ is generated for HTML Help). For this to work a browser that supports
+ JavaScript, DHTML, CSS and frames is required (for instance Mozilla 1.0+,
+ Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are
+ probably better off using the HTML help feature. Other possible values
+ for this tag are: \c HIERARCHIES, which will generate the Groups, Directories,
+ and Class Hierarchy pages using a tree view instead of an ordered list;
+ ALL, which combines the behavior of \c FRAME and \c HIERARCHIES, and \c NONE, 
+ which disables this behavior completely. For backwards compatibility 
+ with previous releases of Doxygen, the values YES and NO are equivalent 
+ to FRAME and NONE respectively.
+
+ Via custom stylesheets (see \ref cfg_html_stylesheet "HTML_STYLESHEET")
+ one can further \ref doxygen_finetune "fine tune" the look of the index. 
+ As an example, the default style sheet generated by doxygen has an 
+ example that shows how to put an image at the root of the tree instead of 
+ the \ref cfg_project_name "project name".
+
+\anchor cfg_treeview_width
+<dt>\c TREEVIEW_WIDTH <dd>
+ \addindex TREEVIEW_WIDTH
+ If the treeview is enabled (see \c GENERATE_TREEVIEW) then this tag can be
+ used to set the initial width (in pixels) of the frame in which the tree
+ is shown.
+
+\anchor cfg_formula_fontsize
+<dt>\c FORMULA_FONTSIZE <dd>
+ \addindex FORMULA_FONTSIZE
+ Use this tag to change the font size of Latex formulas included
+ as images in the HTML documentation. The default is 10.
+ when you change the font size after a successful doxygen run you need
+ to manually remove any <code>form_*.png</code> images from the HTML 
+ output directory to force them to be regenerated.
+ 
+</dl>
+\section latex_output LaTeX related options
+\anchor cfg_generate_latex
+<dl>
+
+<dt>\c GENERATE_LATEX <dd>
+ \addindex GENERATE_LATEX
+ If the \c GENERATE_LATEX tag is set to \c YES (the default) doxygen will
+ generate \f$\mbox{\LaTeX}\f$ output.
+
+\anchor cfg_latex_output
+<dt>\c LATEX_OUTPUT <dd>
+ \addindex LATEX_OUTPUT
+ The \c LATEX_OUTPUT tag is used to specify where the \f$\mbox{\LaTeX}\f$ 
+ docs will be put.
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
+ put in front of it. If left blank `latex' will be used as the default path.
+
+\anchor cfg_latex_cmd_name
+<dt>\c LATEX_CMD_NAME <dd>
+ \addindex LATEX_CMD_NAME
+ The \c LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be invoked. 
+ If left blank `latex' will be used as the default command name.
+
+\anchor cfg_makeindex_cmd_name
+<dt>\c MAKEINDEX_CMD_NAME <dd>
+ \addindex MAKEINDEX_CMD_NAME
+ The MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
+ generate index for LaTeX. If left blank `makeindex' will be used as the 
+ default command name.
+
+\anchor cfg_compact_latex
+<dt>\c COMPACT_LATEX <dd>
+ \addindex COMPACT_LATEX
+ If the \c COMPACT_LATEX tag is set to \c YES doxygen generates more compact
+ \f$\mbox{\LaTeX}\f$ documents. This may be useful for small projects and may help to
+ save some trees in general.
+
+\anchor cfg_paper_type
+<dt>\c PAPER_TYPE <dd>
+ \addindex PAPER_TYPE
+ The \c PAPER_TYPE tag can be used to set the paper type that is used
+ by the printer. Possible values are: 
+ <ul>
+ <li><code>a4</code> (210 x 297 mm).
+ <li><code>a4wide</code> (same as a4, but including the a4wide package).
+ <li><code>letter</code> (8.5 x 11 inches).
+ <li><code>legal</code> (8.5 x 14 inches).
+ <li><code>executive</code> (7.25 x 10.5 inches)
+ </ul> 
+ If left blank a4wide will be used.
+
+\anchor cfg_extra_packages
+<dt>\c EXTRA_PACKAGES <dd>
+ \addindex EXTRA_PACKAGES
+ The \c EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
+ package names that should be included in the \f$\mbox{\LaTeX}\f$ output.
+ To get the times font for instance you can specify 
+\verbatim
+EXTRA_PACKAGES = times
+\endverbatim
+ If left blank no extra packages will be included.
+
+\anchor cfg_latex_header
+<dt>\c LATEX_HEADER <dd>
+ \addindex LATEX_HEADER
+ The \c LATEX_HEADER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ 
+ header for the generated \f$\mbox{\LaTeX}\f$ document. 
+ The header should contain everything until the first chapter. 
+
+ If it is left blank doxygen will generate a 
+ standard header. See section \ref doxygen_usage for information on how to 
+ let doxygen write the default header to a separate file.
+ 
+ \par Note: 
+   Only use a user-defined header if you know what you are doing!
+
+ The following commands have a special meaning inside the header:
+ <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
+ <code>\$doxygenversion</code>, <code>\$projectname</code>, 
+ <code>\$projectnumber</code>. 
+ Doxygen will replace them by respectively 
+ the title of the page, the current date and time, only the current date,
+ the version number of doxygen, the project name (see \c PROJECT_NAME), or the
+ project number (see \c PROJECT_NUMBER).
+   
+\anchor cfg_pdf_hyperlinks
+<dt>\c PDF_HYPERLINKS <dd>
+ \addindex PDF_HYPERLINKS
+
+ If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that 
+ is generated is prepared for conversion to PDF (using ps2pdf or pdflatex). 
+ The PDF file will
+ contain links (just like the HTML output) instead of page references.
+ This makes the output suitable for online browsing using a PDF viewer.
+
+\anchor cfg_use_pdflatex
+<dt>\c USE_PDFLATEX <dd>
+ \addindex LATEX_PDFLATEX
+
+ If the \c LATEX_PDFLATEX tag is set to \c YES, doxygen will use
+ pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
+ files.
+
+\anchor cfg_latex_batchmode
+<dt>\c LATEX_BATCHMODE <dd>
+ \addindex LATEX_BATCHMODE
+
+ If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \\batchmode.
+ command to the generated \f$\mbox{\LaTeX}\f$ files. This will 
+ instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of 
+ asking the user for help. This option is also used when generating formulas 
+ in HTML.
+
+\anchor cfg_latex_hide_indices
+<dt>\c LATEX_HIDE_INDICES <dd>
+ \addindex LATEX_HIDE_INDICES
+
+ If \c LATEX_HIDE_INDICES is set to \c YES then doxygen will not
+ include the index chapters (such as File Index, Compound Index, etc.) 
+ in the output. 
+
+</dl>
+\section rtf_output RTF related options
+\anchor cfg_generate_rtf
+<dl>
+
+<dt>\c GENERATE_RTF <dd>
+ \addindex GENERATE_RTF
+ If the \c GENERATE_RTF tag is set to \c YES doxygen will generate RTF output.
+ The RTF output is optimized for Word 97 and may not look too pretty with
+ other readers/editors.
+
+\anchor cfg_rtf_output
+<dt>\c RTF_OUTPUT <dd>
+ \addindex RTF_OUTPUT
+ The \c RTF_OUTPUT tag is used to specify where the RTF docs will be put.
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
+ put in front of it. If left blank \c rtf will be used as the default path.
+ 
+\anchor cfg_compact_rtf
+<dt>\c COMPACT_RTF <dd>
+ \addindex COMPACT_RTF
+ If the \c COMPACT_RTF tag is set to \c YES doxygen generates more compact
+ RTF documents. This may be useful for small projects and may help to
+ save some trees in general.
+
+\anchor cfg_rtf_hyperlinks
+<dt>\c RTF_HYPERLINKS <dd>
+ \addindex RTF_HYPERLINKS
+ If the \c RTF_HYPERLINKS tag is set to \c YES, the RTF that is generated
+ will contain hyperlink fields. The RTF file will
+ contain links (just like the HTML output) instead of page references.
+ This makes the output suitable for online browsing using Word or some other
+ Word compatible reader that support those fields.
+
+ \par note:
+   WordPad (write) and others do not support links.
+
+\anchor cfg_rtf_stylesheet_file 
+<dt>\c RTF_STYLESHEET_FILE <dd>
+ \addindex RTF_STYLESHEET_FILE
+ Load stylesheet definitions from file. Syntax is similar to doxygen's
+ config file, i.e. a series of assignments. You only have to provide
+ replacements, missing definitions are set to their default value.
+
+ See also section \ref doxygen_usage for information on how to generate
+ the default style sheet that doxygen normally uses.
+
+\anchor cfg_rtf_extensions_file
+<dt>\c RTF_EXTENSIONS_FILE <dd>
+ Set optional variables used in the generation of an RTF document.
+ Syntax is similar to doxygen's config file. 
+ A template extensions file can be generated using 
+ <code>doxygen -e rtf extensionFile</code>.
+
+</dl>
+
+\section man_output Man page related options
+\anchor cfg_generate_man
+<dl>
+
+<dt>\c GENERATE_MAN <dd>
+ \addindex GENERATE_MAN
+ If the \c GENERATE_MAN tag is set to \c YES (the default) doxygen will
+ generate man pages for classes and files.
+
+\anchor cfg_man_output
+<dt>\c MAN_OUTPUT <dd>
+ \addindex MAN_OUTPUT
+ The \c MAN_OUTPUT tag is used to specify where the man pages will be put.
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be
+ put in front of it. If left blank `man' will be used as the default path.
+ A directory man3 will be created inside the directory specified by 
+ \c MAN_OUTPUT.
+
+\anchor cfg_man_extension
+<dt>\c MAN_EXTENSION <dd>
+ \addindex MAX_EXTENSION
+ The \c MAN_EXTENSION tag determines the extension that is added to
+ the generated man pages (default is the subroutine's section .3)
+
+\anchor cfg_man_links
+<dt>\c MAN_LINKS <dd> 
+ \addindex MAN_LINKS
+ If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output, 
+ then it will generate one additional man file for each entity documented in 
+ the real man page(s). These additional files only source the real man page, 
+ but without them the man command would be unable to find the correct page. 
+ The default is \c NO.
+
+</dl>
+
+\section xml_output XML related options
+\anchor cfg_generate_xml
+<dl>
+
+<dt>\c GENERATE_XML <dd>
+ \addindex GENERATE_XML
+ If the \c GENERATE_XML tag is set to \c YES Doxygen will
+ generate an XML file that captures the structure of
+ the code including all documentation. 
+
+\anchor cfg_xml_output
+<dt>\c XML_OUTPUT <dd>
+ \addindex XML_OUTPUT
+ The \c XML_OUTPUT tag is used to specify where the XML pages will be put. 
+ If a relative path is entered the value of \c OUTPUT_DIRECTORY will be 
+ put in front of it. If left blank \c xml will be used as the default path.
+
+\anchor cfg_xml_schema
+<dt>\c XML_SCHEMA <dd>
+ \addindex XML_SCHEMA
+ The \c XML_SCHEMA tag can be used to specify an XML schema,
+ which can be used by a validating XML parser to check the
+ syntax of the XML files.
+
+\anchor cfg_xml_dtd
+<dt>\c XML_DTD <dd>
+ \addindex XML_DTD
+ The \c XML_DTD tag can be used to specify an XML DTD,
+ which can be used by a validating XML parser to check the
+ syntax of the XML files.
+
+\anchor cfg_xml_programlisting
+<dt>\c XML_PROGRAMLISTING <dd>
+ \addindex XML_PROGRAMLISTING
+ If the \c XML_PROGRAMLISTING tag is set to \c YES Doxygen will
+ dump the program listings (including syntax highlighting
+ and cross-referencing information) to the XML output. Note that
+ enabling this will significantly increase the size of the XML output.
+
+</dl>
+
+\section autogen_output AUTOGEN_DEF related options
+\anchor cfg_generate_autogen_def
+<dl>
+
+<dt>\c GENERATE_AUTOGEN_DEF <dd>
+ \addindex GENERATE_AUTOGEN_DEF
+ If the \c GENERATE_AUTOGEN_DEF tag is set to \c YES Doxygen will
+ generate an AutoGen Definitions (see http://autogen.sf.net) file
+ that captures the structure of the code including all
+ documentation. Note that this feature is still experimental 
+ and incomplete at the moment. 
+
+</dl>
+
+\section perlmod_output PERLMOD related options
+\anchor cfg_generate_perlmod
+<dl>
+
+<dt>\c GENERATE_PERLMOD <dd>
+ \addindex GENERATE_PERLMOD
+ If the \c GENERATE_PERLMOD tag is set to \c YES Doxygen will
+ generate a Perl module file that captures the structure of
+ the code including all documentation. Note that this 
+ feature is still experimental and incomplete at the
+ moment.
+
+\anchor cfg_perlmod_latex
+<dt>\c PERLMOD_LATEX <dd>
+ \addindex PERLMOD_LATEX
+ If the \c PERLMOD_LATEX tag is set to \c YES Doxygen will generate 
+ the necessary Makefile rules, Perl scripts and LaTeX code to be able 
+ to generate PDF and DVI output from the Perl module output. 
+
+\anchor cfg_perlmod_pretty
+<dt>\c PERLMOD_PRETTY <dd>
+ \addindex PERLMOD_PRETTY
+ If the \c PERLMOD_PRETTY tag is set to \c YES the Perl module output will be 
+ nicely formatted so it can be parsed by a human reader.  This is useful 
+ if you want to understand what is going on. On the other hand, if this
+ tag is set to \c NO the size of the Perl module output will be much smaller
+ and Perl will parse it just the same. 
+
+\anchor cfg_perlmod_makevar_prefix
+<dt>\c PERLMOD_MAKEVAR_PREFIX <dd>
+ \addindex PERLMOD_MAKEVAR_PREFIX
+ The names of the make variables in the generated doxyrules.make file 
+ are prefixed with the string contained in \c PERLMOD_MAKEVAR_PREFIX. 
+ This is useful so different doxyrules.make files included by the same
+ Makefile don't overwrite each other's variables.
+
+</dl>
+
+\section config_prepro Preprocessor related options
+\anchor cfg_enable_preprocessing
+<dl>
+
+<dt>\c ENABLE_PREPROCESSING <dd>
+ \addindex ENABLE_PREPROCESSING
+ If the \c ENABLE_PREPROCESSING tag is set to \c YES (the default) doxygen will
+ evaluate all C-preprocessor directives found in the sources and include
+ files. 
+
+\anchor cfg_macro_expansion
+<dt>\c MACRO_EXPANSION <dd>
+ \addindex MACRO_EXPANSION
+ If the \c MACRO_EXPANSION tag is set to \c YES doxygen will expand all macro
+ names in the source code. If set to \c NO (the default) only conditional 
+ compilation will be performed. Macro expansion can be done in a controlled
+ way by setting \c EXPAND_ONLY_PREDEF to \c YES.
+
+\anchor cfg_expand_only_predef
+<dt>\c EXPAND_ONLY_PREDEF <dd>
+ \addindex EXPAND_ONLY_PREDEF
+ If the \c EXPAND_ONLY_PREDEF and \c MACRO_EXPANSION tags are both set to YES
+ then the macro expansion is limited to the macros specified with the
+ \c PREDEFINED and \c EXPAND_AS_DEFINED tags.
+
+\anchor cfg_search_includes
+<dt>\c SEARCH_INCLUDES <dd>
+ \addindex SEARCH_INCLUDES 
+ If the \c SEARCH_INCLUDES tag is set to \c YES (the default) the includes files
+ in the \c INCLUDE_PATH (see below) will be searched if a \#include is found.
+
+\anchor cfg_include_path
+<dt>\c INCLUDE_PATH <dd>
+ \addindex INCLUDE_PATH
+ The \c INCLUDE_PATH tag can be used to specify one or more directories that
+ contain include files that are not input files but should be processed by
+ the preprocessor.
+
+\anchor cfg_predefined
+<dt>\c PREDEFINED <dd>
+ \addindex PREDEFINED
+ The \c PREDEFINED tag can be used to specify one or more macro names that
+ are defined before the preprocessor is started (similar to the -D option of
+ gcc). The argument of the tag is a list of macros of the form:
+ <code>name</code> or <code>name=definition</code> (no spaces). 
+ If the definition and the "=" are omitted,  "=1" is assumed. To prevent
+ a macro definition from being undefined via \#undef or recursively expanded
+ use the := operator instead of the = operator.
+
+\anchor cfg_expand_as_defined
+<dt>\c EXPAND_AS_DEFINED <dd>
+ \addindex EXPAND_AS_DEFINED
+ If the \c MACRO_EXPANSION and \c EXPAND_ONLY_PREDEF tags are set to \c YES then
+ this tag can be used to specify a list of macro names that should be expanded.
+ The macro definition that is found in the sources will be used.
+ Use the \c PREDEFINED tag if you want to use a different macro definition.
+
+\anchor cfg_skip_function_macros
+<dt>\c SKIP_FUNCTION_MACROS <dd>
+ \addindex SKIP_FUNCTION_MACROS
+ If the \c SKIP_FUNCTION_MACROS tag is set to \c YES (the default) then 
+ doxygen's preprocessor will remove all function-like macros that are alone 
+ on a line, have an all uppercase name, and do not end with a semicolon. 
+ Such function macros are typically 
+ used for boiler-plate code, and will confuse the parser if not removed. 
+
+</dl>
+\section config_extref External reference options
+\anchor cfg_tagfiles
+<dl>
+
+<dt>\c TAGFILES <dd> 
+ \addindex TAGFILES
+ The \c TAGFILES tag can be used to specify one or more tagfiles. 
+ 
+ See section \ref doxytag_usage for more information about the usage of 
+ tag files.
+ 
+ Optionally an initial location of the external documentation 
+ can be added for each tagfile.
+ The format of a tag file without this location is as follows:
+ <pre>
+TAGFILES = file1 file2 ... </pre>
+ Adding location for the tag files is done as follows:
+ <pre>
+TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
+ where \c loc1 and \c loc2 can be relative or absolute paths or URLs, 
+ If a location is present for each tag, the installdox tool (see 
+ section \ref installdox_usage for more information) does not
+ have to be run to correct the links.
+
+ \par Note:
+  Each tag file must have a unique name 
+  (where the name does \e not include the path)
+  If a tag file is not located in the directory in which doxygen 
+  is run, you must also specify the path to the tagfile here.
+
+\anchor cfg_generate_tagfile
+<dt>\c GENERATE_TAGFILE <dd>
+ \addindex GENERATE_TAGFILE
+ When a file name is specified after \c GENERATE_TAGFILE, doxygen will create
+ a tag file that is based on the input files it reads.
+ See section \ref doxytag_usage for more information about the usage of 
+ tag files.
+
+\anchor cfg_allexternals
+<dt>\c ALLEXTERNALS <dd>
+ \addindex ALLEXTERNALS
+ If the \c ALLEXTERNALS tag is set to \c YES all external class will be listed
+ in the class index. If set to \c NO only the inherited external classes
+ will be listed.
+
+\anchor cfg_external_groups
+<dt>\c EXTERNAL_GROUPS <dd>
+ \addindex EXTERNAL_GROUPS
+ If the \c EXTERNAL_GROUPS tag is set to \c YES all external groups will be listed
+ in the modules index. If set to \c NO, only the current project's groups will
+ be listed.
+ 
+\anchor cfg_perl_path
+<dt>\c PERL_PATH <dd>
+ \addindex PERL_PATH
+ The \c PERL_PATH should be the absolute path and name of the perl script
+ interpreter (i.e. the result of `<tt>which perl</tt>').
+
+</dl>
+\section config_dot Dot options
+\anchor cfg_class_diagrams
+<dl>
+
+<dt>\c CLASS_DIAGRAMS <dd>
+ \addindex CLASS_DIAGRAMS
+ If the \c CLASS_DIAGRAMS tag is set to \c YES (the default) doxygen will
+ generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
+ super classes. Setting the tag to \c NO turns the diagrams off.
+ Note that this option is superseded by the HAVE_DOT option below. 
+ This is only a fallback. It is recommended to install and use dot, 
+ since it yields more powerful graphs. 
+
+\anchor cfg_mscgen_path
+<dt>\c MSCGEN_PATH <dd>
+ \addindex MSCGEN_PATH
+ You can define message sequence charts within doxygen comments using the \ref cmdmsc "\\msc" 
+ command. Doxygen will then run the <a href="http://www.mcternan.me.uk/mscgen/">msgen tool</a>) to 
+ produce the chart and insert it in the documentation. The <code>MSCGEN_PATH</code> tag allows you to 
+ specify the directory where the mscgen tool resides. If left empty the tool is assumed to 
+ be found in the default search path.
+
+\anchor cfg_have_dot
+<dt>\c HAVE_DOT <dd>
+ \addindex HAVE_DOT
+ If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the dot tool is
+ available from the path. This tool is part of 
+ <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
+ visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
+ this section have no effect if this option is set to \c NO (the default)
+
+\anchor cfg_dot_fontname
+<dt>\c DOT_FONTNAME <dd>
+ \addindex DOT_FONTNAME
+ By default doxygen will write a font called \c FreeSans.ttf to the output
+ directory and reference it in all dot files that doxygen generates. This
+ font does not include all possible unicode characters however, so when you need 
+ these (or just want a differently looking font) you can specify the font name
+ using \c DOT_FONTNAME. You need need to make sure dot is able to find the font,
+ which can be done by putting it in a standard location or by setting the
+ \c DOTFONTPATH environment variable or by setting \c DOT_FONTPATH to the directory
+ containing the font.
+
+\anchor cfg_dot_fontsize
+<dt>\c DOT_FONTSIZE <dd>
+The \c DOT_FONTSIZE tag can be used to set the size of the font of dot graphs.
+The default size is 10pt. 
+
+\anchor cfg_dot_fontpath
+<dt>\c DOT_FONTPATH <dd>
+ \addindex DOT_FONTPATH
+ By default doxygen will tell dot to use the output directory to look for the 
+ \c FreeSans.ttf font (which doxygen will put there itself). If you specify a 
+ different font using \c DOT_FONTNAME you can set the path where dot 
+ can find it using this tag.
+ 
+<dt>\c DOT_FONTNAME <dd>
+ \addindex DOT_FONTNAME
+ By default doxygen will write a font called FreeSans.ttf to the output 
+ directory and reference it in all dot files that doxygen generates. This 
+ font does not include all possible unicode characters however, so when you need 
+ these (or just want a differently looking font) you can specify the font name 
+ using \c DOT_FONTNAME. You need need to make sure dot is able to find the font, 
+ which can be done by putting it in a standard location or by setting the \c DOTFONTPATH
+ environment variable or by setting \c DOT_FONTPATH to the directory containing
+ the font.
+
+<dt>\c DOT_FONTPATH <dd>
+ \addindex DOT_FONTPATH
+ By default doxygen will tell dot to use the output directory to look for the
+ FreeSans.ttf font (which doxygen will put there itself). If you specify a 
+ different font using \c DOT_FONTNAME you can set the path where dot 
+ can find it using this tag. 
+
+\anchor cfg_class_graph
+<dt>\c CLASS_GRAPH <dd>
+ \addindex CLASS_GRAPH
+ If the \c CLASS_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen
+ will generate a graph for each documented class showing the direct and
+ indirect inheritance relations. Setting this tag to \c YES will force the
+ the \c CLASS_DIAGRAMS tag to NO.
+
+\anchor cfg_collaboration_graph
+<dt>\c COLLABORATION_GRAPH <dd>
+ \addindex COLLABORATION_GRAPH
+ If the \c COLLABORATION_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen
+ will generate a graph for each documented class showing the direct and
+ indirect implementation dependencies (inheritance, containment, and
+ class references variables) of the class with other documented classes.
+
+\anchor cfg_group_graphs
+<dt>\c GROUP_GRAPHS <dd>
+ \addindex GROUP_GRAPHS
+ If the GROUP_GRAPHS and HAVE_DOT tags are set to YES then doxygen
+ will generate a graph for groups, showing the direct groups dependencies.
+
+\anchor cfg_uml_look
+<dt>\c UML_LOOK <dd>
+ \addindex UML_LOOK
+ If the UML_LOOK tag is set to YES doxygen will generate inheritance and
+ collaboration diagrams in a style similar to the OMG's Unified Modeling
+ Language.
+
+\anchor cfg_template_relations
+<dt>\c TEMPLATE_RELATIONS <dd>
+ \addindex TEMPLATE_RELATIONS
+ If the \c TEMPLATE_RELATIONS and \c HAVE_DOT tags are set to \c YES then 
+ doxygen will show the relations between templates and their instances.
+
+\anchor cfg_hide_undoc_relations
+<dt>\c HIDE_UNDOC_RELATIONS <dd>
+ \addindex HIDE_UNDOC_RELATIONS
+ If set to YES, the inheritance and collaboration graphs will hide
+ inheritance and usage relations if the target is undocumented
+ or is not a class.
+
+\anchor cfg_include_graph
+<dt>\c INCLUDE_GRAPH <dd>
+ \addindex INCLUDE_GRAPH 
+ If the \c ENABLE_PREPROCESSING, \c SEARCH_INCLUDES, \c INCLUDE_GRAPH, and \c HAVE_DOT
+ tags are set to \c YES then doxygen will generate a graph for each documented file
+ showing the direct and indirect include dependencies of the file with other
+ documented files.
+
+\anchor cfg_included_by_graph
+<dt>\c INCLUDED_BY_GRAPH <dd>
+ \addindex INCLUDED_BY_GRAPH 
+ If the \c ENABLE_PREPROCESSING, \c SEARCH_INCLUDES, \c INCLUDED_BY_GRAPH, and
+ \c HAVE_DOT tags are set to \c YES then doxygen will generate a graph for each
+ documented header file showing the documented files that directly or indirectly
+ include this file.
+
+\anchor cfg_call_graph
+<dt>\c CALL_GRAPH <dd>
+ \addindex CALL_GRAPH
+ If the \c CALL_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen will 
+ generate a call dependency graph for every global function or class method. 
+ Note that enabling this option will significantly increase the time of a run.
+ So in most cases it will be better to enable call graphs for selected 
+ functions only using the \\callgraph command.
+
+\anchor cfg_caller_graph
+<dt>\c CALLER_GRAPH <dd>
+ \addindex CALLER_GRAPH
+ If the \c CALLER_GRAPH and \c HAVE_DOT tags are set to \c YES then doxygen will 
+ generate a caller dependency graph for every global function or class method. 
+ Note that enabling this option will significantly increase the time of a run.
+ So in most cases it will be better to enable caller graphs for selected 
+ functions only using the \\callergraph command.
+
+\anchor cfg_graphical_hierarchy
+<dt>\c GRAPHICAL_HIERARCHY <dd>
+ \addindex GRAPHICAL_HIERARCHY
+ If the \c GRAPHICAL_HIERARCHY and \c HAVE_DOT tags are set to \c YES then 
+ doxygen will graphical hierarchy of all classes instead of a textual one.
+
+\anchor cfg_directory_graph
+<dt>\c DIRECTORY_GRAPH <dd>
+ \addindex DIRECTORY_GRAPH		    
+ If the \c DIRECTORY_GRAPH, \c SHOW_DIRECTORIES and \c HAVE_DOT options are set 
+ to \c YES then doxygen will show the dependencies a directory has on other directories
+ in a graphical way. The dependency relations are determined by the \#include
+ relations between the files in the directories.
+
+\anchor cfg_dot_graph_max_nodes 
+<dt>\c DOT_GRAPH_MAX_NODES <dd>
+ \addindex DOT_GRAPH_MAX_NODES
+ The \c DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of 
+ nodes that will be shown in the graph. If the number of nodes in a graph
+ becomes larger than this value, doxygen will truncate the graph, which is 
+ visualized by representing a node as a red box. Note that doxygen if the number
+ of direct children of the root node in a graph is already larger than
+ \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
+ that the size of a graph can be further restricted by \c MAX_DOT_GRAPH_DEPTH.
+
+\anchor cfg_max_dot_graph_depth
+<dt>\c MAX_DOT_GRAPH_DEPTH <dd>
+ \addindex MAX_DOT_GRAPH_DEPTH
+ The \c MAX_DOT_GRAPH_DEPTH tag can be used to set the maximum depth of the 
+ graphs generated by dot. A depth value of 3 means that only nodes reachable
+ from the root by following a path via at most 3 edges will be shown. Nodes
+ that lay further from the root node will be omitted. Note that setting this
+ option to 1 or 2 may greatly reduce the computation time needed for large
+ code bases. Also note that the size of a graph can be further restricted by
+ \c DOT_GRAPH_MAX_NODES. Using a depth of 0 means no depth restriction (the default).
+
+\anchor cfg_dot_image_format
+<dt>\c DOT_IMAGE_FORMAT <dd>
+ \addindex DOT_IMAGE_FORMAT
+ The \c DOT_IMAGE_FORMAT tag can be used to set the image format of the images
+ generated by dot. Possible values are gif, jpg, and png.
+ If left blank png will be used.
+
+\anchor cfg_dot_path
+<dt>\c DOT_PATH <dd>
+ \addindex DOT_PATH
+ This tag can be used to specify the path where the dot tool can be found. 
+ If left blank, it is assumed the dot tool can be found on the path. 
+
+\anchor cfg_dotfile_dirs
+<dt>\c DOTFILE_DIRS <dd>
+ \addindex DOTFILE_DIRS
+ This tag can be used to specify one or more directories that 
+ contain dot files that are included in the documentation (see the
+ \\dotfile command).
+
+\anchor cfg_dot_transparent
+<dt>\c DOT_TRANSPARENT <dd>
+ \addindex DOT_TRANSPARENT
+ Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent
+ background. This is disabled by default, because dot on Windows does not 
+ seem to support this out of the box. Warning: Depending on the platform used, 
+ enabling this option may lead to badly anti-aliased labels on the edges of 
+ a graph (i.e. they become hard to read). 
+ 
+\anchor cfg_dot_multi_targets
+<dt>\c DOT_MULTI_TARGETS <dd>
+ \addindex DOT_MULTI_TARGET
+ Set the \c DOT_MULTI_TARGETS tag to \c YES allow dot to generate multiple output
+ files in one run (i.e. multiple -o and -T options on the command line). This
+ makes dot run faster, but since only newer versions of dot (>1.8.10)
+ support this, this feature is disabled by default.
+
+\anchor cfg_generate_legend 
+<dt>\c GENERATE_LEGEND <dd>
+ \addindex GENERATE_LEGEND
+ If the \c GENERATE_LEGEND tag is set to \c YES (the default) doxygen will
+ generate a legend page explaining the meaning of the various boxes and
+ arrows in the dot generated graphs.
+
+\anchor cfg_dot_cleanup
+<dt>\c DOT_CLEANUP <dd>
+ \addindex DOT_CLEANUP
+If the \c DOT_CLEANUP tag is set to \c YES (the default) doxygen will
+remove the intermediate dot files that are used to generate the various graphs.
+
+
+</dl>
+\section config_search Search engine options
+\anchor cfg_searchengine
+<dl>
+
+<dt>\c SEARCHENGINE <dd>
+ \addindex SEARCHENGINE
+ The \c SEARCHENGINE tag specifies whether or not the HTML output should
+ contain a search facility. Possible values are \c YES and \c NO. 
+ If set to YES, doxygen will produce a search index and a PHP script
+ to search through the index. For this to work the documentation should
+ be viewed via a web-server running PHP version 4.1.0 or higher.
+ (See http://www.php.net/manual/en/installation.php for installation 
+ instructions).
+
+</dl>
+<h2>Examples</h2>
+
+Suppose you have a simple project consisting of two files: a source file 
+\c example.cc and a header file \c example.h.
+Then a minimal configuration file is as simple as:
+\verbatim
+INPUT            = example.cc example.h
+\endverbatim
+
+Assuming the example makes use of Qt classes and perl is located 
+in <code>/usr/bin</code>, a more realistic configuration file would be:
+\verbatim
+PROJECT_NAME     = Example
+INPUT            = example.cc example.h
+WARNINGS         = YES
+TAGFILES         = qt.tag
+PERL_PATH        = /usr/bin/perl
+SEARCHENGINE     = NO
+\endverbatim
+
+To generate the documentation for the 
+<a href="http://www.stack.nl/~dimitri/qdbttabular/index.html">QdbtTabular</a> package
+I have used the following configuration file:
+\verbatim
+PROJECT_NAME     = QdbtTabular
+OUTPUT_DIRECTORY = html
+WARNINGS         = YES
+INPUT            = examples/examples.doc src
+FILE_PATTERNS    = *.cc *.h
+INCLUDE_PATH     = examples
+TAGFILES         = qt.tag
+PERL_PATH        = /usr/local/bin/perl
+SEARCHENGINE     = YES
+\endverbatim
+
+To regenerate the Qt-1.44 documentation from the sources, you could use the
+following config file:
+\verbatim
+PROJECT_NAME         = Qt
+OUTPUT_DIRECTORY     = qt_docs
+HIDE_UNDOC_MEMBERS   = YES
+HIDE_UNDOC_CLASSES   = YES
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION      = YES
+EXPAND_ONLY_PREDEF   = YES
+SEARCH_INCLUDES      = YES
+FULL_PATH_NAMES      = YES
+STRIP_FROM_PATH      = $(QTDIR)/
+PREDEFINED           = USE_TEMPLATECLASS Q_EXPORT= \
+                       QArrayT:=QArray \
+                       QListT:=QList \
+                       QDictT:=QDict \
+                       QQueueT:=QQueue \
+                       QVectorT:=QVector \
+                       QPtrDictT:=QPtrDict \
+                       QIntDictT:=QIntDict \
+                       QStackT:=QStack \
+                       QDictIteratorT:=QDictIterator \
+                       QListIteratorT:=QListIterator \
+                       QCacheT:=QCache \
+                       QCacheIteratorT:=QCacheIterator \
+                       QIntCacheT:=QIntCache \
+                       QIntCacheIteratorT:=QIntCacheIterator \
+                       QIntDictIteratorT:=QIntDictIterator \
+                       QPtrDictIteratorT:=QPtrDictIterator
+INPUT                = $(QTDIR)/doc \
+                       $(QTDIR)/src/widgets \
+                       $(QTDIR)/src/kernel \
+                       $(QTDIR)/src/dialogs \
+                       $(QTDIR)/src/tools
+FILE_PATTERNS        = *.cpp *.h q*.doc
+INCLUDE_PATH         = $(QTDIR)/include 
+RECURSIVE            = YES
+\endverbatim
+
+For the Qt-2.1 sources I recommend to use the following settings:
+\verbatim
+PROJECT_NAME          = Qt
+PROJECT_NUMBER        = 2.1
+HIDE_UNDOC_MEMBERS    = YES
+HIDE_UNDOC_CLASSES    = YES
+SOURCE_BROWSER        = YES
+INPUT                 = $(QTDIR)/src
+FILE_PATTERNS         = *.cpp *.h q*.doc
+RECURSIVE             = YES
+EXCLUDE_PATTERNS      = *codec.cpp moc_* */compat/* */3rdparty/*
+ALPHABETICAL_INDEX    = YES
+COLS_IN_ALPHA_INDEX   = 3
+IGNORE_PREFIX         = Q
+ENABLE_PREPROCESSING  = YES
+MACRO_EXPANSION       = YES
+INCLUDE_PATH          = $(QTDIR)/include
+PREDEFINED            = Q_PROPERTY(x)= \
+                        Q_OVERRIDE(x)= \
+                        Q_EXPORT= \
+                        Q_ENUMS(x)= \
+                        "QT_STATIC_CONST=static const " \
+                        _WS_X11_ \
+                        INCLUDE_MENUITEM_DEF
+EXPAND_ONLY_PREDEF    = YES
+EXPAND_AS_DEFINED     = Q_OBJECT_FAKE Q_OBJECT ACTIVATE_SIGNAL_WITH_PARAM \
+                        Q_VARIANT_AS
+\endverbatim
+
+Here doxygen's preprocessor is used to substitute some
+macro names that are normally substituted by the C preprocessor,
+but without doing full macro expansion.
+
+*/
+
