@@ -257,7 +257,7 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
         ol.disable(OutputGenerator::RTF);
-        ol.newParagraph();
+        //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
         ol.writeString("\n\n");
@@ -268,7 +268,6 @@ void NamespaceDef::writeDetailedDescription(OutputList &ol,const QCString &title
       ol.parseDoc(docFile(),docLine(),this,0,documentation()+"\n",TRUE,FALSE);
     }
     ol.endTextBlock();
-    ol.newParagraph();
   }
 }
 
@@ -276,7 +275,9 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty()) 
   {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    ol.startParagraph();
+    ol.parseDoc(briefFile(),briefLine(),this,0,
+                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -292,11 +293,13 @@ void NamespaceDef::writeBriefDescription(OutputList &ol)
       ol.endTextLink();
     }
     ol.popGeneratorState();
+    ol.endParagraph();
 
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
+    // FIXME:PARA
+    //ol.pushGeneratorState();
+    //ol.disable(OutputGenerator::RTF);
+    //ol.newParagraph();
+    //ol.popGeneratorState();
   }
   ol.writeSynopsis();
 }
@@ -792,10 +795,11 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
       ol.endMemberItem();
       if (!nd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
     }
   }

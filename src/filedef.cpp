@@ -186,7 +186,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
         ol.disable(OutputGenerator::RTF);
-        ol.newParagraph();
+        // ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
         ol.writeString("\n\n");
@@ -220,7 +220,9 @@ void FileDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty()) 
   {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    ol.startParagraph();
+    ol.parseDoc(briefFile(),briefLine(),this,0,
+                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -236,11 +238,12 @@ void FileDef::writeBriefDescription(OutputList &ol)
       ol.endTextLink();
     }
     ol.popGeneratorState();
+    ol.endParagraph();
 
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
+    //ol.pushGeneratorState();
+    //ol.disable(OutputGenerator::RTF);
+    //ol.newParagraph();
+    //ol.popGeneratorState();
   }
   ol.writeSynopsis();
 }
@@ -337,7 +340,6 @@ void FileDef::writeIncludeGraph(OutputList &ol)
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
-      ol.newParagraph();
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclDepGraph(name()));
       ol.endInclDepGraph(incDepGraph);
@@ -358,7 +360,6 @@ void FileDef::writeIncludedByGraph(OutputList &ol)
     {
       ol.startTextBlock(); 
       ol.disable(OutputGenerator::Man);
-      ol.newParagraph();
       ol.startInclDepGraph();
       ol.parseText(theTranslator->trInclByDepGraph());
       ol.endInclDepGraph(incDepGraph);
@@ -376,10 +377,11 @@ void FileDef::writeSourceLink(OutputList &ol)
   if (generateSourceFile())
   {
     ol.disableAllBut(OutputGenerator::Html);
-    ol.newParagraph();
+    ol.startParagraph();
     ol.startTextLink(includeName(),0);
     ol.parseText(theTranslator->trGotoSourceCode());
     ol.endTextLink();
+    ol.endParagraph();
     ol.enableAll();
   }
 }

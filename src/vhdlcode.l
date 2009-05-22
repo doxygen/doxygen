@@ -340,7 +340,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') {}
     if (c=='\n')
     {
       g_yyLineNr++;
@@ -379,7 +379,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   {
     char *sp=p;
     char c;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') {}
     if (c=='\n')
     {
       g_yyLineNr++;

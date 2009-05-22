@@ -63,6 +63,8 @@ class RTFGenerator : public OutputGenerator
     void startParagraph();
     void endParagraph();
     void writeString(const char *text);
+    void startIndexListItem() {}
+    void endIndexListItem() {}
     void startIndexList();
     void endIndexList();
     void startIndexKey();
@@ -88,7 +90,9 @@ class RTFGenerator : public OutputGenerator
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
     void endGroupHeader();
-    void writeListItem();
+    //void writeListItem();
+    void startItemListItem();
+    void endItemListItem();
 
     void startMemberSections() {}
     void endMemberSections() {} 
@@ -152,7 +156,9 @@ class RTFGenerator : public OutputGenerator
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *);
     void endParamList();
-    void writeDescItem();
+    //void writeDescItem();
+    void startDescForItem();
+    void endDescForItem();
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
     void addIndexItem(const char *,const char *);

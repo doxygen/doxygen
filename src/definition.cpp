@@ -819,6 +819,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
       //printf("Read:\n`%s'\n\n",codeFragment.data());
       MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = (MemberDef *)this;
+      ol.startParagraph();
       ol.startCodeFragment();
       pIntf->parseCode(ol,               // codeOutIntf
                        scopeName,        // scope
@@ -832,7 +833,7 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
                        thisMd            // memberDef
                       );
       ol.endCodeFragment();
-      ol.newParagraph();
+      ol.endParagraph();
     }
   }
   ol.popGeneratorState();

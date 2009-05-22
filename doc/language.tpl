@@ -255,7 +255,9 @@ script was developed (located in \c doxygen/doc directory).
 It extracts the important information about obsolete and
 new methods from the source files for each of the languages.  
 The information is stored in the <em>translator report</em> ASCII file
-(%(translatorReportFileName)s). \htmlonly If you compiled this documentation
+(%(translatorReportFileName)s). 
+
+\htmlonly If you compiled this documentation
 from sources and if you have also doxygen sources available the
 link %(translatorReportLink)s should be valid.\endhtmlonly 
 

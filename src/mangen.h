@@ -63,6 +63,8 @@ class ManGenerator : public OutputGenerator
     void startParagraph();
     void endParagraph();
     void writeString(const char *text);
+    void startIndexListItem() {}
+    void endIndexListItem() {}
     void startIndexList() {}
     void endIndexList()   { newParagraph(); } 
     void startIndexKey() {}
@@ -95,7 +97,9 @@ class ManGenerator : public OutputGenerator
     void insertMemberAlign(bool) {}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
-    void writeListItem();
+    //void writeListItem();
+    void startItemListItem();
+    void endItemListItem();
     void startMemberDocList() {}
     void endMemberDocList() {}
     void startMemberList();
@@ -157,7 +161,9 @@ class ManGenerator : public OutputGenerator
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
-    void writeDescItem();
+    //void writeDescItem();
+    void startDescForItem();
+    void endDescForItem();
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
     void addIndexItem(const char *,const char *) {}
@@ -177,7 +183,7 @@ class ManGenerator : public OutputGenerator
     
     void startDescTable() {}
     void endDescTable() {}
-    void startDescTableTitle() { writeListItem(); startBold(); startEmphasis(); }
+    void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
     void startDescTableData() { t << endl; firstCol=TRUE; }
     void endDescTableData() {}

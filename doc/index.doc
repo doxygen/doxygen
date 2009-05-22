@@ -18,8 +18,7 @@
 \if logo_on
 <center>
 \htmlonly
-<img align=center lowsrc="doxygen_logo_low.gif" src="doxygen_logo.gif" 
-     width=634 height=197 alt="doxygen"><br>
+<img src="doxygen_logo.gif" width="634" height="197" alt="doxygen"/><br/>
 Version: $(VERSION)
 \endhtmlonly
 </center>
@@ -118,7 +117,7 @@ The third part provides information for developers:
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2008 by 
+Copyright &copy; 1997-2009 by 
 <a href="mailto:dimitri@stack.nl">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
@@ -177,7 +176,6 @@ Thanks go to:
     given me a good start in writing doxygen.
 <li>All people at Qt Software, for creating a beautiful GUI Toolkit
     (which is very useful as a Windows/Unix platform abstraction layer :-)
-<li>Kevin McBride for maintaining the subversion reporsitory for doxygen.
 <li>My brother Frank
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
@@ -187,8 +185,6 @@ Thanks go to:
 <li>Parker Waechter for adding the RTF output generator.
 <li>Joerg Baumann, for adding conditional documentation blocks, 
     PDF links, and the configuration generator.
-<li>Matthias Andree for providing a .spec script for building rpms from the
-    sources.
 <li>Tim Mensch for adding the todo command.
 <li>Christian Hammond for redesigning the web-site.
 <li>Ken Wong for providing the HTML tree view code.

@@ -293,7 +293,7 @@ unsigned char ftv2vertline_png[] = {
 
 FTVImageInfo image_info[] =
 {
-  { "&nbsp;", "ftv2blank.png",ftv2blank_png,174,16,22 },
+  { "&#160;", "ftv2blank.png",ftv2blank_png,174,16,22 },
   { "*",  "ftv2doc.png",ftv2doc_png,255,24,22 },
   { "+",  "ftv2folderclosed.png",ftv2folderclosed_png,259,24,22 },
   { "-",  "ftv2folderopen.png",ftv2folderopen_png,261,24,22 },
@@ -585,9 +585,10 @@ void FTVHelp::generateTreeView(QString* OutString)
 #if QT_VERSION >= 200
       t.setEncoding(QTextStream::UnicodeUTF8);
 #endif
-      t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
-      t << "<html><head>";
-      t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\n";
+      //t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
+      t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n";
+      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n";
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"/>\n";
       t << "<title>"; 
       if (Config_getString("PROJECT_NAME").isEmpty())
       {
@@ -597,12 +598,14 @@ void FTVHelp::generateTreeView(QString* OutString)
       {
         t << Config_getString("PROJECT_NAME");
       }
-      t << "</title></head>" << endl;
+      t << "</title>\n</head>" << endl;
       t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
-      t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\">" << endl;
-      t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\">" << endl;
+      t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\"/>" << endl;
+      t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\"/>" << endl;
       t << "  <noframes>" << endl;
+      t << "    <body>" << endl;
       t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
+      t << "    </body>" << endl;
       t << "  </noframes>" << endl;
       t << "</frameset>" << endl;
       t << "</html>" << endl;
@@ -618,9 +621,10 @@ void FTVHelp::generateTreeView(QString* OutString)
 
   if (m_topLevelIndex)
   {
+    t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
-    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\" />\n";
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
     t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
     t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
     t << "    <link rel=\"stylesheet\" href=\"";
@@ -638,7 +642,7 @@ void FTVHelp::generateTreeView(QString* OutString)
       }
       t << cssfi.fileName();
     }
-    t << "\">" << endl;
+    t << "\"/>" << endl;
     t << "    <title>TreeView</title>\n";
   }
   t << "    <script type=\"text/javascript\">\n";
@@ -720,7 +724,7 @@ void FTVHelp::generateTreeView(QString* OutString)
   else
   {
     t << "    <div class=\"directory-alt\">\n";
-    t << "      <br>\n";
+    t << "      <br/>\n";
   }
   t << "      <div style=\"display: block;\">\n";
 
@@ -729,7 +733,7 @@ void FTVHelp::generateTreeView(QString* OutString)
   t << "      </div>\n";
   t << "    </div>\n";
   
-  if (!m_topLevelIndex)
+  if (m_topLevelIndex)
   {
     t << "  </body>\n";
     t << "</html>\n";

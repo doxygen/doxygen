@@ -99,6 +99,7 @@ Ali Nadalizadeh: nadalizadeh@gmail.com
 TranslatorPolish 
 Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl
 Grzegorz Kowal:  g_kowal@poczta.onet.pl
+Krzysztof Kral: krzysztof.kral@gmail.com
 
 TranslatorPortuguese
 Rui Godinho Lopes: ruiglopes@yahoo.com

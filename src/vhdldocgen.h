@@ -262,7 +262,7 @@ class VhdlDocGen
     static void writeLink(const MemberDef* mdef,OutputList &ol);
     static void adjustMemberName(QCString& nn);
     static bool membersHaveSpecificType(MemberList *ml,int type);
-    static void startFonts(const QCString& q, char *keyword,OutputList& ol);
+    static void startFonts(const QCString& q, const char *keyword,OutputList& ol);
     static bool isNumber(const QCString& s);
 
   private:

@@ -568,15 +568,15 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   else
     relPathStr=relPath;
 
-  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-    "<html><head>" 
-    "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8" 
-         //<< theTranslator->idLanguageCharset() 
-         << "\">\n"
-    "<title>"; 
+//  t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n";
+//  t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n";
+  t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+  t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n"
+       "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"/>\n"
+       "<title>"; 
   t << convertToHtml(title);
   t << "</title>\n";
-  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\">\n";
+  t << "<link href=\"" << relPathStr << "tabs.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   t << "<link ";
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
@@ -594,8 +594,8 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
     t << relPathStr << cssfi.fileName();
   }
   
-  t << "\" rel=\"stylesheet\" type=\"text/css\">\n";
-  t << "</head><body>\n";
+  t << "\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+  t << "</head>\n<body>\n";
 }
 
 
@@ -609,11 +609,10 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr size=\"1\"><address style=\"text-align: right;\"><small>\n";
+  t << "<hr size=\"1\"/><address style=\"text-align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
-    << "<img src=\"doxygen.png\" alt=\"doxygen\" " 
-    << "align=\"middle\" border=\"0\">"
+    << "<img class=\"footer\" src=\"doxygen.png\" alt=\"doxygen\"/>"
     << "</a> $doxygenversion";
   t << "</small></address>\n"
     << "</body>\n"
@@ -715,24 +714,24 @@ static void writePageFooter(QTextStream &t,const QCString &lastTitle,
 {
   if (g_footer.isEmpty())
   {
-    t << "<hr size=\"1\"><address style=\"text-align: right;\"><small>";
+    t << "<hr size=\"1\"/><address style=\"text-align: right;\"><small>";
     t << theTranslator->trGeneratedAt(
         dateToString(TRUE),
         Config_getString("PROJECT_NAME")
         );
     t << "&nbsp;" << endl << "<a href=\"http://www.doxygen.org/index.html\">";
-    t << endl << "<img src=\"" << relPath << "doxygen.png\" alt=\"doxygen\" " 
-      << "align=\"middle\" border=\"0\">" << "</a> " << versionString << " ";
+    t << endl << "<img class=\"footer\" src=\"" << relPath << "doxygen.png\" alt=\"doxygen\"/>"
+      << "</a> " << versionString << " ";
     t << "</small></address>";
     if (Debug::isFlagSet(Debug::Validate))
     {
       t << "<p><a href=\"http://validator.w3.org/check/referer\">"
-           "<img border=\"0\" src=\"http://www.w3.org/Icons/valid-html401\""
+           "<img class=\"footer\" src=\"http://www.w3.org/Icons/valid-html401\""
            " height=\"31\" width=\"88\" alt=\"This page is Valid HTML 4.01 "
            "Transitional!\"></a><a href=\"http://jigsaw.w3.org/css-validator/\">"
-           "<img style=\"border:0;width:88px;height:31px\" "
+           "<img class=\"footer\" style=\"border:0;width:88px;height:31px\" "
            "src=\"http://jigsaw.w3.org/css-validator/images/vcss\" "
-           "alt=\"This page uses valid CSS!\"></a></p>";
+           "alt=\"This page uses valid CSS!\"/></a></p>";
     }
     t << "\n</body>\n</html>\n";
   }
@@ -754,7 +753,7 @@ void HtmlGenerator::endFile()
 
 void HtmlGenerator::startProjectNumber()
 {
-  t << "<h3 align=\"center\">";
+  t << "<h3>";
 }
 
 void HtmlGenerator::endProjectNumber()
@@ -806,7 +805,7 @@ void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *name,
                                     const char *args)
 {
-  t << "<a class=\"anchor\" name=\"" << anchor << "\"></a>";
+  t << "<a class=\"anchor\" id=\"" << anchor << "\"></a>";
   t << "<!-- doxytag: member=\"";
   docify(name,TRUE); 
   t << "\" ref=\""; 
@@ -820,10 +819,10 @@ void HtmlGenerator::endDoxyAnchor(const char *,const char *)
 {
 }
 
-void HtmlGenerator::newParagraph()
-{
-  t << endl << "<p>" << endl;
-}
+//void HtmlGenerator::newParagraph()
+//{
+//  t << endl << "<p>" << endl;
+//}
 
 void HtmlGenerator::startParagraph()
 {
@@ -840,11 +839,20 @@ void HtmlGenerator::writeString(const char *text)
   t << text;
 }
 
+void HtmlGenerator::startIndexListItem()
+{
+  t << "<li>";
+}
+
+void HtmlGenerator::endIndexListItem()
+{
+  t << "</li>" << endl;
+}
+
 void HtmlGenerator::startIndexItem(const char *ref,const char *f)
 {
   //printf("HtmlGenerator::startIndexItem(%s,%s)\n",ref,f);
   QCString *dest;
-  t << "<li>";
   if (ref || f)
   {
     if (ref) 
@@ -880,7 +888,7 @@ void HtmlGenerator::endIndexItem(const char *ref,const char *f)
   //printf("HtmlGenerator::endIndexItem(%s,%s,%s)\n",ref,f,name);
   if (ref || f)
   {
-    t << "</a>" << endl;
+    t << "</a>";
   }
   else
   {
@@ -1006,14 +1014,14 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::Secti
 {
   switch(type)
   {
-    case SectionInfo::Page:          t << "<h1>"; break;
-    case SectionInfo::Section:       t << "<h2>"; break;
-    case SectionInfo::Subsection:    t << "<h3>"; break;
-    case SectionInfo::Subsubsection: t << "<h4>"; break;
-    case SectionInfo::Paragraph:     t << "<h5>"; break;
+    case SectionInfo::Page:          t << "\n\n<h1>"; break;
+    case SectionInfo::Section:       t << "\n\n<h2>"; break;
+    case SectionInfo::Subsection:    t << "\n\n<h3>"; break;
+    case SectionInfo::Subsubsection: t << "\n\n<h4>"; break;
+    case SectionInfo::Paragraph:     t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  t << "<a class=\"anchor\" name=\"" << lab << "\">";
+  t << "<a class=\"anchor\" id=\"" << lab << "\">";
 }
 
 void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
@@ -1095,6 +1103,10 @@ void HtmlGenerator::codify(const char *str)
                    break;
         case '&':  t << "&amp;"; col++; 
                    break;
+        case '\'': t << "&apos;"; col++;
+                   break;
+        case '"':  t << "&quot;"; col++;
+                   break;
         //case ' ':  t << "&nbsp;"; col++;
         //           break;
         case '\\':
@@ -1133,10 +1145,13 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
-  t << "\n<p><center><img src=\""
-    << relPath << fileName << ".png\" usemap=\"#" << name << "_map\""
-    << " border=\"0\" alt=\"\"></center>" << endl
-    << "<map name=\"" << name << "_map\">" << endl;
+  t << "<img class=\"center\" src=\"";
+  t << relPath << fileName << ".png\" usemap=\"#";
+  docify(name);
+  t << "_map\" alt=\"\"/>" << endl;
+  t << "<map id=\"";
+  docify(name);
+  t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
   t << "</div>" << endl;
@@ -1179,10 +1194,10 @@ void HtmlGenerator::startMemberItem(int annoType)
     t << "<tr>";
     switch(annoType)
     {
-      case 0:  t << "<td class=\"memItemLeft\" nowrap align=\"right\" valign=\"top\">"; break;
-      case 1:  t << "<td class=\"memItemLeft\" nowrap>"; break;
-      case 2:  t << "<td class=\"memItemLeft\" nowrap valign=\"top\">"; break;
-      default: t << "<td class=\"memTemplParams\" nowrap colspan=\"2\">"; break;
+      case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+      case 1:  t << "<td class=\"memItemLeft\" >"; break;
+      case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+      default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
     }
   }
   else
@@ -1196,7 +1211,7 @@ void HtmlGenerator::endMemberItem()
   //DBG_HTML(t << "<!-- endMemberItem(" << (int)inGroup << "," << fileName << "," << headerName << " -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "</td></tr>\n"; 
+    t << "</td></tr>"; 
   }
   t << endl; 
 }
@@ -1210,7 +1225,7 @@ void HtmlGenerator::endMemberTemplateParams()
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     t << "</td></tr>" << endl;
-    t << "<tr><td class=\"memTemplItemLeft\" nowrap align=\"right\" valign=\"top\">";
+    t << "<tr><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
   }
 }
 
@@ -1243,11 +1258,11 @@ void HtmlGenerator::endMemberDescription()
   DBG_HTML(t << "<!-- endMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<br></td></tr>" << endl; 
+    t << "<br/></td></tr>" << endl; 
   }
   else
   {
-    t << "<br></dl>";
+    t << "<br/></dl>";
   }
 }
 
@@ -1276,7 +1291,7 @@ void HtmlGenerator::startMemberHeader()
   DBG_HTML(t << "<!-- startMemberHeader -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<tr><td colspan=\"2\"><br><h2>";
+    t << "<tr><td colspan=\"2\"><br/><h2>";
   }
   else
   {
@@ -1306,7 +1321,7 @@ void HtmlGenerator::startMemberSubtitle()
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br><br></td></tr>" << endl;
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br/><br/></td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -1400,7 +1415,7 @@ void HtmlGenerator::startMemberDocName(bool /*align*/)
 void HtmlGenerator::endMemberDocName()
 {
   DBG_HTML(t << "<!-- endMemberDocName -->" << endl;)
-  t << "          </td>" << endl;
+  t << "</td>" << endl;
 }
 
 void HtmlGenerator::startParameterList(bool openBracket)
@@ -1449,7 +1464,7 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
   {
     if (emptyList)
     {
-      t << "          </td>" << endl;
+      t << "</td>" << endl;
       t << "          <td>";
       if (closeBracket) t << "&nbsp;)";
       t << "&nbsp;</td>" << endl;
@@ -1507,11 +1522,11 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
   g.writeGraph(t,BITMAP,dir,relPath);
   if (Config_getBool("GENERATE_LEGEND"))
   {
-    t << "<center><font size=\"2\">[";
+    t << "<center><span class=\"legend\">[";
     startHtmlLink(relPath+"graph_legend"+Doxygen::htmlFileExtension);
     t << theTranslator->trLegend();
     endHtmlLink();
-    t << "]</font></center>";
+    t << "]</span></center>";
   }
   t << "</div>" << endl;
 }
@@ -1590,7 +1605,7 @@ void HtmlGenerator::startMemberGroupDocs()
 
 void HtmlGenerator::endMemberGroupDocs()
 {
-  t << "<br><br></div></td></tr>" << endl;
+  t << "<br/><br/></div></td></tr>" << endl;
 }
 
 void HtmlGenerator::startMemberGroup()
@@ -1611,7 +1626,7 @@ void HtmlGenerator::startIndent()
 void HtmlGenerator::endIndent()          
 { 
   DBG_HTML(t << "<!-- endIndent -->" << endl;)
-  t << endl << "</div>" << endl << "</div><p>" << endl; 
+  t << endl << "</div>" << endl << "</div>" << endl; 
 }
 
 void HtmlGenerator::addIndexItem(const char *,const char *)
@@ -1653,7 +1668,7 @@ void HtmlGenerator::startSimpleSect(SectionTypes,
                                 const char *filename,const char *anchor,
                                 const char *title)
 {
-  t << "<dl compact><dt><b>";
+  t << "<dl><dt><b>";
   if (filename)
   {
     writeObjectLink(0,filename,anchor,title);
@@ -1673,7 +1688,7 @@ void HtmlGenerator::endSimpleSect()
 void HtmlGenerator::startParamList(ParamListTypes,
                                 const char *title)
 {
-  t << "<dl compact><dt><b>";
+  t << "<dl><dt><b>";
   docify(title);
   t << "</b></dt>";
 }
@@ -2041,7 +2056,7 @@ void HtmlGenerator::generateSectionImages()
 void HtmlGenerator::startConstraintList(const char *header)
 {
   t << "<div class=\"typeconstraint\">" << endl;
-  t << "<dl compact><dt><b>" << header << "</b><dt><dd>" << endl;
+  t << "<dl><dt><b>" << header << "</b><dt><dd>" << endl;
   t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">" << endl;
 }
 
@@ -2086,11 +2101,11 @@ void HtmlGenerator::lineBreak(const char *style)
 {
   if (style)
   {
-    t << "<br class=\"" << style << "\">" << endl;
+    t << "<br class=\"" << style << "\"/>" << endl;
   }
   else
   {
-    t << "<br>" << endl;
+    t << "<br/>" << endl;
   }
 }
 

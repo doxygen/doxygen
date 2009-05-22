@@ -65,6 +65,8 @@ class LatexGenerator : public OutputGenerator
     void startParagraph();
     void endParagraph();
     void writeString(const char *text);
+    void startIndexListItem() {}
+    void endIndexListItem() {}
     void startIndexList() { t << "\\begin{CompactList}"    << endl; }
     void endIndexList()   { t << "\\end{CompactList}"      << endl; }
     void startIndexKey();
@@ -90,7 +92,8 @@ class LatexGenerator : public OutputGenerator
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
     void endGroupHeader();
-    void writeListItem() { t << "\\item " << endl; }
+    void startItemListItem() { t << "\\item " << endl; }
+    void endItemListItem()   {}
 
     void startMemberSections() {}
     void endMemberSections() {} 
@@ -161,7 +164,8 @@ class LatexGenerator : public OutputGenerator
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
-    void writeDescItem()     { t << "\\par" << endl; }
+    void startDescForItem()     { t << "\\par" << endl; }
+    void endDescForItem()       {}
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
     void addIndexItem(const char *,const char *);

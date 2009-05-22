@@ -63,11 +63,13 @@ static int      g_lastCommentContext;
 static bool     g_inSpecialComment;
 static bool     g_inRoseComment;
 static int      g_javaBlock;
+static bool     g_specialComment;
 
 static QCString g_aliasString;
 static int      g_blockCount;
 static int      g_lastBlockContext;
 static bool     g_pythonDocString;
+
 
 static SrcLangExt g_lang;
 
@@ -341,7 +343,8 @@ void replaceComment(int offset);
 				     g_readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
-<Scan>"/*"			   { /* start of a C comment */
+<Scan>"/*"[*!]?			   { /* start of a C comment */
+  			             g_specialComment=yyleng==3;
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
@@ -640,6 +643,10 @@ void replaceComment(int offset);
 				       {
  				         ADDCHAR('/');
      				         ADDCHAR('*');
+					 if (g_specialComment)
+					 {
+					   ADDCHAR('*');
+					 }
 				       }
     				     }
 				    }

@@ -49,6 +49,7 @@
   2005/08/15 - Doxygen's root directory determined primarily from DOXYGEN 
                environment variable. When not found, then relatively to the script.
   2007/03/20 - The "translate me!" searched in comments and reported if found.             
+  2009/05/09 - Changed HTML output to make it confirm to XHTML DTD
   """                               
 
 from __future__ import generators
@@ -1744,16 +1745,16 @@ class TrManager:
         # Define templates for HTML table parts of the documentation.
         htmlTableTpl = '''\
             \\htmlonly
-            <table align=center cellspacing=0 cellpadding=0 border=0>
+            <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
             <td>
-              <table cellspacing=1 cellpadding=2 border=0>
+              <table cellspacing="1" cellpadding="2" border="0">
               <tr bgcolor="#4040c0">
-              <td ><b><font size=+1 color="#ffffff"> Language </font></b></td>
-              <td ><b><font size=+1 color="#ffffff"> Maintainer </font></b></td>
-              <td ><b><font size=+1 color="#ffffff"> Contact address </font>
-                      <font size=-2 color="#ffffff">(replace the at and dot)</font></b></td>
-              <td ><b><font size=+1 color="#ffffff"> Status </font></b></td>
+              <td ><b><font size="+1" color="#ffffff"> Language </font></b></td>
+              <td ><b><font size="+1" color="#ffffff"> Maintainer </font></b></td>
+              <td ><b><font size="+1" color="#ffffff"> Contact address </font>
+                      <font size="-2" color="#ffffff">(replace the at and dot)</font></b></td>
+              <td ><b><font size="+1" color="#ffffff"> Status </font></b></td>
               </tr>
               <!-- table content begin -->
             %s
@@ -1792,20 +1793,20 @@ class TrManager:
             
             if not mm and self.__maintainersDic.has_key(obj.classId):
                 lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
-                mm = '<br>'.join(lm)
+                mm = '<br/>'.join(lm)
                 le = [ m[1] for m in self.__maintainersDic[obj.classId] ]
-                ee = '<br>'.join(le)
+                ee = '<br/>'.join(le)
             
             # Mangle the e-mail and replace the entity references.
             if ee and ee != '&nbsp;':
                 # More than one maintainer address separated by <br> can be used.
-                emails = ee.split('<br>')
+                emails = ee.split('<br/>')
                 mangled_list = []
                 for email in emails:
                     name, domain = email.split('@')
                     domain = domain.replace('.', ' dot ')
                     mangled_list.append(name + ' at ' + domain)
-                ee = '<br>'.join(mangled_list)
+                ee = '<br/>'.join(mangled_list)
                 
             if mm:
                 mm = mm.replace('&ccaron;', '&#x010d;')

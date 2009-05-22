@@ -400,7 +400,7 @@ static void parseProcessProto()
 
 static void parseFunctionProto()
 {
-  QCString name,ret,qcs;
+  QCString name,ret,qcs,temp;
   bool sem=FALSE;
   QList<Argument> ql;
   ql.setAutoDelete(TRUE);
@@ -409,11 +409,18 @@ static void parseFunctionProto()
     return; // function without a prototype 
   if (qcs.contains("function",FALSE)==0 && qcs.contains("procedure",FALSE)==0) 
     return; 
-  while (qcs.stripPrefix(" "));
-  if (qcs.stripPrefix("impure"))
+  qcs=qcs.stripWhiteSpace();
+  temp=qcs.lower();
+  if (temp.stripPrefix("impure"))
+  {
     current->exception="impure";
-  else if (qcs.stripPrefix("pure")) 
+    qcs=qcs.remove(0,6);
+  }
+  else if (temp.stripPrefix("pure")) 
+  {
     current->exception="pure";
+    qcs=qcs.remove(0,4);
+  }
 
   VhdlDocGen::parseFuncProto(qcs.data(),ql,name,ret); 
   //printf("parseFuncProto(%s)=%s,%s\n",qcs.data(),name.data(),ret.data());

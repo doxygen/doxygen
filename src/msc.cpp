@@ -81,7 +81,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
       }
       t << "\" shape=\"rect\" coords=\""
         << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-        << " alt=\"\">" << endl;
+        << " alt=\"\"/>" << endl;
     }
   }
 

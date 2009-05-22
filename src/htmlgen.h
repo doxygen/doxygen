@@ -63,10 +63,11 @@ class HtmlGenerator : public OutputGenerator
     void startTitle() { t << "<h1>"; }
     void endTitle() { t << "</h1>"; }
     
-    void newParagraph();
     void startParagraph();
     void endParagraph();
     void writeString(const char *text);
+    void startIndexListItem();
+    void endIndexListItem();
     void startIndexList();
     void endIndexList();
     void startIndexKey();
@@ -92,7 +93,8 @@ class HtmlGenerator : public OutputGenerator
     void endTypewriter()   { t << "</code>"; }
     void startGroupHeader();
     void endGroupHeader();
-    void writeListItem() { t << "<li>"; }
+    void startItemListItem() { t << "<li>"; }
+    void endItemListItem() { t << "</li>\n"; }
 
     void startMemberSections();
     void endMemberSections();
@@ -122,7 +124,7 @@ class HtmlGenerator : public OutputGenerator
     void startMemberDescription();
     void endMemberDescription();
 
-    void writeRuler()    { t << "<hr>"; }
+    void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name) 
                          { t << "<a name=\"" << name <<"\"></a>"; }
     void startCodeFragment() { t << PREFRAG_START; }
@@ -134,10 +136,12 @@ class HtmlGenerator : public OutputGenerator
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
     void endBold()       { t << "</b>"; }
-    void startDescription() { t << endl << "<dl compact>" << endl; }
-    void endDescription()   { t << endl << "</dl>" << endl; }
+    void startDescription() { t << endl << "<dl>" << endl; }
+    void endDescription()   { t << endl << "</dl>\n" << endl; }
     void startDescItem()    { t << "<dt>"; }
-    void endDescItem()      { t << "<dd>"; }
+    void endDescItem()      { t << "</dt>"; }
+    void startDescForItem() { t << "<dd>"; }
+    void endDescForItem()   { t << "</dd>\n"; }
     void lineBreak(const char *style);
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *);
@@ -160,13 +164,13 @@ class HtmlGenerator : public OutputGenerator
     void endCenter()          { t << "</center>" << endl; }
     void startSmall()         { t << "<small>" << endl; }
     void endSmall()           { t << "</small>" << endl; }
-    void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
-    void endDescList()        { t << "</dl>"; }
+    //void startDescList(SectionTypes)      { t << "<dl compact><dt><b>" << endl; }
+    //void endDescList()        { t << "</dl>"; }
     void startSimpleSect(SectionTypes,const char *,const char *,const char *);
     void endSimpleSect();
     void startParamList(ParamListTypes,const char *);
     void endParamList();
-    void writeDescItem()      { t << "<dd>" << endl; }
+    //void writeDescItem()      { t << "<dd>" << endl; }
     void startSection(const char *,const char *,SectionInfo::SectionType);
     void endSection(const char *,SectionInfo::SectionType);
     void addIndexItem(const char *,const char *);

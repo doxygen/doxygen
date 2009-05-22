@@ -97,14 +97,18 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startTitle); }
     void endTitle() 
     { forall(&OutputGenerator::endTitle); }
-    void newParagraph() 
-    { forall(&OutputGenerator::newParagraph); }
+    //void newParagraph() 
+    //{ forall(&OutputGenerator::newParagraph); }
     void startParagraph() 
     { forall(&OutputGenerator::startParagraph); }
     void endParagraph() 
     { forall(&OutputGenerator::endParagraph); }
     void writeString(const char *text) 
     { forall(&OutputGenerator::writeString,text); }
+    void startIndexListItem() 
+    { forall(&OutputGenerator::startIndexListItem); }
+    void endIndexListItem() 
+    { forall(&OutputGenerator::endIndexListItem); }
     void startIndexList() 
     { forall(&OutputGenerator::startIndexList); }
     void endIndexList() 
@@ -157,8 +161,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startGroupHeader); }
     void endGroupHeader()
     { forall(&OutputGenerator::endGroupHeader); }
-    void writeListItem() 
-    { forall(&OutputGenerator::writeListItem); }
+    //void writeListItem() 
+    //{ forall(&OutputGenerator::writeListItem); }
+    void startItemListItem() 
+    { forall(&OutputGenerator::startItemListItem); }
+    void endItemListItem() 
+    { forall(&OutputGenerator::endItemListItem); }
     void startMemberSections()
     { forall(&OutputGenerator::startMemberSections); }
     void endMemberSections()
@@ -251,6 +259,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDescItem); }
     void endDescItem() 
     { forall(&OutputGenerator::endDescItem); }
+    void startDescForItem() 
+    { forall(&OutputGenerator::startDescForItem); }
+    void endDescForItem() 
+    { forall(&OutputGenerator::endDescForItem); }
     void startSubsection() 
     { forall(&OutputGenerator::startSubsection); }
     void endSubsection() 
@@ -286,8 +298,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startParamList,t,title); }
     void endParamList() 
     { forall(&OutputGenerator::endParamList); }
-    void writeDescItem() 
-    { forall(&OutputGenerator::writeDescItem); }
+    //void writeDescItem() 
+    //{ forall(&OutputGenerator::writeDescItem); }
     void startIndent() 
     { forall(&OutputGenerator::startIndent); }
     void endIndent() 

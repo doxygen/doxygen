@@ -473,6 +473,7 @@ class DocFormula : public DocNode
     int id() const             { return m_id; }
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { v->visit(this); }
+    bool isInline()            { return text().at(0)!='\\'; }
 
   private:
     DocNode *m_parent;
@@ -574,6 +575,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>, public DocNode
     QString key() const        { return m_key; }
     void accept(DocVisitor *v) { CompAccept<DocXRefItem>::accept(this,v); }
     bool parse();
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     DocNode *m_parent;
@@ -838,6 +840,7 @@ class DocSecRefItem : public CompAccept<DocSecRefItem>, public DocNode
     DocNode *parent() const    { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocSecRefItem>::accept(this,v); }
     void parse();
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     DocNode *m_parent;
@@ -929,6 +932,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     int parseRcs();
     int parseXml();
     void appendLinkWord(const QString &word);
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     DocNode *       m_parent;
@@ -1104,6 +1108,7 @@ class DocHtmlListItem : public CompAccept<DocHtmlListItem>, public DocNode
     void accept(DocVisitor *v) { CompAccept<DocHtmlListItem>::accept(this,v); }
     int parse();
     int parseXml();
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     DocNode *      m_parent;
@@ -1122,6 +1127,7 @@ class DocHtmlDescData : public CompAccept<DocHtmlDescData>, public DocNode
     DocNode *parent() const               { return m_parent; }
     void accept(DocVisitor *v) { CompAccept<DocHtmlDescData>::accept(this,v); }
     int parse();
+    const QList<DocNode> &children() const { return m_children; }
 
   private:
     DocNode *     m_parent;

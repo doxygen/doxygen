@@ -1000,6 +1000,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount() ;
   					}
 <FindMembers>[\-+]{BN}*			{
+  					  printf("Found - insideObj=%d\n",insideObjC);
   					  if (!insideObjC) 
 					  {
 					    REJECT;
@@ -1477,7 +1478,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC ;
                                           current->spec    = Entry::Struct;
-					  current->objc    = insideObjC = FALSE;
+					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
+					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
 					  current->type += " struct" ;
 					  current->fileName  = yyFileName;
@@ -1534,7 +1536,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  isTypedef=((QCString)yytext).find("typedef")!=-1;
   					  current->section = Entry::CLASS_SEC;
                                           current->spec    = Entry::Union;
-					  current->objc    = insideObjC = FALSE;
+					  // bug 582676: can be a struct nested in an interface so keep insideObjC state
+					  //current->objc    = insideObjC = FALSE;
 					  addType( current ) ;
 					  current->type += " union" ;
 					  current->fileName  = yyFileName;

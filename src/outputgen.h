@@ -101,7 +101,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
                           const QCString &,bool)  {} 
     virtual void parseText(const QCString &)  {}
     
-    /*! Start of a bullet list: e.g. \c \<ul\> in html. writeListItem() is
+    /*! Start of a bullet list: e.g. \c \<ul\> in html. startItemListItem() is
      *  Used for the bullet items.
      */
     virtual void startItemList()  = 0;
@@ -109,7 +109,12 @@ class BaseOutputDocInterface : public CodeOutputInterface
     /*! Writes a list item for a bullet or enumerated 
      *  list: e.g. \c \<li\> in html 
      */
-    virtual void writeListItem()  = 0;
+    virtual void startItemListItem()  = 0;
+
+    /*! Writes a list item for a bullet or enumerated 
+     *  list: e.g. \c \</li\> in html 
+     */
+    virtual void endItemListItem()  = 0;
 
     /*! Ends a bullet list: e.g. \c \</ul\> in html */
     virtual void endItemList()    = 0;
@@ -130,11 +135,11 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void writeString(const char *text) = 0;
 
     /*! Starts a new paragraph */
-    virtual void newParagraph()   = 0;
+    //virtual void newParagraph()   = 0;
 
     /*! Starts a new paragraph */
     virtual void startParagraph() = 0;
-    /*! End a paragraph */
+    /*! Ends a paragraph */
     virtual void endParagraph() = 0;
 
     /*! Writes a link to an object in the documentation.
@@ -211,8 +216,11 @@ class BaseOutputDocInterface : public CodeOutputInterface
     /*! Starts an item of a description list: e.g. \c \<dt\> in HTML. */
     virtual void startDescItem() = 0;
 
+    virtual void startDescForItem() = 0;
+    virtual void endDescForItem() = 0;
+
     /*! Ends an item of a description list and starts the 
-     *  description itself: e.g. \c \<dd\> in HTML. 
+     *  description itself: e.g. \c \</dt\> in HTML. 
      */
     virtual void endDescItem() = 0;
 
@@ -227,7 +235,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void startParamList(ParamListTypes t,const char *title) = 0;
     virtual void endParamList() = 0;
 
-    virtual void writeDescItem() = 0;
+    //virtual void writeDescItem() = 0;
     virtual void startTitle() = 0;
     virtual void endTitle()   = 0;
 
@@ -303,6 +311,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeStyleInfo(int part) = 0;
     virtual void startTitleHead(const char *) = 0;
     virtual void endTitleHead(const char *fileName,const char *name) = 0;
+    virtual void startIndexListItem() = 0;
+    virtual void endIndexListItem()   = 0;
     virtual void startIndexList() = 0;
     virtual void endIndexList()   = 0;
     virtual void startIndexKey() = 0;

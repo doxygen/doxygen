@@ -527,7 +527,7 @@ void GroupDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
       ol.disable(OutputGenerator::RTF);
-      ol.newParagraph();
+      // ol.newParagraph(); // FIXME:PARA
       ol.enableAll();
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString("\n\n");
@@ -552,7 +552,9 @@ void GroupDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty())
   {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    ol.startParagraph();
+    ol.parseDoc(briefFile(),briefLine(),this,0,
+                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -569,10 +571,11 @@ void GroupDef::writeBriefDescription(OutputList &ol)
     }
     ol.popGeneratorState();
 
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
+    //ol.pushGeneratorState();
+    //ol.disable(OutputGenerator::RTF);
+    //ol.newParagraph();
+    //ol.popGeneratorState();
+    ol.endParagraph();
   }
 }
 
@@ -586,10 +589,11 @@ void GroupDef::writeGroupGraph(OutputList &ol)
       msg("Generating dependency graph for group %s\n",qualifiedName().data());
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::Man);
-      ol.newParagraph();
+      ol.startParagraph();
       ol.startGroupCollaboration();
       ol.parseText(theTranslator->trCollaborationDiagram(title));
       ol.endGroupCollaboration(graph);
+      ol.endParagraph();
       ol.popGeneratorState();
     }
   }
@@ -618,10 +622,11 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
       fd=fileList->next();
     }
@@ -659,10 +664,11 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
       ol.endMemberItem();
       if (!gd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),gd,0,gd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
       gd=groupList->next();
     }
@@ -693,10 +699,11 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
       }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),FALSE,FALSE);
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
       dd=dirList->next();
     }

@@ -336,6 +336,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
           ftv->incContentsDepth();
         started=TRUE;
       }
+      ol.startIndexListItem();
       //printf("Passed...\n");
       bool hasChildren = !cd->visited && !hideSuper && classHasVisibleChildren(cd);
       //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
@@ -371,6 +372,7 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
         cd->visited=TRUE;
         writeClassTree(ol,cd->subClasses(),wasVisited,level+1,ftv);
       }
+      ol.endIndexListItem();
     }
   }
   if (started) 
@@ -500,6 +502,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           Doxygen::indexList.incContentsDepth();
           started=TRUE;
         }
+        ol.startIndexListItem();
         bool hasChildren = !cd->visited && classHasVisibleChildren(cd); 
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
         if (cd->isLinkable())
@@ -533,6 +536,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           writeClassTree(ol,cd->subClasses(),cd->visited,1,ftv);
           cd->visited=TRUE;
         }
+        ol.endIndexListItem();
       }
     }
   }
@@ -617,10 +621,11 @@ void writeHierarchicalIndex(OutputList &ol)
   {
     ol.disable(OutputGenerator::Latex);
     ol.disable(OutputGenerator::RTF);
+    ol.startParagraph();
     ol.startTextLink("inherits",0);
     ol.parseText(theTranslator->trGotoGraphicalHierarchy());
     ol.endTextLink();
-    ol.newParagraph();
+    ol.endParagraph();
     ol.enable(OutputGenerator::Latex);
     ol.enable(OutputGenerator::RTF);
   }
@@ -665,10 +670,11 @@ void writeGraphicalClassHierarchy(OutputList &ol)
   endTitle(ol,0,0);
   ol.startTextBlock();
   Doxygen::indexList.addContentsItem(FALSE,theTranslator->trGraphicalHierarchy(),0,"inherits",0); 
+  ol.startParagraph();
   ol.startTextLink("hierarchy",0);
   ol.parseText(theTranslator->trGotoTextualHierarchy());
   ol.endTextLink();
-  ol.newParagraph();
+  ol.endParagraph();
   //parseText(ol,theTranslator->trClassHierarchyDescription());
   //ol.newParagraph();
   ol.endTextBlock();
@@ -1080,6 +1086,25 @@ void writeAnnotatedClassList(OutputList &ol)
   ol.endIndexList();
 }
 
+static QCString letterToLabel(char startLetter)
+{
+  QCString s(5); 
+  if (isId(startLetter))
+  {
+    s[0]=startLetter; s[1]=0;
+  }
+  else
+  {
+    const char hex[]="0123456789abcdef";
+    s[0]='0';
+    s[1]='x';
+    s[2]=hex[startLetter>>4];
+    s[3]=hex[startLetter&0xF];
+    s[4]=0;
+  }
+  return s;
+}
+
 //----------------------------------------------------------------------------
 
 class PrefixIgnoreClassList : public ClassList
@@ -1123,7 +1148,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
-  QCString alphaLinks = "<p><div class=\"qindex\">";
+  QCString alphaLinks = "<div class=\"qindex\">";
   int l;
   for (l = 0; l < 256; l++)
   {
@@ -1137,7 +1162,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     }
   }
 
-  alphaLinks += "</div><p>\n";
+  alphaLinks += "</div>\n";
   ol.writeString(alphaLinks);
 
   ol.writeString("<table align=\"center\" width=\"95%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
@@ -1236,7 +1261,7 @@ void writeAlphabeticalClassList(OutputList &ol)
           //printf("head ClassDef=%p %s\n",cd,cd ? cd->name().data() : "<none>");
           int index = getPrefixIndex(cd->className());
           startLetter=toupper(cd->className().at(index));
-          char s[2]; s[0]=startLetter; s[1]=0;
+          QCString s = letterToLabel(startLetter);
           //ol.writeIndexHeading(s);
           ol.writeString("<a name=\"letter_");
           ol.writeString(s);
@@ -1437,6 +1462,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
   QCString prevDefName;
   bool first=TRUE;
   bool firstSection=TRUE;
+  bool firstItem=TRUE;
   for (pi=startIndex; pi<=endIndex; pi++) // page==-1 => pi=[0..127], page!=-1 => pi=page 
   {
     MemberIndexList *ml = &memberLists[pi];
@@ -1457,16 +1483,20 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
             tolower(name.at(startIndex))!=tolower(prevName.at(0))) && 
             useSections) // new section
         {
+          if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
-          char cs[2];
-          cs[0]=tolower(name.at(startIndex));cs[1]='\0';
+          char cl[2];
+          cl[0] = tolower(name.at(startIndex));
+          cl[1] = 0;
+          QCString cs = letterToLabel(cl[0]);
           QCString anchor=(QCString)"index_"+cs;
-          QCString title=(QCString)"- "+cs+" -";
+          QCString title=(QCString)"- "+cl+" -";
           ol.startSection(anchor,title,SectionInfo::Subsection);
           ol.docify(title);
           ol.endSection(anchor,SectionInfo::Subsection);
           ol.startItemList();
           firstSection=FALSE;
+          firstItem=TRUE;
         }
         else if (!useSections && first)
         {
@@ -1475,7 +1505,9 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
         }
 
         // member name
-        ol.writeListItem();
+        if (!firstItem) ol.endItemListItem();
+        ol.startItemListItem();
+        firstItem=FALSE;
         ol.docify(name);
         if (isFunc) ol.docify("()");
         ol.writeString("\n");
@@ -1494,6 +1526,7 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
       writeLinkForMemberMap[(int)type](ol,md,sep,prevDefName);
     }
   }
+  if (!firstItem) ol.endItemListItem();
   ol.endItemList();
 }
 
@@ -1848,7 +1881,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
         // normal lists otherwise
         ol.writeString("&nbsp;");
       }
-      ol.newParagraph();
+      //ol.newParagraph();  // FIXME:PARA
       writeMemberList(ol,quickIndex,
                       multiPageIndex?page:-1,
                       g_memberIndexLetterUsed[hl],
@@ -1979,7 +2012,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
         // normal lists otherwise
         ol.writeString("&nbsp;");
       }
-      ol.newParagraph();
+      //ol.newParagraph();  // FIXME:PARA
       //writeFileMemberList(ol,quickIndex,hl,page);
       writeMemberList(ol,quickIndex,
                       multiPageIndex?page:-1,
@@ -2107,7 +2140,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
         // normal lists otherwise
         ol.writeString("&nbsp;");
       }
-      ol.newParagraph();
+      //ol.newParagraph(); // FIXME:PARA
 
       //writeNamespaceMemberList(ol,quickIndex,hl,page);
       writeMemberList(ol,quickIndex,
@@ -2164,7 +2197,7 @@ void writeExampleIndex(OutputList &ol)
   PageDef *pd=0;
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
-    ol.writeListItem();
+    ol.startItemListItem();
     QCString n=pd->getOutputFileBase();
     if (!pd->title().isEmpty())
     {
@@ -2176,6 +2209,7 @@ void writeExampleIndex(OutputList &ol)
       ol.writeObjectLink(0,n,0,pd->name());
       Doxygen::indexList.addContentsItem(FALSE,pd->name(),pd->getReference(),n,0);
     }
+    ol.endItemListItem();
     ol.writeString("\n");
   }
   ol.endItemList();
@@ -2270,6 +2304,7 @@ void writePageIndex(OutputList &ol)
 
       bool hasSubPages = pd->hasSubPages();
 
+      ol.startIndexListItem();
       ol.startIndexItem(pd->getReference(),pd->getOutputFileBase());
       ol.parseText(pageTitle);
       ol.endIndexItem(pd->getReference(),pd->getOutputFileBase());
@@ -2282,6 +2317,7 @@ void writePageIndex(OutputList &ol)
       ol.writeString("\n");
       Doxygen::indexList.addContentsItem(hasSubPages,pageTitle,pd->getReference(),pd->getOutputFileBase(),0);
       writeSubPages(pd);
+      ol.endIndexListItem();
     }
   }
   endIndexHierarchy(ol,0);
@@ -2379,7 +2415,6 @@ void writeGroupIndexItem(GroupDef *gd,MemberList *ml,const QCString &title)
 //----------------------------------------------------------------------------
 /*!
  * write groups as hierarchical trees
- * \author KPW
  */
 void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv)
 {
@@ -2437,6 +2472,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv)
     //parseText(ol,gd->groupTitle());
     //ol.endTextLink();
 
+    ol.startIndexListItem();
     ol.startIndexItem(gd->getReference(),gd->getOutputFileBase());
     ol.parseText(gd->groupTitle());
     ol.endIndexItem(gd->getReference(),gd->getOutputFileBase());
@@ -2572,6 +2608,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv)
         Doxygen::indexList.decContentsDepth();
       }
     }
+    ol.endIndexListItem();
     
     Doxygen::indexList.decContentsDepth();
     if (ftv)
@@ -2627,6 +2664,7 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv)
     ftv->incContentsDepth();
   }
 
+  ol.startIndexListItem();
   ol.startIndexItem(dd->getReference(),dd->getOutputFileBase());
   ol.parseText(dd->shortName());
   ol.endIndexItem(dd->getReference(),dd->getOutputFileBase());
@@ -2664,6 +2702,7 @@ void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv)
       }
     }
   }
+  ol.endIndexListItem();
 
   Doxygen::indexList.decContentsDepth();
   if (ftv)
@@ -2710,6 +2749,7 @@ void writeGroupIndex(OutputList &ol)
   Doxygen::indexList.incContentsDepth();
   ol.parseText(theTranslator->trModulesDescription());
   ol.endTextBlock();
+
   FTVHelp* ftv = NULL;
   QCString& TreeView=Config_getEnum("GENERATE_TREEVIEW");
   if (TreeView=="HIERARCHIES" || TreeView=="ALL")
@@ -2857,7 +2897,7 @@ void writeIndex(OutputList &ol)
     }
   }
   ol.endTitleHead(0,0);
-  ol.newParagraph();
+  // ol.newParagraph(); // FIXME:PARA
   if (!Config_getString("PROJECT_NUMBER").isEmpty())
   {
     ol.startProjectNumber();

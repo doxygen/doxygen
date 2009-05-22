@@ -412,6 +412,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "\\definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}\n";
   t << "\\definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}\n";
   t << "\\definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}\n";
+  t << "\\definecolor{vhdlchar}{rgb}{0.0,0.0,0.0}\n";
 }
 
 void LatexGenerator::writeHeaderFile(QFile &f)
