@@ -175,9 +175,9 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,QCString relPath,
       t << relPath;
     }
     t << cd->getOutputFileBase() << Doxygen::htmlFileExtension << "\" ";
-    t << "alt=\"" << cd->displayName(); 
+    t << "alt=\"" << convertToXML(cd->displayName()); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
-    t << (x+w) << "," << (y+h) << "\">" << endl;
+    t << (x+w) << "," << (y+h) << "\"/>" << endl;
   }
 }
 //-----------------------------------------------------------------------------

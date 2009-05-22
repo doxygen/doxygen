@@ -63,8 +63,8 @@ extern FTVImageInfo image_info[];
 #define FTV_IMGATTRIBS(name) \
     "src=\"" FTV_ICON_FILE(name) "\" " \
     "alt=\"" << FTV_INFO(name).alt << "\" " \
-    "width=" << FTV_INFO(name).width << " " \
-    "height=" << FTV_INFO(name).height << " "
+    "width=\"" << FTV_INFO(name).width << "\" " \
+    "height=\"" << FTV_INFO(name).height << "\" "
 
 /*! A class that generates a dynamic tree view side panel.
  */

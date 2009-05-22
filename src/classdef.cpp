@@ -844,7 +844,9 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
 {
   if (!briefDescription().isEmpty())
   {
-    ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
+    ol.startParagraph();
+    ol.parseDoc(briefFile(),briefLine(),this,0,
+                briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
     ol.writeString(" \n");
@@ -862,10 +864,11 @@ void ClassDef::writeBriefDescription(OutputList &ol,bool exampleFlag)
     }
     ol.popGeneratorState();
 
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
+    //ol.pushGeneratorState();
+    //ol.disable(OutputGenerator::RTF);
+    //ol.newParagraph(); // FIXME:PARA
+    //ol.popGeneratorState();
+    ol.endParagraph();
   }
   ol.writeSynopsis();
 }
@@ -903,7 +906,7 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
         ol.disable(OutputGenerator::RTF);
-        ol.newParagraph();
+        //ol.newParagraph(); // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
         ol.writeString("\n\n");
@@ -912,7 +915,6 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     // write documentation
     if (!documentation().isEmpty())
     {
-      //ol.newParagraph();
       ol.parseDoc(docFile(),docLine(),this,0,documentation(),TRUE,FALSE);
     }
     // write type constraints
@@ -922,9 +924,11 @@ void ClassDef::writeDetailedDescription(OutputList &ol, const QCString &pageType
     if (exampleFlag && m_impl->exampleSDict)
     {
       ol.startSimpleSect(BaseOutputDocInterface::Examples,0,0,theTranslator->trExamples()+": ");
-      ol.writeDescItem();
-      ol.newParagraph();
+      ol.startDescForItem();
+      ol.startParagraph();
       writeExample(ol,m_impl->exampleSDict);
+      ol.endParagraph();
+      ol.endDescForItem();
       ol.endSimpleSect();
     }
     //ol.newParagraph();
@@ -972,7 +976,7 @@ void ClassDef::showUsedFiles(OutputList &ol)
         ol.startItemList();
       }
 
-      ol.writeListItem();
+      ol.startItemListItem();
       QCString path=fd->getPath();
       if (Config_getBool("FULL_PATH_NAMES"))
       {
@@ -1015,8 +1019,9 @@ void ClassDef::showUsedFiles(OutputList &ol)
       {
         ol.docify(fname);
       }
-
       ol.popGeneratorState();
+
+      ol.endItemListItem();
     }
     file=m_impl->files.next();
   }
@@ -1089,6 +1094,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
 
   if (m_impl->inherits && (count=m_impl->inherits->count())>0)
   {
+    ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
 
     QCString inheritLine = theTranslator->trInheritsList(m_impl->inherits->count());
@@ -1147,12 +1153,13 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
       index=newIndex+matchLen;
     } 
     ol.parseText(inheritLine.right(inheritLine.length()-index));
-    ol.newParagraph();
+    ol.endParagraph();
   }
 
   // write subclasses
   if (m_impl->inheritedBy && (count=m_impl->inheritedBy->count())>0)
   {
+    ol.startParagraph();
     QCString inheritLine = theTranslator->trInheritedByList(m_impl->inheritedBy->count());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
@@ -1179,7 +1186,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
       index=newIndex+matchLen;
     } 
     ol.parseText(inheritLine.right(inheritLine.length()-index));
-    ol.newParagraph();
+    ol.endParagraph();
   }
 
   if (renderDiagram) 
@@ -1216,6 +1223,7 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
       m_impl->incInfo->includeName.data();
     if (!nm.isEmpty())
     {
+      ol.startParagraph();
       ol.startTypewriter();
       bool isIDLorJava = nm.right(4)==".idl" || 
                          nm.right(5)==".pidl" || 
@@ -1257,7 +1265,7 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
       if (isIDLorJava) 
         ol.docify(";");
       ol.endTypewriter();
-      ol.newParagraph();
+      ol.endParagraph();
     }
   }
 }
@@ -1271,10 +1279,11 @@ void ClassDef::writeAllMembersLink(OutputList &ol)
   {
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.newParagraph();
+    ol.startParagraph();
     ol.startTextLink(getMemberListFileName(),0);
     ol.parseText(theTranslator->trListOfAllMembers());
     ol.endTextLink();
+    ol.endParagraph();
     ol.enableAll();
     ol.popGeneratorState();
   }
@@ -1663,7 +1672,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   ol.parseText(theTranslator->trIncludingInheritedMembers());
   
   //ol.startItemList();
-  ol.writeString("<p><table>\n");
+  ol.writeString("<table>\n");
   
   //MemberNameInfo *mni=m_impl->allMemberNameInfoList->first();
   MemberNameInfoSDict::Iterator mnii(*m_impl->allMemberNameInfoSDict); 

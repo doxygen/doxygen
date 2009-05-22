@@ -2210,22 +2210,24 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    
                                             // Deal with file changes due to 
                                             // #include's within { .. } blocks
-                                            QCString lineStr;
+                                            QCString lineStr(15+g_yyFileName.length());
                                             lineStr.sprintf("# %d \"%s\" 2",g_yyLineNr,g_yyFileName.data());
                                             outputArray(lineStr.data(),lineStr.length());
 					    
 					    delete fs; fs=0;
 					  }
   					}
-<*>"/*"					{
-					  outputChar('/');outputChar('*');
+<*>"/*"[*]?				{
+					  outputArray(yytext,yyleng);
   					  g_lastCContext=YY_START;
 					  g_commentCount=1;
+					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					  BEGIN(SkipCComment);
   					}
-<*>"//"					{
-					  outputChar('/');outputChar('/');
+<*>"//"[/]?				{
+					  outputArray(yytext,yyleng);
   					  g_lastCPPContext=YY_START;
+					  if (yyleng==3) g_lastGuardName.resize(0); // reset guard in case the #define is documented!
 					  BEGIN(SkipCPPComment);
 					}
 <*>\n					{ 

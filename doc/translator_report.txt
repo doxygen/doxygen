@@ -1,4 +1,4 @@
-(1.5.8)
+(1.5.9)
 
 Doxygen supports the following 38 languages (sorted alphabetically):
 
@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 22 translators are up-to-date, 16 translators are based on
+Of them, 24 translators are up-to-date, 14 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -31,6 +31,7 @@ still may be some details listed even for them:
   TranslatorFinnish
   TranslatorGerman
   TranslatorItalian
+  TranslatorJapanese -- Remove the obsolete methods (never used).
   TranslatorKorean
   TranslatorMacedonian
   TranslatorPersian
@@ -39,6 +40,7 @@ still may be some details listed even for them:
   TranslatorSerbianCyrilic
   TranslatorSerbian
   TranslatorSpanish
+  TranslatorSwedish -- The "translate me!" found in a comment.
   TranslatorTurkish
   TranslatorVietnamese
 
@@ -48,11 +50,9 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorJapanese              1.5.4 	22 methods to implement
   TranslatorGreek                 1.5.4 	22 methods to implement
   TranslatorFrench                1.5.4 	22 methods to implement
   TranslatorDanish                1.5.4 	22 methods to implement
-  TranslatorSwedish               1.4.6 	24 methods to implement
   TranslatorSlovene               1.4.6 	24 methods to implement
   TranslatorPolish                1.4.6 	23 methods to implement
   TranslatorNorwegian             1.4.6 	23 methods to implement
@@ -349,35 +349,10 @@ TranslatorIndonesian   (TranslatorAdapter_1_4_6)  23 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorJapanese   (TranslatorAdapter_1_5_4)  22 methods to implement
+TranslatorJapanese   (Translator)
 ------------------
 
-  Implements 194 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trSubprograms()
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trModulesIndex()
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
+  Implements 216 of the required methods.
 
   Obsolete methods (should be removed, never used):
 
@@ -695,37 +670,10 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  24 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorSwedish   (TranslatorAdapter_1_4_6)  24 methods to implement
+TranslatorSwedish   (Translator)
 -----------------
 
-  Implements 192 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trSubprograms()
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trModulesIndex()
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trCallerGraph()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
+  Implements 216 of the required methods.
 
 
 TranslatorUkrainian   (TranslatorAdapter_1_4_1)  24 methods to implement

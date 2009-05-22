@@ -356,7 +356,7 @@ void ManGenerator::endTitle()
     t << "\"";
 }
 
-void ManGenerator::writeListItem() 
+void ManGenerator::startItemListItem() 
 { 
   if (!firstCol) t << endl; 
   t << ".TP" << endl; 
@@ -364,6 +364,10 @@ void ManGenerator::writeListItem()
   paragraph=FALSE;
   col=0;
 } 
+
+void ManGenerator::endItemListItem()
+{
+}
 
 void ManGenerator::startCodeFragment() 
 { 
@@ -476,7 +480,7 @@ void ManGenerator::startDescItem()
 //  paragraph=TRUE;
 //}
 
-void ManGenerator::writeDescItem()
+void ManGenerator::startDescForItem()
 {
   if (!firstCol) t << endl;
   if (!paragraph) t << ".in -1c" << endl;
@@ -484,6 +488,10 @@ void ManGenerator::writeDescItem()
   firstCol=TRUE;
   paragraph=FALSE;
   col=0;
+}
+
+void ManGenerator::endDescForItem()
+{
 }
 
 void ManGenerator::endDescItem()
@@ -669,13 +677,14 @@ void ManGenerator::startConstraintList(const char *header)
 
 void ManGenerator::startConstraintParam()
 {
-  writeListItem();
+  startItemListItem();
   startEmphasis();
 }
 
 void ManGenerator::endConstraintParam()
 {
   endEmphasis();
+  endItemListItem();
   t << " : ";
 }
 

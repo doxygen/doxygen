@@ -8,8 +8,8 @@ const int messageTimeout = 5000; //!< status bar message timeout in millisec.
 
 MainWindow &MainWindow::instance()
 {
-  static MainWindow theInstance;
-  return theInstance;
+  static MainWindow *theInstance = new MainWindow;
+  return *theInstance;
 }
 
 MainWindow::MainWindow()

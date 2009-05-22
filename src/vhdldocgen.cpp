@@ -833,12 +833,13 @@ bool VhdlDocGen::compareString(const QCString& s1,const QCString& s2)
 
 bool VhdlDocGen::getSigTypeName(QList<QCString>& ql, const char* str,QCString& buffer)
 {
-  QCString temp(str);
-  QStringList qlist=QStringList::split(" is ",temp,FALSE);
-  if (qlist.count()!=2) return FALSE;
-  temp.resize(0);
-  temp+=(QCString)qlist[0]+":"+(QCString)qlist[1];
-  return VhdlDocGen::getSigName(ql,temp.data(),buffer);  
+  //QCString temp(str);
+  //QStringList qlist=QStringList::split(" is ",temp,FALSE);
+  //if (qlist.count()!=2) return FALSE;
+  //temp.resize(0);
+  //temp+=(QCString)qlist[0]+":"+(QCString)qlist[1];
+  //return VhdlDocGen::getSigName(ql,temp.data(),buffer);  
+  return VhdlDocGen::getSigName(ql,str,buffer);  
 }
 
 /*!
@@ -1356,7 +1357,7 @@ bool VhdlDocGen::isNumber(const QCString& s)
   #endif 
 }// isNumber
 
-void VhdlDocGen::startFonts(const QCString& q, char *keyword,OutputList& ol)
+void VhdlDocGen::startFonts(const QCString& q, const char *keyword,OutputList& ol)
 {
   ol.startFontClass(keyword);
   ol.docify(q.data());
@@ -1650,10 +1651,12 @@ bool VhdlDocGen::isFunctionProto(QCString& ss)
   QCString proc("procedure");
   QCString func("function");
   name=name.stripWhiteSpace();
-  QStringList ql=QStringList::split(" ",name,FALSE);
+  QStringList ql=QStringList::split(QRegExp("[\\s]"),name,FALSE);
   int j=ql.count();
   if (j<2) return FALSE;
-  QCString tt=(QCString)ql[0];
+  QCString tt=(QCString)ql[0].lower();
+
+  if (tt=="impure" || tt=="pure") tt=ql[1];
 
   if (VhdlDocGen::compareString(tt,proc)!=0 && VhdlDocGen::compareString(tt,func)!=0) 
     return FALSE;

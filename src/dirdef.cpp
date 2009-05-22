@@ -134,7 +134,7 @@ void DirDef::writeDetailedDescription(OutputList &ol,const QCString &title)
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Man);
         ol.disable(OutputGenerator::RTF);
-        ol.newParagraph();
+        // ol.newParagraph();  // FIXME:PARA
         ol.enableAll();
         ol.disableAllBut(OutputGenerator::Man);
         ol.writeString("\n\n");
@@ -153,6 +153,7 @@ void DirDef::writeBriefDescription(OutputList &ol)
 {
   if (!briefDescription().isEmpty()) 
   {
+    ol.startParagraph();
     ol.parseDoc(briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE);
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::RTF);
@@ -170,10 +171,11 @@ void DirDef::writeBriefDescription(OutputList &ol)
     }
     ol.popGeneratorState();
 
-    ol.pushGeneratorState();
-    ol.disable(OutputGenerator::RTF);
-    ol.newParagraph();
-    ol.popGeneratorState();
+    //ol.pushGeneratorState();
+    //ol.disable(OutputGenerator::RTF);
+    //ol.newParagraph();
+    //ol.popGeneratorState();
+    ol.endParagraph();
   }
   ol.writeSynopsis();
 }
@@ -188,10 +190,11 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
     {
       msg("Generating dependency graph for directory %s\n",displayName().data());
       ol.disable(OutputGenerator::Man);
-      ol.newParagraph();
+      ol.startParagraph();
       ol.startDirDepGraph();
       //TODO: ol.parseText(theTranslator->trDirDepGraph());
       ol.endDirDepGraph(dirDep);
+      ol.endParagraph();
       ol.enableAll();
     }
   }
@@ -220,6 +223,7 @@ void DirDef::writeSubDirList(OutputList &ol)
       }
       if (!dd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),dd,0,dd->briefDescription(),
             FALSE, // indexWords
@@ -229,7 +233,7 @@ void DirDef::writeSubDirList(OutputList &ol)
             TRUE   // link from index
            );
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
       dd=m_subdirs.next();
     }
@@ -282,6 +286,7 @@ void DirDef::writeFileList(OutputList &ol)
       ol.endMemberItem();
       if (!fd->briefDescription().isEmpty() && Config_getBool("BRIEF_MEMBER_DESC"))
       {
+        ol.startParagraph();
         ol.startMemberDescription();
         ol.parseDoc(briefFile(),briefLine(),fd,0,fd->briefDescription(),
             FALSE, // indexWords
@@ -291,7 +296,7 @@ void DirDef::writeFileList(OutputList &ol)
             TRUE   // link from index
            );
         ol.endMemberDescription();
-        ol.newParagraph();
+        ol.endParagraph();
       }
       fd=m_fileList->next();
     }

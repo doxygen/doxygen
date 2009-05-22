@@ -41,7 +41,7 @@
 #include <qtextstream.h>
 #include <md5.h>
 
-#define MAP_CMD "cmap"
+#define MAP_CMD "cmapx"
 
 //#define FONTNAME "FreeSans"
 #define FONTNAME getDotFontName()
@@ -141,75 +141,78 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
     int numBytes = f.readLine(buf.data(),maxLineLen);
     buf[numBytes-1]='\0';
 
-    // search for href="...", store ... part in link
-    int indexS = buf.find("href=\""), indexE;
-    if (indexS!=-1 && (indexE=buf.find('"',indexS+6))!=-1)
+    if (buf.left(5)=="<area")
     {
-      QCString link = buf.mid(indexS+6,indexE-indexS-6);
-      QCString result;
-      QCString *dest;
-      if (urlOnly) // for user defined dot graphs
+      // search for href="...", store ... part in link
+      int indexS = buf.find("href=\""), indexE;
+      if (indexS!=-1 && (indexE=buf.find('"',indexS+6))!=-1)
       {
-        if (link.left(5)=="\\ref ") // \ref url
+        QCString link = buf.mid(indexS+6,indexE-indexS-6);
+        QCString result;
+        QCString *dest;
+        if (urlOnly) // for user defined dot graphs
         {
-          result="href=\"";
-          // fake ref node to resolve the url
-          DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
-          if (!df->ref().isEmpty())
+          if (link.left(5)=="\\ref ") // \ref url
           {
-            if ((dest=Doxygen::tagDestinationDict[df->ref()])) 
-              result += *dest + "/";
+            result="href=\"";
+            // fake ref node to resolve the url
+            DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
+            if (!df->ref().isEmpty())
+            {
+              if ((dest=Doxygen::tagDestinationDict[df->ref()])) 
+                result += *dest + "/";
+            }
+            else if (!relPath.isEmpty())
+            {
+              result += relPath;
+            }
+            if (!df->file().isEmpty())  
+              result += df->file().data() + Doxygen::htmlFileExtension;
+            if (!df->anchor().isEmpty()) 
+              result += "#" + df->anchor();
+            delete df;
+            result += "\"";
           }
-          else if (!relPath.isEmpty())
+          else
           {
-            result += relPath;
+            result = "href=\"" + link + "\"";
           }
-          if (!df->file().isEmpty())  
-            result += df->file().data() + Doxygen::htmlFileExtension;
-          if (!df->anchor().isEmpty()) 
-            result += "#" + df->anchor();
-          delete df;
-          result += "\"";
         }
-        else
+        else // ref$url (external ref via tag file), or $url (local ref)
         {
-          result = "href=\"" + link + "\"";
+          int marker = link.find('$');
+          if (marker!=-1)
+          {
+            QCString ref = link.left(marker);
+            QCString url = link.mid(marker+1);
+            if (!ref.isEmpty())
+            {
+              result = "doxygen=\"" + ref + ":";
+              if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
+              result += "\" ";
+            }
+            result+= "href=\"";
+            if (!ref.isEmpty())
+            {
+              if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
+            }
+            else if (!relPath.isEmpty())
+            {
+              result += relPath;
+            }
+            result+= url + "\"";
+          }
+          else // should not happen, but handle properly anyway
+          {
+            result = "href=\"" + link + "\"";
+          }
         }
+        QCString leftPart = buf.left(indexS);
+        QCString rightPart = buf.mid(indexE+1);
+        buf = leftPart + result + rightPart;
       }
-      else // ref$url (external ref via tag file), or $url (local ref)
-      {
-        int marker = link.find('$');
-        if (marker!=-1)
-        {
-          QCString ref = link.left(marker);
-          QCString url = link.mid(marker+1);
-          if (!ref.isEmpty())
-          {
-            result = "doxygen=\"" + ref + ":";
-            if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
-            result += "\" ";
-          }
-          result+= "href=\"";
-          if (!ref.isEmpty())
-          {
-            if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
-          }
-          else if (!relPath.isEmpty())
-          {
-            result += relPath;
-          }
-          result+= url + "\"";
-        }
-        else // should not happen, but handle properly anyway
-        {
-          result = "href=\"" + link + "\"";
-        }
-      }
-      QCString leftPart = buf.left(indexS);
-      QCString rightPart = buf.mid(indexE+1);
-      buf = leftPart + result + rightPart;
+      t << buf;
     }
-    t << buf;
   }
   return TRUE;
 }
@@ -1128,8 +1131,8 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
     // write image and map in a table row
     QCString mapLabel = convertNameToFile(n->m_label);
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#" 
-      << mapLabel << "_map\">" << endl;
-    out << "<map name=\"" << mapLabel << "_map\">" << endl;
+      << mapLabel << "_map\"/>" << endl;
+    out << "<map name=\"" << mapLabel << "_map\" id=\"" << mapLabel << "\">" << endl;
     convertMapFile(out,mapName,"");
     out << "</map></td></tr>" << endl;
     //thisDir.remove(mapName);
@@ -1915,7 +1918,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   if (format==BITMAP && generateImageMap) // produce HTML to include the image
   {
     QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
-    out << "<p><center><img src=\"" << relPath << baseName << "." 
+    out << "<center><img src=\"" << relPath << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
       << mapLabel << "\" alt=\"";
     switch (m_graphType)
@@ -1930,14 +1933,14 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         ASSERT(0);
         break;
     }
-    out << "\"></center>" << endl;
+    out << "\"/></center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
     tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
-      out << "<map name=\"" << mapLabel << "\">" << endl;
+      out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
       out << tmpstr;
       out << "</map>" << endl;
     }
@@ -2245,10 +2248,9 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<p><center><img src=\"" << relPath << baseName << "." 
+    out << "<center><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "_map\" alt=\"";
-    out << "\">";
+        << mapName << "_map\" alt=\"\"/>";
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
@@ -2256,7 +2258,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
-      out << "<map name=\"" << mapName << "_map\">" << endl;
+      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
       out << tmpstr;
       out << "</map>" << endl;
     }
@@ -2539,7 +2541,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<p><center><img src=\"" << relPath << baseName << "." 
+    out << "<center><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
     out << "\">";
@@ -2550,7 +2552,7 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     convertMapFile(tmpout,baseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
-      out << "<map name=\"" << mapName << "_map\">" << endl;
+      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
       out << tmpstr;
       out << "</map>" << endl;
     }
@@ -2681,11 +2683,11 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<p><center><img src=\"" << relPath << baseName << "." 
+    out << "<center><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
-    out << m_dir->displayName();
-    out << "\">";
+    out << convertToXML(m_dir->displayName());
+    out << "\"/>";
     out << "</center>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
@@ -2693,7 +2695,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
     convertMapFile(tmpout,baseName+".map",relPath,TRUE);
     if (!tmpstr.isEmpty())
     {
-      out << "<map name=\"" << mapName << "_map\">" << endl;
+      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
       out << tmpstr;
       out << "</map>" << endl;
     }
@@ -3175,8 +3177,8 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
       QCString mapLabel = convertNameToFile(baseName);
       t << "<center><table><tr><td><img src=\"" << relPath << imgName
         << "\" border=\"0\" alt=\"\" usemap=\"#" 
-        << mapLabel << "_map\">" << endl;
-      t << "<map name=\"" << mapLabel << "_map\">" << endl;
+        << mapLabel << "_map\"/>" << endl;
+      t << "<map name=\"" << mapLabel << "_map\" id=\"" << mapLabel << "\">" << endl;
       convertMapFile(t,mapName,relPath);
       t << "</map></td></tr></table></center>" << endl;
       thisDir.remove(mapName);
