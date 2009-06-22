@@ -812,6 +812,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
 
+#if 0
   if (Config_getBool("SEARCHENGINE"))
   {
     Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
@@ -823,6 +824,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
       p=i+l;
     }
   }
+#endif
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

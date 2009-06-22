@@ -120,9 +120,9 @@ void PageDef::writeDocumentation(OutputList &ol)
   {
     ol.startSection(si->label,si->title,si->type);
     ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);
-    stringToSearchIndex(getOutputFileBase(),
-                        theTranslator->trPage(TRUE,TRUE)+" "+si->title,
-                        si->title);
+    //stringToSearchIndex(getOutputFileBase(),
+    //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
+    //                    si->title);
     ol.endSection(si->label,si->type);
   }
   ol.popGeneratorState();

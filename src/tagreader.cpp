@@ -1182,6 +1182,10 @@ void TagFileParser::buildLists(Entry *root)
       case TagClassInfo::Category:  ce->spec = Entry::Category;  break;
     }
     ce->name     = tci->name;
+    if (tci->kind==TagClassInfo::Protocol) 
+    {
+      ce->name+="-p";
+    }
     addDocAnchors(ce,tci->docAnchors);
     TagInfo *ti  = new TagInfo;
     ti->tagName  = m_tagName;

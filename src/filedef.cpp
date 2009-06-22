@@ -168,7 +168,7 @@ void FileDef::writeDetailedDescription(OutputList &ol,const QCString &title)
   {
     ol.writeRuler();
     ol.pushGeneratorState();
-    ol.disable(OutputGenerator::Html);
+    ol.disableAllBut(OutputGenerator::Html);
       ol.writeAnchor(0,"_details"); 
     ol.popGeneratorState();
     ol.startGroupHeader();
@@ -514,11 +514,11 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.enableAll();
   }
   
-  if (Config_getBool("SEARCHENGINE"))
-  {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
+  //if (Config_getBool("SEARCHENGINE"))
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //}
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

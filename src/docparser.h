@@ -126,7 +126,7 @@ class DocNode
                 Kind_Formula        = 38,
                 Kind_SecRefItem     = 39,
                 Kind_SecRefList     = 40,
-                //Kind_Language       = 41,
+                Kind_SimpleSectSep  = 41,
                 Kind_LinkedWord     = 42,
                 Kind_ParamSect      = 43,
                 Kind_ParamList      = 44,
@@ -928,7 +928,7 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     QCString typeString() const;
     DocNode *parent() const { return m_parent; }
     void accept(DocVisitor *v);
-    int parse(bool userTitle);
+    int parse(bool userTitle,bool needsSeparator);
     int parseRcs();
     int parseXml();
     void appendLinkWord(const QString &word);
@@ -938,6 +938,21 @@ class DocSimpleSect : public CompAccept<DocSimpleSect>, public DocNode
     DocNode *       m_parent;
     Type            m_type;
     DocTitle *      m_title;
+};
+
+/*! Node representing a separator between two simple sections of the
+ *  same type. 
+ */
+class DocSimpleSectSep : public DocNode
+{
+  public:
+    DocSimpleSectSep(DocNode *parent) : m_parent(parent) {}
+    Kind kind() const { return Kind_SimpleSectSep; }
+    DocNode *parent() const { return m_parent; }
+    void accept(DocVisitor *v) { v->visit(this); }
+
+  private:
+    DocNode *m_parent;
 };
 
 /*! Node representing a parameter section */

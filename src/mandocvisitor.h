@@ -51,6 +51,7 @@ class ManDocVisitor : public DocVisitor
     void visit(DocIncOperator *);
     void visit(DocFormula *);
     void visit(DocIndexEntry *);
+    void visit(DocSimpleSectSep *);
 
     //--------------------------------------
     // visitor functions for compound nodes

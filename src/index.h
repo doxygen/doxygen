@@ -24,6 +24,7 @@
 
 class MemberDef;
 class OutputList;
+class QTextStream;
 
 
 class IndexIntf
@@ -251,5 +252,9 @@ void initNamespaceMemberIndices();
 void addClassMemberNameToIndex(MemberDef *md);
 void addFileMemberNameToIndex(MemberDef *md);
 void addNamespaceMemberNameToIndex(MemberDef *md);
+
+// search engine
+void writeSearchIndex();
+void writeSearchCategories(QTextStream &t);
 
 #endif

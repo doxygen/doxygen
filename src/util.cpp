@@ -6401,6 +6401,7 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s)
   return s.mid(li,bi-li);
 }
 
+#if 0
 void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
     const QCString &str,bool priority,const QCString &anchor)
 {
@@ -6417,6 +6418,7 @@ void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
     }
   }
 }
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -6813,8 +6815,8 @@ void writeTypeConstraints(OutputList &ol,Definition *d,ArgumentList *al)
 
 bool usingTreeIndex()
 {
-  QCString& TreeView=Config_getEnum("GENERATE_TREEVIEW");
-  return TreeView=="FRAME" || TreeView=="ALL" || TreeView=="YES";
+  static bool treeView = Config_getBool("USE_INLINE_TREES");
+  return treeView;
 }
 
 void stackTrace()

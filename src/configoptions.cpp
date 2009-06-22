@@ -630,14 +630,6 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
-                 "SHOW_USED_FILES",
-                 "Set the SHOW_USED_FILES tag to NO to disable the list of files generated \n"
-                 "at the bottom of the documentation of classes and structs. If set to YES the \n"
-                 "list will mention the files that were used to generate the documentation.",
-                 TRUE
-                );
-  //----
-  cb = cfg->addBool(
                  "SHOW_DIRECTORIES",
                  "If the sources in your project are distributed over multiple directories \n"
                  "then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy \n"
@@ -1291,29 +1283,26 @@ void addConfigOptions(Config *cfg)
                 );
   ci->addDependency("GENERATE_HTML");
   //----
-  ce = cfg->addEnum(
+  cb = cfg->addBool(
                  "GENERATE_TREEVIEW",
                  "The GENERATE_TREEVIEW tag is used to specify whether a tree-like index \n"
                  "structure should be generated to display hierarchical information. \n"
                  "If the tag value is set to FRAME, a side panel will be generated \n"
                  "containing a tree-like index structure (just like the one that \n"
                  "is generated for HTML Help). For this to work a browser that supports \n"
-                 "JavaScript, DHTML, CSS and frames is required (for instance Mozilla 1.0+, \n"
-                 "Netscape 6.0+, Internet explorer 5.0+, or Konqueror). Windows users are \n"
-                 "probably better off using the HTML help feature. Other possible values \n"
-                 "for this tag are: HIERARCHIES, which will generate the Groups, Directories, \n"
-                 "and Class Hierarchy pages using a tree view instead of an ordered list; \n"
-                 "ALL, which combines the behavior of FRAME and HIERARCHIES; and NONE, which \n"
-                 "disables this behavior completely. For backwards compatibility with previous \n"
-                 "releases of Doxygen, the values YES and NO are equivalent to FRAME and NONE \n"
-                 "respectively.",
-                 "NONE"
+                 "JavaScript, DHTML, CSS and frames is required (i.e. any modern browser). \n"
+                 "Windows users are probably better off using the HTML help feature.",
+                 FALSE
                 );
-  ce->addValue("NONE");
-  ce->addValue("FRAME");
-  ce->addValue("HIERARCHIES");
-  ce->addValue("ALL");
-  ce->addDependency("GENERATE_HTML");
+  cb->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
+                 "USE_INLINE_TREES",
+                 "By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, \n"
+                 "and Class Hierarchy pages using a tree view instead of an ordered list.",
+                 FALSE
+                );
+  cb->addDependency("GENERATE_HTML");
   //----
   ci = cfg->addInt(
                  "TREEVIEW_WIDTH",
@@ -2094,6 +2083,8 @@ void addConfigOptions(Config *cfg)
                  "used. If set to NO the values of all tags below this one will be ignored.",
                  FALSE
                 );
+  //----
+  cfg->addObsolete("SHOW_USED_FILES");
   //----
   cfg->addObsolete("USE_WINDOWS_ENCODING");
   //----

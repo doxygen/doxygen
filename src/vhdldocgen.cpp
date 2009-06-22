@@ -1745,7 +1745,7 @@ void VhdlDocGen::writeVhdlDeclarations(MemberList* ml,
   VhdlDocGen::writeVHDLDeclarations(ml,ol,cd,0,fd,gd,theTranslator_vhdlType(VhdlDocGen::CONFIG,FALSE),0,FALSE,VhdlDocGen::CONFIG);
 }
 
-static void setConfigurationType(MemberList *ml)
+static void setGlobalType(MemberList *ml)
 {
   if (ml==0) return;
   MemberDef *mdd=0;
@@ -1756,6 +1756,14 @@ static void setConfigurationType(MemberList *ml)
     {
       mdd->setMemberSpecifiers(VhdlDocGen::CONFIG);        
     }
+    else if (strcmp(mdd->typeString(),"library")==0)
+    {
+      mdd->setMemberSpecifiers(VhdlDocGen::LIBRARY);        
+    }
+    else if (strcmp(mdd->typeString(),"package")==0)
+    {
+      mdd->setMemberSpecifiers(VhdlDocGen::USE);        
+    } 
   }
 }
 
@@ -1814,8 +1822,28 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   LockingPtr<MemberDef> lock(mdef,mdef);
 
   Definition *d=0;
-  ASSERT (cd!=0 || nd!=0 || fd!=0 || gd!=0); // member should belong to something
-  if (cd) d=cd; else if (nd) d=nd; else if (fd) d=fd; else d=gd;
+
+  /* some vhdl files contain only a configuration  description
+
+     library work;
+     configuration cfg_tb_jtag_gotoBackup of tb_jtag_gotoBackup is
+     for RTL
+     end for;
+     end cfg_tb_jtag_gotoBackup;
+
+     in this case library work does not belong to an entity, package ...
+
+   */
+
+  ASSERT(cd!=0 || nd!=0 || fd!=0 || gd!=0 || 
+         mdef->getMemberSpecifiers()==VhdlDocGen::LIBRARY || 
+         mdef->getMemberSpecifiers()==VhdlDocGen::USE   
+        ); // member should belong to something
+  if (cd) d=cd; 
+  else if (nd) d=nd; 
+  else if (fd) d=fd; 
+  else if (gd) d=gd; 
+  else d=(Definition*)mdef;
 
   // write tag file information of this member
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
@@ -1862,12 +1890,12 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   }
 
   // write search index info
-  if (Config_getBool("SEARCHENGINE"))
-  {
-    Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
-    Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
-    Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
-  }
+  //if (Config_getBool("SEARCHENGINE"))
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
+  //  Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
+  //  Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
+  //}
 
   QCString cname  = d->name();
   QCString cfname = mdef->getOutputFileBase();
@@ -2187,7 +2215,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
     ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
     const char *title,const char *subtitle,bool /*showEnumValues*/,int type) 
 {
-  setConfigurationType(ml);
+  setGlobalType(ml);
   if (!membersHaveSpecificType(ml,type)) return;
 
   if (title) 

@@ -244,7 +244,8 @@ class HtmlGenerator : public OutputGenerator
     { t << "<a name=\"" << anchor << "\"></a>"; }
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
-    static void writeSearchPage();
+    static void writeSearchFooter(QTextStream &t,const QCString &relPath);
+    static void writeSearchData(const char *dir);
     static void generateSectionImages();
 
   private:

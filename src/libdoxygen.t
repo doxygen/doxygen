@@ -108,6 +108,12 @@ compound_xsd.h: compound.xsd
 layout_default.h: layout_default.xml
 	cat layout_default.xml | $(TO_C_CMD) >layout_default.h 
 
+search_js.h: search.js
+	cat search.js | $(TO_C_CMD) >search_js.h 
+
+search_css.h: search.css
+	cat search.css | $(TO_C_CMD) >search_css.h 
+
 search_php.h: search.php
 	cat search.php | $(TO_C_CMD) >search_php.h 
 

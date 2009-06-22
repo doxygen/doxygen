@@ -1000,7 +1000,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount() ;
   					}
 <FindMembers>[\-+]{BN}*			{
-  					  printf("Found - insideObj=%d\n",insideObjC);
   					  if (!insideObjC) 
 					  {
 					    REJECT;
@@ -4710,7 +4709,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->args += ' ';
 					  current->args += name;
     					}
-<ClassVar,Bases>\n/{BN}*[^{,]		{
+<ClassVar,Bases>\n/{BN}*[^{, \t\n]	{
                                           if (!insideObjC) 
 					  {
 					    REJECT;

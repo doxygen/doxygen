@@ -306,6 +306,7 @@ public:
   void visit(DocIncOperator *);
   void visit(DocFormula *);
   void visit(DocIndexEntry *);
+  void visit(DocSimpleSectSep *);
 
   //--------------------------------------
   // visitor functions for compound nodes
@@ -730,6 +731,10 @@ void PerlModDocVisitor::visit(DocIndexEntry *)
 	       "<secondaryie></secondaryie>"
 	       "</indexentry>");
 #endif
+}
+
+void PerlModDocVisitor::visit(DocSimpleSectSep *)
+{
 }
 
 //--------------------------------------

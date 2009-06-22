@@ -124,7 +124,7 @@ QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross
 bool             Doxygen::parseSourcesNeeded = FALSE;
 double           Doxygen::sysElapsedTime = 0.0;
 QTime            Doxygen::runningTime;
-SearchIndex *    Doxygen::searchIndex=0;
+//SearchIndex *    Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
@@ -1168,8 +1168,8 @@ static void addClassToContext(EntryNav *rootNav)
     }
     cd=new ClassDef(root->fileName,root->startLine,fullName,sec,
         tagName,refFileName);
-    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d cd=%p\n",
-        fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1,cd);
+    Debug::print(Debug::Classes,0,"  New class `%s' (sec=0x%08x)! #tArgLists=%d\n",
+        fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setIsObjectiveC(root->objc);
@@ -7524,6 +7524,29 @@ static void flushUnresolvedRelations()
       Doxygen::lookupCache.remove(ci.currentKey());
     }
   }
+
+  MemberNameSDict::Iterator fnli(*Doxygen::functionNameSDict);
+  MemberName *fn;
+  for (;(fn=fnli.current());++fnli) // for each global function name
+  {
+    MemberNameIterator fni(*fn);
+    MemberDef *fmd;
+    for (;(fmd=fni.current());++fni) // for each function with that name
+    {
+      fmd->invalidateCachedArgumentTypes();
+    }
+  }
+  MemberNameSDict::Iterator mnli(*Doxygen::memberNameSDict);
+  for (;(fn=mnli.current());++mnli) // for each class method name
+  {
+    MemberNameIterator mni(*fn);
+    MemberDef *fmd;
+    for (;(fmd=mni.current());++mni) // for each function with that name
+    {
+      fmd->invalidateCachedArgumentTypes();
+    }
+  }
+
 }
 
 //----------------------------------------------------------------------------
@@ -7763,7 +7786,7 @@ static void buildPageList(EntryNav *rootNav)
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
     addRefItem(root->sli,"page",
-               usingTreeIndex()?"main":"index",
+               Config_getBool("GENERATE_TREEVIEW")?"main":"index",
                title
                );
 
@@ -7783,7 +7806,7 @@ static void findMainPage(EntryNav *rootNav)
     {
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
-      QCString indexName=usingTreeIndex()?"main":"index";
+      QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
       Doxygen::mainPage = new PageDef(root->fileName,root->startLine,
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
@@ -10230,7 +10253,7 @@ void generateOutput()
 #if 0
     if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
 #endif
-    if (usingTreeIndex()) Doxygen::indexList.addIndex(new FTVHelp);
+    if (Config_getBool("GENERATE_TREEVIEW")) Doxygen::indexList.addIndex(new FTVHelp);
     if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     Doxygen::indexList.addImageFile("tab_r.gif");
@@ -10310,6 +10333,14 @@ void generateOutput()
   g_outputList->writeStyleInfo(4); // write last part
   g_outputList->enableAll();
   
+  // generate search indices (need to do this before writing other HTML
+  // pages as these contain a drop down menu with options depending on
+  // what categories we find in this function.
+  if (Config_getBool("SEARCHENGINE"))
+  {
+    writeSearchIndex();
+  }
+
   //statistics();
   
   // count the number of documented elements in the lists we have built. 
@@ -10383,6 +10414,7 @@ void generateOutput()
   
   msg("Generating file member index...\n");
   writeFileMemberIndex(*g_outputList);
+
   
   //writeDirDependencyGraph(Config_getString("HTML_OUTPUT"));
   
@@ -10493,12 +10525,16 @@ void generateOutput()
     }
     QDir::setCurrent(oldDir);
   }
+
+#if 0 // old PHP based search engine
   if (Config_getBool("SEARCHENGINE"))
   {
     msg("Generating search index\n");
     HtmlGenerator::writeSearchPage();
     Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search.idx");
   }
+#endif
+
   if (Debug::isFlagSet(Debug::Time))
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",

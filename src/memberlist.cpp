@@ -342,12 +342,16 @@ void MemberList::writeDeclarations(OutputList &ol,
     ol.parseText(title);
     ol.endMemberHeader();
   }
-  if (subtitle && subtitle[0]!=0) 
+  if (subtitle) 
   {
-    //printf("subtitle=`%s'\n",subtitle);
-    ol.startMemberSubtitle();
-    ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE);
-    ol.endMemberSubtitle();
+    QCString st=subtitle;
+    st = st.stripWhiteSpace();
+    if (!st.isEmpty())
+    {
+      ol.startMemberSubtitle();
+      ol.parseDoc("[generated]",-1,ctx,0,subtitle,FALSE,FALSE);
+      ol.endMemberSubtitle();
+    }
   }
 
   // TODO: Two things need to be worked out for proper VHDL output:

@@ -113,7 +113,7 @@ class Doxygen
     static bool                      parseSourcesNeeded;
     static double                    sysElapsedTime;
     static QTime                     runningTime;
-    static SearchIndex              *searchIndex;
+    //static SearchIndex              *searchIndex;
     static QDict<DefinitionIntf>    *symbolMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;

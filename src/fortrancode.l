@@ -166,20 +166,24 @@ static void startFontClass(const char *s)
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  if (searchEngineEnabled)
-  {
-    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
-  }
+  (void)name;
+  (void)base;
+  (void)anchor;
+  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  //if (searchEngineEnabled)
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  //}
 }
 
 static void addToSearchIndex(const char *text)
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  if (searchEngineEnabled)
-  {
-    Doxygen::searchIndex->addWord(text,FALSE);
-  }
+  (void)text;
+  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
+  //if (searchEngineEnabled)
+  //{
+  //  Doxygen::searchIndex->addWord(text,FALSE);
+  //}
 }
 
 /*! start a new line of code, inserting a line number if g_sourceFileDef

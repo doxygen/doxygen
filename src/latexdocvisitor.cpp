@@ -462,6 +462,10 @@ void LatexDocVisitor::visit(DocIndexEntry *i)
   m_t << "}}";
 }
 
+void LatexDocVisitor::visit(DocSimpleSectSep *)
+{
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------

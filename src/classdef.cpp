@@ -294,7 +294,7 @@ QCString ClassDef::displayName() const
   }
   if (m_impl->compType==ClassDef::Protocol && n.right(2)=="-p")
   {
-    n="< "+n.left(n.length()-2)+" >";
+    n="<"+n.left(n.length()-2)+">";
   }
   return n;
 }
@@ -1442,11 +1442,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  if (Config_getBool("SEARCHENGINE"))
-  {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
+  //if (Config_getBool("SEARCHENGINE"))
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //}
   bool exampleFlag=hasExamples();
 
   //---------------------------------------- start flexible part -------------------------------
@@ -1801,7 +1801,9 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeObjectLink(cd->getReference(),
                              cd->getOutputFileBase(),
                              0,
-                             cd->displayName());
+                             md->category() ? 
+                                md->category()->displayName() : 
+                                cd->displayName());
           ol.writeString("</td>");
           ol.writeString("<td>");
         }
@@ -2146,7 +2148,6 @@ static bool isStandardFunc(MemberDef *md)
  * with that of this class. Must only be called for classes without
  * subclasses!
  */
-
 void ClassDef::mergeMembers()
 {
   if (m_impl->membersMerged) return;
@@ -2398,6 +2399,7 @@ void ClassDef::mergeMembers()
 void ClassDef::mergeCategory(ClassDef *category)
 {
   category->setCategoryOf(this);
+  category->setArtificial(TRUE);
     
   MemberNameInfoSDict *srcMnd  = category->memberNameInfoSDict();
   MemberNameInfoSDict *dstMnd  = m_impl->allMemberNameInfoSDict;
@@ -2415,8 +2417,7 @@ void ClassDef::mergeCategory(ClassDef *category)
       }
       else // new method name
       {
-        // create a deep copy of the list (only the MemberInfo's will be 
-        // copied, not the actual MemberDef's)
+        // create a deep copy of the list
         MemberNameInfo *newMni = 0;
         newMni = new MemberNameInfo(srcMni->memberName()); 
 
@@ -2425,12 +2426,15 @@ void ClassDef::mergeCategory(ClassDef *category)
         MemberInfo *mi;
         for (;(mi=mnii.current());++mnii)
         {
-          //printf("Adding!\n");
+          //printf("Adding '%s'\n",mi->memberDef->name().data());
           MemberInfo *newMi=new MemberInfo(mi->memberDef,mi->prot,mi->virt,mi->inherited);
           newMi->scopePath=mi->scopePath;
           newMi->ambigClass=mi->ambigClass;
-          newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope.copy();
+          newMi->ambiguityResolutionScope=mi->ambiguityResolutionScope;
           newMni->append(newMi);
+          mi->memberDef->moveTo(this);
+          mi->memberDef->setCategory(category);
+          internalInsertMember(mi->memberDef,mi->prot,FALSE);
         }
 
         // add it to the dictionary

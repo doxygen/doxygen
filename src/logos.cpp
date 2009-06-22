@@ -133,6 +133,7 @@ unsigned char doxygen_png_data[] = {
 };
 unsigned int doxygen_png_len = 1281;
 
+#if 0
 unsigned char search_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
   0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 0x1a,
@@ -291,6 +292,7 @@ unsigned char search_png[] = {
   0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
 unsigned int search_png_len = 1857;
+#endif
 
 
 // Stripped version of FreeSans.ttf part of FreeFonts package,
@@ -2223,6 +2225,7 @@ void writeLogo(const char *dir)
   f.close();
 }
 
+#if 0
 void writeSearchButton(const char *dir)
 {
   QCString fileName=(QCString)dir+"/search.png";
@@ -2235,6 +2238,7 @@ void writeSearchButton(const char *dir)
   }
   f.close();
 }
+#endif
 
 void writeDoxFont(const char *dir)
 {

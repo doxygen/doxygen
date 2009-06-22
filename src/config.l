@@ -178,11 +178,11 @@ void ConfigBool::convertStrToVal()
   QCString val = m_valueString.stripWhiteSpace().lower();
   if (!val.isEmpty())
   {
-    if (val=="yes" || val=="true" || val=="1") 
+    if (val=="yes" || val=="true" || val=="1" || val=="all") 
     {
       m_value=TRUE;
     }
-    else if (val=="no" || val=="false" || val=="0")
+    else if (val=="no" || val=="false" || val=="0" || val=="none")
     {
       m_value=FALSE;
     }

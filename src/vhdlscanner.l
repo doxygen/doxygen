@@ -1798,6 +1798,7 @@ static void mergeGrouping(const Entry* ce,int)
 
 void mapLibPackage(const Entry* ce)
 {
+  Entry *lastComp=0;
   while (TRUE)
   {
     bool found = FALSE;
@@ -1820,9 +1821,18 @@ void mapLibPackage(const Entry* ce)
 	    found=TRUE;
 	    rt->spec=-1; //nullify entry
 	    rt->section=0;
+	    lastComp=temp;
 	    break;
 	  }
 	}//for
+	if (lastComp && rt->spec!=-1)
+	{
+	  Entry *ee=new Entry(*rt); //append a copy to entries sublist
+	  lastComp->addSubEntry(ee);
+	  found=TRUE;
+	  rt->spec=-1; //nullify entry
+	  rt->section=0;
+	}
       }//if
     }//for
     if (!found) // nothing left to do

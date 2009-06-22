@@ -323,6 +323,11 @@ void XmlDocVisitor::visit(DocIndexEntry *ie)
          "</indexentry>";
 }
 
+void XmlDocVisitor::visit(DocSimpleSectSep *)
+{
+  m_t << "<simplesectsep/>";
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -683,7 +688,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
       inImage.readBlock(buffer,inImage.size());
       outImage.writeBlock(buffer,inImage.size());
       outImage.flush();
-      delete buffer;
+      delete[] buffer;
     }
   }
 }
