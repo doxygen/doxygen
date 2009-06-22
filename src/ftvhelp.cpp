@@ -18,6 +18,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "language.h"
+#include "htmlgen.h"
 
 #define MAX_INDENT 1024
 
@@ -566,6 +567,7 @@ void FTVHelp::generateTreeView(QString* OutString)
 {
   QCString fileName;
   QFile f;
+  static bool searchEngine = Config_getBool("SEARCHENGINE");
   
   generateTreeViewImages();
   
@@ -621,12 +623,21 @@ void FTVHelp::generateTreeView(QString* OutString)
 
   if (m_topLevelIndex)
   {
+    if (searchEngine)
+    {
+      t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
+    }
     t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
     t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
     t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
     t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
+    if (searchEngine)
+    {
+      t << "    <link href=\"search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>" << endl;
+      t << "    <script type=\"text/javaScript\" src=\"search/search.js\"></script>" << endl;
+    }
     t << "    <link rel=\"stylesheet\" href=\"";
     QCString cssname=Config_getString("HTML_STYLESHEET");
     if (cssname.isEmpty())
@@ -707,7 +718,32 @@ void FTVHelp::generateTreeView(QString* OutString)
   {
     t << "  </head>\n";
     t << "\n";
-    t << "  <body class=\"ftvtree\">\n";
+    t << "  <body class=\"ftvtree\"";
+    if (searchEngine)
+    {
+      t << " onload='searchBox.OnSelectItem(0);'";
+    }
+    t << ">\n";
+    if (searchEngine)
+    {
+      t << "      <script type=\"text/javascript\"><!--\n";
+      t << "      var searchBox = new SearchBox(\"searchBox\", \"search\", true);\n";
+      t << "      --></script>\n";
+      t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+      t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
+      t << "      <input type=\"text\" id=\"MSearchField\" value=\"Search\" \n";
+      t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
+      t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
+      t << "           onkeyup=\"searchBox.OnSearchFieldChange()\"/>\n";
+      t << "      </span><span class=\"MSearchBoxRight\">\n";
+      t << "      <img id=\"MSearchSelect\" src=\"search/search.png\"\n";
+      t << "           onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
+      t << "           onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
+      t << "           alt=\"\"/>\n";
+      t << "      </span></div><div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
+      t << "      </div>\n";
+      HtmlGenerator::writeSearchFooter(t,QCString());
+    }
     t << "    <div class=\"directory\">\n";
     t << "      <h3 class=\"swap\"><span>";
     QCString &projName = Config_getString("PROJECT_NAME");

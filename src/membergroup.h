@@ -118,6 +118,7 @@ struct MemberGroupInfo
   QCString header;
   QCString doc;
   QCString docFile;
+  QCString compoundName;
 };
 
 //class MemberGroupDict : public QIntDict<MemberGroup>

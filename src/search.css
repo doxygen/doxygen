@@ -1,0 +1,210 @@
+/*---------------- Search Box */
+
+#MSearchBox {	
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    border: 1px solid #84B0C7;
+    white-space: nowrap;
+    -moz-border-radius: 8px;
+    -webkit-border-top-left-radius: 8px;
+    -webkit-border-top-right-radius: 8px;
+    -webkit-border-bottom-left-radius: 8px;
+    -webkit-border-bottom-right-radius: 8px;
+}
+#MSearchField {
+    font: 9pt Arial, Verdana, sans-serif;
+    color: #999999;
+    background-color: #FFFFFF;
+    font-style: normal;
+    cursor: pointer;
+    padding: 0px 1px;
+    margin: 0px 6px 0px 0px;
+    border: none;
+    outline: none;
+}
+#MSearchBox.MSearchBoxInactive:hover #MSearchField {
+    background-color: #FFFFFF;
+    padding: 0px 1px;
+    margin: 0px 6px 0px 0px;
+    border: none;
+}
+.MSearchBoxActive #MSearchField {
+    background-color: #FFFFFF;
+    color: #000000;
+    padding: 0px 1px;
+    margin: 0px 6px 0px 0px;
+    border: none;
+}
+#MSearchSelect {
+    float : none;
+    display : inline;
+    background : none;
+    font: 9pt Verdana, sans-serif;
+    margin-right: -6px;
+    padding: 0;
+    border: none;
+    margin: 0px 0px 0px 6px;
+    vertical-align: bottom;
+    padding: 0px 0px;
+    background-color: #84B0C7;
+}
+.MSearchBoxLeft {
+    display: block;
+    text-align: left;
+    float: left;
+    margin-left: 6px;
+}
+.MSearchBoxRight {
+    display: block;
+    float: right;
+    text-align: right;
+    margin-right: 6px;
+}
+.MSearchBoxSpacer {
+    font-size: 0px;
+    clear: both;
+}
+.MSearchBoxRow {
+    font-size: 0px;
+    clear: both;
+}
+
+/*---------------- Search filter selection */
+
+#MSearchSelectWindow {
+    display: none;
+    position: absolute;
+    left: 0; top: 0;
+    border: 1px solid #A0A0A0;
+    background-color: #FAFAFA;
+    z-index: 1;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-top-left-radius: 4px;
+    -webkit-border-top-right-radius: 4px;
+    -webkit-border-bottom-left-radius: 4px;
+    -webkit-border-bottom-right-radius: 4px;
+    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+    }
+.SelectItem {
+    font: 8pt Arial, Verdana, sans-serif;
+    padding-left:  2px;
+    padding-right: 12px;
+    border: 0px;
+}
+span.SelectionMark {
+    margin-right: 4px;
+    font-family: monospace;
+    outline-style: none;
+    text-decoration: none;
+}
+a.SelectItem {
+    display: block;
+    outline-style: none;
+    color: #000000; 
+    text-decoration: none;
+    padding-left:   6px;
+    padding-right: 12px;
+}
+a.SelectItem:visited,
+a.SelectItem:active {
+    color: #000000; 
+    outline-style: none;
+    text-decoration: none;
+}
+a.SelectItem:hover {
+    color: #FFFFFF;
+    background-color: #2A50E4;
+    outline-style: none;
+    text-decoration: none;
+    cursor: pointer;
+    display: block;
+}
+
+/*---------------- Search results window */
+
+iframe#MSearchResults {
+    width: 60ex;
+    height: 15em;
+    }
+#MSearchResultsWindow {
+    display: none;
+    position: absolute;
+    left: 0; top: 0;
+    border: 1px solid #000000;
+    background-color: #EEF3F5;
+    }
+#MSearchResultsWindowClose {
+    font-weight: bold;
+    font-size: 8pt;
+    display: block;
+    padding: 0px;
+    margin: 0px;
+    text-align: right;
+    text-decoration: none;
+    outline-style: none;
+    }
+#MSearchResultsWindowClose:link,
+#MSearchResultsWindowClose:visited {
+    color: #8A8A8A;
+    background-color: #8A8A8A;
+    }
+#MSearchResultsWindowClose:active,
+#MSearchResultsWindowClose:hover {
+    color: #9E9E9E;
+    background-color: #9E9E9E;
+    }
+
+/* ----------------------------------- */
+
+
+#SRIndex {
+    clear:both; 
+    padding-bottom: 15px;
+}
+
+.SREntry {
+    font-size: 10pt;
+    padding-left: 1ex;
+}
+.SRPage .SREntry {
+    font-size: 8pt;
+    padding: 1px 5px;
+}
+body.SRPage {
+    margin: 5px 2px;
+}
+
+.SRChildren {
+    padding-left: 3ex; padding-bottom: .5em 
+}
+.SRPage .SRChildren {
+    display: none;
+}
+.SRSymbol {
+    font-weight: bold; color: #153788;
+    font-family: Arial, Verdana, sans-serif;
+    text-decoration: none;
+    outline: none;
+}
+
+a.SRScope {
+    display: block;
+    color: #153788; 
+    font-family: Arial, Verdana, sans-serif;
+    text-decoration: none;
+    outline: none;
+}
+
+.SRPage .SRStatus {
+    padding: 2px 5px;
+    font-size: 8pt;
+    font-style: italic;
+}
+
+.SRResult {
+    display: none;
+}
+

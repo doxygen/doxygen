@@ -405,6 +405,7 @@ static int              g_memberGroupId = DOX_NOGROUP;
 static QCString         g_memberGroupHeader;
 static QCString         g_memberGroupDocs;
 static QCString         g_memberGroupRelates;
+static QCString         g_compoundName;
 
 //-----------------------------------------------------------------------------
 
@@ -2033,6 +2034,11 @@ static bool handleExample(const QCString &)
 
 static bool handleDetails(const QCString &)
 {
+  if (inContext!=OutputBrief)
+  {
+    addOutput("\n\n"); // treat @details outside brief description
+                       // as a new paragraph
+  }
   setOutput(OutputDoc);
   return FALSE;
 }
@@ -2455,13 +2461,14 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
 //---------------------------------------------------------------------------
 
-void groupEnterFile(const char *,int)
+void groupEnterFile(const char *fileName,int)
 {
   g_autoGroupStack.setAutoDelete(TRUE);
   g_autoGroupStack.clear();
   g_memberGroupId = DOX_NOGROUP;
   g_memberGroupDocs.resize(0);
   g_memberGroupRelates.resize(0);
+  g_compoundName=fileName;
 }
 
 void groupLeaveFile(const char *fileName,int line)
@@ -2488,10 +2495,21 @@ void groupEnterCompound(const char *fileName,int line,const char *name)
   g_memberGroupId=DOX_NOGROUP;
   g_memberGroupRelates.resize(0);
   g_memberGroupDocs.resize(0);
+  g_compoundName = name;
+  int i = g_compoundName.find('(');
+  if (i!=-1) 
+  {
+    g_compoundName=g_compoundName.left(i); // strip category (Obj-C)
+  }
+  if (g_compoundName.isEmpty())
+  {
+    g_compoundName=fileName;
+  }
 }
 
 void groupLeaveCompound(const char *,int,const char *)
 {
+  //printf("groupLeaveCompound(%s)\n",name);
   //if (g_memberGroupId!=DOX_NOGROUP)
   //{
   //  warn(fileName,line,"Warning: end of compound %s while inside a member group\n",name);
@@ -2499,8 +2517,27 @@ void groupLeaveCompound(const char *,int,const char *)
   g_memberGroupId=DOX_NOGROUP;
   g_memberGroupRelates.resize(0);
   g_memberGroupDocs.resize(0);
+  g_compoundName.resize(0);
 }
 
+static int findExistingGroup(int &groupId,const MemberGroupInfo *info)
+{
+  //printf("findExistingGroup %s:%s\n",info->header.data(),info->compoundName.data());
+  QIntDictIterator<MemberGroupInfo> di(Doxygen::memGrpInfoDict);
+  MemberGroupInfo *mi;
+  for (di.toFirst();(mi=di.current());++di)
+  {
+    if (g_compoundName==mi->compoundName &&  // same file or scope
+	stricmp(mi->header,info->header)==0  // same header
+       )
+    {
+      //printf("Found it!\n");
+      return di.currentKey(); // put the item in this group
+    }
+  }
+  groupId++; // start new group
+  return groupId;
+}
 
 void openGroup(Entry *e,const char *,int)
 {
@@ -2515,11 +2552,11 @@ void openGroup(Entry *e,const char *,int)
     if (g_memberGroupId==DOX_NOGROUP) // no group started yet
     {
       static int curGroupId=0;
-      g_memberGroupId = curGroupId++;
-      //printf("new group id=%d header=%s\n",g_memberGroupId,g_memberGroupHeader.data());
 
       MemberGroupInfo *info = new MemberGroupInfo;
       info->header = g_memberGroupHeader.stripWhiteSpace();
+      info->compoundName = g_compoundName;
+      g_memberGroupId = findExistingGroup(curGroupId,info);
       Doxygen::memGrpInfoDict.insert(g_memberGroupId,info);
 
       g_memberGroupRelates = e->relates;

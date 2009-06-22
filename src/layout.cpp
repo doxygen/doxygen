@@ -758,7 +758,9 @@ class LayoutParser : public QXmlDefaultHandler
       if (!m_rootNav->find(LayoutNavEntry::MainPage))
       {
         // no MainPage node... add one the first item of the root node...
-        new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, usingTreeIndex() ? "main" : "index",theTranslator->trMainPage(),TRUE);
+        new LayoutNavEntry(m_rootNav,LayoutNavEntry::MainPage, TRUE, 
+            Config_getBool("GENERATE_TREEVIEW") ? "main" : "index",
+            theTranslator->trMainPage(),TRUE);
       }
     }
 
@@ -776,7 +778,7 @@ class LayoutParser : public QXmlDefaultHandler
         QCString baseFile;         // base name of the file containing the index page
       } mapping[] =
       {
-        { "mainpage",         LayoutNavEntry::MainPage,         theTranslator->trMainPage(),     QCString(), usingTreeIndex() ? "main" : "index" },
+        { "mainpage",         LayoutNavEntry::MainPage,         theTranslator->trMainPage(),     QCString(), Config_getBool("GENERATE_TREEVIEW") ? "main" : "index" },
         { "pages",            LayoutNavEntry::Pages,            theTranslator->trRelatedPages(), QCString(), "pages"  },
         { "modules",          LayoutNavEntry::Modules,          theTranslator->trModules(),      QCString(), "modules" },
         { "namespaces",       LayoutNavEntry::Namespaces,       javaOpt    ? theTranslator->trPackages() : 

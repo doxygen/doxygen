@@ -107,14 +107,14 @@ class SDict
      *  \param size The size of the dictionary. Should be a prime number for
      *              best distribution of elements.
      */
-    SDict(int size) : m_sizeIndex(0)
+    SDict(int size,bool caseSensitive=TRUE) : m_sizeIndex(0)
     {
       m_list = new SList<T>(this);
 #if AUTORESIZE
       while ((uint)size>SDict_primes[m_sizeIndex]) m_sizeIndex++;
-      m_dict = new QDict<T>(SDict_primes[m_sizeIndex]);
+      m_dict = new QDict<T>(SDict_primes[m_sizeIndex],caseSensitive);
 #else
-      m_dict = new QDict<T>(size);
+      m_dict = new QDict<T>(size,caseSensitive);
 #endif
     }
 

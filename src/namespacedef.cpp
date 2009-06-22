@@ -401,11 +401,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
   
-  if (Config_getBool("SEARCHENGINE"))
-  {
-    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
+  //if (Config_getBool("SEARCHENGINE"))
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //}
 
   bool generateTagFile = !Config_getString("GENERATE_TAGFILE").isEmpty();
   if (generateTagFile)

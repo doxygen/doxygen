@@ -474,6 +474,12 @@ void HtmlDocVisitor::visit(DocIndexEntry *)
 {
 }
 
+void HtmlDocVisitor::visit(DocSimpleSectSep *)
+{
+  m_t << "</dd>" << endl;
+  m_t << "<dd>" << endl;
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
@@ -542,6 +548,37 @@ bool isLastChildNode(T *parent, DocNode *node)
    return parent->children().getLast()==node;
 }
 
+bool isSeparatedParagraph(DocSimpleSect *parent,DocPara *par)
+{
+  QList<DocNode> nodes = parent->children();
+  int i = nodes.findRef(par);
+  if (i==-1) return FALSE;
+  int count = parent->children().count();
+  if (count>1 && i==0)
+  {
+    if (nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
+    {
+      return TRUE;
+    }
+  }
+  else if (count>1 && i==count-1)
+  {
+    if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep)
+    {
+      return TRUE;
+    }
+  }
+  else if (count>2 && i>0 && i<count-1)
+  {
+    if (nodes.at(i-1)->kind()==DocNode::Kind_SimpleSectSep &&
+        nodes.at(i+1)->kind()==DocNode::Kind_SimpleSectSep)
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
 {
   int t=0;
@@ -592,6 +629,13 @@ int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         isLast =isLastChildNode ((DocSimpleSect*)p->parent(),p);
         if (isFirst) t=2;
         if (isLast)  t=4;
+        if (isSeparatedParagraph((DocSimpleSect*)p->parent(),p))
+          // if the paragraph is enclosed with separators it will
+          // be included in <dd>..</dd> so avoid addition paragraph
+          // markers
+        {
+          isFirst=isLast=TRUE;
+        }
         break;
       default:
         break;

@@ -98,6 +98,8 @@ HEADERS      =	bufstr.h \
 		scanner.h \
 		searchindex.h \
 		search_php.h \
+		search_js.h \
+		search_css.h \
 		section.h \
 		sortdict.h \
                 store.h \

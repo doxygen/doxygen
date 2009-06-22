@@ -325,9 +325,9 @@ bool findAndRemoveWord(QCString &s,const QCString &word);
 
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s);
 
-void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
-                         const QCString &str, bool priority=FALSE,
-                         const QCString &anchor="");
+//void stringToSearchIndex(const QCString &docUrlBase,const QCString &title,
+//                         const QCString &str, bool priority=FALSE,
+//                         const QCString &anchor="");
 
 bool updateLanguageMapping(const QCString &extension,const QCString &parser);
 SrcLangExt getLanguageFromFileName(const QCString fileName);

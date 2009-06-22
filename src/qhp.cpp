@@ -188,10 +188,25 @@ void Qhp::addIndexItem(const char * level1, const char * level2,
                        const char * contRef, const char * /*memRef*/, 
                        const char * anchor, const MemberDef * /*md*/)
 {
+  QCString ref;
+  if ((m_prevIdName!=level1) || (m_prevIdRef!=contRef))
+  {
+    m_prevIdName = level1;
+    m_prevIdRef = contRef;
+
+    ref = makeFileName(contRef);
+    const char * attributes[] =
+    { "name", level1,
+      "id",   level1,
+      "ref",  ref,
+      0
+    };
+    m_index.openClose("keyword", attributes);
+  }
   /*
   <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
   */
-  QCString ref = makeRef(contRef, anchor);
+  ref = makeRef(contRef, anchor);
   QCString id(level1);
   id += "::";
   id += level2;

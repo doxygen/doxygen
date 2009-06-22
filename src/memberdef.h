@@ -72,6 +72,8 @@ class MemberDef : public Definition
               const ArgumentList *al);
    ~MemberDef(); 
     DefType definitionType() const        { return TypeMember; }
+    // move this member into a different scope
+    void moveTo(Definition *);
     
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -231,6 +233,8 @@ class MemberDef : public Definition
     MemberDef *inheritsDocsFrom() const;
     MemberDef *getGroupAlias() const;
 
+    ClassDef *category() const;
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
@@ -314,6 +318,8 @@ class MemberDef : public Definition
 
     void cacheTypedefVal(ClassDef *val,const QCString &templSpec,const QCString &resolvedType);
     void invalidateTypedefValCache();
+
+    void invalidateCachedArgumentTypes();
     
     // declaration <-> definition relation
     void setMemberDefinition(MemberDef *md);
@@ -321,6 +327,8 @@ class MemberDef : public Definition
         
     void setAnonymousUsed();
     void copyArgumentNames(MemberDef *bmd);
+
+    void setCategory(ClassDef *);
     
     //-----------------------------------------------------------------------------------
     // --- actions ----

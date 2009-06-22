@@ -1129,7 +1129,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
     }
     Doxygen::indexList.addImageFile(imgName);
     // write image and map in a table row
-    QCString mapLabel = convertNameToFile(n->m_label);
+    QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#" 
       << mapLabel << "_map\"/>" << endl;
     out << "<map name=\"" << mapLabel << "_map\" id=\"" << mapLabel << "\">" << endl;
@@ -1917,7 +1917,8 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap) // produce HTML to include the image
   {
-    QCString mapLabel = convertNameToFile(m_startNode->m_label+"_"+mapName);
+    QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
+                        escapeCharsInString(mapName,FALSE);
     out << "<center><img src=\"" << relPath << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
       << mapLabel << "\" alt=\"";
@@ -2191,7 +2192,7 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
   if (m_inverse) baseName+="_dep";
   baseName+="_incl";
   baseName=convertNameToFile(baseName);
-  QCString mapName=m_startNode->m_label.copy();
+  QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
   if (m_inverse) mapName+="dep";
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
@@ -2625,7 +2626,7 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
   QDir thisDir;
 
   QCString baseName=m_dir->getOutputFileBase()+"_dep";
-  QCString mapName=baseName;
+  QCString mapName=escapeCharsInString(baseName,FALSE);
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
 
   // todo: create check, update md5 checksum
@@ -3174,7 +3175,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
 
     if (writeImageMap)
     {
-      QCString mapLabel = convertNameToFile(baseName);
+      QCString mapLabel = escapeCharsInString(baseName,FALSE);
       t << "<center><table><tr><td><img src=\"" << relPath << imgName
         << "\" border=\"0\" alt=\"\" usemap=\"#" 
         << mapLabel << "_map\"/>" << endl;

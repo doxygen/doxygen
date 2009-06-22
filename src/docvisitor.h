@@ -77,6 +77,7 @@ class DocParamList;
 class DocInternalRef;
 class DocCopy;
 class DocText;
+class DocSimpleSectSep;
 
 /*! @brief Abstract visitor that participates in the visitor pattern.
  */
@@ -105,6 +106,7 @@ class DocVisitor
     virtual void visit(DocFormula *) = 0;
     virtual void visit(DocLinkedWord *) = 0;
     virtual void visit(DocIndexEntry *) = 0;
+    virtual void visit(DocSimpleSectSep *) = 0;
     /*! @} */
 
     /*! @name Visitor functions for internal nodes 

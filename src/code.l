@@ -410,22 +410,22 @@ static void popScope()
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
-                                  Config_getBool("SOURCE_BROWSER");
-  if (searchEngineEnabled)
-  {
-    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
-  }
+  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
+  //                                Config_getBool("SOURCE_BROWSER");
+  //if (searchEngineEnabled)
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  //}
 }
 
 static void addToSearchIndex(const char *text)
 {
-  static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
-                                  Config_getBool("SOURCE_BROWSER");
-  if (searchEngineEnabled)
-  {
-    Doxygen::searchIndex->addWord(text,FALSE);
-  }
+  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
+  //                                Config_getBool("SOURCE_BROWSER");
+  //if (searchEngineEnabled)
+  //{
+  //  Doxygen::searchIndex->addWord(text,FALSE);
+  //}
 }
 
 static void setClassScope(const QCString &name)
@@ -1928,7 +1928,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  endFontClass();
 					  BEGIN( Body );
   					}
-<Body>^[ \t]*"#"			{ 
+<Body,Bases>^[ \t]*"#"			{ 
   					  startFontClass("preprocessor");
 					  g_lastSkipCppContext = YY_START;
   					  g_code->codify(yytext);

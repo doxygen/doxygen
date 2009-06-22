@@ -337,6 +337,10 @@ void ManDocVisitor::visit(DocIndexEntry *)
 {
 }
 
+void ManDocVisitor::visit(DocSimpleSectSep *)
+{
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------

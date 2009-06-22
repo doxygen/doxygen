@@ -464,7 +464,7 @@ void HtmlHelp::createProjectFile()
    
     
     QCString indexName="index"+Doxygen::htmlFileExtension;
-    if (usingTreeIndex()) indexName="main"+Doxygen::htmlFileExtension;
+    if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+Doxygen::htmlFileExtension;
     t << "[OPTIONS]\n";
     if (!Config_getString("CHM_FILE").isEmpty())
     {

@@ -216,9 +216,9 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Polish</td>
-    <td>Piotr Kaminski<br/>Grzegorz Kowal</td>
-    <td>Piotr.Kaminski at ctm dot gdynia dot pl<br/>g_kowal at poczta dot onet dot pl</td>
-    <td>1.4.6</td>
+    <td>Piotr Kaminski<br/>Grzegorz Kowal<br/>Krzysztof Kral</td>
+    <td>Piotr.Kaminski at ctm dot gdynia dot pl<br/>g_kowal at poczta dot onet dot pl<br/>krzysztof.kral at gmail dot com</td>
+    <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Portuguese</td>
@@ -373,8 +373,9 @@ when the translator was updated.
   \hline
   Persian & Ali Nadalizadeh & {\tt\tiny nadalizadeh@gmail.com} & up-to-date \\
   \hline
-  Polish & Piotr Kaminski & {\tt\tiny Piotr.Kaminski@ctm.gdynia.pl} & 1.4.6 \\
+  Polish & Piotr Kaminski & {\tt\tiny Piotr.Kaminski@ctm.gdynia.pl} & up-to-date \\
   ~ & Grzegorz Kowal & {\tt\tiny g\_kowal@poczta.onet.pl} & ~ \\
+  ~ & Krzysztof Kral & {\tt\tiny krzysztof.kral@gmail.com} & ~ \\
   \hline
   Portuguese & Rui Godinho Lopes & {\tt\tiny ruiglopes@yahoo.com} & 1.3.3 \\
   \hline

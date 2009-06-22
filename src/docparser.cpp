@@ -257,7 +257,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
           inImage.readBlock(buffer,inImage.size());
           outImage.writeBlock(buffer,inImage.size());
           outImage.flush();
-          delete buffer;
+          delete[] buffer;
           if (type==DocImage::Html) Doxygen::indexList.addImageFile(result);
         }
         else
@@ -1544,10 +1544,10 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
       m_parent(parent), m_word(word) 
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
-  if (!g_searchUrl.isEmpty())
-  {
-    Doxygen::searchIndex->addWord(word,FALSE);
-  }
+  //if (!g_searchUrl.isEmpty())
+  //{
+  //  Doxygen::searchIndex->addWord(word,FALSE);
+  //}
 }
 
 //---------------------------------------------------------------------------
@@ -1560,10 +1560,10 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
       m_tooltip(tooltip)
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
-  if (!g_searchUrl.isEmpty())
-  {
-    Doxygen::searchIndex->addWord(word,FALSE);
-  }
+  //if (!g_searchUrl.isEmpty())
+  //{
+  //  Doxygen::searchIndex->addWord(word,FALSE);
+  //}
 }
 
 //---------------------------------------------------------------------------
@@ -3832,7 +3832,7 @@ void DocSimpleSect::accept(DocVisitor *v)
   v->visitPost(this);
 }
 
-int DocSimpleSect::parse(bool userTitle)
+int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
 {
   DBG(("DocSimpleSect::parse() start\n"));
   g_nodeStack.push(this);
@@ -3856,6 +3856,7 @@ int DocSimpleSect::parse(bool userTitle)
     ((DocPara *)m_children.last())->markLast(FALSE);
   }
   par->markLast();
+  if (needsSeparator) m_children.append(new DocSimpleSectSep(this));
   m_children.append(par);
   
   // parse the contents of the paragraph
@@ -4136,6 +4137,7 @@ int DocParamSect::parse(const QString &cmdName,bool xmlContext, Direction d)
 int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   DocSimpleSect *ss=0;
+  bool needsSeparator = FALSE;
   if (!m_children.isEmpty() &&                           // previous element
       m_children.last()->kind()==Kind_SimpleSect &&      // was a simple sect
       ((DocSimpleSect *)m_children.last())->type()==t && // of same type
@@ -4143,6 +4145,7 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   {
     // append to previous section
     ss=(DocSimpleSect *)m_children.last();
+    needsSeparator = TRUE;
   }
   else // start new section
   {
@@ -4156,7 +4159,7 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   }
   else
   {
-    rv = ss->parse(t==DocSimpleSect::User);
+    rv = ss->parse(t==DocSimpleSect::User,needsSeparator);
   }
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
@@ -6059,7 +6062,7 @@ void DocRoot::parse()
 
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,
-                            const char *input,bool indexWords,
+                            const char *input,bool /*indexWords*/,
                             bool isExample, const char *exampleName,
                             bool singleLine, bool linkFromIndex)
 {
@@ -6071,7 +6074,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //g_token = new TokenInfo;
 
   // store parser state so we can re-enter this function if needed
-  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   docParserPushContext();
 
   if (ctx &&
@@ -6098,9 +6101,9 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   }
   //printf("g_context=%s\n",g_context.data());
 
+#if 0 // needed for PHP based search engine, now obsolete
   if (indexWords && md && Config_getBool("SEARCHENGINE"))
   {
-      
     g_searchUrl=md->getOutputFileBase();
     Doxygen::searchIndex->setCurrentDoc(
         (fortranOpt?theTranslator->trSubprogram(TRUE,TRUE):theTranslator->trMember(TRUE,TRUE))+" "+md->qualifiedName(),
@@ -6174,6 +6177,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_searchUrl="";
   }
+#endif
 
   g_fileName = fileName;
   g_relPath = (!linkFromIndex && ctx) ? 
@@ -6295,18 +6299,18 @@ void docFindSections(const char *input,
 
 void initDocParser()
 {
-  if (Config_getBool("SEARCHENGINE"))
-  {
-    Doxygen::searchIndex = new SearchIndex;
-  }
-  else
-  {
-    Doxygen::searchIndex = 0;
-  }
+//  if (Config_getBool("SEARCHENGINE"))
+//  {
+//    Doxygen::searchIndex = new SearchIndex;
+//  }
+//  else
+//  {
+//    Doxygen::searchIndex = 0;
+//  }
 }
 
 void finializeDocParser()
 {
-  delete Doxygen::searchIndex;
+//  delete Doxygen::searchIndex;
 }
 

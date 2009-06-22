@@ -449,6 +449,8 @@ class MemberDefImpl
     bool docsForDefinition;   // TRUE => documentation block is put before
                               //         definition.
                               // FALSE => block is put before declaration.
+
+    ClassDef *category;
 };
 
 MemberDefImpl::MemberDefImpl() :
@@ -460,7 +462,8 @@ MemberDefImpl::MemberDefImpl() :
     tArgList(0),
     typeConstraints(0),
     defTmpArgLists(0),
-    classSectionSDict(0)
+    classSectionSDict(0),
+    category(0)
 {
 }
 
@@ -633,6 +636,24 @@ MemberDef::MemberDef(const char *df,int dl,
   m_impl->init(this,t,a,e,p,v,s,r,mt,tal,al);
   m_flushPending = FALSE;
 }
+
+void MemberDef::moveTo(Definition *scope)
+{
+   setOuterScope(scope);
+   if (scope->definitionType()==Definition::TypeClass)
+   {
+     m_impl->classDef = (ClassDef*)scope;
+   }
+   else if (scope->definitionType()==Definition::TypeFile)
+   {
+     m_impl->fileDef = (FileDef*)scope;
+   }
+   else if (scope->definitionType()==Definition::TypeNamespace)
+   {
+     m_impl->nspace = (NamespaceDef*)scope;
+   }
+}
+
 
 /*! Destroys the member definition. */
 MemberDef::~MemberDef()
@@ -1176,12 +1197,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   // write search index info
-  if (Config_getBool("SEARCHENGINE") && !isReference())
-  {
-    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-    Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
-  }
+  //if (Config_getBool("SEARCHENGINE") && !isReference())
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //  Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
+  //}
 
   QCString cname  = d->name();
   QCString cfname = getOutputFileBase();
@@ -1496,7 +1517,9 @@ void MemberDef::writeDeclaration(OutputList &ol,
      )
   {
     ol.startMemberDescription();
-    ol.parseDoc(briefFile(),briefLine(),getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE);
+    ol.parseDoc(briefFile(),briefLine(),
+                getOuterScope()?getOuterScope():d,this,briefDescription(),
+                TRUE,FALSE,0,TRUE,FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -3846,6 +3869,19 @@ void MemberDef::setMemberDeclaration(MemberDef *md)
   m_impl->memDec=md; 
 }
 
+ClassDef *MemberDef::category() const
+{
+  makeResident();
+  return m_impl->category;
+}
+
+void MemberDef::setCategory(ClassDef *def)
+{
+  makeResident();
+  m_impl->category = def;
+}
+
+
 void MemberDef::cacheTypedefVal(ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
 {
   makeResident();
@@ -3938,6 +3974,7 @@ void MemberDef::flushToDisk() const
   marshalBool         (Doxygen::symbolStorage,m_impl->tspec);
   marshalBool         (Doxygen::symbolStorage,m_impl->groupHasDocs);
   marshalBool         (Doxygen::symbolStorage,m_impl->docsForDefinition);
+  marshalObjPointer   (Doxygen::symbolStorage,m_impl->category);
   marshalUInt(Doxygen::symbolStorage,END_MARKER);
 
   // function doesn't modify the object conceptually but compiler doesn't know this.
@@ -4035,6 +4072,7 @@ void MemberDef::loadFromDisk() const
   m_impl->tspec                   = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->groupHasDocs            = unmarshalBool         (Doxygen::symbolStorage);
   m_impl->docsForDefinition       = unmarshalBool         (Doxygen::symbolStorage);
+  m_impl->category                = (ClassDef*)unmarshalObjPointer   (Doxygen::symbolStorage);
   marker = unmarshalUInt(Doxygen::symbolStorage);
   assert(marker==END_MARKER);
 }
@@ -4150,4 +4188,23 @@ void MemberDef::copyArgumentNames(MemberDef *bmd)
   }
 }
 
+static void invalidateCachedTypesInArgumentList(ArgumentList *al)
+{
+  if (al)
+  {
+    ArgumentListIterator ali(*al);
+    Argument *a;
+    for (ali.toFirst();(a=ali.current());++ali)
+    {
+      a->canType.resize(0);
+    }
+  }
+}
+
+void MemberDef::invalidateCachedArgumentTypes()
+{
+  makeResident();
+  invalidateCachedTypesInArgumentList(m_impl->defArgList);
+  invalidateCachedTypesInArgumentList(m_impl->declArgList);
+}
 

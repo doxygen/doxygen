@@ -210,6 +210,11 @@ class PrintDocVisitor : public DocVisitor
       indent_leaf();
       printf("<indexentry>%s</indexentry\n",i->entry().data());
     }
+    void visit(DocSimpleSectSep *)
+    {
+      indent_leaf();
+      printf("<simplesectsep/>");
+    }
 
     //--------------------------------------
     

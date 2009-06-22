@@ -537,6 +537,10 @@ void RTFDocVisitor::visit(DocIndexEntry *i)
   m_lastIsPara=FALSE;
 }
 
+void RTFDocVisitor::visit(DocSimpleSectSep *)
+{
+}
+
 //--------------------------------------
 // visitor functions for compound nodes
 //--------------------------------------
