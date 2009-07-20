@@ -104,6 +104,7 @@ static QCString           g_blockName;
 static int                g_condCtx;
 static bool               g_skip;
 static QStack<bool>       g_condStack;
+static bool               g_insideCS; // C# has simpler preprocessor
 
 static bool               g_lexInit = FALSE;
 
@@ -118,6 +119,7 @@ static void setFileName(const char *name)
   g_yyFileName=convertToQCString(fi.absFilePath());
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
   if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
+  g_insideCS = g_yyFileName.right(3)==".cs";
 }
 
 static void incrLevel()
@@ -1817,7 +1819,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_insideComment=FALSE;
 					  BEGIN(DefineText); 
   					}
-<DefName>{ID}/{B}*"\n"			{
+<DefName>{ID}/{B}*"\n"			{ // bare define
   					  g_argDict = 0;
 					  g_defArgs = -1;
 					  g_defName = yytext;
@@ -1831,6 +1833,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    outputArray(tmp.data(),tmp.length());
 					    g_quoteArg=FALSE;
 					    g_insideComment=FALSE;
+					    if (g_insideCS) g_defText="1"; // for C#, use "1" as define text
 					    BEGIN(DefineText);
 					  }
 					  else // define is a guard => hide

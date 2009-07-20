@@ -898,6 +898,14 @@ when you change the font size after a successful doxygen run you need
 to manually remove any form_*.png images from the HTML output directory 
 to force them to be regenerated. 
 ' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'/>
+    <option type='bool' id='SEARCHENGINE' docs='
+When the SEARCHENGINE tag is enable doxygen will generate a search box
+for the HTML output. The underlying search engine uses javascript 
+and DHTML and should work on any modern browser. Note that when using
+HTML help (GENERATE_HTMLHELP) or Qt help (GENERATE_QHP) 
+there is already a search function so this one should typically 
+be disabled.
+' defval='1' depends='GENERATE_HTML'/>
   </group>
   <group name='LaTeX' docs='configuration options related to the LaTeX output'>
     <option type='bool' id='GENERATE_LATEX' docs='
@@ -1358,12 +1366,6 @@ If the DOT_CLEANUP tag is set to YES (the default) Doxygen will
 remove the intermediate dot files that are used to generate 
 the various graphs. 
 ' defval='1' depends='HAVE_DOT'/>
-  </group>
-  <group name='Search' docs='Options related to the search engine'>
-    <option type='bool' id='SEARCHENGINE' docs='
-The SEARCHENGINE tag specifies whether or not a search engine should be 
-used. If set to NO the values of all tags below this one will be ignored. 
-' defval='0'/>
     <option type='obsolete' id='SHOW_USED_FILES'/>
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>

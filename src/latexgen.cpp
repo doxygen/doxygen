@@ -793,9 +793,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
               if (isFirst)
               {
                 t << "}\n\\input{" << fd->getOutputFileBase() << "}\n";
-                if (sourceBrowser && m_prettyCode)
+                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
+                  t << "\\include{" << fd->getSourceFileBase() << "}\n";
                 }
                 isFirst=FALSE;
               }
@@ -803,10 +803,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
               {
                 if (compactLatex) t << "\\input" ; else t << "\\include";
                 t << "{" << fd->getOutputFileBase() << "}\n";
-                if (sourceBrowser && m_prettyCode)
+                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  if (compactLatex) t << "\\input" ; else t << "\\include";
-                  t << "{" << fd->getSourceFileBase() << "}\n";
+                  t << "\\include{" << fd->getSourceFileBase() << "}\n";
                 }
               }
             }

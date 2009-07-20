@@ -17,11 +17,12 @@
     color: #999999;
     background-color: #FFFFFF;
     font-style: normal;
-    cursor: pointer;
+    cursor: text;
     padding: 0px 1px;
     margin: 0px 6px 0px 0px;
     border: none;
     outline: none;
+    vertical-align: middle;
 }
 #MSearchBox.MSearchBoxInactive:hover #MSearchField {
     background-color: #FFFFFF;
@@ -41,14 +42,26 @@
     display : inline;
     background : none;
     font: 9pt Verdana, sans-serif;
-    margin-right: -6px;
-    padding: 0;
     border: none;
     margin: 0px 0px 0px 6px;
-    vertical-align: bottom;
+    vertical-align: middle;
     padding: 0px 0px;
-    background-color: #84B0C7;
 }
+
+#MSearchClose {
+    float : none;
+    display : none;
+    background : none;
+    border: none;
+    margin: 0px 4px 0px 0px;
+    padding: 0px 0px;
+    outline: none;
+}
+
+#MSearchCloseImg {
+    vertical-align: middle;
+}
+
 .MSearchBoxLeft {
     display: block;
     text-align: left;
@@ -108,7 +121,7 @@ a.SelectItem {
     padding-left:   6px;
     padding-right: 12px;
 }
-a.SelectItem:visited,
+a.SelectItem:focus,
 a.SelectItem:active {
     color: #000000; 
     outline-style: none;
@@ -135,26 +148,6 @@ iframe#MSearchResults {
     left: 0; top: 0;
     border: 1px solid #000000;
     background-color: #EEF3F5;
-    }
-#MSearchResultsWindowClose {
-    font-weight: bold;
-    font-size: 8pt;
-    display: block;
-    padding: 0px;
-    margin: 0px;
-    text-align: right;
-    text-decoration: none;
-    outline-style: none;
-    }
-#MSearchResultsWindowClose:link,
-#MSearchResultsWindowClose:visited {
-    color: #8A8A8A;
-    background-color: #8A8A8A;
-    }
-#MSearchResultsWindowClose:active,
-#MSearchResultsWindowClose:hover {
-    color: #9E9E9E;
-    background-color: #9E9E9E;
     }
 
 /* ----------------------------------- */
@@ -196,6 +189,11 @@ a.SRScope {
     font-family: Arial, Verdana, sans-serif;
     text-decoration: none;
     outline: none;
+}
+
+a.SRSymbol:focus, a.SRSymbol:active,
+a.SRScope:focus, a.SRScope:active {
+    text-decoration: underline;
 }
 
 .SRPage .SRStatus {

@@ -157,12 +157,8 @@ a browser that supports cascading style sheets (CSS) should be used
 generated output). 
 
 Some of the features the HTML section (such as 
-\ref cfg_generate_treeview "GENERATE_TREEVIEW") require a browser that
-supports DHTML and Javascript. 
-
-If you plan to use the search engine (see 
-\ref cfg_searchengine "SEARCHENGINE"), you should view the HTML output 
-via a PHP-enabled web server (e.g. apache with the PHP module installed).
+\ref cfg_generate_treeview "GENERATE_TREEVIEW" or the search engine) 
+require a browser that supports DHTML and Javascript. 
 
 \subsection latex_out LaTeX output
 \addindex LaTeX

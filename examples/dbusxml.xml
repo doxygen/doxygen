@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!-- Comment -->
+<!--*< File comment -->
+<node name="/SomeNode" xmlns:dx="http://psiamp.org/dtd/doxygen_dbusxml.dtd">
+  <!--* test struct outside a namespace and interface -->
+  <dx:struct name="StructOutsideNamespace">
+    <!--* member 1 -->
+    <dx:member name="member1" type="s"/>
+    <!--* complex member 1 -->
+    <dx:member name="complexMember1" type="(ssu)"/>
+  </dx:struct>
+
+  <!--* Test flag set -->
+  <dx:flagset name="flagset">
+    <!--* Flag 1 of flagset. -->
+    <dx:value name="FLAG1"/>
+  </dx:flagset>
+
+  <!--* namespace comment -->
+  <dx:namespace name="SomeNamespace">
+    <!--* struct inside a namespace -->
+    <dx:struct name="StructInNamespace">
+       <!--* member 2 -->
+       <dx:member name="member2" type="s"/>
+    </dx:struct>
+  </dx:namespace>
+  <!--* Documentation on the interface -->
+  <interface name="nl.stack.doxygen.test.interface">
+    <!--* Test Enum documentation -->
+    <dx:enum name="TestEnum">
+      <!--* key 1 with value 13 -->
+      <dx:value name="KEY1" value="13"/>
+      <!--* key 2 without a value -->
+      <dx:value name="KEY2"/>
+    </dx:enum>
+
+    <!--* struct inside a interface -->
+    <dx:struct name="StructInInterface">
+      <!--* member 3 -->
+      <dx:member name="member3" type="s"/>
+      <!--* Struct in a struct -->
+      <dx:struct name="StructInAStruct">
+        <!--* member4 -->
+        <dx:member name="member4" type="s"/>
+      </dx:struct>
+      <!--* struct member -->
+      <dx:member name="structMembor" type="(s)" named-type="StructInAStruct"/>
+    </dx:struct>
+    <!--* Document method
+
+          Some extended documentation for the method.
+
+          @param[in] input blah.
+          @param[out] output blub
+     -->
+    <method name="method">
+      <arg direction="in" name="input" type="(s(s))" named-type="::nl::stack::doxygen::test::interface::StructInInterface"/>
+      <arg direction="out" type="v" name="output"/>
+    </method>
+
+    <signal name="signal">
+      <!--*< Documentation for signal.
+
+             @param parameter some parameter.
+        -->
+      <arg name="parameter" type="s"/>
+    </signal>
+
+    <!--* property documentation -->
+    <property name="property" type="s" access="readwrite"/>
+
+    <!--* property documentation read-only -->
+    <property name="propertyRead" type="s" access="read"/>
+    <!--* property documentation write-only -->
+    <property name="propertyWrite" type="s" access="write"/>
+  </interface>
+</node>
+<!-- vim:set sw=2 sts=2 et ft=xml: -->

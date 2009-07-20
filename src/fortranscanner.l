@@ -171,7 +171,7 @@ static int yyread(char *buf,int max_size);
 static void startCommentBlock(bool);
 static void handleCommentBlock(const QCString &doc,bool brief);
 static void addCurrentEntry();
-static void addModule(const char *name);
+static void addModule(const char *name, bool isModule=FALSE);
 static void addSubprogram(const char *text);
 static void addInterface(QCString name);
 static Argument *addFortranParameter(const QCString &type,const QCString &name, const QCString docs);
@@ -242,6 +242,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 %x	Start
 %x	Comment
 %x      Module
+%x      Program
 %x      ModuleBody
 %x	ModuleBodyContains
 %x	AttributeList
@@ -437,7 +438,10 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 
  /*------ module handling ------------------------------------------------------------*/ 
 <Start>module|program{BS_}             {  //
-					    yy_push_state(Module);
+					    if(yytext[0]=='m' || yytext[0]=='M')
+					      yy_push_state(Module);
+					    else
+					      yy_push_state(Program);
                                             defaultProtection = Public;
                                        }
 <Start,ModuleBody,ModuleBodyContains>^{BS}"end"({BS}(module|program)({BS_}{ID})?)?{BS}/(\n|!) { // end module	
@@ -448,7 +452,12 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					    yy_pop_state();
                                        }
 <Module>{ID}                           {  
-                                            addModule(yytext);
+                                            addModule(yytext, TRUE);
+					    BEGIN(ModuleBody);
+                                       }
+
+<Program>{ID}                           {  
+                                            addModule(yytext, FALSE);
 					    BEGIN(ModuleBody);
                                        }
 
@@ -1468,11 +1477,15 @@ static void addCurrentEntry()
 
 static int max(int a, int b) {return a>b?a:b;}
 
-static void addModule(const char *name)
+static void addModule(const char *name, bool isModule)
 {
   //fprintf(stderr, "0=========> got module %s\n", name);
 
-  current->section = Entry::NAMESPACE_SEC;
+  if (isModule)
+    current->section = Entry::NAMESPACE_SEC;
+  else
+    current->section = Entry::FUNCTION_SEC;
+
   if (name!=NULL)
   {
     current->name = name;

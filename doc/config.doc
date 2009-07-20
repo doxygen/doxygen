@@ -1431,6 +1431,26 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If non-empty doxygen will try to run qhelpgenerator on the generated
  .qhp file.
 
+\anchor cfg_searchengine
+<dt>\c SEARCHENGINE <dd>
+ \addindex SEARCHENGINE
+ The \c SEARCHENGINE tag specifies whether or not the HTML output should
+ contain a search function. Possible values are \c YES and \c NO. 
+ If set to YES, doxygen will produce a search index, and a search box at
+ the top of each page (or in the side bar in case GENERATE_TREE is enabled).
+ The search engine is implemented using javascript and DHTML and should
+ work on any modern browser. 
+
+ It is possible to search using the keyboard;
+ to jump to the search box use access key + S (what the access key is
+ depends on the OS and browser, but it is typically CTRL, ALT/option, or both).
+ Inside the search box use the cursor down key to jump into the search 
+ results window, the results can be navigated using the cursor keys.
+ Press Enter to select an item or escape to cancel the search. The
+ filter options can be selected when the cursor is inside the search box
+ by pressing Shift+cursor down. Also here use the cursor keys to 
+ select a filter and enter or escape to activate or cancel the filter option.
+
 <!--
 \anchor cfg_qthelp_file 
 <dt>\c QTHELP_FILE <dd>
@@ -1488,7 +1508,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  the \ref cfg_project_name "project name".
 
 \anchor cfg_use_inline_trees
-<dt>\c USE_INLINE_TREES
+<dt>\c USE_INLINE_TREES <dd>
  \addindex USE_INLINE_TREES
 By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories, 
 and Class Hierarchy pages using a tree view instead of an ordered list.
@@ -2177,21 +2197,6 @@ The default size is 10pt.
 If the \c DOT_CLEANUP tag is set to \c YES (the default) doxygen will
 remove the intermediate dot files that are used to generate the various graphs.
 
-
-</dl>
-\section config_search Search engine options
-\anchor cfg_searchengine
-<dl>
-
-<dt>\c SEARCHENGINE <dd>
- \addindex SEARCHENGINE
- The \c SEARCHENGINE tag specifies whether or not the HTML output should
- contain a search facility. Possible values are \c YES and \c NO. 
- If set to YES, doxygen will produce a search index and a PHP script
- to search through the index. For this to work the documentation should
- be viewed via a web-server running PHP version 4.1.0 or higher.
- (See http://www.php.net/manual/en/installation.php for installation 
- instructions).
 
 </dl>
 <h2>Examples</h2>

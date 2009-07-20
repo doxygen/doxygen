@@ -731,10 +731,12 @@ void FTVHelp::generateTreeView(QString* OutString)
       t << "      --></script>\n";
       t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
       t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
-      t << "      <input type=\"text\" id=\"MSearchField\" value=\"Search\" \n";
+      t << "      <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
+        << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"search/close.png\" alt=\"\"/></a>\n";
+      t << "      <input type=\"text\" id=\"MSearchField\" value=\"Search\" accesskey=\"S\"\n";
       t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
       t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
-      t << "           onkeyup=\"searchBox.OnSearchFieldChange()\"/>\n";
+      t << "           onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
       t << "      </span><span class=\"MSearchBoxRight\">\n";
       t << "      <img id=\"MSearchSelect\" src=\"search/search.png\"\n";
       t << "           onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";

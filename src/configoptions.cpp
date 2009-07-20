@@ -1323,6 +1323,16 @@ void addConfigOptions(Config *cfg)
                  8,50,10
                 );
   ci->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
+                 "SEARCHENGINE",
+                 "When the SEARCHENGINE tag is enable doxygen will generate a search box for the HTML output. The underlying search engine uses javascript \n"
+                 "and DHTML and should work on any modern browser. Note that when using HTML help (GENERATE_HTMLHELP) or Qt help (GENERATE_QHP) \n"
+                 "there is already a search function so this one should typically \n"
+                 "be disabled.",
+                 TRUE
+                );
+  cb->addDependency("GENERATE_HTML");
   //---------------------------------------------------------------------------
   cfg->addInfo("LaTeX","configuration options related to the LaTeX output");
   //---------------------------------------------------------------------------
@@ -2072,17 +2082,6 @@ void addConfigOptions(Config *cfg)
                  TRUE
                 );
   cb->addDependency("HAVE_DOT");
-  //---------------------------------------------------------------------------
-  cfg->addInfo("Search","Options related to the search engine");
-  //---------------------------------------------------------------------------
-
-  //----
-  cb = cfg->addBool(
-                 "SEARCHENGINE",
-                 "The SEARCHENGINE tag specifies whether or not a search engine should be \n"
-                 "used. If set to NO the values of all tags below this one will be ignored.",
-                 FALSE
-                );
   //----
   cfg->addObsolete("SHOW_USED_FILES");
   //----

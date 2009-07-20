@@ -1713,6 +1713,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <FindMemberName>{SCOPENAME}{BN}*/"<"	{
   					  sharpCount=0;
+					  roundCount=0;
 					  lineCount();
   					  current->name+=((QCString)yytext).stripWhiteSpace();
 					  //current->memberSpec.resize(0);
@@ -1722,7 +1723,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    BEGIN( EndTemplate );
   					}
-<EndTemplate>"<<"			{
+<ClassTemplSpec,EndTemplate>"<<"	{
   					  current->name+=yytext;
   					  // *currentTemplateSpec+=yytext; 
   					}
@@ -1731,8 +1732,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  // *currentTemplateSpec+='<'; 
 					  sharpCount++; 
 					}
-<EndTemplate>">>"			{
-  					  if (insideJava || insideCS || insideCli)
+<ClassTemplSpec,EndTemplate>">>"	{
+  					  if (insideJava || insideCS || insideCli || roundCount==0)
 					  {
 					    unput('>');
 					    unput(' ');
@@ -1781,6 +1782,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN(FindMemberName);
 					  }
   					}
+<ClassTemplSpec,EndTemplate>"("         { current->name+=*yytext;
+                                          roundCount++; 
+                                        }
+<ClassTemplSpec,EndTemplate>")"         { current->name+=*yytext;
+                                          if (roundCount>0) roundCount--; 
+                                        }
 <EndTemplate>.				{ 
   					  current->name+=*yytext;
   					  // *currentTemplateSpec+=*yytext; 
@@ -4132,7 +4139,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      current->doc.resize(0);
 					    }
 #endif
-					    if (current->sli) // copy special list items
+					    if (current->sli && previous) // copy special list items
 					    {
 					      QListIterator<ListItemInfo> li(*current->sli);
 					      ListItemInfo *lii;
@@ -4315,6 +4322,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  else // C++ template specialization
 					  {
+					    roundCount=0;
 					    BEGIN( ClassTemplSpec );
 					  }
 					}
@@ -4770,9 +4778,22 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
 					    REJECT;
 					  }
-					  else // for C++ >> is a bitshift operator and > > would end a nested template
+					  else // for C++ >> is a bitshift 
+					       // operator and > > would end 
+					       // a nested template.
+					       // We require the bitshift to be enclosed in braces.
+					       // See http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1757.html
 					  {
-                                            *specName += yytext; 
+					    if (roundCount>0)
+					    {
+                                              *specName += yytext; 
+					    }
+					    else
+					    {
+  					      unput('>');
+  					      unput(' ');
+  					      unput('>');
+					    }
 					  }
                                         }
 <Specialization>"typename"{BN}+		{ lineCount(); }
