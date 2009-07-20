@@ -10,16 +10,16 @@
 # See the GNU General Public License for more details.
 # 
 
-QMAKE = qmake
+QMAKE=qmake
 
 all: Makefile.doxywizard  
 	$(MAKE) -f Makefile.doxywizard 
 
 Makefile.doxywizard: doxywizard.pro
-	$(QTDIR)/bin/qmake doxywizard.pro -o Makefile.doxywizard
+	$(QMAKE) doxywizard.pro -o Makefile.doxywizard
 
 qmake: 
-	$(QTDIR)/bin/qmake doxywizard.pro -o Makefile.doxywizard
+	$(QMAKE) doxywizard.pro -o Makefile.doxywizard
 
 clean: Makefile.doxywizard 
 	$(MAKE) -f Makefile.doxywizard clean 

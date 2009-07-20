@@ -169,6 +169,7 @@ template<class T> class CompAccept
 {
   public:
     CompAccept() { m_children.setAutoDelete(TRUE); }
+    virtual ~CompAccept() {}
     void accept(T *obj, DocVisitor *v) 
     { 
       v->visitPre(obj); 

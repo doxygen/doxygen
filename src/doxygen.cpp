@@ -71,6 +71,7 @@
 #include "htags.h"
 #include "pyscanner.h"
 #include "fortranscanner.h"
+#include "dbusxmlscanner.h"
 #include "code.h"
 #include "objcache.h"
 #include "store.h"
@@ -122,7 +123,6 @@ QTextStream      Doxygen::tagFile;
 NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
-double           Doxygen::sysElapsedTime = 0.0;
 QTime            Doxygen::runningTime;
 //SearchIndex *    Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
@@ -2924,10 +2924,23 @@ static void buildFunctionList(EntryNav *rootNav)
             //printf("matching arguments for %s%s %s%s\n",
             //    md->name().data(),md->argsString(),rname.data(),argListToString(root->argList).data());
             LockingPtr<ArgumentList> mdAl = md->argumentList();
+            LockingPtr<ArgumentList> mdTempl = md->templateArguments();
+
+            // in case of template functions, we need to check if the
+            // functions have the same number of template parameters
+            bool sameNumTemplateArgs = TRUE;
+            if (mdTempl!=0 && root->tArgLists)
+            {
+              if (mdTempl->count()!=root->tArgLists->getLast()->count())
+              {
+                sameNumTemplateArgs = FALSE;
+              }
+            }
             if ( 
                 matchArguments2(md->getOuterScope(),mfd,mdAl.pointer(),
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
-                                FALSE)
+                                FALSE) &&
+                sameNumTemplateArgs
                )
             {
               GroupDef *gd=0;
@@ -4931,6 +4944,22 @@ static bool findGlobalMember(EntryNav *rootNav,
                           rnd ? rnd : Doxygen::globalScope,fd,root->argList,
                           FALSE);
 
+        // for template members we need to check if the number of
+        // template arguments is the same, otherwise we are dealing with
+        // different functions.
+        if (matching && root->tArgLists)
+        {
+          LockingPtr<ArgumentList> mdTempl = md->templateArguments();
+          if (mdTempl!=0)
+          {
+            if (root->tArgLists->getLast()->count()!=mdTempl->count())
+            {
+              matching=FALSE;
+            }
+          }
+        }
+
+
         //printf("%s<->%s\n",
         //    argListToString(md->argumentList()).data(),
         //    argListToString(root->argList).data());
@@ -6572,7 +6601,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
               SrcLangExt sle;
               if (rootNav->fileDef() &&
                   ( (sle=getLanguageFromFileName(rootNav->fileDef()->name()))==SrcLangExt_CSharp
-                  || sle==SrcLangExt_Java
+                  || sle==SrcLangExt_Java || sle==SrcLangExt_XML
                   )
                  )
               {
@@ -9128,6 +9157,7 @@ void initDoxygen()
   Doxygen::parserManager->registerParser("python",  new PythonLanguageScanner);
   Doxygen::parserManager->registerParser("fortran", new FortranLanguageScanner);
   Doxygen::parserManager->registerParser("vhdl",    new VHDLLanguageScanner);
+  Doxygen::parserManager->registerParser("dbusxml", new DBusXMLScanner);
 
   // register any additional parsers here...
 
@@ -10539,7 +10569,7 @@ void generateOutput()
   {
     msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
          ((double)Doxygen::runningTime.elapsed())/1000.0,
-         Doxygen::sysElapsedTime
+         portable_getSysElapsedTime()
         );
   }
 

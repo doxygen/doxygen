@@ -2532,6 +2532,7 @@ void writeSearchIndex()
 
           SDict<QList<Definition> >::Iterator li(g_searchIndexSymbols[i][p]);
           QList<Definition> *dl;
+          int itemCount=0;
           for (li.toFirst();(dl=li.current());++li)
           {
             Definition *d = dl->first();
@@ -2544,8 +2545,18 @@ void writeSearchIndex()
               MemberDef  *md   = 0;
               bool isMemberDef = d->definitionType()==Definition::TypeMember;
               if (isMemberDef) md = (MemberDef*)d;
-              t << "  <a class=\"SRSymbol\" href=\"../" << 
-                d->getOutputFileBase() << Doxygen::htmlFileExtension;
+              t << "  <a id=\"Item" << itemCount << "\" "
+                << "onkeydown=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "onkeypress=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "onkeyup=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+              //  << "onkeydown=\"return true\" "
+              //  << "onkeypress=\""
+              //  << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "class=\"SRSymbol\" href=\"../" 
+                << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               if (isMemberDef)
               {
                 t << "#" << ((MemberDef *)d)->anchor();
@@ -2575,7 +2586,18 @@ void writeSearchIndex()
             }
             else // multiple items with the same name
             {
-              t << "  <a class=\"SRSymbol\" href=\"javascript:searchResults.Toggle('SR_"
+              t << "  <a id=\"Item" << itemCount << "\" "
+                << "onkeydown=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "onkeypress=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "onkeyup=\""
+                << "return searchResults.Nav(event," << itemCount << ")\" "
+              //  << "onkeydown=\"return true\" "
+              //  << "onkeypress=\""
+              //  << "return searchResults.Nav(event," << itemCount << ")\" "
+                << "class=\"SRSymbol\" "
+                << "href=\"javascript:searchResults.Toggle('SR_"
                 << searchId(d->localName()) << "')\">" 
                 << convertToXML(d->localName()) << "</a>" << endl;
               t << "  <div class=\"SRChildren\">" << endl;
@@ -2583,6 +2605,7 @@ void writeSearchIndex()
               QListIterator<Definition> di(*dl);
               bool overloadedFunction = FALSE;
               Definition *prevScope = 0;
+              int childCount=0;
               for (di.toFirst();(d=di.current());)
               {
                 ++di;
@@ -2594,7 +2617,22 @@ void writeSearchIndex()
                 if (isMemberDef) md = (MemberDef*)d;
                 if (next) nextScope = next->getOuterScope();
 
-                t << "    <a class=\"SRScope\" href=\"../" << 
+                t << "    <a id=\"Item" << itemCount << "_c" 
+                  << childCount << "\" "
+                  << "onkeydown=\""
+                  << "return searchResults.NavChild(event," 
+                  << itemCount << "," << childCount << ")\" "
+                  << "onkeypress=\""
+                  << "return searchResults.NavChild(event," 
+                  << itemCount << "," << childCount << ")\" "
+                  << "onkeyup=\""
+                  << "return searchResults.NavChild(event," 
+                  << itemCount << "," << childCount << ")\" "
+                //  << "onkeydown=\"return true\" "
+                //  << "onkeypress=\""
+                //  << "return searchResults.NavChild(event," 
+                //  << itemCount << "," << childCount << ")\" "
+                  << "class=\"SRScope\" href=\"../" << 
                   d->getOutputFileBase() << Doxygen::htmlFileExtension;
                 if (isMemberDef)
                 {
@@ -2663,11 +2701,13 @@ void writeSearchIndex()
                 }
                 t << "</a>" << endl;
                 prevScope = scope;
+                childCount++;
               }
               t << "  </div>" << endl; // SRChildren
             }
             t << " </div>" << endl; // SREntry
             t << "</div>" << endl; // SRResult
+            itemCount++;
           }
           // TODO: translate "Searching"
           t << "<div class=\"SRStatus\" id=\"Searching\">Searching...</div>" << endl;
@@ -2709,23 +2749,40 @@ void writeSearchIndex()
       t << "var indexSectionsWithContent =" << endl;
       t << "{" << endl;
       bool first=TRUE;
+      int j=0;
       for (i=0;i<NUM_SEARCH_INDICES;i++)
       {
         if (g_searchIndexCount[i]>0)
         {
           if (!first) t << "," << endl;
-          t << "  \"" << g_searchIndexName[i] << "\": \"";
+          t << "  " << j << ": \"";
           for (p=32;p<MEMBER_INDEX_ENTRIES;p++)
           {
             t << (g_searchIndexSymbols[i][p].count()>0 ? "1" : "0");
           }
           t << "\"";
           first=FALSE;
+          j++;
         }
       }
       if (!first) t << "\n";
       t << "};" << endl << endl;
-
+      t << "var indexSectionNames =" << endl;
+      t << "{" << endl;
+      first=TRUE;
+      j=0;
+      for (i=0;i<NUM_SEARCH_INDICES;i++)
+      {
+        if (g_searchIndexCount[i]>0)
+        {
+          if (!first) t << "," << endl;
+          t << "  " << j << ": \"" << g_searchIndexName[i] << "\"";
+          first=FALSE;
+          j++;
+        }
+      }
+      if (!first) t << "\n";
+      t << "};" << endl << endl;
       t << search_script;
     }
   }
@@ -2768,8 +2825,7 @@ void writeSearchCategories(QTextStream &t)
     if (g_searchIndexCount[i]>0)
     {
       t << "<a class=\"SelectItem\" href=\"javascript:void(0)\" "
-        << "onclick=\"searchBox.OnSelectItem(" << j << ",'" 
-        << g_searchIndexName[i] << "')\">"
+        << "onclick=\"searchBox.OnSelectItem(" << j << ")\">"
         << "<span class=\"SelectionMark\">&nbsp;</span>"
         << convertToXML(map.categoryLabel[i])
         << "</a>";

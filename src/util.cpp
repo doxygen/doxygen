@@ -305,7 +305,8 @@ int guessSection(const char *name)
       n.right(4)==".ixx"  ||
       n.right(4)==".ipp"  ||
       n.right(4)==".i++"  ||
-      n.right(4)==".inl"
+      n.right(4)==".inl"  ||
+      n.right(4)==".xml"
      ) return Entry::SOURCE_SEC;
   if (n.right(2)==".h"   || // header
       n.right(3)==".hh"  ||
@@ -6069,22 +6070,6 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
 void filterLatexString(QTextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem)
 {
-#if 0
-  static bool isCzech         = theTranslator->idLanguage()=="czech";
-  static bool isSerbian       = theTranslator->idLanguage()=="serbian";
-  static bool isJapanese      = theTranslator->idLanguage()=="japanese" ||
-    theTranslator->idLanguage()=="japanese-en";
-  static bool isKorean        = theTranslator->idLanguage()=="korean" ||
-    theTranslator->idLanguage()=="korean-en";
-  static bool isRussian       = theTranslator->idLanguage()=="russian";
-  static bool isUkrainian     = theTranslator->idLanguage()=="ukrainian";
-  static bool isSlovene       = theTranslator->idLanguage()=="solvene";
-  static bool isChinese       = theTranslator->idLanguage()=="chinese" || 
-    theTranslator->idLanguage()=="chinese-traditional";
-  static bool isLatin2        = theTranslator->idLanguageCharset()=="iso-8859-2";
-  static bool isGreek         = theTranslator->idLanguage()=="greek";
-  //printf("filterLatexString(%s)\n",str);
-#endif
   if (str)
   {
     const unsigned char *p=(const unsigned char *)str;
@@ -6104,25 +6089,6 @@ void filterLatexString(QTextStream &t,const char *str,
           case '_':  t << "\\_"; break;
           default: 
                      t << (char)c;
-#if 0
-                     {
-                       // Some languages use wide characters
-                       if (c>=128 && (isJapanese || isKorean || isChinese || isSerbian))
-                       { 
-                         t << (char)c;
-                         if (*p)  
-                         {
-                           c = *p++;
-                           t << (char)c;
-                         }
-                       }
-                       else
-                       {
-                         t << (char)c; 
-                       }
-                       break;
-                     }
-#endif
         }
       }
       else
@@ -6155,10 +6121,7 @@ void filterLatexString(QTextStream &t,const char *str,
                        else
                          t << "]";             
                      break;
-          case '-':  if (*p=='>') 
-                     { t << " $\\rightarrow$ "; p++; }
-                     else
-                     { t << (char)c; }
+          case '-':  t << "-\\/";
                      break;
           case '\\': if (*p=='<') 
                      { t << "$<$"; p++; }
@@ -6445,6 +6408,7 @@ g_lang2extMap[] =
   { "python",      "python",  SrcLangExt_Python },
   { "fortran",     "fortran", SrcLangExt_F90    },
   { "vhdl",        "vhdl",    SrcLangExt_VHDL   },
+  { "dbusxml",     "dbusxml", SrcLangExt_XML    },
   { 0,             0,        (SrcLangExt)0      }
 };
 
@@ -6507,6 +6471,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f90",   "fortran");
   updateLanguageMapping(".vhd",   "vhdl");
   updateLanguageMapping(".vhdl",  "vhdl");
+  updateLanguageMapping(".xml",   "dbusxml");
 }
 
 SrcLangExt getLanguageFromFileName(const QCString fileName)

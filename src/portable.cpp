@@ -368,3 +368,8 @@ int portable_pclose(FILE *stream)
   return pclose(stream);
 }
 
+double portable_getSysElapsedTime()
+{
+  return sysElapsedTime;
+}
+

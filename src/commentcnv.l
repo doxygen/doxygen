@@ -348,7 +348,7 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
 				     BEGIN(CComment); 
                                    }
-<Scan>"##"		           {
+<Scan>"#"("#")?		           {
                                      if (g_lang!=SrcLangExt_Python)
 				     {
 				       REJECT;

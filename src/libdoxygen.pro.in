@@ -88,6 +88,7 @@ HEADERS      =	bufstr.h \
                 pyscanner.h \
                 fortrancode.h \
                 fortranscanner.h \
+                dbusxmlscanner.h \
 		qhp.h \
 		qhpxmlwriter.h \
 		qtbc.h \
@@ -231,6 +232,7 @@ SOURCES      =	ce_lex.cpp \
 		vhdlscanner.cpp \
 		xmldocvisitor.cpp \
                 xmlgen.cpp \
+                dbusxmlscanner.cpp \
 
 win32:TMAKE_CXXFLAGS       += -DQT_NODLL 
 win32-msvc:TMAKE_CXXFLAGS  += -Zm200

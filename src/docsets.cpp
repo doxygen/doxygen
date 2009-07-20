@@ -263,6 +263,7 @@ void DocSets::addIndexItem(const char *, const char *,
     case SrcLangExt_Python: lang="python"; break;     // Python
     case SrcLangExt_F90:    lang="fortran"; break;    // Fortran
     case SrcLangExt_VHDL:   lang="vhdl"; break;       // VHDL
+    case SrcLangExt_XML:    lang="xml"; break;        // DBUS XML
   }
 
   // determine scope

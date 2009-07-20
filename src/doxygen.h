@@ -111,7 +111,6 @@ class Doxygen
     static QDict<RefList>           *xrefLists; // array of xref lists: todo, test, bug, deprecated ...
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
-    static double                    sysElapsedTime;
     static QTime                     runningTime;
     //static SearchIndex              *searchIndex;
     static QDict<DefinitionIntf>    *symbolMap;

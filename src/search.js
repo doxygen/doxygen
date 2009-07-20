@@ -69,7 +69,7 @@ function SearchBox(name, resultsPath, inFrame)
   this.lastSearchValue       = "";
   this.lastResultsPage       = "";
   this.hideTimeout           = 0;
-  this.searchTopic           = "all";
+  this.searchIndex           = 0;
   this.searchActive          = false;
   this.insideFrame           = inFrame;
 
@@ -90,8 +90,8 @@ function SearchBox(name, resultsPath, inFrame)
   this.DOMPopupSearchResultsWindow = function()
   {  return document.getElementById("MSearchResultsWindow");  }
 
-  this.DOMSearchResultWindowClose = function()
-  {  return document.getElementById("MSearchResultsWindowClose"); }
+  this.DOMSearchClose = function()
+  {  return document.getElementById("MSearchClose"); }
 
   this.DOMSearchBox = function()
   {  return document.getElementById("MSearchBox");  }
@@ -150,12 +150,46 @@ function SearchBox(name, resultsPath, inFrame)
   }
 
   // Called when the content of the search field is changed.
-  this.OnSearchFieldChange = function()
+  this.OnSearchFieldChange = function(evt)
   {
     if (this.keyTimeout) // kill running timer
     {
       clearTimeout(this.keyTimeout);
       this.keyTimeout = 0;
+    }
+
+    var e  = (evt) ? evt : window.event; // for IE
+    if (e.keyCode==40 || e.keyCode==13)
+    {
+      if (e.shiftKey==1)
+      {
+        this.OnSearchSelectShow();
+        var win=this.DOMSearchSelectWindow(); 
+        for (i=0;i<win.childNodes.length;i++)
+        {
+          var child = win.childNodes[i]; // get span within a
+          if (child.className=='SelectItem')
+          {
+            child.focus();
+            return;
+          }
+        }
+        return;
+      }
+      else if (window.frames.MSearchResults.searchResults)
+      {
+        var elem = window.frames.MSearchResults.searchResults.NavNext(0);
+        if (elem) elem.focus();
+      }
+    }
+    else if (e.keyCode==27) // Escape out of the search field
+    {
+      this.DOMSearchField().blur();
+      this.DOMPopupSearchResultsWindow().style.display = 'none';
+      this.DOMSearchClose().style.display = 'none';
+      this.lastSearchValue = '';
+      this.Activate(false);
+      return;
     }
 
     // strip whitespaces
@@ -172,14 +206,28 @@ function SearchBox(name, resultsPath, inFrame)
       else // empty search field
       {
         this.DOMPopupSearchResultsWindow().style.display = 'none';
+        this.DOMSearchClose().style.display = 'none';
         this.lastSearchValue = '';
       }
     }
   }
 
-  // Called when an search filter selection is made.
-  // set item with index id as the active item
-  this.OnSelectItem = function(id,topic)
+  this.SelectItemCount = function(id)
+  {
+    var count=0;
+    var win=this.DOMSearchSelectWindow(); 
+    for (i=0;i<win.childNodes.length;i++)
+    {
+      var child = win.childNodes[i]; // get span within a
+      if (child.className=='SelectItem')
+      {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  this.SelectItemSet = function(id)
   {
     var i,j=0;
     var win=this.DOMSearchSelectWindow(); 
@@ -191,7 +239,6 @@ function SearchBox(name, resultsPath, inFrame)
         var node = child.firstChild;
 	if (j==id)
 	{
-          // add a tickmark: see http://doogalbellend.blogspot.com/2007/05/even-more-on-tick-marks-in-html.html
           node.innerHTML='&bull;';
         } 
         else
@@ -201,31 +248,39 @@ function SearchBox(name, resultsPath, inFrame)
         j++;
       }
     }
-    if (topic)
+  }
+
+  // Called when an search filter selection is made.
+  // set item with index id as the active item
+  this.OnSelectItem = function(id)
+  {
+    this.searchIndex = id;
+    this.SelectItemSet(id);
+    var searchValue = this.DOMSearchField().value.replace(/ +/g, "");
+    if (searchValue!="" && this.searchActive) // something was found -> do a search
     {
-      this.searchTopic = topic;
-      var searchValue = this.DOMSearchField().value.replace(/ +/g, "");
-      if (searchValue != "" && this.searchActive) // something was found -> do a search
-      {
-        this.Search();
-      }
-    }
-    else
-    {
-      this.Activate(false);
+      this.Search();
     }
   }
 
-  this.OnCloseHighlight = function(active)
+  this.OnSearchSelectKey = function(evt)
   {
-    var close = this.DOMSearchResultWindowClose();
-    if (active)
+    var e = (evt) ? evt : window.event; // for IE
+    if (e.keyCode==40 && this.searchIndex<this.SelectItemCount()) // Down
     {
-      close.firstChild.src = this.resultsPath + '/close_active.png';
+      this.searchIndex++;
+      this.OnSelectItem(this.searchIndex);
     }
-    else
+    else if (e.keyCode==38 && this.searchIndex>0) // Up
     {
-      close.firstChild.src = this.resultsPath + '/close.png';
+      this.searchIndex--;
+      this.OnSelectItem(this.searchIndex);
+    }
+    else if (e.keyCode==13 || e.keyCode==27)
+    {
+      this.OnSelectItem(this.searchIndex);
+      this.CloseSelectionWindow();
+      this.DOMSearchField().focus();
     }
     return false;
   }
@@ -235,13 +290,14 @@ function SearchBox(name, resultsPath, inFrame)
   // Closes the results window.
   this.CloseResultsWindow = function()
   {
-    this.DOMPopupSearchResultsWindow().style.display = "none";
+    this.DOMPopupSearchResultsWindow().style.display = 'none';
+    this.DOMSearchClose().style.display = 'none';
     this.Activate(false);
   }
 
   this.CloseSelectionWindow = function()
   {
-    this.DOMSearchSelectWindow().style.display = "none";
+    this.DOMSearchSelectWindow().style.display = 'none';
   }
 
   // Performs a search.
@@ -267,10 +323,9 @@ function SearchBox(name, resultsPath, inFrame)
     var resultsPageWithSearch;
     var hasResultsPage;
 
-    // indexSectionsWithContent is defined in searchdata.js
-    if (indexSectionsWithContent[this.searchTopic].charAt(code-32) == '1')
+    if (indexSectionsWithContent[this.searchIndex].charAt(code-32) == '1')
     {
-       resultsPage = this.resultsPath + '/' + this.searchTopic + '_' + hexCode + '.html';
+       resultsPage = this.resultsPath + '/' + indexSectionNames[this.searchIndex] + '_' + hexCode + '.html';
        resultsPageWithSearch = resultsPage+'?'+escape(searchValue);
        hasResultsPage = true;
     }
@@ -284,13 +339,13 @@ function SearchBox(name, resultsPath, inFrame)
     window.frames.MSearchResults.location.href = resultsPageWithSearch;  
     var domPopupSearchResultsWindow = this.DOMPopupSearchResultsWindow();
 
-    if (domPopupSearchResultsWindow.style.display!="block")
+    if (domPopupSearchResultsWindow.style.display!='block')
     {
+       var domSearchBox = this.DOMSearchBox();
+       this.DOMSearchClose().style.display = 'inline';
        if (this.insideFrame)
        {
-         var domSearchBox = this.DOMSearchBox();
          var domPopupSearchResults = this.DOMPopupSearchResults();
-         this.DOMSearchResultWindowClose().style.textAlign = 'left';
          domPopupSearchResultsWindow.style.position = 'relative';
          domPopupSearchResultsWindow.style.display  = 'block';
          var width = document.body.clientWidth - 8; // the -8 is for IE :-(
@@ -299,10 +354,9 @@ function SearchBox(name, resultsPath, inFrame)
        }
        else
        {
-         var domSearchField = this.DOMSearchField();
          var domPopupSearchResults = this.DOMPopupSearchResults();
-         var left = getXPos(domSearchField) + domSearchField.offsetWidth;
-         var top  = getYPos(domSearchField) + domSearchField.offsetHeight + 1;
+         var left = getXPos(domSearchBox) + domSearchBox.offsetWidth;
+         var top  = getYPos(domSearchBox) + domSearchBox.offsetHeight + 1;
          domPopupSearchResultsWindow.style.display = 'block';
          left -= domPopupSearchResults.offsetWidth;
          domPopupSearchResultsWindow.style.top     = top  + 'px';
@@ -352,9 +406,11 @@ function SearchResults(name)
 {
     // The number of matches from the last run of <Search()>.
     this.lastMatchCount = 0;
+    this.lastKey = 0;
+    this.repeatOn = false;
 
     // Toggles the visibility of the passed element ID.
-    this.Toggle = function(id)
+    this.FindChildElement = function(id)
     {
       var parentElement = document.getElementById(id);
       var element = parentElement.firstChild;
@@ -363,14 +419,7 @@ function SearchResults(name)
       {
         if (element.nodeName == 'DIV' && element.className == 'SRChildren')
         {
-          if (element.style.display == 'block')
-          {  
-            element.style.display = 'none';  
-          }
-          else
-          {  
-            element.style.display = 'block';  
-          }
+          return element;
         }
 
         if (element.nodeName == 'DIV' && element.hasChildNodes())
@@ -393,6 +442,22 @@ function SearchResults(name)
           {  
             element = element.nextSibling;  
           }
+        }
+      }
+    }
+
+    this.Toggle = function(id)
+    {
+      var element = this.FindChildElement(id);
+      if (element)
+      {
+        if (element.style.display == 'block')
+        {  
+          element.style.display = 'none';  
+        }
+        else
+        {  
+          element.style.display = 'block';  
         }
       }
     }
@@ -431,26 +496,213 @@ function SearchResults(name)
           if (search.length<=rowMatchName.length && 
              rowMatchName.substr(0, search.length)==search)
           {
-            row.style.display = "block";
+            row.style.display = 'block';
             matches++;
           }
           else
           {  
-            row.style.display = "none";  
+            row.style.display = 'none';  
           }
         }
         i++;
       }
-      document.getElementById("Searching").style.display="none";
+      document.getElementById("Searching").style.display='none';
       if (matches == 0) // no results
       {  
-        document.getElementById("NoMatches").style.display="block";  
+        document.getElementById("NoMatches").style.display='block';  
       }
       else // at least one result
       {  
-        document.getElementById("NoMatches").style.display="none";  
+        document.getElementById("NoMatches").style.display='none';  
       }
       this.lastMatchCount = matches;
       return true;
+    }
+
+    // return the first item with index index or higher that is visible
+    this.NavNext = function(index)
+    {
+      var focusItem;
+      while (1)
+      {
+        var focusName = 'Item'+index;
+        focusItem = document.getElementById(focusName);
+        if (focusItem && focusItem.parentNode.parentNode.style.display=='block')
+        {
+          break;
+        }
+        else if (!focusItem) // last element
+        {
+          break;
+        }
+        focusItem=null;
+        index++;
+      }
+      return focusItem;
+    }
+
+    this.NavPrev = function(index)
+    {
+      var focusItem;
+      while (1)
+      {
+        var focusName = 'Item'+index;
+        focusItem = document.getElementById(focusName);
+        if (focusItem && focusItem.parentNode.parentNode.style.display=='block')
+        {
+          break;
+        }
+        else if (!focusItem) // last element
+        {
+          break;
+        }
+        focusItem=null;
+        index--;
+      }
+      return focusItem;
+    }
+
+    this.ProcessKeys = function(e)
+    {
+      if (e.type == "keydown") 
+      {
+        this.repeatOn = false;
+        this.lastKey = e.keyCode;
+      }
+      else if (e.type == "keypress")
+      {
+        if (!this.repeatOn)
+        {
+          if (this.lastKey) this.repeatOn = true;
+          return false; // ignore first keypress after keydown
+        }
+      }
+      else if (e.type == "keyup")
+      {
+        this.lastKey = 0;
+        this.repeatOn = false;
+      }
+      return this.lastKey!=0;
+    }
+
+    this.Nav = function(evt,itemIndex) 
+    {
+      var e  = (evt) ? evt : window.event; // for IE
+      if (e.keyCode==13) return true;
+      if (!this.ProcessKeys(e)) return false;
+
+      if (this.lastKey==38) // Up
+      {
+        var newIndex = itemIndex-1;
+        var focusItem = this.NavPrev(newIndex);
+        if (focusItem)
+        {
+          var child = this.FindChildElement(focusItem.parentNode.parentNode.id);
+          if (child && child.style.display == 'block') // children visible
+          { 
+            var n=0;
+            var tmpElem;
+            while (1) // search for last child
+            {
+              tmpElem = document.getElementById('Item'+newIndex+'_c'+n);
+              if (tmpElem) 
+              {
+                focusItem = tmpElem; 
+              }
+              else // found it!
+              {
+                break;
+              }
+              n++;
+            }
+          }
+        }
+        if (focusItem)
+        {
+          focusItem.focus();
+        }
+        else // return focus to search field
+        {
+           parent.document.getElementById("MSearchField").focus();
+        }
+      }
+      else if (this.lastKey==40) // Down
+      {
+        var newIndex = itemIndex+1;
+        var focusItem;
+        var item = document.getElementById('Item'+itemIndex);
+        var elem = this.FindChildElement(item.parentNode.parentNode.id);
+        if (elem && elem.style.display == 'block') // children visible
+        {
+          focusItem = document.getElementById('Item'+itemIndex+'_c0');
+        }
+        if (!focusItem) focusItem = this.NavNext(newIndex);
+        if (focusItem)  focusItem.focus();
+      }
+      else if (this.lastKey==39) // Right
+      {
+        var item = document.getElementById('Item'+itemIndex);
+        var elem = this.FindChildElement(item.parentNode.parentNode.id);
+        if (elem) elem.style.display = 'block';
+      }
+      else if (this.lastKey==37) // Left
+      {
+        var item = document.getElementById('Item'+itemIndex);
+        var elem = this.FindChildElement(item.parentNode.parentNode.id);
+        if (elem) elem.style.display = 'none';
+      }
+      else if (this.lastKey==27) // Escape
+      {
+        parent.searchBox.CloseResultsWindow();
+        parent.document.getElementById("MSearchField").focus();
+      }
+      else if (this.lastKey==13) // Enter
+      {
+        return true;
+      }
+      return false;
+    }
+
+    this.NavChild = function(evt,itemIndex,childIndex)
+    {
+      var e  = (evt) ? evt : window.event; // for IE
+      if (e.keyCode==13) return true;
+      if (!this.ProcessKeys(e)) return false;
+
+      if (this.lastKey==38) // Up
+      {
+        if (childIndex>0)
+        {
+          var newIndex = childIndex-1;
+          document.getElementById('Item'+itemIndex+'_c'+newIndex).focus();
+        }
+        else // already at first child, jump to parent
+        {
+          document.getElementById('Item'+itemIndex).focus();
+        }
+      }
+      else if (this.lastKey==40) // Down
+      {
+        var newIndex = childIndex+1;
+        var elem = document.getElementById('Item'+itemIndex+'_c'+newIndex);
+        if (!elem) // last child, jump to parent next parent
+        {
+          elem = this.NavNext(itemIndex+1);
+        }
+        if (elem)
+        {
+          elem.focus();
+        } 
+      }
+      else if (this.lastKey==27) // Escape
+      {
+        parent.searchBox.CloseResultsWindow();
+        parent.document.getElementById("MSearchField").focus();
+      }
+      else if (this.lastKey==13) // Enter
+      {
+        return true;
+      }
+      return false;
     }
 }
