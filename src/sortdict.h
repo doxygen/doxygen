@@ -106,6 +106,8 @@ class SDict
     /*! Create an ordered dictionary.
      *  \param size The size of the dictionary. Should be a prime number for
      *              best distribution of elements.
+     *  \param caseSensitive indicated whether the keys should be sorted
+     *         in a case sensitive way.
      */
     SDict(int size,bool caseSensitive=TRUE) : m_sizeIndex(0)
     {

@@ -24,7 +24,7 @@
 // UTF-8 patch by Nenad Bulatovic <buletina@gmail.com>
 // translation update by Andrija M. Bosnjakovic <andrija@etf.bg.ac.yu>
 
-class TranslatorSerbian : public Translator
+class TranslatorSerbian : public TranslatorAdapter_1_6_0
 {                                
 private:
    QCString decode(const QCString& sInput)

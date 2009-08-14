@@ -184,7 +184,6 @@ static void writeDefaultHeaderPart1(QTextStream &t)
   t << "}\n";
   if (paperType=="a4wide") t << "\\usepackage{a4wide}\n";
   t << "\\usepackage{makeidx}\n"
-    "\\usepackage{fancyhdr}\n"
     "\\usepackage{graphicx}\n"
     "\\usepackage{multicol}\n"
     "\\usepackage{float}\n"
@@ -300,50 +299,263 @@ static void writeDefaultHeaderPart3(QTextStream &t)
 static void writeDefaultStyleSheetPart1(QTextStream &t)
 {
   // part 1
-  t << "\\NeedsTeXFormat{LaTeX2e}\n";
-  t << "\\ProvidesPackage{doxygen}\n";
-  t << "\\RequirePackage{calc}\n";
-  t << "\\RequirePackage{array}\n";
-  t << "\\RequirePackage{color}\n";
-  t << "\\pagestyle{fancyplain}\n";
-  //t << "\\addtolength{\\headwidth}{\\marginparsep}\n";
-  //t << "\\addtolength{\\headwidth}{\\marginparwidth}\n";
-  t << "\\newcommand{\\clearemptydoublepage}{\\newpage{\\pagestyle{empty}";
-  t << "\\cleardoublepage}}\n";
+  t << "\\NeedsTeXFormat{LaTeX2e}\n"
+       "\\ProvidesPackage{doxygen}\n\n";
+  t << "% Packages used by this style file\n"
+       "\\RequirePackage{alltt}\n"
+       "\\RequirePackage{array}\n"
+       "\\RequirePackage{calc}\n"
+       "\\RequirePackage{color}\n"
+       "\\RequirePackage{fancyhdr}\n"
+       "\\RequirePackage{verbatim}\n\n";
+  t << "% Setup fancy headings\n"
+       "\\pagestyle{fancyplain}\n"
+       "\\newcommand{\\clearemptydoublepage}{%\n"
+       "  \\newpage{\\pagestyle{empty}\\cleardoublepage}%\n"
+       "}\n";
   if (!Config_getBool("COMPACT_LATEX")) 
-    t << "\\renewcommand{\\chaptermark}[1]{\\markboth{#1}{}}\n";
-  t << "\\renewcommand{\\sectionmark}[1]{\\markright{\\thesection\\ #1}}\n";
-  t << "\\lhead[\\fancyplain{}{\\bfseries\\thepage}]\n";
-  t << "        {\\fancyplain{}{\\bfseries\\rightmark}}\n";
-  t << "\\rhead[\\fancyplain{}{\\bfseries\\leftmark}]\n";
-  t << "        {\\fancyplain{}{\\bfseries\\thepage}}\n";
-  t << "\\rfoot[\\fancyplain{}{\\bfseries\\scriptsize ";
+    t << "\\renewcommand{\\chaptermark}[1]{%\n"
+         "  \\markboth{#1}{}%\n"
+         "}\n";
+  t << "\\renewcommand{\\sectionmark}[1]{%\n"
+       "  \\markright{\\thesection\\ #1}%\n"
+       "}\n";
+  t << "\\lhead[\\fancyplain{}{\\bfseries\\thepage}]{%\n"
+       "  \\fancyplain{}{\\bfseries\\rightmark}%\n"
+       "}\n";
+  t << "\\rhead[\\fancyplain{}{\\bfseries\\leftmark}]{%\n"
+       "  \\fancyplain{}{\\bfseries\\thepage}%\n"
+       "}\n";
+  t << "\\rfoot[\\fancyplain{}{\\bfseries\\scriptsize%\n  ";
 }
 
 static void writeDefaultStyleSheetPart2(QTextStream &t)
 {
-  t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize ";
+  t << "\\lfoot[]{\\fancyplain{}{\\bfseries\\scriptsize%\n  ";
 }
 
 static void writeDefaultStyleSheetPart3(QTextStream &t)
 {
   t << "}}\n";
-  t << "\\cfoot{}\n";
-  t << "\\newenvironment{Code}\n";
-  t << "{\\footnotesize}\n";
-  t << "{\\normalsize}\n";
+  t << "\\cfoot{}\n\n";
+  t << "%---------- Internal commands used in this style file ----------------\n\n";
+  t << "% Generic environment used by all paragraph-based environments defined\n"
+       "% below. Note that the command \\title{...} needs to be defined inside\n"
+       "% those environments!\n"
+       "\\newenvironment{DoxyDesc}[1]{%\n"
+       "  \\begin{list}{}%\n"
+       "  {%\n"
+       "    \\settowidth{\\labelwidth}{40pt}%\n"
+       "    \\setlength{\\leftmargin}{\\labelwidth}%\n"
+       "    \\setlength{\\parsep}{0pt}%\n"
+       "    \\setlength{\\itemsep}{-4pt}%\n"
+       "    \\renewcommand{\\makelabel}{\\entrylabel}%\n"
+       "  }%\n"
+       "  \\item[#1:]%\n"
+       "}{%\n"
+       "  \\end{list}%\n"
+       "}\n\n";
+  t << "%---------- Commands used by doxygen LaTeX output generator ----------\n\n";
+  t << "% Used by <pre> ... </pre>\n"
+       "\\newenvironment{DoxyPre}{%\n"
+       "  \\small%\n"
+       "  \\begin{alltt}%\n"
+       "}{%\n"
+       "  \\end{alltt}%\n"
+       "  \\normalsize%\n"
+       "}\n\n";
+  t << "% Used by @code ... @endcode\n"
+       "\\newenvironment{DoxyCode}{%\n"
+       "  \\footnotesize%\n"
+       "  \\verbatim%\n"
+       "}{%\n"
+       "  \\endverbatim%\n"
+       "  \\normalsize%\n"
+       "}\n\n";
+  t << "% Used by @example, @include, @includelineno and @dontinclude\n"
+       "\\newenvironment{DoxyCodeInclude}{%\n"
+       "  \\DoxyCode%\n"
+       "}{%\n"
+       "  \\endDoxyCode%\n"
+       "}\n\n";
+  t << "% Used by @verbatim ... @endverbatim\n"
+       "\\newenvironment{DoxyVerb}{%\n"
+       "  \\footnotesize%\n"
+       "  \\verbatim%\n"
+       "}{%\n"
+       "  \\endverbatim%\n"
+       "  \\normalsize%\n"
+       "}\n\n";
+  t << "% Used by @verbinclude\n"
+       "\\newenvironment{DoxyVerbInclude}{%\n"
+       "  \\DoxyVerb%\n"
+       "}{%\n"
+       "  \\endDoxyVerb%\n"
+       "}\n\n";
+  t << "% Used by numbered lists (using '-#' or <ol> ... </ol>)\n"
+       "\\newenvironment{DoxyEnumerate}{%\n"
+       "  \\enumerate%\n"
+       "}{%\n"
+       "  \\endenumerate%\n"
+       "}\n\n";
+  t << "% Used by bullet lists (using '-', @li, @arg, or <ul> ... </ul>)\n"
+       "\\newenvironment{DoxyItemize}{%\n"
+       "  \\itemize%\n"
+       "}{%\n"
+       "  \\enditemize%\n"
+       "}\n\n";
+  t << "% Used by description lists (using <dl> ... </dl>)\n"
+       "\\newenvironment{DoxyDescription}{%\n"
+       "  \\description%\n"
+       "}{%\n"
+       "  \\enddescription%\n"
+       "}\n\n";
+  t << "% Used by @image, @dotfile, and @dot ... @enddot\n"
+       "% (only if caption is specified)\n"
+       "\\newenvironment{DoxyImage}{%\n"
+       "  \\begin{figure}[H]%\n"
+       "  \\begin{center}%\n"
+       "}{%\n"
+       "  \\end{center}%\n"
+       "  \\end{figure}%\n"
+       "}\n\n";
+  t << "% Used by @image, @dotfile, @dot ... @enddot, and @msc ... @endmsc\n"
+       "% (only if no caption is specified)\n"
+       "\\newenvironment{DoxyImageNoCaption}{%\n"
+       "}{%\n"
+       "}\n\n";
+  t << "% Used by @attention\n"
+       "\\newenvironment{DoxyAttention}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @author and @authors\n"
+       "\\newenvironment{DoxyAuthor}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @date\n"
+       "\\newenvironment{DoxyDate}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @invariant\n"
+       "\\newenvironment{DoxyInvariant}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @note\n"
+       "\\newenvironment{DoxyNote}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @post\n"
+       "\\newenvironment{DoxyPostcond}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @pre\n"
+       "\\newenvironment{DoxyPrecond}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @remark\n"
+       "\\newenvironment{DoxyRemark}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @return\n"
+       "\\newenvironment{DoxyReturn}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @since\n"
+       "\\newenvironment{DoxySince}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @see\n"
+       "\\newenvironment{DoxySeeAlso}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @version\n"
+       "\\newenvironment{DoxyVersion}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @warning\n"
+       "\\newenvironment{DoxyWarning}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @internal\n"
+       "\\newenvironment{DoxyInternal}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "}{%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by @par and @paragraph\n"
+       "\\newenvironment{DoxyParagraph}[1]{%\n"
+       "  \\begin{list}{}%\n"
+       "  {%\n"
+       "    \\settowidth{\\labelwidth}{40pt}%\n"
+       "    \\setlength{\\leftmargin}{\\labelwidth}%\n"
+       "    \\setlength{\\parsep}{0pt}%\n"
+       "    \\setlength{\\itemsep}{-4pt}%\n"
+       "    \\renewcommand{\\makelabel}{\\entrylabel}%\n"
+       "  }%\n"
+       "  \\item[#1]%\n"
+       "}{%\n"
+       "  \\end{list}%\n"
+       "}\n\n";
+  t << "% Used by parameter lists\n"
+       "\\newenvironment{DoxyParams}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "    \\begin{description}%\n"
+       "}{%\n"
+       "    \\end{description}%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by return value lists\n"
+       "\\newenvironment{DoxyRetVals}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "    \\begin{description}%\n"
+       "}{%\n"
+       "    \\end{description}%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by exception lists\n"
+       "\\newenvironment{DoxyExceptions}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "    \\begin{description}%\n"
+       "}{%\n"
+       "    \\end{description}%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
+  t << "% Used by template parameter lists\n"
+       "\\newenvironment{DoxyTemplParams}[1]{%\n"
+       "  \\begin{DoxyDesc}{#1}%\n"
+       "    \\begin{description}%\n"
+       "}{%\n"
+       "    \\end{description}%\n"
+       "  \\end{DoxyDesc}%\n"
+       "}\n\n";
   t << "\\newcommand{\\doxyref}[3]{\\textbf{#1} (\\textnormal{#2}\\,\\pageref{#3})}\n";
-  t << "\\newenvironment{DocInclude}\n";
-  t << "{\\footnotesize}\n";
-  t << "{\\normalsize}\n";
-  t << "\\newenvironment{VerbInclude}\n";
-  t << "{\\footnotesize}\n";
-  t << "{\\normalsize}\n";
-  t << "\\newenvironment{Image}\n";
-  t << "{\\begin{figure}[H]}\n";
-  t << "{\\end{figure}}\n";
-  t << "\\newenvironment{ImageNoCaption}{}{}\n";
-  t << "\\newenvironment{CompactList}\n";
+  t << "\\newenvironment{DoxyCompactList}\n";
   t << "{\\begin{list}{}{\n";
   t << "  \\setlength{\\leftmargin}{0.5cm}\n";
   t << "  \\setlength{\\itemsep}{0pt}\n";
@@ -351,7 +563,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
   t << "  \\setlength{\\topsep}{0pt}\n";
   t << "  \\renewcommand{\\makelabel}{\\hfill}}}\n";
   t << "{\\end{list}}\n";
-  t << "\\newenvironment{CompactItemize}\n";
+  t << "\\newenvironment{DoxyCompactItemize}\n";
   t << "{\n";
   t << "  \\begin{itemize}\n";
   t << "  \\setlength{\\itemsep}{-3pt}\n";
@@ -1515,7 +1727,7 @@ void LatexGenerator::startMemberDescription()
 {
   if (!insideTabbing)
   { 
-    t << "\\begin{CompactList}\\small\\item\\em "; 
+    t << "\\begin{DoxyCompactList}\\small\\item\\em "; 
   }
   else
   {
@@ -1528,7 +1740,7 @@ void LatexGenerator::endMemberDescription()
 { 
   if (!insideTabbing)
   {
-    t << "\\item\\end{CompactList}"; 
+    t << "\\item\\end{DoxyCompactList}"; 
   }
   else
   {
@@ -1552,7 +1764,7 @@ void LatexGenerator::startMemberList()
 { 
   if (!insideTabbing)
   {
-    t << "\\begin{CompactItemize}" << endl; 
+    t << "\\begin{DoxyCompactItemize}" << endl; 
   }
 }
 
@@ -1561,7 +1773,7 @@ void LatexGenerator::endMemberList()
   //printf("LatexGenerator::endMemberList(%d)\n",insideTabbing);
   if (!insideTabbing)
   {
-    t << "\\end{CompactItemize}"   << endl; 
+    t << "\\end{DoxyCompactItemize}"   << endl; 
   }
 }
 
@@ -1808,7 +2020,7 @@ void LatexGenerator::startCodeFragment()
   }
   else
   {
-    t << endl << endl << "\\begin{Code}\\begin{verbatim}";
+    t << "\n\\begin{DoxyCode}\n";
   }
 }
 
@@ -1820,7 +2032,7 @@ void LatexGenerator::endCodeFragment()
   }
   else
   {
-    t << "\\end{verbatim}\n\\end{Code}" << endl;
+    t << "\\end{DoxyCode}\n";
   }
 }
 

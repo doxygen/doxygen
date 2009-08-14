@@ -727,13 +727,15 @@ void FTVHelp::generateTreeView(QString* OutString)
     if (searchEngine)
     {
       t << "      <script type=\"text/javascript\"><!--\n";
-      t << "      var searchBox = new SearchBox(\"searchBox\", \"search\", true);\n";
+      t << "      var searchBox = new SearchBox(\"searchBox\", \"search\", true, '" 
+        << theTranslator->trSearch() << "');\n";
       t << "      --></script>\n";
       t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
       t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
       t << "      <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
         << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"search/close.png\" alt=\"\"/></a>\n";
-      t << "      <input type=\"text\" id=\"MSearchField\" value=\"Search\" accesskey=\"S\"\n";
+      t << "      <input type=\"text\" id=\"MSearchField\" value=\"" 
+        << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
       t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
       t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
       t << "           onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";

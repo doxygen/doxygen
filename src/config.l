@@ -77,20 +77,26 @@ static QCString configStringRecode(
 
 /* -----------------------------------------------------------------
  */
-
 QCString ConfigOption::convertToComment(const QCString &s)
 {
   QCString result;
   if (s.isEmpty()) return result;
   else
   {
-    result+="# ";
     QCString tmp=s.stripWhiteSpace();
     char *p=tmp.data();
     char c;
+    result+="#";
+    if (*p && *p!='\n')
+      result+=" ";
     while ((c=*p++))
     {
-      if (c=='\n') result+="\n# ";
+      if (c=='\n')
+      {
+        result+="\n#";
+        if (*p && *p!='\n')
+          result+=" ";
+      }
       else result+=c;
     }
     result+='\n';
@@ -100,12 +106,13 @@ QCString ConfigOption::convertToComment(const QCString &s)
 
 void ConfigOption::writeBoolValue(QTextStream &t,bool v)
 {
+  t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
 void ConfigOption::writeIntValue(QTextStream &t,int i)
 {
-  t << i;
+  t << " " << i;
 }
 
 void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
@@ -117,6 +124,7 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
   const char *p=se.data();
   if (p)
   {
+    t << " ";
     while ((c=*p++)!=0 && !needsEscaping) 
       needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"' || c=='#');
     if (needsEscaping)
@@ -145,7 +153,8 @@ void ConfigOption::writeStringList(QTextStream &t,QStrList &l)
   while (p)
   {
     QCString s=p;
-    if (!first) t << "                         ";
+    if (!first)
+      t << "                        ";
     first=FALSE;
     writeStringValue(t,s);
     p = l.next();

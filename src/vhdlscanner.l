@@ -607,10 +607,11 @@ SPECIAL_CHARACTER       [#&'()*+,\-\./:;<=>_|]
 OTHER_SPECIAL_CHARACTER [~!$§%?@\[\\\]^{}]
 BASIC_GRAPHIC_CHARACTER {UPPER_CASE_LETTER}|{DIGIT}|{SPECIAL_CHARACTER}|{SPACE_CHARACTER}
 GRAPHIC_CHARACTER       {BASIC_GRAPHIC_CHARACTER}|{LOWER_CASE_LETTER}|{OTHER_SPECIAL_CHARACTER}
+EXTENDED_CHARACTER      [\\]{GRAPHIC_CHARACTER}*[\\] 
 
-NAME                    {LETTER}[a-zA-Z0-9_.]*
+NAME                    ({LETTER}[a-zA-Z0-9_.]*)|{EXTENDED_CHARACTER}
 STRING_LITERAL          \"{GRAPHIC_CHARACTER}*\"
-FUNCNAME                [a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*
+FUNCNAME                ([a-zA-Z"][*+\-_a-zA-Z0-9"\/=<>]*)|{EXTENDED_CHARACTER}
 DIGITS                  [0-9]+|[0-9]+"."[0-9]+|[0-9]+"#"[0-9_a-fA-F\+\.]+"#"
 COMMENT                 "--"[^\n]*
 LABELID                 [a-z_A-Z][^\;]*";"({B}*{COMMENT})*
@@ -843,7 +844,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
  // lineCount();
   QCString type;
   QCString tt(yytext);
-  QRegExp regg("[ \n\t:.()-]");
+  QRegExp regg("[\\s:.()-]");
   QStringList qsl=QStringList::split(regg,tt,false);
 
   // consider upper/lower-case letters
@@ -1159,7 +1160,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
 
 
 <ParseType>{ENDE}|{ENDFUNC} { // found end of function|process
-  QRegExp regg("[ \n\t;]");
+  QRegExp regg("[\\s;]");
   lineCount();
   QCString tt(yytext);
   tt=tt.lower();
@@ -1191,7 +1192,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
  }
 
 <ParseFunc>{ENDE3} {
-  QRegExp regg("[ \n\t;]");
+  QRegExp regg("[\\s;]");
   lineCount();
   QCString tt(yytext);
   tt=tt.lower();
@@ -1444,7 +1445,7 @@ ENDPROTECEDBODY         "end"{BR}+"protected"{BR}+"body"{BR}+{NAME}
     //printf("pos=%d eol=%d\n",pos,eol);
     if (eol>=pos+2)
     {
-      QRegExp re("\\n[ \\t]*--!"); // comment continuation
+      QRegExp re("\\n[\\s]*--!"); // comment continuation
       comment=line.mid(pos+2,eol-pos-2);
       //printf("Comment: '%s'\n",comment.data());
       int p,l;

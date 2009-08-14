@@ -32,7 +32,7 @@
 #ifndef TRANSLATOR_MK_H
 #define TRANSLATOR_MK_H
 
-class TranslatorMacedonian : public Translator
+class TranslatorMacedonian : public TranslatorAdapter_1_6_0
 {
   public:
 

@@ -32,7 +32,7 @@ div.multicol {
 }
 
 p.startli, p.startdd {
-	margin-top: 0px;
+	margin-top: 2px;
 }
 
 p.endli {
@@ -191,12 +191,19 @@ img.formulaInl {
 	vertical-align: middle;
 }
 
-img.center {
-	border: 0;
+div.center {
+	text-align: center;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0px;
+}
+
+div.center img {
+	border: 0px;
 }
 
 img.footer {
-	border: 0;
+	border: 0px;
 	vertical-align: middle;
 }
 

@@ -223,6 +223,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 \refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
 \refitem cfg_sort_by_scope_name SORT_BY_SCOPE_NAME
+\refitem cfg_sort_members_constructors_first SORT_MEMBERS_CTORS_1ST
 \refitem cfg_sort_group_names SORT_GROUP_NAMES
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
 \refitem cfg_source_browser SOURCE_BROWSER
@@ -759,6 +760,18 @@ function's detailed documentation block.
  @note This option applies only to the class list, not to the 
        alphabetical list.
 
+\anchor cfg_sort_members_constructors_first
+<dt>\c SORT_MEMBERS_CTORS_1ST <dd>
+ \addindex SORT_MEMBERS_CTORS_1ST
+ If the \c SORT_MEMBERS_CTORS_1ST tag is set to \c YES then doxygen
+ will sort the (brief and detailed) documentation of class members so that
+ constructors and destructors are listed first. If set to NO (the default)
+ the constructors will appear in the respective orders defined by
+ \c SORT_MEMBER_DOCS and \c SORT_BRIEF_DOCS.
+ @note If \c SORT_BRIEF_DOCS is set to \c NO this option is ignored for
+       sorting brief member documentation.
+ @note If \c SORT_MEMBER_DOCS is set to \c NO this option is ignored for
+       sorting detailed member documentation.
 
 \anchor cfg_generate_deprecatedlist
 <dt>\c GENERATE_DEPRECATEDLIST <dd>
@@ -1080,10 +1093,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 
 <dt>\c SOURCE_BROWSER <dd>
  \addindex SOURCE_BROWSER
- If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will \n"
- be generated. Documented entities will be cross-referenced with these sources. \n"
- Note: To get rid of all source code in the generated output, make sure also \n"
- \c VERBATIM_HEADERS is set to NO. \n"
+ If the \c SOURCE_BROWSER tag is set to \c YES then a list of source files will
+ be generated. Documented entities will be cross-referenced with these sources.
+ Note: To get rid of all source code in the generated output, make sure also
+ \c VERBATIM_HEADERS is set to NO.
 
 \anchor cfg_inline_sources
 <dt>\c INLINE_SOURCES <dd>

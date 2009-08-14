@@ -395,7 +395,7 @@ static void startCodeLine()
   }
 }
 
-static void codify(char* text) 
+static void codify(const char* text) 
 { 
   g_code->codify(text);
 }
@@ -421,7 +421,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   {
     char *sp=p;
     char c;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;
@@ -453,7 +453,7 @@ static void codifyLines(char *text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;

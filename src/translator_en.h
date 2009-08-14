@@ -1728,6 +1728,7 @@ class TranslatorEnglish : public Translator
       if (!singular)  result+="s";
       return result; 
     }
+
     /*! This is put at the bottom of a module documentation page and is
      *  followed by a list of files that were used to generate the page.
      */
@@ -1750,6 +1751,7 @@ class TranslatorEnglish : public Translator
       if (single) result+=":"; else result+="s:";
       return result;
     }
+
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1760,6 +1762,7 @@ class TranslatorEnglish : public Translator
       if (!singular)  result+="s";
       return result; 
     }
+
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1775,6 +1778,40 @@ class TranslatorEnglish : public Translator
     virtual QCString trTypeConstraints()
     {
       return "Type Constraints";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Relation";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Loading...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Global Namespace";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Searching...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "No Matches";
     }
 
 };

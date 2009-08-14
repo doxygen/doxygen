@@ -707,6 +707,20 @@ class TranslatorDecoder : public Translator
     QCString trTypeConstraints()
     { return toUtf8(m_translator->trTypeConstraints()); }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDirRelation(const char *name)
+    { return toUtf8(m_translator->trDirRelation(fromUtf8(name))); }
+    QCString trLoading()
+    { return toUtf8(m_translator->trLoading()); }
+    QCString trGlobalNamespace()
+    { return toUtf8(m_translator->trGlobalNamespace()); }
+    QCString trSearching()
+    { return toUtf8(m_translator->trSearching()); }
+    QCString trNoMatches()
+    { return toUtf8(m_translator->trNoMatches()); }
 
 //////////////////////////////////////////////////////////////////////////
   private:

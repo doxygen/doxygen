@@ -512,8 +512,8 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     {
       if (strcmp(lii->type,listName)==0) 
       {
-	//printf("found %s lii->type=%s\n",listName,lii->type);
-	break;
+        //printf("found %s lii->type=%s\n",listName,lii->type);
+        break;
       }
     }
   }
@@ -534,7 +534,8 @@ static void addXRefItem(const char *listName,const char *itemTitle,
     // if we have already an item from the same list type (e.g. a second @todo)
     // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
     char anchorLabel[1024];
-    sprintf(anchorLabel,"_%s%06d",listName,lii ? lii->itemId : itemId);
+    //sprintf(anchorLabel,"_%s%06d",listName,lii ? lii->itemId : itemId);
+    sprintf(anchorLabel,"_%s%06d",listName,itemId);
     RefItem *item = refList->getRefItem(itemId);
     ASSERT(item!=0);
     item->text = outputXRef;
@@ -621,7 +622,8 @@ static inline void setOutput(OutputContext ctx)
 {
   bool xrefAppendToPrev = xrefAppendFlag;
   // determine append flag for the next item (i.e. the end of this item)
-  xrefAppendFlag = inContext==OutputXRef && ctx==OutputXRef && // two consecutive xref items
+  xrefAppendFlag = !inBody &&
+                   inContext==OutputXRef && ctx==OutputXRef && // two consecutive xref items
                    newXRefKind==xrefKind &&                    // of the same kind
                    (xrefKind!=XRef_Item || 
 		    newXRefItemKey==xrefItemKey);              // with the same key if \xrefitem

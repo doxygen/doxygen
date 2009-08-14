@@ -67,14 +67,14 @@ class LatexGenerator : public OutputGenerator
     void writeString(const char *text);
     void startIndexListItem() {}
     void endIndexListItem() {}
-    void startIndexList() { t << "\\begin{CompactList}"    << endl; }
-    void endIndexList()   { t << "\\end{CompactList}"      << endl; }
+    void startIndexList() { t << "\\begin{DoxyCompactList}"    << endl; }
+    void endIndexList()   { t << "\\end{DoxyCompactList}"      << endl; }
     void startIndexKey();
     void endIndexKey();
     void startIndexValue(bool);
     void endIndexValue(const char *,bool);
-    void startItemList()  { t << "\\begin{CompactItemize}" << endl; }
-    void endItemList()    { t << "\\end{CompactItemize}"   << endl; }
+    void startItemList()  { t << "\\begin{DoxyCompactItemize}" << endl; }
+    void endItemList()    { t << "\\end{DoxyCompactItemize}"   << endl; }
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
@@ -88,7 +88,7 @@ class LatexGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void startTypewriter() { t << "{\\tt "; }
+    void startTypewriter() { t << "{\\ttfamily "; }
     void endTypewriter()   { t << "}";      }
     void startGroupHeader();
     void endGroupHeader();
@@ -130,7 +130,7 @@ class LatexGenerator : public OutputGenerator
     void endCodeLine();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "\\textbf{"; }
+    void startBold()     { t << "{\\bfseries "; }
     void endBold()       { t << "}"; }
     void startDescription();
     void endDescription();

@@ -32,7 +32,7 @@
 #define HtmlDivEnd          QCString("</div>")
 
 
-class TranslatorPersian : public Translator
+class TranslatorPersian : public TranslatorAdapter_1_6_0
 {
   public:
 

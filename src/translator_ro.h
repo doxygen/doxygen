@@ -41,7 +41,7 @@
 #define TRANSLATOR_RO_H
 
 
-class TranslatorRomanian : public Translator
+class TranslatorRomanian : public TranslatorAdapter_1_6_0
 {
   public:
 

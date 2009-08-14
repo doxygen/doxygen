@@ -329,9 +329,8 @@ LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
 LNKWORD2  ({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
-CHARWORD  [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,.]
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]
-WORD1     "%"?{CHARWORD}+|"{"|"}"|("\""[^"\n]*"\"")
+WORD1     "%"?{CHARWORDQ}+|"{"|"}"|("\""[^"\n]*\n?[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 WORD1NQ   "%"?{CHARWORDQ}+
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"

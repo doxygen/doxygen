@@ -476,6 +476,16 @@ class Translator
     virtual QCString trSubprogram(bool first_capital, bool singular) = 0;
     virtual QCString trTypeConstraints() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDirRelation(const char *name) = 0;
+    virtual QCString trLoading() = 0;
+    virtual QCString trGlobalNamespace() = 0;
+    virtual QCString trSearching() = 0;
+    virtual QCString trNoMatches() = 0;
+
 };
 
 #endif

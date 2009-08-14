@@ -2041,20 +2041,24 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
 /*! a link to this class is possible within this project */
 bool ClassDef::isLinkableInProject() const
 { 
+  static bool extractPrivate = Config_getBool("EXTRACT_PRIVATE");
+  static bool extractLocal   = Config_getBool("EXTRACT_LOCAL_CLASSES");
+  static bool extractStatic  = Config_getBool("EXTRACT_STATIC");
+  static bool hideUndoc      = Config_getBool("HIDE_UNDOC_CLASSES");
   if (m_impl->templateMaster)
   {
     return m_impl->templateMaster->isLinkableInProject();
   }
   else
   {
-    return !name().isEmpty() &&    /* no name */
-      !isArtificial() && !isHidden() &&
-      name().find('@')==-1 && /* anonymous compound */
-      (m_impl->prot!=Private || Config_getBool("EXTRACT_PRIVATE")) && /* private */
-      (!m_impl->isLocal || Config_getBool("EXTRACT_LOCAL_CLASSES")) && /* local */
-      hasDocumentation() &&   /* documented */ 
-      !isReference() &&         /* not an external reference */
-      (!m_impl->isStatic || Config_getBool("EXTRACT_STATIC"));
+    return !name().isEmpty() &&                    /* has a name */
+      !isArtificial() && !isHidden() &&            /* not hidden */
+      name().find('@')==-1 &&                      /* not anonymous */
+      (m_impl->prot!=Private || extractPrivate) && /* private */
+      (!m_impl->isLocal      || extractLocal)   && /* local */
+      (hasDocumentation()    || !hideUndoc)     && /* documented */ 
+      (!m_impl->isStatic     || extractStatic)  && /* static */
+      !isReference();                 /* not an external reference */
   }
 }
 

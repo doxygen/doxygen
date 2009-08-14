@@ -163,6 +163,11 @@
     <xsd:attribute name="add" type="DoxBool" use="optional"/>
     <xsd:attribute name="remove" type="DoxBool" use="optional"/>
     <xsd:attribute name="raise" type="DoxBool" use="optional"/>
+    <!-- Objective-C 2.0 protocol method -->
+    <xsd:attribute name="optional" type="DoxBool" use="optional"/>
+    <xsd:attribute name="required" type="DoxBool" use="optional"/>
+    <!-- Objective-C 2.0 property accessor -->
+    <xsd:attribute name="accessor" type="DoxAccessor" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="descriptionType" mixed="true">
@@ -790,6 +795,14 @@
       <xsd:enumeration value="in"/>
       <xsd:enumeration value="out"/>
       <xsd:enumeration value="inout"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxAccessor">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="retain"/>
+      <xsd:enumeration value="copy"/>
+      <xsd:enumeration value="assign"/>
     </xsd:restriction>
   </xsd:simpleType>
 

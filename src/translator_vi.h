@@ -47,7 +47,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorVietnamese : public Translator
+class TranslatorVietnamese : public TranslatorAdapter_1_6_0
 {
   public:
 

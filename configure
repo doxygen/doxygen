@@ -20,7 +20,7 @@ doxygen_version_minor=5
 doxygen_version_revision=9
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20090720
+doxygen_version_mmn=20090814
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -575,7 +575,7 @@ TMAKE_CXXFLAGS += -DENGLISH_ONLY
 EOF
 fi
 
-f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libpng/Makefile.in libmd5/Makefile.in addon/doxyapp/Makefile.in"
+f_inmakefiles="Makefile.in qtools/Makefile.in src/Makefile.in examples/Makefile.in doc/Makefile.in addon/doxywizard/Makefile.in addon/doxmlparser/src/Makefile.in addon/doxmlparser/test/Makefile.in addon/doxmlparser/examples/metrics/Makefile.in libmd5/Makefile.in addon/doxyapp/Makefile.in"
 
 for i in $f_inmakefiles ; do
      SRC=$i
@@ -592,7 +592,6 @@ EOF
        echo "" >> $DST
        echo "all: src/version.cpp " >> $DST
        echo "	\$(MAKE) -C qtools" >> $DST
-       echo "	\$(MAKE) -C libpng" >> $DST
        echo "	\$(MAKE) -C libmd5" >> $DST
        echo "	\$(MAKE) -C src" >> $DST
        if test $f_wizard = YES; then
@@ -616,7 +615,7 @@ EOF
      echo "  Created $DST from $SRC..."
 done
 
-f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libpng/libpng.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in" 
+f_inprofiles="qtools/qtools.pro.in src/libdoxygen.pro.in src/libdoxycfg.pro.in src/doxygen.pro.in src/doxytag.pro.in addon/doxywizard/doxywizard.pro.in addon/doxmlparser/src/doxmlparser.pro.in addon/doxmlparser/test/xmlparse.pro.in addon/doxmlparser/examples/metrics/metrics.pro.in libmd5/libmd5.pro.in addon/doxyapp/doxyapp.pro.in" 
 
 for i in $f_inprofiles ; do
      SRC=$i

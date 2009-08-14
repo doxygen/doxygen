@@ -48,8 +48,17 @@ MemberList::~MemberList()
 
 int MemberList::compareItems(GCI item1, GCI item2)
 {
+  static bool sortConstructorsFirst = Config_getBool("SORT_MEMBERS_CTORS_1ST");
   MemberDef *c1=(MemberDef *)item1;
   MemberDef *c2=(MemberDef *)item2;
+  if (sortConstructorsFirst) {
+    int ord1 = c1->isConstructor() ? 2 : (c1->isDestructor() ? 1 : 0);
+    int ord2 = c2->isConstructor() ? 2 : (c2->isDestructor() ? 1 : 0);
+    if (ord1 > ord2)
+      return -1;
+    else if (ord2 > ord1)
+      return 1;
+  }
   return stricmp(c1->name(),c2->name());
 }
 

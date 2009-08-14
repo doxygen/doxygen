@@ -9,7 +9,6 @@ clean: FORCE
 	cd doc ; $(MAKE) clean
 	cd qtools ; $(MAKE) clean
 	cd src ; $(MAKE) clean
-	cd libpng ; $(MAKE) clean
 	cd libmd5 ; $(MAKE) clean
 	cd addon/doxywizard ; $(MAKE) clean
 	cd addon/doxmlparser/src ; $(MAKE) clean
@@ -20,7 +19,6 @@ clean: FORCE
 
 distclean: clean
 	cd src ; $(MAKE) distclean
-	cd libpng ; $(MAKE) distclean
 	cd libmd5 ; $(MAKE) distclean
 	cd addon/doxywizard ; $(MAKE) distclean
 	cd addon/doxmlparser/src ; $(MAKE) distclean
@@ -34,11 +32,10 @@ distclean: clean
 	-rm -f objects/*.o
 	-rm -f src/Makefile.doxygen src/Makefile.libdoxygen 
 	-rm -f src/Makefile.doxytag src/Makefile.libdoxycfg
-	-rm -f libpng/Makefile.libpng
 	-rm -f libmd5/Makefile.libmd5
 	-rm -f Makefile qtools/Makefile src/Makefile examples/Makefile doc/Makefile 
 	-rm -f .makeconfig .tmakeconfig
-	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro qtools/qtools.pro src/libdoxycfg.pro libpng/libpng.pro libmd5/libmd5.pro
+	-rm -f src/doxygen.pro src/libdoxygen.pro src/doxytag.pro qtools/qtools.pro src/libdoxycfg.pro libmd5/libmd5.pro
 	-rm -f src/version.cpp
 	-rm -r addon/doxywizard/Makefile
 	-rm -f addon/doxywizard/doxywizard.pro
@@ -77,9 +74,9 @@ docs: FORCE
 pdf: docs
 	cd latex ; $(MAKE)
 
-DISTFILES =  Doxyfile libpng libmd5 addon tmake doc wintools examples bin lib objects \
+DISTFILES =  Doxyfile libmd5 addon tmake doc examples bin lib objects \
              qtools src configure configure.bin Makefile.in Makefile.win_nmake.in \
-             Makefile.win_make.in INSTALL make.bat LANGUAGE.HOWTO LICENSE PLATFORMS \
+             Makefile.win_make.in INSTALL LANGUAGE.HOWTO LICENSE PLATFORMS \
              VERSION packages winbuild
 
 archive: clean

@@ -70,6 +70,18 @@ class UseSDict : public SDict<UseEntry>
     UseSDict() : SDict<UseEntry>(17) {}
 };
 
+/**
+  Contains names of used modules and names of local variables.
+*/
+class Scope 
+{
+  public:
+    QStringList useNames; //!< contains names of used modules
+    QDict<void> localVars; //!< contains names of local variables
+
+    Scope() : localVars(7, FALSE /*caseSensitive*/) {}
+};
+
 /*===================================================================*/
 /* 
  *	statics
@@ -79,8 +91,8 @@ static QCString  docBlock;                   //!< contents of all lines of a doc
 static QCString  currentModule=0;            //!< name of the current enclosing module
 static UseSDict  *useMembers= new UseSDict;  //!< info about used modules
 static UseEntry  *useEntry = 0;              //!< current use statement info
-static QStack<QStringList> useStack;         //!< contains names of used modules for current program tree
-static QStringList *currentUseNames= new QStringList; //! contains names of used modules of current program unit
+static QList<Scope> scopeStack;
+// static QStringList *currentUseNames= new QStringList; //! contains names of used modules of current program unit
 static QCString str="";         //!> contents of fortran string
 
 static CodeOutputInterface * g_code;
@@ -109,6 +121,9 @@ static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 
 static char          stringStartSymbol; // single or double quote
+// count in variable declaration to filter out
+//  declared from referenced names
+static int 	     bracketCount = 0; 
 
 // simplified way to know if this is fixed form
 // duplicate in fortranscanner.l
@@ -117,10 +132,12 @@ static bool recognizeFixedForm(const char* contents)
   int column=0;
   bool skipLine=FALSE;
 
-  for(int i=0;;i++) {
+  for (int i=0;;i++) 
+  {
     column++;
 
-    switch(contents[i]) {
+    switch(contents[i]) 
+    {
       case '\n':
         column=0;
         skipLine=FALSE;
@@ -262,7 +279,7 @@ static void codifyLines(char *text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;
@@ -304,7 +321,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   {
     char *sp=p;
     char c;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;
@@ -400,6 +417,13 @@ static bool getFortranDefs(const QCString &memberName, const QCString &moduleNam
 {
   if (memberName.isEmpty()) return FALSE; /* empty name => nothing to link */
 
+  // look in local variables
+  for (Scope *scope=scopeStack.last(); scope!=NULL; scope=scopeStack.prev())
+  {
+    if(scope->localVars.find(memberName))
+      return FALSE;
+  }
+
   // search for function
   MemberName *mn = Doxygen::functionNameSDict->find(memberName);
 
@@ -477,7 +501,6 @@ static bool getLink(UseSDict *usedict, // dictonary with used modules
 {
   MemberDef *md;
   QCString memberName= removeRedundantWhiteSpace(memberText);
-  //printf("Trying `%s'::`%s'\n",c.data(),m.data());
 
   if (getFortranDefs(memberName, currentModule, md, usedict) && md->isLinkable())
   { 
@@ -562,38 +585,46 @@ static int countLines()
 }
 
 //----------------------------------------------------------------------------
-/** start use list */
-void startUseScope() 
+/** start scope */
+void startScope() 
 {
-  //fprintf("===> startUse %s",yytext);
-  useStack.push(currentUseNames);
-  currentUseNames= new QStringList;
+  // fprintf(stderr, "===> startScope %s",yytext);
+  Scope *scope = new Scope;
+  scopeStack.append(scope);
 }
 
-/** end use list */
-void endUseScope() 
+/** end scope */
+void endScope() 
 {
-  //fprintf(stderr,"===> endUse %s",yytext);
-  //UseSDict::Iterator di(*useMembers); UseEntry *ue;
-  //for (di.toFirst(); ue=di.current(); ++di){cout << ue->module ;} cout << endl;
+  // fprintf(stderr,"===> endScope %s",yytext);
+  if (scopeStack.isEmpty()) 
+  {
+    fprintf(stderr,"WARNING: fortrancode.l: stack empty!"); 
+    return;
+    //exit(-1);
+  }
 
-  for ( QStringList::Iterator it = currentUseNames->begin(); it != currentUseNames->end(); ++it) 
+  Scope *scope = scopeStack.getLast();
+  scopeStack.removeLast();
+  for ( QStringList::Iterator it = scope->useNames.begin(); it != scope->useNames.end(); ++it) 
   {
     useMembers->remove(*it);
   }
-  delete currentUseNames;
-  currentUseNames= useStack.pop(); 
-  if (currentUseNames == 0) 
-  {
-     fprintf(stderr,"WARNING: fortrancode.l: stack empty!"); 
-     //exit(-1);
-  }
+  delete scope;
 }
 
 void addUse(QString moduleName) 
 {
-  currentUseNames->append(moduleName);
+  if (!scopeStack.isEmpty())
+    scopeStack.last()->useNames.append(moduleName);
 }
+
+void addLocalVar(QString varName) 
+{
+  if (!scopeStack.isEmpty())
+    scopeStack.last()->localVars.insert(varName, (void*)1);
+}
+
 //----------------------------------------------------------------------------
 
 /* -----------------------------------------------------------------*/
@@ -713,13 +744,13 @@ IGNORE (CALL)
        
  /*-------- fortran module  -----------------------------------------*/
 <Start>("program"|"module"|"type"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
-					  startUseScope();
+					  startScope();
   					  startFontClass("keyword"); 
   					  codifyLines(yytext);
 					  endFontClass();
                                           yy_push_state(YY_START);
 					  BEGIN(ClassName); 
-	                                  if (!strcmp(yytext,"module")) currentModule="module";
+	                                  if (!stricmp(yytext,"module")) currentModule="module";
 					}
 <ClassName>{ID}               	        {
 	                                  if (currentModule == "module") currentModule=yytext;
@@ -730,12 +761,12 @@ IGNORE (CALL)
                                           yy_pop_state();
 					  REJECT;
 					}
-<Start>"end"({BS_}"module")?.*          { // just reset currentModule, rest is done in following rule
+<Start>"end"({BS_}"module").*          { // just reset currentModule, rest is done in following rule
                                           currentModule=0;
 					  REJECT;
                                         }
 <Start>^{BS}"end"({BS}("program"|"module"|"type"|"interface")({BS_}{ID})?)?{BS}/(\n|!) {  //
-                                          endUseScope();
+                                          endScope();
  					  startFontClass("keyword"); 
   					  codifyLines(yytext);
 					  endFontClass();
@@ -755,8 +786,8 @@ IGNORE (CALL)
                                           BEGIN(Subprog);
                                         }
 <Subprog>{ID}                           { // subroutine/function name
-                                          //cout << "===> start procedure " << yytext << endl;
-					  startUseScope();
+                                          // fprintf(stderr, "===> start subprogram %s\n", yytext);
+					  startScope();
 					  generateLink(*g_code,yytext);
                                         }
 <Subprog>"(".*                          { // ignore rest of line 
@@ -765,9 +796,9 @@ IGNORE (CALL)
 <Subprog>"\n"                           { codifyLines(yytext);
                                           yy_pop_state();
                                         }
-<Start>"^{BS}end"({BS}{SUBPROG}({BS_}{ID})?)?{BS}/(\n|!) {  // Fortran subroutine or function ends
+<Start>^{BS}"end"({BS}{SUBPROG}({BS_}{ID})?)?{BS}/(\n|!) {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
-                                          endUseScope();
+                                          endScope();
    					  startFontClass("keyword");
   					  codifyLines(yytext);
 					  endFontClass();
@@ -808,16 +839,33 @@ IGNORE (CALL)
 					  g_code->codify(yytext);
 					  endFontClass();
   					}
+<Declaration>{ID}                       { // local var
+					  g_code->codify(yytext);
+					  if (g_currentMemberDef && g_currentMemberDef->isFunction())
+					    addLocalVar(yytext);
+					}
+<Declaration>[(]			{ // start of array specification
+					  bracketCount++;
+					  g_code->codify(yytext);
+					}
+
+<Declaration>[)]			{ // end array specification
+					  bracketCount--;
+					  g_code->codify(yytext);
+					}
+
 <Declaration>"&"                        { // continuation line
                                           yy_push_state(YY_START);
 					  BEGIN(DeclContLine);					  
  					}
 <DeclContLine>"\n"                      { // declaration not yet finished
                                           codifyLines(yytext);
+					  bracketCount = 0;
                                           yy_pop_state();
  				 	}
 <Declaration>"\n"                       { // end declaration line
 					  codifyLines(yytext);
+					  bracketCount = 0;
                                           yy_pop_state();
  					}
 
@@ -895,6 +943,10 @@ IGNORE (CALL)
 					  endFontClass();
                                         }
  /*------ variable references?  -------------------------------------*/ 
+
+<Start>"%"{BS}{ID}	 		{ // ignore references to elements 
+					  g_code->codify(yytext);
+					}
 <Start>{ID}                             {   
   					    g_insideBody=TRUE;
                                             generateLink(*g_code, yytext);

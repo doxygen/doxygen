@@ -131,7 +131,9 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
   QFile f(mapName);
   if (!f.open(IO_ReadOnly)) 
   {
-    err("Error opening map file %s for inclusion in the docs!\n",mapName);
+    err("Error opening map file %s for inclusion in the docs!\n"
+        "If you installed Graphviz/dot after a previous failing run, \n"
+        "try deleting the output directory and rerun doxygen.\n",mapName);
     return FALSE;
   }
   const int maxLineLen=10240;
@@ -877,7 +879,7 @@ void DotNode::writeXML(QTextStream &t,bool isClassGraph)
 
 void DotNode::writeDEF(QTextStream &t)
 {
-  char* nodePrefix = "        node-";
+  const char* nodePrefix = "        node-";
 
   t << "      node = {" << endl;
   t << nodePrefix << "id    = " << m_number << ';' << endl;
@@ -1919,7 +1921,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
   {
     QCString mapLabel = escapeCharsInString(m_startNode->m_label,FALSE)+"_"+
                         escapeCharsInString(mapName,FALSE);
-    out << "<center><img src=\"" << relPath << baseName << "." 
+    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
       << imgExt << "\" border=\"0\" usemap=\"#"
       << mapLabel << "\" alt=\"";
     switch (m_graphType)
@@ -1934,7 +1936,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         ASSERT(0);
         break;
     }
-    out << "\"/></center>" << endl;
+    out << "\"/></div>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
     tmpout.setEncoding(tmpout.UnicodeUTF8);
@@ -2249,10 +2251,10 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<center><img src=\"" << relPath << baseName << "." 
+    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"\"/>";
-    out << "</center>" << endl;
+    out << "</div>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
     tmpout.setEncoding(tmpout.UnicodeUTF8);
@@ -2542,11 +2544,11 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<center><img src=\"" << relPath << baseName << "." 
+    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
     out << "\">";
-    out << "</center>" << endl;
+    out << "</div>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
     tmpout.setEncoding(tmpout.UnicodeUTF8);
@@ -2684,12 +2686,12 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
 
   if (format==BITMAP && generateImageMap)
   {
-    out << "<center><img src=\"" << relPath << baseName << "." 
+    out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
     out << convertToXML(m_dir->displayName());
     out << "\"/>";
-    out << "</center>" << endl;
+    out << "</div>" << endl;
     QString tmpstr;
     QTextOStream tmpout(&tmpstr);
     tmpout.setEncoding(tmpout.UnicodeUTF8);

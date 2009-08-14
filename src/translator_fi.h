@@ -86,7 +86,7 @@ positiiviset kommentit otetaan ilolla vastaan.
 #ifndef TRANSLATOR_FI_H
 #define TRANSLATOR_FI_H
 
-class TranslatorFinnish : public Translator
+class TranslatorFinnish : public TranslatorAdapter_1_6_0
 {
   public:
     /*! This method is used to generate a warning message to signal

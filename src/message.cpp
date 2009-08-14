@@ -150,7 +150,7 @@ static void do_warn(const char *tag, const char *file, int line, const char *fmt
     )+'\n';
 
   // print resulting message
-  fprintf(warnFile,msgText);
+  fprintf(warnFile,"%s",msgText.data());
 }
 
 void warn(const char *file,int line,const char *fmt, ...)

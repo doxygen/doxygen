@@ -825,7 +825,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   {
     t << "<script type=\"text/javascript\"><!--\n";
     t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << relPath<< "search\",false);\n";
+      << relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
     t << "--></script>\n";
   }
   generateDynamicSections(t,relPath);
@@ -1294,17 +1294,19 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
 {
   t << "</div>" << endl;
   t << "<div class=\"dynsection\">" << endl;
-  t << "<img class=\"center\" src=\"";
-  t << relPath << fileName << ".png\" usemap=\"#";
+  t << " <div class=\"center\">" << endl;
+  t << "  <img src=\"";
+  t << relPath << fileName << ".gif\" usemap=\"#";
   docify(name);
   t << "_map\" alt=\"\"/>" << endl;
-  t << "<map id=\"";
+  t << "  <map id=\"";
   docify(name);
   t << "_map\" name=\"";
   docify(name);
   t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
+  t << " </div>" << endl;
   t << "</div>" << endl;
 }
 
@@ -2027,7 +2029,8 @@ static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
             t << "             onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
             t << "             onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
             t << "             alt=\"\"/>\n";
-            t << "        <input type=\"text\" id=\"MSearchField\" value=\"Search\" accesskey=\"S\"\n";
+            t << "        <input type=\"text\" id=\"MSearchField\" value=\"" 
+              << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
             t << "             onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
             t << "             onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
             t << "             onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";

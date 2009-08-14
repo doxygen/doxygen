@@ -204,7 +204,7 @@ void FormulaList::generateBitmaps(const char *path)
         {
           // assume the size if after the first line that does not start with
           // # excluding the first line of the file.
-          while (!t.eof() && (s=t.readLine()) && !s.isEmpty() && s.at(0)=='#');
+          while (!t.eof() && (s=t.readLine()) && !s.isEmpty() && s.at(0)=='#') { }
           sscanf(s,"%d %d",&imageX,&imageY);
         }
         if (imageX>0 && imageY>0)

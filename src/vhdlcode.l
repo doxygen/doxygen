@@ -60,7 +60,6 @@ static bool isFuncProto=FALSE;
 static bool isComponent=FALSE;
 static bool isPackageBody=FALSE;
 static bool isProto = FALSE;
-static bool isStripCode = FALSE;
 
 static QCString   g_PrevString;
 static QCString   g_CurrClass;
@@ -127,7 +126,7 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
 static bool checkString(QCString &name)
 {
   if (name.isEmpty()) return FALSE;
-  static QRegExp regg("[ \t\"]");
+  static QRegExp regg("[\\s\"]");
 
   int len=name.length();
   if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
@@ -337,7 +336,8 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
  */
 static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
 {
- // printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
+  if (text==0) return;
+  printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
   const char *p=text,*sp=p;
   char c;
   bool done=FALSE;
@@ -578,7 +578,8 @@ static void startFontClass(const char *s)
 
 static void writeFont(const char *s,const char* text)
 {
-  if (s==0) return;
+  if (s==0 || text==0) return;
+  printf("writeFont(%d,\"%s\")\n",g_yyLineNr,text);
   g_code->startFontClass(s);
   g_code->codify(text);
   g_code->endFontClass();
@@ -605,7 +606,7 @@ static QCString g_temp;
 /* writes and links a port map statement */
 static void codifyMapLines(char *text)
 {
-  if (text==NULL) return;
+  if (text==0) return;
   g_temp.resize(0);       
   //bool dot=FALSE;
   int wordCounter=0;
@@ -873,9 +874,6 @@ MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{
 			}
 			BEGIN(Map);
                       }
-<Map>{TEXTT} {
-                            writeFont("keyword",vhdlcodeYYtext);
-                       }
 
 <Map>"\n"|","         {
                         codifyLines(vhdlcodeYYtext);
@@ -924,24 +922,22 @@ MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{
 
 
 <ParseType>{TEXTT}    {
-                        if (!isStripCode) 
-			{
-                          g_FuncProto.append(vhdlcodeYYtext);                
-                          if (isProto)                                                                 
-			  {
-                            writeFont("keyword",vhdlcodeYYtext);
-			  }
-                          BEGIN(ParseType); 
-                         }
+                        g_FuncProto.append(vhdlcodeYYtext);                
+                        if (isProto)                                                                 
+		        {
+                          writeFont("keyword",vhdlcodeYYtext);
+		        }
+                        BEGIN(ParseType); 
                        }
 
 <ParseType>{ENDEFUNC} {
+  			QRegExp regg("[\\s]");
                         QCString tt(vhdlcodeYYtext);
                         codifyLines(vhdlcodeYYtext,g_CurrClass.data());
                         tt=tt.lower();
                         VhdlDocGen::deleteAllChars(tt,';');
                         tt.stripWhiteSpace();
-                        QStringList ql=QStringList::split(" ",tt,FALSE);
+                        QStringList ql=QStringList::split(regg,tt,FALSE);
                         int index=ql.findIndex(QCString("if"))+1;
                         index+=ql.findIndex(QCString("case"))+1;
                         index+=ql.findIndex(QCString("loop"))+1;
@@ -1097,23 +1093,8 @@ MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{
 
 
 <ParseComponent>"\n"|" " {
-                         if (!isStripCode)
-			 {
                            codifyLines(vhdlcodeYYtext);
-			 }
-                      	 else
-			 {
-                           g_yyLineNr++;
-			 }
-                       }
-
-<ParseComponent>{TEXTT} {
-                         QCString text(vhdlcodeYYtext);
-                         if (!isStripCode) 
-			 {
-                           writeFont("keyword",vhdlcodeYYtext);
                          }
-                       }
 
 <ParseComponent>{DIGITSS} { 
                          startFontClass("vhdllogic");
@@ -1446,14 +1427,7 @@ MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{
                 }
 
 <*>\n                    {
-                           if (!isStripCode)
-			   {
-			     codifyLines(vhdlcodeYYtext);
-			   }
-			   else
-			   {
-			     g_yyLineNr++;
-			   }
+			   codifyLines(vhdlcodeYYtext);
 			   BEGIN(Bases);
                          }
 
@@ -1461,33 +1435,36 @@ MAPCOMPONENT4 ({ALLTYPESMAP}[:]{BN}*("entity"|"component"|"configuration"){BN}+{
                            g_code->codify(vhdlcodeYYtext);
                          }
 
-<*>{TEXTT}               { // found text
-                           bool stripLine=FALSE;
+<*>\n{TEXTT}             { // found normal or special comment on its own line
 			   QCString text(vhdlcodeYYtext);
-			   if (Config_getBool("STRIP_CODE_COMMENTS")) 
-			   {  
-			     if (text.contains("--!"))
-			     {
-			       stripLine=TRUE;
-			     }
+			   int i=text.find("--");
+			   if (text.mid(i,3)=="--!" && // hide special comment
+                               Config_getBool("STRIP_CODE_COMMENTS")) 
+			   { 
+			     g_yyLineNr++; // skip complete line
 			   }  
-			   if (!isStripCode && !stripLine) 
+			   else // normal comment
 			   {
-			     writeFont("keyword",vhdlcodeYYtext);
-			     BEGIN(Bases);
+			     startFontClass("comment");
+			     codifyLines(text);
+			     endFontClass();
 			   }
                          }
-    /*
-<*>{B}*"--#"[^\n]*       { // found one line comment
-                           if (!Config_getBool("STRIP_CODE_COMMENTS"))
-                           {
-                             startFontClass("keyword");
-                             codifyLines(vhdlcodeYYtext);
-                             endFontClass(); 
-                           }
+<*>{TEXTT}               { // found normal or special comment after something
+			   QCString text(vhdlcodeYYtext);
+			   int i=text.find("--");
+			   if (text.mid(i,3)=="--!" &&
+                               Config_getBool("STRIP_CODE_COMMENTS")) 
+			   { 
+			      // hide special comment
+			   }  
+			   else // normal comment
+			   {
+			     startFontClass("comment");
+			     codifyLines(text);
+			     endFontClass();
+			   }
                          }
-    */
-
 
 
 %%

@@ -114,9 +114,6 @@ search_js.h: search.js
 search_css.h: search.css
 	cat search.css | $(TO_C_CMD) >search_css.h 
 
-search_php.h: search.php
-	cat search.php | $(TO_C_CMD) >search_php.h 
-
 doxygen_css.h: doxygen.css
 	cat doxygen.css | $(TO_C_CMD) >doxygen_css.h 
 
