@@ -74,7 +74,7 @@ class TranslatorDutch : public Translator
     QCString trGeneratedAutomatically(const char *s)
     { QCString result="Automatisch gegenereerd door Doxygen"; 
       if (s) result+=(QCString)" voor "+s;
-      result+=" uit de programmacode."; 
+      result+=" uit de programmatekst."; 
       return result;
     }
     QCString trEnumName()
@@ -109,7 +109,7 @@ class TranslatorDutch : public Translator
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="files, elk met een korte beschrijving:";
+      result+="bestanden, elk met een korte beschrijving:";
       return result;
     }
     QCString trCompoundListDescription()
@@ -129,9 +129,9 @@ class TranslatorDutch : public Translator
     {
       QCString result="Hieronder volgt de lijst met alle ";
       if (!extractAll) result+="gedocumenteerde ";
-      result+="file members met links naar ";
-      if (extractAll) result+="de file documentatie voor elke member:";
-      else result+="de files waartoe ze behoren:";
+      result+="bestand members met links naar ";
+      if (extractAll) result+="de bestand's documentatie voor elke member:";
+      else result+="de bestanden waartoe ze behoren:";
       return result;
     }
     QCString trExamplesDescription()
@@ -279,7 +279,7 @@ class TranslatorDutch : public Translator
       // used as the title of the HTML page of a file
     {
       QCString result=fileName;
-      result+=" File Referentie"; 
+      result+=" Bestand Referentie"; 
       return result;
     }
     QCString trNamespaceReference(const char *namespaceName)
@@ -420,7 +420,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Category:   result+="deze categorie"; break;
         case ClassDef::Exception:  result+="deze exceptie"; break;
       }
-      result+=" is gegenereerd op grond van de volgende file";
+      result+=" is gegenereerd op grond van het volgende bestand";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -456,11 +456,11 @@ class TranslatorDutch : public Translator
 
     QCString trDefinedAtLineInSourceFile()
     {
-      return "De definitie bevindt zich op regel @0 in de file @1.";
+      return "De definitie bevindt zich op regel @0 in het bestand @1.";
     }
     QCString trDefinedInSourceFile()
     {
-      return "De definitie bevindt zich in de file @0.";
+      return "De definitie bevindt zich in het bestand @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -494,12 +494,12 @@ class TranslatorDutch : public Translator
     /*! Used in the file documentation to point to the corresponding sources. */
     QCString trGotoSourceCode()
     {
-      return "Ga naar de bron code van deze file.";
+      return "Ga naar de broncode van dit bestand.";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     QCString trGotoDocumentation()
     {
-      return "Ga naar de documentatie van deze file.";
+      return "Ga naar de documentatie van dit bestand.";
     }
     /*! Text for the \\pre command */
     QCString trPrecondition()
@@ -622,8 +622,8 @@ class TranslatorDutch : public Translator
     }
     QCString trInclByDepGraph()
     {
-      return "Deze graaf geeft aan welke files direct of "
-             "indirect afhankelijk zijn van deze file:";
+      return "Deze graaf geeft aan welke bestanden direct of "
+             "indirect afhankelijk zijn van dit bestand:";
     }
     QCString trSince()
     {
@@ -863,8 +863,8 @@ class TranslatorDutch : public Translator
      */
     virtual QCString trFile(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "File" : "file"));
-      if (!singular)  result+="s";
+      QCString result((first_capital ? "Bestand" : "bestand"));
+      if (!singular)  result+="en";
       return result; 
     }
 
@@ -1342,7 +1342,7 @@ class TranslatorDutch : public Translator
         case ClassDef::Category:   result+="deze category"; break;
         case ClassDef::Exception:  result+="deze exception"; break;
       }
-      result+=" is gegenereerd op grond van de volgende file";
+      result+=" is gegenereerd op grond van het volgende bestand";
       if (single) result+=":"; else result+="s:";
       return result;
     }
@@ -1372,6 +1372,43 @@ class TranslatorDutch : public Translator
     {
       return "Type Beperkingen";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Relatie";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Laden...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Globale Namespace";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Zoeken...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Niets gevonden";
+    }
+
+
+
 };
 
 #endif

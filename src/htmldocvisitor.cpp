@@ -665,6 +665,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       case DocNode::Kind_SimpleListItem:
       case DocNode::Kind_AutoListItem:
       case DocNode::Kind_SimpleSect:
+      case DocNode::Kind_XRefItem:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -741,6 +742,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
       case DocNode::Kind_SimpleListItem:
       case DocNode::Kind_AutoListItem:
       case DocNode::Kind_SimpleSect:
+      case DocNode::Kind_XRefItem:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -1506,7 +1508,7 @@ void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
-  } 
+  }
   QString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
   QString mapName = baseName+".map";
@@ -1526,7 +1528,7 @@ void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
-  } 
+  }
   QString outDir = Config_getString("HTML_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   QString mapName = baseName+".map";
@@ -1552,7 +1554,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     if (nodeIndex<0) return; // first node
     while (nodeIndex>=0 && 
            para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
-          ) 
+          )
     {
       nodeIndex--;
     }
@@ -1562,7 +1564,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
       //printf("n=%p kind=%d outside=%d\n",n,n->kind(),mustBeOutsideParagraph(n));
       if (mustBeOutsideParagraph(n)) return;
     }
-    
+
     bool isFirst;
     bool isLast;
     getParagraphContext(para,isFirst,isLast);
@@ -1589,7 +1591,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     if (nodeIndex==numNodes) return; // last node
     while (nodeIndex<numNodes && 
            para->children().at(nodeIndex)->kind()==DocNode::Kind_WhiteSpace
-          ) 
+          )
     {
       nodeIndex++;
     }
@@ -1608,7 +1610,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     getParagraphContext(para,isFirst,isLast);
     //printf("forceStart first=%d last=%d\n",isFirst,isLast);
     if (isFirst && isLast) return;
-      
+
     m_t << "<p>";
   }
 }

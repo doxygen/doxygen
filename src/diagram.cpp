@@ -392,7 +392,7 @@ void TreeDiagram::computeLayout()
 
   // re-organize the diagram items
   DiagramItem *root=getFirst()->getFirst();
-  while (layoutTree(root,0));
+  while (layoutTree(root,0)) { }
   
   // move first items of the lists
   if (row)
@@ -1289,8 +1289,9 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
-  image.save((QCString)path+"/"+fileName+".png");
-  Doxygen::indexList.addImageFile(QCString(fileName)+".png");
+#define IMAGE_EXT ".gif"
+  image.save((QCString)path+"/"+fileName+IMAGE_EXT);
+  Doxygen::indexList.addImageFile(QCString(fileName)+IMAGE_EXT);
   
   if (generateMap) t << "</map>" << endl;
 }

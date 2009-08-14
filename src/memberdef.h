@@ -164,6 +164,7 @@ class MemberDef : public Definition
     bool hasDocumentedParams() const;
     bool hasDocumentedReturnType() const;
     bool isObjCMethod() const;
+    bool isObjCProperty() const;
     bool isConstructor() const;
     bool isDestructor() const;
     bool hasOneLineInitializer() const;

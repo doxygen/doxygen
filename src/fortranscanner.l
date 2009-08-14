@@ -595,10 +595,9 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 					  /* remember attributes for the symbol */
 					  modifiers[current_root][name.lower()] |= currentModifiers;
 					  argName= name;
-					  int last= yy_top_state();
 
 					  v_type= V_IGNORE;
-  					  if (!argType.isEmpty() && last != SubprogBody) 
+  					  if (!argType.isEmpty() && current_root->section!=Entry::FUNCTION_SEC) 
 					  { // new variable entry
 					    v_type = V_VARIABLE;
                                             current->section = Entry::VARIABLE_SEC;
@@ -691,7 +690,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                        }
 
 <Subprog>{BS}                          {   /* ignore white space */   }
-<Subprog>{ID}                          {   current->name = yytext; 
+<Subprog>{ID}                          {   current->name = yytext;
 					   //cout << "1a==========> got " << current->type << " " << yytext << " " << yyLineNr << endl;
 					   modifiers[current_root][current->name.lower()].returnName = current->name;
 					   BEGIN(Parameterlist);
@@ -1220,11 +1219,13 @@ static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = F
   for (unsigned int i=0; i<subprog->argList->count(); i++) 
   {
     Argument *arg = subprog->argList->at(i);
-    if (!byTypeName && arg->name.lower() == cname ||
-	byTypeName && arg->type.lower() == cname)
+    if ((!byTypeName && arg->name.lower() == cname) ||
+	(byTypeName && arg->type.lower() == cname)
+       )
+    {
       return arg;
+    }
   }
-
   return 0;
 }
 
@@ -1764,6 +1765,9 @@ static void scanner_abort()
      if (ce == file_root) start=TRUE;
      if (start) ce->reset(); 
   } 
+
+  // dummy call to avoid compiler warning
+  (void)yy_top_state();
   
   return;
   //exit(-1);
@@ -1774,7 +1778,7 @@ static void scanner_abort()
 #if !defined(YY_FLEX_SUBMINOR_VERSION) 
 //----------------------------------------------------------------------------
 extern "C" { // some bogus code to keep the compiler happy
-  void fscannerYYdummy() { yy_flex_realloc(0,0); yy_top_state(); } 
+  void fscannerYYdummy() { yy_flex_realloc(0,0); } 
 }
 #endif
 

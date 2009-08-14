@@ -2049,7 +2049,7 @@ class Receiver
   after the \ref cfg_dotfile_dirs "DOTFILE_DIRS" tag. 
   If the dot file is found it will be used as an input file to the dot tool. 
   The resulting image will be put into the correct output directory.
-  If the dot file name contains spaces you'll have to put quotes (") around it.
+  If the dot file name contains spaces you'll have to put quotes ("...") around it.
 
   The second argument is optional and can be used to specify the caption
   that is displayed below the image. This argument has to be specified
@@ -2224,7 +2224,7 @@ class Receiver
   doxygen will look for files in the paths (or files) that you specified 
   after the \ref cfg_image_path "IMAGE_PATH" tag. 
   If the image is found it will be copied to the correct output directory.
-  If the image name contains spaces you'll have to put quotes (") around it.
+  If the image name contains spaces you'll have to put quotes ("...") around it.
   You can also specify an absolute URL instead of a file name, but then
   doxygen does not copy the image nor check its existance.
 

@@ -854,7 +854,7 @@ bool VhdlDocGen::getSigName(QList<QCString>& ql,
                             const char* str,QCString& buffer)
 {
   int j,ll,index;
-  char *signal = "signal ";
+  const char *signal = "signal ";
   QCString qmem;
   QCString temp(str);
   QCString st(str);
@@ -1123,7 +1123,9 @@ void VhdlDocGen::getFuncParams(QList<Argument>& ql, const char* str)
 
     uint zui=ttype.contains('(',FALSE);
     if (zui == 0)
-      tt=QStringList::split(" ",ttype,FALSE);
+    {
+      tt=QStringList::split(QRegExp("[\\s]"),ttype,FALSE);
+    }
     else
     {
       if (ttype.stripPrefix("in"))
@@ -1165,7 +1167,7 @@ void VhdlDocGen::getFuncParams(QList<Argument>& ql, const char* str)
       QCString name=(QCString)tempList[j];
       name=name.stripWhiteSpace();
 
-      tt=QStringList::split(" ",name,FALSE);
+      tt=QStringList::split(QRegExp("[\\s]"),name,FALSE);
       if (tt.count() > 1)
 	ttype=(tt.first()).stripWhiteSpace();
 
@@ -2114,7 +2116,9 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   if (!mdef->briefDescription().isEmpty() &&   Config_getBool("BRIEF_MEMBER_DESC") /* && !annMemb */)
   {
     ol.startMemberDescription();
-    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),mdef->getOuterScope()?mdef->getOuterScope():d,mdef,mdef->briefDescription(),TRUE,FALSE);
+    ol.parseDoc(mdef->briefFile(),mdef->briefLine(),
+                mdef->getOuterScope()?mdef->getOuterScope():d,
+                mdef,mdef->briefDescription(),TRUE,FALSE,0,TRUE,FALSE);
     if (detailsVisible) 
     {
       ol.pushGeneratorState();
@@ -2228,7 +2232,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
   if (subtitle && subtitle[0]!=0) 
   {
     ol.startMemberSubtitle();
-    ol.parseDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE);
+    ol.parseDoc("[generated]",-1,0,0,subtitle,FALSE,FALSE,0,TRUE,FALSE);
     ol.endMemberSubtitle();
   } //printf("memberGroupList=%p\n",memberGroupList);
 

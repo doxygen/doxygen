@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorTurkish : public Translator
+class TranslatorTurkish : public TranslatorAdapter_1_6_0
 {
   public:
 

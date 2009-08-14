@@ -654,6 +654,16 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
       t << " new=\"yes\"";
     }
 
+    if (md->isOptional())
+    {
+      t << " optional=\"yes\"";
+    }
+
+    if (md->isRequired())
+    {
+      t << " required=\"yes\"";
+    }
+
     t << " virt=\"";
     switch (md->virtualness())
     {
@@ -698,6 +708,15 @@ static void generateXMLForMember(MemberDef *md,QTextStream &ti,QTextStream &t,De
     t << " settable=\"";
     if (md->isSettable()) t << "yes"; else t << "no";
     t << "\"";
+
+    if (md->isAssign() || md->isCopy() || md->isRetain())
+    {
+      t << " accessor=\"";
+      if (md->isAssign()) t << "assign";
+      else if (md->isCopy()) t << "copy";
+      else if (md->isRetain()) t << "retain";
+      t << "\"";
+    }
   }
   else if (md->memberType() == MemberDef::Event)
   {

@@ -142,7 +142,7 @@ class ConfigList : public ConfigOption
         t << convertToComment(m_doc);
         t << endl;
       }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
+      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringList(t,m_value);
       t << "\n";
     }
@@ -183,7 +183,7 @@ class ConfigEnum : public ConfigOption
         t << convertToComment(m_doc);
         t << endl;
       }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
+      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringValue(t,m_value);
       t << "\n";
     }
@@ -225,7 +225,7 @@ class ConfigString : public ConfigOption
         t << convertToComment(m_doc);
         t << endl;
       }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
+      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       writeStringValue(t,m_value);
       t << "\n";
     }
@@ -269,7 +269,7 @@ class ConfigInt : public ConfigOption
         t << convertToComment(m_doc);
         t << endl;
       }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
+      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       if (upd && !m_valueString.isEmpty())
       {
         writeStringValue(t,m_valueString);
@@ -317,7 +317,7 @@ class ConfigBool : public ConfigOption
         t << convertToComment(m_doc);
         t << endl;
       }
-      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "= ";
+      t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
       if (upd && !m_valueString.isEmpty())
       {
         writeStringValue(t,m_valueString);

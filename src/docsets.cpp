@@ -244,16 +244,18 @@ void DocSets::addIndexItem(const char *, const char *,
   switch (langExt)
   {
     case SrcLangExt_Cpp:
+    case SrcLangExt_ObjC:
       {
-        if (md->isObjCMethod())                        
+        if (md->isObjCMethod() || md->isObjCProperty())
           lang="occ";  // Objective C/C++
         else if (fd && fd->name().right(2).lower()==".c") 
           lang="c";    // Plain C
+        else if (cd==0 && nd==0)
+          lang="c";    // Plain C symbol outside any class or namespace
         else                                      
           lang="cpp";  // C++
       }
       break;
-    case SrcLangExt_ObjC:   lang="occ"; break;        // Objective C++
     case SrcLangExt_IDL:    lang="idl"; break;        // IDL
     case SrcLangExt_CSharp: lang="csharp"; break;     // C#
     case SrcLangExt_PHP:    lang="php"; break;        // PHP4/5
@@ -282,7 +284,10 @@ void DocSets::addIndexItem(const char *, const char *,
     if (cd->isTemplate()) 
       type="tmplt";
     else if (cd->compoundType()==ClassDef::Protocol) 
+    {
       type="intf";
+      if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
+    }
     else if (cd->compoundType()==ClassDef::Interface) 
       type="cl";
     else if (cd->compoundType()==ClassDef::Category)
@@ -317,10 +322,22 @@ void DocSets::addIndexItem(const char *, const char *,
     case MemberDef::Define:
       type="macro"; break;
     case MemberDef::Function:
-      if (cd && cd->compoundType()==ClassDef::Interface) 
-        type="intfm";
-      else if (cd && cd->compoundType()==ClassDef::Class) 
-        type="clm"; 
+      if (cd && (cd->compoundType()==ClassDef::Interface || 
+                 cd->compoundType()==ClassDef::Class)
+         ) 
+      {
+        if (md->isStatic())
+          type="clm";
+        else
+          type="instm";
+      }
+      else if (cd && cd->compoundType()==ClassDef::Protocol) 
+      {
+        if (md->isStatic())
+          type="intfcm";
+        else
+          type="intfm";
+      }
       else 
         type="func"; 
       break;
@@ -343,7 +360,11 @@ void DocSets::addIndexItem(const char *, const char *,
     case MemberDef::DCOP:
       type="dcop"; break;
     case MemberDef::Property:
-      type="property"; break;
+      if (cd && cd->compoundType()==ClassDef::Protocol) 
+        type="intfp";
+      else 
+        type="instp";
+      break;
     case MemberDef::Event:
       type="event"; break;
   }

@@ -29,7 +29,7 @@ def parseOption(node):
 	adefval = node.getAttribute('altdefval')
 	depends = node.getAttribute('depends')
 	# replace \ by \\, replace " by \", and '  ' by a newline with end string and start string at next line
-        docC    = doc.strip().replace('\\','\\\\').replace('"','\\"').replace('  ',' \\n"\n                 "')
+        docC    = doc.strip().replace('\\','\\\\').replace('"','\\"').replace('  ','\\n"\n                 "')
 	print "  //----"
         if type=='bool':
         	if len(adefval)>0:

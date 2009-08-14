@@ -48,6 +48,7 @@ HEADERS      =	bufstr.h \
 		filename.h \
 		formula.h \
 		ftvhelp.h \
+                gifenc.h \
 		groupdef.h \
 		htags.h \
 		htmlattrib.h \
@@ -81,7 +82,6 @@ HEADERS      =	bufstr.h \
 		outputlist.h \
 		pagedef.h \
 		perlmodgen.h \
-                pngenc.h \
 		pre.h \
                 printdocvisitor.h \
                 pycode.h \
@@ -98,7 +98,6 @@ HEADERS      =	bufstr.h \
 		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
-		search_php.h \
 		search_js.h \
 		search_css.h \
 		section.h \
@@ -180,6 +179,7 @@ SOURCES      =	ce_lex.cpp \
 		ftvhelp.cpp \
 		fortrancode.cpp \
 		fortranscanner.cpp \    
+                gifenc.cpp \
 		groupdef.cpp \
 		htags.cpp \
                 htmldocvisitor.cpp \
@@ -209,7 +209,6 @@ SOURCES      =	ce_lex.cpp \
 		outputlist.cpp \
 		pagedef.cpp \
 		perlmodgen.cpp \
-                pngenc.cpp \
 		pre.cpp \
 		pycode.cpp \
 		pyscanner.cpp \    
@@ -239,10 +238,11 @@ win32-msvc:TMAKE_CXXFLAGS  += -Zm200
 win32-g++:TMAKE_CXXFLAGS   += -fno-exceptions -fno-rtti
 linux-g++:TMAKE_CXXFLAGS    += -fno-exceptions -fno-rtti
 INCLUDEPATH                += ../qtools
-INCLUDEPATH                += ../libpng
+#INCLUDEPATH                += ../libpng
 INCLUDEPATH                += ../libmd5
 win32:INCLUDEPATH          += .
-win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
+#win32-g++:INCLUDEPATH      = ../qtools /usr/include/libpng12 ../libmd5
+win32-g++:INCLUDEPATH      = ../qtools ../libmd5
 DESTDIR                    =  ../lib
 TARGET                     =  doxygen
 OBJECTS_DIR                =  ../objects

@@ -866,13 +866,20 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lineCount() ;
 					}
 <FindMembers>{B}*"internal"{BN}*":"{BN}* {  // for now treat C++/CLI's internal as package...
-					  current->protection = protection = Package ;
-					  current->mtype = mtype = Method;
-					  current->type.resize(0); 
-					  current->name.resize(0); 
-					  current->args.resize(0);
-					  current->argList->clear();
-					  lineCount() ;
+  					  if (insideCli)
+					  {
+					    current->protection = protection = Package ;
+					    current->mtype = mtype = Method;
+					    current->type.resize(0); 
+					    current->name.resize(0); 
+					    current->args.resize(0);
+					    current->argList->clear();
+					    lineCount() ;
+					  }
+					  else
+					  {
+					    REJECT;
+					  }
   					}
 <FindMembers>{B}*"protected"{BN}*":"{BN}* {  
   					  current->protection = protection = Protected ;
@@ -2706,8 +2713,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
 <FindMembers>"["			{ 
   					  if (!insideCS &&  
-					      current->name.isEmpty() || 
-					      current->name=="typedef"
+					      (current->name.isEmpty() || 
+					       current->name=="typedef"
+					      )
 					     ) // IDL function property
  					  {
           				    squareCount=1;

@@ -1568,10 +1568,11 @@ bool MemberDef::isDetailedSectionLinkable() const
          (m_impl->mtype==EnumValue && !briefDescription().isEmpty()) || 
          // has brief description that is part of the detailed description
          (!briefDescription().isEmpty() &&           // has brief docs
-          (alwaysDetailedSec &&  // they or visible in
-           repeatBrief ||        // detailed section or
-           !briefMemberDesc      // they are explicitly not
-          )                                          // shown in brief section
+          (alwaysDetailedSec &&                      // they are visible in
+           (repeatBrief ||                           // detailed section or
+            !briefMemberDesc                         // they are explicitly not
+           )                                         // shown in brief section
+          )                                       
          ) ||
          // has a multi-line initialization block
          //(initLines>0 && initLines<maxInitLines) || 
@@ -3042,6 +3043,13 @@ bool MemberDef::isObjCMethod() const
 {
   makeResident();
   if (m_impl->classDef && m_impl->classDef->isObjectiveC() && isFunction()) return TRUE;
+  return FALSE; 
+}
+
+bool MemberDef::isObjCProperty() const
+{
+  makeResident();
+  if (m_impl->classDef && m_impl->classDef->isObjectiveC() && isProperty()) return TRUE;
   return FALSE; 
 }
 

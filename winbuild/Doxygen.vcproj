@@ -78,7 +78,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="qtools.lib libpng.lib zlib.lib ws2_32.lib iconv.lib"
+				AdditionalDependencies="qtools.lib ws2_32.lib iconv.lib shell32.lib"
 				OutputFile="..\bin\Debug\doxygen.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -180,7 +180,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/LTCG"
-				AdditionalDependencies="qtools.lib libpng.lib zlib.lib iconv.lib shell32.lib"
+				AdditionalDependencies="qtools.lib iconv.lib shell32.lib"
 				OutputFile="..\bin\doxygen.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -469,6 +469,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\dbusxmlscanner.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\debug.cpp"
@@ -919,6 +923,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\src\gifenc.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\src\groupdef.cpp"
@@ -1531,28 +1539,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\pngenc.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\src\portable.cpp"
 				>
 			</File>
@@ -2048,6 +2034,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\dbusxmlscanner.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\debug.h"
 				>
 			</File>
@@ -2137,6 +2127,10 @@
 			</File>
 			<File
 				RelativePath="..\src\ftvhelp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\gifenc.h"
 				>
 			</File>
 			<File
@@ -2288,10 +2282,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\pngenc.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\portable.h"
 				>
 			</File>
@@ -2341,10 +2331,6 @@
 			</File>
 			<File
 				RelativePath="..\src\scanner.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\search_php.h"
 				>
 			</File>
 			<File

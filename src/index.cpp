@@ -2293,8 +2293,9 @@ static void addMemberToSearchIndex(
     }
   }
   else if (isLinkable && 
-      ((nd=md->getNamespaceDef()) && nd->isLinkable()) || 
-      ((fd=md->getFileDef())      && fd->isLinkable())
+      (((nd=md->getNamespaceDef()) && nd->isLinkable()) || 
+       ((fd=md->getFileDef())      && fd->isLinkable())
+      )
      )
   {
     QCString n = md->name();
@@ -2527,8 +2528,7 @@ void writeSearchIndex()
           t << "</head>" << endl;
           t << "<body class=\"SRPage\">" << endl;
           t << "<div id=\"SRIndex\">" << endl;
-          // TODO: translate "Loading"
-          t << "<div class=\"SRStatus\" id=\"Loading\">Loading...</div>" << endl;
+          t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
 
           SDict<QList<Definition> >::Iterator li(g_searchIndexSymbols[i][p]);
           QList<Definition> *dl;
@@ -2552,9 +2552,6 @@ void writeSearchIndex()
                 << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "onkeyup=\""
                 << "return searchResults.Nav(event," << itemCount << ")\" "
-              //  << "onkeydown=\"return true\" "
-              //  << "onkeypress=\""
-              //  << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "class=\"SRSymbol\" href=\"../" 
                 << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               if (isMemberDef)
@@ -2593,9 +2590,6 @@ void writeSearchIndex()
                 << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "onkeyup=\""
                 << "return searchResults.Nav(event," << itemCount << ")\" "
-              //  << "onkeydown=\"return true\" "
-              //  << "onkeypress=\""
-              //  << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "class=\"SRSymbol\" "
                 << "href=\"javascript:searchResults.Toggle('SR_"
                 << searchId(d->localName()) << "')\">" 
@@ -2628,10 +2622,6 @@ void writeSearchIndex()
                   << "onkeyup=\""
                   << "return searchResults.NavChild(event," 
                   << itemCount << "," << childCount << ")\" "
-                //  << "onkeydown=\"return true\" "
-                //  << "onkeypress=\""
-                //  << "return searchResults.NavChild(event," 
-                //  << itemCount << "," << childCount << ")\" "
                   << "class=\"SRScope\" href=\"../" << 
                   d->getOutputFileBase() << Doxygen::htmlFileExtension;
                 if (isMemberDef)
@@ -2696,8 +2686,7 @@ void writeSearchIndex()
                 }
                 if (!found) // fallback
                 {
-                  // TODO: translate "global namespace"
-                  t << prefix << "(global namespace)";
+                  t << prefix << "("+theTranslator->trGlobalNamespace()+")";
                 }
                 t << "</a>" << endl;
                 prevScope = scope;
@@ -2709,10 +2698,10 @@ void writeSearchIndex()
             t << "</div>" << endl; // SRResult
             itemCount++;
           }
-          // TODO: translate "Searching"
-          t << "<div class=\"SRStatus\" id=\"Searching\">Searching...</div>" << endl;
-          // TODO: translate "No Matches"
-          t << "<div class=\"SRStatus\" id=\"NoMatches\">No Matches</div>" << endl;
+          t << "<div class=\"SRStatus\" id=\"Searching\">" 
+            << theTranslator->trSearching() << "</div>" << endl;
+          t << "<div class=\"SRStatus\" id=\"NoMatches\">"
+            << theTranslator->trNoMatches() << "</div>" << endl;
 
           t << "<script type=\"text/javascript\"><!--" << endl;
           t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
@@ -2807,8 +2796,8 @@ void writeSearchIndex()
       t << "</head>" << endl;
       t << "<body class=\"SRPage\">" << endl;
       t << "<div id=\"SRIndex\">" << endl;
-      // TODO: translate "No Matches"
-      t << "<div class=\"SRStatus\" id=\"NoMatches\">No Matches</div>" << endl;
+      t << "<div class=\"SRStatus\" id=\"NoMatches\">"
+        << theTranslator->trNoMatches() << "</div>" << endl;
       t << "</div>" << endl;
       t << "</body>" << endl;
       t << "</html>" << endl;

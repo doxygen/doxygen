@@ -410,6 +410,9 @@ static void popScope()
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
+  (void)name;
+  (void)base;
+  (void)anchor;
   //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
   //                                Config_getBool("SOURCE_BROWSER");
   //if (searchEngineEnabled)
@@ -420,6 +423,7 @@ static void setCurrentDoc(const QCString &name,const QCString &base,const QCStri
 
 static void addToSearchIndex(const char *text)
 {
+  (void)text;
   //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
   //                                Config_getBool("SOURCE_BROWSER");
   //if (searchEngineEnabled)
@@ -539,7 +543,7 @@ static void codifyLines(char *text)
   while (!done)
   {
     sp=p;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;
@@ -574,7 +578,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
   {
     char *sp=p;
     char c;
-    while ((c=*p++) && c!='\n');
+    while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       g_yyLineNr++;

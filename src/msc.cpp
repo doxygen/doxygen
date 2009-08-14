@@ -32,7 +32,9 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
   QFile f(mapName);
   if (!f.open(IO_ReadOnly))
   {
-    err("Error opening map file %s for inclusion in the docs!\n",mapName);
+    err("Error opening map file %s for inclusion in the docs!\n"
+        "If you installed Graphviz/dot after a previous failing run, \n"
+        "try deleting the output directory and rerun doxygen.\n",mapName);
     return FALSE;
   }
   const int maxLineLen=1024;

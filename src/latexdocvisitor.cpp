@@ -233,13 +233,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
   switch (s->style())
   {
     case DocStyleChange::Bold:
-      if (s->enable()) m_t << "{\\bf ";      else m_t << "}";
+      if (s->enable()) m_t << "{\\bfseries ";      else m_t << "}";
       break;
     case DocStyleChange::Italic:
-      if (s->enable()) m_t << "{\\em ";     else m_t << "\\/}";
+      if (s->enable()) m_t << "{\\itshape ";     else m_t << "\\/}";
       break;
     case DocStyleChange::Code:
-      if (s->enable()) m_t << "{\\tt ";   else m_t << "}";
+      if (s->enable()) m_t << "{\\ttfamily ";   else m_t << "}";
       break;
     case DocStyleChange::Subscript:
       if (s->enable()) m_t << "$_{\\mbox{";    else m_t << "}}$ ";
@@ -256,13 +256,13 @@ void LatexDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Preformatted:
       if (s->enable()) 
       {
-        m_t << "\\small\\begin{alltt}";
+        m_t << "\n\\begin{DoxyPre}";
         m_insidePre=TRUE;
       }
       else
       {
         m_insidePre=FALSE;
-        m_t << "\\end{alltt}\n\\normalsize " << endl;
+        m_t << "\\end{DoxyPre}\n";
       }
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
@@ -283,7 +283,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
       }
       else
       {
-        m_t << "\n\n\\begin{Code}\\begin{verbatim}"; 
+        m_t << "\n\\begin{DoxyCode}\n";
       }
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,s->context(),s->text().latin1(),
@@ -294,13 +294,13 @@ void LatexDocVisitor::visit(DocVerbatim *s)
       }
       else
       {
-        m_t << "\\end{verbatim}\n\\end{Code}\n" << endl; 
+        m_t << "\\end{DoxyCode}\n";
       }
       break;
     case DocVerbatim::Verbatim: 
-      m_t << "\n\n\\begin{footnotesize}\\begin{verbatim}"; 
+      m_t << "\\begin{DoxyVerb}";
       m_t << s->text();
-      m_t << "\\end{verbatim}\n\\end{footnotesize}" << endl; 
+      m_t << "\\end{DoxyVerb}\n";
       break;
     case DocVerbatim::HtmlOnly: 
     case DocVerbatim::XmlOnly: 
@@ -384,7 +384,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       { 
-         m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
+         m_t << "\n\\begin{DoxyCodeInclude}\n";
          QFileInfo cfi( inc->file() );
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
@@ -392,25 +392,25 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                            inc->text().latin1(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
-         m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
+         m_t << "\\end{DoxyCodeInclude}" << endl;
       }
       break;    
     case DocInclude::Include: 
-      m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
+      m_t << "\n\\begin{DoxyCodeInclude}\n";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
                                         inc->text().latin1(),inc->isExample(),
                                         inc->exampleFile());
-      m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
+      m_t << "\\end{DoxyCodeInclude}\n";
       break;
     case DocInclude::DontInclude: 
       break;
     case DocInclude::HtmlInclude: 
       break;
     case DocInclude::VerbInclude: 
-      m_t << "\n\n\\begin{VerbInclude}\\begin{verbatim}"; 
+      m_t << "\n\\begin{DoxyVerbInclude}\n";
       m_t << inc->text();
-      m_t << "\\end{verbatim}\n\\end{VerbInclude}" << endl; 
+      m_t << "\\end{DoxyVerbInclude}\n";
       break;
   }
 }
@@ -421,7 +421,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst()) 
   {
-    if (!m_hide) m_t << "\n\n\\begin{DocInclude}\\begin{verbatim}"; 
+    if (!m_hide) m_t << "\n\\begin{DoxyCodeInclude}\n";
     pushEnabled();
     m_hide = TRUE;
   }
@@ -440,7 +440,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())  
   {
     popEnabled();
-    if (!m_hide) m_t << "\\end{verbatim}\n\\end{DocInclude}" << endl; 
+    if (!m_hide) m_t << "\n\\end{DoxyCodeInclude}\n";
   }
   else
   {
@@ -475,11 +475,11 @@ void LatexDocVisitor::visitPre(DocAutoList *l)
   if (m_hide) return;
   if (l->isEnumList())
   {
-    m_t << "\\begin{enumerate}" << endl;
+    m_t << "\n\\begin{DoxyEnumerate}";
   }
   else
   {
-    m_t << "\\begin{itemize}" << endl;
+    m_t << "\n\\begin{DoxyItemize}";
   }
 }
 
@@ -488,18 +488,18 @@ void LatexDocVisitor::visitPost(DocAutoList *l)
   if (m_hide) return;
   if (l->isEnumList())
   {
-    m_t << "\\end{enumerate}" << endl;
+    m_t << "\n\\end{DoxyEnumerate}";
   }
   else
   {
-    m_t << "\\end{itemize}" << endl;
+    m_t << "\n\\end{DoxyItemize}";
   }
 }
 
 void LatexDocVisitor::visitPre(DocAutoListItem *)
 {
   if (m_hide) return;
-  m_t << "\\item ";
+  m_t << "\n\\item ";
 }
 
 void LatexDocVisitor::visitPost(DocAutoListItem *) 
@@ -531,38 +531,67 @@ void LatexDocVisitor::visitPost(DocRoot *)
 void LatexDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
-  m_t << "\\begin{Desc}\n\\item[";
   switch(s->type())
   {
-    case DocSimpleSect::See: 
-      filter(theTranslator->trSeeAlso()); break;
-    case DocSimpleSect::Return: 
-      filter(theTranslator->trReturns()); break;
-    case DocSimpleSect::Author: 
-      filter(theTranslator->trAuthor(TRUE,TRUE)); break;
-    case DocSimpleSect::Authors: 
-      filter(theTranslator->trAuthor(TRUE,FALSE)); break;
-    case DocSimpleSect::Version: 
-      filter(theTranslator->trVersion()); break;
-    case DocSimpleSect::Since: 
-      filter(theTranslator->trSince()); break;
-    case DocSimpleSect::Date: 
-      filter(theTranslator->trDate()); break;
-    case DocSimpleSect::Note: 
-      filter(theTranslator->trNote()); break;
+    case DocSimpleSect::See:
+      m_t << "\\begin{DoxySeeAlso}{";
+      filter(theTranslator->trSeeAlso());
+      break;
+    case DocSimpleSect::Return:
+      m_t << "\\begin{DoxyReturn}{";
+      filter(theTranslator->trReturns());
+      break;
+    case DocSimpleSect::Author:
+      m_t << "\\begin{DoxyAuthor}{";
+      filter(theTranslator->trAuthor(TRUE,TRUE));
+      break;
+    case DocSimpleSect::Authors:
+      m_t << "\\begin{DoxyAuthor}{";
+      filter(theTranslator->trAuthor(TRUE,FALSE));
+      break;
+    case DocSimpleSect::Version:
+      m_t << "\\begin{DoxyVersion}{";
+      filter(theTranslator->trVersion());
+      break;
+    case DocSimpleSect::Since:
+      m_t << "\\begin{DoxySince}{";
+      filter(theTranslator->trSince());
+      break;
+    case DocSimpleSect::Date:
+      m_t << "\\begin{DoxyDate}{";
+      filter(theTranslator->trDate());
+      break;
+    case DocSimpleSect::Note:
+      m_t << "\\begin{DoxyNote}{";
+      filter(theTranslator->trNote());
+      break;
     case DocSimpleSect::Warning:
-      filter(theTranslator->trWarning()); break;
+      m_t << "\\begin{DoxyWarning}{";
+      filter(theTranslator->trWarning());
+      break;
     case DocSimpleSect::Pre:
-      filter(theTranslator->trPrecondition()); break;
+      m_t << "\\begin{DoxyPrecond}{";
+      filter(theTranslator->trPrecondition());
+      break;
     case DocSimpleSect::Post:
-      filter(theTranslator->trPostcondition()); break;
+      m_t << "\\begin{DoxyPostcond}{";
+      filter(theTranslator->trPostcondition());
+      break;
     case DocSimpleSect::Invar:
-      filter(theTranslator->trInvariant()); break;
+      m_t << "\\begin{DoxyInvariant}{";
+      filter(theTranslator->trInvariant());
+      break;
     case DocSimpleSect::Remark:
-      filter(theTranslator->trRemarks()); break;
+      m_t << "\\begin{DoxyRemark}{";
+      filter(theTranslator->trRemarks());
+      break;
     case DocSimpleSect::Attention:
-      filter(theTranslator->trAttention()); break;
-    case DocSimpleSect::User: break;
+      m_t << "\\begin{DoxyAttention}{";
+      filter(theTranslator->trAttention());
+      break;
+    case DocSimpleSect::User:
+      m_t << "\\begin{DoxyParagraph}{";
+      break;
     case DocSimpleSect::Rcs: break;
     case DocSimpleSect::Unknown:  break;
   }
@@ -570,7 +599,7 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
-    m_t << ":]";
+    m_t << "}\n";
   }
   else
   {
@@ -578,10 +607,59 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   }
 }
 
-void LatexDocVisitor::visitPost(DocSimpleSect *)
+void LatexDocVisitor::visitPost(DocSimpleSect *s)
 {
   if (m_hide) return;
-  m_t << "\\end{Desc}" << endl;
+  switch(s->type())
+  {
+    case DocSimpleSect::See:
+      m_t << "\n\\end{DoxySeeAlso}\n";
+      break;
+    case DocSimpleSect::Return:
+      m_t << "\n\\end{DoxyReturn}\n";
+      break;
+    case DocSimpleSect::Author:
+      m_t << "\n\\end{DoxyAuthor}\n";
+      break;
+    case DocSimpleSect::Authors:
+      m_t << "\n\\end{DoxyAuthor}\n";
+      break;
+    case DocSimpleSect::Version:
+      m_t << "\n\\end{DoxyVersion}\n";
+      break;
+    case DocSimpleSect::Since:
+      m_t << "\n\\end{DoxySince}\n";
+      break;
+    case DocSimpleSect::Date:
+      m_t << "\n\\end{DoxyDate}\n";
+      break;
+    case DocSimpleSect::Note:
+      m_t << "\n\\end{DoxyNote}\n";
+      break;
+    case DocSimpleSect::Warning:
+      m_t << "\n\\end{DoxyWarning}\n";
+      break;
+    case DocSimpleSect::Pre:
+      m_t << "\n\\end{DoxyPrecond}\n";
+      break;
+    case DocSimpleSect::Post:
+      m_t << "\n\\end{DoxyPostcond}\n";
+      break;
+    case DocSimpleSect::Invar:
+      m_t << "\n\\end{DoxyInvariant}\n";
+      break;
+    case DocSimpleSect::Remark:
+      m_t << "\n\\end{DoxyRemark}\n";
+      break;
+    case DocSimpleSect::Attention:
+      m_t << "\n\\end{DoxyAttention}\n";
+      break;
+    case DocSimpleSect::User:
+      m_t << "\n\\end{DoxyParagraph}\n";
+      break;
+    default:
+      break;
+  }
 }
 
 void LatexDocVisitor::visitPre(DocTitle *)
@@ -592,19 +670,19 @@ void LatexDocVisitor::visitPost(DocTitle *)
 {
   if (m_hide) return;
   m_insideItem=FALSE;
-  m_t << "]";
+  m_t << "}\n";
 }
 
 void LatexDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
-  m_t << "\\begin{itemize}" << endl;
+  m_t << "\\begin{DoxyItemize}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocSimpleList *)
 {
   if (m_hide) return;
-  m_t << "\\end{itemize}" << endl;
+  m_t << "\\end{DoxyItemize}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocSimpleListItem *)
@@ -637,24 +715,24 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\begin{enumerate}" << endl; 
+    m_t << "\n\\begin{DoxyEnumerate}";
   else 
-    m_t << "\\begin{itemize}" << endl;
+    m_t << "\n\\begin{DoxyItemize}";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlList *s) 
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered) 
-    m_t << "\\end{enumerate}" << endl; 
+    m_t << "\n\\end{DoxyEnumerate}";
   else 
-    m_t << "\\end{itemize}" << endl;
+    m_t << "\n\\end{DoxyItemize}";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlListItem *)
 {
   if (m_hide) return;
-  m_t << "\\item ";
+  m_t << "\n\\item ";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlListItem *) 
@@ -676,19 +754,19 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 void LatexDocVisitor::visitPre(DocHtmlDescList *)
 {
   if (m_hide) return;
-  m_t << "\\begin{description}" << endl;
+  m_t << "\n\\begin{DoxyDescription}";
 }
 
 void LatexDocVisitor::visitPost(DocHtmlDescList *) 
 {
   if (m_hide) return;
-  m_t << "\\end{description}" << endl;
+  m_t << "\n\\end{DoxyDescription}";
 }
 
 void LatexDocVisitor::visitPre(DocHtmlDescTitle *)
 {
   if (m_hide) return;
-  m_t << "\\item[";
+  m_t << "\n\\item[";
   m_insideItem=TRUE;
 }
 
@@ -810,14 +888,15 @@ void LatexDocVisitor::visitPost(DocHtmlCell *c)
 void LatexDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  m_t << "\\begin{Desc}" << endl 
-    << "\\item["; filter(theTranslator->trForInternalUseOnly()); m_t << "]" << endl;
+  m_t << "\\begin{DoxyInternal}{";
+  filter(theTranslator->trForInternalUseOnly());
+  m_t << "}\n";
 }
 
 void LatexDocVisitor::visitPost(DocInternal *) 
 {
   if (m_hide) return;
-  m_t << "\\end{Desc}" << endl;
+  m_t << "\\end{DoxyInternal}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocHRef *href)
@@ -857,12 +936,12 @@ void LatexDocVisitor::visitPre(DocImage *img)
     if (m_hide) return;
     if (img->hasCaption())
     {
-      m_t << "\\begin{Image}" << endl;
-      m_t << "\\begin{center}" << endl;
+      m_t << "\n\\begin{DoxyImage}\n";
     }
     else
     {
-      m_t << "\\begin{ImageNoCaption}\\mbox{";
+      m_t << "\n\\begin{DoxyImageNoCaption}\n"
+             "  \\mbox{";
     }
     QString gfxName = img->name();
     if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
@@ -881,7 +960,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
     m_t << "{" << gfxName << "}";
     if (img->hasCaption())
     {
-      m_t << "\\caption{";
+      m_t << "\n\\caption{";
     }
   }
   else // other format -> skip
@@ -896,14 +975,13 @@ void LatexDocVisitor::visitPost(DocImage *img)
   if (img->type()==DocImage::Latex)
   {
     if (m_hide) return;
-    m_t << "}" << endl; // end mbox or caption
+    m_t << "}\n"; // end mbox or caption
     if (img->hasCaption())
     {
-      m_t << "\\end{center}" << endl;
-      m_t << "\\end{Image}" << endl;
+      m_t << "\\end{DoxyImage}\n";
     }
     else{
-      m_t << "\\end{ImageNoCaption}" << endl;
+      m_t << "\\end{DoxyImageNoCaption}\n";
     }
   }
   else // other format
@@ -966,13 +1044,13 @@ void LatexDocVisitor::visitPre(DocSecRefList *)
   if (m_hide) return;
   m_t << "\\footnotesize" << endl;
   m_t << "\\begin{multicols}{2}" << endl;
-  m_t << "\\begin{CompactList}" << endl;
+  m_t << "\\begin{DoxyCompactList}" << endl;
 }
 
 void LatexDocVisitor::visitPost(DocSecRefList *) 
 {
   if (m_hide) return;
-  m_t << "\\end{CompactList}" << endl;
+  m_t << "\\end{DoxyCompactList}" << endl;
   m_t << "\\end{multicols}" << endl;
   m_t << "\\normalsize" << endl;
 }
@@ -999,33 +1077,53 @@ void LatexDocVisitor::visitPost(DocSecRefList *)
 void LatexDocVisitor::visitPre(DocParamSect *s)
 {
   if (m_hide) return;
-  m_t << "\\begin{Desc}" << endl;
-  m_t << "\\item[";
   switch(s->type())
   {
-    case DocParamSect::Param: 
-      filter(theTranslator->trParameters()); break;
-    case DocParamSect::RetVal: 
-      filter(theTranslator->trReturnValues()); break;
+    case DocParamSect::Param:
+      m_t << "\n\\begin{DoxyParams}{";
+      filter(theTranslator->trParameters());
+      break;
+    case DocParamSect::RetVal:
+      m_t << "\n\\begin{DoxyRetVals}{";
+      filter(theTranslator->trReturnValues());
+      break;
     case DocParamSect::Exception: 
-      filter(theTranslator->trExceptions()); break;
+      m_t << "\n\\begin{DoxyExceptions}{";
+      filter(theTranslator->trExceptions());
+      break;
     case DocParamSect::TemplateParam: 
       /* TODO: add this 
       filter(theTranslator->trTemplateParam()); break;
       */
-      filter("Template Parameters"); break;
+      m_t << "\n\\begin{DoxyTemplParams}{";
+      filter("Template Parameters");
+      break;
     default:
       ASSERT(0);
   }
-  m_t << ":]" << endl;
-  m_t << "\\begin{description}" << endl;
+  m_t << "}\n";
 }
 
-void LatexDocVisitor::visitPost(DocParamSect *)
+void LatexDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
-  m_t << "\\end{description}" << endl;
-  m_t << "\\end{Desc}" << endl;
+  switch(s->type())
+  {
+    case DocParamSect::Param:
+      m_t << "\\end{DoxyParams}\n";
+      break;
+    case DocParamSect::RetVal:
+      m_t << "\\end{DoxyRetVals}\n";
+      break;
+    case DocParamSect::Exception: 
+      m_t << "\\end{DoxyExceptions}\n";
+      break;
+    case DocParamSect::TemplateParam: 
+      m_t << "\\end{DoxyTemplParams}\n";
+      break;
+    default:
+      ASSERT(0);
+  }
 }
 
 void LatexDocVisitor::visitPre(DocParamList *pl)
@@ -1217,12 +1315,12 @@ void LatexDocVisitor::startDotFile(const QString &fileName,
   writeDotGraphFromFile(name,outDir,baseName,EPS);
   if (hasCaption)
   {
-    m_t << "\\begin{Image}" << endl;
-    m_t << "\\begin{center}" << endl;
+    m_t << "\n\\begin{DoxyImage}\n";
   }
   else
   {
-    m_t << "\\begin{ImageNoCaption}\\mbox{";
+    m_t << "\n\\begin{DoxyImageNoCaption}\n"
+           "  \\mbox{";
   }
   m_t << "\\includegraphics";
   if (!width.isEmpty())
@@ -1237,22 +1335,21 @@ void LatexDocVisitor::startDotFile(const QString &fileName,
 
   if (hasCaption)
   {
-    m_t << "\\caption{";
+    m_t << "\n\\caption{";
   }
 }
 
 void LatexDocVisitor::endDotFile(bool hasCaption)
 {
   if (m_hide) return;
-  m_t << "}" << endl; // end caption or mbox
+  m_t << "}\n"; // end caption or mbox
   if (hasCaption)
   {
-    m_t << "\\end{center}" << endl;
-    m_t << "\\end{Image}" << endl;
+    m_t << "\\end{DoxyImage}\n";
   }
   else
   {
-    m_t << "\\end{ImageNoCaption}" << endl;
+    m_t << "\\end{DoxyImageNoCaption}\n";
   }
 }
 
@@ -1260,8 +1357,8 @@ void LatexDocVisitor::writeMscFile(const QString &baseName)
 {
   QString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(baseName,outDir,baseName,MSC_EPS);
-  m_t << "\\begin{ImageNoCaption}\\mbox{";
-  m_t << "\\includegraphics";
+  m_t << "\n\\begin{DoxyImageNoCaption}"
+         "  \\mbox{\\includegraphics";
   //if (!width.isEmpty())
   //{
   //  m_t << "[width=" << width << "]";
@@ -1272,7 +1369,7 @@ void LatexDocVisitor::writeMscFile(const QString &baseName)
   //}
   m_t << "{" << baseName << "}";
 
-  m_t << "}" << endl; // end mbox
-  m_t << "\\end{ImageNoCaption}" << endl;
+  m_t << "}\n"; // end mbox
+  m_t << "\\end{DoxyImageNoCaption}\n";
 }
 

@@ -155,7 +155,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           {
             ol.startMemberDescription();
             ol.parseDoc(cd->briefFile(),cd->briefLine(),cd,0,
-                cd->briefDescription(),FALSE,FALSE);
+                cd->briefDescription(),FALSE,FALSE,0,TRUE,FALSE);
             if (//(!cd->briefDescription().isEmpty() && Config_getBool("REPEAT_BRIEF")) ||
                 //!cd->documentation().isEmpty())
                 cd->isLinkableInProject()

@@ -86,7 +86,7 @@ static QArray<int>        g_levelGuard;
 static BufStr            *g_outputBuf;
 static int                g_roundCount;
 static bool               g_quoteArg;
-static DefineDict        *g_fileDefineDict;
+static DefineDict        *g_fileDefineDict = new DefineDict(10009);
 static DefineDict        *g_expandedDict;
 static int                g_findDefArgContext;
 static QCString           g_lastGuardName;
@@ -108,7 +108,8 @@ static bool               g_insideCS; // C# has simpler preprocessor
 
 static bool               g_lexInit = FALSE;
 
-DefineDict* getFileDefineDict() {
+DefineDict* getFileDefineDict() 
+{
   return g_fileDefineDict;
 }
 
@@ -176,6 +177,8 @@ static Define *isDefined(const char *name)
   return 0;
 }
 
+static QDict<void> g_allIncludes(10009);
+
 static FileState *checkAndOpenFile(const QCString &fileName)
 {
   FileState *fs = 0;
@@ -184,8 +187,15 @@ static FileState *checkAndOpenFile(const QCString &fileName)
   if (fi.exists() && fi.isFile())
   {
     QCString absName = convertToQCString(fi.absFilePath());
-    // check include stack for absName
 
+#if 1
+    // global guard
+    if (g_allIncludes.find(absName)) return 0; // already done
+    g_allIncludes.insert(absName,(void *)0x8);
+    // check include stack for absName
+#endif
+
+#if 0 // stack based recusive inclusion detection
     QStack<FileState> tmpStack;
     g_includeStack.setAutoDelete(FALSE);
     bool alreadyIncluded=FALSE;
@@ -201,6 +211,8 @@ static FileState *checkAndOpenFile(const QCString &fileName)
     g_includeStack.setAutoDelete(TRUE);
 
     if (alreadyIncluded) return 0; 
+#endif
+    //printf("#include %s\n",absName.data());
 
     fs = new FileState;
     
@@ -688,11 +700,14 @@ static int getNextId(const QCString &expr,int p,int *l)
   while (p<(int)expr.length())
   {
     char c=expr.at(p++);
-    if (isalpha(c) || c=='_') // read id
+    if (isdigit(c)) // skip number
+    {
+      while (p<(int)expr.length() && isId(expr.at(p))) p++;
+    }
+    else if (isalpha(c) || c=='_') // read id
     {
       n=p-1;
-      while (p<(int)expr.length() && isId(expr.at(p))
-	    ) p++;
+      while (p<(int)expr.length() && isId(expr.at(p))) p++;
       *l=p-n;
       return n; 
     }
@@ -747,7 +762,6 @@ static void expandExpression(QCString &expr,QCString *rest,int pos)
   {
     bool replaced=FALSE;
     macroName=expr.mid(p,l);
-    //printf("macroName %s found\n",macroName.data());
     if (p<2 || !(expr.at(p-2)=='@' && expr.at(p-1)=='-')) // no-rescan marker?
     {
       if (g_expandedDict->find(macroName)==0) // expand macro
@@ -1337,6 +1351,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  BEGIN(CopyLine);
                                         }
+<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\(\)\n]*"("[^\)\n]*")"[^\)\n]*")"{B}*\n | // function list macro with one (...) argument, e.g. for K_GLOBAL_STATIC_WITH_ARGS
 <Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"{B}*\n { // function like macro
   					  static bool skipFuncMacros = Config_getBool("SKIP_FUNCTION_MACROS");
 					  QCString name(yytext);
@@ -1746,11 +1761,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCommand>.
 <SkipLine>[^/\n]+			
 <SkipLine>.
-<SkipLine,SkipCommand,SkipCPPBlock>"//"	{
+<SkipLine,SkipCommand,SkipCPPBlock>"//"[^\n]* {
   					  g_lastCPPContext=YY_START;
   					  BEGIN(RemoveCPPComment);
 					}
-<SkipLine,SkipCommand,SkipCPPBlock>"/*"	{
+<SkipLine,SkipCommand,SkipCPPBlock>"/*"/[^\n]* {
 					  g_lastCContext=YY_START;
   					  BEGIN(RemoveCComment);
   					}
@@ -1839,11 +1854,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
+#if 0
   					    Define *def=g_fileDefineDict->find(g_defName);
-					    //if (g_includeStack.isEmpty()) 
-					    //{
-					    //  addDefine();
-					    //}
 					    if (def==0) // new define name for this file
 					    {
 					      g_fileDefineDict->insert(g_defName,newDefine());
@@ -1864,6 +1876,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					        //printf("Error: define %s is defined more than once!\n",g_defName.data());
 					      }
 					    }
+#endif
 					    g_lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
@@ -2329,13 +2342,13 @@ void initPreprocessor()
   //defineDict.clear();
   //fileDefineCache = new DefineCache(1009);
   g_expandedDict = new DefineDict(17);
-  g_fileDefineDict = new DefineDict(1009);
+  //g_fileDefineDict = new DefineDict(1009);
 }
 
 void cleanUpPreprocessor()
 {
   //delete fileDefineCache;
-  delete g_fileDefineDict; g_fileDefineDict=0;
+  //delete g_fileDefineDict; g_fileDefineDict=0;
   delete g_expandedDict; g_expandedDict=0;
   delete g_pathList; g_pathList=0;
 }
@@ -2352,115 +2365,119 @@ void preprocessFile(const char *fileName,BufStr &output)
   g_outputBuf=&output;
   g_includeStack.setAutoDelete(TRUE);
   g_includeStack.clear();
-  g_fileDefineDict->setAutoDelete(TRUE);
-  g_fileDefineDict->clear();
+  //g_fileDefineDict->setAutoDelete(TRUE);
+  //g_fileDefineDict->clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
   g_condStack.clear();
   g_condStack.setAutoDelete(TRUE);
   
-  // add predefined macros
-  char *defStr;
-  QStrList &predefList = Config_getList("PREDEFINED");
-  QStrListIterator sli(predefList);
-  for (sli.toFirst();(defStr=sli.current());++sli)
+  static bool firstTime=TRUE;
+  if (firstTime)
   {
-    QCString ds = defStr;
-    int i_equals=ds.find('=');
-    int i_obrace=ds.find('(');
-    int i_cbrace=ds.find(')');
-    bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
-    
-    if (i_obrace==0) continue; // no define name
-    
-    if (i_obrace<i_equals && i_cbrace<i_equals && 
-	i_obrace!=-1      && i_cbrace!=-1      && 
-	i_obrace<i_cbrace
-       ) // predefined function macro definition
+    // add predefined macros
+    char *defStr;
+    QStrList &predefList = Config_getList("PREDEFINED");
+    QStrListIterator sli(predefList);
+    for (sli.toFirst();(defStr=sli.current());++sli)
     {
-      QRegExp reId("[a-z_A-Z][a-z_A-Z0-9]*"); // regexp matching an id
-      QDict<int> argDict(17);
-      argDict.setAutoDelete(TRUE);
-      int i=i_obrace+1,p,l,count=0;
-      // gather the formal arguments in a dictionary 
-      while (i<i_cbrace && (p=reId.match(ds,i,&l)))
+      QCString ds = defStr;
+      int i_equals=ds.find('=');
+      int i_obrace=ds.find('(');
+      int i_cbrace=ds.find(')');
+      bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
+
+      if (i_obrace==0) continue; // no define name
+
+      if (i_obrace<i_equals && i_cbrace<i_equals && 
+	  i_obrace!=-1      && i_cbrace!=-1      && 
+	  i_obrace<i_cbrace
+	 ) // predefined function macro definition
       {
-        argDict.insert(ds.mid(p,l),new int(count++));
-	i=p+l;
-      }
-      // strip definition part
-      QCString tmp=ds.right(ds.length()-i_equals-1);
-      QCString definition;
-      i=0;
-      // substitute all occurrences of formal arguments by their 
-      // corresponding markers
-      while ((p=reId.match(tmp,i,&l))!=-1)
-      {
-        if (p>i) definition+=tmp.mid(i,p-i);
-	int *argIndex;
-	if ((argIndex=argDict[tmp.mid(p,l)])!=0)
+	QRegExp reId("[a-z_A-Z][a-z_A-Z0-9]*"); // regexp matching an id
+	QDict<int> argDict(17);
+	argDict.setAutoDelete(TRUE);
+	int i=i_obrace+1,p,l,count=0;
+	// gather the formal arguments in a dictionary 
+	while (i<i_cbrace && (p=reId.match(ds,i,&l)))
 	{
-	  QCString marker;
-	  marker.sprintf(" @%d ",*argIndex);
-	  definition+=marker;
+	  argDict.insert(ds.mid(p,l),new int(count++));
+	  i=p+l;
+	}
+	// strip definition part
+	QCString tmp=ds.right(ds.length()-i_equals-1);
+	QCString definition;
+	i=0;
+	// substitute all occurrences of formal arguments by their 
+	// corresponding markers
+	while ((p=reId.match(tmp,i,&l))!=-1)
+	{
+	  if (p>i) definition+=tmp.mid(i,p-i);
+	  int *argIndex;
+	  if ((argIndex=argDict[tmp.mid(p,l)])!=0)
+	  {
+	    QCString marker;
+	    marker.sprintf(" @%d ",*argIndex);
+	    definition+=marker;
+	  }
+	  else
+	  {
+	    definition+=tmp.mid(p,l);
+	  }
+	  i=p+l;
+	}
+	if (i<(int)tmp.length()) definition+=tmp.mid(i,tmp.length()-i);
+
+	// add define definition to the dictionary of defines for this file
+	QCString dname = ds.left(i_obrace);
+	if (!dname.isEmpty())
+	{
+	  Define *def = new Define;
+	  def->name = dname;
+	  def->definition = definition; 
+	  def->nargs = count;
+	  def->isPredefined = TRUE;
+	  def->nonRecursive = nonRecursive;
+	  g_fileDefineDict->insert(def->name,def);
+	}
+
+	//printf("#define `%s' `%s' #nargs=%d\n",
+	//  def->name.data(),def->definition.data(),def->nargs);
+      }
+      else if ((i_obrace==-1 || i_obrace>i_equals) &&
+	  (i_cbrace==-1 || i_cbrace>i_equals) &&
+	  !ds.isEmpty() && (int)ds.length()>i_equals
+	  ) // predefined non-function macro definition
+      {
+	Define *def = new Define;
+	if (i_equals==-1) // simple define without argument
+	{
+	  def->name = ds;
+	  def->definition = "1"; // substitute occurrences by 1 (true)
+	}
+	else // simple define with argument
+	{
+	  int ine=i_equals - (nonRecursive ? 1 : 0);
+	  def->name = ds.left(ine);
+	  def->definition = ds.right(ds.length()-i_equals-1);
+	}
+	if (!def->name.isEmpty())
+	{
+	  def->nargs = -1;
+	  def->isPredefined = TRUE;
+	  def->nonRecursive = nonRecursive;
+	  g_fileDefineDict->insert(def->name,def);
 	}
 	else
 	{
-	  definition+=tmp.mid(p,l);
+	  delete def;
 	}
-	i=p+l;
-      }
-      if (i<(int)tmp.length()) definition+=tmp.mid(i,tmp.length()-i);
-      
-      // add define definition to the dictionary of defines for this file
-      QCString dname = ds.left(i_obrace);
-      if (!dname.isEmpty())
-      {
-	Define *def = new Define;
-	def->name = dname;
-	def->definition = definition; 
-	def->nargs = count;
-	def->isPredefined = TRUE;
-	def->nonRecursive = nonRecursive;
-	g_fileDefineDict->insert(def->name,def);
-      }
 
-      //printf("#define `%s' `%s' #nargs=%d\n",
-      //  def->name.data(),def->definition.data(),def->nargs);
+	//printf("#define `%s' `%s' #nargs=%d\n",
+	//  def->name.data(),def->definition.data(),def->nargs);
+      }
     }
-    else if ((i_obrace==-1 || i_obrace>i_equals) &&
-	     (i_cbrace==-1 || i_cbrace>i_equals) &&
-	     !ds.isEmpty() && (int)ds.length()>i_equals
-	    ) // predefined non-function macro definition
-    {
-      Define *def = new Define;
-      if (i_equals==-1) // simple define without argument
-      {
-        def->name = ds;
-        def->definition = "1"; // substitute occurrences by 1 (true)
-      }
-      else // simple define with argument
-      {
-	int ine=i_equals - (nonRecursive ? 1 : 0);
-	def->name = ds.left(ine);
-	def->definition = ds.right(ds.length()-i_equals-1);
-      }
-      if (!def->name.isEmpty())
-      {
-	def->nargs = -1;
-	def->isPredefined = TRUE;
-	def->nonRecursive = nonRecursive;
-	g_fileDefineDict->insert(def->name,def);
-      }
-      else
-      {
-	delete def;
-      }
-
-      //printf("#define `%s' `%s' #nargs=%d\n",
-      //  def->name.data(),def->definition.data(),def->nargs);
-    }
-    
+    firstTime=FALSE;
   }
  
   QCString inputFilter = getFileFilter(fileName);

@@ -4468,7 +4468,7 @@ int DocPara::handleStartCode()
   int retval = doctokenizerYYlex();
   // search for the first non-whitespace line, index is stored in li
   int i=0,li=0,l=g_token->verb.length();
-  while (i<l && g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n')
+  while (i<l && (g_token->verb.at(i)==' ' || g_token->verb.at(i)=='\n'))
   {
     if (g_token->verb.at(i)=='\n') li=i+1;
     i++;
