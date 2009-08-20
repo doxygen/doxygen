@@ -1,6 +1,6 @@
 /*---------------- Search Box */
 
-#MSearchBox {	
+#MSearchBox {
     padding: 0px;
     margin: 0px;
     border: none;
@@ -18,24 +18,14 @@
     background-color: #FFFFFF;
     font-style: normal;
     cursor: text;
-    padding: 0px 1px;
+    padding: 1px 1px;
     margin: 0px 6px 0px 0px;
     border: none;
     outline: none;
     vertical-align: middle;
 }
-#MSearchBox.MSearchBoxInactive:hover #MSearchField {
-    background-color: #FFFFFF;
-    padding: 0px 1px;
-    margin: 0px 6px 0px 0px;
-    border: none;
-}
 .MSearchBoxActive #MSearchField {
-    background-color: #FFFFFF;
     color: #000000;
-    padding: 0px 1px;
-    margin: 0px 6px 0px 0px;
-    border: none;
 }
 #MSearchSelect {
     float : none;

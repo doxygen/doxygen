@@ -5822,8 +5822,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 //----------------------------------------------------------------------------
 
 void addRefItem(const QList<ListItemInfo> *sli,
-    const char *prefix,
-    const char *name,const char *title,const char *args)
+    const char *prefix, const char *name,const char *title,const char *args)
 {
   //printf("addRefItem(sli=%p,prefix=%s,name=%s,title=%s,args=%s)\n",sli,prefix,name,title,args);
   if (sli)
@@ -5833,22 +5832,35 @@ void addRefItem(const QList<ListItemInfo> *sli,
     for (slii.toFirst();(lii=slii.current());++slii)
     {
       RefList *refList = Doxygen::xrefLists->find(lii->type);
-      if (refList && 
+      if (refList
+#if 0
+          &&
           (
            // either not a built-in list or the list is enabled
-           (lii->type!="todo"       || Config_getBool("GENERATE_TODOLIST")) && 
-           (lii->type!="test"       || Config_getBool("GENERATE_TESTLIST")) && 
-           (lii->type!="bug"        || Config_getBool("GENERATE_BUGLIST"))  && 
+           (lii->type!="todo"       || Config_getBool("GENERATE_TODOLIST")) &&
+           (lii->type!="test"       || Config_getBool("GENERATE_TESTLIST")) &&
+           (lii->type!="bug"        || Config_getBool("GENERATE_BUGLIST"))  &&
            (lii->type!="deprecated" || Config_getBool("GENERATE_DEPRECATEDLIST"))
-          ) 
+          )
+#endif
          )
       {
         RefItem *item = refList->getRefItem(lii->itemId);
         ASSERT(item!=0);
-        printf("anchor=%s written=%d\n",item->listAnchor.data(),item->written);
+
+        item->prefix = prefix;
+        item->name   = name;
+        item->title  = title;
+        item->args   = args;
+
+        refList->insertIntoList(title,item);
+
+#if 0
+
+        //printf("anchor=%s written=%d\n",item->listAnchor.data(),item->written);
         //if (item->written) return;
 
-        QCString doc(1000);
+        QCString doc;
         doc =  "\\anchor ";
         doc += item->listAnchor;
         doc += " <dl><dt>";
@@ -5864,6 +5876,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         doc += "</dd></dl>\n";
         addRelatedPage(refList->listName(),refList->pageTitle(),doc,0,refList->listName(),1,0,0,0);
         //item->written=TRUE;
+#endif
       }
     }
   }

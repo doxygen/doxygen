@@ -337,7 +337,7 @@ static void writeWord(const char *word,const char* curr_class=0,bool classLink=F
 static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
 {
   if (text==0) return;
-  printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
+  //printf("codifyLines(%d,\"%s\")\n",g_yyLineNr,text);
   const char *p=text,*sp=p;
   char c;
   bool done=FALSE;

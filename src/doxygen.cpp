@@ -117,7 +117,7 @@ StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict       Doxygen::tagDestinationDict(257); // all tag locations
 QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
-PageDef         *Doxygen::mainPage = 0;           
+PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 QTextStream      Doxygen::tagFile;
 NamespaceDef    *Doxygen::globalScope = 0;
@@ -2791,7 +2791,6 @@ static void buildFunctionList(EntryNav *rootNav)
     QCString scope=rootNav->parent()->name(); //stripAnonymousNamespaceScope(root->parent->name);
     if (!rname.isEmpty() && scope.find('@')==-1)
     {
-      
       ClassDef *cd=0;
       // check if this function's parent is a class
       scope=stripTemplateSpecifiersFromScope(scope,FALSE);
@@ -2832,7 +2831,6 @@ static void buildFunctionList(EntryNav *rootNav)
         {
           isMember=memIndex<ts || memIndex>te;
         }
-      
       }
 
       static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
@@ -2903,7 +2901,7 @@ static void buildFunctionList(EntryNav *rootNav)
                 sameNumTemplateArgs = FALSE;
               }
             }
-            if ( 
+            if (
                 matchArguments2(md->getOuterScope(),mfd,mdAl.pointer(),
                                 rnd ? rnd : Doxygen::globalScope,rfd,root->argList,
                                 FALSE) &&
@@ -2921,15 +2919,15 @@ static void buildFunctionList(EntryNav *rootNav)
               found=(mnd && rnd && nsName==rnsName) ||   // members are in the same namespace
                     ((mnd==0 && rnd==0 && mfd!=0 &&       // no external reference and
                       mfd->absFilePath()==root->fileName // prototype in the same file
-                     ) 
-                    ); 
+                     )
+                    );
               // otherwise, allow a duplicate global member with the same argument list
               if (!found && gd && gd==md->getGroupDef())
               {
                 // member is already in the group, so we don't want to add it again.
                 found=TRUE;
               }
-              
+
               //printf("combining function with prototype found=%d in namespace %s\n",
               //    found,nsName.data());
 
@@ -2956,6 +2954,8 @@ static void buildFunctionList(EntryNav *rootNav)
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 md->setDocsForDefinition(!root->proto);
+                md->setBodySegment(root->bodyLine,root->endBodyLine);
+                md->setBodyDef(rfd);
 
                 if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
                 {
@@ -2982,6 +2982,13 @@ static void buildFunctionList(EntryNav *rootNav)
                 {
                   //printf("both members are grouped\n");
                 }
+
+                // if md is a declaration and root is the corresponding
+                // definition, then turn md into a definition.
+                if (md->isPrototype() && !root->proto)
+                {
+                  md->setPrototype(FALSE);
+                }
               }
             }
           }
@@ -2991,7 +2998,7 @@ static void buildFunctionList(EntryNav *rootNav)
           Debug::print(Debug::Functions,0,"  --> new function %s found!\n",rname.data());
           //printf("New function type=`%s' name=`%s' args=`%s' bodyLine=%d\n",
           //       root->type.data(),rname.data(),root->args.data(),root->bodyLine);
-          
+
           // new global function
           ArgumentList *tArgList = root->tArgLists ? root->tArgLists->last() : 0;
           QCString name=removeRedundantWhiteSpace(rname);
@@ -3270,7 +3277,7 @@ static void transferArgumentDocumentation(ArgumentList *decAl,ArgumentList *defA
 
 static void transferFunctionDocumentation()
 {
-  //printf("transferFunctionDocumentation()\n");
+  //printf("---- transferFunctionDocumentation()\n");
 
   // find matching function declaration and definitions.
   MemberNameSDict::Iterator mnli(*Doxygen::functionNameSDict);
@@ -3283,6 +3290,7 @@ static void transferFunctionDocumentation()
     /* find a matching function declaration and definition for this function */
     for (;(mdec=mni1.current());++mni1)
     {
+      //printf("mdec=%s isPrototype()=%d\n",mdec->name().data(),mdec->isPrototype());
       if (mdec->isPrototype() ||
           (mdec->isVariable() && mdec->isExternal()) 
          )
@@ -4661,6 +4669,18 @@ static void addListReferences()
 }
 
 //----------------------------------------------------------------------
+
+static void generateXRefPages()
+{
+  QDictIterator<RefList> di(*Doxygen::xrefLists);
+  RefList *rl;
+  for (di.toFirst();(rl=di.current());++di)
+  {
+    rl->generatePage();
+  }
+}
+
+//----------------------------------------------------------------------
 // Copy the documentation in entry `root' to member definition `md' and
 // set the function declaration of the member to `funcDecl'. If the boolean 
 // over_load is set the standard overload text is added. 
@@ -4695,7 +4715,7 @@ static void addMemberDocs(EntryNav *rootNav,
 
   // TODO determine scope based on root not md
   Definition *rscope = md->getOuterScope();
-  
+
   LockingPtr<ArgumentList> mdAl = md->argumentList();
   if (al)
   {
@@ -4729,42 +4749,12 @@ static void addMemberDocs(EntryNav *rootNav,
   }
   else  
   {
-    //printf("Adding docs md->docs=`%s' root->docs=`%s'!\n",
-    //     md->documentation().data(),root->doc.data());
-    // documentation outside a compound overrides the documentation inside it
+    //printf("overwrite!\n");
+    md->setDocumentation(root->doc,root->docFile,root->docLine);
+    md->setDocsForDefinition(!root->proto);
 
-#if 0
-    if ( /* !md->isStatic() && !root->stat &&   do not replace doc of a static */
-        (
-         md->documentation().isEmpty() ||    /* no docs yet */
-         (rootNav->parent()->name().isEmpty() &&     /* or overwrite prototype docs */
-          !root->proto && md->isPrototype()  /* with member definition docs */
-         )
-        ) && !root->doc.isEmpty() 
-       )
-#endif
-    {
-      //printf("overwrite!\n");
-      md->setDocumentation(root->doc,root->docFile,root->docLine);
-      md->setDocsForDefinition(!root->proto);
-    }
-
-    //printf("Adding brief md->brief=`%s' root->brief=`%s'!\n",
-    //     md->briefDescription().data(),root->brief.data());
-    // brief descriptions inside a compound override the documentation 
-    // outside it
-#if 0
-    if ( /* !md->isStatic() && !root->stat &&  do not replace doc of static */
-        ( 
-         md->briefDescription().isEmpty() ||  /* no docs yet */
-         !rootNav->parent()->name().isEmpty()         /* member of a class */
-        ) && !root->brief.isEmpty()
-       )
-#endif
-    {
-      //printf("overwrite!\n");
-      md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-    }
+    //printf("overwrite!\n");
+    md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
 
     if (
         (md->inbodyDocumentation().isEmpty() ||
@@ -4785,14 +4775,12 @@ static void addMemberDocs(EntryNav *rootNav,
     //printf("setInitializer\n");
     md->setInitializer(root->initializer);
   }
-  
+
   md->setMaxInitLines(root->initLines);
 
   if (rfd)
   {
-
     if ((md->getStartBodyLine()==-1 && root->bodyLine!=-1) 
-       // || (md->isVariable() && !root->explicitExternal)
        )
     {
       //printf("Setting new body segment [%d,%d]\n",root->bodyLine,root->endBodyLine);
@@ -4904,7 +4892,7 @@ static bool findGlobalMember(EntryNav *rootNav,
 
         NamespaceDef *rnd = 0;
         if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
-        
+
         LockingPtr<ArgumentList> mdAl = md->argumentList();
         bool matching=
           (mdAl==0 && root->argList->count()==0) ||
@@ -4972,7 +4960,10 @@ static bool findGlobalMember(EntryNav *rootNav,
   {
     if (root->type!="friend class" && 
         root->type!="friend struct" &&
-        root->type!="friend union")
+        root->type!="friend union" &&
+        (!Config_getBool("TYPEDEF_HIDES_STRUCT") || 
+         root->type.find("typedef ")==-1)
+       )
     {
       warn(root->fileName,root->startLine,
            "Warning: documented function `%s' was not declared or defined.",decl
@@ -6582,27 +6573,30 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                 // enum
                 e->loadEntry(g_storage);
                 Entry *root = e->entry();
-                MemberDef *fmd=new MemberDef(
-                    root->fileName,root->startLine,
-                    root->type,root->name,root->args,0,
-                    Public, Normal,root->stat,Member,
-                    MemberDef::EnumValue,0,0);
-                if (md->getClassDef()) fmd->setMemberClass(md->getClassDef());
-                else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
-                else if (md->getFileDef()) fmd->setFileDef(md->getFileDef());
-                fmd->setOuterScope(md->getOuterScope());
-                fmd->setTagInfo(e->tagInfo());
-                fmd->setDocumentation(root->doc,root->docFile,root->docLine);
-                fmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-                fmd->addSectionsToDefinition(root->anchors);
-                fmd->setInitializer(root->initializer);
-                fmd->setMaxInitLines(root->initLines);
-                fmd->setMemberGroupId(root->mGrpId);
-                fmd->setExplicitExternal(root->explicitExternal);
-                if (fmd)
+                if (md->qualifiedName()==rootNav->name()) // enum value scope matches that of the enum
                 {
-                  md->insertEnumField(fmd);
-                  fmd->setEnumScope(md);
+                  MemberDef *fmd=new MemberDef(
+                      root->fileName,root->startLine,
+                      root->type,root->name,root->args,0,
+                      Public, Normal,root->stat,Member,
+                      MemberDef::EnumValue,0,0);
+                  if (md->getClassDef()) fmd->setMemberClass(md->getClassDef());
+                  else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
+                  else if (md->getFileDef()) fmd->setFileDef(md->getFileDef());
+                  fmd->setOuterScope(md->getOuterScope());
+                  fmd->setTagInfo(e->tagInfo());
+                  fmd->setDocumentation(root->doc,root->docFile,root->docLine);
+                  fmd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+                  fmd->addSectionsToDefinition(root->anchors);
+                  fmd->setInitializer(root->initializer);
+                  fmd->setMaxInitLines(root->initLines);
+                  fmd->setMemberGroupId(root->mGrpId);
+                  fmd->setExplicitExternal(root->explicitExternal);
+                  if (fmd)
+                  {
+                    md->insertEnumField(fmd);
+                    fmd->setEnumScope(md);
+                  }
                 }
                 e->releaseEntry();
               }
@@ -10190,8 +10184,9 @@ void parseInput()
   msg("Adding source references...\n");
   addSourceReferences();
 
-  msg("Adding todo/test/bug list items...\n");
+  msg("Adding xrefitems...\n");
   addListReferences();
+  generateXRefPages();
 
   if (Config_getBool("SHOW_DIRECTORIES") && Config_getBool("DIRECTORY_GRAPH"))
   {
