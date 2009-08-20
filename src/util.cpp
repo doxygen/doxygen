@@ -3137,7 +3137,7 @@ static QCString getCanonicalTypeForIdentifier(
 
   if (cd && cd==d)
   {
-    *tSpec="";
+    if (tSpec) *tSpec="";
     return "";
   }
   else if (cd) // resolves to a known class type
