@@ -16,7 +16,9 @@
  *
  */
 
+#include <stdio.h>
 #include "reflist.h"
+#include "util.h"
 
 /*! Create a list of items that are cross referenced with documentation blocks
  *  @param listName String representing the name of the list.
@@ -27,7 +29,8 @@ RefList::RefList(const char *listName,
                  const char *pageTitle,
                  const char *secTitle
                 )
-{ 
+{
+  m_itemList = 0;
   m_dict = 0;
   m_dictIterator = 0;
   m_id = 0;
@@ -37,10 +40,10 @@ RefList::RefList(const char *listName,
 }
 
 /*! Destroy the todo list. Currently not called! */
-RefList::~RefList() 
-{ 
-  delete m_dictIterator; 
-  delete m_dict; 
+RefList::~RefList()
+{
+  delete m_dictIterator;
+  delete m_dict;
 }
 
 /*! Adds a new item to the list.
@@ -50,7 +53,7 @@ int RefList::addRefItem()
 {
   if (m_dict==0)
   {
-    m_dict = new QIntDict<RefItem>(1009); 
+    m_dict = new QIntDict<RefItem>(1009);
     m_dict->setAutoDelete(TRUE);
     m_dictIterator = new QIntDictIterator<RefItem>(*m_dict);
   }
@@ -69,7 +72,7 @@ RefItem *RefList::getRefItem(int itemId)
   return m_dict ? m_dict->find(itemId) : 0;
 }
 
-/*! Returns the first item in the dictionary or 0 if 
+/*! Returns the first item in the dictionary or 0 if
  *  non is available.
  *  Items are not sorted.
  */
@@ -101,5 +104,58 @@ QCString RefList::pageTitle() const
 QCString RefList::sectionTitle() const
 {
   return m_secTitle;
+}
+
+void RefList::insertIntoList(const char *key,RefItem *item)
+{
+  if (m_itemList==0)
+  {
+    m_itemList = new SortedRefItems(1009);
+  }
+  RefItem *ri = m_itemList->find(key);
+  if (ri==0)
+  {
+    m_itemList->append(key,item);
+  }
+  else // item already added to the list (i.e. multiple item for the same
+       // entity)
+  {
+    if (ri!=item)
+    {
+      ri->extraItems.append(item);
+    }
+  }
+}
+
+void RefList::generatePage()
+{
+  if (m_itemList==0) return;
+  m_itemList->sort();
+  SDict<RefItem>::Iterator it(*m_itemList);
+  RefItem *item;
+  for (it.toFirst();(item=it.current());++it)
+  {
+    QCString doc;
+    doc =  "\\anchor ";
+    doc += item->listAnchor;
+    doc += " <dl><dt>";
+    doc += item->prefix;
+    doc += " \\_internalref ";
+    doc += item->name;
+    doc += " \"";
+    doc += item->title;
+    doc += "\"";
+    if (!item->args.isEmpty()) doc += item->args;
+    doc += "</dt>\n<dd>";
+    doc += item->text;
+    QListIterator<RefItem> li(item->extraItems);
+    RefItem *extraItem;
+    for (li.toFirst();(extraItem=li.current());++li)
+    {
+      doc += "<p>" + extraItem->text;
+    }
+    doc += "</dd></dl>\n";
+    addRelatedPage(m_listName,m_pageTitle,doc,0,m_listName,1,0,0,0);
+  }
 }
 

@@ -50,7 +50,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorKorean : public TranslatorAdapter_1_6_0
+class TranslatorKorean : public Translator
 {
   protected:
     friend class TranslatorAdapterBase;
@@ -1792,6 +1792,40 @@ class TranslatorKorean : public TranslatorAdapter_1_6_0
     virtual QCString trTypeConstraints()
     {
       return "타입 한정자들";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" 관계";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "로딩중...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "전역 이름공간";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "검색중...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "일치하는것 없음";
     }
 
 };

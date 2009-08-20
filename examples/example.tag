@@ -7,7 +7,7 @@
       <type>void</type>
       <name>example</name>
       <anchorfile>class_test.html</anchorfile>
-      <anchor>47b775f65718978f1ffcd96376f8ecfa</anchor>
+      <anchor>a47b775f65718978f1ffcd96376f8ecfa</anchor>
       <arglist>()</arglist>
     </member>
   </compound>

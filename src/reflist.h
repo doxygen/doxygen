@@ -21,15 +21,36 @@
 
 #include "qtbc.h"
 #include <qintdict.h>
-//#include "outputgen.h"
+#include <qlist.h>
+#include "sortdict.h"
 
 /*! This struct represents an item in the list of references. */
 struct RefItem
 {
-  RefItem() : written(FALSE) {}
+  RefItem() /*: written(FALSE)*/ {}
   QCString text;           //!< text of the item.
   QCString listAnchor;     //!< anchor in the list
-  bool written;
+
+  QCString prefix;         //!< type prefix for the name
+  QCString name;           //!< name of the entity containing the reference
+  QCString title;          //!< display name of the entity
+  QCString args;           //!< optional arguments for the entity (if function)
+  //bool written;
+  QList<RefItem> extraItems; //!< more items belonging to the same entity
+};
+
+/*! List of items sorted by title */
+class SortedRefItems : public SDict<RefItem>
+{
+  public:
+    SortedRefItems(int size=17) : SDict<RefItem>(size) {}
+    virtual ~SortedRefItems() {}
+    int compareItems(GCI item1,GCI item2)
+    {
+      RefItem *r1 = (RefItem*)item1;
+      RefItem *r2 = (RefItem*)item2;
+      return stricmp(r1->title,r2->title);
+    }
 };
 
 /*! @brief List of cross-referenced items 
@@ -57,12 +78,15 @@ class RefList
             const char *pageTitle,const char *secTitle
            );
    ~RefList();
+    void insertIntoList(const char *key,RefItem *item);
+    void generatePage();
 
   private:
     int m_id;
     QCString m_listName;
     QCString m_pageTitle;
     QCString m_secTitle;
+    SortedRefItems *m_itemList;
     QIntDict<RefItem> *m_dict;
     QIntDictIterator<RefItem> *m_dictIterator;
 };
