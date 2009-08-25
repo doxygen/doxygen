@@ -28,6 +28,8 @@
 #include "doxygen.h"
 #include "docparser.h"
 #include "marshal.h"
+#include "entry.h"
+#include "md5.h"
 
 //static QCString idToName(int id)
 //{
@@ -55,6 +57,8 @@ MemberGroup::MemberGroup(Definition *parent,
   m_numDocMembers = -1;
   m_parent        = parent;
   m_docFile       = docFile;
+  m_xrefListItems = 0;
+  doc.prepend("<a name=\""+anchor()+"\"></a>");
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -200,9 +204,9 @@ void MemberGroup::distributeMemberGroupDocumentation()
   }
 }
 
-int MemberGroup::varCount() const       
-{ 
-  return memberList->varCount(); 
+int MemberGroup::varCount() const
+{
+  return memberList->varCount();
 }
 
 int MemberGroup::funcCount() const      
@@ -255,9 +259,23 @@ void MemberGroup::setInGroup(bool b)
   memberList->setInGroup(b);
 }
 
+QCString MemberGroup::anchor() const
+{
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)grpHeader.data(),grpHeader.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  return "amgrp"+sigStr;
+}
+
 void MemberGroup::addListReferences(Definition *def)
 {
   memberList->addListReferences(def);
+  if (m_xrefListItems && def)
+  {
+    addRefItem(m_xrefListItems,theTranslator->trGroup(TRUE,TRUE),
+        def->getOutputFileBase()+"#"+anchor(),grpHeader,0);
+  }
 }
 
 void MemberGroup::findSectionsInDocumentation()
@@ -280,6 +298,7 @@ void MemberGroup::marshal(StorageIntf *s)
   marshalInt(s,m_numDocMembers);
   marshalObjPointer(s,m_parent);
   marshalQCString(s,m_docFile);
+  marshalItemInfoList (Doxygen::symbolStorage,m_xrefListItems);
 }
 
 void MemberGroup::unmarshal(StorageIntf *s)
@@ -296,5 +315,41 @@ void MemberGroup::unmarshal(StorageIntf *s)
   m_numDocMembers = unmarshalInt(s);
   m_parent        = (Definition *)unmarshalObjPointer(s);
   m_docFile       = unmarshalQCString(s);
+  m_xrefListItems = unmarshalItemInfoList (Doxygen::symbolStorage);
 }
 
+void MemberGroup::setRefItems(const QList<ListItemInfo> *sli)
+{
+  if (sli)
+  {
+    // deep copy the list
+    if (m_xrefListItems==0) 
+    {
+      m_xrefListItems=new QList<ListItemInfo>;
+      m_xrefListItems->setAutoDelete(TRUE);
+    }
+    QListIterator<ListItemInfo> slii(*sli);
+    ListItemInfo *lii;
+    for (slii.toFirst();(lii=slii.current());++slii)
+    {
+      m_xrefListItems->append(new ListItemInfo(*lii));
+    } 
+  }
+}
+//--------------------------------------------------------------------------
+
+void MemberGroupInfo::setRefItems(const QList<ListItemInfo> *sli)
+{
+  if (!sli) return;
+  if (m_sli==0)
+  {
+    m_sli = new QList<ListItemInfo>;
+    m_sli->setAutoDelete(TRUE);
+  }
+  QListIterator<ListItemInfo> slii(*sli);
+  ListItemInfo *ili;
+  for (slii.toFirst();(ili=slii.current());++slii)
+  {
+    m_sli->append(new ListItemInfo(*ili));
+  }
+}

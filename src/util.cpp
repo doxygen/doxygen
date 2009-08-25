@@ -5399,6 +5399,7 @@ void addMembersToMemberGroup(MemberList *ml,
         }
         md = ml->take(index); // remove from member list
         mg->insertMember(md); // insert in member group
+        mg->setRefItems(info->m_sli);
         md->setMemberGroup(mg);
         continue;
       }
@@ -6502,7 +6503,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".f90",   "fortran");
   updateLanguageMapping(".vhd",   "vhdl");
   updateLanguageMapping(".vhdl",  "vhdl");
-  updateLanguageMapping(".xml",   "dbusxml");
+  //updateLanguageMapping(".xml",   "dbusxml");
 }
 
 SrcLangExt getLanguageFromFileName(const QCString fileName)

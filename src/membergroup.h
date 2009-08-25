@@ -34,6 +34,7 @@ class GroupDef;
 class OutputList;
 class Definition;
 class StorageIntf;
+struct ListItemInfo;
 
 class MemberGroup 
 {
@@ -74,8 +75,10 @@ class MemberGroup
     int numDocMembers() const;
     void setInGroup(bool b);
     void addListReferences(Definition *d);
+    void setRefItems(const QList<ListItemInfo> *sli);
     MemberList *members() const { return memberList; }
     Definition *parent() const { return m_parent; }
+    QCString anchor() const;
 
     void marshal(StorageIntf *s);
     void unmarshal(StorageIntf *s);
@@ -93,6 +96,7 @@ class MemberGroup
     int  m_numDocMembers;
     Definition *m_parent;
     QCString m_docFile;
+    QList<ListItemInfo> *m_xrefListItems;
 };
 
 class MemberGroupList : public QList<MemberGroup>
@@ -113,12 +117,17 @@ class MemberGroupSDict : public SIntDict<MemberGroup>
    ~MemberGroupSDict() {}
 };
 
+
 struct MemberGroupInfo
 {
+  MemberGroupInfo() : m_sli(0) {}
+ ~MemberGroupInfo() { delete m_sli; m_sli=0; }
+  void setRefItems(const QList<ListItemInfo> *sli);
   QCString header;
   QCString doc;
   QCString docFile;
   QCString compoundName;
+  QList<ListItemInfo> *m_sli;
 };
 
 //class MemberGroupDict : public QIntDict<MemberGroup>

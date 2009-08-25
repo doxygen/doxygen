@@ -568,17 +568,17 @@ void Step3::setHtmlOptions(int id)
   if (id==0) // plain HTML
   {
     updateBoolOption(m_modelData,STR_GENERATE_HTMLHELP,false);
-    updateStringOption(m_modelData,STR_GENERATE_TREEVIEW,QString::fromAscii("NONE"));
+    updateBoolOption(m_modelData,STR_GENERATE_TREEVIEW,false);
   }
   else if (id==1) // with navigation tree
   {
     updateBoolOption(m_modelData,STR_GENERATE_HTMLHELP,false);
-    updateStringOption(m_modelData,STR_GENERATE_TREEVIEW,QString::fromAscii("ALL"));
+    updateBoolOption(m_modelData,STR_GENERATE_TREEVIEW,true);
   }
   else if (id==2) // with compiled help
   {
     updateBoolOption(m_modelData,STR_GENERATE_HTMLHELP,true);
-    updateStringOption(m_modelData,STR_GENERATE_TREEVIEW,QString::fromAscii("NONE"));
+    updateBoolOption(m_modelData,STR_GENERATE_TREEVIEW,false);
   }
 }
 

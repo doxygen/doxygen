@@ -9,6 +9,14 @@ all XML comments starting with '*' or '!'.  An additional '<' can be
 used to assign the documentation string to the previous entity instead
 of the one following the comment.
 
+Note that before the parsing of DBus XML file works one has to
+assign the .xml extension to the DBus XML parser using the
+following configuration option:
+
+\verbatim
+EXTENSION_MAPPING = xml=dbusxml
+\endverbatim
+
 \section dbusxml_supported Supported XML elements and attributes
 
 <p>The following DBus XML elemets can be annotated:

@@ -636,6 +636,14 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "SHOW_USED_FILES",
+                 "Set the SHOW_USED_FILES tag to NO to disable the list of files generated\n"
+                 "at the bottom of the documentation of classes and structs. If set to YES the\n"
+                 "list will mention the files that were used to generate the documentation.",
+                 TRUE
+                );
+  //----
+  cb = cfg->addBool(
                  "SHOW_DIRECTORIES",
                  "If the sources in your project are distributed over multiple directories\n"
                  "then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy\n"
@@ -1293,7 +1301,7 @@ void addConfigOptions(Config *cfg)
                  "GENERATE_TREEVIEW",
                  "The GENERATE_TREEVIEW tag is used to specify whether a tree-like index\n"
                  "structure should be generated to display hierarchical information.\n"
-                 "If the tag value is set to FRAME, a side panel will be generated\n"
+                 "If the tag value is set to YES, a side panel will be generated\n"
                  "containing a tree-like index structure (just like the one that\n"
                  "is generated for HTML Help). For this to work a browser that supports\n"
                  "JavaScript, DHTML, CSS and frames is required (i.e. any modern browser).\n"
@@ -2088,8 +2096,6 @@ void addConfigOptions(Config *cfg)
                  TRUE
                 );
   cb->addDependency("HAVE_DOT");
-  //----
-  cfg->addObsolete("SHOW_USED_FILES");
   //----
   cfg->addObsolete("USE_WINDOWS_ENCODING");
   //----

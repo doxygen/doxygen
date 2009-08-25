@@ -1021,7 +1021,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>^{B}*"."{B}*/\n                { // explicit end autolist: e.g "  ."
   				          addOutput(yytext); 
 					}
-<Comment>"."[a-z_A-Z0-9]		{ // . at start or in the middle of a word
+<Comment>("."+)[a-z_A-Z0-9]		{ // . at start or in the middle of a word, or ellipsis
   					  addOutput(yytext);
   					}
 <Comment>".\\"[ \t]			{ // . with escaped space.
@@ -2626,6 +2626,7 @@ static void groupAddDocs(Entry *e,const char *fileName)
     {
       info->doc = g_memberGroupDocs;
       info->docFile = fileName;
+      info->setRefItems(e->sli);
     }
     e->doc.resize(0);
     e->brief.resize(0);

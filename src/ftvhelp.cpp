@@ -590,7 +590,7 @@ void FTVHelp::generateTreeView(QString* OutString)
       //t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n";
       t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n";
-      t << "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"/>\n";
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
       t << "<title>"; 
       if (Config_getString("PROJECT_NAME").isEmpty())
       {
