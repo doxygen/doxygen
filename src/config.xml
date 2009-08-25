@@ -449,6 +449,11 @@ The appearance of the initializer of individual variables and defines in the
 documentation can be controlled using \showinitializer or \hideinitializer 
 command in the documentation regardless of this setting. 
 ' minval='0' maxval='10000' defval='30'/>
+    <option type='bool' id='SHOW_USED_FILES' docs='
+Set the SHOW_USED_FILES tag to NO to disable the list of files generated 
+at the bottom of the documentation of classes and structs. If set to YES the 
+list will mention the files that were used to generate the documentation.
+' defval='1'/>
     <option type='bool' id='SHOW_DIRECTORIES' docs='
 If the sources in your project are distributed over multiple directories 
 then setting the SHOW_DIRECTORIES tag to YES will show the directory hierarchy 
@@ -884,7 +889,7 @@ that doxygen will group on one line in the generated HTML documentation.
     <option type='bool' id='GENERATE_TREEVIEW' defval='0' docs='
 The GENERATE_TREEVIEW tag is used to specify whether a tree-like index 
 structure should be generated to display hierarchical information. 
-If the tag value is set to FRAME, a side panel will be generated 
+If the tag value is set to YES, a side panel will be generated 
 containing a tree-like index structure (just like the one that 
 is generated for HTML Help). For this to work a browser that supports 
 JavaScript, DHTML, CSS and frames is required (i.e. any modern browser). 
@@ -1374,7 +1379,6 @@ If the DOT_CLEANUP tag is set to YES (the default) Doxygen will
 remove the intermediate dot files that are used to generate 
 the various graphs. 
 ' defval='1' depends='HAVE_DOT'/>
-    <option type='obsolete' id='SHOW_USED_FILES'/>
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
     <option type='obsolete' id='QTHELP_FILE'/>

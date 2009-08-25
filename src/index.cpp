@@ -2523,6 +2523,7 @@ void writeSearchIndex()
           t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
                " \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
           t << "<html><head><title></title>" << endl;
+          t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
           t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
           t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
           t << "</head>" << endl;
@@ -2552,17 +2553,30 @@ void writeSearchIndex()
                 << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "onkeyup=\""
                 << "return searchResults.Nav(event," << itemCount << ")\" "
-                << "class=\"SRSymbol\" href=\"../" 
-                << d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                << "class=\"SRSymbol\" ";
+              if (!d->getReference().isEmpty())
+              {
+                QCString *dest;
+                t << "doxygen=\"" << d->getReference() << ":../";
+                if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
+                t << "\" ";
+                t << "href=\"../";
+                if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
+              }
+              else
+              {
+                t << "href=\"../";
+              }
+              t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               if (isMemberDef)
               {
                 t << "#" << ((MemberDef *)d)->anchor();
               }
               t << "\" target=\""; 
               if (treeView) t << "basefrm"; else t << "_parent"; 
-              t << "\">" 
-                << convertToXML(d->localName())
-                << "</a>" << endl;
+              t << "\">";
+              t << convertToXML(d->localName());
+              t << "</a>" << endl;
               if (d->getOuterScope()!=Doxygen::globalScope)
               {
                 t << "  <span class=\"SRScope\">" 
@@ -2622,8 +2636,21 @@ void writeSearchIndex()
                   << "onkeyup=\""
                   << "return searchResults.NavChild(event," 
                   << itemCount << "," << childCount << ")\" "
-                  << "class=\"SRScope\" href=\"../" << 
-                  d->getOutputFileBase() << Doxygen::htmlFileExtension;
+                  << "class=\"SRScope\" ";
+                if (!d->getReference().isEmpty())
+                {
+                  QCString *dest;
+                  t << "doxygen=\"" << d->getReference() << ":../";
+                  if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
+                  t << "\" ";
+                  t << "href=\"../";
+                  if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
+                }
+                else
+                {
+                  t << "href=\"../";
+                }
+                t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
                 if (isMemberDef)
                 {
                   t << "#" << ((MemberDef *)d)->anchor();
@@ -2791,6 +2818,7 @@ void writeSearchIndex()
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
            "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
       t << "<html><head><title></title>" << endl;
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
       t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
       t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
       t << "</head>" << endl;

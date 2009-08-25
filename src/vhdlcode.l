@@ -579,7 +579,7 @@ static void startFontClass(const char *s)
 static void writeFont(const char *s,const char* text)
 {
   if (s==0 || text==0) return;
-  printf("writeFont(%d,\"%s\")\n",g_yyLineNr,text);
+  //printf("writeFont(%d,\"%s\")\n",g_yyLineNr,text);
   g_code->startFontClass(s);
   g_code->codify(text);
   g_code->endFontClass();

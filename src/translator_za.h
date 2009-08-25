@@ -14,7 +14,7 @@
  * input used in their production; they are not affected by this license.
  *
  */
- 
+
  /*
  *  Bronne vir hierdie vertaling (Sources for this translation):
  *  Die Stigting vir Afrikaans se rekenaartermelys: 
@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_ZA_H
 #define TRANSLATOR_ZA_H
 
-class TranslatorAfrikaans : public TranslatorAdapter_1_4_6
+class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
 {
   public:
 
@@ -1022,7 +1022,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_4_6
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
         "                  public Ongedokumenteer,\n"
-        "                  public Templ<int>\n"  
+        "                  public Templ<int>\n"
         "{\n"
         "  private:\n"
         "    Used *m_usedClass;\n"
@@ -1260,7 +1260,7 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_4_6
     { 
       QCString result((first_capital ? "Bladsy" : "bladsy"));
       if (!singular)  result+="e";
-      return result;
+      return result; 
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1268,12 +1268,12 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_4_6
      *  of the category.
      */
     virtual QCString trMember(bool first_capital, bool singular)
-    {
+    { 
       QCString result((first_capital ? "Lid" : "lid"));
       if (!singular)  result = (first_capital ? "Lede" : "lede");
       return result; 
     }
-
+   
     /*! This is used for translation of the word that will possibly
      *  be followed by a single name or by a list of names 
      *  of the category.
@@ -1548,8 +1548,220 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_4_6
               "funksie in die argument(e) wat dit aanvaar.";
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.4.6
+//////////////////////////////////////////////////////////////////////////
+
+    /*! This is used to introduce a caller (or called-by) graph */
+    virtual QCString trCallerGraph()
+    {
+      return "Hier is die roep skema vir die funksie:";
+    }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for enumeration values
+     */
+    virtual QCString trEnumerationValueDocumentation()
+    { return "Enumerator Dokumentasie"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Lede Funksie/Subroetine Dokumentasie"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Data Tipes Lys"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Data Velde"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Hier is die data tipes met kort beskrywings:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Hier is 'n lys van alle ";
+      if (!extractAll)
+      {
+        result+="gedokumenteerde ";
+      }
+      result+="data tipe lede";
+      result+=" met skakels na ";
+      if (!extractAll) 
+      {
+         result+="die data strukture dokumentasie vir elke lid";
+      }
+      else 
+      {
+         result+="die data tipes waaraan hulle behoort:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Data Tipe Indeks"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Data Tipe Dokumentasie"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Funksies/Subroetines"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Funksies/Subroetine Dokumentasie"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Data Tipes"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Modules Lys"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Hier is 'n lys van alle ";
+      if (!extractAll) result+="gedokumenteerde ";
+      result+="modules met kort beskrywings:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Module"; break;
+        case ClassDef::Struct:     result+=" Tipe"; break;
+        case ClassDef::Union:      result+=" Unie"; break;
+        case ClassDef::Interface:  result+=" Interflak"; break;
+        case ClassDef::Protocol:   result+=" Protokol"; break;
+        case ClassDef::Category:   result+=" Kategorie"; break;
+        case ClassDef::Exception:  result+=" Eksepsie"; break;
+      }
+      if (isTemplate) result+=" Template";
+      result+=" Bron";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Module Bron";        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Module Lede"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Hier is 'n lys van alle ";
+      if (!extractAll) result+="gedokumenteerde ";
+      result+="module lede met skakels na ";
+      if (extractAll) 
+      {
+        result+="die module dokumentasie vir elke lid:";
+      }
+      else 
+      {
+        result+="die modules waaraan hulle behoort:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Modules Indeks"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Module" : "module"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"The documentation for this ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="module"; break;
+        case ClassDef::Struct:     result+="tipe"; break;
+        case ClassDef::Union:      result+="unie"; break;
+        case ClassDef::Interface:  result+="Interflak"; break;
+        case ClassDef::Protocol:   result+="protokcol"; break;
+        case ClassDef::Category:   result+="kategorie"; break;
+        case ClassDef::Exception:  result+="eksepsie"; break;
+      }
+      result+=" is gegenereer vanaf die foldende leer";
+      if (single) result+=":"; else result+="s:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Tipe" : "tipe"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Subprogram" : "subprogram"));
+      if (!singular)  result+="me";
+      return result; 
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Tipe Limiete";
+    }
 
 };
 
 #endif
-

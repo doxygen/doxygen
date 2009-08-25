@@ -725,7 +725,7 @@ REFWORD   ("#"|"::")?({ID}{TEMPLPART}?("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCA
   			 unput(' ');
   			 return 0;
                        }
-<St_Ref>{WS}+"\""      { // white space following by quoted string
+<St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
   			 BEGIN(St_Ref2);
                        }
 <St_Ref>\n	       { // new line

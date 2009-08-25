@@ -6330,6 +6330,7 @@ static void findEnums(EntryNav *rootNav)
       md->setMemberGroupId(root->mGrpId);
       md->enableCallGraph(root->callGraph);
       md->enableCallerGraph(root->callerGraph);
+      //printf("%s::setRefItems(%d)\n",md->name().data(),root->sli?root->sli->count():-1);
       md->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",name.data(),nd);
       bool defSet=FALSE;
@@ -6755,8 +6756,9 @@ static void findEnumDocumentation(EntryNav *rootNav)
               {
                 md->setMemberGroupId(root->mGrpId);
               }
-              
+
               md->addSectionsToDefinition(root->anchors);
+              md->setRefItems(root->sli);
 
               GroupDef *gd=md->getGroupDef();
               if (gd==0 &&root->groups->first()!=0) // member not grouped but out-of-line documentation is

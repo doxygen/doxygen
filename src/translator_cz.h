@@ -20,6 +20,8 @@
 
 // Updates:
 // --------
+// 2009/08/24 - 
+// 2008/06/09 - Corrections in trLegendDocs().
 // 2007/11/13 - Update for "new since 1.5.4 (mainly for Fortran)".
 // 2007/03/20 - removing decode(), conversion of literals to UTF-8.
 // 2006/06/13 - translation of the trEnumerationValueDocumentation().
@@ -77,7 +79,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_6_0
+class TranslatorCzech : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -1053,7 +1055,7 @@ class TranslatorCzech : public TranslatorAdapter_1_6_0
     /*! page explaining how the dot graph's should be interpreted */
     virtual QCString trLegendDocs()
     {
-      QCString result(  
+      return
         "Zde naleznete vysvětlení, jak mají být interpretovány grafy, "
         "které byly generovány programem doxygen.<p>\n"
         "Uvažujte následující příklad:\n"
@@ -1064,22 +1066,21 @@ class TranslatorCzech : public TranslatorAdapter_1_6_0
         "/*! Třída, u které došlo k ořezání grafu. Vztah dědičnosti "
         "je skryt. */\n"
         "class Truncated : public Invisible { };\n\n"
+        "/* Třída, která není dokumentována komentáři programu doxygen. */\n"
+        "class Undocumented { };\n\n"
         "/*! Bázová třída děděná veřejně (public inheritance). */\n"
         "class PublicBase : public Truncated { };\n\n"
+        "/*! Šablona třídy. */\n"
+        "template<class T> class Templ { };\n\n"
         "/*! Bázová třída, použitá pro chráněné dědění "
         "(protected inheritance). */\n"
         "class ProtectedBase { };\n\n"
         "/*! Bázová třída, využitá pro privátní dědění "
         "(private inheritance). */\n"
         "class PrivateBase { };\n\n"
-        "/* Třída, která není dokumentována komentáři programu doxygen. */\n"
-        "class Undocumented { };\n\n"
-        "/*! Šablona třídy. */\n"
-        "template<class T> class Templ { };\n\n"
         "/*! Třída, která je využívána třídou Inherited. */\n"
         "class Used { };\n\n"
-        "/*! Odvozená třída, která různým způsobem dědí z více bázových "
-        "tříd. */\n"
+        "/*! Odvozená třída, která dědí z více tříd. */\n"
         "class Inherited : public PublicBase,\n"
         "                  protected ProtectedBase,\n"
         "                  private PrivateBase,\n"
@@ -1090,13 +1091,12 @@ class TranslatorCzech : public TranslatorAdapter_1_6_0
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Pokud je položka \\c MAX_DOT_GRAPH_HEIGHT konfiguračního souboru "
-        "nastavena na hodnotu 200, bude vygenerován následující graf:"
+        "K výše uvedenému bude vygenerován následující graf:"
         "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
         "<p>\n"
         "Bloky (tj. uzly) v uvedeném grafu mají následující význam:\n"
         "<ul>\n"
-        "<li>Černě vyplněný obdélník reprezentuje strukturu nebo třídu, "
+        "<li>Šedě vyplněný obdélník reprezentuje strukturu nebo třídu, "
             "pro kterou byl graf generován.\n"
         "<li>Obdélník s černým obrysem označuje dokumentovanou "
             "strukturu nebo třídu.\n"
@@ -1125,9 +1125,7 @@ class TranslatorCzech : public TranslatorAdapter_1_6_0
             "a šablonou třídy, na základě které byla\n"
             "instance šablony vytvořena. V popisu šipky jsou uvedeny  příslušné"
             " parametry šablony.\n"
-        "</ul>\n");
-        
-        return result;
+        "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
@@ -1814,6 +1812,40 @@ class TranslatorCzech : public TranslatorAdapter_1_6_0
     virtual QCString trTypeConstraints()
     {
       return "Omezení typů (Type Constraints)";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "Relace "+QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Načítám...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Globální prostor jmen";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Vyhledávám...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Nic se nenašlo";
     }
 
 };

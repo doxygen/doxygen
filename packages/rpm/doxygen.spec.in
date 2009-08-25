@@ -14,7 +14,7 @@ URL: http://www.stack.nl/~dimitri/doxygen/index.html
 Vendor: Dimitri van Heesch
 License: GNU General Public License
 Group: Development/Tools
-Source: %{name}-%{version}_%{revision}.src.tar.gz
+Source: %{name}-%{version}.src.tar.gz
 BuildRoot: %{buildroot}
 BuildPrereq: libstdc++-devel >= 2.96, /usr/bin/perl, /usr/bin/latex, /usr/bin/dvips, /usr/bin/gs
 Prereq: /sbin/chkconfig, /bin/mktemp, /bin/rm, /bin/mv, libstdc++ >= 2.96
@@ -48,7 +48,7 @@ install.
 %endif
 
 %prep
-%setup -q -n %{name}-%{version}_%{revision}
+%setup -q -n %{name}-%{version}
 ./configure %{?_with_doxywizard} --prefix $RPM_BUILD_ROOT/usr
 
 %build

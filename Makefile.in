@@ -105,7 +105,6 @@ rpm: dist
 	mkdir $(DISTDIR)/packages
 	mkdir $(DISTDIR)/packages/rpm
 	cp packages/rpm/doxygen.spec $(DISTDIR)/packages/rpm
-	tar -rvf $(DISTDIR).src.tar $(DISTDIR)/packages/rpm/doxygen.spec
 	rm -rf $(DISTDIR)
 	gzip -9v $(DISTDIR).src.tar
 	rpmbuild -ta %%WITHDOXYWIZARD%% $(DISTDIR).src.tar.gz

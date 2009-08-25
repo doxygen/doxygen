@@ -179,26 +179,31 @@ static Define *isDefined(const char *name)
 
 static QDict<void> g_allIncludes(10009);
 
-static FileState *checkAndOpenFile(const QCString &fileName)
+static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyIncluded)
 {
+  alreadyIncluded = FALSE;
   FileState *fs = 0;
-  //printf("checkAndOpenFile(%s)\n",absName.data());
+  //printf("checkAndOpenFile(%s)\n",fileName.data());
   QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
   {
     QCString absName = convertToQCString(fi.absFilePath());
 
-#if 1
     // global guard
-    if (g_allIncludes.find(absName)) return 0; // already done
-    g_allIncludes.insert(absName,(void *)0x8);
+    if (g_curlyCount==0) // not #include inside { ... }
+    {
+      if (g_allIncludes.find(absName)==0) 
+      {
+	alreadyIncluded = TRUE;
+	//printf("  already included 1\n");
+	return 0; // already done
+      }
+      g_allIncludes.insert(absName,(void *)0x8);
+    }
     // check include stack for absName
-#endif
 
-#if 0 // stack based recusive inclusion detection
     QStack<FileState> tmpStack;
     g_includeStack.setAutoDelete(FALSE);
-    bool alreadyIncluded=FALSE;
     while ((fs=g_includeStack.pop()))
     {
       if (fs->fileName==absName) alreadyIncluded=TRUE;
@@ -210,37 +215,52 @@ static FileState *checkAndOpenFile(const QCString &fileName)
     }
     g_includeStack.setAutoDelete(TRUE);
 
-    if (alreadyIncluded) return 0; 
-#endif
+    if (alreadyIncluded) 
+    {
+      //printf("  already included 2\n");
+      return 0; 
+    }
     //printf("#include %s\n",absName.data());
 
     fs = new FileState;
-    
+    alreadyIncluded = FALSE;
+
     QCString filterName = getFileFilter(absName);
     if (!filterName.isEmpty())
     {
       fs->isPlainFile = FALSE;
       QCString cmd = filterName+" \""+absName+"\"";
       fs->filePtr=portable_popen(cmd,"r");
-      if (!fs->filePtr) err("Error: could not execute filter %s\n",cmd.data());
+      if (!fs->filePtr)
+      {
+        err("Error: could not execute filter %s, reason: %s\n",cmd.data(),
+            strerror(errno));
+      }
     }
     else
     {
       fs->isPlainFile = TRUE;
       fs->filePtr=fopen(absName,"r");
-      if (!fs->filePtr) err("Error: could not open file %s for reading\n",absName.data());
+      if (!fs->filePtr)
+      {
+        err("Error: could not open file %s for reading, reason: %s \n",
+            absName.data(),strerror(errno));
+      }
     }
     if (!fs->filePtr) // error -> cleanup
     {
       delete fs;
       fs=0;
     }
-    fs->oldYYin = preYYin;
+    else
+    {
+      fs->oldYYin = preYYin;
+    }
   }
   return fs;
 }
 
-static FileState *findFile(const char *fileName,bool localInclude)
+static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyIncluded)
 {
   //printf("** findFile(%s,%d) g_yyFileName=%s\n",fileName,localInclude,g_yyFileName.data());
   if (localInclude && !g_yyFileName.isEmpty())
@@ -249,12 +269,16 @@ static FileState *findFile(const char *fileName,bool localInclude)
     if (fi.exists())
     {
       QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
-      FileState *fs = checkAndOpenFile(absName);
+      FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
       if (fs)
       {
 	setFileName(absName);
 	g_yyLineNr=1;
 	return fs;
+      }
+      else if (alreadyIncluded)
+      {
+	return 0;
       }
     }
   }
@@ -266,12 +290,16 @@ static FileState *findFile(const char *fileName,bool localInclude)
   while (s)
   {
     QCString absName = (QCString)s+"/"+fileName;
-    FileState *fs = checkAndOpenFile(absName);
+    FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
     if (fs)
     {
       setFileName(absName);
       g_yyLineNr=1;
       return fs;
+    }
+    else if (alreadyIncluded)
+    {
+      return 0;
     }
 
     s=g_pathList->next();
@@ -1081,10 +1109,10 @@ void addDefine()
   int l=g_defLitText.find('\n');
   if (l>0 && g_defLitText.left(l).stripWhiteSpace()=="\\")
   {
-    // strip first line if it only contains a slash 
+    // strip first line if it only contains a slash
     g_defLitText = g_defLitText.right(g_defLitText.length()-l-1);
   }
-  else if (l>0) 
+  else if (l>0)
   {
     // align the items on the first line with the items on the second line
     int k=l+1;
@@ -1094,7 +1122,7 @@ void addDefine()
     g_defLitText=g_defLitText.mid(l+1,k-l-1)+g_defLitText.stripWhiteSpace();
   }
   md->setInitializer(g_defLitText.stripWhiteSpace());
-  
+
   md->setFileDef(g_inputFileDef);
   md->setDefinition("#define "+g_defName);
 
@@ -1106,7 +1134,7 @@ void addDefine()
   }
   mn->append(md);
   if (g_yyFileDef) g_yyFileDef->insertMember(md);
-  
+
   //Define *d;
   //if ((d=defineDict[g_defName])==0) defineDict.insert(g_defName,newDefine()); 
 }
@@ -1114,7 +1142,7 @@ void addDefine()
 static inline void outputChar(char c)
 {
   if (g_includeStack.isEmpty() || g_curlyCount>0) g_outputBuf->addChar(c);
-} 
+}
 
 static inline void outputArray(const char *a,int len)
 {
@@ -1125,32 +1153,34 @@ static void readIncludeFile(const QCString &inc)
 {
   if (!Config_getBool("SEARCH_INCLUDES")) return; // do not read include files
   uint i=0;
-  
+
   // find the start of the include file name
   while (i<inc.length() && 
          (inc.at(i)==' ' || inc.at(i)=='"' || inc.at(i)=='<')
 	) i++;
   uint s=i;
-  
+
   // was it a local include?
   bool localInclude = s>0 && inc.at(s-1)=='"';
-  
+
   // find the end of the include file name
-  while (i<inc.length() && inc.at(i)!='"' && inc.at(i)!='>') i++; 
+  while (i<inc.length() && inc.at(i)!='"' && inc.at(i)!='>') i++;
 
   if (s<inc.length() && i>s) // valid include file name found
   {
     // extract include path+name
-    QCString incFileName=inc.mid(s,i-s).stripWhiteSpace(); 
+    QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
 
     QCString oldFileName = g_yyFileName.copy();
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
-    
+
     // findFile will overwrite g_yyFileDef if found
     FileState *fs;
-    if ((fs=findFile(incFileName,localInclude))) // see if the include file can be found
+    bool alreadyIncluded = FALSE;
+    //printf("calling findFile(%s)\n",incFileName.data());
+    if ((fs=findFile(incFileName,localInclude,alreadyIncluded))) // see if the include file can be found
     {
       //printf("Found include file!\n");
       if (Debug::isFlagSet(Debug::Preprocessor))
@@ -1158,7 +1188,7 @@ static void readIncludeFile(const QCString &inc)
         for (i=0;i<g_includeStack.count();i++) msg("  ");
         msg("#include %s: parsing...\n",incFileName.data());
       }
-      if (oldFileDef) 
+      if (oldFileDef)
       {
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(g_yyFileDef,incFileName,localInclude,g_isImported);
@@ -1181,14 +1211,15 @@ static void readIncludeFile(const QCString &inc)
       QCString lineStr(g_yyFileName.length()+20);
       lineStr.sprintf("# 1 \"%s\" 1\n",g_yyFileName.data());
       outputArray(lineStr.data(),lineStr.length());
-      
+
       //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
       preYYin=fs->filePtr;
       yy_switch_to_buffer(yy_create_buffer(preYYin, YY_BUF_SIZE));
-    } 
+    }
     else
     {
-      if (oldFileDef) 
+      //printf("  calling findFile(%s) alreadyInc=%d\n",incFileName.data(),alreadyIncluded);
+      if (oldFileDef)
       {
 	bool ambig;
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
@@ -1199,7 +1230,7 @@ static void readIncludeFile(const QCString &inc)
         if (fd)
         {
           //printf("Adding include dependency (2) %s->%s ambig=%d\n",oldFileDef->name().data(),fd->name().data(),ambig);
-  	  fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
+          fd->addIncludedByDependency(oldFileDef,oldFileDef->docName(),localInclude,g_isImported);
         }
       }
       if (Debug::isFlagSet(Debug::Preprocessor))
@@ -1207,7 +1238,7 @@ static void readIncludeFile(const QCString &inc)
         msg("#include %s: not found or already included! skipping...\n",incFileName.data());
         //printf("Error: include file %s not found\n",yytext);
       }
-      if (g_curlyCount>0) // failed to find #include inside { ... }
+      if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
       {
 	warn(g_yyFileName,g_yyLineNr,"Warning: include file %s not found, perhaps you forgot to add its directory to INCLUDE_PATH?",incFileName.data());
       }
