@@ -105,7 +105,7 @@ class VhdlDocGen
     static void debugClassName(ClassSDict*);
     //static void MergeFuncDoc(Entry* p,Entry* root);
 
-    static void computeVhdlComponentRelations(const QDict<EntryNav>&,FileStorage*);
+    static void computeVhdlComponentRelations();
 
     //static void  addVariableToComponents(EntryNav *rootNav,ClassDef *cd, MemberDef::MemberType mtype, const QCString &name, bool fromAnnScope,MemberDef *fromAnnMemb,Protection prot,bool related);
 

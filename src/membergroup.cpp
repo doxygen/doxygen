@@ -273,8 +273,12 @@ void MemberGroup::addListReferences(Definition *def)
   memberList->addListReferences(def);
   if (m_xrefListItems && def)
   {
-    addRefItem(m_xrefListItems,theTranslator->trGroup(TRUE,TRUE),
-        def->getOutputFileBase()+"#"+anchor(),grpHeader,0);
+    QCString name = def->getOutputFileBase()+"#"+anchor();
+    addRefItem(m_xrefListItems,
+        name,
+        theTranslator->trGroup(TRUE,TRUE),
+        name,
+        grpHeader,0);
   }
 }
 

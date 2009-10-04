@@ -69,6 +69,10 @@ class BufStr
       }
       m_buf = (char *)realloc(m_buf,m_size);
     }
+    int size() const
+    {
+      return m_size;
+    }
     char *data() const
     {
       return m_buf;

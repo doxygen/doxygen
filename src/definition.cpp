@@ -198,9 +198,10 @@ static bool matchExcludedSymbols(const char *name)
 
 void Definition::addToMap(const char *name,Definition *d)
 {
+  static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   QCString symbolName = name;
   int index=computeQualifiedIndex(symbolName);
-  if (index!=-1) symbolName=symbolName.mid(index+2);
+  if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty()) 
   {
     //printf("******* adding symbol `%s' (%p)\n",symbolName.data(),d);
@@ -1240,7 +1241,7 @@ void Definition::writePathFragment(OutputList &ol) const
     else
     {
       ol.writeString("&nbsp;");
-      ol.writeString("&raquo");
+      ol.writeString("&raquo;");
       ol.writeString("&nbsp;");
     }
   }

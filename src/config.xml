@@ -139,7 +139,7 @@ the path. The tag can be used to show relative paths in the file list.
 If left blank the directory from which doxygen is run is used as the 
 path to strip. 
 ' depends='FULL_PATH_NAMES'>
-      <value name='/Users/dimitri/doxygen/mail/1.5.7/doxywizard/'/>
+      <value name=''/>
     </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string' docs='
 The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
@@ -536,7 +536,7 @@ documented source files. You may enter file names like &quot;myfile.cpp&quot; or
 directories like &quot;/usr/src/myproject&quot;. Separate the files or directories 
 with spaces. 
 '>
-      <value name='/Users/dimitri/doxygen/mail/1.5.7/doxywizard'/>
+      <value name=''/>
     </option>
     <option type='string' id='INPUT_ENCODING' format='string' docs='
 This tag can be used to specify the character encoding of the source files 
@@ -933,6 +933,9 @@ put in front of it. If left blank `latex&apos; will be used as the default path.
     <option type='string' id='LATEX_CMD_NAME' format='file' docs='
 The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be 
 invoked. If left blank `latex&apos; will be used as the default command name. 
+Note that when enabling USE_PDFLATEX this option is only used for 
+generating bitmaps for formulas in the HTML output, but not in the 
+Makefile that is written to the output directory.
 ' defval='latex' depends='GENERATE_LATEX'/>
     <option type='string' id='MAKEINDEX_CMD_NAME' format='file' docs='
 The MAKEINDEX_CMD_NAME tag can be used to specify the command name to 

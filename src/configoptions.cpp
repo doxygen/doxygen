@@ -192,7 +192,7 @@ void addConfigOptions(Config *cfg)
                  "If left blank the directory from which doxygen is run is used as the\n"
                  "path to strip."
                 );
-  cl->addValue("/Users/dimitri/doxygen/mail/1.5.7/doxywizard/");
+  cl->addValue("");
   cl->addDependency("FULL_PATH_NAMES");
   //----
   cl = cfg->addList(
@@ -767,7 +767,7 @@ void addConfigOptions(Config *cfg)
                  "directories like \"/usr/src/myproject\". Separate the files or directories\n"
                  "with spaces."
                 );
-  cl->addValue("/Users/dimitri/doxygen/mail/1.5.7/doxywizard");
+  cl->addValue("");
   cl->setWidgetType(ConfigList::FileAndDir);
   //----
   cs = cfg->addString(
@@ -1372,7 +1372,10 @@ void addConfigOptions(Config *cfg)
   cs = cfg->addString(
                  "LATEX_CMD_NAME",
                  "The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be\n"
-                 "invoked. If left blank `latex' will be used as the default command name."
+                 "invoked. If left blank `latex' will be used as the default command name.\n"
+                 "Note that when enabling USE_PDFLATEX this option is only used for\n"
+                 "generating bitmaps for formulas in the HTML output, but not in the\n"
+                 "Makefile that is written to the output directory."
                 );
   cs->setDefaultValue("latex");
   cs->setWidgetType(ConfigString::File);

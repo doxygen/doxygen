@@ -20,7 +20,6 @@
 
 #include "qtbc.h"
 #include <stdio.h>
-//#include <qfile.h>
 #include "define.h"
 
 class BufStr;
@@ -29,7 +28,7 @@ DefineDict* getFileDefineDict();
 void initPreprocessor();
 void cleanUpPreprocessor();
 void addSearchDir(const char *dir);
-void preprocessFile(const char *fileName,BufStr &output);
+void preprocessFile(const char *fileName,BufStr &input,BufStr &output);
 void preFreeScanner();
 
 #endif

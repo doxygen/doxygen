@@ -720,9 +720,11 @@ void DirRelation::writeDocumentation(OutputList &ol)
   
   ol.writeString("<table class=\"dirtab\">");
   ol.writeString("<tr class=\"dirtab\">");
+  // TODO: translate me! "File in %s"
   ol.writeString("<th class=\"dirtab\">File in ");
   m_src->writePathFragment(ol);
   ol.writeString("</th>");
+  // TODO: translate me! "Includes file in %s"
   ol.writeString("<th class=\"dirtab\">Includes file in ");
   m_dst->dir()->writePathFragment(ol);
   ol.writeString("</th>");
@@ -844,7 +846,7 @@ void computeDirDependencies()
 #endif
 }
 
-
+#if 0
 void writeDirDependencyGraph(const char *dirName)
 {
   QString path;
@@ -889,6 +891,7 @@ void writeDirDependencyGraph(const char *dirName)
   }
   htmlPage.close();
 }
+#endif
 
 void generateDirDocs(OutputList &ol)
 {

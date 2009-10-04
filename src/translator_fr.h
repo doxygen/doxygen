@@ -158,7 +158,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of typedefs. */
        virtual QCString trMemberTypedefDocumentation()
       { 
-         return "Documentation des définitions de type membres"; }
+         return "Documentation des définitions de type membre"; }
     
     /*! header that is put before the list of enumerations. */
        virtual QCString trMemberEnumerationDocumentation()
@@ -386,7 +386,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
       
          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
          {
-            result+="des fonctions, variables, macros, enumérations, et définitions de type ";
+            result+="des fonctions, variables, macros, énumérations, et définitions de type ";
          }
          else
          {
@@ -573,7 +573,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
      */
        virtual QCString trTypedefDocumentation()
       { 
-         return "Documentation des définition de type"; }
+         return "Documentation des définitions de type"; }
    
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
@@ -812,7 +812,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
                if (i<numEntries-2) // not the fore last entry
                   result+=", ";
                else                // the fore last entry
-                  result+=", et ";
+                  result+=" et ";
             }
          }
          return result; 
@@ -998,7 +998,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of constructor/destructors. */
        virtual QCString trConstructorDocumentation()
       {
-         return "Documentation des constructeurs et destructeur"; 
+         return "Documentation des constructeurs et destructeurs"; 
       }
     /*! Used in the file documentation to point to the corresponding sources. */
        virtual QCString trGotoSourceCode()
@@ -1192,7 +1192,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
             "};\n"
             "\\endcode\n"
             "Si la valeur 240 est attribuée au tag \\c MAX_DOT_GRAPH_HEIGHT "
-            "du fichier de configuration, cela génèrera le graphe suivant :"
+            "du fichier de configuration, cela générera le graphe suivant :"
             "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
             "<p>\n"
             "Les rectangles du graphe ci-dessus ont la signification suivante :\n"
@@ -1736,6 +1736,41 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
      */
     virtual QCString trEnumerationValueDocumentation()
     { return "Documentation des énumérations"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Relation";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Chargement...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Espace de nommage global";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Recherche...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Aucune correspondance";
+    }
+
 };
 
 #endif

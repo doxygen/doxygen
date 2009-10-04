@@ -61,8 +61,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_alphabetical_index ALPHABETICAL_INDEX 
 \refitem cfg_always_detailed_sec ALWAYS_DETAILED_SEC
 \refitem cfg_binary_toc BINARY_TOC
-\refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
 \refitem cfg_brief_member_desc BRIEF_MEMBER_DESC 
+\refitem cfg_builtin_stl_support BUILTIN_STL_SUPPORT
 \refitem cfg_call_graph CALL_GRAPH
 \refitem cfg_caller_graph CALLER_GRAPH
 \refitem cfg_case_sense_names CASE_SENSE_NAMES 
@@ -80,6 +80,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
 \refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
 \refitem cfg_docset_feedname DOCSET_FEEDNAME
+\refitem cfg_dot_cleanup DOT_CLEANUP
 \refitem cfg_dot_fontname DOT_FONTNAME
 \refitem cfg_dot_fontpath DOT_FONTPATH
 \refitem cfg_dot_fontsize DOT_FONTSIZE
@@ -91,8 +92,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
 \refitem cfg_doxyfile_encoding DOXYFILE_ENCODING
 \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
-\refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 \refitem cfg_enabled_sections ENABLED_SECTIONS
+\refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
 \refitem cfg_example_path EXAMPLE_PATH
 \refitem cfg_example_patterns EXAMPLE_PATTERNS
 \refitem cfg_example_recursive EXAMPLE_RECURSIVE
@@ -146,6 +147,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_hide_undoc_relations HIDE_UNDOC_RELATIONS
 \refitem cfg_html_align_members HTML_ALIGN_MEMBERS
 \refitem cfg_html_dynamic_sections HTML_DYNAMIC_SECTIONS
+\refitem cfg_html_file_extension HTML_FILE_EXTENSION
 \refitem cfg_html_footer HTML_FOOTER
 \refitem cfg_html_header HTML_HEADER
 \refitem cfg_html_output HTML_OUTPUT
@@ -155,6 +157,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_image_path IMAGE_PATH
 \refitem cfg_include_graph INCLUDE_GRAPH
 \refitem cfg_include_path INCLUDE_PATH
+\refitem cfg_included_by_graph INCLUDED_BY_GRAPH
 \refitem cfg_inherit_docs INHERIT_DOCS
 \refitem cfg_inline_info INLINE_INFO
 \refitem cfg_inline_inherited_memb INLINE_INHERITED_MEMB
@@ -189,23 +192,23 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_pdf_hyperlinks PDF_HYPERLINKS
 \refitem cfg_perl_path PERL_PATH
 \refitem cfg_perlmod_latex PERLMOD_LATEX
-\refitem cfg_perlmod_pretty PERLMOD_PRETTY
 \refitem cfg_perlmod_makevar_prefix PERLMOD_MAKEVAR_PREFIX
+\refitem cfg_perlmod_pretty PERLMOD_PRETTY
 \refitem cfg_predefined PREDEFINED
 \refitem cfg_project_name PROJECT_NAME
 \refitem cfg_project_number PROJECT_NUMBER
-\refitem cfg_qhp_namespace QHP_NAMESPACE
-\refitem cfg_qhp_virtual_folder QHP_VIRTUAL_FOLDER
-\refitem cfg_qhp_cust_filter_name QHP_CUST_FILTER_NAME
-\refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
-\refitem cfg_qhp_sect_filter_attrs QHP_SECT_FILTER_ATTRS
 \refitem cfg_qhg_location QHG_LOCATION
+\refitem cfg_qhp_cust_filter_attrs QHP_CUST_FILTER_ATTRS
+\refitem cfg_qhp_cust_filter_name QHP_CUST_FILTER_NAME
+\refitem cfg_qhp_namespace QHP_NAMESPACE
+\refitem cfg_qhp_sect_filter_attrs QHP_SECT_FILTER_ATTRS
+\refitem cfg_qhp_virtual_folder QHP_VIRTUAL_FOLDER
 \refitem cfg_qt_autobrief QT_AUTOBRIEF
 \refitem cfg_quiet QUIET
 \refitem cfg_recursive RECURSIVE
 \refitem cfg_referenced_by_relation REFERENCED_BY_RELATION
-\refitem cfg_references_relation REFERENCES_RELATION
 \refitem cfg_references_link_source REFERENCES_LINK_SOURCE
+\refitem cfg_references_relation REFERENCES_RELATION
 \refitem cfg_repeat_brief REPEAT_BRIEF
 \refitem cfg_rtf_extensions_file RTF_EXTENSIONS_FILE
 \refitem cfg_rtf_hyperlinks RTF_HYPERLINKS
@@ -219,13 +222,14 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_show_files SHOW_FILES
 \refitem cfg_show_include_files SHOW_INCLUDE_FILES
 \refitem cfg_show_namespaces SHOW_NAMESPACES
+\refitem cfg_show_used_files SHOW_USED_FILES
 \refitem cfg_sip_support SIP_SUPPORT
 \refitem cfg_skip_function_macros SKIP_FUNCTION_MACROS
 \refitem cfg_sort_brief_docs SORT_BRIEF_DOCS
 \refitem cfg_sort_by_scope_name SORT_BY_SCOPE_NAME
-\refitem cfg_sort_members_constructors_first SORT_MEMBERS_CTORS_1ST
 \refitem cfg_sort_group_names SORT_GROUP_NAMES
 \refitem cfg_sort_member_docs SORT_MEMBER_DOCS
+\refitem cfg_sort_members_constructors_first SORT_MEMBERS_CTORS_1ST
 \refitem cfg_source_browser SOURCE_BROWSER
 \refitem cfg_strip_code_comments STRIP_CODE_COMMENTS
 \refitem cfg_strip_from_inc_path STRIP_FROM_INC_PATH
@@ -240,8 +244,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_typedef_hides_struct TYPEDEF_HIDES_STRUCT
 \refitem cfg_uml_look UML_LOOK
 \refitem cfg_use_htags USE_HTAGS
+\refitem cfg_use_inline_trees USE_INLINE_TREES
 \refitem cfg_use_pdflatex USE_PDFLATEX
-\refitem cfg_use_windows_encoding USE_WINDOWS_ENCODING
 \refitem cfg_verbatim_headers VERBATIM_HEADERS
 \refitem cfg_warn_format WARN_FORMAT
 \refitem cfg_warn_if_doc_error WARN_IF_DOC_ERROR
@@ -311,17 +315,6 @@ followed by the descriptions of the tags grouped by category.
  Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean, 
  Lithuanian, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, 
  Slovak, Slovene, Spanish, Swedish, and Ukrainian.
-
-\anchor cfg_use_windows_encoding
-<dt>\c USE_WINDOWS_ENCODING <dd>
- \addindex USE_WINDOWS_ENCODING
- This tag can be used to specify the encoding used in the generated output. 
- The encoding is not always determined by the language that is chosen, 
- but also whether or not the output is meant for Windows or non-Windows users.
- In case there is a difference, setting the \c USE_WINDOWS_ENCODING tag to \c YES
- forces the Windows encoding, (this is the default for the Windows binary),
- whereas setting the tag to \c NO uses a Unix-style encoding (the default for
- all platforms other than Windows).
 
 \anchor cfg_brief_member_desc
 <dt>\c BRIEF_MEMBER_DESC <dd>
@@ -1565,6 +1558,9 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  \addindex LATEX_CMD_NAME
  The \c LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be invoked. 
  If left blank `latex' will be used as the default command name.
+ Note that when enabling USE_PDFLATEX this option is only used for
+ generating bitmaps for formulas in the HTML output, but not in the
+ Makefile that is written to the output directory.
 
 \anchor cfg_makeindex_cmd_name
 <dt>\c MAKEINDEX_CMD_NAME <dd>

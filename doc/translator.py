@@ -48,8 +48,10 @@
   2005/02/28 - Slight modification to generate "mailto.txt" auxiliary file.
   2005/08/15 - Doxygen's root directory determined primarily from DOXYGEN 
                environment variable. When not found, then relatively to the script.
-  2007/03/20 - The "translate me!" searched in comments and reported if found.             
-  2009/05/09 - Changed HTML output to make it confirm to XHTML DTD
+  2007/03/20 - The "translate me!" searched in comments and reported if found.
+  2008/06/09 - Warning when the MAX_DOT_GRAPH_HEIGHT is still part of trLegendDocs().
+  2009/05/09 - Changed HTML output to fit it with XHTML DTD
+  2009/09/02 - Added percentage info to the report (implemented / to be implemented).
   """                               
 
 from __future__ import generators
@@ -166,6 +168,7 @@ class Transl:
         self.prototypeDic = {}       # uniPrototype -> prototype
         self.translateMeText = 'translate me!'
         self.translateMeFlag = False # comments with "translate me!" found
+        self.txtMAX_DOT_GRAPH_HEIGHT_flag = False # found in string in trLegendDocs()
         self.obsoleteMethods = None  # list of prototypes to be removed
         self.missingMethods = None   # list of prototypes to be implemented
         self.implementedMethods = None  # list of implemented required methods
@@ -769,6 +772,8 @@ class Transl:
         # identifiers.
         prototype = ''    # readable prototype (with everything)
         uniPrototype = '' # unified prototype (without arg. identifiers)
+        warning = ''      # warning message -- if something special detected
+        methodId = None   # processed method id
         
         # Collect the method prototypes. Stop on the closing
         # curly brace followed by the semicolon (end of class).
@@ -823,6 +828,7 @@ class Transl:
                 if tokenId == 'id':
                     prototype += ' ' + tokenStr
                     uniPrototype += ' ' + tokenStr
+                    methodId = tokenStr    # for reporting
                     status = 5
                 else:
                     self.__unexpectedToken(status, tokenId, tokenLineNo)
@@ -884,9 +890,17 @@ class Transl:
                         # Insert new dictionary item.
                         assert(not self.prototypeDic.has_key(uniPrototype))
                         self.prototypeDic[uniPrototype] = prototype
-                        status = 2     # body consumed
+                        status = 2      # body consumed
+                        methodId = None # outside of any method
                 elif tokenId == 'lcurly':
                     curlyCnt += 1
+                    
+                # Warn in special case.     
+                elif methodId == 'trLegendDocs' and tokenId == 'string' \
+                    and tokenStr.find('MAX_DOT_GRAPH_HEIGHT') >= 0:
+                        self.txtMAX_DOT_GRAPH_HEIGHT_flag = True  
+  
+                    
             elif status == 11:   # probably the end of class
                 if tokenId == 'semic':
                     status = 777
@@ -1114,10 +1128,17 @@ class Transl:
                     self.adaptMinClass = adaptMinClass
                     self.readableStatus = adaptMinVersion # simplified
         
-        # If everything seems OK, but the explicit mark self.translateMeText 
-        # in comments was found, something must be translated.
-        if not self.note and self.status == '' and self.translateMeFlag:
-            self.note = 'The "%s" found in a comment.' % self.translateMeText
+        # If everything seems OK, some explicit warning flags still could 
+        # be set. 
+        if not self.note and self.status == '' and \
+           (self.translateMeFlag or self.txtMAX_DOT_GRAPH_HEIGHT_flag):
+           self.note = '' 
+           if self.translateMeFlag:
+               self.note += 'The "%s" found in a comment.' % self.translateMeText
+           if self.note != '':
+               self.note += '\n\t\t'          
+           if self.txtMAX_DOT_GRAPH_HEIGHT_flag:
+                self.note += 'The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()'
         
         # If everything seems OK, but there are obsolete methods, set 
         # the note to clean-up source. This note will be used only when
@@ -1138,18 +1159,21 @@ class Transl:
         # Report the number of not implemented methods.
         fout.write('\n\n\n')
         fout.write(self.classId + '   (' + self.baseClassId + ')')
+        percentImplemented = 100    # init
+        allNum = len(self.manager.requiredMethodsDic) 
         if self.missingMethods:
             num = len(self.missingMethods)
+            percentImplemented = 100 * (allNum - num) / allNum
             fout.write('  %d' % num)
             fout.write(' method')
             if num > 1:
                 fout.write('s')
-            fout.write(' to implement')
+            fout.write(' to implement (%d %%)' % (100 * num / allNum))
         fout.write('\n' + '-' * len(self.classId))
         
         # Write the info about the implemented required methods.
         fout.write('\n\n  Implements %d' % len(self.implementedMethods))
-        fout.write(' of the required methods.')
+        fout.write(' of the required methods (%d %%).' % percentImplemented)
         
         # Report the missing method, but only when it is not English-based
         # translator.
@@ -1541,6 +1565,7 @@ class TrManager:
             adaptMinVersion = '9.9.99'
             
             mailtoLst = []
+            numRequired = len(self.requiredMethodsDic)
             for x in self.adaptIdLst:
                 obj = self.__translDic[x]
                 f.write('  %-30s' % obj.classId)
@@ -1548,7 +1573,9 @@ class TrManager:
                 numimpl = len(obj.missingMethods)
                 pluralS = ''
                 if numimpl > 1: pluralS = 's'
-                f.write('\t%2d method%s to implement' % (numimpl, pluralS))
+                percent = 100 * numimpl / numRequired
+                f.write('\t%2d method%s to implement (%d %%)' % (
+                        numimpl, pluralS, percent))
                 if obj.note:
                     f.write('\n\tNote: ' + obj.note + '\n')
                 f.write('\n')

@@ -1230,8 +1230,10 @@ void GroupDef::addListReferences()
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
+             getOutputFileBase(),
              theTranslator->trGroup(TRUE,TRUE),
-             getOutputFileBase(),name()
+             getOutputFileBase(),name(),
+             0
             );
   }
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);

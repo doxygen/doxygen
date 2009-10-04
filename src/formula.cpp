@@ -84,7 +84,7 @@ void FormulaList::generateBitmaps(const char *path)
     for (fli.toFirst();(formula=fli.current());++fli)
     {
       QCString resultName;
-      resultName.sprintf("form_%d.png",formula->getId());
+      resultName.sprintf("form_%d.gif",formula->getId());
       // only formulas for which no image exists are generated
       QFileInfo fi(resultName);
       if (!fi.exists())
@@ -119,7 +119,7 @@ void FormulaList::generateBitmaps(const char *path)
     for (;(pagePtr=pli.current());++pli,++pageIndex)
     {
       int pageNum=*pagePtr;
-      msg("Generating image form_%d.png for formula\n",pageNum);
+      msg("Generating image form_%d.gif for formula\n",pageNum);
       char dviArgs[4096];
       QCString formBase;
       formBase.sprintf("_form%d",pageNum);
@@ -268,7 +268,7 @@ void FormulaList::generateBitmaps(const char *path)
           }
           // save the result as a png
           QCString resultName;
-          resultName.sprintf("form_%d.png",pageNum);
+          resultName.sprintf("form_%d.gif",pageNum);
           // the option parameter 1 is used here as a temporary hack
           // to select the right color palette! 
           dstImage.save(resultName,1);

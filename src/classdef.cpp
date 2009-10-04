@@ -3089,10 +3089,12 @@ void ClassDef::addListReferences()
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
+             qualifiedName(),
              fortranOpt?theTranslator->trType(TRUE,TRUE):
                         theTranslator->trClass(TRUE,TRUE),
              getOutputFileBase(),
-             displayName()
+             displayName(),
+             0
             );
   }
   if (m_impl->memberGroupSDict)

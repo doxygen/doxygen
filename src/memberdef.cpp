@@ -1538,6 +1538,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
       //ol.startEmphasis();
       ol.popGeneratorState();
     }
+    // for RTF we need to add an extra empty paragraph
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::RTF);
+      ol.startParagraph();
+      ol.endParagraph();
+    ol.popGeneratorState();
     ol.endMemberDescription();
   }
   warnIfUndocumented();
@@ -2714,14 +2720,16 @@ void MemberDef::addListReference(Definition *)
   QCString memName = name();
   Definition *pd=getOuterScope();
   QCString memArgs;
-  if (!isRelated() &&
+  if (!isRelated() 
+      /* && commented out as a result of bug 597016
       (
-       (!hideScopeNames && // there is a scope
+       (!hideScopeNames &&                    // there is a scope
         pd && pd!=Doxygen::globalScope)       // and we can show it
        ||
        (pd=getClassDef())                     // it's a class so we
                                               // show the scope anyway
       )
+      */
      )
   {
     if (isObjCMethod())
@@ -2730,19 +2738,21 @@ void MemberDef::addListReference(Definition *)
     }
     else if (optimizeOutputJava)
     {
-      memName.prepend(pd->name()+".");
+      if (!hideScopeNames) memName.prepend(pd->name()+".");
       memArgs = argsString();
     }
     else
     {
-      memName.prepend(pd->name()+"::");
+      if (!hideScopeNames) memName.prepend(pd->name()+"::");
       memArgs = argsString();
     }
   }
   LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
   if (xrefItems!=0)
   {
-    addRefItem(xrefItems.pointer(),memLabel,
+    addRefItem(xrefItems.pointer(),
+        qualifiedName(),
+        memLabel,
         getOutputFileBase()+"#"+anchor(),memName,memArgs);
   }
 }

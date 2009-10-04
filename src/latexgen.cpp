@@ -1580,37 +1580,17 @@ void LatexGenerator::docify(const char *str)
 
 void LatexGenerator::codify(const char *str)
 {
-  static bool isJapanese  = theTranslator->idLanguage()=="japanese" || 
-                            theTranslator->idLanguage()=="japanese-en";
-
   if (str)
   { 
     const char *p=str;
     char c;
-    char cs[2];
-    cs[1]='\0';
+    char cs[5];
     int spacesToNextTabStop;
     static int tabSize = Config_getInt("TAB_SIZE");
     while (*p)
     {
-      static bool MultiByte = FALSE;
+      //static bool MultiByte = FALSE;
       c=*p++;
-
-      if( isJapanese )
-      {
-        if ( MultiByte )
-        {
-          t << (char)c;
-          MultiByte = FALSE;
-          continue;
-        }
-        if ((uchar)c>=0x80) // char in range [0x80..0xff]
-        {
-          t << (char)c;
-          MultiByte = TRUE;
-          continue;
-        }
-      }
 
       switch(c)
       {
@@ -1621,14 +1601,34 @@ void LatexGenerator::codify(const char *str)
                    col+=spacesToNextTabStop;
                    break; 
         case '\n': t << '\n'; col=0;                    break;
-        default:   if (m_prettyCode)
+        default:   cs[0]=c;
+                   cs[1]=0;
+                   int bytes=1;
+                   if (c<0) // multibyte utf-8 character
                    {
-                     cs[0]=c; 
+                     bytes++;   // 1xxx.xxxx: >=2 byte character
+                     cs[1]=*p;
+                     cs[2]=0;
+                     if (((uchar)c&0xE0)==0xE0)
+                     {
+                       bytes++; // 111x.xxxx: >=3 byte character
+                       cs[2]=*(p+1);
+                       cs[3]=0;
+                     }
+                     if (((uchar)c&0xF0)==0xF0)
+                     {
+                       bytes++; // 1111.xxxx: 4 byte character
+                       cs[2]=*(p+2);
+                       cs[4]=0;
+                     }
+                   }
+                   if (m_prettyCode)
+                   {
                      filterLatexString(t,cs,insideTabbing,TRUE);
                    }
                    else
                    {
-                     t << c;
+                     t << cs;
                    }
                    if (col>=80)
                    {
@@ -1637,8 +1637,9 @@ void LatexGenerator::codify(const char *str)
                    }
                    else
                    {
-                     col++;                    
+                     col++;
                    }
+                   p+=(bytes-1); // skip to next character
                    break;
       }
     }

@@ -1758,7 +1758,7 @@ void HtmlGenerator::startMemberGroupDocs()
 
 void HtmlGenerator::endMemberGroupDocs()
 {
-  t << "<br/><br/></div></td></tr>" << endl;
+  t << "</div></td></tr>" << endl;
 }
 
 void HtmlGenerator::startMemberGroup()
