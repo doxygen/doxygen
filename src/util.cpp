@@ -49,6 +49,7 @@
 #include "textdocvisitor.h"
 #include "portable.h"
 #include "parserintf.h"
+#include "bufstr.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -5515,31 +5516,48 @@ QCString substituteTemplateArgumentsInString(
       {
         //printf("n=%s formArg->type='%s' formArg->name='%s' formArg->defval='%s'\n",
         //  n.data(),formArg->type.data(),formArg->name.data(),formArg->defval.data());
+        //printf(">> formArg->name='%s' actArg->type='%s' actArg->name='%s'\n",
+        //    formArg->name.data(),actArg->type.data(),actArg->name.data()
+        //    );
         if (formArg->name==n && actArg && !actArg->type.isEmpty()) // base class is a template argument
         {
           // replace formal argument with the actual argument of the instance
-          if (actArg->name.isEmpty())
+          if (!leftScopeMatch(actArg->type,n)) 
+            // the scope guard is to prevent recursive lockup for 
+            // template<class A> class C : public<A::T>, 
+            // where A::T would become A::T::T here, 
+            // since n==A and actArg->type==A::T
+            // see bug595833 for an example
           {
-            result += actArg->type+" "; 
+            if (actArg->name.isEmpty())
+            {
+              result += actArg->type+" "; 
+              found=TRUE;
+            }
+            else 
+              // for case where the actual arg is something like "unsigned int"
+              // the "int" part is in actArg->name.
+            {
+              result += actArg->type+" "+actArg->name+" "; 
+              found=TRUE;
+            }
           }
-          else // for case where the actual arg is something like "unsigned int"
-               // the "int" part is in actArg->name.
-          {
-            result += actArg->type+" "+actArg->name+" "; 
-          }
-          found=TRUE;
         }
-        else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&
-            formArg->defval!=name /* to prevent recursion */
+        else if (formArg->name==n && 
+                 actArg==0 && 
+                 !formArg->defval.isEmpty() &&
+                 formArg->defval!=name /* to prevent recursion */
             )
         {
           result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs)+" ";
           found=TRUE;
         }
       }
-      else if (formArg->name==n && actArg==0 && !formArg->defval.isEmpty() &&
-          formArg->defval!=name /* to prevent recursion */
-          )
+      else if (formArg->name==n && 
+               actArg==0 && 
+               !formArg->defval.isEmpty() &&
+               formArg->defval!=name /* to prevent recursion */
+              )
       {
         result += substituteTemplateArgumentsInString(formArg->defval,formalArgs,actualArgs)+" ";
         found=TRUE;
@@ -5777,12 +5795,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
     }
 
-    QCString pageName;
-    if (Config_getBool("CASE_SENSE_NAMES"))
-      pageName=pd->name();
-    else
-      pageName=pd->name().lower();
-    pd->setFileName(pageName);
+    pd->setFileName(convertNameToFile(pd->name(),FALSE));
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);
@@ -5799,13 +5812,9 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       {
         file=gd->getOutputFileBase();
       }
-      else if (pd->getGroupDef())
+      else 
       {
-        file=pd->getGroupDef()->getOutputFileBase().copy();
-      }
-      else
-      {
-        file=pageName;
+        file=pd->getOutputFileBase();
       }
       SectionInfo *si=new SectionInfo(
           file,pd->name(),pd->title(),SectionInfo::Page,pd->getReference());
@@ -5814,7 +5823,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       //      si->fileName.data());
       //printf("  SectionInfo: sec=%p sec->fileName=%s\n",si,si->fileName.data());
       //printf("Adding section key=%s si->fileName=%s\n",pageName.data(),si->fileName.data());
-      Doxygen::sectionDict.insert(pageName,si);
+      Doxygen::sectionDict.insert(pd->name(),si);
     }
   }
   return pd;
@@ -5823,6 +5832,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 //----------------------------------------------------------------------------
 
 void addRefItem(const QList<ListItemInfo> *sli,
+    const char *key, 
     const char *prefix, const char *name,const char *title,const char *args)
 {
   //printf("addRefItem(sli=%p,prefix=%s,name=%s,title=%s,args=%s)\n",sli,prefix,name,title,args);
@@ -5834,7 +5844,6 @@ void addRefItem(const QList<ListItemInfo> *sli,
     {
       RefList *refList = Doxygen::xrefLists->find(lii->type);
       if (refList
-#if 0
           &&
           (
            // either not a built-in list or the list is enabled
@@ -5843,7 +5852,6 @@ void addRefItem(const QList<ListItemInfo> *sli,
            (lii->type!="bug"        || Config_getBool("GENERATE_BUGLIST"))  &&
            (lii->type!="deprecated" || Config_getBool("GENERATE_DEPRECATEDLIST"))
           )
-#endif
          )
       {
         RefItem *item = refList->getRefItem(lii->itemId);
@@ -5854,7 +5862,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
         item->title  = title;
         item->args   = args;
 
-        refList->insertIntoList(title,item);
+        refList->insertIntoList(key,item);
 
 #if 0
 
@@ -6842,4 +6850,122 @@ void stackTrace()
   //fprintf(stderr,"%s\n", frameStrings[x]);
 #endif
 }
+
+static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
+           const char *inputEncoding,const char *outputEncoding)
+{
+  if (inputEncoding==0 || outputEncoding==0) return size;
+  if (qstricmp(inputEncoding,outputEncoding)==0) return size;
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  if (cd==(void *)(-1)) 
+  {
+    err("Error: unsupported character conversion: '%s'->'%s': %s\n"
+        "Check the INPUT_ENCODING setting in the config file!\n",
+        inputEncoding,outputEncoding,strerror(errno));
+    exit(1);
+  }
+  int tmpBufSize=size*4+1;
+  BufStr tmpBuf(tmpBufSize);
+  size_t iLeft=size;
+  size_t oLeft=tmpBufSize;
+  const char *srcPtr = srcBuf.data();
+  char *dstPtr = tmpBuf.data();
+  uint newSize=0;
+  if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
+  {
+    newSize = tmpBufSize-oLeft;
+    srcBuf.shrink(newSize);
+    strncpy(srcBuf.data(),tmpBuf.data(),newSize);
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+  }
+  else
+  {
+    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+        inputEncoding,outputEncoding);
+    exit(1);
+  }
+  portable_iconv_close(cd);
+  return newSize;
+}
+
+//! read a file name \a fileName and optionally filter and transcode it
+bool readInputFile(const char *fileName,BufStr &inBuf)
+{
+  // try to open file
+  int size=0;
+  //uint oldPos = dest.curPos();
+  //printf(".......oldPos=%d\n",oldPos);
+
+  QFileInfo fi(fileName);
+  if (!fi.exists()) return FALSE;
+  QCString filterName = getFileFilter(fileName);
+  if (filterName.isEmpty())
+  {
+    QFile f(fileName);
+    if (!f.open(IO_ReadOnly))
+    {
+      err("Error: could not open file %s\n",fileName);
+      return FALSE;
+    }
+    size=fi.size();
+    // read the file
+    inBuf.skip(size);
+    if (f.readBlock(inBuf.data()/*+oldPos*/,size)!=size)
+    {
+      err("Error while reading file %s\n",fileName);
+      return FALSE;
+    }
+  }
+  else
+  {
+    QCString cmd=filterName+" \""+fileName+"\"";
+    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
+    FILE *f=portable_popen(cmd,"r");
+    if (!f)
+    {
+      err("Error: could not execute filter %s\n",filterName.data());
+      return FALSE;
+    }
+    const int bufSize=1024;
+    char buf[bufSize];
+    int numRead;
+    while ((numRead=fread(buf,1,bufSize,f))>0) 
+    {
+      //printf(">>>>>>>>Reading %d bytes\n",numRead);
+      inBuf.addArray(buf,numRead),size+=numRead;
+    }
+    portable_pclose(f);
+  }
+
+  if (inBuf.size()>=2 &&
+      ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Litte endian BOM
+       (inBuf.at(0)==-2 && inBuf.at(1)==-1)    // big endian BOM
+      )
+     ) // UCS-2 encoded file
+  {
+    transcodeCharacterBuffer(inBuf,inBuf.curPos(),
+        "UCS-2","UTF-8");
+  }
+  else // transcode according to the INPUT_ENCODING setting
+  {
+    // do character transcoding if needed.
+    transcodeCharacterBuffer(inBuf,inBuf.curPos(),
+        Config_getString("INPUT_ENCODING"),"UTF-8");
+  }
+
+  inBuf.addChar('\n'); /* to prevent problems under Windows ? */
+
+  // and translate CR's
+  size=inBuf.curPos();
+  int newSize=filterCRLF(inBuf.data(),size);
+  //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
+  if (newSize!=size) // we removed chars
+  {
+    inBuf.shrink(newSize); // resize the array
+    //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,dest.data());
+  }
+  inBuf.at(inBuf.curPos())='\0';
+  return TRUE;
+}
+
 

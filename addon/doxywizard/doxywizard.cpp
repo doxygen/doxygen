@@ -185,7 +185,7 @@ void MainWindow::about()
   t << QString::fromAscii("<qt><center>A tool to configure and run doxygen version ")+
        QString::fromAscii(versionString)+
        QString::fromAscii(" on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2008</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2009</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
@@ -230,7 +230,14 @@ void MainWindow::saveConfig(const QString &fileName)
 {
   if (fileName.isEmpty()) return;
   QFile f(fileName);
-  if (!f.open(QIODevice::WriteOnly)) return;
+  if (!f.open(QIODevice::WriteOnly)) 
+  {
+    QMessageBox::warning(this,
+        tr("Error saving"),
+        tr("Error: cannot open the file ")+fileName+tr(" for writing!\n")+
+        tr("Reason given: ")+f.error());
+    return;
+  }
   QTextStream t(&f);
   m_expert->writeConfig(t,false);
   updateConfigFileName(fileName);

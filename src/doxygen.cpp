@@ -78,6 +78,7 @@
 #include "marshal.h"
 #include "portable.h"
 #include "vhdlscanner.h"
+#include "vhdldocgen.h"
 
 #include "layout.h"
 
@@ -4078,12 +4079,12 @@ static bool findClassRelation(
 
   QCString biName=bi->name;
   bool explicitGlobalScope=FALSE;
+  //printf("findClassRelation: biName=`%s'\n",biName.data());
   if (biName.left(2)=="::") // explicit global scope
   {
      biName=biName.right(biName.length()-2);
      explicitGlobalScope=TRUE;
   }
-  //printf("biName=`%s'\n",biName.data());
 
   EntryNav *parentNode=rootNav->parent();
   bool lastParent=FALSE;
@@ -4108,7 +4109,7 @@ static bool findClassRelation(
       //                    &stripped);
       MemberDef *baseClassTypeDef=0;
       QCString templSpec;
-      ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? 0 : cd,
+      ClassDef *baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                            cd->getFileDef(), 
                                            baseClassName,
                                            &baseClassTypeDef,
@@ -4154,7 +4155,7 @@ static bool findClassRelation(
           {
             templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
-            baseClass=getResolvedClass(cd,
+            baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                        cd->getFileDef(),
                                        baseClassName,
                                        &baseClassTypeDef,
@@ -4190,7 +4191,7 @@ static bool findClassRelation(
           QCString tmpTemplSpec;
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,si);
-          baseClass=getResolvedClass(cd,
+          baseClass=getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                      cd->getFileDef(),
                                      baseClassName,
                                      &baseClassTypeDef,
@@ -4648,8 +4649,9 @@ static void addListReferences()
     {
       LockingPtr< QList<ListItemInfo> > xrefItems = pd->xrefListItems();
       addRefItem(xrefItems.pointer(),
+          name,
           theTranslator->trPage(TRUE,TRUE),
-          name,pd->title());
+          name,pd->title(),0);
     }
   }
   DirSDict::Iterator ddi(*Doxygen::directories);
@@ -4663,8 +4665,9 @@ static void addListReferences()
     //}
     LockingPtr< QList<ListItemInfo> > xrefItems = dd->xrefListItems();
     addRefItem(xrefItems.pointer(),
+        name,
         theTranslator->trDir(TRUE,TRUE),
-        name,dd->displayName());
+        name,dd->displayName(),0);
   }
 }
 
@@ -7782,9 +7785,13 @@ static void buildPageList(EntryNav *rootNav)
 
     QCString title=root->args.stripWhiteSpace();
     if (title.isEmpty()) title=theTranslator->trMainPage();
-    addRefItem(root->sli,"page",
-               Config_getBool("GENERATE_TREEVIEW")?"main":"index",
-               title
+    QCString name = Config_getBool("GENERATE_TREEVIEW")?"main":"index";
+    addRefItem(root->sli,
+               name,
+               "page",
+               name,
+               title,
+               0
                );
 
     rootNav->releaseEntry();
@@ -8422,113 +8429,6 @@ static bool patternMatch(QFileInfo *fi,QStrList *patList)
   return found;
 }
 
-static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
-           const char *inputEncoding,const char *outputEncoding)
-{
-  if (inputEncoding==0 || outputEncoding==0) return size;
-  if (qstricmp(inputEncoding,outputEncoding)==0) return size;
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
-  if (cd==(void *)(-1)) 
-  {
-    err("Error: unsupported character conversion: '%s'->'%s': %s\n"
-        "Check the INPUT_ENCODING setting in the config file!\n",
-        inputEncoding,outputEncoding,strerror(errno));
-    exit(1);
-  }
-  int tmpBufSize=size*4+1;
-  BufStr tmpBuf(tmpBufSize);
-  size_t iLeft=size;
-  size_t oLeft=tmpBufSize;
-  const char *srcPtr = srcBuf.data();
-  char *dstPtr = tmpBuf.data();
-  uint newSize=0;
-  if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))
-  {
-    newSize = tmpBufSize-oLeft;
-    srcBuf.shrink(newSize);
-    strncpy(srcBuf.data(),tmpBuf.data(),newSize);
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
-  }
-  else
-  {
-    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
-        inputEncoding,outputEncoding);
-    exit(1);
-  }
-  portable_iconv_close(cd);
-  return newSize;
-}
-
-//----------------------------------------------------------------------------
-// reads a file into an array and filters out any 0x00 and 0x06 bytes,
-// because these are special for the parser.
-
-void copyAndFilterFile(const char *fileName,BufStr &dest)
-{
-  // try to open file
-  int size=0;
-  //uint oldPos = dest.curPos();
-  //printf(".......oldPos=%d\n",oldPos);
-
-  QFileInfo fi(fileName);
-  if (!fi.exists()) return;
-  QCString filterName = getFileFilter(fileName);
-  if (filterName.isEmpty())
-  {
-    QFile f(fileName);
-    if (!f.open(IO_ReadOnly))
-    {
-      err("Error: could not open file %s\n",fileName);
-      return;
-    }
-    size=fi.size();
-    // read the file
-    dest.skip(size);
-    if (f.readBlock(dest.data()/*+oldPos*/,size)!=size)
-    {
-      err("Error while reading file %s\n",fileName);
-      return;
-    }
-  }
-  else
-  {
-    QCString cmd=filterName+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
-    FILE *f=portable_popen(cmd,"r");
-    if (!f)
-    {
-      err("Error: could not execute filter %s\n",filterName.data());
-      return;
-    }
-    const int bufSize=1024;
-    char buf[bufSize];
-    int numRead;
-    while ((numRead=fread(buf,1,bufSize,f))>0) 
-    {
-      //printf(">>>>>>>>Reading %d bytes\n",numRead);
-      dest.addArray(buf,numRead),size+=numRead;
-    }
-    portable_pclose(f);
-  }
-  // filter unwanted bytes from the resulting data
-  uchar conv[256];
-  int i;
-  for (i=0;i<256;i++) conv[i]=i;
-  conv[0x06]=0x20; // replace the offending characters with spaces
-  conv[0x00]=0x20;
-  // remove any special markers from the input
-  uchar *p=(uchar *)dest.data()/*+oldPos*/;
-  for (i=0;i<size;i++,p++) *p=conv[*p];
-  // and translate CR's
-  int newSize=filterCRLF(dest.data()/*+oldPos*/,size);
-  //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
-  if (newSize!=size) // we removed chars
-  {
-    dest.shrink(/*oldPos+*/newSize); // resize the array
-    //printf(".......resizing from %d to %d result=[%s]\n",oldPos+size,oldPos+newSize,dest.data());
-  }
-}
-
 //----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
@@ -8562,6 +8462,8 @@ static void copyStyleSheet()
   }
 }
 
+
+//! parse the list of input files
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
   void *cd = 0;
@@ -8587,25 +8489,20 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
 
     QFileInfo fi(fileName);
     BufStr preBuf(fi.size()+4096);
-    //BufStr *bufPtr = &preBuf;
 
     if (Config_getBool("ENABLE_PREPROCESSING") && 
         parser->needsPreprocessing(extension))
     {
+      BufStr inBuf(fi.size()+4096);
       msg("Preprocessing %s...\n",s->data());
-      preprocessFile(fileName,preBuf);
+      readInputFile(fileName,inBuf);
+      preprocessFile(fileName,inBuf,preBuf);
     }
-    else
+    else // no preprocessing
     {
       msg("Reading %s...\n",s->data());
-      copyAndFilterFile(fileName,preBuf);
+      readInputFile(fileName,preBuf);
     }
-
-    preBuf.addChar('\n'); /* to prevent problems under Windows ? */
-
-    // do character transcoding if needed.
-    transcodeCharacterBuffer(preBuf,preBuf.curPos(),
-                             Config_getString("INPUT_ENCODING"),"UTF-8");
 
     BufStr convBuf(preBuf.curPos()+1024);
 
@@ -9911,6 +9808,29 @@ void parseInput()
   if (generateMan)
     manOutput = createOutputDirectory(outputDirectory,"MAN_OUTPUT","/man");
 
+
+  if (Config_getBool("HAVE_DOT"))
+  {
+    QCString curFontPath = Config_getString("DOT_FONTPATH");
+    if (curFontPath.isEmpty())
+    {
+      portable_getenv("DOTFONTPATH");
+      QCString newFontPath = ".";
+      if (!curFontPath.isEmpty())
+      {
+        newFontPath+=portable_pathListSeparator();
+        newFontPath+=curFontPath;
+      }
+      portable_setenv("DOTFONTPATH",newFontPath);
+    }
+    else
+    {
+      portable_setenv("DOTFONTPATH",curFontPath);
+    }
+  }
+
+
+
   /**************************************************************************
    *             Handle layout file                                         *
    **************************************************************************/
@@ -10102,14 +10022,14 @@ void parseInput()
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
-  //if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
-  //{
-  //  VhdlDocGen::computeVhdlComponentRelations(g_classEntries,g_storage);
-  //}
-  //else
-  //{
+  if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
+  {
+    VhdlDocGen::computeVhdlComponentRelations();
+  }
+  else
+  {
     computeClassRelations();        
-  //}
+  }
   g_classEntries.clear();          
 
   msg("Add enum values to enums...\n");

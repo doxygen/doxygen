@@ -47,3 +47,6 @@ sub GenerateDep {
 #$ GenerateDep("config.cpp","config.l");
 	$(LEX) -PconfigYY -t config.l >config.cpp 
 
+configoptions.cpp: config.xml
+	python configgen.py config.xml >configoptions.cpp
+

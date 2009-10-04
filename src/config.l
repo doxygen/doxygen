@@ -1395,26 +1395,6 @@ void Config::check()
     config_err("Warning: Specifying QCH_FILE requires QHG_LOCATION to be set.\n");
   }
 
-  if (Config_getBool("HAVE_DOT")) 
-  {
-    QCString curFontPath = Config_getString("DOT_FONTPATH");
-    if (curFontPath.isEmpty())
-    {  
-      portable_getenv("DOTFONTPATH");
-      QCString newFontPath = ".";
-      if (!curFontPath.isEmpty())
-      {
-        newFontPath+=portable_pathListSeparator();
-        newFontPath+=curFontPath;
-      }
-      portable_setenv("DOTFONTPATH",newFontPath);
-    }
-    else
-    {
-      portable_setenv("DOTFONTPATH",curFontPath);
-    }
-  }
-
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
   {
     // don't show inline info for Java output, since Java has no inline 

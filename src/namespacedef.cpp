@@ -655,8 +655,10 @@ void NamespaceDef::addListReferences()
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
+        qualifiedName(),
         fortranOpt?theTranslator->trModule(TRUE,TRUE):theTranslator->trNamespace(TRUE,TRUE),
-        getOutputFileBase(),displayName()
+        getOutputFileBase(),displayName(),
+        0
         );
   }
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);

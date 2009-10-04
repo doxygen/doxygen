@@ -321,10 +321,14 @@ class DotRunner
      */
     void addJob(const char *format,const char *output);
 
+    void addPostProcessing(const char *cmd,const char *args);
+
     /** Runs dot for all jobs added. */
     bool run();
   private:
     QList<QCString> m_jobs;
+    QCString m_postArgs;
+    QCString m_postCmd;
     QCString m_file;
 };
 

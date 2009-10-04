@@ -204,52 +204,32 @@ ClassDef *VhdlDocGen::getClass(const char *name)
 }
 
 /*!
- * adds components to their entities
+ * adds architectures to their entity
  */
-void VhdlDocGen::computeVhdlComponentRelations(const QDict<EntryNav>& classEntries,FileStorage* g_storage)
+void VhdlDocGen::computeVhdlComponentRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli) cli.current()->visited=FALSE;
-  QDictIterator<EntryNav> edi(classEntries);
-  EntryNav *rootNav;
-  for (;(rootNav=edi.current());++edi)
+  for (cli.toFirst();cli.current();++cli)
   {
-    ClassDef *cd;
-    rootNav->loadEntry(g_storage);
-    Entry *root = rootNav->entry();
-    QCString bName=stripAnonymousNamespaceScope(rootNav->name());
-    if ((cd=getClass(bName)))
+    cli.current()->visited=FALSE;
+    ClassDef * cd = cli.current();
+    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
     {
-      QListIterator<BaseInfo> bii(*root->extends);
-      BaseInfo *bi=0;
-      for (bii.toFirst();(bi=bii.current());++bii)
+      QCString bName=cd->name();
+      int i=bName.find("::");
+      if (i>0)
       {
-	ClassDef* baseDef=getClass(bi->name);
-
-	if (baseDef && baseDef != cd)
-	{
-	  QCString cc=VhdlDocGen::getClassName(cd);
-	  ClassDef *ccdef=getClass(cc);
-	  if (ccdef==0) break;
-
-	  int ii=ccdef->protection();
-	  int jj=baseDef->protection();
-
-	  if (ii==VhdlDocGen::ENTITYCLASS && jj==VhdlDocGen::ENTITYCLASS && (ccdef !=baseDef))
-	  {
-	    ccdef->insertBaseClass(baseDef,bi->name,Public,Normal,0);
-	    baseDef->insertSubClass(ccdef,Public,bi->virt,0);
-	  }        
-	}
-	else 
-	{
-	  if (Config_getBool("WARNINGS"))
-	    warn(rootNav->fileDef()->fileName().data(),root->startLine, "found component without entity: [%s]",bi->name.data());
-	}
-      }//for 
-    }//if
-    rootNav->releaseEntry();
-  }// for
+        QCString entityName=bName.left(i);
+        ClassDef *classEntity=Doxygen::classSDict->find(entityName);
+        // entity for architecutre ?
+        if (classEntity)
+        {
+          classEntity->insertBaseClass(cd,bName,Public,Normal,0);
+          cd->insertSubClass(classEntity,Public,Normal,0);
+        }
+      }
+    }
+  }
 } // computeVhdlComponentRelations
 
 

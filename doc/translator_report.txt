@@ -1,4 +1,4 @@
-(1.6.0)
+(1.6.1)
 
 Doxygen supports the following 38 languages (sorted alphabetically):
 
@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 4 translators are up-to-date, 34 translators are based on
+Of them, 5 translators are up-to-date, 33 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -23,6 +23,7 @@ still may be some details listed even for them:
   TranslatorDutch
   TranslatorEnglish
   TranslatorKorean
+  TranslatorPolish -- Remove the obsolete methods (never used).
 
 ----------------------------------------------------------------------
 The following translator classes need some maintenance (the most
@@ -30,40 +31,39 @@ obsolete at the end). The other info shows the estimation of Doxygen
 version when the class was last updated and number of methods that
 must be implemented to become up-to-date:
 
-  TranslatorVietnamese            1.6.0 	 5 methods to implement
-  TranslatorTurkish               1.6.0 	 5 methods to implement
-  TranslatorSwedish               1.6.0 	 5 methods to implement
-  TranslatorSpanish               1.6.0 	 5 methods to implement
-  TranslatorSerbian               1.6.0 	 5 methods to implement
-  TranslatorSerbianCyrilic        1.6.0 	 5 methods to implement
-  TranslatorRussian               1.6.0 	 5 methods to implement
-  TranslatorRomanian              1.6.0 	 5 methods to implement
-  TranslatorPolish                1.6.0 	 5 methods to implement
-  TranslatorPersian               1.6.0 	 5 methods to implement
-  TranslatorMacedonian            1.6.0 	 5 methods to implement
-  TranslatorJapanese              1.6.0 	 5 methods to implement
-  TranslatorItalian               1.6.0 	 5 methods to implement
-  TranslatorGerman                1.6.0 	 5 methods to implement
-  TranslatorFinnish               1.6.0 	 5 methods to implement
-  TranslatorEsperanto             1.6.0 	 5 methods to implement
-  TranslatorCroatian              1.6.0 	 5 methods to implement
-  TranslatorChinese               1.6.0 	 5 methods to implement
-  TranslatorChinesetraditional    1.6.0 	 5 methods to implement
-  TranslatorCatalan               1.6.0 	 5 methods to implement
-  TranslatorBrazilian             1.6.0 	 5 methods to implement
-  TranslatorGreek                 1.5.4 	27 methods to implement
-  TranslatorFrench                1.5.4 	27 methods to implement
-  TranslatorDanish                1.5.4 	27 methods to implement
-  TranslatorSlovene               1.4.6 	29 methods to implement
-  TranslatorNorwegian             1.4.6 	28 methods to implement
-  TranslatorLithuanian            1.4.6 	29 methods to implement
-  TranslatorIndonesian            1.4.6 	28 methods to implement
-  TranslatorHungarian             1.4.6 	29 methods to implement
-  TranslatorArabic                1.4.6 	28 methods to implement
-  TranslatorAfrikaans             1.4.6 	29 methods to implement
-  TranslatorUkrainian             1.4.1 	29 methods to implement
-  TranslatorPortuguese            1.3.3 	40 methods to implement
-  TranslatorSlovak                1.2.18	49 methods to implement
+  TranslatorVietnamese            1.6.0 	 5 methods to implement (2 %)
+  TranslatorTurkish               1.6.0 	 5 methods to implement (2 %)
+  TranslatorSwedish               1.6.0 	 5 methods to implement (2 %)
+  TranslatorSpanish               1.6.0 	 5 methods to implement (2 %)
+  TranslatorSerbian               1.6.0 	 5 methods to implement (2 %)
+  TranslatorSerbianCyrilic        1.6.0 	 5 methods to implement (2 %)
+  TranslatorRussian               1.6.0 	 5 methods to implement (2 %)
+  TranslatorRomanian              1.6.0 	 5 methods to implement (2 %)
+  TranslatorPersian               1.6.0 	 5 methods to implement (2 %)
+  TranslatorMacedonian            1.6.0 	 5 methods to implement (2 %)
+  TranslatorJapanese              1.6.0 	 5 methods to implement (2 %)
+  TranslatorItalian               1.6.0 	 5 methods to implement (2 %)
+  TranslatorGerman                1.6.0 	 5 methods to implement (2 %)
+  TranslatorFinnish               1.6.0 	 5 methods to implement (2 %)
+  TranslatorEsperanto             1.6.0 	 5 methods to implement (2 %)
+  TranslatorCroatian              1.6.0 	 5 methods to implement (2 %)
+  TranslatorChinese               1.6.0 	 5 methods to implement (2 %)
+  TranslatorChinesetraditional    1.6.0 	 5 methods to implement (2 %)
+  TranslatorCatalan               1.6.0 	 5 methods to implement (2 %)
+  TranslatorBrazilian             1.6.0 	 5 methods to implement (2 %)
+  TranslatorAfrikaans             1.6.0 	 5 methods to implement (2 %)
+  TranslatorGreek                 1.5.4 	27 methods to implement (12 %)
+  TranslatorFrench                1.5.4 	22 methods to implement (9 %)
+  TranslatorDanish                1.5.4 	27 methods to implement (12 %)
+  TranslatorSlovene               1.4.6 	29 methods to implement (13 %)
+  TranslatorNorwegian             1.4.6 	28 methods to implement (12 %)
+  TranslatorLithuanian            1.4.6 	29 methods to implement (13 %)
+  TranslatorIndonesian            1.4.6 	28 methods to implement (12 %)
+  TranslatorHungarian             1.4.6 	29 methods to implement (13 %)
+  TranslatorArabic                1.4.6 	28 methods to implement (12 %)
+  TranslatorUkrainian             1.4.1 	29 methods to implement (13 %)
+  TranslatorPortuguese            1.3.3 	40 methods to implement (18 %)
+  TranslatorSlovak                1.2.18	49 methods to implement (22 %)
 
 ----------------------------------------------------------------------
 The following translator classes derive directly from the
@@ -91,48 +91,24 @@ Details for translators (classes sorted alphabetically):
 
 
 
-TranslatorAfrikaans   (TranslatorAdapter_1_4_6)  29 methods to implement
+TranslatorAfrikaans   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -------------------
 
-  Implements 192 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
     virtual QCString trSearching()
     virtual QCString trNoMatches()
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
     virtual QCString trLoading()
-    virtual QCString trSubprograms()
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
     virtual QCString trGlobalNamespace()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trModulesIndex()
     virtual QCString trDirRelation(const char * name)
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trCallerGraph()
-    virtual QCString trEnumerationValueDocumentation()
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
 
 
-TranslatorArabic   (TranslatorAdapter_1_4_6)  28 methods to implement
+TranslatorArabic   (TranslatorAdapter_1_4_6)  28 methods to implement (12 %)
 ----------------
 
-  Implements 193 of the required methods.
+  Implements 193 of the required methods (87 %).
 
   Missing methods (should be implemented):
 
@@ -178,10 +154,10 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  28 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorBrazilian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorBrazilian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -192,10 +168,10 @@ TranslatorBrazilian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorCatalan   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorCatalan   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -206,10 +182,10 @@ TranslatorCatalan   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorChinese   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorChinese   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -220,10 +196,10 @@ TranslatorChinese   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorChinesetraditional   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorChinesetraditional   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ----------------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -234,10 +210,10 @@ TranslatorChinesetraditional   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorCroatian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorCroatian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -248,10 +224,10 @@ TranslatorCroatian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorDanish   (TranslatorAdapter_1_5_4)  27 methods to implement
+TranslatorDanish   (TranslatorAdapter_1_5_4)  27 methods to implement (12 %)
 ----------------
 
-  Implements 194 of the required methods.
+  Implements 194 of the required methods (87 %).
 
   Missing methods (should be implemented):
 
@@ -284,10 +260,10 @@ TranslatorDanish   (TranslatorAdapter_1_5_4)  27 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorEsperanto   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorEsperanto   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -298,10 +274,10 @@ TranslatorEsperanto   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorFinnish   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorFinnish   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -312,23 +288,19 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorFrench   (TranslatorAdapter_1_5_4)  27 methods to implement
+TranslatorFrench   (TranslatorAdapter_1_5_4)  22 methods to implement (9 %)
 ----------------
 
-  Implements 194 of the required methods.
+  Implements 199 of the required methods (90 %).
 
   Missing methods (should be implemented):
 
     virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trSearching()
-    virtual QCString trNoMatches()
     virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trLoading()
     virtual QCString trSubprograms()
     virtual QCString trModulesListDescription(bool extractAll)
     virtual QCString trModulesList()
     virtual QCString trTypeConstraints()
-    virtual QCString trGlobalNamespace()
     virtual QCString trMemberFunctionDocumentationFortran()
     virtual QCString trCompoundListDescriptionFortran()
     virtual QCString trTypeDocumentation()
@@ -336,7 +308,6 @@ TranslatorFrench   (TranslatorAdapter_1_5_4)  27 methods to implement
     virtual QCString trModulesMemberDescription(bool extractAll)
     virtual QCString trModulesMembers()
     virtual QCString trModulesIndex()
-    virtual QCString trDirRelation(const char * name)
     virtual QCString trCompoundListFortran()
     virtual QCString trDataTypes()
     virtual QCString trCompoundIndexFortran()
@@ -348,10 +319,10 @@ TranslatorFrench   (TranslatorAdapter_1_5_4)  27 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorGerman   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorGerman   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -362,10 +333,10 @@ TranslatorGerman   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorGreek   (TranslatorAdapter_1_5_4)  27 methods to implement
+TranslatorGreek   (TranslatorAdapter_1_5_4)  27 methods to implement (12 %)
 ---------------
 
-  Implements 194 of the required methods.
+  Implements 194 of the required methods (87 %).
 
   Missing methods (should be implemented):
 
@@ -410,10 +381,10 @@ TranslatorGreek   (TranslatorAdapter_1_5_4)  27 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorHungarian   (TranslatorAdapter_1_4_6)  29 methods to implement
+TranslatorHungarian   (TranslatorAdapter_1_4_6)  29 methods to implement (13 %)
 -------------------
 
-  Implements 192 of the required methods.
+  Implements 192 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -448,10 +419,10 @@ TranslatorHungarian   (TranslatorAdapter_1_4_6)  29 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorIndonesian   (TranslatorAdapter_1_4_6)  28 methods to implement
+TranslatorIndonesian   (TranslatorAdapter_1_4_6)  28 methods to implement (12 %)
 --------------------
 
-  Implements 193 of the required methods.
+  Implements 193 of the required methods (87 %).
 
   Missing methods (should be implemented):
 
@@ -497,10 +468,10 @@ TranslatorIndonesian   (TranslatorAdapter_1_4_6)  28 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorItalian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorItalian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -511,10 +482,10 @@ TranslatorItalian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorJapanese   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorJapanese   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -537,10 +508,10 @@ TranslatorJapanese   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorJapaneseEn   (TranslatorEnglish)  216 methods to implement
+TranslatorJapaneseEn   (TranslatorEnglish)  216 methods to implement (97 %)
 --------------------
 
-  Implements 5 of the required methods.
+  Implements 5 of the required methods (2 %).
 
   This English-based translator implements the following methods:
 
@@ -551,10 +522,10 @@ TranslatorJapaneseEn   (TranslatorEnglish)  216 methods to implement
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorKoreanEn   (TranslatorEnglish)  216 methods to implement
+TranslatorKoreanEn   (TranslatorEnglish)  216 methods to implement (97 %)
 ------------------
 
-  Implements 5 of the required methods.
+  Implements 5 of the required methods (2 %).
 
   This English-based translator implements the following methods:
 
@@ -565,10 +536,10 @@ TranslatorKoreanEn   (TranslatorEnglish)  216 methods to implement
     virtual QCString latexLanguageSupportCommand()
 
 
-TranslatorLithuanian   (TranslatorAdapter_1_4_6)  29 methods to implement
+TranslatorLithuanian   (TranslatorAdapter_1_4_6)  29 methods to implement (13 %)
 --------------------
 
-  Implements 192 of the required methods.
+  Implements 192 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -603,10 +574,10 @@ TranslatorLithuanian   (TranslatorAdapter_1_4_6)  29 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorMacedonian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorMacedonian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 --------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -617,10 +588,10 @@ TranslatorMacedonian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorNorwegian   (TranslatorAdapter_1_4_6)  28 methods to implement
+TranslatorNorwegian   (TranslatorAdapter_1_4_6)  28 methods to implement (12 %)
 -------------------
 
-  Implements 193 of the required methods.
+  Implements 193 of the required methods (87 %).
 
   Missing methods (should be implemented):
 
@@ -666,10 +637,10 @@ TranslatorNorwegian   (TranslatorAdapter_1_4_6)  28 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorPersian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorPersian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -680,18 +651,10 @@ TranslatorPersian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorPolish   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorPolish   (Translator)
 ----------------
 
-  Implements 216 of the required methods.
-
-  Missing methods (should be implemented):
-
-    virtual QCString trSearching()
-    virtual QCString trNoMatches()
-    virtual QCString trLoading()
-    virtual QCString trGlobalNamespace()
-    virtual QCString trDirRelation(const char * name)
+  Implements 221 of the required methods (100 %).
 
   Obsolete methods (should be removed, never used):
 
@@ -706,10 +669,10 @@ TranslatorPolish   (TranslatorAdapter_1_6_0)  5 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorPortuguese   (TranslatorAdapter_1_3_3)  40 methods to implement
+TranslatorPortuguese   (TranslatorAdapter_1_3_3)  40 methods to implement (18 %)
 --------------------
 
-  Implements 181 of the required methods.
+  Implements 181 of the required methods (81 %).
 
   Missing methods (should be implemented):
 
@@ -767,10 +730,10 @@ TranslatorPortuguese   (TranslatorAdapter_1_3_3)  40 methods to implement
     QCString trNoDescriptionAvailable()
 
 
-TranslatorRomanian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorRomanian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -781,10 +744,10 @@ TranslatorRomanian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorRussian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorRussian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -795,10 +758,10 @@ TranslatorRussian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorSerbian   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorSerbian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -809,10 +772,10 @@ TranslatorSerbian   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 ------------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -823,10 +786,10 @@ TranslatorSerbianCyrilic   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorSlovak   (TranslatorAdapter_1_2_18)  49 methods to implement
+TranslatorSlovak   (TranslatorAdapter_1_2_18)  49 methods to implement (22 %)
 ----------------
 
-  Implements 172 of the required methods.
+  Implements 172 of the required methods (77 %).
 
   Missing methods (should be implemented):
 
@@ -893,10 +856,10 @@ TranslatorSlovak   (TranslatorAdapter_1_2_18)  49 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorSlovene   (TranslatorAdapter_1_4_6)  29 methods to implement
+TranslatorSlovene   (TranslatorAdapter_1_4_6)  29 methods to implement (13 %)
 -----------------
 
-  Implements 192 of the required methods.
+  Implements 192 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -931,10 +894,10 @@ TranslatorSlovene   (TranslatorAdapter_1_4_6)  29 methods to implement
     virtual QCString trSubprogramDocumentation()
 
 
-TranslatorSpanish   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorSpanish   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -945,10 +908,10 @@ TranslatorSpanish   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorSwedish   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorSwedish   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -959,10 +922,10 @@ TranslatorSwedish   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorTurkish   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorTurkish   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 -----------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 
@@ -973,10 +936,10 @@ TranslatorTurkish   (TranslatorAdapter_1_6_0)  5 methods to implement
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorUkrainian   (TranslatorAdapter_1_4_1)  29 methods to implement
+TranslatorUkrainian   (TranslatorAdapter_1_4_1)  29 methods to implement (13 %)
 -------------------
 
-  Implements 192 of the required methods.
+  Implements 192 of the required methods (86 %).
 
   Missing methods (should be implemented):
 
@@ -1023,10 +986,10 @@ TranslatorUkrainian   (TranslatorAdapter_1_4_1)  29 methods to implement
     virtual QCString trNoDescriptionAvailable()
 
 
-TranslatorVietnamese   (TranslatorAdapter_1_6_0)  5 methods to implement
+TranslatorVietnamese   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
 --------------------
 
-  Implements 216 of the required methods.
+  Implements 216 of the required methods (97 %).
 
   Missing methods (should be implemented):
 

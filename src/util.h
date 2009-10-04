@@ -53,6 +53,7 @@ class PageDef;
 struct SectionInfo;
 class QDir;
 class Definition;
+class BufStr;
 
 //--------------------------------------------------------------------
 
@@ -279,7 +280,8 @@ int getScopeFragment(const QCString &s,int p,int *l);
 int filterCRLF(char *buf,int len);
 
 void addRefItem(const QList<ListItemInfo> *sli,const char *prefix,
-                        const char *name,const char *title,const char *args=0);
+                const char *key,
+                const char *name,const char *title,const char *args);
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            const QCString &doc,QList<SectionInfo> *anchors,
@@ -362,6 +364,9 @@ QCString convertCharEntitiesToUTF8(const QCString &s);
 
 bool usingTreeIndex();
 void stackTrace();
+
+bool readInputFile(const char *fileName,BufStr &inBuf);
+
 
 #endif
 

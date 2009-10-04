@@ -20,7 +20,7 @@
 
 // Updates:
 // --------
-// 2009/08/24 - 
+// 2009/09/02 - Updates for "new since 1.6.0 (mainly for the new search engine)".
 // 2008/06/09 - Corrections in trLegendDocs().
 // 2007/11/13 - Update for "new since 1.5.4 (mainly for Fortran)".
 // 2007/03/20 - removing decode(), conversion of literals to UTF-8.
@@ -1821,7 +1821,7 @@ class TranslatorCzech : public Translator
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const char *name)
     {
-      return "Relace "+QCString(name);
+      return "Relace " + QCString(name);
     }
 
     /*! Loading message shown when loading search results */
@@ -1847,7 +1847,6 @@ class TranslatorCzech : public Translator
     {
       return "Nic se nenašlo";
     }
-
 };
 
 #endif // TRANSLATOR_CZ_H

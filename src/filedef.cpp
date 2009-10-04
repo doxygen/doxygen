@@ -1094,8 +1094,10 @@ void FileDef::addListReferences()
   {
     LockingPtr< QList<ListItemInfo> > xrefItems = xrefListItems();
     addRefItem(xrefItems.pointer(),
+               getOutputFileBase(),
                theTranslator->trFile(TRUE,TRUE),
-               getOutputFileBase(),name()
+               getOutputFileBase(),name(),
+               0
               );
   }
   if (memberGroupSDict)

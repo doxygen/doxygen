@@ -70,10 +70,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 {
   //outputList->disable(OutputGenerator::Man);
   QCString pageName;
-  if (Config_getBool("CASE_SENSE_NAMES"))
-    pageName=name();
-  else
-    pageName=name().lower();
+  pageName=escapeCharsInString(name(),FALSE);
 
   startFile(ol,pageName,pageName,title(),HLI_Pages,TRUE);
 

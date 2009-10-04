@@ -1124,7 +1124,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{BN}{1,80}			{
   					  lineCount();
   					}
-<FindMembers>"@"{ID}{BN}*"("		{
+<FindMembers>"@"({ID}".")*{ID}{BN}*"("	{
   					  if (insideJava) // Java annotation
 					  {
   					    lineCount();
@@ -2010,7 +2010,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  lastCPPContext = YY_START;
 					  BEGIN( SkipCPP ) ;
 					}
-<FindMembers,FindFields>{B}*"#"{B}*"define"	{ if (insidePHP)
+<FindMembers,FindFields>{B}*"#"{B}*("cmake")?"define"	{
+  					  if (insidePHP)
 					    REJECT;
   					  current->bodyLine = yyLineNr;
   					  BEGIN( Define );
@@ -2674,6 +2675,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->type=current->type.simplifyWhiteSpace();
 					    current->args=removeRedundantWhiteSpace(current->args);
 					    current->name=current->name.stripWhiteSpace();
+					    if (current->section==Entry::CLASS_SEC) // remove spec for "struct Bla bla;"
+					    {
+					    	current->spec = 0;
+					    }
 					    current->section = Entry::VARIABLE_SEC ;
 					    current->fileName = yyFileName;
 					    current->startLine = yyLineNr;
