@@ -38,11 +38,12 @@
   \section linkclass Links to classes.
 
   All words in the documentation that correspond to a documented class and
-  contain at least one upper case character will automatically be replaced by 
-  a link to the page containing the 
+  contain at least one non-lower case character will automatically be 
+  replaced by a link to the page containing the 
   documentation of the class. If you want to prevent that a word 
   that corresponds to a documented class is replaced by a link you
   should put a \% in front of the word.
+  To link to an all lower case symbol, use \ref cmdref "\\ref".
 
   \section linkfile Links to files.
 

@@ -1402,16 +1402,17 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
   else // index member
   {
-    static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
-    QCString cfname = getOutputFileBase();
-    QCString cfiname = d->getOutputFileBase();
-    Doxygen::indexList.addIndexItem(
-        cname,                                 // level1
-        name(),                                // level2
-        separateMemPages ? cfname : cfiname,   // contRef
-        cfname,                                // memRef
-        anchor(),                              // anchor
-        this);                                 // memberdef
+    //static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+    //QCString cfname = getOutputFileBase();
+    //QCString cfiname = d->getOutputFileBase();
+    //Doxygen::indexList.addIndexItem(
+    //    cname,                                 // level1
+    //    name(),                                // level2
+    //    separateMemPages ? cfname : cfiname,   // contRef
+    //    cfname,                                // memRef
+    //    anchor(),                              // anchor
+    //    this);                                 // memberdef
+    Doxygen::indexList.addIndexItem(d,this);
   }
 
   // *** write arguments
@@ -1642,7 +1643,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   bool hasParameterList = FALSE;
   bool inFile = container->definitionType()==Definition::TypeFile;
   bool hasDocs = isDetailedSectionVisible(inGroup,inFile);
-  static bool separateMemPages = Config_getBool("SEPARATE_MEMBER_PAGES");
   static bool optVhdl          = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   //printf("MemberDef::writeDocumentation(): name=`%s' hasDocs=`%d' containerType=%d inGroup=%d\n",
   //    name().data(),hasDocs,container->definitionType(),inGroup);
@@ -1671,22 +1671,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
   QCString cname  = container->name();
   QCString cfname = getOutputFileBase();
   QCString cfiname = container->getOutputFileBase();
-
-  // the next part is moved to declaration
-  //if (isEnumerate() && name().at(0)=='@')
-  //{
-  //  // don't add to index
-  //}
-  //else
-  //{
-  //  Doxygen::indexList.addIndexItem(
-  //      ciname,                                // level1
-  //      name(),                                // level2
-  //      separateMemPages ? cfname : cfiname,   // contRef
-  //      cfname,                                // memRef
-  //      memAnchor,                             // anchor
-  //      this);                                 // memberdef
-  //}
 
   // get member name
   QCString doxyName=name();
@@ -2073,35 +2057,6 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
         FALSE         // isExample
         );
 
-#if 0  // old, now obsolete way to add parameter documentation
-    //printf("***** argumentList is documented\n");
-    ol.startParamList(BaseOutputDocInterface::Param,theTranslator->trParameters()+": ");
-    ol.writeDescItem();
-    ol.startDescTable();
-    ArgumentListIterator ali(*docArgList);
-    Argument *a;
-    for (ali.toFirst();(a=ali.current());++ali)
-    {
-      if (a->hasDocumentation())
-      {
-        ol.startDescTableTitle();
-        ol.docify(a->name);
-        ol.endDescTableTitle();
-        QCString doc = a->docs+"\n";
-        ol.startDescTableData();
-        ol.parseDoc(docFile(),docLine(),
-                    getOuterScope()?getOuterScope():container,
-                    this,         // memberDef
-                    a->docs+"\n", // docStr
-                    TRUE,         // indexWords
-                    FALSE         // isExample
-                   );
-        ol.endDescTableData();
-      }
-    }
-    ol.endDescTable();
-    ol.endParamList();
-#endif
   }
 
   // For enum, we also write the documented enum values
@@ -2127,21 +2082,15 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           ol.addIndexItem(fmd->name(),cname);
           ol.addIndexItem(cname,fmd->name());
 
-          //if (hasHtmlHelp)
-          //{
-          //   htmlHelp->addIndexItem(ciname,                                // level1
-          //                          fmd->name(),                           // level2
-          //                          separateMemPages ? cfname : cfiname,   // contRef
-          //                          cfname,                                // memRef
-          //                          fmd->anchor());                        // anchor
-          //}
-          Doxygen::indexList.addIndexItem(
-                                 ciname,                                // level1
-                                 fmd->name(),                           // level2
-                                 separateMemPages ? cfname : cfiname,   // contRef
-                                 cfname,                                // memRef
-                                 fmd->anchor(),                         // anchor
-                                 fmd);                                  // memberdef
+          //Doxygen::indexList.addIndexItem(
+          //                       ciname,                                // level1
+          //                       fmd->name(),                           // level2
+          //                       separateMemPages ? cfname : cfiname,   // contRef
+          //                       cfname,                                // memRef
+          //                       fmd->anchor(),                         // anchor
+          //                       fmd);                                  // memberdef
+          Doxygen::indexList.addIndexItem(container,fmd);
+
           //ol.writeListItem();
           ol.startDescTableTitle(); // this enables emphasis!
           ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());

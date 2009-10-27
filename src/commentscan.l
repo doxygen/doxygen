@@ -451,12 +451,6 @@ static bool makeStructuralIndicator(Entry::Sections s)
 {
   if (!getDocSectionName(current->section).isEmpty())
   {
-    //warn(yyFileName,yyLineNr,
-    //	    "Warning: found a structural command %s for a section already "
-    //	    "marked with structural command %s. Ignoring the latter command.",
-    //	     getDocSectionName(s).data(),
-    //         getDocSectionName(current->section).data()
-    //	);
     return TRUE;
   }
   else
@@ -2005,7 +1999,10 @@ static bool handlePage(const QCString &)
 static bool handleMainpage(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::MAINPAGEDOC_SEC);
-  if (!stop) current->name = "mainpage";
+  if (!stop) 
+  {
+    current->name = "mainpage";
+  }
   BEGIN( PageDocArg2 );
   return stop;
 }
@@ -2013,7 +2010,10 @@ static bool handleMainpage(const QCString &)
 static bool handleFile(const QCString &)
 {
   bool stop=makeStructuralIndicator(Entry::FILEDOC_SEC);
-  if (!stop) current->name = yyFileName;
+  if (!stop) 
+  {
+    current->name = yyFileName;
+  }
   BEGIN( FileDocArg1 );
   return stop;
 }
@@ -2372,7 +2372,7 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
                        /* in */     Entry *curEntry,
                        /* in */     const QCString &comment,
 		       /* in */     const QCString &fileName,
-		       /* in */     int lineNr,
+		       /* in,out */ int  &lineNr,
 		       /* in */     bool isBrief,
 		       /* in */     bool isAutoBriefOn,
 		       /* in */     bool isInbody,
@@ -2456,7 +2456,15 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
 
   newEntryNeeded = needNewEntry;
 
+  // if we did not proceed during this call, it does not make
+  // sence to continue, since we get stuck. See bug 567346 for situations
+  // were this happens
+  if (parseMore && position==inputPosition) parseMore=FALSE;
+
   if (parseMore) position=inputPosition; else position=0;
+
+  lineNr = yyLineNr;
+  //printf("position=%d parseMore=%d\n",position,parseMore);
 
   return parseMore;
 }

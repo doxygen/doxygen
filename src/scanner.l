@@ -772,6 +772,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembersPHP>"<?"("php"?)            { // PHP code start
                                            BEGIN( FindMembers );
 					}
+<FindMembersPHP>"<script"{BN}+"language"{BN}*"="{BN}*['"]?"php"['"]?{BN}*">" { // PHP code start
+					  lineCount() ;
+                                          BEGIN( FindMembers );
+					}
 <FindMembersPHP>[^\n<]+                 { // Non-PHP code text, ignore
   					}
 <FindMembersPHP>\n                      { // Non-PHP code text, ignore
@@ -779,7 +783,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <FindMembersPHP>.                       { // Non-PHP code text, ignore
 				        }
-<FindMembers>"?>"                       { // PHP code end
+<FindMembers>"?>"|"</script>"           { // PHP code end
 					  if (insidePHP)
 					    BEGIN( FindMembersPHP );
 					  else
@@ -5368,12 +5372,13 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   bool needsEntry=FALSE;
   if (docBlockInBody && hideInBodyDocs) return;
   //printf("parseCommentBlock [%s]\n",doc.data());
+  int lineNr = brief ? current->briefLine : current->docLine;   // line of block start
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody && previous ? previous : current,
 	doc,        // text
 	yyFileName, // file
-	brief ? current->briefLine : current->docLine,   // line of block start
+	lineNr,     // line of block start
 	docBlockInBody ? FALSE : brief, 
 	docBlockInBody ? FALSE : docBlockAutoBrief,
 	docBlockInBody,

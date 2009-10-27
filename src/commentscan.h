@@ -37,7 +37,8 @@ class ParserInterface;
  *         Note that leading *'s are already stripped from the comment block.
  *  @param[in] fileName The name of the file in which the comment is found.
  *         Mainly used for producing warnings.
- *  @param[in] lineNr The line number at which the comment block was found.
+ *  @param[in,out] lineNr The line number at which the comment block was found.
+ *         When the function returns it will be set to the last line parsed.
  *  @param[in] isBrief TRUE iff this comment block represents a brief description.
  *  @param[in] isJavaDocStyle TRUE iff this comment block is in "JavaDoc" style.
  *         This means that it starts as a brief description until the end of
@@ -62,7 +63,7 @@ bool parseCommentBlock(ParserInterface *parser,
                        Entry *curEntry,
                        const QCString &comment,
 	               const QCString &fileName,
-		       int lineNr,
+		       int  &lineNr,
 		       bool isBrief,
 		       bool isJavaDocStyle,
                        bool isInbody,

@@ -61,7 +61,7 @@ void DocSets::initialize()
         "DOCSET_CONTENTS=$(DOCSET_NAME)/Contents\n"
         "DOCSET_RESOURCES=$(DOCSET_CONTENTS)/Resources\n"
         "DOCSET_DOCUMENTS=$(DOCSET_RESOURCES)/Documents\n"
-        "DOCSET_INSTALL=~/Library/Developer/Shared/Documentation/DocSets\n"
+        "DESTDIR=~/Library/Developer/Shared/Documentation/DocSets\n"
         "XCODE_INSTALL=$(shell xcode-select -print-path)\n"
         "\n"
         "all: docset\n"
@@ -85,11 +85,11 @@ void DocSets::initialize()
         "\trm -f $(DOCSET_RESOURCES)/Tokens.xml\n"
         "\n"
         "install: docset\n"
-        "\tmkdir -p $(DOCSET_INSTALL)\n"
-        "\tcp -R $(DOCSET_NAME) $(DOCSET_INSTALL)\n"
+        "\tmkdir -p $(DESTDIR)\n"
+        "\tcp -R $(DOCSET_NAME) $(DESTDIR)\n"
         "\n"
         "uninstall:\n"
-        "\trm -rf $(DOCSET_INSTALL)\n"
+        "\trm -rf $(DESTDIR)/$(DOCSET_NAME)\n"
         "\n"
         "always:\n";
   }
@@ -227,15 +227,28 @@ void DocSets::addContentsItem(bool isDir,
   }
 }
 
-void DocSets::addIndexItem(const char *, const char *, 
-                           const char *, const char *,
-                           const char *,const MemberDef *md)
+void DocSets::addIndexItem(Definition *context,MemberDef *md,
+                           const char *anchor,const char *word)
 {
-  if (!md->isLinkable()) return; // internal symbol
+  (void)anchor;
+  (void)word;
+  if (md==0 || context==0) return; // TODO: also index non members...
 
-  ClassDef *cd     = md->getClassDef();
-  NamespaceDef *nd = md->getNamespaceDef();
-  FileDef  *fd     = md->getFileDef();
+  FileDef *fd      = 0;
+  ClassDef *cd     = 0;
+  NamespaceDef *nd = 0;
+
+  if (md)
+  {
+    fd = md->getFileDef();
+    cd = md->getClassDef();
+    nd = md->getNamespaceDef();
+    if (!md->isLinkable()) return; // internal symbol
+  }
+
+  QCString scope;
+  QCString type;
+  QCString decl;
 
   // determine language
   QCString lang;
@@ -246,13 +259,13 @@ void DocSets::addIndexItem(const char *, const char *,
     case SrcLangExt_Cpp:
     case SrcLangExt_ObjC:
       {
-        if (md->isObjCMethod() || md->isObjCProperty())
+        if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
         else if (fd && fd->name().right(2).lower()==".c") 
           lang="c";    // Plain C
         else if (cd==0 && nd==0)
           lang="c";    // Plain C symbol outside any class or namespace
-        else                                      
+        else
           lang="cpp";  // C++
       }
       break;
@@ -268,107 +281,133 @@ void DocSets::addIndexItem(const char *, const char *,
     case SrcLangExt_XML:    lang="xml"; break;        // DBUS XML
   }
 
-  // determine scope
-  QCString scope;
-  QCString type;
-  QCString decl;
-  Definition *d = 0;
-  if (fd && fd->isLinkable() && m_scopes.find(fd->getOutputFileBase())==0)
+  if (md)
   {
-    writeToken(m_tts,fd,"file",lang,0,0,0);
-    m_scopes.append(fd->getOutputFileBase(),(void*)0x8);
-  }
-  if (cd) 
-  {
-    scope = cd->qualifiedName();
-    if (cd->isTemplate()) 
-      type="tmplt";
-    else if (cd->compoundType()==ClassDef::Protocol) 
+    if (!md->isLinkable()) return; // internal symbol
+    if (context==0)
     {
-      type="intf";
-      if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
-    }
-    else if (cd->compoundType()==ClassDef::Interface) 
-      type="cl";
-    else if (cd->compoundType()==ClassDef::Category)
-      type="cat";
-    else 
-      type = "cl";
-    d = cd;
-    IncludeInfo *ii = cd->includeInfo();
-    if (ii)
-    {
-      decl=ii->includeName;
-      if (decl.isEmpty())
-      {
-        decl=ii->local;
-      }
-    }
-  }
-  else if (nd) 
-  {
-    scope = nd->name();
-    type = "ns";
-    d = cd;
-  }
-  if (d && d->isLinkable() && m_scopes.find(d->getOutputFileBase())==0)
-  {
-    writeToken(m_tts,d,type,lang,0,0,decl);
-    m_scopes.append(d->getOutputFileBase(),(void*)0x8);
-  }
+      if (md->getGroupDef())
+        context = md->getGroupDef();
+      else if (md->getFileDef())
+        context = md->getFileDef();
+      if (context==0) return; // should not happen
 
-  switch (md->memberType())
-  {
-    case MemberDef::Define:
-      type="macro"; break;
-    case MemberDef::Function:
-      if (cd && (cd->compoundType()==ClassDef::Interface || 
-                 cd->compoundType()==ClassDef::Class)
-         ) 
+      switch (md->memberType())
       {
-        if (md->isStatic())
-          type="clm";
-        else
-          type="instm";
+        case MemberDef::Define:
+          type="macro"; break;
+        case MemberDef::Function:
+          if (cd && (cd->compoundType()==ClassDef::Interface ||
+                     cd->compoundType()==ClassDef::Class))
+          {
+            if (md->isStatic())
+              type="clm";         // class member
+            else
+              type="instm";       // instance member
+          }
+          else if (cd && cd->compoundType()==ClassDef::Protocol)
+          {
+            if (md->isStatic())
+              type="intfcm";     // interface class member
+            else
+              type="intfm";      // interface member
+          }
+          else
+            type="func";
+          break;
+        case MemberDef::Variable:
+          type="data"; break;
+        case MemberDef::Typedef:
+          type="tdef"; break;
+        case MemberDef::Enumeration:
+          type="enum"; break;
+        case MemberDef::EnumValue:
+          type="econst"; break;
+          //case MemberDef::Prototype:
+          //  type="prototype"; break;
+        case MemberDef::Signal:
+          type="signal"; break;
+        case MemberDef::Slot:
+          type="slot"; break;
+        case MemberDef::Friend:
+          type="ffunc"; break;
+        case MemberDef::DCOP:
+          type="dcop"; break;
+        case MemberDef::Property:
+          if (cd && cd->compoundType()==ClassDef::Protocol) 
+            type="intfp";         // interface property
+          else 
+            type="instp";         // instance property
+          break;
+        case MemberDef::Event:
+          type="event"; break;
       }
-      else if (cd && cd->compoundType()==ClassDef::Protocol) 
-      {
-        if (md->isStatic())
-          type="intfcm";
-        else
-          type="intfm";
-      }
-      else 
-        type="func"; 
-      break;
-    case MemberDef::Variable:
-      type="data"; break;
-    case MemberDef::Typedef:
-      type="tdef"; break;
-    case MemberDef::Enumeration:
-      type="enum"; break;
-    case MemberDef::EnumValue:
-      type="econst"; break;
-    //case MemberDef::Prototype:
-    //  type="prototype"; break;
-    case MemberDef::Signal:
-      type="signal"; break;
-    case MemberDef::Slot:
-      type="slot"; break;
-    case MemberDef::Friend:
-      type="ffunc"; break;
-    case MemberDef::DCOP:
-      type="dcop"; break;
-    case MemberDef::Property:
-      if (cd && cd->compoundType()==ClassDef::Protocol) 
-        type="intfp";
-      else 
-        type="instp";
-      break;
-    case MemberDef::Event:
-      type="event"; break;
+      writeToken(m_tts,md,type,lang,scope,md->anchor());
+    }
   }
-  writeToken(m_tts,md,type,lang,scope,md->anchor());
+  else if (context && context->isLinkable())
+  {
+    if (fd==0 && context->definitionType()==Definition::TypeFile)
+    {
+      fd = (FileDef*)context;
+    }
+    if (cd==0 && context->definitionType()==Definition::TypeClass)
+    {
+      cd = (ClassDef*)context;
+    }
+    if (nd==0 && context->definitionType()==Definition::TypeNamespace)
+    {
+      nd = (NamespaceDef*)context;
+    }
+    if (fd)
+    {
+      type="file";
+    }
+    else if (cd) 
+    {
+      scope = cd->qualifiedName();
+      if (cd->isTemplate())
+      {
+        type="tmplt";
+      }
+      else if (cd->compoundType()==ClassDef::Protocol) 
+      {
+        type="intf";
+        if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
+      }
+      else if (cd->compoundType()==ClassDef::Interface)
+      {
+        type="cl";
+      }
+      else if (cd->compoundType()==ClassDef::Category)
+      {
+        type="cat";
+      }
+      else 
+      {
+        type = "cl";
+      }
+      IncludeInfo *ii = cd->includeInfo();
+      if (ii)
+      {
+        decl=ii->includeName;
+        if (decl.isEmpty())
+        {
+          decl=ii->local;
+        }
+      }
+    }
+    else if (nd)
+    {
+      scope = nd->name();
+      type = "ns";
+    }
+    if (m_scopes.find(context->getOutputFileBase())==0)
+    {
+      writeToken(m_tts,context,type,lang,0,0,decl);
+      m_scopes.append(context->getOutputFileBase(),(void*)0x8);
+    }
+  }
 }
 
 void DocSets::writeToken(QTextStream &t,
@@ -384,9 +423,18 @@ void DocSets::writeToken(QTextStream &t,
   QString name = d->name();
   if (name.right(2)=="-p")  name=name.left(name.length()-2);
   t << "      <Name>" << convertToXML(name) << "</Name>" << endl;
-  t << "      <APILanguage>" << lang << "</APILanguage>" << endl;
-  t << "      <Type>" << type << "</Type>" << endl;
-  t << "      <Scope>" << convertToXML(scope) << "</Scope>" << endl;
+  if (!lang.isEmpty())
+  {
+    t << "      <APILanguage>" << lang << "</APILanguage>" << endl;
+  }
+  if (!type.isEmpty())
+  {
+    t << "      <Type>" << type << "</Type>" << endl;
+  }
+  if (scope)
+  {
+    t << "      <Scope>" << convertToXML(scope) << "</Scope>" << endl;
+  }
   t << "    </TokenIdentifier>" << endl;
   t << "    <Path>" << d->getOutputFileBase() 
                     << Doxygen::htmlFileExtension << "</Path>" << endl;
@@ -397,7 +445,7 @@ void DocSets::writeToken(QTextStream &t,
   QCString tooltip = d->briefDescriptionAsTooltip();
   if (!tooltip.isEmpty())
   {
-    t << "    <Abstract>" << tooltip << "</Abstract>" << endl;
+    t << "    <Abstract>" << convertToXML(tooltip) << "</Abstract>" << endl;
   }
   if (decl)
   {

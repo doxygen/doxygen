@@ -3136,13 +3136,10 @@ static QCString getCanonicalTypeForIdentifier(
 
   //printf("  mtype=%s\n",mType?mType->name().data():"<none>");
 
-  if (cd && cd==d)
+  if (cd) // resolves to a known class type
   {
-    if (tSpec) *tSpec="";
-    return "";
-  }
-  else if (cd) // resolves to a known class type
-  {
+    if (cd==d && tSpec) *tSpec="";
+
     if (mType && mType->isTypedef()) // but via a typedef
     {
       result = resolvedType;
@@ -3248,7 +3245,8 @@ static QCString extractCanonicalType(Definition *d,FileDef *fs,QCString type)
     {
       canType += ct;
     }
-    //printf(" word=%s templSpec=%s canType=%s\n",word.data(),templSpec.data(),canType.data());
+    //printf(" word=%s templSpec=%s canType=%s ct=%s\n",
+    //    word.data(),templSpec.data(),canType.data(),ct.data());
     if (!templSpec.isEmpty()) // if we didn't use up the templSpec already
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside. 
@@ -4095,16 +4093,14 @@ static bool getScopeDefs(const char *docScope,const char *scope,
   return FALSE;
 }
 
-//static bool isLowerCase(QCString &s)
-//{
-//  char *p=s.data();
-//  if (p==0) return TRUE;
-//  int c;
-//  while ((c=*p++)) if (!islower(c)) return FALSE;
-//  return TRUE; 
-//}
-
-
+static bool isLowerCase(QCString &s)
+{
+  char *p=s.data();
+  if (p==0) return TRUE;
+  int c;
+  while ((c=*p++)) if (!islower(c)) return FALSE;
+  return TRUE; 
+}
 
 /*! Returns an object to reference to given its name and context 
  *  @post return value TRUE implies *resContext!=0 or *resMember!=0
@@ -4136,10 +4132,12 @@ bool resolveRef(/* in */  const char *scName,
     ClassDef *cd=0;
     NamespaceDef *nd=0;
 
-    //if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
-    //{ // link to lower case only name => do not try to autolink 
-    //  return FALSE;
-    //}
+    // the following if() was commented out for releases in the range 
+    // 1.5.2 to 1.6.1, but has been restored as a result of bug report 594787.
+    if (!inSeeBlock && scopePos==-1 && isLowerCase(tsName))
+    { // link to lower case only name => do not try to autolink 
+      return FALSE;
+    }
 
     //printf("scName=%s fullName=%s\n",scName,fullName.data());
 

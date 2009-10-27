@@ -158,7 +158,8 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
             child.attribute(SA("id")),
             child.attribute(SA("defval")),
             mode,
-            child.attribute(SA("docs"))
+            child.attribute(SA("docs")),
+            child.attribute(SA("abspath"))
            );
       m_options.insert(
           child.attribute(SA("id")),

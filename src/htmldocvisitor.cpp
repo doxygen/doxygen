@@ -34,6 +34,34 @@
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
 
+static QCString convertIndexWordToAnchor(const QString &word)
+{
+  static char hex[] = "0123456789abcdef";
+  uint i;
+  QCString result;
+  for (i=0;i<word.length();i++)
+  {
+    int c = word.at(i);
+    if (isId(c))
+    {
+      result+=c;
+    }
+    else if (isspace(c))
+    {
+      result+="_";
+    }
+    else
+    {
+      char cs[3];
+      cs[0]=hex[c>>4];
+      cs[1]=hex[c&0xf];
+      cs[2]=0;
+      result+=cs;
+    }
+  }
+  return result;
+}
+
 static bool mustBeOutsideParagraph(DocNode *n)
 {
   switch (n->kind())
@@ -293,7 +321,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::XmlOnly: 
       /* nothing */ 
       break;
-     
+
     case DocVerbatim::Dot:
       {
         static int dotindex = 1;
@@ -470,8 +498,20 @@ void HtmlDocVisitor::visit(DocFormula *f)
   }
 }
 
-void HtmlDocVisitor::visit(DocIndexEntry *)
+void HtmlDocVisitor::visit(DocIndexEntry *e)
 {
+  QCString anchor = convertIndexWordToAnchor(e->entry());
+  if (e->member()) 
+  {
+    anchor.prepend(e->member()->anchor()+"_");
+  }
+  m_t << "<a name=\"" << anchor << "\"></a>";
+  //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
+  //       e->entry().data(),
+  //       e->scope()  ? e->scope()->name().data()  : "<null>",
+  //       e->member() ? e->member()->name().data() : "<null>"
+  //      );
+  Doxygen::indexList.addIndexItem(e->scope(),e->member(),anchor,e->entry());
 }
 
 void HtmlDocVisitor::visit(DocSimpleSectSep *)

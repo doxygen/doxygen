@@ -305,7 +305,7 @@ FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z0-9]+|{VERBATIM})
-SPCMD2    {CMD}[\\@<>&$#%~]
+SPCMD2    {CMD}[\\@<>&$#%~"]
 SPCMD3    {CMD}form#[0-9]+
 INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
@@ -924,7 +924,7 @@ REFWORD   ("#"|"::")?({ID}{TEMPLPART}?("."|"#"|"::"|"-"|"/"))*({ID}(":")?){FUNCA
 <*>\n                  { 
                          warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
 		       }
-<*>[\\@<>&$#%~]        { /* unescaped special character */
+<*>[\\@<>&$#%~"]       { /* unescaped special character */
                          //warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;

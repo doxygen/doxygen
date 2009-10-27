@@ -41,7 +41,8 @@ class InputString : public QObject, public Input
     InputString( QGridLayout *layout,int &row,
                  const QString &id, const QString &s, 
                  StringMode m,
-                 const QString &docs );
+                 const QString &docs,
+                 const QString &absPath = QString() );
     ~InputString();
     void addValue(QString s);
     void setDefault();
@@ -83,6 +84,7 @@ class InputString : public QObject, public Input
     QVariant      m_value;
     QString       m_docs;
     QString       m_id;
+    bool          m_absPath;
 };
 
 #endif

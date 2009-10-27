@@ -512,7 +512,7 @@ static bool replaceFunctionMacro(const QCString &expr,QCString *rest,int pos,int
   len=0;
   result.resize(0);
   int cc;
-  while ((cc=getCurrentChar(expr,rest,j))!=EOF && cc==' ') 
+  while ((cc=getCurrentChar(expr,rest,j))!=EOF && isspace(cc)) 
   { 
     len++; 
     getNextChar(expr,rest,j); 
@@ -772,6 +772,7 @@ static int getNextId(const QCString &expr,int p,int *l)
 	c=expr.at(p);
 	p++;
       }
+      if (p<(int)expr.length()) ++p; // skip closing quote
     }
     else if (c=='/') // skip C Comment
     {

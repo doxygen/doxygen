@@ -100,7 +100,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorFrench : public TranslatorAdapter_1_5_4
+class TranslatorFrench : public Translator
 {
    public:
    
@@ -158,7 +158,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of typedefs. */
        virtual QCString trMemberTypedefDocumentation()
       { 
-         return "Documentation des définitions de type membre"; }
+         return "Documentation des définitions de type membres"; }
     
     /*! header that is put before the list of enumerations. */
        virtual QCString trMemberEnumerationDocumentation()
@@ -386,7 +386,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
       
          if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
          {
-            result+="des fonctions, variables, macros, énumérations, et définitions de type ";
+            result+="des fonctions, variables, macros, enumérations, et définitions de type ";
          }
          else
          {
@@ -812,7 +812,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
                if (i<numEntries-2) // not the fore last entry
                   result+=", ";
                else                // the fore last entry
-                  result+=" et ";
+                  result+=", et ";
             }
          }
          return result; 
@@ -998,7 +998,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! header that is put before the list of constructor/destructors. */
        virtual QCString trConstructorDocumentation()
       {
-         return "Documentation des constructeurs et destructeurs"; 
+         return "Documentation des constructeurs et destructeur"; 
       }
     /*! Used in the file documentation to point to the corresponding sources. */
        virtual QCString trGotoSourceCode()
@@ -1192,7 +1192,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
             "};\n"
             "\\endcode\n"
             "Si la valeur 240 est attribuée au tag \\c MAX_DOT_GRAPH_HEIGHT "
-            "du fichier de configuration, cela générera le graphe suivant :"
+            "du fichier de configuration, cela génèrera le graphe suivant :"
             "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
             "<p>\n"
             "Les rectangles du graphe ci-dessus ont la signification suivante :\n"
@@ -1622,7 +1622,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
       {
          if (numDocuments==0)
          {
-            return "Désolé aucun document ne correspond à votre requête.";
+            return "Désolé, aucun document ne correspond à votre requête.";
          }
          else if (numDocuments==1)
          {
@@ -1737,6 +1737,207 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     virtual QCString trEnumerationValueDocumentation()
     { return "Documentation des énumérations"; }
 
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.5.4 (mainly for Fortran)
+    //////////////////////////////////////////////////////////////////////////
+    
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Documentation des fonctions membres/subroutine"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */    
+    virtual QCString trCompoundListFortran()
+    { return "Liste des types de données"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Champs de données"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Liste des types de données avec une brève description :"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Liste de tous les ";
+      result+="membres de types de données ";
+      if (!extractAll)
+      {
+        result+="documentés ";
+      }
+      result+="avec liens vers ";
+      if (!extractAll) 
+      {
+         result+="la documentation de la structure des données de chaque membre :";
+      }
+      else 
+      {
+         result+="les types des données auxquels ils appartiennent :";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Index du type de données"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Documentation du type de données"; }
+
+    /*! This is used in the documentation of a file as a header before the 
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Fonctions/Subroutines"; }
+
+    /*! This is used in the documentation of a file/namespace before the list 
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Documentation de la Fonction/Subroutine"; }
+
+    /*! This is used in the documentation of a file/namespace/group before 
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Les types de données"; }
+    
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Liste des modules"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Liste de tous les modules";
+      if (!extractAll) result+="documentés ";
+      result+="avec une brève description :";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result="Réference ";
+      if (isTemplate) result+="du gabarit (template) ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="du module "; break;
+        case ClassDef::Struct:     result+="du type "; break;
+        case ClassDef::Union:      result+="de l'union "; break;
+        case ClassDef::Interface:  result+="de l'interface "; break;
+        case ClassDef::Protocol:   result+="du protocole "; break;
+        case ClassDef::Category:   result+="de la catégorie "; break;
+        case ClassDef::Exception:  result+="de l'exception "; break;
+      }
+      result+=(QCString)clName;
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result="Référence du module ";
+      result+= namespaceName;        
+      return result;
+    }
+    
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Membres du module"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    { 
+      QCString result="Liste de tous les membres ";
+      if (!extractAll) result+="documentés ";
+      result+="du module avec lien vers ";
+      if (extractAll) 
+      {
+        result+="la documentation du module de chaque membre :";
+      }
+      else 
+      {
+        result+="les modules auxquels ils appartiennent :";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the 
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Index des modules"; }
+    
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {       
+      QCString result((first_capital ? "Module" : "module"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    {
+      // single is true implies a single file
+      QCString result=(QCString)"La documentation de ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="ce module"; break;
+        case ClassDef::Struct:     result+="ce type"; break;
+        case ClassDef::Union:      result+="cette union"; break;
+        case ClassDef::Interface:  result+="cette interface"; break;
+        case ClassDef::Protocol:   result+="ce protocole"; break;
+        case ClassDef::Category:   result+="cette catégorie"; break;
+        case ClassDef::Exception:  result+="cette exception"; break;
+      }
+      result+=" a été générée à partir ";
+      if (single) result+="du fichier suivant :"; else result+="des fichiers suivants :";
+      return result;
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Type" : "type"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names 
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    { 
+      QCString result((first_capital ? "Sous-programme" : "sous-programme"));
+      if (!singular)  result+="s";
+      return result; 
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Les constraintes du type";
+    }
+
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0 (mainly for the new search engine)
 //////////////////////////////////////////////////////////////////////////
@@ -1744,7 +1945,7 @@ class TranslatorFrench : public TranslatorAdapter_1_5_4
     /*! directory relation for \a name */
     virtual QCString trDirRelation(const char *name)
     {
-      return QCString(name)+" Relation";
+      return "Relation " + QCString(name);
     }
 
     /*! Loading message shown when loading search results */

@@ -87,6 +87,12 @@ doxygen -l
 optionally the name of the layout file can be specified, if omitted
 \c DoxygenLayout.xml will be used.
 
+The next step is to mention the layout file in the config file
+\verbatim
+LAYOUT_FILE = DoxygenLayout.xml
+\endverbatim
+The change the layout all you need to do is edit the layout file.
+
 The toplevel structure of the file looks as follows:
 \verbatim
 <doxygenlayout version="1.0">

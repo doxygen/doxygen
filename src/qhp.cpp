@@ -18,6 +18,9 @@
 #include "qhpxmlwriter.h"
 #include "message.h"
 #include "config.h"
+#include "memberdef.h"
+#include "groupdef.h"
+#include "filedef.h"
 
 #include <qstringlist.h>
 #include <string.h>
@@ -132,7 +135,7 @@ void Qhp::finalize()
   m_toc.close("toc");
   m_doc.insert(m_toc);
 
-  // Finish index  
+  // Finish index
   m_index.close("keywords");
   m_doc.insert(m_index);
 
@@ -184,65 +187,90 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
   }
 }
 
-void Qhp::addIndexItem(const char * level1, const char * level2,
-                       const char * contRef, const char * /*memRef*/, 
-                       const char * anchor, const MemberDef * /*md*/)
+void Qhp::addIndexItem(Definition *context,MemberDef *md,
+                       const char *anc,const char *word)
 {
-  QCString ref;
-  if ((m_prevIdName!=level1) || (m_prevIdRef!=contRef))
-  {
-    m_prevIdName = level1;
-    m_prevIdRef = contRef;
+  (void)anc;
+  (void)word;
 
-    ref = makeFileName(contRef);
+  if (md) // member
+  {
+    static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+    if (context==0) // global member
+    {
+      if (md->getGroupDef())
+        context = md->getGroupDef();
+      else if (md->getFileDef())
+        context = md->getFileDef();
+    }
+    if (context==0) return; // should not happen
+    QCString cfname  = md->getOutputFileBase();
+    QCString cfiname = context->getOutputFileBase();
+    QCString level1  = context->name();
+    QCString level2  = word ? QCString(word) : md->name();
+    QCString contRef = separateMemberPages ? cfname : cfiname;
+    QCString anchor  = anc;
+
+    QCString ref;
+
+    // <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
+    ref = makeRef(contRef, anchor);
+    QCString id = level1+"::"+level2;
     const char * attributes[] =
-    { "name", level1,
+    {
+      "name", level2,
+      "id",   id,
+      "ref",  ref,
+      0
+    };
+    m_index.openClose("keyword", attributes);
+  }
+  else if (context) // container
+  {
+    // <keyword name="Foo" id="Foo" ref="doc.html"/>
+    QCString contRef = context->getOutputFileBase();
+    QCString level1  = word ? QCString(word) : context->name();
+    QCString ref;
+    if (anc)
+    {
+      ref = makeRef(contRef,anc);
+    }
+    else
+    {
+      ref = makeFileName(contRef);
+    }
+    const char * attributes[] =
+    {
+      "name", level1,
       "id",   level1,
       "ref",  ref,
       0
     };
     m_index.openClose("keyword", attributes);
   }
-  /*
-  <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
-  */
-  ref = makeRef(contRef, anchor);
-  QCString id(level1);
-  id += "::";
-  id += level2;
-  const char * attributes[] =
-  { "name", level2, 
-    "id",   id, 
-    "ref",  ref, 
-    0
-  };
-  m_index.openClose("keyword", attributes);
 }
 
-void
-Qhp::addIndexFile(const char * name)
+void Qhp::addIndexFile(const char * name)
 {
   addFile(name);
 }
 
-/*static*/ QCString
-Qhp::getQhpFileName()
+QCString Qhp::getQhpFileName()
 {
   return "index.qhp";
 }
 
-/*static*/ QCString
-Qhp::getFullProjectName()
+QCString Qhp::getFullProjectName()
 {
-  QCString const projectName = Config_getString("PROJECT_NAME");
-  QCString const versionText = Config_getString("PROJECT_NUMBER");
+  QCString projectName = Config_getString("PROJECT_NAME");
+  QCString versionText = Config_getString("PROJECT_NUMBER");
+  if (projectName.isEmpty()) projectName="Root";
   return projectName + (versionText.isEmpty()
       ? QCString("")
       : QCString(" ") + versionText);
 }
 
-void
-Qhp::handlePrevSection()
+void Qhp::handlePrevSection()
 {
   /*
   <toc>
