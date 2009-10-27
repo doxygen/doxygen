@@ -131,7 +131,7 @@ class MemberIndexList : public QList<MemberDef>
     }
 };
 
-#define MEMBER_INDEX_ENTRIES 128
+#define MEMBER_INDEX_ENTRIES 256
 
 static MemberIndexList g_memberIndexLetterUsed[CMHL_Total][MEMBER_INDEX_ENTRIES];
 static MemberIndexList g_fileIndexLetterUsed[FMHL_Total][MEMBER_INDEX_ENTRIES];
@@ -1573,7 +1573,8 @@ void addClassMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int letter = tolower(n.at(index)) & 0x7f;
+    int charCode = n.at(index);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -1653,7 +1654,8 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int letter = tolower(n.at(index));
+    int charCode = n.at(index);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       g_namespaceIndexLetterUsed[NMHL_All][letter].append(md);
@@ -1711,7 +1713,8 @@ void addFileMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int letter = tolower(n.at(index));
+    int charCode = n.at(index);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       g_fileIndexLetterUsed[FMHL_All][letter].append(md);
@@ -2237,7 +2240,8 @@ static void addMemberToSearchIndex(
       cd->templateMaster()==0)
   {
     QCString n = md->name();
-    int letter = tolower(n.at(0)) & 0x7f;
+    int charCode = n.at(0);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -2299,7 +2303,8 @@ static void addMemberToSearchIndex(
      )
   {
     QCString n = md->name();
-    int letter = tolower(n.at(0)) & 0x7f;
+    int charCode = n.at(0);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       symbols[SEARCH_INDEX_ALL][letter].append(md);
@@ -2412,7 +2417,8 @@ void writeSearchIndex()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    int letter = tolower(cd->localName().at(0));
+    int charCode = cd->localName().at(0);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (cd->isLinkable() && isId(letter))
     {
       g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(cd);
@@ -2425,7 +2431,8 @@ void writeSearchIndex()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    int letter = tolower(nd->name().at(0));
+    int charCode = nd->name().at(0);
+    int letter = charCode<128 ? tolower(charCode) : charCode;
     if (nd->isLinkable() && isId(letter))
     {
       g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(nd);
@@ -2442,7 +2449,8 @@ void writeSearchIndex()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      int letter = tolower(fd->name().at(0));
+      int charCode = fd->name().at(0);
+      int letter = charCode<128 ? tolower(charCode) : charCode;
       if (fd->isLinkable() && isId(letter))
       {
         g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(fd);
@@ -2772,7 +2780,7 @@ void writeSearchIndex()
         {
           if (!first) t << "," << endl;
           t << "  " << j << ": \"";
-          for (p=32;p<MEMBER_INDEX_ENTRIES;p++)
+          for (p=0;p<MEMBER_INDEX_ENTRIES;p++)
           {
             t << (g_searchIndexSymbols[i][p].count()>0 ? "1" : "0");
           }

@@ -478,10 +478,12 @@ public:
         bool needs_entry(false);
         bool brief(false);
         Protection prot(Public);
+        int lineNr = lineNumber();
 
         while (parseCommentBlock(m_parser,
                                  m_currentEntry,
-                                 text, m_fileName.utf8().data(), lineNumber(),
+                                 text, m_fileName.utf8().data(), 
+                                 lineNr,
                                  brief, m_currentComment->isJavaStyle,
                                  false,
                                  prot,

@@ -6926,17 +6926,17 @@ static void computeMemberRelations()
         {
           ClassDef *bmcd = bmd->getClassDef();
           //printf("Check relation between `%s'::`%s' (%p) and `%s'::`%s' (%p)\n",
-          //       mcd->name().data(),md->name().data(),md,
+          //      mcd->name().data(),md->name().data(),md,
           //       bmcd->name().data(),bmd->name().data(),bmd
           //      );
           if (md!=bmd && bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd,TRUE))
           {
-            //printf(" Base argList=`%s'\n Super argList=`%s'\n",
-            //        argListToString(bmd->argumentList()).data(),
-            //        argListToString(md->argumentList()).data()
-            //      );
             LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
             LockingPtr<ArgumentList>  mdAl =  md->argumentList();
+            //printf(" Base argList=`%s'\n Super argList=`%s'\n",
+            //        argListToString(bmdAl.pointer()).data(),
+            //        argListToString(mdAl.pointer()).data()
+            //      );
             if ( 
                 matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),bmdAl.pointer(),
                   md->getOuterScope(), md->getFileDef(), mdAl.pointer(),
@@ -10167,13 +10167,17 @@ void generateOutput()
   {
     g_outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
-    if (Config_getBool("GENERATE_HTMLHELP")) Doxygen::indexList.addIndex(new HtmlHelp);
-    if (Config_getBool("GENERATE_QHP")) Doxygen::indexList.addIndex(new Qhp);
 #if 0
     if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
 #endif
-    if (Config_getBool("GENERATE_TREEVIEW")) Doxygen::indexList.addIndex(new FTVHelp);
-    if (Config_getBool("GENERATE_DOCSET"))   Doxygen::indexList.addIndex(new DocSets);
+    bool generateHtmlHelp = Config_getBool("GENERATE_HTMLHELP");
+    bool generateQhp      = Config_getBool("GENERATE_QHP");
+    bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+    bool generateDocSet   = Config_getBool("GENERATE_DOCSET");
+    if (generateHtmlHelp) Doxygen::indexList.addIndex(new HtmlHelp);
+    if (generateQhp)      Doxygen::indexList.addIndex(new Qhp);
+    if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp);
+    if (generateDocSet)   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     Doxygen::indexList.addImageFile("tab_r.gif");
     Doxygen::indexList.addImageFile("tab_l.gif");
@@ -10258,6 +10262,10 @@ void generateOutput()
   if (Config_getBool("SEARCHENGINE"))
   {
     writeSearchIndex();
+    Doxygen::indexList.addImageFile("search/close.png");
+    Doxygen::indexList.addImageFile("search/search.png");
+    Doxygen::indexList.addStyleSheetFile("search/search.css");
+    Doxygen::indexList.addStyleSheetFile("search/search.js");
   }
 
   //statistics();
@@ -10407,26 +10415,6 @@ void generateOutput()
     }
     QDir::setCurrent(oldDir);
   }
-#if 0
-  if ( Config_getBool("GENERATE_HTMLHELP") && 
-      !Config_getString("DOXYGEN2QTHELP_LOC").isEmpty() && 
-      !Config_getString("QTHELP_CONFIG").isEmpty())
-  {
-    msg("Running doxygen2qthelp...\n");
-    const QCString qtHelpFile = Config_getString("QTHELP_FILE");
-    const QCString args = QCString().sprintf("--config=%s index.hhp%s%s",
-        Config_getString("QTHELP_CONFIG").data(),
-        (qtHelpFile.isEmpty() ? "" : " "), (qtHelpFile.isEmpty() ? "" : qtHelpFile.data()));
-    
-    const QString oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
-    if (portable_system(Config_getString("DOXYGEN2QTHELP_LOC"), args.data(), FALSE))
-    {
-      err("Error: failed to run doxygen2qthelp on index.hhp\n");
-    }
-    QDir::setCurrent(oldDir);
-  }
-#endif
   if ( Config_getBool("GENERATE_HTML") &&
        Config_getBool("GENERATE_QHP") && 
       !Config_getString("QHG_LOCATION").isEmpty())

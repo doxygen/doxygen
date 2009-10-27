@@ -302,8 +302,13 @@ static QDict<QCString> s_languageDict;
 void HtmlHelp::initialize()
 {
   const char *str = Config_getString("CHM_INDEX_ENCODING");
-  if(!str) str = "Windows-1250";
+  if (!str) str = "CP1250"; // use safe and likely default
   m_fromUtf8 = portable_iconv_open(str,"UTF-8"); 
+  if (m_fromUtf8==(void *)(-1))
+  {
+    err("Error: unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
+    exit(1);
+  }
 
   /* open the contents file */
   QCString fName = Config_getString("HTML_OUTPUT") + "/index.hhc";
@@ -639,21 +644,36 @@ void HtmlHelp::addContentsItem(bool isDir,
   cts << "</OBJECT>\n";
 }
 
-/*! Add an list item to the index file.
- *  \param level1 the main index of the item.
- *  \param level2 the sub index of the item.
- *  \param contRef the output file refering to the container.
- *  \param memRef  the output file containing to the member documentation.
- *  \param anchor  the anchor of the item.
- *  \param md      the member definition corresponding to this item.
- *  \sa HtmlHelpIndex
- */
-void HtmlHelp::addIndexItem(const char *level1, const char *level2,
-                            const char *contRef, const char *memRef, 
-                            const char *anchor,const MemberDef *md)
+
+void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
+                            const char *anc,const char *word)
 {
-  (void)md;
-  index->addItem(level1,level2,contRef,anchor,TRUE,FALSE);
-  index->addItem(level2,level1,memRef,anchor,TRUE,TRUE);
+  if (md)
+  {
+    static bool separateMemberPages = Config_getBool("SEPARATE_MEMBER_PAGES");
+    if (context==0) // global member
+    {
+      if (md->getGroupDef())
+        context = md->getGroupDef();
+      else if (md->getFileDef())
+        context = md->getFileDef();
+    }
+    if (context==0) return; // should not happen
+
+    QCString cfname  = md->getOutputFileBase();
+    QCString cfiname = context->getOutputFileBase();
+    QCString level1  = context->name();
+    QCString level2  = md->name();
+    QCString contRef = separateMemberPages ? cfname : cfiname;
+    QCString memRef  = cfname;
+    QCString anchor  = anc;
+    index->addItem(level1,level2,contRef,anchor,TRUE,FALSE);
+    index->addItem(level2,level1,memRef,anchor,TRUE,TRUE);
+  }
+  else if (context)
+  {
+    QCString level1  = word ? QCString(word) : context->name();
+    index->addItem(level1,0,context->getOutputFileBase(),anc,TRUE,FALSE);
+  }
 }
 

@@ -21,8 +21,10 @@
 
 InputString::InputString( QGridLayout *layout,int &row,
                           const QString & id, const QString &s, 
-                          StringMode m, const QString &docs )
-  : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id)
+                          StringMode m, const QString &docs,
+                          const QString &absPath )
+  : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id),
+    m_absPath(absPath==QString::fromAscii("1"))
 {
   m_lab = new HelpLabel(id);
   if (m==StringFixed)
@@ -126,7 +128,7 @@ void InputString::browse()
       QDir dir(path);
       if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
       {
-        fileName = dir.relativeFilePath(fileName);
+        fileName = m_absPath ? fileName : dir.relativeFilePath(fileName);
       }
       setValue(fileName);
     }
@@ -140,10 +142,10 @@ void InputString::browse()
       QDir dir(path);
       if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
       {
-        dirName = dir.relativeFilePath(dirName);
+        dirName = m_absPath ? dirName : dir.relativeFilePath(dirName);
       }
       setValue(dirName);
-    }	
+    }
   }
 }
 

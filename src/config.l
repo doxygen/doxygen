@@ -1383,18 +1383,6 @@ void Config::check()
     Config_getBool("GENERATE_QHP")=qhp;
   }
 
-  // check QCH creation requirements
-  if (!Config_getString("QHG_LOCATION").isEmpty() &&
-      !Config_getBool("GENERATE_QHP"))
-  {
-    config_err("Warning: Specifying QHG_LOCATION requires GENERATE_QHP=YES.\n");
-  }
-  if (!Config_getString("QCH_FILE").isEmpty() &&
-      Config_getString("QHG_LOCATION").isEmpty())
-  {
-    config_err("Warning: Specifying QCH_FILE requires QHG_LOCATION to be set.\n");
-  }
-
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))
   {
     // don't show inline info for Java output, since Java has no inline 

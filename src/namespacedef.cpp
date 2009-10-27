@@ -415,6 +415,8 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     Doxygen::tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   }
 
+  Doxygen::indexList.addIndexItem(this,0);
+
   //---------------------------------------- start flexible part -------------------------------
 
   QListIterator<LayoutDocEntry> eli(

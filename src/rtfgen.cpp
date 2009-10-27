@@ -39,8 +39,8 @@
 #include "dirdef.h"
 #include "vhdldocgen.h"
 
-#define DBG_RTF(x) x;
-//#define DBG_RTF(x)
+//#define DBG_RTF(x) x;
+#define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {

@@ -85,10 +85,6 @@ MainWindow::MainWindow()
   m_launchHtml = new QPushButton(tr("Show HTML output"));
   launchLayout->addWidget(m_launchHtml);
 
-#if 0
-  m_launchPdf  = new QPushButton(tr("Show PDF output"));
-  launchLayout->addWidget(m_launchPdf);
-#endif
   launchLayout->addStretch(1);
   grid->addLayout(launchLayout,1,0);
   runTabLayout->addLayout(grid);
@@ -300,24 +296,12 @@ void MainWindow::loadSettings()
 {
   QVariant geometry     = m_settings.value(QString::fromAscii("main/geometry"), QVariant::Invalid);
   QVariant state        = m_settings.value(QString::fromAscii("main/state"),    QVariant::Invalid);
-  //QVariant expState     = m_settings.value(QString::fromAscii("expert/state"),  QVariant::Invalid);
-  //QVariant expState2    = m_settings.value(QString::fromAscii("expert/state2"), QVariant::Invalid);
   QVariant wizState     = m_settings.value(QString::fromAscii("wizard/state"),  QVariant::Invalid);
   QVariant loadSettings = m_settings.value(QString::fromAscii("wizard/loadsettings"),  QVariant::Invalid);
-  //QVariant workingDir   = m_settings.value(QString::fromAscii("main/defdir"),   QVariant::Invalid);
 
   if (geometry  !=QVariant::Invalid) restoreGeometry(geometry.toByteArray());
   if (state     !=QVariant::Invalid) restoreState   (state.toByteArray());
-  //if (expState  !=QVariant::Invalid) m_expert->restoreState(expState.toByteArray());
-  //if (expState2 !=QVariant::Invalid) m_expert->restoreInnerState(expState2.toByteArray());
   if (wizState  !=QVariant::Invalid) m_wizard->restoreState(wizState.toByteArray());
-  //if (workingDir!=QVariant::Invalid) 
-  //{ 
-  //  QString dir = workingDir.toString();
-  //  m_workingDir->setText(dir);
-  //  QDir::setCurrent(dir);
-  //  m_run->setEnabled(!dir.isEmpty());
-  //}
   if (loadSettings!=QVariant::Invalid && loadSettings.toBool())
   {
     m_expert->loadSettings(&m_settings);
@@ -337,8 +321,6 @@ void MainWindow::saveSettings()
 
   m_settings.setValue(QString::fromAscii("main/geometry"), saveGeometry());
   m_settings.setValue(QString::fromAscii("main/state"),    saveState());
-  //m_settings.setValue(QString::fromAscii("expert/state"),  m_expert->saveState());
-  //m_settings.setValue(QString::fromAscii("expert/state2"), m_expert->saveInnerState());
   m_settings.setValue(QString::fromAscii("wizard/state"),  m_wizard->saveState());
 }
 
@@ -387,15 +369,19 @@ void MainWindow::runDoxygen()
 #if defined(Q_OS_MACX)
     doxygenPath = qApp->applicationDirPath()+QString::fromAscii("/../Resources/");
     qDebug() << tr("Doxygen path: ") << doxygenPath;
-    if ( !QFile(doxygenPath + QString::fromAscii("doxygen")).exists() ) {
-        // No doygen binary in the resources, if there is a system doxygen binary, use that instead
-        if ( QFile(QString::fromAscii("/usr/local/bin/doxygen")).exists() )
-            doxygenPath = QString::fromAscii("/usr/local/bin/");
-        else {
-            qDebug() << tr("Can't find the doxygen command, make sure it's in your $$PATH");
-            doxygenPath = QString::fromAscii("");
-       	}
-   	}
+    if ( !QFile(doxygenPath + QString::fromAscii("doxygen")).exists() ) 
+    {
+      // No doygen binary in the resources, if there is a system doxygen binary, use that instead
+      if ( QFile(QString::fromAscii("/usr/local/bin/doxygen")).exists() )
+      {
+        doxygenPath = QString::fromAscii("/usr/local/bin/");
+      }
+      else 
+      {
+        qDebug() << tr("Can't find the doxygen command, make sure it's in your $$PATH");
+        doxygenPath = QString::fromAscii("");
+      }
+    }
     qDebug() << tr("Getting doxygen from: ") << doxygenPath;
 #endif
 
@@ -423,7 +409,7 @@ void MainWindow::runDoxygen()
     QTextStream t(m_runProcess);
     m_expert->writeConfig(t,false);
     m_runProcess->closeWriteChannel();
-    
+
     if (m_runProcess->state() == QProcess::NotRunning)
     {
       m_outputLog->append(QString::fromAscii("*** Failed to run doxygen\n"));

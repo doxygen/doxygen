@@ -112,7 +112,8 @@ enum CommandType
   CMD_INHERITDOC   = 78,
   CMD_TPARAM       = 79 | SIMPLESECT_BIT,
   CMD_COPYBRIEF    = 80,
-  CMD_COPYDETAILS  = 81
+  CMD_COPYDETAILS  = 81,
+  CMD_QUOTE        = 82 
 };
 
 enum HtmlTagType

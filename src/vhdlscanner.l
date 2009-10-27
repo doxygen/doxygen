@@ -1704,6 +1704,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   Protection protection=Public;
+  int lineNr = iDocLine;
   if (brief) 
     current->briefLine = iDocLine; 
   else 
@@ -1715,7 +1716,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	current,
 	doc,        // text
 	yyFileName, // file
-	iDocLine,   // line of block start
+	lineNr,     // line of block start
 	brief, 
 	docBlockAutoBrief,
 	FALSE,

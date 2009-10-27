@@ -69,6 +69,7 @@ static const char *sectionLevelToName[] =
 //---------------------------------------------------------------------------
 
 // Parser state: global variables during a call to validatingParseDoc
+static Definition *           g_scope;
 static QString                g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
@@ -95,6 +96,7 @@ static uint                   g_includeFileLength;
 // parser's context to store all global variables
 struct DocParserContext
 {
+  Definition *scope;
   QString context;
   bool inSeeBlock;
   bool insideHtmlLink;
@@ -133,6 +135,7 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
 
   doctokenizerYYpushContext();
   DocParserContext *ctx   = new DocParserContext;
+  ctx->scope              = g_scope;
   ctx->context            = g_context;
   ctx->inSeeBlock         = g_inSeeBlock;
   ctx->insideHtmlLink     = g_insideHtmlLink;
@@ -169,6 +172,7 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
 static void docParserPopContext(bool keepParamInfo=FALSE)
 {
   DocParserContext *ctx = g_parserStack.pop();
+  g_scope               = ctx->scope;
   g_context             = ctx->context;
   g_inSeeBlock          = ctx->inSeeBlock;
   g_insideHtmlLink      = ctx->insideHtmlLink;
@@ -1125,6 +1129,9 @@ reparsetoken:
         case CMD_PERCENT:
           children.append(new DocSymbol(parent,DocSymbol::Percent));
           break;
+        case CMD_QUOTE:
+          children.append(new DocSymbol(parent,DocSymbol::Quot));
+          break;
         case CMD_EMPHASIS:
           {
             children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,TRUE));
@@ -1776,6 +1783,7 @@ void DocCopy::parse()
       //      g_hasParamCommand,g_hasReturnCommand,g_paramsFound.count());
 
       docParserPushContext(FALSE);
+      g_scope = def;
       if (def->definitionType()==Definition::TypeMember && def->getOuterScope())
       {
         g_context=def->getOuterScope()->name();
@@ -2848,6 +2856,7 @@ int DocIndexEntry::parse()
         case CMD_DOLLAR:  m_entry+='$';  break;
         case CMD_HASH:    m_entry+='#';  break;
         case CMD_PERCENT: m_entry+='%';  break;
+        case CMD_QUOTE:   m_entry+='"';  break;
         default:
           warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected command %s found as argument of \\addindex",
                     g_token->name.data());
@@ -2862,6 +2871,7 @@ int DocIndexEntry::parse()
   }
   if (tok!=0) retval=tok;
   doctokenizerYYsetStatePara();
+  m_entry = m_entry.stripWhiteSpace();
 endindexentry:
   DBG(("DocIndexEntry::parse() end retval=%x\n",retval));
   DocNode *n=g_nodeStack.pop();
@@ -4489,7 +4499,8 @@ void DocPara::handleInheritDoc()
       MemberDef *thisMd = g_memberDef;
       //printf("{InheritDocs:%s=>%s}\n",g_memberDef->qualifiedName().data(),reMd->qualifiedName().data());
       docParserPushContext();
-      g_context=reMd->getOuterScope()->name();
+      g_scope=reMd->getOuterScope();
+      g_context=g_scope->name();
       g_memberDef=reMd;
       g_styleStack.clear();
       g_nodeStack.clear();
@@ -4556,6 +4567,9 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_PERCENT:
       m_children.append(new DocSymbol(this,DocSymbol::Percent));
       break;
+    case CMD_QUOTE:
+      m_children.append(new DocSymbol(this,DocSymbol::Quot));
+      break;
     case CMD_SA:
       g_inSeeBlock=TRUE;
       retval = handleSimpleSection(DocSimpleSect::See);
@@ -4620,19 +4634,19 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_SUBSECTION:
       {
         handleSection(cmdName);
-	retval = RetVal_Subsection;
+        retval = RetVal_Subsection;
       }
       break;
     case CMD_SUBSUBSECTION:
       {
         handleSection(cmdName);
-	retval = RetVal_Subsubsection;
+        retval = RetVal_Subsubsection;
       }
       break;
     case CMD_PARAGRAPH:
       {
         handleSection(cmdName);
-	retval = RetVal_Paragraph;
+        retval = RetVal_Paragraph;
       }
       break;
     case CMD_STARTCODE:
@@ -4740,33 +4754,35 @@ int DocPara::handleCommand(const QString &cmdName)
       break;
     case CMD_ANCHOR:
       {
-	int tok=doctokenizerYYlex();
-	if (tok!=TK_WHITESPACE)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
-	      cmdName.data());
-	  break;
-	}
-	tok=doctokenizerYYlex();
-	if (tok==0)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment block while parsing the "
-	      "argument of command %s",cmdName.data());
-	  break;
-	}
-	else if (tok!=TK_WORD && tok!=TK_LNKWORD)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
-	      tokToString(tok),cmdName.data());
-	  break;
-	}
+        int tok=doctokenizerYYlex();
+        if (tok!=TK_WHITESPACE)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
+              cmdName.data());
+          break;
+        }
+        tok=doctokenizerYYlex();
+        if (tok==0)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment block while parsing the "
+              "argument of command %s",cmdName.data());
+          break;
+        }
+        else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
+              tokToString(tok),cmdName.data());
+          break;
+        }
         DocAnchor *anchor = new DocAnchor(this,g_token->name,FALSE);
         m_children.append(anchor);
       }
       break;
     case CMD_ADDINDEX:
       {
-        DocIndexEntry *ie = new DocIndexEntry(this);
+        DocIndexEntry *ie = new DocIndexEntry(this,
+                     g_scope!=Doxygen::globalScope?g_scope:0,
+                     g_memberDef);
         m_children.append(ie);
         retval = ie->parse();
       }
@@ -4778,26 +4794,26 @@ int DocPara::handleCommand(const QString &cmdName)
     case CMD_COPYBRIEF: // fall through
     case CMD_COPYDETAILS:
       {
-	int tok=doctokenizerYYlex();
-	if (tok!=TK_WHITESPACE)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
-	      cmdName.data());
-	  break;
-	}
-	tok=doctokenizerYYlex();
-	if (tok==0)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment block while parsing the "
-	      "argument of command %s\n", cmdName.data());
-	  break;
-	}
-	else if (tok!=TK_WORD && tok!=TK_LNKWORD)
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
-	      tokToString(tok),cmdName.data());
-	  break;
-	}
+        int tok=doctokenizerYYlex();
+        if (tok!=TK_WHITESPACE)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: expected whitespace after %s command",
+              cmdName.data());
+          break;
+        }
+        tok=doctokenizerYYlex();
+        if (tok==0)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected end of comment block while parsing the "
+              "argument of command %s\n", cmdName.data());
+          break;
+        }
+        else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: unexpected token %s as the argument of %s",
+              tokToString(tok),cmdName.data());
+          break;
+        }
         DocCopy *cpy = new DocCopy(this,g_token->name,
             cmdId==CMD_COPYDOC || cmdId==CMD_COPYBRIEF,
             cmdId==CMD_COPYDOC || cmdId==CMD_COPYDETAILS);
@@ -5102,7 +5118,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       {
         QString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
-	{
+        {
           retval = handleParamSection(paramName,
               tagId==XML_PARAM ? DocParamSect::Param : DocParamSect::TemplateParam,
               TRUE);
@@ -5135,7 +5151,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       {
         QString exceptName;
         if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
-	{
+        {
           retval = handleParamSection(exceptName,DocParamSect::Exception,TRUE);
         }
         else
@@ -5213,8 +5229,8 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       {
         QString cref;
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
-	{
-	  // Look for an existing "see" section
+        {
+          // Look for an existing "see" section
           DocSimpleSect *ss=0;
           QListIterator<DocNode> cli(m_children);
           DocNode *n;
@@ -5225,15 +5241,15 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
               ss = (DocSimpleSect *)n;
             }
           }
-  
+
           if (!ss)  // start new section
           {
             ss=new DocSimpleSect(this,DocSimpleSect::See);
             m_children.append(ss);
           }
-          
+
           ss->appendLinkWord(cref);
-	  retval = RetVal_OK;
+          retval = RetVal_OK;
         }
         else
         {
@@ -5472,21 +5488,21 @@ reparsetoken:
     DBG(("\n"));
     switch(tok)
     {
-      case TK_WORD:        
-	m_children.append(new DocWord(this,g_token->name));
-	break;
-      case TK_LNKWORD:        
+      case TK_WORD:
+        m_children.append(new DocWord(this,g_token->name));
+        break;
+      case TK_LNKWORD:
         handleLinkedWord(this,m_children);
-	break;
+        break;
       case TK_URL:
         m_children.append(new DocURL(this,g_token->name,g_token->isEMailAddr));
         break;
-      case TK_WHITESPACE:  
+      case TK_WHITESPACE:
         {
           // prevent leading whitespace and collapse multiple whitespace areas
-          DocNode::Kind k; 
+          DocNode::Kind k;
           if (insidePRE(this) || // all whitespace is relevant
-              (                
+              (
                // remove leading whitespace 
                !m_children.isEmpty()  && 
                // and whitespace after certain constructs
@@ -5506,51 +5522,52 @@ reparsetoken:
             m_children.append(new DocWhiteSpace(this,g_token->chars));
           }
         }
-	break;
-      case TK_LISTITEM:    
-	{
-	  DBG(("found list item at %d parent=%d\n",g_token->indent,parent()->kind()));
-	  DocNode *n=parent();
-	  while (n && n->kind()!=DocNode::Kind_AutoList) n=n->parent();
-	  if (n) // we found an auto list up in the hierarchy
-	  {
-	    DocAutoList *al = (DocAutoList *)n;
-	    DBG(("previous list item at %d\n",al->indent()));
-	    if (al->indent()>=g_token->indent) 
-	      // new item at the same or lower indent level
-	    {
-	      retval=TK_LISTITEM;
-	      goto endparagraph;
-	    }
-	  }
+        break;
+      case TK_LISTITEM:
+        {
+          DBG(("found list item at %d parent=%d\n",g_token->indent,parent()->kind()));
+          DocNode *n=parent();
+          while (n && n->kind()!=DocNode::Kind_AutoList) n=n->parent();
+          if (n) // we found an auto list up in the hierarchy
+          {
+            DocAutoList *al = (DocAutoList *)n;
+            DBG(("previous list item at %d\n",al->indent()));
+            if (al->indent()>=g_token->indent) 
+              // new item at the same or lower indent level
+            {
+              retval=TK_LISTITEM;
+              goto endparagraph;
+            }
+          }
 
           // determine list depth
           int depth = 0;
           n=parent();
-          while(n) {
+          while(n) 
+          {
             if(n->kind() == DocNode::Kind_AutoList) ++depth;
             n=n->parent();
           }
 
-	  // first item or sub list => create new list
-	  DocAutoList *al=0;
-	  do
-	  {
-	    al = new DocAutoList(this,g_token->indent,g_token->isEnumList,
-                                 depth);
-	    m_children.append(al);
-	    retval = al->parse();
-	  } while (retval==TK_LISTITEM &&         // new list
-	           al->indent()==g_token->indent  // at same indent level
-		  );
-	      
-	  // check the return value
-	  if (retval==RetVal_SimpleSec) // auto list ended due to simple section command
-	  {
-	    // Reparse the token that ended the section at this level,
-	    // so a new simple section will be started at this level.
-	    // This is the same as unputting the last read token and continuing.
-	    g_token->name = g_token->simpleSectName;
+          // first item or sub list => create new list
+          DocAutoList *al=0;
+          do
+          {
+            al = new DocAutoList(this,g_token->indent,g_token->isEnumList,
+                depth);
+            m_children.append(al);
+            retval = al->parse();
+          } while (retval==TK_LISTITEM &&         // new list
+              al->indent()==g_token->indent  // at same indent level
+              );
+
+          // check the return value
+          if (retval==RetVal_SimpleSec) // auto list ended due to simple section command
+          {
+            // Reparse the token that ended the section at this level,
+            // so a new simple section will be started at this level.
+            // This is the same as unputting the last read token and continuing.
+            g_token->name = g_token->simpleSectName;
             if (g_token->name.left(4)=="rcs:") // RCS section
             {
               g_token->name = g_token->name.mid(4);
@@ -5559,97 +5576,97 @@ reparsetoken:
             }
             else // other section
             {
-	      tok = TK_COMMAND;
+              tok = TK_COMMAND;
             }
-	    DBG(("reparsing command %s\n",g_token->name.data()));
-	    goto reparsetoken;
-	  }
-	  else if (retval==TK_ENDLIST)
-	  {
-	    if (al->indent()>g_token->indent) // end list
-	    {
-	      goto endparagraph;
-	    }
-	    else // continue with current paragraph
-	    {
-	    }
-	  }
-	  else // paragraph ended due to TK_NEWPARA, TK_LISTITEM, or EOF
-	  {
-	    goto endparagraph;
-	  }
-	}
-	break;
+            DBG(("reparsing command %s\n",g_token->name.data()));
+            goto reparsetoken;
+          }
+          else if (retval==TK_ENDLIST)
+          {
+            if (al->indent()>g_token->indent) // end list
+            {
+              goto endparagraph;
+            }
+            else // continue with current paragraph
+            {
+            }
+          }
+          else // paragraph ended due to TK_NEWPARA, TK_LISTITEM, or EOF
+          {
+            goto endparagraph;
+          }
+        }
+        break;
       case TK_ENDLIST:     
-	DBG(("Found end of list inside of paragraph at line %d\n",doctokenizerYYlineno));
-	if (parent()->kind()==DocNode::Kind_AutoListItem)
-	{
-	  ASSERT(parent()->parent()->kind()==DocNode::Kind_AutoList);
-	  DocAutoList *al = (DocAutoList *)parent()->parent();
-	  if (al->indent()>=g_token->indent)
-	  {
-	    // end of list marker ends this paragraph
-	    retval=TK_ENDLIST;
-	    goto endparagraph;
-	  }
-	  else
-	  {
-	    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: End of list marker found "
-		   "has invalid indent level");
-	  }
-	}
-	else
-	{
-	  warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: End of list marker found without any preceding "
-	         "list items");
-	}
-	break;
+        DBG(("Found end of list inside of paragraph at line %d\n",doctokenizerYYlineno));
+        if (parent()->kind()==DocNode::Kind_AutoListItem)
+        {
+          ASSERT(parent()->parent()->kind()==DocNode::Kind_AutoList);
+          DocAutoList *al = (DocAutoList *)parent()->parent();
+          if (al->indent()>=g_token->indent)
+          {
+            // end of list marker ends this paragraph
+            retval=TK_ENDLIST;
+            goto endparagraph;
+          }
+          else
+          {
+            warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: End of list marker found "
+                "has invalid indent level");
+          }
+        }
+        else
+        {
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: End of list marker found without any preceding "
+              "list items");
+        }
+        break;
       case TK_COMMAND:    
-	{
-	  // see if we have to start a simple section
-	  int cmd = Mappers::cmdMapper->map(g_token->name);
-	  DocNode *n=parent();
-	  while (n && 
-                 n->kind()!=DocNode::Kind_SimpleSect && 
-                 n->kind()!=DocNode::Kind_ParamSect
-                ) 
+        {
+          // see if we have to start a simple section
+          int cmd = Mappers::cmdMapper->map(g_token->name);
+          DocNode *n=parent();
+          while (n && 
+              n->kind()!=DocNode::Kind_SimpleSect && 
+              n->kind()!=DocNode::Kind_ParamSect
+              ) 
           {
             n=n->parent();
           }
-	  if (cmd&SIMPLESECT_BIT)
-	  {
-	    if (n)  // already in a simple section
-	    {
-	      // simple section cannot start in this paragraph, need
-	      // to unwind the stack and remember the command.
-	      g_token->simpleSectName = g_token->name.copy();
-	      retval=RetVal_SimpleSec;
-	      goto endparagraph;
-	    }
-	  }
-	  // see if we are in a simple list
-	  n=parent();
-	  while (n && n->kind()!=DocNode::Kind_SimpleListItem) n=n->parent();
-	  if (n)
-	  {
-	    if (cmd==CMD_LI)
-	    {
-	      retval=RetVal_ListItem;
-	      goto endparagraph;
-	    }
-	  }
-	  
-	  // handle the command
-	  retval=handleCommand(g_token->name.copy());
+          if (cmd&SIMPLESECT_BIT)
+          {
+            if (n)  // already in a simple section
+            {
+              // simple section cannot start in this paragraph, need
+              // to unwind the stack and remember the command.
+              g_token->simpleSectName = g_token->name.copy();
+              retval=RetVal_SimpleSec;
+              goto endparagraph;
+            }
+          }
+          // see if we are in a simple list
+          n=parent();
+          while (n && n->kind()!=DocNode::Kind_SimpleListItem) n=n->parent();
+          if (n)
+          {
+            if (cmd==CMD_LI)
+            {
+              retval=RetVal_ListItem;
+              goto endparagraph;
+            }
+          }
+
+          // handle the command
+          retval=handleCommand(g_token->name.copy());
           DBG(("handleCommand returns %x\n",retval));
 
-	  // check the return value
-	  if (retval==RetVal_SimpleSec)
-	  {
-	    // Reparse the token that ended the section at this level,
-	    // so a new simple section will be started at this level.
-	    // This is the same as unputting the last read token and continuing.
-	    g_token->name = g_token->simpleSectName;
+          // check the return value
+          if (retval==RetVal_SimpleSec)
+          {
+            // Reparse the token that ended the section at this level,
+            // so a new simple section will be started at this level.
+            // This is the same as unputting the last read token and continuing.
+            g_token->name = g_token->simpleSectName;
             if (g_token->name.left(4)=="rcs:") // RCS section
             {
               g_token->name = g_token->name.mid(4);
@@ -5658,29 +5675,29 @@ reparsetoken:
             }
             else // other section
             {
-	      tok = TK_COMMAND;
+              tok = TK_COMMAND;
             }
-	    DBG(("reparsing command %s\n",g_token->name.data()));
-	    goto reparsetoken;
-	  }
-	  else if (retval==RetVal_OK) 
-	  {
-	    // the command ended normally, keep scanning for new tokens.
-	    retval = 0;
-	  }
+            DBG(("reparsing command %s\n",g_token->name.data()));
+            goto reparsetoken;
+          }
+          else if (retval==RetVal_OK) 
+          {
+            // the command ended normally, keep scanning for new tokens.
+            retval = 0;
+          }
           else if (retval>0 && retval<RetVal_OK)
           { 
             // the command ended with a new command, reparse this token
             tok = retval;
             goto reparsetoken;
           }
-	  else // end of file, end of paragraph, start or end of section 
-	       // or some auto list marker
-	  {
-	    goto endparagraph;
-	  }
-	}
-	break;
+          else // end of file, end of paragraph, start or end of section 
+            // or some auto list marker
+          {
+            goto endparagraph;
+          }
+        }
+        break;
       case TK_HTMLTAG:    
         {
           if (!g_token->endTag) // found a start tag
@@ -5693,7 +5710,7 @@ reparsetoken:
           }
           if (retval==RetVal_OK) 
           {
-	    // the command ended normally, keep scanner for new tokens.
+            // the command ended normally, keep scanner for new tokens.
             retval = 0;
           }
           else
@@ -5701,7 +5718,7 @@ reparsetoken:
             goto endparagraph;
           }
         }
-	break;
+        break;
       case TK_SYMBOL:     
         {
           char letter='\0';
@@ -5718,29 +5735,29 @@ reparsetoken:
           break;
         }
       case TK_NEWPARA:     
-	retval=TK_NEWPARA;
-	goto endparagraph;
+        retval=TK_NEWPARA;
+        goto endparagraph;
       case TK_RCSTAG:
         {
-	  DocNode *n=parent();
-	  while (n && 
-                 n->kind()!=DocNode::Kind_SimpleSect && 
-                 n->kind()!=DocNode::Kind_ParamSect
-                ) 
+          DocNode *n=parent();
+          while (n && 
+              n->kind()!=DocNode::Kind_SimpleSect && 
+              n->kind()!=DocNode::Kind_ParamSect
+              ) 
           {
             n=n->parent();
           }
-	  if (n)  // already in a simple section
-	  {
-	    // simple section cannot start in this paragraph, need
-	    // to unwind the stack and remember the command.
-	    g_token->simpleSectName = "rcs:"+g_token->name;
+          if (n)  // already in a simple section
+          {
+            // simple section cannot start in this paragraph, need
+            // to unwind the stack and remember the command.
+            g_token->simpleSectName = "rcs:"+g_token->name;
             g_token->simpleSectText = g_token->text;
-	    retval=RetVal_SimpleSec;
-	    goto endparagraph;
-	  }
+            retval=RetVal_SimpleSec;
+            goto endparagraph;
+          }
 
-	  // see if we are in a simple list
+          // see if we are in a simple list
           DocSimpleSect *ss=new DocSimpleSect(this,DocSimpleSect::Rcs);
           m_children.append(ss);
           ss->parseRcs();
@@ -5958,6 +5975,9 @@ void DocText::parse()
           case CMD_PERCENT:
             m_children.append(new DocSymbol(this,DocSymbol::Percent));
             break;
+          case CMD_QUOTE:
+            m_children.append(new DocSymbol(this,DocSymbol::Quot));
+            break;
           default:
             warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: Unexpected command `%s' found",
                       g_token->name.data());
@@ -6099,6 +6119,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_context = "";
   }
+  g_scope = ctx;
   //printf("g_context=%s\n",g_context.data());
 
 #if 0 // needed for PHP based search engine, now obsolete

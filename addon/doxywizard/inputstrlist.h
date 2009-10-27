@@ -33,14 +33,14 @@ class InputStrList : public QObject, public Input
   Q_OBJECT
 
   public:
-    enum ListMode { ListString  = 0, 
-                    ListFile    = 1, 
-                    ListDir     = 2, 
-                    ListFileDir = ListFile | ListDir 
+    enum ListMode { ListString  = 0,
+                    ListFile    = 1,
+                    ListDir     = 2,
+                    ListFileDir = ListFile | ListDir
                   };
-    
+
     InputStrList( QGridLayout *layout,int &row,
-                  const QString &id, const QStringList &sl, 
+                  const QString &id, const QStringList &sl,
                   ListMode v, const QString &docs);
     void setValue(const QStringList &sl);
 

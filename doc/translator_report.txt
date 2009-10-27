@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 5 translators are up-to-date, 33 translators are based on
+Of them, 6 translators are up-to-date, 32 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -22,6 +22,7 @@ still may be some details listed even for them:
   TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
+  TranslatorFrench -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
   TranslatorKorean
   TranslatorPolish -- Remove the obsolete methods (never used).
 
@@ -53,7 +54,6 @@ must be implemented to become up-to-date:
   TranslatorBrazilian             1.6.0 	 5 methods to implement (2 %)
   TranslatorAfrikaans             1.6.0 	 5 methods to implement (2 %)
   TranslatorGreek                 1.5.4 	27 methods to implement (12 %)
-  TranslatorFrench                1.5.4 	22 methods to implement (9 %)
   TranslatorDanish                1.5.4 	27 methods to implement (12 %)
   TranslatorSlovene               1.4.6 	29 methods to implement (13 %)
   TranslatorNorwegian             1.4.6 	28 methods to implement (12 %)
@@ -288,35 +288,10 @@ TranslatorFinnish   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
     virtual QCString trDirRelation(const char * name)
 
 
-TranslatorFrench   (TranslatorAdapter_1_5_4)  22 methods to implement (9 %)
+TranslatorFrench   (Translator)
 ----------------
 
-  Implements 199 of the required methods (90 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
-    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType, bool single)
-    virtual QCString trSubprograms()
-    virtual QCString trModulesListDescription(bool extractAll)
-    virtual QCString trModulesList()
-    virtual QCString trTypeConstraints()
-    virtual QCString trMemberFunctionDocumentationFortran()
-    virtual QCString trCompoundListDescriptionFortran()
-    virtual QCString trTypeDocumentation()
-    virtual QCString trModuleReference(const char * namespaceName)
-    virtual QCString trModulesMemberDescription(bool extractAll)
-    virtual QCString trModulesMembers()
-    virtual QCString trModulesIndex()
-    virtual QCString trCompoundListFortran()
-    virtual QCString trDataTypes()
-    virtual QCString trCompoundIndexFortran()
-    virtual QCString trSubprogram(bool first_capital, bool singular)
-    virtual QCString trCompoundReferenceFortran(const char * clName, ClassDef::CompoundType compType, bool isTemplate)
-    virtual QCString trType(bool first_capital, bool singular)
-    virtual QCString trModule(bool first_capital, bool singular)
-    virtual QCString trCompoundMembersFortran()
-    virtual QCString trSubprogramDocumentation()
+  Implements 221 of the required methods (100 %).
 
 
 TranslatorGerman   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)

@@ -324,10 +324,10 @@ class DocStyleChange : public DocNode
 class DocSymbol : public DocNode
 {
   public:
-    enum SymType { Unknown=0, BSlash,At,Less,Greater,Amp,Dollar,Hash,Percent, 
-                   Copy, Tm, Reg, Apos, Quot, Uml, Acute, Grave, Circ, Tilde, 
-                   Szlig, Cedil, Ring, Nbsp, Slash, Lsquo, Rsquo, Ldquo, Rdquo, 
-                   Ndash, Mdash, Aelig, AElig
+    enum SymType { Unknown=0, BSlash, At, Less, Greater, Amp, Dollar, Hash,
+                   Percent, Copy, Tm, Reg, Apos, Quot, Uml, Acute, 
+                   Grave, Circ, Tilde, Szlig, Cedil, Ring, Nbsp, Slash, 
+                   Lsquo, Rsquo, Ldquo, Rdquo, Ndash, Mdash, Aelig, AElig
                  };
     DocSymbol(DocNode *parent,SymType s,char letter='\0') : 
       m_parent(parent), m_symbol(s), m_letter(letter) {}
@@ -488,16 +488,21 @@ class DocFormula : public DocNode
 class DocIndexEntry : public DocNode
 {
   public:
-    DocIndexEntry(DocNode *parent) : m_parent(parent) { }
+    DocIndexEntry(DocNode *parent,Definition *scope,MemberDef *md) 
+      : m_parent(parent), m_scope(scope), m_member(md) { }
     Kind kind() const { return Kind_IndexEntry; }
     int parse();
     DocNode *parent() const      { return m_parent; }
-    void accept(DocVisitor *v)   { v->visit(this); }
-    QString entry()              { return m_entry; }
+    Definition *scope() const    { return m_scope;  }
+    MemberDef *member() const    { return m_member; }
+    QString entry() const        { return m_entry;  }
+    void accept(DocVisitor *v)   { v->visit(this);  }
 
   private:
-    DocNode *m_parent;
-    QString  m_entry;
+    DocNode    *m_parent;
+    QString     m_entry;
+    Definition *m_scope;
+    MemberDef  *m_member;
 };
 
 //-----------------------------------------------------------------------

@@ -1423,6 +1423,8 @@ void ClassDef::writeDocumentation(OutputList &ol)
     ol.popGeneratorState();
   }
 
+  Doxygen::indexList.addIndexItem(this,0);
+
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
     Doxygen::tagFile << "  <compound kind=\"" << compoundTypeString();

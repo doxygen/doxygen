@@ -1602,12 +1602,13 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   if (docBlockInBody && hideInBodyDocs) return;
   //fprintf(stderr,"call parseCommentBlock [%s]\n",doc.data());
+  int lineNr = brief ? current->briefLine : current->docLine;
   while (parseCommentBlock(
 	g_thisParser,
 	docBlockInBody ? last_entry : current,
 	doc,        // text
 	yyFileName, // file
-	brief ? current->briefLine : current->docLine,   // line of block start
+	lineNr,
 	docBlockInBody ? FALSE : brief, 
 	docBlockInBody ? FALSE : docBlockJavaStyle,
 	docBlockInBody,

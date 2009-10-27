@@ -816,7 +816,7 @@ If the GENERATE_HTMLHELP tag is set to YES, the HHC_LOCATION tag can
 be used to specify the location (absolute path including file name) of 
 the HTML help compiler (hhc.exe). If non-empty doxygen will try to run 
 the HTML help compiler on the generated index.hhp. 
-' defval='' depends='GENERATE_HTMLHELP'/>
+' defval='' depends='GENERATE_HTMLHELP' abspath='1'/>
     <option type='bool' id='GENERATE_CHI' docs='
 If the GENERATE_HTMLHELP tag is set to YES, the GENERATE_CHI flag 
 controls if a separate .chi index file is generated (YES) or that 

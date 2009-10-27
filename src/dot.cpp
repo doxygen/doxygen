@@ -1173,7 +1173,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
       checkDotResult(absImgName);
       if (Config_getBool("DOT_CLEANUP")) d.remove(dotName);
     }
-    Doxygen::indexList.addImageFile(absImgName);
+    Doxygen::indexList.addImageFile(imgName);
     // write image and map in a table row
     QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"

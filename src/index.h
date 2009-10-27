@@ -22,11 +22,12 @@
 #include <qfile.h>
 #include <qlist.h>
 
+class Definition;
 class MemberDef;
 class OutputList;
 class QTextStream;
 
-
+/** \brief Abstract interface for index generators. */
 class IndexIntf
 {
   public:
@@ -37,44 +38,56 @@ class IndexIntf
     virtual void decContentsDepth() = 0;
     virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
                                  const char *file = 0, const char *anchor = 0) = 0;
-    virtual void addIndexItem(const char *level1, const char *level2, const char *contRef, 
-                              const char *memRef, const char *anchor,const MemberDef *md) = 0;
+    virtual void addIndexItem(Definition *context,MemberDef *md,
+                              const char *anchor,const char *word) = 0;
     virtual void addIndexFile(const char *name) = 0;
     virtual void addImageFile(const char *name) = 0;
     virtual void addStyleSheetFile(const char *name) = 0;
 };
 
+/** \brief A list of index interfaces.
+ *
+ *  This class itself implements all methods of IndexIntf and
+ *  just forwards the calls to all items in the list.
+ */
 class IndexList : public IndexIntf
 {
   private:
     QList<IndexIntf> m_intfs;
+
+    // --- foreach implementations for various number of arguments
 
     void foreach(void (IndexIntf::*methodPtr)())
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)();
     }
+
     template<typename A1>
     void foreach(void (IndexIntf::*methodPtr)(A1),A1 a1)
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1);
     }
+
+    template<typename A1,typename A2,typename A3,typename A4>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4),A1 a1,A2 a2,A3 a3,A4 a4)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4);
+    }
+
     template<typename A1,typename A2,typename A3,typename A4,typename A5>
     void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5)
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5);
     }
-    template<typename A1,typename A2,typename A3,typename A4,typename A5,typename A6>
-    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3,A4,A5,A6),A1 a1,A2 a2,A3 a3,A4 a4,A5 a5,A6 a6)
-    {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3,a4,a5,a6);
-    }
 
   public:
+    /** Creates a list of indexes */
     IndexList() { m_intfs.setAutoDelete(TRUE); }
+    /** Add an index generator to the list */
     void addIndex(IndexIntf *intf) 
     { m_intfs.append(intf); }
 
@@ -91,10 +104,10 @@ class IndexList : public IndexIntf
                          const char *file = 0, const char *anchor = 0)
     { foreach<bool,const char *,const char *,const char *,const char*>
              (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor); }
-    void addIndexItem(const char *level1, const char *level2, const char *contRef, 
-                      const char *memRef, const char *anchor,const MemberDef *md)
-    { foreach<const char *,const char *,const char *,const char *,const char *,const MemberDef *>
-             (&IndexIntf::addIndexItem,level1,level2,contRef,memRef,anchor,md); }
+    void addIndexItem(Definition *context,MemberDef *md,
+                      const char *anchor=0,const char *word=0)
+    { foreach<Definition *,MemberDef *>
+             (&IndexIntf::addIndexItem,context,md,anchor,word); }
     void addIndexFile(const char *name) 
     { foreach<const char *>(&IndexIntf::addIndexFile,name); }
     void addImageFile(const char *name) 

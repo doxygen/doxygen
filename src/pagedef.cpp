@@ -160,7 +160,8 @@ void PageDef::writeDocumentation(OutputList &ol)
 void PageDef::writePageDocumentation(OutputList &ol)
 {
   ol.startTextBlock();
-  ol.parseDoc(docFile(),   // fileName
+  ol.parseDoc(
+      docFile(),           // fileName
       docLine(),           // startLine
       this,                // context
       0,                   // memberdef

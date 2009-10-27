@@ -46,9 +46,11 @@ class DocSets  : public IndexIntf
                          const char *file = 0,
                          const char *anchor = 0
                         );
-    void addIndexItem(const char *level1, const char *level2, 
-                      const char *contRef, const char *memRef,
-                      const char *anchor,const MemberDef *md);
+    //void addIndexItem(const char *level1, const char *level2, 
+    //                  const char *contRef, const char *memRef,
+    //                  const char *anchor,const MemberDef *md);
+    void addIndexItem(Definition *context,MemberDef *md,
+                      const char *anchor,const char *word);
     void addIndexFile(const char *name);
     void addImageFile(const char *) {}
     void addStyleSheetFile(const char *) {}
