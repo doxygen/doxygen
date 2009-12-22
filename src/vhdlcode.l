@@ -113,14 +113,10 @@ static void startFontClass(const char *s);
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  (void)name;
-  (void)base;
-  (void)anchor;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  }
 }
 
 static bool checkString(QCString &name)
@@ -162,12 +158,10 @@ static bool checkString(QCString &name)
 
 static void addToSearchIndex(const char *text)
 {
-  (void)text;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->addWord(text,FALSE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->addWord(text,FALSE);
+  }
 }
 
 
@@ -242,6 +236,17 @@ static void endCodeLine()
 {
   endFontClass();
   g_code->endCodeLine();
+}
+
+static void nextCodeLine()
+{
+  const char *fc = g_currentFontClass;
+  endCodeLine();
+  if (g_yyLineNr<g_inputLines) 
+  {
+    g_currentFontClass = fc;
+    startCodeLine();
+  }
 }
 
 /*! writes a word to the output.
@@ -354,11 +359,7 @@ static void codifyLines(const char *text,const char *cl=0,bool classlink=FALSE)
       //*(p-1)='\0';
       //g_code->codify(sp);
       writeWord(line,cl,classlink);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-        startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -391,11 +392,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       *(p-1)='\0';
       // printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(ref,file,anchor,sp,tooltip);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-        startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -1550,8 +1547,7 @@ void parseVhdlCode(CodeOutputInterface &od,const char *className,const QCString 
   g_lexInit=TRUE;
   if (g_needsTermination)
   {
-    endFontClass();
-    g_code->endCodeLine();
+    endCodeLine();
   }
   if (exBlock && g_sourceFileDef)
   {

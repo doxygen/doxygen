@@ -33,7 +33,8 @@ CASE_SENSE_NAMES  = NO
 IMAGE_PATH        = .
 INPUT             = index.doc install.doc starting.doc docblocks.doc lists.doc \
                     grouping.doc formulas.doc diagrams.doc preprocessing.doc \
-                    autolink.doc output.doc customize.doc custcmd.doc external.doc faq.doc trouble.doc history.doc features.doc \
+                    autolink.doc output.doc searching.doc customize.doc custcmd.doc \
+                    external.doc faq.doc trouble.doc history.doc features.doc \
 		    doxygen_usage.doc doxytag_usage.doc \
                     doxywizard_usage.doc installdox_usage.doc \
 		    config.doc commands.doc htmlcmds.doc xmlcmds.doc language.doc \

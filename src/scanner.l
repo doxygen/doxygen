@@ -2002,7 +2002,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					}
 <TryFunctionBlock>.
 <TryFunctionBlockEnd>"catch"		{ BEGIN(TryFunctionBlock); }
-<TryFunctionBlockEnd>.			{ unput(*yytext); 
+<TryFunctionBlockEnd>\n			{ unput(*yytext); // added to fix bug id 601138
+  					  BEGIN( FindMembers );
+					}
+<TryFunctionBlockEnd>.			{ unput(*yytext);
   					  BEGIN( FindMembers );
 					}
 <EndCppQuote>")"			{
@@ -2024,13 +2027,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           yyLineNr = atoi(&yytext[1]);
 					  //printf("setting line number to %d\n",yyLineNr);
 					  lastPreLineCtrlContext = YY_START;
+  					  current->program+=yytext;
   					  BEGIN( PreLineCtrl );
   					}
 <PreLineCtrl>"\""[^\n\"]*"\""		{
 				          yyFileName = stripQuotes(yytext);
+  					  current->program+=yytext;
   					}
-<PreLineCtrl>.				{}
+<PreLineCtrl>.				{
+  					  current->program+=yytext;
+                                        }
 <PreLineCtrl>\n				{
+  					  current->program+=yytext;
                                           yyLineNr++;
   					  BEGIN( lastPreLineCtrlContext );
   					}
@@ -3306,8 +3314,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					}
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 
-<FindMembers>"("/{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
-<FindMembers>("("({BN}*{TSCOPE}{BN}*"::")*({BN}*[*&]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[] */
+<FindMembers>"("/{BN}*"::"*{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
+<FindMembers>("("({BN}*"::"*{BN}*{TSCOPE}{BN}*"::")*({BN}*[*&]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[] */
   					  if (insidePHP) // reference parameter
 					  {
 					    REJECT
@@ -3565,6 +3573,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 	/* a non-special comment */
+<ReadFuncArgType,ReadTempArgs>"/**/"	{ /* empty comment */ }
 <ReadFuncArgType,ReadTempArgs>"/*"	{
   					  lastCContext = YY_START;
 					  BEGIN( SkipComment );
@@ -4536,6 +4545,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    BEGIN( FindMembers );
 					  }
 					}
+<CSConstraintType,CSConstraintName>"/**/" { /* empty comment */ }
 <CSConstraintType,CSConstraintName>("/*"[*!]|"//"[/!])("<"?)	{ // special comment
                                           fullArgString.resize(0);
 					  lastCopyArgChar='#'; // end marker

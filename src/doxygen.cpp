@@ -125,7 +125,7 @@ NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
 QTime            Doxygen::runningTime;
-//SearchIndex *    Doxygen::searchIndex=0;
+SearchIndex *    Doxygen::searchIndex=0;
 QDict<DefinitionIntf> *Doxygen::symbolMap;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
@@ -712,18 +712,31 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
   { 
     //printf(">>>>>> includeFile=%s\n",root->includeFile.data());
 
+    bool local=Config_getBool("FORCE_LOCAL_INCLUDES");
+    QCString includeFile = root->includeFile;
+    if (!includeFile.isEmpty() && includeFile.at(0)=='"')
+    {
+      local = TRUE;
+      includeFile=includeFile.mid(1,includeFile.length()-2);
+    }
+    else if (!includeFile.isEmpty() && includeFile.at(0)=='<')
+    {
+      local = FALSE;
+      includeFile=includeFile.mid(1,includeFile.length()-2);
+    }
+
     bool ambig;
     FileDef *fd=0;
     // see if we need to include a verbatim copy of the header file
     //printf("root->includeFile=%s\n",root->includeFile.data());
-    if (!root->includeFile.isEmpty() && 
-        (fd=findFileDef(Doxygen::inputNameDict,root->includeFile,ambig))==0
+    if (!includeFile.isEmpty() && 
+        (fd=findFileDef(Doxygen::inputNameDict,includeFile,ambig))==0
        )
     { // explicit request
       QCString text;
       text.sprintf("Warning: the name `%s' supplied as "
                   "the argument of the \\class, \\struct, \\union, or \\include command ",
-                  root->includeFile.data()
+                  includeFile.data()
                  );
       if (ambig) // name is ambigious
       {
@@ -738,7 +751,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
       }
       warn(root->fileName,root->startLine,text);
     }
-    else if (root->includeFile.isEmpty() && ifd &&
+    else if (includeFile.isEmpty() && ifd &&
         // see if the file extension makes sense
         guessSection(ifd->name())==Entry::HEADER_SEC)
     { // implicit assumption
@@ -749,14 +762,17 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
     if (fd)
     {
       QCString iName = !root->includeName.isEmpty() ? 
-                       root->includeName.data() : root->includeFile.data();
-      bool local=FALSE;
+                       root->includeName : includeFile;
       if (!iName.isEmpty()) // user specified include file
       {
-        local = iName.at(0)=='"'; // is it a local include file
-        if (local || iName.at(0)=='<')
+        if (iName.at(0)=='<') local=FALSE; // explicit override
+        if (iName.at(0)=='"' || iName.at(0)=='<')
         {
           iName=iName.mid(1,iName.length()-2); // strip quotes or brackets
+        }
+        if (iName.isEmpty())
+        {
+          iName=fd->name();
         }
       }
       else if (!Config_getList("STRIP_FROM_INC_PATH").isEmpty()) 
@@ -4237,8 +4253,15 @@ static bool findClassRelation(
           // relations.
           if (!templSpec.isEmpty() && mode==TemplateInstances)
           {
-            //printf("       => findTemplateInstanceRelation\n");
-            findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
+            // if baseClass is actually a typedef then we should not
+            // instantiate it, since typedefs are in a different namespace
+            // see bug531637 for an example where this would otherwise hang
+            // doxygen
+            if (baseClassTypeDef==0)
+            {
+              //printf("       => findTemplateInstanceRelation: %p\n",baseClassTypeDef);
+              findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
+            }
           }
           else if (mode==DocumentedOnly || mode==Undocumented)
           {
@@ -8466,6 +8489,7 @@ static void copyStyleSheet()
 //! parse the list of input files
 static void parseFiles(Entry *root,EntryNav *rootNav)
 {
+#if 0
   void *cd = 0;
   QCString inpEncoding = Config_getString("INPUT_ENCODING");
   bool needsTranscoding = !inpEncoding.isEmpty();
@@ -8477,6 +8501,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
        exit(1);
     }
   }
+#endif
 
   QCString *s=g_inputFiles.first();
   while (s)
@@ -10256,16 +10281,30 @@ void generateOutput()
   g_outputList->writeStyleInfo(4); // write last part
   g_outputList->enableAll();
   
+  static bool searchEngine      = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+
   // generate search indices (need to do this before writing other HTML
   // pages as these contain a drop down menu with options depending on
   // what categories we find in this function.
-  if (Config_getBool("SEARCHENGINE"))
+  if (searchEngine)
   {
-    writeSearchIndex();
-    Doxygen::indexList.addImageFile("search/close.png");
-    Doxygen::indexList.addImageFile("search/search.png");
-    Doxygen::indexList.addStyleSheetFile("search/search.css");
-    Doxygen::indexList.addStyleSheetFile("search/search.js");
+    QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
+    QDir searchDir(searchDirName);
+    if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
+    {
+      err("Could not create search results directory '%s/search'\n",searchDirName.data());
+      return;
+    }
+    HtmlGenerator::writeSearchData(searchDirName);
+    writeSearchStyleSheet();
+    if (serverBasedSearch)
+    {
+    }
+    else
+    {
+      writeJavascriptSearchIndex();
+    }
   }
 
   //statistics();
@@ -10433,14 +10472,12 @@ void generateOutput()
     QDir::setCurrent(oldDir);
   }
 
-#if 0 // old PHP based search engine
-  if (Config_getBool("SEARCHENGINE"))
+  if (Config_getBool("GENERATE_HTML") && searchEngine && serverBasedSearch)
   {
     msg("Generating search index\n");
     HtmlGenerator::writeSearchPage();
-    Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search.idx");
+    Doxygen::searchIndex->write(Config_getString("HTML_OUTPUT")+"/search/search.idx");
   }
-#endif
 
   if (Debug::isFlagSet(Debug::Time))
   {

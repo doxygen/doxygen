@@ -80,61 +80,79 @@ Entry::Entry(const Entry &e)
   //printf("Entry::Entry(%p):copy\n",this);
   num++;
   section     = e.section;
+  type        = e.type;
+  name        = e.name;
+  tagInfo     = e.tagInfo;
   protection  = e.protection;
   mtype       = e.mtype;
+  spec        = e.spec;
+  initLines   = e.initLines;
   stat        = e.stat;
   explicitExternal = e.explicitExternal;
-  virt        = e.virt;
-  m_parent    = e.m_parent;
-  type        = e.type.copy();
-  name        = e.name.copy();
-  args        = e.args;
-  bitfields   = e.bitfields.copy();
-  exception   = e.exception.copy();
-  program     = e.program;
-  includeFile = e.includeFile.copy();
-  includeName = e.includeFile.copy();
-  doc         = e.doc.copy();
-  docLine     = e.docLine;
-  docFile     = e.docFile.copy();
-  relates     = e.relates.copy();
-  relatesType = e.relatesType;
-  read        = e.read.copy();
-  write       = e.write.copy();
-  brief       = e.brief.copy();
-  briefLine   = e.briefLine;
-  briefFile   = e.briefFile.copy();
-  inbodyDocs  = e.inbodyDocs.copy();
-  inbodyLine  = e.inbodyLine;
-  inbodyFile  = e.inbodyFile.copy();
-  inside      = e.inside.copy();
-  fileName    = e.fileName.copy();
-  startLine   = e.startLine;
-  mGrpId      = e.mGrpId;
-  bodyLine    = e.bodyLine;
-  endBodyLine = e.endBodyLine;
-  spec        = e.spec;
-  initializer = e.initializer;
-  initLines   = e.initLines;
+  proto       = e.proto;
+  subGrouping = e.subGrouping;
   callGraph   = e.callGraph;
   callerGraph = e.callerGraph;
-  objc        = e.objc;
-  tagInfo     = e.tagInfo;
-  hidden      = e.hidden;
-  artificial  = e.artificial;
-  m_sublist   = new QList<Entry>;
-  m_sublist->setAutoDelete(TRUE);
+  virt        = e.virt;
+  args        = e.args;
+  bitfields   = e.bitfields;
+  argList     = new ArgumentList;
+  argList->setAutoDelete(TRUE);
+  tArgLists = 0;
+  program     = e.program;
+  initializer = e.initializer;
+  includeFile = e.includeFile;
+  includeName = e.includeName;
+  doc         = e.doc;
+  docLine     = e.docLine;
+  docFile     = e.docFile;
+  brief       = e.brief;
+  briefLine   = e.briefLine;
+  briefFile   = e.briefFile;
+  inbodyDocs  = e.inbodyDocs;
+  inbodyLine  = e.inbodyLine;
+  inbodyFile  = e.inbodyFile;
+  relates     = e.relates;
+  relatesType = e.relatesType;
+  read        = e.read;
+  write       = e.write;
+  inside      = e.inside;
+  exception   = e.exception;
+  typeConstr  = new ArgumentList;
+  typeConstr->setAutoDelete(TRUE);
+  bodyLine    = e.bodyLine;
+  endBodyLine = e.endBodyLine;
+  mGrpId      = e.mGrpId;
   extends     = new QList<BaseInfo>;
   extends->setAutoDelete(TRUE);
   groups      = new QList<Grouping>;
   groups->setAutoDelete(TRUE);
   anchors     = new QList<SectionInfo>;
-  argList     = new ArgumentList;
-  argList->setAutoDelete(TRUE);
-  typeConstr  = new ArgumentList;
-  typeConstr->setAutoDelete(TRUE);
-  tArgLists = 0;
+  fileName    = e.fileName;
+  startLine   = e.startLine;
+  if (e.sli)
+  {
+    sli = new QList<ListItemInfo>;
+    sli->setAutoDelete(TRUE);
+    QListIterator<ListItemInfo> slii(*e.sli);
+    ListItemInfo *ili;
+    for (slii.toFirst();(ili=slii.current());++slii)
+    {
+      sli->append(new ListItemInfo(*ili));
+    }
+  }
+  else
+  {
+    sli=0;
+  }
+  objc        = e.objc;
+  hidden      = e.hidden;
+  artificial  = e.artificial;
   groupDocType = e.groupDocType;
+
+  m_parent    = e.m_parent;
+  m_sublist   = new QList<Entry>;
+  m_sublist->setAutoDelete(TRUE);
 
   // deep copy of the child entry list
   QListIterator<Entry> eli(*e.m_sublist);
@@ -194,21 +212,6 @@ Entry::Entry(const Entry &e)
     tArgLists = copyArgumentLists(e.tArgLists);
   }
 
-  if (e.sli)
-  {
-    sli = new QList<ListItemInfo>;
-    sli->setAutoDelete(TRUE);
-    QListIterator<ListItemInfo> slii(*e.sli);
-    ListItemInfo *ili;
-    for (slii.toFirst();(ili=slii.current());++slii)
-    {
-      sli->append(new ListItemInfo(*ili));
-    }
-  }
-  else
-  {
-    sli=0;
-  }
 }
 
 Entry::~Entry()

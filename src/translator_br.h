@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2009 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -7,14 +7,18 @@
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
- * Documents produced by Doxygen are derivative works derived from the
+ * Documents produced by Doxygen are derivative workns derived from the
  * input used in their production; they are not affected by this license.
  *
- * Brazilian Portuguese translation version 20071216
+ * Brazilian Portuguese translation version 20091215
  *    Maintainer: Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
- *    Thanks to Jorge Ramos and others for their contributions.
+ *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ *   20091218:
+ *      - Updated to 1.6.1;
+ *      - Copyright year updated;
+ *      - Translation updates suggested by Fernando Carijó added;
  *   20080709:
  *	- References to MAX_DOT_GRAPH_HEIGHT removed from trLegendDocs().
  *   20080206:
@@ -26,15 +30,12 @@
  *      - Revision number changed from doxygen version to a date string.
  *      - History cleanup
  *      - Latex babel package fixed.
- *   1.4.6
- *      - trCallerGraph() added.
- *      - trEnumerationValueDocumentation() added.
  *   Previous history removed from this version.
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_6_0
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -99,11 +100,11 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_0
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Campos e Atributos";
+        return "Campos";
       }
       else
       {
-        return "Constantes";
+        return "Atributos";
       }
     }
 
@@ -235,7 +236,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_0
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Aqui estão as estruturas de dados e suas respectivas descrições:";
+        return "Aqui estão as estruturas de dados, uniões e suas respectivas descrições:";
       }
       else
       {
@@ -1430,7 +1431,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_0
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Este é o grafo de chamadas para esta função:";
+      return "Este é o diagrama das funções utilizadas por esta função:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1563,7 +1564,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_0
     /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
-      return "Este é o diagrama de chamadas para esta função:";
+      return "Este é o diagrama das funções que utilizam esta função:";
     }
 
     /*! This is used in the documentation of a file/namespace before the list 
@@ -1774,5 +1775,41 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_0
     {
       return "Restrições do Tipo";
     }    
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name
+     * \todo
+     */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "Relação " + QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Carregando...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Namespace global";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Procurando...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Nenhuma entrada encontrada";
+    }
 };
 #endif

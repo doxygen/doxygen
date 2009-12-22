@@ -115,6 +115,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_file_version_filter FILE_VERSION_FILTER
 \refitem cfg_filter_patterns FILTER_PATTERNS
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
+\refitem cfg_force_local_includes FORCE_LOCAL_INCLUDES
 \refitem cfg_formula_fontsize FORMULA_FONTSIZE
 \refitem cfg_full_path_names FULL_PATH_NAMES
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
@@ -152,6 +153,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_html_header HTML_HEADER
 \refitem cfg_html_output HTML_OUTPUT
 \refitem cfg_html_stylesheet HTML_STYLESHEET
+\refitem cfg_html_timestamp HTML_TIMESTAMP
 \refitem cfg_idl_property_support IDL_PROPERTY_SUPPORT
 \refitem cfg_ignore_prefix IGNORE_PREFIX
 \refitem cfg_image_path IMAGE_PATH
@@ -217,6 +219,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_search_includes SEARCH_INCLUDES
 \refitem cfg_searchengine SEARCHENGINE
 \refitem cfg_separate_member_pages SEPARATE_MEMBER_PAGES
+\refitem cfg_server_based_search SERVER_BASED_SEARCH
 \refitem cfg_short_names SHORT_NAMES
 \refitem cfg_show_dirs SHOW_DIRECTORIES
 \refitem cfg_show_files SHOW_FILES
@@ -708,9 +711,16 @@ function's detailed documentation block.
 \anchor cfg_show_include_files
 <dt>\c SHOW_INCLUDE_FILES <dd>
  \addindex SHOW_INCLUDE_FILES
- If the SHOW_INCLUDE_FILES tag is set to YES (the default) then doxygen
+ If the SHOW_INCLUDE_FILES tag is set to \c YES (the default) then doxygen
  will put a list of the files that are included by a file in the documentation 
  of that file.
+
+\anchor cfg_force_local_includes
+<dt>\c FORCE_LOCAL_INCLUDES <dd>
+ \addindex FORCE_LOCAL_INCLUDES
+ If the \c FORCE_LOCAL_INCLUDES tag is set to \c YES then Doxygen 
+ will list include files with double quotes in the documentation 
+ rather than with sharp brackets.
 
 \anchor cfg_inline_info
 <dt>\c INLINE_INFO <dd>
@@ -1280,6 +1290,14 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  See also section \ref doxygen_usage for information on how to generate
  the style sheet that doxygen normally uses.
 
+\anchor cfg_html_timestamp
+<dt>\c HTML_TIMESTAMP <dd>
+ \addindex HTML_TIMESTAMP
+ If the \c HTML_TIMESTAMP tag is set to \c YES then the footer of 
+ each generated HTML page will contain the date and time when the page 
+ was generated. Setting this to NO can help when comparing the output of 
+ multiple runs.
+
 \anchor cfg_html_align_members
 <dt>\c HTML_ALIGN_MEMBERS <dd>
  \addindex HTML_ALIGN_MEMBERS
@@ -1440,12 +1458,17 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 \anchor cfg_searchengine
 <dt>\c SEARCHENGINE <dd>
  \addindex SEARCHENGINE
- The \c SEARCHENGINE tag specifies whether or not the HTML output should
- contain a search function. Possible values are \c YES and \c NO. 
- If set to YES, doxygen will produce a search index, and a search box at
- the top of each page (or in the side bar in case GENERATE_TREE is enabled).
- The search engine is implemented using javascript and DHTML and should
- work on any modern browser. 
+
+ When the \c SEARCHENGINE tag is enabled doxygen will generate a search box
+ for the HTML output. The underlying search engine uses javascript 
+ and DHTML and should work on any modern browser. Note that when using
+ HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), 
+ Qt help (\ref cfg_generate_qhp "GENERATE_QHP"), or docsets
+ (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search 
+ function so this one should typically be disabled. For large projects 
+ the javascript based search engine can be slow, then enabling 
+ \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a 
+ better solution. 
 
  It is possible to search using the keyboard;
  to jump to the search box use access key + S (what the access key is
@@ -1457,29 +1480,17 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  by pressing Shift+cursor down. Also here use the cursor keys to 
  select a filter and enter or escape to activate or cancel the filter option.
 
-<!--
-\anchor cfg_qthelp_file 
-<dt>\c QTHELP_FILE <dd>
- \addindex QTHELP_FILE
-  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c QTHELP_FILE tag can
-  be used to specify the file name of the resulting .(qch|qhp) file. 
-  You can add a path in front of the file if the result should not be
-  written to the html output directory.
+\anchor cfg_server_based_search
+<dt>\c SERVER_BASED_SEARCH <dd>
+ \addindex SERVER_BASED_SEARCH
 
-\anchor cfg_qthelp_config 
-<dt>\c QTHELP_CONFIG <dd>
- \addindex QTHELP_CONFIG
-  If \c DOXYGEN2QTHELP_LOC is set, \c QTHELP_CONFIG must specify the file name
-  of a config file to pass to doxygen2qthelp.
-
-\anchor cfg_doxygen2qthelp_loc 
-<dt>\c DOXYGEN2QTHELP_LOC <dd>
- \addindex DOXYGEN2QTHELP_LOC
-  If the \c GENERATE_HTMLHELP tag is set to \c YES, the \c DOXYGEN2QTHELP_LOC tag
-  can be used to specify the location (absolute path including file name) of 
-  the doxygen2qthelp tool. If non-empty doxygen will try to run doxygen2qthelp 
-  on the generated index.hhp.
--->
+When the SERVER_BASED_SEARCH tag is enabled the search engine will be
+implemented using a PHP enabled web server instead of at the web client
+using Javascript. Doxygen will generate the search PHP script and index 
+file to put on the web server. The advantage of the server
+based approach is that it scales better to large projects and also allows
+full text search. The disadvances is that it is more difficult to setup 
+and does not have live searching capabilities.
 
 \anchor cfg_disable_index
 <dt>\c DISABLE_INDEX <dd>

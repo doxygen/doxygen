@@ -410,26 +410,18 @@ static void popScope()
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  (void)name;
-  (void)base;
-  (void)anchor;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
-  //                                Config_getBool("SOURCE_BROWSER");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  }
 }
 
 static void addToSearchIndex(const char *text)
 {
-  (void)text;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE") &&
-  //                                Config_getBool("SOURCE_BROWSER");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->addWord(text,FALSE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->addWord(text,FALSE);
+  }
 }
 
 static void setClassScope(const QCString &name)
@@ -525,11 +517,23 @@ static void startCodeLine()
 
 
 static void endFontClass();
+static void startFontClass(const char *s);
 
 static void endCodeLine()
 {
   endFontClass();
   g_code->endCodeLine();
+}
+
+static void nextCodeLine()
+{
+  const char * fc = g_currentFontClass;
+  endCodeLine();
+  if (g_yyLineNr<g_inputLines) 
+  {
+    g_currentFontClass = fc;
+    startCodeLine();
+  }
 }
 
 /*! write a code fragment `text' that may span multiple lines, inserting
@@ -550,11 +554,7 @@ static void codifyLines(char *text)
       g_yyLineNr++;
       *(p-1)='\0';
       g_code->codify(sp);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-	startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -586,11 +586,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(ref,file,anchor,sp,tooltip);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-	startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -3022,11 +3018,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					}
 <RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)? {
   					  g_yyLineNr+=QCString(yytext).contains('\n');
-                                          endCodeLine();
-                                          if (g_yyLineNr<g_inputLines) 
-                                          {
-                                            startCodeLine();
-                                          }
+					  nextCodeLine();
 					  if (g_lastSpecialCContext==SkipCxxComment)
 					  { // force end of C++ comment here
 					    endFontClass();
@@ -3054,11 +3046,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
-					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
-					    {
-					      startCodeLine();
-					    }
+					    nextCodeLine();
 					  }
 					  else
 					  {
@@ -3081,11 +3069,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=2;
-					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
-					    {
-					      startCodeLine();
-					    }
+					    nextCodeLine();
 					  }
 					  else
 					  {
@@ -3122,11 +3106,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr++;
-					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
-					    {
-					      startCodeLine();
-					    }
+					    nextCodeLine();
 					  }
 					  else
 					  {
@@ -3157,11 +3137,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr++;
-					    endCodeLine();
-					    if (g_yyLineNr<g_inputLines) 
-					    {
-					      startCodeLine();
-					    }
+					    nextCodeLine();
 					  }
 					  else
 					  {

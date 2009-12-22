@@ -18,8 +18,10 @@
 #include "qtbc.h"
 #include "searchindex.h"
 #include "config.h"
+#include "util.h"
 #include <qfile.h>
 #include <ctype.h>
+#include <qregexp.h>
 
 
 // file format: (all multi-byte values are stored in big endian format)
@@ -100,10 +102,10 @@ static int charsToIndex(const char *word)
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const char *word,bool hiPriority)
+void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
 {
+  static QRegExp nextPart("[_a-z:][A-Z]");
   //printf("SearchIndex::addWord(%s,%d)\n",word,hiPriority);
-  //QString wStr=QString(word).lower();
   QString wStr(word);
   if (wStr.isEmpty()) return;
   wStr=wStr.lower();
@@ -118,6 +120,24 @@ void SearchIndex::addWord(const char *word,bool hiPriority)
     m_words.insert(wStr,w);
   }
   w->addUrlIndex(m_urlIndex,hiPriority);
+  int i;
+  bool found=FALSE;
+  if (!recurse) // the first time we check if we can strip the prefix
+  {
+    i=getPrefixIndex(word);
+    if (i>0)
+    {
+      addWord(word+i,hiPriority,TRUE);
+      found=TRUE;
+    }
+  }
+  if (!found) // no prefix stripped
+  {
+    if ((i=nextPart.match(word))>=1)
+    {
+      addWord(word+i+1,hiPriority,TRUE);
+    }
+  }
 }
 
 

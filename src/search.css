@@ -1,5 +1,7 @@
 /*---------------- Search Box */
-
+#FSearchBox {
+    float: left;
+}
 #MSearchBox {
     padding: 0px;
     margin: 0px;

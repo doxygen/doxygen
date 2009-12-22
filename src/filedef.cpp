@@ -514,11 +514,11 @@ void FileDef::writeDocumentation(OutputList &ol)
     ol.enableAll();
   }
   
-  //if (Config_getBool("SEARCHENGINE"))
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-  //  Doxygen::searchIndex->addWord(localName(),TRUE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName(),TRUE);
+  }
   
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

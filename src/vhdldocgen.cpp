@@ -1872,12 +1872,12 @@ void VhdlDocGen::writeVHDLDeclaration(MemberDef* mdef,OutputList &ol,
   }
 
   // write search index info
-  //if (Config_getBool("SEARCHENGINE"))
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
-  //  Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
-  //  Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(mdef->qualifiedName(),mdef->getOutputFileBase(),mdef->anchor());
+    Doxygen::searchIndex->addWord(mdef->localName(),TRUE);
+    Doxygen::searchIndex->addWord(mdef->qualifiedName(),FALSE);
+  }
 
   QCString cname  = d->name();
   QCString cfname = mdef->getOutputFileBase();

@@ -48,7 +48,6 @@ HEADERS      =	bufstr.h \
 		filename.h \
 		formula.h \
 		ftvhelp.h \
-                gifenc.h \
 		groupdef.h \
 		htags.h \
 		htmlattrib.h \
@@ -82,6 +81,7 @@ HEADERS      =	bufstr.h \
 		outputlist.h \
 		pagedef.h \
 		perlmodgen.h \
+		lodepng.h \
 		pre.h \
                 printdocvisitor.h \
                 pycode.h \
@@ -98,8 +98,9 @@ HEADERS      =	bufstr.h \
 		rtfstyle.h \
 		scanner.h \
 		searchindex.h \
-		search_js.h \
 		search_css.h \
+		search_js.h \
+		search_php.h \
 		section.h \
 		sortdict.h \
                 store.h \
@@ -179,7 +180,6 @@ SOURCES      =	ce_lex.cpp \
 		ftvhelp.cpp \
 		fortrancode.cpp \
 		fortranscanner.cpp \    
-                gifenc.cpp \
 		groupdef.cpp \
 		htags.cpp \
                 htmldocvisitor.cpp \
@@ -193,6 +193,7 @@ SOURCES      =	ce_lex.cpp \
                 latexdocvisitor.cpp \
 		latexgen.cpp \
                 layout.cpp \
+		lodepng.cpp \
 		logos.cpp \
 		mandocvisitor.cpp \
 		mangen.cpp \

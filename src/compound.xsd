@@ -100,7 +100,8 @@
       <xsd:extension base="xsd:string">
        <xsd:attribute name="refid" type="xsd:string" />
        <xsd:attribute name="kindref" type="DoxRefKind" />
-       <xsd:attribute name="external" type="xsd:string" />
+       <xsd:attribute name="external" type="xsd:string" use="optional"/>
+       <xsd:attribute name="tooltip" type="xsd:string" use="optional"/>
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>
@@ -464,7 +465,10 @@
   <xsd:complexType name="docSimpleSectType">
     <xsd:sequence>
       <xsd:element name="title" type="docTitleType" minOccurs="0" />
-      <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="para" type="docParaType" minOccurs="1" maxOccurs="unbounded" />
+        <xsd:element name="simplesectsep" type="docEmptyType" minOccurs="0"/>
+      </xsd:sequence>
     </xsd:sequence>
     <xsd:attribute name="kind" type="DoxSimpleSectKind" />
   </xsd:complexType>

@@ -600,7 +600,11 @@ static bool readCodeFragment(const char *fileName,
         }
         // copy until end of line
         result+=c;
-        if (c==':') result+=cn;
+        if (c==':') 
+        {
+          result+=cn;
+          if (cn=='\n') lineNr++;
+        }
         startLine=lineNr;
         const int maxLineLength=4096;
         char lineStr[maxLineLength];
@@ -617,9 +621,10 @@ static bool readCodeFragment(const char *fileName,
             {
               size_read=qstrlen(p); 
             }
-            else 
+            else  // nothing read
             {
               size_read=-1;
+              lineStr[0]='\0';
             }
             result+=lineStr;
           } while (size_read == (maxLineLength-1));

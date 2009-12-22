@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 6 translators are up-to-date, 32 translators are based on
+Of them, 7 translators are up-to-date, 31 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -19,6 +19,7 @@ alphabetically). This means that they derive from the Translator class
 and they implement all 221 of the required methods. Anyway, there
 still may be some details listed even for them:
 
+  TranslatorBrazilian
   TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
@@ -51,7 +52,6 @@ must be implemented to become up-to-date:
   TranslatorChinese               1.6.0 	 5 methods to implement (2 %)
   TranslatorChinesetraditional    1.6.0 	 5 methods to implement (2 %)
   TranslatorCatalan               1.6.0 	 5 methods to implement (2 %)
-  TranslatorBrazilian             1.6.0 	 5 methods to implement (2 %)
   TranslatorAfrikaans             1.6.0 	 5 methods to implement (2 %)
   TranslatorGreek                 1.5.4 	27 methods to implement (12 %)
   TranslatorDanish                1.5.4 	27 methods to implement (12 %)
@@ -152,20 +152,6 @@ TranslatorArabic   (TranslatorAdapter_1_4_6)  28 methods to implement (12 %)
     virtual QCString trHeaderFiles()
     virtual QCString trBugsAndLimitations()
     virtual QCString trNoDescriptionAvailable()
-
-
-TranslatorBrazilian   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)
--------------------
-
-  Implements 216 of the required methods (97 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trSearching()
-    virtual QCString trNoMatches()
-    virtual QCString trLoading()
-    virtual QCString trGlobalNamespace()
-    virtual QCString trDirRelation(const char * name)
 
 
 TranslatorCatalan   (TranslatorAdapter_1_6_0)  5 methods to implement (2 %)

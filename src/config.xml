@@ -377,6 +377,11 @@ If the SHOW_INCLUDE_FILES tag is set to YES (the default) then Doxygen
 will put a list of the files that are included by a file in the documentation 
 of that file. 
 ' defval='1'/>
+    <option type='bool' id='FORCE_LOCAL_INCLUDES' docs='
+If the FORCE_LOCAL_INCLUDES tag is set to YES then Doxygen 
+will list include files with double quotes in the documentation 
+rather than with sharp brackets.
+' defval='0'/>
     <option type='bool' id='INLINE_INFO' docs='
 If the INLINE_INFO tag is set to YES (the default) then a tag [inline] 
 is inserted in the documentation for inline members. 
@@ -764,6 +769,11 @@ will generate a default style sheet. Note that doxygen will try to copy
 the style sheet file to the HTML output directory, so don&apos;t put your own 
 stylesheet in the HTML output directory as well, or it will be erased! 
 ' defval='' depends='GENERATE_HTML'/>
+    <option type='bool' id='HTML_TIMESTAMP' docs='
+If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML 
+page will contain the date and time when the page was generated. Setting 
+this to NO can help when comparing the output of multiple runs.
+' defval='0' depends='GENERATE_HTML'/>
     <option type='bool' id='HTML_ALIGN_MEMBERS' docs='
 If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 files or namespaces will be aligned in HTML using tables. If set to 
@@ -912,13 +922,23 @@ to manually remove any form_*.png images from the HTML output directory
 to force them to be regenerated. 
 ' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'/>
     <option type='bool' id='SEARCHENGINE' docs='
-When the SEARCHENGINE tag is enable doxygen will generate a search box
+When the SEARCHENGINE tag is enabled doxygen will generate a search box
 for the HTML output. The underlying search engine uses javascript 
 and DHTML and should work on any modern browser. Note that when using
-HTML help (GENERATE_HTMLHELP) or Qt help (GENERATE_QHP) 
-there is already a search function so this one should typically 
-be disabled.
+HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets
+(GENERATE_DOCSET) there is already a search function so this one should 
+typically be disabled. For large projects the javascript based search engine 
+can be slow, then enabling SERVER_BASED_SEARCH may provide a better solution.
 ' defval='1' depends='GENERATE_HTML'/>
+    <option type='bool' id='SERVER_BASED_SEARCH' docs='
+When the SERVER_BASED_SEARCH tag is enabled the search engine will be
+implemented using a PHP enabled web server instead of at the web client
+using Javascript. Doxygen will generate the search PHP script and index 
+file to put on the web server. The advantage of the server
+based approach is that it scales better to large projects and allows
+full text search. The disadvances is that it is more difficult to setup 
+and does not have live searching capabilities.
+' defval='0' depends='SEARCHENGINE'/>
   </group>
   <group name='LaTeX' docs='configuration options related to the LaTeX output'>
     <option type='bool' id='GENERATE_LATEX' docs='

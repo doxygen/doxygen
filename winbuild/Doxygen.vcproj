@@ -925,10 +925,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\src\gifenc.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\groupdef.cpp"
 				>
 				<FileConfiguration
@@ -1194,6 +1190,10 @@
 			</File>
 			<File
 				RelativePath="..\src\layout.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\lodepng.cpp"
 				>
 			</File>
 			<File
@@ -2130,10 +2130,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\gifenc.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\groupdef.h"
 				>
 			</File>
@@ -2203,6 +2199,10 @@
 			</File>
 			<File
 				RelativePath="..\src\lockingptr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\lodepng.h"
 				>
 			</File>
 			<File
@@ -2331,6 +2331,18 @@
 			</File>
 			<File
 				RelativePath="..\src\scanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\search_css.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\search_js.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\search_php.h"
 				>
 			</File>
 			<File

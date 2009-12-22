@@ -93,6 +93,13 @@ class BufStr
     { 
       return m_writeOffset; 
     }
+    void dropFromStart(uint bytes)
+    {
+      if (bytes>m_size) bytes=m_size;
+      if (bytes>0) qmemmove(m_buf,m_buf+bytes,m_size-bytes);
+      m_size-=bytes;
+      m_writeOffset-=bytes;
+    }
   private:
     void makeRoomFor(uint size)
     {
