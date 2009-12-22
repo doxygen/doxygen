@@ -1407,7 +1407,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
  					  outputArray(yytext,yyleng); 
   					  BEGIN(CopyLine); 
 					}
-<Start>^{B}*[_A-Z][_A-Z0-9]*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
+<Start>^{B}*[_A-Z][_A-Z0-9]*{B}*"("[^\)\n]*")"/{BN}{1,10}*[:{] { // constructors?
 					  int i;
 					  for (i=yyleng-1;i>=0;i--)
 					  {
@@ -2013,8 +2013,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(g_lastCContext);  
 					  }
   					}
-<SkipCComment>"//"			{
-  					  outputChar('/');outputChar('/');
+<SkipCComment>"//"("/")*		{
+  					  outputArray(yytext,yyleng);
   					}
 <SkipCComment>"/*"			{
   					  outputChar('/');outputChar('*');

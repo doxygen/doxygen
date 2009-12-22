@@ -54,6 +54,11 @@ span.legend {
         text-align: center;
 }
 
+h3.version {
+        font-size: 90%;
+        text-align: center;
+}
+
 div.qindex, div.navtab{
 	background-color: #e8eef2;
 	border: 1px solid #84b0c7;

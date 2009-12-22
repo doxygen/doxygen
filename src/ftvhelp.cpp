@@ -1,8 +1,19 @@
 /******************************************************************************
  * ftvhelp.cpp,v 1.0 2000/09/06 16:09:00
  *
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
  * Contributed by Kenney Wong <kwong@ea.com>
- * Modified by Dimitri van Heesch (c) 2003
+ * Modified by Dimitri van Heesch
  *
  * Folder Tree View for offline help on browsers that do not support HTML Help.
  */
@@ -568,6 +579,7 @@ void FTVHelp::generateTreeView(QString* OutString)
   QCString fileName;
   QFile f;
   static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   
   generateTreeViewImages();
   
@@ -719,7 +731,7 @@ void FTVHelp::generateTreeView(QString* OutString)
     t << "  </head>\n";
     t << "\n";
     t << "  <body class=\"ftvtree\"";
-    if (searchEngine)
+    if (searchEngine && !serverBasedSearch)
     {
       t << " onload='searchBox.OnSelectItem(0);'";
     }
@@ -730,23 +742,39 @@ void FTVHelp::generateTreeView(QString* OutString)
       t << "      var searchBox = new SearchBox(\"searchBox\", \"search\", true, '" 
         << theTranslator->trSearch() << "');\n";
       t << "      --></script>\n";
-      t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
-      t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
-      t << "      <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
-        << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"search/close.png\" alt=\"\"/></a>\n";
-      t << "      <input type=\"text\" id=\"MSearchField\" value=\"" 
-        << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
-      t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
-      t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
-      t << "           onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
-      t << "      </span><span class=\"MSearchBoxRight\">\n";
-      t << "      <img id=\"MSearchSelect\" src=\"search/search.png\"\n";
-      t << "           onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
-      t << "           onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
-      t << "           alt=\"\"/>\n";
-      t << "      </span></div><div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
-      t << "      </div>\n";
-      HtmlGenerator::writeSearchFooter(t,QCString());
+      if (!serverBasedSearch)
+      {
+        t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+        t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
+        t << "      <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
+          << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"search/close.png\" alt=\"\"/></a>\n";
+        t << "      <input type=\"text\" id=\"MSearchField\" value=\"" 
+          << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
+        t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
+        t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
+        t << "           onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
+        t << "      </span><span class=\"MSearchBoxRight\">\n";
+        t << "      <img id=\"MSearchSelect\" src=\"search/search.png\"\n";
+        t << "           onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
+        t << "           onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
+        t << "           alt=\"\"/>\n";
+        t << "      </span></div><div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
+        t << "      </div>\n";
+        HtmlGenerator::writeSearchFooter(t,QCString());
+      }
+      else
+      {
+        t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+        t << "            <form id=\"FSearchBox\" action=\"search.php\" method=\"get\" target=\"basefrm\">\n";
+        t << "              <img id=\"MSearchSelect\" src=\"search/search.png\" alt=\"\"/>\n";
+        t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\""
+          << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
+        t << "                     onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
+        t << "                     onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+        t << "            </form>\n";
+        t << "          <div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
+        t << "        </div>\n";
+      }
     }
     t << "    <div class=\"directory\">\n";
     t << "      <h3 class=\"swap\"><span>";

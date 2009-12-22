@@ -535,6 +535,14 @@ void addConfigOptions(Config *cfg)
                 );
   //----
   cb = cfg->addBool(
+                 "FORCE_LOCAL_INCLUDES",
+                 "If the FORCE_LOCAL_INCLUDES tag is set to YES then Doxygen\n"
+                 "will list include files with double quotes in the documentation\n"
+                 "rather than with sharp brackets.",
+                 FALSE
+                );
+  //----
+  cb = cfg->addBool(
                  "INLINE_INFO",
                  "If the INLINE_INFO tag is set to YES (the default) then a tag [inline]\n"
                  "is inserted in the documentation for inline members.",
@@ -1093,6 +1101,15 @@ void addConfigOptions(Config *cfg)
   cs->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
+                 "HTML_TIMESTAMP",
+                 "If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML\n"
+                 "page will contain the date and time when the page was generated. Setting\n"
+                 "this to NO can help when comparing the output of multiple runs.",
+                 FALSE
+                );
+  cb->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
                  "HTML_ALIGN_MEMBERS",
                  "If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes,\n"
                  "files or namespaces will be aligned in HTML using tables. If set to\n"
@@ -1340,13 +1357,22 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "SEARCHENGINE",
-                 "When the SEARCHENGINE tag is enable doxygen will generate a search box for the HTML output. The underlying search engine uses javascript\n"
-                 "and DHTML and should work on any modern browser. Note that when using HTML help (GENERATE_HTMLHELP) or Qt help (GENERATE_QHP)\n"
-                 "there is already a search function so this one should typically\n"
-                 "be disabled.",
+                 "When the SEARCHENGINE tag is enabled doxygen will generate a search box for the HTML output. The underlying search engine uses javascript\n"
+                 "and DHTML and should work on any modern browser. Note that when using HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets (GENERATE_DOCSET) there is already a search function so this one should\n"
+                 "typically be disabled. For large projects the javascript based search engine\n"
+                 "can be slow, then enabling SERVER_BASED_SEARCH may provide a better solution.",
                  TRUE
                 );
   cb->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
+                 "SERVER_BASED_SEARCH",
+                 "When the SERVER_BASED_SEARCH tag is enabled the search engine will be implemented using a PHP enabled web server instead of at the web client using Javascript. Doxygen will generate the search PHP script and index\n"
+                 "file to put on the web server. The advantage of the server based approach is that it scales better to large projects and allows full text search. The disadvances is that it is more difficult to setup\n"
+                 "and does not have live searching capabilities.",
+                 FALSE
+                );
+  cb->addDependency("SEARCHENGINE");
   //---------------------------------------------------------------------------
   cfg->addInfo("LaTeX","configuration options related to the LaTeX output");
   //---------------------------------------------------------------------------

@@ -1197,12 +1197,12 @@ void MemberDef::writeDeclaration(OutputList &ol,
   }
 
   // write search index info
-  //if (Config_getBool("SEARCHENGINE") && !isReference())
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
-  //  Doxygen::searchIndex->addWord(localName(),TRUE);
-  //  Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
-  //}
+  if (Doxygen::searchIndex && isLinkableInProject())
+  {
+    Doxygen::searchIndex->setCurrentDoc(qualifiedName(),getOutputFileBase(),anchor());
+    Doxygen::searchIndex->addWord(localName(),TRUE);
+    Doxygen::searchIndex->addWord(qualifiedName(),FALSE);
+  }
 
   QCString cname  = d->name();
   QCString cfname = getOutputFileBase();

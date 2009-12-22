@@ -592,7 +592,9 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
     case DocSimpleSect::User:
       m_t << "\\begin{DoxyParagraph}{";
       break;
-    case DocSimpleSect::Rcs: break;
+    case DocSimpleSect::Rcs: 
+      m_t << "\\begin{DoxyParagraph}{";
+      break;
     case DocSimpleSect::Unknown:  break;
   }
 
@@ -655,6 +657,9 @@ void LatexDocVisitor::visitPost(DocSimpleSect *s)
       m_t << "\n\\end{DoxyAttention}\n";
       break;
     case DocSimpleSect::User:
+      m_t << "\n\\end{DoxyParagraph}\n";
+      break;
+    case DocSimpleSect::Rcs: 
       m_t << "\n\\end{DoxyParagraph}\n";
       break;
     default:

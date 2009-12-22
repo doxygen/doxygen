@@ -81,13 +81,16 @@ void countRelatedPages(int &docPages,int &indexPages);
 
 void countDataStructures()
 {
-  annotatedClasses           = countAnnotatedClasses();
-  hierarchyClasses           = countClassHierarchy();
-  countFiles(documentedHtmlFiles,documentedFiles);
-  countRelatedPages(documentedPages,indexedPages);
-  documentedGroups           = countGroups();
-  documentedNamespaces       = countNamespaces();
-  documentedDirs             = countDirs();
+  annotatedClasses           = countAnnotatedClasses(); // "classes" + "annotated"
+  hierarchyClasses           = countClassHierarchy();   // "hierarchy"
+  countFiles(documentedHtmlFiles,documentedFiles);      // "files"
+  countRelatedPages(documentedPages,indexedPages);      // "pages"
+  documentedGroups           = countGroups();           // "modules"
+  documentedNamespaces       = countNamespaces();       // "namespaces"
+  documentedDirs             = countDirs();             // "dirs"
+  // "globals"
+  // "namespacemembers"
+  // "functions"
 }
 
 static void startIndexHierarchy(OutputList &ol,int level)
@@ -1573,8 +1576,8 @@ void addClassMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int charCode = n.at(index);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)n.at(index);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -1654,8 +1657,8 @@ void addNamespaceMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int charCode = n.at(index);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)n.at(index);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       g_namespaceIndexLetterUsed[NMHL_All][letter].append(md);
@@ -1713,8 +1716,8 @@ void addFileMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    int charCode = n.at(index);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)n.at(index);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       g_fileIndexLetterUsed[FMHL_All][letter].append(md);
@@ -2202,7 +2205,10 @@ void writeNamespaceMemberIndex(OutputList &ol)
 class SearchIndexList : public SDict< QList<Definition> >
 {
   public:
-    SearchIndexList(int size=17) : SDict< QList<Definition> >(size,FALSE) {}
+    SearchIndexList(int size=17) : SDict< QList<Definition> >(size,FALSE) 
+    {
+      setAutoDelete(TRUE);
+    }
    ~SearchIndexList() {}
     void append(Definition *d)
     {
@@ -2240,8 +2246,8 @@ static void addMemberToSearchIndex(
       cd->templateMaster()==0)
   {
     QCString n = md->name();
-    int charCode = n.at(0);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)n.at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       bool isFriendToHide = hideFriendCompounds &&
@@ -2303,8 +2309,8 @@ static void addMemberToSearchIndex(
      )
   {
     QCString n = md->name();
-    int charCode = n.at(0);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)n.at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (!n.isEmpty()) 
     {
       symbols[SEARCH_INDEX_ALL][letter].append(md);
@@ -2408,7 +2414,7 @@ class SearchIndexCategoryMapping
     QString categoryLabel[NUM_SEARCH_INDICES];
 };
 
-void writeSearchIndex()
+void writeJavascriptSearchIndex()
 {
   if (!Config_getBool("GENERATE_HTML")) return;
   static bool treeView = Config_getBool("GENERATE_TREEVIEW");
@@ -2417,8 +2423,8 @@ void writeSearchIndex()
   ClassDef *cd;
   for (;(cd=cli.current());++cli)
   {
-    int charCode = cd->localName().at(0);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)cd->localName().at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (cd->isLinkable() && isId(letter))
     {
       g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(cd);
@@ -2431,8 +2437,8 @@ void writeSearchIndex()
   NamespaceDef *nd;
   for (;(nd=nli.current());++nli)
   {
-    int charCode = nd->name().at(0);
-    int letter = charCode<128 ? tolower(charCode) : charCode;
+    uchar charCode = (uchar)nd->name().at(0);
+    uint letter = charCode<128 ? tolower(charCode) : charCode;
     if (nd->isLinkable() && isId(letter))
     {
       g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(nd);
@@ -2449,8 +2455,8 @@ void writeSearchIndex()
     FileDef *fd;
     for (;(fd=fni.current());++fni)
     {
-      int charCode = fd->name().at(0);
-      int letter = charCode<128 ? tolower(charCode) : charCode;
+      uchar charCode = (uchar)fd->name().at(0);
+      uint letter = charCode<128 ? tolower(charCode) : charCode;
       if (fd->isLinkable() && isId(letter))
       {
         g_searchIndexSymbols[SEARCH_INDEX_ALL][letter].append(fd);
@@ -2503,17 +2509,7 @@ void writeSearchIndex()
     }
   }
 
-  //ol.pushGeneratorState();
-  //ol.disableAllBut(OutputGenerator::Html);
-  QCString htmlDirName = Config_getString("HTML_OUTPUT")+"/search";
-  QDir htmlDir(htmlDirName);
-  if (!htmlDir.exists() && !htmlDir.mkdir(htmlDirName))
-  {
-    err("Could not create search results directory '%s/search'\n",htmlDirName.data());
-    return;
-  }
-
-  HtmlGenerator::writeSearchData(htmlDirName);
+  QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
 
   for (i=0;i<NUM_SEARCH_INDICES;i++)
   {
@@ -2523,7 +2519,7 @@ void writeSearchIndex()
       {
         QCString fileName;
         fileName.sprintf("/%s_%02x.html",g_searchIndexName[i],p);
-        fileName.prepend(htmlDirName);
+        fileName.prepend(searchDirName);
         QFile outFile(fileName);
         if (outFile.open(IO_WriteOnly))
         {
@@ -2761,7 +2757,7 @@ void writeSearchIndex()
   //ol.popGeneratorState();
 
   {
-    QFile f(htmlDirName+"/search.js");
+    QFile f(searchDirName+"/search.js");
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
@@ -2811,15 +2807,7 @@ void writeSearchIndex()
     }
   }
   {
-    QFile f(htmlDirName+"/search.css");
-    if (f.open(IO_WriteOnly))
-    {
-      QTextStream t(&f);
-      t << search_styleSheet;
-    }
-  }
-  {
-    QFile f(htmlDirName+"/nomatches.html");
+    QFile f(searchDirName+"/nomatches.html");
     if (f.open(IO_WriteOnly))
     {
       QTextStream t(&f);
@@ -2839,6 +2827,19 @@ void writeSearchIndex()
       t << "</html>" << endl;
     }
   }
+  Doxygen::indexList.addStyleSheetFile("search/search.js");
+}
+
+void writeSearchStyleSheet()
+{
+  QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
+  QFile f(searchDirName+"/search.css");
+  if (f.open(IO_WriteOnly))
+  {
+    QTextStream t(&f);
+    t << search_styleSheet;
+  }
+  Doxygen::indexList.addStyleSheetFile("search/search.css");
 }
 
 void writeSearchCategories(QTextStream &t)

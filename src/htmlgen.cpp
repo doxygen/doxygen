@@ -48,11 +48,9 @@ static const char defaultStyleSheet[] =
 #include "doxygen_css.h"
 ;
 
-#if 0 // old PHP based search engine
 static const char search_script[]=
 #include "search_php.h"
 ;
-#endif
 
 static QCString g_header;
 static QCString g_footer;
@@ -349,7 +347,7 @@ static unsigned char tab_r_gif[] = {
 };
 static unsigned int tab_r_gif_len = 2585;
 
-static unsigned char search_png[] = {
+static unsigned char search_sel_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
   0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x10,
   0x08, 0x02, 0x00, 0x00, 0x00, 0x99, 0x7a, 0xc8, 0x4c, 0x00, 0x00, 0x01,
@@ -395,7 +393,53 @@ static unsigned char search_png[] = {
   0x56, 0xfa, 0x1b, 0x21, 0x36, 0x05, 0xd3, 0x4d, 0xe6, 0x17, 0x7f, 0x00,
   0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-static unsigned int search_png_len = 527;
+static unsigned int search_sel_png_len = 527;
+
+unsigned char search_png[] = {
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x10,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0xc9, 0x56, 0x25, 0x04, 0x00, 0x00, 0x01,
+  0x9e, 0x49, 0x44, 0x41, 0x54, 0x28, 0x15, 0xa5, 0x52, 0xcd, 0xca, 0x41,
+  0x51, 0x14, 0x5d, 0xdf, 0x75, 0xe5, 0x96, 0xa2, 0x64, 0x2e, 0x6e, 0x86,
+  0x64, 0x24, 0x79, 0x07, 0xc9, 0x0b, 0x18, 0x1b, 0x9a, 0x18, 0x78, 0x08,
+  0x33, 0x03, 0x6f, 0x21, 0x19, 0x31, 0x62, 0x22, 0x49, 0x28, 0x26, 0xa2,
+  0x0c, 0x0c, 0x4c, 0xa4, 0x28, 0x7f, 0x85, 0xed, 0xee, 0x5d, 0xe7, 0x84,
+  0x81, 0xfa, 0xbe, 0x6f, 0x0f, 0xee, 0x3d, 0xad, 0xbd, 0xd6, 0xda, 0xfb,
+  0xec, 0x7d, 0x80, 0x7f, 0xc4, 0xcf, 0xab, 0xb6, 0xdf, 0xef, 0xd3, 0x64,
+  0x32, 0xc1, 0x62, 0xb1, 0x10, 0x38, 0x1a, 0x8d, 0x22, 0x91, 0x48, 0x20,
+  0x95, 0x4a, 0xbd, 0xf1, 0x94, 0x46, 0x83, 0x8d, 0x46, 0x83, 0xea, 0xf5,
+  0x3a, 0xee, 0xf7, 0x3b, 0x1e, 0x8f, 0x87, 0xe4, 0x0d, 0xc3, 0x80, 0xcb,
+  0xe5, 0x42, 0x2e, 0x97, 0x43, 0x36, 0x9b, 0xd5, 0xdc, 0x37, 0x71, 0xaf,
+  0xd7, 0xa3, 0x5a, 0xad, 0x06, 0xaf, 0xd7, 0x8b, 0x64, 0x32, 0x89, 0x58,
+  0x2c, 0x26, 0xf9, 0xe9, 0x74, 0x8a, 0xc1, 0x60, 0x80, 0xe3, 0xf1, 0x88,
+  0x42, 0xa1, 0x80, 0x74, 0x3a, 0xfd, 0x66, 0x60, 0x32, 0x6b, 0x38, 0x1c,
+  0xe2, 0x76, 0xbb, 0x71, 0x7b, 0xc8, 0x64, 0x32, 0x08, 0x04, 0x02, 0x42,
+  0xda, 0xed, 0x76, 0xc4, 0xd5, 0x5b, 0xad, 0x96, 0x70, 0x54, 0x45, 0xf5,
+  0x37, 0xf8, 0x30, 0x9f, 0xcf, 0x41, 0x44, 0x52, 0x55, 0x09, 0x19, 0xe7,
+  0x33, 0x77, 0xc2, 0x39, 0xe6, 0x7c, 0x86, 0x88, 0xd5, 0x1d, 0x3d, 0x1e,
+  0xcf, 0x67, 0x1e, 0x96, 0x65, 0x09, 0xa6, 0x38, 0xaf, 0x04, 0x11, 0x47,
+  0x22, 0x11, 0xc1, 0xc6, 0xe3, 0x31, 0x0f, 0x8b, 0x14, 0x81, 0xcf, 0x8c,
+  0x71, 0xd8, 0xb6, 0xad, 0x60, 0xfd, 0x97, 0x3b, 0xc7, 0xe3, 0x71, 0x8c,
+  0x46, 0x23, 0x74, 0xbb, 0x5d, 0x98, 0xa6, 0x89, 0xcd, 0x66, 0xe3, 0x74,
+  0x4a, 0x68, 0x36, 0x9b, 0xe8, 0x74, 0x3a, 0x42, 0xe6, 0xb5, 0x7d, 0x86,
+  0x0c, 0x66, 0xbf, 0xdf, 0xcb, 0x9a, 0xda, 0xed, 0xb6, 0x88, 0x79, 0x3d,
+  0x1c, 0xbc, 0x36, 0x1e, 0x24, 0x1b, 0x85, 0x42, 0x21, 0x94, 0xcb, 0x65,
+  0xf8, 0xfd, 0x7e, 0x3d, 0x71, 0xa9, 0xcc, 0x00, 0x4f, 0x36, 0x18, 0x0c,
+  0x62, 0x36, 0x9b, 0x61, 0xb5, 0x5a, 0x89, 0x38, 0x1c, 0x0e, 0x83, 0xaf,
+  0xe4, 0xac, 0x12, 0xeb, 0xf5, 0x1a, 0x95, 0x4a, 0x05, 0x87, 0xc3, 0x81,
+  0x7c, 0x3e, 0x9f, 0x18, 0x68, 0x17, 0x66, 0x73, 0x07, 0xd7, 0xeb, 0x55,
+  0x57, 0x73, 0xbb, 0xdd, 0xd2, 0x89, 0x63, 0x8c, 0x6a, 0xb5, 0x8a, 0xed,
+  0x76, 0x0b, 0x36, 0x2c, 0x95, 0x4a, 0x50, 0x06, 0x52, 0xe5, 0xdb, 0xe7,
+  0x74, 0x3a, 0xd1, 0x72, 0xb9, 0xa4, 0x62, 0xb1, 0x48, 0xf9, 0x7c, 0x9e,
+  0x9c, 0x77, 0xa1, 0x87, 0xfa, 0x4d, 0xa7, 0x73, 0xe7, 0xf3, 0x59, 0x0c,
+  0x9c, 0x07, 0x43, 0xce, 0x8b, 0xfb, 0x9d, 0x98, 0x5d, 0x2e, 0x97, 0xcb,
+  0xdf, 0x84, 0xba, 0x85, 0x97, 0xc3, 0x13, 0x25, 0xab, 0xcb, 0x08, 0x4d,
+  0x39, 0xd0, 0x92, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+  0x42, 0x60, 0x82
+};
+unsigned int search_png_len = 471;
+
+
 
 static unsigned char close_png[] = {
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -574,16 +618,25 @@ static void writeTabData(const char *dir)
   writeImgData(dir,tab_data);
 }
 
-static img_data_item search_data[] =
+static img_data_item search_client_data[] =
+{
+  { "search.png",       search_sel_png,   search_sel_png_len },
+  { "close.png",        close_png,        close_png_len },
+  { 0, 0, 0 }
+};
+
+static img_data_item search_server_data[] =
 {
   { "search.png",       search_png,       search_png_len },
-  { "close.png",        close_png,        close_png_len },
   { 0, 0, 0 }
 };
 
 void HtmlGenerator::writeSearchData(const char *dir)
 {
-  writeImgData(dir,search_data);
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  writeImgData(dir,serverBasedSearch ? search_server_data : search_client_data);
+  Doxygen::indexList.addImageFile("search/close.png");
+  Doxygen::indexList.addImageFile("search/search.png");
 }
 
 
@@ -654,7 +707,8 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
 }
 
 static void writeDefaultHeaderFile(QTextStream &t, const char *title,
-                                   const char *relPath,bool usePathCmd)
+                                   const char *relPath,bool usePathCmd,
+                                   bool searchPage=FALSE)
 {
   QString relPathStr;
   if (usePathCmd) 
@@ -664,6 +718,7 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
 
   static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
   static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   if (searchEngine && !generateTreeView)
   {
     t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
@@ -701,13 +756,22 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
   
   t << "\" rel=\"stylesheet\" type=\"text/css\"/>\n";
   t << "</head>\n";
-  if (searchEngine && !generateTreeView)
+  if (searchEngine && !generateTreeView && !serverBasedSearch)
   {
+    // for the javascript based search select the default filter
     t << "<body onload='searchBox.OnSelectItem(0);'>\n";
   }
   else
   {
-    t << "<body>\n";
+    if (searchPage) // keep focus on search result's box when loading 
+                    // search results page
+    {
+      t << "<body onload='searchBox.DOMSearchField().focus()'>\n";
+    }
+    else
+    {
+      t << "<body>\n";
+    }
   }
 }
 
@@ -854,19 +918,28 @@ void HtmlGenerator::writeSearchFooter(QTextStream &t,const QCString &relPath)
 static void writePageFooter(QTextStream &t,const QCString &lastTitle,
                             const QCString relPath)
 {
-  static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-  static bool searchEngine = Config_getBool("SEARCHENGINE");
-  if (searchEngine && !generateTreeView)
+  static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
+  static bool searchEngine      = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  static bool timeStamp         = Config_getBool("HTML_TIMESTAMP");
+  if (searchEngine && !generateTreeView && !serverBasedSearch)
   {
     HtmlGenerator::writeSearchFooter(t,relPath);
   }
   if (g_footer.isEmpty())
   {
     t << "<hr size=\"1\"/><address style=\"text-align: right;\"><small>";
-    t << theTranslator->trGeneratedAt(
-        dateToString(TRUE),
-        Config_getString("PROJECT_NAME")
-        );
+    if (timeStamp)
+    {
+      t << theTranslator->trGeneratedAt(
+          dateToString(TRUE),
+          Config_getString("PROJECT_NAME")
+         );
+    }
+    else
+    {
+      t << theTranslator->trGeneratedBy();
+    }
     t << "&nbsp;" << endl << "<a href=\"http://www.doxygen.org/index.html\">";
     t << endl << "<img class=\"footer\" src=\"" << relPath << "doxygen.png\" alt=\"doxygen\"/>"
       << "</a> " << versionString << " ";
@@ -901,7 +974,7 @@ void HtmlGenerator::endFile()
 
 void HtmlGenerator::startProjectNumber()
 {
-  t << "<h3>";
+  t << "<h3 class=\"version\">";
 }
 
 void HtmlGenerator::endProjectNumber()
@@ -1252,7 +1325,7 @@ void HtmlGenerator::codify(const char *str)
                    break;
         case '&':  t << "&amp;"; col++; 
                    break;
-        case '\'': t << "&apos;"; col++;
+        case '\'': t << "&#39;"; col++; // &apos; is not valid HTML
                    break;
         case '"':  t << "&quot;"; col++;
                    break;
@@ -1296,7 +1369,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   t << "<div class=\"dynsection\">" << endl;
   t << " <div class=\"center\">" << endl;
   t << "  <img src=\"";
-  t << relPath << fileName << ".gif\" usemap=\"#";
+  t << relPath << fileName << ".png\" usemap=\"#";
   docify(name);
   t << "_map\" alt=\"\"/>" << endl;
   t << "  <map id=\"";
@@ -2019,10 +2092,13 @@ static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
           endQuickIndexList(t,TRUE);
         }
 #endif
-        static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
-        static bool searchEngine = Config_getBool("SEARCHENGINE");
+        static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
+        static bool searchEngine      = Config_getBool("SEARCHENGINE");
+        static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
         if (searchEngine && !generateTreeView)
         {
+          if (!serverBasedSearch) // pure client side search
+          {
             t << "      <li>\n";
             t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
             t << "        <img id=\"MSearchSelect\" src=\"" << relPath << "search/search.png\"\n";
@@ -2038,8 +2114,30 @@ static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
               << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"" << relPath << "search/close.png\" alt=\"\"/></a>\n";
             t << "        </div>\n";
             t << "      </li>\n";
+          }
+          else if (!generateTreeView) // server based search
+          {
+            t << "      <li>\n";
+            t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+            t << "          <form id=\"FSearchBox\" action=\"" << relPath << "search.php\" method=\"get\">\n";
+            t << "            <img id=\"MSearchSelect\" src=\"" << relPath << "search/search.png\" alt=\"\"/>\n";
+            if (!highlightSearch)
+            {
+              t << "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\""
+                << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
+              t << "                   onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
+              t << "                   onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
+              t << "          </form>\n";
+              t << "        </div>\n";
+              t << "      </li>\n";
+            }
+          }
         }
-        endQuickIndexList(t,TRUE);
+        if (!highlightSearch) // on the search page the page will be ended by the
+                              // page itself
+        {
+          endQuickIndexList(t,TRUE);
+        }
       }
       else // normal case
       {
@@ -2129,85 +2227,137 @@ void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli)
   writeDefaultQuickLinks(t,compact,hli,relPath);
 }
 
-#if 0 // old PHP based search results page
+// PHP based search script
 void HtmlGenerator::writeSearchPage()
 {
-  if (Config_getBool("SEARCHENGINE") && Config_getBool("GENERATE_HTML"))
+  QCString fileName = Config_getString("HTML_OUTPUT")+"/search.php";
+  QFile f(fileName);
+  if (f.open(IO_WriteOnly))
   {
-    QCString fileName = Config_getString("HTML_OUTPUT")+"/search.php";
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly))
+    QTextStream t(&f);
+    t.setEncoding(QTextStream::UnicodeUTF8);
+    if (g_header.isEmpty()) 
     {
-      QTextStream t(&f);
-      t.setEncoding(QTextStream::UnicodeUTF8);
-      if (g_header.isEmpty()) 
-      {
-        writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE);
-      }
-      else
-      {
-        t << substituteKeywords(g_header,"Search","");
-      }
-      t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
-        << versionString << " -->" << endl;
-      if (!Config_getBool("DISABLE_INDEX")) 
-      { 
-        writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
-      }
-      else
-      {
-        t << "&nbsp;\n<div class=\"qindex\">\n";
-        t << "  <form class=\"search\" action=\"search.php\" "
-          << "method=\"get\">\n";
-      }
-
-      t << "\n<?php\n\n";
-      t << "function search_results()\n";
-      t << "{\n";
-      t << "  return \"" << theTranslator->trSearchResultsTitle() << "\";\n";
-      t << "}\n";
-      t << "\n";
-      t << "function matches_text($num)\n";
-      t << "{\n";
-      t << "  if ($num==0)\n";
-      t << "  {\n";
-      t << "    return \"" << theTranslator->trSearchResults(0) << "\";\n";
-      t << "  }\n";
-      t << "  else if ($num==1)\n";
-      t << "  {\n";
-      t << "    return \"" << theTranslator->trSearchResults(1) << "\";\n";
-      t << "  }\n";
-      t << "  else // $num>1\n";
-      t << "  {\n";
-      t << "    return \"" << theTranslator->trSearchResults(2) << "\";\n";
-      t << "  }\n";
-      t << "}\n";
-      t << "\n";
-      t << "function report_matches()\n";
-      t << "{\n";
-      t << "  return \"" << theTranslator->trSearchMatches() << " \";\n";
-      t << "}\n";
-      t << "function end_form($value)\n";
-      t << "{\n";
-      t << "  echo \"" 
-        << "            <td><input type=\\\"text\\\" name=\\\"query\\\" value=\\\"$value\\\" size=\\\"20\\\" accesskey=\\\"s\\\"/></td>\\n"
-        << "          </tr>\\n"
-        << "        </table>\\n"
-        << "      </form>\\n"
-        << "    </li>\\n"
-        << "  </ul>\\n"
-        << "</div>\\n"
-        << "\";\n";
-      t << "}\n";
-      t << "\n";
-      t << search_script;
-      t << "\n";
-      t << "?>\n";
-      writePageFooter(t,"Search","");
+      writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE,TRUE);
     }
+    else
+    {
+      t << substituteKeywords(g_header,"Search","");
+    }
+
+    t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen " 
+      << versionString << " -->" << endl;
+    static bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
+    static bool searchEngine = Config_getBool("SEARCHENGINE");
+    if (searchEngine && !generateTreeView)
+    {
+      t << "<script type=\"text/javascript\"><!--\n";
+      t << "var searchBox = new SearchBox(\"searchBox\", \""
+        << "search\",false,'" << theTranslator->trSearch() << "');\n";
+      t << "--></script>\n";
+    }
+    if (!Config_getBool("DISABLE_INDEX")) 
+    { 
+      writeDefaultQuickLinks(t,TRUE,HLI_Search,"");
+    }
+    else
+    {
+      t << "&nbsp;\n<div class=\"qindex\">\n";
+      t << "  <form class=\"search\" action=\"search.php\" "
+        << "method=\"get\">\n";
+    }
+
+    t << "\n<script language=\"php\">\n\n";
+    t << "function search_results()\n";
+    t << "{\n";
+    t << "  return \"" << theTranslator->trSearchResultsTitle() << "\";\n";
+    t << "}\n";
+    t << "\n";
+    t << "function matches_text($num)\n";
+    t << "{\n";
+    t << "  if ($num==0)\n";
+    t << "  {\n";
+    t << "    return \"" << theTranslator->trSearchResults(0) << "\";\n";
+    t << "  }\n";
+    t << "  else if ($num==1)\n";
+    t << "  {\n";
+    t << "    return \"" << theTranslator->trSearchResults(1) << "\";\n";
+    t << "  }\n";
+    t << "  else // $num>1\n";
+    t << "  {\n";
+    t << "    return \"" << theTranslator->trSearchResults(2) << "\";\n";
+    t << "  }\n";
+    t << "}\n";
+    t << "\n";
+    t << "function report_matches()\n";
+    t << "{\n";
+    t << "  return \"" << theTranslator->trSearchMatches() << " \";\n";
+    t << "}\n";
+    t << "function end_form($value)\n";
+    t << "{\n";
+    if (!generateTreeView)
+    {
+      t << "  echo \"" 
+        << "            <input type=\\\"text\\\" id=\\\"MSearchField\\\" name=\\\"query\\\" value=\\\"$value\\\" size=\\\"20\\\" accesskey=\\\"S\\\" "
+        << "onfocus=\\\"searchBox.OnSearchFieldFocus(true)\\\" "
+        << "onblur=\\\"searchBox.OnSearchFieldFocus(false)\\\"/>\\n"
+        << "          </form>\\n"
+        << "        </div>\\n"
+        << "      </li>\\n"
+        << "    </ul>\\n"
+        << "  </div>\\n"
+        << "\";\n";
+    }
+    else
+    {
+      t << "  echo \"" 
+        << "    </ul>\\n"
+        << "  </div>\\n"
+        << "\";\n";
+    }
+    t << "}\n";
+    t << "\n";
+    t << search_script;
+    t << "\n";
+    t << "</script>\n";
+    writePageFooter(t,"Search","");
+  }
+  QCString scriptName = Config_getString("HTML_OUTPUT")+"/search/search.js";
+  QFile sf(scriptName);
+  if (sf.open(IO_WriteOnly))
+  {
+    QTextStream t(&sf);
+    t << "function SearchBox(name, resultsPath, inFrame, label)\n";
+    t << "{\n";
+    t << "  this.searchLabel = label;\n";
+    t << "  this.DOMSearchField = function()\n";
+    t << "  {  return document.getElementById(\"MSearchField\");  }\n";
+    t << "  this.DOMSearchBox = function()\n";
+    t << "  {  return document.getElementById(\"MSearchBox\");  }\n";
+    t << "  this.OnSearchFieldFocus = function(isActive)\n";
+    t << "  {\n";
+    t << "    if (isActive)\n";
+    t << "    {\n";
+    t << "      this.DOMSearchBox().className = 'MSearchBoxActive';\n";
+    t << "      var searchField = this.DOMSearchField();\n";
+    t << "      if (searchField.value == this.searchLabel) \n";
+    t << "      {\n";
+    t << "        searchField.value = '';\n";
+    t << "      }\n";
+    t << "    }\n";
+    t << "    else\n";
+    t << "    {\n";
+    t << "      this.DOMSearchBox().className = 'MSearchBoxInactive';\n";
+    t << "      this.DOMSearchField().value   = this.searchLabel;\n";
+    t << "    }\n";
+    t << "  }\n";
+    t << "}\n";
+  }
+  else
+  {
+     err("Failed to open file '%s' for writing...\n",scriptName.data());
   }
 }
-#endif
 
 void HtmlGenerator::generateSectionImages()
 {

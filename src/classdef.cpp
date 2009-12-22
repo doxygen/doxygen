@@ -1444,11 +1444,11 @@ void ClassDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  //if (Config_getBool("SEARCHENGINE"))
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
-  //  Doxygen::searchIndex->addWord(localName(),TRUE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(pageTitle,getOutputFileBase());
+    Doxygen::searchIndex->addWord(localName(),TRUE);
+  }
   bool exampleFlag=hasExamples();
 
   //---------------------------------------- start flexible part -------------------------------

@@ -473,6 +473,7 @@ void PerlModDocVisitor::singleItem(const char *name)
 
 void PerlModDocVisitor::openSubBlock(const char *s)
 {
+  leaveText();
   m_output.openList(s);
   m_textblockstart = true;
 }

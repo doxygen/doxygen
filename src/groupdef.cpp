@@ -812,11 +812,10 @@ void GroupDef::writeDocumentation(OutputList &ol)
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
 
-#if 0
-  if (Config_getBool("SEARCHENGINE"))
+  if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(title,getOutputFileBase());
-    static QRegExp we("[a-zA-Z_][a-zA-Z_0-9]*");
+    static QRegExp we("[a-zA-Z_][-a-zA-Z_0-9]*");
     int i=0,p=0,l=0;
     while ((i=we.match(title,p,&l))!=-1) // foreach word in the title
     {
@@ -824,7 +823,8 @@ void GroupDef::writeDocumentation(OutputList &ol)
       p=i+l;
     }
   }
-#endif
+
+  Doxygen::indexList.addIndexItem(this,0,0,title);
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

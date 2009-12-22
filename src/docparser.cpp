@@ -1551,10 +1551,10 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
       m_parent(parent), m_word(word) 
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
-  //if (!g_searchUrl.isEmpty())
-  //{
-  //  Doxygen::searchIndex->addWord(word,FALSE);
-  //}
+  if (Doxygen::searchIndex && !g_searchUrl.isEmpty())
+  {
+    Doxygen::searchIndex->addWord(word,FALSE);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -1567,10 +1567,10 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
       m_tooltip(tooltip)
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
-  //if (!g_searchUrl.isEmpty())
-  //{
-  //  Doxygen::searchIndex->addWord(word,FALSE);
-  //}
+  if (Doxygen::searchIndex && !g_searchUrl.isEmpty())
+  {
+    Doxygen::searchIndex->addWord(word,FALSE);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -6082,7 +6082,7 @@ void DocRoot::parse()
 
 DocNode *validatingParseDoc(const char *fileName,int startLine,
                             Definition *ctx,MemberDef *md,
-                            const char *input,bool /*indexWords*/,
+                            const char *input,bool indexWords,
                             bool isExample, const char *exampleName,
                             bool singleLine, bool linkFromIndex)
 {
@@ -6094,7 +6094,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   //g_token = new TokenInfo;
 
   // store parser state so we can re-enter this function if needed
-  //bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
+  bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   docParserPushContext();
 
   if (ctx &&
@@ -6122,8 +6122,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   g_scope = ctx;
   //printf("g_context=%s\n",g_context.data());
 
-#if 0 // needed for PHP based search engine, now obsolete
-  if (indexWords && md && Config_getBool("SEARCHENGINE"))
+  if (indexWords && md && Doxygen::searchIndex)
   {
     g_searchUrl=md->getOutputFileBase();
     Doxygen::searchIndex->setCurrentDoc(
@@ -6131,7 +6130,7 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
         g_searchUrl,
         md->anchor());
   }
-  else if (indexWords && ctx && Config_getBool("SEARCHENGINE"))
+  else if (indexWords && ctx && Doxygen::searchIndex)
   {
     g_searchUrl=ctx->getOutputFileBase();
     QCString name = ctx->qualifiedName();
@@ -6198,7 +6197,6 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   {
     g_searchUrl="";
   }
-#endif
 
   g_fileName = fileName;
   g_relPath = (!linkFromIndex && ctx) ? 
@@ -6320,18 +6318,20 @@ void docFindSections(const char *input,
 
 void initDocParser()
 {
-//  if (Config_getBool("SEARCHENGINE"))
-//  {
-//    Doxygen::searchIndex = new SearchIndex;
-//  }
-//  else
-//  {
-//    Doxygen::searchIndex = 0;
-//  }
+  static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  if (searchEngine && serverBasedSearch)
+  {
+    Doxygen::searchIndex = new SearchIndex;
+  }
+  else // no search engine or pure javascript based search function
+  {
+    Doxygen::searchIndex = 0;
+  }
 }
 
 void finializeDocParser()
 {
-//  delete Doxygen::searchIndex;
+  delete Doxygen::searchIndex;
 }
 

@@ -44,6 +44,7 @@ RefList::~RefList()
 {
   delete m_dictIterator;
   delete m_dict;
+  delete m_itemList;
 }
 
 /*! Adds a new item to the list.

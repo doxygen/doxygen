@@ -267,7 +267,8 @@ void addFileMemberNameToIndex(MemberDef *md);
 void addNamespaceMemberNameToIndex(MemberDef *md);
 
 // search engine
-void writeSearchIndex();
+void writeJavascriptSearchIndex();
 void writeSearchCategories(QTextStream &t);
+void writeSearchStyleSheet();
 
 #endif

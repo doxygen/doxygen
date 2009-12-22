@@ -58,7 +58,7 @@ class SearchIndex
   public:
     SearchIndex();
     void setCurrentDoc(const char *name,const char *baseName,const char *anchor=0);
-    void addWord(const char *word,bool hiPriority);
+    void addWord(const char *word,bool hiPriority,bool recurse=FALSE);
     void write(const char *file);
   private:
     QDict<IndexWord> m_words;

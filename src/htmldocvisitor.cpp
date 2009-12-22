@@ -490,7 +490,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
   m_t << "\"";
   /// @todo cache image dimensions on formula generation and give height/width
   /// for faster preloading and better rendering of the page
-  m_t << " src=\"" << f->relPath() << f->name() << ".gif\"/>";
+  m_t << " src=\"" << f->relPath() << f->name() << ".png\"/>";
   if (bDisplay)
   {
     m_t << endl << "</p>" << endl;

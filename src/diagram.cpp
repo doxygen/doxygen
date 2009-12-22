@@ -1289,7 +1289,7 @@ void ClassDiagram::writeImage(QTextStream &t,const char *path,
   base->drawConnectors(t,&image,TRUE,TRUE,baseRows,superRows,cellWidth,cellHeight);
   super->drawConnectors(t,&image,FALSE,TRUE,baseRows,superRows,cellWidth,cellHeight);
 
-#define IMAGE_EXT ".gif"
+#define IMAGE_EXT ".png"
   image.save((QCString)path+"/"+fileName+IMAGE_EXT);
   Doxygen::indexList.addImageFile(QCString(fileName)+IMAGE_EXT);
   

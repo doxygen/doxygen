@@ -281,24 +281,18 @@ static int countLines()
 
 static void setCurrentDoc(const QCString &name,const QCString &base,const QCString &anchor="")
 {
-  (void)name;
-  (void)base;
-  (void)anchor;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->setCurrentDoc(name,base,anchor);
+  }
 }
 
 static void addToSearchIndex(const char *text)
 {
-  (void)text;
-  //static bool searchEngineEnabled=Config_getBool("SEARCHENGINE");
-  //if (searchEngineEnabled)
-  //{
-  //  Doxygen::searchIndex->addWord(text,FALSE);
-  //}
+  if (Doxygen::searchIndex)
+  {
+    Doxygen::searchIndex->addWord(text,FALSE);
+  }
 }
 
 
@@ -406,6 +400,18 @@ static void endCodeLine()
   g_code->endCodeLine();
 }
 
+static void nextCodeLine()
+{
+  const char *fc = g_currentFontClass;
+  endCodeLine();
+  if (g_yyLineNr<g_inputLines) 
+  {
+    g_currentFontClass = fc;
+    startCodeLine();
+  }
+}
+
+
 /*! writes a link to a fragment \a text that may span multiple lines, inserting
  * line numbers for each line. If \a text contains newlines, the link will be 
  * split into multiple links with the same destination, one for each line.
@@ -428,11 +434,7 @@ static void writeMultiLineCodeLink(CodeOutputInterface &ol,
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
       ol.writeCodeLink(ref,file,anchor,sp,tooltip);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-	startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -459,12 +461,7 @@ static void codifyLines(char *text)
       g_yyLineNr++;
       *(p-1)='\0';
       g_code->codify(sp);
-      endCodeLine();
-      if (g_yyLineNr<g_inputLines) 
-      {
-        // Re-enable sometime
-	startCodeLine();
-      }
+      nextCodeLine();
     }
     else
     {
@@ -1443,8 +1440,7 @@ void parsePythonCode(CodeOutputInterface &od,const char *className,
 
   if (g_needsTermination)
   {
-    endFontClass();
-    g_code->endCodeLine();
+    endCodeLine();
   }
   return;
 }

@@ -2267,12 +2267,6 @@ QCString dateToString(bool includeTime)
         d.year());
     return result;
   }
-  //QDate date=dt.date();
-  //QTime time=dt.time();
-  //QCString dtString;
-  //dtString.sprintf("%02d:%02d, %04d/%02d/%02d",
-  //    time.hour(),time.minute(),date.year(),date.month(),date.day());
-  //return dtString;
 }
 
 QCString yearToString()
@@ -4689,7 +4683,7 @@ QCString substituteKeywords(const QCString &s,const char *title,const QCString &
 int getPrefixIndex(const QCString &name)
 {
   if (name.isEmpty()) return 0;
-  QStrList &sl = Config_getList("IGNORE_PREFIX");
+  static QStrList &sl = Config_getList("IGNORE_PREFIX");
   char *s = sl.first();
   while (s)
   {
@@ -6935,6 +6929,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
     portable_pclose(f);
   }
 
+  int start=0;
   if (inBuf.size()>=2 &&
       ((inBuf.at(0)==-1 && inBuf.at(1)==-2) || // Litte endian BOM
        (inBuf.at(0)==-2 && inBuf.at(1)==-1)    // big endian BOM
@@ -6943,6 +6938,15 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
   {
     transcodeCharacterBuffer(inBuf,inBuf.curPos(),
         "UCS-2","UTF-8");
+  }
+  else if (inBuf.size()>=3 &&
+           (uchar)inBuf.at(0)==0xEF &&
+           (uchar)inBuf.at(1)==0xBB &&
+           (uchar)inBuf.at(2)==0xBF
+     )
+  {
+    // UTF-8 encoded file
+    inBuf.dropFromStart(3); // remove UTF-8 BOM: no translation needed
   }
   else // transcode according to the INPUT_ENCODING setting
   {
@@ -6954,8 +6958,8 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
   inBuf.addChar('\n'); /* to prevent problems under Windows ? */
 
   // and translate CR's
-  size=inBuf.curPos();
-  int newSize=filterCRLF(inBuf.data(),size);
+  size=inBuf.curPos()-start;
+  int newSize=filterCRLF(inBuf.data()+start,size);
   //printf("filter char at %p size=%d newSize=%d\n",dest.data()+oldPos,size,newSize);
   if (newSize!=size) // we removed chars
   {

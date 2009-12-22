@@ -1193,11 +1193,11 @@ void Config::check()
   {
     dotImageFormat = "png";
   }
-  else if (dotImageFormat!="gif" && dotImageFormat!="png" && dotImageFormat!="jpg")
-  {
-    config_err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
-    dotImageFormat = "png";
-  }
+  //else if (dotImageFormat!="gif" && dotImageFormat!="png" && dotImageFormat!="jpg")
+  //{
+  //  config_err("Invalid value for DOT_IMAGE_FORMAT: `%s'. Using the default.\n",dotImageFormat.data());
+  //  dotImageFormat = "png";
+  //}
   
   
   // check dot path

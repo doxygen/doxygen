@@ -18,8 +18,19 @@
 
 #include "qtbc.h"
 #include "image.h"
-#include "gifenc.h"
+//#include "gifenc.h"
 #include <qfile.h>
+#include "lodepng.h"
+
+typedef unsigned char  Byte;
+
+struct Color
+{
+  Byte red;
+  Byte green;
+  Byte blue;
+  Byte alpha;
+};
 
 const int charSetWidth=80;
 const int charHeight=12;
@@ -143,16 +154,17 @@ unsigned char fontRaw[charSetWidth*charHeight] = {
 
 static Color palette[] =
 {
-  { 0xff, 0xff, 0xff },
-  { 0x00, 0x00, 0x00 },
-  { 0xff, 0xff, 0xc0 },
-  { 0x9f, 0x9f, 0x60 },
-  { 0x90, 0x00, 0x00 },
-  { 0x00, 0x90, 0x00 },
-  { 0x00, 0x00, 0x90 },
-  { 0xc0, 0xc0, 0xc0 }
+  { 0xff, 0xff, 0xff, 0x00 },
+  { 0x00, 0x00, 0x00, 0xff },
+  { 0xff, 0xff, 0xc0, 0xff },
+  { 0x9f, 0x9f, 0x60, 0xff },
+  { 0x90, 0x00, 0x00, 0xff },
+  { 0x00, 0x90, 0x00, 0xff },
+  { 0x00, 0x00, 0x90, 0xff },
+  { 0xc0, 0xc0, 0xc0, 0xff }
 };
 
+#if 0
 static Color palette2[] =
 {
   { 0xff, 0xff, 0xff },
@@ -171,6 +183,28 @@ static Color palette2[] =
   { 0x20, 0x20, 0x20 },
   { 0x10, 0x10, 0x10 },
   { 0x00, 0x00, 0x00 }
+};
+#endif
+
+// for alpha we use x^(1/1.3)
+static Color palette2[] =
+{
+  { 0x00, 0x00, 0x00, 0x00 },
+  { 0x00, 0x00, 0x00, 0x2e },
+  { 0x00, 0x00, 0x00, 0x48 },
+  { 0x00, 0x00, 0x00, 0x5d },
+  { 0x00, 0x00, 0x00, 0x6f },
+  { 0x00, 0x00, 0x00, 0x80 },
+  { 0x00, 0x00, 0x00, 0x8f },
+  { 0x00, 0x00, 0x00, 0x9e },
+  { 0x00, 0x00, 0x00, 0xac },
+  { 0x00, 0x00, 0x00, 0xb9 },
+  { 0x00, 0x00, 0x00, 0xc5 },
+  { 0x00, 0x00, 0x00, 0xd2 },
+  { 0x00, 0x00, 0x00, 0xdd },
+  { 0x00, 0x00, 0x00, 0xe9 },
+  { 0x00, 0x00, 0x00, 0xf4 },
+  { 0x00, 0x00, 0x00, 0xff }
 };
 
 Image::Image(int w,int h)
@@ -321,6 +355,7 @@ void Image::fillRect(int x,int y,int lwidth,int lheight,uchar colIndex,uint mask
 
 bool Image::save(const char *fileName,int mode)
 {
+#if 0
   GifEncoder gifenc(data,
                     mode==0 ? palette : palette2,
                     width,height,
@@ -336,5 +371,25 @@ bool Image::save(const char *fileName,int mode)
   {
     return FALSE;
   }
+#endif
+  uchar* buffer;
+  size_t bufferSize;
+  LodePNG_Encoder encoder;
+  LodePNG_Encoder_init(&encoder);
+  int numCols = mode==0 ? 8 : 16;
+  Color *pPal = mode==0 ? palette : palette2;
+  int i;
+  for (i=0;i<numCols;i++,pPal++)
+  {
+    LodePNG_InfoColor_addPalette(&encoder.infoPng.color,
+                                 pPal->red,pPal->green,pPal->blue,pPal->alpha);
+  }
+  encoder.infoPng.color.colorType = 3; 
+  encoder.infoRaw.color.colorType = 3;
+  LodePNG_encode(&encoder, &buffer, &bufferSize, data, width, height);
+  LodePNG_saveFile(buffer, bufferSize, fileName);
+  free(buffer);
+  LodePNG_Encoder_cleanup(&encoder);
+  return TRUE;
 }
 
