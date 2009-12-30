@@ -6,6 +6,7 @@
 #include "outputlist.h"
 #include "doxygen.h"
 #include "language.h"
+#include <qregexp.h>
 
 
 PageDef::PageDef(const char *f,int l,const char *n,
@@ -156,7 +157,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  Doxygen::indexList.addIndexItem(this,0,0,title());
+  Doxygen::indexList.addIndexItem(this,0,0,filterTitle(title()));
 }
 
 void PageDef::writePageDocumentation(OutputList &ol)

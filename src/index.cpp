@@ -2892,7 +2892,7 @@ void writeExampleIndex(OutputList &ol)
     if (!pd->title().isEmpty())
     {
       ol.writeObjectLink(0,n,0,pd->title());
-      Doxygen::indexList.addContentsItem(FALSE,pd->title(),pd->getReference(),n,0);
+      Doxygen::indexList.addContentsItem(FALSE,filterTitle(pd->title()),pd->getReference(),n,0);
     }
     else
     {
@@ -3005,7 +3005,7 @@ void writePageIndex(OutputList &ol)
         ol.endTypewriter();
       }
       ol.writeString("\n");
-      Doxygen::indexList.addContentsItem(hasSubPages,pageTitle,pd->getReference(),pd->getOutputFileBase(),0);
+      Doxygen::indexList.addContentsItem(hasSubPages,filterTitle(pageTitle),pd->getReference(),pd->getOutputFileBase(),0);
       writeSubPages(pd);
       ol.endIndexListItem();
     }
@@ -3548,7 +3548,7 @@ void writeIndex(OutputList &ol)
   }
   else 
   {
-    title = substitute(Doxygen::mainPage->title(),"%","");
+    title = filterTitle(Doxygen::mainPage->title());
   }
 
   QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
@@ -3576,7 +3576,9 @@ void writeIndex(OutputList &ol)
   {
     if (Doxygen::mainPage->title().lower()!="notitle")
     {
-      ol.docify(Doxygen::mainPage->title());
+      ol.parseDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
+                  Doxygen::mainPage,0,Doxygen::mainPage->title(),
+                  TRUE,FALSE,0,TRUE,FALSE);
     }
   }
   else

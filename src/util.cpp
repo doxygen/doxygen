@@ -6970,4 +6970,19 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
   return TRUE;
 }
 
+// Replace %word by word in title
+QCString filterTitle(const QCString &title)
+{
+  QCString tf;
+  static QRegExp re("%[A-Z_a-z]");
+  int p=0,i,l;
+  while ((i=re.match(title,p,&l))!=-1)
+  {
+    tf+=title.mid(p,i-p);
+    tf+=title.mid(i+1,l-1); // skip %
+    p=i+l;
+  }
+  tf+=title.right(title.length()-p);
+  return tf;
+}
 
