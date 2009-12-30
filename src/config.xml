@@ -861,7 +861,7 @@ The path specified is relative to the HTML output folder.
 The QHP_NAMESPACE tag specifies the namespace to use when generating 
 Qt Help Project output. For more information please see 
 http://doc.trolltech.com/qthelpproject.html#namespace 
-' defval='' depends='GENERATE_QHP'/>
+' defval='org.doxygen.Project' depends='GENERATE_QHP'/>
     <option type='string' id='QHP_VIRTUAL_FOLDER' format='string' docs='
 The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating 
 Qt Help Project output. For more information please see 
@@ -887,6 +887,21 @@ be used to specify the location of Qt&apos;s qhelpgenerator.
 If non-empty doxygen will try to run qhelpgenerator on the generated 
 .qhp file. 
 ' defval='' depends='GENERATE_QHP'/>
+    <option type='bool' id='GENERATE_ECLIPSEHELP' docs='
+If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files  
+will be generated, which together with the HTML files, form an Eclipse help  
+plugin. To install this plugin and make it available under the help contents 
+menu in Eclipse, the contents of the directory containing the HTML and XML 
+files needs to be copied into the plugins directory of eclipse. The name of 
+the directory within the plugins directory should be the same as 
+the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before
+the help appears.
+' defval='0' depends='GENERATE_HTML'/>
+    <option type='string' id='ECLIPSE_DOC_ID' docs='
+A unique identifier for the eclipse help plugin. When installing the plugin 
+the directory name containing the HTML and XML files should also have 
+this name.
+' defval='org.doxygen.Project' depends='GENERATE_ECLIPSEHELP'/>
     <option type='bool' id='DISABLE_INDEX' docs='
 The DISABLE_INDEX tag can be used to turn on/off the condensed index at 
 top of each HTML page. The value NO (the default) enables the index and 

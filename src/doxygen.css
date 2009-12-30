@@ -31,7 +31,7 @@ div.multicol {
 	-webkit-column-count: 3;
 }
 
-p.startli, p.startdd {
+p.startli, p.startdd, p.starttd {
 	margin-top: 2px;
 }
 
@@ -41,6 +41,10 @@ p.endli {
 
 p.enddd {
 	margin-bottom: 4px;
+}
+
+p.endtd {
+	margin-bottom: 2px;
 }
 
 /* @end */
@@ -115,9 +119,11 @@ a.elRef {
 }
 
 a.code {
+	color: #3030f0;
 }
 
 a.codeRef {
+	color: #3030f0;
 }
 
 /* @end */
@@ -136,6 +142,10 @@ pre.fragment {
 	background-color: #f5f5f5;
 	padding: 4px 6px;
 	margin: 4px 8px 4px 2px;
+	overflow: auto;
+	word-wrap: break-word;
+	font-size:  9pt;
+	line-height: 125%;
 }
 
 div.ah {
@@ -501,3 +511,22 @@ address {
 	font-style: normal;
 	color: #333;
 }
+
+table.doxtable {
+	border-collapse:collapse;
+}
+
+table.doxtable td, table.doxtable th {
+	border: 1px solid #153788;
+	padding: 3px 7px 2px;
+}
+
+table.doxtable th {
+	background-color: #254798;
+	color: #FFFFFF;
+	font-size: 110%;
+	padding-bottom: 4px;
+	padding-top: 5px;
+	text-align:left;
+}
+

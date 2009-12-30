@@ -370,8 +370,8 @@ void replaceComment(int offset);
 				       BEGIN(CComment);
 				     }
   				   }
-<CComment>[ \t]+"{@code"	   {
-                                     copyToOutput(" @code",6); 
+<CComment>"{@code"/[ \t\n]	   {
+                                     copyToOutput("@code",5); 
 				     g_lastCommentContext = YY_START;
 				     g_javaBlock=1;
 				     g_blockName=&yytext[1];
@@ -426,6 +426,7 @@ void replaceComment(int offset);
 				     else
 				     {
 				       g_javaBlock++;
+                                       copyToOutput(yytext,yyleng);
 				     }
                                    }
 <VerbatimCode>"}"		   {
@@ -440,6 +441,10 @@ void replaceComment(int offset);
 				       {
                                          copyToOutput(" @endcode ",10);
 				         BEGIN(g_lastCommentContext);
+				       }
+				       else
+				       {
+                                         copyToOutput(yytext,yyleng);
 				       }
 				     }
   				   }
@@ -492,7 +497,7 @@ void replaceComment(int offset);
                                      copyToOutput(yytext,yyleng); 
                                    }
 
-<CComment>[^\\!@*\n]*	           { /* anything that is not a '*' or command */ 
+<CComment>[^\\!@*\n{]*	           { /* anything that is not a '*' or command */ 
                                      copyToOutput(yytext,yyleng); 
                                    }
 <CComment>"*"+[^*/\\@\n]*          { /* stars without slashes */

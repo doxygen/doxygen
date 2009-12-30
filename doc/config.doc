@@ -91,6 +91,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_dot_transparent DOT_TRANSPARENT
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
 \refitem cfg_doxyfile_encoding DOXYFILE_ENCODING
+\refitem cfg_eclipse_doc_id ECLIPSE_DOC_ID
 \refitem cfg_enable_preprocessing ENABLE_PREPROCESSING
 \refitem cfg_enabled_sections ENABLED_SECTIONS
 \refitem cfg_enum_values_per_line ENUM_VALUES_PER_LINE
@@ -123,6 +124,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_generate_chi GENERATE_CHI
 \refitem cfg_generate_deprecatedlist GENERATE_DEPRECIATEDLIST
 \refitem cfg_generate_docset GENERATE_DOCSET
+\refitem cfg_generate_eclipsehelp GENERATE_ECLIPSEHELP
 \refitem cfg_generate_html GENERATE_HTML
 \refitem cfg_generate_htmlhelp GENERATE_HTMLHELP
 \refitem cfg_generate_latex GENERATE_LATEX
@@ -1454,6 +1456,28 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  be used to specify the location of Qt's qhelpgenerator.
  If non-empty doxygen will try to run qhelpgenerator on the generated
  .qhp file.
+
+\anchor cfg_generate_eclipsehelp
+<dt>\c GENERATE_ECLIPSEHELP <dd>
+ \addindex GENERATE_ECLIPSEHELP
+ If the \c GENERATE_ECLIPSEHELP tag is set to \c YES, additional index files  
+ will be generated, which together with the HTML files, form an Eclipse help  
+ plugin. 
+
+ To install this plugin and make it available under the help contents 
+ menu in Eclipse, the contents of the directory containing the HTML and XML 
+ files needs to be copied into the plugins directory of eclipse. The name of 
+ the directory within the plugins directory should be the same as 
+ the \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" value. 
+
+ After copying Eclipse needs to be restarted before the help appears.
+
+\anchor cfg_eclipse_doc_id
+<dt>\c ECLIPSE_DOC_ID <dd>
+ \addindex ECLIPSE_DOC_ID
+ A unique identifier for the eclipse help plugin. When installing the plugin 
+ the directory name containing the HTML and XML files should also have 
+ this name. Each documentation set should have its own identifier.
 
 \anchor cfg_searchengine
 <dt>\c SEARCHENGINE <dd>

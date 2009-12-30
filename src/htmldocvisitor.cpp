@@ -619,7 +619,7 @@ bool isSeparatedParagraph(DocSimpleSect *parent,DocPara *par)
   return FALSE;
 }
 
-int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
+static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
 {
   int t=0;
   isFirst=FALSE;
@@ -663,6 +663,12 @@ int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
         isLast =isLastChildNode ((DocXRefItem*)p->parent(),p);
         if (isFirst) t=2;
         if (isLast)  t=4;
+        break;
+      case DocNode::Kind_HtmlCell:
+        isFirst=isFirstChildNode((DocHtmlCell*)p->parent(),p);
+        isLast =isLastChildNode ((DocHtmlCell*)p->parent(),p);
+        if (isFirst) t=5;
+        if (isLast)  t=6;
         break;
       case DocNode::Kind_SimpleSect:
         isFirst=isFirstChildNode((DocSimpleSect*)p->parent(),p);
@@ -741,12 +747,14 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   // this allows us to mark the tag with a special class so we can
   // fix the otherwise ugly spacing.
   int t;
-  static const char *contexts[5] = 
-  { "", 
-    " class=\"startli\"",
-    " class=\"startdd\"",
-    " class=\"endli\"",
-    " class=\"enddd\""
+  static const char *contexts[7] = 
+  { "",                     // 0
+    " class=\"startli\"",   // 1
+    " class=\"startdd\"",   // 2
+    " class=\"endli\"",     // 3
+    " class=\"enddd\"",     // 4
+    " class=\"starttd\"",   // 5
+    " class=\"endtd\""      // 6
   };
   bool isFirst;
   bool isLast;
@@ -1025,24 +1033,24 @@ void HtmlDocVisitor::visitPost(DocHtmlDescData *)
 void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  bool hasBorder      = FALSE;
-  bool hasCellSpacing = FALSE;
-  bool hasCellPadding = FALSE;
+  //bool hasBorder      = FALSE;
+  //bool hasCellSpacing = FALSE;
+  //bool hasCellPadding = FALSE;
 
   forceEndParagraph(t);
 
-  HtmlAttribListIterator li(t->attribs());
-  HtmlAttrib *att;
-  for (li.toFirst();(att=li.current());++li)
-  {
-    if      (att->name=="border")      hasBorder=TRUE;
-    else if (att->name=="cellspacing") hasCellSpacing=TRUE;
-    else if (att->name=="cellpadding") hasCellPadding=TRUE;
-  }
-  m_t << "<table" << htmlAttribsToString(t->attribs());
-  if (!hasBorder)      m_t << " border=\"1\"";
-  if (!hasCellSpacing) m_t << " cellspacing=\"3\"";
-  if (!hasCellPadding) m_t << " cellpadding=\"3\"";
+  //HtmlAttribListIterator li(t->attribs());
+  //HtmlAttrib *att;
+  //for (li.toFirst();(att=li.current());++li)
+  //{
+  // if      (att->name=="border")      hasBorder=TRUE;
+  //  else if (att->name=="cellspacing") hasCellSpacing=TRUE;
+  //  else if (att->name=="cellpadding") hasCellPadding=TRUE;
+  //}
+  m_t << "<table class=\"doxtable\"" << htmlAttribsToString(t->attribs());
+  //if (!hasBorder)      m_t << " border=\"1\"";
+  //if (!hasCellSpacing) m_t << " cellspacing=\"3\"";
+  //if (!hasCellPadding) m_t << " cellpadding=\"3\"";
   m_t << ">\n";
 }
 

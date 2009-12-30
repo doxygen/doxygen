@@ -767,6 +767,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\eclipsehelp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\entry.cpp"
 				>
 				<FileConfiguration
@@ -2095,6 +2099,10 @@
 			</File>
 			<File
 				RelativePath="..\src\doxygen_css.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\eclipsehelp.h"
 				>
 			</File>
 			<File

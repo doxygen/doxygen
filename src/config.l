@@ -1361,26 +1361,17 @@ void Config::check()
   // check QHP creation requirements
   if (Config_getBool("GENERATE_QHP"))
   {
-    bool qhp=TRUE;
-    if (!Config_getBool("GENERATE_HTML"))
-    {
-      config_err("Error: GENERATE_QHP=YES requires GENERATE_HTML=YES. Disabling QHP output.\n");
-      qhp=FALSE;
-    }
-
     if (Config_getString("QHP_NAMESPACE").isEmpty())
     {
-      config_err("Error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Disabling QHP output.\n");
-      qhp=FALSE;
+      config_err("Error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
+      Config_getString("QHP_NAMESPACE")="org.doxygen.doc";
     }
 
     if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
     {
-      config_err("Error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Disabling QHP output.\n");
-      qhp=FALSE;
+      config_err("Error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
+      Config_getString("QHP_VIRTUAL_FOLDER")="doc";
     }
-
-    Config_getBool("GENERATE_QHP")=qhp;
   }
 
   if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") && Config_getBool("INLINE_INFO"))

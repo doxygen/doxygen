@@ -1253,6 +1253,7 @@ void addConfigOptions(Config *cfg)
                  "Qt Help Project output. For more information please see\n"
                  "http://doc.trolltech.com/qthelpproject.html#namespace"
                 );
+  cs->setDefaultValue("org.doxygen.Project");
   cs->addDependency("GENERATE_QHP");
   //----
   cs = cfg->addString(
@@ -1296,6 +1297,28 @@ void addConfigOptions(Config *cfg)
                 );
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_QHP");
+  //----
+  cb = cfg->addBool(
+                 "GENERATE_ECLIPSEHELP",
+                 "If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files\n"
+                 " will be generated, which together with the HTML files, form an Eclipse help\n"
+                 " plugin. To install this plugin and make it available under the help contents\n"
+                 "menu in Eclipse, the contents of the directory containing the HTML and XML\n"
+                 "files needs to be copied into the plugins directory of eclipse. The name of\n"
+                 "the directory within the plugins directory should be the same as\n"
+                 "the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before the help appears.",
+                 FALSE
+                );
+  cb->addDependency("GENERATE_HTML");
+  //----
+  cs = cfg->addString(
+                 "ECLIPSE_DOC_ID",
+                 "A unique identifier for the eclipse help plugin. When installing the plugin\n"
+                 "the directory name containing the HTML and XML files should also have\n"
+                 "this name."
+                );
+  cs->setDefaultValue("org.doxygen.Project");
+  cs->addDependency("GENERATE_ECLIPSEHELP");
   //----
   cb = cfg->addBool(
                  "DISABLE_INDEX",

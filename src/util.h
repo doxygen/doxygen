@@ -366,6 +366,7 @@ bool usingTreeIndex();
 void stackTrace();
 
 bool readInputFile(const char *fileName,BufStr &inBuf);
+QCString filterTitle(const QCString &title);
 
 
 #endif

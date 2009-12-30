@@ -153,18 +153,31 @@ that use doxygen.
 \latexonly
 list of projects that use doxygen (see {\tt http://www.doxygen.org/projects.html}).
 \endlatexonly
-If you know other projects, let me know and I'll add them. 
+If you know other projects, let <a href="mailto:dimitri@stack.nl?subject=New%20project%20using%20Doxygen">me</a> 
+know and I'll add them. 
+
+<h2>Commercial Support</h2>
+
+I'm currently investigating the possibilities of providing
+commercial support for doxygen. The forms of support I'm thinking of
+are: 
+<ul>
+<li>implementing features, 
+<li>fixing bugs, 
+<li>providing priority help in answering questions. 
+</ul>
+To get a better understanding of the feasibility,
+please let <a href="mailto:dimitri@stack.nl?subject=Doxygen%20Commercial%20Support">me</a> know if you 
+have a need for this type (or another type)
+of doxygen related commercial support.
 
 <h2>Future work</h2>
-Although doxygen is used successfully by a lot of people already, 
-there is always room for improvement. Therefore, I have compiled a 
-\htmlonly
-<a href="http://www.doxygen.org/todo.html">todo/wish list</a>
-\endhtmlonly 
-\latexonly
-todo/wish list (see {\tt http://www.doxygen.org/todo.html})
-\endlatexonly
-of possible and/or requested enhancements. 
+Although doxygen is successfully used by large number of companies and 
+open source projects already, there is always room for improvement. 
+<p>
+You can submit enhancement requests in
+<a href="https://bugzilla.gnome.org/buglist.cgi?product=doxygen&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&bug_severity=enhancement">the bug tracker</a>.
+Make sure the severity of the bug report is set to "enhancement".
 
 <h2>Acknowledgements</h2>
 \addindex acknowledgements

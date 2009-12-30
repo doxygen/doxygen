@@ -1171,6 +1171,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>, public DocNode
     void markFirst(bool v=TRUE) { m_isFirst=v; }
     void markLast(bool v=TRUE)  { m_isLast=v; }
     const HtmlAttribList &attribs() const { return m_attribs; }
+    const QList<DocNode> &children() const { return m_children; }
     int parse();
     int parseXml();
 

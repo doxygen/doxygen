@@ -1,8 +1,5 @@
 /******************************************************************************
  *
- * 
- *
- *
  * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -79,6 +76,7 @@
 #include "portable.h"
 #include "vhdlscanner.h"
 #include "vhdldocgen.h"
+#include "eclipsehelp.h"
 
 #include "layout.h"
 
@@ -10196,9 +10194,11 @@ void generateOutput()
     if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
 #endif
     bool generateHtmlHelp = Config_getBool("GENERATE_HTMLHELP");
+    bool generateEclipseHelp = Config_getBool("GENERATE_ECLIPSEHELP");
     bool generateQhp      = Config_getBool("GENERATE_QHP");
     bool generateTreeView = Config_getBool("GENERATE_TREEVIEW");
     bool generateDocSet   = Config_getBool("GENERATE_DOCSET");
+    if (generateEclipseHelp) Doxygen::indexList.addIndex(new EclipseHelp);
     if (generateHtmlHelp) Doxygen::indexList.addIndex(new HtmlHelp);
     if (generateQhp)      Doxygen::indexList.addIndex(new Qhp);
     if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp);
