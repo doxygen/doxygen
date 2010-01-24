@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -3065,11 +3065,12 @@ void writeGraphInfo(OutputList &ol)
   startTitle(ol,0);
   ol.parseText(theTranslator->trLegendTitle());
   endTitle(ol,0,0);
-  bool oldStripCommentsState = Config_getBool("STRIP_CODE_COMMENTS");
+  bool &stripCommentsStateRef = Config_getBool("STRIP_CODE_COMMENTS");
+  bool oldStripCommentsState = stripCommentsStateRef;
   // temporarily disable the stripping of comments for our own code example!
-  Config_getBool("STRIP_CODE_COMMENTS") = FALSE;
+  stripCommentsStateRef = FALSE;
   ol.parseDoc("graph_legend",1,0,0,theTranslator->trLegendDocs(),FALSE,FALSE);
-  Config_getBool("STRIP_CODE_COMMENTS") = oldStripCommentsState;
+  stripCommentsStateRef = oldStripCommentsState;
   endFile(ol);
   ol.popGeneratorState();
 }
@@ -3173,10 +3174,7 @@ void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv)
       ol.endTypewriter();
     }
     
-    //ol.writeStartAnnoItem(0,gd->getOutputFileBase(),0,gd-);
-    //parseText(ol,gd->groupTitle());
-    //ol.writeEndAnnoItem(gd->getOutputFileBase());
-
+    
     // write pages
     PageSDict::Iterator pli(*gd->pageDict);
     PageDef *pd = 0;
@@ -3325,7 +3323,9 @@ void writeGroupHierarchy(OutputList &ol, FTVHelp* ftv)
   }
   endIndexHierarchy(ol,0); 
   if (ftv)
+  {
     ol.popGeneratorState(); 
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -3443,7 +3443,9 @@ void writeGroupIndex(OutputList &ol)
   FTVHelp* ftv = 0;
   bool treeView=Config_getBool("USE_INLINE_TREES");
   if (treeView)
+  {
     ftv = new FTVHelp(false);
+  }
 
   writeGroupHierarchy(ol,ftv);
 

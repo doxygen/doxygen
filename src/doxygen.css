@@ -303,9 +303,13 @@ th.dirtab {
 }
 
 hr {
-	height: 0;
+	height: 0px;
 	border: none;
 	border-top: 1px solid #666;
+}
+
+hr.footer {
+	height: 1px;
 }
 
 /* @group Member Descriptions */

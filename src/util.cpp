@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -5787,7 +5787,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
     }
 
-    pd->setFileName(convertNameToFile(pd->name(),FALSE));
+    pd->setFileName(convertNameToFile(pd->name()));
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);

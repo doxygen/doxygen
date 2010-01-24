@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1564,7 +1564,7 @@ void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath
   m_t << "<img src=\"" << relPath << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getDotImageMapFromFile(fileName,outDir,relPath.data(),context);
+  QString imap = getDotImageMapFromFile(baseName,outDir,relPath.data(),context);
   m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 

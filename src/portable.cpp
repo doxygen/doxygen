@@ -179,6 +179,7 @@ static char **last_environ;
 
 void portable_setenv(const char *name,const char *value)
 {
+    if (value==0) value="";
 #if defined(_WIN32) && !defined(__CYGWIN__)
     SetEnvironmentVariable(name,value);
 #else
