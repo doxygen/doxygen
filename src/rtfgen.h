@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Parker Waechter & Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Parker Waechter & Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -63,8 +63,8 @@ class RTFGenerator : public OutputGenerator
     void startParagraph();
     void endParagraph();
     void writeString(const char *text);
-    void startIndexListItem() {}
-    void endIndexListItem() {}
+    void startIndexListItem();
+    void endIndexListItem();
     void startIndexList();
     void endIndexList();
     void startIndexKey();

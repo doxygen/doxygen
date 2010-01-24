@@ -2,7 +2,7 @@
  *
  * 
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -786,7 +786,7 @@ void HtmlGenerator::writeHeaderFile(QFile &file)
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
   QTextStream t(&file);
-  t << "<hr size=\"1\"/><address style=\"text-align: right;\"><small>\n";
+  t << "<hr class=\"footer\"/><address style=\"text-align: right;\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
     << "<img class=\"footer\" src=\"doxygen.png\" alt=\"doxygen\"/>"
@@ -928,7 +928,7 @@ static void writePageFooter(QTextStream &t,const QCString &lastTitle,
   }
   if (g_footer.isEmpty())
   {
-    t << "<hr size=\"1\"/><address style=\"text-align: right;\"><small>";
+    t << "<hr class=\"footer\"/><address style=\"text-align: right;\"><small>";
     if (timeStamp)
     {
       t << theTranslator->trGeneratedAt(

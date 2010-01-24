@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -8986,7 +8986,7 @@ void dumpConfigAsXML()
 
 static void usage(const char *name)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2008\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2010\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
@@ -10287,21 +10287,19 @@ void generateOutput()
   // generate search indices (need to do this before writing other HTML
   // pages as these contain a drop down menu with options depending on
   // what categories we find in this function.
-  if (searchEngine)
+  if (Config_getBool("GENERATE_HTML") && searchEngine)
   {
     QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      err("Could not create search results directory '%s/search'\n",searchDirName.data());
-      return;
+      err("Error: Could not create search results directory '%s' $PWD='%s'\n",
+          searchDirName.data(),QDir::currentDirPath().data());
+      exit(1);
     }
     HtmlGenerator::writeSearchData(searchDirName);
     writeSearchStyleSheet();
-    if (serverBasedSearch)
-    {
-    }
-    else
+    if (!serverBasedSearch) // client side search index
     {
       writeJavascriptSearchIndex();
     }

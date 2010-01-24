@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -1888,7 +1888,7 @@ bool DocXRefItem::parse()
       }
       else
       {
-        m_file   = refList->listName();
+        m_file   = convertNameToFile(refList->listName());
         m_anchor = item->listAnchor;
       }
       m_title  = refList->sectionTitle();

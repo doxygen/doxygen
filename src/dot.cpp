@@ -3,7 +3,7 @@
  * 
  *
  *
- * Copyright (C) 1997-2008 by Dimitri van Heesch.
+ * Copyright (C) 1997-2010 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -2821,7 +2821,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   {
     err("Error: Output dir %s does not exist!\n",outDir); exit(1);
   }
-  setDotFontPath(0);
+  setDotFontPath("");
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
@@ -2875,9 +2875,10 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
   }
   setDotFontPath(d.absPath());
 
+  QCString absInFile  = QCString(d.absPath())+"/"+inFile.data();
   QCString absOutFile = QCString(d.absPath())+"/"+outFile.data();
 
-  DotRunner dotRun(inFile);
+  DotRunner dotRun(absInFile);
   dotRun.addJob(MAP_CMD,absOutFile);
   if (!dotRun.run())
   {
