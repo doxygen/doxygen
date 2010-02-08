@@ -71,7 +71,7 @@ void PageDef::writeDocumentation(OutputList &ol)
 {
   //outputList->disable(OutputGenerator::Man);
   QCString pageName;
-  pageName=escapeCharsInString(name(),FALSE);
+  pageName=escapeCharsInString(name(),FALSE,TRUE);
 
   startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,TRUE);
 
@@ -114,7 +114,7 @@ void PageDef::writeDocumentation(OutputList &ol)
   ol.disable(OutputGenerator::RTF);
   SectionInfo *si=0;
   if (!title().isEmpty() && !name().isEmpty() &&
-      (si=Doxygen::sectionDict.find(pageName))!=0)
+      (si=Doxygen::sectionDict.find(name()))!=0)
   {
     ol.startSection(si->label,si->title,si->type);
     ol.parseDoc(docFile(),docLine(),this,0,si->title,TRUE,FALSE,0,TRUE,FALSE);

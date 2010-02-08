@@ -195,6 +195,9 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
   QFileInfo fi(fileName);
   if (fi.exists() && fi.isFile())
   {
+    static QStrList &exclPatterns = Config_getList("EXCLUDE_PATTERNS");
+    if (patternMatch(fi,&exclPatterns)) return 0;
+
     QCString absName = convertToQCString(fi.absFilePath());
 
     // global guard
@@ -243,41 +246,6 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
       fs->oldFileBuf    = g_inputBuf;
       fs->oldFileBufPos = g_inputBufPos;
     }
-
-#if 0
-    QCString filterName = getFileFilter(absName);
-    if (!filterName.isEmpty())
-    {
-      fs->isPlainFile = FALSE;
-      QCString cmd = filterName+" \""+absName+"\"";
-      fs->filePtr=portable_popen(cmd,"r");
-      if (!fs->filePtr)
-      {
-        err("Error: could not execute filter %s, reason: %s\n",cmd.data(),
-            strerror(errno));
-      }
-    }
-    else
-    {
-      fs->isPlainFile = TRUE;
-      fs->filePtr=fopen(absName,"r");
-      if (!fs->filePtr)
-      {
-        err("Error: could not open file %s for reading, reason: %s \n",
-            absName.data(),strerror(errno));
-      }
-    }
-    if (!fs->filePtr) // error -> cleanup
-    {
-      delete fs;
-      fs=0;
-    }
-    else
-    {
-      fs->oldYYin = preYYin;
-    }
-#endif
-
   }
   return fs;
 }
@@ -1874,7 +1842,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <EndImport>.				{
   					}
-<DefName>{ID}/"("			{
+<DefName>{ID}/"("			{ // define with argument
   					  //printf("Define() `%s'\n",yytext);
 					  g_argDict = new QDict<int>(31);
 					  g_argDict->setAutoDelete(TRUE);
@@ -1886,7 +1854,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defVarArgs = FALSE;
 					  BEGIN(DefineArg);
   					}
-<DefName>{ID}/{B}*			{
+<DefName>{ID}/{B}*			{ // define with content
   					  //printf("Define `%s'\n",yytext);
   					  g_argDict = 0;
 					  g_defArgs = -1;
@@ -1895,13 +1863,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defLitText.resize(0);
 					  g_defName = yytext;
 					  g_defVarArgs = FALSE;
-					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
-					  outputArray(tmp.data(),tmp.length());
-					  g_quoteArg=FALSE;
-					  g_insideComment=FALSE;
-					  BEGIN(DefineText); 
+					  //QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
+					  //outputArray(tmp.data(),tmp.length());
+					  //g_quoteArg=FALSE;
+					  //g_insideComment=FALSE;
+					  //BEGIN(DefineText); 
+					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
+					  { // define may appear in the output
+					    QCString tmp=(QCString)"#define "+g_defName;
+					    outputArray(tmp.data(),tmp.length());
+					    g_quoteArg=FALSE;
+					    g_insideComment=FALSE;
+					    BEGIN(DefineText); 
+					  }
+					  else // define is a guard => hide
+					  {
+					    g_lastGuardName.resize(0);
+					    BEGIN(Start);
+					  }
   					}
-<DefName>{ID}/{B}*"\n"			{ // bare define
+<DefName>{ID}/{B}*"\n"			{ // empty define
   					  g_argDict = 0;
 					  g_defArgs = -1;
 					  g_defName = yytext;

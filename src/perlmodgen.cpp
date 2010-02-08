@@ -534,53 +534,59 @@ void PerlModDocVisitor::visit(DocSymbol *sy)
   const char *symbol = 0;
   switch(sy->symbol())
   {
-  case DocSymbol::At:      c = '@'; break;
-  case DocSymbol::Less:    c = '<'; break;
-  case DocSymbol::Greater: c = '>'; break;
-  case DocSymbol::Amp:     c = '&'; break;
-  case DocSymbol::Dollar:  c = '$'; break;
-  case DocSymbol::Hash:    c = '#'; break;
-  case DocSymbol::Percent: c = '%'; break;
-  case DocSymbol::Quot:    c = '"'; break;
-  case DocSymbol::Lsquo:   s = "\\\'"; break;
-  case DocSymbol::Rsquo:   s = "\\\'"; break;
-  case DocSymbol::Ldquo:   c = '"'; break;
-  case DocSymbol::Rdquo:   c = '"'; break;
-  case DocSymbol::Ndash:   c = '-'; break;
-  case DocSymbol::Mdash:   s = "--"; break;
-  case DocSymbol::Nbsp:    c = ' '; break;
-  case DocSymbol::Uml:     accent = "umlaut"; break;
-  case DocSymbol::Acute:   accent = "acute"; break;
-  case DocSymbol::Grave:   accent = "grave"; break;
-  case DocSymbol::Circ:    accent = "circ"; break;
-  case DocSymbol::Slash:   accent = "slash"; break;
-  case DocSymbol::Tilde:   accent = "tilde"; break;
-  case DocSymbol::Cedil:   accent = "cedilla"; break;
-  case DocSymbol::Ring:    accent = "ring"; break;
-  case DocSymbol::BSlash:  s = "\\\\"; break;
-  case DocSymbol::Copy:    symbol = "copyright"; break;
-  case DocSymbol::Tm:      symbol = "trademark"; break;
-  case DocSymbol::Reg:     symbol = "registered"; break;
-  case DocSymbol::Szlig:   symbol = "szlig"; break;
-  case DocSymbol::Apos:    s = "\\\'"; break;
-  case DocSymbol::Aelig:   symbol = "aelig"; break;
-  case DocSymbol::AElig:   symbol = "AElig"; break;
-  case DocSymbol::Unknown:
-    err("Error: unknown symbol found\n");
-    break;
+    case DocSymbol::At:      c = '@'; break;
+    case DocSymbol::Less:    c = '<'; break;
+    case DocSymbol::Greater: c = '>'; break;
+    case DocSymbol::Amp:     c = '&'; break;
+    case DocSymbol::Dollar:  c = '$'; break;
+    case DocSymbol::Hash:    c = '#'; break;
+    case DocSymbol::Percent: c = '%'; break;
+    case DocSymbol::Quot:    c = '"'; break;
+    case DocSymbol::Lsquo:   s = "\\\'"; break;
+    case DocSymbol::Rsquo:   s = "\\\'"; break;
+    case DocSymbol::Ldquo:   c = '"'; break;
+    case DocSymbol::Rdquo:   c = '"'; break;
+    case DocSymbol::Ndash:   c = '-'; break;
+    case DocSymbol::Mdash:   s = "--"; break;
+    case DocSymbol::Nbsp:    c = ' '; break;
+    case DocSymbol::Uml:     accent = "umlaut"; break;
+    case DocSymbol::Acute:   accent = "acute"; break;
+    case DocSymbol::Grave:   accent = "grave"; break;
+    case DocSymbol::Circ:    accent = "circ"; break;
+    case DocSymbol::Slash:   accent = "slash"; break;
+    case DocSymbol::Tilde:   accent = "tilde"; break;
+    case DocSymbol::Cedil:   accent = "cedilla"; break;
+    case DocSymbol::Ring:    accent = "ring"; break;
+    case DocSymbol::BSlash:  s = "\\\\"; break;
+    case DocSymbol::Copy:    symbol = "copyright"; break;
+    case DocSymbol::Tm:      symbol = "trademark"; break;
+    case DocSymbol::Reg:     symbol = "registered"; break;
+    case DocSymbol::Szlig:   symbol = "szlig"; break;
+    case DocSymbol::Apos:    s = "\\\'"; break;
+    case DocSymbol::Aelig:   symbol = "aelig"; break;
+    case DocSymbol::AElig:   symbol = "AElig"; break;
+    case DocSymbol::Unknown: err("Error: unknown symbol found\n");
+                             break;
   }
-  if (c != 0) {
+  if (c != 0) 
+  {
     enterText();
     m_output.add(c);
-  } else if (s != 0) {
+  } 
+  else if (s != 0) 
+  {
     enterText();
     m_output.add(s);
-  } else if (symbol != 0) {
+  } 
+  else if (symbol != 0) 
+  {
     leaveText();
     openItem("symbol");
     m_output.addFieldQuotedString("symbol", symbol);
     closeItem();
-  } else if (accent != 0) {
+  } 
+  else if (accent != 0) 
+  {
     leaveText();
     openItem("accent");
     m_output
@@ -805,7 +811,7 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   case DocSimpleSect::Version:		type = "version"; break;
   case DocSimpleSect::Since:		type = "since"; break;
   case DocSimpleSect::Date:		type = "date"; break;
-  case DocSimpleSect::Note:		type = "bug"; break;
+  case DocSimpleSect::Note:		type = "note"; break;
   case DocSimpleSect::Warning:		type = "warning"; break;
   case DocSimpleSect::Pre:		type = "pre"; break;
   case DocSimpleSect::Post:		type = "post"; break;
@@ -818,6 +824,8 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
     err("Error: unknown simple section found\n");
     break;
   }
+  leaveText();
+  m_output.openHash();
   openOther();
   openSubBlock(type);
 }
@@ -826,6 +834,7 @@ void PerlModDocVisitor::visitPost(DocSimpleSect *)
 {
   closeSubBlock();
   closeOther();
+  m_output.closeHash();
 }
 
 void PerlModDocVisitor::visitPre(DocTitle *)

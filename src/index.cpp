@@ -1203,7 +1203,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
       int index = getPrefixIndex(cd->className());
-      startLetter=toupper(cd->className().at(index));
+      startLetter=toupper(cd->className().at(index))&0xFF;
       // Do some sorting again, since the classes are sorted by name with 
       // prefix, which should be ignored really.
       classesByLetter[startLetter].inSort (cd);

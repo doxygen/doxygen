@@ -2076,6 +2076,7 @@ QCString getFileFilter(const char* name)
   return "";
 }
 
+#if 0
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding)
 {
   QCString inputEncoding  = fromEncoding;
@@ -2112,6 +2113,7 @@ QCString recodeString(const QCString &str,const char *fromEncoding,const char *t
   portable_iconv_close(cd);
   return output;
 }
+#endif
 
 
 QCString transcodeCharacterStringToUTF8(const QCString &input)
@@ -4749,7 +4751,7 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
-QCString escapeCharsInString(const char *name,bool allowDots)
+QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
   QCString result;
@@ -4759,7 +4761,7 @@ QCString escapeCharsInString(const char *name,bool allowDots)
   {
     switch(c)
     {
-      case '_': result+="__"; break;
+      case '_': if (allowUnderscore) result+="_"; else result+="__"; break;
       case '-': result+="-";  break;
       case ':': result+="_1"; break;
       case '/': result+="_2"; break;
@@ -4813,7 +4815,7 @@ QCString escapeCharsInString(const char *name,bool allowDots)
  *  given its name, which could be a class name with template 
  *  arguments, so special characters need to be escaped.
  */
-QCString convertNameToFile(const char *name,bool allowDots)
+QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool shortNames = Config_getBool("SHORT_NAMES");
   static bool createSubdirs = Config_getBool("CREATE_SUBDIRS");
@@ -4839,7 +4841,7 @@ QCString convertNameToFile(const char *name,bool allowDots)
   }
   else // long names
   {
-    result=escapeCharsInString(name,allowDots);
+    result=escapeCharsInString(name,allowDots,allowUnderscore);
     int resultLen = result.length();
     if (resultLen>=128) // prevent names that cannot be created!
     {
@@ -5787,7 +5789,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
     }
 
-    pd->setFileName(convertNameToFile(pd->name()));
+    pd->setFileName(convertNameToFile(pd->name(),TRUE,FALSE));
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);
@@ -5856,28 +5858,6 @@ void addRefItem(const QList<ListItemInfo> *sli,
 
         refList->insertIntoList(key,item);
 
-#if 0
-
-        //printf("anchor=%s written=%d\n",item->listAnchor.data(),item->written);
-        //if (item->written) return;
-
-        QCString doc;
-        doc =  "\\anchor ";
-        doc += item->listAnchor;
-        doc += " <dl><dt>";
-        doc += prefix;
-        doc += " \\_internalref ";
-        doc += name;
-        doc += " \"";
-        doc += title;
-        doc += "\"";
-        if (args) doc += args;
-        doc += "</dt>\n<dd>";
-        doc += item->text;
-        doc += "</dd></dl>\n";
-        addRelatedPage(refList->listName(),refList->pageTitle(),doc,0,refList->listName(),1,0,0,0);
-        //item->written=TRUE;
-#endif
       }
     }
   }
@@ -6843,7 +6823,7 @@ void stackTrace()
 #endif
 }
 
-static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
+static int transcodeCharacterBuffer(const char *fileName,BufStr &srcBuf,int size,
            const char *inputEncoding,const char *outputEncoding)
 {
   if (inputEncoding==0 || outputEncoding==0) return size;
@@ -6872,8 +6852,8 @@ static int transcodeCharacterBuffer(BufStr &srcBuf,int size,
   }
   else
   {
-    err("Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
-        inputEncoding,outputEncoding);
+    err("%s: Error: failed to translate characters from %s to %s: check INPUT_ENCODING\n",
+        fileName,inputEncoding,outputEncoding);
     exit(1);
   }
   portable_iconv_close(cd);
@@ -6936,7 +6916,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
       )
      ) // UCS-2 encoded file
   {
-    transcodeCharacterBuffer(inBuf,inBuf.curPos(),
+    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         "UCS-2","UTF-8");
   }
   else if (inBuf.size()>=3 &&
@@ -6951,7 +6931,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf)
   else // transcode according to the INPUT_ENCODING setting
   {
     // do character transcoding if needed.
-    transcodeCharacterBuffer(inBuf,inBuf.curPos(),
+    transcodeCharacterBuffer(fileName,inBuf,inBuf.curPos(),
         Config_getString("INPUT_ENCODING"),"UTF-8");
   }
 
@@ -6985,4 +6965,40 @@ QCString filterTitle(const QCString &title)
   tf+=title.right(title.length()-p);
   return tf;
 }
+
+//----------------------------------------------------------------------------
+// returns TRUE if the name of the file represented by `fi' matches
+// one of the file patterns in the `patList' list.
+
+bool patternMatch(const QFileInfo &fi,const QStrList *patList)
+{
+  bool found=FALSE;
+  if (patList)
+  { 
+    QStrListIterator it(*patList);
+    QCString pattern;
+    for (it.toFirst();(pattern=it.current());++it)
+    {
+      if (!pattern.isEmpty() && !found)
+      {
+        int i=pattern.find('=');
+        if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
+
+#if defined(_WIN32) || defined(__MACOSX__) // Windows or MacOSX
+        QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
+#else                // unix
+        QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
+#endif
+        found = found || re.match(fi.fileName())!=-1 || 
+                         re.match(fi.filePath())!=-1 ||
+                         re.match(fi.absFilePath())!=-1;
+        //printf("Matching `%s' against pattern `%s' found=%d\n",
+        //    fi->fileName().data(),pattern.data(),found);
+      }
+    }
+  }
+  return found;
+}
+
+
 

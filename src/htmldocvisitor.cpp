@@ -1033,25 +1033,18 @@ void HtmlDocVisitor::visitPost(DocHtmlDescData *)
 void HtmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  //bool hasBorder      = FALSE;
-  //bool hasCellSpacing = FALSE;
-  //bool hasCellPadding = FALSE;
 
   forceEndParagraph(t);
 
-  //HtmlAttribListIterator li(t->attribs());
-  //HtmlAttrib *att;
-  //for (li.toFirst();(att=li.current());++li)
-  //{
-  // if      (att->name=="border")      hasBorder=TRUE;
-  //  else if (att->name=="cellspacing") hasCellSpacing=TRUE;
-  //  else if (att->name=="cellpadding") hasCellPadding=TRUE;
-  //}
-  m_t << "<table class=\"doxtable\"" << htmlAttribsToString(t->attribs());
-  //if (!hasBorder)      m_t << " border=\"1\"";
-  //if (!hasCellSpacing) m_t << " cellspacing=\"3\"";
-  //if (!hasCellPadding) m_t << " cellpadding=\"3\"";
-  m_t << ">\n";
+  QString attrs = htmlAttribsToString(t->attribs());
+  if (attrs.isEmpty())
+  {
+    m_t << "<table class=\"doxtable\">\n";
+  }
+  else
+  {
+    m_t << "<table " << htmlAttribsToString(t->attribs()) << ">\n";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlTable *t) 
