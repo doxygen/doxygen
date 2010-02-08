@@ -633,11 +633,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
       t << "\\par " << rtf_Style_Reset << endl;
       if (fortranOpt)
       {
-          t << "{\\tc \\v " << theTranslator->trModulesIndex() << "}"<< endl;
+          t << "{\\tc \\v " << theTranslator->trModulesIndex() << "}" << endl;
       }
       else
       {
-          t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}"<< endl;
+          t << "{\\tc \\v " << theTranslator->trNamespaceIndex() << "}" << endl;
       }
       
       t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";

@@ -3197,7 +3197,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    }
 					  }
 					  //printf("msName=%s current->name=%s\n",msName.data(),current->name.data());
-					  if (!msName.isEmpty() && msName!=current->name) // skip typedef T {} T;
+					  if (!msName.isEmpty() 
+					      /*&& msName!=current->name*/) // skip typedef T {} T;, removed due to bug608493
 					  {
 					    static bool typedefHidesStruct = Config_getBool("TYPEDEF_HIDES_STRUCT");
 					    // case 1: typedef struct _S { ... } S_t; 

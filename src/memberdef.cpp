@@ -2687,12 +2687,12 @@ void MemberDef::addListReference(Definition *)
     }
     else if (optimizeOutputJava)
     {
-      if (!hideScopeNames) memName.prepend(pd->name()+".");
+      if (!hideScopeNames && pd!=Doxygen::globalScope) memName.prepend(pd->name()+".");
       memArgs = argsString();
     }
     else
     {
-      if (!hideScopeNames) memName.prepend(pd->name()+"::");
+      if (!hideScopeNames && pd!=Doxygen::globalScope) memName.prepend(pd->name()+"::");
       memArgs = argsString();
     }
   }

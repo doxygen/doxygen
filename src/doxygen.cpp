@@ -8029,7 +8029,7 @@ static void buildExampleList(EntryNav *rootNav)
     {
       PageDef *pd=new PageDef(root->fileName,root->startLine,
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
-      pd->setFileName(convertNameToFile(pd->name()+"-example"));
+      pd->setFileName(convertNameToFile(pd->name()+"-example",TRUE,FALSE));
       pd->addSectionsToDefinition(root->anchors);
       //pi->addSections(root->anchors);
 
@@ -8420,37 +8420,6 @@ static void readTagFile(Entry *root,const char *tl)
 }
 
 //----------------------------------------------------------------------------
-// returns TRUE if the name of the file represented by `fi' matches
-// one of the file patterns in the `patList' list.
-
-static bool patternMatch(QFileInfo *fi,QStrList *patList)
-{
-  bool found=FALSE;
-  if (patList)
-  { 
-    QCString pattern=patList->first();
-    while (!pattern.isEmpty() && !found)
-    {
-      int i=pattern.find('=');
-      if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
-
-#if defined(_WIN32) // windows
-      QRegExp re(pattern,FALSE,TRUE); // case insensitive match 
-#else                // unix
-      QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
-#endif
-      found = found || re.match(fi->fileName())!=-1 || 
-                       re.match(fi->filePath())!=-1 ||
-                       re.match(fi->absFilePath())!=-1;
-      //printf("Matching `%s' against pattern `%s' found=%d\n",
-      //    fi->fileName().data(),pattern.data(),found);
-      pattern=patList->next();
-    }
-  }
-  return found;
-}
-
-//----------------------------------------------------------------------------
 static void copyStyleSheet()
 {
   QCString &htmlStyleSheet = Config_getString("HTML_STYLESHEET");
@@ -8659,8 +8628,8 @@ int readDir(QFileInfo *fi,
         }
         else if (cfi->isFile() && 
             (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
-            (patList==0 || patternMatch(cfi,patList)) && 
-            !patternMatch(cfi,exclPatList) &&
+            (patList==0 || patternMatch(*cfi,patList)) && 
+            !patternMatch(*cfi,exclPatList) &&
             (killDict==0 || killDict->find(cfi->absFilePath())==0)
             )
         {
@@ -8695,7 +8664,7 @@ int readDir(QFileInfo *fi,
         else if (recursive &&
             (!Config_getBool("EXCLUDE_SYMLINKS") || !cfi->isSymLink()) &&
             cfi->isDir() && cfi->fileName()!="." && 
-            !patternMatch(cfi,exclPatList) &&
+            !patternMatch(*cfi,exclPatList) &&
             cfi->fileName()!="..")
         {
           cfi->setFile(cfi->absFilePath());

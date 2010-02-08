@@ -283,67 +283,66 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
 
   if (md)
   {
-    if (!md->isLinkable()) return; // internal symbol
     if (context==0)
     {
       if (md->getGroupDef())
         context = md->getGroupDef();
       else if (md->getFileDef())
         context = md->getFileDef();
-      if (context==0) return; // should not happen
-
-      switch (md->memberType())
-      {
-        case MemberDef::Define:
-          type="macro"; break;
-        case MemberDef::Function:
-          if (cd && (cd->compoundType()==ClassDef::Interface ||
-                     cd->compoundType()==ClassDef::Class))
-          {
-            if (md->isStatic())
-              type="clm";         // class member
-            else
-              type="instm";       // instance member
-          }
-          else if (cd && cd->compoundType()==ClassDef::Protocol)
-          {
-            if (md->isStatic())
-              type="intfcm";     // interface class member
-            else
-              type="intfm";      // interface member
-          }
-          else
-            type="func";
-          break;
-        case MemberDef::Variable:
-          type="data"; break;
-        case MemberDef::Typedef:
-          type="tdef"; break;
-        case MemberDef::Enumeration:
-          type="enum"; break;
-        case MemberDef::EnumValue:
-          type="econst"; break;
-          //case MemberDef::Prototype:
-          //  type="prototype"; break;
-        case MemberDef::Signal:
-          type="signal"; break;
-        case MemberDef::Slot:
-          type="slot"; break;
-        case MemberDef::Friend:
-          type="ffunc"; break;
-        case MemberDef::DCOP:
-          type="dcop"; break;
-        case MemberDef::Property:
-          if (cd && cd->compoundType()==ClassDef::Protocol) 
-            type="intfp";         // interface property
-          else 
-            type="instp";         // instance property
-          break;
-        case MemberDef::Event:
-          type="event"; break;
-      }
-      writeToken(m_tts,md,type,lang,scope,md->anchor());
     }
+    if (context==0) return; // should not happen
+
+    switch (md->memberType())
+    {
+      case MemberDef::Define:
+        type="macro"; break;
+      case MemberDef::Function:
+        if (cd && (cd->compoundType()==ClassDef::Interface ||
+              cd->compoundType()==ClassDef::Class))
+        {
+          if (md->isStatic())
+            type="clm";         // class member
+          else
+            type="instm";       // instance member
+        }
+        else if (cd && cd->compoundType()==ClassDef::Protocol)
+        {
+          if (md->isStatic())
+            type="intfcm";     // interface class member
+          else
+            type="intfm";      // interface member
+        }
+        else
+          type="func";
+        break;
+      case MemberDef::Variable:
+        type="data"; break;
+      case MemberDef::Typedef:
+        type="tdef"; break;
+      case MemberDef::Enumeration:
+        type="enum"; break;
+      case MemberDef::EnumValue:
+        type="econst"; break;
+        //case MemberDef::Prototype:
+        //  type="prototype"; break;
+      case MemberDef::Signal:
+        type="signal"; break;
+      case MemberDef::Slot:
+        type="slot"; break;
+      case MemberDef::Friend:
+        type="ffunc"; break;
+      case MemberDef::DCOP:
+        type="dcop"; break;
+      case MemberDef::Property:
+        if (cd && cd->compoundType()==ClassDef::Protocol) 
+          type="intfp";         // interface property
+        else 
+          type="instp";         // instance property
+        break;
+      case MemberDef::Event:
+        type="event"; break;
+    }
+    writeToken(m_tts,md,type,lang,scope,md->anchor());
   }
   else if (context && context->isLinkable())
   {

@@ -245,9 +245,7 @@ void Definition::addToMap(const char *name,Definition *d)
 
 void Definition::removeFromMap(Definition *d)
 {
-  QCString symbolName = d->symbolName();
-  int index=computeQualifiedIndex(symbolName);
-  if (index!=-1) symbolName=symbolName.mid(index+2);
+  QString symbolName = d->m_symbolName;
   if (!symbolName.isEmpty()) 
   {
     //printf("******* removing symbol `%s' (%p)\n",symbolName.data(),d);

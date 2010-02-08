@@ -1938,6 +1938,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 <SkipCPP>.				{ 
   					  g_code->codify(yytext);
 					}
+<SkipCPP>[^\n\/\\]+			{
+  					  g_code->codify(yytext);
+  					}
 <SkipCPP>\\[\r]?\n			{ 
   					  codifyLines(yytext);
 					}
@@ -3043,6 +3046,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  BEGIN(g_memCallContext); 
 					}
 <*>\n({B}*"//"[!/][^\n]*\n)+		{ // remove special one-line comment
+					  if (YY_START==SkipCPP) REJECT;
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    g_yyLineNr+=((QCString)yytext).contains('\n');
@@ -3147,7 +3151,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  }
   					}
 <*>"//"[!/][^\n]*\n			{ // strip special one-line comment
-                                          if (YY_START==SkipComment || YY_START==SkipString) REJECT;
+                                          if (YY_START==SkipComment || YY_START==SkipString || YY_START==SkipCPP) REJECT;
   					  if (Config_getBool("STRIP_CODE_COMMENTS"))
 					  {
 					    char c[2]; c[0]='\n'; c[1]=0;

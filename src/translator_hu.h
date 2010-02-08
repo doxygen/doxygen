@@ -1185,7 +1185,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_4_6
      */
     virtual QCString trRTFansicp()
     {
-      return "1252";
+      return "1250";
     }
     
 

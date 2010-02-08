@@ -54,6 +54,8 @@ struct SectionInfo;
 class QDir;
 class Definition;
 class BufStr;
+class QFileInfo;
+class QStrList;
 
 //--------------------------------------------------------------------
 
@@ -234,7 +236,7 @@ bool hasVisibleRoot(BaseClassList *bcl);
 
 int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
 
-QCString convertNameToFile(const char *name,bool allowDots=FALSE);
+QCString convertNameToFile(const char *name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
 
 void extractNamespaceName(const QCString &scopeName,
                           QCString &className,QCString &namespaceName,
@@ -291,7 +293,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
                            TagInfo *tagInfo=0
                           );
 
-QCString escapeCharsInString(const char *name,bool allowDots);
+QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore=FALSE);
 
 void addGroupListToTitle(OutputList &ol,Definition *d);
 
@@ -368,6 +370,7 @@ void stackTrace();
 bool readInputFile(const char *fileName,BufStr &inBuf);
 QCString filterTitle(const QCString &title);
 
+bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 
 #endif
 
