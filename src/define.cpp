@@ -20,8 +20,11 @@
 
 Define::Define()
 { 
-  undef=FALSE; 
   fileDef=0; 
+  lineNr=1;
+  nargs=-1;
+  undef=FALSE; 
+  varArgs=FALSE;
   isPredefined=FALSE;
   nonRecursive=FALSE;
 }
@@ -33,6 +36,9 @@ Define::Define(const Define &d)
   lineNr=d.lineNr; 
   nargs=d.nargs; 
   undef=d.undef; 
+  varArgs=d.varArgs;
+  isPredefined=d.isPredefined;
+  nonRecursive=d.nonRecursive;
   fileDef=0;
 }
 

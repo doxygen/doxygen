@@ -1658,6 +1658,7 @@ void LatexGenerator::startClassDiagram()
 {
   //if (Config_getBool("COMPACT_LATEX")) t << "\\subsubsection"; else t << "\\subsection";
   //t << "{";
+  newParagraph();
 }
 
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
@@ -1812,6 +1813,7 @@ void LatexGenerator::endMemberGroup(bool hasHeader)
 
 void LatexGenerator::startDotGraph() 
 {
+  newParagraph();
 }
 
 void LatexGenerator::endDotGraph(const DotClassGraph &g) 

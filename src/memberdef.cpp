@@ -2700,7 +2700,7 @@ void MemberDef::addListReference(Definition *)
   if (xrefItems!=0)
   {
     addRefItem(xrefItems.pointer(),
-        qualifiedName(),
+        qualifiedName()+argsString(), // argsString is needed for overloaded functions (see bug 609624)
         memLabel,
         getOutputFileBase()+"#"+anchor(),memName,memArgs);
   }

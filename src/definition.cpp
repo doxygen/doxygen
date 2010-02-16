@@ -1146,6 +1146,7 @@ void Definition::makePartOfGroup(GroupDef *gd)
 
 void Definition::setRefItems(const QList<ListItemInfo> *sli)
 {
+  //printf("%s::setRefItems()\n",name().data());
   if (sli)
   {
     makeResident();
@@ -1166,6 +1167,7 @@ void Definition::setRefItems(const QList<ListItemInfo> *sli)
 
 void Definition::mergeRefItems(Definition *d)
 {
+  //printf("%s::mergeRefItems()\n",name().data());
   LockingPtr< QList<ListItemInfo> > xrefList = d->xrefListItems();
   if (xrefList!=0)
   {

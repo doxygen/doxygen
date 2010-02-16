@@ -4031,7 +4031,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					                // was: current->args.simplifyWhiteSpace();
 					  current->fileName = yyFileName;
 					  current->startLine = yyLineNr;
-					  static QRegExp re("([^)]*\\[*&][^)]*)"); // (...*...)
+					  static QRegExp re("([^)]*[*&][^)]*)"); // (...*...)
 					  if (*yytext!=';' || (current_root->section&Entry::COMPOUND_MASK) )
 					  {
 					    int tempArg=current->name.find('<');
@@ -4041,6 +4041,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
 					      //printf("Scanner.l: found in class variable: `%s' `%s' `%s'\n", current->type.data(),current->name.data(),current->args.data());
+					      if (isTypedef && current->type.left(8)!="typedef ")
+					      {
+						current->type.prepend("typedef ");
+					      }
 					      current->section = Entry::VARIABLE_SEC ;
 					    }
 					    else	      
@@ -4056,6 +4060,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    if (!current->type.isEmpty() && 
 						(current->type.find(re,0)!=-1 || current->type.left(8)=="typedef "))
 					    {
+					      if (isTypedef && current->type.left(8)!="typedef ")
+					      {
+						current->type.prepend("typedef ");
+					      }
 					      //printf("Scanner.l: found function variable!\n");
 					      current->section = Entry::VARIABLE_SEC;
 					    }
