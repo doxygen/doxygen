@@ -511,10 +511,12 @@ void MemberList::addListReferences(Definition *def)
       LockingPtr<MemberList> enumFields = md->enumFieldList();
       if (md->memberType()==MemberDef::Enumeration && enumFields!=0)
       {
+        //printf("  Adding enum values!\n");
         MemberListIterator vmli(*enumFields);
         MemberDef *vmd;
         for ( ; (vmd=vmli.current()) ; ++vmli)
         {
+          //printf("   adding %s\n",vmd->name().data());  
           vmd->addListReference(def);
         }
       }

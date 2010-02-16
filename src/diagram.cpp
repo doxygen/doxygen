@@ -999,7 +999,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
   }
 
   //output << "}\n";
-  output << ":\\begin{figure}[H]\n"
+  output << "\\begin{figure}[H]\n"
             "\\begin{center}\n"
             "\\leavevmode\n";
   output << "\\includegraphics[height=" << realHeight << "cm]{" 

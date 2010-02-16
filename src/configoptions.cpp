@@ -1105,7 +1105,7 @@ void addConfigOptions(Config *cfg)
                  "If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML\n"
                  "page will contain the date and time when the page was generated. Setting\n"
                  "this to NO can help when comparing the output of multiple runs.",
-                 FALSE
+                 TRUE
                 );
   cb->addDependency("GENERATE_HTML");
   //----

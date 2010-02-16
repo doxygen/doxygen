@@ -773,7 +773,7 @@ stylesheet in the HTML output directory as well, or it will be erased!
 If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML 
 page will contain the date and time when the page was generated. Setting 
 this to NO can help when comparing the output of multiple runs.
-' defval='0' depends='GENERATE_HTML'/>
+' defval='1' depends='GENERATE_HTML'/>
     <option type='bool' id='HTML_ALIGN_MEMBERS' docs='
 If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 files or namespaces will be aligned in HTML using tables. If set to 

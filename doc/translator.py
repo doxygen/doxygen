@@ -173,7 +173,7 @@ class Transl:
         self.missingMethods = None   # list of prototypes to be implemented
         self.implementedMethods = None  # list of implemented required methods
         self.adaptMinClass = None    # The newest adapter class that can be used
-            
+        self.isDecodedTranslator = None  # Flag related to internal usage of UTF-8    
         
     def __tokenGenerator(self):
         """Generator that reads the file and yields tokens as 4-tuples.
@@ -1094,6 +1094,13 @@ class Transl:
             else:
                 self.missingMethods.append(p)
 
+        # Set the least important note first if the translator is decoded.
+        # If yes, then it means that the implementation should be switched
+        # to UTF-8 later (suggestion).
+        self.isDecodedTranslator = self.classId in self.manager.decodedTranslators
+        if self.isDecodedTranslator:
+            self.note = 'Reimplementation using UTF-8 suggested.'
+            
         # Check whether adapter must be used or suggest the newest one.
         # Change the status and set the note accordingly.
         if self.baseClassId != 'Translator':
@@ -1277,9 +1284,43 @@ class TrManager:
         self.numLang = None                   # excluding coupled En-based
         self.doxVersion = None                # Doxygen version
         
+        # Capture the knowledge about translators that are not implemented
+        # to use UTF-8 internally.
+        self.decodedTranslators = self.getDecodedTranslators()
+        
         # Build objects where each one is responsible for one translator.
         self.__build()
         
+        
+    def getDecodedTranslators(self):
+        """Parses language.cpp to find what translators do not use UTF-8 yet"""
+        decodedTranslators = []
+        
+        # Regular expression to detect the lines like
+        #     theTranslator=new TranslatorDecoder(new TranslatorSwedish);
+        rex = re.compile(r'^\s*theTranslator\s*=\s*new\s+.*$')
+        
+        # Regular expression to get the (optional) TranslatorDecoder and TranslatorXXX
+        rex2 = re.compile(r'\bTranslator\w+')
+        
+        # Parse the lines in the specific source code.
+        f = open(os.path.join(self.src_path, 'language.cpp'), 'rU')
+        for line in f:
+            if rex.match(line):
+                lst = rex2.findall(line)
+                if lst[0] == 'TranslatorDecoder':
+                    decodedTranslators.append(lst[1])
+        f.close()
+        
+        # Display warning when all translator implementations were converted 
+        # to UTF-8.
+        if len(decodedTranslators) == 0:
+            print 'This script should be updated. All translators do use UTF-8'
+            print 'internally.  The TranslatorDecoder adapter should be removed'
+            print 'from the code and its usage should not be checked any more.'
+            
+        return decodedTranslators
+    
         
     def __build(self):
         """Find the translator files and build the objects for translators."""

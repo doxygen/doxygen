@@ -6617,6 +6617,7 @@ static void addEnumValuesToEnums(EntryNav *rootNav)
                   fmd->setMaxInitLines(root->initLines);
                   fmd->setMemberGroupId(root->mGrpId);
                   fmd->setExplicitExternal(root->explicitExternal);
+                  fmd->setRefItems(root->sli);
                   if (fmd)
                   {
                     md->insertEnumField(fmd);
@@ -7737,6 +7738,16 @@ static void findDirDocumentation(EntryNav *rootNav)
 
     QCString normalizedName = root->name;
     normalizedName = substitute(normalizedName,"\\","/");
+    //printf("root->docFile=%s normalizedName=%s\n",
+    //    root->docFile.data(),normalizedName.data());
+    if (root->docFile==normalizedName) // current dir?
+    {
+      int lastSlashPos=normalizedName.findRev('/'); 
+      if (lastSlashPos!=-1) // strip file name
+      {
+        normalizedName=normalizedName.left(lastSlashPos);
+      }
+    }
     if (normalizedName.at(normalizedName.length()-1)!='/')
     {
       normalizedName+='/';
@@ -7774,7 +7785,7 @@ static void findDirDocumentation(EntryNav *rootNav)
     else
     {
       warn(root->fileName,root->startLine,"Warning: No matching "
-          "directory found for command \\dir %s\n",root->name.data());
+          "directory found for command \\dir %s\n",normalizedName.data());
     }
     rootNav->releaseEntry();
   }

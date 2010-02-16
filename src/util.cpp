@@ -5829,7 +5829,7 @@ void addRefItem(const QList<ListItemInfo> *sli,
     const char *key, 
     const char *prefix, const char *name,const char *title,const char *args)
 {
-  //printf("addRefItem(sli=%p,prefix=%s,name=%s,title=%s,args=%s)\n",sli,prefix,name,title,args);
+  //printf("addRefItem(sli=%p,key=%s,prefix=%s,name=%s,title=%s,args=%s)\n",sli,key,prefix,name,title,args);
   if (sli)
   {
     QListIterator<ListItemInfo> slii(*sli);
