@@ -145,7 +145,7 @@ static bool  	        insideTryBlock=FALSE;
 static bool             insideCode;
 static bool             needsSemi;
 
-static int              depthIf;
+//static int              depthIf;
 static int  	        initBracketCount;
 static QCString         memberGroupRelates;
 static QCString         memberGroupInside;
@@ -5495,7 +5495,7 @@ static void parseCompounds(Entry *rt)
       //  ce->name.data(),ce->program.data());
       // init scanner state
       padCount=0;
-      depthIf = 0;
+      //depthIf = 0;
       inputString = ce->program;
       inputPosition = 0;
       scanYYrestart( scanYYin ) ;
@@ -5577,10 +5577,10 @@ static void parseCompounds(Entry *rt)
       ce->program.resize(0);
 
 
-      if (depthIf>0)
-      {
-	warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
-      }
+      //if (depthIf>0)
+      //{
+      //	warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+      //}
     }
     parseCompounds(ce);
   }
@@ -5598,7 +5598,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
   g_inputFromFile = FALSE;
 
   //anonCount     = 0;  // don't reset per file
-  depthIf       = 0;
+  //depthIf       = 0;
   protection    = Public;
   mtype         = Method;
   gstat         = FALSE;
@@ -5648,10 +5648,10 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     //forceEndGroup();
     groupLeaveFile(yyFileName,yyLineNr);
 
-    if (depthIf>0)
-    {
-      warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
-    }
+    //if (depthIf>0)
+    //{
+    //  warn(yyFileName,yyLineNr,"Documentation block ended in the middle of a conditional section!");
+    //}
 
     rt->program.resize(0);
     delete current; current=0;

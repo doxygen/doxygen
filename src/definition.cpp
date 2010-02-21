@@ -449,7 +449,7 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
   {
     switch(brief.at(bl-1))
     {
-      case '.': case '!': case '?': break;
+      case '.': case '!': case '?': case '>': case ':': break;
       default: 
         if (uni_isupper(brief.at(0))) brief+='.'; 
         break;

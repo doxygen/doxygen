@@ -10025,14 +10025,12 @@ void parseInput()
   msg("Computing class relations...\n");
   computeTemplateClassRelations(); 
   flushUnresolvedRelations();
+
+  computeClassRelations();        
+
   if (Config_getBool("OPTIMIZE_OUTPUT_VHDL"))
-  {
     VhdlDocGen::computeVhdlComponentRelations();
-  }
-  else
-  {
-    computeClassRelations();        
-  }
+
   g_classEntries.clear();          
 
   msg("Add enum values to enums...\n");

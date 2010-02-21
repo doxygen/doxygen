@@ -1595,9 +1595,9 @@ nextChar:
       ADD_CHAR(' ');
     }
     else if (i>0 && 
-        ((isId(s.at(i)) && s.at(i-1)==')') || 
-         (s.at(i)=='\''  && s.at(i-1)==' ')
-        )
+         ((isId(s.at(i)) && s.at(i-1)==')') || 
+          (s.at(i)=='\''  && s.at(i-1)==' ')
+         )
         )
     {
       ADD_CHAR(' ');
@@ -6325,7 +6325,7 @@ bool findAndRemoveWord(QCString &s,const QCString &word)
   {
     if (s.mid(i,l)==word) 
     {
-      if (i>0 && isspace(s.at(i-1))) 
+      if (i>0 && isspace((uchar)s.at(i-1))) 
         i--,l++;
       else if (i+l<(int)s.length() && isspace(s.at(i+l))) 
         l++;

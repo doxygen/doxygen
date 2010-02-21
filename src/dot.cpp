@@ -35,7 +35,7 @@
 #include "pagedef.h"
 #include "portable.h"
 #include "dirdef.h"
-
+#include "vhdldocgen.h"
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
@@ -718,9 +718,18 @@ void DotNode::writeBox(QTextStream &t,
   }
   else 
   {
-    if (!Config_getBool("DOT_TRANSPARENT"))
+    static bool dotTransparent = Config_getBool("DOT_TRANSPARENT");
+    static bool vhdlOpt = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+    if (!dotTransparent)
     {
-      t << ",color=\"" << labCol << "\", fillcolor=\"white\", style=\"filled\"";
+      ClassDef* ccd=this->m_classDef;
+
+      t << ",color=\"" << labCol << "\", fillcolor=\"";
+      if (ccd && vhdlOpt && (VhdlDocGen::VhdlClasses)ccd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+        t << "khaki";	
+      else
+        t << "white";
+      t << "\", style=\"filled\"";
     }
     else
     {
