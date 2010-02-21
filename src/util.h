@@ -199,7 +199,7 @@ int guessSection(const char *name);
 
 inline bool isId(int c)
 {
-  return c=='_' || isalnum(c) || c>=128 || c<0;
+  return c=='_' || c>=128 || c<0 || isalnum(c);
 }
 
 QCString removeRedundantWhiteSpace(const QCString &s);

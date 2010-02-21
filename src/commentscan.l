@@ -395,6 +395,8 @@ static bool             inGroupParamFound;
 static int              braceCount;
 static bool             insidePre;
 static bool             parseMore;
+static int              g_condCount;
+static int              g_sectionLevel;
 
 static int              g_commentCount;
 
@@ -1691,6 +1693,48 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					  if (*yytext=='\n') yyLineNr++;
 					  addOutput('\n');
   					}
+<SkipInternal>[@\\]"if"/[ \t]		{
+                                          g_condCount++;
+  					}
+<SkipInternal>[@\\]"ifnot"/[ \t]	{
+                                          g_condCount++;
+  					}
+<SkipInternal>[@\\]/"endif"		{
+                                          g_condCount--;
+					  if (g_condCount<0) // handle conditional section around of \internal, see bug607743  
+					  {
+					    unput('\\');
+					    BEGIN(Comment);
+					  }
+  					}
+<SkipInternal>[@\\]/"section"[ \t]	{
+  					  if (g_sectionLevel>0)
+					  {
+					    unput('\\');
+					    BEGIN(Comment);
+					  }
+  					}
+<SkipInternal>[@\\]/"subsection"[ \t]	{
+  					  if (g_sectionLevel>1)
+					  {
+					    unput('\\');
+					    BEGIN(Comment);
+					  }
+  					}
+<SkipInternal>[@\\]/"subsubsection"[ \t]	{
+  					  if (g_sectionLevel>2)
+					  {
+					    unput('\\');
+					    BEGIN(Comment);
+					  }
+  					}
+<SkipInternal>[@\\]/"paragraph"[ \t]	{
+  					  if (g_sectionLevel>3)
+					  {
+					    unput('\\');
+					    BEGIN(Comment);
+					  }
+  					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
   					}
 <SkipInternal>.				{ // any other character
@@ -2134,6 +2178,10 @@ static bool handleSection(const QCString &s)
   setOutput(OutputDoc);
   addOutput("@"+s+" ");
   BEGIN(SectionLabel);
+  if      (s=="section")       g_sectionLevel=1;
+  else if (s=="subsection")    g_sectionLevel=2;
+  else if (s=="subsubsection") g_sectionLevel=3;
+  else if (s=="paragraph")     g_sectionLevel=4;
   return FALSE;
 }
 
@@ -2283,6 +2331,7 @@ static bool handleInternal(const QCString &)
     { 
       current->doc.resize(0);
     }
+    g_condCount=0;
     BEGIN( SkipInternal );
   }
   else
@@ -2409,6 +2458,8 @@ bool parseCommentBlock(/* in */     ParserInterface *parser,
   outputXRef.resize(0);
   setOutput( isBrief || isAutoBriefOn ? OutputBrief : OutputDoc );
   briefEndsAtDot = isAutoBriefOn;
+  g_condCount    = 0;
+  g_sectionLevel = 0;
 
   if (!current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {

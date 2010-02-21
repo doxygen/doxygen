@@ -80,6 +80,8 @@ static bool mustBeOutsideParagraph(DocNode *n)
           /* <h?> */
         case DocNode::Kind_Section:
         case DocNode::Kind_HtmlHeader:
+          /* \internal */
+        case DocNode::Kind_Internal:
           /* <div> */
         case DocNode::Kind_Verbatim:
         case DocNode::Kind_Include:
@@ -705,6 +707,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
     switch (p->parent()->kind()) 
     {
       case DocNode::Kind_Section:
+      case DocNode::Kind_Internal:
       case DocNode::Kind_HtmlListItem:
       case DocNode::Kind_HtmlDescData:
       case DocNode::Kind_HtmlCell:
@@ -784,6 +787,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
     switch (p->parent()->kind()) 
     {
       case DocNode::Kind_Section:
+      case DocNode::Kind_Internal:
       case DocNode::Kind_HtmlListItem:
       case DocNode::Kind_HtmlDescData:
       case DocNode::Kind_HtmlCell:
@@ -1106,17 +1110,17 @@ void HtmlDocVisitor::visitPost(DocHtmlCaption *)
   m_t << "</caption>\n";
 }
 
-void HtmlDocVisitor::visitPre(DocInternal *)
+void HtmlDocVisitor::visitPre(DocInternal *i)
 {
   if (m_hide) return;
+  forceEndParagraph(i);
   m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
-  m_t << "<p>" << endl;
 }
 
-void HtmlDocVisitor::visitPost(DocInternal *) 
+void HtmlDocVisitor::visitPost(DocInternal *i) 
 {
   if (m_hide) return;
-  m_t << "</p>" << endl;
+  forceStartParagraph(i);
 }
 
 void HtmlDocVisitor::visitPre(DocHRef *href)

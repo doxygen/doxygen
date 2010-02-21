@@ -264,7 +264,7 @@ class VhdlDocGen
     static bool membersHaveSpecificType(MemberList *ml,int type);
     static void startFonts(const QCString& q, const char *keyword,OutputList& ol);
     static bool isNumber(const QCString& s);
-
+    static QCString getProtectionName(int prot);
   private:
     static void getFuncParams(QList<Argument>&, const char* str);
     static bool compareArgList(ArgumentList*,ArgumentList*);

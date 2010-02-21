@@ -317,8 +317,21 @@ void endFile(OutputList &ol,bool)
 
 static bool classHasVisibleChildren(ClassDef *cd)
 {
-  if (cd->subClasses()==0) return FALSE;
-  BaseClassList *bcl=cd->subClasses();
+ bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+
+  BaseClassList *bcl;
+
+  if (vhdl) // reverse baseClass/subClass relation
+  {
+    if (cd->baseClasses()==0) return FALSE;
+    bcl=cd->baseClasses();
+  }
+  else 
+  {
+    if (cd->subClasses()==0) return FALSE;
+    bcl=cd->subClasses();
+  }
+
   BaseClassListIterator bcli(*bcl);
   for ( ; bcli.current() ; ++bcli)
   {
@@ -332,13 +345,25 @@ static bool classHasVisibleChildren(ClassDef *cd)
 
 void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,FTVHelp* ftv)
 {
+  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+
   if (bcl==0) return;
   BaseClassListIterator bcli(*bcl);
   bool started=FALSE;
   for ( ; bcli.current() ; ++bcli)
   {
     ClassDef *cd=bcli.current()->classDef;
-    if (cd->isVisibleInHierarchy() && hasVisibleRoot(cd->baseClasses()))
+    bool b;
+    if (vhdl)
+    {
+      b=hasVisibleRoot(cd->subClasses());
+    }
+    else
+    {
+      b=hasVisibleRoot(cd->baseClasses());
+    }
+
+    if (cd->isVisibleInHierarchy() && b) // hasVisibleRoot(cd->baseClasses()))
     {
       if (!started)
       {
@@ -382,7 +407,14 @@ void writeClassTree(OutputList &ol,BaseClassList *bcl,bool hideSuper,int level,F
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
         bool wasVisited=cd->visited;
         cd->visited=TRUE;
-        writeClassTree(ol,cd->subClasses(),wasVisited,level+1,ftv);
+        if (vhdl)	
+        {
+          writeClassTree(ol,cd->baseClasses(),wasVisited,level+1,ftv);
+        }
+        else       
+        {
+          writeClassTree(ol,cd->subClasses(),wasVisited,level+1,ftv);
+        }
       }
       ol.endIndexListItem();
     }
@@ -441,6 +473,8 @@ void writeClassTree(BaseClassList *cl,int level)
 void writeClassTreeNode(ClassDef *cd,bool &started,int level)
 {
   //printf("writeClassTreeNode(%s) visited=%d\n",cd->name().data(),cd->visited);
+  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+
   if (cd->isVisibleInHierarchy() && !cd->visited)
   {
     if (!started)
@@ -455,7 +489,14 @@ void writeClassTreeNode(ClassDef *cd,bool &started,int level)
     }
     if (hasChildren)
     {
-      writeClassTree(cd->subClasses(),level+1);
+      if (vhdl)
+      {
+        writeClassTree(cd->baseClasses(),level+1);
+      }
+      else
+      {
+        writeClassTree(cd->subClasses(),level+1);
+      }
     }
     cd->visited=TRUE;
   }
@@ -495,6 +536,7 @@ void writeClassTree(ClassSDict *d,int level)
 
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv)
 {
+  static bool vhdl=Config_getBool("OPTIMIZE_OUTPUT_VHDL");
   ClassSDict::Iterator cli(*cl);
   for (;cli.current(); ++cli)
   {
@@ -504,7 +546,22 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
     //              hasVisibleRoot(cd->baseClasses()),
     //              cd->isVisibleInHierarchy()
     //      );
-    if (!hasVisibleRoot(cd->baseClasses())) // filter on root classes
+    bool b;
+    if (vhdl)
+    {
+      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS || 
+          (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
+      {
+        continue;
+      }
+      b=!hasVisibleRoot(cd->subClasses());
+    }
+    else
+    {
+      b=!hasVisibleRoot(cd->baseClasses());
+    }
+
+    if (b)  //filter on root classes
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
       {
@@ -543,7 +600,12 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           if (ftv)
             ftv->addContentsItem(hasChildren,cd->displayName(),0,0,0); 
         }
-        if (hasChildren) 
+        if (vhdl && hasChildren) 
+        {
+          writeClassTree(ol,cd->baseClasses(),cd->visited,1,ftv);
+          cd->visited=TRUE;
+        }
+        else if (hasChildren)
         {
           writeClassTree(ol,cd->subClasses(),cd->visited,1,ftv);
           cd->visited=TRUE;
@@ -1073,6 +1135,13 @@ void writeAnnotatedClassList(OutputList &ol)
     {
       QCString type=cd->compoundTypeString();
       ol.startIndexKey();
+      static bool vhdl = Config_getBool("OPTIMIZE_OUTPUT_VHDL");
+      if (vhdl)
+      {
+        QCString prot= VhdlDocGen::getProtectionName((VhdlDocGen::VhdlClasses)cd->protection());
+        ol.docify(prot.data());
+        ol.insertMemberAlign();
+      }
       ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
       ol.endIndexKey();
       bool hasBrief = !cd->briefDescription().isEmpty();

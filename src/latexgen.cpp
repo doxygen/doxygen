@@ -351,7 +351,7 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
        "    \\setlength{\\itemsep}{-4pt}%\n"
        "    \\renewcommand{\\makelabel}{\\entrylabel}%\n"
        "  }%\n"
-       "  \\item[#1:]%\n"
+       "  \\item[#1]%\n"
        "}{%\n"
        "  \\end{list}%\n"
        "}\n\n";
@@ -504,9 +504,8 @@ static void writeDefaultStyleSheetPart3(QTextStream &t)
        "}\n\n";
   t << "% Used by @internal\n"
        "\\newenvironment{DoxyInternal}[1]{%\n"
-       "  \\begin{DoxyDesc}{#1}%\n"
+       "  \\paragraph*{#1}%\n"
        "}{%\n"
-       "  \\end{DoxyDesc}%\n"
        "}\n\n";
   t << "% Used by @par and @paragraph\n"
        "\\newenvironment{DoxyParagraph}[1]{%\n"
@@ -1127,6 +1126,7 @@ void LatexGenerator::startParagraph()
 
 void LatexGenerator::endParagraph()
 {
+  t << endl << endl;
 }
 
 void LatexGenerator::writeString(const char *text)
@@ -1658,7 +1658,6 @@ void LatexGenerator::startClassDiagram()
 {
   //if (Config_getBool("COMPACT_LATEX")) t << "\\subsubsection"; else t << "\\subsection";
   //t << "{";
-  newParagraph();
 }
 
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,

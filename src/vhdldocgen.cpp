@@ -213,17 +213,20 @@ void VhdlDocGen::computeVhdlComponentRelations()
   {
     cli.current()->visited=FALSE;
     ClassDef * cd = cli.current();
-    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
+    if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS || 
+        (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS)
     {
       QCString bName=cd->name();
       int i=bName.find("::");
       if (i>0)
       {
         QCString entityName=bName.left(i);
+        entityName.stripPrefix("_");
         ClassDef *classEntity=Doxygen::classSDict->find(entityName);
         // entity for architecutre ?
         if (classEntity)
         {
+          // printf("\n entity %s  arch %s",entityName.data(),bName.data());
           classEntity->insertBaseClass(cd,bName,Public,Normal,0);
           cd->insertSubClass(classEntity,Public,Normal,0);
         }
@@ -1163,6 +1166,19 @@ void VhdlDocGen::getFuncParams(QList<Argument>& ql, const char* str)
   }//while
 } // getFuncName
 
+QCString VhdlDocGen::getProtectionName(int prot)
+{
+  if (prot==VhdlDocGen::ENTITYCLASS)
+    return "entity";
+  else if (prot==VhdlDocGen::ARCHITECTURECLASS)
+    return "architecture";
+  else if (prot==VhdlDocGen::PACKAGECLASS)
+    return "package";
+  else if (prot==VhdlDocGen::PACKBODYCLASS)
+    return "package body";
+
+  return "";
+}
 
 QCString VhdlDocGen::trTypeString(int type)
 {
