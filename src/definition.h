@@ -307,6 +307,7 @@ class Definition : public DefinitionIntf, public LockableObj
     void writePathFragment(OutputList &ol) const;
     void writeNavigationPath(OutputList &ol) const;
     virtual void writeQuickMemberLinks(OutputList &,MemberDef *) const {}
+    virtual void writeSummaryLinks(OutputList &) {}
 
     /*! Writes the documentation anchors of the definition to 
      *  the Doxygen::tagFile stream.

@@ -604,7 +604,7 @@ void GroupDef::writeFiles(OutputList &ol,const QCString &title)
   // write list of files
   if (fileList->count()>0)
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader("files");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
@@ -645,7 +645,7 @@ void GroupDef::writeNestedGroups(OutputList &ol,const QCString &title)
   // write list of groups
   if (groupList->count()>0)
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader("groups");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
@@ -681,7 +681,7 @@ void GroupDef::writeDirs(OutputList &ol,const QCString &title)
   // write list of directories
   if (dirList->count()>0)
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader("dirs");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
@@ -803,14 +803,57 @@ void GroupDef::writeAuthorSection(OutputList &ol)
   ol.popGeneratorState();
 }
 
+void GroupDef::writeSummaryLinks(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
+  LayoutDocEntry *lde;
+  bool first=TRUE;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if ((lde->kind()==LayoutDocEntry::GroupClasses && classSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::GroupNamespaces && namespaceSDict->declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupFiles && fileList->count()>0) ||
+        (lde->kind()==LayoutDocEntry::GroupNestedGroups && groupList->count()>0) ||
+        (lde->kind()==LayoutDocEntry::GroupDirs && dirList->count()>0)
+       )
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" : 
+                       lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
+                       lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
+                       lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
+                       "dirs";
+      writeSummaryLink(ol,label,ls->title,first);
+    }
+    else if (lde->kind()==LayoutDocEntry::MemberDecl)
+    {
+      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      MemberList * ml = getMemberList(lmd->type);
+      if (ml && ml->declVisible())
+      {
+        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+      }
+    }
+  }
+  if (!first)
+  {
+    ol.writeString("  </div>\n");
+  }
+  ol.popGeneratorState();
+}
+
 void GroupDef::writeDocumentation(OutputList &ol)
 {
   ol.pushGeneratorState();
   startFile(ol,getOutputFileBase(),name(),title);
-  startTitle(ol,getOutputFileBase());
+  startTitle(ol,getOutputFileBase(),this);
   ol.parseText(title);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),title);
+  ol.startContents();
 
   if (Doxygen::searchIndex)
   {

@@ -356,8 +356,8 @@ function SearchBox(name, resultsPath, inFrame, label)
        else
        {
          var domPopupSearchResults = this.DOMPopupSearchResults();
-         var left = getXPos(domSearchBox) + domSearchBox.offsetWidth;
-         var top  = getYPos(domSearchBox) + domSearchBox.offsetHeight + 1;
+         var left = getXPos(domSearchBox) + 150; // domSearchBox.offsetWidth;
+         var top  = getYPos(domSearchBox) + 20;  // domSearchBox.offsetHeight + 1;
          domPopupSearchResultsWindow.style.display = 'block';
          left -= domPopupSearchResults.offsetWidth;
          domPopupSearchResultsWindow.style.top     = top  + 'px';

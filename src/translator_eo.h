@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorEsperanto : public TranslatorAdapter_1_6_0
+class TranslatorEsperanto : public Translator
 {
   public:
 
@@ -1773,6 +1773,40 @@ class TranslatorEsperanto : public TranslatorAdapter_1_6_0
     virtual QCString trTypeConstraints()
     {
       return "Tipaj Limigoj";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Rilato";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Ŝarĝante...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Malloka Nomspaco";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Serĉante...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Nenia kongruo";
     }
 
 };

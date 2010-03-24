@@ -28,7 +28,7 @@ class MemberDef;
 void parseCCode(CodeOutputInterface &,const char *,const QCString &, 
             bool ,const char *,FileDef *fd=0,
             int startLine=-1,int endLine=-1,bool inlineFragment=FALSE,
-            MemberDef *memberDef=0);
+            MemberDef *memberDef=0,bool showLineNumbers=TRUE);
 void resetCCodeParserState();
 void codeFreeScanner();
 

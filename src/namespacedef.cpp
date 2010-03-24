@@ -372,6 +372,41 @@ void NamespaceDef::writeAuthorSection(OutputList &ol)
   ol.popGeneratorState();
 }
 
+void NamespaceDef::writeSummaryLinks(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
+  LayoutDocEntry *lde;
+  bool first=TRUE;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if ((lde->kind()==LayoutDocEntry::NamespaceClasses && classSDict && classSDict->declVisible()) || 
+        (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaceSDict && namespaceSDict->declVisible())
+       )
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      QCString label = lde->kind()==LayoutDocEntry::NamespaceClasses ? "nested-classes" : "namespaces";
+      writeSummaryLink(ol,label,ls->title,first);
+    }
+    else if (lde->kind()== LayoutDocEntry::MemberDecl)
+    {
+      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      MemberList * ml = getMemberList(lmd->type);
+      if (ml && ml->declVisible())
+      {
+        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+      }
+    }
+  }
+  if (!first)
+  {
+    ol.writeString("  </div>\n");
+  }
+  ol.popGeneratorState();
+}
+
 void NamespaceDef::writeDocumentation(OutputList &ol)
 {
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
@@ -395,11 +430,11 @@ void NamespaceDef::writeDocumentation(OutputList &ol)
     writeNavigationPath(ol);
   }
   ol.endQuickIndices();
-  ol.startContents();
-  startTitle(ol,getOutputFileBase());
+  startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
+  ol.startContents();
   
   if (Doxygen::searchIndex)
   {
@@ -730,6 +765,20 @@ void NamespaceDef::combineUsingRelations()
   }
 }
 
+bool NamespaceSDict::declVisible() const
+{
+  SDict<NamespaceDef>::Iterator ni(*this);
+  NamespaceDef *nd;
+  for (ni.toFirst();(nd=ni.current());++ni)
+  {
+    if (nd->isLinkable())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool localName)
 {
   if (count()==0) return; // no namespaces in the list
@@ -744,7 +793,7 @@ void NamespaceSDict::writeDeclaration(OutputList &ol,const char *title,bool loca
   if (!found) return; // no linkable namespaces in the list
 
   // write list of namespaces
-  ol.startMemberHeader();
+  ol.startMemberHeader("namespaces");
   bool javaOpt    = Config_getBool("OPTIMIZE_OUTPUT_JAVA");
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
 #if 0

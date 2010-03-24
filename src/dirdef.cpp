@@ -205,7 +205,7 @@ void DirDef::writeSubDirList(OutputList &ol)
   // write subdir list
   if (m_subdirs.count()>0)
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader("subdirs");
     ol.parseText(theTranslator->trDir(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
@@ -247,7 +247,7 @@ void DirDef::writeFileList(OutputList &ol)
   // write file list
   if (m_fileList->count()>0)
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader("files");
     ol.parseText(theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
@@ -326,7 +326,6 @@ void DirDef::writeDocumentation(OutputList &ol)
   writeNavigationPath(ol);
 
   ol.endQuickIndices();
-  ol.startContents();
 
   startTitle(ol,getOutputFileBase());
   ol.pushGeneratorState();
@@ -337,6 +336,7 @@ void DirDef::writeDocumentation(OutputList &ol)
     ol.parseText(title);
   ol.popGeneratorState();
   endTitle(ol,getOutputFileBase(),title);
+  ol.startContents();
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {
@@ -712,6 +712,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
 
   // write navigation path
   m_src->writeNavigationPath(ol);
+  ol.startContents();
 
   //startTitle(ol,getOutputFileBase());
   //  ol.parseText(shortTitle);

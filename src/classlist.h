@@ -54,6 +54,7 @@ class ClassSDict : public SDict<ClassDef>
    int compareItems(GCI item1,GCI item2);
    void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
                          const char *header=0,bool localNames=FALSE);
+   bool declVisible(const ClassDef::CompoundType *filter=0) const;
 };
 
 #endif

@@ -171,8 +171,12 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberSections); }
     void endMemberSections()
     { forall(&OutputGenerator::endMemberSections); }
-    void startMemberHeader()
-    { forall(&OutputGenerator::startMemberHeader); }
+    void startHeaderSection()
+    { forall(&OutputGenerator::startHeaderSection); }
+    void endHeaderSection()
+    { forall(&OutputGenerator::endHeaderSection); }
+    void startMemberHeader(const char *anchor)
+    { forall(&OutputGenerator::startMemberHeader,anchor); }
     void endMemberHeader()
     { forall(&OutputGenerator::endMemberHeader); }
     void startMemberSubtitle()

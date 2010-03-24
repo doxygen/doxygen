@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorCatalan : public TranslatorAdapter_1_6_0
+class TranslatorCatalan : public Translator
 {
   public:
 
@@ -1781,6 +1781,40 @@ class TranslatorCatalan : public TranslatorAdapter_1_6_0
     virtual QCString trTypeConstraints()
     {
       return "Restriccions de Tipus";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name)+" Relació";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Carregant...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Espai de Noms Global";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Cercant...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Cap coincidència";
     }
 
 };

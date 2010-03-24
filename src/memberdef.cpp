@@ -630,6 +630,7 @@ MemberDef::MemberDef(const char *df,int dl,
                      const ArgumentList *tal,const ArgumentList *al
                     ) : Definition(df,dl,removeRedundantWhiteSpace(na))
 {
+  //printf("MemberDef::MemberDef(%s)\n",na);
   m_storagePos=-1;
   m_cacheHandle=-1;
   m_impl = new MemberDefImpl;
@@ -1980,7 +1981,8 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
     ParserInterface *pIntf = Doxygen::parserManager->getParser(getDefFileExtension());
     pIntf->resetCodeParserState();
     ol.startCodeFragment();
-    pIntf->parseCode(ol,scopeName,m_impl->initializer,FALSE,0);
+    pIntf->parseCode(ol,scopeName,m_impl->initializer,FALSE,0,getFileDef(),
+                     -1,-1,TRUE,this,FALSE);
     ol.endCodeFragment();
   }
 

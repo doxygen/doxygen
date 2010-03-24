@@ -506,9 +506,15 @@ void HtmlHelp::createProjectFile()
       s = indexFiles.next();
     }
     t << "tabs.css" << endl;
+#if 0
     t << "tab_b.gif" << endl;
     t << "tab_l.gif" << endl;
     t << "tab_r.gif" << endl;
+#endif
+    t << "tab_a.png" << endl;
+    t << "tab_b.png" << endl;
+    t << "tab_h.png" << endl;
+    t << "tab_s.png" << endl;
     if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
     {
       t << "open.gif" << endl;

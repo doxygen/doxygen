@@ -154,7 +154,8 @@ static Argument          *parameter; // element of parameter list
 static QCString          argType;  // fortran type of an argument of a parameter list
 static QCString          argName;  // last identifier name in variable list
 static QCString          initializer;  // initial value of a variable
-static int               initializerScope;  // number if nested array scopes in initializer
+static int               initializerArrayScope;  // number if nested array scopes in initializer
+static int               initializerScope;  // number if nested function calls in initializer
 static QCString          useModuleName;  // name of module in the use statement
 static Protection        defaultProtection;
 
@@ -310,24 +311,34 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 
 
- /*------ ignore strings */ 
-<*>"\\\\"                               { /* ignore \\  */}
-<*>"\\\""|\\\'                          { /* ignore \" and \'  */}
-
+ /*------ ignore strings that are not initialization strings */ 
+<*>"\\\\"				{ if (yy_top_state() == Initialization
+					      || yy_top_state() == ArrayInitializer)
+					    initializer+=yytext;
+					}
+<*>"\\\""|\\\'                          { if (yy_top_state() == Initialization
+					      || yy_top_state() == ArrayInitializer)
+					    initializer+=yytext;
+					}
 <String>\"|\'                           { // string ends with next quote without previous backspace
                                           if (yytext[0]!=stringStartSymbol) REJECT; // single vs double quote
-                                          // fprintf(stderr,"string end: %s\n",debugStr.data());
+					  if (yy_top_state() == Initialization
+					      || yy_top_state() == ArrayInitializer)
+					    initializer+=yytext;
                                           yy_pop_state();
                                         }           
-
-<String>.                               { debugStr+=yytext; } // ignore String contents (especially '!') 
-
+<String>.                               { if (yy_top_state() == Initialization
+					      || yy_top_state() == ArrayInitializer)
+					    initializer+=yytext;
+					} 
 <*>\"|\'                                { /* string starts */
 					  if (YY_START == StrIgnore) REJECT; // ignore in simple comments
-                                          // fprintf(stderr,"string start: %c %d\n",yytext[0],yyLineNr);
                                           yy_push_state(YY_START);
+                                          if (yy_top_state() == Initialization
+					      || yy_top_state() == ArrayInitializer)
+					    initializer+=yytext;
                                           stringStartSymbol=yytext[0]; // single or double quote
-                                          BEGIN(String); debugStr="!^!";
+                                          BEGIN(String);
                                         }
 
  /*------ ignore simple comment (not documentation comments) */
@@ -629,7 +640,7 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
 <Variable>{COMMA}	                {}
 <Variable>{BS}"="                       { yy_push_state(YY_START);
                                           initializer="";
-                                          initializerScope = 0;
+                                          initializerScope = initializerArrayScope = 0;
 					  BEGIN(Initialization);
                                         }
 <Variable>"\n"	                        { currentModifiers = SymbolModifiers();
@@ -639,22 +650,33 @@ PREFIX    (RECURSIVE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,2}(RECURSIVE|PURE|ELEMENTA
                                         }
 
 <Initialization,ArrayInitializer>"(/"   { initializer+=yytext;
-                                           initializerScope++;
+                                           initializerArrayScope++;
                                            BEGIN(ArrayInitializer); // initializer may contain comma
                                         }
 <ArrayInitializer>"/)"                   { initializer+=yytext;
-                                           initializerScope--;
-                                           if(initializerScope<=0)
+                                           initializerArrayScope--;
+                                           if(initializerArrayScope<=0)
                                            {
-                                              initializerScope = 0; // just in case
+                                              initializerArrayScope = 0; // just in case
                                               BEGIN(Initialization);
                                            }
                                         }
 <ArrayInitializer>.                     { initializer+=yytext; }
-<Initialization>{COMMA}                 { yy_pop_state(); // end initialization
-                                          if (v_type == V_VARIABLE) last_entry->initializer= initializer;
-                                        }
-<Initialization>"\n"|"!"                { //| 
+<Initialization>"("			{ initializerScope++;
+					  initializer+=yytext;
+					}
+<Initialization>")"			{ initializerScope--;
+					  initializer+=yytext;
+					}
+<Initialization>{COMMA}                 { if (initializerScope == 0)
+					  {
+					    yy_pop_state(); // end initialization
+                                            if (v_type == V_VARIABLE) last_entry->initializer= initializer;
+					  }
+					  else
+					    initializer+=", ";
+					}
+<Initialization>"\n"|"!"                { //|
                                           yy_pop_state(); // end initialization
                                           if (v_type == V_VARIABLE) last_entry->initializer= initializer;
  					  unput(*yytext);
@@ -1663,7 +1685,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     isFixedForm = recognizeFixedForm(fileBuf);
 
     if (isFixedForm) {
-      printf("Prepassing fixed form of %s\n", yyFileName.data());
+      printf("Prepassing fixed form of %s\n", fileName);
       //printf("---strlen=%d\n", strlen(fileBuf));
       //clock_t start=clock();
 
@@ -1729,11 +1751,13 @@ void FortranLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-		   MemberDef *memberDef
+		   MemberDef *memberDef,
+                   bool showLineNumbers
                   )
 {
   ::parseFortranCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                     fileDef,startLine,endLine,inlineFragment,memberDef);
+                     fileDef,startLine,endLine,inlineFragment,memberDef,
+                     showLineNumbers);
 }
 
 bool FortranLanguageScanner::needsPreprocessing(const QCString &extension)

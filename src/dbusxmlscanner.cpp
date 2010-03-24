@@ -879,7 +879,8 @@ void DBusXMLScanner::parseCode(CodeOutputInterface & /* codeOutIntf */,
                                int /* startLine */,
                                int /* endLine */,
                                bool /* inlineFragment */,
-                               MemberDef * /* memberDef */)
+                               MemberDef * /* memberDef */,
+                               bool /*showLineNumbers*/)
 { }
 
 void DBusXMLScanner::resetCodeParserState()

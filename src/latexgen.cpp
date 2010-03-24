@@ -1380,7 +1380,7 @@ void LatexGenerator::endGroupHeader()
   t << "}" << endl;
 }
 
-void LatexGenerator::startMemberHeader()
+void LatexGenerator::startMemberHeader(const char *)
 {
   if (Config_getBool("COMPACT_LATEX")) 
   {

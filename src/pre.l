@@ -53,7 +53,8 @@
 
 struct FileState
 {
-  FileState(int size) : fileBuf(size), oldFileBuf(0), oldFileBufPos(0),fileDef(0) {}
+  FileState(int size) : fileBuf(size), 
+                        oldFileBuf(0), oldFileBufPos(0) {}
   int lineNr;
   //FILE *filePtr;
   BufStr fileBuf;
@@ -63,7 +64,6 @@ struct FileState
   //bool isPlainFile;
   YY_BUFFER_STATE bufState;
   QCString fileName;
-  FileDef *fileDef;
 };  
 
 /* -----------------------------------------------------------------
@@ -122,23 +122,14 @@ DefineDict* getFileDefineDict()
   return g_fileDefineDict;
 }
 
-#if 0
 static void setFileName(const char *name)
 {
   bool ambig;
   QFileInfo fi(name);
   g_yyFileName=convertToQCString(fi.absFilePath());
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
-  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
-  g_insideCS = g_yyFileName.right(3)==".cs";
-}
-#endif
-
-static void setFileName(FileState *fs)
-{
-  g_yyFileName=fs->fileName;
-  g_yyFileDef=fs->fileDef;
-  //printf("^^ setFileName: %s->%p\n",g_yyFileName.data(),g_yyFileDef);
+  //printf("setFileName(%s) g_yyFileName=%s g_yyFileDef=%p\n",
+  //    name,g_yyFileName.data(),g_yyFileDef);
   if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
   g_insideCS = g_yyFileName.right(3)==".cs";
 }
@@ -194,6 +185,10 @@ static bool macroIsAccessible(Define *def)
   {
     //printf("%s: predefined macro %s\n",g_inputFileDef->name().data(),def->name.data());
     return TRUE;
+  }
+  if (def && def->fileDef==g_inputFileDef)
+  {
+    return def->lineNr<g_yyLineNr;
   }
   if (g_inputFileDef && def && def->fileDef) // check if g_inputFileDef actually includes def->fileDef
   {
@@ -281,8 +276,6 @@ static FileState *checkAndOpenFile(const QCString &fileName,bool &alreadyInclude
     {
       fs->oldFileBuf    = g_inputBuf;
       fs->oldFileBufPos = g_inputBufPos;
-      fs->fileDef       = g_yyFileDef;
-      fs->fileName      = g_yyFileName;
     }
   }
   return fs;
@@ -300,7 +293,7 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
       FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
       if (fs)
       {
-	setFileName(fs);
+	setFileName(absName);
 	g_yyLineNr=1;
 	return fs;
       }
@@ -321,7 +314,7 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
     FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
     if (fs)
     {
-      setFileName(fs);
+      setFileName(absName);
       g_yyLineNr=1;
       return fs;
     }
@@ -1155,6 +1148,7 @@ void addDefine()
   }
   md->setInitializer(g_defLitText.stripWhiteSpace());
 
+  //printf("pre.l: md->setFileDef(%p)\n",g_inputFileDef);
   md->setFileDef(g_inputFileDef);
   md->setDefinition("#define "+g_defName);
 
@@ -1206,7 +1200,7 @@ static void readIncludeFile(const QCString &inc)
     // extract include path+name
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
 
-    QCString oldFileName = g_yyFileName.copy();
+    QCString oldFileName = g_yyFileName;
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
     //printf("Searching for `%s'\n",incFileName.data());
@@ -1237,7 +1231,6 @@ static void readIncludeFile(const QCString &inc)
       fs->bufState = YY_CURRENT_BUFFER;
       fs->lineNr   = oldLineNr;
       fs->fileName = oldFileName;
-      fs->fileDef  = oldFileDef;
       // push the state on the stack
       g_includeStack.push(fs);
       // set the scanner to the include file
@@ -1249,10 +1242,8 @@ static void readIncludeFile(const QCString &inc)
       outputArray(lineStr.data(),lineStr.length());
 
       //fprintf(stderr,"Switching to include file %s\n",incFileName.data());
-      //preYYin=fs->filePtr;
-      //yy_switch_to_buffer(yy_create_buffer(preYYin, YY_BUF_SIZE));
       g_expectGuard=TRUE;
-      g_inputBuf=&fs->fileBuf;
+      g_inputBuf   = &fs->fileBuf;
       g_inputBufPos=0;
       yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE));
     }
@@ -1349,16 +1340,6 @@ static char resolveTrigraph(char c)
 
 static int yyread(char *buf,int max_size)
 {
-#if 0
-  int len = fread( buf, 1, max_size, preYYin );
-  if (len==0 && ferror( yyin ))
-  {
-    yy_fatal_error( "input in flex scanner failed" );
-    return len;
-  }
-  return filterCRLF(buf,len);
-#endif
-
   int bytesInBuf = g_inputBuf->curPos()-g_inputBufPos;
   int bytesToCopy = QMIN(max_size,bytesInBuf);
   memcpy(buf,g_inputBuf->data()+g_inputBufPos,bytesToCopy);
@@ -1952,32 +1933,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  else // define is a guard => hide
 					  {
 					    //printf("Found a guard %s\n",yytext);
-#if 0
-  					    Define *def=g_fileDefineDict->find(g_defName);
-					    if (def==0) // new define name for this file
-					    {
-					      g_fileDefineDict->insert(g_defName,newDefine());
-					    }
-					    else // name already exists
-					    {
-					      if (def->undef) // undefined name
-					      {
-					        def->undef = FALSE;
-					        def->name = g_defName;
-					        def->definition = g_defText.stripWhiteSpace();
-					        def->nargs = g_defArgs;
-					        def->fileName = g_yyFileName.copy(); 
-					        def->lineNr = g_yyLineNr;
-					      }
-					      else
-					      {
-					        //printf("Error: define %s is defined more than once!\n",g_defName.data());
-					      }
-					    }
-#endif
 					    g_lastGuardName.resize(0);
 					    BEGIN(Start);
 					  }
+					  g_expectGuard=FALSE;
   					}
 <DefineArg>","{B}*			{ g_defArgsStr+=yytext; }
 <DefineArg>"("{B}*                      { g_defArgsStr+=yytext; }
@@ -2020,14 +1979,14 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_insideComment=FALSE;
   					}
   */
-<DefineText>"/*"			{
+<DefineText>"/*"[!*]?			{
 					  g_defText+=yytext;
 					  g_defLitText+=yytext;
 					  g_lastCContext=YY_START;
 					  g_commentCount=1;
   					  BEGIN(CopyCComment);
   					}
-<DefineText>"//"			{
+<DefineText>"//"[!/]?			{
   				          outputChar('/');outputChar('/');
   					  g_lastCPPContext=YY_START;
 					  g_defLitText+=' ';
@@ -2299,24 +2258,6 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  {
 					    FileState *fs=g_includeStack.pop();
 					    //fileDefineCache->merge(g_yyFileName,fs->fileName);
-#if 0
-					    if (fs->isPlainFile)
-					    {
-					      if (fs->filePtr && fclose(fs->filePtr)!=0)
-					      {
-						err("Error: could not close file %s: %s\n",fs->fileName.data(),strerror(errno));
-					      }
-				              fs->filePtr=0;
-					    }
-					    else
-					    {
-					      if (fs->filePtr && portable_pclose(fs->filePtr)!=0)
-					      {
-						err("Error: could not close pipe: %s\n",strerror(errno));
-					      }
-				    	      fs->filePtr=0;
-					    }
-#endif
 					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
 					    yy_switch_to_buffer( fs->bufState );
 					    yy_delete_buffer( oldBuf );
@@ -2324,7 +2265,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             //preYYin = fs->oldYYin;
                                             g_inputBuf    = fs->oldFileBuf;
 					    g_inputBufPos = fs->oldFileBufPos;
-					    setFileName(fs);
+					    setFileName(fs->fileName);
 					    //fprintf(stderr,"######## FileName %s\n",g_yyFileName.data());
 					    
                                             // Deal with file changes due to 
@@ -2442,18 +2383,11 @@ void initPreprocessor()
 {
   g_pathList = new QStrList;
   addSearchDir(".");
-  //defineNameList.setAutoDelete(TRUE);
-  //defineNameList.clear();
-  //defineDict.clear();
-  //fileDefineCache = new DefineCache(1009);
   g_expandedDict = new DefineDict(17);
-  //g_fileDefineDict = new DefineDict(1009);
 }
 
 void cleanUpPreprocessor()
 {
-  //delete fileDefineCache;
-  //delete g_fileDefineDict; g_fileDefineDict=0;
   delete g_expandedDict; g_expandedDict=0;
   delete g_pathList; g_pathList=0;
 }
@@ -2474,8 +2408,6 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   g_outputBuf=&output;
   g_includeStack.setAutoDelete(TRUE);
   g_includeStack.clear();
-  //g_fileDefineDict->setAutoDelete(TRUE);
-  //g_fileDefineDict->clear();
   g_expandedDict->setAutoDelete(FALSE);
   g_expandedDict->clear();
   g_condStack.clear();
@@ -2595,38 +2527,10 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
     firstTime=FALSE;
   }
  
-#if 0
-  QCString inputFilter = getFileFilter(fileName);
-  if (inputFilter.isEmpty())
-  {
-    preYYin = fopen(fileName,"r");
-    if (!preYYin)
-    {
-      err("Error: could not open file %s\n",fileName);
-      return;
-    }
-  }
-  else
-  {
-    QCString cmd = inputFilter+" \""+fileName+"\"";
-    Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",cmd.data());
-    preYYin = portable_popen(cmd,"r");
-    if (!preYYin)
-    {
-      err("Error: could not execute filter %s\n",cmd.data());
-      return;
-    }
-  }
-#endif
   g_yyLineNr = 1;
   g_level    = 0;
   g_ifcount  = 0;
-  QFileInfo fi(fileName);
-  bool ambig;
-  g_yyFileName   = convertToQCString(fi.absFilePath());
-  g_yyFileDef    = findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
-  if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
-  g_insideCS     = g_yyFileName.right(3)==".cs";
+  setFileName(fileName);
   g_inputFileDef = g_yyFileDef;
 
   BEGIN( Start );
@@ -2638,13 +2542,6 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   preYYlex();
   g_lexInit=TRUE;
 
-#if 0
-  if (inputFilter.isEmpty())
-    fclose(preYYin);
-  else
-    portable_pclose(preYYin);
-#endif
-  
   if (Debug::isFlagSet(Debug::Preprocessor))
   {
     char *orgPos=output.data()+orgOffset;

@@ -1031,13 +1031,25 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>".,"				{ // . with comma such as "e.g.," 
   					  addOutput(yytext);
   					}
+<Comment>"...\\"[ \t]			{ // ellipsis with escaped space.
+  					  addOutput("... ");
+  					}
+<Comment>".."[\.]?/[^ \t\n] 		{ // internal ellipsis 
+  					  addOutput(yytext);
+  					}
 <Comment>(\n|\\_linebr)({B}*(\n|\\_linebr))+	{ // at least one blank line (or blank line command)
-  					  if (inContext!=OutputBrief)
+					  if (inContext==OutputXRef)
+					  {
+					    // see bug 613024, we need to put the newlines after ending the XRef section.
+					    setOutput(OutputDoc);
+  					    addOutput("\n\n");
+					  }
+					  else if (inContext!=OutputBrief)
 					  {
   					    addOutput("\n\n");
 					    setOutput(OutputDoc);
 					  }
-					  else 
+					  else // inContext==OutputBrief
 					  { // only go to the detailed description if we have
 					    // found some brief description and not just whitespace
 					    endBrief(FALSE);

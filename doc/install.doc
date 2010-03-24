@@ -59,7 +59,7 @@ tools should be installed.
     <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
     \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
     \addindex Qt
-    version 3.3 or higher.
+    version 4.3 or higher.
     This is needed to build the GUI front-end doxywizard. 
 <li>A \f$\mbox{\LaTeX}\f$ distribution: for instance
     <a href="http://www.tug.org/interest.html#free">teTeX 1.0</a>
@@ -110,7 +110,7 @@ Compilation is now done by performing the following steps:
     See the <code>PLATFORMS</code> file for a list of possible platform
     options.
 
-    If you have Qt-3.3.x installed and want to build the GUI 
+    If you have Qt-4.3 or higher installed and want to build the GUI 
     front-end, you should run the configure script with 
     the <code>--with-doxywizard</code> option:
 
@@ -409,7 +409,7 @@ containing a \c Doxygen.sln file. Open this file in Visual Studio.
 You can now build the Release or Debug flavor of Doxygen and Doxytag by right-clicking
 the project in the solutions explorer, and selecting Build.
 
-Note that compiling Doxywizard currently requires Qt version 3
+Note that compiling Doxywizard currently requires Qt version 4
 (see http://www.trolltech.com/products/qt/qt3).
 If you do not have a commercial license, you can build Doxywizard with the open
 source version (see http://qtwin.sourceforge.net/qt3-win32/compile-msvc-2005.php), 

@@ -297,7 +297,7 @@ LISTITEM {BLANK}*{OPTSTARS}"-"("#")?{WS}
 ENDLIST  {BLANK}*{OPTSTARS}"."{BLANK}*\n
 ATTRIB   {ID}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
-URLMASK   (([a-z_A-Z][^\>\"\n]*{URLCHAR})|({URLCHAR}+))([({]{URLCHAR}*[)}])?
+URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)*
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+]
 FILEECHAR [a-z_A-Z0-9\-\+]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*

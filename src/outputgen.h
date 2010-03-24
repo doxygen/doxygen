@@ -325,7 +325,9 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endGroupHeader() = 0;
     virtual void startMemberSections() = 0;
     virtual void endMemberSections() = 0;
-    virtual void startMemberHeader() = 0;
+    virtual void startHeaderSection() = 0;
+    virtual void endHeaderSection() = 0;
+    virtual void startMemberHeader(const char *anchor) = 0;
     virtual void endMemberHeader() = 0;
     virtual void startMemberSubtitle() = 0;
     virtual void endMemberSubtitle() = 0;

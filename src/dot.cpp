@@ -268,11 +268,12 @@ static void setDotFontPath(const char *path)
   ASSERT(g_dotFontPath.isEmpty());
   g_dotFontPath = portable_getenv("DOTFONTPATH");
   QCString newFontPath = Config_getString("DOT_FONTPATH");
-  if (!newFontPath.isEmpty() && path)
+  QCString spath = path;
+  if (!newFontPath.isEmpty() && !spath.isEmpty())
   {
-    newFontPath.prepend(path+portable_pathListSeparator());
+    newFontPath.prepend(spath+portable_pathListSeparator());
   }
-  else if (newFontPath.isEmpty() && path)
+  else if (newFontPath.isEmpty() && !spath.isEmpty())
   {
     newFontPath=path;
   }
@@ -286,7 +287,14 @@ static void setDotFontPath(const char *path)
 
 static void unsetDotFontPath()
 {
-  portable_setenv("DOTFONTPATH",g_dotFontPath);
+  if (g_dotFontPath.isEmpty())
+  {
+    portable_unsetenv("DOTFONTPATH");
+  }
+  else
+  {
+    portable_setenv("DOTFONTPATH",g_dotFontPath);
+  }
   g_dotFontPath="";
 }
 

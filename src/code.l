@@ -3343,7 +3343,7 @@ void resetCCodeParserState()
 void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s, 
                   bool exBlock, const char *exName,FileDef *fd,
 		  int startLine,int endLine,bool inlineFragment,
-		  MemberDef *memberDef)
+		  MemberDef *memberDef,bool showLineNumbers)
 {
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
@@ -3378,7 +3378,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;
-  g_lineNumbers   = fd!=0;
+  g_lineNumbers   = fd!=0 && showLineNumbers;
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
