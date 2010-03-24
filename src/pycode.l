@@ -1394,7 +1394,7 @@ static void adjustScopesAndSuites(unsigned indentLength)
 void parsePythonCode(CodeOutputInterface &od,const char *className,
                  const QCString &s,bool exBlock, const char *exName,
 		 FileDef *fd,int startLine,int endLine,bool inlineFragment,
-		 MemberDef *) 
+		 MemberDef *,bool) 
 {
 
   //printf("***parseCode()\n");

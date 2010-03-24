@@ -44,7 +44,8 @@ public:
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
-                   MemberDef *memberDef=0
+                   MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE
                   );
 
     void resetCodeParserState();

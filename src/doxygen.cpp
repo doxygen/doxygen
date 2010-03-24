@@ -5687,13 +5687,26 @@ static void findMember(EntryNav *rootNav,
         }
         else if (cd) // member specialization
         {
+          MemberNameIterator mni(*mn);
+          MemberDef *declMd=0;
+          MemberDef *md=0;
+          for (mni.toFirst();(md=mni.current());++mni)
+          {
+            if (md->getClassDef()==cd) 
+            {
+              // TODO: we should probably also check for matching arguments
+              declMd = md;
+              break;
+            }
+          }
           MemberDef::MemberType mtype=MemberDef::Function;
           ArgumentList *tArgList = new ArgumentList;
           //  getTemplateArgumentsFromName(cd->name()+"::"+funcName,root->tArgLists);
-          MemberDef *md=new MemberDef(
+          md=new MemberDef(
               root->fileName,root->startLine,
               funcType,funcName,funcArgs,exceptions,
-              root->protection,root->virt,root->stat,Member,
+              declMd ? declMd->protection() : root->protection,
+              root->virt,root->stat,Member,
               mtype,tArgList,root->argList);
           //printf("new specialized member %s args=`%s'\n",md->name().data(),funcArgs.data());
           md->setTagInfo(rootNav->tagInfo());
@@ -8040,7 +8053,7 @@ static void buildExampleList(EntryNav *rootNav)
     {
       PageDef *pd=new PageDef(root->fileName,root->startLine,
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
-      pd->setFileName(convertNameToFile(pd->name()+"-example",TRUE,FALSE));
+      pd->setFileName(convertNameToFile(pd->name()+"-example"));
       pd->addSectionsToDefinition(root->anchors);
       //pi->addSections(root->anchors);
 
@@ -10187,7 +10200,7 @@ void generateOutput()
     Doxygen::indexList.addImageFile("tab_b.gif");
     Doxygen::indexList.addStyleSheetFile("tabs.css");
     Doxygen::indexList.addImageFile("doxygen.png");
-    if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
+    //if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
   }
   if (Config_getBool("GENERATE_LATEX")) 
@@ -10276,7 +10289,6 @@ void generateOutput()
       exit(1);
     }
     HtmlGenerator::writeSearchData(searchDirName);
-    writeSearchStyleSheet();
     if (!serverBasedSearch) // client side search index
     {
       writeJavascriptSearchIndex();

@@ -1631,11 +1631,13 @@ void PythonLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     int startLine,
     int endLine,
     bool inlineFragment,
-    MemberDef *memberDef
+    MemberDef *memberDef,
+    bool showLineNumbers
     )
 {
   ::parsePythonCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-                    fileDef,startLine,endLine,inlineFragment,memberDef);
+                    fileDef,startLine,endLine,inlineFragment,memberDef,
+                    showLineNumbers);
 }
 
 void PythonLanguageScanner::parsePrototype(const char *text)

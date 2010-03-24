@@ -312,14 +312,15 @@ void addConfigOptions(Config *cfg)
   //----
   cl = cfg->addList(
                  "EXTENSION_MAPPING",
-                 "Doxygen selects the parser to use depending on the extension of the files it parses.\n"
-                 "With this tag you can assign which parser to use for a given extension.\n"
-                 "Doxygen has a built-in mapping, but you can override or extend it using this tag.\n"
-                 "The format is ext=language, where ext is a file extension, and language is one of\n"
-                 "the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,\n"
-                 "Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat\n"
-                 ".inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),\n"
-                 "use: inc=Fortran f=C. Note that for custom extensions you also need to set FILE_PATTERNS otherwise the files are not read by doxygen."
+                 "Doxygen selects the parser to use depending on the extension of the files it\n"
+                 "parses. With this tag you can assign which parser to use for a given extension.\n"
+                 "Doxygen has a built-in mapping, but you can override or extend it using this\n"
+                 "tag. The format is ext=language, where ext is a file extension, and language\n"
+                 "is one of the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++,\n"
+                 "D, PHP, Objective-C, Python, Fortran, VHDL, C, C++. For instance to make\n"
+                 "doxygen treat .inc files as Fortran files (default is PHP), and .f files as C\n"
+                 "(default is Fortran), use: inc=Fortran f=C. Note that for custom extensions\n"
+                 "you also need to set FILE_PATTERNS otherwise the files are not read by doxygen."
                 );
   //----
   cb = cfg->addBool(
@@ -569,7 +570,13 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "SORT_MEMBERS_CTORS_1ST",
-                 "If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will sort the (brief and detailed) documentation of class members so that constructors and destructors are listed first. If set to NO (the default) the constructors will appear in the respective orders defined by SORT_MEMBER_DOCS and SORT_BRIEF_DOCS. This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO and ignored for detailed docs if SORT_MEMBER_DOCS is set to NO.",
+                 "If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen\n"
+                 "will sort the (brief and detailed) documentation of class members so that\n"
+                 "constructors and destructors are listed first. If set to NO (the default)\n"
+                 "the constructors will appear in the respective orders defined by\n"
+                 "SORT_MEMBER_DOCS and SORT_BRIEF_DOCS.\n"
+                 "This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO\n"
+                 "and ignored for detailed docs if SORT_MEMBER_DOCS is set to NO.",
                  FALSE
                 );
   //----
@@ -690,12 +697,12 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "LAYOUT_FILE",
-                 "The LAYOUT_FILE tag can be used to specify a layout file which will be parsed by\n"
-                 "doxygen. The layout file controls the global structure of the generated output files\n"
-                 "in an output format independent way. The create the layout file that represents\n"
-                 "doxygen's defaults, run doxygen with the -l option. You can optionally specify a\n"
-                 "file name after the option, if omitted DoxygenLayout.xml will be used as the name\n"
-                 "of the layout file."
+                 "The LAYOUT_FILE tag can be used to specify a layout file which will be parsed\n"
+                 "by doxygen. The layout file controls the global structure of the generated\n"
+                 "output files in an output format independent way. The create the layout file\n"
+                 "that represents doxygen's defaults, run doxygen with the -l option.\n"
+                 "You can optionally specify a file name after the option, if omitted\n"
+                 "DoxygenLayout.xml will be used as the name of the layout file."
                 );
   cs->setWidgetType(ConfigString::File);
   //---------------------------------------------------------------------------
@@ -1100,6 +1107,39 @@ void addConfigOptions(Config *cfg)
   cs->setWidgetType(ConfigString::File);
   cs->addDependency("GENERATE_HTML");
   //----
+  ci = cfg->addInt(
+                 "HTML_COLORSTYLE_HUE",
+                 "The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.\n"
+                 "Doxygen will adjust the colors in the stylesheet and background images\n"
+                 "according to this color. Hue is specified as an angle on a colorwheel,\n"
+                 "see http://en.wikipedia.org/wiki/Hue for more information.\n"
+                 "For instance the value 0 represents red, 60 is yellow, 120 is green,\n"
+                 "180 is cyan, 240 is blue, 300 purple, and 360 is red again.\n"
+                 "The allowed range is 0 to 359.",
+                 0,359,220
+                );
+  ci->addDependency("GENERATE_HTML");
+  //----
+  ci = cfg->addInt(
+                 "HTML_COLORSTYLE_SAT",
+                 "The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of\n"
+                 "the colors in the HTML output. For a value of 0 the output will use\n"
+                 "grayscales only. A value of 255 will produce the most vivid colors.",
+                 0,255,100
+                );
+  ci->addDependency("GENERATE_HTML");
+  //----
+  ci = cfg->addInt(
+                 "HTML_COLORSTYLE_GAMMA",
+                 "The HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to\n"
+                 "the luminance component of the colors in the HTML output. Values below\n"
+                 "100 gradually make the output lighter, whereas values above 100 make\n"
+                 "the output darker. The value divided by 100 is the actual gamma applied,\n"
+                 "so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2,\n"
+                 "and 100 does not change the gamma.",
+                 40,240,80
+                );
+  //----
   cb = cfg->addBool(
                  "HTML_TIMESTAMP",
                  "If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML\n"
@@ -1139,7 +1179,8 @@ void addConfigOptions(Config *cfg)
                  "directory and running \"make install\" will install the docset in\n"
                  "~/Library/Developer/Shared/Documentation/DocSets so that Xcode will find\n"
                  "it at startup.\n"
-                 "See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for more information.",
+                 "See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html\n"
+                 "for more information.",
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");
@@ -1230,10 +1271,10 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "GENERATE_QHP",
-                 "If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and QHP_VIRTUAL_FOLDER\n"
-                 "are set, an additional index file will be generated that can be used as input for\n"
-                 "Qt's qhelpgenerator to generate a Qt Compressed Help (.qch) of the generated\n"
-                 "HTML documentation.",
+                 "If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and\n"
+                 "QHP_VIRTUAL_FOLDER are set, an additional index file will be generated\n"
+                 "that can be used as input for Qt's qhelpgenerator to generate a\n"
+                 "Qt Compressed Help (.qch) of the generated HTML documentation.",
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");
@@ -1267,24 +1308,28 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "QHP_CUST_FILTER_NAME",
-                 "If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add.\n"
-                 "For more information please see\n"
+                 "If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to\n"
+                 "add. For more information please see\n"
                  "http://doc.trolltech.com/qthelpproject.html#custom-filters"
                 );
   cs->addDependency("GENERATE_QHP");
   //----
   cs = cfg->addString(
                  "QHP_CUST_FILTER_ATTRS",
-                 "The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the custom filter to add.For more information please see\n"
-                 "<a href=\"http://doc.trolltech.com/qthelpproject.html#custom-filters\">Qt Help Project / Custom Filters</a>."
+                 "The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the\n"
+                 "custom filter to add. For more information please see\n"
+                 "<a href=\"http://doc.trolltech.com/qthelpproject.html#custom-filters\">\n"
+                 "Qt Help Project / Custom Filters</a>."
                 );
   cs->addDependency("GENERATE_QHP");
   //----
   cs = cfg->addString(
                  "QHP_SECT_FILTER_ATTRS",
-                 "The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's\n"
+                 "The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this\n"
+                 "project's\n"
                  "filter section matches.\n"
-                 "<a href=\"http://doc.trolltech.com/qthelpproject.html#filter-attributes\">Qt Help Project / Filter Attributes</a>."
+                 "<a href=\"http://doc.trolltech.com/qthelpproject.html#filter-attributes\">\n"
+                 "Qt Help Project / Filter Attributes</a>."
                 );
   cs->addDependency("GENERATE_QHP");
   //----
@@ -1302,11 +1347,12 @@ void addConfigOptions(Config *cfg)
                  "GENERATE_ECLIPSEHELP",
                  "If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files\n"
                  " will be generated, which together with the HTML files, form an Eclipse help\n"
-                 " plugin. To install this plugin and make it available under the help contents\n"
+                 "plugin. To install this plugin and make it available under the help contents\n"
                  "menu in Eclipse, the contents of the directory containing the HTML and XML\n"
                  "files needs to be copied into the plugins directory of eclipse. The name of\n"
                  "the directory within the plugins directory should be the same as\n"
-                 "the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before the help appears.",
+                 "the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before\n"
+                 "the help appears.",
                  FALSE
                 );
   cb->addDependency("GENERATE_HTML");
@@ -1380,8 +1426,11 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "SEARCHENGINE",
-                 "When the SEARCHENGINE tag is enabled doxygen will generate a search box for the HTML output. The underlying search engine uses javascript\n"
-                 "and DHTML and should work on any modern browser. Note that when using HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets (GENERATE_DOCSET) there is already a search function so this one should\n"
+                 "When the SEARCHENGINE tag is enabled doxygen will generate a search box\n"
+                 "for the HTML output. The underlying search engine uses javascript\n"
+                 "and DHTML and should work on any modern browser. Note that when using\n"
+                 "HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets\n"
+                 "(GENERATE_DOCSET) there is already a search function so this one should\n"
                  "typically be disabled. For large projects the javascript based search engine\n"
                  "can be slow, then enabling SERVER_BASED_SEARCH may provide a better solution.",
                  TRUE
@@ -1390,8 +1439,12 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "SERVER_BASED_SEARCH",
-                 "When the SERVER_BASED_SEARCH tag is enabled the search engine will be implemented using a PHP enabled web server instead of at the web client using Javascript. Doxygen will generate the search PHP script and index\n"
-                 "file to put on the web server. The advantage of the server based approach is that it scales better to large projects and allows full text search. The disadvances is that it is more difficult to setup\n"
+                 "When the SERVER_BASED_SEARCH tag is enabled the search engine will be\n"
+                 "implemented using a PHP enabled web server instead of at the web client\n"
+                 "using Javascript. Doxygen will generate the search PHP script and index\n"
+                 "file to put on the web server. The advantage of the server\n"
+                 "based approach is that it scales better to large projects and allows\n"
+                 "full text search. The disadvances is that it is more difficult to setup\n"
                  "and does not have live searching capabilities.",
                  FALSE
                 );
@@ -1520,7 +1573,10 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "LATEX_SOURCE_CODE",
-                 "If LATEX_SOURCE_CODE is set to YES then doxygen will include source code with syntax highlighting in the LaTeX output. Note that which sources are shown also depends on other settings such as SOURCE_BROWSER.",
+                 "If LATEX_SOURCE_CODE is set to YES then doxygen will include\n"
+                 "source code with syntax highlighting in the LaTeX output.\n"
+                 "Note that which sources are shown also depends on other settings\n"
+                 "such as SOURCE_BROWSER.",
                  FALSE
                 );
   cb->addDependency("GENERATE_LATEX");

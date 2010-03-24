@@ -2,12 +2,12 @@ This short howto explains how to add support for a new language to Doxygen:
 
 Just follow these steps:
 
-1) Tell me for which language you want to add support. If no one else
+1) Tell me which language you want to add support for. If no one else
    is already working on support for that language, you will be 
    assigned as the maintainer for the language. I'll create a 
    list on Doxygen's homepage, so everyone knows who is doing what.
 2) Create a copy of translator_en.h and name it 
-   translator_<your_2_letter_counter_code>.h
+   translator_<your_2_letter_country_code>.h
    I'll use xx in the rest of this document.
 3) Edit language.cpp:
    - Add a #include<translator_xx.h> 
@@ -21,8 +21,9 @@ Just follow these steps:
      after the if { ... }
 4) Edit libdoxygen.pro.in and add translator_xx.h to the HEADERS line.
 5) Edit translator_xx.h:
-   - Rename TRANSLATOR_EN_H to TRANSLATOR_XX_H twice.
-   - Rename TranslatorEnglish to TranslatorYourLanguage 
+   - Change TRANSLATOR_EN_H to TRANSLATOR_XX_H (in both the #include line and
+     the #define line).
+   - Change TranslatorEnglish to TranslatorYourLanguage 
    - In the member idLanguage() change "english" into the name of your
      language (use lower case characters only). Depending on the language you
      may also wish to change the member functions latexLanguageSupportCommand()

@@ -92,7 +92,9 @@ class ManGenerator : public OutputGenerator
     void endGroupHeader();
     void startMemberSections() {}
     void endMemberSections() {}
-    void startMemberHeader();
+    void startHeaderSection() {}
+    void endHeaderSection() {}
+    void startMemberHeader(const char *);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
     void startMemberSubtitle() {}

@@ -635,10 +635,10 @@ void FTVHelp::generateTreeView(QString* OutString)
 
   if (m_topLevelIndex)
   {
-    if (searchEngine)
-    {
-      t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
-    }
+    //if (searchEngine)
+    //{
+    //  t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
+    //}
     t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
     t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
     t << "  <head>\n";
@@ -744,36 +744,41 @@ void FTVHelp::generateTreeView(QString* OutString)
       t << "      --></script>\n";
       if (!serverBasedSearch)
       {
-        t << "      <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
-        t << "      <div class=\"MSearchBoxRow\"><span class=\"MSearchBoxLeft\">\n";
-        t << "      <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
+        t << "      <div class=\"tabsearch\">\n";
+        t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+        t << "          <span class=\"left\">\n";
+        t << "            <a id=\"MSearchClose\" href=\"javascript:searchBox.CloseResultsWindow()\">"
           << "<img id=\"MSearchCloseImg\" border=\"0\" src=\"search/close.png\" alt=\"\"/></a>\n";
-        t << "      <input type=\"text\" id=\"MSearchField\" value=\"" 
+        t << "            <input type=\"text\" id=\"MSearchField\" value=\"" 
           << theTranslator->trSearch() << "\" accesskey=\"S\"\n";
-        t << "           onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
-        t << "           onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
-        t << "           onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
-        t << "      </span><span class=\"MSearchBoxRight\">\n";
-        t << "      <img id=\"MSearchSelect\" src=\"search/search.png\"\n";
-        t << "           onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
-        t << "           onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
-        t << "           alt=\"\"/>\n";
-        t << "      </span></div><div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
+        t << "                   onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
+        t << "                   onblur=\"searchBox.OnSearchFieldFocus(false)\" \n";
+        t << "                   onkeyup=\"searchBox.OnSearchFieldChange(event)\"/>\n";
+        t << "          </span><span class=\"right\">\n";
+        t << "            <img id=\"MSearchSelect\" src=\"search/mag_sel.png\"\n";
+        t << "                 onmouseover=\"return searchBox.OnSearchSelectShow()\"\n";
+        t << "                 onmouseout=\"return searchBox.OnSearchSelectHide()\"\n";
+        t << "                 alt=\"\"/>\n";
+        t << "          </span>\n";
+        t << "        </div>\n";
         t << "      </div>\n";
         HtmlGenerator::writeSearchFooter(t,QCString());
       }
       else
       {
+        t << "      <div class=\"tabsearch\">\n";
         t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
+        t << "          <span class=\"left\">\n";
         t << "            <form id=\"FSearchBox\" action=\"search.php\" method=\"get\" target=\"basefrm\">\n";
-        t << "              <img id=\"MSearchSelect\" src=\"search/search.png\" alt=\"\"/>\n";
+        t << "              <img id=\"MSearchSelect\" src=\"search/mag.png\" alt=\"\"/>\n";
         t << "              <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\""
           << theTranslator->trSearch() << "\" size=\"20\" accesskey=\"S\" \n";
         t << "                     onfocus=\"searchBox.OnSearchFieldFocus(true)\" \n";
         t << "                     onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n";
         t << "            </form>\n";
-        t << "          <div class=\"MSearchBoxSpacer\">&nbsp;</div>\n";
+        t << "          </span><span class=\"right\"></span>\n";
         t << "        </div>\n";
+        t << "      </div>\n";
       }
     }
     t << "    <div class=\"directory\">\n";

@@ -1387,6 +1387,35 @@ void Config::check()
     depth=1000;
   }
 
+  int &hue = Config_getInt("HTML_COLORSTYLE_HUE");
+  if (hue<0)
+  {
+    hue=0;
+  }
+  else if (hue>=360)
+  {
+    hue=hue%360;
+  }
+
+  int &sat = Config_getInt("HTML_COLORSTYLE_SAT");
+  if (sat<0)
+  {
+    sat=0;
+  }
+  else if (sat>255)
+  {
+    sat=255;
+  }
+  int &gamma = Config_getInt("HTML_COLORSTYLE_GAMMA");
+  if (gamma<40)
+  {
+    gamma=40;
+  }
+  else if (gamma>240)
+  {
+    gamma=240;
+  }
+
   
   // add default words if needed
   QStrList &annotationFromBrief = Config_getList("ABBREVIATE_BRIEF");

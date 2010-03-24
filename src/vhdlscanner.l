@@ -2015,9 +2015,12 @@ void VHDLLanguageScanner::parseCode(CodeOutputInterface &codeOutIntf,
     int startLine,
     int endLine,
     bool inlineFragment,
-    MemberDef *memberDef
+    MemberDef *memberDef,
+    bool showLineNumbers
     )
 {
-  ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,fileDef,startLine,endLine,inlineFragment,memberDef);
+  ::parseVhdlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                  fileDef,startLine,endLine,inlineFragment,memberDef,
+                  showLineNumbers);
 }
 

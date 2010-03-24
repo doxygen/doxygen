@@ -222,15 +222,15 @@ sources. Doxygen will then generate output that is tailored for
 VHDL. 
 ' defval='0'/>
     <option type='list' id='EXTENSION_MAPPING' format='string' docs='
-Doxygen selects the parser to use depending on the extension of the files it parses. 
-With this tag you can assign which parser to use for a given extension. 
-Doxygen has a built-in mapping, but you can override or extend it using this tag. 
-The format is ext=language, where ext is a file extension, and language is one of 
-the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP, 
-Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat 
-.inc files as Fortran files (default is PHP), and .f files as C (default is Fortran), 
-use: inc=Fortran f=C. Note that for custom extensions you also need to set
-FILE_PATTERNS otherwise the files are not read by doxygen.
+Doxygen selects the parser to use depending on the extension of the files it 
+parses. With this tag you can assign which parser to use for a given extension. 
+Doxygen has a built-in mapping, but you can override or extend it using this 
+tag. The format is ext=language, where ext is a file extension, and language 
+is one of the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, 
+D, PHP, Objective-C, Python, Fortran, VHDL, C, C++. For instance to make 
+doxygen treat .inc files as Fortran files (default is PHP), and .f files as C 
+(default is Fortran), use: inc=Fortran f=C. Note that for custom extensions 
+you also need to set FILE_PATTERNS otherwise the files are not read by doxygen.
 '>
     </option>
     <option type='bool' id='BUILTIN_STL_SUPPORT' docs='
@@ -399,12 +399,12 @@ by member name. If set to NO (the default) the members will appear in
 declaration order. 
 ' defval='0'/>
     <option type='bool' id='SORT_MEMBERS_CTORS_1ST' docs='
-If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen
-will sort the (brief and detailed) documentation of class members so that
-constructors and destructors are listed first. If set to NO (the default)
-the constructors will appear in the respective orders defined by
-SORT_MEMBER_DOCS and SORT_BRIEF_DOCS.
-This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO
+If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen 
+will sort the (brief and detailed) documentation of class members so that 
+constructors and destructors are listed first. If set to NO (the default) 
+the constructors will appear in the respective orders defined by 
+SORT_MEMBER_DOCS and SORT_BRIEF_DOCS. 
+This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO 
 and ignored for detailed docs if SORT_MEMBER_DOCS is set to NO.' defval='0'/>
     <option type='bool' id='SORT_GROUP_NAMES' docs='
 If the SORT_GROUP_NAMES tag is set to YES then doxygen will sort the 
@@ -484,12 +484,12 @@ provided by doxygen. Whatever the program writes to standard output
 is used as the file version. See the manual for examples. 
 ' defval=''/>
     <option type='string' id='LAYOUT_FILE' format='file' docs='
-The LAYOUT_FILE tag can be used to specify a layout file which will be parsed by 
-doxygen. The layout file controls the global structure of the generated output files 
-in an output format independent way. The create the layout file that represents 
-doxygen&apos;s defaults, run doxygen with the -l option. You can optionally specify a 
-file name after the option, if omitted DoxygenLayout.xml will be used as the name 
-of the layout file. 
+The LAYOUT_FILE tag can be used to specify a layout file which will be parsed 
+by doxygen. The layout file controls the global structure of the generated 
+output files in an output format independent way. The create the layout file 
+that represents doxygen&apos;s defaults, run doxygen with the -l option. 
+You can optionally specify a file name after the option, if omitted 
+DoxygenLayout.xml will be used as the name of the layout file. 
 ' defval=''/>
   </group>
   <group name='Messages' docs='configuration options related to warning and progress messages'>
@@ -769,6 +769,28 @@ will generate a default style sheet. Note that doxygen will try to copy
 the style sheet file to the HTML output directory, so don&apos;t put your own 
 stylesheet in the HTML output directory as well, or it will be erased! 
 ' defval='' depends='GENERATE_HTML'/>
+    <option type='int' id='HTML_COLORSTYLE_HUE' docs='
+The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. 
+Doxygen will adjust the colors in the stylesheet and background images 
+according to this color. Hue is specified as an angle on a colorwheel, 
+see http://en.wikipedia.org/wiki/Hue for more information. 
+For instance the value 0 represents red, 60 is yellow, 120 is green, 
+180 is cyan, 240 is blue, 300 purple, and 360 is red again. 
+The allowed range is 0 to 359. 
+' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'/>
+    <option type='int' id='HTML_COLORSTYLE_SAT' docs='
+The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of 
+the colors in the HTML output. For a value of 0 the output will use 
+grayscales only. A value of 255 will produce the most vivid colors. 
+' minval='0' maxval='255' defval='100' depends='GENERATE_HTML'/>
+    <option type='int' id='HTML_COLORSTYLE_GAMMA' docs='
+The HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to 
+the luminance component of the colors in the HTML output. Values below 
+100 gradually make the output lighter, whereas values above 100 make 
+the output darker. The value divided by 100 is the actual gamma applied, 
+so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2, 
+and 100 does not change the gamma.
+' minval='40' maxval='240' defval='80'/>
     <option type='bool' id='HTML_TIMESTAMP' docs='
 If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML 
 page will contain the date and time when the page was generated. Setting 
@@ -795,7 +817,8 @@ HTML output directory. Running make will produce the docset in that
 directory and running &quot;make install&quot; will install the docset in 
 ~/Library/Developer/Shared/Documentation/DocSets so that Xcode will find 
 it at startup. 
-See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for more information. 
+See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html 
+for more information. 
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='string' id='DOCSET_FEEDNAME' format='string' docs='
 When GENERATE_DOCSET tag is set to YES, this tag determines the name of the 
@@ -847,10 +870,10 @@ The TOC_EXPAND flag can be set to YES to add extra items for group members
 to the contents of the HTML help documentation and to the tree view. 
 ' defval='0' depends='GENERATE_HTMLHELP'/>
     <option type='bool' id='GENERATE_QHP' docs='
-If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and QHP_VIRTUAL_FOLDER 
-are set, an additional index file will be generated that can be used as input for 
-Qt&apos;s qhelpgenerator to generate a Qt Compressed Help (.qch) of the generated 
-HTML documentation. 
+If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and 
+QHP_VIRTUAL_FOLDER are set, an additional index file will be generated 
+that can be used as input for Qt&apos;s qhelpgenerator to generate a 
+Qt Compressed Help (.qch) of the generated HTML documentation. 
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='string' id='QCH_FILE' format='file' docs='
 If the QHG_LOCATION tag is specified, the QCH_FILE tag can 
@@ -868,18 +891,22 @@ Qt Help Project output. For more information please see
 http://doc.trolltech.com/qthelpproject.html#virtual-folders 
 ' defval='doc' depends='GENERATE_QHP'/>
     <option type='string' id='QHP_CUST_FILTER_NAME' format='string' docs='
-If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add. 
-For more information please see 
+If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to 
+add. For more information please see 
 http://doc.trolltech.com/qthelpproject.html#custom-filters 
 ' defval='' depends='GENERATE_QHP'/>
     <option type='string' id='QHP_CUST_FILTER_ATTRS' format='string' docs='
-The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the custom filter to add.For more information please see 
-&lt;a href=&quot;http://doc.trolltech.com/qthelpproject.html#custom-filters&quot;&gt;Qt Help Project / Custom Filters&lt;/a&gt;. 
+The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the 
+custom filter to add. For more information please see 
+&lt;a href=&quot;http://doc.trolltech.com/qthelpproject.html#custom-filters&quot;&gt; 
+Qt Help Project / Custom Filters&lt;/a&gt;. 
 ' defval='' depends='GENERATE_QHP'/>
     <option type='string' id='QHP_SECT_FILTER_ATTRS' format='string' docs='
-The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project&apos;s 
+The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this 
+project&apos;s 
 filter section matches. 
-&lt;a href=&quot;http://doc.trolltech.com/qthelpproject.html#filter-attributes&quot;&gt;Qt Help Project / Filter Attributes&lt;/a&gt;. 
+&lt;a href=&quot;http://doc.trolltech.com/qthelpproject.html#filter-attributes&quot;&gt; 
+Qt Help Project / Filter Attributes&lt;/a&gt;. 
 ' defval='' depends='GENERATE_QHP'/>
     <option type='string' id='QHG_LOCATION' format='file' docs='
 If the GENERATE_QHP tag is set to YES, the QHG_LOCATION tag can 
@@ -889,12 +916,12 @@ If non-empty doxygen will try to run qhelpgenerator on the generated
 ' defval='' depends='GENERATE_QHP'/>
     <option type='bool' id='GENERATE_ECLIPSEHELP' docs='
 If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files  
-will be generated, which together with the HTML files, form an Eclipse help  
+will be generated, which together with the HTML files, form an Eclipse help 
 plugin. To install this plugin and make it available under the help contents 
 menu in Eclipse, the contents of the directory containing the HTML and XML 
 files needs to be copied into the plugins directory of eclipse. The name of 
 the directory within the plugins directory should be the same as 
-the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before
+the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before 
 the help appears.
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='string' id='ECLIPSE_DOC_ID' docs='
@@ -937,22 +964,22 @@ to manually remove any form_*.png images from the HTML output directory
 to force them to be regenerated. 
 ' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'/>
     <option type='bool' id='SEARCHENGINE' docs='
-When the SEARCHENGINE tag is enabled doxygen will generate a search box
+When the SEARCHENGINE tag is enabled doxygen will generate a search box 
 for the HTML output. The underlying search engine uses javascript 
-and DHTML and should work on any modern browser. Note that when using
-HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets
+and DHTML and should work on any modern browser. Note that when using 
+HTML help (GENERATE_HTMLHELP), Qt help (GENERATE_QHP), or docsets 
 (GENERATE_DOCSET) there is already a search function so this one should 
 typically be disabled. For large projects the javascript based search engine 
 can be slow, then enabling SERVER_BASED_SEARCH may provide a better solution.
 ' defval='1' depends='GENERATE_HTML'/>
     <option type='bool' id='SERVER_BASED_SEARCH' docs='
-When the SERVER_BASED_SEARCH tag is enabled the search engine will be
-implemented using a PHP enabled web server instead of at the web client
+When the SERVER_BASED_SEARCH tag is enabled the search engine will be 
+implemented using a PHP enabled web server instead of at the web client 
 using Javascript. Doxygen will generate the search PHP script and index 
-file to put on the web server. The advantage of the server
-based approach is that it scales better to large projects and allows
+file to put on the web server. The advantage of the server 
+based approach is that it scales better to large projects and allows 
 full text search. The disadvances is that it is more difficult to setup 
-and does not have live searching capabilities.
+and does not have live searching capabilities. 
 ' defval='0' depends='SEARCHENGINE'/>
   </group>
   <group name='LaTeX' docs='configuration options related to the LaTeX output'>
@@ -1027,9 +1054,9 @@ include the index chapters (such as File Index, Compound Index, etc.)
 in the output. 
 ' defval='0' depends='GENERATE_LATEX'/>
     <option type='bool' id='LATEX_SOURCE_CODE' docs='
-If LATEX_SOURCE_CODE is set to YES then doxygen will include
-source code with syntax highlighting in the LaTeX output.
-Note that which sources are shown also depends on other settings
+If LATEX_SOURCE_CODE is set to YES then doxygen will include 
+source code with syntax highlighting in the LaTeX output. 
+Note that which sources are shown also depends on other settings 
 such as SOURCE_BROWSER.
 ' defval='0' depends='GENERATE_LATEX'/>
   </group>

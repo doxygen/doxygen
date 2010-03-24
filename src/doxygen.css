@@ -8,7 +8,6 @@ body, table, div, p, dl {
 /* @group Heading Levels */
 
 h1 {
-	text-align: center;
 	font-size: 150%;
 }
 
@@ -64,8 +63,8 @@ h3.version {
 }
 
 div.qindex, div.navtab{
-	background-color: #e8eef2;
-	border: 1px solid #84b0c7;
+	background-color: ##ee;
+	border: 1px solid ##b0;
 	text-align: center;
 	margin: 2px;
 	padding: 2px;
@@ -83,13 +82,13 @@ div.navtab {
 /* @group Link Styling */
 
 a {
-	color: #153788;
+	color: ##50;
 	font-weight: normal;
 	text-decoration: none;
 }
 
 .contents a:visited {
-	color: #1b77c5;
+	color: ##60;
 }
 
 a:hover {
@@ -102,9 +101,9 @@ a.qindex {
 
 a.qindexHL {
 	font-weight: bold;
-	background-color: #6666cc;
+	background-color: ##AA;
 	color: #ffffff;
-	border: 1px double #9295C2;
+	border: 1px double ##98;
 }
 
 .contents a.qindexHL:visited {
@@ -119,11 +118,11 @@ a.elRef {
 }
 
 a.code {
-	color: #3030f0;
+	color: ##60;
 }
 
 a.codeRef {
-	color: #3030f0;
+	color: ##60;
 }
 
 /* @end */
@@ -138,8 +137,8 @@ dl.el {
 }
 
 pre.fragment {
-	border: 1px solid #CCCCCC;
-	background-color: #f5f5f5;
+	border: 1px solid ##CC;
+	background-color: ##f5;
 	padding: 4px 6px;
 	margin: 4px 8px 4px 2px;
 	overflow: auto;
@@ -171,27 +170,32 @@ div.groupText {
 body {
 	background: white;
 	color: black;
-	margin-right: 20px;
-	margin-left: 20px;
+        margin: 0;
+}
+
+div.contents {
+	margin-top: 10px;
+	margin-left: 10px;
+	margin-right: 10px;
 }
 
 td.indexkey {
-	background-color: #e8eef2;
+	background-color: ##ee;
 	font-weight: bold;
-	border: 1px solid #CCCCCC;
+	border: 1px solid ##cc;
 	margin: 2px 0px 2px 0;
 	padding: 2px 10px;
 }
 
 td.indexvalue {
-	background-color: #e8eef2;
-	border: 1px solid #CCCCCC;
+	background-color: ##ee;
+	border: 1px solid ##cc;
 	padding: 2px 10px;
 	margin: 2px 0px;
 }
 
 tr.memlist {
-	background-color: #f0f0f0;
+	background-color: ##f0;
 }
 
 p.formulaDsp {
@@ -215,6 +219,11 @@ div.center {
 
 div.center img {
 	border: 0px;
+}
+
+address.footer {
+	text-align: right;
+	padding-right: 12px;
 }
 
 img.footer {
@@ -270,6 +279,7 @@ span.vhdllogic {
 
 /* @end */
 
+/*
 .search {
 	color: #003399;
 	font-weight: bold;
@@ -286,6 +296,7 @@ input.search {
 	font-weight: normal;
 	background-color: #e8eef2;
 }
+*/
 
 td.tiny {
 	font-size: 75%;
@@ -294,18 +305,18 @@ td.tiny {
 .dirtab {
 	padding: 4px;
 	border-collapse: collapse;
-	border: 1px solid #84b0c7;
+	border: 1px solid ##b0;
 }
 
 th.dirtab {
-	background: #e8eef2;
+	background: ##ee;
 	font-weight: bold;
 }
 
 hr {
 	height: 0px;
 	border: none;
-	border-top: 1px solid #666;
+	border-top: 1px solid ##66;
 }
 
 hr.footer {
@@ -317,7 +328,7 @@ hr.footer {
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
-	background-color: #FAFAFA;
+	background-color: ##FA;
 	border: none;
 	margin: 4px;
 	padding: 1px 0 0 8px;
@@ -329,7 +340,7 @@ hr.footer {
 }
 
 .memItemLeft, .memItemRight, .memTemplParams {
-	border-top: 1px solid #ccc;
+	border-top: 1px solid ##cc;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -337,7 +348,7 @@ hr.footer {
 }
 
 .memTemplParams {
-	color: #606060;
+	color: ##60;
         white-space: nowrap;
 }
 
@@ -349,14 +360,14 @@ hr.footer {
 
 .memtemplate {
 	font-size: 80%;
-	color: #606060;
+	color: ##60;
 	font-weight: normal;
 	margin-left: 3px;
 }
 
 .memnav {
-	background-color: #e8eef2;
-	border: 1px solid #84b0c7;
+	background-color: ##ee;
+	border: 1px solid ##b0;
 	text-align: center;
 	margin: 2px;
 	margin-right: 15px;
@@ -375,19 +386,21 @@ hr.footer {
 }
 
 .memproto {
-        border-top: 1px solid #84b0c7;          
-        border-left: 1px solid #84b0c7;         
-        border-right: 1px solid #84b0c7; 
+        border-top: 1px solid ##80;
+        border-left: 1px solid ##80;
+        border-right: 1px solid ##80;
         padding: 0;
-        background-color: #d5e1e8;
+        background-color: ##c8;
+        color: ##2b;
         font-weight: bold;
+        text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
         /* firefox specific markup */
-        background-image: -moz-linear-gradient(rgba(228, 233, 245, 1.0) 0%, rgba(193, 205, 232, 1.0) 100%);
+        background-image: -moz-linear-gradient(center top, ##F8, ##E8 30%, ##E0 90%, ##D0);
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
         -moz-border-radius-topright: 8px;
         -moz-border-radius-topleft: 8px;
         /* webkit specific markup */
-        background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(228, 233, 245, 1.0)), to(rgba(193, 205, 232, 1.0)));
+        background-image: -webkit-gradient(linear,center top,center bottom,from(##F8),color-stop(0.3,##E0),color-stop(0.9,##E0),to(##D0));
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         -webkit-border-top-right-radius: 8px;
         -webkit-border-top-left-radius: 8px;
@@ -395,20 +408,22 @@ hr.footer {
 }
 
 .memdoc {
-        border-bottom: 1px solid #84b0c7;      
-        border-left: 1px solid #84b0c7;      
-        border-right: 1px solid #84b0c7; 
+        border-bottom: 1px solid ##80;      
+        border-left: 1px solid ##80;      
+        border-right: 1px solid ##80; 
         padding: 2px 5px;
-        background-color: #eef3f5;
+        background-color: ##E0;
         border-top-width: 0;
         /* firefox specific markup */
         -moz-border-radius-bottomleft: 8px;
         -moz-border-radius-bottomright: 8px;
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+        background-image: -moz-linear-gradient(center top, ##FF 0%, ##F8 80%, ##F0);
         /* webkit specific markup */
         -webkit-border-bottom-left-radius: 8px;
         -webkit-border-bottom-right-radius: 8px;
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.2,##F8), to(##F0));
 }
 
 .paramkey {
@@ -435,7 +450,7 @@ hr.footer {
 
 .ftvtree {
 	font-family: sans-serif;
-	margin: 0.5em;
+	margin: 0px;
 }
 
 /* these are for tree view when used as main index */
@@ -443,6 +458,7 @@ hr.footer {
 .directory {
 	font-size: 9pt;
 	font-weight: bold;
+	margin: 5px;
 }
 
 .directory h3 {
@@ -520,9 +536,13 @@ proper pixel height of your image.
 
 /* @end */
 
+div.dynheader {
+        margin-top: 8px;
+}
+
 address {
 	font-style: normal;
-	color: #333;
+	color: ##33;
 }
 
 table.doxtable {
@@ -530,16 +550,91 @@ table.doxtable {
 }
 
 table.doxtable td, table.doxtable th {
-	border: 1px solid #153788;
+	border: 1px solid ##37;
 	padding: 3px 7px 2px;
 }
 
 table.doxtable th {
-	background-color: #254798;
+	background-color: ##47;
 	color: #FFFFFF;
 	font-size: 110%;
 	padding-bottom: 4px;
 	padding-top: 5px;
 	text-align:left;
+}
+
+.tabsearch {
+	top: 0px;
+	left: 10px;
+	height: 36px;
+	background-image: url('tab_b.png');
+	z-index: 101;
+	overflow: hidden;
+	font-size: 13px;
+}
+
+.navpath ul
+{
+	font-size: 11px;
+	background-image:url('tab_b.png');
+	background-repeat:repeat-x;
+	height:30px;
+	line-height:30px;
+	color:##9b;
+	border:solid 1px ##ca;
+	overflow:hidden;
+	margin:0px;
+	padding:0px;
+}
+
+.navpath li
+{
+	list-style-type:none;
+	float:left;
+	padding-left:10px;
+}
+
+.navpath a
+{
+	height:32px;
+	display:block;
+	background-image:url('bc_s.png');
+	background-repeat:no-repeat;
+	background-position:right;
+	padding-right: 15px;
+	text-decoration: none;
+	outline: none;
+	color:##45;
+}
+
+.navpath a:hover
+{
+	color:##80;
+}
+
+div.summary
+{
+	float: right;
+	font-size: 8pt;
+	padding-right: 5px;
+	width: 50%;
+	text-align: right;
+}       
+
+div.summary a
+{
+	white-space: nowrap;
+}
+
+div.header
+{
+	background-color: ##FA;
+	margin:  0px;
+	border-bottom: 1px solid ##CC;
+}
+
+div.headertitle
+{
+	padding: 5px 5px 5px 10px;
 }
 

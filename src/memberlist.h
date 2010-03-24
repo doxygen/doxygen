@@ -118,6 +118,7 @@ class MemberList : public QList<MemberDef>
     MemberList(ListType lt);
    ~MemberList();
     ListType listType() const { return m_listType; }
+    QCString listTypeAsString() const;
     bool insert(uint index,const MemberDef *md);
     void inSort(const MemberDef *md);
     void append(const MemberDef *md);
@@ -143,6 +144,7 @@ class MemberList : public QList<MemberDef>
                Definition *container,const char *title,bool showEnumValues=FALSE);
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, Definition *container);
+    bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void setInGroup(bool inGroup) { m_inGroup=inGroup; }
     void setInFile(bool inFile) { m_inFile=inFile; }

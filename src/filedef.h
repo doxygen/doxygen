@@ -130,6 +130,7 @@ class FileDef : public Definition
     void writeDocumentation(OutputList &ol);
     void writeMemberPages(OutputList &ol);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
+    void writeSummaryLinks(OutputList &ol);
 
     void writeSource(OutputList &ol);
     void parseSource();

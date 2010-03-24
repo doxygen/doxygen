@@ -97,7 +97,9 @@ class LatexGenerator : public OutputGenerator
 
     void startMemberSections() {}
     void endMemberSections() {} 
-    void startMemberHeader();
+    void startHeaderSection() {}
+    void endHeaderSection() {}
+    void startMemberHeader(const char *);
     void endMemberHeader();
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}

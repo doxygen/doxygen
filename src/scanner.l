@@ -2311,7 +2311,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					  {
                                             lastStringContext=YY_START;
-  					    current->initializer+=*yytext; 
+  					    current->initializer=yytext; 
   					    pCopyQuotedGString=&current->initializer;
 					    BEGIN(CopyGString);
 					  }
@@ -5750,11 +5750,13 @@ void CLanguageScanner::parseCode(CodeOutputInterface & codeOutIntf,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
-		   MemberDef *memberDef
+		   MemberDef *memberDef,
+		   bool showLineNumbers
                   )
 {
   ::parseCCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
-               fileDef,startLine,endLine,inlineFragment,memberDef);
+               fileDef,startLine,endLine,inlineFragment,memberDef,
+	       showLineNumbers);
 }
 
 bool CLanguageScanner::needsPreprocessing(const QCString &extension)

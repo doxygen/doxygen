@@ -311,6 +311,7 @@ class ClassDef : public Definition
     void writeMemberList(OutputList &ol);
     void writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup);
     void writeQuickMemberLinks(OutputList &ol,MemberDef *md) const;
+    void writeSummaryLinks(OutputList &ol);
     void reclassifyMember(MemberDef *md,MemberDef::MemberType t);
     
     bool visited;

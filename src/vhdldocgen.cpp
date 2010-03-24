@@ -2220,7 +2220,7 @@ void VhdlDocGen::writeVHDLDeclarations(MemberList* ml,OutputList &ol,
 
   if (title) 
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader(ml->listTypeAsString());
     ol.parseText(title);
     ol.endMemberHeader();
     ol.docify(" ");

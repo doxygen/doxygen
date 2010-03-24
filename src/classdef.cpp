@@ -1360,6 +1360,42 @@ void ClassDef::writeAuthorSection(OutputList &ol)
   ol.popGeneratorState();
 }
 
+
+void ClassDef::writeSummaryLinks(OutputList &ol)
+{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  QListIterator<LayoutDocEntry> eli(
+      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
+  LayoutDocEntry *lde;
+  bool first=TRUE;
+  for (eli.toFirst();(lde=eli.current());++eli)
+  {
+    if (lde->kind()==LayoutDocEntry::ClassNestedClasses && 
+        m_impl->innerClasses  &&
+        m_impl->innerClasses->declVisible()
+       )
+    {
+      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      writeSummaryLink(ol,"nested-classes",ls->title,first);
+    }
+    else if (lde->kind()== LayoutDocEntry::MemberDecl)
+    {
+      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      MemberList * ml = getMemberList(lmd->type);
+      if (ml && ml->declVisible())
+      {
+        writeSummaryLink(ol,ml->listTypeAsString(),lmd->title,first);
+      }
+    }
+  }
+  if (!first)
+  {
+    ol.writeString("  </div>\n");
+  }
+  ol.popGeneratorState();
+}
+
 // write all documentation for this class
 void ClassDef::writeDocumentation(OutputList &ol)
 {
@@ -1394,11 +1430,12 @@ void ClassDef::writeDocumentation(OutputList &ol)
     writeNavigationPath(ol);
   }
   ol.endQuickIndices();
-  ol.startContents();
-  startTitle(ol,getOutputFileBase());
+
+  startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
   addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),name());
+  ol.startContents();
 
   {
     ol.pushGeneratorState();
@@ -1669,6 +1706,7 @@ void ClassDef::writeMemberList(OutputList &ol)
   startTitle(ol,0);
   ol.parseText(displayName()+" "+theTranslator->trMemberList());
   endTitle(ol,0,0);
+  ol.startContents();
   ol.parseText(theTranslator->trThisIsTheListOfAllMembers());
   ol.writeObjectLink(getReference(),getOutputFileBase(),0,displayName());
   ol.parseText(theTranslator->trIncludingInheritedMembers());

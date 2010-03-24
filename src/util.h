@@ -372,5 +372,8 @@ QCString filterTitle(const QCString &title);
 
 bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 
+void writeSummaryLink(OutputList &ol,const char *label,const char *title,
+                      bool &first);
+
 #endif
 

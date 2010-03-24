@@ -854,9 +854,11 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
 void Definition::_writeSourceRefList(OutputList &ol,const char *scopeName,
     const QCString &text,MemberSDict *members,bool /*funcOnly*/)
 {
-static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE"); 
- ol.pushGeneratorState();
-  if (/*Config_getBool("SOURCE_BROWSER") &&*/ members)
+  static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE"); 
+  static bool sourceBrowser   = Config_getBool("SOURCE_BROWSER");
+  static bool refLinkSource   = Config_getBool("REFERENCES_LINK_SOURCE");
+  ol.pushGeneratorState();
+  if (members)
   {
     ol.startParagraph();
     ol.parseText(text);
@@ -893,22 +895,29 @@ static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
             (md->isFunction() || md->isSlot() || 
              md->isPrototype() || md->isSignal()
             )
-           ) name+="()";
+           ) 
+        {
+          name+="()";
+        }
         //Definition *d = md->getOutputFileBase();
         //if (d==Doxygen::globalScope) d=md->getBodyDef();
-        if (!(md->isLinkable() && !Config_getBool("REFERENCES_LINK_SOURCE")) && md->getStartBodyLine()!=-1 && md->getBodyDef()) 
+        if (sourceBrowser &&
+            !(md->isLinkable() && !refLinkSource) && 
+            md->getStartBodyLine()!=-1 && 
+            md->getBodyDef()
+           )
         {
           //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope); 
           // for HTML write a real link
           ol.pushGeneratorState();
           //ol.disableAllBut(OutputGenerator::Html);
-           
-         ol.disable(OutputGenerator::RTF); 
-         ol.disable(OutputGenerator::Man); 
-         if (!latexSourceCode)
-         {
-          ol.disable(OutputGenerator::Latex);
-        }
+
+          ol.disable(OutputGenerator::RTF); 
+          ol.disable(OutputGenerator::Man); 
+          if (!latexSourceCode)
+          {
+            ol.disable(OutputGenerator::Latex);
+          }
           QCString lineStr,anchorStr;
           anchorStr.sprintf("l%05d",md->getStartBodyLine());
           //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
@@ -917,11 +926,11 @@ static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
 
           // for the other output formats just mention the name
           ol.pushGeneratorState();
-           ol.disable(OutputGenerator::Html);
-           if (latexSourceCode)
+          ol.disable(OutputGenerator::Html);
+          if (latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
-           }
+          }
           ol.docify(name);
           ol.popGeneratorState();
         }
@@ -935,20 +944,20 @@ static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
           if (!latexSourceCode)
           {
             ol.disable(OutputGenerator::Latex);
-           }
-     
+          }
+
           ol.writeObjectLink(md->getReference(),
-                             md->getOutputFileBase(),
-                             md->anchor(),name);
+              md->getOutputFileBase(),
+              md->anchor(),name);
           ol.popGeneratorState();
 
           // for the other output formats just mention the name
           ol.pushGeneratorState();
           ol.disable(OutputGenerator::Html);
-           if (latexSourceCode)
-           {
+          if (latexSourceCode)
+          {
             ol.disable(OutputGenerator::Latex);
-           }
+          }
           ol.docify(name);
           ol.popGeneratorState();
         }
@@ -1234,6 +1243,7 @@ void Definition::writePathFragment(OutputList &ol) const
   if (m_impl->outerScope && m_impl->outerScope!=Doxygen::globalScope)
   {
     m_impl->outerScope->writePathFragment(ol);
+#if 0
     if (m_impl->outerScope->definitionType()==Definition::TypeClass ||
         m_impl->outerScope->definitionType()==Definition::TypeNamespace)
     {
@@ -1254,7 +1264,9 @@ void Definition::writePathFragment(OutputList &ol) const
       ol.writeString("&raquo;");
       ol.writeString("&nbsp;");
     }
+#endif
   }
+  ol.writeString("      <li>");
   if (isLinkable())
   {
     if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
@@ -1276,6 +1288,7 @@ void Definition::writePathFragment(OutputList &ol) const
     ol.docify(m_impl->localName);
     ol.endBold();
   }
+  ol.writeString("      </li>\n");
 }
 
 void Definition::writeNavigationPath(OutputList &ol) const
@@ -1283,9 +1296,11 @@ void Definition::writeNavigationPath(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  ol.writeString("  <div class=\"navpath\">");
+  ol.writeString("  <div class=\"navpath\">\n");
+  ol.writeString("    <ul>\n");
   writePathFragment(ol);
-  ol.writeString("\n  </div>\n");
+  ol.writeString("    </ul>\n");
+  ol.writeString("  </div>\n");
 
   ol.popGeneratorState();
 }

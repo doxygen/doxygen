@@ -1,48 +1,86 @@
 /*---------------- Search Box */
+
 #FSearchBox {
     float: left;
 }
+
+#searchli {
+    float: right;
+    display: block;
+    width: 170px;
+    height: 36px;
+}
+
 #MSearchBox {
-    padding: 0px;
-    margin: 0px;
-    border: none;
-    border: 1px solid #84B0C7;
-    white-space: nowrap;
-    -moz-border-radius: 8px;
-    -webkit-border-top-left-radius: 8px;
-    -webkit-border-top-right-radius: 8px;
-    -webkit-border-bottom-left-radius: 8px;
-    -webkit-border-bottom-right-radius: 8px;
+    white-space : nowrap;
+    position: absolute;
+    float: none;
+    display: inline;
+    margin-top: 8px;
+    right: 0px;
+    width: 170px;
+    z-index: 102;*/
 }
-#MSearchField {
-    font: 9pt Arial, Verdana, sans-serif;
-    color: #999999;
-    background-color: #FFFFFF;
-    font-style: normal;
-    cursor: text;
-    padding: 1px 1px;
-    margin: 0px 6px 0px 0px;
-    border: none;
-    outline: none;
-    vertical-align: middle;
+
+#MSearchBox .left
+{
+    display:block;
+    position:absolute;
+    left:10px;
+    width:20px;
+    height:19px;
+    background:url('search_l.png') no-repeat;
+    background-position:right;
 }
-.MSearchBoxActive #MSearchField {
-    color: #000000;
-}
+
 #MSearchSelect {
-    float : none;
-    display : inline;
-    background : none;
-    font: 9pt Verdana, sans-serif;
-    border: none;
-    margin: 0px 0px 0px 6px;
-    vertical-align: middle;
-    padding: 0px 0px;
+    display:block;
+    position:absolute;
+    width:20px;
+    height:19px;
+}
+
+.left #MSearchSelect {
+    left:4px;
+}
+
+.right #MSearchSelect {
+    right:5px;
+}
+
+#MSearchField {
+    display:block;
+    position:absolute;
+    height:19px;
+    background:url('search_m.png') repeat-x;
+    border:none;
+    width:116px;
+    margin-left:20px;
+    padding-left:4px;
+    color: #909090;
+    outline: none;
+    font: 9pt Arial, Verdana, sans-serif;
+}
+
+#FSearchBox #MSearchField {
+    margin-left:15px;
+}
+
+#MSearchBox .right {
+    display:block;
+    position:absolute;
+    right:10px;
+    top:0px;
+    width:20px;
+    height:19px;
+    background:url('search_r.png') no-repeat;
+    background-position:left;
 }
 
 #MSearchClose {
-    float : none;
-    display : none;
+    display: none;
+    position: absolute;
+    top: 4px;
     background : none;
     border: none;
     margin: 0px 4px 0px 0px;
@@ -50,29 +88,16 @@
     outline: none;
 }
 
-#MSearchCloseImg {
-    vertical-align: middle;
+.left #MSearchClose {
+    left: 6px;
 }
 
-.MSearchBoxLeft {
-    display: block;
-    text-align: left;
-    float: left;
-    margin-left: 6px;
+.right #MSearchClose {
+    right: 2px;
 }
-.MSearchBoxRight {
-    display: block;
-    float: right;
-    text-align: right;
-    margin-right: 6px;
-}
-.MSearchBoxSpacer {
-    font-size: 0px;
-    clear: both;
-}
-.MSearchBoxRow {
-    font-size: 0px;
-    clear: both;
+
+.MSearchBoxActive #MSearchField {
+    color: #000000;
 }
 
 /*---------------- Search filter selection */
@@ -81,8 +106,8 @@
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid #A0A0A0;
-    background-color: #FAFAFA;
+    border: 1px solid ##A0;
+    background-color: ##FA;
     z-index: 1;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -92,19 +117,22 @@
     -webkit-border-bottom-left-radius: 4px;
     -webkit-border-bottom-right-radius: 4px;
     -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-    }
+}
+
 .SelectItem {
     font: 8pt Arial, Verdana, sans-serif;
     padding-left:  2px;
     padding-right: 12px;
     border: 0px;
 }
+
 span.SelectionMark {
     margin-right: 4px;
     font-family: monospace;
     outline-style: none;
     text-decoration: none;
 }
+
 a.SelectItem {
     display: block;
     outline-style: none;
@@ -113,15 +141,17 @@ a.SelectItem {
     padding-left:   6px;
     padding-right: 12px;
 }
+
 a.SelectItem:focus,
 a.SelectItem:active {
     color: #000000; 
     outline-style: none;
     text-decoration: none;
 }
+
 a.SelectItem:hover {
     color: #FFFFFF;
-    background-color: #2A50E4;
+    background-color: ##50;
     outline-style: none;
     text-decoration: none;
     cursor: pointer;
@@ -133,14 +163,15 @@ a.SelectItem:hover {
 iframe#MSearchResults {
     width: 60ex;
     height: 15em;
-    }
+}
+
 #MSearchResultsWindow {
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid #000000;
-    background-color: #EEF3F5;
-    }
+    border: 1px solid #000;
+    background-color: ##F0;
+}
 
 /* ----------------------------------- */
 
@@ -154,10 +185,12 @@ iframe#MSearchResults {
     font-size: 10pt;
     padding-left: 1ex;
 }
+
 .SRPage .SREntry {
     font-size: 8pt;
     padding: 1px 5px;
 }
+
 body.SRPage {
     margin: 5px 2px;
 }
@@ -165,11 +198,14 @@ body.SRPage {
 .SRChildren {
     padding-left: 3ex; padding-bottom: .5em 
 }
+
 .SRPage .SRChildren {
     display: none;
 }
+
 .SRSymbol {
-    font-weight: bold; color: #153788;
+    font-weight: bold; 
+    color: ##58;
     font-family: Arial, Verdana, sans-serif;
     text-decoration: none;
     outline: none;
@@ -177,7 +213,7 @@ body.SRPage {
 
 a.SRScope {
     display: block;
-    color: #153788; 
+    color: ##58; 
     font-family: Arial, Verdana, sans-serif;
     text-decoration: none;
     outline: none;
@@ -198,3 +234,7 @@ a.SRScope:focus, a.SRScope:active {
     display: none;
 }
 
+DIV.searchresults {
+    margin-left: 10px;
+    margin-right: 10px;
+}

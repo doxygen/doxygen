@@ -182,6 +182,69 @@ MemberListIterator::MemberListIterator(const QList<MemberDef> &l) :
 {
 }
 
+bool MemberList::declVisible() const
+{
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for ( ; (md=mli.current()); ++mli )
+  {
+    if (md->isBriefSectionVisible())
+    {
+      switch (md->memberType())
+      {
+        case MemberDef::Define:    // fall through
+        case MemberDef::Typedef:   // fall through
+        case MemberDef::Variable:  // fall through
+        case MemberDef::Function:  // fall through
+        case MemberDef::Signal:    // fall through
+        case MemberDef::Slot:      // fall through
+        case MemberDef::DCOP:      // fall through
+        case MemberDef::Property:  // fall through
+        case MemberDef::Event:  
+          return TRUE;
+        case MemberDef::Enumeration: 
+          {
+            int enumVars=0;
+            MemberListIterator vmli(*this);
+            MemberDef *vmd;
+            QCString name(md->name());
+            int i=name.findRev("::");
+            if (i!=-1) name=name.right(name.length()-i-2); // strip scope (TODO: is this needed?)
+            if (name[0]=='@') // anonymous enum => append variables
+            {
+              for ( ; (vmd=vmli.current()) ; ++vmli)
+              {
+                QCString vtype=vmd->typeString();
+                if ((vtype.find(name))!=-1) 
+                {
+                  enumVars++;
+                }
+              }
+            }
+            // if this is an anoymous enum and there are variables of this
+            // enum type (i.e. enumVars>0), then we do not show the enum here.
+            if (enumVars==0) // show enum here
+            {
+              return TRUE;
+            }
+          }
+          break;
+        case MemberDef::Friend:
+          return TRUE;
+        case MemberDef::EnumValue: 
+          {
+            if (m_inGroup)
+            {
+              return TRUE;
+            }
+          }
+          break;
+      }
+    }
+  }
+  return FALSE;
+}
+
 void MemberList::writePlainDeclarations(OutputList &ol,
                        ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd
                       )
@@ -347,7 +410,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   //    this,title,subtitle,numDecMembers());
   if (title) 
   {
-    ol.startMemberHeader();
+    ol.startMemberHeader(listTypeAsString());
     ol.parseText(title);
     ol.endMemberHeader();
   }
@@ -459,6 +522,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     QCString title=md->qualifiedName();
     startFile(ol,diskName,md->name(),title);
     container->writeNavigationPath(ol);
+    ol.startContents();
 
     ol.writeString("<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n"
                    "  <tr>\n"
@@ -615,6 +679,60 @@ void MemberList::unmarshal(StorageIntf *s)
   }
 }
 
+QCString MemberList::listTypeAsString() const
+{
+  switch(m_listType)
+  {
+    case pubMethods: return "pub-methods";
+    case proMethods: return "pro-methods";
+    case pacMethods: return "pac-methods";
+    case priMethods: return "pri-methods";
+    case pubStaticMethods: return "pub-static-methods";
+    case proStaticMethods: return "pro-static-methods";
+    case pacStaticMethods: return "pac-static-methods";
+    case priStaticMethods: return "pri-static-methods";
+    case pubSlots: return "pub-slots";
+    case proSlots: return "pro-slots";
+    case priSlots: return "pri-slots";
+    case pubAttribs: return "pub-attribs";
+    case proAttribs: return "pro-attribs";
+    case pacAttribs: return "pac-attribs";
+    case priAttribs: return "pri-attribs";
+    case pubStaticAttribs: return "pub-static-attribs";
+    case proStaticAttribs: return "pro-static-attribs";
+    case pacStaticAttribs: return "pac-static-attribs";
+    case priStaticAttribs: return "pri-static-attribs";
+    case pubTypes: return "pub-types";
+    case proTypes: return "pro-types";
+    case pacTypes: return "pac-types";
+    case priTypes: return "pri-types";
+    case related: return "related";
+    case signals: return "signals";
+    case friends: return "friends";
+    case dcopMethods: return "dcop-methods";
+    case properties: return "properties";
+    case events: return "events";
+    case decDefineMembers: return "define-members";
+    case decProtoMembers: return "proto-members";
+    case decTypedefMembers: return "typedef-members";
+    case decEnumMembers: return "enum-members";
+    case decFuncMembers: return "func-members";
+    case decVarMembers: return "var-members";
+    case decEnumValMembers: return "enumval-members";
+    case decPubSlotMembers: return "pub-slot-members";
+    case decProSlotMembers: return "pro-slot-members";
+    case decPriSlotMembers: return "pri-slot-members";
+    case decSignalMembers: return "signal-members";
+    case decEventMembers: return "event-members";
+    case decFriendMembers: return "friend-members";
+    case decPropMembers: return "prop-members";
+    case enumFields: return "enum-fields";
+    case memberGroup: return "member-group";
+    default: break;
+  }
+  return "";
+}
+
 //--------------------------------------------------------------------------
 
 int MemberSDict::compareItems(GCI item1, GCI item2)
@@ -623,4 +741,5 @@ int MemberSDict::compareItems(GCI item1, GCI item2)
   MemberDef *c2=(MemberDef *)item2;
   return stricmp(c1->name(),c2->name());
 }
+
 
