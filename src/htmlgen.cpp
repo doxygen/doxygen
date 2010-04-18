@@ -64,6 +64,7 @@ static QCString g_footer;
 
 //------------------------- Pictures for the Tabs ------------------------
 
+// active
 static unsigned char tab_a_png[36] =
 {
    31,  42,  59,  69,  73,  74,  75,  77,  77,
@@ -72,6 +73,7 @@ static unsigned char tab_a_png[36] =
    96,  96,  97,  98,  98,  99,  99,  99, 100
 };
 
+// normal background
 static unsigned char tab_b_png[36] =
 {
   240, 239, 238, 237, 235, 234, 234, 232, 231,
@@ -80,6 +82,14 @@ static unsigned char tab_b_png[36] =
   196, 195, 193, 192, 190, 189, 188, 188, 188
 };
 
+// shadowed header
+static unsigned char header_png[12] = 
+{
+  255, 240, 241, 242, 243, 244, 
+  245, 246, 247, 248, 249, 250
+};
+
+// hovering
 static unsigned char tab_h_png[36] =
 {
   199, 198, 196, 196, 195, 194, 193, 192, 189,
@@ -88,6 +98,7 @@ static unsigned char tab_h_png[36] =
   153, 152, 149, 148, 147, 145, 145, 150, 161
 };
 
+// separator
 static unsigned char tab_s_png[36] =
 {
   187, 186, 185, 183, 182, 181, 180, 178, 176,
@@ -95,6 +106,7 @@ static unsigned char tab_s_png[36] =
   156, 154, 152, 150, 148, 145, 143, 141, 140,
   138, 136, 134, 131, 131, 128, 126, 125, 124
 };
+
 
 static unsigned char bc_s_png[240] =
 {
@@ -692,6 +704,7 @@ static colored_img_data_item colored_tab_data[] =
   { "tab_b.png",    1, 36, tab_b_png, 0 },
   { "tab_h.png",    1, 36, tab_h_png, 0 },
   { "tab_s.png",    1, 36, tab_s_png, 0 },
+  { "nav_h.png",   1, 12, header_png, 0 },
   { "bc_s.png",     8, 32, bc_s_png, bc_s_a_png },
   { "doxygen.png", 104,31, doxygen_png, doxygen_a_png },
   { "closed.png",   9,  9, closed_png, closed_a_png },
@@ -939,6 +952,7 @@ static void generateDynamicSections(QTextStream &t,const QCString &relPath)
   if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
   { 
     t << 
+#if 0
       "<script type=\"text/javascript\">\n"
       "<!--\n"
       "function changeDisplayState (e){\n"
@@ -980,6 +994,44 @@ static void generateDynamicSections(QTextStream &t,const QCString &relPath)
       "window.onload = initDynSections;\n"
       "-->\n"
       "</script>\n";
+#endif
+    "<script type=\"text/javascript\">\n"
+    "function hasClass(ele,cls) {\n"
+    "  return ele.className.match(new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)'));\n"
+    "}\n"
+    "\n"
+    "function addClass(ele,cls) {\n"
+    "  if (!this.hasClass(ele,cls)) ele.className += \" \"+cls;\n"
+    "}\n"
+    "\n"
+    "function removeClass(ele,cls) {\n"
+    "  if (hasClass(ele,cls)) {\n"
+    "    var reg = new RegExp('(\\\\s|^)'+cls+'(\\\\s|$)');\n"
+    "    ele.className=ele.className.replace(reg,' ');\n"
+    "  }\n"
+    "}\n"
+    "\n"
+    "function toggleVisibility(linkObj) {\n"
+    " var base = linkObj.getAttribute('id');\n"
+    " var summary = document.getElementById(base + '-summary');\n"
+    " var content = document.getElementById(base + '-content');\n"
+    " var trigger = document.getElementById(base + '-trigger');\n"
+    " if ( hasClass(linkObj,'closed') ) {\n"
+    "   summary.style.display = 'none';\n"
+    "   content.style.display = 'block';\n"
+    "   trigger.src = '" << relPath << "open.png';\n"
+    "   removeClass(linkObj,'closed');\n"
+    "   addClass(linkObj,'opened');\n"
+    " } else if ( hasClass(linkObj,'opened') ) {\n"
+    "   summary.style.display = 'block';\n"
+    "   content.style.display = 'none';\n"
+    "   trigger.src = '" << relPath << "closed.png';\n"
+    "   removeClass(linkObj,'opened');\n"
+    "   addClass(linkObj,'closed');\n"
+    " }\n"
+    " return false;\n"
+    "}\n"
+    "</script>\n";
   }
 }
 
@@ -1031,6 +1083,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
     t << "--></script>\n";
   }
   generateDynamicSections(t,relPath);
+  m_sectionCount=0;
 }
 
 void HtmlGenerator::writeSearchFooter(QTextStream &t,const QCString &relPath)
@@ -1494,17 +1547,84 @@ void HtmlGenerator::writeChar(char c)
   docify(cs);
 }
 
+//--- helper function for dynamic sections -------------------------
+
+static void startSectionHeader(QTextStream &t,int sectionCount)
+{
+  static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
+  if (dynamicSections)
+  {
+    t << "<div id=\"dynsection-" << sectionCount << "\" "
+         "onclick=\"return toggleVisibility(this)\" "
+         "class=\"dynheader closed\" "
+         "style=\"cursor:pointer;\">" << endl;
+    t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\"closed.png\"/> ";
+  }
+  else
+  {
+    t << "<div class=\"dynheader\">" << endl;
+  }
+}
+
+static void endSectionHeader(QTextStream &t)
+{
+  t << "</div>" << endl;
+}
+
+static void startSectionSummary(QTextStream &t,int sectionCount)
+{
+  static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
+  if (dynamicSections)
+  {
+    t << "<div id=\"dynsection-" << sectionCount << "-summary\" "
+         "class=\"dynsummary\" "
+         "style=\"display:block;\">" << endl;
+  }
+}
+
+static void endSectionSummary(QTextStream &t)
+{
+  static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
+  if (dynamicSections)
+  {
+    t << "</div>" << endl;
+  }
+}
+
+static void startSectionContent(QTextStream &t,int sectionCount)
+{
+  static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
+  if (dynamicSections)
+  {
+    t << "<div id=\"dynsection-" << sectionCount << "-content\" "
+         "class=\"dyncontent\" "
+         "style=\"display:none;\">" << endl;
+  }
+  else
+  {
+    t << "<div class=\"dyncontent\">" << endl;
+  }
+}
+
+static void endSectionContent(QTextStream &t)
+{
+  t << "</div>" << endl;
+}
+
+//----------------------------
+
 void HtmlGenerator::startClassDiagram()
 {
-  //t << "<p>";
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
   t << " <div class=\"center\">" << endl;
   t << "  <img src=\"";
   t << relPath << fileName << ".png\" usemap=\"#";
@@ -1517,8 +1637,8 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
-  t << " </div>" << endl;
-  t << "</div>" << endl;
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 
@@ -1880,13 +2000,16 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
 
 void HtmlGenerator::startDotGraph()
 {
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endDotGraph(const DotClassGraph &g)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
   g.writeGraph(t,BITMAP,dir,relPath);
   if (Config_getBool("GENERATE_LEGEND"))
   {
@@ -1896,59 +2019,81 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
     endHtmlLink();
     t << "]</span></center>";
   }
-  t << "</div>" << endl;
+
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 void HtmlGenerator::startInclDepGraph()
 {
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
   g.writeGraph(t,BITMAP,dir,relPath);
-  t << "</div>" << endl;
+
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 void HtmlGenerator::startGroupCollaboration()
 {
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
   g.writeGraph(t,BITMAP,dir,relPath);
-  t << "</div>" << endl;
+
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 void HtmlGenerator::startCallGraph()
 {
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endCallGraph(const DotCallGraph &g)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
   g.writeGraph(t,BITMAP,dir,relPath);
-  t << "</div>" << endl;
+
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 void HtmlGenerator::startDirDepGraph()
 {
-  t << "<div class=\"dynheader\">" << endl;
+  startSectionHeader(t,m_sectionCount);
 }
 
 void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
 {
-  t << "</div>" << endl;
-  t << "<div class=\"dynsection\">" << endl;
+  endSectionHeader(t);
+  startSectionSummary(t,m_sectionCount);
+  endSectionSummary(t);
+  startSectionContent(t,m_sectionCount);
+
   g.writeGraph(t,BITMAP,dir,relPath);
-  t << "</div>" << endl;
+
+  endSectionContent(t);
+  m_sectionCount++;
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &g)

@@ -628,6 +628,8 @@ div.summary a
 
 div.header
 {
+        background-image:url('nav_h.png');
+        background-repeat:repeat-x;
 	background-color: ##FA;
 	margin:  0px;
 	border-bottom: 1px solid ##CC;

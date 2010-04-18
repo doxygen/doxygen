@@ -261,6 +261,7 @@ class HtmlGenerator : public OutputGenerator
     HtmlGenerator(const HtmlGenerator &g);
 
     int col;
+    int m_sectionCount;
 };
 
 #endif

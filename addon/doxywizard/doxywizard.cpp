@@ -101,14 +101,10 @@ MainWindow::MainWindow()
 
   setCentralWidget(topPart);
   statusBar()->showMessage(tr("Welcome to Doxygen"),messageTimeout);
-  loadSettings();
 
   m_runProcess = new QProcess;
   m_running = false;
   m_timer = new QTimer;
-  updateLaunchButtonState();
-  m_modified = false;
-  updateTitle();
 
   // connect signals and slots
   connect(tabs,SIGNAL(currentChanged(int)),SLOT(selectTab(int)));
@@ -123,6 +119,12 @@ MainWindow::MainWindow()
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
+
+  loadSettings();
+  updateLaunchButtonState();
+  m_modified = false;
+  updateTitle();
+  m_wizard->refresh();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -274,6 +276,7 @@ void MainWindow::makeDefaults()
     //printf("MainWindow:makeDefaults()\n");
     m_expert->saveSettings(&m_settings);
     m_settings.setValue(QString::fromAscii("wizard/loadsettings"), true);
+    m_settings.sync();
   }
 }
 
@@ -288,6 +291,7 @@ void MainWindow::resetToDefaults()
     //printf("MainWindow:resetToDefaults()\n");
     m_expert->resetToDefaults();
     m_settings.setValue(QString::fromAscii("wizard/loadsettings"), false);
+    m_settings.sync();
     m_wizard->refresh();
   }
 }
@@ -298,6 +302,7 @@ void MainWindow::loadSettings()
   QVariant state        = m_settings.value(QString::fromAscii("main/state"),    QVariant::Invalid);
   QVariant wizState     = m_settings.value(QString::fromAscii("wizard/state"),  QVariant::Invalid);
   QVariant loadSettings = m_settings.value(QString::fromAscii("wizard/loadsettings"),  QVariant::Invalid);
+  QVariant workingDir   = m_settings.value(QString::fromAscii("wizard/workingdir"), QVariant::Invalid);
 
   if (geometry  !=QVariant::Invalid) restoreGeometry(geometry.toByteArray());
   if (state     !=QVariant::Invalid) restoreState   (state.toByteArray());
@@ -305,6 +310,11 @@ void MainWindow::loadSettings()
   if (loadSettings!=QVariant::Invalid && loadSettings.toBool())
   {
     m_expert->loadSettings(&m_settings);
+  }
+
+  if (workingDir!=QVariant::Invalid && QDir(workingDir.toString()).exists())
+  {
+    setWorkingDir(workingDir.toString());
   }
 
   for (int i=0;i<10;i++)
@@ -322,6 +332,7 @@ void MainWindow::saveSettings()
   m_settings.setValue(QString::fromAscii("main/geometry"), saveGeometry());
   m_settings.setValue(QString::fromAscii("main/state"),    saveState());
   m_settings.setValue(QString::fromAscii("wizard/state"),  m_wizard->saveState());
+  m_settings.setValue(QString::fromAscii("wizard/workingdir"), m_workingDir->text());
 }
 
 void MainWindow::selectTab(int id)

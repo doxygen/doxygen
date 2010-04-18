@@ -2255,6 +2255,16 @@ QCString fileToString(const char *name,bool filter)
 
 QCString dateToString(bool includeTime)
 {
+  QDateTime current = QDateTime::currentDateTime();
+  return theTranslator->trDateTime(current.date().year(),
+                                   current.date().month(),
+                                   current.date().day(),
+                                   current.date().dayOfWeek(),
+                                   current.time().hour(),
+                                   current.time().minute(),
+                                   current.time().second(),
+                                   includeTime);
+#if 0
   if (includeTime)
   {
     return convertToQCString(QDateTime::currentDateTime().toString());
@@ -2269,6 +2279,7 @@ QCString dateToString(bool includeTime)
         d.year());
     return result;
   }
+#endif
 }
 
 QCString yearToString()
@@ -3684,7 +3695,7 @@ bool getDefs(const QCString &scName,const QCString &memberName,
   //printf("mName=%s mn=%p\n",mName.data(),mn);
   if (!forceEmptyScope && mn && !(scopeName.isEmpty() && mScope.isEmpty()))
   {
-    //printf("  >member name found\n");
+    //printf("  >member name '%s' found\n",mName.data());
     int scopeOffset=scopeName.length();
     do
     {
@@ -3695,13 +3706,13 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       }
       else if (!mScope.isEmpty())
       {
-        className=mScope.copy();
+        className=mScope;
       }
-      //printf("Trying class scope %s\n",className.data());
 
-      ClassDef *fcd=0;
+      ClassDef *fcd=getResolvedClass(Doxygen::globalScope,0,className);
+      //printf("Trying class scope %s: %p\n",className.data(),fcd);
       // todo: fill in correct fileScope!
-      if ((fcd=getResolvedClass(Doxygen::globalScope,0,className)) &&  // is it a documented class
+      if (fcd &&  // is it a documented class
           fcd->isLinkable() 
          )
       {

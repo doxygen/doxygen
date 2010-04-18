@@ -193,6 +193,7 @@ void DirDef::writeDirectoryGraph(OutputList &ol)
       ol.startParagraph();
       ol.startDirDepGraph();
       //TODO: ol.parseText(theTranslator->trDirDepGraph());
+      ol.parseText((QCString)"Directory dependency graph for "+displayName()+":");
       ol.endDirDepGraph(dirDep);
       ol.endParagraph();
       ol.enableAll();
@@ -722,12 +723,15 @@ void DirRelation::writeDocumentation(OutputList &ol)
   ol.writeString("<table class=\"dirtab\">");
   ol.writeString("<tr class=\"dirtab\">");
   // TODO: translate me! "File in %s"
-  ol.writeString("<th class=\"dirtab\">File in ");
-  m_src->writePathFragment(ol);
+  ol.writeString("<th class=\"dirtab\">");
+  ol.parseText(theTranslator->trFileIn(m_src->pathFragment()));
+  //m_src->writePathFragment(ol);
   ol.writeString("</th>");
   // TODO: translate me! "Includes file in %s"
-  ol.writeString("<th class=\"dirtab\">Includes file in ");
-  m_dst->dir()->writePathFragment(ol);
+  ol.writeString("<th class=\"dirtab\">");
+  //ol.writeString("Includes file in ");
+  //m_dst->dir()->writePathFragment(ol);
+  ol.parseText(theTranslator->trIncludesFileIn(m_dst->dir()->pathFragment()));
   ol.writeString("</th>");
   ol.writeString("</tr>");
 

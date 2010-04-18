@@ -914,7 +914,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (!gd->isReference())
           {
-            if (compactLatex) t << "\\input"; else t << "\\include";
+            //if (compactLatex) t << "\\input"; else t << "\\include";
+            t << "\\input"; 
             t << "{" << gd->getOutputFileBase() << "}\n";
           }
         }
@@ -937,7 +938,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (dd->isLinkableInProject())
           {
-            if (compactLatex) t << "\\input"; else t << "\\include";
+            //if (compactLatex) t << "\\input"; else t << "\\include";
+            t << "\\input"; 
             t << "{" << dd->getOutputFileBase() << "}\n";
           }
         }
@@ -960,7 +962,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (nd->isLinkableInProject())
           {
-            if (compactLatex) t << "\\input"; else t << "\\include";
+            //if (compactLatex) t << "\\input"; else t << "\\include";
+            t << "\\input"; 
             t << "{" << nd->getOutputFileBase() << "}\n";
           }
           ++nli;
@@ -984,7 +987,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() && cd->templateMaster()==0)
           {
-            if (compactLatex) t << "\\input"; else t << "\\include";
+            //if (compactLatex) t << "\\input"; else t << "\\include";
+            t << "\\input"; 
             t << "{" << cd->getOutputFileBase() << "}\n";
           } 
         }
@@ -1006,17 +1010,20 @@ void LatexGenerator::endIndexSection(IndexSections is)
                 t << "}\n\\input{" << fd->getOutputFileBase() << "}\n";
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "\\include{" << fd->getSourceFileBase() << "}\n";
+                  //t << "\\include{" << fd->getSourceFileBase() << "}\n";
+                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
                 }
                 isFirst=FALSE;
               }
               else
               {
-                if (compactLatex) t << "\\input" ; else t << "\\include";
+                //if (compactLatex) t << "\\input" ; else t << "\\include";
+                t << "\\input" ; 
                 t << "{" << fd->getOutputFileBase() << "}\n";
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "\\include{" << fd->getSourceFileBase() << "}\n";
+                  //t << "\\include{" << fd->getSourceFileBase() << "}\n";
+                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
                 }
               }
             }
@@ -1037,7 +1044,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         for (++pdi;(pd=pdi.current());++pdi)
         {
-          if (compactLatex) t << "\\input" ; else t << "\\include";
+          //if (compactLatex) t << "\\input" ; else t << "\\include";
+          t << "\\input"; 
           t << "{" << pd->getOutputFileBase() << "}\n";
         }
       }
@@ -1077,7 +1085,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
 void LatexGenerator::writePageLink(const char *name, bool first)
 {
   bool &compactLatex = Config_getBool("COMPACT_LATEX");
-  if (compactLatex || first) t << "\\input" ; else t << "\\include";
+  // next is remove for bug615957
+  //if (compactLatex || first) t << "\\input" ; else t << "\\include";
+  t << "\\input" ; 
   t << "{" << name << "}\n";
 }
 

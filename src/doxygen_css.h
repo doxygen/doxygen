@@ -628,6 +628,8 @@
 "\n"
 "div.header\n"
 "{\n"
+"        background-image:url('nav_h.png');\n"
+"        background-repeat:repeat-x;\n"
 "	background-color: ##FA;\n"
 "	margin:  0px;\n"
 "	border-bottom: 1px solid ##CC;\n"

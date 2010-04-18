@@ -41,7 +41,25 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_6_0 : public TranslatorAdapterBase
+class TranslatorAdapter_1_6_3 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.6.3"); }
+
+    virtual QCString trDirDependency(const char *name)
+    { return english.trDirDependency(name); }
+    virtual QCString trFileIn(const char *name)
+    { return english.trFileIn(name); }
+    virtual QCString trIncludesFileIn(const char *name)
+    { return english.trIncludesFileIn(name); }
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    { return english.trDateTime(year,month,day,dayOfWeek,hour,minutes,seconds,includeTime); }
+};
+
+class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
 {
   public:
     virtual QCString updateNeededMessage()

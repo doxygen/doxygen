@@ -839,7 +839,8 @@ void Definition::writeInlineCode(OutputList &ol,const char *scopeName)
                        actualStart,      // startLine
                        actualEnd,        // endLine
                        TRUE,             // inlineFragment
-                       thisMd            // memberDef
+                       thisMd,           // memberDef
+                       FALSE             // show line numbers
                       );
       ol.endCodeFragment();
       ol.endParagraph();
@@ -1237,34 +1238,43 @@ QCString Definition::convertNameToFile(const char *name,bool allowDots) const
   }
 }
 
+QCString Definition::pathFragment() const
+{
+  makeResident();
+  QCString result;
+  if (m_impl->outerScope && m_impl->outerScope!=Doxygen::globalScope)
+  {
+    result = m_impl->outerScope->pathFragment();
+  }
+  if (isLinkable())
+  {
+    if (!result.isEmpty()) result+="/";
+    if (definitionType()==Definition::TypeGroup && ((const GroupDef*)this)->groupTitle())
+    {
+      result+=((const GroupDef*)this)->groupTitle();
+    }
+    else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
+    {
+      result+=((const PageDef*)this)->title();
+    }
+    else
+    {
+      result+=m_impl->localName;
+    }
+  }
+  else
+  {
+    result+=m_impl->localName;
+  }
+  return result;
+}
+
 void Definition::writePathFragment(OutputList &ol) const
 {
   makeResident();
   if (m_impl->outerScope && m_impl->outerScope!=Doxygen::globalScope)
   {
     m_impl->outerScope->writePathFragment(ol);
-#if 0
-    if (m_impl->outerScope->definitionType()==Definition::TypeClass ||
-        m_impl->outerScope->definitionType()==Definition::TypeNamespace)
-    {
-      if (Config_getBool("OPTIMIZE_OUTPUT_JAVA") ||
-          Config_getBool("OPTIMIZE_OUTPUT_VHDL")
-         )
-      {
-        ol.writeString(".");
-      }
-      else
-      {
-        ol.writeString("::");
-      }
-    }
-    else
-    {
-      ol.writeString("&nbsp;");
-      ol.writeString("&raquo;");
-      ol.writeString("&nbsp;");
-    }
-#endif
   }
   ol.writeString("      <li>");
   if (isLinkable())

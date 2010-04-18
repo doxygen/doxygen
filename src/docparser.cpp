@@ -535,10 +535,10 @@ static void detectNoDocumentedParams()
     }
     else if ( // see if return needs to documented 
         g_memberDef->hasDocumentedReturnType() ||
-        returnType.isEmpty() ||          // empty return type
-        returnType.find("void")!=-1  ||  // void return type
-        !g_memberDef->isConstructor() || // a constructor
-        !g_memberDef->isDestructor()     // or destructor
+        returnType.isEmpty()         || // empty return type
+        returnType.find("void")!=-1  || // void return type
+        g_memberDef->isConstructor() || // a constructor
+        g_memberDef->isDestructor()     // or destructor
        )
     {
       g_memberDef->setHasDocumentedReturnType(TRUE);
@@ -670,7 +670,24 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   if (l==0) return FALSE;
 
   int funcStart=cmdArg.find('(');
-  if (funcStart==-1) funcStart=l;
+  if (funcStart==-1) 
+  {
+    funcStart=l;
+  }
+  else
+  {
+    // Check for the case of operator() and the like.
+    // beware of scenarios like operator()((foo)bar)
+    int secondParen = cmdArg.find('(', funcStart+1);
+    int leftParen   = cmdArg.find(')', funcStart+1);
+    if (leftParen!=-1 && secondParen!=-1) 
+    {
+      if (leftParen<secondParen) 
+      {
+        funcStart=secondParen;
+      }
+    }
+  }
 
   QString name=removeRedundantWhiteSpace(cmdArg.left(funcStart).latin1());
   QString args=cmdArg.right(l-funcStart);

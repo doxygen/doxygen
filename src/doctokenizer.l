@@ -327,10 +327,10 @@ OPMASK    ({BLANK}*{OPNORM}{FUNCARG})
 OPMASKOPT ({BLANK}*{OPNORM}{FUNCARG}?)|({OPCAST}{FUNCARG})
 LNKWORD1  ("::"|"#")?{SCOPEMASK}
 CVSPEC    {BLANK}*("const"|"volatile")
-LNKWORD2  ({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})
+LNKWORD2  (({SCOPEPRE}*"operator"{OPMASK})|({SCOPEPRE}"operator"{OPMASKOPT})|(("::"|"#"){SCOPEPRE}*"operator"{OPMASKOPT})){CVSPEC}?
 LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."]
-WORD1     "%"?{CHARWORDQ}+|"{"|"}"|("\""[^"\n]*\n?[^"\n]*"\"")
+WORD1     "%"?{CHARWORDQ}+|"{"|"}"|"'\"'"|("\""[^"\n]*\n?[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|":"|";"|"\?"
 WORD1NQ   "%"?{CHARWORDQ}+
 WORD2NQ   "."|","|"("|")"|"["|"]"|":"|";"|"\?"
@@ -472,8 +472,8 @@ REFWORD   {LABELID}|{REFWORD2}
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
                          QString tagName(yytext+1);
 			 int index=tagName.find(':');
-  			 g_token->name = tagName.left(index);
-			 g_token->text = tagName.mid(index+1,tagName.length()-index-2);
+  			 g_token->name = tagName.left(index+1);
+			 g_token->text = tagName.mid(index+2,tagName.length()-index-3);
 			 return TK_RCSTAG;
   		       }
 <St_Para,St_HtmlOnly>"$("{ID}")"   { /* environment variable */

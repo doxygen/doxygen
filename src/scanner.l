@@ -566,7 +566,6 @@ ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
-FTSCOPE   {ID}("<"[a-z_A-Z0-9\*\&,]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
@@ -1603,7 +1602,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->tArgLists->setAutoDelete(TRUE);
 					  }
 					  ArgumentList *al = new ArgumentList;
-					  current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
+					  //current->spec |= (yytext[0]=='g') ? Entry::Generic : Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
 					  templateStr="<";
@@ -1832,7 +1831,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <QtPropType>{B}+			{
   				          current->type+=yytext;
   					}
-<QtPropType>({FTSCOPE}"::")*{FTSCOPE}	{
+<QtPropType>({TSCOPE}"::")*{TSCOPE}	{
   					  current->type+=yytext;
                                           BEGIN(QtPropName);
   					}
@@ -2001,8 +2000,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  BEGIN( SkipCurly );
 					}
 <TryFunctionBlock>.
-<TryFunctionBlockEnd>"catch"		{ BEGIN(TryFunctionBlock); }
-<TryFunctionBlockEnd>\n			{ unput(*yytext); // added to fix bug id 601138
+<TryFunctionBlockEnd>{BN}*"catch"	{ lineCount(); BEGIN(TryFunctionBlock); // {BN}* added to fix bug 611193
+					}
+<TryFunctionBlockEnd>\n			{ unput(*yytext); // rule added to fix bug id 601138
   					  BEGIN( FindMembers );
 					}
 <TryFunctionBlockEnd>.			{ unput(*yytext);
@@ -4330,6 +4330,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  yyLineNr++;
   					}
 <SkipString,SkipPHPString>.		{ }
+<CompoundName>":"			{ // for "class : public base {} var;" construct, see bug 608359
+  					  unput(':');
+					  BEGIN(ClassVar);
+  					}
 <Bases,CompoundName>";"			{ 
 					  current->section = Entry::EMPTY_SEC ;
 					  current->type.resize(0) ;
@@ -4368,7 +4372,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->tArgLists->setAutoDelete(TRUE);
 					  }
 					  ArgumentList *al = new ArgumentList;
-					  current->spec |= Entry::Template;
+					  // check bug 612858 before enabling the next line
+					  //current->spec |= Entry::Template;
 					  current->tArgLists->append(al);
 					  currentArgumentList = al;
 					  templateStr="<";
@@ -4846,6 +4851,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <SkipRound>")"				{ if (--roundCount<=0)
 					    BEGIN ( lastSkipRoundContext );
 					}
+<SkipRound>\"				{
+  					  lastStringContext=SkipRound;
+					  BEGIN(SkipString);
+  					}
 <Bases>","|(">"({BN}*"{")?)|({BN}+"implements"{BN}*)	{ lineCount();
                                           if (insideProtocolList)
 					  {
