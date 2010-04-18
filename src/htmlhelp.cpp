@@ -24,6 +24,7 @@
 #include <qdict.h>
 #include <qregexp.h>
 #include "qtextcodec.h"
+#include "sortdict.h"
 
 #include "htmlhelp.h"
 #include "config.h"
@@ -43,28 +44,15 @@ struct IndexField
   bool     reversed;
 };
 
-class IndexFieldList : public QList<IndexField>
+class IndexFieldSDict : public SDict<IndexField>
 {
   public:
+    IndexFieldSDict() : SDict<IndexField>(17) {}
+   ~IndexFieldSDict() {}
     int compareItems(GCI item1, GCI item2)
     {
       return stricmp(((IndexField *)item1)->name,((IndexField *)item2)->name);
     }
-   ~IndexFieldList() {}
-};
-
-class IndexFieldListIterator : public QListIterator<IndexField>
-{
-  public:
-    IndexFieldListIterator( const IndexFieldList &list) :
-       QListIterator<IndexField>(list) {}
-};
-
-class IndexFieldDict : public QDict<IndexField>
-{
-  public:
-    IndexFieldDict(int size) : QDict<IndexField>(size) {}
-   ~IndexFieldDict() {}
 };
 
 /*! A helper class for HtmlHelp that manages a two level index in 
@@ -80,22 +68,19 @@ class HtmlHelpIndex
                  bool hasLink,bool reversed);
     void writeFields(QTextStream &t);
   private:
-    IndexFieldList *list;
-    IndexFieldDict *dict;   
+    IndexFieldSDict *dict;   
 };
 
 /*! Constructs a new HtmlHelp index */
 HtmlHelpIndex::HtmlHelpIndex()
 {
-  list = new IndexFieldList;
-  dict = new IndexFieldDict(10007);
-  list->setAutoDelete(TRUE);
+  dict = new IndexFieldSDict;
+  dict->setAutoDelete(TRUE);
 }
 
 /*! Destroys the HtmlHelp index */
 HtmlHelpIndex::~HtmlHelpIndex()
 {
-  delete list;
   delete dict;
 }
 
@@ -132,8 +117,7 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
     f->anchor   = anchor;
     f->link     = hasLink;
     f->reversed = reversed;
-    list->inSort(f);
-    dict->insert(key,f);
+    dict->append(key,f);
   }
 }
 
@@ -165,7 +149,8 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
  */
 void HtmlHelpIndex::writeFields(QTextStream &t)
 {
-  IndexFieldListIterator ifli(*list);
+  dict->sort();
+  IndexFieldSDict::Iterator ifli(*dict);
   IndexField *f;
   QCString lastLevel1;
   bool level2Started=FALSE;
@@ -506,15 +491,11 @@ void HtmlHelp::createProjectFile()
       s = indexFiles.next();
     }
     t << "tabs.css" << endl;
-#if 0
-    t << "tab_b.gif" << endl;
-    t << "tab_l.gif" << endl;
-    t << "tab_r.gif" << endl;
-#endif
     t << "tab_a.png" << endl;
     t << "tab_b.png" << endl;
     t << "tab_h.png" << endl;
     t << "tab_s.png" << endl;
+    t << "nav_h.png" << endl;
     if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
     {
       t << "open.gif" << endl;

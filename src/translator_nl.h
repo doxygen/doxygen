@@ -1127,19 +1127,19 @@ class TranslatorDutch : public Translator
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "Directory Hi&euml;rarchie"; }
+    { return "Folder Hi&euml;rarchie"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     virtual QCString trDirDocumentation()
-    { return "Directory Documentatie"; }
+    { return "Folder Documentatie"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of a HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
-    { return "Directories"; }
+    { return "Folders"; }
 
     /*! This returns a sentences that introduces the directory hierarchy. 
      *  and the fact that it is sorted alphabetically per level
@@ -1153,15 +1153,15 @@ class TranslatorDutch : public Translator
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { QCString result=dirName; result+=" Directory Referentie"; return result; }
+    { QCString result=dirName; result+=" Folder Referentie"; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
     { 
-      QCString result((first_capital ? "Director" : "director"));
-      if (singular) result+="y"; else result+="ies";
+      QCString result((first_capital ? "Folder" : "folder"));
+      if (!singular) result+="s";
       return result; 
     }
 
@@ -1406,6 +1406,51 @@ class TranslatorDutch : public Translator
     {
       return "Niets gevonden";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Folder afhankelijkheidsgraaf voor "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Bestand in "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Includeert bestand in "+name;
+    }
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Ma","Di","Wo","Do","Vr","Za","Zo" };
+      static const char *months[] = { "Jan","Feb","Maa","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec" };
+      QCString sdate;
+      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
 
 
 

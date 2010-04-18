@@ -486,6 +486,18 @@ class Translator
     virtual QCString trSearching() = 0;
     virtual QCString trNoMatches() = 0;
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDirDependency(const char *name) = 0;
+    virtual QCString trFileIn(const char *name) = 0;
+    virtual QCString trIncludesFileIn(const char *name) = 0;
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime) = 0;
+                       
+
 };
 
 #endif

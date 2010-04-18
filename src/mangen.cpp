@@ -409,7 +409,10 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
     // - truncate after an (optional) ::
     QCString baseName = name;
     int i=baseName.findRev("::");
-    if (i!=-1) baseName=baseName.right(baseName.length()-i-1);
+    if (i!=-1) baseName=baseName.right(baseName.length()-i-2);
+
+    //printf("Converting man link '%s'->'%s'->'%s'\n",
+    //       name,baseName.data(),buildFileName(baseName).data());
     
     // - remove dangerous characters and append suffix, then add dir prefix
     QCString fileName=dir+"/"+buildFileName( baseName );

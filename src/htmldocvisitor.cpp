@@ -89,6 +89,11 @@ static bool mustBeOutsideParagraph(DocNode *n)
         case DocNode::Kind_SecRefList:
           /* <hr> */
         case DocNode::Kind_HorRuler:
+          /* CopyDoc gets paragraph markers from the wrapping DocPara node,
+           * but needs to insert them for all documentation being copied to
+           * preserve formatting.
+           */
+        case DocNode::Kind_Copy:
           return TRUE;
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -715,6 +720,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       case DocNode::Kind_AutoListItem:
       case DocNode::Kind_SimpleSect:
       case DocNode::Kind_XRefItem:
+      case DocNode::Kind_Copy:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:
@@ -795,6 +801,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
       case DocNode::Kind_AutoListItem:
       case DocNode::Kind_SimpleSect:
       case DocNode::Kind_XRefItem:
+      case DocNode::Kind_Copy:
         needsTag = TRUE;
         break;
       case DocNode::Kind_Root:

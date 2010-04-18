@@ -224,7 +224,7 @@ GENERATE_AUTOGEN_DEF   = NO
 #---------------------------------------------------------------------------
 # configuration options related to the Perl module output
 #---------------------------------------------------------------------------
-GENERATE_PERLMOD       = YES
+GENERATE_PERLMOD       = NO
 PERLMOD_LATEX          = NO
 PERLMOD_PRETTY         = YES
 PERLMOD_MAKEVAR_PREFIX = 

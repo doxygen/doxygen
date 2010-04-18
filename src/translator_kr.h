@@ -50,7 +50,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorKorean : public Translator
+class TranslatorKorean : public TranslatorAdapter_1_6_3
 {
   protected:
     friend class TranslatorAdapterBase;

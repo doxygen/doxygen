@@ -185,7 +185,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
                                m_t << "\\^{" << s->letter() << "}"; 
                              break;
     case DocSymbol::Slash:   if (tolower(s->letter())=='o')
-                               m_t << "\\" << s->letter();
+                               m_t << "{\\" << s->letter() << "}";
                              else
                                m_t << s->letter();
                              break;

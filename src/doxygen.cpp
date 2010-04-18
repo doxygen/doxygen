@@ -8103,6 +8103,7 @@ static void generateExampleDocs()
     startTitle(*g_outputList,n);
     g_outputList->docify(pd->name());
     endTitle(*g_outputList,n,0);
+    g_outputList->startContents();
     g_outputList->parseDoc(pd->docFile(),                            // file
                          pd->docLine(),                            // startLine
                          pd,                                       // context
@@ -8112,6 +8113,7 @@ static void generateExampleDocs()
                          TRUE,                                     // is example
                          pd->name()
                         );
+    g_outputList->endContents();
     endFile(*g_outputList);
   }
   g_outputList->enable(OutputGenerator::Man);

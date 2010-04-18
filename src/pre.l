@@ -188,7 +188,9 @@ static bool macroIsAccessible(Define *def)
   }
   if (def && def->fileDef==g_inputFileDef)
   {
-    return def->lineNr<g_yyLineNr;
+    //printf("%s: macro %s defined in this file at line %d now at %d\n",
+    //	g_inputFileDef->name().data(),def->name.data(),def->lineNr,g_yyLineNr);
+    return def->lineNr<=g_yyLineNr;
   }
   if (g_inputFileDef && def && def->fileDef) // check if g_inputFileDef actually includes def->fileDef
   {
@@ -198,6 +200,7 @@ static bool macroIsAccessible(Define *def)
     //       g_inputFileDef->name().data(),def->name.data(),def->fileDef->name().data(),b);
     return b;
   }
+  //printf("not accessible!\n");
   return FALSE;
 }
 
@@ -1883,6 +1886,32 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defVarArgs = FALSE;
 					  BEGIN(DefineArg);
   					}
+<DefName>{ID}{B}+"1"			{ // special case: define with 1 -> can be "guard"
+  					  //printf("Define `%s'\n",yytext);
+  					  g_argDict = 0;
+					  g_defArgs = -1;
+                                          g_defArgsStr.resize(0);
+					  g_defName = yytext;
+					  g_defName = g_defName.left(g_defName.length()-1).stripWhiteSpace();
+					  g_defVarArgs = FALSE;
+					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
+					  { // define may appear in the output
+					    QCString tmp=(QCString)"#define "+g_defName;
+					    outputArray(tmp.data(),tmp.length());
+					    g_quoteArg=FALSE;
+					    g_insideComment=FALSE;
+					    g_lastGuardName.resize(0);
+				            g_defText="1"; 
+					    g_defLitText="1"; 
+					    BEGIN(DefineText); 
+					  }
+					  else // define is a guard => hide
+					  {
+					    g_defText.resize(0);
+					    g_defLitText.resize(0);
+					    BEGIN(Start);
+					  }
+  					}
 <DefName>{ID}/{B}*			{ // define with content
   					  //printf("Define `%s'\n",yytext);
   					  g_argDict = 0;
@@ -1892,24 +1921,11 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defLitText.resize(0);
 					  g_defName = yytext;
 					  g_defVarArgs = FALSE;
-					  //QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
-					  //outputArray(tmp.data(),tmp.length());
-					  //g_quoteArg=FALSE;
-					  //g_insideComment=FALSE;
-					  //BEGIN(DefineText); 
-					  if ( g_defName!=g_lastGuardName || !g_expectGuard)
-					  { // define may appear in the output
-					    QCString tmp=(QCString)"#define "+g_defName;
-					    outputArray(tmp.data(),tmp.length());
-					    g_quoteArg=FALSE;
-					    g_insideComment=FALSE;
-					    BEGIN(DefineText); 
-					  }
-					  else // define is a guard => hide
-					  {
-					    g_lastGuardName.resize(0);
-					    BEGIN(Start);
-					  }
+					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
+					  outputArray(tmp.data(),tmp.length());
+					  g_quoteArg=FALSE;
+					  g_insideComment=FALSE;
+					  BEGIN(DefineText); 
   					}
 <DefName>{ID}/{B}*"\n"			{ // empty define
   					  g_argDict = 0;

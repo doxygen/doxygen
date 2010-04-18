@@ -723,6 +723,23 @@ class TranslatorDecoder : public Translator
     { return toUtf8(m_translator->trNoMatches()); }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.6.3
+//////////////////////////////////////////////////////////////////////////
+
+    QCString trDirDependency(const char *name)
+    { return toUtf8(m_translator->trDirDependency(fromUtf8(name))); }
+    QCString trFileIn(const char *name)
+    { return toUtf8(m_translator->trFileIn(fromUtf8(name))); }
+    QCString trIncludesFileIn(const char *name)
+    { return toUtf8(m_translator->trIncludesFileIn(fromUtf8(name))); }
+    QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                        int hour,int minutes,int seconds,bool includeTime)
+    { return toUtf8(m_translator->trDateTime(year,month,day,dayOfWeek,
+                                             hour,minutes,seconds,includeTime)); 
+    }
+
+
+//////////////////////////////////////////////////////////////////////////
   private:
     Translator *m_translator;
     void *m_toUtf8;

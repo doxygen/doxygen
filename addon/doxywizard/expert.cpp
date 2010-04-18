@@ -321,9 +321,9 @@ void Expert::loadSettings(QSettings *s)
   {
     i.next();
     QVariant var = s->value(SA("config/")+i.key());
-    //printf("Loading key %s: type=%d\n",qPrintable(i.key()),var.type());
     if (i.value())
     {
+      //printf("Loading key %s: type=%d value='%s'\n",qPrintable(i.key()),var.type(),qPrintable(var.toString()));
       i.value()->value() = var;
       i.value()->update();
     }
@@ -336,9 +336,10 @@ void Expert::saveSettings(QSettings *s)
   while (i.hasNext()) 
   {
     i.next();
+    //printf("Saving key %s: type=%d value='%s'\n",qPrintable(i.key()),i.value()->value().type(),qPrintable(i.value()->value().toString()));
     if (i.value())
     {
-      s->value(SA("config/")+i.key(),i.value()->value());
+      s->setValue(SA("config/")+i.key(),i.value()->value());
     }
   }
 }

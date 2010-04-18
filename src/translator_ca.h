@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorCatalan : public Translator
+class TranslatorCatalan : public TranslatorAdapter_1_6_3
 {
   public:
 

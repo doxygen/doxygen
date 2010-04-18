@@ -27,8 +27,8 @@
 #ifndef TRANSLATOR_FA_H
 #define TRANSLATOR_FA_H
 
-#define HtmlRightToLeft     QCString("<div dir=rtl>")
-#define HtmlLeftToRight     QCString("<div dir=rtl>")
+#define HtmlRightToLeft     QCString("<div dir=\"rtl\">")
+#define HtmlLeftToRight     QCString("<div dir=\"rtl\">")
 #define HtmlDivEnd          QCString("</div>")
 
 

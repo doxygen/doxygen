@@ -20,8 +20,9 @@
 #include "image.h"
 //#include "gifenc.h"
 #include <qfile.h>
-#include "lodepng.h"
 #include <math.h>
+#include "lodepng.h"
+#include "config.h"
 
 typedef unsigned char  Byte;
 
@@ -210,6 +211,33 @@ static Color palette2[] =
 
 Image::Image(int w,int h)
 {
+  static int hue   = Config_getInt("HTML_COLORSTYLE_HUE");
+  static int sat   = Config_getInt("HTML_COLORSTYLE_SAT");
+  static int gamma = Config_getInt("HTML_COLORSTYLE_GAMMA");
+
+  double red1,green1,blue1;
+  double red2,green2,blue2;
+
+  ColoredImage::hsl2rgb(hue/360.0,                  // hue
+                        sat/255.0,                  // saturation
+                        pow(235/255.0,gamma/100.0), // luma (gamma corrected)
+                        &red1,&green1,&blue1
+                       );
+
+  ColoredImage::hsl2rgb(hue/360.0,                  // hue
+                        sat/255.0,                  // saturation
+                        pow(138/255.0,gamma/100.0), // luma (gamma corrected)
+                        &red2,&green2,&blue2
+                       );
+
+  palette[2].red   = (int)(red1   * 255.0);
+  palette[2].green = (int)(green1 * 255.0);
+  palette[2].blue  = (int)(blue1  * 255.0);
+
+  palette[3].red   = (int)(red2   * 255.0);
+  palette[3].green = (int)(green2 * 255.0);
+  palette[3].blue  = (int)(blue2  * 255.0);
+
   data = new uchar[w*h];
   memset(data,0,w*h);
   width = w;

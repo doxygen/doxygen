@@ -1802,6 +1802,7 @@ static void generateXMLForPage(PageDef *pd,QTextStream &ti,bool isExample)
   {
     t << "    <title>" << convertToXML(si->title) << "</title>" << endl;
   }
+  writeInnerPages(pd->getSubPages(),t);
   t << "    <detaileddescription>" << endl;
   if (isExample)
   {
