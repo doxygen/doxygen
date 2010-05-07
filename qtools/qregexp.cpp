@@ -192,7 +192,7 @@ QRegExp::QRegExp()
   \sa setWildcard()
 */
 
-QRegExp::QRegExp( const QString &pattern, bool caseSensitive, bool wildcard )
+QRegExp::QRegExp( const QCString &pattern, bool caseSensitive, bool wildcard )
 {
     rxstring = pattern;
     rxdata = 0;
@@ -247,7 +247,7 @@ QRegExp &QRegExp::operator=( const QRegExp &r )
   The case sensitivity or wildcard options do not change.
 */
 
-QRegExp &QRegExp::operator=( const QString &pattern )
+QRegExp &QRegExp::operator=( const QCString &pattern )
 {
     rxstring = pattern;
     compile();
@@ -342,13 +342,13 @@ void QRegExp::setCaseSensitive( bool enable )
 
 
 /*!
-  \fn QString QRegExp::pattern() const
+  \fn QCString QRegExp::pattern() const
   Returns the pattern string of the regexp.
 */
 
 
 /*!
-  \fn void QRegExp::setPattern(const QString & pattern)
+  \fn void QRegExp::setPattern(const QCString & pattern)
   Sets the pattern string to \a pattern and returns a reference to this regexp.
   The case sensitivity or wildcard options do not change.
 */
@@ -364,7 +364,7 @@ static inline bool iswordchar( int x )
   Match character class
 */
 
-static bool matchcharclass( uint *rxd, QChar c )
+static bool matchcharclass( uint *rxd, char c )
 {
     uint *d = rxd;
     uint clcode = *d & MCD;
@@ -372,15 +372,15 @@ static bool matchcharclass( uint *rxd, QChar c )
     if ( clcode != CCL && clcode != CCN)
 	qWarning("QRegExp: Internal error, please report to qt-bugs@trolltech.com");
     uint numFields = *d & MVL;
-    uint cval = (((uint)(c.row())) << 8) | ((uint)c.cell());
+    uint cval = (uint)c; //(((uint)(c.row())) << 8) | ((uint)c.cell());
     bool found = FALSE;
     for ( int i = 0; i < (int)numFields; i++ ) {
 	d++;
-	if ( *d == PWS && c.isSpace() ) {
+	if ( *d == PWS && isspace(c) ) {
 	    found = TRUE;
 	    break;
 	}
-	if ( *d == PDG && c.isDigit() ) {
+	if ( *d == PDG && isdigit(c) ) {
 	    found = TRUE;
 	    break;
 	}
@@ -402,11 +402,11 @@ static bool matchcharclass( uint *rxd, QChar c )
   Internal: Recursively match string.
 */
 
-static int matchstring( uint *rxd, const QChar *str, uint strlength,
-			const QChar *bol, bool cs )
+static int matchstring( uint *rxd, const char *str, uint strlength,
+			const char *bol, bool cs )
 {
-    const QChar *p = str;
-    const QChar *start = p;
+    const char *p = str;
+    const char *start = p;
     uint pl = strlength;
     uint *d = rxd;
 
@@ -415,9 +415,9 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 	if ( *d & CHR ) {			// match char
 	    if ( !pl )
 		return -1;
-	    QChar c( *d );
-	    if ( !cs && !c.row() ) {		// case insensitive, #Only 8bit
-		if ( p->row() || tolower(p->cell()) != c.cell() )
+	    char c =  *d;
+	    if ( !cs /*&& !c.row()*/ ) {		// case insensitive, #Only 8bit
+		if ( tolower(*p) != c )
 		    return -1;
 		p++;
 		pl--;
@@ -440,13 +440,13 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 	}
 	else switch ( *d++ ) {
 	    case PWS:				// match whitespace
-		if ( !pl || !p->isSpace() )
+		if ( !pl || !isspace(*p) )
 		    return -1;
 		p++;
 		pl--;
 		break;
 	    case PDG:				// match digits
-		if ( !pl || !p->isDigit() )
+		if ( !pl || !isdigit(*p) )
 		    return -1;
 		p++;
 		pl--;
@@ -475,11 +475,11 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 		break;
 	    case CLO:				// Kleene closure
 		{
-		const QChar *first_p = p;
+		const char *first_p = p;
 		if ( *d & CHR ) {		// match char
-		    QChar c( *d );
-		    if ( !cs && !c.row() ) {	// case insensitive, #only 8bit
-			while ( pl && !p->row() && tolower(p->cell())==c.cell() ) {
+		    char c =  *d;
+		    if ( !cs /*&& !c.row()*/ ) {	// case insensitive, #only 8bit
+			while ( pl /*&& !p->row()*/ && tolower(*p)==c ) {
 			    p++;
 			    pl--;
 			}
@@ -500,14 +500,14 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 		    d += (*d & MVL) + 1;
 		}
 		else if ( *d == PWS ) {
-		    while ( pl && p->isSpace() ) {
+		    while ( pl && isspace(*p) ) {
 			p++;
 			pl--;
 		    }
 		    d++;
 		}
 		else if ( *d == PDG ) {
-		    while ( pl && p->isDigit() ) {
+		    while ( pl && isdigit(*p) ) {
 			p++;
 			pl--;
 		    }
@@ -535,11 +535,11 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 		return -1;
 	    case OPT:				// optional closure
 		{
-		const QChar *first_p = p;
+		const char *first_p = p;
 		if ( *d & CHR ) {		// match char
-		    QChar c( *d );
-		    if ( !cs && !c.row() ) {	// case insensitive, #only 8bit
-			if ( pl && !p->row() && tolower(p->cell()) == c.cell() ) {
+		    char c =  *d;
+		    if ( !cs /*&& !c.row()*/ ) {	// case insensitive, #only 8bit
+			if ( pl && /*!p->row() &&*/ tolower(*p) == c ) {
 			    p++;
 			    pl--;
 			}
@@ -560,14 +560,14 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 		    d += (*d & MVL) + 1;
 		}
 		else if ( *d == PWS ) {
-		    if ( pl && p->isSpace() ) {
+		    if ( pl && isspace(*p) ) {
 			p++;
 			pl--;
 		    }
 		    d++;
 		}
 		else if ( *d == PDG ) {
-		    if ( pl && p->isDigit() ) {
+		    if ( pl && isdigit(*p) ) {
 			p++;
 			pl--;
 		    }
@@ -614,8 +614,8 @@ static int matchstring( uint *rxd, const QChar *str, uint strlength,
 // class derived from QRegExp and calls this directly.
 // Qt 3.0: Remove this?
 
-
-const QChar *QRegExp::matchstr( uint *rxd, const QChar *str, uint strlength,
+#if 0
+const char *QRegExp::matchstr( uint *rxd, const QChar *str, uint strlength,
 				const QChar *bol ) const
 {
     int len = matchstring( rxd, str, strlength, bol, cs );
@@ -623,6 +623,7 @@ const QChar *QRegExp::matchstr( uint *rxd, const QChar *str, uint strlength,
 	return 0;
     return str + len;
 }
+#endif
 
 /*!
   Attempts to match in \e str, starting from position \e index.
@@ -645,15 +646,15 @@ const QChar *QRegExp::matchstr( uint *rxd, const QChar *str, uint strlength,
   \note In Qt 3.0, this function will be replaced by find().
 */
 
-int QRegExp::match( const QString &str, int index, int *len,
+int QRegExp::match( const QCString &str, int index, int *len,
 		    bool indexIsStart ) const
 {
     if ( !isValid() || isEmpty() )
 	return -1;
     if ( str.length() < (uint)index )
 	return -1;
-    const QChar *start = str.unicode();
-    const QChar *p = start + index;
+    const char *start = str.data();
+    const char *p = start + index;
     uint pl = str.length() - index;
     uint *d  = rxdata;
     int ep = -1;
@@ -662,9 +663,9 @@ int QRegExp::match( const QString &str, int index, int *len,
 	ep = matchstring( d, p, pl, indexIsStart ? p : start, cs );
     } else {
 	if ( *d & CHR ) {
-	    QChar c( *d );
-	    if ( !cs && !c.row() ) {		// case sensitive, # only 8bit
-		while ( pl && ( p->row() || tolower(p->cell()) != c.cell() ) ) {
+	    char c = *d;
+	    if ( !cs /*&& !c.row()*/ ) {		// case sensitive, # only 8bit
+		while ( pl && ( /*p->row() ||*/ tolower(*p) != c ) ) {
 		    p++;
 		    pl--;
 		}
@@ -690,7 +691,7 @@ int QRegExp::match( const QString &str, int index, int *len,
     return ep >= 0 ? (int)(p - start) : -1;		// return index;
 }
 
-/*! \fn int QRegExp::find( const QString& str, int index )
+/*! \fn int QRegExp::find( const QCString& str, int index )
 
   Attempts to match in \e str, starting from position \e index.
   Returns the position of the match, or -1 if there was no match.
@@ -703,12 +704,12 @@ int QRegExp::match( const QString &str, int index, int *len,
 // Ex:	 *.cpp	==> ^.*\.cpp$
 //
 
-static QString wc2rx( const QString &pattern )
+static QCString wc2rx( const QCString &pattern )
 {
     int patlen = (int)pattern.length();
-    QString wcpattern = QString::fromLatin1("^");
+    QCString wcpattern("^");
 
-    QChar c;
+    char c;
     for( int i = 0; i < patlen; i++ ) {
 	c = pattern[i];
 	switch ( (char)c ) {
@@ -745,9 +746,9 @@ static QString wc2rx( const QString &pattern )
 // Internal: Get char value and increment pointer.
 //
 
-static uint char_val( const QChar **str, uint *strlength )   // get char value
+static uint char_val( const char **str, uint *strlength )   // get char value
 {
-    const QChar *p = *str;
+    const char *p = *str;
     uint pl = *strlength;
     uint len = 1;
     uint v = 0;
@@ -812,12 +813,12 @@ static uint char_val( const QChar **str, uint *strlength )   // get char value
 		    }
 		}
 		else {				// not an octal number
-		    v = (((uint)(p->row())) << 8) | ((uint)p->cell());
+		    v = (uint)*p; //(((uint)(p->row())) << 8) | ((uint)p->cell());
 		}
 	    }
 	}
     } else {
-	v = (((uint)(p->row())) << 8) | ((uint)p->cell());
+	v = (uint)*p; //(((uint)(p->row())) << 8) | ((uint)p->cell());
     }
     *str += len;
     *strlength -= len;
@@ -830,9 +831,9 @@ static uint *dump( uint *p )
 {
     while ( *p != END ) {
 	if ( *p & CHR ) {
-	    QChar uc = (QChar)*p;
+	    uchar uc = (uchar)*p;
 	    char c = (char)uc;
-	    uint u = (((uint)(uc.row())) << 8) | ((uint)uc.cell());
+	    uint u = (uint)uc; //(((uint)(uc.row())) << 8) | ((uint)uc.cell());
 	    qDebug( "\tCHR\tU%04x (%c)", u, (c ? c : ' '));
 	    p++;
 	}
@@ -854,8 +855,8 @@ static uint *dump( uint *p )
 		else {
 		    uint from = ( *p & MCD ) >> 16;
 		    uint to = *p & MVL;
-		    char fc = (char)QChar(from);
-		    char tc = (char)QChar(to);
+		    char fc = (char)from;
+		    char tc = (char)to;
 		    qDebug( "\t\tU%04x (%c) - U%04x (%c)", from,
 			   (fc ? fc : ' '), to, (tc ? tc : ' ') );
 		}
@@ -923,13 +924,13 @@ void QRegExp::compile()
 
     error = PatOk;				// assume pattern is ok
 
-    QString pattern;
+    QCString pattern;
     if ( wc )
 	pattern = wc2rx(rxstring);
     else
 	pattern = rxstring;
-    const QChar *start = pattern.unicode();	// pattern pointer
-    const QChar *p = start;			// pattern pointer
+    const char *start = pattern.data();	        // pattern pointer
+    const char *p = start;			// pattern pointer
     uint pl = pattern.length();
     uint *d = rxarray;				// data pointer
     uint *prev_d = 0;

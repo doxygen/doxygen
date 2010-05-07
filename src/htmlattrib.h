@@ -18,8 +18,8 @@
 /*! A Html option. A name, value pair */
 struct HtmlAttrib
 {
-  QString name;
-  QString value;
+  QCString name;
+  QCString value;
 };
 
 /*! @brief A list of Html attributes. 
@@ -35,10 +35,10 @@ class HtmlAttribList : public QList<HtmlAttrib>
     { operator=(l); }
     HtmlAttribList &operator=(const HtmlAttribList &l)
     { clear(); QList<HtmlAttrib>::operator=(l); return *this; }
-    QString toString() const
+    QCString toString() const
     {
       HtmlAttribList *that = (HtmlAttribList *)this;
-      QString result;
+      QCString result;
       HtmlAttrib *attr=that->first();
       while (attr)
       {

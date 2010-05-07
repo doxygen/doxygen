@@ -153,6 +153,7 @@ class FileDef : public Definition
     void combineUsingRelations();
 
     bool generateSourceFile() const;
+    void sortMemberLists();
 
     void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported);
     void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported);

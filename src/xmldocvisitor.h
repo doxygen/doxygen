@@ -23,15 +23,15 @@
 #include <qstack.h>
 #include <qcstring.h>
 
-class QTextStream;
+class FTextStream;
 class CodeOutputInterface;
-class QString;
+class QCString;
 
 /*! @brief Concrete visitor implementation for XML output. */
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(QTextStream &t,CodeOutputInterface &ci);
+    XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -135,8 +135,8 @@ class XmlDocVisitor : public DocVisitor
     //--------------------------------------
     
     void filter(const char *str);
-    void startLink(const QString &ref,const QString &file,
-                   const QString &anchor);
+    void startLink(const QCString &ref,const QCString &file,
+                   const QCString &anchor);
     void endLink();
 
     void pushEnabled();
@@ -146,7 +146,7 @@ class XmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    QTextStream &m_t;
+    FTextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

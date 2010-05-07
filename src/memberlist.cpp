@@ -39,6 +39,7 @@ MemberList::MemberList(ListType lt) : m_listType(lt)
   m_numDocMembers=-1; // special value indicating that value needs to be computed
   m_inGroup=FALSE;
   m_inFile=FALSE;
+  m_needsSorting=FALSE;
 }
 
 MemberList::~MemberList()
@@ -221,7 +222,7 @@ bool MemberList::declVisible() const
                 }
               }
             }
-            // if this is an anoymous enum and there are variables of this
+            // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
             if (enumVars==0) // show enum here
             {
@@ -307,7 +308,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 }
               }
             }
-            // if this is an anoymous enum and there are variables of this
+            // if this is an anonymous enum and there are variables of this
             // enum type (i.e. enumVars>0), then we do not show the enum here.
             if (enumVars==0) // show enum here
             {
@@ -631,6 +632,7 @@ void MemberList::marshal(StorageIntf *s)
   marshalInt(s,m_numDocMembers);
   marshalBool(s,m_inGroup);
   marshalBool(s,m_inFile);
+  marshalBool(s,m_needsSorting);
   if (memberGroupList==0)
   {
     marshalUInt(s,NULL_LIST); // null pointer representation
@@ -662,6 +664,7 @@ void MemberList::unmarshal(StorageIntf *s)
   m_numDocMembers  = unmarshalInt(s);
   m_inGroup        = unmarshalBool(s);
   m_inFile         = unmarshalBool(s);
+  m_needsSorting   = unmarshalBool(s);
   uint i,count     = unmarshalUInt(s); 
   if (count==NULL_LIST) // empty list
   {
@@ -731,6 +734,11 @@ QCString MemberList::listTypeAsString() const
     default: break;
   }
   return "";
+}
+
+void MemberList::setNeedsSorting(bool b)
+{
+  m_needsSorting = b;
 }
 
 //--------------------------------------------------------------------------

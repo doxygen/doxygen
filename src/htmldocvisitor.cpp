@@ -129,7 +129,7 @@ static QString htmlAttribsToString(const HtmlAttribList &attribs)
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                                const char *langExt) 
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
                                  m_hide(FALSE), m_langExt(langExt)
@@ -308,7 +308,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       forceEndParagraph(s);
       m_t << PREFRAG_START;
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                            ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       m_t << PREFRAG_END;
       forceStartParagraph(s);
@@ -405,7 +405,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,                 
                                         inc->context(),
-                                        inc->text().latin1(),
+                                        inc->text(),
                                         inc->isExample(),
                                         inc->exampleFile(),
                                         0,   // fd
@@ -425,7 +425,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,
                                            inc->context(),
-                                           inc->text().latin1(),
+                                           inc->text(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << PREFRAG_END;
@@ -464,7 +464,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     {
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,op->context(),
-                                op->text().latin1(),op->isExample(),
+                                op->text(),op->isExample(),
                                 op->exampleFile());
     }
     pushEnabled();
@@ -951,9 +951,9 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   forceEndParagraph(s);
   m_t << "<h" << s->level()+1 << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
-  m_t << "\">" << endl;
+  m_t << "\"></a>" << endl;
   filter(convertCharEntitiesToUTF8(s->title().data()));
-  m_t << "</a></h" << s->level()+1 << ">\n";
+  m_t << "</h" << s->level()+1 << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocSection *s) 
@@ -1502,15 +1502,15 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
   }
 }
 
-void HtmlDocVisitor::startLink(const QString &ref,const QString &file,
-                               const QString &relPath,const QString &anchor,
-                               const QString &tooltip)
+void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
+                               const QCString &relPath,const QCString &anchor,
+                               const QCString &tooltip)
 {
   QCString *dest;
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";
-    m_t << "doxygen=\"" << ref << ":";
+    m_t << "target=\"_blank\" doxygen=\"" << ref << ":";
     if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
     m_t << "\" ";
   }
@@ -1552,42 +1552,42 @@ void HtmlDocVisitor::popEnabled()
   delete v;
 }
 
-void HtmlDocVisitor::writeDotFile(const QString &fileName,const QString &relPath,
-                                  const QString &context)
+void HtmlDocVisitor::writeDotFile(const QCString &fileName,const QCString &relPath,
+                                  const QCString &context)
 {
-  QString baseName=fileName;
+  QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  QString outDir = Config_getString("HTML_OUTPUT");
+  QCString outDir = Config_getString("HTML_OUTPUT");
   writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
-  QString mapName = baseName+".map";
-  QString mapFile = fileName+".map";
+  QCString mapName = baseName+".map";
+  QCString mapFile = fileName+".map";
   m_t << "<img src=\"" << relPath << baseName << "." 
     << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getDotImageMapFromFile(baseName,outDir,relPath.data(),context);
+  QCString imap = getDotImageMapFromFile(baseName,outDir,relPath,context);
   m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 
-void HtmlDocVisitor::writeMscFile(const QString &fileName,const QString &relPath,
-                                  const QString &context)
+void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
+                                  const QCString &context)
 {
-  QString baseName=fileName;
+  QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
-  QString outDir = Config_getString("HTML_OUTPUT");
+  QCString outDir = Config_getString("HTML_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
-  QString mapName = baseName+".map";
-  QString mapFile = fileName+".map";
+  QCString mapName = baseName+".map";
+  QCString mapFile = fileName+".map";
   m_t << "<img src=\"" << relPath << baseName << ".png\" alt=\""
     << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QString imap = getMscImageMapFromFile(fileName,outDir,relPath.data(),context);
+  QCString imap = getMscImageMapFromFile(fileName,outDir,relPath,context);
   m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 

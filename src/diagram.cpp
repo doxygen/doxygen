@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <qlist.h>
 #include <qarray.h>
-#include <qtextstream.h>
+#include "ftextstream.h"
 #include <qfile.h>
 
 #include "diagram.h"
@@ -142,7 +142,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
   }
 }
 
-static void writeVectorBox(QTextStream &t,DiagramItem *di,
+static void writeVectorBox(FTextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
   if (di->virtualness()==Virtual) t << "dashed\n";
@@ -151,7 +151,7 @@ static void writeVectorBox(QTextStream &t,DiagramItem *di,
   if (di->virtualness()==Virtual) t << "solid\n";
 }
 
-static void writeMapArea(QTextStream &t,ClassDef *cd,QCString relPath,
+static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
                          int x,int y,int w,int h)
 {
   if (cd->isLinkable())
@@ -161,7 +161,7 @@ static void writeMapArea(QTextStream &t,ClassDef *cd,QCString relPath,
     t << "<area ";
     if (!ref.isEmpty()) 
     {
-      t << "doxygen=\"" << ref << ":";
+      t << "target=\"_blank\" doxygen=\"" << ref << ":";
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
       t << "\" ";
     }
@@ -485,7 +485,7 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
   if (maxXPos)     *maxXPos=mx;
 }
 
-void TreeDiagram::drawBoxes(QTextStream &t,Image *image, 
+void TreeDiagram::drawBoxes(FTextStream &t,Image *image, 
                             bool doBase,bool bitmap,
                             uint baseRows,uint superRows,
                             uint cellWidth,uint cellHeight,
@@ -616,7 +616,7 @@ void TreeDiagram::drawBoxes(QTextStream &t,Image *image,
   }
 }
 
-void TreeDiagram::drawConnectors(QTextStream &t,Image *image,
+void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
                                  bool doBase,bool bitmap,
                                  uint baseRows,uint superRows,
                                  uint cellWidth,uint cellHeight)
@@ -968,7 +968,7 @@ ClassDiagram::~ClassDiagram()
   delete super;
 }
 
-void ClassDiagram::writeFigure(QTextStream &output,const char *path,
+void ClassDiagram::writeFigure(FTextStream &output,const char *path,
                                const char *fileName) const
 {
   uint baseRows=base->computeRows();
@@ -1018,7 +1018,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
     err("Could not open file %s for writing\n",convertToQCString(f1.name()).data());
     exit(1);
   }
-  QTextStream t(&f1);
+  FTextStream t(&f1);
   
   //printf("writeEPS() rows=%d cols=%d\n",rows,cols);
   
@@ -1262,7 +1262,7 @@ void ClassDiagram::writeFigure(QTextStream &output,const char *path,
 }
 
 
-void ClassDiagram::writeImage(QTextStream &t,const char *path,
+void ClassDiagram::writeImage(FTextStream &t,const char *path,
                               const char *relPath,const char *fileName, 
                               bool generateMap) const
 {

@@ -37,7 +37,7 @@ class PerlModOutputStream
 {
 public:
 
-  QString m_s;
+  QCString m_s;
   QTextStream *m_t;
 
   PerlModOutputStream(QTextStream *t = 0) : m_t(t) { }
@@ -45,7 +45,6 @@ public:
   void add(char c);
   void add(const char *s);
   void add(QCString &s);
-  void add(QString &s);
   void add(int n);
   void add(unsigned int n);
 };
@@ -67,14 +66,6 @@ void PerlModOutputStream::add(const char *s)
 }
 
 void PerlModOutputStream::add(QCString &s)
-{
-  if (m_t != 0)
-    (*m_t) << s;
-  else
-    m_s += s;
-}
-
-void PerlModOutputStream::add(QString &s)
 {
   if (m_t != 0)
     (*m_t) << s;
@@ -115,7 +106,7 @@ public:
   inline void setPerlModOutputStream(PerlModOutputStream *os) { m_stream = os; }
 
   inline PerlModOutput &openSave() { iopenSave(); return *this; }
-  inline PerlModOutput &closeSave(QString &s) { icloseSave(s); return *this; }
+  inline PerlModOutput &closeSave(QCString &s) { icloseSave(s); return *this; }
 
   inline PerlModOutput &continueBlock()
   {
@@ -130,7 +121,6 @@ public:
   inline PerlModOutput &add(char c) { m_stream->add(c); return *this; }
   inline PerlModOutput &add(const char *s) { m_stream->add(s); return *this; }
   inline PerlModOutput &add(QCString &s) { m_stream->add(s); return *this; }
-  inline PerlModOutput &add(QString &s) { m_stream->add(s); return *this; }
   inline PerlModOutput &add(int n) { m_stream->add(n); return *this; }
   inline PerlModOutput &add(unsigned int n) { m_stream->add(n); return *this; }
 
@@ -169,7 +159,7 @@ public:
 protected:
   
   void iopenSave();
-  void icloseSave(QString &);
+  void icloseSave(QCString &);
   
   void incIndent();
   void decIndent();
@@ -198,7 +188,7 @@ void PerlModOutput::iopenSave()
   m_stream = new PerlModOutputStream();
 }
 
-void PerlModOutput::icloseSave(QString &s)
+void PerlModOutput::icloseSave(QCString &s)
 {
   s = m_stream->m_s;
   delete m_stream;
@@ -389,8 +379,8 @@ private:
   // helper functions
   //--------------------------------------
 
-  void addLink(const QString &ref, const QString &file,
-	       const QString &anchor);
+  void addLink(const QCString &ref, const QCString &file,
+	       const QCString &anchor);
    
   void enterText();
   void leaveText();
@@ -410,7 +400,7 @@ private:
   PerlModOutput &m_output;
   bool m_textmode;
   bool m_textblockstart;
-  QString m_other;
+  QCString m_other;
 };
 
 PerlModDocVisitor::PerlModDocVisitor(PerlModOutput &output)
@@ -426,9 +416,9 @@ void PerlModDocVisitor::finish()
     .add(m_other);
 }
 
-void PerlModDocVisitor::addLink(const QString &,const QString &file,const QString &anchor)
+void PerlModDocVisitor::addLink(const QCString &,const QCString &file,const QCString &anchor)
 {
-  QString link = file;
+  QCString link = file;
   if (!anchor.isEmpty())
     (link += "_1") += anchor;
   m_output.addFieldQuotedString("link", link);
@@ -499,7 +489,7 @@ void PerlModDocVisitor::closeOther()
   // Using a secondary text stream will corrupt the perl file. Instead of
   // printing doc => [ data => [] ], it will print doc => [] data => [].
   /*
-  QString other;
+  QCString other;
   leaveText();
   m_output.closeSave(other);
   m_other += other;
@@ -656,7 +646,7 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
 
 void PerlModDocVisitor::visit(DocAnchor *anc)
 {
-  QString anchor = anc->file() + "_1" + anc->anchor();
+  QCString anchor = anc->file() + "_1" + anc->anchor();
   openItem("anchor");
   m_output.addFieldQuotedString("id", anchor);
   closeItem();
@@ -722,7 +712,7 @@ void PerlModDocVisitor::visit(DocIncOperator *)
 void PerlModDocVisitor::visit(DocFormula *f)
 {
   openItem("formula");
-  QString id;
+  QCString id;
   id += f->id();
   m_output.addFieldQuotedString("id", id).addFieldQuotedString("content", f->text());
   closeItem();
@@ -867,7 +857,7 @@ void PerlModDocVisitor::visitPost(DocSimpleListItem *) { closeSubBlock(); }
 
 void PerlModDocVisitor::visitPre(DocSection *s)
 {
-  QString sect = QString("sect%1").arg(s->level());
+  QCString sect = QCString().sprintf("sect%d",s->level());
   openItem(sect);
   openSubBlock("content");
 }
@@ -1366,10 +1356,10 @@ static const char *getVirtualnessName(Specifier virt)
   return 0;
 }
 
-static QString pathDoxyfile;
-static QString pathDoxyExec;
+static QCString pathDoxyfile;
+static QCString pathDoxyExec;
 
-void setPerlModDoxyfile(const QString &qs)
+void setPerlModDoxyfile(const QCString &qs)
 {
   pathDoxyfile = qs;
   pathDoxyExec = QDir::currentDirPath();
@@ -1381,18 +1371,18 @@ public:
 
   PerlModOutput m_output;
 
-  QString pathDoxyStructurePM;
-  QString pathDoxyDocsTex;
-  QString pathDoxyFormatTex;
-  QString pathDoxyLatexTex;
-  QString pathDoxyLatexDVI;
-  QString pathDoxyLatexPDF;
-  QString pathDoxyStructureTex;
-  QString pathDoxyDocsPM;
-  QString pathDoxyLatexPL;
-  QString pathDoxyLatexStructurePL;
-  QString pathDoxyRules;
-  QString pathMakefile;
+  QCString pathDoxyStructurePM;
+  QCString pathDoxyDocsTex;
+  QCString pathDoxyFormatTex;
+  QCString pathDoxyLatexTex;
+  QCString pathDoxyLatexDVI;
+  QCString pathDoxyLatexPDF;
+  QCString pathDoxyStructureTex;
+  QCString pathDoxyDocsPM;
+  QCString pathDoxyLatexPL;
+  QCString pathDoxyLatexStructurePL;
+  QCString pathDoxyRules;
+  QCString pathMakefile;
 
   inline PerlModGenerator(bool pretty) : m_output(pretty) { }
 
@@ -2353,7 +2343,7 @@ bool PerlModGenerator::generateDoxyRules()
     return false;
 
   bool perlmodLatex = Config_getBool("PERLMOD_LATEX");
-  QString prefix = Config_getString("PERLMOD_MAKEVAR_PREFIX");
+  QCString prefix = Config_getString("PERLMOD_MAKEVAR_PREFIX");
 
   QTextStream doxyRulesStream(&doxyRules);
   doxyRulesStream <<
@@ -2450,7 +2440,7 @@ bool PerlModGenerator::generateMakefile()
     return false;
 
   bool perlmodLatex = Config_getBool("PERLMOD_LATEX");
-  QString prefix = Config_getString("PERLMOD_MAKEVAR_PREFIX");
+  QCString prefix = Config_getString("PERLMOD_MAKEVAR_PREFIX");
 
   QTextStream makefileStream(&makefile);
   makefileStream <<

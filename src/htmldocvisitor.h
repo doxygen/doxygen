@@ -24,15 +24,14 @@
 #include <qcstring.h>
 
 class DocNode;
-class QTextStream;
+class FTextStream;
 class CodeOutputInterface;
-class QString;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(QTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -133,12 +132,12 @@ class HtmlDocVisitor : public DocVisitor
     
     void filter(const char *str);
     void filterQuotedCdataAttr(const char* str);
-    void startLink(const QString &ref,const QString &file,
-                   const QString &relPath,const QString &anchor,
-                   const QString &tooltip = QString::null);
+    void startLink(const QCString &ref,const QCString &file,
+                   const QCString &relPath,const QCString &anchor,
+                   const QCString &tooltip = "");
     void endLink();
-    void writeDotFile(const QString &fileName,const QString &relPath,const QString &context);
-    void writeMscFile(const QString &fileName,const QString &relPath,const QString &context);
+    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context);
+    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context);
 
     void pushEnabled();
     void popEnabled();
@@ -150,7 +149,7 @@ class HtmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    QTextStream &m_t;
+    FTextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

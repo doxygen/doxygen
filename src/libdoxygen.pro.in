@@ -48,6 +48,7 @@ HEADERS      =	bufstr.h \
 		filedef.h \
 		filename.h \
 		formula.h \
+		ftextstream.h \
 		ftvhelp.h \
 		groupdef.h \
 		htags.h \
@@ -179,6 +180,7 @@ SOURCES      =	ce_lex.cpp \
 		filedef.cpp \
 		filename.cpp \
 		formula.cpp \
+		ftextstream.cpp \
 		ftvhelp.cpp \
 		fortrancode.cpp \
 		fortranscanner.cpp \    

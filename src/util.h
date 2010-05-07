@@ -56,6 +56,7 @@ class Definition;
 class BufStr;
 class QFileInfo;
 class QStrList;
+class FTextStream;
 
 //--------------------------------------------------------------------
 
@@ -141,7 +142,8 @@ bool resolveRef(/* in */  const char *scName,
                 /* out */ Definition **resContext,
                 /* out */ MemberDef  **resMember,
                 /* in */  bool lookForSpecializations = TRUE,
-                /* in */  FileDef *currentFile = 0
+                /* in */  FileDef *currentFile = 0,
+                /* in */  bool checkScope = FALSE
                );
 
 bool resolveLink(/* in */  const char *scName,
@@ -297,7 +299,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
 
 void addGroupListToTitle(OutputList &ol,Definition *d);
 
-void filterLatexString(QTextStream &t,const char *str,
+void filterLatexString(FTextStream &t,const char *str,
                        bool insideTabbing=FALSE,bool insidePre=FALSE,
                        bool insideItem=FALSE);
 
@@ -345,7 +347,7 @@ ClassDef *newResolveTypedef(FileDef *fileScope,MemberDef *md,
                             QCString *pResolvedType=0,
                             ArgumentList *actTemplParams=0);
 
-QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QString &doc,const QCString &fileName,int lineNr);
+QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
 QCString transcodeCharacterStringToUTF8(const QCString &input);
 

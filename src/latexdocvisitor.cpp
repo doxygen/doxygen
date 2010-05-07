@@ -28,9 +28,9 @@
 #include "msc.h"
 #include "htmlattrib.h"
 
-static QString escapeLabelName(const char *s)
+static QCString escapeLabelName(const char *s)
 {
-  QString result;
+  QCString result;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -73,9 +73,9 @@ static int rowspan(DocHtmlCell *cell)
   return retval;
 }
 
-QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
+QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 {
-  QString result;
+  QCString result;
   const char *p=s;
   char str[2]; str[1]=0;
   char c;
@@ -96,7 +96,7 @@ QString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                                  const char *langExt,bool insideTabbing) 
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_insideItem(FALSE), m_hide(FALSE), m_insideTabbing(insideTabbing),
@@ -272,27 +272,27 @@ void LatexDocVisitor::visit(DocStyleChange *s)
 
 void LatexDocVisitor::visit(DocVerbatim *s)
 {
-  static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
+  //static bool latexSourceCode = Config_getBool("LATEX_SOURCE_CODE");
   if (m_hide) return;
   switch(s->type())
   {
     case DocVerbatim::Code: 
-      if (latexSourceCode)
-      {
-        m_t << "\n\n\\begin{footnotesize}\\begin{alltt}" << endl; 
-      }
-      else
+      //if (latexSourceCode)
+      //{
+      //  m_t << "\n\n\\begin{footnotesize}\\begin{alltt}" << endl; 
+      //}
+      //else
       {
         m_t << "\n\\begin{DoxyCode}\n";
       }
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                            ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
-      if (latexSourceCode)
-      {
-        m_t << "\\end{alltt}\\end{footnotesize}" << endl; 
-      }
-      else
+      //if (latexSourceCode)
+      //{
+      //  m_t << "\\end{alltt}\\end{footnotesize}" << endl; 
+      //}
+      //else
       {
         m_t << "\\end{DoxyCode}\n";
       }
@@ -389,7 +389,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
-                                           inc->text().latin1(),
+                                           inc->text(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "\\end{DoxyCodeInclude}" << endl;
@@ -399,7 +399,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
       m_t << "\n\\begin{DoxyCodeInclude}\n";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text().latin1(),inc->isExample(),
+                                        inc->text(),inc->isExample(),
                                         inc->exampleFile());
       m_t << "\\end{DoxyCodeInclude}\n";
       break;
@@ -431,7 +431,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                            ->parseCode(m_ci,op->context(),op->text(),
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();
@@ -948,7 +948,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
       m_t << "\n\\begin{DoxyImageNoCaption}\n"
              "  \\mbox{";
     }
-    QString gfxName = img->name();
+    QCString gfxName = img->name();
     if (gfxName.right(4)==".eps" || gfxName.right(4)==".pdf")
     {
       gfxName=gfxName.left(gfxName.length()-4);
@@ -1062,7 +1062,7 @@ void LatexDocVisitor::visitPost(DocSecRefList *)
 
 //void LatexDocVisitor::visitPre(DocLanguage *l)
 //{
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    pushEnabled();
@@ -1072,7 +1072,7 @@ void LatexDocVisitor::visitPost(DocSecRefList *)
 //
 //void LatexDocVisitor::visitPost(DocLanguage *l) 
 //{
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    popEnabled();
@@ -1238,7 +1238,7 @@ void LatexDocVisitor::filter(const char *str)
   filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);
 }
 
-void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
+void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
   if (ref.isEmpty() && Config_getBool("PDF_HYPERLINKS")) // internal PDF link 
   {
@@ -1269,7 +1269,7 @@ void LatexDocVisitor::startLink(const QString &ref,const QString &file,const QSt
   }
 }
 
-void LatexDocVisitor::endLink(const QString &ref,const QString &file,const QString &anchor)
+void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
   m_t << "}";
   if (ref.isEmpty() && !Config_getBool("PDF_HYPERLINKS"))
@@ -1295,13 +1295,13 @@ void LatexDocVisitor::popEnabled()
   delete v;
 }
 
-void LatexDocVisitor::startDotFile(const QString &fileName,
-                                   const QString &width,
-                                   const QString &height,
+void LatexDocVisitor::startDotFile(const QCString &fileName,
+                                   const QCString &width,
+                                   const QCString &height,
                                    bool hasCaption
                                   )
 {
-  QString baseName=fileName;
+  QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
@@ -1315,8 +1315,8 @@ void LatexDocVisitor::startDotFile(const QString &fileName,
   {
     baseName=baseName.left(baseName.length()-4);
   }
-  QString outDir = Config_getString("LATEX_OUTPUT");
-  QString name = fileName;
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  QCString name = fileName;
   writeDotGraphFromFile(name,outDir,baseName,EPS);
   if (hasCaption)
   {
@@ -1358,15 +1358,15 @@ void LatexDocVisitor::endDotFile(bool hasCaption)
   }
 }
 
-void LatexDocVisitor::writeMscFile(const QString &baseName)
+void LatexDocVisitor::writeMscFile(const QCString &baseName)
 {
-  QString shortName = baseName;
+  QCString shortName = baseName;
   int i;
   if ((i=shortName.findRev('/'))!=-1)
   {
     shortName=shortName.right(shortName.length()-i-1);
   } 
-  QString outDir = Config_getString("LATEX_OUTPUT");
+  QCString outDir = Config_getString("LATEX_OUTPUT");
   writeMscGraphFromFile(baseName,outDir,baseName,MSC_EPS);
   m_t << "\n\\begin{DoxyImageNoCaption}"
          "  \\mbox{\\includegraphics";

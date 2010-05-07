@@ -680,7 +680,7 @@ static void buildFileList(EntryNav *rootNav)
           "the second argument in the \\file statement ",
           root->name.data()
                   );
-      if (ambig) // name is ambigious
+      if (ambig) // name is ambiguous
       {
         text+="matches the following input files:\n";
         text+=showFileDefMatches(Doxygen::inputNameDict,root->name);
@@ -736,7 +736,7 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
                   "the argument of the \\class, \\struct, \\union, or \\include command ",
                   includeFile.data()
                  );
-      if (ambig) // name is ambigious
+      if (ambig) // name is ambiguous
       {
         text+="matches the following input files:\n";
         text+=showFileDefMatches(Doxygen::inputNameDict,root->includeFile);
@@ -2072,7 +2072,7 @@ static MemberDef *addVariableToFile(
   {
     if (!root->type.isEmpty() && !root->name.isEmpty())
     {
-      if (name.at(0)=='@') // dummy variable representing annonymous union
+      if (name.at(0)=='@') // dummy variable representing anonymous union
         def=root->type;
       else
         def=root->type+" "+name+root->args;
@@ -2479,8 +2479,8 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
     {
       MemberDef *md=0;
 
-      // if cd is an annonymous scope we insert the member 
-      // into a non-annonymous scope as well. This is needed to
+      // if cd is an anonymous scope we insert the member 
+      // into a non-anonymous scope as well. This is needed to
       // be able to refer to it using \var or \fn
 
       //int indentDepth=0;
@@ -4411,7 +4411,7 @@ static void findInheritedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any annonymous scopes first 
+    // strip any anonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
     Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",bName.data());
@@ -4434,7 +4434,7 @@ static void findUsedTemplateInstances()
   for (;(rootNav=edi.current());++edi)
   {
     ClassDef *cd;
-    // strip any annonymous scopes first 
+    // strip any anonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
     Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",bName.data());
@@ -4460,7 +4460,7 @@ static void computeClassRelations()
     rootNav->loadEntry(g_storage);
     Entry *root = rootNav->entry();
 
-    // strip any annonymous scopes first 
+    // strip any anonymous scopes first 
     QCString bName=stripAnonymousNamespaceScope(rootNav->name());
     bName=stripTemplateSpecifiersFromScope(bName);
     Debug::print(Debug::Classes,0,"  Relations: Class %s : \n",bName.data());
@@ -4500,7 +4500,7 @@ static void computeTemplateClassRelations()
     QCString bName=stripAnonymousNamespaceScope(root->name);
     bName=stripTemplateSpecifiersFromScope(bName);
     ClassDef *cd=getClass(bName);
-    // strip any annonymous scopes first 
+    // strip any anonymous scopes first 
     QDict<ClassDef> *templInstances = 0;
     if (cd && (templInstances=cd->getTemplateInstances()))
     {
@@ -7220,6 +7220,48 @@ static void addSourceReferences()
 }
 
 //----------------------------------------------------------------------------
+
+static void sortMemberLists()
+{
+  // sort class member lists
+  ClassSDict::Iterator cli(*Doxygen::classSDict);
+  ClassDef *cd=0;
+  for (cli.toFirst();(cd=cli.current());++cli)
+  {
+    cd->sortMemberLists();
+  }
+
+  // sort namespace member lists
+  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
+  NamespaceDef *nd=0;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    nd->sortMemberLists();
+  }
+
+  // sort file member lists
+  FileNameListIterator fnli(*Doxygen::inputNameList); 
+  FileName *fn;
+  for (;(fn=fnli.current());++fnli)
+  {
+    FileNameIterator fni(*fn);
+    FileDef *fd;
+    for (;(fd=fni.current());++fni)
+    {
+      fd->sortMemberLists();
+    }
+  }
+
+  // sort group member lists
+  GroupSDict::Iterator gli(*Doxygen::groupSDict);
+  GroupDef *gd;
+  for (gli.toFirst();(gd=gli.current());++gli)
+  {
+    gd->sortMemberLists();
+  }
+}
+
+//----------------------------------------------------------------------------
 // generate the documentation of all classes
   
 static void generateClassList(ClassSDict &classSDict)
@@ -8053,7 +8095,7 @@ static void buildExampleList(EntryNav *rootNav)
     {
       PageDef *pd=new PageDef(root->fileName,root->startLine,
           root->name,root->brief+root->doc+root->inbodyDocs,root->args);
-      pd->setFileName(convertNameToFile(pd->name()+"-example"));
+      pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
       //pi->addSections(root->anchors);
 
@@ -9445,7 +9487,7 @@ void readConfiguration(int argc, char **argv)
 
   /* Perlmod wants to know the path to the config file.*/
   QFileInfo configFileInfo(configName);
-  setPerlModDoxyfile(configFileInfo.absFilePath());
+  setPerlModDoxyfile(configFileInfo.absFilePath().data());
 
 }
 
@@ -10126,6 +10168,9 @@ void parseInput()
   addListReferences();
   generateXRefPages();
 
+  msg("Sorting member lists...\n");
+  sortMemberLists();
+
   if (Config_getBool("SHOW_DIRECTORIES") && Config_getBool("DIRECTORY_GRAPH"))
   {
     msg("Computing dependencies between directories...\n");
@@ -10194,7 +10239,7 @@ void generateOutput()
     if (generateEclipseHelp) Doxygen::indexList.addIndex(new EclipseHelp);
     if (generateHtmlHelp) Doxygen::indexList.addIndex(new HtmlHelp);
     if (generateQhp)      Doxygen::indexList.addIndex(new Qhp);
-    if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp);
+    if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp(TRUE));
     if (generateDocSet)   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
     Doxygen::indexList.addImageFile("tab_r.gif");
@@ -10398,6 +10443,7 @@ void generateOutput()
   //  FTVHelp::getInstance()->finalize();
   //}
 
+  msg("finalizing index lists...\n");
   Doxygen::indexList.finalize();
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty())
@@ -10475,6 +10521,10 @@ void generateOutput()
          ((double)Doxygen::runningTime.elapsed())/1000.0,
          portable_getSysElapsedTime()
         );
+  }
+  else
+  {
+    msg("finished...\n");
   }
 
   /**************************************************************************

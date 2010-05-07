@@ -123,7 +123,7 @@ struct LayoutNavEntry
       Dirs, 
       Examples
     };
-    LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QString &bf, const QString &tl,bool prepend=FALSE) 
+    LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf, const QCString &tl,bool prepend=FALSE) 
       : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl) 
     { m_children.setAutoDelete(TRUE); 
       if (parent) { if (prepend) parent->prependChild(this); else parent->addChild(this); }

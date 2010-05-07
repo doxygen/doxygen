@@ -30,7 +30,7 @@ class QStrList;
 class FileDef;
 class OutputList;
 class UsedDir;
-class QTextStream;
+class FTextStream;
 
 class DirDef;
 
@@ -69,7 +69,7 @@ class DirDef : public Definition
 
     // generate output
     void writeDocumentation(OutputList &ol);
-    void writeDepGraph(QTextStream &t);
+    void writeDepGraph(FTextStream &t);
 
     static DirDef *mergeDirectoryInTree(const QCString &path);
     bool visited;

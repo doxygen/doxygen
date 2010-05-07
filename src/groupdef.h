@@ -82,6 +82,7 @@ class GroupDef : public Definition
     void findSectionsInDocumentation();
 
     void addListReferences();
+    void sortMemberLists();
 
     bool visited;    // number of times accessed for output - KPW
 

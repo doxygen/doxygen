@@ -153,6 +153,15 @@ div.ah {
 	color: #ffffff;
 	margin-bottom: 3px;
 	margin-top: 3px
+	padding: .2em;
+	border: solid thin #333;
+	border-radius: .5em;
+	-webkit-border-radius: .5em;
+	-moz-border-radius: .5em;
+	-webkit-box-shadow: 2px 2px 3px #999;
+	-moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
+	background-image: -moz-linear-gradient(center top, #eee 0%, #444 40%, #000);
 }
 
 div.groupHeader {
@@ -324,6 +333,11 @@ hr.footer {
 }
 
 /* @group Member Descriptions */
+
+table.memberdecls {
+	border-spacing: 0px;
+	padding: 0px;
+}
 
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight,
@@ -592,19 +606,19 @@ table.doxtable th {
 	list-style-type:none;
 	float:left;
 	padding-left:10px;
+	padding-right: 15px;
+	background-image:url('bc_s.png');
+	background-repeat:no-repeat;
+	background-position:right;
+	color:##45;
 }
 
 .navpath a
 {
 	height:32px;
 	display:block;
-	background-image:url('bc_s.png');
-	background-repeat:no-repeat;
-	background-position:right;
-	padding-right: 15px;
 	text-decoration: none;
 	outline: none;
-	color:##45;
 }
 
 .navpath a:hover

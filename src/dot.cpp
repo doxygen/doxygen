@@ -38,7 +38,7 @@
 #include "vhdldocgen.h"
 #include <qdir.h>
 #include <qfile.h>
-#include <qtextstream.h>
+#include "ftextstream.h"
 #include <md5.h>
 
 #define MAP_CMD "cmapx"
@@ -92,7 +92,7 @@ static int getDotFontSize()
   return dotFontSize;
 }
 
-static void writeGraphHeader(QTextStream &t)
+static void writeGraphHeader(FTextStream &t)
 {
   t << "digraph G" << endl;
   t << "{" << endl;
@@ -108,7 +108,7 @@ static void writeGraphHeader(QTextStream &t)
        "fontsize=\"" << FONTSIZE << "\",shape=record];\n";
 }
 
-static void writeGraphFooter(QTextStream &t)
+static void writeGraphFooter(FTextStream &t)
 {
   t << "}" << endl;
 }
@@ -124,9 +124,9 @@ static void writeGraphFooter(QTextStream &t)
  *                 map file was found
  *  \returns TRUE if succesful.
  */
-static bool convertMapFile(QTextStream &t,const char *mapName,
+static bool convertMapFile(FTextStream &t,const char *mapName,
                            const QCString relPath, bool urlOnly=FALSE,
-                           const QString &context=QString())
+                           const QCString &context=QCString())
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly)) 
@@ -189,7 +189,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,
             QCString url = link.mid(marker+1);
             if (!ref.isEmpty())
             {
-              result = "doxygen=\"" + ref + ":";
+              result = "target=\"_blank\" doxygen=\"" + ref + ":";
               if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
               result += "\" ";
             }
@@ -629,7 +629,7 @@ static QCString escapeTooltip(const QCString &tooltip)
   return result;
 }
 
-static void writeBoxMemberList(QTextStream &t,char prot,MemberList *ml,ClassDef *scope)
+static void writeBoxMemberList(FTextStream &t,char prot,MemberList *ml,ClassDef *scope)
 {
   if (ml)
   {
@@ -662,7 +662,7 @@ static void writeBoxMemberList(QTextStream &t,char prot,MemberList *ml,ClassDef 
   }
 }
 
-void DotNode::writeBox(QTextStream &t,
+void DotNode::writeBox(FTextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren,
@@ -764,7 +764,7 @@ void DotNode::writeBox(QTextStream &t,
   t << "];" << endl; 
 }
 
-void DotNode::writeArrow(QTextStream &t,
+void DotNode::writeArrow(FTextStream &t,
                          GraphType gt,
                          GraphOutputFormat format,
                          DotNode *cn,
@@ -807,7 +807,7 @@ void DotNode::writeArrow(QTextStream &t,
   t << "];" << endl; 
 }
 
-void DotNode::write(QTextStream &t,
+void DotNode::write(FTextStream &t,
                     GraphType gt,
                     GraphOutputFormat format,
                     bool topDown,
@@ -865,7 +865,7 @@ void DotNode::write(QTextStream &t,
   //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
 }
 
-void DotNode::writeXML(QTextStream &t,bool isClassGraph)
+void DotNode::writeXML(FTextStream &t,bool isClassGraph)
 {
   t << "      <node id=\"" << m_number << "\">" << endl;
   t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
@@ -934,7 +934,7 @@ void DotNode::writeXML(QTextStream &t,bool isClassGraph)
 }
 
 
-void DotNode::writeDEF(QTextStream &t)
+void DotNode::writeDEF(FTextStream &t)
 {
   const char* nodePrefix = "        node-";
 
@@ -1101,7 +1101,7 @@ const DotNode *DotNode::findDocNode() const
 
 int DotGfxHierarchyTable::m_curNodeNumber;
 
-void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
+void DotGfxHierarchyTable::writeGraph(FTextStream &out,const char *path) const
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -1140,9 +1140,9 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
     DotNode *node;
 
     // compute md5 checksum of the graph were are about to generate
-    QString theGraph;
-    QTextStream md5stream(&theGraph,IO_WriteOnly);
-    md5stream.setEncoding(md5stream.UnicodeUTF8);
+    QGString theGraph;
+    FTextStream md5stream(&theGraph);
+    //md5stream.setEncoding(md5stream.UnicodeUTF8);
     writeGraphHeader(md5stream);
     md5stream << "  rankdir=LR;" << endl;
     for (dnli2.toFirst();(node=dnli2.current());++dnli2)
@@ -1163,7 +1163,7 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
     resetReNumbering();
     uchar md5_sig[16];
     QCString sigStr(33);
-    MD5Buffer((const unsigned char *)theGraph.ascii(),theGraph.length(),md5_sig);
+    MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
     MD5SigToString(md5_sig,sigStr.data(),33);
     if (checkAndUpdateMd5Signature(absBaseName,sigStr) || 
         !QFileInfo(absMapName).exists())
@@ -1172,8 +1172,8 @@ void DotGfxHierarchyTable::writeGraph(QTextStream &out,const char *path) const
       QCString dotName=absBaseName+".dot";
       QFile f(dotName);
       if (!f.open(IO_WriteOnly)) return;
-      QTextStream t(&f);
-      t.setEncoding(t.UnicodeUTF8);
+      FTextStream t(&f);
+      //t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
       f.close();
       resetReNumbering();
@@ -1777,9 +1777,9 @@ QCString computeMd5Signature(DotNode *root,
   bool reNumber=TRUE;
     
   //printf("computeMd5Signature\n");
-  QString buf;
-  QTextStream md5stream(&buf,IO_WriteOnly);
-  md5stream.setEncoding(md5stream.UnicodeUTF8);
+  QGString buf;
+  FTextStream md5stream(&buf);
+  //md5stream.setEncoding(md5stream.UnicodeUTF8);
   writeGraphHeader(md5stream);
   if (lrRank)
   {
@@ -1824,13 +1824,13 @@ QCString computeMd5Signature(DotNode *root,
   writeGraphFooter(md5stream);
   uchar md5_sig[16];
   QCString sigStr(33);
-  MD5Buffer((const unsigned char *)buf.ascii(),buf.length(),md5_sig);
+  MD5Buffer((const unsigned char *)buf.data(),buf.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.data(),33);
   if (reNumber)
   {
     resetReNumbering();
   }
-  graphStr=buf.ascii();
+  graphStr=buf.data();
   //printf("md5: %s | file: %s\n",sigStr,baseName.data());
   return sigStr;
 }
@@ -1854,8 +1854,8 @@ static bool updateDotGraph(DotNode *root,
     f.setName(baseName+".dot");
     if (f.open(IO_WriteOnly))
     {
-      QTextStream t(&f);
-      t.setEncoding(t.UnicodeUTF8);
+      FTextStream t(&f);
+      //t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
     }
     return TRUE;
@@ -1884,7 +1884,7 @@ QCString DotClassGraph::diskName() const
   return result;
 }
 
-QCString DotClassGraph::writeGraph(QTextStream &out,
+QCString DotClassGraph::writeGraph(FTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
                                const char *relPath,
@@ -1989,9 +1989,8 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
         break;
     }
     out << "\"/></div>" << endl;
-    QString tmpstr;
-    QTextOStream tmpout(&tmpstr);
-    tmpout.setEncoding(tmpout.UnicodeUTF8);
+    QGString tmpstr;
+    FTextStream tmpout(&tmpstr);
     convertMapFile(tmpout,absBaseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2039,7 +2038,7 @@ QCString DotClassGraph::writeGraph(QTextStream &out,
 
 //--------------------------------------------------------------------
 
-void DotClassGraph::writeXML(QTextStream &t)
+void DotClassGraph::writeXML(FTextStream &t)
 {
   QDictIterator<DotNode> dni(*m_usedNodes);
   DotNode *node;
@@ -2049,7 +2048,7 @@ void DotClassGraph::writeXML(QTextStream &t)
   }
 }
 
-void DotClassGraph::writeDEF(QTextStream &t)
+void DotClassGraph::writeDEF(FTextStream &t)
 {
   QDictIterator<DotNode> dni(*m_usedNodes);
   DotNode *node;
@@ -2223,7 +2222,7 @@ QCString DotInclDepGraph::diskName() const
   return convertNameToFile(result); 
 }
 
-QCString DotInclDepGraph::writeGraph(QTextStream &out,
+QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  GraphOutputFormat format,
                                  const char *path,
                                  const char *relPath,
@@ -2301,9 +2300,9 @@ QCString DotInclDepGraph::writeGraph(QTextStream &out,
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"\"/>";
     out << "</div>" << endl;
-    QString tmpstr;
-    QTextOStream tmpout(&tmpstr);
-    tmpout.setEncoding(tmpout.UnicodeUTF8);
+    QGString tmpstr;
+    FTextStream tmpout(&tmpstr);
+    //tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,absBaseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2351,7 +2350,7 @@ bool DotInclDepGraph::isTooBig() const
   return numNodes>=maxNodes;
 }
 
-void DotInclDepGraph::writeXML(QTextStream &t)
+void DotInclDepGraph::writeXML(FTextStream &t)
 {
   QDictIterator<DotNode> dni(*m_usedNodes);
   DotNode *node;
@@ -2518,7 +2517,7 @@ DotCallGraph::~DotCallGraph()
   delete m_usedNodes;
 }
 
-QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
+QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
                         const char *path,const char *relPath,bool generateImageMap) const
 {
   QDir d(path);
@@ -2586,11 +2585,11 @@ QCString DotCallGraph::writeGraph(QTextStream &out, GraphOutputFormat format,
     out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
         << mapName << "_map\" alt=\"";
-    out << "\">";
+    out << "\"/>";
     out << "</div>" << endl;
-    QString tmpstr;
-    QTextOStream tmpout(&tmpstr);
-    tmpout.setEncoding(tmpout.UnicodeUTF8);
+    QGString tmpstr;
+    FTextStream tmpout(&tmpstr);
+    //tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,absBaseName+".map",relPath);
     if (!tmpstr.isEmpty())
     {
@@ -2648,7 +2647,7 @@ DotDirDeps::~DotDirDeps()
 {
 }
 
-QCString DotDirDeps::writeGraph(QTextStream &out,
+QCString DotDirDeps::writeGraph(FTextStream &out,
                             GraphOutputFormat format,
                             const char *path,
                             const char *relPath,
@@ -2675,8 +2674,8 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
     {
       err("Cannot create file %s.dot for writing!\n",baseName.data());
     }
-    QTextStream t(&f);
-    t.setEncoding(t.UnicodeUTF8);
+    FTextStream t(&f);
+    //t.setEncoding(t.UnicodeUTF8);
     m_dir->writeDepGraph(t);
     f.close();
 
@@ -2724,9 +2723,9 @@ QCString DotDirDeps::writeGraph(QTextStream &out,
     out << convertToXML(m_dir->displayName());
     out << "\"/>";
     out << "</div>" << endl;
-    QString tmpstr;
-    QTextOStream tmpout(&tmpstr);
-    tmpout.setEncoding(tmpout.UnicodeUTF8);
+    QGString tmpstr;
+    FTextStream tmpout(&tmpstr);
+    //tmpout.setEncoding(tmpout.UnicodeUTF8);
     convertMapFile(tmpout,absBaseName+".map",relPath,TRUE);
     if (!tmpstr.isEmpty())
     {
@@ -2783,7 +2782,7 @@ void generateGraphLegend(const char *path)
         convertToQCString(dotFile.name()).data());
     return;
   }
-  QTextStream dotText(&dotFile); 
+  FTextStream dotText(&dotFile); 
   writeGraphHeader(dotText);
   dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
@@ -2880,8 +2879,8 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param context the scope in which this graph is found (for resolving links)
  *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
-QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
-    const QCString &relPath,const QString &context)
+QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
+                               const QCString &relPath,const QCString &context)
 {
   QString outFile = inFile + ".map";
 
@@ -2903,14 +2902,14 @@ QString getDotImageMapFromFile(const QString& inFile, const QString& outDir,
     return "";
   }
 
-  QString result;
-  QTextOStream tmpout(&result);
-  tmpout.setEncoding(tmpout.UnicodeUTF8);
+  QGString result;
+  FTextStream tmpout(&result);
+  //tmpout.setEncoding(tmpout.UnicodeUTF8);
   convertMapFile(tmpout, absOutFile, relPath ,TRUE, context);
   d.remove(outFile);
 
   unsetDotFontPath();
-  return result;
+  return result.data();
 }
 // end MDG mods
 
@@ -3125,7 +3124,7 @@ void DotGroupCollaboration::addCollaborationMember(
 }
 
 
-QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat format,
+QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat format,
     const char *path, const char *relPath,
     bool writeImageMap) const
 {
@@ -3143,8 +3142,8 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
   QFile dotfile(absBaseName+".dot");
   if (dotfile.open(IO_WriteOnly))
   {
-    QTextStream tdot(&dotfile);
-    tdot.setEncoding(tdot.UnicodeUTF8);
+    FTextStream tdot(&dotfile);
+    //tdot.setEncoding(tdot.UnicodeUTF8);
     writeGraphHeader(tdot);
 
     // clean write flags
@@ -3245,7 +3244,7 @@ QCString DotGroupCollaboration::writeGraph( QTextStream &t, GraphOutputFormat fo
   return baseName;
 }
 
-void DotGroupCollaboration::Edge::write( QTextStream &t ) const
+void DotGroupCollaboration::Edge::write( FTextStream &t ) const
 {
   const char* linkTypeColor[] = {
     "darkorchid3"
@@ -3312,7 +3311,7 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes->count() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(QTextStream &t) const
+void DotGroupCollaboration::writeGraphHeader(FTextStream &t) const
 {
   t << "digraph structs" << endl;
   t << "{" << endl;
@@ -3326,7 +3325,7 @@ void DotGroupCollaboration::writeGraphHeader(QTextStream &t) const
   t << "  rankdir=LR;\n";
 }
 
-void writeDotDirDepGraph(QTextStream &t,DirDef *dd)
+void writeDotDirDepGraph(FTextStream &t,DirDef *dd)
 {
     t << "digraph G {\n";
     if (Config_getBool("DOT_TRANSPARENT"))

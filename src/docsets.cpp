@@ -44,6 +44,10 @@ void DocSets::initialize()
   if (bundleId.isEmpty()) bundleId="org.doxygen.Project";
   QCString feedName = Config_getString("DOCSET_FEEDNAME");
   if (feedName.isEmpty()) feedName="FeedName";
+  QCString publisherId = Config_getString("DOCSET_PUBLISHER_ID");
+  if (publisherId.isEmpty()) publisherId="PublisherId";
+  QCString publisherName = Config_getString("DOCSET_PUBLISHER_NAME");
+  if (publisherName.isEmpty()) publisherName="PublisherName";
 
   // -- write Makefile
   {
@@ -54,8 +58,7 @@ void DocSets::initialize()
     err("Could not open file %s for writing\n",mfName.data());
     exit(1);
   }
-  QTextStream ts(&makefile);
-  ts.setEncoding(QTextStream::UnicodeUTF8);
+  FTextStream ts(&makefile);
 
   ts << "DOCSET_NAME=" << bundleId << ".docset\n" 
         "DOCSET_CONTENTS=$(DOCSET_NAME)/Contents\n"
@@ -103,8 +106,7 @@ void DocSets::initialize()
     err("Could not open file %s for writing\n",plName.data());
     exit(1);
   }
-  QTextStream ts(&plist);
-  ts.setEncoding(QTextStream::UnicodeUTF8);
+  FTextStream ts(&plist);
 
   ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
         "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"\n" 
@@ -117,6 +119,10 @@ void DocSets::initialize()
         "     <string>" << bundleId << ".docset</string>\n" 
         "     <key>DocSetFeedName</key>\n" 
         "     <string>" << feedName << "</string>\n"
+        "     <key>DocSetPublisherIdentifier</key>\n"
+        "     <string>" << publisherId << "</string>\n"
+        "     <key>DocSetPublisherName</key>\n"
+        "     <string>" << publisherName << "</string>\n"
         "</dict>\n"
         "</plist>\n";
   }
@@ -131,7 +137,6 @@ void DocSets::initialize()
   }
   QCString indexName=Config_getBool("GENERATE_TREEVIEW")?"main":"index";
   m_nts.setDevice(m_nf);
-  m_nts.setEncoding(QTextStream::UnicodeUTF8);
   m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
   m_nts << "<DocSetNodes version=\"1.0\">" << endl;
   m_nts << "  <TOC>" << endl;
@@ -151,7 +156,6 @@ void DocSets::initialize()
     exit(1);
   }
   m_tts.setDevice(m_tf);
-  m_tts.setEncoding(QTextStream::UnicodeUTF8);
   m_tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
   m_tts << "<Tokens version=\"1.0\">" << endl;
 }
@@ -218,12 +222,11 @@ void DocSets::addContentsItem(bool isDir,
     m_firstNode.at(m_dc-1)=FALSE;
     m_nts << indent() << " <Node>" << endl;
     m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
-    m_nts << indent() << "  <Path>" << file << Doxygen::htmlFileExtension;
+    m_nts << indent() << "  <Path>" << file << Doxygen::htmlFileExtension << "</Path>" << endl;
     if (anchor)
     {
-      m_nts << "#" << anchor;
+      m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
     }
-    m_nts << "</Path>" << endl;
   }
 }
 
@@ -409,7 +412,7 @@ void DocSets::addIndexItem(Definition *context,MemberDef *md,
   }
 }
 
-void DocSets::writeToken(QTextStream &t,
+void DocSets::writeToken(FTextStream &t,
                          const Definition *d,
                          const QCString &type,
                          const QCString &lang,

@@ -1028,7 +1028,7 @@ void addConfigOptions(Config *cfg)
                  "If the ALPHABETICAL_INDEX tag is set to YES, an alphabetical index\n"
                  "of all compounds will be generated. Enable this if the project\n"
                  "contains a lot of classes, structs, unions or interfaces.",
-                 FALSE
+                 TRUE
                 );
   //----
   ci = cfg->addInt(
@@ -1203,6 +1203,22 @@ void addConfigOptions(Config *cfg)
                  "will append .docset to the name."
                 );
   cs->setDefaultValue("org.doxygen.Project");
+  cs->addDependency("GENERATE_DOCSET");
+  //----
+  cs = cfg->addString(
+                 "DOCSET_PUBLISHER_ID",
+                 "When GENERATE_DOCSET tag specifies a string that should uniquely identify\n"
+                 "the documentation publisher. This should be a reverse domain-name style\n"
+                 "string, e.g. com.mycompany.MyDocSet.documentation."
+                );
+  cs->setDefaultValue("org.doxygen.Publisher");
+  cs->addDependency("GENERATE_DOCSET");
+  //----
+  cs = cfg->addString(
+                 "DOCSET_PUBLISHER_NAME",
+                 "The GENERATE_DOCSET tag identifies the documentation publisher."
+                );
+  cs->setDefaultValue("Publisher");
   cs->addDependency("GENERATE_DOCSET");
   //----
   cb = cfg->addBool(

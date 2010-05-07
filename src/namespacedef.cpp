@@ -57,6 +57,7 @@ NamespaceDef::NamespaceDef(const char *df,int dl,
   memberGroupSDict->setAutoDelete(TRUE);
   visited=FALSE;
   m_subGrouping=Config_getBool("SUBGROUPING");
+  m_isCSharp = df && getLanguageFromFileName(df)==SrcLangExt_CSharp;
 }
 
 NamespaceDef::~NamespaceDef()
@@ -882,14 +883,32 @@ void NamespaceDef::addMemberToList(MemberList::ListType lt,MemberDef *md)
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
-  if (((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberList::documentationLists) && sortMemberDocs)
-     )
+  ml->setNeedsSorting(
+      ((ml->listType()&MemberList::declarationLists) && sortBriefDocs) ||
+      ((ml->listType()&MemberList::documentationLists) && sortMemberDocs));
+  ml->append(md);
+
+#if 0
+  if (ml->needsSorting())
     ml->inSort(md);
   else
     ml->append(md);
+#endif
+
   if (ml->listType()&MemberList::declarationLists) md->setSectionList(this,ml);
 }
+
+void NamespaceDef::sortMemberLists()
+{
+  MemberList *ml = m_memberLists.first();
+  while (ml)
+  {
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    ml = m_memberLists.next();
+  }
+}
+
+
 
 MemberList *NamespaceDef::getMemberList(MemberList::ListType lt) const
 {
@@ -932,7 +951,7 @@ bool NamespaceDef::isLinkableInProject() const
     return TRUE;
   }
   return !name().isEmpty() && name().at(i)!='@' && // not anonymous
-    hasDocumentation() &&  // documented
+    (hasDocumentation() || m_isCSharp) &&  // documented
     !isReference() &&      // not an external reference
     !isHidden() &&         // not hidden
     !isArtificial() &&     // or artificial
@@ -943,7 +962,6 @@ bool NamespaceDef::isLinkable() const
 {
   return isLinkableInProject() || isReference();
 }
-
 
 MemberDef * NamespaceDef::getMemberByName(const QCString &n) const
 {

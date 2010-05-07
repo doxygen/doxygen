@@ -26,7 +26,7 @@
 
 #include "qtbc.h"
 #include "index.h"
-#include <qtextstream.h>
+#include "ftextstream.h"
 
 /* -- forward declarations */
 class QFile;
@@ -62,7 +62,7 @@ class EclipseHelp : public IndexIntf
     bool m_endtag;
 
     QFile * m_tocfile;
-    QTextStream m_tocstream;
+    FTextStream m_tocstream;
     QCString m_pathprefix;
 
     /* -- avoid copying */

@@ -22,6 +22,7 @@
 #define ROUND_SIZE(x) ((x)+BLOCK_SIZE-1)&~(BLOCK_SIZE-1)
 
 #define DBG_STR(x) do { } while(0)
+//#define DBG_STR(x) printf x
 
 QGString::QGString() // make null string
   : m_data(0), m_len(0), m_memSize(0) 
@@ -121,6 +122,40 @@ bool QGString::resize( uint newlen )
   m_len = qstrlen(m_data);
   DBG_STR(("%p: 3.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return TRUE;
+}
+
+bool QGString::enlarge( uint newlen )
+{
+  if (newlen==0)
+  {
+    if (m_data) { free(m_data); m_data=0; }
+    m_memSize=0;
+    m_len=0;
+    return TRUE;
+  }
+  uint newMemSize = ROUND_SIZE(newlen+1);
+  if (newMemSize==m_memSize) return TRUE;
+  m_memSize = newMemSize;
+  if (m_data==0)
+  {
+    m_data = (char *)malloc(m_memSize);
+  }
+  else
+  {
+    m_data = (char *)realloc(m_data,m_memSize);
+  }
+  if (m_data==0) 
+  {
+    return FALSE;
+  }
+  m_data[newlen-1]='\0';
+  if (m_len>newlen) m_len=newlen;
+  return TRUE;
+}
+
+void QGString::setLen( uint newlen )
+{
+  m_len = newlen<=m_memSize ? newlen : m_memSize;
 }
 
 QGString &QGString::operator=( const QGString &s ) 

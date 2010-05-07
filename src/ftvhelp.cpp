@@ -433,7 +433,7 @@ void FTVHelp::addContentsItem(bool isDir,
 
 static int folderId=1;
 
-void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
+void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
 {
   if (n->parent)
   {
@@ -478,7 +478,7 @@ void FTVHelp::generateIndent(QTextStream &t, FTVNode *n,int level)
   }
 }
 
-void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
+void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 {
   QCString *dest;
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
@@ -492,7 +492,7 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
     if (!n->ref.isEmpty()) // link to entity imported via tag file
     {
       t << "<a class=\"elRef\" ";
-      t << "doxygen=\"" << n->ref << ":";
+      t << "target=\"_blank\" doxygen=\"" << n->ref << ":";
       if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
       t << "\" ";
     }
@@ -520,7 +520,7 @@ void FTVHelp::generateLink(QTextStream &t,FTVNode *n)
   }
 }
 
-void FTVHelp::generateTree(QTextStream &t, const QList<FTVNode> &nl,int level)
+void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level)
 {
   QCString spaces;
   spaces.fill(' ',level*2+8);
@@ -574,100 +574,8 @@ void FTVHelp::generateTreeViewImages()
   }
 } 
 
-void FTVHelp::generateTreeView(QString* OutString)
+void FTVHelp::generateScript(FTextStream &t)
 {
-  QCString fileName;
-  QFile f;
-  static bool searchEngine = Config_getBool("SEARCHENGINE");
-  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
-  
-  generateTreeViewImages();
-  
-  // If top level index, generate alternative index.html as a frame
-  if (m_topLevelIndex)
-  {
-    fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
-    f.setName(fileName);
-    if (!f.open(IO_WriteOnly))
-    {
-      err("Cannot open file %s for writing!\n",fileName.data());
-      return;
-    }
-    else
-    {
-      QTextStream t(&f);
-#if QT_VERSION >= 200
-      t.setEncoding(QTextStream::UnicodeUTF8);
-#endif
-      //t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
-      t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n";
-      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n";
-      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
-      t << "<title>"; 
-      if (Config_getString("PROJECT_NAME").isEmpty())
-      {
-        t << "Doxygen Documentation";
-      }
-      else
-      {
-        t << Config_getString("PROJECT_NAME");
-      }
-      t << "</title>\n</head>" << endl;
-      t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
-      t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\"/>" << endl;
-      t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\"/>" << endl;
-      t << "  <noframes>" << endl;
-      t << "    <body>" << endl;
-      t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
-      t << "    </body>" << endl;
-      t << "  </noframes>" << endl;
-      t << "</frameset>" << endl;
-      t << "</html>" << endl;
-      f.close();
-    }
-  }
-
-  // Generate tree view
-  if (!OutString)
-    OutString = new QString;
-  QTextOStream t(OutString);
-  t.setEncoding(QTextStream::UnicodeUTF8);
-
-  if (m_topLevelIndex)
-  {
-    //if (searchEngine)
-    //{
-    //  t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
-    //}
-    t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-    t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
-    t << "  <head>\n";
-    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
-    t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
-    t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
-    if (searchEngine)
-    {
-      t << "    <link href=\"search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>" << endl;
-      t << "    <script type=\"text/javaScript\" src=\"search/search.js\"></script>" << endl;
-    }
-    t << "    <link rel=\"stylesheet\" href=\"";
-    QCString cssname=Config_getString("HTML_STYLESHEET");
-    if (cssname.isEmpty())
-    {
-      t << "doxygen.css";
-    }
-    else
-    {
-      QFileInfo cssfi(cssname);
-      if (!cssfi.exists())
-      {
-        err("Error: user specified HTML style sheet file does not exist!\n");
-      }
-      t << cssfi.fileName();
-    }
-    t << "\"/>" << endl;
-    t << "    <title>TreeView</title>\n";
-  }
   t << "    <script type=\"text/javascript\">\n";
   t << "    <!-- // Hide script from old browsers\n";
   t << "    \n";
@@ -726,8 +634,112 @@ void FTVHelp::generateTreeView(QString* OutString)
   t << "\n";
   t << "    // End script hiding -->        \n";
   t << "    </script>\n";
-  if (m_topLevelIndex)
+}
+
+void FTVHelp::generateTreeViewInline(FTextStream &t)
+{
+  generateScript(t);
+  t << "    <div class=\"directory-alt\">\n";
+  t << "      <br/>\n";
+  t << "      <div style=\"display: block;\">\n";
+
+  generateTree(t,m_indentNodes[0],0);
+
+  t << "      </div>\n";
+  t << "    </div>\n";
+}
+
+
+void FTVHelp::generateTreeView()
+{
+  QCString fileName;
+  QFile f;
+  static bool searchEngine = Config_getBool("SEARCHENGINE");
+  static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
+  generateTreeViewImages();
+  
+  fileName=Config_getString("HTML_OUTPUT")+"/index"+Doxygen::htmlFileExtension;
+  f.setName(fileName);
+  if (!f.open(IO_WriteOnly))
   {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  else
+  {
+    FTextStream t(&f);
+    //t << "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\">\n";
+    t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n";
+    t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n";
+    t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+    t << "<title>"; 
+    if (Config_getString("PROJECT_NAME").isEmpty())
+    {
+      t << "Doxygen Documentation";
+    }
+    else
+    {
+      t << Config_getString("PROJECT_NAME");
+    }
+    t << "</title>\n</head>" << endl;
+    t << "<frameset cols=\"" << Config_getInt("TREEVIEW_WIDTH") << ",*\">" << endl;
+    t << "  <frame src=\"tree" << Doxygen::htmlFileExtension << "\" name=\"treefrm\"/>" << endl;
+    t << "  <frame src=\"main" << Doxygen::htmlFileExtension << "\" name=\"basefrm\"/>" << endl;
+    t << "  <noframes>" << endl;
+    t << "    <body>" << endl;
+    t << "    <a href=\"main" << Doxygen::htmlFileExtension << "\">Frames are disabled. Click here to go to the main page.</a>" << endl;
+    t << "    </body>" << endl;
+    t << "  </noframes>" << endl;
+    t << "</frameset>" << endl;
+    t << "</html>" << endl;
+    f.close();
+  }
+
+  // Generate tree view
+  fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
+  f.setName(fileName);
+  if (!f.open(IO_WriteOnly))
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  else
+  {
+    FTextStream t(&f);
+
+    //if (searchEngine)
+    //{
+    //  t << "<!-- This comment will put IE 6, 7 and 8 in quirks mode -->" << endl;
+    //}
+    t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+    t << "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    t << "  <head>\n";
+    t << "    <meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+    t << "    <meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
+    t << "    <meta http-equiv=\"Content-Language\" content=\"en\" />\n";
+    if (searchEngine)
+    {
+      t << "    <link href=\"search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>" << endl;
+      t << "    <script type=\"text/javaScript\" src=\"search/search.js\"></script>" << endl;
+    }
+    t << "    <link rel=\"stylesheet\" href=\"";
+    QCString cssname=Config_getString("HTML_STYLESHEET");
+    if (cssname.isEmpty())
+    {
+      t << "doxygen.css";
+    }
+    else
+    {
+      QFileInfo cssfi(cssname);
+      if (!cssfi.exists())
+      {
+        err("Error: user specified HTML style sheet file does not exist!\n");
+      }
+      t << cssfi.fileName();
+    }
+    t << "\"/>" << endl;
+    t << "    <title>TreeView</title>\n";
+    generateScript(t);
     t << "  </head>\n";
     t << "\n";
     t << "  <body class=\"ftvtree\"";
@@ -793,41 +805,17 @@ void FTVHelp::generateTreeView(QString* OutString)
       t << projName;
     }
     t << "</span></h3>\n";
-  }
-  else
-  {
-    t << "    <div class=\"directory-alt\">\n";
-    t << "      <br/>\n";
-  }
-  t << "      <div style=\"display: block;\">\n";
+    t << "      <div style=\"display: block;\">\n";
 
-  generateTree(t,m_indentNodes[0],0);
+    generateTree(t,m_indentNodes[0],0);
 
-  t << "      </div>\n";
-  t << "    </div>\n";
+    t << "      </div>\n";
+    t << "    </div>\n";
   
-  if (m_topLevelIndex)
-  {
     t << "  </body>\n";
     t << "</html>\n";
-  }
   
-  if (m_topLevelIndex)
-  {
-    fileName=Config_getString("HTML_OUTPUT")+"/tree"+Doxygen::htmlFileExtension;
-    f.setName(fileName);
-    if (!f.open(IO_WriteOnly))
-    {
-      err("Cannot open file %s for writing!\n",fileName.data());
-      return;
-    }
-    else
-    {
-      QTextStream t(&f);
-      t.setEncoding(QTextStream::UnicodeUTF8);
-      t << *OutString << endl;
-      f.close();
-    }
+    f.close();
   }
 }
 

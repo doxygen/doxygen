@@ -25,6 +25,7 @@ class TreeDiagram;
 class ClassDiagram;
 class DiagramItemList;
 class Image;
+class FTextStream;
 
 class DiagramItem 
 {
@@ -101,13 +102,13 @@ class TreeDiagram : public QList<DiagramRow>
     //uint computeCols();
     void moveChildren(DiagramItem *root,int dx);
     void computeExtremes(uint *labelWidth,uint *xpos);
-    void drawBoxes(QTextStream &t,Image *image,
+    void drawBoxes(FTextStream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellHeight,
                    QCString relPath="",
                    bool generateMap=TRUE);
-    void drawConnectors(QTextStream &t,Image *image,
+    void drawConnectors(FTextStream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellheight);
@@ -122,9 +123,9 @@ class ClassDiagram
   public:
     ClassDiagram(ClassDef *root);
    ~ClassDiagram();
-    void writeFigure(QTextStream &t,const char *path,
+    void writeFigure(FTextStream &t,const char *path,
                      const char *file) const;
-    void writeImage(QTextStream &t,const char *path,const char *relPath,
+    void writeImage(FTextStream &t,const char *path,const char *relPath,
                      const char *file,bool generateMap=TRUE) const;
   private:
     TreeDiagram *base;

@@ -1,4 +1,4 @@
-# Doxyfile 1.6.1
+# Doxyfile 1.6.3
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -130,12 +130,17 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            =
 HTML_FOOTER            =
 HTML_STYLESHEET        =
+HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_SAT    = 70
+HTML_COLORSTYLE_GAMMA  = 60
 HTML_TIMESTAMP         = NO
 HTML_ALIGN_MEMBERS     = YES
 HTML_DYNAMIC_SECTIONS  = NO
 GENERATE_DOCSET        = YES
 DOCSET_FEEDNAME        = "Doxygen generated docs"
 DOCSET_BUNDLE_ID       = org.doxygen.Project
+DOCSET_PUBLISHER_ID    = org.doxygen.Publisher
+DOCSET_PUBLISHER_NAME  = Publisher
 GENERATE_HTMLHELP      = NO
 CHM_FILE               =
 HHC_LOCATION           =
@@ -238,7 +243,7 @@ PERL_PATH              = /usr/bin/perl
 CLASS_DIAGRAMS         = YES
 MSCGEN_PATH            =
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 DOT_FONTNAME           = FreeSans
 DOT_FONTSIZE           = 10
 DOT_FONTPATH           =
@@ -248,7 +253,7 @@ GROUP_GRAPHS           = YES
 UML_LOOK               = NO
 TEMPLATE_RELATIONS     = YES
 INCLUDE_GRAPH          = YES
-INCLUDED_BY_GRAPH      = NO
+INCLUDED_BY_GRAPH      = YES
 CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
 GRAPHICAL_HIERARCHY    = YES
@@ -261,4 +266,4 @@ MAX_DOT_GRAPH_DEPTH    = 0
 DOT_TRANSPARENT        = YES
 DOT_MULTI_TARGETS      = NO
 GENERATE_LEGEND        = YES
-DOT_CLEANUP            = YES
+DOT_CLEANUP            = NO

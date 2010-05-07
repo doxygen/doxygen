@@ -25,6 +25,7 @@
 #define PREFRAG_END   "</pre></div>"
 
 class QFile;
+class FTextStream;
 
 class HtmlGenerator : public OutputGenerator
 {
@@ -247,7 +248,7 @@ class HtmlGenerator : public OutputGenerator
     { t << "<a name=\"" << anchor << "\"></a>"; }
     void linkableSymbol(int,const char *,Definition *,Definition *) {}
 
-    static void writeSearchFooter(QTextStream &t,const QCString &relPath);
+    static void writeSearchFooter(FTextStream &t,const QCString &relPath);
     static void writeSearchData(const char *dir);
     //static void generateSectionImages();
 

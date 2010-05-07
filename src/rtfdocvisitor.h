@@ -23,15 +23,14 @@
 #include <qstack.h>
 #include <qcstring.h>
 
-class QTextStream;
+class FTextStream;
 class CodeOutputInterface;
-class QString;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(QTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    RTFDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -135,23 +134,23 @@ class RTFDocVisitor : public DocVisitor
     //--------------------------------------
     
     void filter(const char *str,bool verbatim=FALSE);
-    void startLink(const QString &ref,const QString &file,
-                   const QString &anchor);
-    void endLink(const QString &ref);
-    QString getStyle(const char *name);
+    void startLink(const QCString &ref,const QCString &file,
+                   const QCString &anchor);
+    void endLink(const QCString &ref);
+    QCString getStyle(const char *name);
     void incIndentLevel();
     void decIndentLevel();
 
     void pushEnabled();
     void popEnabled();
-    void writeDotFile(const QString &fileName);
-    void writeMscFile(const QString &fileName);
+    void writeDotFile(const QCString &fileName);
+    void writeMscFile(const QCString &fileName);
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    QTextStream &m_t;
+    FTextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

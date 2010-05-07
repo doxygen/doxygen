@@ -716,17 +716,20 @@ void writeHierarchicalIndex(OutputList &ol)
   FTVHelp* ftv = 0;
   bool treeView=Config_getBool("USE_INLINE_TREES");
   if (treeView)
-    ftv = new FTVHelp(false);
+  {
+    ftv = new FTVHelp(FALSE);
+  }
 
   writeClassHierarchy(ol,ftv);
 
   if (ftv)
   {
-    QString OutStr;
-    ftv->generateTreeView(&OutStr);
+    QGString outStr;
+    FTextStream t(&outStr);
+    ftv->generateTreeViewInline(t);
     ol.pushGeneratorState(); 
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(OutStr);
+    ol.writeString(outStr);
     ol.popGeneratorState();
     delete ftv;
   }
@@ -2446,7 +2449,7 @@ static QCString searchId(const QCString &s)
     else
     {
       char val[4];
-      sprintf(val,"_%02x",c);
+      sprintf(val,"_%02x",(uchar)c);
       result+=val;
     }
   }
@@ -2645,12 +2648,12 @@ void writeJavascriptSearchIndex()
                 QCString *dest = Doxygen::tagDestinationDict[d->getReference()];
                 if (dest && *dest=='.') // relative path (see bug 593679)
                 {
-                  t << "doxygen=\"" << d->getReference() << ":../"
+                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":../"
                     << *dest << "/\" href=\"../" << *dest << "/";
                 }
                 else if (dest) // absolute path
                 {
-                  t << "doxygen=\"" << d->getReference() << ":"
+                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":"
                     << *dest << "/\" href=\"" << *dest << "/";
                 }
               }
@@ -2731,7 +2734,7 @@ void writeJavascriptSearchIndex()
                 if (!d->getReference().isEmpty())
                 {
                   QCString *dest;
-                  t << "doxygen=\"" << d->getReference() << ":../";
+                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":../";
                   if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
                   t << "\" ";
                   t << "href=\"../";
@@ -2919,7 +2922,7 @@ void writeJavascriptSearchIndex()
   Doxygen::indexList.addStyleSheetFile("search/search.js");
 }
 
-void writeSearchCategories(QTextStream &t)
+void writeSearchCategories(FTextStream &t)
 {
   static SearchIndexCategoryMapping map;
   int i,j=0;
@@ -3525,7 +3528,7 @@ void writeGroupIndex(OutputList &ol)
   bool treeView=Config_getBool("USE_INLINE_TREES");
   if (treeView)
   {
-    ftv = new FTVHelp(false);
+    ftv = new FTVHelp(FALSE);
   }
 
   writeGroupHierarchy(ol,ftv);
@@ -3533,11 +3536,12 @@ void writeGroupIndex(OutputList &ol)
   Doxygen::indexList.decContentsDepth();
   if (ftv)
   {
-    QString OutStr;
-    ftv->generateTreeView(&OutStr);
+    QGString outStr;
+    FTextStream t(&outStr);
+    ftv->generateTreeViewInline(t);
     ol.pushGeneratorState(); 
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(OutStr);
+    ol.writeString(outStr);
     ol.popGeneratorState();
     delete ftv;
   }
@@ -3571,17 +3575,20 @@ void writeDirIndex(OutputList &ol)
   FTVHelp* ftv = 0;
   bool treeView=Config_getBool("USE_INLINE_TREES");
   if (treeView)
-    ftv = new FTVHelp(false);
+  {
+    ftv = new FTVHelp(FALSE);
+  }
 
   writeDirHierarchy(ol,ftv);
 
   if (ftv)
   {
-    QString OutStr;
-    ftv->generateTreeView(&OutStr);
+    QGString outStr;
+    FTextStream t(&outStr);
+    ftv->generateTreeViewInline(t);
     ol.pushGeneratorState(); 
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(OutStr);
+    ol.writeString(outStr);
     ol.popGeneratorState();
     delete ftv;
   }

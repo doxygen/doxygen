@@ -243,7 +243,7 @@ bool QDir::readDirEntries( const QString &nameFilter,
     bool doModified = (filterSpec & Modified)   != 0;
     bool doSystem   = (filterSpec & System)     != 0;
 
-    QRegExp   wc( nameFilter, FALSE, TRUE );    // wild card, case insensitive
+    QRegExp   wc( nameFilter.data(), FALSE, TRUE );    // wild card, case insensitive
     bool      first = TRUE;
     QString   p = dPath.copy();
     int       plen = p.length();

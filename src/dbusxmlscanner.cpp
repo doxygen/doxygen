@@ -597,8 +597,8 @@ private:
         {
             type = attributes.value(type_idx);
 
-            QRegExp reg_exp(QString("(a?[ybnqiuxdtsogv]|a[{]sv[}])"));
-            if (reg_exp.match(type))
+            QRegExp reg_exp(QCString("(a?[ybnqiuxdtsogv]|a[{]sv[}])"));
+            if (reg_exp.match(type.data()))
             { return type; }
 
             DOC_ERROR(QString("Unnamed complex D-Bus type \"%1\" found.").arg(type));

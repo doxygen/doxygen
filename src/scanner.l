@@ -160,7 +160,7 @@ static QCString         briefBackup;
 static bool             g_inputFromFile;
 
 static int              docBlockContext;
-static QCString         docBlock;
+static QGString         docBlock;
 static QCString         docBlockName;
 static bool             docBlockInBody;
 static bool             docBlockAutoBrief;
@@ -3172,8 +3172,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  if (msName.isEmpty() && !current->name.isEmpty())
 					  { 
 					    // see if the compound does not have a name or is inside another
-					    // annonymous compound. If so we insert a 
-					    // special `annonymous' variable.
+					    // anonymous compound. If so we insert a 
+					    // special `anonymous' variable.
 					    //Entry *p=current_root;
 					    Entry *p=current;
 					    while (p)
@@ -3186,8 +3186,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						int pi = (i==-1) ? 0 : i+2;
 						if (p->name.at(pi)=='@')
 						{
-						  // annonymous compound inside -> insert dummy variable name
-						  //printf("Adding annonymous variable for scope %s\n",p->name.data());
+						  // anonymous compound inside -> insert dummy variable name
+						  //printf("Adding anonymous variable for scope %s\n",p->name.data());
 						  msName.sprintf("@%d",anonCount++); 
 						  break;
 						}
@@ -4569,7 +4569,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  else
 					    BEGIN( CopyArgComment );
 					}
-<CSConstraintType,CSConstraintName>"#"	{ // artifically inserted token to signal end of comment block
+<CSConstraintType,CSConstraintName>"#"	{ // artificially inserted token to signal end of comment block
                                           current->typeConstr->last()->docs = fullArgString;
   					}
 <CSConstraintType>"{"			{ // end of type constraint reached
@@ -5126,14 +5126,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                         }
 <DocLine>[^\n]*/"\n"			{ // whole line
   					  docBlock+=yytext;
-					  handleCommentBlock(docBlock,current->brief.isEmpty());
+					  handleCommentBlock(docBlock.data(),current->brief.isEmpty());
 					  BEGIN( docBlockContext );
   					}
 
  /* ---- Comments blocks ------ */
 
 <DocBlock>"*"*"*/"			{ // end of comment block
-  				          handleCommentBlock(docBlock,FALSE);
+  				          handleCommentBlock(docBlock.data(),FALSE);
 					  BEGIN(docBlockContext);
   					}
 <DocBlock>^{B}*("//")?{B}*"*"+/[^//]	{ // start of a comment line

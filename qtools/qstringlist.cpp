@@ -184,6 +184,11 @@ QStringList QStringList::split( const QString &sep, const QString &str, bool all
     return lst;
 }
 
+QStringList QStringList::split( const QCString &sep, const QCString &str, bool allowEmptyEntries )
+{
+  return split(QString(sep.data()),QString(str.data()),allowEmptyEntries);
+}
+
 /*!
   Splits the string \a str using the regular expression \a sep as separator. Returns the
   list of strings. If \a allowEmptyEntries is TRUE, also empty
@@ -204,7 +209,7 @@ QStringList QStringList::split( const QRegExp &sep, const QString &str, bool all
 
     int j = 0;
     int len = 0;
-    int i = sep.match( str, j, &len );
+    int i = sep.match( str.data(), j, &len );
 
     while ( i != -1 ) {
 	if ( str.mid( j, i - j ).length() > 0 )
@@ -212,7 +217,7 @@ QStringList QStringList::split( const QRegExp &sep, const QString &str, bool all
 	else if ( allowEmptyEntries )
 	    lst << QString::null;
 	j = i + len;
-	i = sep.match( str, j, &len );
+	i = sep.match( str.data(), j, &len );
     }
 
     int l = str.length() - 1;

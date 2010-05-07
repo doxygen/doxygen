@@ -131,7 +131,7 @@ void TextGeneratorOLImpl::writeLink(const char *extRef,const char *file,
 const int maxInheritanceDepth = 100000; 
 
 /*! 
-  Removes all anoymous scopes from string s
+  Removes all anonymous scopes from string s
   Possible examples:
 \verbatim
    "bla::@10::blep"      => "bla::blep"
@@ -197,7 +197,7 @@ QCString replaceAnonymousScopes(const QCString &s,const char *replacement)
 }
 
 
-// strip annonymous left hand side part of the scope
+// strip anonymous left hand side part of the scope
 QCString stripAnonymousNamespaceScope(const QCString &s)
 {
   int i,p=0,l;
@@ -1251,7 +1251,7 @@ static void getResolvedSymbol(Definition *scope,
   //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,bestResolvedType.data());
 }
 
-/* Find the fully qualified class name refered to by the input class
+/* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
  * match against the input name. Can recursively call itself when 
@@ -1429,7 +1429,7 @@ ClassDef *getResolvedClassRec(Definition *scope,
   return bestMatch;
 }
 
-/* Find the fully qualified class name refered to by the input class
+/* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
  * match against the input name. 
@@ -1465,7 +1465,7 @@ ClassDef *getResolvedClass(Definition *scope,
   {
     if (!mayBeHidden || !result->isHidden())
     {
-      result=0; // don't link to artifical/hidden classes unless explicitly allowed
+      result=0; // don't link to artificial/hidden classes unless explicitly allowed
     }
   }
   //printf("getResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
@@ -1483,7 +1483,7 @@ static bool findOperator(const QCString &s,int i)
   int b = s.findRev("operator",i);
   if (b==-1) return FALSE; // not found
   b+=8;
-  while (b<i) // check if there are only spaces inbetween 
+  while (b<i) // check if there are only spaces in between 
     // the operator and the >
   {
     if (!isspace((uchar)s.at(b))) return FALSE;
@@ -1509,17 +1509,53 @@ static bool findOperator2(const QCString &s,int i)
 static const char constScope[] = { 'c', 'o', 'n', 's', 't', ':' };
 static const char virtualScope[] = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 
+
+//#define ADD_CHAR(c) if (resultPos>=resultLen) { resultLen+=1024; result.resize(resultLen); } 
+//                    result[resultPos++]=(c)
+
+class StrBuf
+{
+  public:
+    StrBuf() : str(0), pos(0), len(0) {}
+   ~StrBuf()          { free(str); str=0; pos=0; len=0; }
+    void clear()      { pos=0; }
+    void addChar(char c)  { if (pos>=len) { len+=1024; str = (char*)realloc(str,len); } 
+                        str[pos++]=c; 
+                      }
+    void addStr(const char *s) {
+                        int l=strlen(s);
+                        if (pos+l>=len) { len+=l+1024; str = (char*)realloc(str,len); }
+                        strcpy(&str[pos],s);
+                        pos+=l;
+                      }
+    const char *get() { return str; }
+    int getPos() const   { return pos; }
+    char at(int i) const   { return str[i]; }
+  private:
+    char *str;
+    int pos;
+    int len;
+};
+
+#define CLR_BUF()   g_strBuf.clear()
+#define ADD_CHAR(c) g_strBuf.addChar(c)
+#define ADD_STR(s)  g_strBuf.addStr(s)
+#define GET_STR()   g_strBuf.get()
+#define STR_POS()   g_strBuf.getPos()
+#define STR_AT(i)   g_strBuf.at(i)
+
+// Not this function is not reentrant due to the use of static buffer!
 QCString removeRedundantWhiteSpace(const QCString &s)
 {
   static bool cliSupport = Config_getBool("CPP_CLI_SUPPORT");
   if (s.isEmpty()) return s;
-  int resultLen = 1024;
-  int resultPos = 0;
-  QCString result(resultLen);
-  // we use ADD_CHAR(c) instead of result+=c to 
+  static StrBuf strBuf;
+  //int resultLen = 1024;
+  //int resultPos = 0;
+  //QCString result(resultLen);
+  // we use strBuf.addChar(c) instead of result+=c to 
   // improve the performance of this function
-#define ADD_CHAR(c) if (resultPos>=resultLen) { resultLen+=1024; result.resize(resultLen); } \
-                    result[resultPos++]=(c)
+  strBuf.clear();
   uint i;
   uint l=s.length();
   uint csp=0;
@@ -1554,14 +1590,14 @@ nextChar:
     if (c=='"') // quoted string
     {
       i++;
-      ADD_CHAR(c);
+      strBuf.addChar(c);
       while (i<l)
       {
         char cc=s.at(i);
-        ADD_CHAR(cc);
+        strBuf.addChar(cc);
         if (cc=='\\') // escaped character
         { 
-          ADD_CHAR(s.at(i+1));
+          strBuf.addChar(s.at(i+1));
           i+=2; 
         }
         else if (cc=='"') // end of string
@@ -1575,24 +1611,24 @@ nextChar:
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      ADD_CHAR('<');
-      ADD_CHAR(' ');
+      strBuf.addChar('<');
+      strBuf.addChar(' ');
     }
     else if (i>0 && c=='>' && // current char is a >
         (isId(s.at(i-1)) || isspace((uchar)s.at(i-1)) || s.at(i-1)=='*' || s.at(i-1)=='&') && // prev char is an id char or space
         (i<8 || !findOperator(s,i)) // string in front is not "operator"
         )
     {
-      ADD_CHAR(' ');
-      ADD_CHAR('>');
+      strBuf.addChar(' ');
+      strBuf.addChar('>');
     }
     else if (i>0 && c==',' && !isspace((uchar)s.at(i-1))
         && ((i<l-1 && isId(s.at(i+1)))
           || (i<l-2 && s.at(i+1)=='$' && isId(s.at(i+2)))  // for PHP
           || (i<l-3 && s.at(i+1)=='&' && s.at(i+2)=='$' && isId(s.at(i+3)))))  // for PHP
     {
-      ADD_CHAR(',');
-      ADD_CHAR(' ');
+      strBuf.addChar(',');
+      strBuf.addChar(' ');
     }
     else if (i>0 && 
          ((isId(s.at(i)) && s.at(i-1)==')') || 
@@ -1600,8 +1636,8 @@ nextChar:
          )
         )
     {
-      ADD_CHAR(' ');
-      ADD_CHAR(s.at(i));
+      strBuf.addChar(' ');
+      strBuf.addChar(s.at(i));
     }
     else if (c=='t' && csp==5 /*&& (i<5 || !isId(s.at(i-5)))*/ &&
              !(isId(s.at(i+1)) /*|| s.at(i+1)==' '*/ || 
@@ -1612,16 +1648,16 @@ nextChar:
             ) 
       // prevent const ::A from being converted to const::A
     {
-      ADD_CHAR('t');
-      ADD_CHAR(' ');
+      strBuf.addChar('t');
+      strBuf.addChar(' ');
       if (s.at(i+1)==' ') i++;
       csp=0;
     }
     else if (c==':' && csp==6 /*&& (i<6 || !isId(s.at(i-6)))*/) 
       // replace const::A by const ::A
     {
-      ADD_CHAR(' ');
-      ADD_CHAR(':');
+      strBuf.addChar(' ');
+      strBuf.addChar(':');
       csp=0;
     }
     else if (c=='l' && vsp==7 /*&& (i<7 || !isId(s.at(i-7)))*/ &&
@@ -1633,16 +1669,16 @@ nextChar:
             ) 
       // prevent virtual ::A from being converted to virtual::A
     {
-      ADD_CHAR('l');
-      ADD_CHAR(' ');
+      strBuf.addChar('l');
+      strBuf.addChar(' ');
       if (s.at(i+1)==' ') i++;
       vsp=0;
     }
     else if (c==':' && vsp==8 /*&& (i<8 || !isId(s.at(i-8)))*/) 
       // replace virtual::A by virtual ::A
     {
-      ADD_CHAR(' ');
-      ADD_CHAR(':');
+      strBuf.addChar(' ');
+      strBuf.addChar(':');
       vsp=0;
     }
     else if (!isspace((uchar)c) || // not a space
@@ -1656,28 +1692,28 @@ nextChar:
       if (c=='*' || c=='&' || c=='@' || c=='$')
       {  
         //uint rl=result.length();
-        uint rl=resultPos;
-        if ((rl>0 && (isId(result.at(rl-1)) || result.at(rl-1)=='>')) &&
+        uint rl=strBuf.getPos();
+        if ((rl>0 && (isId(strBuf.at(rl-1)) || strBuf.at(rl-1)=='>')) &&
             ((c!='*' && c!='&') || !findOperator2(s,i)) // avoid splitting operator* and operator->* and operator&
            ) 
         {
-          ADD_CHAR(' ');
+          strBuf.addChar(' ');
         }
       }
-      ADD_CHAR(c);
+      strBuf.addChar(c);
       if (cliSupport &&
           (c=='^' || c=='%') && i>1 && isId(s.at(i-1)) &&
           !findOperator(s,i)
          ) 
       {
-        ADD_CHAR(' '); // C++/CLI: Type^ name and Type% name
+        strBuf.addChar(' '); // C++/CLI: Type^ name and Type% name
       }
     }
   }
   //printf("removeRedundantWhiteSpace(`%s')=`%s'\n",s.data(),result.data());
-  ADD_CHAR(0);
-  result.resize(resultPos);
-  return result;
+  strBuf.addChar(0);
+  //result.resize(resultPos);
+  return strBuf.get();
 }  
 
 bool rightScopeMatch(const QCString &scope, const QCString &name)
@@ -2000,7 +2036,7 @@ void setAnchors(ClassDef *cd,char id,MemberList *ml,int groupId)
 
 //----------------------------------------------------------------------------
 
-/*! takes the \a buf of the given lenght \a len and converts CR LF (DOS)
+/*! takes the \a buf of the given length \a len and converts CR LF (DOS)
  * or CR (MAC) line ending to LF (Unix).  Returns the length of the
  * converted content (i.e. the same as \a len (Unix, MAC) or
  * smaller (DOS).
@@ -2311,6 +2347,7 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
   int m=maxInheritanceDepth; 
   if (cd->baseClasses())
   {
+#if 0    
     BaseClassListIterator bcli(*cd->baseClasses());
     for ( ; bcli.current() ; ++bcli)
     {
@@ -2318,6 +2355,15 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
       int mc=minClassDistance(bcli.current()->classDef,bcd,level+1);
       if (mc<m) m=mc;
       if (m<0) break;
+    }
+#endif
+    BaseClassDef *bcdi = cd->baseClasses()->first();
+    while (bcdi)
+    {
+      int mc=minClassDistance(bcdi->classDef,bcd,level+1);
+      if (mc<m) m=mc;
+      if (m<0) break;
+      bcdi = cd->baseClasses()->next();
     }
   }
   return m;
@@ -2683,9 +2729,9 @@ static bool matchArgument(const Argument *srcA,const Argument *dstA,
   srcAType.stripPrefix("class ");
   dstAType.stripPrefix("class ");
 
-  // allow distingishing "const A" from "const B" even though 
+  // allow distinguishing "const A" from "const B" even though 
   // from a syntactic point of view they would be two names of the same 
-  // type "const". This is not fool prove ofcourse, but should at least 
+  // type "const". This is not fool prove of course, but should at least 
   // catch the most common cases.
   if ((srcAType=="const" || srcAType=="volatile") && !srcAName.isEmpty())
   {
@@ -3470,7 +3516,7 @@ void mergeArguments(ArgumentList *srcAl,ArgumentList *dstAl,bool forceNameOverwr
       dstA->defval=srcA->defval.copy();
     }
 
-    // fix wrongly detected const or volatile specificiers before merging.
+    // fix wrongly detected const or volatile specifiers before merging.
     // example: "const A *const" is detected as type="const A *" name="const"
     if (srcA->name=="const" || srcA->name=="volatile")
     {
@@ -3799,7 +3845,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
         }
       } 
       /* go to the parent scope */
-
       if (scopeOffset==0)
       {
         scopeOffset=-1;
@@ -3810,7 +3855,6 @@ bool getDefs(const QCString &scName,const QCString &memberName,
       }
     } while (scopeOffset>=0);
 
-    // unknown or undocumented scope 
   }
   if (mn && scopeName.isEmpty() && mScope.isEmpty()) // Maybe a related function?
   {
@@ -4082,7 +4126,8 @@ bool resolveRef(/* in */  const char *scName,
     /* out */ Definition **resContext,
     /* out */ MemberDef  **resMember,
     bool lookForSpecialization,
-    FileDef *currentFile
+    FileDef *currentFile,
+    bool checkScope
     )
 {
   QCString tsName = name;
@@ -4173,15 +4218,25 @@ bool resolveRef(/* in */  const char *scName,
   GroupDef     *gd = 0;
 
   // check if nameStr is a member or global.
-  //printf("getDefs(scope=%s,name=%s,args=%s)\n",scopeStr.data(),nameStr.data(),argsStr.data());
+  //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
+  //    scopeStr.data(),nameStr.data(),argsStr.data(),checkScope);
   if (getDefs(scopeStr,nameStr,argsStr,
         md,cd,fd,nd,gd,
-        scopePos==0 && !memberScopeFirst,
+        scopePos==0 && !memberScopeFirst, // forceEmptyScope
         currentFile,
-        TRUE
+        TRUE                              // checkCV
         )
      )
   {
+    if (checkScope && md && !cd && !nd && (!scopeStr.isEmpty() || nameStr.find("::")>0))
+    {
+      // we did find a member, but it is a global one while we were explicitly 
+      // looking for a scoped variable. See bug 616387 for an example why this check is needed.
+      // note we do need to support autolinking to "::symbol" hence the >0
+      *resContext=0;
+      *resMember=0;
+      return FALSE;
+    }
     //printf("after getDefs md=%p cd=%p fd=%p nd=%p gd=%p\n",md,cd,fd,nd,gd);
     if      (md) { *resMember=md; *resContext=md; }
     else if (cd) *resContext=cd;
@@ -4211,7 +4266,7 @@ bool resolveRef(/* in */  const char *scName,
 
   if (tryUnspecializedVersion)
   {
-    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE);
+    return resolveRef(scName,name,inSeeBlock,resContext,resMember,FALSE,0,checkScope);
   }
 
   return FALSE;
@@ -4486,7 +4541,7 @@ QCString substituteClassNames(const QCString &s)
 #endif
 
 //----------------------------------------------------------------------
-// substitute all occurences of `src' in `s' by `dst'
+// substitute all occurrences of `src' in `s' by `dst'
 
 QCString substitute(const char *s,const char *src,const char *dst)
 {
@@ -4577,7 +4632,7 @@ FileDef *findFileDef(const FileNameDict *fnDict,const char *n,bool &ambig)
         return fd;
       }
     }
-    else // file name alone is ambigious
+    else // file name alone is ambiguous
     {
       int count=0;
       FileNameIterator fni(*fn);
@@ -4726,38 +4781,40 @@ bool hasVisibleRoot(BaseClassList *bcl)
 
 //----------------------------------------------------------------------
 
+// note that this function is not reentrant due to the use of static strBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
   static bool caseSenseNames = Config_getBool("CASE_SENSE_NAMES");
-  QCString result;
+  static StrBuf strBuf;
+  strBuf.clear();
   char c;
   const char *p=name;
   while ((c=*p++)!=0)
   {
     switch(c)
     {
-      case '_': if (allowUnderscore) result+="_"; else result+="__"; break;
-      case '-': result+="-";  break;
-      case ':': result+="_1"; break;
-      case '/': result+="_2"; break;
-      case '<': result+="_3"; break;
-      case '>': result+="_4"; break;
-      case '*': result+="_5"; break;
-      case '&': result+="_6"; break;
-      case '|': result+="_7"; break;
-      case '.': if (allowDots) result+="."; else result+="_8"; break;
-      case '!': result+="_9"; break;
-      case ',': result+="_00"; break;
-      case ' ': result+="_01"; break;
-      case '{': result+="_02"; break;
-      case '}': result+="_03"; break;
-      case '?': result+="_04"; break;
-      case '^': result+="_05"; break;
-      case '%': result+="_06"; break;
-      case '(': result+="_07"; break;
-      case ')': result+="_08"; break;
-      case '+': result+="_09"; break;
-      case '=': result+="_0A"; break;
+      case '_': if (allowUnderscore) strBuf.addChar('_'); else strBuf.addStr("__"); break;
+      case '-': strBuf.addChar('-');  break;
+      case ':': strBuf.addStr("_1"); break;
+      case '/': strBuf.addStr("_2"); break;
+      case '<': strBuf.addStr("_3"); break;
+      case '>': strBuf.addStr("_4"); break;
+      case '*': strBuf.addStr("_5"); break;
+      case '&': strBuf.addStr("_6"); break;
+      case '|': strBuf.addStr("_7"); break;
+      case '.': if (allowDots) strBuf.addChar('.'); else strBuf.addStr("_8"); break;
+      case '!': strBuf.addStr("_9"); break;
+      case ',': strBuf.addStr("_00"); break;
+      case ' ': strBuf.addStr("_01"); break;
+      case '{': strBuf.addStr("_02"); break;
+      case '}': strBuf.addStr("_03"); break;
+      case '?': strBuf.addStr("_04"); break;
+      case '^': strBuf.addStr("_05"); break;
+      case '%': strBuf.addStr("_06"); break;
+      case '(': strBuf.addStr("_07"); break;
+      case ')': strBuf.addStr("_08"); break;
+      case '+': strBuf.addStr("_09"); break;
+      case '=': strBuf.addStr("_0A"); break;
       default: 
                 if (c<0)
                 {
@@ -4769,21 +4826,22 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                   ids[2]=map[id>>4];
                   ids[3]=map[id&0xF];
                   ids[4]=0;
-                  result+=ids;
+                  strBuf.addStr(ids);
                 }
                 else if (caseSenseNames || !isupper(c))
                 {
-                  result+=c;
+                  strBuf.addChar(c);
                 }
                 else
                 {
-                  result+="_";
-                  result+=tolower(c); 
+                  strBuf.addChar('_');
+                  strBuf.addChar(tolower(c)); 
                 }
                 break;
     }
   }
-  return result;
+  strBuf.addChar(0);
+  return strBuf.get();
 }
 
 /*! This function determines the file name on disk of an item
@@ -5117,38 +5175,41 @@ QCString stripScope(const char *name)
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s)
 {
-  QCString result;
-  if (s==0) return result;
+  static StrBuf strBuf;
+  strBuf.clear();
+  if (s==0) return "";
   const char *p=s;
   char c;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '<':  result+="&lt;";   break;
-      case '>':  result+="&gt;";   break;
-      case '&':  result+="&amp;";  break;
-      case '\'': result+="&apos;"; break; 
-      case '"':  result+="&quot;"; break;
-      default:   result+=c;        break;
+      case '<':  strBuf.addStr("&lt;");   break;
+      case '>':  strBuf.addStr("&gt;");   break;
+      case '&':  strBuf.addStr("&amp;");  break;
+      case '\'': strBuf.addStr("&apos;"); break; 
+      case '"':  strBuf.addStr("&quot;"); break;
+      default:   strBuf.addChar(c);       break;
     }
   }
-  return result;
+  strBuf.addChar(0);
+  return strBuf.get();
 }
 
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const char *s,bool keepEntities)
 {
-  QCString result;
-  if (s==0) return result;
+  static StrBuf strBuf;
+  strBuf.clear();
+  if (s==0) return "";
   const char *p=s;
   char c;
   while ((c=*p++))
   {
     switch (c)
     {
-      case '<':  result+="&lt;";   break;
-      case '>':  result+="&gt;";   break;
+      case '<':  strBuf.addStr("&lt;");   break;
+      case '>':  strBuf.addStr("&gt;");   break;
       case '&':  if (keepEntities)
                  {
                    const char *e=p;
@@ -5160,25 +5221,26 @@ QCString convertToHtml(const char *s,bool keepEntities)
                    if (ce==';') // found end of an entity
                    {
                      // copy entry verbatim
-                     result+=c;
-                     while (p<e) result+=*p++;
+                     strBuf.addChar(c);
+                     while (p<e) strBuf.addChar(*p++);
                    }
                    else
                    {
-                     result+="&amp;";
+                     strBuf.addStr("&amp;");
                    }
                  }
                  else
                  {
-                   result+="&amp;";  
+                   strBuf.addStr("&amp;");  
                  }
                  break;
-      case '\'': result+="&#39;"; break; 
-      case '"':  result+="&quot;"; break;
-      default:   result+=c;        break;
+      case '\'': strBuf.addStr("&#39;");  break; 
+      case '"':  strBuf.addStr("&quot;"); break;
+      default:   strBuf.addChar(c);       break;
     }
   }
-  return result;
+  strBuf.addChar(0);
+  return strBuf.get();
 }
 
 QCString convertCharEntitiesToUTF8(const QCString &s)
@@ -5764,7 +5826,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pd->setReference(tagInfo->tagName);
     }
 
-    pd->setFileName(convertNameToFile(pd->name()));
+    pd->setFileName(convertNameToFile(pd->name(),FALSE,TRUE));
 
     //printf("Appending page `%s'\n",baseName.data());
     Doxygen::pageSDict->append(baseName,pd);
@@ -5865,7 +5927,7 @@ void addGroupListToTitle(OutputList &ol,Definition *d)
 
 #if 0
 /*!
- * Function converts Latin1 character to latex string representin the same
+ * Function converts Latin1 character to latex string representing the same
  * character.
  */
 static void latin1ToLatex(QTextStream &t,unsigned char c)
@@ -5941,7 +6003,7 @@ static void latin1ToLatex(QTextStream &t,unsigned char c)
 }
 
 /*!
- * Function converts Latin2 character to latex string representin the same
+ * Function converts Latin2 character to latex string representing the same
  * character.
  */
 static void latin2ToLatex(QTextStream &t,unsigned char c)
@@ -6054,149 +6116,76 @@ static void latin2ToLatex(QTextStream &t,unsigned char c)
 }
 #endif
 
-void filterLatexString(QTextStream &t,const char *str,
+void filterLatexString(FTextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem)
 {
-  if (str)
+  if (str==0) return;
+  const unsigned char *p=(const unsigned char *)str;
+  unsigned char c;
+  unsigned char pc='\0';
+  while (*p)
   {
-    const unsigned char *p=(const unsigned char *)str;
-    unsigned char c;
-    unsigned char pc='\0';
-    while (*p)
+    c=*p++;
+
+    if (insidePre)
     {
-      c=*p++;
-
-      if (insidePre)
+      switch(c)
       {
-        switch(c)
-        {
-          case '\\': t << "\\(\\backslash\\)"; break;
-          case '{':  t << "\\{"; break;
-          case '}':  t << "\\}"; break;
-          case '_':  t << "\\_"; break;
-          default: 
-                     t << (char)c;
-        }
+        case '\\': t << "\\(\\backslash\\)"; break;
+        case '{':  t << "\\{"; break;
+        case '}':  t << "\\}"; break;
+        case '_':  t << "\\_"; break;
+        default: 
+                   t << (char)c;
       }
-      else
-      {
-        switch(c)
-        {
-          case '#':  t << "\\#";           break;
-          case '$':  t << "\\$";           break;
-          case '%':  t << "\\%";           break;
-          case '^':  t << "$^\\wedge$";    break;
-          case '&':  t << "\\&";           break;
-          case '*':  t << "$\\ast$";       break;
-          case '_':  t << "\\_"; 
-                     if (!insideTabbing) t << "\\-";  
-                     break;
-          case '{':  t << "\\{";           break;
-          case '}':  t << "\\}";           break;
-          case '<':  t << "$<$";           break;
-          case '>':  t << "$>$";           break;
-          case '|':  t << "$|$";           break;
-          case '~':  t << "$\\sim$";       break;
-          case '[':  if (Config_getBool("PDF_HYPERLINKS") || insideItem) 
-                       t << "\\mbox{[}"; 
-                     else
-                       t << "[";
-                     break;
-          case ']':  if (pc=='[') t << "$\\,$";
-                       if (Config_getBool("PDF_HYPERLINKS") || insideItem)
-                         t << "\\mbox{]}";
-                       else
-                         t << "]";             
-                     break;
-          case '-':  t << "-\\/";
-                     break;
-          case '\\': if (*p=='<') 
-                     { t << "$<$"; p++; }
-                     else if (*p=='>')
-                     { t << "$>$"; p++; } 
-                     else  
-                     { t << "$\\backslash$"; }
-                     break;           
-          case '"':  { t << "\\char`\\\"{}"; }
-                     break;
-
-          default:   
-                     t << (char)c;
-#if 0
-                     {
-                       // Some languages use wide characters
-                       if (isJapanese || isKorean || isChinese || isSerbian)
-                       { 
-                         if (c>=128) 
-                         {
-                           t << (char)c;
-                           if (*p)  
-                           {
-                             c = *p++;
-                             t << (char)c;
-                           }
-                         }
-                         else // ascii char => see if we can insert a hypenation hint
-                         {
-                           if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                           t << (char)c;    
-                         } 
-                       }
-                       else if (isCzech || isRussian || isUkrainian || isSlovene)
-                       {
-                         if (c>=128)
-                         {
-                           t << (char)c;
-                         }
-                         else // ascii char => see if we can insert a hypenation hint
-                         {
-                           if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                           t << (char)c;
-                         }
-                       }
-                       else if (isGreek)
-                       {
-                         if (c<128)
-                         {
-                           t << "\\textlatin{" << (char)c << "}";
-                         }
-                         else
-                         {
-                           t << (char)c;
-                         }
-                       }
-                       else if (isLatin2)
-                       {
-                         if (c>=128)
-                         {
-                           latin2ToLatex(t,c);
-                         }
-                         else
-                         { 
-                           // see if we can insert an hyphenation hint
-                           if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                           t << (char)c;
-                         }
-                       }
-                       else // another language => assume latin1 charset
-                       {
-                         if (c>=128)
-                         {
-                           latin1ToLatex(t,c);
-                         }
-                         else
-                         { 
-                           // see if we can insert an hyphenation hint
-                           if (isupper(c) && islower(pc) && !insideTabbing) t << "\\-";
-                           t << (char)c;
-                         }
-                       }
-                     }
-#endif
-        }
-      }
-      pc = c;
     }
+    else
+    {
+      switch(c)
+      {
+        case '#':  t << "\\#";           break;
+        case '$':  t << "\\$";           break;
+        case '%':  t << "\\%";           break;
+        case '^':  t << "$^\\wedge$";    break;
+        case '&':  t << "\\&";           break;
+        case '*':  t << "$\\ast$";       break;
+        case '_':  t << "\\_"; 
+                   if (!insideTabbing) t << "\\-";  
+                   break;
+        case '{':  t << "\\{";           break;
+        case '}':  t << "\\}";           break;
+        case '<':  t << "$<$";           break;
+        case '>':  t << "$>$";           break;
+        case '|':  t << "$|$";           break;
+        case '~':  t << "$\\sim$";       break;
+        case '[':  if (Config_getBool("PDF_HYPERLINKS") || insideItem) 
+                     t << "\\mbox{[}"; 
+                   else
+                     t << "[";
+                   break;
+        case ']':  if (pc=='[') t << "$\\,$";
+                     if (Config_getBool("PDF_HYPERLINKS") || insideItem)
+                       t << "\\mbox{]}";
+                     else
+                       t << "]";             
+                   break;
+        case '-':  t << "-\\/";
+                   break;
+        case '\\': if (*p=='<') 
+                   { t << "$<$"; p++; }
+                   else if (*p=='>')
+                   { t << "$>$"; p++; } 
+                   else  
+                   { t << "$\\backslash$"; }
+                   break;           
+        case '"':  { t << "\\char`\\\"{}"; }
+                   break;
+
+        default:   
+                   t << (char)c;
+      }
+    }
+    pc = c;
   }
 }
 
@@ -6401,7 +6390,7 @@ g_lang2extMap[] =
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
 {
-  //getLanguageFromFileName("dummy"); // force initializion of the g_extLookup map
+  //getLanguageFromFileName("dummy"); // force initialization of the g_extLookup map
   const Lang2ExtMap *p = g_lang2extMap;
   QCString langName = language.lower();
   while (p->langName)
@@ -6552,23 +6541,24 @@ bool checkIfTypedef(Definition *scope,FileDef *fileScope,const char *n)
 }
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
-    const QString &doc,const QCString &fileName,int lineNr)
+    const QCString &doc,const QCString &fileName,int lineNr)
 {
-  QString result;
-  if (doc.isEmpty()) return result.data();
-  QTextStream t(&result,IO_WriteOnly);
+  QGString s;
+  if (doc.isEmpty()) return s.data();
+  FTextStream t(&s);
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE);
   TextDocVisitor *visitor = new TextDocVisitor(t);
   root->accept(visitor);
   delete visitor;
   delete root;
+  QCString result = s.data();
   int i=0;
   if (result.length()>80)
   {
     for (i=80;i<100;i++) // search for nice truncation point
     {
-      if (result.at(i).isSpace() || 
+      if (isspace(result.at(i)) || 
           result.at(i)==',' || 
           result.at(i)=='.' || 
           result.at(i)=='?')
@@ -6662,6 +6652,8 @@ static QCString replaceAliasArgument(const QCString &aliasValue,int paramNum,
     }
   }
   result+=aliasValue.right(aliasValue.length()-p);
+  result = substitute(result,"\\{","{");
+  result = substitute(result,"\\}","}");
   result = expandAliasRec(substitute(result,"\\,",","));
   //printf("replaceAliasArgument('%s',%d,'%s')->%s\n",
   //    aliasValue.data(),paramNum,paramValue.data(),result.data());
@@ -6705,12 +6697,22 @@ QCString extractAliasArgs(const QCString &args,int pos)
 {
   int i;
   int bc=0;
+  char prevChar=0;
   if (args.at(pos)=='{') // alias has argument
   {
     for (i=pos;i<(int)args.length();i++)
     {
-      if (args.at(i)=='{') bc++;
-      if (args.at(i)=='}') bc--;
+      if (prevChar!='\\')
+      {
+        if (args.at(i)=='{') bc++;
+        if (args.at(i)=='}') bc--;
+        prevChar=args.at(i);
+      }
+      else
+      {
+        prevChar=0;
+      }
+
       if (bc==0) 
       {
         //printf("extractAliasArgs('%s')->'%s'\n",args.data(),args.mid(pos+1,i-pos-1).data());
@@ -6964,9 +6966,9 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList)
 #else                // unix
         QRegExp re(pattern,TRUE,TRUE);  // case sensitive match
 #endif
-        found = found || re.match(fi.fileName())!=-1 || 
-                         re.match(fi.filePath())!=-1 ||
-                         re.match(fi.absFilePath())!=-1;
+        found = found || re.match(fi.fileName().data())!=-1 || 
+                         re.match(fi.filePath().data())!=-1 ||
+                         re.match(fi.absFilePath().data())!=-1;
         //printf("Matching `%s' against pattern `%s' found=%d\n",
         //    fi->fileName().data(),pattern.data(),found);
       }

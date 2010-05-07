@@ -64,8 +64,9 @@ public:
     void sort();
 
     static QStringList split( const QString &sep, const QString &str, bool allowEmptyEntries = FALSE );
-    static QStringList split(  const QChar &sep, const QString &str, bool allowEmptyEntries = FALSE );
-    static QStringList split(  const QRegExp &sep, const QString &str, bool allowEmptyEntries = FALSE );
+    static QStringList split( const QCString &sep, const QCString &str, bool allowEmptyEntries = FALSE );
+    static QStringList split( const QChar &sep, const QString &str, bool allowEmptyEntries = FALSE );
+    static QStringList split( const QRegExp &sep, const QString &str, bool allowEmptyEntries = FALSE );
     QString join( const QString &sep ) const;
 
     QStringList grep( const QString &str, bool cs = TRUE ) const;

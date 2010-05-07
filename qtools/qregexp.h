@@ -39,7 +39,7 @@
 #define QREGEXP_H
 
 #ifndef QT_H
-#include "qstring.h"
+#include "qcstring.h"
 #endif // QT_H
 
 
@@ -47,11 +47,11 @@ class Q_EXPORT QRegExp
 {
 public:
     QRegExp();
-    QRegExp( const QString &, bool caseSensitive=TRUE, bool wildcard=FALSE );
+    QRegExp( const QCString &, bool caseSensitive=TRUE, bool wildcard=FALSE );
     QRegExp( const QRegExp & );
    ~QRegExp();
     QRegExp    &operator=( const QRegExp & );
-    QRegExp    &operator=( const QString &pattern );
+    QRegExp    &operator=( const QCString &pattern );
 
     bool	operator==( const QRegExp & )  const;
     bool	operator!=( const QRegExp &r ) const
@@ -66,22 +66,22 @@ public:
     bool	wildcard()	const	{ return wc; }
     void	setWildcard( bool );
 
-    QString	pattern()	const	{ return rxstring; }
+    QCString	pattern()	const	{ return rxstring; }
     // ### in Qt 3.0, provide a real implementation
-    void	setPattern( const QString& pattern )
+    void	setPattern( const QCString& pattern )
 					{ operator=( pattern ); }
 
-    int		match( const QString &str, int index=0, int *len=0,
+    int		match( const QCString &str, int index=0, int *len=0,
 		       bool indexIsStart = TRUE ) const;
-    int		find( const QString& str, int index )
+    int		find( const QCString& str, int index )
 					{ return match( str, index ); }
 
 protected:
     void	compile();
-    const QChar *matchstr( uint *, const QChar *, uint, const QChar * ) const;
+    const char *matchstr( uint *, const char *, uint, const char * ) const;
 
 private:
-    QString	rxstring;			// regular expression pattern
+    QCString	rxstring;			// regular expression pattern
     uint	*rxdata;			// compiled regexp pattern
     int		error;				// error status
     bool	cs;				// case sensitive

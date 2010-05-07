@@ -217,10 +217,10 @@ class LatexGenerator : public OutputGenerator
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const char *);
-    void endParameterType() {}
-    void startParameterName(bool) {}
-    void endParameterName(bool,bool,bool) {}
-    void startParameterList(bool) {}
+    void endParameterType();
+    void startParameterName(bool);
+    void endParameterName(bool,bool,bool);
+    void startParameterList(bool);
     void endParameterList() {}
 
     void startConstraintList(const char *);
