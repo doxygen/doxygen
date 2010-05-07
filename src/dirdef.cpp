@@ -9,6 +9,7 @@
 #include "message.h"
 #include "dot.h"
 #include "layout.h"
+#include "ftextstream.h"
 
 //----------------------------------------------------------------------
 // method implementation
@@ -662,7 +663,7 @@ DirDef *DirDef::mergeDirectoryInTree(const QCString &path)
   return dir;
 }
 
-void DirDef::writeDepGraph(QTextStream &t)
+void DirDef::writeDepGraph(FTextStream &t)
 {
     writeDotDirDepGraph(t,this);
 }

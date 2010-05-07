@@ -1038,8 +1038,8 @@ bool QDir::match( const QStringList &filters, const QString &fileName )
     QStringList::ConstIterator sit = filters.begin();
     bool matched = FALSE;
     for ( ; sit != filters.end(); ++sit ) {
-	QRegExp regexp( *sit, FALSE, TRUE );
-	if ( regexp.match( fileName ) != -1 ) {
+	QRegExp regexp( (*sit).data(), FALSE, TRUE );
+	if ( regexp.match( fileName.data() ) != -1 ) {
 	    matched = TRUE;
 	    break;
 	}

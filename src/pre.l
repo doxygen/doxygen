@@ -1500,7 +1500,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  if ((g_includeStack.isEmpty() || g_curlyCount>0) &&
 					      g_macroExpansion &&
 					      (def=g_fileDefineDict->find(yytext)) &&
-				              macroIsAccessible(def) &&
+				              (def->isPredefined || macroIsAccessible(def)) &&
 					      (!g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
@@ -1509,7 +1509,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    g_defArgsStr=yytext;
 					    if (def->nargs==-1) // no function macro
 					    {
-					      QCString result = expandMacro(g_defArgsStr);
+					      QCString result = def->isPredefined ? def->definition : expandMacro(g_defArgsStr);
 					      outputArray(result,result.length());
 					    }
 					    else // zero or more arguments
@@ -1525,19 +1525,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <CopyLine>{ID}				{
                                           Define *def=0;
-					  //printf("Search for define %s\n",yytext);
   					  if ((g_includeStack.isEmpty() || g_curlyCount>0) && 
 					      g_macroExpansion &&
 					      (def=g_fileDefineDict->find(yytext)) &&
 					      def->nargs==-1 &&
-				              macroIsAccessible(def) &&
+				              (def->isPredefined || macroIsAccessible(def)) &&
 					      (!g_expandOnlyPredef || def->isPredefined)
 					     )
 					  {
-					    //printf("Found it!\n");
-                                            QCString name=yytext;
-					    QCString result=expandMacro(name); 
-					    //printf("result=`%s'\n",result.data());
+					    QCString result=def->isPredefined ? def->definition : expandMacro(yytext); 
 					    outputArray(result,result.length());
 					  }
 					  else

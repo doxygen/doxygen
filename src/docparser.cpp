@@ -70,15 +70,15 @@ static const char *sectionLevelToName[] =
 
 // Parser state: global variables during a call to validatingParseDoc
 static Definition *           g_scope;
-static QString                g_context;
+static QCString                g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
 static QStack<DocNode>        g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
 static QStack<DocStyleChange> g_initialStyleStack;
 static QList<Definition>      g_copyStack;
-static QString                g_fileName;
-static QString                g_relPath;
+static QCString                g_fileName;
+static QCString                g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
@@ -89,7 +89,7 @@ static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
 static QCString               g_searchUrl;
 
-static QString                g_includeFileText;
+static QCString                g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
 
@@ -97,15 +97,15 @@ static uint                   g_includeFileLength;
 struct DocParserContext
 {
   Definition *scope;
-  QString context;
+  QCString context;
   bool inSeeBlock;
   bool insideHtmlLink;
   QStack<DocNode> nodeStack;
   QStack<DocStyleChange> styleStack;
   QStack<DocStyleChange> initialStyleStack;
   QList<Definition> copyStack;
-  QString fileName;
-  QString relPath;
+  QCString fileName;
+  QCString relPath;
 
   bool         hasParamCommand;
   bool         hasReturnCommand;
@@ -116,7 +116,7 @@ struct DocParserContext
   SectionDict *sectionDict;
   QCString     searchUrl;
 
-  QString  includeFileText;
+  QCString  includeFileText;
   uint     includeFileOffset;
   uint     includeFileLength;
 
@@ -297,7 +297,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
   else if (ambig)
   {
     QCString text;
-    text.sprintf("Warning: image file name %s is ambigious.\n",fileName);
+    text.sprintf("Warning: image file name %s is ambiguous.\n",fileName);
     text+="Possible candidates:\n";
     text+=showFileDefMatches(Doxygen::imageNameDict,fileName);
     warn_doc_error(g_fileName,doctokenizerYYlineno,text);
@@ -322,7 +322,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QString &name,bool isParam)
+static void checkArgumentName(const QCString &name,bool isParam)
 {                
   if (!Config_getBool("WARN_IF_DOC_ERROR")) return;
   if (g_memberDef==0) return; // not a member
@@ -334,16 +334,16 @@ static void checkArgumentName(const QString &name,bool isParam)
 
   static QRegExp re("[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
   int p=0,i=0,l;
-  while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
+  while ((i=re.match(name.data(),p,&l))!=-1) // to handle @param x,y
   {
-    QString aName=name.mid(i,l);
+    QCString aName=name.mid(i,l);
     //printf("aName=`%s'\n",aName.data());
     ArgumentListIterator ali(*al);
     Argument *a;
     bool found=FALSE;
     for (ali.toFirst();(a=ali.current());++ali)
     {
-      QString argName = g_memberDef->isDefine() ? a->type : a->name;
+      QCString argName = g_memberDef->isDefine() ? a->type : a->name;
       argName=argName.stripWhiteSpace();
       //printf("argName=`%s'\n",argName.data());
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
@@ -358,10 +358,10 @@ static void checkArgumentName(const QString &name,bool isParam)
     if (!found && isParam)
     {
       //printf("member type=%d\n",memberDef->memberType());
-      QString scope=g_memberDef->getScopeString();
+      QCString scope=g_memberDef->getScopeString();
       if (!scope.isEmpty()) scope+="::"; else scope="";
-      QString inheritedFrom = "";
-      QString docFile = g_memberDef->docFile();
+      QCString inheritedFrom = "";
+      QCString docFile = g_memberDef->docFile();
       int docLine = g_memberDef->docLine();
       MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
       if (inheritedMd) // documentation was inherited
@@ -402,7 +402,7 @@ static void checkUndocumentedParams()
       bool found=FALSE;
       for (ali.toFirst();(a=ali.current());++ali)
       {
-        QString argName = g_memberDef->isDefine() ? a->type : a->name;
+        QCString argName = g_memberDef->isDefine() ? a->type : a->name;
         argName=argName.stripWhiteSpace();
         if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
         if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
@@ -418,14 +418,14 @@ static void checkUndocumentedParams()
       if (found)
       {
         bool first=TRUE;
-        QString errMsg=
+        QCString errMsg=
             "Warning: The following parameters of "+
-            QString(g_memberDef->qualifiedName()) + 
-            QString(argListToString(al.pointer())) +
+            QCString(g_memberDef->qualifiedName()) + 
+            QCString(argListToString(al.pointer())) +
             " are not documented:\n";
         for (ali.toFirst();(a=ali.current());++ali)
         {
-          QString argName = g_memberDef->isDefine() ? a->type : a->name;
+          QCString argName = g_memberDef->isDefine() ? a->type : a->name;
           argName=argName.stripWhiteSpace();
           if (getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python && argName=="self")
           { 
@@ -472,7 +472,7 @@ static void detectNoDocumentedParams()
   {
     LockingPtr<ArgumentList> al     = g_memberDef->argumentList();
     LockingPtr<ArgumentList> declAl = g_memberDef->declArgumentList();
-    QString returnType   = g_memberDef->typeString();
+    QCString returnType   = g_memberDef->typeString();
     bool isPython = getLanguageFromFileName(g_memberDef->getDefFileName())==SrcLangExt_Python;
 
     if (!g_memberDef->hasDocumentedParams() &&
@@ -551,15 +551,15 @@ static void detectNoDocumentedParams()
 //---------------------------------------------------------------------------
 
 /*! Strips known html and tex extensions from \a text. */
-static QString stripKnownExtensions(const char *text)
+static QCString stripKnownExtensions(const char *text)
 {
-  QString result=text;
+  QCString result=text;
   if (result.right(4)==".tex")
   {
     result=result.left(result.length()-4);
   }
   else if (result.right(Doxygen::htmlFileExtension.length())==
-         QString(Doxygen::htmlFileExtension)) 
+         QCString(Doxygen::htmlFileExtension)) 
   {
     result=result.left(result.length()-Doxygen::htmlFileExtension.length());
   }
@@ -657,15 +657,15 @@ static bool insideTable(DocNode *n)
  *  @retval FALSE if name was not found.
  */
 static bool findDocsForMemberOrCompound(const char *commandName,
-                                 QString *pDoc,
-                                 QString *pBrief,
+                                 QCString *pDoc,
+                                 QCString *pBrief,
                                  Definition **pDef)
 {
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
   *pBrief="";
   *pDef=0;
-  QString cmdArg=substitute(commandName,"#","::");
+  QCString cmdArg=substitute(commandName,"#","::");
   int l=cmdArg.length();
   if (l==0) return FALSE;
 
@@ -689,8 +689,8 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     }
   }
 
-  QString name=removeRedundantWhiteSpace(cmdArg.left(funcStart).latin1());
-  QString args=cmdArg.right(l-funcStart);
+  QCString name=removeRedundantWhiteSpace(cmdArg.left(funcStart));
+  QCString args=cmdArg.right(l-funcStart);
 
   // try if the link is to a member
   MemberDef    *md=0;
@@ -700,9 +700,9 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   GroupDef     *gd=0;
   PageDef      *pd=0;
   bool found = getDefs(
-      g_context.find('.')==-1?g_context.latin1():"", // `find('.') is a hack to detect files
-      name.latin1(),
-      args.isEmpty()?0:args.latin1(),
+      g_context.find('.')==-1?g_context.data():"", // `find('.') is a hack to detect files
+      name.data(),
+      args.isEmpty()?0:args.data(),
       md,cd,fd,nd,gd,FALSE,0,TRUE);
   //printf("found=%d context=%s name=%s\n",found,g_context.data(),name.data());
   if (found && md)
@@ -717,7 +717,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   int scopeOffset=g_context.length();
   do // for each scope
   {
-    QString fullName=cmdArg;
+    QCString fullName=cmdArg;
     if (scopeOffset>0)
     {
       fullName.prepend(g_context.left(scopeOffset)+"::");
@@ -790,10 +790,10 @@ static bool defaultHandleToken(DocNode *parent,int tok,
 
 
 static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
-                               const QString &cmdName)
+                               const QCString &cmdName)
 {
   DBG(("handleStyleArgument(%s)\n",cmdName.data()));
-  QString tokenName = g_token->name;
+  QCString tokenName = g_token->name;
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
   {
@@ -996,16 +996,16 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
   Definition *compound=0;
   MemberDef  *member=0;
-  QString name = linkToText(g_token->name,TRUE);
+  QCString name = linkToText(g_token->name,TRUE);
   int len = g_token->name.length();
   ClassDef *cd=0;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameDict,g_fileName,ambig);
   //printf("handleLinkedWord(%s) g_context=%s\n",name.data(),g_context.data());
   if (!g_insideHtmlLink && 
-      (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd)
+      (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!g_context.isEmpty() &&  // also try with global scope
-           resolveRef("",g_token->name,g_inSeeBlock,&compound,&member))
+           resolveRef("",g_token->name,g_inSeeBlock,&compound,&member,FALSE,0,TRUE))
       )
      )
   {
@@ -1116,7 +1116,7 @@ static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children
   }
   DBG(("\n"));
 reparsetoken:
-  QString tokenName = g_token->name;
+  QCString tokenName = g_token->name;
   switch (tok)
   {
     case TK_COMMAND: 
@@ -1432,7 +1432,7 @@ handlepara:
 
 //---------------------------------------------------------------------------
 
-DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
+DocSymbol::SymType DocSymbol::decodeSymbol(const QCString &symName,char *letter)
 {
   int l=symName.length();
   DBG(("decodeSymbol(%s) l=%d\n",symName.data(),l));
@@ -1501,7 +1501,7 @@ DocSymbol::SymType DocSymbol::decodeSymbol(const QString &symName,char *letter)
 //---------------------------------------------------------------------------
 
 static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
-                                    const QString &doc)
+                                    const QCString &doc)
 {
   int retval = RetVal_OK;
 
@@ -1540,7 +1540,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 //---------------------------------------------------------------------------
 
-static void readTextFileByName(const QString &file,QString &text)
+static void readTextFileByName(const QCString &file,QCString &text)
 {
   bool ambig;
   FileDef *fd;
@@ -1550,7 +1550,7 @@ static void readTextFileByName(const QString &file,QString &text)
   }
   else if (ambig)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included file name %s is ambigious"
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included file name %s is ambiguous"
            "Possible candidates:\n%s",file.data(),
            showFileDefMatches(Doxygen::exampleNameDict,file).data()
           );
@@ -1564,7 +1564,7 @@ static void readTextFileByName(const QString &file,QString &text)
 
 //---------------------------------------------------------------------------
 
-DocWord::DocWord(DocNode *parent,const QString &word) : 
+DocWord::DocWord(DocNode *parent,const QCString &word) : 
       m_parent(parent), m_word(word) 
 {
   //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
@@ -1576,9 +1576,9 @@ DocWord::DocWord(DocNode *parent,const QString &word) :
 
 //---------------------------------------------------------------------------
 
-DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
-                  const QString &ref,const QString &file,
-                  const QString &anchor,const QString &tooltip) : 
+DocLinkedWord::DocLinkedWord(DocNode *parent,const QCString &word,
+                  const QCString &ref,const QCString &file,
+                  const QCString &anchor,const QCString &tooltip) : 
       m_parent(parent), m_word(word), m_ref(ref), 
       m_file(file), m_relPath(g_relPath), m_anchor(anchor),
       m_tooltip(tooltip)
@@ -1592,7 +1592,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QString &word,
 
 //---------------------------------------------------------------------------
 
-DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor) 
+DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor) 
   : m_parent(parent)
 {
   if (id.isEmpty())
@@ -1628,9 +1628,9 @@ DocAnchor::DocAnchor(DocNode *parent,const QString &id,bool newAnchor)
 
 //---------------------------------------------------------------------------
 
-DocVerbatim::DocVerbatim(DocNode *parent,const QString &context,
-    const QString &text, Type t,bool isExample,
-    const QString &exampleFile) 
+DocVerbatim::DocVerbatim(DocNode *parent,const QCString &context,
+    const QCString &text, Type t,bool isExample,
+    const QCString &exampleFile) 
   : m_parent(parent), m_context(context), m_text(text), m_type(t),
     m_isExample(isExample), m_exampleFile(exampleFile), m_relPath(g_relPath) 
 {
@@ -1787,7 +1787,7 @@ void DocIncOperator::parse()
 
 void DocCopy::parse()
 {
-  QString doc,brief;
+  QCString doc,brief;
   Definition *def;
   if (findDocsForMemberOrCompound(m_link,&doc,&brief,&def))
   {
@@ -1882,7 +1882,7 @@ DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
 
 bool DocXRefItem::parse()
 {
-  QString listName;
+  QCString listName;
   RefList *refList = Doxygen::xrefLists->find(m_key); 
   if (refList && 
       (
@@ -1929,7 +1929,7 @@ bool DocXRefItem::parse()
 DocFormula::DocFormula(DocNode *parent,int id) :
       m_parent(parent), m_relPath(g_relPath)
 {
-  QString formCmd;
+  QCString formCmd;
   formCmd.sprintf("\\form#%d",id);
   Formula *formula=Doxygen::formulaNameDict[formCmd];
   if (formula)
@@ -2096,7 +2096,7 @@ endsecreflist:
 
 //---------------------------------------------------------------------------
 
-DocInternalRef::DocInternalRef(DocNode *parent,const QString &ref) 
+DocInternalRef::DocInternalRef(DocNode *parent,const QCString &ref) 
   : m_parent(parent), m_relPath(g_relPath)
 {
   int i=ref.find('#');
@@ -2147,7 +2147,7 @@ void DocInternalRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocRef::DocRef(DocNode *parent,const QString &target,const QString &context) : 
+DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) : 
    m_parent(parent), m_refToSection(FALSE), m_refToAnchor(FALSE)
 {
   Definition  *compound = 0;
@@ -2289,7 +2289,7 @@ void DocRef::parse()
 
 //---------------------------------------------------------------------------
 
-DocLink::DocLink(DocNode *parent,const QString &target) : 
+DocLink::DocLink(DocNode *parent,const QCString &target) : 
       m_parent(parent)
 {
   Definition *compound;
@@ -2326,9 +2326,9 @@ DocLink::DocLink(DocNode *parent,const QString &target) :
 }
 
 
-QString DocLink::parse(bool isJavaLink,bool isXmlLink)
+QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
 {
-  QString result;
+  QCString result;
   g_nodeStack.push(this);
   DBG(("DocLink::parse() start\n"));
 
@@ -2369,7 +2369,7 @@ QString DocLink::parse(bool isJavaLink,bool isXmlLink)
         case TK_WORD: 
           if (isJavaLink) // special case to detect closing }
           {
-            QString w = g_token->name;
+            QCString w = g_token->name;
             int p;
             if (w=="}")
             {
@@ -2417,7 +2417,7 @@ endlink:
 
 //---------------------------------------------------------------------------
 
-DocDotFile::DocDotFile(DocNode *parent,const QString &name,const QString &context) : 
+DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &context) : 
       m_parent(parent), m_name(name), m_relPath(g_relPath), m_context(context)
 {
 }
@@ -2480,7 +2480,7 @@ void DocDotFile::parse()
   }
   else if (ambig)
   {
-    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included dot file name %s is ambigious.\n"
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: included dot file name %s is ambiguous.\n"
            "Possible candidates:\n%s",m_name.data(),
            showFileDefMatches(Doxygen::exampleNameDict,m_name).data()
           );
@@ -2499,7 +2499,7 @@ void DocDotFile::parse()
 
 //---------------------------------------------------------------------------
 
-DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QString &name,Type t) : 
+DocImage::DocImage(DocNode *parent,const HtmlAttribList &attribs,const QCString &name,Type t) : 
       m_parent(parent), m_attribs(attribs), m_name(name), 
       m_type(t), m_relPath(g_relPath)
 {
@@ -3314,7 +3314,7 @@ int DocHtmlDescTitle::parse()
       {
         case TK_COMMAND: 
           {
-            QString cmdName=g_token->name;
+            QCString cmdName=g_token->name;
             bool isJavaLink=FALSE;
             switch (Mappers::cmdMapper->map(cmdName))
             {
@@ -3370,7 +3370,7 @@ int DocHtmlDescTitle::parse()
                       doctokenizerYYsetStatePara();
                       DocLink *lnk = new DocLink(this,g_token->name);
                       m_children.append(lnk);
-                      QString leftOver = lnk->parse(isJavaLink);
+                      QCString leftOver = lnk->parse(isJavaLink);
                       if (!leftOver.isEmpty())
                       {
                         m_children.append(new DocWord(this,leftOver));
@@ -3831,7 +3831,7 @@ void DocTitle::parse()
   ASSERT(n==this);
 }
 
-void DocTitle::parseFromString(const QString &text)
+void DocTitle::parseFromString(const QCString &text)
 {
   m_children.append(new DocWord(this,text));
 }
@@ -3903,7 +3903,7 @@ int DocSimpleSect::parseRcs()
   m_title = new DocTitle(this);
   m_title->parseFromString(g_token->name);
 
-  QString text = g_token->text;
+  QCString text = g_token->text;
   docParserPushContext(); // this will create a new g_token
   internalValidatingParseDoc(this,m_children,text);
   docParserPopContext(); // this will restore the old g_token
@@ -3952,7 +3952,7 @@ int DocSimpleSect::parseXml()
   return retval; 
 }
 
-void DocSimpleSect::appendLinkWord(const QString &word)
+void DocSimpleSect::appendLinkWord(const QCString &word)
 {
   DocPara *p;
   if (m_children.isEmpty() || m_children.last()->kind()!=DocNode::Kind_Para)
@@ -4001,7 +4001,7 @@ QCString DocSimpleSect::typeString() const
 
 //--------------------------------------------------------------------------
 
-int DocParamList::parse(const QString &cmdName)
+int DocParamList::parse(const QCString &cmdName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamList::parse() start\n"));
@@ -4055,7 +4055,7 @@ endparamlist:
   return retval;
 }
 
-int DocParamList::parseXml(const QString &paramName)
+int DocParamList::parseXml(const QCString &paramName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamList::parseXml() start\n"));
@@ -4125,7 +4125,7 @@ int DocParamList::parseXml(const QString &paramName)
 
 //--------------------------------------------------------------------------
 
-int DocParamSect::parse(const QString &cmdName,bool xmlContext, Direction d)
+int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
 {
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
@@ -4191,7 +4191,7 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
-int DocPara::handleParamSection(const QString &cmdName,
+int DocPara::handleParamSection(const QCString &cmdName,
                                 DocParamSect::Type t,
                                 bool xmlContext=FALSE,
                                 int direction=DocParamSect::Unspecified)
@@ -4235,7 +4235,7 @@ int DocPara::handleXRefItem()
   return retval;
 }
 
-void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type t)
+void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
   DBG(("handleIncludeOperator(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
@@ -4286,7 +4286,7 @@ void DocPara::handleIncludeOperator(const QString &cmdName,DocIncOperator::Type 
   op->parse();
 }
 
-void DocPara::handleImage(const QString &cmdName)
+void DocPara::handleImage(const QCString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -4310,7 +4310,7 @@ void DocPara::handleImage(const QString &cmdName)
     return;
   }
   DocImage::Type t;
-  QString imgType = g_token->name.lower();
+  QCString imgType = g_token->name.lower();
   if      (imgType=="html")  t=DocImage::Html;
   else if (imgType=="latex") t=DocImage::Latex;
   else if (imgType=="rtf")   t=DocImage::Rtf;
@@ -4336,7 +4336,7 @@ void DocPara::handleImage(const QString &cmdName)
   img->parse();
 }
 
-void DocPara::handleDotFile(const QString &cmdName)
+void DocPara::handleDotFile(const QCString &cmdName)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -4354,13 +4354,13 @@ void DocPara::handleDotFile(const QString &cmdName)
         tokToString(tok),cmdName.data());
     return;
   }
-  QString name = g_token->name;
+  QCString name = g_token->name;
   DocDotFile *df = new DocDotFile(this,name,g_context);
   m_children.append(df);
   df->parse();
 }
 
-void DocPara::handleLink(const QString &cmdName,bool isJavaLink)
+void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 {
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -4380,14 +4380,14 @@ void DocPara::handleLink(const QString &cmdName,bool isJavaLink)
   doctokenizerYYsetStatePara();
   DocLink *lnk = new DocLink(this,g_token->name);
   m_children.append(lnk);
-  QString leftOver = lnk->parse(isJavaLink);
+  QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
     m_children.append(new DocWord(this,leftOver));
   }
 }
 
-void DocPara::handleRef(const QString &cmdName)
+void DocPara::handleRef(const QCString &cmdName)
 {
   DBG(("handleRef(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
@@ -4414,7 +4414,7 @@ endref:
 }
 
 
-void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
+void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
 {
   DBG(("handleInclude(%s)\n",cmdName.data()));
   int tok=doctokenizerYYlex();
@@ -4444,7 +4444,7 @@ void DocPara::handleInclude(const QString &cmdName,DocInclude::Type t)
   inc->parse();
 }
 
-void DocPara::handleSection(const QString &cmdName)
+void DocPara::handleSection(const QCString &cmdName)
 {
   // get the argument of the section command.
   int tok=doctokenizerYYlex();
@@ -4484,7 +4484,7 @@ int DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
 // For XML tags whose content is stored in attributes rather than
 // contained within the element, we need a way to inject the attribute
 // text into the current paragraph.
-bool DocPara::injectToken(int tok,const QString &tokText) 
+bool DocPara::injectToken(int tok,const QCString &tokText) 
 {
   g_token->name = tokText;
   return defaultHandleToken(this,tok,m_children);
@@ -4532,7 +4532,7 @@ void DocPara::handleInheritDoc()
 }
 
 
-int DocPara::handleCommand(const QString &cmdName)
+int DocPara::handleCommand(const QCString &cmdName)
 {
   DBG(("handleCommand(%s)\n",cmdName.data()));
   int retval = RetVal_OK;
@@ -4925,7 +4925,7 @@ int DocPara::handleCommand(const QString &cmdName)
 
 static bool findAttribute(const HtmlAttribList &tagHtmlAttribs, 
                           const char *attrName, 
-                          QString *result) 
+                          QCString *result) 
 {
 
   HtmlAttribListIterator li(tagHtmlAttribs);
@@ -4941,7 +4941,7 @@ static bool findAttribute(const HtmlAttribList &tagHtmlAttribs,
   return FALSE;
 }
 
-int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tagHtmlAttribs)
+int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs)
 {
   DBG(("handleHtmlStartTag(%s,%d)\n",tagName.data(),tagHtmlAttribs.count()));
   int retval=RetVal_OK;
@@ -5136,7 +5136,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
     case XML_PARAM:
     case XML_TYPEPARAM:
       {
-        QString paramName;
+        QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
           retval = handleParamSection(paramName,
@@ -5152,7 +5152,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
     case XML_PARAMREF:
     case XML_TYPEPARAMREF:
       {
-        QString paramName;
+        QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
           //printf("paramName=%s\n",paramName.data());
@@ -5169,7 +5169,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case XML_EXCEPTION:
       {
-        QString exceptName;
+        QCString exceptName;
         if (findAttribute(tagHtmlAttribs,"cref",&exceptName))
         {
           retval = handleParamSection(exceptName,DocParamSect::Exception,TRUE);
@@ -5212,7 +5212,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       // C# specification is extremely vague about this (but what else 
       // can we expect from Microsoft...)
       {
-        QString cref;
+        QCString cref;
         //printf("XML_SEE: empty tag=%d\n",g_token->emptyTag);
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
@@ -5232,7 +5232,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
             doctokenizerYYsetStatePara();
             DocLink *lnk = new DocLink(this,cref);
             m_children.append(lnk);
-            QString leftOver = lnk->parse(FALSE,TRUE);
+            QCString leftOver = lnk->parse(FALSE,TRUE);
             if (!leftOver.isEmpty())
             {
               m_children.append(new DocWord(this,leftOver));
@@ -5247,7 +5247,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case XML_SEEALSO:
       {
-        QString cref;
+        QCString cref;
         if (findAttribute(tagHtmlAttribs,"cref",&cref))
         {
           // Look for an existing "see" section
@@ -5279,7 +5279,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
       break;
     case XML_LIST:
       {
-        QString type;
+        QCString type;
         findAttribute(tagHtmlAttribs,"type",&type);
         DocHtmlList::Type listType = DocHtmlList::Unordered;
         if (type=="number")
@@ -5317,7 +5317,7 @@ int DocPara::handleHtmlStartTag(const QString &tagName,const HtmlAttribList &tag
   return retval;
 }
 
-int DocPara::handleHtmlEndTag(const QString &tagName)
+int DocPara::handleHtmlEndTag(const QCString &tagName)
 {
   DBG(("handleHtmlEndTag(%s)\n",tagName.data()));
   int tagId = Mappers::htmlTagMapper->map(tagName);
@@ -6220,8 +6220,8 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
 
   g_fileName = fileName;
   g_relPath = (!linkFromIndex && ctx) ? 
-               QString(relativePathToRoot(ctx->getOutputFileBase())) : 
-               QString("");
+               QCString(relativePathToRoot(ctx->getOutputFileBase())) : 
+               QCString("");
   //printf("ctx->name=%s relPath=%s\n",ctx->name().data(),g_relPath.data());
   g_memberDef = md;
   g_nodeStack.clear();

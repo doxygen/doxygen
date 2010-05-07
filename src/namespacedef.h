@@ -67,6 +67,7 @@ class NamespaceDef : public Definition
     void addMembersToMemberGroup();
     void distributeMemberGroupDocumentation();
     void findSectionsInDocumentation();
+    void sortMemberLists();
 
     virtual Definition *findInnerCompound(const char *name);
     void addInnerCompound(Definition *d);
@@ -117,6 +118,7 @@ class NamespaceDef : public Definition
     ClassSDict           *classSDict;
     NamespaceSDict       *namespaceSDict;
     bool                  m_subGrouping;
+    bool                  m_isCSharp;
 };
 
 class NamespaceList : public QList<NamespaceDef>

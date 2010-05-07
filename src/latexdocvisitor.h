@@ -24,15 +24,14 @@
 #include <qcstring.h>
 #include <qmap.h>
 
-class QTextStream;
+class FTextStream;
 class CodeOutputInterface;
-class QString;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+    LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                     const char *langExt,bool insideTabbing);
     
     //--------------------------------------
@@ -137,15 +136,15 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
     
     void filter(const char *str);
-    void startLink(const QString &ref,const QString &file,
-                   const QString &anchor);
-    void endLink(const QString &ref,const QString &file,
-                 const QString &anchor);
-    QString escapeMakeIndexChars(const char *s);
-    void startDotFile(const QString &fileName,const QString &width,
-                      const QString &height, bool hasCaption);
+    void startLink(const QCString &ref,const QCString &file,
+                   const QCString &anchor);
+    void endLink(const QCString &ref,const QCString &file,
+                 const QCString &anchor);
+    QCString escapeMakeIndexChars(const char *s);
+    void startDotFile(const QCString &fileName,const QCString &width,
+                      const QCString &height, bool hasCaption);
     void endDotFile(bool hasCaption);
-    void writeMscFile(const QString &fileName);
+    void writeMscFile(const QCString &fileName);
 
     void pushEnabled();
     void popEnabled();
@@ -154,7 +153,7 @@ class LatexDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    QTextStream &m_t;
+    FTextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_insideItem;

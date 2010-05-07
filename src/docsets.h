@@ -17,10 +17,9 @@
 #define DOCSETS_H
 
 #include "qtbc.h"
-#include <qtextstream.h>
 #include <qstrlist.h>
 #include "sortdict.h"
-
+#include "ftextstream.h"
 #include "index.h"
 
 class QFile;
@@ -56,7 +55,7 @@ class DocSets  : public IndexIntf
     void addStyleSheetFile(const char *) {}
 
   private:
-    void writeToken(QTextStream &t, const Definition *d,
+    void writeToken(FTextStream &t, const Definition *d,
                     const QCString &type, const QCString &lang,
                     const char *scope=0, const char *anchor=0,
                     const char *decl=0);
@@ -75,8 +74,8 @@ class DocSets  : public IndexIntf
     QCString indent();
     QFile *m_nf;
     QFile *m_tf;
-    QTextStream m_nts;
-    QTextStream m_tts;
+    FTextStream m_nts;
+    FTextStream m_tts;
     int m_dc;
     int m_id;
     QArray<bool> m_firstNode;

@@ -110,7 +110,7 @@ void writeInstallScript()
     t << "  }\n";
     t << "  elsif ( ! $quiet && $sub ne \"_doc\" && $sub ne \"_cgi\" )\n";
     t << "  {\n";
-    t << "    print \"Substituting $subst{$sub} for each occurence of tag file $sub\\n\"; \n";
+    t << "    print \"Substituting $subst{$sub} for each occurrence of tag file $sub\\n\"; \n";
     t << "  }\n";
     t << "}\n";
     t << "\n";

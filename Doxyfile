@@ -138,7 +138,7 @@ VERBATIM_HEADERS       = YES
 #---------------------------------------------------------------------------
 # configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
-ALPHABETICAL_INDEX     = NO
+ALPHABETICAL_INDEX     = YES
 COLS_IN_ALPHA_INDEX    = 5
 IGNORE_PREFIX          = 
 #---------------------------------------------------------------------------
@@ -173,7 +173,7 @@ QHG_LOCATION           =
 DISABLE_INDEX          = NO
 ENUM_VALUES_PER_LINE   = 4
 GENERATE_TREEVIEW      = YES
-USE_INLINE_TREES       = NO
+USE_INLINE_TREES       = YES
 TREEVIEW_WIDTH         = 250
 FORMULA_FONTSIZE       = 10
 SEARCHENGINE           = YES

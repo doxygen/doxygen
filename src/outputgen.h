@@ -19,7 +19,7 @@
 #define OUTPUTGEN_H
 
 #include "qtbc.h"
-#include <qtextstream.h>
+#include "ftextstream.h"
 #include <qbuffer.h>
 #include <qfile.h>
 #include <qstack.h>
@@ -287,12 +287,12 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual OutputGenerator *get(OutputType o) = 0;
     void startPlainFile(const char *name);
     void endPlainFile();
-    QCString getContents() const;
+    //QCString getContents() const;
     bool isEnabled() const { return active; }
     void pushGeneratorState();
     void popGeneratorState();
-    void setEncoding(const QCString &enc) { encoding = enc; }
-    virtual void postProcess(QByteArray &) { }
+    //void setEncoding(const QCString &enc) { encoding = enc; }
+    //virtual void postProcess(QByteArray &) { }
 
     virtual void printDoc(DocNode *,const char *langExt) = 0;
 
@@ -406,15 +406,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endConstraintList() = 0;
 
   protected:
-    QTextStream fs;
-    QByteArray a;
-    QBuffer b;
-    QTextStream t;
+    FTextStream t;
     QFile *file;
     QCString dir;
     bool active;
     QStack<bool> *genStack;
-    QString encoding;
 
   private:
     OutputGenerator(const OutputGenerator &o);

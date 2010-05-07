@@ -283,11 +283,13 @@ ClassDef *VariableContext::findVariable(const QCString &name)
 {
   if (name.isEmpty()) return 0;
   ClassDef *result = 0;
-  QListIterator<Scope> sli(m_scopes);
+  //QListIterator<Scope> sli(m_scopes);
   Scope *scope;
   QCString key = name;
   // search from inner to outer scope
-  for (sli.toLast();(scope=sli.current());--sli)
+  scope = m_scopes.last();
+  //for (sli.toLast();(scope=sli.current());--sli)
+  while (scope)
   {
     result = scope->find(key);
     if (result) 
@@ -295,6 +297,7 @@ ClassDef *VariableContext::findVariable(const QCString &name)
       DBG_CTX((stderr,"** findVariable(%s)=%p\n",name.data(),result));
       return result;
     }
+    scope = m_scopes.prev();
   }
   // nothing found -> also try the global scope
   result=m_globalScope.find(name);
@@ -835,7 +838,8 @@ static bool getLinkInScope(const QCString &c,  // scope
                            const QCString &m,  // member
 			   const char *memberText, // exact text
 			   CodeOutputInterface &ol,
-			   const char *text
+			   const char *text,
+			   bool varOnly=FALSE
 			  )
 {
   MemberDef    *md;
@@ -843,9 +847,9 @@ static bool getLinkInScope(const QCString &c,  // scope
   FileDef      *fd;
   NamespaceDef *nd;
   GroupDef     *gd;
-  //fprintf(stderr,"getLinkInScope: trying `%s'::`%s'\n",c.data(),m.data());
+  //fprintf(stderr,"getLinkInScope: trying `%s'::`%s' varOnly=%d\n",c.data(),m.data(),varOnly);
   if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,g_sourceFileDef) && 
-      md->isLinkable())
+      md->isLinkable() && (!varOnly || md->isVariable()))
   {
     if (g_exampleBlock)
     {
@@ -894,18 +898,19 @@ static bool getLinkInScope(const QCString &c,  // scope
 static bool getLink(const char *className,
                     const char *memberName,
 		    CodeOutputInterface &ol,
-		    const char *text=0)
+		    const char *text=0,
+		    bool varOnly=FALSE)
 {
   //printf("getLink(%s,%s) g_curClassName=%s\n",className,memberName,g_curClassName.data());
   QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
-  if (!getLinkInScope(c,m,memberName,ol,text))
+  if (!getLinkInScope(c,m,memberName,ol,text,varOnly))
   {
     if (!g_curClassName.isEmpty())
     {
       if (!c.isEmpty()) c.prepend("::");
       c.prepend(g_curClassName);
-      return getLinkInScope(c,m,memberName,ol,text);
+      return getLinkInScope(c,m,memberName,ol,text,varOnly);
     }
     return FALSE;
   }
@@ -913,7 +918,7 @@ static bool getLink(const char *className,
 }
 
 static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
-                                      bool typeOnly=FALSE)
+                                      bool typeOnly=FALSE,bool varOnly=FALSE)
 {
   int i=0;
   if (*clName=='~') // correct for matching negated values i.s.o. destructors.
@@ -953,7 +958,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
     //fprintf(stderr,"is found as a type %s\n",cd?cd->name().data():"<null>");
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
-      if (getLink(g_classScope,clName,ol,clName))
+      if (getLink(g_classScope,clName,ol,clName,varOnly))
       {
 	return;
       }
@@ -1031,7 +1036,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
 	  md=0; // variable not accessible
 	}
       }
-      if (md)
+      if (md && (!varOnly || md->isVariable()))
       {
         //fprintf(stderr,"is a global md=%p g_currentDefinition=%s linkable=%d\n",md,g_currentDefinition?g_currentDefinition->name().data():"<none>",md->isLinkable());
 	if (md->isLinkable())
@@ -1890,7 +1895,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					  {
 					    if (ambig) // multiple input files match the name
 					    {
-					      //printf("===== yes %s is ambigious\n",yytext);
+					      //printf("===== yes %s is ambiguous\n",yytext);
 					      QCString name = convertToQCString(QDir::cleanDirPath(yytext));
 					      if (!name.isEmpty() && g_sourceFileDef)
 					      {
@@ -2227,6 +2232,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
   					}
 <UsingName>{ID}("::"{ID})*		{ addUsingDirective(yytext);
  					  generateClassOrGlobalLink(*g_code,yytext);
+                                          DBG_CTX((stderr,"** scope stack push CLASSBLOCK\n"));
+  					  g_scopeStack.push(CLASSBLOCK);
+					  pushScope(yytext);
 					  BEGIN(Body);
                                         }
 <UsingName>\n				{ codifyLines(yytext); BEGIN(Body); }
@@ -2372,7 +2380,7 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					}
 <Body>{SCOPENAME}/{BN}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
 					  addType();
-					  generateClassOrGlobalLink(*g_code,yytext/*,TRUE*/);
+					  generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
   					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()

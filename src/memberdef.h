@@ -362,6 +362,9 @@ class MemberDef : public Definition
     void unlock() const;
     void saveToDisk() const;
     void makeResident() const;
+    void _computeLinkableInProject();
+    void _computeIsConstructor();
+    void _computeIsDestructor();
 
     static int s_indentLevel;
     // disable copying of member defs
@@ -376,6 +379,9 @@ class MemberDef : public Definition
     int m_cacheHandle;
     off_t m_storagePos;     // location where the item is stored in file (if impl==0)
     bool m_flushPending;
+    uchar m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE
+    uchar m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
+    uchar m_isDestructorCached;  // 0 = not cached, 1=FALSE, 2=TRUE
 };
 
 #endif

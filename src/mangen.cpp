@@ -422,9 +422,9 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
     {
 	if ( linkfile.open( IO_WriteOnly ) ) 
         {
-	      QTextStream linkstream;
+	      FTextStream linkstream;
 	      linkstream.setDevice(&linkfile);
-	      linkstream.setEncoding(QTextStream::UnicodeUTF8);
+	      //linkstream.setEncoding(QTextStream::UnicodeUTF8);
 	      linkstream << ".so man" << getExtension() << "/" << buildFileName( manName ) << endl;
 	}
     }

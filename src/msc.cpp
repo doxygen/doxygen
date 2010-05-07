@@ -27,7 +27,7 @@
 static const int maxCmdLine = 40960;
 
 static bool convertMapFile(QTextStream &t,const char *mapName,const QCString relPath,
-                           const QString &context)
+                           const QCString &context)
 {
   QFile f(mapName);
   if (!f.open(IO_ReadOnly))
@@ -140,10 +140,10 @@ error:
   QDir::setCurrent(oldDir);
 }
 
-QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
-                               const QCString& relPath,const QString& context)
+QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
+                                const QCString& relPath,const QCString& context)
 {
-  QString outFile = inFile + ".map";
+  QCString outFile = inFile + ".map";
 
   // chdir to the output dir, so dot can find the font file.
   QCString oldDir = convertToQCString(QDir::currentDirPath());
@@ -169,7 +169,7 @@ QString getMscImageMapFromFile(const QString& inFile, const QString& outDir,
   QDir().remove(outFile);
 
   QDir::setCurrent(oldDir);
-  return result;
+  return result.data();
 }
 
 

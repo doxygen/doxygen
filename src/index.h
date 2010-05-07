@@ -25,7 +25,7 @@
 class Definition;
 class MemberDef;
 class OutputList;
-class QTextStream;
+class FTextStream;
 
 /** \brief Abstract interface for index generators. */
 class IndexIntf
@@ -268,6 +268,6 @@ void addNamespaceMemberNameToIndex(MemberDef *md);
 
 // search engine
 void writeJavascriptSearchIndex();
-void writeSearchCategories(QTextStream &t);
+void writeSearchCategories(FTextStream &t);
 
 #endif

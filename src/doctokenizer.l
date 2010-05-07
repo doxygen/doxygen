@@ -42,7 +42,7 @@ static int g_commentState;
 TokenInfo *g_token = 0;
 static int g_inputPos = 0;
 static const char *g_inputString;
-static QString g_fileName;
+static QCString g_fileName;
 static bool g_insidePre;
 
 // context for section finding phase
@@ -256,7 +256,7 @@ static void handleHtmlTag()
   }
 }
   
-static QString stripEmptyLines(const char *s)
+static QCString stripEmptyLines(const char *s)
 {
   int result=0,p=0;
   for (;;)
@@ -382,14 +382,14 @@ REFWORD   {LABELID}|{REFWORD2}
 %%
 <St_Para>\r               /* skip carriage return */
 <St_Para>^{LISTITEM}      { /* list item */ 
-                         QString text=yytext;
+                         QCString text=yytext;
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
 			 g_token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*\n{LISTITEM}     { /* list item on next line */ 
-                         QString text=yytext;
+                         QCString text=yytext;
 			 text=text.right(text.length()-text.find('\n')-1);
 			 int dashPos = text.findRev('-');
 			 g_token->isEnumList = text.at(dashPos+1)=='#';
@@ -397,12 +397,12 @@ REFWORD   {LABELID}|{REFWORD2}
                          return TK_LISTITEM;
                        }
 <St_Para>^{ENDLIST}       { /* end list */ 
-                         int dotPos = QString(yytext).findRev('.');
+                         int dotPos = QCString(yytext).findRev('.');
 			 g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*\n{ENDLIST}      { /* end list on next line */ 
-                         QString text=yytext;
+                         QCString text=yytext;
 			 text=text.right(text.length()-text.find('\n')-1);
                          int dotPos = text.findRev('.');
 			 g_token->indent     = computeIndent(text,dotPos);
@@ -422,7 +422,7 @@ REFWORD   {LABELID}|{REFWORD2}
 <St_Para>{SPCMD3}      {
   			 g_token->name = "form";
 			 bool ok;
-			 g_token->id = QString(yytext).right(yyleng-6).toInt(&ok);
+			 g_token->id = QCString(yytext).right(yyleng-6).toInt(&ok);
 			 ASSERT(ok);
 			 return TK_COMMAND;
   		       }
@@ -435,7 +435,7 @@ REFWORD   {LABELID}|{REFWORD2}
   		       }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
   			 g_token->name = "param";
-			 QString s(yytext);
+			 QCString s(yytext);
 			 bool isIn  = s.find("in")!=-1;
 			 bool isOut = s.find("out")!=-1;
 			 if (isIn)
@@ -470,7 +470,7 @@ REFWORD   {LABELID}|{REFWORD2}
 			 return TK_URL;
                        }
 <St_Para>"$"{ID}":"[^\n$]+"$" { /* RCS tag */
-                         QString tagName(yytext+1);
+                         QCString tagName(yytext+1);
 			 int index=tagName.find(':');
   			 g_token->name = tagName.left(index+1);
 			 g_token->text = tagName.mid(index+2,tagName.length()-index-3);
@@ -774,7 +774,7 @@ REFWORD   {LABELID}|{REFWORD2}
                          BEGIN(St_XRefItem2);
                        }
 <St_XRefItem2>[0-9]+"." {
-  			 QString numStr=yytext;
+  			 QCString numStr=yytext;
 			 numStr=numStr.left(yyleng-1);
 			 g_token->id=numStr.toInt();
 			 return RetVal_OK;
@@ -802,7 +802,7 @@ REFWORD   {LABELID}|{REFWORD2}
 			 return TK_WORD;  
   		       }
 <St_File>"\""[^\n\"]+"\"" {
-  		         QString text=yytext;
+  		         QCString text=yytext;
 			 g_token->name = text.mid(1,text.length()-2);
 			 return TK_WORD;
   		       }

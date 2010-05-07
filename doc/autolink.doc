@@ -33,7 +33,10 @@
   \section linkurl Links to web pages and mail addresses
 
   Doxygen will automatically replace any URLs and mail addresses found in the
-  documentation by links (in HTML).
+  documentation by links (in HTML). To manually specify link text, use the
+  HTML '<tt>a</tt>' tag:
+  \verbatim <a href="linkURL">link text</a> \endverbatim
+  which will be automatically translated to other output formats by Doxygen.
 
   \section linkclass Links to classes.
 

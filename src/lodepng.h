@@ -1120,7 +1120,7 @@ The meanings of the LodePNG error values:
 *) 53: size of zlib data too small
 *) 55: jumped past tree while generating huffman tree, this could be when the
        tree will have more leaves than symbols after generating it out of the
-       given lenghts. They call this an oversubscribed dynamic bit lengths tree in zlib.
+       given lengths. They call this an oversubscribed dynamic bit lengths tree in zlib.
 *) 56: given output image colorType or bitDepth not supported for color conversion
 *) 57: invalid CRC encountered (checking CRC can be disabled)
 *) 58: invalid ADLER32 encountered (checking ADLER32 can be disabled)

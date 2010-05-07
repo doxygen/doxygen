@@ -28,7 +28,7 @@
 #include <qfileinfo.h> 
 #include "parserintf.h"
 
-ManDocVisitor::ManDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(TRUE),
     m_indent(0), m_langExt(langExt)
@@ -195,7 +195,7 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".PP" << endl;
       m_t << ".nf" << endl;
       Doxygen::parserManager->getParser(0/*TODO*/)
-                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                            ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -244,7 +244,7 @@ void ManDocVisitor::visit(DocInclude *inc)
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
-                                           inc->text().latin1(),
+                                           inc->text(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          if (!m_firstCol) m_t << endl;
@@ -259,7 +259,7 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << ".nf" << endl;
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text().latin1(),inc->isExample(),
+                                        inc->text(),inc->isExample(),
                                         inc->exampleFile());
       if (!m_firstCol) m_t << endl;
       m_t << ".fi" << endl;
@@ -304,7 +304,7 @@ void ManDocVisitor::visit(DocIncOperator *op)
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(0/*TODO*/)
-                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                            ->parseCode(m_ci,op->context(),op->text(),
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();
@@ -479,7 +479,7 @@ void ManDocVisitor::visitPre(DocTitle *)
 void ManDocVisitor::visitPost(DocTitle *)
 {
   if (m_hide) return;
-  m_t << "\\fP";
+  m_t << "\\fP" << endl;
   m_t << ".RS 4" << endl;
 }
 

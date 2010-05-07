@@ -28,7 +28,7 @@
 #include <qfileinfo.h> 
 #include "parserintf.h"
 
-XmlDocVisitor::XmlDocVisitor(QTextStream &t,CodeOutputInterface &ci) 
+XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci) 
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE) 
 {
 }
@@ -179,7 +179,7 @@ void XmlDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::Code: // fall though
       m_t << "<programlisting>"; 
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                            ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       m_t << "</programlisting>"; 
       break;
@@ -237,7 +237,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
-                                           inc->text().latin1(),
+                                           inc->text(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "</programlisting>"; 
@@ -247,7 +247,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       m_t << "<programlisting>";
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text().latin1(),
+                                        inc->text(),
                                         inc->isExample(),
                                         inc->exampleFile());
       m_t << "</programlisting>"; 
@@ -287,7 +287,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
     {
       Doxygen::parserManager->getParser(m_langExt)
                             ->parseCode(m_ci,op->context(),
-                                        op->text().latin1(),op->isExample(),
+                                        op->text(),op->isExample(),
                                         op->exampleFile());
     }
     pushEnabled();
@@ -656,7 +656,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   }
   m_t << "\"";
 
-  QString baseName=img->name();
+  QCString baseName=img->name();
   int i;
   if ((i=baseName.findRev('/'))!=-1 || (i=baseName.findRev('\\'))!=-1)
   {
@@ -679,7 +679,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
 
   // copy the image to the output dir
   QFile inImage(img->name());
-  QFile outImage(Config_getString("XML_OUTPUT")+"/"+baseName.ascii());
+  QFile outImage(Config_getString("XML_OUTPUT")+"/"+baseName.data());
   if (inImage.open(IO_ReadOnly))
   {
     if (outImage.open(IO_WriteOnly))
@@ -907,7 +907,7 @@ void XmlDocVisitor::filter(const char *str)
   m_t << convertToXML(str);
 }
 
-void XmlDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
+void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;

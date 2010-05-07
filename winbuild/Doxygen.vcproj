@@ -907,6 +907,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\src\ftextstream.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ftvhelp.cpp"
 				>
 				<FileConfiguration
@@ -2131,6 +2135,10 @@
 			</File>
 			<File
 				RelativePath="..\src\fortranscanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ftextstream.h"
 				>
 			</File>
 			<File

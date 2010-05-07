@@ -23,14 +23,14 @@
 #include "docparser.h"
 #include <qstack.h>
 #include <qcstring.h>
-#include <qtextstream.h>
+#include "ftextstream.h"
 
 
 /*! @brief Concrete visitor implementation for TEXT output. */
 class TextDocVisitor : public DocVisitor
 {
   public:
-    TextDocVisitor(QTextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
+    TextDocVisitor(FTextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -127,7 +127,7 @@ class TextDocVisitor : public DocVisitor
 
    void filter(const char *str);
 
-    QTextStream &m_t;
+    FTextStream &m_t;
 };
 
 #endif

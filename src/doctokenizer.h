@@ -19,7 +19,7 @@
 #ifndef _DOCTOKENIZER_H
 #define _DOCTOKENIZER_H
 
-#include <qstring.h>
+#include <qcstring.h>
 #include <qlist.h>
 #include "htmlattrib.h"
 
@@ -68,10 +68,10 @@ struct TokenInfo
   char unknownChar;
   
   // command token
-  QString name;
+  QCString name;
 
   // command text (RCS tag)
-  QString text;
+  QCString text;
 
   // comment blocks
   
@@ -80,14 +80,14 @@ struct TokenInfo
   int indent;
 
   // sections
-  QString sectionId;
+  QCString sectionId;
 
   // simple section
-  QString simpleSectName;
-  QString simpleSectText;
+  QCString simpleSectName;
+  QCString simpleSectText;
 
   // verbatim fragment
-  QString verb;
+  QCString verb;
 
   // xrefitem
   int id;
@@ -98,7 +98,7 @@ struct TokenInfo
   bool emptyTag;
 
   // whitespace
-  QString chars;
+  QCString chars;
 
   // url
   bool isEMailAddr;

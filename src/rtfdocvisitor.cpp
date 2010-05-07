@@ -33,16 +33,16 @@
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
 
-RTFDocVisitor::RTFDocVisitor(QTextStream &t,CodeOutputInterface &ci,
+RTFDocVisitor::RTFDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt) 
   : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE), 
     m_hide(FALSE), m_indentLevel(0), m_lastIsPara(FALSE), m_langExt(langExt)
 {
 }
 
-QString RTFDocVisitor::getStyle(const char *name)
+QCString RTFDocVisitor::getStyle(const char *name)
 {
-  QString n;
+  QCString n;
   n.sprintf("%s%d",name,m_indentLevel);
   StyleData *sd = rtf_Style[n];
   ASSERT(sd!=0);
@@ -333,7 +333,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,s->context(),s->text().latin1(),
+                            ->parseCode(m_ci,s->context(),s->text(),
                                         s->isExample(),s->exampleFile());
       //m_t << "\\par" << endl; 
       m_t << "}" << endl;
@@ -408,7 +408,7 @@ void RTFDocVisitor::visit(DocAnchor *anc)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocAnchor)}\n");
-  QString anchor;
+  QCString anchor;
   if (!anc->file().isEmpty())
   {
     anchor+=anc->file();
@@ -441,7 +441,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          FileDef fd( cfi.dirPath(), cfi.fileName() );
          Doxygen::parserManager->getParser(inc->extension())
                                ->parseCode(m_ci,inc->context(),
-                                           inc->text().latin1(),
+                                           inc->text(),
                                            inc->isExample(),
                                            inc->exampleFile(), &fd);
          m_t << "\\par";
@@ -454,7 +454,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << rtf_Style_Reset << getStyle("CodeExample");
       Doxygen::parserManager->getParser(inc->extension())
                             ->parseCode(m_ci,inc->context(),
-                                        inc->text().latin1(),inc->isExample(),
+                                        inc->text(),inc->isExample(),
                                         inc->exampleFile());
       m_t << "\\par";
       m_t << "}" << endl;
@@ -497,7 +497,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
     if (!m_hide) 
     {
       Doxygen::parserManager->getParser(m_langExt)
-                            ->parseCode(m_ci,op->context(),op->text().latin1(),
+                            ->parseCode(m_ci,op->context(),op->text(),
                                         op->isExample(),op->exampleFile());
     }
     pushEnabled();
@@ -750,7 +750,7 @@ void RTFDocVisitor::visitPre(DocSection *s)
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{{" // start section
       << rtf_Style_Reset;
-  QString heading;
+  QCString heading;
   int level = QMIN(s->level()+1,4);
   heading.sprintf("Heading%d",level);
   // set style
@@ -1017,7 +1017,7 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlHeader)}\n");
   m_t << "{" // start section
       << rtf_Style_Reset;
-  QString heading;
+  QCString heading;
   int level = QMIN(header->level()+2,4);
   heading.sprintf("Heading%d",level);
   // set style
@@ -1146,7 +1146,7 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
 //void RTFDocVisitor::visitPre(DocLanguage *l)
 //{
 //  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocLanguage)}\n");
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    pushEnabled();
@@ -1157,7 +1157,7 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
 //void RTFDocVisitor::visitPost(DocLanguage *l) 
 //{
 //  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocLanguage)}\n");
-//  QString langId = Config_getEnum("OUTPUT_LANGUAGE");
+//  QCString langId = Config_getEnum("OUTPUT_LANGUAGE");
 //  if (l->id().lower()!=langId.lower())
 //  {
 //    popEnabled();
@@ -1269,7 +1269,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   m_t << "{" << rtf_Style["Heading5"]->reference << endl;
   if (Config_getBool("RTF_HYPERLINKS") && !anonymousEnum)
   {
-    QString refName;
+    QCString refName;
     if (!x->file().isEmpty())
     {
       refName+=x->file();
@@ -1405,11 +1405,11 @@ void RTFDocVisitor::filter(const char *str,bool verbatim)
   }
 }
 
-void RTFDocVisitor::startLink(const QString &ref,const QString &file,const QString &anchor)
+void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
   if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
   {
-    QString refName;
+    QCString refName;
     if (!file.isEmpty())
     {
       refName+=file;
@@ -1432,7 +1432,7 @@ void RTFDocVisitor::startLink(const QString &ref,const QString &file,const QStri
   m_lastIsPara=FALSE;
 }
 
-void RTFDocVisitor::endLink(const QString &ref)
+void RTFDocVisitor::endLink(const QCString &ref)
 {
   if (ref.isEmpty() && Config_getBool("RTF_HYPERLINKS"))
   {
@@ -1458,15 +1458,15 @@ void RTFDocVisitor::popEnabled()
   delete v;
 }
 
-void RTFDocVisitor::writeDotFile(const QString &fileName)
+void RTFDocVisitor::writeDotFile(const QCString &fileName)
 {
-  QString baseName=fileName;
+  QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString("RTF_OUTPUT");
   writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;
@@ -1478,15 +1478,15 @@ void RTFDocVisitor::writeDotFile(const QString &fileName)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::writeMscFile(const QString &fileName)
+void RTFDocVisitor::writeMscFile(const QCString &fileName)
 {
-  QString baseName=fileName;
+  QCString baseName=fileName;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   } 
-  QString outDir = Config_getString("RTF_OUTPUT");
+  QCString outDir = Config_getString("RTF_OUTPUT");
   writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{" << endl;

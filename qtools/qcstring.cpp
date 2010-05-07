@@ -198,6 +198,11 @@ int QCString::find( const char *str, int index, bool cs ) const
   return d ? (int)(d - m_data) : -1;
 }
 
+int QCString::find( const QCString &str,int index,bool cs) const
+{
+  return find(str.data(),index,cs);
+}
+
 int QCString::find( const QRegExp &rx, int index ) const
 {
   QString d = QString::fromLatin1( m_data );

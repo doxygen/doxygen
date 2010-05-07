@@ -208,6 +208,11 @@ int SCString::find( const char *str, int index, bool cs ) const
   return d ? (int)(d - m_data) : -1;
 }
 
+int SCString::find( const QCString &str, int index, bool cs ) const
+{
+  return find(str.data(),index,cs);
+}
+
 int SCString::find( const QRegExp &rx, int index ) const
 {
   QString d = QString::fromLatin1( m_data );

@@ -31,6 +31,7 @@
 
 class QFile;
 struct FTVNode;
+class FTextStream;
 
 struct FTVImageInfo
 {
@@ -71,7 +72,7 @@ extern FTVImageInfo image_info[];
 class FTVHelp : public IndexIntf
 {
   public:
-    FTVHelp(bool topLevelIndex = true);
+    FTVHelp(bool LTI);
     ~FTVHelp();
     void initialize();
     void finalize();
@@ -89,12 +90,14 @@ class FTVHelp : public IndexIntf
     void addIndexFile(const char *) {}
     void addImageFile(const char *) {}
     void addStyleSheetFile(const char *) {}
-    void generateTreeView(QString* = NULL);
+    void generateTreeView();
+    void generateTreeViewInline(FTextStream &t);
   private:
+    void generateScript(FTextStream &t);
     void generateTreeViewImages();
-    void generateTree(QTextStream &t,const QList<FTVNode> &nl,int level);
-    void generateIndent(QTextStream &t,FTVNode *n,int level);
-    void generateLink(QTextStream &t,FTVNode *n);
+    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level);
+    void generateIndent(FTextStream &t,FTVNode *n,int level);
+    void generateLink(FTextStream &t,FTVNode *n);
     QList<FTVNode> *m_indentNodes;
     int m_indent;
     bool m_topLevelIndex;

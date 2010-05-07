@@ -857,7 +857,7 @@ void HtmlGenerator::writeStyleSheetFile(QFile &file)
   t << replaceColorMarkers(defaultStyleSheet);
 }
 
-static void writeDefaultHeaderFile(QTextStream &t, const char *title,
+static void writeDefaultHeaderFile(FTextStream &t, const char *title,
                                    const char *relPath,bool usePathCmd,
                                    bool searchPage=FALSE)
 {
@@ -929,8 +929,8 @@ static void writeDefaultHeaderFile(QTextStream &t, const char *title,
 
 void HtmlGenerator::writeHeaderFile(QFile &file)
 {
-  QTextStream t(&file);
-  t.setEncoding(QTextStream::UnicodeUTF8);
+  FTextStream t(&file);
+  //t.setEncoding(QTextStream::UnicodeUTF8);
   writeDefaultHeaderFile(t,"$title",relativePathToRoot(0),TRUE);
 }
 
@@ -948,7 +948,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
     << "</html>\n";
 }
 
-static void generateDynamicSections(QTextStream &t,const QCString &relPath)
+static void generateDynamicSections(FTextStream &t,const QCString &relPath)
 {
   if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
   { 
@@ -1087,7 +1087,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   m_sectionCount=0;
 }
 
-void HtmlGenerator::writeSearchFooter(QTextStream &t,const QCString &relPath)
+void HtmlGenerator::writeSearchFooter(FTextStream &t,const QCString &relPath)
 {
   (void)relPath;
   t << "<!--- window showing the filter options -->\n";
@@ -1107,7 +1107,7 @@ void HtmlGenerator::writeSearchFooter(QTextStream &t,const QCString &relPath)
   t << "\n";
 }
 
-static void writePageFooter(QTextStream &t,const QCString &lastTitle,
+static void writePageFooter(FTextStream &t,const QCString &lastTitle,
                             const QCString relPath)
 {
   static bool generateTreeView  = Config_getBool("GENERATE_TREEVIEW");
@@ -1271,7 +1271,7 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
     if (ref) 
     {
       t << "<a class=\"elRef\" ";
-      t << "doxygen=\"" << ref << ":";
+      t << "target=\"_blank\" doxygen=\"" << ref << ":";
       if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
       t << "\" ";
     }
@@ -1326,7 +1326,7 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
   if (ref) 
   {
     t << "<a class=\"elRef\" ";
-    t << "doxygen=\"" << ref << ":";
+    t << "target=\"_blank\" doxygen=\"" << ref << ":";
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     t << "\" ";
   }
@@ -1359,7 +1359,7 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
   if (ref) 
   {
     t << "<a class=\"codeRef\" ";
-    t << "doxygen=\"" << ref << ":";
+    t << "target=\"_blank\" doxygen=\"" << ref << ":";
     if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
     t << "\" ";
   }
@@ -1435,12 +1435,11 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionInfo::Secti
     case SectionInfo::Paragraph:     t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  t << "<a class=\"anchor\" id=\"" << lab << "\">";
+  t << "<a class=\"anchor\" id=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const char *,SectionInfo::SectionType type)
 {
-  t << "</a>";
   switch(type)
   {
     case SectionInfo::Page:          t << "</h1>"; break;
@@ -1550,7 +1549,7 @@ void HtmlGenerator::writeChar(char c)
 
 //--- helper function for dynamic sections -------------------------
 
-static void startSectionHeader(QTextStream &t,int sectionCount)
+static void startSectionHeader(FTextStream &t,int sectionCount)
 {
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
@@ -1567,12 +1566,12 @@ static void startSectionHeader(QTextStream &t,int sectionCount)
   }
 }
 
-static void endSectionHeader(QTextStream &t)
+static void endSectionHeader(FTextStream &t)
 {
   t << "</div>" << endl;
 }
 
-static void startSectionSummary(QTextStream &t,int sectionCount)
+static void startSectionSummary(FTextStream &t,int sectionCount)
 {
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
@@ -1583,7 +1582,7 @@ static void startSectionSummary(QTextStream &t,int sectionCount)
   }
 }
 
-static void endSectionSummary(QTextStream &t)
+static void endSectionSummary(FTextStream &t)
 {
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
@@ -1592,7 +1591,7 @@ static void endSectionSummary(QTextStream &t)
   }
 }
 
-static void startSectionContent(QTextStream &t,int sectionCount)
+static void startSectionContent(FTextStream &t,int sectionCount)
 {
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
@@ -1607,7 +1606,7 @@ static void startSectionContent(QTextStream &t,int sectionCount)
   }
 }
 
-static void endSectionContent(QTextStream &t)
+static void endSectionContent(FTextStream &t)
 {
   t << "</div>" << endl;
 }
@@ -1667,7 +1666,7 @@ void HtmlGenerator::endMemberList()
   }
 }
 
-// annonymous type:
+// anonymous type:
 //  0 = single column right aligned
 //  1 = double column left aligned
 //  2 = single column left aligned
@@ -1756,7 +1755,7 @@ void HtmlGenerator::startMemberSections()
   DBG_HTML(t << "<!-- startMemberSections -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">" << endl;
+    t << "<table class=\"memberdecls\">" << endl;
     // HTML is not recursively decomposable, sorry
     //t << "<tr><td></td></tr>" << endl;
   }
@@ -2221,7 +2220,7 @@ void HtmlGenerator::printDoc(DocNode *n,const char *langExt)
 
 //---------------- helpers for index generation -----------------------------
 
-static void startQuickIndexList(QTextStream &t,bool compact,bool topLevel=TRUE)
+static void startQuickIndexList(FTextStream &t,bool compact,bool topLevel=TRUE)
 {
   if (compact) 
   {
@@ -2241,7 +2240,7 @@ static void startQuickIndexList(QTextStream &t,bool compact,bool topLevel=TRUE)
   }
 }
 
-static void endQuickIndexList(QTextStream &t,bool compact)
+static void endQuickIndexList(FTextStream &t,bool compact)
 {
   if (compact) 
   {
@@ -2254,7 +2253,7 @@ static void endQuickIndexList(QTextStream &t,bool compact)
   }
 }
 
-static void startQuickIndexItem(QTextStream &t,const char *l,
+static void startQuickIndexItem(FTextStream &t,const char *l,
                                 bool hl,bool /*compact*/,
                                 const QCString &relPath)
 {
@@ -2264,7 +2263,7 @@ static void startQuickIndexItem(QTextStream &t,const char *l,
   t << "<span>";
 }
 
-static void endQuickIndexItem(QTextStream &t)
+static void endQuickIndexItem(FTextStream &t)
 {
   t << "</span>";
   t << "</a>";
@@ -2297,7 +2296,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   return FALSE;
 }
 
-static void renderQuickLinksAsTree(QTextStream &t,const QCString &relPath,LayoutNavEntry *root)
+static void renderQuickLinksAsTree(FTextStream &t,const QCString &relPath,LayoutNavEntry *root)
 
 {
   QListIterator<LayoutNavEntry> li(root->children());
@@ -2327,7 +2326,7 @@ static void renderQuickLinksAsTree(QTextStream &t,const QCString &relPath,Layout
 }
 
 
-static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
+static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
                              LayoutNavEntry *hlEntry,LayoutNavEntry::Kind kind,
                              bool highlightParent,bool highlightSearch)
 {
@@ -2448,7 +2447,7 @@ static void renderQuickLinksAsTabs(QTextStream &t,const QCString &relPath,
   }
 }
 
-static void writeDefaultQuickLinks(QTextStream &t,bool compact,
+static void writeDefaultQuickLinks(FTextStream &t,bool compact,
                                    HighlightedItem hli,const QCString &relPath)
 {
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
@@ -2535,8 +2534,8 @@ void HtmlGenerator::writeSearchPage()
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
-    t.setEncoding(QTextStream::UnicodeUTF8);
+    FTextStream t(&f);
+    //t.setEncoding(QTextStream::UnicodeUTF8);
     if (g_header.isEmpty()) 
     {
       writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE,TRUE);

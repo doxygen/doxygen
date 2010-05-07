@@ -19,7 +19,7 @@
 "    margin-top: 8px;\n"
 "    right: 0px;\n"
 "    width: 170px;\n"
-"    z-index: 102;*/\n"
+"    z-index: 102;\n"
 "}\n"
 "\n"
 "#MSearchBox .left\n"

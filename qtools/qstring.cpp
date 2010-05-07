@@ -12657,7 +12657,7 @@ QString &QString::sprintf( const char* cformat, ... )
     int len = 0;
     int pos;
     while ( 1 ) {
-	pos = escape->match( format, last, &len );
+	pos = escape->match( cformat, last, &len );
 	// Non-escaped text
 	if ( pos > (int)last )
 	    result += format.mid(last,pos-last);
@@ -12695,15 +12695,15 @@ QString &QString::sprintf( const char* cformat, ... )
 	    // Yes, %-5s really means left adjust in sprintf
 
 	    if ( wpos < 0 ) {
-		QRegExp num( QString::fromLatin1("[0-9]+") );
-		QRegExp dot( QString::fromLatin1("\\.") );
+		QRegExp num( "[0-9]+" );
+		QRegExp dot( "\\." );
 		int nlen;
-		int p = num.match( f, 0, &nlen );
-		int q = dot.match( f, 0 );
+		int p = num.match( f.data(), 0, &nlen );
+		int q = dot.match( f.data(), 0 );
 		if ( q < 0 || (p < q && p >= 0) )
 		    width = f.mid( p, nlen ).toInt();
 		if ( q >= 0 ) {
-		    p = num.match( f, q );
+		    p = num.match( f.data(), q );
 		    // "decimals" is used to specify string truncation
 		    if ( p >= 0 )
 			decimals = f.mid( p, nlen ).toInt();
@@ -13633,7 +13633,7 @@ int QString::find( const QRegExp &rx, int index ) const
 {
     if ( index < 0 )
 	index += length();
-    return rx.match( *this, index );
+    return rx.match( data(), index );
 }
 
 /*!
@@ -13655,7 +13655,7 @@ int QString::findRev( const QRegExp &rx, int index ) const
     if ( (uint)index > length() )		// bad index
 	return -1;
     while( index >= 0 ) {
-	if ( rx.match( *this, index ) == index )
+	if ( rx.match( data(), index ) == index )
 	    return index;
 	index--;
     }
@@ -13678,12 +13678,12 @@ int QString::findRev( const QRegExp &rx, int index ) const
 int QString::contains( const QRegExp &rx ) const
 {
     if ( isEmpty() )
-	return rx.match( *this ) < 0 ? 0 : 1;
+	return rx.match( data() ) < 0 ? 0 : 1;
     int count = 0;
     int index = -1;
     int len = length();
     while ( index < len-1 ) {			// count overlapping matches
-	index = rx.match( *this, index+1 );
+	index = rx.match( data(), index+1 );
 	if ( index < 0 )
 	    break;
 	count++;
@@ -13719,7 +13719,7 @@ QString &QString::replace( const QRegExp &rx, const QString &str )
     int slen  = str.length();
     int len;
     while ( index < (int)length() ) {
-	index = rx.match( *this, index, &len, FALSE );
+	index = rx.match( data(), index, &len, FALSE );
 	if ( index >= 0 ) {
 	    replace( index, len, str );
 	    index += slen;

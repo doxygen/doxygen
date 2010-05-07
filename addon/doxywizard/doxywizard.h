@@ -50,6 +50,7 @@ class MainWindow : public QMainWindow
     void saveLog();
     void showSettings();
     void configChanged();
+    void clearRecent();
     
   private:
     MainWindow();

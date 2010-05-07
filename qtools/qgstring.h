@@ -26,6 +26,8 @@ class QGString
    ~QGString() ;
 
     bool resize( uint newlen );
+    bool enlarge( uint newlen );
+    void setLen( uint newlen );
 
     QGString    &operator=( const QGString &s );
     QGString    &operator=( const char *str );

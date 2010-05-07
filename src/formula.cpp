@@ -172,8 +172,8 @@ void FormulaList::generateBitmaps(const char *path)
       int zoomFactor = Config_getInt("FORMULA_FONTSIZE");
       if (zoomFactor<8 || zoomFactor>50) zoomFactor=10;
       scaleFactor *= zoomFactor/10.0;
-      int gx = (((int)((x2-x1)*scaleFactor))+3)&~2;
-      int gy = (((int)((y2-y1)*scaleFactor))+3)&~2;
+      int gx = (((int)((x2-x1)*scaleFactor))+3)&~1;
+      int gy = (((int)((y2-y1)*scaleFactor))+3)&~1;
       // Then we run ghostscript to convert the postscript to a pixmap
       // The pixmap is a truecolor image, where only black and white are
       // used.  
