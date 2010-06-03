@@ -287,10 +287,12 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type)
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
                            outputDir.data(), baseName.data(),
 			   outputDir.data(), baseName.data());
+      portable_sysTimerStart();
       if (portable_system("epstopdf",epstopdfArgs)!=0)
       {
 	err("Error: Problems running epstopdf. Check your TeX installation!\n");
       }
+      portable_sysTimerStop();
       return baseName;
     }
   }

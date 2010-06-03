@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="doxywizard"
 	ProjectGUID="{77C9C2D3-EA3F-3D59-8B4C-0ED852890172}"
 	Keyword="Qt4VSv1.0"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -81,6 +82,8 @@
 				ProgramDatabaseFile=""
 				SubSystem="2"
 				LinkTimeCodeGeneration="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -99,9 +102,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -137,7 +137,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="2"
-				AdditionalIncludeDirectories="&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,..\..\..\Qt\4.4.3\mkspecs\win32-msvc2005"
+				AdditionalIncludeDirectories="&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtCore&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtGui&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include\QtXml&quot;,&quot;..\..\..\Qt\4.4.3\include&quot;,&quot;..\addon\doxywizard&quot;,&quot;c:\Qt\4.4.3\include\ActiveQt&quot;,&quot;..\addon\doxywizard\moc&quot;,&quot;..\addon\doxywizard&quot;,&quot;.&quot;,..\..\..\Qt\4.4.3\mkspecs\win32-msvc2008"
 				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,_WINDOWS,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,QT_NO_CAST_FROM_ASCII,QT_NO_CAST_TO_ASCII,QT_NO_DEBUG,QT_XML_LIB,QT_GUI_LIB,QT_CORE_LIB,QT_THREAD_SUPPORT,NDEBUG"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="1"
@@ -177,6 +177,8 @@
 				ProgramDatabaseFile=""
 				SubSystem="2"
 				LinkTimeCodeGeneration="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -195,9 +197,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -528,7 +527,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Lex ..\addon\doxywizard\config.l"
-						CommandLine="flex -Pconfig ..\addon\doxywizard\config.l &amp;&amp; 	 del config_lex.cpp &amp;&amp; 	 move lex.config.c config_lex.cpp&#x0D;&#x0A;"
+						CommandLine="flex -Pconfig ..\addon\doxywizard\config.l &amp;&amp;   del config_lex.cpp &amp;&amp;   move lex.config.c config_lex.cpp&#x0D;&#x0A;"
 						AdditionalDependencies="..\addon\doxywizard\config.l;flex"
 						Outputs="config_lex.cpp"
 					/>
@@ -539,7 +538,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Lex ..\addon\doxywizard\config.l"
-						CommandLine="flex -Pconfig ..\addon\doxywizard\config.l &amp;&amp; 	 del config_lex.cpp &amp;&amp; 	 move lex.config.c config_lex.cpp&#x0D;&#x0A;"
+						CommandLine="flex -Pconfig ..\addon\doxywizard\config.l &amp;&amp;   del config_lex.cpp &amp;&amp;   move lex.config.c config_lex.cpp&#x0D;&#x0A;"
 						AdditionalDependencies="..\addon\doxywizard\config.l;flex"
 						Outputs="config_lex.cpp"
 					/>
@@ -577,6 +576,10 @@
 						Outputs="rcc\qrc_doxywizard.cpp"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\addon\doxywizard\doxywizard.rc"
+				>
 			</File>
 		</Filter>
 	</Files>

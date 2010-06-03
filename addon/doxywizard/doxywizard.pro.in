@@ -25,3 +25,4 @@ SOURCES     += doxywizard.cpp ../../src/version.cpp expert.cpp wizard.cpp \
                inputbool.cpp inputstring.cpp inputint.cpp inputstrlist.cpp
 LEXSOURCES  += config.l
 RESOURCES   += doxywizard.qrc
+win32:RC_FILE += doxywizard.rc

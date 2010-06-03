@@ -10,7 +10,7 @@
 # See the GNU General Public License for more details.
 # 
 
-QMAKE=qmake
+QMAKE=qmake $(MKSPECS)
 
 all: Makefile.doxywizard  
 	$(MAKE) -f Makefile.doxywizard 

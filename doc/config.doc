@@ -80,6 +80,8 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_distribute_group_doc DISTRIBUTE_GROUP_DOC
 \refitem cfg_docset_bundle_id DOCSET_BUNDLE_ID
 \refitem cfg_docset_feedname DOCSET_FEEDNAME
+\refitem cfg_docset_publisher_id DOCSET_PUBLISHER_ID
+\refitem cfg_docset_publisher_name DOCSET_PUBLISHER_NAME
 \refitem cfg_dot_cleanup DOT_CLEANUP
 \refitem cfg_dot_fontname DOT_FONTNAME
 \refitem cfg_dot_fontpath DOT_FONTPATH
@@ -87,6 +89,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_dot_graph_max_nodes DOT_GRAPH_MAX_NODES
 \refitem cfg_dot_image_format DOT_IMAGE_FORMAT
 \refitem cfg_dot_multi_targets DOT_MULTI_TARGETS
+\refitem cfg_dot_num_threads DOT_NUM_THREADS
 \refitem cfg_dot_path DOT_PATH
 \refitem cfg_dot_transparent DOT_TRANSPARENT
 \refitem cfg_dotfile_dirs DOTFILE_DIRS
@@ -103,6 +106,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_exclude_symlinks EXCLUDE_SYMLINKS
 \refitem cfg_expand_as_defined EXPAND_AS_DEFINED
 \refitem cfg_expand_only_predef EXPAND_ONLY_PREDEF
+\refitem cfg_ext_links_in_window EXT_LINKS_IN_WINDOW
 \refitem cfg_extension_mapping EXTENSION_MAPPING
 \refitem cfg_external_groups EXTERNAL_GROUPS
 \refitem cfg_extra_packages EXTRA_PACKAGES
@@ -1350,6 +1354,15 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>. 
  Doxygen will append <code>.docset</code> to the name.
 
+\anchor cfg_docset_publisher_id
+<dt>\c DOCSET_PUBLISHER_ID <dd>
+When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify 
+the documentation publisher. This should be a reverse domain-name style 
+string, e.g. com.mycompany.MyDocSet.documentation. 
+
+\anchor cfg_docset_publisher_name
+<dt>\c DOCSET_PUBLISHER_NAME <dd>
+The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher.
 
 \anchor cfg_generate_htmlhelp
 <dt>\c GENERATE_HTMLHELP <dd>
@@ -1560,6 +1573,12 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  If the treeview is enabled (see \c GENERATE_TREEVIEW) then this tag can be
  used to set the initial width (in pixels) of the frame in which the tree
  is shown.
+
+\anchor cfg_ext_links_in_window
+<dt>\c EXT_LINKS_IN_WINDOW <dd>
+ \addindex EXT_LINKS_IN_WINDOW
+ When the \c EXT_LINKS_IN_WINDOW option is set to \c YES doxygen will open 
+ links to external symbols imported via tag files in a separate window. 
 
 \anchor cfg_formula_fontsize
 <dt>\c FORMULA_FONTSIZE <dd>
@@ -2035,6 +2054,15 @@ TAGFILES = file1=loc1 "file2 = loc2" ... </pre>
  <a href="http://www.research.att.com/sw/tools/graphviz/">Graphviz</a>, a graph 
  visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
  this section have no effect if this option is set to \c NO (the default)
+
+\anchor cfg_dot_num_threads
+<dt>\c DOT_NUM_THREADS <dd>
+ \addindex DOT_NUM_THREADS
+ The \c DOT_NUM_THREADS specifies the number of dot invocations doxygen is 
+ allowed to run in parallel. When set to 0 (the default) doxygen will 
+ base this on the number of processors available in the system. You can set it 
+ explicitly to a value larger than 0 to get control over the balance 
+ between CPU load and processing speed.  
 
 \anchor cfg_dot_fontname
 <dt>\c DOT_FONTNAME <dd>

@@ -480,7 +480,6 @@ void FTVHelp::generateIndent(FTextStream &t, FTVNode *n,int level)
 
 void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
 {
-  QCString *dest;
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
   //    n->ref.data(),n->file.data(),n->anchor.data());
   if (n->file.isEmpty()) // no link
@@ -492,19 +491,14 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     if (!n->ref.isEmpty()) // link to entity imported via tag file
     {
       t << "<a class=\"elRef\" ";
-      t << "target=\"_blank\" doxygen=\"" << n->ref << ":";
-      if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
-      t << "\" ";
+      t << externalLinkTarget() << externalRef("",n->ref,FALSE);
     }
     else // local link
     {
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    if (!n->ref.isEmpty())
-    {
-      if ((dest=Doxygen::tagDestinationDict[n->ref])) t << *dest << "/";
-    }
+    t << externalRef("",n->ref,TRUE);
     t << n->file << Doxygen::htmlFileExtension;
     if (!n->anchor.isEmpty()) t << "#" << n->anchor;
     if (m_topLevelIndex)

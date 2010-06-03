@@ -28,7 +28,10 @@ const char *   portable_commandExtension();
 bool           portable_fileSystemIsCaseSensitive();
 FILE *         portable_popen(const char *name,const char *type);
 int            portable_pclose(FILE *stream);
+void           portable_sysTimerStart();
+void           portable_sysTimerStop();
 double         portable_getSysElapsedTime();
+void           portable_sleep(int ms);
 
 extern "C" {
   void *         portable_iconv_open(const char* tocode, const char* fromcode);

@@ -146,12 +146,18 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   //if (!md->isDefine()) ol.startParameter(TRUE); else ol.docify(" ");
   bool first=TRUE;
   bool paramTypeStarted=FALSE;
+  bool isDefine = md->isDefine();
   while (a)
   {
-    if (md->isDefine() || first) 
+    if (isDefine || first) 
     {
       ol.startParameterType(first,md->isObjCMethod()?"dummy":0);
       paramTypeStarted=TRUE;
+      if (isDefine)
+      {
+        ol.endParameterType();
+        ol.startParameterName(TRUE);
+      }
     }
     QRegExp re(")("),res("(.*\\*");
     int vp=a->type.find(re);
@@ -187,7 +193,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
         linkifyText(TextGeneratorOLImpl(ol),cd,md->getBodyDef(),md->name(),n);
       }
     }
-    if (!md->isDefine())
+    if (!isDefine)
     {
       if (paramTypeStarted) 
       {
@@ -243,7 +249,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
     if (a) 
     {
       if (!md->isObjCMethod()) ol.docify(", "); // there are more arguments
-      if (!md->isDefine()) 
+      if (!isDefine) 
       {
         QCString key;
         if (md->isObjCMethod() && a->attrib.length()>=2)
@@ -261,7 +267,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
         ol.startParameterType(FALSE,key);
         paramTypeStarted=TRUE;
       }
-      else
+      else // isDefine
       {
         ol.endParameterName(FALSE,FALSE,TRUE);
       }
@@ -276,17 +282,16 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.enableAll();
   if (htmlOn) ol.enable(OutputGenerator::Html);
   if (latexOn) ol.enable(OutputGenerator::Latex);
-  if (!md->isDefine()) 
+  //if (!isDefine) 
   {
     if (first) ol.startParameterName(defArgList->count()<2);
     ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
   }
-  else 
-  {
-    ol.endParameterType();
-    ol.startParameterName(TRUE);
-    ol.endParameterName(TRUE,TRUE,!md->isObjCMethod());
-  }
+  //else // isDefine
+  //{
+  //  if (first) ol.startParameterName(TRUE);
+  //  ol.endParameterName(TRUE,defArgList->count()<2,!md->isObjCMethod());
+  //}
   ol.popGeneratorState();
   if (md->extraTypeChars())
   {

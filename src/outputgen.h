@@ -408,6 +408,7 @@ class OutputGenerator : public BaseOutputDocInterface
   protected:
     FTextStream t;
     QFile *file;
+    QCString fileName;
     QCString dir;
     bool active;
     QStack<bool> *genStack;

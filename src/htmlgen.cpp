@@ -89,6 +89,18 @@ static unsigned char header_png[12] =
   245, 246, 247, 248, 249, 250
 };
 
+// function header
+static unsigned char func_header_png[56] =
+{
+  248, 247, 246, 245, 244, 243, 242, 241,
+  240, 239, 238, 237, 236, 235, 234, 233,
+  232, 231, 230, 229, 228, 223, 223, 223,
+  223, 223, 223, 223, 223, 223, 223, 223,
+  224, 224, 224, 224, 225, 225, 225, 225,
+  225, 226, 226, 226, 227, 227, 227, 227,
+  228, 228, 228, 229, 229, 229, 229, 229
+};
+
 // hovering
 static unsigned char tab_h_png[36] =
 {
@@ -705,7 +717,8 @@ static colored_img_data_item colored_tab_data[] =
   { "tab_b.png",    1, 36, tab_b_png, 0 },
   { "tab_h.png",    1, 36, tab_h_png, 0 },
   { "tab_s.png",    1, 36, tab_s_png, 0 },
-  { "nav_h.png",   1, 12, header_png, 0 },
+  { "nav_h.png",    1, 12, header_png, 0 },
+  { "nav_f.png",    1, 56, func_header_png, 0 },
   { "bc_s.png",     8, 32, bc_s_png, bc_s_a_png },
   { "doxygen.png", 104,31, doxygen_png, doxygen_a_png },
   { "closed.png",   9,  9, closed_png, closed_a_png },
@@ -1265,29 +1278,19 @@ void HtmlGenerator::endIndexListItem()
 void HtmlGenerator::startIndexItem(const char *ref,const char *f)
 {
   //printf("HtmlGenerator::startIndexItem(%s,%s)\n",ref,f);
-  QCString *dest;
   if (ref || f)
   {
     if (ref) 
     {
       t << "<a class=\"elRef\" ";
-      t << "target=\"_blank\" doxygen=\"" << ref << ":";
-      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-      t << "\" ";
+      t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
     }
     else
     {
       t << "<a class=\"el\" ";
     }
     t << "href=\"";
-    if (ref)
-    {
-      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-    }
-    else
-    {
-      t << relPath;
-    }
+    t << externalRef(relPath,ref,TRUE);
     if (f) t << f << Doxygen::htmlFileExtension << "\">";
   }
   else
@@ -1322,27 +1325,17 @@ void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
 void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
                                     const char *anchor, const char *name)
 {
-  QCString *dest;
   if (ref) 
   {
     t << "<a class=\"elRef\" ";
-    t << "target=\"_blank\" doxygen=\"" << ref << ":";
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-    t << "\" ";
+    t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
   }
   else
   {
     t << "<a class=\"el\" ";
   }
   t << "href=\"";
-  if (ref)
-  {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-  }
-  else
-  {
-    t << relPath;
-  }
+  t << externalRef(relPath,ref,TRUE);
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\">";
@@ -1354,28 +1347,18 @@ void HtmlGenerator::writeCodeLink(const char *ref,const char *f,
                                   const char *anchor, const char *name,
                                   const char *tooltip)
 {
-  QCString *dest;
   //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
   if (ref) 
   {
     t << "<a class=\"codeRef\" ";
-    t << "target=\"_blank\" doxygen=\"" << ref << ":";
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-    t << "\" ";
+    t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
   }
   else
   {
     t << "<a class=\"code\" ";
   }
   t << "href=\"";
-  if (ref)
-  {
-    if ((dest=Doxygen::tagDestinationDict[ref])) t << relPath << *dest << "/";
-  }
-  else
-  {
-    t << relPath;
-  }
+  t << externalRef(relPath,ref,TRUE);
   if (f) t << f << Doxygen::htmlFileExtension;
   if (anchor) t << "#" << anchor;
   t << "\"";
@@ -2010,7 +1993,7 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath);
   if (Config_getBool("GENERATE_LEGEND"))
   {
     t << "<center><span class=\"legend\">[";
@@ -2036,7 +2019,7 @@ void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2054,7 +2037,7 @@ void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2072,7 +2055,7 @@ void HtmlGenerator::endCallGraph(const DotCallGraph &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2090,7 +2073,7 @@ void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
 
-  g.writeGraph(t,BITMAP,dir,relPath);
+  g.writeGraph(t,BITMAP,dir,fileName,relPath);
 
   endSectionContent(t);
   m_sectionCount++;
@@ -2098,7 +2081,7 @@ void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
 
 void HtmlGenerator::writeGraphicalHierarchy(const DotGfxHierarchyTable &g)
 {
-  g.writeGraph(t,dir);
+  g.writeGraph(t,dir,fileName);
 }
 
 void HtmlGenerator::startMemberGroupHeader(bool)

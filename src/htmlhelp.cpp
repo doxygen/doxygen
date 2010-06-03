@@ -496,6 +496,7 @@ void HtmlHelp::createProjectFile()
     t << "tab_h.png" << endl;
     t << "tab_s.png" << endl;
     t << "nav_h.png" << endl;
+    t << "nav_f.png" << endl;
     if (Config_getBool("HTML_DYNAMIC_SECTIONS"))
     {
       t << "open.gif" << endl;

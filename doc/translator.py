@@ -52,6 +52,10 @@
   2008/06/09 - Warning when the MAX_DOT_GRAPH_HEIGHT is still part of trLegendDocs().
   2009/05/09 - Changed HTML output to fit it with XHTML DTD
   2009/09/02 - Added percentage info to the report (implemented / to be implemented).
+  2010/02/09 - Added checking/suggestion 'Reimplementation using UTF-8 suggested.
+  2010/03/03 - Added [unreachable] prefix used in maintainers.txt.
+  2010/05/28 - BOM skipped; minor code cleaning.
+  2010/05/31 - e-mail mangled already in maintainers.txt
   """                               
 
 from __future__ import generators
@@ -223,7 +227,7 @@ class Transl:
 
         # Open the file for reading and extracting tokens until the eof.
         # Initialize the finite automaton.
-        f = file(self.fname)
+        f = open(self.fname)
         lineNo = 0
         line = ''         # init -- see the pos initialization below
         linelen = 0       # init
@@ -242,9 +246,11 @@ class Transl:
             else:
                 lineNo += 1
                 line = f.readline()
+                if line.startswith('\xef\xbb\xbf'):
+                    line = line[3:]    # skip the BOM
                 linelen = len(line)
                 pos = 0
-                if line == '':   # eof
+                if line == '':         # eof
                     status = 777
                 else:
                     c = line[pos]
@@ -1439,7 +1445,7 @@ class TrManager:
                     self.numLang -= 1    # the couple will be counted as one
         
         # Extract the version of Doxygen.
-        f = file(os.path.join(self.doxy_path, 'VERSION'))
+        f = open(os.path.join(self.doxy_path, 'VERSION'))
         self.doxVersion = f.readline().strip()
         f.close()
         
@@ -1487,7 +1493,7 @@ class TrManager:
         
         # Read content of the file as one string.
         assert os.path.isfile(fname)
-        f = file(fname)
+        f = open(fname)
         cont = f.read()
         f.close()
         
@@ -1525,11 +1531,19 @@ class TrManager:
         return trdic
         
         
-    
+    def __emails(self, classId):
+        """Returns the list of maintainer emails.
         
-    def __email(self, classId):
-        """Returns the first maintainer for the translator class"""
-        return self.__maintainersDic[classId][0][1]
+        The method returns the list of e-mail adresses for the translator
+        class, but only the addresses that were not marked as [unreachable]."""
+        lst = []
+        for m in self.__maintainersDic[classId]:
+            if not m[1].startswith('[unreachable]'):
+                email = m[1]
+                email = email.replace(' at ', '@') # Unmangle the mangled e-mail 
+                email = email.replace(' dot ', '.')
+                lst.append(email)
+        return lst
                     
     
     def generateTranslatorReport(self):
@@ -1538,7 +1552,7 @@ class TrManager:
         output = os.path.join(self.doc_path, self.translatorReportFileName)
         
         # Open the textual report file for the output.
-        f = file(output, 'w')
+        f = open(output, 'w')
 
         # Output the information about the version.
         f.write('(' + self.doxVersion + ')\n\n')
@@ -1566,7 +1580,7 @@ class TrManager:
         # The e-mail addresses of the maintainers will be collected to 
         # the auxiliary file in the order of translator classes listed
         # in the translator report.
-        fmail = file('mailto.txt', 'w')
+        fmail = open('mailto.txt', 'w')
         
         # Write the list of up-to-date translator classes. 
         if self.upToDateIdLst:
@@ -1586,7 +1600,7 @@ class TrManager:
                 if obj.note:
                     f.write(' -- ' + obj.note)
                 f.write('\n')
-                mailtoLst.append(self.__email(obj.classId))
+                mailtoLst.extend(self.__emails(obj.classId))
                 
             fmail.write('up-to-date\n')
             fmail.write('; '.join(mailtoLst))
@@ -1620,7 +1634,7 @@ class TrManager:
                 if obj.note:
                     f.write('\n\tNote: ' + obj.note + '\n')
                 f.write('\n')
-                mailtoLst.append(self.__email(obj.classId)) # to maintainer
+                mailtoLst.extend(self.__emails(obj.classId)) # to maintainer
                 
                 # Check the level of required adapter classes.
                 if obj.status != '0.0.00' and obj.status < adaptMinVersion:
@@ -1723,7 +1737,7 @@ class TrManager:
             self.lastModificationTime = tim
         
         # Process the content of the maintainers file.
-        f = file(fname)
+        f = open(fname)
         inside = False  # inside the record for the language
         lineReady = True
         classId = None
@@ -1753,7 +1767,8 @@ class TrManager:
                         self.__maintainersDic[classId] = []
                     
                     # Split the information about the maintainer and append
-                    # the tuple.
+                    # the tuple. The address may be prefixed '[unreachable]'.
+                    # This will be processed later.
                     lst = line.split(':', 1)
                     assert(len(lst) == 2)
                     t = (lst[0].strip(), lst[1].strip())
@@ -1786,7 +1801,7 @@ class TrManager:
         #
         # Read the template of the documentation, and remove the first
         # attention lines.
-        f = file(fTplName)
+        f = open(fTplName)
         line = f.readline()
         while line[0] != '/':
             line = f.readline()
@@ -1862,20 +1877,17 @@ class TrManager:
             if not mm and self.__maintainersDic.has_key(obj.classId):
                 lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
                 mm = '<br/>'.join(lm)
-                le = [ m[1] for m in self.__maintainersDic[obj.classId] ]
+                
+                # Unreachable adresses will not be displayed at all.
+                le = []
+                for m in self.__maintainersDic[obj.classId]:
+                    address = m[1]
+                    if address.startswith('[unreachable]'):
+                        address = '[unreachable]'
+                    le.append(address)    
                 ee = '<br/>'.join(le)
             
-            # Mangle the e-mail and replace the entity references.
-            if ee and ee != '&nbsp;':
-                # More than one maintainer address separated by <br> can be used.
-                emails = ee.split('<br/>')
-                mangled_list = []
-                for email in emails:
-                    name, domain = email.split('@')
-                    domain = domain.replace('.', ' dot ')
-                    mangled_list.append(name + ' at ' + domain)
-                ee = '<br/>'.join(mangled_list)
-                
+            # Replace the entity references.    
             if mm:
                 mm = mm.replace('&ccaron;', '&#x010d;')
                 mm = mm.replace('&rcaron;', '&#x0159;')
@@ -1973,7 +1985,7 @@ class TrManager:
         tplDic['informationTable'] = htmlTable + '\n' + latexTable 
 
         # Insert the symbols into the document template and write it down.
-        f = file(fDocName, 'w')
+        f = open(fDocName, 'w')
         f.write(doctpl % tplDic)
         f.close()
                     

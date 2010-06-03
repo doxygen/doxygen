@@ -138,7 +138,7 @@ dl.el {
 
 pre.fragment {
 	border: 1px solid ##CC;
-	background-color: ##f5;
+	background-color: ##FC;
 	padding: 4px 6px;
 	margin: 4px 8px 4px 2px;
 	overflow: auto;
@@ -400,44 +400,44 @@ table.memberdecls {
 }
 
 .memproto {
-        border-top: 1px solid ##80;
-        border-left: 1px solid ##80;
-        border-right: 1px solid ##80;
-        padding: 0;
-        background-color: ##c8;
+        border-top: 1px solid ##B4;
+        border-left: 1px solid ##B4;
+        border-right: 1px solid ##B4;
+        padding: 6px 0px 6px 0px;
         color: ##2b;
         font-weight: bold;
         text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9);
         /* firefox specific markup */
-        background-image: -moz-linear-gradient(center top, ##F8, ##E8 30%, ##E0 90%, ##D0);
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
         -moz-border-radius-topright: 8px;
         -moz-border-radius-topleft: 8px;
         /* webkit specific markup */
-        background-image: -webkit-gradient(linear,center top,center bottom,from(##F8),color-stop(0.3,##E0),color-stop(0.9,##E0),to(##D0));
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         -webkit-border-top-right-radius: 8px;
         -webkit-border-top-left-radius: 8px;
+        background-image:url('nav_f.png');
+        background-repeat:repeat-x;
+        background-color: ##E6;
 
 }
 
 .memdoc {
-        border-bottom: 1px solid ##80;      
-        border-left: 1px solid ##80;      
-        border-right: 1px solid ##80; 
+        border-bottom: 1px solid ##B4;      
+        border-left: 1px solid ##B4;      
+        border-right: 1px solid ##B4; 
         padding: 2px 5px;
-        background-color: ##E0;
+        background-color: ##FC;
         border-top-width: 0;
         /* firefox specific markup */
         -moz-border-radius-bottomleft: 8px;
         -moz-border-radius-bottomright: 8px;
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
-        background-image: -moz-linear-gradient(center top, ##FF 0%, ##F8 80%, ##F0);
+        background-image: -moz-linear-gradient(center top, ##FF 0%, ##FF 60%, #F8 95%, #F0);
         /* webkit specific markup */
         -webkit-border-bottom-left-radius: 8px;
         -webkit-border-bottom-right-radius: 8px;
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.2,##F8), to(##F0));
+        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.6,##FF), color-stop(0.60,#FF), color-stop(0.95,#F8), to(#F0));
 }
 
 .paramkey {

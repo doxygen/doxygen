@@ -161,19 +161,10 @@ static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
     t << "<area ";
     if (!ref.isEmpty()) 
     {
-      t << "target=\"_blank\" doxygen=\"" << ref << ":";
-      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-      t << "\" ";
+      t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
     }
     t << "href=\"";
-    if (!ref.isEmpty())
-    {
-      if ((dest=Doxygen::tagDestinationDict[ref])) t << *dest << "/";
-    }
-    else
-    {
-      t << relPath;
-    }
+    t << externalRef(relPath,ref,TRUE);
     t << cd->getOutputFileBase() << Doxygen::htmlFileExtension << "\" ";
     t << "alt=\"" << convertToXML(cd->displayName()); 
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
@@ -1253,11 +1244,14 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
                    epsBaseName.data(),epsBaseName.data());
     //printf("Converting eps using `%s'\n",epstopdfCmd.data());
+    portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
        err("Error: Problems running epstopdf. Check your TeX installation!\n");
+       portable_sysTimerStop();
        return;
     }
+    portable_sysTimerStop();
   }
 }
 

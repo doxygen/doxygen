@@ -25,12 +25,13 @@
  * Updated to 1.5.5 by Bartomeu Creus Navarro (5-febrero-2008)
  * Updated to 1.5.8 by Bartomeu Creus Navarro (10-abril-2009)
  * Updated to 1.6.3 by Bartomeu Creus Navarro (3-marzo-2010)
+ * Updated to 1.6.4 by Bartomeu Creus Navarro (26-mayo-2010)
  */
 
 #ifndef TRANSLATOR_ES_H
 #define TRANSLATOR_ES_H
 
-class TranslatorSpanish : public TranslatorAdapter_1_6_3
+class TranslatorSpanish : public Translator
 {
 
   public:
@@ -1869,6 +1870,65 @@ class TranslatorSpanish : public TranslatorAdapter_1_6_3
     {
       return "Nada coincide";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Gráfico de dependencias para el directorio "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Fichero en "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Incluye ficheros en "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Lunes","Martes","Miércoles","Jueves",
+									  "Viernes","Sábado","Domingo" };
+      static const char *months[] = { "Enero","Febrero","Marzo","Abril",
+									  "Mayo","Junio","Julio","Agosto",
+									  "Septiembre","Octubre","Noviembre","Diciembre" };
+      QCString sdate;
+      sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
 
 };
 

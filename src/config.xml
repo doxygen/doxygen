@@ -833,12 +833,12 @@ reverse domain-name style string, e.g. com.mycompany.MyDocSet. Doxygen
 will append .docset to the name. 
 ' defval='org.doxygen.Project' depends='GENERATE_DOCSET'/>
     <option type='string' id='DOCSET_PUBLISHER_ID' format='string' docs='
-When GENERATE_DOCSET tag specifies a string that should uniquely identify 
+When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify 
 the documentation publisher. This should be a reverse domain-name style 
 string, e.g. com.mycompany.MyDocSet.documentation. 
 ' defval='org.doxygen.Publisher' depends='GENERATE_DOCSET'/>
     <option type='string' id='DOCSET_PUBLISHER_NAME' format='string' docs='
-The GENERATE_DOCSET tag identifies the documentation publisher.
+The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher.
 ' defval='Publisher' depends='GENERATE_DOCSET'/>
     <option type='bool' id='GENERATE_HTMLHELP' docs='
 If the GENERATE_HTMLHELP tag is set to YES, additional index files 
@@ -964,6 +964,10 @@ If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be
 used to set the initial width (in pixels) of the frame in which the tree 
 is shown. 
 ' minval='0' maxval='1500' defval='250' depends='GENERATE_HTML'/>
+    <option type='bool' id='EXT_LINKS_IN_WINDOW' defval='0' docs='
+When the EXT_LINKS_IN_WINDOW option is set to YES doxygen will open 
+links to external symbols imported via tag files in a separate window. 
+' depends='GENERATE_HTML'/>
     <option type='int' id='FORMULA_FONTSIZE' docs='
 Use this tag to change the font size of Latex formulas included 
 as images in the HTML documentation. The default is 10. Note that 
@@ -1311,6 +1315,13 @@ available from the path. This tool is part of Graphviz, a graph visualization
 toolkit from AT&amp;T and Lucent Bell Labs. The other options in this section 
 have no effect if this option is set to NO (the default) 
 ' defval='0'/>
+    <option type='int' id='DOT_NUM_THREADS' docs='
+The DOT_NUM_THREADS specifies the number of dot invocations doxygen is 
+allowed to run in parallel. When set to 0 (the default) doxygen will 
+base this on the number of processors available in the system. You can set it 
+explicitly to a value larger than 0 to get control over the balance 
+between CPU load and processing speed.  
+' defval='0' minval='0' maxval='32'/>
     <option type='string' id='DOT_FONTNAME' format='string' docs='
 By default doxygen will write a font called FreeSans.ttf to the output 
 directory and reference it in all dot files that doxygen generates. This 
@@ -1320,7 +1331,7 @@ using DOT_FONTNAME. You need need to make sure dot is able to find the font,
 which can be done by putting it in a standard location or by setting the 
 DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory 
 containing the font. 
-' defval='FreeSans' depends='HAVE_DOT'/>
+' defval='FreeSans.ttf' depends='HAVE_DOT'/>
     <option type='int' id='DOT_FONTSIZE' docs='
 The DOT_FONTSIZE tag can be used to set the size of the font of dot graphs. 
 The default size is 10pt. 

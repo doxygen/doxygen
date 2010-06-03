@@ -1994,7 +1994,7 @@ void RTFGenerator::incrementIndentLevel()
   m_listLevel++;
   if (m_listLevel>rtf_maxIndentLevels-1)
   {
-    warn_cont("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
+    err("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
     m_listLevel=rtf_maxIndentLevels-1;
   }
 }
@@ -2004,7 +2004,7 @@ void RTFGenerator::decrementIndentLevel()
   m_listLevel--;
   if (m_listLevel<0)
   {
-    warn_cont("Warning: Negative indent level while generating RTF output!\n");
+    err("Warning: Negative indent level while generating RTF output!\n");
     m_listLevel=0;
   }
 }
@@ -2351,7 +2351,7 @@ void RTFGenerator::endDotGraph(const DotClassGraph &g)
   newParagraph();
 
   QCString fileName =
-    g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),relPath,TRUE,FALSE);
+    g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),fileName,relPath,TRUE,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2373,14 +2373,14 @@ void RTFGenerator::endInclDepGraph(const DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
-                         relPath,FALSE);
+  QCString fn = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
+                         fileName,relPath,FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  t << fn << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   DBG_RTF(t << "{\\comment (endInclDepGraph)}"    << endl)
@@ -2403,14 +2403,14 @@ void RTFGenerator::endCallGraph(const DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
-                        relPath,FALSE);
+  QCString fn = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
+                        fileName,relPath,FALSE);
 
   // display the file
   t << "{" << endl;
   t << rtf_Style_Reset << endl;
   t << "\\par\\pard \\qc {\\field\\flddirty {\\*\\fldinst INCLUDEPICTURE \"";
-  t << fileName << "." << Config_getEnum("DOT_IMAGE_FORMAT");
+  t << fn << "." << Config_getEnum("DOT_IMAGE_FORMAT");
   t << "\" \\\\d \\\\*MERGEFORMAT}{\\fldrslt IMAGE}}\\par" << endl;
   t << "}" << endl;
   DBG_RTF(t << "{\\comment (endCallGraph)}"    << endl)
@@ -2426,7 +2426,7 @@ void RTFGenerator::endDirDepGraph(const DotDirDeps &g)
   newParagraph();
 
   QCString fileName = g.writeGraph(t,BITMAP,Config_getString("RTF_OUTPUT"),
-                        relPath,FALSE);
+                        fileName,relPath,FALSE);
 
   // display the file
   t << "{" << endl;
@@ -2631,7 +2631,7 @@ void RTFGenerator::endParamList()
 void RTFGenerator::startParameterType(bool first,const char *key)
 {
   DBG_RTF(t << "{\\comment (startParameterList)}"    << endl)
-  if (!first)
+  if (!first && key)
   {
     t << " " << key << " ";
   }

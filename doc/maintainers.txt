@@ -8,135 +8,141 @@
 % The following one or more lines contain information about 
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
+% If the <e-mail> is prefixed [unreachable] it is not displayed in the table
+% of maintainers in the Doxygen documentation, nor it is used when building
+% the mailto.txt by translator.py.
 
 TranslatorAfrikaans
-Johan Prinsloo: johan@zippysnoek.com
+Johan Prinsloo: johan at zippysnoek dot com
 
 TranslatorArabic
-Moaz Reyad: moazreyad@yahoo.com
+Moaz Reyad: moazreyad at yahoo dot com
 
 TranslatorBrazilian
-Fabio "FJTC" Jun Takada Chino: jun-chino@uol.com.br
+Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
 
 TranslatorCatalan
-Maximiliano Pin: max.pin@bitroit.com
-Albert Mora: amora@iua.upf.es
+Maximiliano Pin: max dot pin at bitroit dot com
+Albert Mora: [unreachable] amora at iua dot upf dot es
 
 TranslatorChinese
-Li Daobing: lidaobing@gmail.com
-Wei Liu: liuwei@asiainfo.com
+Li Daobing: lidaobing at gmail dot com
+Wei Liu: liuwei at asiainfo dot com
 
 TranslatorChinesetraditional
-Daniel YC Lin: dlin.tw@gmail.com
-Gary Lee: garywlee@gmail.com
+Daniel YC Lin: dlin dot tw at gmail dot com
+Gary Lee: garywlee at gmail dot com
 
 TranslatorCroatian
-Boris Bralo: boris.bralo@zg.htnet.hr
+Boris Bralo: boris dot bralo at gmail dot com
 
 TranslatorCzech 
-Petr P&rcaron;ikryl: prikrylp@skil.cz
+Petr P&rcaron;ikryl: prikrylp at skil dot cz
 
 TranslatorDanish
-Erik S&oslash;e S&oslash;rensen: eriksoe+doxygen@daimi.au.dk
+Erik S&oslash;e S&oslash;rensen: eriksoe+doxygen at daimi dot au dot dk
 
 TranslatorDutch 
-Dimitri van Heesch: dimitri@stack.nl
+Dimitri van Heesch: dimitri at stack dot nl
 
 TranslatorEnglish 
-Dimitri van Heesch: dimitri@stack.nl
+Dimitri van Heesch: dimitri at stack dot nl
 
 TranslatorEsperanto
-Ander Martinez: dwarfnauko@gmail.com
+Ander Martinez: dwarfnauko at gmail dot com
 
 TranslatorFinnish
-Antti Laine: antti.a.laine@tut.fi
+Antti Laine: antti dot a dot laine at tut dot fi
 
 TranslatorFrench
-Xavier Outhier: xouthier@yahoo.fr
+Xavier Outhier: xouthier at yahoo dot fr
 
 TranslatorGerman  
-Jens Seidel: jensseidel@users.sf.net
+Jens Seidel: jensseidel at users dot sf dot net
 
 TranslatorGreek
-Paul Gessos: nickreserved@yahoo.com
+Paul Gessos: gessos dot paul at yahoo dot gr
 
 TranslatorHungarian
-&Aacute;kos Kiss: akiss@users.sourceforge.net
-F&ouml;ldv&aacute;ri Gy&ouml;rgy: foldvari lost@cyberspace
+&Aacute;kos Kiss: akiss at users dot sourceforge dot net
+F&ouml;ldv&aacute;ri Gy&ouml;rgy: [unreachable] foldvari lost at cyberspace
 
 TranslatorIndonesian
-Hendy Irawan: ceefour@gauldong.net
+Hendy Irawan: ceefour at gauldong dot net
 
 TranslatorItalian 
-Alessandro Falappa: alessandro@falappa.net 
-Ahmed Aldo Faisal: aaf23@cam.ac.uk
+Alessandro Falappa: alessandro at falappa dot net 
+Ahmed Aldo Faisal: aaf23 at cam dot ac dot uk
 
 TranslatorJapanese 
-Hiroki Iseri: goyoki@gmail.com
-Ryunosuke Satoh: sun594@hotmail.com
-Kenji Nagamatsu: naga@joyful.club.ne.jp
-Iwasa Kazmi: iwasa@cosmo-system.jp
+Hiroki Iseri: goyoki at gmail dot com
+Ryunosuke Satoh: sun594 at hotmail dot com
+Kenji Nagamatsu: naga at joyful dot club dot ne dot jp
+Iwasa Kazmi: [unreachable] iwasa at cosmo-system dot jp
 
 TranslatorKorean
-Kim Taedong: fly1004@gmail.com
-SooYoung Jung: jung5000@gmail.com
-Richard Kim: ryk@dspwiz.com
+Kim Taedong: fly1004 at gmail dot com
+SooYoung Jung: jung5000 at gmail dot com
+Richard Kim: [unreachable] ryk at dspwiz dot com
 
 TranslatorLithuanian
-Tomas Simonaitis: haden@homelan.lt
-Mindaugas Radzius: mindaugasradzius@takas.lt
-Aidas Berukstis: aidasber@takas.lt
+Tomas Simonaitis: [unreachable] haden at homelan dot lt
+Mindaugas Radzius: [unreachable] mindaugasradzius at takas dot lt
+Aidas Berukstis: [unreachable] aidasber at takas dot lt
+-- contact lost --:
 
 TranslatorNorwegian
-Lars Erik Jordet: lejordet@gmail.com
+Lars Erik Jordet: lejordet at gmail dot com
 
 TranslatorMacedonian
-Slave Jovanovski: slavejovanovski@yahoo.com
+Slave Jovanovski: slavejovanovski at yahoo dot com
 
 TranslatorPersian
-Ali Nadalizadeh: nadalizadeh@gmail.com
+Ali Nadalizadeh: nadalizadeh at gmail dot com
 
 TranslatorPolish 
-Piotr Kaminski: Piotr.Kaminski@ctm.gdynia.pl
-Grzegorz Kowal:  g_kowal@poczta.onet.pl
-Krzysztof Kral: krzysztof.kral@gmail.com
+Piotr Kaminski: [unreachable] Piotr dot Kaminski at ctm dot gdynia dot pl
+Grzegorz Kowal: [unreachable] g_kowal at poczta dot onet dot pl
+Krzysztof Kral: krzysztof dot kral at gmail dot com
 
 TranslatorPortuguese
-Rui Godinho Lopes: ruiglopes@yahoo.com
+Rui Godinho Lopes: [unreachable] ruiglopes at yahoo dot com
 
 TranslatorRomanian
-Ionut Dumitrascu: reddumy@yahoo.com
-Alexandru Iosup: aiosup@yahoo.com
+Ionut Dumitrascu: reddumy at yahoo dot com
+Alexandru Iosup: aiosup at yahoo dot com
 
 TranslatorRussian
-Alexandr Chelpanov: cav@cryptopro.ru
+Alexandr Chelpanov: cav at cryptopro dot ru
 
 TranslatorSerbian
-Dejan Milosavljevic: dmilos@email.com
+Dejan Milosavljevic: [unreachable] dmilos at email dot com
 
 TranslatorSerbianCyrilic
-Nedeljko Stefanovic: stenedjo@yahoo.com
+Nedeljko Stefanovic: stenedjo at yahoo dot com
 
 TranslatorSlovak
-Stanislav Kudl&aacute;&ccaron;: skudlac@pobox.sk
+% Stanislav Kudl&aacute;&ccaron;: [unreachable] skudlac at pobox dot sk
+-- searching for the maintainer --:
 
 TranslatorSlovene
-Matja&zcaron; Ostrover&scaron;nik: matjaz.ostroversnik@ostri.org
+Matja&zcaron; Ostrover&scaron;nik: matjaz dot ostroversnik at ostri dot org
 
 TranslatorSpanish 
-Bartomeu: bartomeu@loteria3cornella.com
-Francisco Oltra Thennet: foltra@puc.cl
-David Vaquero: david@grupoikusnet.com
+Bartomeu: bartomeu at loteria3cornella dot com
+Francisco Oltra Thennet: [unreachable] foltra at puc dot cl
+David Vaquero: david at grupoikusnet dot com
 
 TranslatorSwedish 
-Mikael Hallin: mikaelhallin@yahoo.se
+Mikael Hallin: mikaelhallin at yahoo dot se
 
 TranslatorUkrainian
-Olexij Tkatchenko: olexij.tkatchenko@parcs.de
+% (resigned) Olexij Tkatchenko: olexij at tkatchenko dot com
+-- searching for the maintainer --:
 
 TranslatorVietnamese
-Dang Minh Tuan: tuanvietkey@gmail.com
+Dang Minh Tuan: tuanvietkey at gmail dot com
 
 TranslatorTurkish
-Emin Ilker Cetinbas: niw3@yahoo.com
+Emin Ilker Cetinbas: niw3 at yahoo dot com
 
