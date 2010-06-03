@@ -105,6 +105,7 @@ void FormulaList::generateBitmaps(const char *path)
     //system("latex _formulas.tex </dev/null >/dev/null");
     QCString latexCmd = Config_getString("LATEX_CMD_NAME");
     if (latexCmd.isEmpty()) latexCmd="latex";
+    portable_sysTimerStart();
     if (portable_system(latexCmd,"_formulas.tex")!=0)
     {
       err("Problems running latex. Check your installation or look "
@@ -112,6 +113,7 @@ void FormulaList::generateBitmaps(const char *path)
       formulaError=TRUE;
       //return;
     }
+    portable_sysTimerStop();
     //printf("Running dvips...\n");
     QListIterator<int> pli(pagesToGenerate);
     int *pagePtr;
@@ -127,11 +129,14 @@ void FormulaList::generateBitmaps(const char *path)
       // encapsulated postscript.
       sprintf(dviArgs,"-q -D 600 -E -n 1 -p %d -o %s.eps _formulas.dvi",
           pageIndex,formBase.data());
+      portable_sysTimerStart();
       if (portable_system("dvips",dviArgs)!=0)
       {
         err("Problems running dvips. Check your installation!\n");
+        portable_sysTimerStop();
         return;
       }
+      portable_sysTimerStop();
       // now we read the generated postscript file to extract the bounding box
       QFileInfo fi(formBase+".eps");
       if (fi.exists())
@@ -184,11 +189,14 @@ void FormulaList::generateBitmaps(const char *path)
                     gx,gy,(int)(scaleFactor*72),(int)(scaleFactor*72),
                     formBase.data(),formBase.data()
              );
+      portable_sysTimerStart();
       if (portable_system(portable_ghostScriptCommand(),gsArgs)!=0)
       {
         err("Problem running ghostscript %s %s. Check your installation!\n",portable_ghostScriptCommand(),gsArgs);
+        portable_sysTimerStop();
         return;
       }
+      portable_sysTimerStop();
       f.setName(formBase+".pnm");
       uint imageX=0,imageY=0;
       // we read the generated image again, to obtain the pixel data.

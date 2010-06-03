@@ -161,16 +161,6 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_end(args); 
 }
 
-void warn_cont(const char *fmt, ...)
-{
-  if (!Config_getBool("WARNINGS"))
-    return;
-  va_list args;
-  va_start(args, fmt);
-  vfprintf(warnFile, fmt, args);
-  va_end(args); 
-}
-  
 void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
   va_list args;

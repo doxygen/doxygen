@@ -10,11 +10,13 @@
  * Documents produced by Doxygen are derivative workns derived from the
  * input used in their production; they are not affected by this license.
  *
- * Brazilian Portuguese translation version 20091215
+ * Brazilian Portuguese translation version 20100531
  *    Maintainer: Fabio "FJTC" Jun Takada Chino <jun-chino at uol.com.br>
  *    Thanks to Jorge Ramos, Fernando Carijo and others for their contributions.
  *
  * History:
+ *   20100531:
+ *	- Updated to 1.6.3;
  *   20091218:
  *      - Updated to 1.6.1;
  *      - Copyright year updated;
@@ -25,17 +27,12 @@
  *      - Method trTypeContraints() renamed to trTypeConstraints().
  *   20071216:
  * 	- New methods since 1.5.4 updated. 
- *   20070914
- *      - "Translate me" fixed
- *      - Revision number changed from doxygen version to a date string.
- *      - History cleanup
- *      - Latex babel package fixed.
  *   Previous history removed from this version.
  */
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public TranslatorAdapter_1_6_3
+class TranslatorBrazilian : public Translator
 {
   public:
 
@@ -1781,7 +1778,6 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_3
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name
-     * \todo
      */
     virtual QCString trDirRelation(const char *name)
     {
@@ -1810,6 +1806,61 @@ class TranslatorBrazilian : public TranslatorAdapter_1_6_3
     virtual QCString trNoMatches()
     {
       return "Nenhuma entrada encontrada";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Grafo de dependência de diretórios para "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Arquivo em "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Inclui arquivo em "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo" };
+      static const char *months[] = { "Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro" };
+      QCString sdate;
+      sdate.sprintf("%s, %d de %s de %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
     }
 };
 #endif

@@ -1510,23 +1510,14 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";
-    m_t << "target=\"_blank\" doxygen=\"" << ref << ":";
-    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
-    m_t << "\" ";
+    m_t << externalLinkTarget() << externalRef(relPath,ref,FALSE);
   }
   else // local link
   {
     m_t << "<a class=\"el\" ";
   }
   m_t << "href=\"";
-  if (!ref.isEmpty())
-  {
-    if ((dest=Doxygen::tagDestinationDict[ref])) m_t << *dest << "/";
-  }
-  else
-  {
-    m_t << relPath;
-  }
+  m_t << externalRef(relPath,ref,TRUE);
   if (!file.isEmpty()) m_t << file << Doxygen::htmlFileExtension;
   if (!anchor.isEmpty()) m_t << "#" << anchor;
   m_t << "\"";
@@ -1552,22 +1543,22 @@ void HtmlDocVisitor::popEnabled()
   delete v;
 }
 
-void HtmlDocVisitor::writeDotFile(const QCString &fileName,const QCString &relPath,
+void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
                                   const QCString &context)
 {
-  QCString baseName=fileName;
+  QCString baseName=fn;
   int i;
   if ((i=baseName.findRev('/'))!=-1)
   {
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString("HTML_OUTPUT");
-  writeDotGraphFromFile(fileName,outDir,baseName,BITMAP);
+  writeDotGraphFromFile(fn,outDir,baseName,BITMAP);
   QCString mapName = baseName+".map";
-  QCString mapFile = fileName+".map";
+  QCString mapFile = fn+".map";
   m_t << "<img src=\"" << relPath << baseName << "." 
-    << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
+      << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
+      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
   QCString imap = getDotImageMapFromFile(baseName,outDir,relPath,context);
   m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }

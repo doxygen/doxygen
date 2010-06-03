@@ -90,7 +90,9 @@ bool Htags::execute(const QCString &htmldir)
   QCString oldDir = convertToQCString(QDir::currentDirPath());
   QDir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",commandLine.data());
+  portable_sysTimerStart();
   bool result=portable_system("htags",commandLine,FALSE)==0;
+  portable_sysTimerStop();
   QDir::setCurrent(oldDir);
   return result;
 }

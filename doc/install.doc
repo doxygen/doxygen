@@ -56,8 +56,8 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit 
-    <A HREF="http://www.trolltech.com/products/qt.html">Qt</A>
-    \latexonly(see {\tt http://www.trolltech.com/products/qt.html})\endlatexonly
+    <a href="http://qt.nokia.com/">Qt</A>
+    \latexonly(see {\tt http://qt.nokia.com/})\endlatexonly
     \addindex Qt
     version 4.3 or higher.
     This is needed to build the GUI front-end doxywizard. 
@@ -410,7 +410,7 @@ You can now build the Release or Debug flavor of Doxygen and Doxytag by right-cl
 the project in the solutions explorer, and selecting Build.
 
 Note that compiling Doxywizard currently requires Qt version 4
-(see http://www.trolltech.com/products/qt/qt3).
+(see http://qt.nokia.com/products/platform/qt-for-windows).
 If you do not have a commercial license, you can build Doxywizard with the open
 source version (see http://qtwin.sourceforge.net/qt3-win32/compile-msvc-2005.php), 
 but I have not tried this myself.
@@ -497,17 +497,11 @@ Here is what is required:
     steps.
 
 <li>From Doxygen-1.2.2-20001015 onwards, the distribution includes the part
-    of Qt-2.x.y that is needed for to compile doxygen and doxytag,
+    of Qt that is needed for to compile doxygen and doxytag,
     The Windows specific part were also created.
-    As a result doxygen can be compiled on systems without X11 or the
-    commerical version of Qt. 
+    As a result doxygen (without the wizard) can be compiled on systems 
+    without X11 or the (commerical) version of Qt. 
 
-    For doxywizard, a complete Qt library is 
-    still a requirement however. A commercial license to build
-    doxywizard with the latest Qt library was kindly donated to me
-    by the nice people at <a href="http://www.trolltech.com">Qt Software</a>. 
-    See doxygen download page for a link. 
-   
 <li>If you used WinZip to extract the tar archive it will (apparently) not 
     create empty folders, so you have to add the folders
     <code>objects</code> and <code>bin</code> manually in the root of the 

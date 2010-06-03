@@ -377,5 +377,8 @@ bool patternMatch(const QFileInfo &fi,const QStrList *patList);
 void writeSummaryLink(OutputList &ol,const char *label,const char *title,
                       bool &first);
 
+QCString externalLinkTarget();
+QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
+
 #endif
 

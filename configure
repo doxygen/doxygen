@@ -20,7 +20,7 @@ doxygen_version_minor=6
 doxygen_version_revision=3
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20100507
+doxygen_version_mmn=20100603
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 
@@ -268,7 +268,7 @@ if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
     echo -n "  Checking for Qt..."
-    for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4}; do
+    for d in /usr /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4}; do
       if test -x "$d/bin/qmake"; then
         QTDIR=$d
       fi
@@ -498,6 +498,17 @@ if test "$f_platform" = "m68k-atari-mint-g++"; then
 TMAKE += -unix
 EOF
 fi
+
+if test "$f_platform" = "macosx-c++"; then
+  cat >> .makeconfig <<EOF
+MKSPECS   = -spec macx-g++
+EOF
+fi
+if test "$f_platform" = "macosx-uni-c++"; then
+  cat >> .makeconfig <<EOF
+MKSPECS   = -spec macx-g++
+EOF
+  fi
 
 
 # Make doxygen.spec...

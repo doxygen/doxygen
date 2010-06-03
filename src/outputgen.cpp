@@ -41,7 +41,7 @@ OutputGenerator::~OutputGenerator()
 void OutputGenerator::startPlainFile(const char *name)
 {
   //printf("startPlainFile(%s)\n",name);
-  QCString fileName=dir+"/"+name;
+  fileName=dir+"/"+name;
   file = new QFile(fileName);
   if (!file)
   {
@@ -60,6 +60,7 @@ void OutputGenerator::endPlainFile()
 {
   delete file;
   file=0;
+  fileName.resize(0);
 }
 
 void OutputGenerator::pushGeneratorState()

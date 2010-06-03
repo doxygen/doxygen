@@ -221,7 +221,7 @@ class LatexGenerator : public OutputGenerator
     void startParameterName(bool);
     void endParameterName(bool,bool,bool);
     void startParameterList(bool);
-    void endParameterList() {}
+    void endParameterList();
 
     void startConstraintList(const char *);
     void startConstraintParam();

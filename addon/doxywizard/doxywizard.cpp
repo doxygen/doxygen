@@ -4,6 +4,10 @@
 #include "expert.h"
 #include "wizard.h"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #define MAX_RECENT_FILES 10
 
 const int messageTimeout = 5000; //!< status bar message timeout in millisec.
@@ -520,12 +524,13 @@ void MainWindow::showHtmlOutput()
   QFileInfo fi(indexFile);
   // TODO: the following doesn't seem to work with IE
 #ifdef WIN32
-  QString indexUrl(QString::fromAscii("file:///"));
+  //QString indexUrl(QString::fromAscii("file:///"));
+  ShellExecute(NULL, L"open", fi.absoluteFilePath().utf16(), NULL, NULL, SW_SHOWNORMAL);
 #else
   QString indexUrl(QString::fromAscii("file://"));
-#endif
   indexUrl+=fi.absoluteFilePath();
   QDesktopServices::openUrl(QUrl(indexUrl));
+#endif
 }
 
 void MainWindow::saveLog()

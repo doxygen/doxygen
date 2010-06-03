@@ -907,11 +907,11 @@ void QGDict::statistics() const
     QString line;
     line.fill( '-', 60 );
     double real, ideal;
-    qDebug( line.ascii() );
+    qDebug( "%s",line.ascii() );
     qDebug( "DICTIONARY STATISTICS:" );
     if ( count() == 0 ) {
 	qDebug( "Empty!" );
-	qDebug( line.ascii() );
+	qDebug( "%s", line.ascii() );
 	return;
     }
     real = 0.0;
@@ -932,7 +932,7 @@ void QGDict::statistics() const
 	while ( b-- )
 	    *pbuf++ = '*';
 	*pbuf = '\0';
-	qDebug( buf );
+	qDebug( "%s", buf );
 	i++;
     }
     qDebug( "Array size = %d", size() );
@@ -940,7 +940,7 @@ void QGDict::statistics() const
     qDebug( "Real dist  = %g", real );
     qDebug( "Rand dist  = %g", ideal );
     qDebug( "Real/Rand  = %g", real/ideal );
-    qDebug( line.ascii() );
+    qDebug( "%s",line.ascii() );
 #endif // DEBUG
 }
 

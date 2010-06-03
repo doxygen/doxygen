@@ -2643,32 +2643,20 @@ void writeJavascriptSearchIndex()
                 << "onkeyup=\""
                 << "return searchResults.Nav(event," << itemCount << ")\" "
                 << "class=\"SRSymbol\" ";
-              if (!d->getReference().isEmpty())
-              {
-                QCString *dest = Doxygen::tagDestinationDict[d->getReference()];
-                if (dest && *dest=='.') // relative path (see bug 593679)
-                {
-                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":../"
-                    << *dest << "/\" href=\"../" << *dest << "/";
-                }
-                else if (dest) // absolute path
-                {
-                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":"
-                    << *dest << "/\" href=\"" << *dest << "/";
-                }
-              }
-              else
-              {
-                t << "href=\"../";
-              }
+              t << externalLinkTarget() << "href=\"" << externalRef("../",d->getReference(),TRUE);
               t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
               if (isMemberDef)
               {
                 t << "#" << ((MemberDef *)d)->anchor();
               }
-              t << "\" target=\""; 
-              if (treeView) t << "basefrm"; else t << "_parent"; 
-              t << "\">";
+              static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+              if (!extLinksInWindow || d->getReference().isEmpty())
+              {
+                t << "\" target=\""; 
+                if (treeView) t << "basefrm"; else t << "_parent"; 
+                t << "\"";
+              }
+              t << ">";
               t << convertToXML(d->localName());
               t << "</a>" << endl;
               if (d->getOuterScope()!=Doxygen::globalScope)
@@ -2733,25 +2721,22 @@ void writeJavascriptSearchIndex()
                   << "class=\"SRScope\" ";
                 if (!d->getReference().isEmpty())
                 {
-                  QCString *dest;
-                  t << "target=\"_blank\" doxygen=\"" << d->getReference() << ":../";
-                  if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
-                  t << "\" ";
-                  t << "href=\"../";
-                  if ((dest=Doxygen::tagDestinationDict[d->getReference()])) t << *dest << "/";
+                  t << externalLinkTarget() << externalRef("../",d->getReference(),FALSE);
                 }
-                else
-                {
-                  t << "href=\"../";
-                }
+                t << "href=\"" << externalRef("../",d->getReference(),TRUE);
                 t << d->getOutputFileBase() << Doxygen::htmlFileExtension;
                 if (isMemberDef)
                 {
                   t << "#" << ((MemberDef *)d)->anchor();
                 }
-                t << "\" target=\"";
-                if (treeView) t << "basefrm"; else t << "_parent"; 
-                t << "\">";
+                static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+                if (!extLinksInWindow || d->getReference().isEmpty())
+                {
+                  t << "\" target=\"";
+                  if (treeView) t << "basefrm"; else t << "_parent"; 
+                  t << "\"";
+                }
+                t << ">";
                 bool found=FALSE;
                 overloadedFunction = ((prevScope!=0 && scope==prevScope) ||
                                       (scope && scope==nextScope)

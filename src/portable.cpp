@@ -27,11 +27,10 @@ extern char **environ;
 //#include "doxygen.h"
 
 static double  sysElapsedTime;
+static QTime   time;
 
 int  portable_system(const char *command,const char *args,bool commandHasConsole)
 {
-  QTime time;
-  time.start();
 
   if (command==0) return 1;
 
@@ -79,7 +78,6 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
       }
     }
   }
-  sysElapsedTime+=((double)time.elapsed())/1000.0;
   return status;
 
 #else  // Other Unices just use fork
@@ -104,7 +102,6 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
     }
     else
     {
-      sysElapsedTime+=((double)time.elapsed())/1000.0;
       if (WIFEXITED(status))
       {
         return WEXITSTATUS(status);
@@ -158,7 +155,6 @@ int  portable_system(const char *command,const char *args,bool commandHasConsole
       CloseHandle(sInfo.hProcess);
     }
   }
-  sysElapsedTime+=((double)time.elapsed())/1000.0;
   return 0;
 #endif
 
@@ -369,8 +365,26 @@ int portable_pclose(FILE *stream)
   return pclose(stream);
 }
 
+void portable_sysTimerStart()
+{
+  time.start();
+}
+
+void portable_sysTimerStop()
+{
+  sysElapsedTime+=((double)time.elapsed())/1000.0;
+}
+
 double portable_getSysElapsedTime()
 {
   return sysElapsedTime;
 }
 
+void portable_sleep(int ms)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  Sleep(ms);
+#else
+  usleep(1000*ms);
+#endif
+}

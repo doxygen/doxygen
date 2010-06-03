@@ -20,6 +20,8 @@
 
 // Updates:
 // --------
+// 2010/06/01 - typo
+// 2010/04/28 - Updates for "new since 1.6.3".
 // 2009/09/02 - Updates for "new since 1.6.0 (mainly for the new search engine)".
 // 2008/06/09 - Corrections in trLegendDocs().
 // 2007/11/13 - Update for "new since 1.5.4 (mainly for Fortran)".
@@ -79,7 +81,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public TranslatorAdapter_1_6_3
+class TranslatorCzech : public Translator
 {
   public:
     // --- Language control methods -------------------
@@ -1847,6 +1849,61 @@ class TranslatorCzech : public TranslatorAdapter_1_6_3
     {
       return "Nic se nenašlo";
     }
-};
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Graf závislosti adresářů pro "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Soubor v "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Vkládá (include) soubor z "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "po","út","st","čt","pá","so","ne" };
+      static const char *months[] = { "led","úno","bře","dub","kvě","čer","čec","srp","zář","říj","lis","pro" };
+      QCString sdate;
+      sdate.sprintf("%s %d. %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d.%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
+};
 #endif // TRANSLATOR_CZ_H

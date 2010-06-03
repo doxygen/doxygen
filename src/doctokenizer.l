@@ -16,6 +16,7 @@
  *
  */
 
+
 %{
 
 #include <qfile.h>
@@ -181,7 +182,7 @@ static void handleHtmlTag()
 
   // Parse the name portion
   int i = startNamePos;
-  for (i=startNamePos; i < yyleng; i++)
+  for (i=startNamePos; i < (int)yyleng; i++)
   {
     // Check for valid HTML/XML name chars (including namespaces)
     char c = tagText.at(i);
@@ -192,11 +193,11 @@ static void handleHtmlTag()
   // Parse the attributes. Each attribute is a name, value pair
   // The result is stored in g_token->attribs.
   int startName,endName,startAttrib,endAttrib;
-  while (i<yyleng)
+  while (i<(int)yyleng)
   {
     char c=tagText.at(i);
     // skip spaces
-    while (i<yyleng && isspace(c)) { c=tagText.at(++i); }
+    while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); }
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
@@ -207,43 +208,43 @@ static void handleHtmlTag()
     }
     startName=i;
     // search for end of name
-    while (i<yyleng && !isspace(c) && c!='=') { c=tagText.at(++i); }
+    while (i<(int)yyleng && !isspace(c) && c!='=') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
     opt.name  = tagText.mid(startName,endName-startName).lower(); 
     // skip spaces
-    while (i<yyleng && isspace(c)) { c=tagText.at(++i); } 
+    while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); } 
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<yyleng && isspace(c)) { c=tagText.at(++i); } 
+      while (i<(int)yyleng && isspace(c)) { c=tagText.at(++i); } 
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
 	startAttrib=i;
 	
 	// search for matching quote 
-        while (i<yyleng && c!='\'') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) c=tagText.at(++i);
       }
       else if (tagText.at(i)=='"') // option "..."
       {
         c=tagText.at(++i);
 	startAttrib=i;
 	// search for matching quote 
-        while (i<yyleng && c!='"') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); } 
 	endAttrib=i;
-        if (i<yyleng) c=tagText.at(++i);
+        if (i<(int)yyleng) c=tagText.at(++i);
       }
       else // value without any quotes
       {
 	startAttrib=i;
 	// search for separator or end symbol
-        while (i<yyleng && !isspace(c) && c!='>') { c=tagText.at(++i); } 
+        while (i<(int)yyleng && !isspace(c) && c!='>') { c=tagText.at(++i); } 
 	endAttrib=i;
-	if (i<yyleng) c=tagText.at(++i);
+	if (i<(int)yyleng) c=tagText.at(++i);
       }
       opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
     }

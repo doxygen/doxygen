@@ -40,6 +40,11 @@
 #include <qfile.h>
 #include "ftextstream.h"
 #include <md5.h>
+#include <qqueue.h>
+
+#include <qthread.h>
+#include <qmutex.h>
+#include <qwaitcondition.h>
 
 #define MAP_CMD "cmapx"
 
@@ -81,7 +86,7 @@ static const char *edgeStyleMap[] =
 static QCString getDotFontName()
 {
   static QCString dotFontName = Config_getString("DOT_FONTNAME");
-  if (dotFontName.isEmpty()) dotFontName="FreeSans";
+  if (dotFontName.isEmpty()) dotFontName="FreeSans.ttf";
   return dotFontName;
 }
 
@@ -151,7 +156,6 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
       {
         QCString link = buf.mid(indexS+6,indexE-indexS-6);
         QCString result;
-        QCString *dest;
         if (urlOnly) // for user defined dot graphs
         {
           if (link.left(5)=="\\ref ") // \ref url
@@ -159,15 +163,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
             result="href=\"";
             // fake ref node to resolve the url
             DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
-            if (!df->ref().isEmpty())
-            {
-              if ((dest=Doxygen::tagDestinationDict[df->ref()])) 
-                result += *dest + "/";
-            }
-            else if (!relPath.isEmpty())
-            {
-              result += relPath;
-            }
+            result+=externalRef(relPath,df->ref(),TRUE);
             if (!df->file().isEmpty())  
               result += df->file().data() + Doxygen::htmlFileExtension;
             if (!df->anchor().isEmpty()) 
@@ -189,19 +185,10 @@ static bool convertMapFile(FTextStream &t,const char *mapName,
             QCString url = link.mid(marker+1);
             if (!ref.isEmpty())
             {
-              result = "target=\"_blank\" doxygen=\"" + ref + ":";
-              if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
-              result += "\" ";
+              result = externalLinkTarget() + externalRef(relPath,ref,FALSE);
             }
             result+= "href=\"";
-            if (!ref.isEmpty())
-            {
-              if ((dest=Doxygen::tagDestinationDict[ref])) result += *dest + "/";
-            }
-            else if (!relPath.isEmpty())
-            {
-              result += relPath;
-            }
+            result+=externalRef(relPath,ref,TRUE);
             result+= url + "\"";
           }
           else // should not happen, but handle properly anyway
@@ -298,28 +285,95 @@ static void unsetDotFontPath()
   g_dotFontPath="";
 }
 
-static bool readBoundingBoxEPS(const char *fileName,int *width,int *height)
+static bool readBoundingBox(const char *fileName,int *width,int *height,bool isEps)
 {
-  QCString bb("%%PageBoundingBox:");
+  QCString bb = isEps ? QCString("%%PageBoundingBox:") : QCString("   /MediaBox [ ");
   QFile f(fileName);
-  if (!f.open(IO_ReadOnly)) return FALSE;
+  if (!f.open(IO_ReadOnly|IO_Raw)) 
+  {
+    //printf("readBoundingBox: could not open %s\n",fileName);
+    return FALSE;
+  }
   const int maxLineLen=1024;
   char buf[maxLineLen];
   while (!f.atEnd())
   {
     int numBytes = f.readLine(buf,maxLineLen-1); // read line
-    buf[numBytes]='\0';
-    if (strncmp(buf,bb.data(),bb.length()-1)==0) // found PageBoundingBox string
+    if (numBytes>0)
     {
-      int x,y;
-      if (sscanf(buf+bb.length(),"%d %d %d %d",&x,&y,width,height)!=4)
+      buf[numBytes]='\0';
+      if (strncmp(buf,bb.data(),bb.length()-1)==0) // found PageBoundingBox string
       {
-        return FALSE;
+        int x,y;
+        if (sscanf(buf+bb.length(),"%d %d %d %d",&x,&y,width,height)!=4)
+        {
+          //printf("readBoundingBox sscanf fail\n");
+          return FALSE;
+        }
+        return TRUE;
       }
-      return TRUE;
+    }
+    else // read error!
+    {
+      //printf("Read error %d!\n",numBytes);
+      return FALSE;
     }
   }
+  //printf("readBoundingBox: bounding box not found\n");
   return FALSE;
+}
+
+static bool writeVecGfxFigure(FTextStream &out,const QCString &baseName,
+                           const QCString &figureName)
+{
+  int width=420,height=600;
+  static bool usePdfLatex = Config_getBool("USE_PDFLATEX");
+  if (usePdfLatex)
+  {
+    if (!readBoundingBox(figureName+".pdf",&width,&height,FALSE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  else
+  {
+    if (!readBoundingBox(figureName+".eps",&width,&height,TRUE))
+    {
+      //printf("writeVecGfxFigure()=0\n");
+      return FALSE;
+    }
+  }
+  //printf("Got PDF/EPS size %d,%d\n",width,height);
+  int maxWidth  = 400;  /* approx. page width in points, excl. margins */
+  int maxHeight = 600;  /* approx. page height in points, excl. margins */ 
+  out << "\\nopagebreak\n"
+         "\\begin{figure}[H]\n"
+         "\\begin{center}\n"
+         "\\leavevmode\n";
+  if (width>maxWidth || height>maxHeight) // figure too big for page
+  {
+    // c*width/maxWidth > c*height/maxHeight, where c=maxWidth*maxHeight>0
+    if (width*maxHeight>height*maxWidth)
+    {
+      out << "\\includegraphics[width=" << maxWidth << "pt]";
+    }
+    else
+    {
+      out << "\\includegraphics[height=" << maxHeight << "pt]";
+    }
+  }
+  else
+  {
+     out << "\\includegraphics[width=" << width << "pt]";
+  }
+
+  out << "{" << baseName << "}\n"
+         "\\end{center}\n"
+         "\\end{figure}\n";
+
+  //printf("writeVecGfxFigure()=1\n");
+  return TRUE;
 }
 
 // since dot silently reproduces the input file when it does not
@@ -355,6 +409,27 @@ static void checkDotResult(const QCString &imgName)
   }
 }
 
+static bool insertMapFile(FTextStream &out,const QCString &mapFile,
+                          const QCString &relPath,const QCString &mapLabel)
+{
+  QFileInfo fi(mapFile);
+  if (fi.exists() && fi.size()>0) // reuse existing map file
+  {
+    QGString tmpstr;
+    FTextStream tmpout(&tmpstr);
+    convertMapFile(tmpout,mapFile,relPath);
+    if (!tmpstr.isEmpty())
+    {
+      out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
+      out << tmpstr;
+      out << "</map>" << endl;
+    }
+    return TRUE;
+  }
+  return FALSE; // no map file yet, need to generate it
+}
+
+
 /*! Checks if a file "baseName".md5 exists. If so the contents
  *  are compared with \a md5. If equal FALSE is returned. If the .md5
  *  file does not exist or its contents are not equal to \a md5, 
@@ -386,6 +461,24 @@ static bool checkAndUpdateMd5Signature(const QCString &baseName,const QCString &
   return TRUE;
 }
 
+static bool checkDeliverables(const QCString &file1,
+                              const QCString &file2=QCString())
+{
+  bool file1Ok = TRUE;
+  bool file2Ok = TRUE;
+  if (!file1.isEmpty())
+  {
+    QFileInfo fi(file1);
+    file1Ok = (fi.exists() && fi.size()>0);
+  }
+  if (!file2.isEmpty())
+  {
+    QFileInfo fi(file2);
+    file2Ok = (fi.exists() && fi.size()>0);
+  }
+  return file1Ok && file2Ok;
+}
+
 //--------------------------------------------------------------------
 
 class DotNodeList : public QList<DotNode>
@@ -401,8 +494,13 @@ class DotNodeList : public QList<DotNode>
 
 //--------------------------------------------------------------------
 
-DotRunner::DotRunner(const char *file) : m_file(file)
+DotRunner::DotRunner(const QCString &file,const QCString &path,
+                     bool checkResult,const QCString &imageName) 
+  : m_file(file), m_path(path), 
+    m_checkResult(checkResult), m_imageName(imageName)
 {
+  static bool dotCleanUp = Config_getBool("DOT_CLEANUP"); 
+  m_cleanUp = dotCleanUp;
   m_jobs.setAutoDelete(TRUE);
 }
 
@@ -421,11 +519,12 @@ void DotRunner::addPostProcessing(const char *cmd,const char *args)
 bool DotRunner::run()
 {
   int exitCode=0;
-  static QCString dotExe = Config_getString("DOT_PATH")+"dot";
+  static QCString dotExe   = Config_getString("DOT_PATH")+"dot";
+  static bool multiTargets = Config_getBool("DOT_MULTI_TARGETS");
   QCString dotArgs;
   QListIterator<QCString> li(m_jobs);
   QCString *s;
-  if (Config_getBool("DOT_MULTI_TARGETS"))
+  if (multiTargets)
   {
     dotArgs="\""+m_file+"\"";
     for (li.toFirst();(s=li.current());++li)
@@ -454,12 +553,323 @@ bool DotRunner::run()
     err("Error: Problems running '%s' as a post-processing step for dot output\n",m_postCmd.data());
     return FALSE;
   }
+  if (m_checkResult) checkDotResult(m_imageName);
+  if (m_cleanUp) 
+  {
+    //printf("removing dot file %s\n",m_file.data());
+    QDir(m_path).remove(m_file);
+  }
   return TRUE;
 error:
   err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
       exitCode,dotExe.data(),dotArgs.data());
   return FALSE;
 }
+
+//--------------------------------------------------------------------
+
+DotMapConverter::DotMapConverter(const char *patchFile) 
+  : m_patchFile(patchFile)
+{
+  m_maps.setAutoDelete(TRUE);
+}
+
+int DotMapConverter::addMap(const QCString &mapFile,const QCString &relPath,
+               bool urlOnly,const QCString &context,const QCString &label)
+{
+  int id = m_maps.count();
+  Map *map = new Map;
+  map->mapFile = mapFile;
+  map->relPath = relPath;
+  map->urlOnly = urlOnly;
+  map->context = context;
+  map->label   = label;
+  m_maps.append(map);
+  return id;
+}
+
+int DotMapConverter::addFigure(const QCString &baseName,
+                               const QCString &figureName,bool heightCheck)
+{
+  int id = m_maps.count();
+  Map *map = new Map;
+  map->mapFile = figureName;
+  map->urlOnly = heightCheck;
+  map->label   = baseName;
+  m_maps.append(map);
+  return id;
+}
+
+bool DotMapConverter::run()
+{
+  //printf("DotMapConverter::run(): %s\n",m_patchFile.data());
+  QCString tmpName = m_patchFile+".tmp";
+  if (!QDir::current().rename(m_patchFile,tmpName))
+  {
+    err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.data());
+    return FALSE;
+  }
+  QFile fi(tmpName);
+  QFile fo(m_patchFile);
+  if (!fi.open(IO_ReadOnly)) 
+  {
+    err("Error opening file %s for patching!\n",tmpName.data());
+    QDir::current().rename(tmpName,m_patchFile);
+    return FALSE;
+  }
+  if (!fo.open(IO_WriteOnly))
+  {
+    err("Error opening file %s for patching!\n",m_patchFile.data());
+    QDir::current().rename(tmpName,m_patchFile);
+    return FALSE;
+  }
+  FTextStream t(&fo);
+  const int maxLineLen=100*1024;
+  while (!fi.atEnd()) // foreach line
+  {
+    QCString line(maxLineLen);
+    int numBytes = fi.readLine(line.data(),maxLineLen);
+    int i;
+    ASSERT(numBytes<maxLineLen);
+    if ((i=line.find("<!-- MAP"))!=-1)
+    {
+      int mapId=-1;
+      int n = sscanf(line,"<!-- MAP %d",&mapId);
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      {
+        Map *map = m_maps.at(mapId);
+        //printf("patching MAP %d in file %s with contents of %s\n",
+        //   mapId,m_patchFile.data(),map->mapFile.data());
+        t << "<map name=\"" << map->label << "\" id=\"" << map->label << "\">" << endl;
+        convertMapFile(t,map->mapFile,map->relPath,map->urlOnly,map->context);
+        t << "</map>" << endl;
+      }
+      else // error invalid map id!
+      {
+        err("Found invalid MAP id in file %s!\n",mapId,m_patchFile.data());
+        t << line;
+      }
+    }
+    else if ((i=line.find("% FIG"))!=-1)
+    {
+      int mapId=-1;
+      int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
+      //printf("line='%s' n=%d\n",line.data()+i,n);
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      {
+        Map *map = m_maps.at(mapId);
+        //printf("patching FIG %d in file %s with contents of %s\n",
+        //   mapId,m_patchFile.data(),map->mapFile.data());
+        writeVecGfxFigure(t,map->label,map->mapFile);
+      }
+      else // error invalid map id!
+      {
+        err("Found invalid bounding FIG id in file %s!\n",mapId,m_patchFile.data());
+        t << line;
+      }
+    }
+    else
+    {
+      t << line;
+    }
+  }
+  fi.close();
+  QDir::current().remove(tmpName);
+  return TRUE;
+}
+
+//--------------------------------------------------------------------
+
+void DotRunnerQueue::enqueue(DotRunner *runner)
+{
+  QMutexLocker locker(&m_mutex);
+  m_queue.enqueue(runner);
+  m_bufferNotEmpty.wakeAll();
+}
+
+DotRunner *DotRunnerQueue::dequeue()
+{
+  QMutexLocker locker(&m_mutex);
+  while (m_queue.isEmpty())
+  {
+    // wait until something is added to the queue
+    m_bufferNotEmpty.wait(&m_mutex);
+  }
+  DotRunner *result = m_queue.dequeue();
+  return result;
+}
+
+uint DotRunnerQueue::count() const
+{
+  QMutexLocker locker(&m_mutex);
+  return m_queue.count();
+}
+
+//--------------------------------------------------------------------
+
+DotWorkerThread::DotWorkerThread(int id,DotRunnerQueue *queue)
+      : m_id(id), m_queue(queue)
+{
+}
+
+void DotWorkerThread::run()
+{
+  DotRunner *runner;
+  while ((runner=m_queue->dequeue()))
+  {
+    runner->run();
+  }
+}
+
+//--------------------------------------------------------------------
+
+DotManager *DotManager::m_theInstance = 0;
+
+DotManager *DotManager::instance()
+{
+  if (!m_theInstance)
+  {
+    m_theInstance = new DotManager;
+  }
+  return m_theInstance;
+}
+
+DotManager::DotManager() : m_dotMaps(1007)
+{
+  m_dotRuns.setAutoDelete(TRUE);
+  m_dotMaps.setAutoDelete(TRUE);
+  m_queue = new DotRunnerQueue;
+  int i;
+  int numThreads = QMIN(32,Config_getInt("DOT_NUM_THREADS"));
+  if (numThreads==0) numThreads = QMAX(1,QThread::idealThreadCount()+1);
+  for (i=0;i<numThreads;i++)
+  {
+    DotWorkerThread *thread = new DotWorkerThread(i,m_queue);
+    thread->start();
+    if (thread->isRunning())
+    {
+      m_workers.append(thread);
+    }
+    else // no more threads available!
+    {
+      delete thread;
+    }
+  }
+  ASSERT(m_workers.count()>0);
+}
+
+DotManager::~DotManager()
+{
+  delete m_queue;
+}
+
+void DotManager::addRun(DotRunner *run)
+{
+  m_dotRuns.append(run);
+}
+
+int DotManager::addMap(const QCString &file,const QCString &mapFile,
+                const QCString &relPath,bool urlOnly,const QCString &context,
+                const QCString &label)
+{
+  DotMapConverter *map = m_dotMaps.find(file);
+  if (map==0)
+  {
+    map = new DotMapConverter(file);
+    m_dotMaps.append(file,map);
+  }
+  return map->addMap(mapFile,relPath,urlOnly,context,label);
+}
+
+int DotManager::addFigure(const QCString &file,const QCString &baseName,
+                          const QCString &figureName,bool heightCheck)
+{
+  DotMapConverter *map = m_dotMaps.find(file);
+  if (map==0)
+  {
+    map = new DotMapConverter(file);
+    m_dotMaps.append(file,map);
+  }
+  return map->addFigure(baseName,figureName,heightCheck);
+}
+
+bool DotManager::run()
+{
+  msg("Generating dot graphs using %d parallel threads...\n",m_workers.count());
+  uint numDotRuns = m_dotRuns.count();
+  uint numDotMaps = m_dotMaps.count();
+  int i=1;
+  QListIterator<DotRunner> li(m_dotRuns);
+
+  bool setPath=FALSE;
+  if (Config_getBool("GENERATE_HTML"))
+  {
+    setDotFontPath(Config_getString("HTML_OUTPUT"));
+    setPath=TRUE;
+  }
+  else if (Config_getBool("GENERATE_LATEX"))
+  {
+    setDotFontPath(Config_getString("LATEX_OUTPUT"));
+    setPath=TRUE;
+  }
+  else if (Config_getBool("GENERATE_RTF"))
+  {
+    setDotFontPath(Config_getString("RTF_OUTPUT"));
+    setPath=TRUE;
+  }
+  portable_sysTimerStart();
+  // fill work queue with dot operations
+  DotRunner *dr;
+  for (li.toFirst();(dr=li.current());++li)
+  {
+    m_queue->enqueue(dr);
+  }
+  int prev=1;
+  // wait for the queue to become empty
+  while ((i=m_queue->count())>0)
+  {
+    i = numDotRuns - i;
+    while (i>=prev)
+    {
+      msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+      prev++;
+    }
+    portable_sleep(100);
+  }
+  while ((int)numDotRuns>=prev)
+  {
+    msg("Running dot for graph %d/%d\n",prev,numDotRuns);
+    prev++;
+  }
+  // signal the workers we are done
+  for (i=0;i<(int)m_workers.count();i++)
+  {
+    m_queue->enqueue(0); // add terminator for each worker
+  }
+  // wait for the workers to finish
+  for (i=0;i<(int)m_workers.count();i++)
+  {
+    m_workers.at(i)->wait();
+  }
+  portable_sysTimerStop();
+  if (setPath)
+  {
+    unsetDotFontPath();
+  }
+
+  // patch the output file and insert the maps and figures
+  i=1;
+  SDict<DotMapConverter>::Iterator di(m_dotMaps);
+  DotMapConverter *map;
+  for (di.toFirst();(map=di.current());++di)
+  {
+    msg("Inserting map/figure %d/%d\n",i,numDotMaps);
+    if (!map->run()) return FALSE;
+    i++;
+  }
+  return TRUE;
+}
+
 
 //--------------------------------------------------------------------
 
@@ -1101,7 +1511,8 @@ const DotNode *DotNode::findDocNode() const
 
 int DotGfxHierarchyTable::m_curNodeNumber;
 
-void DotGfxHierarchyTable::writeGraph(FTextStream &out,const char *path) const
+void DotGfxHierarchyTable::writeGraph(FTextStream &out,
+                      const char *path,const char *fileName) const
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
@@ -1113,11 +1524,6 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,const char *path) const
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
-  //QCString oldDir = convertToQCString(QDir::currentDirPath());
-  // go to the html output directory (i.e. path)
-  //QDir::setCurrent(d.absPath());
-  //QDir thisDir;
 
   // put each connected subgraph of the hierarchy in a row of the HTML output
   out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">" << endl;
@@ -1142,7 +1548,6 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,const char *path) const
     // compute md5 checksum of the graph were are about to generate
     QGString theGraph;
     FTextStream md5stream(&theGraph);
-    //md5stream.setEncoding(md5stream.UnicodeUTF8);
     writeGraphHeader(md5stream);
     md5stream << "  rankdir=LR;" << endl;
     for (dnli2.toFirst();(node=dnli2.current());++dnli2)
@@ -1165,44 +1570,42 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,const char *path) const
     QCString sigStr(33);
     MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
     MD5SigToString(md5_sig,sigStr.data(),33);
+    bool regenerate=FALSE;
     if (checkAndUpdateMd5Signature(absBaseName,sigStr) || 
-        !QFileInfo(absMapName).exists())
+        !checkDeliverables(absMapName))
     {
+      regenerate=TRUE;
       // image was new or has changed
       QCString dotName=absBaseName+".dot";
       QFile f(dotName);
       if (!f.open(IO_WriteOnly)) return;
       FTextStream t(&f);
-      //t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
       f.close();
       resetReNumbering();
 
-      DotRunner dotRun(dotName);
-      dotRun.addJob(imgExt,absImgName);
-      dotRun.addJob(MAP_CMD,absMapName);
-      if (!dotRun.run())
-      {
-        out << "</table>" << endl;
-        unsetDotFontPath();
-        return;
-      }
-      checkDotResult(absImgName);
-      if (Config_getBool("DOT_CLEANUP")) d.remove(dotName);
+      DotRunner *dotRun = new DotRunner(dotName,d.absPath().data(),TRUE,absImgName);
+      dotRun->addJob(imgExt,absImgName);
+      dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
+
     }
     Doxygen::indexList.addImageFile(imgName);
     // write image and map in a table row
     QCString mapLabel = escapeCharsInString(n->m_label,FALSE);
     out << "<tr><td><img src=\"" << imgName << "\" border=\"0\" alt=\"\" usemap=\"#"
-        << mapLabel << "_map\"/>" << endl;
-    out << "<map name=\"" << mapLabel << "_map\" id=\"" << mapLabel << "\">" << endl;
-    convertMapFile(out,absMapName,"");
-    out << "</map></td></tr>" << endl;
-    //thisDir.remove(mapName);
+        << mapLabel << "\"/>" << endl;
+
+    if (regenerate || !insertMapFile(out,absMapName,QCString(),mapLabel))
+    {
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,QCString(),
+                                                 FALSE,QCString(),mapLabel);
+      out << "<!-- MAP " << mapId << " -->" << endl;
+    }
+
+    out << "</td></tr>" << endl;
   }
   out << "</table>" << endl;
-
-  unsetDotFontPath();
 }
 
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,ClassDef *cd,bool hideSuper)
@@ -1779,7 +2182,6 @@ QCString computeMd5Signature(DotNode *root,
   //printf("computeMd5Signature\n");
   QGString buf;
   FTextStream md5stream(&buf);
-  //md5stream.setEncoding(md5stream.UnicodeUTF8);
   writeGraphHeader(md5stream);
   if (lrRank)
   {
@@ -1855,7 +2257,6 @@ static bool updateDotGraph(DotNode *root,
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
-      //t.setEncoding(t.UnicodeUTF8);
       t << theGraph;
     }
     return TRUE;
@@ -1887,6 +2288,7 @@ QCString DotClassGraph::diskName() const
 QCString DotClassGraph::writeGraph(FTextStream &out,
                                GraphOutputFormat format,
                                const char *path,
+                               const char *fileName,
                                const char *relPath,
                                bool /*isTBRank*/,
                                bool generateImageMap) const
@@ -1897,7 +2299,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
   QCString baseName;
   QCString mapName;
@@ -1917,10 +2319,16 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
       break;
   }
   baseName = convertNameToFile(diskName());
-  QCString absBaseName = QCString(d.absPath().data())+"/"+baseName;
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absDotName  = absBaseName+".dot";
+  QCString absMapName  = absBaseName+".map";
+  QCString absPdfName  = absBaseName+".pdf";
+  QCString absEpsName  = absBaseName+".eps";
+  QCString absImgName  = absBaseName+"."+imgExt;
 
+  bool regenerate = FALSE;
   if (updateDotGraph(m_startNode,
                  m_graphType,
                  absBaseName,
@@ -1928,44 +2336,37 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
                  m_lrRank,
                  m_graphType==DotNode::Inheritance,
                  TRUE
-                )
-      )
+                ) ||
+      !checkDeliverables(format==BITMAP ? absImgName : 
+                         usePDFLatex    ? absPdfName : absEpsName,
+                         format==BITMAP && generateImageMap ? absMapName : QCString())
+     )
   {
+    regenerate=TRUE;
     if (format==BITMAP) // run dot to create a bitmap image
     {
       QCString dotArgs(maxCmdLine);
-      QCString absImgName = absBaseName+"."+imgExt;
 
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob(imgExt,absImgName);
-      if (generateImageMap) dotRun.addJob(MAP_CMD,absBaseName+".map");
-      if (!dotRun.run())
-      {
-        unsetDotFontPath();
-        return baseName;
-      }
-      checkDotResult(absImgName);
+      DotRunner *dotRun = new DotRunner(absDotName,
+                              d.absPath().data(),TRUE,absImgName);
+      dotRun->addJob(imgExt,absImgName);
+      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
+
     }
     else if (format==EPS) // run dot to create a .eps image
     {
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob("ps",absBaseName+".eps");
-
-      if (Config_getBool("USE_PDFLATEX"))
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      if (usePDFLatex)
       {
-        QCString epstopdfArgs(maxCmdLine);
-        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-            absBaseName.data(),absBaseName.data());
-        dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+        dotRun->addJob("pdf",absPdfName);
       }
-
-      if (!dotRun.run())
+      else
       {
-        unsetDotFontPath();
-        return baseName;
+        dotRun->addJob("ps",absEpsName);
       }
+      DotManager::instance()->addRun(dotRun);
     }
-    if (Config_getBool("DOT_CLEANUP")) d.remove(baseName+".dot");
   }
   Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
@@ -1989,49 +2390,21 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
         break;
     }
     out << "\"/></div>" << endl;
-    QGString tmpstr;
-    FTextStream tmpout(&tmpstr);
-    convertMapFile(tmpout,absBaseName+".map",relPath);
-    if (!tmpstr.isEmpty())
+    if (regenerate || !insertMapFile(out,absMapName,relPath,mapLabel))
     {
-      out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
-      out << tmpstr;
-      out << "</map>" << endl;
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                               FALSE,QCString(),mapLabel);
+      out << "<!-- MAP " << mapId << " -->" << endl;
     }
   }
   else if (format==EPS) // produce tex to include the .eps image
   {
-      int width=420,height=600;
-      if (!readBoundingBoxEPS(absBaseName+".eps",&width,&height))
-      {
-        err("Error: Could not extract bounding box from .eps!\n");
-        unsetDotFontPath();
-        return baseName;
-      }
-      //printf("Got EPS size %d,%d\n",width,height);
-      int maxWidth  = 400;  /* approx. page width in points, excl. margins */
-      int maxHeight = 400;  /* approx. page height in points, excl. margins */ 
-      out << "\\nopagebreak\n"
-        "\\begin{figure}[H]\n"
-        "\\begin{center}\n"
-        "\\leavevmode\n";
-      if (width>maxWidth)
-      {
-        out << "\\includegraphics[width=" << maxWidth << "pt]";
-      }
-      else if (height>maxHeight)
-      {
-        out << "\\includegraphics[height=" << maxHeight << "pt]";
-      }
-      else
-      {
-        out << "\\includegraphics[width=" << width << "pt]";
-      }
-      out << "{" << baseName << "}\n"
-        "\\end{center}\n"
-        "\\end{figure}\n";
+    if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
+    {
+      int figId = DotManager::instance()->addFigure(fileName,baseName,absBaseName,FALSE /*TRUE*/);
+      out << endl << "% FIG " << figId << endl;
+    }
   }
-  unsetDotFontPath();
 
   return baseName;
 }
@@ -2225,6 +2598,7 @@ QCString DotInclDepGraph::diskName() const
 QCString DotInclDepGraph::writeGraph(FTextStream &out,
                                  GraphOutputFormat format,
                                  const char *path,
+                                 const char *fileName,
                                  const char *relPath,
                                  bool generateImageMap
                                 ) const
@@ -2235,7 +2609,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
   QCString baseName=m_diskName;
   if (m_inverse) baseName+="_dep";
@@ -2243,11 +2617,16 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   baseName=convertNameToFile(baseName);
   QCString mapName=escapeCharsInString(m_startNode->m_label,FALSE);
   if (m_inverse) mapName+="dep";
+
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-
   QCString absBaseName = QCString(d.absPath())+"/"+baseName;
-  QCString absMapName  = QCString(d.absPath())+"/"+mapName;
+  QCString absDotName  = absBaseName+".dot";
+  QCString absMapName  = absBaseName+".map";
+  QCString absPdfName  = absBaseName+".pdf";
+  QCString absEpsName  = absBaseName+".eps";
+  QCString absImgName  = absBaseName+"."+imgExt;
 
+  bool regenerate = FALSE;
   if (updateDotGraph(m_startNode,
                  DotNode::Dependency,
                  absBaseName,
@@ -2255,42 +2634,36 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
                  FALSE,        // lrRank
                  FALSE,        // renderParents
                  m_inverse     // backArrows
-                )
-      )
+                ) ||
+      !checkDeliverables(format==BITMAP ? absImgName :
+                         usePDFLatex ? absPdfName : absEpsName,
+                         format==BITMAP && generateImageMap ? absMapName : QCString())
+     )
   {
+    regenerate=TRUE;
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
-      QCString absImgName=absBaseName+"."+imgExt;
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob(imgExt,absImgName);
-      if (generateImageMap) dotRun.addJob(MAP_CMD,absBaseName+".map");
-      if (!dotRun.run())
-      {
-        unsetDotFontPath();
-        return baseName;
-      }
-      checkDotResult(absImgName);
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
+      dotRun->addJob(imgExt,absImgName);
+      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
     }
     else if (format==EPS)
     {
-      // run dot to create a .eps image
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob("ps",absBaseName+".eps");
-      if (Config_getBool("USE_PDFLATEX"))
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      if (usePDFLatex)
       {
-        QCString epstopdfArgs(maxCmdLine);
-        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-            absBaseName.data(),absBaseName.data());
-        dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+        dotRun->addJob("pdf",absPdfName);
       }
-      if (!dotRun.run())
+      else
       {
-        unsetDotFontPath();
-        return baseName;
+        dotRun->addJob("ps",absEpsName);
       }
-    }
+      DotManager::instance()->addRun(dotRun);
+            
+    }    
   }
   Doxygen::indexList.addImageFile(baseName+"."+imgExt);
 
@@ -2298,43 +2671,27 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
   {
     out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "_map\" alt=\"\"/>";
+        << mapName << "\" alt=\"\"/>";
     out << "</div>" << endl;
-    QGString tmpstr;
-    FTextStream tmpout(&tmpstr);
-    //tmpout.setEncoding(tmpout.UnicodeUTF8);
-    convertMapFile(tmpout,absBaseName+".map",relPath);
-    if (!tmpstr.isEmpty())
+
+    QCString absMapName = absBaseName+".map";
+    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
     {
-      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
-      out << tmpstr;
-      out << "</map>" << endl;
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                               FALSE,QCString(),mapName);
+      out << "<!-- MAP " << mapId << " -->" << endl;
     }
+        
   }
   else if (format==EPS)
   {
-    int width,height;
-    if (!readBoundingBoxEPS(absBaseName+".eps",&width,&height))
+    if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
-      err("Error: Could not extract bounding box from .eps!\n");
-      unsetDotFontPath();
-      return baseName;
+      int figId = DotManager::instance()->addFigure(fileName,baseName,absBaseName,FALSE);
+      out << endl << "% FIG " << figId << endl;
     }
-    int maxWidth = 420; /* approx. page width in points */
-
-    out << "\\nopagebreak\n"
-           "\\begin{figure}[H]\n"
-           "\\begin{center}\n"
-           "\\leavevmode\n"
-           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-                                      << "pt]{" << baseName << "}\n"
-           "\\end{center}\n"
-           "\\end{figure}\n";
   }
 
-  if (Config_getBool("DOT_CLEANUP")) d.remove(baseName+".dot");
-
-  unsetDotFontPath();
   return baseName;
 }
 
@@ -2518,7 +2875,8 @@ DotCallGraph::~DotCallGraph()
 }
 
 QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
-                        const char *path,const char *relPath,bool generateImageMap) const
+                        const char *path,const char *fileName,
+                        const char *relPath,bool generateImageMap) const
 {
   QDir d(path);
   // store the original directory
@@ -2526,14 +2884,20 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
   QCString baseName = m_diskName + (m_inverse ? "_icgraph" : "_cgraph");
-  QCString mapName=baseName;
+  QCString mapName     = baseName;
+
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-
   QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absDotName  = absBaseName+".dot";
+  QCString absMapName  = absBaseName+".map";
+  QCString absPdfName  = absBaseName+".pdf";
+  QCString absEpsName  = absBaseName+".eps";
+  QCString absImgName  = absBaseName+"."+imgExt;
 
+  bool regenerate=FALSE;
   if (updateDotGraph(m_startNode,
                  DotNode::CallGraph,
                  absBaseName,
@@ -2541,41 +2905,37 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
                  TRUE,         // lrRank
                  FALSE,        // renderParents
                  m_inverse     // backArrows
-                )
-      )
+                ) ||
+      !checkDeliverables(format==BITMAP ? absImgName :
+                         usePDFLatex ? absPdfName : absEpsName,
+                         format==BITMAP && generateImageMap ? absMapName : QCString())
+     )
   {
+    regenerate=TRUE;
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
-      QCString absImgName=absBaseName+"."+imgExt;
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob(imgExt,absImgName);
-      if (generateImageMap) dotRun.addJob(MAP_CMD,absBaseName+".map");
-      if (!dotRun.run())
-      {
-        unsetDotFontPath();
-        return baseName;
-      }
-      checkDotResult(absImgName);
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
+      dotRun->addJob(imgExt,absImgName);
+      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
+
     }
     else if (format==EPS)
     {
       // run dot to create a .eps image
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob("ps",absBaseName+".eps");
-      if (Config_getBool("USE_PDFLATEX"))
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      if (usePDFLatex)
       {
-        QCString epstopdfArgs(maxCmdLine);
-        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-            absBaseName.data(),absBaseName.data());
-        dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+        dotRun->addJob("pdf",absPdfName);
       }
-      if (!dotRun.run())
+      else
       {
-        unsetDotFontPath();
-        return baseName;
+        dotRun->addJob("ps",absEpsName);
       }
+      DotManager::instance()->addRun(dotRun);
+
     }
   }
   Doxygen::indexList.addImageFile(baseName+"."+imgExt);
@@ -2584,44 +2944,27 @@ QCString DotCallGraph::writeGraph(FTextStream &out, GraphOutputFormat format,
   {
     out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "_map\" alt=\"";
+        << mapName << "\" alt=\"";
     out << "\"/>";
     out << "</div>" << endl;
-    QGString tmpstr;
-    FTextStream tmpout(&tmpstr);
-    //tmpout.setEncoding(tmpout.UnicodeUTF8);
-    convertMapFile(tmpout,absBaseName+".map",relPath);
-    if (!tmpstr.isEmpty())
+
+    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
     {
-      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
-      out << tmpstr;
-      out << "</map>" << endl;
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                               FALSE,QCString(),mapName);
+      out << "<!-- MAP " << mapId << " -->" << endl;
     }
+
   }
   else if (format==EPS)
   {
-    int width,height;
-    if (!readBoundingBoxEPS(absBaseName+".eps",&width,&height))
+    if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
-      err("Error: Could not extract bounding box from .eps!\n");
-      unsetDotFontPath();
-      return baseName;
+      int figId = DotManager::instance()->addFigure(fileName,baseName,absBaseName,FALSE);
+      out << endl << "% FIG " << figId << endl;
     }
-    int maxWidth = 420; /* approx. page width in points */
-
-    out << "\\nopagebreak\n"
-           "\\begin{figure}[H]\n"
-           "\\begin{center}\n"
-           "\\leavevmode\n"
-           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-                                      << "pt]{" << baseName << "}\n"
-           "\\end{center}\n"
-           "\\end{figure}\n";
   }
 
-  if (Config_getBool("DOT_CLEANUP")) d.remove(baseName+".dot");
-
-  unsetDotFontPath();
   return baseName;
 }
 
@@ -2650,6 +2993,7 @@ DotDirDeps::~DotDirDeps()
 QCString DotDirDeps::writeGraph(FTextStream &out,
                             GraphOutputFormat format,
                             const char *path,
+                            const char *fileName,
                             const char *relPath,
                             bool generateImageMap) const
 {
@@ -2659,58 +3003,66 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
   QCString baseName=m_dir->getOutputFileBase()+"_dep";
   QCString mapName=escapeCharsInString(baseName,FALSE);
+
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-
   QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QCString absDotName  = absBaseName+".dot";
+  QCString absMapName  = absBaseName+".map";
+  QCString absPdfName  = absBaseName+".pdf";
+  QCString absEpsName  = absBaseName+".eps";
+  QCString absImgName  = absBaseName+"."+imgExt;
 
-  // TODO: create check, update md5 checksum
+  // compute md5 checksum of the graph were are about to generate
+  QGString theGraph;
+  FTextStream md5stream(&theGraph);
+  m_dir->writeDepGraph(md5stream);
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  bool regenerate=FALSE;
+  if (checkAndUpdateMd5Signature(absBaseName,sigStr) ||
+      !checkDeliverables(format==BITMAP ? absImgName :
+                         usePDFLatex ? absPdfName : absEpsName,
+                         format==BITMAP && generateImageMap ? absMapName : QCString())
+     )
   {
-    QFile f(absBaseName+".dot");
+    regenerate=TRUE;
+
+    QFile f(absDotName);
     if (!f.open(IO_WriteOnly))
     {
       err("Cannot create file %s.dot for writing!\n",baseName.data());
     }
     FTextStream t(&f);
-    //t.setEncoding(t.UnicodeUTF8);
-    m_dir->writeDepGraph(t);
+    t << theGraph.data();
     f.close();
 
     if (format==BITMAP)
     {
       // run dot to create a bitmap image
       QCString dotArgs(maxCmdLine);
-      QCString absImgName=absBaseName+"."+imgExt;
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob(imgExt,absImgName);
-      if (generateImageMap) dotRun.addJob(MAP_CMD,absBaseName+".map");
-      if (!dotRun.run())
-      {
-        unsetDotFontPath();
-        return baseName;
-      }
-      checkDotResult(absImgName);
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
+      dotRun->addJob(imgExt,absImgName);
+      if (generateImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
     }
     else if (format==EPS)
     {
-      // run dot to create a .eps image
-      DotRunner dotRun(absBaseName+".dot");
-      dotRun.addJob("ps",absBaseName+".eps");
-      if (Config_getBool("USE_PDFLATEX"))
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      if (usePDFLatex)
       {
-        QCString epstopdfArgs(maxCmdLine);
-        epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-            absBaseName.data(),absBaseName.data());
-        dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+        dotRun->addJob("pdf",absPdfName);
       }
-      if (!dotRun.run())
+      else
       {
-        unsetDotFontPath();
-        return baseName;
+        dotRun->addJob("ps",absEpsName);
       }
+      DotManager::instance()->addRun(dotRun);
     }
   }
   Doxygen::indexList.addImageFile(baseName+"."+imgExt);
@@ -2719,50 +3071,27 @@ QCString DotDirDeps::writeGraph(FTextStream &out,
   {
     out << "<div class=\"center\"><img src=\"" << relPath << baseName << "." 
         << imgExt << "\" border=\"0\" usemap=\"#"
-        << mapName << "_map\" alt=\"";
+        << mapName << "\" alt=\"";
     out << convertToXML(m_dir->displayName());
     out << "\"/>";
     out << "</div>" << endl;
-    QGString tmpstr;
-    FTextStream tmpout(&tmpstr);
-    //tmpout.setEncoding(tmpout.UnicodeUTF8);
-    convertMapFile(tmpout,absBaseName+".map",relPath,TRUE);
-    if (!tmpstr.isEmpty())
+
+    if (regenerate || !insertMapFile(out,absMapName,relPath,mapName))
     {
-      out << "<map name=\"" << mapName << "_map\" id=\"" << mapName << "\">" << endl;
-      out << tmpstr;
-      out << "</map>" << endl;
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+                                               TRUE,QCString(),mapName);
+      out << "<!-- MAP " << mapId << " -->" << endl;
     }
-    else
-    {
-      //printf("Map is empty!\n");
-    }
-    //thisDir.remove(baseName+".map");
   }
   else if (format==EPS)
   {
-    int width,height;
-    if (!readBoundingBoxEPS(absBaseName+".eps",&width,&height))
+    if (regenerate || !writeVecGfxFigure(out,baseName,absBaseName))
     {
-      err("Error: Could not extract bounding box from .eps!\n");
-      unsetDotFontPath();
-      return baseName;
+      int figId = DotManager::instance()->addFigure(fileName,baseName,absBaseName,FALSE);
+      out << endl << "% FIG " << figId << endl;
     }
-    int maxWidth = 420; /* approx. page width in points */
-
-    out << "\\nopagebreak\n"
-           "\\begin{figure}[H]\n"
-           "\\begin{center}\n"
-           "\\leavevmode\n"
-           "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-                                      << "pt]{" << baseName << "}\n"
-           "\\end{center}\n"
-           "\\end{figure}\n";
   }
 
-  if (Config_getBool("DOT_CLEANUP")) d.remove(baseName+".dot");
-
-  unsetDotFontPath();
   return baseName;
 }
 
@@ -2775,58 +3104,65 @@ bool DotDirDeps::isTrivial() const
 
 void generateGraphLegend(const char *path)
 {
-  QFile dotFile((QCString)path+"/graph_legend.dot");
-  if (!dotFile.open(IO_WriteOnly))
-  {
-    err("Could not open file %s for writing\n",
-        convertToQCString(dotFile.name()).data());
-    return;
-  }
-  FTextStream dotText(&dotFile); 
-  writeGraphHeader(dotText);
-  dotText << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
-  dotText << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"grey75\"];\n";
-  dotText << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
-  dotText << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
-  dotText << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
-  writeGraphFooter(dotText);
-  dotFile.close();
-
   QDir d(path);
   // store the original directory
   if (!d.exists())
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
 
-  // run dot to generate the a bitmap image from the graph
-  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  QCString imgName = "graph_legend."+imgExt;
-  QCString absImgName = QCString(d.absPath())+"/"+ imgName;
-
-  DotRunner dotRun(d.absPath()+"/graph_legend.dot");
-  dotRun.addJob(imgExt,absImgName);
-  if (!dotRun.run())
+  QGString theGraph;
+  FTextStream md5stream(&theGraph);
+  writeGraphHeader(md5stream);
+  md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
+  md5stream << "  Node10 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node10 [shape=\"box\",label=\"PublicBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPublicBase" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node11 -> Node10 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node11 [shape=\"box\",label=\"Truncated\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"red\",URL=\"$classTruncated" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node13 -> Node9 [dir=back,color=\"darkgreen\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node13 [shape=\"box\",label=\"ProtectedBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classProtectedBase" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node14 -> Node9 [dir=back,color=\"firebrick4\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node14 [shape=\"box\",label=\"PrivateBase\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classPrivateBase" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node15 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node15 [shape=\"box\",label=\"Undocumented\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"grey75\"];\n";
+  md5stream << "  Node16 -> Node9 [dir=back,color=\"midnightblue\",fontsize=\"" << FONTSIZE << "\",style=\"solid\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node16 [shape=\"box\",label=\"Templ< int >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node17 -> Node16 [dir=back,color=\"orange\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"< int >\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node17 [shape=\"box\",label=\"Templ< T >\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classTempl" << Doxygen::htmlFileExtension << "\"];\n";
+  md5stream << "  Node18 -> Node9 [dir=back,color=\"darkorchid3\",fontsize=\"" << FONTSIZE << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << FONTNAME << "\"];\n";
+  md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << FONTSIZE << "\",height=0.2,width=0.4,fontname=\"" << FONTNAME << "\",color=\"black\",URL=\"$classUsed" << Doxygen::htmlFileExtension << "\"];\n";
+  writeGraphFooter(md5stream);
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  QCString absBaseName = (QCString)path+"/graph_legend";
+  QCString absDotName  = absBaseName+".dot";
+  QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString imgName     = "graph_legend."+imgExt;
+  QCString absImgName  = absBaseName+"."+imgExt;
+  if (checkAndUpdateMd5Signature(absBaseName,sigStr) ||
+      !checkDeliverables(absImgName))
   {
-    unsetDotFontPath();
-    return;
+    QFile dotFile(absDotName);
+    if (!dotFile.open(IO_WriteOnly))
+    {
+      err("Could not open file %s for writing\n",
+          convertToQCString(dotFile.name()).data());
+      return;
+    }
+
+    FTextStream dotText(&dotFile); 
+    dotText << theGraph;
+    dotFile.close();
+
+    // run dot to generate the a bitmap image from the graph
+
+    DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),TRUE,absImgName);
+    dotRun->addJob(imgExt,absImgName);
+    DotManager::instance()->addRun(dotRun);
   }
-  checkDotResult(absImgName);
-  Doxygen::indexList.addImageFile(imgName);
-  unsetDotFontPath();
+
 }
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
@@ -2837,37 +3173,37 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
   {
     err("Error: Output dir %s does not exist!\n",outDir); exit(1);
   }
-  setDotFontPath("");
 
   QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
   QCString imgName = (QCString)outFile+"."+imgExt;
   QCString absImgName = QCString(d.absPath())+"/"+imgName;
   QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
-  DotRunner dotRun(inFile);
+  DotRunner dotRun(inFile,d.absPath().data(),FALSE,absImgName);
   if (format==BITMAP)
     dotRun.addJob(imgExt,absImgName);
   else // format==EPS
-    dotRun.addJob("ps",absOutFile+".eps");
-
-  if ( (format==EPS) && (Config_getBool("USE_PDFLATEX")) )
   {
-    QCString epstopdfArgs(maxCmdLine);
-    epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         absOutFile.data(),absOutFile.data());
-    dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+    if (Config_getBool("USE_PDFLATEX"))
+    {
+      dotRun.addJob("pdf",absOutFile+".pdf");
+    }
+    else
+    {
+      dotRun.addJob("ps",absOutFile+".eps");
+    }
   }
 
+  dotRun.preventCleanUp();
   if (!dotRun.run())
   {
-     unsetDotFontPath();
      return;
   }
 
   if (format==BITMAP) checkDotResult(absImgName);
+
   Doxygen::indexList.addImageFile(imgName);
 
-  unsetDotFontPath();
 }
 
  
@@ -2875,40 +3211,38 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  dotfiles to generate image maps.
  *  \param inFile just the basename part of the filename
  *  \param outDir output directory
+ *  \param fileName file name in which the map will be embedded
  *  \param relPath relative path the to root of the output dir
  *  \param context the scope in which this graph is found (for resolving links)
  *  \returns a string which is the HTML image map (without the \<map\>\</map\>)
  */
 QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                               const QCString &relPath,const QCString &context)
+                                const QCString &relPath, const QCString &context)
 {
-  QString outFile = inFile + ".map";
+  QCString outFile = inFile + ".map";
 
   QDir d(outDir);
   if (!d.exists())
   {
     err("Error: Output dir %s does not exist!\n",outDir.data()); exit(1);
   }
-  setDotFontPath(d.absPath());
 
-  QCString absInFile  = QCString(d.absPath())+"/"+inFile.data();
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile.data();
+  QCString absInFile  = QCString(d.absPath())+"/"+inFile;
+  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
-  DotRunner dotRun(absInFile);
+  DotRunner dotRun(absInFile,d.absPath().data(),FALSE);
   dotRun.addJob(MAP_CMD,absOutFile);
+  dotRun.preventCleanUp();
   if (!dotRun.run())
   {
-    unsetDotFontPath();
     return "";
   }
 
   QGString result;
   FTextStream tmpout(&result);
-  //tmpout.setEncoding(tmpout.UnicodeUTF8);
   convertMapFile(tmpout, absOutFile, relPath ,TRUE, context);
   d.remove(outFile);
 
-  unsetDotFontPath();
   return result.data();
 }
 // end MDG mods
@@ -3125,7 +3459,7 @@ void DotGroupCollaboration::addCollaborationMember(
 
 
 QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat format,
-    const char *path, const char *relPath,
+    const char *path, const char *fileName, const char *relPath,
     bool writeImageMap) const
 {
   QDir d(path);
@@ -3134,113 +3468,117 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t, GraphOutputFormat fo
   {
     err("Error: Output dir %s does not exist!\n",path); exit(1);
   }
-  setDotFontPath(d.absPath());
+  static bool usePDFLatex = Config_getBool("USE_PDFLATEX");
 
-  QCString baseName = m_diskName;
-  QCString absBaseName = QCString(d.absPath())+"/"+baseName;
+  QGString theGraph;
+  FTextStream md5stream(&theGraph);
+  writeGraphHeader(md5stream);
 
-  QFile dotfile(absBaseName+".dot");
-  if (dotfile.open(IO_WriteOnly))
+  // clean write flags
+  QDictIterator<DotNode> dni(*m_usedNodes);
+  DotNode *pn;
+  for (dni.toFirst();(pn=dni.current());++dni)
   {
-    FTextStream tdot(&dotfile);
-    //tdot.setEncoding(tdot.UnicodeUTF8);
-    writeGraphHeader(tdot);
-
-    // clean write flags
-    QDictIterator<DotNode> dni(*m_usedNodes);
-    DotNode *pn;
-    for (dni.toFirst();(pn=dni.current());++dni)
-      pn->clearWriteFlag();
-
-    // write other nodes.
-    for (dni.toFirst();(pn=dni.current());++dni)
-    {
-      pn->write(tdot,DotNode::Inheritance,format,TRUE,FALSE,FALSE,FALSE);
-    }
-
-    // write edges
-    QListIterator<Edge> eli(m_edges);
-    Edge* edge;
-    for (eli.toFirst();(edge=eli.current());++eli)
-    {
-      edge->write( tdot );
-    }
-
-    writeGraphFooter(tdot);
-    dotfile.close();
+    pn->clearWriteFlag();
   }
 
-  QCString imgExt = Config_getEnum("DOT_IMAGE_FORMAT");
-  if (format==BITMAP) // run dot to create a bitmap image
+  // write other nodes.
+  for (dni.toFirst();(pn=dni.current());++dni)
   {
-    QCString dotArgs(maxCmdLine);
-    QCString imgName = baseName+"."+imgExt;
-    QCString mapName=baseName+".map";
+    pn->write(md5stream,DotNode::Inheritance,format,TRUE,FALSE,FALSE,FALSE);
+  }
 
-    QCString absImgName = QCString(d.absPath())+"/"+imgName;
-    QCString absMapName = QCString(d.absPath())+"/"+mapName;
+  // write edges
+  QListIterator<Edge> eli(m_edges);
+  Edge* edge;
+  for (eli.toFirst();(edge=eli.current());++eli)
+  {
+    edge->write( md5stream );
+  }
 
-    DotRunner dotRun(absBaseName+".dot");
-    dotRun.addJob(imgExt,absImgName);
-    if (writeImageMap) dotRun.addJob(MAP_CMD,absMapName);
-    if (!dotRun.run())
+  writeGraphFooter(md5stream);
+  resetReNumbering();
+  uchar md5_sig[16];
+  QCString sigStr(33);
+  MD5Buffer((const unsigned char *)theGraph.data(),theGraph.length(),md5_sig);
+  MD5SigToString(md5_sig,sigStr.data(),33);
+  QCString imgExt      = Config_getEnum("DOT_IMAGE_FORMAT");
+  QCString baseName    = m_diskName;
+  QCString imgName     = baseName+"."+imgExt;
+  QCString mapName     = baseName+".map";
+  QCString absPath     = d.absPath().data();
+  QCString absBaseName = absPath+"/"+baseName;
+  QCString absDotName  = absBaseName+".dot";
+  QCString absImgName  = absBaseName+"."+imgExt;
+  QCString absMapName  = absBaseName+".map";
+  QCString absPdfName  = absBaseName+".pdf";
+  QCString absEpsName  = absBaseName+".eps";
+  bool regenerate=FALSE;
+  if (checkAndUpdateMd5Signature(absBaseName,sigStr) ||
+      !checkDeliverables(format==BITMAP ? absImgName :
+                         usePDFLatex ? absPdfName : absEpsName,
+                         format==BITMAP /*&& generateImageMap*/ ? absMapName : QCString())
+     )
+  {
+    regenerate=TRUE;
+
+    QFile dotfile(absDotName);
+    if (dotfile.open(IO_WriteOnly))
     {
-      unsetDotFontPath();
-      return baseName;
+      FTextStream tdot(&dotfile);
+      tdot << theGraph;
+      dotfile.close();
     }
 
-    if (writeImageMap)
+    if (format==BITMAP) // run dot to create a bitmap image
     {
-      QCString mapLabel = escapeCharsInString(baseName,FALSE);
-      t << "<center><table><tr><td><img src=\"" << relPath << imgName
-        << "\" border=\"0\" alt=\"\" usemap=\"#" 
-        << mapLabel << "_map\"/>" << endl;
-      t << "<map name=\"" << mapLabel << "_map\" id=\"" << mapLabel << "\">" << endl;
-      convertMapFile(t,absMapName,relPath);
-      t << "</map></td></tr></table></center>" << endl;
+      QCString dotArgs(maxCmdLine);
+
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      dotRun->addJob(imgExt,absImgName);
+      if (writeImageMap) dotRun->addJob(MAP_CMD,absMapName);
+      DotManager::instance()->addRun(dotRun);
+
     }
+    else if (format==EPS)
+    {
+      DotRunner *dotRun = new DotRunner(absDotName,d.absPath().data(),FALSE);
+      if (usePDFLatex)
+      {
+        dotRun->addJob("pdf",absPdfName);
+      }
+      else
+      {
+        dotRun->addJob("ps",absEpsName);
+      }
+      DotManager::instance()->addRun(dotRun);
+    }
+
+  }
+  if (format==BITMAP && writeImageMap)
+  {
+    QCString mapLabel = escapeCharsInString(baseName,FALSE);
+    t << "<center><table><tr><td><img src=\"" << relPath << imgName
+      << "\" border=\"0\" alt=\"\" usemap=\"#" 
+      << mapLabel << "\"/>" << endl;
+    if (regenerate || !insertMapFile(t,absMapName,relPath,mapLabel))
+    {
+      int mapId = DotManager::instance()->addMap(fileName,absMapName,relPath,
+          FALSE,QCString(),mapLabel);
+      t << "<!-- MAP " << mapId << " -->" << endl;
+    }
+
+    t << "</td></tr></table></center>" << endl;
   }
   else if (format==EPS)
   {
-    DotRunner dotRun(absBaseName+".dot");
-    dotRun.addJob("ps",absBaseName+".eps");
-    if (Config_getBool("USE_PDFLATEX"))
+    if (regenerate || !writeVecGfxFigure(t,baseName,absBaseName))
     {
-      QCString epstopdfArgs(maxCmdLine);
-      epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-          absBaseName.data(),absBaseName.data());
-      dotRun.addPostProcessing("epstopdf",epstopdfArgs);
+      int figId = DotManager::instance()->addFigure(fileName,baseName,absBaseName,FALSE);
+      t << endl << "% FIG " << figId << endl;
     }
-
-    if (!dotRun.run())
-    {
-      unsetDotFontPath();
-      return baseName;
-    }
-
-    int width,height;
-    if (!readBoundingBoxEPS(absBaseName+".eps",&width,&height))
-    {
-      err("Error: Could not extract bounding box from .eps!\n");
-      unsetDotFontPath();
-      return baseName;
-    }
-    int maxWidth = 420; /* approx. page width in points */
-    t << "\\nopagebreak\n"
-         "\\begin{figure}[H]\n"
-         "\\begin{center}\n"
-         "\\leavevmode\n"
-         "\\includegraphics[width=" << QMIN(width/2,maxWidth) 
-          << "pt]{" << baseName << "}\n"
-         "\\end{center}\n"
-         "\\end{figure}\n";
-  }
-  if (Config_getBool("DOT_CLEANUP"))
-  {
-    d.remove(baseName+".dot");
   }
 
-  unsetDotFontPath();
   return baseName;
 }
 

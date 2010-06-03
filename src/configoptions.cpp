@@ -1207,7 +1207,7 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "DOCSET_PUBLISHER_ID",
-                 "When GENERATE_DOCSET tag specifies a string that should uniquely identify\n"
+                 "When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify\n"
                  "the documentation publisher. This should be a reverse domain-name style\n"
                  "string, e.g. com.mycompany.MyDocSet.documentation."
                 );
@@ -1216,7 +1216,7 @@ void addConfigOptions(Config *cfg)
   //----
   cs = cfg->addString(
                  "DOCSET_PUBLISHER_NAME",
-                 "The GENERATE_DOCSET tag identifies the documentation publisher."
+                 "The GENERATE_PUBLISHER_NAME tag identifies the documentation publisher."
                 );
   cs->setDefaultValue("Publisher");
   cs->addDependency("GENERATE_DOCSET");
@@ -1428,6 +1428,14 @@ void addConfigOptions(Config *cfg)
                  0,1500,250
                 );
   ci->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
+                 "EXT_LINKS_IN_WINDOW",
+                 "When the EXT_LINKS_IN_WINDOW option is set to YES doxygen will open\n"
+                 "links to external symbols imported via tag files in a separate window.",
+                 FALSE
+                );
+  cb->addDependency("GENERATE_HTML");
   //----
   ci = cfg->addInt(
                  "FORMULA_FONTSIZE",
@@ -1991,6 +1999,16 @@ void addConfigOptions(Config *cfg)
                  FALSE
                 );
   //----
+  ci = cfg->addInt(
+                 "DOT_NUM_THREADS",
+                 "The DOT_NUM_THREADS specifies the number of dot invocations doxygen is\n"
+                 "allowed to run in parallel. When set to 0 (the default) doxygen will\n"
+                 "base this on the number of processors available in the system. You can set it\n"
+                 "explicitly to a value larger than 0 to get control over the balance\n"
+                 "between CPU load and processing speed.",
+                 0,32,0
+                );
+  //----
   cs = cfg->addString(
                  "DOT_FONTNAME",
                  "By default doxygen will write a font called FreeSans.ttf to the output\n"
@@ -2002,7 +2020,7 @@ void addConfigOptions(Config *cfg)
                  "DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory\n"
                  "containing the font."
                 );
-  cs->setDefaultValue("FreeSans");
+  cs->setDefaultValue("FreeSans.ttf");
   cs->addDependency("HAVE_DOT");
   //----
   ci = cfg->addInt(

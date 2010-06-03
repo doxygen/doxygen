@@ -2,7 +2,7 @@
  *
  *
  *
- * Copyright (C) 1997-2010 by Dimitri van Heesch.
+ * Copyright (C) 1997-2008 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,14 +19,14 @@
  * 15 Dec 2001 : Translation to greek by
  *               Harry Kalogirou <no email>
  *
- * 04 Feb 2006 : Greek maintainance by
- *               Paul Gessos <nickreserved@yahoo.com>
+ * 01 Jan 2009 : Greek maintainance by
+ *               Paul Gessos <gessos.paul@yahoo.gr>
  */
 
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_5_4
+class TranslatorGreek : public Translator
 {
   protected:
     friend class TranslatorAdapterBase;
@@ -53,89 +53,89 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "iso-8859-7";
+        return "utf-8";
     }
 
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
     virtual QCString trRelatedFunctions()
-    { return "Σχετικές συναρτήσεις"; }
+    { return "Ξ£Ο‡ΞµΟ„ΞΉΞΊΞ­Ο‚ ΟƒΟ…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚"; }
 
     /*! subscript for the related functions. */
     virtual QCString trRelatedSubscript()
-    { return "(Σημειώστε ότι αυτές δεν είναι συναρτήσεις μέλη.)"; }
+    { return "(Ξ£Ξ·ΞΌΞµΞΉΟΟƒΟ„Ξµ ΟΟ„ΞΉ Ξ±Ο…Ο„Ξ­Ο‚ Ξ΄ΞµΞ½ ΞµΞ―Ξ½Ξ±ΞΉ ΟƒΟ…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚ ΞΌΞ­Ξ»Ξ·.)"; }
 
     /*! header that is put before the detailed description of files, classes and namespaces. */
     virtual QCString trDetailedDescription()
-    { return "Λεπτομερής Περιγραφή"; }
+    { return "Ξ›ΞµΟ€Ο„ΞΏΞΌΞµΟΞ®Ο‚ Ξ ΞµΟΞΉΞ³ΟΞ±Ο†Ξ®"; }
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "Τεκμηρίωση Μελών Typedef"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΞµΞ»ΟΞ½ Typedef"; }
 
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "Τεκμηρίωση Απαριθμήσεων Μελών"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ‘Ο€Ξ±ΟΞΉΞΈΞΌΞ®ΟƒΞµΟ‰Ξ½ ΞΞµΞ»ΟΞ½"; }
 
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
-    { return "Τεκμηρίωση Συναρτήσεων Μελών"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½ ΞΞµΞ»ΟΞ½"; }
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Τεκμηρίωση Πεδίων";
+        return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ ΞµΞ΄Ξ―Ο‰Ξ½";
       }
       else
       {
-        return "Τεκμηρίωση Δεδομένων Μελών";
+        return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½ ΞΞµΞ»ΟΞ½";
       }
     }
 
     /*! this is the text of a link put after brief descriptions. */
     virtual QCString trMore()
-    { return "Περισσότερα..."; }
+    { return "Ξ ΞµΟΞΉΟƒΟƒΟΟ„ΞµΟΞ±..."; }
 
     /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
-    { return "Λίστα όλων των μελών."; }
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ΞΌΞµΞ»ΟΞ½."; }
 
     /*! used as the title of the "list of all members" page of a class */
     virtual QCString trMemberList()
-    { return "Λίστα μελών"; }
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± ΞΌΞµΞ»ΟΞ½"; }
 
     /*! this is the first part of a sentence that is followed by a class name */
     virtual QCString trThisIsTheListOfAllMembers()
-    { return "Ακολουθεί η πλήρης λίστα των μελών της"; }
+    { return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ο€Ξ»Ξ®ΟΞ·Ο‚ Ξ»Ξ―ΟƒΟ„Ξ± Ο„Ο‰Ξ½ ΞΌΞµΞ»ΟΞ½ Ο„Ξ·Ο‚"; }
 
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
-    { return ", περιλαμβανομένων όλων των κληρονομημένων μελών."; }
+    { return ", Ο€ΞµΟΞΉΞ»Ξ±ΞΌΞ²Ξ±Ξ½ΞΏΞΌΞ­Ξ½Ο‰Ξ½ ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞ·ΞΌΞ­Ξ½Ο‰Ξ½ ΞΌΞµΞ»ΟΞ½."; }
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
     virtual QCString trGeneratedAutomatically(const char *s)
-    { QCString result="Δημιουργήθηκε αυτόματα από το Doxygen";
-      if (s) result+=(QCString)" για "+s;
-      result+=" από τον πηγαίο κώδικα.";
+    { QCString result="Ξ”Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ Ξ±Ο…Ο„ΟΞΌΞ±Ο„Ξ± Ξ±Ο€Ο Ο„ΞΏ Doxygen";
+      if (s) result+=(QCString)" Ξ³ΞΉΞ± "+s;
+      result+=" Ξ±Ο€Ο Ο„ΞΏΞ½ Ο€Ξ·Ξ³Ξ±Ξ―ΞΏ ΞΊΟΞ΄ΞΉΞΊΞ±.";
       return result;
     }
 
     /*! put after an enum name in the list of all members */
     virtual QCString trEnumName()
-    { return "όνομα απαρύθμισης"; }
+    { return "ΟΞ½ΞΏΞΌΞ± Ξ±Ο€Ξ±ΟΟΞΈΞΌΞΉΟƒΞ·Ο‚"; }
 
     /*! put after an enum value in the list of all members */
     virtual QCString trEnumValue()
-    { return "τιμή απαρίθμησης"; }
+    { return "Ο„ΞΉΞΌΞ® Ξ±Ο€Ξ±ΟΞ―ΞΈΞΌΞ·ΟƒΞ·Ο‚"; }
 
     /*! put after an undocumented member in the list of all members */
     virtual QCString trDefinedIn()
-    { return "ορισμένο στο "; }
+    { return "ΞΏΟΞΉΟƒΞΌΞ­Ξ½ΞΏ ΟƒΟ„ΞΏ "; }
 
     // quick reference sections
 
@@ -143,43 +143,39 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  compounds or files (see the \\group command).
      */
     virtual QCString trModules()
-    { return "Κομμάτια"; }
+    { return "ΞΞΏΞΌΞΌΞ¬Ο„ΞΉΞ±"; }
 
     /*! This is put above each page as a link to the class hierarchy */
     virtual QCString trClassHierarchy()
-    { return "Ιεραρχία Κλάσεων"; }
+    { return "Ξ™ΞµΟΞ±ΟΟ‡Ξ―Ξ± ΞΞ»Ξ¬ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is put above each page as a link to the list of annotated classes */
     virtual QCString trCompoundList()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Δομές Δεδομένων";
+        return "Ξ”ΞΏΞΌΞ­Ο‚ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Λίστα Συσσωματωμάτων";
+        return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ£Ο…ΟƒΟƒΟ‰ΞΌΞ±Ο„Ο‰ΞΌΞ¬Ο„Ο‰Ξ½";
       }
     }
 
     /*! This is put above each page as a link to the list of documented files */
     virtual QCString trFileList()
-    { return "Λίστα Αρχείων"; }
-
-    /*! This is put above each page as a link to the list of all verbatim headers */
-    virtual QCString trHeaderFiles()
-    { return "Αρχεία Κεφαλίδας"; }
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ‘ΟΟ‡ΞµΞ―Ο‰Ξ½"; }
 
     /*! This is put above each page as a link to all members of compounds. */
     virtual QCString trCompoundMembers()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Πεδία Δεδομένων";
+        return "Ξ ΞµΞ΄Ξ―Ξ± Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Μέλη Συσσωματώματα";
+        return "ΞΞ­Ξ»Ξ· Ξ£Ο…ΟƒΟƒΟ‰ΞΌΞ±Ο„ΟΞΌΞ±Ο„Ξ±";
       }
     }
 
@@ -188,38 +184,38 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Καθολικοί ορισμοί";
+        return "ΞΞ±ΞΈΞΏΞ»ΞΉΞΊΞΏΞ― ΞΏΟΞΉΟƒΞΌΞΏΞ―";
       }
       else
       {
-        return "Μέλη Αρχείων";
+        return "ΞΞ­Ξ»Ξ· Ξ‘ΟΟ‡ΞµΞ―Ο‰Ξ½";
       }
     }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
-    { return "Σχετικές Σελίδες"; }
+    { return "Ξ£Ο‡ΞµΟ„ΞΉΞΊΞ­Ο‚ Ξ£ΞµΞ»Ξ―Ξ΄ΞµΟ‚"; }
 
     /*! This is put above each page as a link to all examples. */
     virtual QCString trExamples()
-    { return "Παραδείγματα"; }
+    { return "Ξ Ξ±ΟΞ±Ξ΄ΞµΞ―Ξ³ΞΌΞ±Ο„Ξ±"; }
 
     /*! This is put above each page as a link to the search engine. */
     virtual QCString trSearch()
-    { return "Αναζήτηση"; }
+    { return "Ξ‘Ξ½Ξ±Ξ¶Ξ®Ο„Ξ·ΟƒΞ·"; }
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Αυτή η λίστα κληρονομηκότητας είναι μερικώς ταξινομημένη, "
-             "αλλά όχι πλήρως, αλφαβητικά:";
+    { return "Ξ‘Ο…Ο„Ξ® Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞ·ΞΊΟΟ„Ξ·Ο„Ξ±Ο‚ ΞµΞ―Ξ½Ξ±ΞΉ ΞΌΞµΟΞΉΞΊΟΟ‚ Ο„Ξ±ΞΎΞΉΞ½ΞΏΞΌΞ·ΞΌΞ­Ξ½Ξ·, "
+             "Ξ±Ξ»Ξ»Ξ¬ ΟΟ‡ΞΉ Ο€Ξ»Ξ®ΟΟ‰Ο‚, Ξ±Ξ»Ο†Ξ±Ξ²Ξ·Ο„ΞΉΞΊΞ¬:";
     }
 
     /*! This is an introduction to the list with all files. */
     virtual QCString trFileListDescription(bool extractAll)
     {
-      QCString result="Ακολουθεί μια λίστα όλων των ";
-      if (!extractAll) result+="τεκμηριωμένων ";
-      result+="αρχείων με σύντομες περιγραφές:";
+      QCString result="Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― ΞΌΞΉΞ± Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
+      result+="Ξ±ΟΟ‡ΞµΞ―Ο‰Ξ½ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞµΟ‚ Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ­Ο‚:";
       return result;
     }
 
@@ -229,52 +225,52 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Ακολουθούνε οι δομές δεδομένων με σύντομες περιγραφές:";
+        return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞΏΟΞ½Ξµ ΞΏΞΉ Ξ΄ΞΏΞΌΞ­Ο‚ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞµΟ‚ Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ­Ο‚:";
       }
       else
       {
-        return "Ακολουθούνε οι κλάσεις, οι δομές, "
-               "τα σώματα και οι διαπροσωπίες με σύντομες περιγραφές:";
+        return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞΏΟΞ½Ξµ ΞΏΞΉ ΞΊΞ»Ξ¬ΟƒΞµΞΉΟ‚, ΞΏΞΉ Ξ΄ΞΏΞΌΞ­Ο‚, "
+               "Ο„Ξ± ΟƒΟΞΌΞ±Ο„Ξ± ΞΊΞ±ΞΉ ΞΏΞΉ Ξ΄ΞΉΞ±Ο€ΟΞΏΟƒΟ‰Ο€Ξ―ΞµΟ‚ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞµΟ‚ Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ­Ο‚:";
       }
     }
 
     /*! This is an introduction to the page with all class members. */
     virtual QCString trCompoundMembersDescription(bool extractAll)
     {
-      QCString result="Ακολουθεί η λίστα όλων των ";
+      QCString result="Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
       if (!extractAll)
       {
-        result+="τεκμηριωμένων ";
+        result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
       }
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="πεδίων δομών και σωμάτων ";
+        result+="Ο€ΞµΞ΄Ξ―Ο‰Ξ½ Ξ΄ΞΏΞΌΟΞ½ ΞΊΞ±ΞΉ ΟƒΟ‰ΞΌΞ¬Ο„Ο‰Ξ½ ";
       }
       else
       {
-        result+="κλάσεων";
+        result+="ΞΊΞ»Ξ¬ΟƒΞµΟ‰Ξ½";
       }
-      result+=" με συνδέσμους ";
+      result+=" ΞΌΞµ ΟƒΟ…Ξ½Ξ΄Ξ­ΟƒΞΌΞΏΟ…Ο‚ ";
       if (!extractAll)
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="στην τεκμηρίωση των δομών/ενώσεων για κάθε πεδίο:";
+          result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„Ο‰Ξ½ Ξ΄ΞΏΞΌΟΞ½/ΞµΞ½ΟΟƒΞµΟ‰Ξ½ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ Ο€ΞµΞ΄Ξ―ΞΏ:";
         }
         else
         {
-          result+="στην τεκμηρίωση των κλάσεων για κάθε πεδίο:";
+          result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„Ο‰Ξ½ ΞΊΞ»Ξ¬ΟƒΞµΟ‰Ξ½ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ Ο€ΞµΞ΄Ξ―ΞΏ:";
         }
       }
       else
       {
         if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
         {
-          result+="στις δομές/ενώσεις που ανήκουν:";
+          result+="ΟƒΟ„ΞΉΟ‚ Ξ΄ΞΏΞΌΞ­Ο‚/ΞµΞ½ΟΟƒΞµΞΉΟ‚ Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
         }
         else
         {
-          result+="στις κλάσεις που ανήκουν:";
+          result+="ΟƒΟ„ΞΉΟ‚ ΞΊΞ»Ξ¬ΟƒΞµΞΉΟ‚ Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
         }
       }
       return result;
@@ -283,65 +279,55 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! This is an introduction to the page with all file members. */
     virtual QCString trFileMembersDescription(bool extractAll)
     {
-      QCString result="Ακολουθεί η λίστα όλων των ";
-      if (!extractAll) result+="τεκμηριωμένων ";
+      QCString result="Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
 
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        result+="συναρτήσεων, μεταβλητών, ορισμών, απαριθμήσεων, και ορισμών τύπων";
+        result+="ΟƒΟ…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½, ΞΌΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„ΟΞ½, ΞΏΟΞΉΟƒΞΌΟΞ½, Ξ±Ο€Ξ±ΟΞΉΞΈΞΌΞ®ΟƒΞµΟ‰Ξ½, ΞΊΞ±ΞΉ ΞΏΟΞΉΟƒΞΌΟΞ½ Ο„ΟΟ€Ο‰Ξ½";
       }
       else
       {
-        result+="μελών αρχείων";
+        result+="ΞΌΞµΞ»ΟΞ½ Ξ±ΟΟ‡ΞµΞ―Ο‰Ξ½";
       }
-      result+=" με συνδέσμους ";
+      result+=" ΞΌΞµ ΟƒΟ…Ξ½Ξ΄Ξ­ΟƒΞΌΞΏΟ…Ο‚ ";
       if (extractAll)
-        result+="στα αρχεία που ανήκουν:";
+        result+="ΟƒΟ„Ξ± Ξ±ΟΟ‡ΞµΞ―Ξ± Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
       else
-        result+="στην τεκμηρίωση:";
+        result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ·:";
       return result;
     }
 
-    /*! This is an introduction to the page with the list of all header files. */
-    virtual QCString trHeaderFilesDescription()
-    { return "Ακολουθούνε τα αρχεία κεφαλίδας που απαρτίζουν το API:"; }
-
     /*! This is an introduction to the page with the list of all examples */
     virtual QCString trExamplesDescription()
-    { return "Ακολουθεί η λίστα με τα παραδείγματα:"; }
+    { return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΞΌΞµ Ο„Ξ± Ο€Ξ±ΟΞ±Ξ΄ΞµΞ―Ξ³ΞΌΞ±Ο„Ξ±:"; }
 
     /*! This is an introduction to the page with the list of related pages */
     virtual QCString trRelatedPagesDescription()
-    { return "Ακολουθεί η λίστα όλων των σχετικών σελίδων τεκμηρίωσης:"; }
+    { return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ΟƒΟ‡ΞµΟ„ΞΉΞΊΟΞ½ ΟƒΞµΞ»Ξ―Ξ΄Ο‰Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ·Ο‚:"; }
 
     /*! This is an introduction to the page with the list of class/file groups */
     virtual QCString trModulesDescription()
-    { return "Ακολουθεί η λίστα όλων των μονάδων:"; }
-
-    /*! This sentences is used in the annotated class/file lists if no brief
-     * description is given.
-     */
-    virtual QCString trNoDescriptionAvailable()
-    { return "Δεν υπάρχει περιγραφή διαθέσιμη"; }
+    { return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ΞΌΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½:"; }
 
     // index titles (the project name is prepended for these)
 
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return "Τεκμηρίωση"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ·"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * index of all groups.
      */
     virtual QCString trModuleIndex()
-    { return "Ευρετήριο μονάδων"; }
+    { return "Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ ΞΌΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * class hierarchy.
      */
     virtual QCString trHierarchicalIndex()
-    { return "Ιεραρχικό Ευρετήριο"; }
+    { return "Ξ™ΞµΟΞ±ΟΟ‡ΞΉΞΊΟ Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ"; }
 
     /*! This is used in LaTeX as the title of the chapter with the
      * annotated compound index.
@@ -350,11 +336,11 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Ευρετήριο δομών δεδομένων";
+        return "Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ Ξ΄ΞΏΞΌΟΞ½ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Συμπαγές Ευρετήριο";
+        return "Ξ£Ο…ΞΌΟ€Ξ±Ξ³Ξ­Ο‚ Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ";
       }
     }
 
@@ -362,13 +348,13 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      * list of all files.
      */
     virtual QCString trFileIndex()
-    { return "Ευρετήτιο Αρχείων"; }
+    { return "Ξ•Ο…ΟΞµΟ„Ξ®Ο„ΞΉΞΏ Ξ‘ΟΟ‡ΞµΞ―Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all groups.
      */
     virtual QCString trModuleDocumentation()
-    { return "Τεκμηρίωση Μονάδων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all classes, structs and unions.
@@ -377,11 +363,11 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Τεκμηρίωση Δομών Δεδομένων";
+        return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ”ΞΏΞΌΟΞ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Τεκμηρίωση Κλάσεων";
+        return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΞ»Ξ¬ΟƒΞµΟ‰Ξ½";
       }
     }
 
@@ -389,101 +375,101 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  the documentation of all files.
      */
     virtual QCString trFileDocumentation()
-    { return "Τεκμηρίωση Αρχείων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ‘ΟΟ‡ΞµΞ―Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all examples.
      */
     virtual QCString trExampleDocumentation()
-    { return "Τεκμηρίωση Παραδειγμάτων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ Ξ±ΟΞ±Ξ΄ΞµΞΉΞ³ΞΌΞ¬Ο„Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all related pages.
      */
     virtual QCString trPageDocumentation()
-    { return "Τεκμηρίωση Σελίδων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£ΞµΞ»Ξ―Ξ΄Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the document */
     virtual QCString trReferenceManual()
-    { return "Ενχειρίδιο Αναφοράς"; }
+    { return "Ξ•Ξ½Ο‡ΞµΞΉΟΞ―Ξ΄ΞΉΞΏ Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬Ο‚"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of defines
      */
     virtual QCString trDefines()
-    { return "Ορισμοί"; }
+    { return "ΞΟΞΉΟƒΞΌΞΏΞ―"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of function prototypes
      */
     virtual QCString trFuncProtos()
-    { return "Πρωτοτυπήσεις Συναρτήσεων"; }
+    { return "Ξ ΟΟ‰Ο„ΞΏΟ„Ο…Ο€Ξ®ΟƒΞµΞΉΟ‚ Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "Ορισμοί Τύπων"; }
+    { return "ΞΟΞΉΟƒΞΌΞΏΞ― Ξ¤ΟΟ€Ο‰Ξ½"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of enumerations
      */
     virtual QCString trEnumerations()
-    { return "Απαριθμήσεις"; }
+    { return "Ξ‘Ο€Ξ±ΟΞΉΞΈΞΌΞ®ΟƒΞµΞΉΟ‚"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) functions
      */
     virtual QCString trFunctions()
-    { return "Συναρτήσεις"; }
+    { return "Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trVariables()
-    { return "Μεταβλητές"; }
+    { return "ΞΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„Ξ­Ο‚"; }
 
     /*! This is used in the documentation of a file as a header before the
      *  list of (global) variables
      */
     virtual QCString trEnumerationValues()
-    { return "Τιμές Απαριθμήσεων"; }
+    { return "Ξ¤ΞΉΞΌΞ­Ο‚ Ξ‘Ο€Ξ±ΟΞΉΞΈΞΌΞ®ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is used in the documentation of a file before the list of
      *  documentation blocks for defines
      */
     virtual QCString trDefineDocumentation()
-    { return "Τεκμηρίωση Ορισμών"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΟΞΉΟƒΞΌΟΞ½"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for function prototypes
      */
     virtual QCString trFunctionPrototypeDocumentation()
-    { return "Τεκμηρίωση Πρωτοτυπήσεων των Συναρτήσεων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ ΟΟ‰Ο„ΞΏΟ„Ο…Ο€Ξ®ΟƒΞµΟ‰Ξ½ Ο„Ο‰Ξ½ Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "Τεκμηρίωση Ορισμών Τύπων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΟΞΉΟƒΞΌΟΞ½ Ξ¤ΟΟ€Ο‰Ξ½"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for enumeration types
      */
     virtual QCString trEnumerationTypeDocumentation()
-    { return "Τεκμηρίωση Απαριθμήσεων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ‘Ο€Ξ±ΟΞΉΞΈΞΌΞ®ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for functions
      */
     virtual QCString trFunctionDocumentation()
-    { return "Τεκμηρίωση Συναρτήσεων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½"; }
 
     /*! This is used in the documentation of a file/namespace before the list
      *  of documentation blocks for variables
      */
     virtual QCString trVariableDocumentation()
-    { return "Τεκμηρίωση Μεταβλητών"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„ΟΞ½"; }
 
     /*! This is used in the documentation of a file/namespace/group before
      *  the list of links to documented compounds
@@ -492,11 +478,11 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Δομές Δεδομένων";
+        return "Ξ”ΞΏΞΌΞ­Ο‚ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Συσσωματώματα";
+        return "Ξ£Ο…ΟƒΟƒΟ‰ΞΌΞ±Ο„ΟΞΌΞ±Ο„Ξ±";
       }
     }
 
@@ -505,67 +491,59 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trGeneratedAt(const char *date,const char *projName)
     {
-      QCString result=(QCString)"Δημιουργήθηκε στις "+date;
-      if (projName) result+=(QCString)" για "+projName;
-      result+=(QCString)" από";
+      QCString result=(QCString)"Ξ”Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ ΟƒΟ„ΞΉΟ‚ "+date;
+      if (projName) result+=(QCString)" Ξ³ΞΉΞ± "+projName;
+      result+=(QCString)" Ξ±Ο€Ο";
       return result;
     }
     /*! This is part of the sentence used in the standard footer of each page.
      */
     virtual QCString trWrittenBy()
     {
-      return "γραμμένο από τον ";
+      return "Ξ³ΟΞ±ΞΌΞΌΞ­Ξ½ΞΏ Ξ±Ο€Ο Ο„ΞΏΞ½ ";
     }
 
     /*! this text is put before a class diagram */
     virtual QCString trClassDiagram(const char *clName)
     {
-      return (QCString)"Διάγραμμα κληρονομικότητας για την "+clName+":";
+      return (QCString)"Ξ”ΞΉΞ¬Ξ³ΟΞ±ΞΌΞΌΞ± ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞΉΞΊΟΟ„Ξ·Ο„Ξ±Ο‚ Ξ³ΞΉΞ± Ο„Ξ·Ξ½ "+clName+":";
     }
 
     /*! this text is generated when the \\internal command is used. */
     virtual QCString trForInternalUseOnly()
-    { return "Μόνο για εσωτερική χρήση."; }
-
-    /*! this text is generated when the \\reimp command is used. */
-    virtual QCString trReimplementedForInternalReasons()
-    { return "Επαναυλοποιημένη για εσωτερικούς λόγους, το API δεν επιρεάζεται."; }
+    { return "ΞΟΞ½ΞΏ Ξ³ΞΉΞ± ΞµΟƒΟ‰Ο„ΞµΟΞΉΞΊΞ® Ο‡ΟΞ®ΟƒΞ·."; }
 
     /*! this text is generated when the \\warning command is used. */
     virtual QCString trWarning()
-    { return "Προειδοποίηση"; }
-
-    /*! this text is generated when the \\bug command is used. */
-    virtual QCString trBugsAndLimitations()
-    { return "Προβλήματα και περιορισμοί"; }
+    { return "Ξ ΟΞΏΞµΞΉΞ΄ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ·"; }
 
     /*! this text is generated when the \\version command is used. */
     virtual QCString trVersion()
-    { return "Έκδοση"; }
+    { return "ΞΞΊΞ΄ΞΏΟƒΞ·"; }
 
     /*! this text is generated when the \\date command is used. */
     virtual QCString trDate()
-    { return "Ημ/νια"; }
+    { return "Ξ—ΞΌ/Ξ½ΞΉΞ±"; }
 
     /*! this text is generated when the \\return command is used. */
     virtual QCString trReturns()
-    { return "Επιστρέφει"; }
+    { return "Ξ•Ο€ΞΉΟƒΟ„ΟΞ­Ο†ΞµΞΉ"; }
 
     /*! this text is generated when the \\sa command is used. */
     virtual QCString trSeeAlso()
-    { return "Κοιτάξτε επίσης "; }
+    { return "ΞΞΏΞΉΟ„Ξ¬ΞΎΟ„Ξµ ΞµΟ€Ξ―ΟƒΞ·Ο‚ "; }
 
     /*! this text is generated when the \\param command is used. */
     virtual QCString trParameters()
-    { return "Παράμετροι"; }
+    { return "Ξ Ξ±ΟΞ¬ΞΌΞµΟ„ΟΞΏΞΉ"; }
 
     /*! this text is generated when the \\exception command is used. */
     virtual QCString trExceptions()
-    { return "Εξαίρεση"; }
+    { return "Ξ•ΞΎΞ±Ξ―ΟΞµΟƒΞ·"; }
 
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
-    { return "Δημιουργήθηκε από "; }
+    { return "Ξ”Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ Ξ±Ο€Ο "; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
@@ -573,14 +551,14 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
     /*! used as the title of page containing all the index of all namespaces. */
     virtual QCString trNamespaceList()
-    { return "Λίστα Namespace"; }
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± Namespace"; }
 
     /*! used as an introduction to the namespace list */
     virtual QCString trNamespaceListDescription(bool extractAll)
     {
-      QCString result="Ακολουθέι η λίστα όλων των ";
-      if (!extractAll) result+="τεκμηριωμένων ";
-      result+="Namespace με σύντομες περιγραφές:";
+      QCString result="Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞ­ΞΉ Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
+      result+="Namespace ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞµΟ‚ Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ­Ο‚:";
       return result;
     }
 
@@ -588,7 +566,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  friends of a class
      */
     virtual QCString trFriends()
-    { return "Φίλοι"; }
+    { return "Ξ¦Ξ―Ξ»ΞΏΞΉ"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990405
@@ -598,7 +576,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      * related classes
      */
     virtual QCString trRelatedFunctionDocumentation()
-    { return "Τεκμηρίωση Φιλικών και Συσχετιζόμενων Συναρτήσεων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ¦ΞΉΞ»ΞΉΞΊΟΞ½ ΞΊΞ±ΞΉ Ξ£Ο…ΟƒΟ‡ΞµΟ„ΞΉΞ¶ΟΞΌΞµΞ½Ο‰Ξ½ Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΟ‰Ξ½"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990425
@@ -610,16 +588,16 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
                                     bool isTemplate)
     {
       QCString result=(QCString)clName+" ";
-      result+=" Αναφορά";
+      result+=" Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬";
       switch(compType)
       {
-        case ClassDef::Class:      result+=" Κλάσης"; break;
-        case ClassDef::Struct:     result+=" Δομής"; break;
-        case ClassDef::Union:      result+=" Ένωσης"; break;
-        case ClassDef::Interface:  result+=" Διαπροσωπίας"; break;
-        case ClassDef::Protocol:   result+=" Πρωτοκόλλου"; break;
-        case ClassDef::Category:   result+=" Κατηγορίας"; break;
-        case ClassDef::Exception:  result+=" Εξαίρεσης"; break;
+        case ClassDef::Class:      result+=" ΞΞ»Ξ¬ΟƒΞ·Ο‚"; break;
+        case ClassDef::Struct:     result+=" Ξ”ΞΏΞΌΞ®Ο‚"; break;
+        case ClassDef::Union:      result+=" ΞΞ½Ο‰ΟƒΞ·Ο‚"; break;
+        case ClassDef::Interface:  result+=" Ξ”ΞΉΞ±Ο€ΟΞΏΟƒΟ‰Ο€Ξ―Ξ±Ο‚"; break;
+        case ClassDef::Protocol:   result+=" Ξ ΟΟ‰Ο„ΞΏΞΊΟΞ»Ξ»ΞΏΟ…"; break;
+        case ClassDef::Category:   result+=" ΞΞ±Ο„Ξ·Ξ³ΞΏΟΞ―Ξ±Ο‚"; break;
+        case ClassDef::Exception:  result+=" Ξ•ΞΎΞ±Ξ―ΟΞµΟƒΞ·Ο‚"; break;
       }
       if (isTemplate) result+=" Template";
 
@@ -630,7 +608,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     virtual QCString trFileReference(const char *fileName)
     {
       QCString result=fileName;
-      result+=" Αναφορά Αρχείου";
+      result+=" Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬ Ξ‘ΟΟ‡ΞµΞ―ΞΏΟ…";
       return result;
     }
 
@@ -638,30 +616,30 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     virtual QCString trNamespaceReference(const char *namespaceName)
     {
       QCString result=namespaceName;
-      result+=" Αναφορά Namespace";
+      result+=" Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬ Namespace";
       return result;
     }
 
     virtual QCString trPublicMembers()
-    { return "Δημόσιες Μέθοδοι"; }
+    { return "Ξ”Ξ·ΞΌΟΟƒΞΉΞµΟ‚ ΞΞ­ΞΈΞΏΞ΄ΞΏΞΉ"; }
     virtual QCString trPublicSlots()
-    { return "Δημόσια Slots"; }
+    { return "Ξ”Ξ·ΞΌΟΟƒΞΉΞ± Slots"; }
     virtual QCString trSignals()
-    { return "Σήματα"; }
+    { return "Ξ£Ξ®ΞΌΞ±Ο„Ξ±"; }
     virtual QCString trStaticPublicMembers()
-    { return "Στατικές Δημόσιες Μέδοδοι"; }
+    { return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ­Ο‚ Ξ”Ξ·ΞΌΟΟƒΞΉΞµΟ‚ ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ"; }
     virtual QCString trProtectedMembers()
-    { return "Προστατευμένες Μέδοδοι"; }
+    { return "Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½ΞµΟ‚ ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ"; }
     virtual QCString trProtectedSlots()
-    { return "Προστατευμένα Slots"; }
+    { return "Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½Ξ± Slots"; }
     virtual QCString trStaticProtectedMembers()
-    { return "Στατικές Προστατευμένες Μέδοδοι"; }
+    { return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ­Ο‚ Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½ΞµΟ‚ ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ"; }
     virtual QCString trPrivateMembers()
-    { return "Ιδιοτικές Μέδοδοι"; }
+    { return "Ξ™Ξ΄ΞΉΞΏΟ„ΞΉΞΊΞ­Ο‚ ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ"; }
     virtual QCString trPrivateSlots()
-    { return "Ιδιοτικά Slots"; }
+    { return "Ξ™Ξ΄ΞΉΞΏΟ„ΞΉΞΊΞ¬ Slots"; }
     virtual QCString trStaticPrivateMembers()
-    { return "Στατικές Ιδιοτικές Μέδοδοι"; }
+    { return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ­Ο‚ Ξ™Ξ΄ΞΉΞΏΟ„ΞΉΞΊΞ­Ο‚ ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ"; }
 
     /*! this function is used to produce a comma-separated list of items.
      *  use generateMarker(i) to indicate where item i should be put.
@@ -682,7 +660,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
           if (i<numEntries-2) // not the fore last entry
             result+=", ";
           else                // the fore last entry
-            result+=", και ";
+            result+=", ΞΊΞ±ΞΉ ";
         }
       }
       return result;
@@ -693,7 +671,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trInheritsList(int numEntries)
     {
-      return "Κληρονομεί "+trWriteList(numEntries)+".";
+      return "ΞΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞµΞ― "+trWriteList(numEntries)+".";
     }
 
     /*! used in class documentation to produce a list of super classes,
@@ -701,7 +679,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trInheritedByList(int numEntries)
     {
-      return "Κληρονομείται από "+trWriteList(numEntries)+".";
+      return "ΞΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞµΞ―Ο„Ξ±ΞΉ Ξ±Ο€Ο "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -709,7 +687,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trReimplementedFromList(int numEntries)
     {
-      return "Επαναϋλοποιείται από "+trWriteList(numEntries)+".";
+      return "Ξ•Ο€Ξ±Ξ½Ξ±Ο‹Ξ»ΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ±Ο€Ο "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -717,36 +695,36 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trReimplementedInList(int numEntries)
     {
-      return "Επαναϋλοποιείται στην "+trWriteList(numEntries)+".";
+      return "Ξ•Ο€Ξ±Ξ½Ξ±Ο‹Ξ»ΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ ΟƒΟ„Ξ·Ξ½ "+trWriteList(numEntries)+".";
     }
 
     /*! This is put above each page as a link to all members of namespaces. */
     virtual QCString trNamespaceMembers()
-    { return "Μέλη Namespace"; }
+    { return "ΞΞ­Ξ»Ξ· Namespace"; }
 
     /*! This is an introduction to the page with all namespace members */
     virtual QCString trNamespaceMemberDescription(bool extractAll)
     {
-      QCString result="Ακολουθεί η λίστα όλων των ";
-      if (!extractAll) result+="τεκμηριωμένων ";
-      result+="μελών χώρων ονομάτων με συνδέσμους ";
+      QCString result="Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
+      result+="ΞΌΞµΞ»ΟΞ½ Ο‡ΟΟΟ‰Ξ½ ΞΏΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½ ΞΌΞµ ΟƒΟ…Ξ½Ξ΄Ξ­ΟƒΞΌΞΏΟ…Ο‚ ";
       if (extractAll)
-        result+="στην τεκμηρίωση του χώρου ονομάτων για κάθε μέλος:";
+        result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„ΞΏΟ… Ο‡ΟΟΞΏΟ… ΞΏΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ ΞΌΞ­Ξ»ΞΏΟ‚:";
       else
-        result+="στους χώρους ονομάτων που ανήκουν:";
+        result+="ΟƒΟ„ΞΏΟ…Ο‚ Ο‡ΟΟΞΏΟ…Ο‚ ΞΏΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½ Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
       return result;
     }
     /*! This is used in LaTeX as the title of the chapter with the
      *  index of all namespaces.
      */
     virtual QCString trNamespaceIndex()
-    { return "Ευρετήριο Χώρων Ονομάτων"; }
+    { return "Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ Ξ§ΟΟΟ‰Ξ½ ΞΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½"; }
 
     /*! This is used in LaTeX as the title of the chapter containing
      *  the documentation of all namespaces.
      */
     virtual QCString trNamespaceDocumentation()
-    { return "Τεκμηρίωση Χώρων Ονομάτων"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ§ΟΟΟ‰Ξ½ ΞΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990522
@@ -756,7 +734,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  namespaces in a file.
      */
     virtual QCString trNamespaces()
-    { return "Χώροι Ονομάτων"; }
+    { return "Ξ§ΟΟΞΏΞΉ ΞΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990728
@@ -769,19 +747,19 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
-      QCString result=(QCString)"Η τεκμηρίωση για ";
+      QCString result=(QCString)"Ξ— Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ³ΞΉΞ± ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="αυτή την κλάση"; break;
-        case ClassDef::Struct:     result+="αυτή η δομή"; break;
-        case ClassDef::Union:      result+="αυτή η ένωση"; break;
-        case ClassDef::Interface:  result+="αυτή η διαπροσωπία"; break;
-        case ClassDef::Protocol:   result+="Protocol"; break; // translate me!
-        case ClassDef::Category:   result+="Category"; break; // translate me!
-        case ClassDef::Exception:  result+="αυτή η εξαίρεση"; break;
+        case ClassDef::Class:      result+="Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞΊΞ»Ξ¬ΟƒΞ·"; break;
+        case ClassDef::Struct:     result+="Ξ±Ο…Ο„Ξ® Ξ· Ξ΄ΞΏΞΌΞ®"; break;
+        case ClassDef::Union:      result+="Ξ±Ο…Ο„Ξ® Ξ· Ξ­Ξ½Ο‰ΟƒΞ·"; break;
+        case ClassDef::Interface:  result+="Ξ±Ο…Ο„Ξ® Ξ· Ξ΄ΞΉΞ±Ο€ΟΞΏΟƒΟ‰Ο€Ξ―Ξ±"; break;
+        case ClassDef::Protocol:   result+="Ξ ΟΟ‰Ο„ΟΞΊΞΏΞ»Ξ»ΞΏ"; break;
+        case ClassDef::Category:   result+="ΞΞ±Ο„Ξ·Ξ³ΞΏΟΞ―Ξ±"; break;
+        case ClassDef::Exception:  result+="Ξ±Ο…Ο„Ξ® Ξ· ΞµΞΎΞ±Ξ―ΟΞµΟƒΞ·"; break;
       }
-      result+=" δημιουργήθηκε απο τ";
-      if (single) result+="ο ακόλουθο αρχείο:"; else result+="α ακόλουθα αρχεία:";
+      result+=" Ξ΄Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ Ξ±Ο€ΞΏ Ο„";
+      if (single) result+="ΞΏ Ξ±ΞΊΟΞ»ΞΏΟ…ΞΈΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ:"; else result+="Ξ± Ξ±ΞΊΟΞ»ΞΏΟ…ΞΈΞ± Ξ±ΟΟ‡ΞµΞ―Ξ±:";
       return result;
     }
 
@@ -789,7 +767,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      * list.
      */
     virtual QCString trAlphabeticalList()
-    { return "Αλφαβητική Λίστα"; }
+    { return "Ξ‘Ξ»Ο†Ξ±Ξ²Ξ·Ο„ΞΉΞΊΞ® Ξ›Ξ―ΟƒΟ„Ξ±"; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990901
@@ -797,34 +775,30 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
     /*! This is used as the heading text for the retval command. */
     virtual QCString trReturnValues()
-    { return "Τιμές Επιστροφής"; }
+    { return "Ξ¤ΞΉΞΌΞ­Ο‚ Ξ•Ο€ΞΉΟƒΟ„ΟΞΏΟ†Ξ®Ο‚"; }
 
     /*! This is in the (quick) index as a link to the main page (index.html)
      */
     virtual QCString trMainPage()
-    { return "Κύρια Σελίδα"; }
+    { return "ΞΟΟΞΉΞ± Ξ£ΞµΞ»Ξ―Ξ΄Ξ±"; }
 
     /*! This is used in references to page that are put in the LaTeX
      *  documentation. It should be an abbreviation of the word page.
      */
     virtual QCString trPageAbbreviation()
-    { return "σελ."; }
+    { return "ΟƒΞµΞ»."; }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-991003
 //////////////////////////////////////////////////////////////////////////
 
-    virtual QCString trSources()
-    {
-      return "Πηγαίος";
-    }
     virtual QCString trDefinedAtLineInSourceFile()
     {
-      return "Ορισμός στη γραμμή @0 του αρχείου @1.";
+      return "ΞΟΞΉΟƒΞΌΟΟ‚ ΟƒΟ„Ξ· Ξ³ΟΞ±ΞΌΞΌΞ® @0 Ο„ΞΏΟ… Ξ±ΟΟ‡ΞµΞ―ΞΏΟ… @1.";
     }
     virtual QCString trDefinedInSourceFile()
     {
-      return "Ορισμός στο αρχείο @0.";
+      return "ΞΟΞΉΟƒΞΌΟΟ‚ ΟƒΟ„ΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ @0.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -833,7 +807,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
     virtual QCString trDeprecated()
     {
-      return "Αποσυρμένο";
+      return "Ξ‘Ο€ΞΏΟƒΟ…ΟΞΌΞ­Ξ½ΞΏ";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -843,68 +817,68 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
-      return (QCString)"Δίαγραμμα Συνεργασίας για την κλάση "+clName+":";
+      return (QCString)"Ξ”Ξ―Ξ±Ξ³ΟΞ±ΞΌΞΌΞ± Ξ£Ο…Ξ½ΞµΟΞ³Ξ±ΟƒΞ―Ξ±Ο‚ Ξ³ΞΉΞ± Ο„Ξ·Ξ½ ΞΊΞ»Ξ¬ΟƒΞ· "+clName+":";
     }
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Διάγραμμα εξάρτησης Include για το αρχείο "+fName+":";
+      return (QCString)"Ξ”ΞΉΞ¬Ξ³ΟΞ±ΞΌΞΌΞ± ΞµΞΎΞ¬ΟΟ„Ξ·ΟƒΞ·Ο‚ Include Ξ³ΞΉΞ± Ο„ΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Τεκμηρίωση Constructor & Destructor";
+      return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Constructor & Destructor";
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
     {
-      return "Πήγαινε στον πηγαίο κώδικα του αρχείου.";
+      return "Ξ Ξ®Ξ³Ξ±ΞΉΞ½Ξµ ΟƒΟ„ΞΏΞ½ Ο€Ξ·Ξ³Ξ±Ξ―ΞΏ ΞΊΟΞ΄ΞΉΞΊΞ± Ο„ΞΏΟ… Ξ±ΟΟ‡ΞµΞ―ΞΏΟ….";
     }
     /*! Used in the file sources to point to the corresponding documentation. */
     virtual QCString trGotoDocumentation()
     {
-      return "Πήγαινε στην τεκμηρίωση του αρχείου.";
+      return "Ξ Ξ®Ξ³Ξ±ΞΉΞ½Ξµ ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„ΞΏΟ… Ξ±ΟΟ‡ΞµΞ―ΞΏΟ….";
     }
     /*! Text for the \\pre command */
     virtual QCString trPrecondition()
     {
-      return "Προϋποθέσεις";
+      return "Ξ ΟΞΏΟ‹Ο€ΞΏΞΈΞ­ΟƒΞµΞΉΟ‚";
     }
     /*! Text for the \\post command */
     virtual QCString trPostcondition()
     {
-      return "Μεταϋποθέσεις";
+      return "ΞΞµΟ„Ξ±Ο‹Ο€ΞΏΞΈΞ­ΟƒΞµΞΉΟ‚";
     }
     /*! Text for the \\invariant command */
     virtual QCString trInvariant()
     {
-      return "Αμετάβλητα";
+      return "Ξ‘ΞΌΞµΟ„Ξ¬Ξ²Ξ»Ξ·Ο„Ξ±";
     }
     /*! Text shown before a multi-line variable/enum initialization */
     virtual QCString trInitialValue()
     {
-      return "Αρχική τιμή:";
+      return "Ξ‘ΟΟ‡ΞΉΞΊΞ® Ο„ΞΉΞΌΞ®:";
     }
     /*! Text used the source code in the file index */
     virtual QCString trCode()
     {
-      return "κώδικας";
+      return "ΞΊΟΞ΄ΞΉΞΊΞ±Ο‚";
     }
     virtual QCString trGraphicalHierarchy()
     {
-      return "Γραφική Αναπαράσταση Της Ιεραρχίας Των Κλάσεων";
+      return "Ξ“ΟΞ±Ο†ΞΉΞΊΞ® Ξ‘Ξ½Ξ±Ο€Ξ±ΟΞ¬ΟƒΟ„Ξ±ΟƒΞ· Ξ¤Ξ·Ο‚ Ξ™ΞµΟΞ±ΟΟ‡Ξ―Ξ±Ο‚ Ξ¤Ο‰Ξ½ ΞΞ»Ξ¬ΟƒΞµΟ‰Ξ½";
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "Πήγαινε στην γραφική αναπαράσταση της ιεραρχίας των κλάσεων";
+      return "Ξ Ξ®Ξ³Ξ±ΞΉΞ½Ξµ ΟƒΟ„Ξ·Ξ½ Ξ³ΟΞ±Ο†ΞΉΞΊΞ® Ξ±Ξ½Ξ±Ο€Ξ±ΟΞ¬ΟƒΟ„Ξ±ΟƒΞ· Ο„Ξ·Ο‚ ΞΉΞµΟΞ±ΟΟ‡Ξ―Ξ±Ο‚ Ο„Ο‰Ξ½ ΞΊΞ»Ξ¬ΟƒΞµΟ‰Ξ½";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "Πήγαινε στην με κείμενο αναπαράσταση της ιεραρχίας των κλάσεων";
+      return "Ξ Ξ®Ξ³Ξ±ΞΉΞ½Ξµ ΟƒΟ„Ξ·Ξ½ ΞΌΞµ ΞΊΞµΞ―ΞΌΞµΞ½ΞΏ Ξ±Ξ½Ξ±Ο€Ξ±ΟΞ¬ΟƒΟ„Ξ±ΟƒΞ· Ο„Ξ·Ο‚ ΞΉΞµΟΞ±ΟΟ‡Ξ―Ξ±Ο‚ Ο„Ο‰Ξ½ ΞΊΞ»Ξ¬ΟƒΞµΟ‰Ξ½";
     }
     virtual QCString trPageIndex()
     {
-      return "Ευρετήριο Σελίδων";
+      return "Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ Ξ£ΞµΞ»Ξ―Ξ΄Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -913,50 +887,50 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
     virtual QCString trNote()
     {
-      return "Σημείωση";
+      return "Ξ£Ξ·ΞΌΞµΞ―Ο‰ΟƒΞ·";
     }
     virtual QCString trPublicTypes()
     {
-      return "Δημόσιοι Τυποι";
+      return "Ξ”Ξ·ΞΌΟΟƒΞΉΞΏΞΉ Ξ¤Ο…Ο€ΞΏΞΉ";
     }
     virtual QCString trPublicAttribs()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Πεδία Δεδομένων";
+        return "Ξ ΞµΞ΄Ξ―Ξ± Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Δημόσια Χαρακτηριστικά";
+        return "Ξ”Ξ·ΞΌΟΟƒΞΉΞ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
       }
     }
     virtual QCString trStaticPublicAttribs()
     {
-      return "Στατικά Δημόσια Χαρακτηριστικά";
+      return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ¬ Ξ”Ξ·ΞΌΟΟƒΞΉΞ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
     }
     virtual QCString trProtectedTypes()
     {
-      return "Προστατευμένοι Τύποι";
+      return "Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½ΞΏΞΉ Ξ¤ΟΟ€ΞΏΞΉ";
     }
     virtual QCString trProtectedAttribs()
     {
-      return "Προστατευμένα Χαρακτηριστικά";
+      return "Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½Ξ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
     }
     virtual QCString trStaticProtectedAttribs()
     {
-      return "Στατικά Προστατευμένα Χαρακτηριστικά";
+      return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ¬ Ξ ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½Ξ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
     }
     virtual QCString trPrivateTypes()
     {
-      return "Ιδιωτικοί Τύποι";
+      return "Ξ™Ξ΄ΞΉΟ‰Ο„ΞΉΞΊΞΏΞ― Ξ¤ΟΟ€ΞΏΞΉ";
     }
     virtual QCString trPrivateAttribs()
     {
-      return "Ιδιωτικα Χαρακτηριστικά";
+      return "Ξ™Ξ΄ΞΉΟ‰Ο„ΞΉΞΊΞ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
     }
     virtual QCString trStaticPrivateAttribs()
     {
-      return "Στατικά Ιδιωτικα Χαρακτηριστικά";
+      return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ¬ Ξ™Ξ΄ΞΉΟ‰Ο„ΞΉΞΊΞ± Ξ§Ξ±ΟΞ±ΞΊΟ„Ξ·ΟΞΉΟƒΟ„ΞΉΞΊΞ¬";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -966,12 +940,12 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as a marker that is put before a \\todo item */
     virtual QCString trTodo()
     {
-      return "Προς Υλοποίηση";
+      return "Ξ ΟΞΏΟ‚ Ξ¥Ξ»ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ·";
     }
     /*! Used as the header of the todo list */
     virtual QCString trTodoList()
     {
-      return "Λίστα των Προς Υλοποίηση";
+      return "Ξ›Ξ―ΟƒΟ„Ξ± Ο„Ο‰Ξ½ Ξ ΟΞΏΟ‚ Ξ¥Ξ»ΞΏΟ€ΞΏΞ―Ξ·ΟƒΞ·";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -980,24 +954,24 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
 
     virtual QCString trReferencedBy()
     {
-      return "Αναφορά από";
+      return "Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬ Ξ±Ο€Ο";
     }
     virtual QCString trRemarks()
     {
-      return "Παρατήρηση";
+      return "Ξ Ξ±ΟΞ±Ο„Ξ®ΟΞ·ΟƒΞ·";
     }
     virtual QCString trAttention()
     {
-      return "Προσοχή";
+      return "Ξ ΟΞΏΟƒΞΏΟ‡Ξ®";
     }
     virtual QCString trInclByDepGraph()
     {
-      return "Το γράφημα αυτό παρουσιάζει ποιά αρχεία άμεσα ή "
-             "έμεσα περιλαμβάνουν αυτό το αρχείο:";
+      return "Ξ¤ΞΏ Ξ³ΟΞ¬Ο†Ξ·ΞΌΞ± Ξ±Ο…Ο„Ο Ο€Ξ±ΟΞΏΟ…ΟƒΞΉΞ¬Ξ¶ΞµΞΉ Ο€ΞΏΞΉΞ¬ Ξ±ΟΟ‡ΞµΞ―Ξ± Ξ¬ΞΌΞµΟƒΞ± Ξ® "
+             "Ξ­ΞΌΞµΟƒΞ± Ο€ΞµΟΞΉΞ»Ξ±ΞΌΞ²Ξ¬Ξ½ΞΏΟ…Ξ½ Ξ±Ο…Ο„Ο Ο„ΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ:";
     }
     virtual QCString trSince()
     {
-      return "Από";
+      return "Ξ‘Ο€Ο";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1007,7 +981,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! title of the graph legend page */
     virtual QCString trLegendTitle()
     {
-      return "Υπόμνημα Διαγραμμάτων";
+      return "Ξ¥Ο€ΟΞΌΞ½Ξ·ΞΌΞ± Ξ”ΞΉΞ±Ξ³ΟΞ±ΞΌΞΌΞ¬Ο„Ο‰Ξ½";
     }
     /*! page explaining how the dot graph's should be interpreted
      *  The %A in the text below are to prevent link to classes called "A".
@@ -1015,9 +989,9 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     virtual QCString trLegendDocs()
     {
       return
-        "Αυτή η σελίδα εξηγεί το πως ερμηνεύονται τα διαγράμματα που δημιουργούνται "
-        "από το doxygen.<p>\n"
-        "Θεωρείστε το παρακάτω παράδειγμα:"
+        "Ξ‘Ο…Ο„Ξ® Ξ· ΟƒΞµΞ»Ξ―Ξ΄Ξ± ΞµΞΎΞ·Ξ³ΞµΞ― Ο„ΞΏ Ο€Ο‰Ο‚ ΞµΟΞΌΞ·Ξ½ΞµΟΞΏΞ½Ο„Ξ±ΞΉ Ο„Ξ± Ξ΄ΞΉΞ±Ξ³ΟΞ¬ΞΌΞΌΞ±Ο„Ξ± Ο€ΞΏΟ… Ξ΄Ξ·ΞΌΞΉΞΏΟ…ΟΞ³ΞΏΟΞ½Ο„Ξ±ΞΉ "
+        "Ξ±Ο€Ο Ο„ΞΏ doxygen.<p>\n"
+        "ΞΞµΟ‰ΟΞµΞ―ΟƒΟ„Ξµ Ο„ΞΏ Ο€Ξ±ΟΞ±ΞΊΞ¬Ο„Ο‰ Ο€Ξ±ΟΞ¬Ξ΄ΞµΞΉΞ³ΞΌΞ±:"
         "\\code\n"
         "/*! Invisible class because of truncation */\n"
         "class Invisible { };\n\n"
@@ -1046,35 +1020,40 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
         "    Used *m_usedClass;\n"
         "};\n"
         "\\endcode\n"
-        "Αν η ετικέτα \\c MAX_DOT_GRAPH_HEIGHT στο αρχείο ρυθμίσεων "
-        "τεθεί στο 200 θα έχουμε σαν αποτέλεσμα το ακόλουθο διάγραμμα:"
-        "<p><center><img src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center>\n"
+        "Ξ‘Ο…Ο„Ο ΞΏΞ΄Ξ·Ξ³ΞµΞ― ΟƒΟ„ΞΏ ΞµΟ€ΟΞΌΞµΞ½ΞΏ Ξ³ΟΞ¬Ο†Ξ·ΞΌΞ±:"
+        "<p><center><img alt=\"\" src=\"graph_legend."+Config_getEnum("DOT_IMAGE_FORMAT")+"\"></center></p>\n"
         "<p>\n"
-        "Τα κουτιά στο παραπάνω διάγραμμα έχουν την ακόλουθη σημασία:\n"
+        "Ξ¤Ξ± ΞΊΞΏΟ…Ο„ΞΉΞ¬ ΟƒΟ„ΞΏ Ο€Ξ±ΟΞ±Ο€Ξ¬Ξ½Ο‰ Ξ΄ΞΉΞ¬Ξ³ΟΞ±ΞΌΞΌΞ± Ξ­Ο‡ΞΏΟ…Ξ½ Ο„Ξ·Ξ½ Ξ±ΞΊΟΞ»ΞΏΟ…ΞΈΞ· ΟƒΞ·ΞΌΞ±ΟƒΞ―Ξ±:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Ένα γεμισμένο μαύρο κουτί αναπαριστά τη δομή ή την κλάση για την οποία"
-        "αφορά το διάγραμμα.\n"
-        "<li>Ένα κουτί με μαύρο περίγραμμα αναπαριστά μία τεκμηριωμένη δομή ή κλάση.\n"
-        "<li>Ένα κουτί με γκρίζο περίγραμμα αναπαριστά μία μη τεκμηριωμένη δομή ή κλάση.\n"
-        "<li>Ένα κουτί με κόκκινο περίγραμμα αναπαριστά μία τεκμηριωμένη δομή ή κλάση για "
-        "την οποία δεν παρουσιάζονται όλες οι σχέσεις κληρονομικότητας και περιεχομένου. %Ένα "
-        "διάγραμμα μειώνεται αν δεν χωράει στις ορισμένες διαστάσεις."
+        "<li>ΞΞ½Ξ± Ξ³ΞµΞΌΞΉΟƒΞΌΞ­Ξ½ΞΏ ΞΌΞ±ΟΟΞΏ ΞΊΞΏΟ…Ο„Ξ― Ξ±Ξ½Ξ±Ο€Ξ±ΟΞΉΟƒΟ„Ξ¬ Ο„Ξ· Ξ΄ΞΏΞΌΞ® Ξ® Ο„Ξ·Ξ½ ΞΊΞ»Ξ¬ΟƒΞ· Ξ³ΞΉΞ± Ο„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ±"
+        "Ξ±Ο†ΞΏΟΞ¬ Ο„ΞΏ Ξ΄ΞΉΞ¬Ξ³ΟΞ±ΞΌΞΌΞ±.\n"
+        "<li>ΞΞ½Ξ± ΞΊΞΏΟ…Ο„Ξ― ΞΌΞµ ΞΌΞ±ΟΟΞΏ Ο€ΞµΟΞ―Ξ³ΟΞ±ΞΌΞΌΞ± Ξ±Ξ½Ξ±Ο€Ξ±ΟΞΉΟƒΟ„Ξ¬ ΞΌΞ―Ξ± Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ξ· Ξ΄ΞΏΞΌΞ® Ξ® ΞΊΞ»Ξ¬ΟƒΞ·.\n"
+        "<li>ΞΞ½Ξ± ΞΊΞΏΟ…Ο„Ξ― ΞΌΞµ Ξ³ΞΊΟΞ―Ξ¶ΞΏ Ο€ΞµΟΞ―Ξ³ΟΞ±ΞΌΞΌΞ± Ξ±Ξ½Ξ±Ο€Ξ±ΟΞΉΟƒΟ„Ξ¬ ΞΌΞ―Ξ± ΞΌΞ· Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ξ· Ξ΄ΞΏΞΌΞ® Ξ® ΞΊΞ»Ξ¬ΟƒΞ·.\n"
+        "<li>ΞΞ½Ξ± ΞΊΞΏΟ…Ο„Ξ― ΞΌΞµ ΞΊΟΞΊΞΊΞΉΞ½ΞΏ Ο€ΞµΟΞ―Ξ³ΟΞ±ΞΌΞΌΞ± Ξ±Ξ½Ξ±Ο€Ξ±ΟΞΉΟƒΟ„Ξ¬ ΞΌΞ―Ξ± Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ξ· Ξ΄ΞΏΞΌΞ® Ξ® ΞΊΞ»Ξ¬ΟƒΞ· Ξ³ΞΉΞ± "
+        "Ο„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ± Ξ΄ΞµΞ½ Ο€Ξ±ΟΞΏΟ…ΟƒΞΉΞ¬Ξ¶ΞΏΞ½Ο„Ξ±ΞΉ ΟΞ»ΞµΟ‚ ΞΏΞΉ ΟƒΟ‡Ξ­ΟƒΞµΞΉΟ‚ ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞΉΞΊΟΟ„Ξ·Ο„Ξ±Ο‚ ΞΊΞ±ΞΉ Ο€ΞµΟΞΉΞµΟ‡ΞΏΞΌΞ­Ξ½ΞΏΟ…. %ΞΞ½Ξ± "
+        "Ξ΄ΞΉΞ¬Ξ³ΟΞ±ΞΌΞΌΞ± ΞΌΞµΞΉΟΞ½ΞµΟ„Ξ±ΞΉ Ξ±Ξ½ Ξ΄ΞµΞ½ Ο‡Ο‰ΟΞ¬ΞµΞΉ ΟƒΟ„ΞΉΟ‚ ΞΏΟΞΉΟƒΞΌΞ­Ξ½ΞµΟ‚ Ξ΄ΞΉΞ±ΟƒΟ„Ξ¬ΟƒΞµΞΉΟ‚."
         "</ul>\n"
-        "Τα βέλη έχουν τις ακόλουθες σημασίες:\n"
+        "<p>\n"
+        "Ξ¤Ξ± Ξ²Ξ­Ξ»Ξ· Ξ­Ο‡ΞΏΟ…Ξ½ Ο„ΞΉΟ‚ Ξ±ΞΊΟΞ»ΞΏΟ…ΞΈΞµΟ‚ ΟƒΞ·ΞΌΞ±ΟƒΞ―ΞµΟ‚:\n"
+        "</p>\n"
         "<ul>\n"
-        "<li>Ένα βαθύ μπλε βέλος χρησιμοποιείται για να παρουσιάσει μία δημόσια σχέση κληρονομικότητας "
-        "μεταξύ δύο κλάσεων.\n"
-        "<li>Ένα βαθύ πράσινο βέλος χρησιμοποιείται για προστατευμένη κληρονομικότητα.\n"
-        "<li>Ένα βαθύ κόκκινο βέλος χρησιμοποιείται για ιδιωτική κληρονομικότητα.\n"
-        "<li>Ένα μωβ διακεκομένο βέλος χρησιμοποιείται αν μία κλάση περιέχεται ή χρησιμοποιείται "
-        "από μία άλλη κλάση. Το βέλος ονομάζεται από το όνομα της μεταβλητής(ων) "
-        "μέσω της οποίας η κλάση ή δομή είναι προσβάσιμη. \n"
+        "<li>ΞΞ½Ξ± Ξ²Ξ±ΞΈΟ ΞΌΟ€Ξ»Ξµ Ξ²Ξ­Ξ»ΞΏΟ‚ Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ³ΞΉΞ± Ξ½Ξ± Ο€Ξ±ΟΞΏΟ…ΟƒΞΉΞ¬ΟƒΞµΞΉ ΞΌΞ―Ξ± Ξ΄Ξ·ΞΌΟΟƒΞΉΞ± ΟƒΟ‡Ξ­ΟƒΞ· ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞΉΞΊΟΟ„Ξ·Ο„Ξ±Ο‚ "
+        "ΞΌΞµΟ„Ξ±ΞΎΟ Ξ΄ΟΞΏ ΞΊΞ»Ξ¬ΟƒΞµΟ‰Ξ½.</li>\n"
+        "<li>ΞΞ½Ξ± Ξ²Ξ±ΞΈΟ Ο€ΟΞ¬ΟƒΞΉΞ½ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ³ΞΉΞ± Ο€ΟΞΏΟƒΟ„Ξ±Ο„ΞµΟ…ΞΌΞ­Ξ½Ξ· ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞΉΞΊΟΟ„Ξ·Ο„Ξ±.</li>\n"
+        "<li>ΞΞ½Ξ± Ξ²Ξ±ΞΈΟ ΞΊΟΞΊΞΊΞΉΞ½ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ³ΞΉΞ± ΞΉΞ΄ΞΉΟ‰Ο„ΞΉΞΊΞ® ΞΊΞ»Ξ·ΟΞΏΞ½ΞΏΞΌΞΉΞΊΟΟ„Ξ·Ο„Ξ±.</li>\n"
+        "<li>ΞΞ½Ξ± ΞΌΟ‰Ξ² Ξ΄ΞΉΞ±ΞΊΞµΞΊΞΏΞΌΞ­Ξ½ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ±Ξ½ ΞΌΞ―Ξ± ΞΊΞ»Ξ¬ΟƒΞ· Ο€ΞµΟΞΉΞ­Ο‡ΞµΟ„Ξ±ΞΉ Ξ® Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ "
+        "Ξ±Ο€Ο ΞΌΞ―Ξ± Ξ¬Ξ»Ξ»Ξ· ΞΊΞ»Ξ¬ΟƒΞ·. Ξ¤ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ ΞΏΞ½ΞΏΞΌΞ¬Ξ¶ΞµΟ„Ξ±ΞΉ Ξ±Ο€Ο Ο„ΞΏ ΟΞ½ΞΏΞΌΞ± Ο„Ξ·Ο‚ ΞΌΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„Ξ®Ο‚(Ο‰Ξ½) "
+        "ΞΌΞ­ΟƒΟ‰ Ο„Ξ·Ο‚ ΞΏΟ€ΞΏΞ―Ξ±Ο‚ Ξ· ΞΊΞ»Ξ¬ΟƒΞ· Ξ® Ξ΄ΞΏΞΌΞ® ΞµΞ―Ξ½Ξ±ΞΉ Ο€ΟΞΏΟƒΞ²Ξ¬ΟƒΞΉΞΌΞ·.</li>\n"
+        "<li>ΞΞ½Ξ± ΞΊΞ―Ο„ΟΞΉΞ½ΞΏ Ξ΄ΞΉΞ±ΞΊΞµΞΊΞΏΞΌΞΌΞ­Ξ½ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ Ο‡ΟΞ·ΟƒΞΉΞΌΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ³ΞΉΞ± ΞΌΞΉΞ± ΟƒΟ‡Ξ­ΟƒΞ· ΞΌΞµΟ„Ξ±ΞΎΟ ΞµΞ½ΟΟ‚ template Ξ±Ξ½Ο„ΞΉΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ… ΞΊΞ±ΞΉ "
+        "Ο„Ξ·Ο‚ template ΞΊΞ»Ξ¬ΟƒΞ·Ο‚ Ξ±Ο€Ο Ο„Ξ·Ξ½ ΞΏΟ€ΞΏΞ―Ξ± Ξ΄Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ. Ξ¤ΞΏ Ξ²Ξ­Ξ»ΞΏΟ‚ ΞΏΞ½ΞΏΞΌΞ¬Ξ¶ΞµΟ„Ξ±ΞΉ ΞΌΞµ Ο„ΞΉΟ‚ Ο€Ξ±ΟΞ±ΞΌΞ­Ο„ΟΞΏΟ…Ο‚ Ο„ΞΏΟ… template "
+        "Ο„ΞΏΟ… Ξ±Ξ½Ο„ΞΉΞΊΞµΞΉΞΌΞ­Ξ½ΞΏΟ….</li>\n"
         "</ul>\n";
     }
     /*! text for the link to the legend page */
     virtual QCString trLegend()
     {
-      return "υπόμνημα";
+      return "Ο…Ο€ΟΞΌΞ½Ξ·ΞΌΞ±";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1084,12 +1063,12 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-      return "Δοκιμαστικό";
+      return "Ξ”ΞΏΞΊΞΉΞΌΞ±ΟƒΟ„ΞΉΞΊΟ";
     }
     /*! Used as the header of the test list */
     virtual QCString trTestList()
     {
-      return "Λίστα Δοκιμαστικών";
+      return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ”ΞΏΞΊΞΉΞΌΞ±ΟƒΟ„ΞΉΞΊΟΞ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1099,7 +1078,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as a section header for KDE-2 IDL methods */
     virtual QCString trDCOPMethods()
     {
-      return "Μέδοδοι DCOP";
+      return "ΞΞ­Ξ΄ΞΏΞ΄ΞΏΞΉ DCOP";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1109,64 +1088,54 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-      return "Ιδιότητες";
+      return "Ξ™Ξ΄ΞΉΟΟ„Ξ·Ο„ΞµΟ‚";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
     {
-      return "Τεκμηρίωση Ιδιοτήτων";
+      return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ™Ξ΄ΞΉΞΏΟ„Ξ®Ο„Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.2.4
 //////////////////////////////////////////////////////////////////////////
 
-    /*! Used for Java interfaces in the summary section of Java packages */
-    virtual QCString trInterfaces()
-    {
-      return "Διαπροσωπίες";
-    }
     /*! Used for Java classes in the summary section of Java packages */
     virtual QCString trClasses()
     {
       if (Config_getBool("OPTIMIZE_OUTPUT_FOR_C"))
       {
-        return "Δομές Δεδομένων";
+        return "Ξ”ΞΏΞΌΞ­Ο‚ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
       }
       else
       {
-        return "Κλάσεις";
+        return "ΞΞ»Ξ¬ΟƒΞµΞΉΟ‚";
       }
     }
     /*! Used as the title of a Java package */
     virtual QCString trPackage(const char *name)
     {
-      return (QCString)"Πακέτο "+name;
+      return (QCString)"Ξ Ξ±ΞΊΞ­Ο„ΞΏ "+name;
     }
     /*! Title of the package index page */
     virtual QCString trPackageList()
     {
-      return "Λίστα Πακέτων";
+      return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ Ξ±ΞΊΞ­Ο„Ο‰Ξ½";
     }
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "Ακολουθεί η λίστα των πακέτων με σύντομη περιγραφή (αν υπάρχει):";
+      return "Ξ‘ΞΊΞΏΞ»ΞΏΟ…ΞΈΞµΞ― Ξ· Ξ»Ξ―ΟƒΟ„Ξ± Ο„Ο‰Ξ½ Ο€Ξ±ΞΊΞ­Ο„Ο‰Ξ½ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞ· Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ® (Ξ±Ξ½ Ο…Ο€Ξ¬ΟΟ‡ΞµΞΉ):";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
     {
-      return "Πακέτα";
-    }
-    /*! Used as a chapter title for Latex & RTF output */
-    virtual QCString trPackageDocumentation()
-    {
-      return "Τεκμηρίωση Πακέτων";
+      return "Ξ Ξ±ΞΊΞ­Ο„Ξ±";
     }
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "Τιμή:";
+      return "Ξ¤ΞΉΞΌΞ®:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1176,12 +1145,12 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as a marker that is put before a \\bug item */
     virtual QCString trBug()
     {
-      return "Πρόβλημα";
+      return "Ξ ΟΟΞ²Ξ»Ξ·ΞΌΞ±";
     }
     /*! Used as the header of the bug list */
     virtual QCString trBugList()
     {
-      return "Λίστα Προβλημάτων";
+      return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ ΟΞΏΞ²Ξ»Ξ·ΞΌΞ¬Ο„Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1230,7 +1199,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! Used as header RTF general index */
     virtual QCString trRTFGeneralIndex()
     {
-      return "Ευρετήριο";
+      return "Ξ•Ο…ΟΞµΟ„Ξ®ΟΞΉΞΏ";
     }
 
     /*! This is used for translation of the word that will possibly
@@ -1239,7 +1208,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trClass(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Κλάση" : "κλάση"));
+      QCString result((first_capital ? "ΞΞ»Ξ¬ΟƒΞ·" : "ΞΊΞ»Ξ¬ΟƒΞ·"));
       if (!singular)  result+="";
       return result;
     }
@@ -1250,8 +1219,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trFile(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Αρχεί" : "αρχεί"));
-      if (!singular)  result+="α"; else result+="ο";
+      QCString result((first_capital ? "Ξ‘ΟΟ‡ΞµΞ―" : "Ξ±ΟΟ‡ΞµΞ―"));
+      if (!singular)  result+="Ξ±"; else result+="ΞΏ";
       return result;
     }
 
@@ -1272,8 +1241,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trGroup(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Ομάδ" : "ομάδ"));
-      if (!singular)  result+="ες"; else result+="α";
+      QCString result((first_capital ? "ΞΞΌΞ¬Ξ΄" : "ΞΏΞΌΞ¬Ξ΄"));
+      if (!singular)  result+="ΞµΟ‚"; else result+="Ξ±";
       return result;
     }
 
@@ -1283,8 +1252,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trPage(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Σελίδ" : "σελίδ"));
-      if (!singular)  result+="ες"; else result+="α";
+      QCString result((first_capital ? "Ξ£ΞµΞ»Ξ―Ξ΄" : "ΟƒΞµΞ»Ξ―Ξ΄"));
+      if (!singular)  result+="ΞµΟ‚"; else result+="Ξ±";
       return result;
     }
 
@@ -1294,19 +1263,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trMember(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Μέλ" : "μέλ"));
-      if (!singular)  result+="η"; else result+="ος";
-      return result;
-    }
-
-    /*! This is used for translation of the word that will possibly
-     *  be followed by a single name or by a list of names
-     *  of the category.
-     */
-    virtual QCString trField(bool first_capital, bool singular)
-    {
-      QCString result((first_capital ? "Πεδί" : "πεδί"));
-      if (!singular)  result+="α"; else result+="ο";
+      QCString result((first_capital ? "ΞΞ­Ξ»" : "ΞΌΞ­Ξ»"));
+      if (!singular)  result+="Ξ·"; else result+="ΞΏΟ‚";
       return result;
     }
 
@@ -1316,8 +1274,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trGlobal(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Καθολικ" : "καθολικ"));
-      if (!singular) result+="ές"; else result+="ή";
+      QCString result((first_capital ? "ΞΞ±ΞΈΞΏΞ»ΞΉΞΊ" : "ΞΊΞ±ΞΈΞΏΞ»ΞΉΞΊ"));
+      if (!singular) result+="Ξ­Ο‚"; else result+="Ξ®";
       return result;
     }
 
@@ -1329,8 +1287,8 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  for the author section in man pages. */
     virtual QCString trAuthor(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Συγραφ" : "συγραφ"));
-      if (!singular)  result+=""; else result+="έας";
+      QCString result((first_capital ? "Ξ£Ο…Ξ³ΟΞ±Ο†" : "ΟƒΟ…Ξ³ΟΞ±Ο†"));
+      if (!singular)  result+=""; else result+="Ξ­Ξ±Ο‚";
       return result;
     }
 
@@ -1342,7 +1300,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trReferences()
     {
-      return "Αναφορές";
+      return "Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ­Ο‚";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1354,7 +1312,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trImplementedFromList(int numEntries)
     {
-      return "Υλοποιεί "+trWriteList(numEntries)+".";
+      return "Ξ¥Ξ»ΞΏΟ€ΞΏΞΉΞµΞ― "+trWriteList(numEntries)+".";
     }
 
     /*! used in member documentation blocks to produce a list of
@@ -1362,7 +1320,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trImplementedInList(int numEntries)
     {
-      return "Υλοποιείται από "+trWriteList(numEntries)+".";
+      return "Ξ¥Ξ»ΞΏΟ€ΞΏΞΉΞµΞ―Ο„Ξ±ΞΉ Ξ±Ο€Ο "+trWriteList(numEntries)+".";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1374,7 +1332,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trRTFTableOfContents()
     {
-      return "Πίνακας Περιεχομένων";
+      return "Ξ Ξ―Ξ½Ξ±ΞΊΞ±Ο‚ Ξ ΞµΟΞΉΞµΟ‡ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1386,7 +1344,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trDeprecatedList()
     {
-      return "Λίστα Καταργημένων";
+      return "Ξ›Ξ―ΟƒΟ„Ξ± ΞΞ±Ο„Ξ±ΟΞ³Ξ·ΞΌΞ­Ξ½Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1398,12 +1356,12 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trEvents()
     {
-      return "Συμβάντα";
+      return "Ξ£Ο…ΞΌΞ²Ξ¬Ξ½Ο„Ξ±";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Τεκμηρίωση Συμβάντων";
+      return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£Ο…ΞΌΞ²Ξ¬Ξ½Ο„Ο‰Ξ½";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1414,35 +1372,35 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trPackageTypes()
     {
-      return "Τύποι Πακέτων";
+      return "Ξ¤ΟΟ€ΞΏΞΉ Ξ Ξ±ΞΊΞ­Ο„Ο‰Ξ½";
     }
     /*! Used as a heading for a list of Java class functions with package
      * scope.
      */
     virtual QCString trPackageMembers()
     {
-      return "Συναρτήσεις Πακέτου";
+      return "Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚ Ξ Ξ±ΞΊΞ­Ο„ΞΏΟ…";
     }
     /*! Used as a heading for a list of static Java class functions with
      *  package scope.
      */
     virtual QCString trStaticPackageMembers()
     {
-      return "Στατικές Συναρτήσεις Πακέτου";
+      return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ­Ο‚ Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚ Ξ Ξ±ΞΊΞ­Ο„ΞΏΟ…";
     }
     /*! Used as a heading for a list of Java class variables with package
      * scope.
      */
     virtual QCString trPackageAttribs()
     {
-      return "Μεταβλητές Πακέτου";
+      return "ΞΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„Ξ­Ο‚ Ξ Ξ±ΞΊΞ­Ο„ΞΏΟ…";
     }
     /*! Used as a heading for a list of static Java class variables with
      * package scope.
      */
     virtual QCString trStaticPackageAttribs()
     {
-      return "Στατικές Μεταβλητές Πακέτου";
+      return "Ξ£Ο„Ξ±Ο„ΞΉΞΊΞ­Ο‚ ΞΞµΟ„Ξ±Ξ²Ξ»Ξ·Ο„Ξ­Ο‚ Ξ Ξ±ΞΊΞ­Ο„ΞΏΟ…";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1454,12 +1412,12 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trAll()
     {
-      return "Όλα";
+      return "ΞΞ»Ξ±";
     }
     /*! Put in front of the call graph for a function. */
     virtual QCString trCallGraph()
     {
-      return "Το γράφημα δείχνει ποιές συναρτήσεις καλούνται από αυτή:";
+      return "Ξ¤ΞΏ Ξ³ΟΞ¬Ο†Ξ·ΞΌΞ± Ξ΄ΞµΞ―Ο‡Ξ½ΞµΞΉ Ο€ΞΏΞΉΞ­Ο‚ ΟƒΟ…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚ ΞΊΞ±Ξ»ΞΏΟΞ½Ο„Ξ±ΞΉ Ξ±Ο€Ο Ξ±Ο…Ο„Ξ®:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1472,14 +1430,14 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trSearchForIndex()
     {
-      return "Αναζήτηση για";
+      return "Ξ‘Ξ½Ξ±Ξ¶Ξ®Ο„Ξ·ΟƒΞ· Ξ³ΞΉΞ±";
     }
     /*! This string is used as the title for the page listing the search
      *  results.
      */
     virtual QCString trSearchResultsTitle()
     {
-      return "Αποτελέσματα Αναζήτησης";
+      return "Ξ‘Ο€ΞΏΟ„ΞµΞ»Ξ­ΟƒΞΌΞ±Ο„Ξ± Ξ‘Ξ½Ξ±Ξ¶Ξ®Ο„Ξ·ΟƒΞ·Ο‚";
     }
     /*! This string is put just before listing the search results. The
      *  text can be different depending on the number of documents found.
@@ -1493,16 +1451,16 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     {
       if (numDocuments==0)
       {
-        return "Συγγνώμη, δεν υπάρχει κείμενο που να ταιριάζει με την αίτησή σας.";
+        return "Ξ£Ο…Ξ³Ξ³Ξ½ΟΞΌΞ·, Ξ΄ΞµΞ½ Ο…Ο€Ξ¬ΟΟ‡ΞµΞΉ ΞΊΞµΞ―ΞΌΞµΞ½ΞΏ Ο€ΞΏΟ… Ξ½Ξ± Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞµΞΉ ΞΌΞµ Ο„Ξ·Ξ½ Ξ±Ξ―Ο„Ξ·ΟƒΞ® ΟƒΞ±Ο‚.";
       }
       else if (numDocuments==1)
       {
-        return "Βρέθηκε <b>1</b> κείμενο που ταιριάζει με την αίτησή σας.";
+        return "Ξ’ΟΞ­ΞΈΞ·ΞΊΞµ <b>1</b> ΞΊΞµΞ―ΞΌΞµΞ½ΞΏ Ο€ΞΏΟ… Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞµΞΉ ΞΌΞµ Ο„Ξ·Ξ½ Ξ±Ξ―Ο„Ξ·ΟƒΞ® ΟƒΞ±Ο‚.";
       }
       else
       {
-        return "Βρέθηκαν <b>$num</b> κείμενα που ταιριάζουν με την αίτησή σας. "
-               "Πρώτα εμφανίζονται τα κείμενα που ταιριάζουν πιο πολύ.";
+        return "Ξ’ΟΞ­ΞΈΞ·ΞΊΞ±Ξ½ <b>$num</b> ΞΊΞµΞ―ΞΌΞµΞ½Ξ± Ο€ΞΏΟ… Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞΏΟ…Ξ½ ΞΌΞµ Ο„Ξ·Ξ½ Ξ±Ξ―Ο„Ξ·ΟƒΞ® ΟƒΞ±Ο‚. "
+               "Ξ ΟΟΟ„Ξ± ΞµΞΌΟ†Ξ±Ξ½Ξ―Ξ¶ΞΏΞ½Ο„Ξ±ΞΉ Ο„Ξ± ΞΊΞµΞ―ΞΌΞµΞ½Ξ± Ο€ΞΏΟ… Ο„Ξ±ΞΉΟΞΉΞ¬Ξ¶ΞΏΟ…Ξ½ Ο€ΞΉΞΏ Ο€ΞΏΞ»Ο.";
       }
     }
     /*! This string is put before the list of matched words, for each search
@@ -1510,7 +1468,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trSearchMatches()
     {
-      return "Ταίριαξαν:";
+      return "Ξ¤Ξ±Ξ―ΟΞΉΞ±ΞΎΞ±Ξ½:";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1521,7 +1479,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trSourceFile(QCString& filename)
     {
-      return "Αρχείο κώδικα " + filename;
+      return "Ξ‘ΟΟ‡ΞµΞ―ΞΏ ΞΊΟΞ΄ΞΉΞΊΞ± " + filename;
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1532,41 +1490,41 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      *  hierarchy.
      */
     virtual QCString trDirIndex()
-    { return "Ιεραρχία Καταλόγου"; }
+    { return "Ξ™ΞµΟΞ±ΟΟ‡Ξ―Ξ± ΞΞ±Ο„Ξ±Ξ»ΟΞ³ΞΏΟ…"; }
 
     /*! This is used as the name of the chapter containing the documentation
      *  of the directories.
      */
     virtual QCString trDirDocumentation()
-    { return "Τεκμηρίωση Καταλόγου"; }
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· ΞΞ±Ο„Ξ±Ξ»ΟΞ³ΞΏΟ…"; }
 
     /*! This is used as the title of the directory index and also in the
      *  Quick links of an HTML page, to link to the directory hierarchy.
      */
     virtual QCString trDirectories()
-    { return "Κατάλογοι"; }
+    { return "ΞΞ±Ο„Ξ¬Ξ»ΞΏΞ³ΞΏΞΉ"; }
 
     /*! This returns a sentences that introduces the directory hierarchy.
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
     {
-			return "Η ιεραρχία καταλόγων ταξινομήθηκε αλφαβητικά, αλλά όχι πολύ αυστηρά:";
+			return "Ξ— ΞΉΞµΟΞ±ΟΟ‡Ξ―Ξ± ΞΊΞ±Ο„Ξ±Ξ»ΟΞ³Ο‰Ξ½ Ο„Ξ±ΞΎΞΉΞ½ΞΏΞΌΞ®ΞΈΞ·ΞΊΞµ Ξ±Ξ»Ο†Ξ±Ξ²Ξ·Ο„ΞΉΞΊΞ¬, Ξ±Ξ»Ξ»Ξ¬ ΟΟ‡ΞΉ Ο€ΞΏΞ»Ο Ξ±Ο…ΟƒΟ„Ξ·ΟΞ¬:";
     }
 
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
     virtual QCString trDirReference(const char *dirName)
-    { QCString result=QCString("Αναφορά του Καταλόγου ") + dirName; return result; }
+    { QCString result=QCString("Ξ‘Ξ½Ξ±Ο†ΞΏΟΞ¬ Ο„ΞΏΟ… ΞΞ±Ο„Ξ±Ξ»ΟΞ³ΞΏΟ… ") + dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
      *  (\a first_capital) and in sigular or plural form (\a singular).
      */
     virtual QCString trDir(bool first_capital, bool singular)
     {
-      QCString result((first_capital ? "Κατάλογο" : "κατάλογο"));
-      if (singular) result+="ς"; else result+="ι";
+      QCString result((first_capital ? "ΞΞ±Ο„Ξ¬Ξ»ΞΏΞ³ΞΏ" : "ΞΊΞ±Ο„Ξ¬Ξ»ΞΏΞ³ΞΏ"));
+      if (singular) result+="Ο‚"; else result+="ΞΉ";
       return result;
     }
 
@@ -1579,9 +1537,9 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
      */
     virtual QCString trOverloadText()
     {
-       return "Αυτή είναι μια υπερφορτωμένη συνάρτηση-μέλος, "
-              "που παρέχεται για ευκολία. Διαφέρει από την παραπάνω "
-              "συνάρτηση μόνο στον τύπο των παραμέτρων που δέχεται.";
+       return "Ξ‘Ο…Ο„Ξ® ΞµΞ―Ξ½Ξ±ΞΉ ΞΌΞΉΞ± Ο…Ο€ΞµΟΟ†ΞΏΟΟ„Ο‰ΞΌΞ­Ξ½Ξ· ΟƒΟ…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ·-ΞΌΞ­Ξ»ΞΏΟ‚, "
+              "Ο€ΞΏΟ… Ο€Ξ±ΟΞ­Ο‡ΞµΟ„Ξ±ΞΉ Ξ³ΞΉΞ± ΞµΟ…ΞΊΞΏΞ»Ξ―Ξ±. Ξ”ΞΉΞ±Ο†Ξ­ΟΞµΞΉ Ξ±Ο€Ο Ο„Ξ·Ξ½ Ο€Ξ±ΟΞ±Ο€Ξ¬Ξ½Ο‰ "
+              "ΟƒΟ…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ· ΞΌΟΞ½ΞΏ ΟƒΟ„ΞΏΞ½ Ο„ΟΟ€ΞΏ Ο„Ο‰Ξ½ Ο€Ξ±ΟΞ±ΞΌΞ­Ο„ΟΟ‰Ξ½ Ο€ΞΏΟ… Ξ΄Ξ­Ο‡ΞµΟ„Ξ±ΞΉ.";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1591,7 +1549,7 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     /*! This is used to introduce a caller (or called-by) graph */
     virtual QCString trCallerGraph()
     {
-      return "Το γράφημα δείχνει από ποιές συναρτήσεις καλείται αυτή η συνάρτηση:";
+      return "Ξ¤ΞΏ Ξ³ΟΞ¬Ο†Ξ·ΞΌΞ± Ξ΄ΞµΞ―Ο‡Ξ½ΞµΞΉ Ξ±Ο€Ο Ο€ΞΏΞΉΞ­Ο‚ ΟƒΟ…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚ ΞΊΞ±Ξ»ΞµΞ―Ο„Ξ±ΞΉ Ξ±Ο…Ο„Ξ® Ξ· ΟƒΟ…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ·:";
     }
 
     /*! This is used in the documentation of a file/namespace before the list 
@@ -1600,6 +1558,294 @@ class TranslatorGreek : public TranslatorAdapter_1_5_4
     virtual QCString trEnumerationValueDocumentation()
     { return "Enumerator Documentation"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.5.4 (mainly for Fortran)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! header that is put before the list of member subprograms (Fortran). */
+    virtual QCString trMemberFunctionDocumentationFortran()
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£Ο…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ·Ο‚/Ξ¥Ο€ΞΏΟΞΏΟ…Ο„Ξ―Ξ½Ξ±Ο‚ ΞΞ­Ξ»ΞΏΟ…Ο‚"; }
+
+    /*! This is put above each page as a link to the list of annotated data types (Fortran). */
+    virtual QCString trCompoundListFortran()
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ¤ΟΟ€Ο‰Ξ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; }
+
+    /*! This is put above each page as a link to all members of compounds (Fortran). */
+    virtual QCString trCompoundMembersFortran()
+    { return "Ξ ΞµΞ΄Ξ―Ξ± Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; }
+
+    /*! This is an introduction to the annotated compound list (Fortran). */
+    virtual QCString trCompoundListDescriptionFortran()
+    { return "Ξ•Ξ΄Ο ΞµΞ―Ξ½Ξ±ΞΉ ΞΏΞΉ Ο„ΟΟ€ΞΏΞΉ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞ· Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ®:"; }
+
+    /*! This is an introduction to the page with all data types (Fortran). */
+    virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
+    {
+      QCString result="Ξ•Ξ΄Ο ΞµΞ―Ξ½Ξ±ΞΉ Ξ· Ξ»Ξ―ΟƒΟ„Ξ± ΟΞ»Ο‰Ξ½ Ο„Ο‰Ξ½ ";
+      if (!extractAll)
+      {
+        result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½Ο‰Ξ½ ";
+      }
+      result+="ΞΌΞµΞ»ΟΞ½ Ο„ΟΟ€Ο‰Ξ½ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
+      result+=" ΞΌΞµ ΟƒΟ…Ξ½Ξ΄Ξ­ΟƒΞµΞΉΟ‚ ";
+      if (!extractAll)
+      {
+         result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„Ξ·Ο‚ Ξ΄ΞΏΞΌΞ®Ο‚ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ ΞΌΞ­Ξ»ΞΏΟ‚";
+      }
+      else
+      {
+         result+="ΟƒΟ„ΞΏΟ…Ο‚ Ο„ΟΟ€ΞΏΟ…Ο‚ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½ Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     * annotated compound index (Fortran).
+     */
+    virtual QCString trCompoundIndexFortran()
+    { return "Ξ ΞµΟΞΉΞµΟ‡ΟΞΌΞµΞ½Ξ± Ξ¤ΟΟ€Ο‰Ξ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; }
+
+    /*! This is used in LaTeX as the title of the chapter containing
+     *  the documentation of all data types (Fortran).
+     */
+    virtual QCString trTypeDocumentation()
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ¤ΟΟ€Ο‰Ξ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; }
+
+    /*! This is used in the documentation of a file as a header before the
+     *  list of (global) subprograms (Fortran).
+     */
+    virtual QCString trSubprograms()
+    { return "Ξ£Ο…Ξ½Ξ±ΟΟ„Ξ®ΟƒΞµΞΉΟ‚/Ξ¥Ο€ΞΏΟΞΏΟ…Ο„Ξ―Ξ½ΞµΟ‚"; }
+
+    /*! This is used in the documentation of a file/namespace before the list
+     *  of documentation blocks for subprograms (Fortran)
+     */
+    virtual QCString trSubprogramDocumentation()
+    { return "Ξ¤ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ£Ο…Ξ½Ξ¬ΟΟ„Ξ·ΟƒΞ·Ο‚/Ξ¥Ο€ΞΏΟΞΏΟ…Ο„Ξ―Ξ½Ξ±Ο‚"; }
+
+    /*! This is used in the documentation of a file/namespace/group before
+     *  the list of links to documented compounds (Fortran)
+     */
+     virtual QCString trDataTypes()
+    { return "Ξ¤ΟΟ€ΞΏΞΉ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; }
+
+    /*! used as the title of page containing all the index of all modules (Fortran). */
+    virtual QCString trModulesList()
+    { return "Ξ›Ξ―ΟƒΟ„Ξ± Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½"; }
+
+    /*! used as an introduction to the modules list (Fortran) */
+    virtual QCString trModulesListDescription(bool extractAll)
+    {
+      QCString result="Ξ•Ξ΄Ο ΞµΞ―Ξ½Ξ±ΞΉ ΞΌΞΉΞ± Ξ»Ξ―ΟƒΟ„Ξ± ΞΌΞµ ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½ΞµΟ‚ ";
+      result+="Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄ΞµΟ‚ ΞΌΞµ ΟƒΟΞ½Ο„ΞΏΞΌΞ® Ο€ΞµΟΞΉΞ³ΟΞ±Ο†Ξ®:";
+      return result;
+    }
+
+    /*! used as the title of the HTML page of a module/type (Fortran) */
+    virtual QCString trCompoundReferenceFortran(const char *clName,
+                                    ClassDef::CompoundType compType,
+                                    bool isTemplate)
+    {
+      QCString result=(QCString)clName;
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ξ±"; break;
+        case ClassDef::Struct:     result+=" Ξ¤ΟΟ€ΞΏΟ‚"; break;
+        case ClassDef::Union:      result+=" ΞΞ½Ο‰ΟƒΞ·"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Protocol:   result+=" Ξ ΟΟ‰Ο„ΟΞΊΞΏΞ»Ξ»ΞΏ"; break;
+        case ClassDef::Category:   result+=" ΞΞ±Ο„Ξ·Ξ³ΞΏΟΞ―Ξ±"; break;
+        case ClassDef::Exception:  result+=" Ξ•ΞΎΞ±Ξ―ΟΞµΟƒΞ·"; break;
+      }
+      if (isTemplate) result+=" Ξ ΟΟΟ„Ο…Ο€ΞΏ";
+      result+=" Ξ”Ξ®Ξ»Ο‰ΟƒΞ·";
+      return result;
+    }
+    /*! used as the title of the HTML page of a module (Fortran) */
+    virtual QCString trModuleReference(const char *namespaceName)
+    {
+      QCString result=namespaceName;
+      result+=" Ξ”Ξ·Ξ»ΟΟƒΞµΞΉΟ‚ Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½";
+      return result;
+    }
+
+    /*! This is put above each page as a link to all members of modules. (Fortran) */
+    virtual QCString trModulesMembers()
+    { return "Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄ΞµΟ‚ ΞΞ­Ξ»Ξ·"; }
+
+    /*! This is an introduction to the page with all modules members (Fortran) */
+    virtual QCString trModulesMemberDescription(bool extractAll)
+    {
+      QCString result="Ξ•Ξ΄Ο ΞµΞ―Ξ½Ξ±ΞΉ ΞΌΞΉΞ± Ξ»Ξ―ΟƒΟ„Ξ± ΞΌΞµ ΟΞ»ΞµΟ‚ Ο„ΞΉΟ‚ ";
+      if (!extractAll) result+="Ο„ΞµΞΊΞΌΞ·ΟΞΉΟ‰ΞΌΞ­Ξ½ΞµΟ‚ ";
+      result+="ΞΌΞ­Ξ»Ξ· Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄ΞµΟ‚ ΞΌΞµ ΟƒΟ…Ξ½Ξ΄Ξ­ΟƒΞµΞΉΟ‚ ";
+      if (extractAll)
+      {
+        result+="ΟƒΟ„Ξ·Ξ½ Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ο„Ξ·Ο‚ Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ξ±Ο‚ Ξ³ΞΉΞ± ΞΊΞ¬ΞΈΞµ ΞΌΞ­Ξ»ΞΏΟ‚:";
+      }
+      else
+      {
+        result+="ΟƒΟ„ΞΉΟ‚ Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄ΞµΟ‚ Ο€ΞΏΟ… Ξ±Ξ½Ξ®ΞΊΞΏΟ…Ξ½:";
+      }
+      return result;
+    }
+
+    /*! This is used in LaTeX as the title of the chapter with the
+     *  index of all modules (Fortran).
+     */
+    virtual QCString trModulesIndex()
+    { return "Ξ ΞµΟΞΉΞµΟ‡ΟΞΌΞµΞ½Ξ± Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ο‰Ξ½"; }
+
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trModule(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Ξ¥Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄" : "Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄"));
+      if (!singular)  result+="ΞµΟ‚"; else result+="Ξ±";
+      return result;
+    }
+    /*! This is put at the bottom of a module documentation page and is
+     *  followed by a list of files that were used to generate the page.
+     */
+    virtual QCString trGeneratedFromFilesFortran(ClassDef::CompoundType compType,
+        bool single)
+    { // here s is one of " Module", " Struct" or " Union"
+      // single is true implies a single file
+      QCString result=(QCString)"Ξ— Ο„ΞµΞΊΞΌΞ·ΟΞ―Ο‰ΟƒΞ· Ξ³ΞΉΞ± ";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+="Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ Ο…Ο€ΞΏΞΌΞΏΞ½Ξ¬Ξ΄Ξ±"; break;
+        case ClassDef::Struct:     result+="Ξ±Ο…Ο„Ο Ο„ΞΏΞ½ Ο„ΟΟ€ΞΏ Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½"; break;
+        case ClassDef::Union:      result+="Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ Ξ­Ξ½Ο‰ΟƒΞ·"; break;
+        case ClassDef::Interface:  result+="Ξ±Ο…Ο„Ο Ο„ΞΏ interface"; break;
+        case ClassDef::Protocol:   result+="Ξ±Ο…Ο„Ο Ο„ΞΏ Ο€ΟΟ‰Ο„ΟΞΊΞΏΞ»Ξ»ΞΏ"; break;
+        case ClassDef::Category:   result+="Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞΊΞ±Ο„Ξ·Ξ³ΞΏΟΞ―Ξ±"; break;
+        case ClassDef::Exception:  result+="Ξ±Ο…Ο„Ξ® Ο„Ξ·Ξ½ ΞµΞΎΞ±Ξ―ΟΞµΟƒΞ·"; break;
+      }
+      result+=" Ξ΄Ξ·ΞΌΞΉΞΏΟ…ΟΞ³Ξ®ΞΈΞ·ΞΊΞµ Ξ±Ο€Ο ";
+      if (single) result+="Ο„ΞΏ Ο€Ξ±ΟΞ±ΞΊΞ¬Ο„Ο‰ Ξ±ΟΟ‡ΞµΞ―ΞΏ:"; else result+="Ο„Ξ± Ο€Ξ±ΟΞ±ΞΊΞ¬Ο„Ο‰ Ξ±ΟΟ‡ΞµΞ―Ξ±:";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trType(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Ξ¤ΟΟ€ΞΏ" : "Ο„ΟΟ€ΞΏ"));
+      if (!singular)  result+="ΞΉ"; else result+="ΞΏΟ‚";
+      result+= first_capital ? " Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½" : "  Ξ΄ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
+      return result;
+    }
+    /*! This is used for translation of the word that will possibly
+     *  be followed by a single name or by a list of names
+     *  of the category.
+     */
+    virtual QCString trSubprogram(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Ξ¥Ο€ΞΏΟ€Ο" : "Ο…Ο€ΞΏΟ€Ο"));
+      if (!singular)  result+="ΞΏΞ³ΟΞ¬ΞΌΞΌΞ±Ο„Ξ±"; else result+="ΟΞ³ΟΞ±ΞΌΞΌΞ±";
+      return result;
+    }
+
+    /*! C# Type Constraint list */
+    virtual QCString trTypeConstraints()
+    {
+      return "Ξ ΞµΟΞΉΞΏΟΞΉΟƒΞΌΞΏΞ― Ξ¤ΟΟ€Ο‰Ξ½ Ξ”ΞµΞ΄ΞΏΞΌΞ­Ξ½Ο‰Ξ½";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return "Ξ£Ο‡Ξ­ΟƒΞ· Ο„ΞΏΟ… "+QCString(name);
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "Ξ¦ΟΟΟ„Ο‰ΟƒΞ·...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "Ξ“ΞµΞ½ΞΉΞΊΟΟ‚ Ο‡ΟΟΞΏΟ‚ ΞΏΞ½ΞΏΞΌΞ¬Ο„Ο‰Ξ½";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "Ξ‘Ξ½Ξ±Ξ¶Ξ®Ο„Ξ·ΟƒΞ·...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "Ξ”ΞµΞ½ Ξ²ΟΞ­ΞΈΞ·ΞΊΞ±Ξ½ Ξ±Ο€ΞΏΟ„ΞµΞ»Ξ­ΟƒΞΌΞ±Ο„Ξ± Ξ±Ξ½Ξ±Ξ¶Ξ®Ο„Ξ·ΟƒΞ·Ο‚";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Ξ“ΟΞ¬Ο†Ξ·ΞΌΞ± ΞµΞΎΞ¬ΟΟ„Ξ·ΟƒΞ·Ο‚ Ο†Ξ±ΞΊΞ­Ξ»ΞΏΟ… Ξ³ΞΉΞ± Ο„ΞΏ "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Ξ‘ΟΟ‡ΞµΞ―ΞΏ ΟƒΞµ "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Ξ•ΟƒΟ‰ΞΊΞ»ΞµΞ―ΞµΞΉ Ο„ΞΏ Ξ±ΟΟ‡ΞµΞ―ΞΏ ΟƒΟ„ΞΏ "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "Ξ”ΞµΟ…","Ξ¤ΟΞΉ","Ξ¤ΞµΟ„","Ξ ΞµΞΌ","Ξ Ξ±Ο","Ξ£Ξ±Ξ²","ΞΟ…Ο" };
+      static const char *months[] = { "Ξ™Ξ±Ξ½","Ξ¦ΞµΞ²","ΞΞ±Ο","Ξ‘Ο€Ο","ΞΞ±ΞΉ","Ξ™ΞΏΟ…Ξ½","Ξ™ΞΏΟ…Ξ»","Ξ‘Ο…Ξ³","Ξ£ΞµΟ€","ΞΞΊΟ„","ΞΞΏΞµ","Ξ”ΞµΞΊ" };
+      QCString sdate;
+      sdate.sprintf("%s %.2d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
 
 };
+
 #endif

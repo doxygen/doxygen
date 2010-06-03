@@ -463,7 +463,7 @@ NamespaceDef *getResolvedNamespace(const char *name)
     }
     if (count==10)
     {
-      warn_cont("Warning: possible recursive namespace alias detected for %s!\n",name);
+      err("Warning: possible recursive namespace alias detected for %s!\n",name);
     }
     return Doxygen::namespaceSDict->find(subst->data());
   }
@@ -6996,5 +6996,35 @@ void writeSummaryLink(OutputList &ol,const char *label,const char *title,
   ol.writeString("</a>");
 }
 
+QCString externalLinkTarget()
+{
+  static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
+  if (extLinksInWindow) return "target=\"_blank\" "; else return "";
+}
 
+QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
+{
+  QCString result;
+  if (!ref.isEmpty())
+  {
+    QCString *dest = Doxygen::tagDestinationDict[ref];
+    if (dest)
+    {
+      result = *dest;
+      int l = result.length();
+      if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
+      { // relative path -> prepend relPath.
+        result.prepend(relPath);
+      }
+      if (!href) result.prepend("doxygen=\""+ref+":");
+      if (l>0 && !result.at(l-1)!='/') result+='/';
+      if (!href) result.append("\" ");
+    }
+  }
+  else
+  {
+    result = relPath;
+  }
+  return result;
+}
 
