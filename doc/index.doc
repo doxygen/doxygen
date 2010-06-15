@@ -87,8 +87,6 @@ The second part forms a reference manual:
 
 <ul>
 <li>Section \ref features presents an overview of what doxygen can do.
-<li>Section \ref history shows what has changed during the development 
-                 of doxygen and what still has to be done.
 <li>Section \ref doxygen_usage shows how to use the \c doxygen program.
 <li>Section \ref doxytag_usage shows how to use the \c doxytag program.
 <li>Section \ref doxywizard_usage shows how to use the \c doxywizard program. 

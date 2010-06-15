@@ -68,7 +68,7 @@ int Store::open(const char *name)
   int i;
   STORE_ASSERT(m_state==Init);
   if (m_file) return 0; // already open
-  m_file = fopen(name,"w+b");
+  m_file = portable_fopen(name,"w+b");
   if (m_file==0) return -1;
 
   // first block serves as header, so offset=0 can be used as the end of the list.

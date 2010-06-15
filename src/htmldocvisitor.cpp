@@ -1506,7 +1506,6 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
                                const QCString &relPath,const QCString &anchor,
                                const QCString &tooltip)
 {
-  QCString *dest;
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";

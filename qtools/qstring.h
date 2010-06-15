@@ -501,6 +501,8 @@ public:
     const char* ascii() const;
     const char* latin1() const;
     static QString fromLatin1(const char*, int len=-1);
+    const unsigned short *ucs2() const;
+    static QString fromUcs2( const unsigned short *ucs2 );
 #ifndef QT_NO_TEXTCODEC
     QCString utf8() const;
     static QString fromUtf8(const char*, int len=-1);

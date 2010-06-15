@@ -12065,6 +12065,69 @@ char* QString::unicodeToAscii(const QChar *uc, uint l)
     return result;
 }
 
+static uint computeNewMax( uint len )
+{
+  if (len >= 0x80000000)
+    return len;
+
+  uint newMax = 4;
+  while ( newMax < len )
+    newMax *= 2;
+  // try to save some memory
+  if ( newMax >= 1024 * 1024 && len <= newMax - (newMax >> 2) )
+    newMax -= newMax >> 2;
+  return newMax;
+}
+
+/*!
+  Returns the QString as a zero terminated array of unsigned shorts
+  if the string is not null; otherwise returns zero.
+
+  The result remains valid so long as one unmodified
+  copy of the source string exists.
+ */
+const unsigned short *QString::ucs2() const
+{
+  if ( ! d->unicode )
+    return 0;
+  unsigned int len = d->len;
+  if ( d->maxl < len + 1 ) {
+    // detach, grow or shrink
+    uint newMax = computeNewMax( len + 1 );
+    QChar* nd = QT_ALLOC_QCHAR_VEC( newMax );
+    if ( nd ) {
+      if ( d->unicode )
+        memcpy( nd, d->unicode, sizeof(QChar)*len );
+      ((QString *)this)->deref();
+      ((QString *)this)->d = new QStringData( nd, len, newMax );
+    }
+  }
+  d->unicode[len] = 0;
+  return (unsigned short *) d->unicode;
+}
+
+/*!
+    Constructs a string that is a deep copy of \a str, interpreted as a
+    UCS2 encoded, zero terminated, Unicode string.
+
+    If \a str is 0, then a null string is created.
+    \sa isNull()
+ */
+QString QString::fromUcs2( const unsigned short *str )
+{
+  if ( !str ) {
+    return QString::null;
+  } else {
+    int length = 0;
+    while ( str[length] != 0 )
+      length++;
+    QChar* uc = QT_ALLOC_QCHAR_VEC( length );
+    memcpy( uc, str, length*sizeof(QChar) );
+    return QString( new QStringData( uc, length, length ), TRUE );
+  }
+}
+
+
 /*****************************************************************************
   QString member functions
  *****************************************************************************/
@@ -12214,10 +12277,14 @@ QString::QString( const QByteArray& ba )
 
 QString::QString( const QCString& ba )
 {
-    Q2HELPER(stat_construct_ba++)
-    uint l;
-    QChar *uc = internalAsciiToUnicode(ba,&l);
-    d = new QStringData(uc,l,l);
+    //Q2HELPER(stat_construct_ba++)
+    //uint l;
+    //QChar *uc = internalAsciiToUnicode(ba,&l);
+    //d = new QStringData(uc,l,l);
+    Q2HELPER(stat_fast_copy++)
+    QString s = QString::fromUtf8(ba.data(),ba.length());
+    d = s.d;
+    d->ref();
 }
 
 /*!
@@ -12265,11 +12332,15 @@ QString::QString( const QChar* unicode, uint length )
 
 QString::QString( const char *str )
 {
-    Q2HELPER(stat_construct_charstar++)
-    uint l;
-    QChar *uc = internalAsciiToUnicode(str,&l);
-    Q2HELPER(stat_construct_charstar_size+=l)
-    d = new QStringData(uc,l,l);
+    //Q2HELPER(stat_construct_charstar++)
+    //uint l;
+    //QChar *uc = internalAsciiToUnicode(str,&l);
+    //Q2HELPER(stat_construct_charstar_size+=l)
+    //d = new QStringData(uc,l,l);
+    Q2HELPER(stat_fast_copy++)
+    QString s = QString::fromUtf8(str);
+    d = s.d;
+    d->ref();
 }
 
 
@@ -14329,7 +14400,25 @@ const char* QString::latin1() const
     }
     Q2HELPER(stat_get_ascii++)
     Q2HELPER(stat_get_ascii_size+=d->len)
-    d->ascii = unicodeToAscii( d->unicode, d->len );
+    static QTextCodec* codec = QTextCodec::codecForMib(106);
+    if (codec) // we use utf8 coding also for latin1 if possible
+    {
+      QCString utf8str(codec->fromUnicode(*this));
+      d->ascii = new char[utf8str.length()+1];
+      if (utf8str.isEmpty())
+      {
+        d->ascii[0]='\0'; // make empty string
+      }
+      else // copy string
+      {
+        qstrcpy(d->ascii,utf8str.data());
+      }
+    }
+    else // fall back to latin1
+    {
+      d->ascii = unicodeToAscii( d->unicode, d->len );
+    }
+    QCString utf8str(utf8());
     d->dirtyascii = 0;
     return d->ascii;
 }

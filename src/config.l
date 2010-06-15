@@ -496,7 +496,7 @@ static FILE *tryPath(const char *path,const char *fileName)
   QFileInfo fi(absName);
   if (fi.exists() && fi.isFile())
   {
-    FILE *f=fopen(absName,"r");
+    FILE *f=portable_fopen(absName,"r");
     if (!f) config_err("Error: could not open file %s for reading\n",absName.data());
     return f;
   }

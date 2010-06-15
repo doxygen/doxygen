@@ -310,6 +310,17 @@ portable_off_t portable_ftell(FILE *f)
 #endif
 }
 
+FILE *portable_fopen(const char *fileName,const char *mode)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  QString fn(fileName);
+  QString m(mode);
+  return _wfopen((wchar_t*)fn.ucs2(),(wchar_t*)m.ucs2());
+#else
+  return fopen(fileName,mode);
+#endif
+}
+
 char  portable_pathSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)

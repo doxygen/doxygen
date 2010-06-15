@@ -213,7 +213,7 @@ void ClassDefImpl::init(const char *defFileName, const char *name,
   //extractNamespaceName(name,className,ns);
   //printf("m_name=%s m_className=%s ns=%s\n",m_name.data(),m_className.data(),ns.data());
 
-  if (((QCString)defFileName).right(5)!=".java" && 
+  if (getLanguageFromFileName(defFileName)!=SrcLangExt_Java && 
       guessSection(defFileName)==Entry::SOURCE_SEC)
   {
     isLocal=TRUE;
@@ -1225,9 +1225,8 @@ void ClassDef::writeIncludeFiles(OutputList &ol)
     {
       ol.startParagraph();
       ol.startTypewriter();
-      bool isIDLorJava = nm.right(4)==".idl" || 
-                         nm.right(5)==".pidl" || 
-                         nm.right(5)==".java";
+      SrcLangExt lang = getLanguageFromFileName(nm);
+      bool isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
       if (isIDLorJava)
       {
         ol.docify("import ");
@@ -3059,30 +3058,28 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   static bool hideScopeNames = Config_getBool("HIDE_SCOPE_NAMES");
   //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
   QCString scName;
-  if (!hideScopeNames)
+  Definition *d=getOuterScope();
+  if (d)
   {
-    Definition *d=getOuterScope();
-    if (d)
+    if (d->definitionType()==Definition::TypeClass)
     {
-      if (d->definitionType()==Definition::TypeClass)
-      {
-        ClassDef *cd=(ClassDef *)d;
-        scName = cd->qualifiedNameWithTemplateParameters(actualParams);
-      }
-      else
-      {
-        scName = d->qualifiedName();
-      }
+      ClassDef *cd=(ClassDef *)d;
+      scName = cd->qualifiedNameWithTemplateParameters(actualParams);
     }
-
-    QCString scopeSeparator;
-    if (optimizeOutputJava)
-      scopeSeparator=".";
-    else
-      scopeSeparator="::";
-
-    if (!scName.isEmpty()) scName+=scopeSeparator;
+    else if (!hideScopeNames)
+    {
+      scName = d->qualifiedName();
+    }
   }
+
+  QCString scopeSeparator;
+  if (optimizeOutputJava)
+    scopeSeparator=".";
+  else
+    scopeSeparator="::";
+
+  if (!scName.isEmpty()) scName+=scopeSeparator;
+
   scName+=className();
   ArgumentList *al=0;
   bool isSpecialization = localName().find('<')!=-1;

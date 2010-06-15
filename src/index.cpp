@@ -1237,7 +1237,7 @@ void writeAlphabeticalClassList(OutputList &ol)
     {
       int index = getPrefixIndex(cd->className());
       //printf("name=%s index=%d\n",cd->className().data(),index);
-      startLetter=toupper(cd->className().at(index));
+      startLetter=toupper(cd->className().at(index))&0xFF;
       indexLetterUsed[startLetter] = true;
     }
   }
@@ -2649,10 +2649,11 @@ void writeJavascriptSearchIndex()
               {
                 t << "#" << ((MemberDef *)d)->anchor();
               }
+              t << "\"";
               static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
               if (!extLinksInWindow || d->getReference().isEmpty())
               {
-                t << "\" target=\""; 
+                t << " target=\""; 
                 if (treeView) t << "basefrm"; else t << "_parent"; 
                 t << "\"";
               }
@@ -2729,10 +2730,11 @@ void writeJavascriptSearchIndex()
                 {
                   t << "#" << ((MemberDef *)d)->anchor();
                 }
+                t << "\"";
                 static bool extLinksInWindow = Config_getBool("EXT_LINKS_IN_WINDOW");
                 if (!extLinksInWindow || d->getReference().isEmpty())
                 {
-                  t << "\" target=\"";
+                  t << " target=\"";
                   if (treeView) t << "basefrm"; else t << "_parent"; 
                   t << "\"";
                 }

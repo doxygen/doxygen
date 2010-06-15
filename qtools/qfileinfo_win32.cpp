@@ -25,6 +25,15 @@
 #include "qdatetime.h"
 #include "qdir.h"
 
+static void reslashify( QString& n )
+{
+  for ( int i=0; i<(int)n.length(); i++ ) 
+  {
+     if ( n[i] == '/' )
+          n[i] = '\\';
+  }
+}
+
 void QFileInfo::slashify( QString& n )
 {
   for ( int i=0; i<(int)n.length(); i++ ) 
@@ -246,6 +255,7 @@ void QFileInfo::doStat() const
     STATBUF *b = &that->fic->st;
     that->fic->isSymLink = FALSE;
 
+#if defined(__CYGWIN32_)
     int r;
 
     r = STAT( QFile::encodeName(fn), b );
@@ -254,6 +264,18 @@ void QFileInfo::doStat() const
 	delete that->fic;
 	that->fic = 0;
     }
+#else
+    QString file = fn;
+    reslashify(file);
+#ifdef QT_LARGEFILE_SUPPORT
+    if ( _wstati64( (wchar_t*) file.ucs2(), b ) == -1 ) {
+#else
+    if ( _wstat( (wchar_t*) file.ucs2(), b ) == -1 ) {
+#endif
+      delete that->fic;
+      that->fic = 0;
+    }
+#endif
 }
 
 /*!

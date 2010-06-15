@@ -49,6 +49,7 @@ HEADERS		= qarray.h \
 		  qthread_p.h \
 		  qmutex.h \
 		  qmutex_p.h \
+                  qutfcodec.h \
 		  qwaitcondition.h
 
 SOURCES		= qbuffer.cpp \
@@ -75,7 +76,8 @@ SOURCES		= qbuffer.cpp \
 	          qxml.cpp \
                   qmap.cpp \
 		  qthread.cpp \
-		  qmutex.cpp
+		  qmutex.cpp \
+                  qutfcodec.cpp
 
 unix:SOURCES +=   qfile_unix.cpp \
 		  qdir_unix.cpp \
@@ -92,7 +94,8 @@ win32:SOURCES +=  qfile_win32.cpp \
 		  qwaitcondition_win32.cpp
 
 INCLUDEPATH = .
-TMAKE_CXXFLAGS += -DQT_NO_CODECS -DQT_LITE_UNICODE
+#TMAKE_CXXFLAGS += -DQT_NO_CODECS -DQT_LITE_UNICODE
+TMAKE_CXXFLAGS += -DQT_LITE_UNICODE
 win32:TMAKE_CXXFLAGS += -DQT_NODLL
 win32-g++:TMAKE_CXXFLAGS += -D__CYGWIN__ -DALL_STATIC
 OBJECTS_DIR = ../objects

@@ -1137,20 +1137,20 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
   m_t << "\\item[";
   if (pl->direction()!=DocParamSect::Unspecified)
   {
-    m_t << "\\mbox{";
+    m_t << "\\mbox{\\tt[";
     if (pl->direction()==DocParamSect::In)
     {
-      m_t << "$\\leftarrow$";
+      m_t << "in";
     }
     else if (pl->direction()==DocParamSect::Out)
     {
-      m_t << "$\\rightarrow$";
+      m_t << "out";
     }
     else if (pl->direction()==DocParamSect::InOut)
     {
-      m_t << "$\\leftrightarrow$";
+      m_t << "in,out";
     }
-    m_t << "} ";
+    m_t << "]} ";
   }
   m_t << "{\\em ";
   //QStrListIterator li(pl->parameters());

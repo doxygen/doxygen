@@ -41,14 +41,14 @@
 #include "qlist.h"
 #ifndef QT_NO_CODECS
 #include "qutfcodec.h"
-#include "qgbkcodec.h"
-#include "qeucjpcodec.h"
-#include "qjiscodec.h"
-#include "qsjiscodec.h"
-#include "qeuckrcodec.h"
-#include "qbig5codec.h"
-#include "qrtlcodec.h"
-#include "qtsciicodec.h"
+//#include "qgbkcodec.h"
+//#include "qeucjpcodec.h"
+//#include "qjiscodec.h"
+//#include "qsjiscodec.h"
+//#include "qeuckrcodec.h"
+//#include "qbig5codec.h"
+//#include "qrtlcodec.h"
+//#include "qtsciicodec.h"
 #endif
 
 #include "qfile.h"
@@ -1006,7 +1006,7 @@ public:
                 break;
             else if (incmap) {
                 char* cursor = line;
-                int byte,unicode=-1;
+                int byte=0,unicode=-1;
                 ushort* mb_unicode=0;
                 const int maxmb=8; // more -> we'll need to improve datastructures
                 char mb[maxmb+1];
@@ -2054,17 +2054,17 @@ static void setupBuiltinCodecs()
         (void)new QSimpleTextCodec( i );
     } while( unicodevalues[i++].mib != LAST_MIB );
 
-    (void)new QEucJpCodec;
-    (void)new QSjisCodec;
-    (void)new QJisCodec;
-    (void)new QEucKrCodec;
-    (void)new QGbkCodec;
-    (void)new QBig5Codec;
+    //(void)new QEucJpCodec;
+    //(void)new QSjisCodec;
+    //(void)new QJisCodec;
+    //(void)new QEucKrCodec;
+    //(void)new QGbkCodec;
+    //(void)new QBig5Codec;
     (void)new QUtf8Codec;
     (void)new QUtf16Codec;
-    (void)new QHebrewCodec;
-    (void)new QArabicCodec;
-    (void)new QTsciiCodec;
+    //(void)new QHebrewCodec;
+    //(void)new QArabicCodec;
+    //(void)new QTsciiCodec;
 #endif // QT_NO_CODECS
 }
 

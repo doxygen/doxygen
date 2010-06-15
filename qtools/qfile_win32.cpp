@@ -34,11 +34,26 @@
 # define OPEN_ASYNC O_NDELAY
 #endif
 
+static void reslashify( QString& n )
+{
+  for ( int i=0; i<(int)n.length(); i++ ) 
+  {
+     if ( n[i] == '/' )
+          n[i] = '\\';
+  }
+}
+
 bool qt_file_access( const QString& fn, int t )
 {
     if ( fn.isEmpty() )
 	return FALSE;
+#if defined(__CYGWIN32_)
     return ACCESS( QFile::encodeName(fn), t ) == 0;
+#else
+    QString str = fn;
+    reslashify(str);
+    return ( _waccess( (wchar_t*) str.ucs2(), t ) == 0 );
+#endif
 }
 
 /*!
@@ -54,8 +69,14 @@ bool QFile::remove( const QString &fileName )
 #endif
 	return FALSE;
     }
-    return ::remove( QFile::encodeName(fileName) ) == 0;	
+#if defined(__CYGWIN32_)
     // unlink more common in UNIX
+    return ::remove( QFile::encodeName(fileName) ) == 0;	
+#else
+    QString str = fileName;
+    reslashify(str);
+    return ( _wunlink( (wchar_t*) str.ucs2() ) == 0 );
+#endif
 }
 
 #if defined(O_NONBLOCK)
@@ -166,7 +187,15 @@ bool QFile::open( int m )
 	if ( isAsynchronous() )
 	    oflags |= OPEN_ASYNC;
 #endif
+
+
+#if defined(__CYGWIN32_)
 	fd = OPEN( QFile::encodeName(fn), oflags, 0666 );
+#else
+        QString str = fn;
+        reslashify(str);
+        fd = _wopen( (wchar_t*) str.ucs2(), oflags, 0666 );
+#endif
 
 	if ( fd != -1 ) {			// open successful
 	    FSTAT( fd, &st ); // get the stat for later usage
@@ -201,7 +230,14 @@ bool QFile::open( int m )
 	    strcat( perm2, "b" );
 	while (1) { // At most twice
 
+#if defined(__CYGWIN32_)
 	    fh = fopen( QFile::encodeName(fn), perm2 );
+#else
+            QString str = fn;
+            QString prm( perm2 );
+            reslashify(str);
+            fh = _wfopen( (wchar_t*) str.ucs2(), (wchar_t*) prm.ucs2() );
+#endif
 
 	    if ( !fh && try_create ) {
 		perm2[0] = 'w';			// try "w+" instead of "r+"
@@ -372,10 +408,23 @@ uint QFile::size() const
     STATBUF st;
     if ( isOpen() ) {
 	FSTAT( fh ? FILENO(fh) : fd, &st );
+        return st.st_size;
     } else {
+#if defined(__CYGWIN32_)
 	STAT( QFile::encodeName(fn), &st );
+#else
+        QString str = fn;
+        reslashify(str);
+#ifdef QT_LARGEFILE_SUPPORT
+        if ( _wstati64( (wchar_t*) str.ucs2(), &st ) != -1 ) {
+#else
+        if ( _wstat( (wchar_t*) str.ucs2(), &st ) != -1 ) {
+#endif
+#endif
+            return st.st_size;
+        }
     }
-    return st.st_size;
+    return 0;
 }
 
 /*!

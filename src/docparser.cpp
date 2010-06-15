@@ -1087,7 +1087,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
   }
   else // normal non-linkable word
   {
-    if (g_token->name.at(0)=='#')
+    if (g_token->name.at(0)=='#' || g_token->name.left(2)=="::")
     {
       warn_doc_error(g_fileName,doctokenizerYYlineno,"Warning: explicit link request to '%s' could not be resolved",name.data());
     }
@@ -4983,7 +4983,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       handleStyleEnter(this,m_children,DocStyleChange::Bold,&g_token->attribs);
       break;
     case HTML_CODE:
-      if (g_fileName.right(3)==".cs") 
+      if (getLanguageFromFileName(g_fileName)==SrcLangExt_CSharp) 
         // for C# code we treat <code> as an XML tag
       {
         doctokenizerYYsetStateXmlCode();

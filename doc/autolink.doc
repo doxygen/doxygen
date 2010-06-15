@@ -82,7 +82,7 @@
     the patterns above.
   \par Note 4:
     In the documentation of a class containing a member foo, 
-    a reference to a global variable is made using ::foo, whereas \#foo
+    a reference to a global variable is made using "::foo", whereas \#foo
     will link to the member.
 
   For non overloaded members the argument list may be omitted.

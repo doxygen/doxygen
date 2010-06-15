@@ -532,7 +532,7 @@ static bool readCodeFragment(const char *fileName,
   bool usePipe = !filter.isEmpty() && filterSourceFiles;
   if (!usePipe) // no filter given or wanted
   {
-    f = fopen(fileName,"r");
+    f = portable_fopen(fileName,"r");
   }
   else // use filter
   {

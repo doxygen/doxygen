@@ -46,7 +46,7 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\qtools"
-				PreprocessorDefinitions="QT_NO_CODECS;WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -121,7 +121,7 @@
 				AdditionalOptions=""
 				Optimization="0"
 				AdditionalIncludeDirectories="..\qtools"
-				PreprocessorDefinitions="QT_NO_CODECS;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -702,6 +702,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\qtools\qutfcodec.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\qtools\qwaitcondition_win32.cpp"
 				>
 			</File>
@@ -932,6 +936,10 @@
 			</File>
 			<File
 				RelativePath="..\qtools\qtl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\qtools\qutfcodec.h"
 				>
 			</File>
 			<File

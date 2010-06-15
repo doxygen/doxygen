@@ -1910,13 +1910,15 @@ class TrManager:
         # Define templates for LaTeX table parts of the documentation.
         latexTableTpl = r'''
             \latexonly
-            \begin{tabular}{|l|l|l|l|}
+            \footnotesize
+            \begin{longtable}{|l|l|l|l|}
               \hline 
               {\bf Language} & {\bf Maintainer} & {\bf Contact address} & {\bf Status} \\
               \hline
             %s
               \hline
-            \end{tabular}
+            \end{longtable}
+            \normalsize
             \endlatexonly
             '''
         latexTableTpl = dedent(latexTableTpl)    
