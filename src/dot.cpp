@@ -795,9 +795,12 @@ int DotManager::addFigure(const QCString &file,const QCString &baseName,
 
 bool DotManager::run()
 {
-  msg("Generating dot graphs using %d parallel threads...\n",m_workers.count());
   uint numDotRuns = m_dotRuns.count();
   uint numDotMaps = m_dotMaps.count();
+  if (numDotRuns+numDotMaps>0)
+  {
+    msg("Generating dot graphs using %d parallel threads...\n",m_workers.count());
+  }
   int i=1;
   QListIterator<DotRunner> li(m_dotRuns);
 

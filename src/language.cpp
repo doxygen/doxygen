@@ -319,7 +319,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_SK
   else if (L_EQUAL("slovak"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorSlovak);
+    theTranslator=new TranslatorSlovak;
   }
 #endif
 #ifdef LANG_UA
@@ -373,7 +373,7 @@ bool setTranslator(const char *langName)
 #ifdef LANG_FA
   else if (L_EQUAL("persian") || L_EQUAL("farsi"))
   {
-    theTranslator=new TranslatorDecoder(new TranslatorPersian);
+    theTranslator=new TranslatorPersian;
   }
 #endif
 #ifdef LANG_MK

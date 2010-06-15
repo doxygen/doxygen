@@ -322,7 +322,7 @@ void replaceComment(int offset);
   				     int i=3;
 				     if (yytext[2]=='/')
 				     {
-				       while (i<yyleng && yytext[i]=='/') i++;
+				       while (i<(int)yyleng && yytext[i]=='/') i++;
 				     }
 				     g_blockHeadCol=g_col;
                                      copyToOutput("/**",3); 
@@ -699,6 +699,8 @@ void replaceComment(int offset);
 				     g_aliasString=yytext;
 				     g_lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
+  				   }
+<ReadAliasArgs>^[ \t]*"//"[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
   				   }
 <ReadAliasArgs>[^{}\n\\\*]+	   {
                                      g_aliasString+=yytext;

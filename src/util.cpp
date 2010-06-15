@@ -4131,13 +4131,18 @@ bool resolveRef(/* in */  const char *scName,
     )
 {
   QCString tsName = name;
-  bool memberScopeFirst = tsName.find('#')!=-1;
+  //bool memberScopeFirst = tsName.find('#')!=-1;
   QCString fullName = substitute(tsName,"#","::");
   fullName = removeRedundantWhiteSpace(substitute(fullName,".","::"));
 
   int bracePos=fullName.findRev('('); // reverse is needed for operator()(...)
   int endNamePos=bracePos!=-1 ? bracePos : fullName.length();
   int scopePos=fullName.findRev("::",endNamePos);
+  bool explicitScope = fullName.left(2)=="::" &&   // ::scope or #scope
+                       (scopePos>2 ||              // ::N::A
+                        tsName.left(2)=="::" ||    // ::foo in local scope
+                        scName==0                  // #foo  in global scope
+                       );
 
   // default result values
   *resContext=0;
@@ -4184,6 +4189,7 @@ bool resolveRef(/* in */  const char *scName,
 
   // extract userscope+name
   QCString nameStr=fullName.left(endNamePos);
+  if (explicitScope) nameStr=nameStr.mid(2);
 
   // extract arguments
   QCString argsStr;
@@ -4222,7 +4228,8 @@ bool resolveRef(/* in */  const char *scName,
   //    scopeStr.data(),nameStr.data(),argsStr.data(),checkScope);
   if (getDefs(scopeStr,nameStr,argsStr,
         md,cd,fd,nd,gd,
-        scopePos==0 && !memberScopeFirst, // forceEmptyScope
+        //scopePos==0 && !memberScopeFirst, // forceEmptyScope
+        explicitScope, // replaces prev line due to bug 600829
         currentFile,
         TRUE                              // checkCV
         )
@@ -6375,7 +6382,7 @@ g_lang2extMap[] =
   { "idl",         "c",       SrcLangExt_IDL    },
   { "java",        "c",       SrcLangExt_Java   },
   { "javascript",  "c",       SrcLangExt_JS     },
-  { "c#",          "c",       SrcLangExt_CSharp },
+  { "csharp",      "c",       SrcLangExt_CSharp },
   { "d",           "c",       SrcLangExt_D      },
   { "php",         "c",       SrcLangExt_PHP    },
   { "objective-c", "c",       SrcLangExt_ObjC   },
@@ -6432,7 +6439,7 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".java",  "java");
   updateLanguageMapping(".as",    "javascript"); 
   updateLanguageMapping(".js",    "javascript");
-  updateLanguageMapping(".cs",    "c#");
+  updateLanguageMapping(".cs",    "csharp");
   updateLanguageMapping(".d",     "d");
   updateLanguageMapping(".php",   "php"); 
   updateLanguageMapping(".php4",  "php");
@@ -7017,7 +7024,7 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
         result.prepend(relPath);
       }
       if (!href) result.prepend("doxygen=\""+ref+":");
-      if (l>0 && !result.at(l-1)!='/') result+='/';
+      if (l>0 && result.at(l-1)!='/') result+='/';
       if (!href) result.append("\" ");
     }
   }

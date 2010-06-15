@@ -14,14 +14,21 @@
  * input used in their production; they are not affected by this license.
  *
  *
- * Description : Doxygen Persian Translator
- * Author : Ali Nadalizadeh < nadalizadeh @ gmail dot com >
+ * Description : Doxygen Persian (Farsi) Translator
+ * Author : Ali Nadalizadeh < nadalizadeh at gmail dot com >
+ *
  * ChangeLog :
  *   Thu 06 Jul 2006 11:54:09 PM IRDT <nadalizadeh at gmail dot com>
  *   >> First version of persian language support has been completed.
- *   Mon Feb  4 11:52:09 IRST 2008 <nadalizadeh at gmail dot com>
+ *   
+ *   Mon 04 Feb 2008 11:52:09 AM IRDT <nadalizadeh at gmail dot com>
  *   >> Obsolete methods removed. Translated more string(s) to persian. Upgraded to 1_5_4 adapter.
+ *   
+ *   Fri 04 Jun 2010 04:05:24 PM IRDT <nadalizadeh at gmail dot com>
+ *   >> Implement missing new methods since 1.6.0.
+ *   >> Add English to Persian digit convertor. (for date/time digits)
  *
+ * Translation feedbacks are really appreciated.
  */
 
 #ifndef TRANSLATOR_FA_H
@@ -32,8 +39,26 @@
 #define HtmlDivEnd          QCString("</div>")
 
 
-class TranslatorPersian : public TranslatorAdapter_1_6_0
+class TranslatorPersian : public Translator
 {
+  private:
+  	/** Converts english digits of an input string to persian equivalents.
+	 */
+	QCString convertDigitsToFarsi(QCString str)
+	{
+		QCString output;
+		const char * PersianDigits[] = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
+		for(unsigned i=0; i<str.length(); i++)
+		{
+			if (str[i] >= '0' && str[i] <= '9')
+				output += PersianDigits[ str[i] - '0' ];
+			else
+				output += str[i];
+		}
+		
+		return output;
+	}
+
   public:
 
     // --- Language control methods -------------------
@@ -88,11 +113,11 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
 
     /*! header that is put before the list of typedefs. */
     virtual QCString trMemberTypedefDocumentation()
-    { return "های عضو Typedef مستندات"; }
+    { return "مستندات تعریف گونه ها"; }
     
     /*! header that is put before the list of enumerations. */
     virtual QCString trMemberEnumerationDocumentation()
-    { return "Member Enumeration Documentation"; }
+    { return "های عضو Enumeration مستندات"; }
     
     /*! header that is put before the list of member functions. */
     virtual QCString trMemberFunctionDocumentation()
@@ -204,7 +229,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
       }
       else
       {
-        return "اعضاء فايل"; 
+        return "اعضاء پرونده"; 
       }
     }
 
@@ -310,7 +335,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
 
     /*! This is used in HTML as the title of index.html. */
     virtual QCString trDocumentation()
-    { return "مستند سازی"; }
+    { return "مستندات"; }
 
     /*! This is used in LaTeX as the title of the chapter with the 
      * index of all groups.
@@ -404,7 +429,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
      *  list of typedefs
      */
     virtual QCString trTypedefs()
-    { return "Typedefs"; }
+    { return "تعریف گونه ها"; }
 
     /*! This is used in the documentation of a file as a header before the 
      *  list of enumerations
@@ -446,7 +471,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
      *  of documentation blocks for typedefs
      */
     virtual QCString trTypedefDocumentation()
-    { return "Typedef Documentation"; }
+    { return "Typedef"; }
 
     /*! This is used in the documentation of a file/namespace before the list 
      *  of documentation blocks for enumeration types
@@ -819,12 +844,12 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     /*! this text is put before an include dependency graph */
     virtual QCString trInclDepGraph(const char *fName)
     {
-      return (QCString)"Include dependency graph for "+fName+":";
+      return (QCString)"نمودار شامل شدن ها برای "+fName+":";
     }
     /*! header that is put before the list of constructor/destructors. */
     virtual QCString trConstructorDocumentation()
     {
-      return "Constructor و Destructor مستندات"; 
+      return "مستندات توباع آغازین و پایانی"; 
     }
     /*! Used in the file documentation to point to the corresponding sources. */
     virtual QCString trGotoSourceCode()
@@ -867,11 +892,11 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     }
     virtual QCString trGotoGraphicalHierarchy()
     {
-      return "Go to the graphical class hierarchy";
+      return "نمایش نمودار درختی گرافیکی کلاس";
     }
     virtual QCString trGotoTextualHierarchy()
     {
-      return "Go to the textual class hierarchy";
+      return "نمایش نمودار درختی متنی کلاس";
     }
     virtual QCString trPageIndex()
     {
@@ -955,7 +980,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     }
     virtual QCString trRemarks()
     {
-      return "Remarks";
+      return "ملاحظات";
     }
     virtual QCString trAttention()
     {
@@ -1057,7 +1082,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     /*! Used as a marker that is put before a test item */
     virtual QCString trTest()
     {
-      return "Test";
+      return "تست";
     }
     /*! Used as the header of the test list */
     virtual QCString trTestList()
@@ -1119,7 +1144,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     /*! The description of the package index page */
     virtual QCString trPackageListDescription()
     {
-      return "Here are the packages with brief descriptions (if available):";
+      return "لیست بسته ها به همراه توضیح مختر در صورت وجود :";
     }
     /*! The link name in the Quick links header for each page */
     virtual QCString trPackages()
@@ -1129,7 +1154,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     /*! Text shown before a multi-line define */
     virtual QCString trDefineValue()
     {
-      return "Value:";
+      return "مقدار:";
     }
     
 //////////////////////////////////////////////////////////////////////////
@@ -1350,12 +1375,12 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
      */
     virtual QCString trEvents()
     {
-      return "Events";
+      return "رویداد ها";
     }
     /*! Header used for the documentation section of a class' events. */
     virtual QCString trEventDocumentation()
     {
-      return "Event Documentation";
+      return "مستندات رویداد";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1449,7 +1474,7 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
       }
       else if (numDocuments==1)
       {
-        return "Found <b>1</b> document matching your query.";
+        return "یک سند برای این مورد یافت شد.";
       }
       else 
       {
@@ -1714,6 +1739,96 @@ class TranslatorPersian : public TranslatorAdapter_1_6_0
     {
       return "Type Constraints";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.0 (mainly for the new search engine)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+      return QCString(name) + " Relation";
+    }
+
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+      return "در حال بارگذاری...";
+    }
+
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+      return "فضای نام جهانی";
+    }
+
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+      return "در حال جستجو...";
+    }
+
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+      return "یافت نشد";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"نمودار وابستگی دایرکتوری ها برای "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"پرونده ای در "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Includes file in "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه","یکشنبه" };
+      static const char *months[] = { "ژانویه","فوریه","مارس","آوریل","می","جون","جولای","آگوست","سپتامبر","اکتبر","نوامبر","دسامبر" };
+      QCString sdate;
+      sdate.sprintf("%s %d %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return convertDigitsToFarsi(sdate);
+    }
+
 };
 
 #endif

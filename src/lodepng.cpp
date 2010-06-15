@@ -29,6 +29,7 @@ You are free to name this file lodepng.cpp or lodepng.c depending on your usage.
 */
 
 #include "lodepng.h"
+#include "portable.h"
 
 #define VERSION_STRING "20080927"
 
@@ -4061,7 +4062,7 @@ unsigned LodePNG_loadFile(unsigned char** out, size_t* outsize, const char* file
   *out = 0;
   *outsize = 0;
 
-  file = fopen(filename, "rb");
+  file = portable_fopen(filename, "rb");
   if(!file) return 78;
 
   /*get filesize:*/
@@ -4083,7 +4084,7 @@ unsigned LodePNG_loadFile(unsigned char** out, size_t* outsize, const char* file
 unsigned LodePNG_saveFile(const unsigned char* buffer, size_t buffersize, const char* filename)
 {
   FILE* file;
-  file = fopen(filename, "wb" );
+  file = portable_fopen(filename, "wb" );
   if(!file) return 79;
   fwrite((char*)buffer , 1 , buffersize, file);
   fclose(file);

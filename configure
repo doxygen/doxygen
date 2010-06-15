@@ -16,11 +16,11 @@
 # shell script to configure doxygen
 
 doxygen_version_major=1
-doxygen_version_minor=6
-doxygen_version_revision=3
+doxygen_version_minor=7
+doxygen_version_revision=0
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
-doxygen_version_mmn=20100603
+doxygen_version_mmn=NO
 
 bin_dirs=`echo $PATH | sed -e "s/:/ /g"`
 

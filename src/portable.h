@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <stdio.h>
+#include <qglobal.h>
 
 #if defined(_WIN32)
 typedef __int64 portable_off_t;
@@ -21,6 +22,7 @@ void           portable_setenv(const char *variable,const char *value);
 void           portable_unsetenv(const char *variable);
 portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence);
 portable_off_t portable_ftell(FILE *f);
+FILE *         portable_fopen(const char *fileName,const char *mode);
 char           portable_pathSeparator();
 char           portable_pathListSeparator();
 const char *   portable_ghostScriptCommand();

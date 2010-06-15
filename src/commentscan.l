@@ -346,7 +346,7 @@ class GuardedSection
 };
 
 void openGroup(Entry *e,const char *file,int line);
-void closeGroup(Entry *e,const char *file,int line);
+void closeGroup(Entry *e,const char *file,int line,bool foundInline=FALSE);
 void initGroupInfo(Entry *e);
 static void groupAddDocs(Entry *e,const char *fileName);
 
@@ -844,6 +844,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 %x	FormatBlock
 %x	LineParam
 %x	GuardParam
+%x	GuardParamEnd
 %x	SkipGuardedSection
 %x	SkipInternal
 %x      NameParam
@@ -929,8 +930,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>"<!--"				{ 
   					  BEGIN(HtmlComment);
 					}
-<Comment>{CMD}[a-z_A-Z]+{B}*		{ // potentially interesting command
-  					  QCString cmdName = QCString(&yytext[1]).stripWhiteSpace();
+<Comment>{B}*{CMD}[a-z_A-Z]+{B}*	{ // potentially interesting command
+                                          // the {B}* in the front was added for bug620924
+  					  QCString cmdName = QCString(yytext).stripWhiteSpace().data()+1;
 					  DocCmdMapper::Cmd *cmdPtr = DocCmdMapper::map(cmdName);
 					  if (cmdPtr) // special action is required
 					  {
@@ -970,20 +972,20 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    addOutput(yytext);
 					  }
   					}
-<Comment>("\\\\"|"@@")"f"[$\[{]		{ // escaped formula command
+<Comment>{B}*("\\\\"|"@@")"f"[$\[{]	{ // escaped formula command
   					  addOutput(yytext);
   					}
-<Comment>{CMD}"~"[a-z_A-Z]*		{ // language switch command
-                                          QCString langId = &yytext[2];
+<Comment>{B}*{CMD}"~"[a-z_A-Z]*		{ // language switch command
+                                          QCString langId = QString(yytext).stripWhiteSpace().data()+2;
 			       	          if (!langId.isEmpty() &&
 					      stricmp(Config_getEnum("OUTPUT_LANGUAGE"),langId)!=0)
 				          { // enable language specific section
 				            BEGIN(SkipLang);
 				          }
   					}
-<Comment>{CMD}"f{"[^}\n]+"}"("{"?)      { // start of a formula with custom environment
+<Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
 					  formulaText="\\begin";
-					  formulaEnv=&yytext[2];
+					  formulaEnv=QString(yytext).stripWhiteSpace().data()+2;
 					  if (formulaEnv.at(formulaEnv.length()-1)=='{')
 					  {
 					    // remove trailing open brace
@@ -993,26 +995,34 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
   					}
-<Comment>{CMD}"f$"			{ // start of a inline formula
+<Comment>{B}*{CMD}"f$"			{ // start of a inline formula
 					  formulaText="$";
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaShort);
   					}
-<Comment>{CMD}"f["			{ // start of a block formula
+<Comment>{B}*{CMD}"f["			{ // start of a block formula
 					  formulaText="\\[";
 					  formulaNewLines=0;
 					  BEGIN(ReadFormulaLong);
   					}
-<Comment>{CMD}"{"                       { // begin of a group
+<Comment>{B}*{CMD}"{"                   { // begin of a group
                                           //langParser->handleGroupStartCommand(g_memberGroupHeader);
                                           openGroup(current,yyFileName,yyLineNr);
                                         }
-<Comment>{CMD}"}"                       { // end of a group
+<Comment>{B}*{CMD}"}"                   { // end of a group
                                           //langParser->handleGroupEndCommand();
-                                          closeGroup(current,yyFileName,yyLineNr);
+                                          closeGroup(current,yyFileName,yyLineNr,TRUE);
                                           g_memberGroupHeader.resize(0);
+					  parseMore=TRUE;
+                                          needNewEntry = TRUE;
+#if YY_FLEX_MINOR_VERSION>=5 && YY_FLEX_SUBMINOR_VERSION>=33
+				          inputPosition=prevPosition + yy_bp - YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + strlen(yytext);
+#else
+				          inputPosition=prevPosition + yy_bp - yy_current_buffer->yy_ch_buf + strlen(yytext);
+#endif
+					  yyterminate();
                                         }
-<Comment>{CMD}[$@\\&~<>#%]		{ // escaped character
+<Comment>{B}*{CMD}[$@\\&~<>#%]		{ // escaped character
   					  addOutput(yytext);
   					}
 <Comment>[a-z_A-Z]+			{ // normal word
@@ -1605,7 +1615,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    {
 					      guards.push(new GuardedSection(TRUE,TRUE));
 					      enabledSectionFound=TRUE;
-					      BEGIN( Comment );
+					      BEGIN( GuardParamEnd );
 					    }
 					    else // section is invisible
 					    {
@@ -1624,7 +1634,8 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <GuardParam>{DOCNL}			{ // end of argument
   					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
+					  //next line is commented out due to bug620924
+					  //addOutput('\n');
 					  BEGIN( Comment );
   					}
 <GuardParam>{LC}			{ // line continuation
@@ -1633,6 +1644,16 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <GuardParam>.				{ // ignore other stuff
   					  addOutput(*yytext);
+  					}
+<GuardParamEnd>{B}*{DOCNL}		{
+  					  BEGIN(Comment);
+  					}
+<GuardParamEnd>{B}*			{
+  					  BEGIN(Comment);
+  					}
+<GuardParamEnd>.			{
+  					  unput(*yytext);
+  					  BEGIN(Comment);
   					}
 
   /* ----- handle skipping of conditional sections ------- */
@@ -1654,7 +1675,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					  else
 					  {
 					    delete guards.pop();
-					    BEGIN( Comment );
+					    BEGIN( GuardParamEnd );
 					  }
   					}
 <SkipGuardedSection>{CMD}"else"/{NW}	{
@@ -1670,7 +1691,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					      delete guards.pop();
 					      guards.push(new GuardedSection(TRUE,TRUE));
 					      enabledSectionFound=TRUE;
-					      BEGIN( Comment );
+					      BEGIN( GuardParamEnd );
 					    }
 					  }
   					}
@@ -1691,7 +1712,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   					}
 <SkipGuardedSection>{DOCNL}		{ // skip line
   					  if (*yytext=='\n') yyLineNr++;
-					  addOutput('\n');
+					  //addOutput('\n');
   					}
 <SkipGuardedSection>[^ \\@\n]+		{ // skip non-special characters
   					}
@@ -2114,7 +2135,7 @@ static bool handleName(const QCString &)
     BEGIN( NameParam );
     if (g_memberGroupId!=DOX_NOGROUP) // end of previous member group
     {
-      closeGroup(current,yyFileName,yyLineNr);
+      closeGroup(current,yyFileName,yyLineNr,TRUE);
     }
   }
   return stop;
@@ -2293,6 +2314,7 @@ static bool handleEndIf(const QCString &)
     delete guards.pop();
   }
   enabledSectionFound=FALSE;
+  BEGIN( GuardParamEnd );
   return FALSE;
 }
 
@@ -2646,7 +2668,7 @@ void openGroup(Entry *e,const char *,int)
   }
 }
 
-void closeGroup(Entry *e,const char *fileName,int)
+void closeGroup(Entry *e,const char *fileName,int,bool foundInline)
 {
   //printf("==> closeGroup(name=%s,sec=%x) g_autoGroupStack=%d\n",
   //    e->name.data(),e->section,g_autoGroupStack.count());
@@ -2667,17 +2689,18 @@ void closeGroup(Entry *e,const char *fileName,int)
   else if (!g_autoGroupStack.isEmpty()) // end of auto group
   {
     Grouping *grp = g_autoGroupStack.pop();
-    e->groups->removeLast();
-    //printf("Removing %s\n",grp->groupname.data());
+    // see bug577005: we should not remove the last group for e
+    if (!foundInline) e->groups->removeLast();
+    //printf("Removing %s e=%p\n",grp->groupname.data(),e);
     delete grp;
-    initGroupInfo(e);
+    if (!foundInline) initGroupInfo(e);
   }
 }
 
 void initGroupInfo(Entry *e)
 {
-  //printf("==> initGroup(id=%d,related=%s)\n",g_memberGroupId,
-  //       g_memberGroupRelates.data());
+  //printf("==> initGroup(id=%d,related=%s,e=%p)\n",g_memberGroupId,
+  //       g_memberGroupRelates.data(),e);
   e->mGrpId     = g_memberGroupId;
   e->relates    = g_memberGroupRelates;
   if (!g_autoGroupStack.isEmpty())

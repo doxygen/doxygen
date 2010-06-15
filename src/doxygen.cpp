@@ -10537,7 +10537,10 @@ void generateOutput()
     }
   }
 
-  DotManager::instance()->run();
+  if (Config_getBool("HAVE_DOT"))
+  {
+    DotManager::instance()->run();
+  }
 
   if (Debug::isFlagSet(Debug::Time))
   {
