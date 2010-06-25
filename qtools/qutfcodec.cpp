@@ -181,8 +181,8 @@ const char* QUtf16Codec::name() const
 int QUtf16Codec::heuristicContentMatch(const char* chars, int len) const
 {
     uchar* uchars = (uchar*)chars;
-    if ( len >= 2 && (uchars[0] == 0xff && uchars[1] == 0xfe ||
-		      uchars[1] == 0xff && uchars[0] == 0xfe) )
+    if ( len >= 2 && ((uchars[0] == 0xff && uchars[1] == 0xfe) ||
+		      (uchars[1] == 0xff && uchars[0] == 0xfe)) )
 	return len;
     else
 	return 0;

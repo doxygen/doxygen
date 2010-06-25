@@ -1464,7 +1464,7 @@ void FileDef::acquireFileVersion()
     FILE *f=portable_popen(cmd,"r");
     if (!f)
     {
-      err("Error: could not execute %s\n",vercmd.data());
+      err("error: could not execute %s\n",vercmd.data());
       return;
     }
     const int bufSize=1024;

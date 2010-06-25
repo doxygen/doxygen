@@ -561,7 +561,7 @@ void FTVHelp::generateTreeViewImages()
     }
     else
     {
-      fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+      fprintf(stderr,"warning: Cannot open file %s for writing\n",fileName.data());
     }
     f.close();
     p++;

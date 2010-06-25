@@ -197,7 +197,7 @@ void LatexDocVisitor::visit(DocSymbol *s)
     case DocSymbol::AElig:   m_t << "{\\AE}"; break;
     case DocSymbol::Aelig:   m_t << "{\\ae}"; break;
     default:
-                             err("Error: unknown symbol found\n");
+                             err("error: unknown symbol found\n");
   }
 }
 

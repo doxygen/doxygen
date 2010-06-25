@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Doxygen"
 	ProjectGUID="{309C9A4A-94D2-4837-9A11-45B0A6CF35C3}"
 	RootNamespace="Doxygen"
@@ -2526,6 +2526,10 @@
 			</File>
 			<File
 				RelativePath="..\src\translator_sr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\translator_tr.h"
 				>
 			</File>
 			<File

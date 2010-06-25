@@ -132,7 +132,7 @@ static void initEntry()
   current->mtype      = mtype;
   current->virt       = virt;
   current->stat       = gstat;
-  current->objc       = FALSE; //insideObjC;
+  current->lang       = SrcLangExt_Python; 
   current->setParent(current_root);
   initGroupInfo(current);
 }
@@ -501,7 +501,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			  current->bodyLine  = yyLineNr;
 			  current->section = Entry::FUNCTION_SEC;
 			  current->protection = protection = Public;
-			  current->objc = FALSE;
+			  current->lang = SrcLangExt_Python;
 			  current->virt = Normal;
 			  current->stat = FALSE;
 			  current->mtype = mtype = Method;

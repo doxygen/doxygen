@@ -666,7 +666,7 @@ private:
         entry->protection = Public ;
         entry->virt       = Normal;
         entry->stat       = false;
-        entry->objc       = false;
+        entry->lang       = SrcLangExt_XML;
         entry->spec       = 0;
 
         entry->fileName  = m_fileName;

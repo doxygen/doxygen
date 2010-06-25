@@ -46,7 +46,7 @@ static bool elemIsVisible(const QXmlAttributes &attrib,bool defVal=TRUE)
     }
     else if (!opt)
     {
-      err("Warning: found unsupported value %s for visible attribute in layout file\n",
+      err("error: found unsupported value %s for visible attribute in layout file\n",
           visible.data());
     }
   }
@@ -827,11 +827,11 @@ class LayoutParser : public QXmlDefaultHandler
       {
         if (type.isEmpty())
         {
-          err("Warning: an entry tag within a navindex has no type attribute! Check your layout file!\n");
+          err("error: an entry tag within a navindex has no type attribute! Check your layout file!\n");
         }
         else
         {
-          err("Warning: the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n");
+          err("error: the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n");
         }
         return;
       }
@@ -982,7 +982,7 @@ class LayoutParser : public QXmlDefaultHandler
       }
       else
       {
-        err("Warning: Unexpected start tag `%s' found in scope='%s'!\n",
+        err("error: Unexpected start tag `%s' found in scope='%s'!\n",
             name.data(),m_scope.data());
       }
       return TRUE;
@@ -1027,21 +1027,21 @@ class LayoutErrorHandler : public QXmlErrorHandler
   public:
     bool warning( const QXmlParseException &exception )
     {
-      err("Warning at line %d column %d: %s\n",
+      err("error: at line %d column %d: %s\n",
           exception.lineNumber(),exception.columnNumber(),
           exception.message().data());
       return FALSE;
     }
     bool error( const QXmlParseException &exception )
     {
-      err("Error at line %d column %d: %s\n",
+      err("error: at line %d column %d: %s\n",
           exception.lineNumber(),exception.columnNumber(),
           exception.message().data());
       return FALSE;
     }
     bool fatalError( const QXmlParseException &exception )
     {
-      err("Fatal error at line %d column %d: %s\n",
+      err("error: at line %d column %d: %s\n",
           exception.lineNumber(),exception.columnNumber(),
           exception.message().data());
       return FALSE;

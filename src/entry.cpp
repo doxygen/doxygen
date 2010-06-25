@@ -118,8 +118,7 @@ Entry::Entry(const Entry &e)
   write       = e.write;
   inside      = e.inside;
   exception   = e.exception;
-  typeConstr  = new ArgumentList;
-  typeConstr->setAutoDelete(TRUE);
+  typeConstr  = 0;
   bodyLine    = e.bodyLine;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
@@ -145,7 +144,7 @@ Entry::Entry(const Entry &e)
   {
     sli=0;
   }
-  objc        = e.objc;
+  lang        = e.lang;
   hidden      = e.hidden;
   artificial  = e.artificial;
   groupDocType = e.groupDocType;
@@ -199,6 +198,8 @@ Entry::Entry(const Entry &e)
   // deep copy type contraint list
   if (e.typeConstr)
   {
+    typeConstr  = new ArgumentList;
+    typeConstr->setAutoDelete(TRUE);
     QListIterator<Argument> tcli(*e.typeConstr);
     for (;(a=tcli.current());++tcli)
     {
@@ -283,7 +284,7 @@ void Entry::reset()
   proto   = FALSE;
   explicitExternal = FALSE;
   spec  = 0;
-  objc = FALSE;
+  lang = SrcLangExt_Unknown;
   hidden = FALSE;
   artificial = FALSE;
   subGrouping = TRUE;

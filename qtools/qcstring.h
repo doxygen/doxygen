@@ -450,5 +450,15 @@ Q_EXPORT inline QCString operator+( char c1, const QCString &s2 )
     return tmp;
 }
 
+inline const char *qPrint(const char *s)
+{
+  if (s) return s; else return "";
+}
+
+inline const char *qPrint(const QCString &s)
+{
+  if (!s.isEmpty()) return s.data(); else return "";
+}
+
 
 #endif // QCSTRING_H

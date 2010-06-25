@@ -2220,7 +2220,7 @@ void writeLogo(const char *dir)
     f.writeBlock((char *)doxygen_png_data,doxygen_png_len);
   else
   {
-    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    fprintf(stderr,"warning: Cannot open file %s for writing\n",fileName.data());
   }
   f.close();
 }
@@ -2233,7 +2233,7 @@ void writeSearchButton(const char *dir)
     f.writeBlock((char *)search_png,search_png_len);
   else
   {
-    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    fprintf(stderr,"warning: Cannot open file %s for writing\n",fileName.data());
   }
   f.close();
 }
@@ -2247,7 +2247,7 @@ void writeDoxFont(const char *dir)
     f.writeBlock((char *)FreeSans_ttf,FreeSans_ttf_len);
   else
   {
-    fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
+    fprintf(stderr,"error: Cannot open file %s for writing\n",fileName.data());
   }
   f.close();
 }

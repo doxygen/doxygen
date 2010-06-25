@@ -553,7 +553,7 @@ QTextStream::QTextStream( QByteArray a, int mode )
     dev = new QBuffer( a );
     ((QBuffer *)dev)->open( mode );
     owndev = TRUE;
-    setEncoding( Latin1 ); //### Locale???
+    setEncoding( Locale ); //### Locale???
     reset();
     d->sourceType = QTextStreamPrivate::ByteArray;
 }

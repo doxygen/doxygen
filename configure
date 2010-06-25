@@ -17,7 +17,7 @@
 
 doxygen_version_major=1
 doxygen_version_minor=7
-doxygen_version_revision=0
+doxygen_version_revision=1
 
 #NOTE: Setting version_mmn to "NO" will omit mmn info from the package.
 doxygen_version_mmn=NO
@@ -268,7 +268,7 @@ if test "$f_wizard" = YES; then
   if test -z "$QTDIR"; then
     echo "  QTDIR environment variable not set!"
     echo -n "  Checking for Qt..."
-    for d in /usr /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4}; do
+    for d in /usr/{lib,share,qt}/{qt-4,qt4,qt,qt*,4} /usr; do
       if test -x "$d/bin/qmake"; then
         QTDIR=$d
       fi

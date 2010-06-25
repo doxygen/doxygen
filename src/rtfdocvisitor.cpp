@@ -222,7 +222,7 @@ void RTFDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Aelig:   m_t << "\346"; break;
     case DocSymbol::AElig:   m_t << "\306"; break;
     default:
-                             err("Error: unknown symbol found\n");
+                             err("error: unknown symbol found\n");
   }
   m_lastIsPara=FALSE;
 }

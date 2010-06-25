@@ -204,7 +204,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::AElig:   m_t << "&AElig;"; break;
     case DocSymbol::Aelig:   m_t << "&aelig;"; break;
     default:
-                             err("Error: unknown symbol found\n");
+                             err("error: unknown symbol found\n");
   }
 }
 

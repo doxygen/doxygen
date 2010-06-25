@@ -152,8 +152,8 @@ class ClassDefImpl
     /*! Is the class part of an unnamed namespace? */
     bool isStatic;
 
-    /*! Is the class part implemented in Objective C? */
-    bool isObjC;
+    /*! Language used for this class */
+    SrcLangExt lang;
 
     /*! TRUE if classes members are merged with those of the base classes. */
     bool membersMerged;
@@ -259,7 +259,7 @@ ClassDef::ClassDef(
   setReference(lref);
   m_impl = new ClassDefImpl;
   m_impl->compType = ct;
-  m_impl->isObjC   = FALSE;
+  m_impl->lang     = SrcLangExt_Unknown;
   m_impl->init(defFileName,name(),compoundTypeString(),fName);
 
 }
@@ -951,13 +951,13 @@ void ClassDef::showUsedFiles(OutputList &ol)
   if (fortranOpt)
   {
     ol.parseText(theTranslator->trGeneratedFromFilesFortran(
-          m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          m_impl->lang==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));
   }
   else
   {
     ol.parseText(theTranslator->trGeneratedFromFiles(
-          m_impl->isObjC && m_impl->compType==Interface ? Class : m_impl->compType,
+          m_impl->lang==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
           m_impl->files.count()==1));  
   }
 
@@ -1148,7 +1148,7 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
       }
       else
       {
-        err("Error: invalid marker %d in inherits list!\n",entryIndex);
+        err("error: invalid marker %d in inherits list!\n",entryIndex);
       }
       index=newIndex+matchLen;
     } 
@@ -1419,7 +1419,7 @@ void ClassDef::writeDocumentation(OutputList &ol)
   else
   {
     pageTitle = theTranslator->trCompoundReference(displayName(),
-              m_impl->compType == Interface && m_impl->isObjC ? Class : m_impl->compType,
+              m_impl->compType == Interface && m_impl->lang==SrcLangExt_ObjC ? Class : m_impl->compType,
               m_impl->tempArgs != 0);
   }
   
@@ -1680,7 +1680,7 @@ void ClassDef::writeDocumentationForInnerClasses(OutputList &ol)
           (innerCd->protection()!=Private || Config_getBool("EXTRACT_PRIVATE"))
          )
       {
-        msg("Generating docs for nested compound %s...\n",innerCd->name().data());
+        msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
         innerCd->writeDocumentation(ol);
         innerCd->writeMemberList(ol);
       }
@@ -1847,7 +1847,7 @@ void ClassDef::writeMemberList(OutputList &ol)
           ol.writeString("<td>");
         }
         if (
-            (prot!=Public || (virt!=Normal && !m_impl->isObjC) || 
+            (prot!=Public || (virt!=Normal && m_impl->lang!=SrcLangExt_ObjC) || 
              md->isFriend() || md->isRelated() || md->isExplicit() ||
              md->isMutable() || (md->isInline() && Config_getBool("INLINE_INFO")) ||
              md->isSignal() || md->isSlot() ||
@@ -1872,7 +1872,7 @@ void ClassDef::writeMemberList(OutputList &ol)
             else if (prot==Private)    sl.append("private");
             else if (prot==Package)    sl.append("package");
             if (virt==Virtual && 
-                !m_impl->isObjC)             sl.append("virtual");
+                m_impl->lang!=SrcLangExt_ObjC)             sl.append("virtual");
             else if (virt==Pure)       sl.append("pure virtual");
             if (md->isStatic())        sl.append("static");
             if (md->isSignal())        sl.append("signal");
@@ -2156,7 +2156,7 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
   //printf("isBaseClass(cd=%s) looking for %s\n",cd->name().data(),bcd->name().data());
   if (level>256)
   {
-    err("Possible recursive class relation while inside %s and looking for %s\n",name().data(),bcd->name().data());
+    err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(name()),qPrint(bcd->name()));
     abort();
     return FALSE;
   }
@@ -2730,7 +2730,7 @@ void ClassDef::determineIntfUsageRelation()
 
 QCString ClassDef::compoundTypeString() const
 {
-  if (m_impl->compType==Interface && m_impl->isObjC) return "class";
+  if (m_impl->compType==Interface && m_impl->lang==SrcLangExt_ObjC) return "class";
   if (Config_getBool("OPTIMIZE_FOR_FORTRAN"))
   {
     switch (m_impl->compType)
@@ -2933,7 +2933,7 @@ ClassDef *ClassDef::getVariableInstance(const char *templSpec)
   ClassDef *templateClass=m_impl->variableInstances->find(templSpec);
   if (templateClass==0)
   {
-    Debug::print(Debug::Classes,0,"      New template variable instance class `%s'`%s'\n",name().data(),templSpec);
+    Debug::print(Debug::Classes,0,"      New template variable instance class `%s'`%s'\n",qPrint(name()),qPrint(templSpec));
     templateClass = new ClassDef("<code>",1,name()+templSpec,
                         ClassDef::Class,0,0,FALSE);
     templateClass->addMembersToTemplateInstance( this, templSpec );
@@ -3080,9 +3080,16 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
 
   if (!scName.isEmpty()) scName+=scopeSeparator;
 
-  scName+=className();
-  ArgumentList *al=0;
   bool isSpecialization = localName().find('<')!=-1;
+  bool isGeneric = m_impl->lang==SrcLangExt_CSharp;
+
+  QCString clName = className();
+  if (isGeneric && clName.right(2)=="-g") 
+  {
+    clName = clName.left(clName.length()-2);
+  }
+  scName+=clName;
+  ArgumentList *al=0;
   if (templateArguments())
   {
     if (actualParams && (al=actualParams->current()))
@@ -3387,7 +3394,12 @@ bool ClassDef::isAbstract() const
 
 bool ClassDef::isObjectiveC() const 
 { 
-  return m_impl->isObjC; 
+  return m_impl->lang==SrcLangExt_ObjC; 
+}
+
+bool ClassDef::isCSharp() const 
+{ 
+  return m_impl->lang==SrcLangExt_CSharp; 
 }
 
 ClassDef *ClassDef::categoryOf() const 
@@ -3430,9 +3442,9 @@ void ClassDef::setIsStatic(bool b)
   m_impl->isStatic=b; 
 }
 
-void ClassDef::setIsObjectiveC(bool b) 
+void ClassDef::setLanguage(SrcLangExt lang) 
 { 
-  m_impl->isObjC=b; 
+  m_impl->lang=lang; 
 }
 
 void ClassDef::setCompoundType(CompoundType t) 

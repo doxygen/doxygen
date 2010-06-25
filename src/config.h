@@ -24,7 +24,8 @@
 #include <qfile.h>
 #include <qdict.h>
 #include <qlist.h>
-#include <qtextstream.h>
+#include "ftextstream.h"
+
 
 /*! \brief Abstract base class for any configuration option.
  *
@@ -71,17 +72,17 @@ class ConfigOption
     void setEncoding(const QCString &e) { m_encoding = e; }
 
   protected:
-    virtual void writeTemplate(QTextStream &t,bool sl,bool upd) = 0;
+    virtual void writeTemplate(FTextStream &t,bool sl,bool upd) = 0;
     virtual void convertStrToVal() {}
     virtual void substEnvVars() = 0;
-    virtual void writeXML(QTextStream&) {}
+    virtual void writeXML(FTextStream&) {}
     virtual void init() {}
 
     QCString convertToComment(const QCString &s);
-    void writeBoolValue(QTextStream &t,bool v);
-    void writeIntValue(QTextStream &t,int i);
-    void writeStringValue(QTextStream &t,QCString &s);
-    void writeStringList(QTextStream &t,QStrList &l);
+    void writeBoolValue(FTextStream &t,bool v);
+    void writeIntValue(FTextStream &t,int i);
+    void writeStringValue(FTextStream &t,QCString &s);
+    void writeStringList(FTextStream &t,QStrList &l);
 
     QCString m_spaces;
     QCString m_name;
@@ -103,7 +104,7 @@ class ConfigInfo : public ConfigOption
       m_name = name;
       m_doc = doc;
     }
-    void writeTemplate(QTextStream &t, bool sl,bool)
+    void writeTemplate(FTextStream &t, bool sl,bool)
     {
       if (!sl)
       {
@@ -134,7 +135,7 @@ class ConfigList : public ConfigOption
     void setWidgetType(WidgetType w) { m_widgetType = w; }
     WidgetType widgetType() const { return m_widgetType; }
     QStrList *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl,bool)
+    void writeTemplate(FTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -147,7 +148,7 @@ class ConfigList : public ConfigOption
       t << "\n";
     }
     void substEnvVars();
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
     void init() { m_value.clear(); }
   private:
     QStrList m_value;
@@ -175,7 +176,7 @@ class ConfigEnum : public ConfigOption
     }
     QCString *valueRef() { return &m_value; }
     void substEnvVars();
-    void writeTemplate(QTextStream &t,bool sl,bool)
+    void writeTemplate(FTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -187,7 +188,7 @@ class ConfigEnum : public ConfigOption
       writeStringValue(t,m_value);
       t << "\n";
     }
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
     void init() { m_value = m_defValue.copy(); }
 
   private:
@@ -217,7 +218,7 @@ class ConfigString : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     void setDefaultValue(const char *v) { m_defValue = v; }
     QCString *valueRef() { return &m_value; }
-    void writeTemplate(QTextStream &t,bool sl,bool)
+    void writeTemplate(FTextStream &t,bool sl,bool)
     {
       if (!sl)
       {
@@ -230,7 +231,7 @@ class ConfigString : public ConfigOption
       t << "\n";
     }
     void substEnvVars();
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
     void init() { m_value = m_defValue.copy(); }
   
   private:
@@ -261,7 +262,7 @@ class ConfigInt : public ConfigOption
     int maxVal() const { return m_maxVal; }
     void convertStrToVal();
     void substEnvVars();
-    void writeTemplate(QTextStream &t,bool sl,bool upd)
+    void writeTemplate(FTextStream &t,bool sl,bool upd)
     {
       if (!sl)
       {
@@ -280,7 +281,7 @@ class ConfigInt : public ConfigOption
       }
       t << "\n";
     }
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
     void init() { m_value = m_defValue; }
   private:
     int m_value;
@@ -309,7 +310,7 @@ class ConfigBool : public ConfigOption
     void convertStrToVal();
     void substEnvVars();
     void setValueString(const QCString &v) { m_valueString = v; }
-    void writeTemplate(QTextStream &t,bool sl,bool upd)
+    void writeTemplate(FTextStream &t,bool sl,bool upd)
     {
       if (!sl)
       {
@@ -328,7 +329,7 @@ class ConfigBool : public ConfigOption
       }
       t << "\n";
     }
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
     void init() { m_value = m_defValue; }
   private:
     bool m_value;
@@ -344,9 +345,9 @@ class ConfigObsolete : public ConfigOption
   public:
     ConfigObsolete(const char *name,OptionType t) : ConfigOption(t)  
     { m_name = name; }
-    void writeTemplate(QTextStream &,bool,bool) {}
+    void writeTemplate(FTextStream &,bool,bool) {}
     void substEnvVars() {}
-    void writeXML(QTextStream&);
+    void writeXML(FTextStream&);
 };
 
 
@@ -535,10 +536,10 @@ class Config
      *  is \c TRUE the description of each configuration option will
      *  be omitted.
      */
-    void writeTemplate(QTextStream &t,bool shortIndex,bool updateOnly);
+    void writeTemplate(FTextStream &t,bool shortIndex,bool updateOnly);
 
     /** Write XML representation of the config file */
-    void writeXML(QTextStream &t);
+    void writeXML(FTextStream &t);
 
     /////////////////////////////
     // internal API

@@ -152,10 +152,10 @@ div.ah {
 	font-weight: bold;
 	color: #ffffff;
 	margin-bottom: 3px;
-	margin-top: 3px
-	padding: .2em;
+	margin-top: 3px;
+	padding: 0.2em;
 	border: solid thin #333;
-	border-radius: .5em;
+	border-radius: 0.5em;
 	-webkit-border-radius: .5em;
 	-moz-border-radius: .5em;
 	-webkit-box-shadow: 2px 2px 3px #999;
@@ -432,12 +432,12 @@ table.memberdecls {
         -moz-border-radius-bottomleft: 8px;
         -moz-border-radius-bottomright: 8px;
         -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
-        background-image: -moz-linear-gradient(center top, ##FF 0%, ##FF 60%, #F8 95%, #F0);
+        background-image: -moz-linear-gradient(center top, ##FF 0%, ##FF 60%, ##F8 95%, ##F0);
         /* webkit specific markup */
         -webkit-border-bottom-left-radius: 8px;
         -webkit-border-bottom-right-radius: 8px;
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.6,##FF), color-stop(0.60,#FF), color-stop(0.95,#F8), to(#F0));
+        background-image: -webkit-gradient(linear,center top,center bottom,from(##FF), color-stop(0.6,##FF), color-stop(0.60,##FF), color-stop(0.95,##F8), to(##F0));
 }
 
 .paramkey {

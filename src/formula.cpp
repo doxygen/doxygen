@@ -19,8 +19,8 @@
 
 #include "qtbc.h"
 #include <qfile.h>
-#include <qtextstream.h>
 #include <qfileinfo.h>
+#include <qtextstream.h>
 #include <qdir.h>
 
 #include "formula.h"
@@ -31,6 +31,7 @@
 #include "portable.h"
 #include "index.h"
 #include "doxygen.h"
+#include "ftextstream.h"
 
 Formula::Formula(const char *text)
 {
@@ -53,7 +54,7 @@ void FormulaList::generateBitmaps(const char *path)
   int x1,y1,x2,y2;
   QDir d(path);
   // store the original directory
-  if (!d.exists()) { err("Error: Output dir %s does not exist!\n",path); exit(1); }
+  if (!d.exists()) { err("error: Output dir %s does not exist!\n",path); exit(1); }
   QCString oldDir = convertToQCString(QDir::currentDirPath());
   // go to the html output directory (i.e. path)
   QDir::setCurrent(d.absPath());
@@ -68,7 +69,7 @@ void FormulaList::generateBitmaps(const char *path)
   bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     if (Config_getBool("LATEX_BATCHMODE")) t << "\\batchmode" << endl;
     t << "\\documentclass{article}" << endl;
     t << "\\usepackage{epsfig}" << endl; // for those who want to include images
@@ -149,7 +150,7 @@ void FormulaList::generateBitmaps(const char *path)
         }
         else
         {
-          err("Error: Couldn't extract bounding box!\n");
+          err("error: Couldn't extract bounding box!\n");
         }
       } 
       // next we generate a postscript file which contains the eps
@@ -157,7 +158,7 @@ void FormulaList::generateBitmaps(const char *path)
       f.setName(formBase+".ps");
       if (f.open(IO_WriteOnly))
       {
-        QTextStream t(&f);
+        FTextStream t(&f);
         t << "1 1 1 setrgbcolor" << endl;  // anti-alias to white background
         t << "newpath" << endl;
         t << "-1 -1 moveto" << endl;
@@ -207,7 +208,7 @@ void FormulaList::generateBitmaps(const char *path)
         if (!t.eof())
           s=t.readLine();
         if (s.length()<2 || s.left(2)!="P6")
-          err("Error: ghostscript produced an illegal image format!");
+          err("error: ghostscript produced an illegal image format!");
         else
         {
           // assume the size if after the first line that does not start with
@@ -303,7 +304,7 @@ void FormulaList::generateBitmaps(const char *path)
   f.setName("formula.repository");
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     for (fli.toFirst();(formula=fli.current());++fli)
     {
       t << "\\form#" << formula->getId() << ":" << formula->getFormulaText() << endl;

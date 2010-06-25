@@ -92,9 +92,9 @@ class FTVHelp : public IndexIntf
     void addStyleSheetFile(const char *) {}
     void generateTreeView();
     void generateTreeViewInline(FTextStream &t);
+    static void generateTreeViewImages();
   private:
     void generateScript(FTextStream &t);
-    void generateTreeViewImages();
     void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level);
     void generateIndent(FTextStream &t,FTVNode *n,int level);
     void generateLink(FTextStream &t,FTVNode *n);

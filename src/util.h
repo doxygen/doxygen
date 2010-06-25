@@ -89,18 +89,19 @@ class TextGeneratorOLImpl : public TextGeneratorIntf
 
 enum SrcLangExt
 {
-  SrcLangExt_IDL    = 0x0008,
-  SrcLangExt_Java   = 0x0010,
-  SrcLangExt_CSharp = 0x0020,
-  SrcLangExt_D      = 0x0040,
-  SrcLangExt_PHP    = 0x0080,
-  SrcLangExt_ObjC   = 0x0100,
-  SrcLangExt_Cpp    = 0x0200,
-  SrcLangExt_JS     = 0x0400,
-  SrcLangExt_Python = 0x0800,
-  SrcLangExt_F90    = 0x1000,
-  SrcLangExt_VHDL   = 0x2000,
-  SrcLangExt_XML    = 0x4000
+  SrcLangExt_Unknown = 0x0000,
+  SrcLangExt_IDL     = 0x0008,
+  SrcLangExt_Java    = 0x0010,
+  SrcLangExt_CSharp  = 0x0020,
+  SrcLangExt_D       = 0x0040,
+  SrcLangExt_PHP     = 0x0080,
+  SrcLangExt_ObjC    = 0x0100,
+  SrcLangExt_Cpp     = 0x0200,
+  SrcLangExt_JS      = 0x0400,
+  SrcLangExt_Python  = 0x0800,
+  SrcLangExt_F90     = 0x1000,
+  SrcLangExt_VHDL    = 0x2000,
+  SrcLangExt_XML     = 0x4000
 };
 
 //--------------------------------------------------------------------

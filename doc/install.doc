@@ -366,20 +366,12 @@ before running make.
 
 \section install_src_windows Compiling from source on Windows
 
-From version 1.5.0 onwards, build files are provided for Visual Studio 2005.
+From version 1.7.0 onwards, build files are provided for Visual Studio 2008.
 Also the free (as in beer) "Express" version of Developer Studio can be used to 
 compile doxygen. Alternatively, you can compile doxygen 
 \ref install_src_unix "the Unix way" using 
 <a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
-
-Before you can compile doxygen you need to download and install the C++ compiler of
-Visual Studio. Since Microsoft apparently wants to lure everyone into using their 
-.NET stuff, they made things somewhat difficult when you use the Express version.
-You need to
-<a href="http://msdn2.microsoft.com/en-gb/express/aa700755.aspx">
-do some manual steps</a> in order to setup a proper working environment for building
-native win32 applications such as Doxygen.
 
 The next step is to install unxutils (see http://sourceforge.net/projects/unxutils).
 This packages contains the tools \c flex and \c bison which are needed during the
@@ -411,9 +403,6 @@ the project in the solutions explorer, and selecting Build.
 
 Note that compiling Doxywizard currently requires Qt version 4
 (see http://qt.nokia.com/products/platform/qt-for-windows).
-If you do not have a commercial license, you can build Doxywizard with the open
-source version (see http://qtwin.sourceforge.net/qt3-win32/compile-msvc-2005.php), 
-but I have not tried this myself.
 
 Also read the next section for additional tools you may need to install to run
 doxygen with certain features enabled.

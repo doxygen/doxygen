@@ -37,6 +37,7 @@ class HtmlGenerator : public OutputGenerator
     static void writeHeaderFile(QFile &f);
     static void writeFooterFile(QFile &f);
     static void writeSearchPage();
+    static void writeTabData();
    
     void enable() 
     { if (genStack->top()) active=*genStack->top(); else active=TRUE; }

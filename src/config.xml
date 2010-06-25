@@ -975,6 +975,13 @@ when you change the font size after a successful doxygen run you need
 to manually remove any form_*.png images from the HTML output directory 
 to force them to be regenerated. 
 ' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'/>
+    <option type='bool' id='FORMULA_TRANSPARENT' docs='
+Use the FORMULA_TRANPARENT tag to determine whether or not the images 
+generated for formulas are transparent PNGs. Transparent PNGs are 
+not supported properly for IE 6.0, but are supported on all modern browsers. 
+Note that when changing this option you need to delete any form_*.png files 
+in the HTML output before the changes have effect. 
+' defval='1' depends='GENERATE_HTML'/>
     <option type='bool' id='SEARCHENGINE' docs='
 When the SEARCHENGINE tag is enabled doxygen will generate a search box 
 for the HTML output. The underlying search engine uses javascript 

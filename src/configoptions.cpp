@@ -1449,6 +1449,17 @@ void addConfigOptions(Config *cfg)
   ci->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
+                 "FORMULA_TRANSPARENT",
+                 "Use the FORMULA_TRANPARENT tag to determine whether or not the images\n"
+                 "generated for formulas are transparent PNGs. Transparent PNGs are\n"
+                 "not supported properly for IE 6.0, but are supported on all modern browsers.\n"
+                 "Note that when changing this option you need to delete any form_*.png files\n"
+                 "in the HTML output before the changes have effect.",
+                 TRUE
+                );
+  cb->addDependency("GENERATE_HTML");
+  //----
+  cb = cfg->addBool(
                  "SEARCHENGINE",
                  "When the SEARCHENGINE tag is enabled doxygen will generate a search box\n"
                  "for the HTML output. The underlying search engine uses javascript\n"

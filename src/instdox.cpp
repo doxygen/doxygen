@@ -21,7 +21,6 @@
 #include "qtbc.h"
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qtextstream.h>
 
 #include "instdox.h"
 #include "doxygen.h"
@@ -34,7 +33,7 @@ void writeInstallScript()
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     t << "#!" << Config_getString("PERL_PATH") << endl << endl << "%subst = ( ";
     
     char *s=Config_getList("TAGFILES").first();

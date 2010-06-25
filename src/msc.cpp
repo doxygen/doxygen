@@ -32,7 +32,7 @@ static bool convertMapFile(QTextStream &t,const char *mapName,const QCString rel
   QFile f(mapName);
   if (!f.open(IO_ReadOnly))
   {
-    err("Error opening map file %s for inclusion in the docs!\n"
+    err("error: failed to open map file %s for inclusion in the docs!\n"
         "If you installed Graphviz/dot after a previous failing run, \n"
         "try deleting the output directory and rerun doxygen.\n",mapName);
     return FALSE;
@@ -132,7 +132,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
-      err("Error: Problems running epstopdf. Check your TeX installation!\n");
+      err("error: Problems running epstopdf. Check your TeX installation!\n");
     }
     portable_sysTimerStop();
   }

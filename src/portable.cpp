@@ -26,8 +26,8 @@ extern char **environ;
 #endif
 //#include "doxygen.h"
 
-static double  sysElapsedTime;
-static QTime   time;
+static double  g_sysElapsedTime;
+static QTime   g_time;
 
 int  portable_system(const char *command,const char *args,bool commandHasConsole)
 {
@@ -378,17 +378,17 @@ int portable_pclose(FILE *stream)
 
 void portable_sysTimerStart()
 {
-  time.start();
+  g_time.start();
 }
 
 void portable_sysTimerStop()
 {
-  sysElapsedTime+=((double)time.elapsed())/1000.0;
+  g_sysElapsedTime+=((double)g_time.elapsed())/1000.0;
 }
 
 double portable_getSysElapsedTime()
 {
-  return sysElapsedTime;
+  return g_sysElapsedTime;
 }
 
 void portable_sleep(int ms)

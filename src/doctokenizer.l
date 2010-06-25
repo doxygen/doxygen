@@ -919,20 +919,20 @@ REFWORD   {LABELID}|{REFWORD2}
                          BEGIN(St_Sections);
 		       }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(g_fileName,yylineno,"Error: Unexpected character `%s' while looking for section label or title",yytext); 
+                         warn(g_fileName,yylineno,"warning: Unexpected character `%s' while looking for section label or title",yytext); 
                        }
    
      /* Generic rules that work for all states */ 
 <*>\n                  { 
-                         warn(g_fileName,yylineno,"Error: Unexpected new line character"); 
+                         warn(g_fileName,yylineno,"warning: Unexpected new line character"); 
 		       }
 <*>[\\@<>&$#%~"]       { /* unescaped special character */
-                         //warn(g_fileName,yylineno,"Warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
+                         //warn(g_fileName,yylineno,"warning: Unexpected character `%s', assuming command \\%s was meant.",yytext,yytext); 
 			 g_token->name = yytext;
 			 return TK_COMMAND;
                        }
 <*>.                   { 
-                         warn(g_fileName,yylineno,"Error: Unexpected character `%s'",yytext); 
+                         warn(g_fileName,yylineno,"warning: Unexpected character `%s'",yytext); 
 		       }
 %%
 

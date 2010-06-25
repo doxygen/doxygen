@@ -40,7 +40,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorTurkish : public TranslatorAdapter_1_6_0
+class TranslatorTurkish : public Translator
 {
   public:
 
@@ -77,7 +77,7 @@ class TranslatorTurkish : public TranslatorAdapter_1_6_0
     /*! return the language charset. This will be used for the HTML output */
     virtual QCString idLanguageCharset()
     {
-      return "iso-8859-9";
+      return "utf-8";
     }
 
     // --- Language translation methods -------------------
@@ -1048,24 +1048,24 @@ class TranslatorTurkish : public TranslatorAdapter_1_6_0
         "<p>\n"
         "Yukarıdaki şemadaki kutular aşağıda açıklanmıştır:\n"
         "<ul>\n"
-        "<li>%A dolu gri kutu şemanın ait olduğu yapı(struct) ya da sınıfı "
+        "<li>Dolu gri kutu şemanın ait olduğu yapı(struct) ya da sınıfı "
         "gösterir.\n"
-        "<li>%A siyah çerçeveli bir kutu dokümante edilmiş bir yapı(struct) ya da sınıfı gösterir.\n"
-        "<li>%A gri çerçeveli bir kutu dokümante edilmemiş bir yapı(struct) ya da sınıfı gösterir.\n"
-        "<li>%A kırmızı çerçeveli bir kutu tüm kalıtım/içerme ilişkileri gösterilmemiş ve dokümante "
+        "<li>Siyah çerçeveli bir kutu dokümante edilmiş bir yapı(struct) ya da sınıfı gösterir.\n"
+        "<li>Gri çerçeveli bir kutu dokümante edilmemiş bir yapı(struct) ya da sınıfı gösterir.\n"
+        "<li>Kırmızı çerçeveli bir kutu tüm kalıtım/içerme ilişkileri gösterilmemiş ve dokümante "
         "edilmiş bir yapı(struct) ya da sınıfı gösterir. %A şema belirlenen sınırlara "
         "sığmıyorsa sadeleştirilir.\n"
         "</ul>\n"
         "Okların anlamı aşağıdaki gibidir:\n"
         "<ul>\n"
-        "<li>%A koyu mavi ok iki sınıf arasındaki public kalıtım ilişkisini "
+        "<li>Koyu mavi ok iki sınıf arasındaki public kalıtım ilişkisini "
         "göstermekte kullanılır.\n"
-        "<li>%A koyu yeşil ok korumalı kalıtımı gösterir.\n"
-        "<li>%A koyu kırmızı ok özel kalıtımı gösterir.\n"
-        "<li>%A mor kesikli çizgi bir sınıfın diğeri tarafından içeriliyor ya da kullanılıyor "
+        "<li>Koyu yeşil ok korumalı kalıtımı gösterir.\n"
+        "<li>Koyu kırmızı ok özel kalıtımı gösterir.\n"
+        "<li>Mor kesikli çizgi bir sınıfın diğeri tarafından içeriliyor ya da kullanılıyor "
         "olduğunu gösterir. Ok işaret edilen sınıfın hangi değişken(ler) tarafından erişildiğini "
         "gösteren etiketle işaretleniştir.\n"
-        "<li>%A Sarı kesikli çizgi şablondan üretilen bir sınıf ve ilgili şablon sınıfı "
+        "<li>Sarı kesikli çizgi şablondan üretilen bir sınıf ve ilgili şablon sınıfı "
         "arasındaki ilişkiyi gösterir. Ok türeyen sınıfın şablon parametreleriyle "
         "etiketlenmiştir.\n"
         "</ul>\n";
@@ -1775,7 +1775,98 @@ class TranslatorTurkish : public TranslatorAdapter_1_6_0
     {
       return "Tip Sınırlamaları";
     }
-
+	
+	
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.6.0 (mainly for the new search engine)
+	//////////////////////////////////////////////////////////////////////////
+	
+    /*! directory relation for \a name */
+    virtual QCString trDirRelation(const char *name)
+    {
+		return QCString(name)+" İlişkisi";
+    }
+	
+    /*! Loading message shown when loading search results */
+    virtual QCString trLoading()
+    {
+		return "Yüklüyor...";
+    }
+	
+    /*! Label used for search results in the global namespace */
+    virtual QCString trGlobalNamespace()
+    {
+		return "En Üst Seviye";
+    }
+	
+    /*! Message shown while searching */
+    virtual QCString trSearching()
+    {
+		return "Arıyor...";
+    }
+	
+    /*! Text shown when no search results are found */
+    virtual QCString trNoMatches()
+    {
+		return "Eşleşme Yok";
+    }
+	
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.6.3 (missing items for the directory pages)
+	//////////////////////////////////////////////////////////////////////////
+	
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+		return (QCString)(name) + (QCString)" için dizin bağımlılık grafiği";
+    }
+	
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+		return (QCString)(name) + (QCString)" dizinindeki dosya";
+    }
+	
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+		return (QCString)(name) + (QCString)" dizinindeki dosyayı kapsıyor";
+    }
+	
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+		static const char *days[]   = { "Pzt","Sal","Çar","Per","Cma","Cmt","Pzr" };
+		static const char *months[] = { "Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Ekm","Kas","Ara" };
+		QCString sdate;
+		sdate.sprintf("%s %s %d %d",days[dayOfWeek-1],months[month-1],day,year);
+		if (includeTime)
+		{
+			QCString stime;
+			stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+			sdate+=stime;
+		}
+		return sdate;
+    }
+	
+	
 };
 
 #endif
