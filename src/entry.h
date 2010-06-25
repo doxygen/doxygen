@@ -22,6 +22,7 @@
 #include <qlist.h>
 
 #include <qgstring.h>
+#include "util.h"
 
 struct SectionInfo;
 class QFile;
@@ -283,7 +284,6 @@ class Entry
       GROUPDOC_WEAK           //!< weakgroup
     };                        //!< kind of group
 
-
     Entry();
     Entry(const Entry &);
     ~Entry();
@@ -358,7 +358,7 @@ class Entry
     QCString	fileName;     //!< file this entry was extracted from
     int		startLine;    //!< start line of entry in the source
     QList<ListItemInfo> *sli; //!< special lists (test/todo/bug/deprecated/..) this entry is in
-    bool        objc;         //!< Objective-C construct
+    SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
     GroupDocType groupDocType;

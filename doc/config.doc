@@ -122,6 +122,7 @@ followed by the descriptions of the tags grouped by category.
 \refitem cfg_filter_source_files FILTER_SOURCE_FILES
 \refitem cfg_force_local_includes FORCE_LOCAL_INCLUDES
 \refitem cfg_formula_fontsize FORMULA_FONTSIZE
+\refitem cfg_formula_transparent FORMULA_TRANSPARENT
 \refitem cfg_full_path_names FULL_PATH_NAMES
 \refitem cfg_generate_autogen_def GENERATE_AUTOGEN_DEF
 \refitem cfg_generate_buglist GENERATE_BUGLIST
@@ -1588,6 +1589,15 @@ and Class Hierarchy pages using a tree view instead of an ordered list.
  when you change the font size after a successful doxygen run you need
  to manually remove any <code>form_*.png</code> images from the HTML 
  output directory to force them to be regenerated.
+
+\anchor cfg_formula_transparent
+<dt>\c FORMULA_TRANSPARENT <dd>
+ \addindex FORMULA_TRANSPARENT
+ Use the \c FORMULA_TRANPARENT tag to determine whether or not the images 
+ generated for formulas are transparent PNGs. Transparent PNGs are 
+ not supported properly for IE 6.0, but are supported on all modern browsers. 
+ Note that when changing this option you need to delete any form_*.png files 
+ in the HTML output before the changes have effect. 
  
 </dl>
 \section latex_output LaTeX related options

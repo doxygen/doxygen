@@ -782,7 +782,7 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
     }
     else
     {
-      err("Error: translation error: invalid markers in trDefinedInSourceFile()\n");
+      err("error: translation error: invalid markers in trDefinedInSourceFile()\n");
     }
   }
   ol.popGeneratorState();
@@ -1075,7 +1075,7 @@ Definition *Definition::findInnerCompound(const char *)
 
 void Definition::addInnerCompound(Definition *)
 {
-  err("Error: Definition::addInnerCompound() called\n");
+  err("error: Definition::addInnerCompound() called\n");
 }
 
 QCString Definition::qualifiedName() const
@@ -1286,6 +1286,10 @@ void Definition::writePathFragment(OutputList &ol) const
     else if (definitionType()==Definition::TypePage && !((const PageDef*)this)->title().isEmpty())
     {
       ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const PageDef*)this)->title());
+    }
+    else if (definitionType()==Definition::TypeClass)
+    {
+      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const ClassDef*)this)->displayName());
     }
     else
     {

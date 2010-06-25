@@ -622,7 +622,7 @@ void VhdlDocGen::addFuncDoc(EntryNav* rootNav)
     if (!func && Config_getBool("WARNINGS"))
     {
       warn(root->fileName,root->docLine,
-      "Warning: documentation for unknown function %s found.\n",
+      "warning: documentation for unknown function %s found.\n",
       root->name.data()
       );
     }

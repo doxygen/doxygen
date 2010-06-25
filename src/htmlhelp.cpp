@@ -66,7 +66,7 @@ class HtmlHelpIndex
     void addItem(const char *first,const char *second, 
                  const char *url, const char *anchor,
                  bool hasLink,bool reversed);
-    void writeFields(QTextStream &t);
+    void writeFields(FTextStream &t);
   private:
     IndexFieldSDict *dict;   
 };
@@ -147,7 +147,7 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
  *      b1     -> link to url#anchor 
  *  </pre>
  */
-void HtmlHelpIndex::writeFields(QTextStream &t)
+void HtmlHelpIndex::writeFields(FTextStream &t)
 {
   dict->sort();
   IndexFieldSDict::Iterator ifli(*dict);
@@ -305,7 +305,6 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   cts.setDevice(cf);
-  cts.setEncoding(QTextStream::Latin1);
   cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -323,7 +322,6 @@ void HtmlHelp::initialize()
   }
   /* Write the header of the contents file */
   kts.setDevice(kf);
-  kts.setEncoding(QTextStream::Latin1);
   kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -446,12 +444,7 @@ void HtmlHelp::createProjectFile()
   QFile f(fName);
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
-#if QT_VERSION >= 200
-    t.setEncoding(QTextStream::Latin1);
-#endif
-
-   
+    FTextStream t(&f);
     
     QCString indexName="index"+Doxygen::htmlFileExtension;
     if (Config_getBool("GENERATE_TREEVIEW")) indexName="main"+Doxygen::htmlFileExtension;

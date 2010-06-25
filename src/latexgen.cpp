@@ -659,7 +659,6 @@ void LatexGenerator::writeHeaderFile(QFile &f)
 void LatexGenerator::writeStyleSheetFile(QFile &f)
 {
   FTextStream t(&f);
-  //t.setEncoding(QTextStream::UnicodeUTF8);
 
   writeDefaultStyleSheetPart1(t);
   QCString &projectName = Config_getString("PROJECT_NAME");
@@ -1602,7 +1601,6 @@ void LatexGenerator::endSection(const char *lab,SectionInfo::SectionType)
 }
 
 
-//void LatexGenerator::docifyStatic(QTextStream &t,const char *str)
 void LatexGenerator::docify(const char *str)
 {
   filterLatexString(t,str,insideTabbing,FALSE);

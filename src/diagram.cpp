@@ -156,7 +156,6 @@ static void writeMapArea(FTextStream &t,ClassDef *cd,QCString relPath,
 {
   if (cd->isLinkable())
   {
-    QCString *dest;
     QCString ref=cd->getReference();
     t << "<area ";
     if (!ref.isEmpty()) 
@@ -1247,7 +1246,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
     portable_sysTimerStart();
     if (portable_system("epstopdf",epstopdfArgs)!=0)
     {
-       err("Error: Problems running epstopdf. Check your TeX installation!\n");
+       err("error: Problems running epstopdf. Check your TeX installation!\n");
        portable_sysTimerStop();
        return;
     }

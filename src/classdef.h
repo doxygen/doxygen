@@ -23,7 +23,7 @@
 #include <qdict.h>
 #include <qstrlist.h>
 
-//#include "entry.h"
+#include "util.h"
 #include "memberlist.h"
 #include "definition.h"
 #include "sortdict.h"
@@ -237,6 +237,9 @@ class ClassDef : public Definition
     /*! Returns TRUE if this class is implemented in Objective-C */
     bool isObjectiveC() const;
 
+    /*! Returns TRUE if this class is implemented in C# */
+    bool isCSharp() const;
+
     /*! Returns the class of which this is a category (Objective-C only) */
     ClassDef *categoryOf() const;
 
@@ -282,7 +285,7 @@ class ClassDef : public Definition
     void addUsedClass(ClassDef *cd,const char *accessName);
     void addUsedByClass(ClassDef *cd,const char *accessName);
     void setIsStatic(bool b);
-    void setIsObjectiveC(bool b);
+    void setLanguage(SrcLangExt lang);
     void setCompoundType(CompoundType t);
     void setClassName(const char *name);
 

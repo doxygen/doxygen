@@ -118,7 +118,7 @@ QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
 PageDef         *Doxygen::mainPage = 0;
 bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
-QTextStream      Doxygen::tagFile;
+FTextStream      Doxygen::tagFile;
 NamespaceDef    *Doxygen::globalScope = 0;
 QDict<RefList>  *Doxygen::xrefLists = new QDict<RefList>; // dictionary of cross-referenced item lists
 bool             Doxygen::parseSourcesNeeded = FALSE;
@@ -505,7 +505,7 @@ static void buildGroupListFiltered(EntryNav *rootNav,bool additional)
         {
           warn( root->fileName,root->startLine,
               "group %s: ignoring title \"%s\" that does not match old title \"%s\"\n",
-              root->name.data(), root->type.data(), gd->groupTitle() );
+              qPrint(root->name), qPrint(root->type), qPrint(gd->groupTitle()) );
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         gd->setDocumentation( root->doc, root->docFile, root->docLine );
@@ -643,7 +643,7 @@ static void buildFileList(EntryNav *rootNav)
       {
         warn(
             root->fileName,root->startLine,
-            "Warning: file %s already documented. "
+            "warning: file %s already documented. "
             "Skipping documentation.",
             root->name.data()
             );
@@ -676,9 +676,9 @@ static void buildFileList(EntryNav *rootNav)
     {
       const char *fn = root->fileName.data();
       QCString text;
-      text.sprintf("Warning: the name `%s' supplied as "
+      text.sprintf("warning: the name `%s' supplied as "
           "the second argument in the \\file statement ",
-          root->name.data()
+          qPrint(root->name)
                   );
       if (ambig) // name is ambiguous
       {
@@ -732,9 +732,9 @@ static void addIncludeFile(ClassDef *cd,FileDef *ifd,Entry *root)
        )
     { // explicit request
       QCString text;
-      text.sprintf("Warning: the name `%s' supplied as "
+      text.sprintf("warning: the name `%s' supplied as "
                   "the argument of the \\class, \\struct, \\union, or \\include command ",
-                  includeFile.data()
+                  qPrint(includeFile)
                  );
       if (ambig) // name is ambiguous
       {
@@ -1154,7 +1154,7 @@ static void addClassToContext(EntryNav *rootNav)
         fullName.data(),root->section,root->tArgLists ? (int)root->tArgLists->count() : -1);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-    cd->setIsObjectiveC(root->objc);
+    cd->setLanguage(root->lang);
     cd->setHidden(root->hidden);
     cd->setArtificial(root->artificial);
     cd->setTypeConstraints(root->typeConstr);
@@ -1290,7 +1290,7 @@ static void resolveClassNestingRelations()
         d->addInnerCompound(cd);
         cd->setOuterScope(d);
         warn(cd->getDefFileName(),cd->getDefLine(),
-            "Warning: Internal inconsistency: scope for class %s not "
+            "warning: Internal inconsistency: scope for class %s not "
             "found!",name.data()
             );
       }
@@ -1346,7 +1346,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           {
             warn(
                  root->fileName,root->startLine,
-                 "Warning: namespace %s already has a detailed description found in file %s at line %d. "
+                 "warning: namespace %s already has a detailed description found in file %s at line %d. "
                  "Skipping the documentation found here.",
                  fullName.data(),nd->docFile().data(),nd->docLine());
           }
@@ -1360,7 +1360,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           else if (!nd->briefDescription().isEmpty() && !root->brief.isEmpty())
           {
             warn(root->fileName,root->startLine,
-                 "Warning: namespace %s already has a brief description found in file %s at line %d. "
+                 "warning: namespace %s already has a brief description found in file %s at line %d. "
                  "Skipping the documentation found here.",
                  fullName.data(),nd->docFile().data(),nd->docLine()
                 );
@@ -1902,7 +1902,7 @@ static MemberDef *addVariableToClass(
         // member already in the scope
       {
 
-        if (root->objc && 
+        if (root->lang==SrcLangExt_ObjC && 
             root->mtype==Property && 
             md->memberType()==MemberDef::Variable)
         { // Objective-C 2.0 property
@@ -3165,7 +3165,7 @@ static void buildFunctionList(EntryNav *rootNav)
     else if (rname.isEmpty())
     {
         warn(root->fileName,root->startLine,
-             "Warning: Illegal member name found."
+             "warning: Illegal member name found."
             );
     }
 
@@ -3920,7 +3920,7 @@ static bool findTemplateInstanceRelation(Entry *root,
   ClassDef *instanceClass = templateClass->insertTemplateInstance(
                      root->fileName,root->startLine,templSpec,freshInstance);
   if (isArtificial) instanceClass->setArtificial(TRUE);
-  instanceClass->setIsObjectiveC(root->objc);
+  instanceClass->setLanguage(root->lang);
 
   if (freshInstance)
   {
@@ -4220,6 +4220,11 @@ static bool findClassRelation(
         
         //printf("root->name=%s biName=%s baseClassName=%s\n",
         //        root->name.data(),biName.data(),baseClassName.data());
+        if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
+        {
+          baseClassName+="-g";
+          templSpec.resize(0);
+        }
 
         if (!found)
         {
@@ -4231,7 +4236,7 @@ static bool findClassRelation(
         }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
         // make templSpec canonical
-        // Warning: the following line doesn't work for Mixin classes (see bug 560623)
+        // warning: the following line doesn't work for Mixin classes (see bug 560623)
         // templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
 
         //printf("3. found=%d\n",found);
@@ -4265,7 +4270,7 @@ static bool findClassRelation(
           {
             //printf("       => insert base class\n");
             QCString usedName;
-            if (baseClassTypeDef) 
+            if (baseClassTypeDef || cd->isCSharp()) 
             {
               usedName=biName;
               //printf("***** usedName=%s templSpec=%s\n",usedName.data(),templSpec.data());
@@ -4479,7 +4484,7 @@ static void computeClassRelations()
          )
         warn_undoc(
                    root->fileName,root->startLine,
-                   "Warning: Compound %s is not documented.",
+                   "warning: Compound %s is not documented.",
                    root->name.data()
              );
     }
@@ -4831,7 +4836,7 @@ static void addMemberDocs(EntryNav *rootNav,
       {
         warn(
              root->fileName,root->startLine,
-             "Warning: member %s belongs to two different groups. The second "
+             "warning: member %s belongs to two different groups. The second "
              "one found here will be ignored.",
              md->name().data()
             );
@@ -4969,7 +4974,7 @@ static bool findGlobalMember(EntryNav *rootNav,
       QCString fullFuncDecl=decl;
       if (root->argList) fullFuncDecl+=argListToString(root->argList,TRUE);
       QCString warnMsg =
-         QCString("Warning: no matching file member found for \n")+fullFuncDecl;
+         QCString("warning: no matching file member found for \n")+fullFuncDecl;
       if (mn->count()>0)
       {
         warnMsg+="Possible candidates:\n";
@@ -4993,7 +4998,7 @@ static bool findGlobalMember(EntryNav *rootNav,
        )
     {
       warn(root->fileName,root->startLine,
-           "Warning: documented function `%s' was not declared or defined.",decl
+           "warning: documented function `%s' was not declared or defined.",decl
           );
     }
   }
@@ -5160,10 +5165,10 @@ static void findMember(EntryNav *rootNav,
   Debug::print(Debug::FindMembers,0,
                "findMember(root=%p,funcDecl=`%s',related=`%s',overload=%d,"
                "isFunc=%d mGrpId=%d tArgList=%p (#=%d) "
-               "spec=%d isObjC=%d\n",
+               "spec=%d lang=%x\n",
                root,funcDecl.data(),root->relates.data(),overloaded,isFunc,root->mGrpId,
                root->tArgLists,root->tArgLists ? root->tArgLists->count() : 0,
-               root->spec,root->objc
+               root->spec,root->lang
               );
 
   QCString scopeName;
@@ -5242,7 +5247,7 @@ static void findMember(EntryNav *rootNav,
   else
   {
     // extract information from the declarations
-    parseFuncDecl(funcDecl,root->objc,scopeName,funcType,funcName,
+    parseFuncDecl(funcDecl,root->lang==SrcLangExt_ObjC,scopeName,funcType,funcName,
                 funcArgs,funcTempList,exceptions
                );
   }
@@ -5641,7 +5646,7 @@ static void findMember(EntryNav *rootNav,
               }
             }
 
-            QCString warnMsg = "Warning: no ";
+            QCString warnMsg = "warning: no ";
             if (noMatchCount>1) warnMsg+="uniquely ";
             warnMsg+="matching class member found for \n";
 
@@ -5822,7 +5827,7 @@ static void findMember(EntryNav *rootNav,
           QCString fullFuncDecl=funcDecl.copy();
           if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
           warn(root->fileName,root->startLine,
-               "Warning: Cannot determine class for function\n%s",
+               "warning: Cannot determine class for function\n%s",
                fullFuncDecl.data()
               );   
         }
@@ -6019,7 +6024,7 @@ static void findMember(EntryNav *rootNav,
             QCString fullFuncDecl=funcDecl.copy();
             if (isFunc) fullFuncDecl+=argListToString(root->argList,TRUE);
             warn(root->fileName,root->startLine,
-               "Warning: Cannot determine file/namespace for relatedalso function\n%s",
+               "warning: Cannot determine file/namespace for relatedalso function\n%s",
                fullFuncDecl.data()
               );   
           }
@@ -6028,7 +6033,7 @@ static void findMember(EntryNav *rootNav,
       else
       {
         warn_undoc(root->fileName,root->startLine,
-                   "Warning: class `%s' for related function `%s' is not "
+                   "warning: class `%s' for related function `%s' is not "
                    "documented.", 
                    className.data(),funcName.data()
                   );
@@ -6089,14 +6094,14 @@ localObjCMethod:
       if (className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
-             "Warning: class for member `%s' cannot "
+             "warning: class for member `%s' cannot "
              "be found.", funcName.data()
             ); 
       }
       else if (!className.isEmpty() && !globMem)
       {
         warn(root->fileName,root->startLine,
-             "Warning: member `%s' of class `%s' cannot be found",
+             "warning: member `%s' of class `%s' cannot be found",
              funcName.data(),className.data());
       }
     }
@@ -6105,7 +6110,7 @@ localObjCMethod:
   {
     // this should not be called
     warn(root->fileName,root->startLine,
-         "Warning: member with no name found.");
+         "warning: member with no name found.");
   }
   return;
 } 
@@ -6864,7 +6869,7 @@ static void findEnumDocumentation(EntryNav *rootNav)
       if (!found)
       {
         warn(root->fileName,root->startLine,
-             "Warning: Documentation for undefined enum `%s' found.",
+             "warning: Documentation for undefined enum `%s' found.",
              name.data()
             );
       }
@@ -7696,19 +7701,9 @@ static void findDefineDocumentation(EntryNav *rootNav)
         {
           if (md->memberType()==MemberDef::Define)
           {
-#if 0
-            if (md->documentation().isEmpty())
-#endif
-            {
-              md->setDocumentation(root->doc,root->docFile,root->docLine);
-              md->setDocsForDefinition(!root->proto);
-            }
-#if 0
-            if (md->briefDescription().isEmpty())
-#endif
-            {
-              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-            }
+            md->setDocumentation(root->doc,root->docFile,root->docLine);
+            md->setDocsForDefinition(!root->proto);
+            md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
             if (md->inbodyDocumentation().isEmpty())
             {
               md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
@@ -7769,7 +7764,7 @@ static void findDefineDocumentation(EntryNav *rootNav)
           }
           md=mn->next();
         }
-        //warn("Warning: define %s found in the following files:\n",root->name.data());
+        //warn("warning: define %s found in the following files:\n",root->name.data());
         //warn("Cannot determine where to add the documentation found "
         //     "at line %d of file %s. \n",
         //     root->startLine,root->fileName.data());
@@ -7781,14 +7776,14 @@ static void findDefineDocumentation(EntryNav *rootNav)
       if (preEnabled)
       {
         warn(root->fileName,root->startLine,
-             "Warning: documentation for unknown define %s found.\n",
+             "warning: documentation for unknown define %s found.\n",
              root->name.data()
             );
       }
       else
       {
         warn(root->fileName,root->startLine,
-             "Warning: found documented #define but ignoring it because "
+             "warning: found documented #define but ignoring it because "
              "ENABLE_PREPROCESSING is NO.\n",
              root->name.data()
             );
@@ -7835,7 +7830,7 @@ static void findDirDocumentation(EntryNav *rootNav)
         if (matchingDir)
         {
            warn(root->fileName,root->startLine,
-             "Warning: \\dir command matches multiple directories.\n"
+             "warning: \\dir command matches multiple directories.\n"
              "  Applying the command for directory %s\n"
              "  Ignoring the command for directory %s\n",
              matchingDir->name().data(),dir->name().data()
@@ -7857,7 +7852,7 @@ static void findDirDocumentation(EntryNav *rootNav)
     }
     else
     {
-      warn(root->fileName,root->startLine,"Warning: No matching "
+      warn(root->fileName,root->startLine,"warning: No matching "
           "directory found for command \\dir %s\n",normalizedName.data());
     }
     rootNav->releaseEntry();
@@ -7934,7 +7929,7 @@ static void findMainPage(EntryNav *rootNav)
     else
     {
       warn(root->fileName,root->startLine,
-           "Warning: found more than one \\mainpage comment block! Skipping this "
+           "warning: found more than one \\mainpage comment block! Skipping this "
            "block."
           );
     }
@@ -7990,7 +7985,7 @@ static void checkPageRelations()
     {
       if (ppd==pd)
       {
-        err("Warning: page defined at line %d of file %s with label %s is a subpage "
+        err("warning: page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
             pd->docLine(),pd->docFile().data(),pd->name().data());
         exit(1);
@@ -8104,7 +8099,7 @@ static void buildExampleList(EntryNav *rootNav)
     if (Doxygen::exampleSDict->find(root->name))
     {
       warn(root->fileName,root->startLine,
-          "Warning: Example %s was already documented. Ignoring "
+          "warning: Example %s was already documented. Ignoring "
           "documentation found here.",
           root->name.data()
           );
@@ -8312,7 +8307,7 @@ static QCString fixSlashes(QCString &s)
 //        << "else" << endl
 //        << "  echo \"Content-Type: text/html\"" << endl
 //        << "  echo \"\"" << endl
-//        << "  echo \"<h2>Error: $DOXYSEARCH not found. Check cgi script!</h2>\"" << endl
+//        << "  echo \"<h2>error: $DOXYSEARCH not found. Check cgi script!</h2>\"" << endl
 //        << "fi" << endl;
 //
 //      f.close();
@@ -8322,7 +8317,7 @@ static QCString fixSlashes(QCString &s)
 //    }
 //    else
 //    {
-//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//      err("error: Cannot open file %s for writing\n",fileName.data());
 //    }
 //#else /* Windows platform */
 //    // create cgi program
@@ -8351,7 +8346,7 @@ static QCString fixSlashes(QCString &s)
 //      t << "  if (system(buf))" << endl;
 //      t << "  {" << endl;
 //      t << "    printf(\"Content-Type: text/html\\n\\n\");" << endl;
-//      t << "    printf(\"<h2>Error: failed to execute %s</h2>\\n\",DOXYSEARCH);" << endl;
+//      t << "    printf(\"<h2>error: failed to execute %s</h2>\\n\",DOXYSEARCH);" << endl;
 //      t << "    exit(1);" << endl;
 //      t << "  }" << endl;
 //      t << "  return 0;" << endl;
@@ -8360,7 +8355,7 @@ static QCString fixSlashes(QCString &s)
 //    }
 //    else
 //    {
-//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//      err("error: Cannot open file %s for writing\n",fileName.data());
 //    }
 //#endif /* !defined(_WIN32) */
 //    
@@ -8376,7 +8371,7 @@ static QCString fixSlashes(QCString &s)
 //    }
 //    else
 //    {
-//      err("Error: Cannot open file %s for writing\n",fileName.data());
+//      err("error: Cannot open file %s for writing\n",fileName.data());
 //    }
 //    //g_outputList->generateExternalIndex();
 //    g_outputList->pushGeneratorState();
@@ -8428,8 +8423,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    QTextStream t(&f);
-    t.setEncoding(QTextStream::UnicodeUTF8);
+    FTextStream t(&f);
     Config::instance()->writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -8451,7 +8445,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
   }
   else
   {
-    err("Error: Cannot open file %s for writing\n",configFile);
+    err("error: Cannot open file %s for writing\n",configFile);
     exit(1);
   }
 }
@@ -8491,7 +8485,7 @@ static void readTagFile(Entry *root,const char *tl)
   QFileInfo fi(fileName);
   if (!fi.exists() || !fi.isFile())
   {
-    err("Error: Tag file `%s' does not exist or is not a file. Skipping it...\n",
+    err("error: Tag file `%s' does not exist or is not a file. Skipping it...\n",
         fileName.data());
     return;
   }
@@ -8527,12 +8521,12 @@ static void copyStyleSheet()
       }
       else
       {
-        err("Error: could not write to style sheet %s\n",destFileName.data());
+        err("error: could not write to style sheet %s\n",destFileName.data());
       }
     }
     else
     {
-      err("Error: could not open user specified style sheet %s\n",Config_getString("HTML_STYLESHEET").data());
+      err("error: could not open user specified style sheet %s\n",Config_getString("HTML_STYLESHEET").data());
       htmlStyleSheet.resize(0); // revert to the default
     }
   }
@@ -8550,7 +8544,7 @@ static void parseFiles(Entry *root,EntryNav *rootNav)
   {
     if (!(cd = portable_iconv_open("UTF-8", inpEncoding)))
     {
-       err("Error: unsupported character enconding: '%s'",inpEncoding.data());
+       err("error: unsupported character enconding: '%s'",inpEncoding.data());
        exit(1);
     }
   }
@@ -8709,7 +8703,7 @@ int readDir(QFileInfo *fi,
         {
           if (errorIfNotExist)
           {
-            err("Warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+            err("warning: source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
           }
         }
         else if (cfi->isFile() && 
@@ -8800,7 +8794,7 @@ int readFileOrDirectory(const char *s,
       {
         if (errorIfNotExist)
         {
-          err("Warning: source %s is not a readable file or directory... skipping.\n",s);
+          err("warning: source %s is not a readable file or directory... skipping.\n",s);
         }
       }
       else if (!Config_getBool("EXCLUDE_SYMLINKS") || !fi.isSymLink())
@@ -8869,7 +8863,7 @@ void readFormulaRepository()
       int se=line.find(':'); // find name and text separator.
       if (se==-1)
       {
-        err("Warning: formula.repository is corrupted!\n");
+        err("warning: formula.repository is corrupted!\n");
         break;
       }
       else
@@ -8973,7 +8967,7 @@ void readAliases()
 
 //----------------------------------------------------------------------------
 
-static void dumpSymbol(QTextStream &t,Definition *d)
+static void dumpSymbol(FTextStream &t,Definition *d)
 {
   QCString anchor;
   if (d->definitionType()==Definition::TypeMember)
@@ -9000,7 +8994,7 @@ static void dumpSymbolMap()
   QFile f("symbols.sql");
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
     DefinitionIntf *intf;
     for (;(intf=di.current());++di)
@@ -9031,7 +9025,7 @@ void dumpConfigAsXML()
   QFile f("config.xml");
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     Config::instance()->writeXML(t);
   }
 }
@@ -9248,7 +9242,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("Error:option -e is missing format specifier rtf.\n");
+          err("error: option -e is missing format specifier rtf.\n");
           cleanUpDoxygen();
           exit(1);
         }
@@ -9256,7 +9250,7 @@ void readConfiguration(int argc, char **argv)
         {
           if (optind+1>=argc)
           {
-            err("Error: option \"-e rtf\" is missing an extensions file name\n");
+            err("error: option \"-e rtf\" is missing an extensions file name\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9268,7 +9262,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
-        err("Error: option \"-e\" has invalid format specifier.\n");
+        err("error: option \"-e\" has invalid format specifier.\n");
         cleanUpDoxygen();
         exit(1);
         break; 
@@ -9276,7 +9270,7 @@ void readConfiguration(int argc, char **argv)
         formatName=getArg(argc,argv,optind);
         if (!formatName)
         {
-          err("Error: option -w is missing format specifier rtf, html or latex\n");
+          err("error: option -w is missing format specifier rtf, html or latex\n");
           cleanUpDoxygen();
           exit(1);
         } 
@@ -9284,7 +9278,7 @@ void readConfiguration(int argc, char **argv)
         {
           if (optind+1>=argc)
           {
-            err("Error: option \"-w rtf\" is missing a style sheet file name\n");
+            err("error: option \"-w rtf\" is missing a style sheet file name\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9302,7 +9296,7 @@ void readConfiguration(int argc, char **argv)
           {
             if (!Config::instance()->parse(argv[optind+4]))
             {
-              err("Error opening or reading configuration file %s!\n",argv[optind+4]);
+              err("error opening or reading configuration file %s!\n",argv[optind+4]);
               cleanUpDoxygen();
               exit(1);
             }
@@ -9316,7 +9310,7 @@ void readConfiguration(int argc, char **argv)
           }
           if (optind+3>=argc)
           {
-            err("Error: option \"-w html\" does not have enough arguments\n");
+            err("error: option \"-w html\" does not have enough arguments\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9324,7 +9318,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("Warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            err("warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -9351,7 +9345,7 @@ void readConfiguration(int argc, char **argv)
           {
             if (!Config::instance()->parse(argv[optind+3]))
             {
-              err("Error opening or reading configuration file %s!\n",argv[optind+3]);
+              err("error opening or reading configuration file %s!\n",argv[optind+3]);
               exit(1);
             }
             Config::instance()->substituteEnvironmentVars();
@@ -9364,7 +9358,7 @@ void readConfiguration(int argc, char **argv)
           }
           if (optind+2>=argc)
           {
-            err("Error: option \"-w latex\" does not have enough arguments\n");
+            err("error: option \"-w latex\" does not have enough arguments\n");
             cleanUpDoxygen();
             exit(1);
           }
@@ -9372,7 +9366,7 @@ void readConfiguration(int argc, char **argv)
           QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
           if (!setTranslator(outputLanguage))
           {
-            err("Warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
+            err("warning: Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
           QFile f;
@@ -9390,7 +9384,7 @@ void readConfiguration(int argc, char **argv)
         }
         else 
         {
-          err("Error: Illegal format specifier %s: should be one of rtf, html, or latex\n",formatName);
+          err("error: Illegal format specifier %s: should be one of rtf, html, or latex\n",formatName);
           cleanUpDoxygen();
           exit(1);
         }
@@ -9483,7 +9477,7 @@ void readConfiguration(int argc, char **argv)
     }
     else
     {
-      err("Error: configuration file %s not found!\n",argv[optind]);
+      err("error: configuration file %s not found!\n",argv[optind]);
       usage(argv[0]);
     }
   }
@@ -9491,7 +9485,7 @@ void readConfiguration(int argc, char **argv)
 
   if (!Config::instance()->parse(configName))
   {
-    err("Error: could not open or read configuration file %s!\n",configName);
+    err("error: could not open or read configuration file %s!\n",configName);
     cleanUpDoxygen();
     exit(1);
   }
@@ -9526,7 +9520,7 @@ void adjustConfiguration()
   QCString outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
   if (!setTranslator(outputLanguage))
   {
-    err("Warning: Output language %s not supported! Using English instead.\n",
+    err("warning: Output language %s not supported! Using English instead.\n",
        outputLanguage.data());
   }
   QStrList &includePath = Config_getList("INCLUDE_PATH");
@@ -9801,7 +9795,7 @@ void parseInput()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("Error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
+        err("error: tag OUTPUT_DIRECTORY: Output directory `%s' does not "
 	    "exist and cannot be created\n",outputDirectory.data());
         cleanUpDoxygen();
         exit(1);
@@ -9927,11 +9921,12 @@ void parseInput()
   {
     msg("Parsing layout file %s...\n",layoutFileName.data());
     QTextStream t(&layoutFile); 
+    t.setEncoding(QTextStream::Latin1);
     LayoutDocManager::instance().parse(t);
   }
   else if (!defaultLayoutUsed)
   {
-    err("Warning: failed to open layout file '%s' for reading!\n",layoutFileName.data());
+    err("warning: failed to open layout file '%s' for reading!\n",layoutFileName.data());
   }
 
   /**************************************************************************
@@ -10246,9 +10241,7 @@ void generateOutput()
   {
     g_outputList->add(new HtmlGenerator);
     HtmlGenerator::init();
-#if 0
-    if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
-#endif
+
     bool generateHtmlHelp = Config_getBool("GENERATE_HTMLHELP");
     bool generateEclipseHelp = Config_getBool("GENERATE_ECLIPSEHELP");
     bool generateQhp      = Config_getBool("GENERATE_QHP");
@@ -10260,13 +10253,17 @@ void generateOutput()
     if (generateTreeView) Doxygen::indexList.addIndex(new FTVHelp(TRUE));
     if (generateDocSet)   Doxygen::indexList.addIndex(new DocSets);
     Doxygen::indexList.initialize();
-    Doxygen::indexList.addImageFile("tab_r.gif");
-    Doxygen::indexList.addImageFile("tab_l.gif");
-    Doxygen::indexList.addImageFile("tab_b.gif");
-    Doxygen::indexList.addStyleSheetFile("tabs.css");
-    Doxygen::indexList.addImageFile("doxygen.png");
+    HtmlGenerator::writeTabData();
+
+#if 0
+    if (Config_getBool("GENERATE_INDEXLOG")) Doxygen::indexList.addIndex(new IndexLog);
+#endif
     //if (Config_getBool("HTML_DYNAMIC_SECTIONS")) HtmlGenerator::generateSectionImages();
     copyStyleSheet();
+    if (!generateTreeView && Config_getBool("USE_INLINE_TREES"))
+    {
+      FTVHelp::generateTreeViewImages();
+    }
   }
   if (Config_getBool("GENERATE_LATEX")) 
   {
@@ -10289,9 +10286,9 @@ void generateOutput()
     Htags::useHtags = TRUE;
     QCString htmldir = Config_getString("HTML_OUTPUT");
     if (!Htags::execute(htmldir))
-       err("Error: USE_HTAGS is YES but htags(1) failed. \n");
+       err("error: USE_HTAGS is YES but htags(1) failed. \n");
     if (!Htags::loadFilemap(htmldir))
-       err("Error: htags(1) ended normally but failed to load the filemap. \n");
+       err("error: htags(1) ended normally but failed to load the filemap. \n");
   }
   
   /**************************************************************************
@@ -10305,14 +10302,13 @@ void generateOutput()
     tag=new QFile(generateTagFile);
     if (!tag->open(IO_WriteOnly))
     {
-      err("Error: cannot open tag file %s for writing\n",
+      err("error: cannot open tag file %s for writing\n",
           generateTagFile.data()
          );
       cleanUpDoxygen();
       exit(1);
     }
     Doxygen::tagFile.setDevice(tag);
-    Doxygen::tagFile.setEncoding(QTextStream::UnicodeUTF8);
     Doxygen::tagFile << "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>" << endl;
     Doxygen::tagFile << "<tagfile>" << endl;
   }
@@ -10349,7 +10345,7 @@ void generateOutput()
     QDir searchDir(searchDirName);
     if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
     {
-      err("Error: Could not create search results directory '%s' $PWD='%s'\n",
+      err("error: Could not create search results directory '%s' $PWD='%s'\n",
           searchDirName.data(),QDir::currentDirPath().data());
       exit(1);
     }
@@ -10486,41 +10482,6 @@ void generateOutput()
     msg("Generating Perl module output...\n");
     generatePerlMod();
   }
-  if (Config_getBool("GENERATE_HTML") &&
-      Config_getBool("GENERATE_HTMLHELP") && 
-      !Config_getString("HHC_LOCATION").isEmpty())
-  {
-    msg("Running html help compiler...\n");
-    QString oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
-    portable_sysTimerStart();
-    if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
-    {
-      err("Error: failed to run html help compiler on index.hhp\n");
-    }
-    portable_sysTimerStop();
-    QDir::setCurrent(oldDir);
-  }
-  if ( Config_getBool("GENERATE_HTML") &&
-       Config_getBool("GENERATE_QHP") && 
-      !Config_getString("QHG_LOCATION").isEmpty())
-  {
-    msg("Running qhelpgenerator...\n");
-    QCString const qhpFileName = Qhp::getQhpFileName();
-    QCString const qchFileName = getQchFileName();
-
-    QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
-    QString const oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
-    portable_sysTimerStart();
-    if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))
-    {
-      err("Error: failed to run qhelpgenerator on index.qhp\n");
-    }
-    portable_sysTimerStop();
-    QDir::setCurrent(oldDir);
-  }
-
   if (Config_getBool("GENERATE_HTML") && searchEngine && serverBasedSearch)
   {
     msg("Generating search index\n");
@@ -10541,6 +10502,42 @@ void generateOutput()
   {
     DotManager::instance()->run();
   }
+
+  if (Config_getBool("GENERATE_HTML") &&
+      Config_getBool("GENERATE_HTMLHELP") && 
+      !Config_getString("HHC_LOCATION").isEmpty())
+  {
+    msg("Running html help compiler...\n");
+    QString oldDir = QDir::currentDirPath();
+    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    portable_sysTimerStart();
+    if (portable_system(Config_getString("HHC_LOCATION"), "index.hhp", FALSE))
+    {
+      err("error: failed to run html help compiler on index.hhp\n");
+    }
+    portable_sysTimerStop();
+    QDir::setCurrent(oldDir);
+  }
+  if ( Config_getBool("GENERATE_HTML") &&
+       Config_getBool("GENERATE_QHP") && 
+      !Config_getString("QHG_LOCATION").isEmpty())
+  {
+    msg("Running qhelpgenerator...\n");
+    QCString const qhpFileName = Qhp::getQhpFileName();
+    QCString const qchFileName = getQchFileName();
+
+    QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
+    QString const oldDir = QDir::currentDirPath();
+    QDir::setCurrent(Config_getString("HTML_OUTPUT"));
+    portable_sysTimerStart();
+    if (portable_system(Config_getString("QHG_LOCATION"), args.data(), FALSE))
+    {
+      err("error: failed to run qhelpgenerator on index.qhp\n");
+    }
+    portable_sysTimerStop();
+    QDir::setCurrent(oldDir);
+  }
+
 
   if (Debug::isFlagSet(Debug::Time))
   {

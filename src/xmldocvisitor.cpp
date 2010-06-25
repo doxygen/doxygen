@@ -101,7 +101,7 @@ void XmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Aelig:   m_t << "<aelig/>"; break;
     case DocSymbol::AElig:   m_t << "<AElig/>"; break;
     default:
-                             err("Error: unknown symbol found\n");
+                             err("error: unknown symbol found\n");
   }
 }
 

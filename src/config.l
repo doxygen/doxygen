@@ -104,18 +104,18 @@ QCString ConfigOption::convertToComment(const QCString &s)
   return result;
 }
 
-void ConfigOption::writeBoolValue(QTextStream &t,bool v)
+void ConfigOption::writeBoolValue(FTextStream &t,bool v)
 {
   t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
-void ConfigOption::writeIntValue(QTextStream &t,int i)
+void ConfigOption::writeIntValue(FTextStream &t,int i)
 {
   t << " " << i;
 }
 
-void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
+void ConfigOption::writeStringValue(FTextStream &t,QCString &s)
 {
   char c;
   bool needsEscaping=FALSE;
@@ -146,7 +146,7 @@ void ConfigOption::writeStringValue(QTextStream &t,QCString &s)
   }
 }
 
-void ConfigOption::writeStringList(QTextStream &t,QStrList &l)
+void ConfigOption::writeStringList(FTextStream &t,QStrList &l)
 {
   const char *p = l.first();
   bool first=TRUE;
@@ -175,7 +175,7 @@ void ConfigInt::convertStrToVal()
     int val = m_valueString.toInt(&ok);
     if (!ok || val<m_minVal || val>m_maxVal)
     {
-      config_warn("Warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
+      config_warn("warning: argument `%s' for option %s is not a valid number in the range [%d..%d]!\n"
                 "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
     }
     m_value=val;
@@ -197,7 +197,7 @@ void ConfigBool::convertStrToVal()
     }
     else
     {
-      config_warn("Warning: argument `%s' for option %s is not a valid boolean value\n"
+      config_warn("warning: argument `%s' for option %s is not a valid boolean value\n"
                 "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
     }
   }
@@ -286,7 +286,7 @@ bool &Config::getBool(const char *fileName,int num,const char *name) const
 /* -----------------------------------------------------------------
  */
 
-void ConfigInt::writeXML(QTextStream& t)
+void ConfigInt::writeXML(FTextStream& t)
 {
   t << "    <option type='int' "
        "id='" << convertToXML(name()) << "' "
@@ -298,7 +298,7 @@ void ConfigInt::writeXML(QTextStream& t)
   t << "/>" << endl;
 }
 
-void ConfigBool::writeXML(QTextStream& t)
+void ConfigBool::writeXML(FTextStream& t)
 {
   t << "    <option type='bool' "
        "id='" << convertToXML(name()) << "' "
@@ -308,7 +308,7 @@ void ConfigBool::writeXML(QTextStream& t)
   t << "/>" << endl;
 }
 
-void ConfigString::writeXML(QTextStream& t)
+void ConfigString::writeXML(FTextStream& t)
 {
   QString format;
   switch (m_widgetType)
@@ -326,7 +326,7 @@ void ConfigString::writeXML(QTextStream& t)
   t << "/>" << endl;
 }
 
-void ConfigEnum::writeXML(QTextStream &t)
+void ConfigEnum::writeXML(FTextStream &t)
 {
   t << "    <option type='enum' "
        "id='" << convertToXML(name()) << "' "
@@ -345,7 +345,7 @@ void ConfigEnum::writeXML(QTextStream &t)
   t << "    </option>" << endl;
 }
 
-void ConfigList::writeXML(QTextStream &t)
+void ConfigList::writeXML(FTextStream &t)
 {
   QString format;
   switch (m_widgetType)
@@ -371,7 +371,7 @@ void ConfigList::writeXML(QTextStream &t)
   t << "    </option>" << endl;
 }
 
-void ConfigObsolete::writeXML(QTextStream &t)
+void ConfigObsolete::writeXML(FTextStream &t)
 {
   t << "    <option type='obsolete' "
        "id='" << convertToXML(name()) << "'/>" << endl;
@@ -459,7 +459,7 @@ static QCString configStringRecode(
   void *cd = portable_iconv_open(outputEncoding,inputEncoding);
   if (cd==(void *)(-1)) 
   {
-    fprintf(stderr,"Error: unsupported character conversion: '%s'->'%s'\n",
+    fprintf(stderr,"error: unsupported character conversion: '%s'->'%s'\n",
         inputEncoding.data(),outputEncoding.data());
     exit(1);
   }
@@ -476,7 +476,7 @@ static QCString configStringRecode(
   }
   else
   {
-    fprintf(stderr,"Error: failed to translate characters from %s to %s: %s\n",
+    fprintf(stderr,"error: failed to translate characters from %s to %s: %s\n",
         inputEncoding.data(),outputEncoding.data(),strerror(errno));
     exit(1);
   }
@@ -497,7 +497,7 @@ static FILE *tryPath(const char *path,const char *fileName)
   if (fi.exists() && fi.isFile())
   {
     FILE *f=portable_fopen(absName,"r");
-    if (!f) config_err("Error: could not open file %s for reading\n",absName.data());
+    if (!f) config_err("error: could not open file %s for reading\n",absName.data());
     return f;
   }
   return 0;
@@ -542,7 +542,7 @@ static FILE *findFile(const char *fileName)
 static void readIncludeFile(const char *incName)
 {
   if (includeDepth==MAX_INCLUDE_DEPTH) {
-    config_err("Error: maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    config_err("error: maximum include depth (%d) reached, %s is not included. Aborting...\n",
 	MAX_INCLUDE_DEPTH,incName);
     exit(1);
   } 
@@ -582,7 +582,7 @@ static void readIncludeFile(const char *incName)
   } 
   else
   {
-    config_err("Error: @INCLUDE = %s: not found!\n",inc.data());
+    config_err("error: @INCLUDE = %s: not found!\n",inc.data());
     exit(1);
   }
 }
@@ -612,7 +612,7 @@ static void readIncludeFile(const char *incName)
 					   ConfigOption *option = config->get(cmd);
 					   if (option==0) // oops not known
 					   {
-					     config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					     config_err("warning: ignoring unsupported tag `%s' at line %d, file %s\n",
 						 yytext,yyLineNr,yyFileName.data()); 
 					     BEGIN(SkipInvalid);
 					   }
@@ -652,7 +652,7 @@ static void readIncludeFile(const char *incName)
 					         BEGIN(GetString);
 						 break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_err("warning: Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
@@ -665,7 +665,7 @@ static void readIncludeFile(const char *incName)
 					  ConfigOption *option = config->get(cmd);
 					  if (option==0) // oops not known
 					  {
-					    config_err("Warning: ignoring unsupported tag `%s' at line %d, file %s\n",
+					    config_err("warning: ignoring unsupported tag `%s' at line %d, file %s\n",
 						yytext,yyLineNr,yyFileName.data()); 
 					    BEGIN(SkipInvalid);
 					  }
@@ -686,12 +686,12 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_String:
 					      case ConfigOption::O_Int:
 					      case ConfigOption::O_Bool:
-					        config_err("Warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
+					        config_err("warning: operator += not supported for `%s'. Ignoring line at line %d, file %s\n",
 						    yytext,yyLineNr,yyFileName.data()); 
 					        BEGIN(SkipInvalid);
 						break;
 					       case ConfigOption::O_Obsolete:
-					         config_err("Warning: Tag `%s' at line %d of file %s has become obsolete.\n"
+					         config_err("warning: Tag `%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
 							    "file using \"doxygen -u\"\n", cmd.data(),yyLineNr,yyFileName.data()); 
 					         BEGIN(SkipInvalid);
@@ -728,7 +728,7 @@ static void readIncludeFile(const char *incName)
 					  }
   					}
 
-<Start>[a-z_A-Z0-9]+			{ config_err("Warning: ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
+<Start>[a-z_A-Z0-9]+			{ config_err("warning: ignoring unknown tag `%s' at line %d, file %s\n",yytext,yyLineNr,yyFileName.data()); }
 <GetString,GetBool,SkipInvalid>\n	{ yyLineNr++; BEGIN(Start); }
 <GetStrList>\n				{ 
   					  yyLineNr++; 
@@ -769,7 +769,7 @@ static void readIncludeFile(const char *incName)
 					  }
 					  if (*yytext=='\n')
 					  {
-					    config_err("Warning: Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
+					    config_err("warning: Missing end quote (\") on line %d, file %s\n",yyLineNr,yyFileName.data());
 					    yyLineNr++;
 					  }
 					  BEGIN(lastState);
@@ -788,7 +788,7 @@ static void readIncludeFile(const char *incName)
 					  else 
 					  {
 					    *b=FALSE; 
-					    config_warn("Warning: Invalid value `%s' for "
+					    config_warn("warning: Invalid value `%s' for "
 						 "boolean tag in line %d, file %s; use YES or NO\n",
 						 bs.data(),yyLineNr,yyFileName.data());
 					  }
@@ -807,7 +807,7 @@ static void readIncludeFile(const char *incName)
 /*@ ----------------------------------------------------------------------------
  */
 
-void Config::writeTemplate(QTextStream &t,bool sl,bool upd)
+void Config::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
   t << "# Doxyfile " << versionString << endl << endl;
   if (!sl)
@@ -830,7 +830,7 @@ void Config::writeTemplate(QTextStream &t,bool sl,bool upd)
   }
 }
 
-void Config::writeXML(QTextStream &t)
+void Config::writeXML(FTextStream &t)
 {
   t << "<doxygenconfig>" << endl;
   bool first=TRUE;
@@ -1060,15 +1060,15 @@ void Config::check()
   {
     if (warnFormat.find("$file")==-1)
     {
-      config_err("Warning: warning format does not contain a $file tag!\n");
+      config_err("warning: warning format does not contain a $file tag!\n");
     }
     if (warnFormat.find("$line")==-1)
     {
-      config_err("Warning: warning format does not contain a $line tag!\n");
+      config_err("warning: warning format does not contain a $line tag!\n");
     }
     if (warnFormat.find("$text")==-1)
     {
-      config_err("Warning: warning format foes not contain a $text tag!\n");
+      config_err("warning: warning format foes not contain a $text tag!\n");
     }
   }
 
@@ -1089,7 +1089,7 @@ void Config::check()
   if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
       paperType!="legal" && paperType!="executive")
   {
-    config_err("Error: Unknown page type specified");
+    config_err("error: Unknown page type specified");
   }
   
   QCString &outputLanguage=Config_getEnum("OUTPUT_LANGUAGE");
@@ -1129,7 +1129,7 @@ void Config::check()
     QFileInfo fi(headerFile);
     if (!fi.exists())
     {
-      config_err("Error: tag HTML_HEADER: header file `%s' "
+      config_err("error: tag HTML_HEADER: header file `%s' "
 	  "does not exist\n",headerFile.data());
       exit(1);
     }
@@ -1141,7 +1141,7 @@ void Config::check()
     QFileInfo fi(footerFile);
     if (!fi.exists())
     {
-      config_err("Error: tag HTML_FOOTER: footer file `%s' "
+      config_err("error: tag HTML_FOOTER: footer file `%s' "
 	  "does not exist\n",footerFile.data());
       exit(1);
     }
@@ -1153,7 +1153,7 @@ void Config::check()
     QFileInfo fi(latexHeaderFile);
     if (!fi.exists())
     {
-      config_err("Error: tag LATEX_HEADER: header file `%s' "
+      config_err("error: tag LATEX_HEADER: header file `%s' "
 	  "does not exist\n",latexHeaderFile.data());
       exit(1);
     }
@@ -1164,7 +1164,7 @@ void Config::check()
   while (s)
   {
     QFileInfo fi(s);
-    if (!fi.exists()) config_err("Warning: tag INCLUDE_PATH: include path `%s' "
+    if (!fi.exists()) config_err("warning: tag INCLUDE_PATH: include path `%s' "
 	                  "does not exist\n",s);
     s=includePath.next();
   }
@@ -1207,7 +1207,7 @@ void Config::check()
     QFileInfo dp(dotPath+"/dot"+portable_commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
-      config_err("Warning: the dot tool could not be found at %s\n",dotPath.data());
+      config_err("warning: the dot tool could not be found at %s\n",dotPath.data());
       dotPath="";
     }
     else
@@ -1231,7 +1231,7 @@ void Config::check()
     QFileInfo dp(mscgenPath+"/mscgen"+portable_commandExtension());
     if (!dp.exists() || !dp.isFile())
     {
-      config_err("Warning: the mscgen tool could not be found at %s\n",mscgenPath.data());
+      config_err("warning: the mscgen tool could not be found at %s\n",mscgenPath.data());
       mscgenPath="";
     }
     else
@@ -1264,7 +1264,7 @@ void Config::check()
       QFileInfo fi(s);
       if (!fi.exists())
       {
-	config_err("Warning: tag INPUT: input source `%s' does not exist\n",s);
+	config_err("warning: tag INPUT: input source `%s' does not exist\n",s);
       }
       s=inputSources.next();
     }
@@ -1348,14 +1348,14 @@ void Config::check()
       Config_getString("GENERATE_TAGFILE").isEmpty()
      )
   {
-    config_err("Warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
+    config_err("warning: No output formats selected! Set at least one of the main GENERATE_* options to YES.\n");
   }
 
   // check HTMLHELP creation requirements
   if (!Config_getBool("GENERATE_HTML") && 
       Config_getBool("GENERATE_HTMLHELP"))
   {
-    config_err("Warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
+    config_err("warning: GENERATE_HTMLHELP=YES requires GENERATE_HTML=YES.\n");
   }
 
   // check QHP creation requirements
@@ -1363,13 +1363,13 @@ void Config::check()
   {
     if (Config_getString("QHP_NAMESPACE").isEmpty())
     {
-      config_err("Error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
+      config_err("error: GENERATE_QHP=YES requires QHP_NAMESPACE to be set. Using 'org.doxygen.doc' as default!.\n");
       Config_getString("QHP_NAMESPACE")="org.doxygen.doc";
     }
 
     if (Config_getString("QHP_VIRTUAL_FOLDER").isEmpty())
     {
-      config_err("Error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
+      config_err("error: GENERATE_QHP=YES requires QHP_VIRTUAL_FOLDER to be set. Using 'doc' as default!\n");
       Config_getString("QHP_VIRTUAL_FOLDER")="doc";
     }
   }
@@ -1453,7 +1453,7 @@ void Config::check()
     if (!b3) s3="  HIDE_SCOPE_NAMES       = YES (was NO)\n"; else s3="";
     if (!b4) s4="  EXTRACT_PRIVATE        = YES (was NO)\n"; else s4="";
 
-    config_err("Warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
+    config_err("warning: enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
 	       "%s%s%s%s",s1,s2,s3,s4
 	      );
 
@@ -1514,7 +1514,7 @@ static QCString configFileToString(const char *name)
     QFileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
-      config_err("Error: file `%s' not found\n",name);
+      config_err("error: file `%s' not found\n",name);
       return "";
     }
     f.setName(name);
@@ -1535,7 +1535,7 @@ static QCString configFileToString(const char *name)
   }
   if (!fileOpened)  
   {
-    config_err("Error: cannot open file `%s' for reading\n",name);
+    config_err("error: cannot open file `%s' for reading\n",name);
   }
   return "";
 }

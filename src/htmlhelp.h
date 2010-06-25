@@ -22,9 +22,9 @@
 #define HTMLHELP_H
 
 #include "qtbc.h"
-#include <qtextstream.h>
 #include <qstrlist.h>
 #include "index.h"
+#include "ftextstream.h"
 
 class QFile;
 class HtmlHelpIndex;
@@ -87,7 +87,7 @@ class HtmlHelp  : public IndexIntf
     void createProjectFile();
 
     QFile *cf,*kf; 
-    QTextStream cts,kts;
+    FTextStream cts,kts;
     HtmlHelpIndex *index;
     int dc;
     QStrList indexFiles;

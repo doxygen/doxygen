@@ -1159,7 +1159,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
       if (fgd && gd!=fgd && g->pri==pri) 
       {
          warn(root->fileName.data(), root->startLine,
-           "Warning: Member %s found in multiple %s groups! "
+           "warning: Member %s found in multiple %s groups! "
            "The member will be put in group %s, and not in group %s",
 	   md->name().data(), Grouping::getGroupPriName( pri ),
 	   gd->name().data(), fgd->name().data()
@@ -1204,7 +1204,7 @@ void addMemberToGroups(Entry *root,MemberDef *md)
           else if (!root->doc.isEmpty() && md->getGroupHasDocs())
           {
             warn(md->getGroupFileName(),md->getGroupStartLine(),
-                "Warning: Member documentation for %s found several times in %s groups!\n"
+                "warning: Member documentation for %s found several times in %s groups!\n"
                 "%s:%d: The member will remain in group %s, and won't be put into group %s",
                 md->name().data(), Grouping::getGroupPriName( pri ),
                 root->fileName.data(), root->startLine,

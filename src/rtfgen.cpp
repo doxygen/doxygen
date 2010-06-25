@@ -1994,7 +1994,7 @@ void RTFGenerator::incrementIndentLevel()
   m_listLevel++;
   if (m_listLevel>rtf_maxIndentLevels-1)
   {
-    err("Warning: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
+    err("error: Maximum indent level (%d) exceeded while generating RTF output!\n",rtf_maxIndentLevels);
     m_listLevel=rtf_maxIndentLevels-1;
   }
 }
@@ -2004,7 +2004,7 @@ void RTFGenerator::decrementIndentLevel()
   m_listLevel--;
   if (m_listLevel<0)
   {
-    err("Warning: Negative indent level while generating RTF output!\n");
+    err("error: Negative indent level while generating RTF output!\n");
     m_listLevel=0;
   }
 }
@@ -2279,7 +2279,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
   QFile f(infName);
   if (!f.open(IO_ReadOnly))
   {
-    err("Error opening rtf file %s for reading\n",infName.data());
+    err("error: problems opening rtf file %s for reading\n",infName.data());
     return FALSE;
   }
 
@@ -2477,7 +2477,7 @@ void testRTFOutput(const char *name)
   }
   if (bcount==0) return; // file is OK.
 err:
-  err("Error: RTF integrity test failed at line %d of %s due to a bracket mismatch.\n",line,name);
+  err("error: RTF integrity test failed at line %d of %s due to a bracket mismatch.\n",line,name);
   err("       Please try to create a small code example that produces this error \n"
       "       and send that to dimitri@stack.nl.\n");
 }
@@ -2492,7 +2492,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   // store the original directory
   if (!d.exists())
   {
-    err("Error: Output dir %s does not exist!\n",path);
+    err("error: Output dir %s does not exist!\n",path);
     return FALSE;
   }
   QCString oldDir = convertToQCString(QDir::currentDirPath());

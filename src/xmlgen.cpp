@@ -1845,13 +1845,13 @@ void generateXML()
       dir.setPath(QDir::currentDirPath());
       if (!dir.mkdir(outputDirectory))
       {
-        err("Error: tag XML_OUTPUT: Output directory `%s' does not "
+        err("error: tag XML_OUTPUT: Output directory `%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
         exit(1);
       }
       else if (!Config_getBool("QUIET"))
       {
-        err("Notice: Output directory `%s' does not exist. "
+        err("notice: Output directory `%s' does not exist. "
             "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);

@@ -683,6 +683,7 @@ static void writeImgData(const char *dir,img_data_item *data)
     {
       fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
     }
+    Doxygen::indexList.addImageFile(QCString("/search/")+data->name);
     data++;
   }
 }
@@ -707,6 +708,7 @@ static void writeColoredImgData(const char *dir,colored_img_data_item *data)
     {
       fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
     }
+    Doxygen::indexList.addImageFile(data->name);
     data++;
   }
 }
@@ -725,11 +727,6 @@ static colored_img_data_item colored_tab_data[] =
   { "open.png",     9,  9, open_png, open_a_png },
   { 0, 0, 0, 0, 0 }
 };
-
-static void writeTabData(const char *dir)
-{
-  writeColoredImgData(dir,colored_tab_data);
-}
 
 static img_data_item search_client_data[] =
 {
@@ -835,28 +832,32 @@ void HtmlGenerator::init()
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     t << replaceColorMarkers(tabs_css);
   }
   else
   {
     fprintf(stderr,"Warning: Cannot open file %s for writing\n",fileName.data());
   }
+}
 
-  writeTabData(dname);
+/// Additional initialization after indices have been created
+void HtmlGenerator::writeTabData()
+{
+  Doxygen::indexList.addStyleSheetFile("tabs.css");
+  QCString dname=Config_getString("HTML_OUTPUT");
+  writeColoredImgData(dname,colored_tab_data);
 }
 
 void HtmlGenerator::writeSearchData(const char *dir)
 {
   static bool serverBasedSearch = Config_getBool("SERVER_BASED_SEARCH");
   writeImgData(dir,serverBasedSearch ? search_server_data : search_client_data);
-  Doxygen::indexList.addImageFile("search/close.png");
-  Doxygen::indexList.addImageFile("search/search.png");
   QCString searchDirName = Config_getString("HTML_OUTPUT")+"/search";
   QFile f(searchDirName+"/search.css");
   if (f.open(IO_WriteOnly))
   {
-    QTextStream t(&f);
+    FTextStream t(&f);
     t << replaceColorMarkers(search_styleSheet);
   }
   Doxygen::indexList.addStyleSheetFile("search/search.css");
@@ -866,7 +867,7 @@ void HtmlGenerator::writeSearchData(const char *dir)
 
 void HtmlGenerator::writeStyleSheetFile(QFile &file)
 {
-  QTextStream t(&file);
+  FTextStream t(&file);
   t << replaceColorMarkers(defaultStyleSheet);
 }
 
@@ -913,7 +914,7 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
     QFileInfo cssfi(cssname);
     if (!cssfi.exists())
     {
-      err("Error: user specified HTML style sheet file does not exist!\n");
+      err("error: user specified HTML style sheet file does not exist!\n");
     }
     t << relPathStr << cssfi.fileName();
   }
@@ -943,14 +944,12 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
 void HtmlGenerator::writeHeaderFile(QFile &file)
 {
   FTextStream t(&file);
-  //t.setEncoding(QTextStream::UnicodeUTF8);
   writeDefaultHeaderFile(t,"$title",relativePathToRoot(0),TRUE);
 }
 
 void HtmlGenerator::writeFooterFile(QFile &file)
 {
-  QTextStream t(&file);
-  t.setEncoding(QTextStream::UnicodeUTF8);
+  FTextStream t(&file);
   t << "<hr class=\"footer\"/><address class=\"footer\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
   t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
@@ -1211,7 +1210,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       QFileInfo cssfi(cssname);
       if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
       {
-        err("Error: style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
+        err("error: style sheet %s does not exist or is not readable!", Config_getString("HTML_STYLESHEET").data());
       }
       else
       {
@@ -2518,7 +2517,6 @@ void HtmlGenerator::writeSearchPage()
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
-    //t.setEncoding(QTextStream::UnicodeUTF8);
     if (g_header.isEmpty()) 
     {
       writeDefaultHeaderFile(t,theTranslator->trSearch().data(),0,FALSE,TRUE);
@@ -2610,7 +2608,7 @@ void HtmlGenerator::writeSearchPage()
   QFile sf(scriptName);
   if (sf.open(IO_WriteOnly))
   {
-    QTextStream t(&sf);
+    FTextStream t(&sf);
     t << "function SearchBox(name, resultsPath, inFrame, label)\n";
     t << "{\n";
     t << "  this.searchLabel = label;\n";

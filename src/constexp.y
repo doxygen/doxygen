@@ -34,7 +34,7 @@
 int cppExpYYerror(const char *s)
 {
   warn(g_constExpFileName,g_constExpLineNr,
-       "Problem during constant expression evaluation: %s",s);
+       "warning: preprocessing issue while doing constant expression evaluation: %s",s);
   return 0;
 }
 

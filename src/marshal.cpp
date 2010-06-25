@@ -410,7 +410,7 @@ void marshalEntry(StorageIntf *s,Entry *e)
   marshalQCString(s,e->fileName);
   marshalInt(s,e->startLine);
   marshalItemInfoList(s,e->sli);
-  marshalBool(s,e->objc);
+  marshalInt(s,(int)e->lang);
   marshalBool(s,e->hidden);
   marshalBool(s,e->artificial);
   marshalInt(s,(int)e->groupDocType);
@@ -806,7 +806,7 @@ Entry * unmarshalEntry(StorageIntf *s)
   e->fileName         = unmarshalQCString(s);
   e->startLine        = unmarshalInt(s);
   e->sli              = unmarshalItemInfoList(s);
-  e->objc             = unmarshalBool(s);
+  e->lang             = (SrcLangExt)unmarshalInt(s);
   e->hidden           = unmarshalBool(s);
   e->artificial       = unmarshalBool(s);
   e->groupDocType     = (Entry::GroupDocType)unmarshalInt(s);

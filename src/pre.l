@@ -152,8 +152,7 @@ static void decrLevel()
   }
   else
   {
-    err("%s:%d: Error: More #endif's than #if's found.\n",
-	g_yyFileName.data(),g_yyLineNr);
+    warn(g_yyFileName,g_yyLineNr,"warning: More #endif's than #if's found.\n");
   }
 }
 
@@ -161,8 +160,7 @@ static bool otherCaseDone()
 {
   if (g_level==0)
   {
-    err("%s:%d: Error: Found an #else without a preceding #if.\n",
-	g_yyFileName.data(),g_yyLineNr);
+    warn(g_yyFileName,g_yyLineNr,"warning: Found an #else without a preceding #if.\n");
     return TRUE;
   }
   else
@@ -971,7 +969,7 @@ QCString removeIdsAndMarkers(const char *s)
 nextChar:
 	result+=c;
 	char lc=tolower(c);
-	if (!isId(lc) && lc!='.' && lc!='-' && lc!='+') inNum=FALSE;
+	if (!isId(lc) && lc!='.' /*&& lc!='-' && lc!='+'*/) inNum=FALSE;
 	p++;
       }
     }
@@ -1270,7 +1268,7 @@ static void readIncludeFile(const QCString &inc)
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
         msg("#include %s: not found or already included! skipping...\n",incFileName.data());
-        //printf("Error: include file %s not found\n",yytext);
+        //printf("error: include file %s not found\n",yytext);
       }
       if (g_curlyCount>0 && !alreadyIncluded) // failed to find #include inside { ... }
       {
@@ -2010,7 +2008,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(CopyCComment);
   					}
 <DefineText>"//"[!/]?			{
-  				          outputChar('/');outputChar('/');
+  					  outputArray(yytext,yyleng);
   					  g_lastCPPContext=YY_START;
 					  g_defLitText+=' ';
   					  BEGIN(SkipCPPComment);
@@ -2237,7 +2235,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    }
 					    else
 					    {
-					      //printf("Error: define %s is defined more than once!\n",g_defName.data());
+					      //printf("error: define %s is defined more than once!\n",g_defName.data());
 					    }
 					  }
 					  delete g_argDict; g_argDict=0;
