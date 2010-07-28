@@ -51,8 +51,7 @@ class EclipseHelp : public IndexIntf
     virtual void decContentsDepth();
     virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0,
                                  const char *file = 0, const char *anchor = 0);
-    virtual void addIndexItem(Definition *context,MemberDef *md,
-                              const char *anchor,const char *word);
+    virtual void addIndexItem(Definition *context,MemberDef *md,const char *title);
     virtual void addIndexFile(const char *name);
     virtual void addImageFile(const char *name);
     virtual void addStyleSheetFile(const char *name);

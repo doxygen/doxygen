@@ -1384,7 +1384,7 @@ static void buildNamespaceList(EntryNav *rootNav)
           tagName=rootNav->tagInfo()->tagName;
           tagFileName=rootNav->tagInfo()->fileName;
         }
-        //printf("++ new namespace %d\n",fullName.data());
+        //printf("++ new namespace %s\n",fullName.data());
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,fullName,tagName,tagFileName);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -1552,7 +1552,7 @@ static void findUsingDirectives(EntryNav *rootNav)
       }
       else // unknown namespace, but add it anyway.
       {
-        //printf("++ new unknown namespace %s\n",name.data());
+        printf("++ new unknown namespace %s\n",name.data());
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -2194,7 +2194,7 @@ static MemberDef *addVariableToFile(
  */
 static int findFunctionPtr(const QCString &type,int *pLength=0)
 {
-  static const QRegExp re("([^)]*\\*[^)]*)");
+  static const QRegExp re("([^)]*[\\*\\^][^)]*)");
   int i=-1,l;
   if (!type.isEmpty() &&             // return type is non-empty
       (i=re.match(type,0,&l))!=-1 && // contains (...*...)
@@ -2204,10 +2204,12 @@ static int findFunctionPtr(const QCString &type,int *pLength=0)
      )
   {
     if (pLength) *pLength=l;
+    //printf("findFunctionPtr=%d\n",i);
     return i;
   }
   else
   {
+    //printf("findFunctionPtr=%d\n",-1);
     return -1;
   }
 }
@@ -2969,8 +2971,11 @@ static void buildFunctionList(EntryNav *rootNav)
                 md->setDocumentation(root->doc,root->docFile,root->docLine);
                 md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
                 md->setDocsForDefinition(!root->proto);
-                md->setBodySegment(root->bodyLine,root->endBodyLine);
-                md->setBodyDef(rfd);
+                if (md->getStartBodyLine()!=-1 && md->getStartBodyLine()==-1)
+                {
+                  md->setBodySegment(root->bodyLine,root->endBodyLine);
+                  md->setBodyDef(rfd);
+                }
 
                 if (md->briefDescription().isEmpty() && !root->brief.isEmpty())
                 {
@@ -3633,6 +3638,10 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = getResolvedClass(cd,fd,name,0,0,TRUE,TRUE);
   }
+  if (result==0) // try direct class, needed for namespaced classes imported via tag files (see bug624095)
+  {
+    result = getClass(name);
+  }
   //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
   //       context ? context->name().data() : "<none>",
@@ -3800,7 +3809,7 @@ static void findUsedClassesForClass(EntryNav *rootNav,
             ClassDef *usedCd = Doxygen::hiddenClasses->find(type);
             if (usedCd==0 && !Config_getBool("HIDE_UNDOC_RELATIONS"))
             {
-              if (type.right(2)=="(*") // type is a function pointer
+              if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
               {
                 type+=md->argsString();
               }

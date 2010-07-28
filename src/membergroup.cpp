@@ -58,7 +58,6 @@ MemberGroup::MemberGroup(Definition *parent,
   m_parent        = parent;
   m_docFile       = docFile;
   m_xrefListItems = 0;
-  doc.prepend("<a name=\""+anchor()+"\"></a>");
   //printf("Member group docs=`%s'\n",doc.data());
 }
 
@@ -109,7 +108,9 @@ void MemberGroup::writeDeclarations(OutputList &ol,
                ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd)
 {
   //printf("MemberGroup::writeDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,doc/*,TRUE,TRUE*/);
+  QCString ldoc = doc;
+  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\"></a>");
+  memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc/*,TRUE,TRUE*/);
 }
 
 void MemberGroup::writePlainDeclarations(OutputList &ol,

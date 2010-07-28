@@ -230,11 +230,8 @@ void DocSets::addContentsItem(bool isDir,
   }
 }
 
-void DocSets::addIndexItem(Definition *context,MemberDef *md,
-                           const char *anchor,const char *word)
+void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
 {
-  (void)anchor;
-  (void)word;
   if (md==0 || context==0) return; // TODO: also index non members...
 
   FileDef *fd      = 0;

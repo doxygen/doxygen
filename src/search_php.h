@@ -279,7 +279,7 @@
 "    $query=$_GET[\"query\"];\n"
 "  }\n"
 "  end_form(preg_replace(\"/[^a-zA-Z0-9\\-\\_\\.]/i\", \" \", $query ));\n"
-"  echo \"&nbsp;\\n<div class=\\\"searchresults\\\">\\n\";\n"
+"  echo \"&#160;\\n<div class=\\\"searchresults\\\">\\n\";\n"
 "  $results = array();\n"
 "  $requiredWords = array();\n"
 "  $forbiddenWords = array();\n"

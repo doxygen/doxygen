@@ -218,6 +218,7 @@ static void initEntry()
   current->virt       = virt;
   current->stat       = gstat;
   current->lang       = language;
+  //printf("*** initEntry() language=%d\n",language);
   //if (!autoGroupStack.isEmpty())
   //{
   //  //printf("Appending group %s\n",autoGroupStack.top()->groupname.data());
@@ -1782,6 +1783,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  // *currentTemplateSpec+='>';
 					  if (--sharpCount<=0)
 					  {
+					    current->bodyLine = yyLineNr;
 					    current->args = "(";
 					    currentArgumentContext = FuncQual;
 					    fullArgString = current->args.copy();
@@ -2153,7 +2155,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
   					}
 <FindMembers>[*&]+			{ 
-                                          current->name += yytext ;  
+  					  if (current->type.stripWhiteSpace().right(1)!=yytext)
+					  {
+                                            current->name += yytext ;  
+					  }
   					  addType( current );
 					}
 <FindMembers,MemberSpec,Function,NextSemi,BitFields,ReadInitializer,OldStyleArgs>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
@@ -2714,6 +2719,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    if (needNewCurrent)
 					    {
 					      current = new Entry(*current);
+					      initEntry();
 					    }
 					    current->name.resize(0);
 					    current->args.resize(0);
@@ -3078,8 +3084,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						}
 						else
 						{
-						  //current->doc.resize(0);
-						  //current->brief.resize(0);
+						  if (!isTypedef)
+						  {
+						    // enabled the next two lines for bug 623424
+						    current->doc.resize(0);
+						    current->brief.resize(0);
+						  }
 						  BEGIN( MemberSpec ) ;
 						}
 					      }
@@ -3142,6 +3152,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current_root->addSubEntry( current ) ;
 					  memspecEntry = current;
 					  current = new Entry(*current);
+					  initEntry();
 					  unput(';');
 					  BEGIN( MemberSpec ) ;
   					}
@@ -3234,6 +3245,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    else // case 2: create a typedef field
 					    {
 					      Entry *varEntry=new Entry;
+					      varEntry->lang = language;
 					      varEntry->protection = current->protection ;
 					      varEntry->mtype = current->mtype;
 					      varEntry->virt = current->virt;
@@ -3288,8 +3300,19 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      current_root->addSubEntry(varEntry);
 					    }
 					  }
-					  if (*yytext==';')
+					  if (*yytext==';') // end of a struct/class ...
 					  {
+					    if (msName.isEmpty() && memspecEntry && (current->section&Entry::COMPOUND_MASK))
+					    { // case where a class/struct has a doc block after it
+					      if (!current->doc.isEmpty())
+					      {
+					        memspecEntry->doc += current->doc;
+					      }
+					      if (!current->brief.isEmpty())
+					      {
+					        memspecEntry->brief += current->brief;
+					      }
+				  	    }
 					    msType.resize(0);
 					    msName.resize(0);
 					    msArgs.resize(0);
@@ -3335,7 +3358,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <ReadBody,ReadNSBody,ReadBodyIntf>.	{ current->program += yytext ; }
 
 <FindMembers>"("/{BN}*"::"*{BN}*({TSCOPE}{BN}*"::")*{TSCOPE}{BN}*")"{BN}*"(" | /* typedef void (A<int>::func_t)(args...) */
-<FindMembers>("("({BN}*"::"*{BN}*{TSCOPE}{BN}*"::")*({BN}*[*&]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[] */
+<FindMembers>("("({BN}*"::"*{BN}*{TSCOPE}{BN}*"::")*({BN}*[*&\^]{BN}*)+)+ {   /* typedef void (A::*ptr_t)(args...) or int (*func(int))[], the ^ is for Obj-C blocks */
   					  if (insidePHP) // reference parameter
 					  {
 					    REJECT
@@ -5446,7 +5469,7 @@ static void handleCommentBlock(const QCString &doc,bool brief)
   int position=0;
   bool needsEntry=FALSE;
   if (docBlockInBody && hideInBodyDocs) return;
-  //printf("parseCommentBlock [%s]\n",doc.data());
+  //printf("parseCommentBlock [%s] brief=%d\n",doc.data(),brief);
   int lineNr = brief ? current->briefLine : current->docLine;   // line of block start
   while (parseCommentBlock(
 	g_thisParser,
@@ -5454,9 +5477,9 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 	doc,        // text
 	yyFileName, // file
 	lineNr,     // line of block start
-	docBlockInBody ? FALSE : brief, 
-	docBlockInBody ? FALSE : docBlockAutoBrief,
-	docBlockInBody,
+	docBlockInBody ? FALSE : brief,               // isBrief
+	docBlockInBody ? FALSE : docBlockAutoBrief,   // isJavaDocStyle
+	docBlockInBody,                               // isInBody
 	protection,
         position,
         needsEntry
@@ -5568,6 +5591,7 @@ static void parseCompounds(Entry *rt)
       //current->reset();
       if (current) delete current;
       current = new Entry;
+      current->lang = language;
       gstat = FALSE;
       int ni=ce->name.findRev("::"); if (ni==-1) ni=0; else ni+=2;
       // set default protection based on the compound type
@@ -5667,6 +5691,7 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     yyLineNr= 1 ; 
     yyFileName = fileName;
     setContext();
+    rt->lang = language;
     msg("Parsing file %s...\n",yyFileName.data());
 
     current_root  = rt ;
@@ -5710,7 +5735,12 @@ static void parseMain(const char *fileName,const char *fileBuf,Entry *rt)
     //}
 
     rt->program.resize(0);
-    delete current; current=0;
+    if (rt->children()->contains(current)==0) 
+      // it could be that current is already added as a child to rt, so we
+      // only delete it if this is not the case. See bug 635317.
+    {
+      delete current; current=0;
+    }
 
     parseCompounds(rt);
 

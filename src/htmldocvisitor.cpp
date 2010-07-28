@@ -200,7 +200,7 @@ void HtmlDocVisitor::visit(DocSymbol *s)
     case DocSymbol::Szlig:   m_t << "&szlig;"; break;
     case DocSymbol::Cedil:   m_t << "&" << s->letter() << "cedil;"; break;
     case DocSymbol::Ring:    m_t << "&" << s->letter() << "ring;"; break;
-    case DocSymbol::Nbsp:    m_t << "&nbsp;"; break;
+    case DocSymbol::Nbsp:    m_t << "&#160;"; break;
     case DocSymbol::AElig:   m_t << "&AElig;"; break;
     case DocSymbol::Aelig:   m_t << "&aelig;"; break;
     default:
@@ -518,7 +518,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   //       e->scope()  ? e->scope()->name().data()  : "<null>",
   //       e->member() ? e->member()->name().data() : "<null>"
   //      );
-  Doxygen::indexList.addIndexItem(e->scope(),e->member(),anchor,e->entry());
+  Doxygen::indexList.addIndexItem(e->scope(),e->member(),e->entry());
 }
 
 void HtmlDocVisitor::visit(DocSimpleSectSep *)
@@ -1361,7 +1361,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     {
       m_t << "in,out";
     }
-    m_t << "]</tt>&nbsp;";
+    m_t << "]</tt>&#160;";
   }
   m_t << "</td><td valign=\"top\"><em>";
   //QStrListIterator li(pl->parameters());
@@ -1381,7 +1381,7 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
       visit((DocLinkedWord*)param); 
     }
   }
-  m_t << "</em>&nbsp;</td><td>";
+  m_t << "</em>&#160;</td><td>";
 }
 
 void HtmlDocVisitor::visitPost(DocParamList *)

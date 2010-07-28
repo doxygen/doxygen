@@ -509,7 +509,7 @@ void FTVHelp::generateLink(FTextStream &t,FTVNode *n)
     t << "</a>";
     if (!n->ref.isEmpty())
     {
-      t << "&nbsp;[external]";
+      t << "&#160;[external]";
     }
   }
 }

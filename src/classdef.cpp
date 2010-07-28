@@ -296,6 +296,7 @@ QCString ClassDef::displayName() const
   {
     n="<"+n.left(n.length()-2)+">";
   }
+  //printf("ClassDef::displayName()=%s\n",n.data());
   return n;
 }
 
@@ -780,7 +781,12 @@ static void searchTemplateSpecs(/*in*/  Definition *d,
     }
     ClassDef *cd=(ClassDef *)d;
     if (!name.isEmpty()) name+="::";
-    name+=d->localName();
+    QCString clName = d->localName();
+    if (clName.right(2)=="-g" || clName.right(2)=="-p")
+    {
+      clName = clName.left(clName.length()-2);
+    }
+    name+=clName;
     bool isSpecialization = d->localName().find('<')!=-1;
     if (cd->templateArguments()) 
     {
@@ -1744,9 +1750,9 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (md->isObjCMethod())
             {
               if (md->isStatic())
-                ol.writeString("+&nbsp;</td><td>");
+                ol.writeString("+&#160;</td><td>");
               else
-                ol.writeString("-&nbsp;</td><td>");
+                ol.writeString("-&#160;</td><td>");
             }
             else
               ol.writeString("</td><td>");
@@ -1793,9 +1799,9 @@ void ClassDef::writeMemberList(OutputList &ol)
             if (md->isObjCMethod())
             {
               if (md->isStatic())
-                ol.writeString("+&nbsp;</td><td>");
+                ol.writeString("+&#160;</td><td>");
               else
-                ol.writeString("-&nbsp;</td><td>");
+                ol.writeString("-&#160;</td><td>");
             }
             else
               ol.writeString("</td><td>");
@@ -2016,6 +2022,10 @@ void ClassDef::writeDeclaration(OutputList &ol,MemberDef *md,bool inGroup)
   QCString cn=name().right(name().length()-ri-2);
   if (!cn.isEmpty() && cn.at(0)!='@' && md)
   { 
+    if (cn.right(2)=="-p" || cn.right(2)=="-g")
+    {
+      cn = cn.left(cn.length()-2);
+    }
     ol.docify(" ");
     if (isLinkable())
     {
@@ -3088,6 +3098,7 @@ QCString ClassDef::qualifiedNameWithTemplateParameters(
   {
     clName = clName.left(clName.length()-2);
   }
+  //printf("m_impl->lang=%d clName=%s\n",m_impl->lang,clName.data());
   scName+=clName;
   ArgumentList *al=0;
   if (templateArguments())
@@ -3239,15 +3250,6 @@ void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrie
   MemberList *ml = createMemberList(lt);
   ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
   ml->append(md);
-
-#if 0
-  if (( isBrief && sortBriefDocs ) ||
-      (!isBrief && sortMemberDocs)
-     )
-    ml->inSort(md);
-  else
-    ml->append(md);
-#endif
 
   // for members in the declaration lists we set the section, needed for member grouping
   if ((ml->listType()&MemberList::detailedLists)==0) md->setSectionList(this,ml);

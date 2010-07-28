@@ -321,6 +321,12 @@ class DotGroupCollaboration
 class DotRunner
 {
   public:
+    struct CleanupItem
+    {
+      QCString path;
+      QCString file;
+    };
+
     /** Creates a runner for a dot \a file. */
     DotRunner(const QCString &file,const QCString &fontPath,bool checkResult,
         const QCString &imageName = QCString());
@@ -336,6 +342,8 @@ class DotRunner
 
     /** Runs dot for all jobs added. */
     bool run();
+    CleanupItem cleanup() const { return m_cleanupItem; }
+
   private:
     QList<QCString> m_jobs;
     QCString m_postArgs;
@@ -345,6 +353,7 @@ class DotRunner
     bool m_checkResult;
     QCString m_imageName;
     bool m_cleanUp;
+    CleanupItem m_cleanupItem;
 };
 
 /** @brief Helper class to insert a set of map file into an output file */
@@ -388,9 +397,11 @@ class DotWorkerThread : public QThread
   public:
     DotWorkerThread(int id,DotRunnerQueue *queue);
     void run();
+    void cleanup();
   private:
     int m_id;
     DotRunnerQueue *m_queue;
+    QList<DotRunner::CleanupItem> m_cleanupItems;
 };
 
 /** @brief singleton that manages dot relation actions */

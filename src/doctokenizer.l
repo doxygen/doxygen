@@ -305,7 +305,7 @@ HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)*
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
 VERBATIM  "verbatim"{BLANK}*
-SPCMD1    {CMD}([a-z_A-Z0-9]+|{VERBATIM})
+SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM})
 SPCMD2    {CMD}[\\@<>&$#%~"]
 SPCMD3    {CMD}form#[0-9]+
 INOUT	  "in"|"out"|("in"{BLANK}*","{BLANK}*"out")|("out"{BLANK}*","{BLANK}*"in")

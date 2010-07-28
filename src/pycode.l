@@ -1336,6 +1336,10 @@ TARGET           ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBUT
 				 BEGIN(Body);
                                }
 
+<*>[ \t]+                      {
+  		                 codify(yytext);
+				 BEGIN(Body);					
+  			       }
 <*>.                           {
   		                 codify(yytext);
 				 // printf("[pycode] '%s' [ state %d ]  [line %d] no match\n",

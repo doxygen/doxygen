@@ -150,6 +150,10 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
           if (localNames)
           {
             cname = cd->localName();
+            if (cname.right(2)=="-p" || cname.right(2)=="-g")
+            {
+              cname = cname.left(cname.length()-2);
+            }
           }
           else
           {

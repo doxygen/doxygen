@@ -535,9 +535,16 @@ bool DotRunner::run()
   QCString dotArgs;
   QListIterator<QCString> li(m_jobs);
   QCString *s;
+  QCString file      = m_file;
+  QCString path      = m_path;
+  QCString imageName = m_imageName;
+  QCString postCmd   = m_postCmd;
+  QCString postArgs  = m_postArgs;
+  bool checkResult   = m_checkResult;
+  bool cleanUp       = m_cleanUp;
   if (multiTargets)
   {
-    dotArgs="\""+m_file+"\"";
+    dotArgs="\""+file+"\"";
     for (li.toFirst();(s=li.current());++li)
     {
       dotArgs+=' ';
@@ -552,23 +559,25 @@ bool DotRunner::run()
   {
     for (li.toFirst();(s=li.current());++li)
     {
-      dotArgs="\""+m_file+"\" "+*s;
+      dotArgs="\""+file+"\" "+*s;
       if ((exitCode=portable_system(dotExe,dotArgs,FALSE))!=0)
       {
         goto error;
       }
     }
   }
-  if (!m_postCmd.isEmpty() && portable_system(m_postCmd,m_postArgs)!=0)
+  if (!postCmd.isEmpty() && portable_system(postCmd,postArgs)!=0)
   {
     err("error: Problems running '%s' as a post-processing step for dot output\n",m_postCmd.data());
     return FALSE;
   }
-  if (m_checkResult) checkDotResult(m_imageName);
-  if (m_cleanUp) 
+  if (checkResult) checkDotResult(imageName);
+  if (cleanUp) 
   {
     //printf("removing dot file %s\n",m_file.data());
-    QDir(m_path).remove(m_file);
+    //QDir(path).remove(file);
+    m_cleanupItem.file = file;
+    m_cleanupItem.path = path;
   }
   return TRUE;
 error:
@@ -721,6 +730,7 @@ uint DotRunnerQueue::count() const
 DotWorkerThread::DotWorkerThread(int id,DotRunnerQueue *queue)
       : m_id(id), m_queue(queue)
 {
+  m_cleanupItems.setAutoDelete(TRUE);
 }
 
 void DotWorkerThread::run()
@@ -729,6 +739,21 @@ void DotWorkerThread::run()
   while ((runner=m_queue->dequeue()))
   {
     runner->run();
+    DotRunner::CleanupItem cleanup = runner->cleanup();
+    if (!cleanup.file.isEmpty())
+    {
+      m_cleanupItems.append(new DotRunner::CleanupItem(cleanup));
+    }
+  }
+}
+
+void DotWorkerThread::cleanup()
+{
+  QListIterator<DotRunner::CleanupItem> it(m_cleanupItems);
+  DotRunner::CleanupItem *ci;
+  for (;(ci=it.current());++it)
+  {
+    QDir(ci->path).remove(ci->file);
   }
 }
 
@@ -864,6 +889,11 @@ bool DotManager::run()
   for (i=0;i<(int)m_workers.count();i++)
   {
     m_workers.at(i)->wait();
+  }
+  // clean up dot files from main thread
+  for (i=0;i<(int)m_workers.count();i++)
+  {
+    m_workers.at(i)->cleanup();
   }
   portable_sysTimerStop();
   if (setPath)
@@ -3182,6 +3212,7 @@ void generateGraphLegend(const char *path)
   {
     removeDotGraph(absDotName);
   }
+  Doxygen::indexList.addImageFile(imgName);
 
 }
 

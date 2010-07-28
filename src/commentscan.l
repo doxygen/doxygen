@@ -932,6 +932,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>"<!--"				{ 
   					  BEGIN(HtmlComment);
 					}
+<Comment>{B}*{CMD}"endinternal"{B}*	{
+  					  warn(yyFileName,yyLineNr,
+                                               "warning: found \\endinternal without matching \\internal"
+                                              );
+  					}
 <Comment>{B}*{CMD}[a-z_A-Z]+{B}*	{ // potentially interesting command
                                           // the {B}* in the front was added for bug620924
   					  QCString cmdName = QCString(yytext).stripWhiteSpace().data()+1;
@@ -1770,6 +1775,9 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 					    BEGIN(Comment);
 					  }
   					}
+<SkipInternal>[@\\]"endinternal"[ \t]*  {
+					  BEGIN(Comment);
+					}
 <SkipInternal>[^ \\@\n]+		{ // skip non-special characters
   					}
 <SkipInternal>.				{ // any other character
@@ -2372,7 +2380,7 @@ static bool handleInternal(const QCString &)
   }
   else
   {
-    addOutput("\\internal "); 
+    //addOutput("\\internal "); 
   }
   return FALSE;
 }

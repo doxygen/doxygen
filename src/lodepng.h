@@ -1038,8 +1038,8 @@ in the Decoder's interface in the C++ version.
 
 getBpp():          bits per pixel of the PNG image
 getChannels():     amount of color channels of the PNG image
-isGreyscaleType(): it's color type 0 or 4
-isAlphaType():     it's color type 2 or 6
+isGreyscaleType(): its color type 0 or 4
+isAlphaType():     its color type 2 or 6
 
 These values are calculated out of color type and bit depth of InfoColor.
 

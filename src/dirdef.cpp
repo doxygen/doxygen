@@ -434,7 +434,7 @@ void DirDef::writePathFragment(OutputList &ol) const
   if (m_parent)
   {
     m_parent->writePathFragment(ol);
-    ol.writeString("&nbsp;/&nbsp;");
+    ol.writeString("&#160;/&#160;");
   }
   ol.writeObjectLink(getReference(),getOutputFileBase(),0,shortName());
 }
@@ -675,7 +675,7 @@ static void writePartialDirPath(OutputList &ol,const DirDef *root,const DirDef *
   if (target->parent()!=root) 
   {
     writePartialDirPath(ol,root,target->parent());
-    ol.writeString("&nbsp;/&nbsp;");
+    ol.writeString("&#160;/&#160;");
   }
   ol.writeObjectLink(target->getReference(),target->getOutputFileBase(),0,target->shortName());
 }
@@ -685,7 +685,7 @@ static void writePartialFilePath(OutputList &ol,const DirDef *root,const FileDef
   if (fd->getDirDef() && fd->getDirDef()!=root)
   {
     writePartialDirPath(ol,root,fd->getDirDef());
-    ol.writeString("&nbsp;/&nbsp;");
+    ol.writeString("&#160;/&#160;");
   }
   if (fd->isLinkable())
   {

@@ -266,7 +266,7 @@ static void endQuickIndexItem(OutputList &ol)
 
 static QCString fixSpaces(const QCString &s)
 {
-  return substitute(s," ","&nbsp;");
+  return substitute(s," ","&#160;");
 }
 
 
@@ -1248,7 +1248,7 @@ void writeAlphabeticalClassList(OutputList &ol)
   {
     if (indexLetterUsed[l])
     {
-      if (headerItems) alphaLinks += "&nbsp;|&nbsp;";
+      if (headerItems) alphaLinks += "&#160;|&#160;";
       headerItems++;
       alphaLinks += (QCString)"<a class=\"qindex\" href=\"#letter_" + 
                     (char)l + "\">" + 
@@ -1362,9 +1362,9 @@ void writeAlphabeticalClassList(OutputList &ol)
           ol.writeString("\"></a>");
           ol.writeString("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">"
                            "<tr>"
-                             "<td><div class=\"ah\">&nbsp;&nbsp;"); 
+                             "<td><div class=\"ah\">&#160;&#160;"); 
           ol.writeString(s);
-          ol.writeString(         "&nbsp;&nbsp;</div>"
+          ol.writeString(         "&#160;&#160;</div>"
                              "</td>"
                            "</tr>"
                          "</table>\n");
@@ -1385,6 +1385,10 @@ void writeAlphabeticalClassList(OutputList &ol)
         else
         {
           nsDispName=namesp.copy();
+        }
+        if (cname.right(2)=="-g" || cname.right(2)=="-p")
+        {
+          cname = cname.left(cname.length()-2);
         }
 
         ol.writeObjectLink(cd->getReference(),
@@ -1853,6 +1857,7 @@ void writeQuickMemberIndex(OutputList &ol,
   for (i=33;i<127;i++)
   {
     char is[2];is[0]=(char)i;is[1]='\0';
+    QCString ci = letterToLabel((char)i);
     if (charUsed[i].count()>0)
     {
       QCString anchor;
@@ -1863,7 +1868,7 @@ void writeQuickMemberIndex(OutputList &ol,
         anchor=fullName+extension+"#index_";
       else 
         anchor=fullName+QCString().sprintf("_0x%02x",i)+extension+"#index_";
-      startQuickIndexItem(ol,anchor+is,i==page,TRUE,first);
+      startQuickIndexItem(ol,anchor+ci,i==page,TRUE,first);
       ol.writeString(is);
       endQuickIndexItem(ol);
       first=FALSE;
@@ -1978,7 +1983,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
       {
         // hack to work around a mozilla bug, which refuses to switch to
         // normal lists otherwise
-        ol.writeString("&nbsp;");
+        ol.writeString("&#160;");
       }
       //ol.newParagraph();  // FIXME:PARA
       writeMemberList(ol,quickIndex,
@@ -2109,7 +2114,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
       {
         // hack to work around a mozilla bug, which refuses to switch to
         // normal lists otherwise
-        ol.writeString("&nbsp;");
+        ol.writeString("&#160;");
       }
       //ol.newParagraph();  // FIXME:PARA
       //writeFileMemberList(ol,quickIndex,hl,page);
@@ -2237,7 +2242,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
       {
         // hack to work around a mozilla bug, which refuses to switch to
         // normal lists otherwise
-        ol.writeString("&nbsp;");
+        ol.writeString("&#160;");
       }
       //ol.newParagraph(); // FIXME:PARA
 
@@ -2772,7 +2777,7 @@ void writeJavascriptSearchIndex()
                     if (fd==0) fd = md->getFileDef();
                     if (fd)
                     {
-                      if (!prefix.isEmpty()) prefix+=":&nbsp;";
+                      if (!prefix.isEmpty()) prefix+=":&#160;";
                       t << prefix << convertToXML(fd->localName());
                       found = TRUE;
                     }
@@ -2916,7 +2921,7 @@ void writeSearchCategories(FTextStream &t)
     {
       t << "<a class=\"SelectItem\" href=\"javascript:void(0)\" "
         << "onclick=\"searchBox.OnSelectItem(" << j << ")\">"
-        << "<span class=\"SelectionMark\">&nbsp;</span>"
+        << "<span class=\"SelectionMark\">&#160;</span>"
         << convertToXML(map.categoryLabel[i])
         << "</a>";
       j++;

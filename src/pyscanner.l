@@ -331,11 +331,11 @@ static void handleCommentBlock(const QCString &doc,bool brief)
 
 }
 
-static void endOfDef()
+static void endOfDef(int correction=0)
 {
   if (bodyEntry)
   {
-    bodyEntry->endBodyLine  = yyLineNr;
+    bodyEntry->endBodyLine  = yyLineNr-correction;
     bodyEntry = 0;
   }
   newEntry();
@@ -377,6 +377,34 @@ static void initSpecialBlock()
   docBrief = TRUE;
   docBlock.resize(0);
   startCommentBlock(TRUE);
+}
+
+static void searchFoundDef()
+{
+  current->fileName  = yyFileName;
+  current->startLine = yyLineNr;
+  current->bodyLine  = yyLineNr;
+  current->section = Entry::FUNCTION_SEC;
+  current->protection = protection = Public;
+  current->lang = SrcLangExt_Python;
+  current->virt = Normal;
+  current->stat = FALSE;
+  current->mtype = mtype = Method;
+  current->type.resize(0);
+  current->name.resize(0);
+  current->args.resize(0);
+  current->argList->clear();
+  g_packageCommentAllowed = FALSE;
+}
+
+static void searchFoundClass()
+{
+  current->section = Entry::CLASS_SEC;
+  current->argList->clear();
+  current->type += "class" ;
+  current->fileName  = yyFileName;
+  current->bodyLine  = yyLineNr;
+  g_packageCommentAllowed = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -438,9 +466,9 @@ STRINGLITERAL     {STRINGPREFIX}?( {SHORTSTRING} | {LONGSTRING})
 STRINGPREFIX      ("r"|"u"|"ur"|"R"|"U"|"UR"|"Ur"|"uR")
 KEYWORD           ("lambda"|"import"|"class"|"assert"|"as"|"from"|"global"|"def"|"True"|"False")
 FLOWKW            ("or"|"and"|"is"|"not"|"print"|"for"|"in"|"if"|"try"|"except"|"yield"|"raise"|"break"|"continue"|"pass"|"if"|"return"|"while"|"elif"|"else"|"finally")
-POUNDCOMMENT      {B}"#"[^#\n][^\n]* 
+POUNDCOMMENT      "#"[^#\n][^\n]* 
 
-STARTDOCSYMS      ^{B}"##"/[^#]
+STARTDOCSYMS      "##"
 
 %option noyywrap
 
@@ -493,36 +521,23 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 
 <Search>{
 
-    ^{B}"def"{BB}       |
-    "def"{BB}           { // start of a function/method definition
+    ^{B}"def"{BB}       { // start of a function/method definition with indent
       			  g_indent=computeIndent(yytext);
-			  current->fileName  = yyFileName;
-			  current->startLine = yyLineNr;
-			  current->bodyLine  = yyLineNr;
-			  current->section = Entry::FUNCTION_SEC;
-			  current->protection = protection = Public;
-			  current->lang = SrcLangExt_Python;
-			  current->virt = Normal;
-			  current->stat = FALSE;
-			  current->mtype = mtype = Method;
-			  current->type.resize(0);
-			  current->name.resize(0);
-			  current->args.resize(0);
-			  current->argList->clear();
-			  g_packageCommentAllowed = FALSE;
+			  searchFoundDef();
 			  BEGIN( FunctionDec );
-                       }
+      			}
+    "def"{BB}           { // start of a function/method definition
+			  searchFoundDef();
+			  BEGIN( FunctionDec );
+                        }
 
-     ^{B}"class"{BB}	|
-     "class"{BB}        {  // start of a class definition
+     ^{B}"class"{BB}	{ // start of a class definition with indent
       			  g_indent=computeIndent(yytext);
-			  current->section = Entry::CLASS_SEC;
-			  current->argList->clear();
-			  current->type += "class" ;
-			  current->fileName  = yyFileName;
-			  current->bodyLine  = yyLineNr;
-			  g_packageCommentAllowed = FALSE;
-
+			  searchFoundClass();
+			  BEGIN( ClassDec ) ;
+       			}
+     "class"{BB}        {  // start of a class definition
+			  searchFoundClass();
 			  BEGIN( ClassDec ) ;
                        }
      ^{B}"from"{BB}    |
@@ -578,11 +593,6 @@ STARTDOCSYMS      ^{B}"##"/[^#]
     ^{BB}	      {
       			g_curIndent=computeIndent(yytext);
                       }
-    [^\n]             { // any other character...
-                        // This is the major default
-                        // that should catch everything
-                        // else in Body.
-                      }
 
     {NEWLINE}+        { // new line
                         lineCount();
@@ -598,10 +608,16 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			BEGIN(TripleComment);
                       }
 
-    {STARTDOCSYMS}    {  // start of a special comment
+    {STARTDOCSYMS}/[^#]    {  // start of a special comment
+      			g_curIndent=computeIndent(yytext);
 			g_packageCommentAllowed = FALSE;
 			initSpecialBlock();
 			BEGIN(SpecialComment);
+                      }
+    [^\n]             { // any other character...
+                        // This is the major default
+                        // that should catch everything
+                        // else in Body.
                       }
 }
 
@@ -711,7 +727,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			BEGIN(TripleComment);
                       }
 
-    {STARTDOCSYMS}    {  // start of a special comment
+    {STARTDOCSYMS}/[^#]    {  // start of a special comment
 			initSpecialBlock();
 			BEGIN(SpecialComment);
                       }
@@ -728,6 +744,8 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                         BEGIN( DoubleQuoteString );
                       }
     \n		      { yyLineNr++; }
+    {IDENTIFIER}      // identifiers
+    [^'"\.#a-z_A-Z]+  // other uninteresting stuff
     .                 // anything else
 }
 
@@ -742,7 +760,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			    unput(yytext[i]);
 			  }
 			  endOfDef();
-			  YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                           BEGIN(Search);
 			}
 			else
@@ -760,7 +778,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			    unput(yytext[i]);
 			  }
 			  endOfDef();
-			  YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                           BEGIN(Search);
 			}
 			else
@@ -782,7 +800,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                         if (g_curIndent<=g_indent) 
 			  // jumped out of the function
 			{
-			  endOfDef();
+			  endOfDef(1);
                           BEGIN(Search);
 			}
       		      }
@@ -830,7 +848,7 @@ STARTDOCSYMS      ^{B}"##"/[^#]
 			BEGIN(TripleComment);
                       }
 
-    {STARTDOCSYMS}    {  // start of a special comment
+    {STARTDOCSYMS}/[^#]  {  // start of a special comment
 			initSpecialBlock();
 			BEGIN(SpecialComment);
                       }
@@ -931,14 +949,14 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                         yyLineNr++;
 			endOfDef();
 			g_hideClassDocs = FALSE;
-			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
-    \n/"##"           {  // start of a special comment at indent 0
+    \n/"##"[^#]       {  // start of a special comment at indent 0
                         yyLineNr++;
 			endOfDef();
 			g_hideClassDocs = FALSE;
-			YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
                         BEGIN(Search);
                       }
     ^{BB}/\n	      { // skip empty line
@@ -952,12 +970,12 @@ STARTDOCSYMS      ^{B}"##"/[^#]
                         g_curIndent=computeIndent(yytext);
 			//fprintf(stderr,"g_curIndent=%d g_indent=%d\n",g_curIndent,g_indent);
                         if (g_curIndent<=g_indent) 
-			  // jumped out of the class
+			  // jumped out of the class/method
 			{
-			  endOfDef();
+			  endOfDef(1);
 			  g_indent=g_curIndent;
 			  // make sure the next rule matches ^...
-			  YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
 			  g_hideClassDocs = FALSE;
                           BEGIN(Search);
 			}

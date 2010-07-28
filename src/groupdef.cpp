@@ -867,7 +867,7 @@ void GroupDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  Doxygen::indexList.addIndexItem(this,0,0,title);
+  Doxygen::indexList.addIndexItem(this,0,title);
 
   if (!Config_getString("GENERATE_TAGFILE").isEmpty()) 
   {

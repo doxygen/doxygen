@@ -20,6 +20,7 @@
 #define LANG_SI
 #define LANG_CN
 #define LANG_NO
+#define LANG_MK
 #define LANG_BR
 #define LANG_DK
 #define LANG_SK
@@ -32,6 +33,7 @@
 #define LANG_ZA
 #define LANG_AR
 #define LANG_FA
+#define LANG_SC
 #define LANG_VI
 #define LANG_TR
 #define LANG_EO
