@@ -244,7 +244,7 @@
 "        }\n"
 "        else\n"
 "        {\n"
-"          node.innerHTML='&nbsp;';\n"
+"          node.innerHTML='&#160;';\n"
 "        }\n"
 "        j++;\n"
 "      }\n"

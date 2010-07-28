@@ -474,6 +474,11 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
       m_impl->brief->file = briefFile;
       m_impl->brief->line = briefLine;
     }
+    else
+    {
+      m_impl->brief->file = briefFile;
+      m_impl->brief->line = 1;
+    }
   }
 }
 
@@ -790,8 +795,8 @@ void Definition::writeSourceDef(OutputList &ol,const char *)
 
 void Definition::setBodySegment(int bls,int ble) 
 {
-  makeResident();
   //printf("setBodySegment(%d,%d) for %s\n",bls,ble,name().data());
+  makeResident();
   if (m_impl->body==0) m_impl->body = new BodyInfo;
   m_impl->body->startLine=bls; 
   m_impl->body->endLine=ble; 
@@ -1289,7 +1294,12 @@ void Definition::writePathFragment(OutputList &ol) const
     }
     else if (definitionType()==Definition::TypeClass)
     {
-      ol.writeObjectLink(getReference(),getOutputFileBase(),0,((const ClassDef*)this)->displayName());
+      QCString name = m_impl->localName;
+      if (name.right(2)=="-p" || name.right(2)=="-g")
+      {
+        name = name.left(name.length()-2);
+      }
+      ol.writeObjectLink(getReference(),getOutputFileBase(),0,name);
     }
     else
     {

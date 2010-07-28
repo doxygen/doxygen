@@ -952,7 +952,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   FTextStream t(&file);
   t << "<hr class=\"footer\"/><address class=\"footer\"><small>\n";
   t << theTranslator->trGeneratedAt( "$datetime", "$projectname" );
-  t << "&nbsp;<a href=\"http://www.doxygen.org/index.html\">"
+  t << "&#160;<a href=\"http://www.doxygen.org/index.html\">"
     << "<img class=\"footer\" src=\"$relpath$doxygen.png\" alt=\"doxygen\"/>"
     << "</a> $doxygenversion";
   t << "</small></address>\n"
@@ -1144,7 +1144,7 @@ static void writePageFooter(FTextStream &t,const QCString &lastTitle,
     {
       t << theTranslator->trGeneratedBy();
     }
-    t << "&nbsp;" << endl << "<a href=\"http://www.doxygen.org/index.html\">";
+    t << "&#160;" << endl << "<a href=\"http://www.doxygen.org/index.html\">";
     t << endl << "<img class=\"footer\" src=\"" << relPath << "doxygen.png\" alt=\"doxygen\"/>"
       << "</a> " << versionString << " ";
     t << "</small></address>";
@@ -1502,7 +1502,7 @@ void HtmlGenerator::codify(const char *str)
                    break;
         case '"':  t << "&quot;"; col++;
                    break;
-        //case ' ':  t << "&nbsp;"; col++;
+        //case ' ':  t << "&#160;"; col++;
         //           break;
         case '\\':
                    if (*p=='<')
@@ -1531,7 +1531,8 @@ void HtmlGenerator::writeChar(char c)
 
 //--- helper function for dynamic sections -------------------------
 
-static void startSectionHeader(FTextStream &t,int sectionCount)
+static void startSectionHeader(FTextStream &t,
+                               const QCString &relPath,int sectionCount)
 {
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
@@ -1540,7 +1541,8 @@ static void startSectionHeader(FTextStream &t,int sectionCount)
          "onclick=\"return toggleVisibility(this)\" "
          "class=\"dynheader closed\" "
          "style=\"cursor:pointer;\">" << endl;
-    t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\"closed.png\"/> ";
+    t << "  <img id=\"dynsection-" << sectionCount << "-trigger\" src=\"" 
+      << relPath << "closed.png\"/> ";
   }
   else
   {
@@ -1597,7 +1599,7 @@ static void endSectionContent(FTextStream &t)
 
 void HtmlGenerator::startClassDiagram()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
@@ -1702,7 +1704,7 @@ void HtmlGenerator::insertMemberAlign(bool templ)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
     QCString className = templ ? "memTemplItemRight" : "memItemRight";
-    t << "&nbsp;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
+    t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">"; 
   }
 }
 
@@ -1711,7 +1713,7 @@ void HtmlGenerator::startMemberDescription()
   DBG_HTML(t << "<!-- startMemberDescription -->" << endl)
   if (Config_getBool("HTML_ALIGN_MEMBERS"))
   {
-    t << "<tr><td class=\"mdescLeft\">&nbsp;</td><td class=\"mdescRight\">"; 
+    t << "<tr><td class=\"mdescLeft\">&#160;</td><td class=\"mdescRight\">"; 
   }
   else
   {
@@ -1791,7 +1793,7 @@ void HtmlGenerator::startMemberSubtitle()
 void HtmlGenerator::endMemberSubtitle()
 {
   DBG_HTML(t << "<!-- endMemberSubtitle -->" << endl)
-  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br/><br/></td></tr>" << endl;
+  if (Config_getBool("HTML_ALIGN_MEMBERS")) t << "<br/></td></tr>" << endl;
 }
 
 void HtmlGenerator::startIndexList() 
@@ -1918,7 +1920,7 @@ void HtmlGenerator::startParameterType(bool first,const char *key)
 void HtmlGenerator::endParameterType()
 {
   DBG_HTML(t << "<!-- endParameterType -->" << endl;)
-  t << "&nbsp;</td>" << endl;
+  t << "&#160;</td>" << endl;
 }
 
 void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
@@ -1936,13 +1938,13 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
     {
       t << "</td>" << endl;
       t << "          <td>";
-      if (closeBracket) t << "&nbsp;)";
-      t << "&nbsp;</td>" << endl;
+      if (closeBracket) t << "&#160;)";
+      t << "&#160;</td>" << endl;
       t << "          <td>";
     }
     else
     {
-      t << "</td><td>&nbsp;</td>" << endl;
+      t << "</td><td>&#160;</td>" << endl;
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
       t << "          <td></td>" << endl;
@@ -1982,7 +1984,7 @@ void HtmlGenerator::endMemberDoc(bool hasArgs)
 
 void HtmlGenerator::startDotGraph()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDotGraph(const DotClassGraph &g)
@@ -2008,7 +2010,7 @@ void HtmlGenerator::endDotGraph(const DotClassGraph &g)
 
 void HtmlGenerator::startInclDepGraph()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
@@ -2026,7 +2028,7 @@ void HtmlGenerator::endInclDepGraph(const DotInclDepGraph &g)
 
 void HtmlGenerator::startGroupCollaboration()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
@@ -2044,7 +2046,7 @@ void HtmlGenerator::endGroupCollaboration(const DotGroupCollaboration &g)
 
 void HtmlGenerator::startCallGraph()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endCallGraph(const DotCallGraph &g)
@@ -2062,7 +2064,7 @@ void HtmlGenerator::endCallGraph(const DotCallGraph &g)
 
 void HtmlGenerator::startDirDepGraph()
 {
-  startSectionHeader(t,m_sectionCount);
+  startSectionHeader(t,relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDirDepGraph(const DotDirDeps &g)
@@ -2133,7 +2135,7 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   int i;
   for (i=0;i<n;i++)
   {
-    t << "&nbsp;";
+    t << "&#160;";
   }
 }
 
@@ -2254,7 +2256,7 @@ static void endQuickIndexItem(FTextStream &t)
 
 static QCString fixSpaces(const QCString &s)
 {
-  return substitute(s," ","&nbsp;");
+  return substitute(s," ","&#160;");
 }
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
@@ -2353,7 +2355,7 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
           t << "      <form action=\"" << relPath << "search.php\" method=\"get\">\n";
           t << "        <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n";
           t << "          <tr>\n";
-          t << "            <td><label>&nbsp;" << searchFor << "&nbsp;</label></td>\n";
+          t << "            <td><label>&#160;" << searchFor << "&#160;</label></td>\n";
           if (!highlightSearch)
           {
             t << "            <td><input type=\"text\" name=\"query\" value=\"\" size=\"20\" accesskey=\"s\"/></td>\n";
@@ -2543,7 +2545,7 @@ void HtmlGenerator::writeSearchPage()
     }
     else
     {
-      t << "&nbsp;\n<div class=\"qindex\">\n";
+      t << "&#160;\n<div class=\"qindex\">\n";
       t << "  <form class=\"search\" action=\"search.php\" "
         << "method=\"get\">\n";
     }
@@ -2684,7 +2686,7 @@ void HtmlGenerator::endConstraintParam()
 
 void HtmlGenerator::startConstraintType()
 {
-  t << "<td>&nbsp;:</td><td valign=\"top\"><em>";
+  t << "<td>&#160;:</td><td valign=\"top\"><em>";
 }
 
 void HtmlGenerator::endConstraintType()
@@ -2694,7 +2696,7 @@ void HtmlGenerator::endConstraintType()
 
 void HtmlGenerator::startConstraintDocs()
 {
-  t << "<td>&nbsp;";
+  t << "<td>&#160;";
 }
 
 void HtmlGenerator::endConstraintDocs()

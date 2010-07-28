@@ -74,6 +74,7 @@ documentation:
 \refitem cmdenddot \\enddot
 \refitem cmdendhtmlonly \\endhtmlonly
 \refitem cmdendif \\endif
+\refitem cmdendinternal \\endinternal
 \refitem cmdendlatexonly \\endlatexonly
 \refitem cmdendlink \\endlink
 \refitem cmdendmanonly \\endmanonly
@@ -381,6 +382,15 @@ Structural indicators
   \sa section \ref cmdinclude "\\include".
 
 <hr>
+\section cmdendinternal \\endinternal
+
+  \addindex \\endinternal
+  This command ends a documentation fragment that was started with a
+  \ref cmdinternal "\\internal" command. The text between \c \\internal and 
+  \c \\endinternal will only be visible 
+  if \ref cfg_internal_docs "INTERNAL_DOCS" is set to YES.
+
+<hr>
 \section cmdextends \\extends <name>
 
   \addindex \\extends
@@ -549,18 +559,18 @@ Structural indicators
 \section cmdinternal \\internal
   
   \addindex \\internal
-  This command writes the message `For internal use only' to the output and
-  all text \e after an \c \\internal command until the end of the
-  comment block or the end of the section (whichever comes first) is 
-  marked as "internal". 
+  This command starts a documentation fragment that is meant for internal
+  use only. The fragment naturally ends at the end of the comment block. 
+  You can also force the internal section to end earlier using the 
+  \ref cmdendinternal "\\endinternal" command.
 
   If the \\internal command is put inside a section 
-  (see for example \ref cmdsection "\\section") all subsection after the 
+  (see for example \ref cmdsection "\\section") all subsections after the 
   command are considered to be internal as well. Only a new section at the 
-  same level will be visible again. 
+  same level will end the fragment that is considered internal.
 
   You can use \ref cfg_internal_docs "INTERNAL_DOCS" in the config file
-  to show or hide the internal documentation.
+  to show (\c YES) or hide (\c NO) the internal documentation.
 
 <hr>
 \section cmdmainpage \\mainpage [(title)]

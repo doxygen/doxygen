@@ -84,6 +84,7 @@ static QCString           g_defName;
 static QCString           g_defText;
 static QCString           g_defLitText;
 static QCString           g_defArgsStr;
+static QCString           g_defExtraSpacing;
 static bool               g_defVarArgs;
 static int                g_level;
 static int                g_lastCContext;
@@ -944,6 +945,34 @@ QCString removeIdsAndMarkers(const char *s)
 	result+="0L";
 	p++;
 	while ((c=*p) && isId(c)) p++;
+	if (*p=='(') // undefined function macro
+	{
+	  p++;
+	  int count=1;
+	  while ((c=*p++))
+	  {
+	    if (c=='(') count++;
+	    else if (c==')')
+	    {
+	      count--;
+	      if (count==0) break;
+	    }
+	    else if (c=='/')
+	    {
+	      char pc=c;
+	      c=*++p;
+	      if (c=='*') // start of C comment
+	      {
+		while (*p && !(pc=='*' && c=='/')) // search end of comment
+		{
+		  pc=c;
+		  c=*++p;
+		}
+		p++;
+	      }
+	    }
+	  }
+	}
       }
       else if (c=='/') // skip C comments
       {
@@ -1201,6 +1230,13 @@ static void readIncludeFile(const QCString &inc)
     // extract include path+name
     QCString incFileName=inc.mid(s,i-s).stripWhiteSpace();
 
+    QCString dosExt = incFileName.right(4);
+    if (dosExt==".exe" || dosExt==".dll" || dosExt==".tbl")
+    {
+      // skip imported binary files (e.g. M$ type libraries)
+      return;
+    }
+
     QCString oldFileName = g_yyFileName;
     FileDef *oldFileDef  = g_yyFileDef;
     int oldLineNr        = g_yyLineNr;
@@ -1254,8 +1290,14 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef)
       {
 	bool ambig;
+	if (QDir::isRelativePath(incFileName))
+	{
+	  QString absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
+	  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
+	  incFileName = absPath;
+	}
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
-	//printf("findFileDef(%s)=%p\n",incFileName.data(),fd);
+	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);
 	// add include dependency to the file in which the #include was found
 	oldFileDef->addIncludeDependency(fd,incFileName,localInclude,g_isImported);
 	// add included by dependency
@@ -1300,6 +1342,15 @@ static void endCondSection()
     bool *ctx = g_condStack.pop();
     g_skip=*ctx;
   }
+}
+
+static void forceEndCondSection()
+{
+  while (!g_condStack.isEmpty())
+  {
+    g_condStack.pop();
+  }
+  g_skip=FALSE;
 }
 
 static QCString escapeAt(const char *text)
@@ -1879,7 +1930,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					}
 <EndImport>.				{
   					}
-<DefName>{ID}/"("			{ // define with argument
+<DefName>{ID}/("\\\n")*"("		{ // define with argument
   					  //printf("Define() `%s'\n",yytext);
 					  g_argDict = new QDict<int>(31);
 					  g_argDict->setAutoDelete(TRUE);
@@ -1889,6 +1940,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  g_defLitText.resize(0);
 					  g_defName = yytext;
 					  g_defVarArgs = FALSE;
+					  g_defExtraSpacing.resize(0);
 					  BEGIN(DefineArg);
   					}
 <DefName>{ID}{B}+"1"			{ // special case: define with 1 -> can be "guard"
@@ -1959,11 +2011,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					  g_expectGuard=FALSE;
   					}
+<DefineArg>"\\\n"                       {
+  					  g_defExtraSpacing+="\n";
+					  g_yyLineNr++;
+                                        }
 <DefineArg>","{B}*			{ g_defArgsStr+=yytext; }
 <DefineArg>"("{B}*                      { g_defArgsStr+=yytext; }
 <DefineArg>{B}*")"{B}*			{
                                           g_defArgsStr+=yytext; 
-					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr;
+					  QCString tmp=(QCString)"#define "+g_defName+g_defArgsStr+g_defExtraSpacing;
 					  outputArray(tmp.data(),tmp.length());
 					  g_quoteArg=FALSE;
 					  g_insideComment=FALSE;
@@ -2572,6 +2628,9 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
   
   preYYlex();
   g_lexInit=TRUE;
+
+  // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
+  forceEndCondSection();
 
   if (Debug::isFlagSet(Debug::Preprocessor))
   {

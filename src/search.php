@@ -279,7 +279,7 @@ function main()
     $query=$_GET["query"];
   }
   end_form(preg_replace("/[^a-zA-Z0-9\-\_\.]/i", " ", $query ));
-  echo "&nbsp;\n<div class=\"searchresults\">\n";
+  echo "&#160;\n<div class=\"searchresults\">\n";
   $results = array();
   $requiredWords = array();
   $forbiddenWords = array();

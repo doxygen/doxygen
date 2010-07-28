@@ -86,7 +86,7 @@ class FTVHelp : public IndexIntf
     //void addIndexItem(const char *, const char *, 
     //                  const char *, const char *,
     //                  const char *, const MemberDef *) {}
-    void addIndexItem(Definition *,MemberDef *,const char *,const char *) {}
+    void addIndexItem(Definition *,MemberDef *,const char *) {}
     void addIndexFile(const char *) {}
     void addImageFile(const char *) {}
     void addStyleSheetFile(const char *) {}

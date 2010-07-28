@@ -42,7 +42,7 @@ SYMBOL_CACHE_SIZE      = 0
 # Build related configuration options
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_LOCAL_METHODS  = NO
@@ -115,7 +115,12 @@ EXCLUDE                = src/code.cpp \
                          src/fortranscanner.cpp \
                          src/fortrancode.cpp \
                          src/vhdlscanner.cpp \
-                         src/vhdlcode.cpp
+                         src/vhdlcode.cpp \
+                         src/doxygen_css.h \
+                         src/doxygen_js.h \
+                         src/doxygen_php.h \
+                         src/compound_xsd.h \
+                         src/layout_default.h \
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       =
 EXCLUDE_SYMBOLS        =

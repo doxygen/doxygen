@@ -38,8 +38,7 @@ class IndexIntf
     virtual void decContentsDepth() = 0;
     virtual void addContentsItem(bool isDir, const char *name, const char *ref = 0, 
                                  const char *file = 0, const char *anchor = 0) = 0;
-    virtual void addIndexItem(Definition *context,MemberDef *md,
-                              const char *anchor,const char *word) = 0;
+    virtual void addIndexItem(Definition *context,MemberDef *md,const char *title) = 0;
     virtual void addIndexFile(const char *name) = 0;
     virtual void addImageFile(const char *name) = 0;
     virtual void addStyleSheetFile(const char *name) = 0;
@@ -68,6 +67,13 @@ class IndexList : public IndexIntf
     {
       QListIterator<IndexIntf> li(m_intfs);
       for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1);
+    }
+
+    template<typename A1,typename A2,typename A3>
+    void foreach(void (IndexIntf::*methodPtr)(A1,A2,A3),A1 a1,A2 a2,A3 a3)
+    {
+      QListIterator<IndexIntf> li(m_intfs);
+      for (li.toFirst();li.current();++li) (li.current()->*methodPtr)(a1,a2,a3);
     }
 
     template<typename A1,typename A2,typename A3,typename A4>
@@ -104,10 +110,9 @@ class IndexList : public IndexIntf
                          const char *file = 0, const char *anchor = 0)
     { foreach<bool,const char *,const char *,const char *,const char*>
              (&IndexIntf::addContentsItem,isDir,name,ref,file,anchor); }
-    void addIndexItem(Definition *context,MemberDef *md,
-                      const char *anchor=0,const char *word=0)
+    void addIndexItem(Definition *context,MemberDef *md,const char *title=0)
     { foreach<Definition *,MemberDef *>
-             (&IndexIntf::addIndexItem,context,md,anchor,word); }
+             (&IndexIntf::addIndexItem,context,md,title); }
     void addIndexFile(const char *name) 
     { foreach<const char *>(&IndexIntf::addIndexFile,name); }
     void addImageFile(const char *name) 

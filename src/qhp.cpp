@@ -188,9 +188,8 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
 }
 
 void Qhp::addIndexItem(Definition *context,MemberDef *md,
-                       const char *anc,const char *word)
+                       const char *word)
 {
-  (void)anc;
   (void)word;
 
   if (md) // member
@@ -209,7 +208,7 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
     QCString level1  = context->name();
     QCString level2  = word ? QCString(word) : md->name();
     QCString contRef = separateMemberPages ? cfname : cfiname;
-    QCString anchor  = anc;
+    QCString anchor  = md->anchor();
 
     QCString ref;
 
@@ -230,15 +229,7 @@ void Qhp::addIndexItem(Definition *context,MemberDef *md,
     // <keyword name="Foo" id="Foo" ref="doc.html"/>
     QCString contRef = context->getOutputFileBase();
     QCString level1  = word ? QCString(word) : context->name();
-    QCString ref;
-    if (anc)
-    {
-      ref = makeRef(contRef,anc);
-    }
-    else
-    {
-      ref = makeFileName(contRef);
-    }
+    QCString ref = makeFileName(contRef);
     const char * attributes[] =
     {
       "name", level1,

@@ -368,9 +368,15 @@ public:
     QString    &operator=( QChar c );
     QString    &operator=( char c );
 
-    QT_STATIC_CONST QString null;
+    //QT_STATIC_CONST QString null;
+    //bool	isNull()	const;
 
-    bool	isNull()	const;
+    struct Null { };
+    static const Null null;
+    inline QString(const Null &): d(shared_null) { d->ref(); }
+    inline QString &operator=(const Null &) { *this = QString(); return *this; }
+    inline bool isNull() const { return d == shared_null; }
+    
     bool	isEmpty()	const;
     uint	length()	const;
     void	truncate( uint pos );
@@ -662,8 +668,8 @@ inline QString &QString::operator=( QChar c )
 inline QString &QString::operator=( char c )
 { return *this = QString(QChar(c)); }
 
-inline bool QString::isNull() const
-{ return unicode() == 0; }
+//inline bool QString::isNull() const
+//{ return unicode() == 0; }
 
 inline bool QString::operator!() const
 { return isNull(); }

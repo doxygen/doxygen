@@ -12170,12 +12170,19 @@ QString QString::fromUcs2( const unsigned short *str )
 */
 
 Q_EXPORT QStringData *QString::shared_null = 0;
-QT_STATIC_CONST_IMPL QString QString::null;
+//QT_STATIC_CONST_IMPL QString QString::null;
 QT_STATIC_CONST_IMPL QChar QChar::null;
 QT_STATIC_CONST_IMPL QChar QChar::replacement((ushort)0xfffd);
 QT_STATIC_CONST_IMPL QChar QChar::byteOrderMark((ushort)0xfeff);
 QT_STATIC_CONST_IMPL QChar QChar::byteOrderSwapped((ushort)0xfffe);
 QT_STATIC_CONST_IMPL QChar QChar::nbsp((ushort)0x00a0);
+
+#if defined(_CC_MSVC_) && _MSC_VER <= 1300
+const QString::Null QString::null;
+#else
+const QString::Null QString::null = { };
+#endif
+
 
 QStringData* QString::makeSharedNull()
 {

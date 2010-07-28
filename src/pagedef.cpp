@@ -159,7 +159,7 @@ void PageDef::writeDocumentation(OutputList &ol)
     }
   }
 
-  Doxygen::indexList.addIndexItem(this,0,0,filterTitle(title()));
+  Doxygen::indexList.addIndexItem(this,0,filterTitle(title()));
 }
 
 void PageDef::writePageDocumentation(OutputList &ol)

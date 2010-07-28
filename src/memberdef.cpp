@@ -277,7 +277,7 @@ static bool writeDefArgumentList(OutputList &ol,ClassDef *cd,
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
   ol.disable(OutputGenerator::Latex);
-  //if (!first) ol.writeString("&nbsp;");
+  //if (!first) ol.writeString("&#160;");
   if (!md->isObjCMethod()) ol.docify(")"); // end argument list
   ol.enableAll();
   if (htmlOn) ol.enable(OutputGenerator::Html);
@@ -2392,7 +2392,7 @@ void MemberDef::writeDocumentation(MemberList *ml,OutputList &ol,
           "warning: parameters of member %s are not (all) documented",
           qPrint(qualifiedName()));
     }
-    if (!hasDocumentedReturnType() && !isDefine() && hasDocumentation())
+    if (!hasDocumentedReturnType() && isFunction() && hasDocumentation())
     {
       warn_doc_error(docFile(),docLine(),
           "warning: return type of member %s is not documented",
@@ -2807,6 +2807,13 @@ void MemberDef::_computeIsConstructor()
       m_isConstructorCached = name()=="__construct" ? 2 : 1;
       return;
     }
+    else if (name()=="__init__" && m_impl->fileDef &&
+             getLanguageFromFileName(m_impl->fileDef->name())==SrcLangExt_Python) 
+               // for Python
+    {
+      m_isConstructorCached=2; // TRUE
+      return;
+    }
     else // for other languages
     {
       QCString locName = m_impl->classDef->localName();
@@ -2848,6 +2855,12 @@ void MemberDef::_computeIsDestructor()
       getLanguageFromFileName(m_impl->fileDef->name())==SrcLangExt_PHP)
   {                // for PHP
     isDestructor = name()=="__destruct";
+  }
+  else if (name()=="__del__" && m_impl->fileDef &&
+           getLanguageFromFileName(m_impl->fileDef->name())==SrcLangExt_Python) 
+               // for Python
+  {
+    isDestructor=TRUE;
   }
   else // other languages
   {
@@ -2943,7 +2956,7 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.enable(OutputGenerator::Latex);
             typeDecl.lineBreak(); 
             typeDecl.disable(OutputGenerator::Latex);
-            typeDecl.writeString("&nbsp;&nbsp;");
+            typeDecl.writeString("&#160;&#160;");
             typeDecl.popGeneratorState();
           }
 

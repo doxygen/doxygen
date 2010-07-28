@@ -1002,6 +1002,7 @@ static void generateClassOrGlobalLink(CodeOutputInterface &ol,char *clName,
                       g_currentMemberDef ? g_currentMemberDef : g_currentDefinition);
     writeMultiLineCodeLink(ol,cd->getReference(),cd->getOutputFileBase(),0,clName,cd->briefDescriptionAsTooltip());
     addToSearchIndex(className);
+    g_theCallContext.setClass(cd);
     if (md)
     {
       Definition *d = md->getOuterScope()==Doxygen::globalScope ?
@@ -2380,7 +2381,9 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					}
 <Body>{SCOPENAME}/{BN}*[;,)\]]		{ // "int var;" or "var, var2" or "debug(f) macro" 
 					  addType();
-					  generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
+					  // changed this to generateFunctionLink, see bug 624514
+					  //generateClassOrGlobalLink(*g_code,yytext,FALSE,TRUE);
+					  generateFunctionLink(*g_code,yytext);
   					  g_name+=yytext; 
 					}
 <Body>{SCOPENAME}/{B}* 			{ // p->func()

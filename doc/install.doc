@@ -209,6 +209,7 @@ The solution: go to the root of the doxygen distribution and do:
    cd qt
    ln -s your-qt-include-dir-here include
    ln -s your-qt-lib-dir-here lib
+   ln -s your-qt-bin-dir-here bin
    export QTDIR=$PWD
 \endverbatim 
 

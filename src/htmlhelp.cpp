@@ -627,7 +627,7 @@ void HtmlHelp::addContentsItem(bool isDir,
 
 
 void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
-                            const char *anc,const char *word)
+                            const char *word)
 {
   if (md)
   {
@@ -647,14 +647,14 @@ void HtmlHelp::addIndexItem(Definition *context,MemberDef *md,
     QCString level2  = md->name();
     QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString memRef  = cfname;
-    QCString anchor  = anc;
+    QCString anchor  = md->anchor();
     index->addItem(level1,level2,contRef,anchor,TRUE,FALSE);
     index->addItem(level2,level1,memRef,anchor,TRUE,TRUE);
   }
   else if (context)
   {
     QCString level1  = word ? QCString(word) : context->name();
-    index->addItem(level1,0,context->getOutputFileBase(),anc,TRUE,FALSE);
+    index->addItem(level1,0,context->getOutputFileBase(),0,TRUE,FALSE);
   }
 }
 

@@ -140,7 +140,7 @@ ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
   					  g_curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
-<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*]+{B}*/{ID} { 
+<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
   					  // function pointer as argument
 					  g_curArgTypeName+=yytext;
 					  //g_curArgTypeName=g_curArgTypeName.simplifyWhiteSpace();
