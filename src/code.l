@@ -3408,7 +3408,8 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_bracketCount = 0;
   if (!g_exampleName.isEmpty())
   {
-    g_exampleFile = convertNameToFile(g_exampleName+"-example");
+    g_exampleFile = convertNameToFile(g_exampleName+"-example",FALSE,TRUE);
+    //printf("g_exampleFile=%s\n",g_exampleFile.data());
   }
   g_includeCodeFragment = inlineFragment;
   //printf("** exBlock=%d exName=%s include=%d\n",exBlock,exName,inlineFragment);

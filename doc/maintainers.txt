@@ -1,16 +1,16 @@
 % $Id$
 %
-% Comments start with % sign at the beginning.
-% XML entities like &auml; are used for special characters.
+% The text is in UTF-8. Comments start with % sign at the beginning.
 % There is one record for each language. The records are separated
 % by the empty line and they do not contain empty lines.
 % First line of the record identifies the translator class for the language.
 % The following one or more lines contain information about 
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
-% If the <e-mail> is prefixed [unreachable] it is not displayed in the table
+% If the <e-mail> is prefixed [some_text] it is not displayed in the table
 % of maintainers in the Doxygen documentation, nor it is used when building
-% the mailto.txt by translator.py.
+% the mailto.txt by translator.py. The mark is displayed in the documentation
+% instead.
 
 TranslatorAfrikaans
 Johan Prinsloo: johan at zippysnoek dot com
@@ -37,10 +37,10 @@ TranslatorCroatian
 Boris Bralo: boris dot bralo at gmail dot com
 
 TranslatorCzech 
-Petr P&rcaron;ikryl: prikrylp at skil dot cz
+Petr Přikryl: prikrylp at skil dot cz
 
 TranslatorDanish
-Erik S&oslash;e S&oslash;rensen: eriksoe+doxygen at daimi dot au dot dk
+Erik Søe Sørensen: eriksoe+doxygen at daimi dot au dot dk
 
 TranslatorDutch 
 Dimitri van Heesch: dimitri at stack dot nl
@@ -64,8 +64,8 @@ TranslatorGreek
 Paul Gessos: gessos dot paul at yahoo dot gr
 
 TranslatorHungarian
-&Aacute;kos Kiss: akiss at users dot sourceforge dot net
-F&ouml;ldv&aacute;ri Gy&ouml;rgy: [unreachable] foldvari lost at cyberspace
+Ákos Kiss: akiss at users dot sourceforge dot net
+Földvári György: [unreachable] foldvari lost at cyberspace
 
 TranslatorIndonesian
 Hendy Irawan: ceefour at gauldong dot net
@@ -89,7 +89,7 @@ TranslatorLithuanian
 Tomas Simonaitis: [unreachable] haden at homelan dot lt
 Mindaugas Radzius: [unreachable] mindaugasradzius at takas dot lt
 Aidas Berukstis: [unreachable] aidasber at takas dot lt
--- contact lost --:
+-- contact lost --: [Please, try to help to find someone.]
 
 TranslatorNorwegian
 Lars Erik Jordet: lejordet at gmail dot com
@@ -106,7 +106,7 @@ Grzegorz Kowal: [unreachable] g_kowal at poczta dot onet dot pl
 Krzysztof Kral: krzysztof dot kral at gmail dot com
 
 TranslatorPortuguese
-Rui Godinho Lopes: [unreachable] ruiglopes at yahoo dot com
+Rui Godinho Lopes: [resigned] rgl at ruilopes dot com
 
 TranslatorRomanian
 Ionut Dumitrascu: reddumy at yahoo dot com
@@ -122,11 +122,12 @@ TranslatorSerbianCyrilic
 Nedeljko Stefanovic: stenedjo at yahoo dot com
 
 TranslatorSlovak
-% Stanislav Kudl&aacute;&ccaron;: [unreachable] skudlac at pobox dot sk
--- searching for the maintainer --:
+% Stanislav Kudláč: [resigned] skudlac at pobox dot sk
+Kali+Laco Švec: the Slovak language advisors 
+Petr Přikryl: prikrylp at skil dot cz
 
 TranslatorSlovene
-Matja&zcaron; Ostrover&scaron;nik: matjaz dot ostroversnik at ostri dot org
+Matjaž Ostroveršnik: matjaz dot ostroversnik at ostri dot org
 
 TranslatorSpanish 
 Bartomeu: bartomeu at loteria3cornella dot com
@@ -136,13 +137,13 @@ David Vaquero: david at grupoikusnet dot com
 TranslatorSwedish 
 Mikael Hallin: mikaelhallin at yahoo dot se
 
+TranslatorTurkish
+Emin Ilker Cetinbas: niw3 at yahoo dot com
+
 TranslatorUkrainian
-% (resigned) Olexij Tkatchenko: olexij at tkatchenko dot com
--- searching for the maintainer --:
+Olexij Tkatchenko: [resigned] olexij at tkatchenko dot com
+-- searching for the maintainer --: [Please, try to help to find someone.]
 
 TranslatorVietnamese
 Dang Minh Tuan: tuanvietkey at gmail dot com
-
-TranslatorTurkish
-Emin Ilker Cetinbas: niw3 at yahoo dot com
 

@@ -1260,7 +1260,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of {def,add,weak}group commands --------- */
 
-<GroupDocArg1>{ID}(".html"?)		{ // group name
+<GroupDocArg1>{LABELID}(".html"?)	{ // group name
   					  current->name = yytext;
 					  //lastDefGroup.groupname = yytext;
 					  //lastDefGroup.pri = current->groupingPri();
@@ -1354,7 +1354,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* --------- handle arguments of the xrefitem command ------------ */
 
-<XRefItemParam1>{ID}			{ // first argument
+<XRefItemParam1>{LABELID}		{ // first argument
   					  newXRefItemKey=yytext;
                                           setOutput(OutputXRef);
 					  BEGIN(XRefItemParam2);
@@ -1803,7 +1803,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
   /* ----- handle argument of ingroup command ------- */
 
-<InGroupParam>{ID}			{ // group id
+<InGroupParam>{LABELID}			{ // group id
   					  current->groups->append(
 					    new Grouping(yytext, Grouping::GROUPING_INGROUP)
 					  );

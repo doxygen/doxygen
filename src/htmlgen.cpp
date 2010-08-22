@@ -1534,6 +1534,7 @@ void HtmlGenerator::writeChar(char c)
 static void startSectionHeader(FTextStream &t,
                                const QCString &relPath,int sectionCount)
 {
+  t << "<!-- startSectionHeader -->";
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
   {
@@ -1552,11 +1553,13 @@ static void startSectionHeader(FTextStream &t,
 
 static void endSectionHeader(FTextStream &t)
 {
+  t << "<!-- endSectionHeader -->";
   t << "</div>" << endl;
 }
 
 static void startSectionSummary(FTextStream &t,int sectionCount)
 {
+  t << "<!-- startSectionSummary -->";
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
   {
@@ -1568,6 +1571,7 @@ static void startSectionSummary(FTextStream &t,int sectionCount)
 
 static void endSectionSummary(FTextStream &t)
 {
+  t << "<!-- endSectionSummary -->";
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
   {
@@ -1577,6 +1581,7 @@ static void endSectionSummary(FTextStream &t)
 
 static void startSectionContent(FTextStream &t,int sectionCount)
 {
+  t << "<!-- startSectionContent -->";
   static bool dynamicSections = Config_getBool("HTML_DYNAMIC_SECTIONS");
   if (dynamicSections)
   {
@@ -1592,6 +1597,7 @@ static void startSectionContent(FTextStream &t,int sectionCount)
 
 static void endSectionContent(FTextStream &t)
 {
+  t << "<!-- endSectionContent -->";
   t << "</div>" << endl;
 }
 
@@ -1621,6 +1627,7 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   t << "_map\">" << endl;
 
   d.writeImage(t,dir,relPath,fileName);
+  t << " </div>";
   endSectionContent(t);
   m_sectionCount++;
 }
@@ -1936,22 +1943,20 @@ void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
   {
     if (emptyList)
     {
-      t << "</td>" << endl;
-      t << "          <td>";
       if (closeBracket) t << "&#160;)";
-      t << "&#160;</td>" << endl;
+      t << "</td>" << endl;
       t << "          <td>";
     }
     else
     {
-      t << "</td><td>&#160;</td>" << endl;
+      t << "&#160;</td>" << endl;
       t << "        </tr>" << endl;
       t << "        <tr>" << endl;
       t << "          <td></td>" << endl;
       t << "          <td>";
       if (closeBracket) t << ")";
       t << "</td>" << endl;
-      t << "          <td></td><td></td><td>";
+      t << "          <td></td><td>";
     }
   }
   else

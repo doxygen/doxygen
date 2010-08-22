@@ -468,6 +468,17 @@ void replaceComment(int offset);
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yytext,yyleng); 
                                    }
+<Verbatim,VerbatimCode>^[ \t]*"///"  {
+  				     if (g_blockName=="dot" || g_blockName=="msc" || g_blockName.at(0)=='f')
+				     {
+				       // see bug 487871, strip /// from dot images and formulas.
+				       copyToOutput("   ",3);
+				     }
+				     else // even slashes are verbatim (e.g. \verbatim, \code)
+				     {
+				       REJECT;
+				     }
+  				   }
 <Verbatim,VerbatimCode>.	   { /* any other character */
                                      copyToOutput(yytext,yyleng); 
                                    }

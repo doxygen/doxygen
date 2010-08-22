@@ -634,7 +634,7 @@ Structural indicators
       \ref cmdprivate "\\private".
 
 <hr>
-\section cmdname \\name (header)  
+\section cmdname \\name [(header)]  
 
   \addindex \\name
 

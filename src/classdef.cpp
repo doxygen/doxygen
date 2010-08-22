@@ -2163,7 +2163,7 @@ bool ClassDef::hasDocumentation() const
 bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
 {
   bool found=FALSE;
-  //printf("isBaseClass(cd=%s) looking for %s\n",cd->name().data(),bcd->name().data());
+  //printf("isBaseClass(cd=%s) looking for %s\n",name().data(),bcd->name().data());
   if (level>256)
   {
     err("Possible recursive class relation while inside %s and looking for %s\n",qPrint(name()),qPrint(bcd->name()));
@@ -2172,20 +2172,18 @@ bool ClassDef::isBaseClass(ClassDef *bcd, bool followInstances,int level)
   }
   if (baseClasses())
   {
-    //BaseClassListIterator bcli(*baseClasses());
-    //for ( ; bcli.current() && !found ; ++bcli)
-    BaseClassDef *bcdi = baseClasses()->first();
-    while (bcdi)
+    // Beware: trying to optimise the iterator away using ->first() & ->next()
+    // causes bug 625531
+    BaseClassListIterator bcli(*baseClasses());
+    for ( ; bcli.current() && !found ; ++bcli)
     {
-      //ClassDef *ccd=bcli.current()->classDef;
-      ClassDef *ccd=bcdi->classDef;
+      ClassDef *ccd=bcli.current()->classDef;
       if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
       //printf("isBaseClass() baseclass %s\n",ccd->name().data());
       if (ccd==bcd) 
         found=TRUE;
       else 
         found=ccd->isBaseClass(bcd,followInstances,level+1);
-      bcdi = baseClasses()->next();
     }
   }
   return found;

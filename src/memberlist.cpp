@@ -409,12 +409,12 @@ void MemberList::writeDeclarations(OutputList &ol,
   if (numDecMembers()==0) return;
   //printf("%p: MemberList::writeDeclaration(title=`%s',subtitle=`%s')=%d\n",
   //    this,title,subtitle,numDecMembers());
+  ol.startMemberHeader(listTypeAsString());
   if (title) 
   {
-    ol.startMemberHeader(listTypeAsString());
     ol.parseText(title);
-    ol.endMemberHeader();
   }
+  ol.endMemberHeader();
   if (subtitle) 
   {
     QCString st=subtitle;
@@ -449,8 +449,8 @@ void MemberList::writeDeclarations(OutputList &ol,
     MemberGroup *mg;
     while ((mg=mgli.current()))
     {
-      //printf("mg->header=%s\n",mg->header().data());
-      bool hasHeader=mg->header()!="[NOHEADER]";
+      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+      //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
       ol.startMemberGroupHeader(hasHeader);
       if (hasHeader)
       {

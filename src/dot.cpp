@@ -3277,11 +3277,8 @@ QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
     err("error: Output dir %s does not exist!\n",outDir.data()); exit(1);
   }
 
-  QCString absInFile  = QCString(d.absPath())+"/"+inFile;
-  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
-
-  DotRunner dotRun(absInFile,d.absPath().data(),FALSE);
-  dotRun.addJob(MAP_CMD,absOutFile);
+  DotRunner dotRun(inFile,d.absPath().data(),FALSE);
+  dotRun.addJob(MAP_CMD,outFile);
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {
@@ -3290,7 +3287,7 @@ QCString getDotImageMapFromFile(const QCString& inFile, const QCString& outDir,
 
   QGString result;
   FTextStream tmpout(&result);
-  convertMapFile(tmpout, absOutFile, relPath ,TRUE, context);
+  convertMapFile(tmpout, outFile, relPath ,TRUE, context);
   d.remove(outFile);
 
   return result.data();

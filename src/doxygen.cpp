@@ -1552,7 +1552,7 @@ static void findUsingDirectives(EntryNav *rootNav)
       }
       else // unknown namespace, but add it anyway.
       {
-        printf("++ new unknown namespace %s\n",name.data());
+        //printf("++ new unknown namespace %s\n",name.data());
         NamespaceDef *nd=new NamespaceDef(root->fileName,root->startLine,name);
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
@@ -6998,6 +6998,7 @@ static void computeMemberRelations()
           //      );
           if (md!=bmd && bmcd && mcd && bmcd!=mcd && mcd->isBaseClass(bmcd,TRUE))
           {
+            //printf("  derived scope\n");
             LockingPtr<ArgumentList> bmdAl = bmd->argumentList();
             LockingPtr<ArgumentList>  mdAl =  md->argumentList();
             //printf(" Base argList=`%s'\n Super argList=`%s'\n",

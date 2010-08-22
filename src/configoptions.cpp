@@ -1393,9 +1393,10 @@ void addConfigOptions(Config *cfg)
   //----
   ci = cfg->addInt(
                  "ENUM_VALUES_PER_LINE",
-                 "This tag can be used to set the number of enum values (range [1..20])\n"
-                 "that doxygen will group on one line in the generated HTML documentation.",
-                 1,20,4
+                 "This tag can be used to set the number of enum values (range [0,1..20])\n"
+                 "that doxygen will group on one line in the generated HTML documentation.\n"
+                 "Note that a value of 0 will completely suppress the enum values from appearing in the overview section.",
+                 0,20,4
                 );
   ci->addDependency("GENERATE_HTML");
   //----

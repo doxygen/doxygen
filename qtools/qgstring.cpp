@@ -118,7 +118,7 @@ bool QGString::resize( uint newlen )
     DBG_STR(("%p: 2.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
     return FALSE;
   }
-  m_data[newlen-1]='\0';
+  m_data[newlen]='\0';
   m_len = qstrlen(m_data);
   DBG_STR(("%p: 3.QGString::resize() %d:%s\n",this,m_len,m_data?m_data:"<none>"));
   return TRUE;
