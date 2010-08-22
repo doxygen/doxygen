@@ -129,6 +129,11 @@ static void setFileName(const char *name)
   QFileInfo fi(name);
   g_yyFileName=convertToQCString(fi.absFilePath());
   g_yyFileDef=findFileDef(Doxygen::inputNameDict,g_yyFileName,ambig);
+  if (g_yyFileDef==0) // if this is not an input file check if it is an
+                      // include file
+  {
+    g_yyFileDef=findFileDef(Doxygen::includeNameDict,g_yyFileName,ambig);
+  }
   //printf("setFileName(%s) g_yyFileName=%s g_yyFileDef=%p\n",
   //    name,g_yyFileName.data(),g_yyFileDef);
   if (g_yyFileDef && g_yyFileDef->isReference()) g_yyFileDef=0;
@@ -313,11 +318,13 @@ static FileState *findFile(const char *fileName,bool localInclude,bool &alreadyI
   while (s)
   {
     QCString absName = (QCString)s+"/"+fileName;
+    //printf("  Looking for %s in %s\n",fileName,s);
     FileState *fs = checkAndOpenFile(absName,alreadyIncluded);
     if (fs)
     {
       setFileName(absName);
       g_yyLineNr=1;
+      //printf("  -> found it\n");
       return fs;
     }
     else if (alreadyIncluded)
@@ -1252,7 +1259,7 @@ static void readIncludeFile(const QCString &inc)
       if (Debug::isFlagSet(Debug::Preprocessor))
       {
         for (i=0;i<g_includeStack.count();i++) msg("  ");
-        msg("#include %s: parsing...\n",incFileName.data());
+        //msg("#include %s: parsing...\n",incFileName.data());
       }
       if (oldFileDef)
       {
@@ -1290,11 +1297,11 @@ static void readIncludeFile(const QCString &inc)
       if (oldFileDef)
       {
 	bool ambig;
+	QCString absPath = incFileName;
 	if (QDir::isRelativePath(incFileName))
 	{
 	  QString absPath = QDir::cleanDirPath(oldFileDef->getPath()+"/"+incFileName);
 	  //printf("%s + %s -> resolved path %s\n",oldFileDef->getPath().data(),incFileName.data(),absPath.data());
-	  incFileName = absPath;
 	}
 	FileDef *fd = findFileDef(Doxygen::inputNameDict,incFileName,ambig);
 	//printf("%s::findFileDef(%s)=%p\n",oldFileDef->name().data(),incFileName.data(),fd);

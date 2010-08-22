@@ -73,6 +73,8 @@ void PageDef::writeDocumentation(OutputList &ol)
   QCString pageName;
   pageName=escapeCharsInString(name(),FALSE,TRUE);
 
+  //printf("PageDef::writeDocumentation: %s\n",getOutputFileBase().data());
+
   startFile(ol,getOutputFileBase(),pageName,title(),HLI_Pages,TRUE);
 
   ol.pushGeneratorState();

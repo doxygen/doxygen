@@ -5191,7 +5191,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
  /* ---- Single line comments ------ */
 <DocLine>[^\n]*"\n"[ \t]*"//"[/!]       { // continuation of multiline C++-style comment
 				           docBlock+=yytext;
-          		                   docBlock.resize(docBlock.size() - 3);
+          		                   docBlock.resize(docBlock.length() - 3);
 					   yyLineNr++;
                                         }
 <DocLine>[^\n]*/"\n"			{ // whole line
@@ -5487,7 +5487,13 @@ static void handleCommentBlock(const QCString &doc,bool brief)
      ) 
   {
     //printf("parseCommentBlock position=%d [%s]\n",position,doc.data()+position);
-    if (needsEntry) newEntry();
+    if (needsEntry) 
+    {
+      QCString docFile = current->docFile;
+      newEntry();
+      current->docFile = docFile;
+      current->docLine = lineNr;
+    }
   }
   if (needsEntry)
   {

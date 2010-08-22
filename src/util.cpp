@@ -1937,6 +1937,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::RTF);
       // link for Html / man
+      //printf("writeObjectLink(file=%s)\n",e->file.data());
       ol.writeObjectLink(0,e->file,e->anchor,e->name);
       ol.popGeneratorState();
 
@@ -4140,7 +4141,7 @@ static bool getScopeDefs(const char *docScope,const char *scope,
 
 static bool isLowerCase(QCString &s)
 {
-  char *p=s.data();
+  uchar *p=(uchar*)s.data();
   if (p==0) return TRUE;
   int c;
   while ((c=*p++)) if (!islower(c)) return FALSE;
@@ -6451,7 +6452,8 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
   {
     g_extLookup.remove(extension);
   }
-  g_extLookup.insert(extension,new int(parserId));
+  //printf("registering extension %s\n",extName.data());
+  g_extLookup.insert(extName,new int(parserId));
   if (!Doxygen::parserManager->registerExtension(extName,p->parserName))
   {
     err("Failed to assign extension %s to parser %s for language %s\n",
@@ -6503,10 +6505,12 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
       int *pVal=g_extLookup.find(extStr);
       if (pVal) // listed extension
       {
+        //printf("getLanguageFromFileName(%s)=%x\n",extStr.data(),*pVal);
         return (SrcLangExt)*pVal; 
       }
     }
   }
+  //printf("getLanguageFromFileName(%s) not found!\n",fileName.data());
   return SrcLangExt_Cpp; // not listed => assume C-ish language.
 }
 

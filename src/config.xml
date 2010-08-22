@@ -943,9 +943,11 @@ top of each HTML page. The value NO (the default) enables the index and
 the value YES disables it. 
 ' defval='0' depends='GENERATE_HTML'/>
     <option type='int' id='ENUM_VALUES_PER_LINE' docs='
-This tag can be used to set the number of enum values (range [1..20]) 
+This tag can be used to set the number of enum values (range [0,1..20]) 
 that doxygen will group on one line in the generated HTML documentation. 
-' minval='1' maxval='20' defval='4' depends='GENERATE_HTML'/>
+Note that a value of 0 will completely suppress the enum values from
+appearing in the overview section.
+' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'/>
     <option type='bool' id='GENERATE_TREEVIEW' defval='0' docs='
 The GENERATE_TREEVIEW tag is used to specify whether a tree-like index 
 structure should be generated to display hierarchical information. 

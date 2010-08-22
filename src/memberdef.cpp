@@ -2933,10 +2933,9 @@ void MemberDef::writeEnumDeclaration(OutputList &typeDecl,
     typeDecl.writeChar(' ');
   }
 
-  if (numVisibleEnumValues>0)
+  uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
+  if (numVisibleEnumValues>0 && enumValuesPerLine>0)
   {
-    uint enumValuesPerLine = (uint)Config_getInt("ENUM_VALUES_PER_LINE");
-    if (enumValuesPerLine==0) enumValuesPerLine=1;
     typeDecl.docify("{ ");
     if (fmdl)
     {

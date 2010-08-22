@@ -1089,6 +1089,8 @@ static void copyEntry(Entry *dest, Entry *src)
    dest->bodyLine = src->bodyLine;
    dest->args     = src->args;
    dest->argList  = new ArgumentList(*src->argList);
+   dest->doc      = src->doc;
+   dest->brief    = src->brief;
 }
 
 /** fill empty interface module procedures with info from 

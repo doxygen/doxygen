@@ -1930,7 +1930,7 @@ bool DocXRefItem::parse()
       }
       else
       {
-        m_file   = convertNameToFile(refList->listName());
+        m_file   = convertNameToFile(refList->listName(),FALSE,TRUE);
         m_anchor = item->listAnchor;
       }
       m_title  = refList->sectionTitle();

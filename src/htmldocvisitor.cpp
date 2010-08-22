@@ -1558,7 +1558,7 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   m_t << "<img src=\"" << relPath << baseName << "." 
       << Config_getEnum("DOT_IMAGE_FORMAT") << "\" alt=\""
       << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\">" << endl;
-  QCString imap = getDotImageMapFromFile(baseName,outDir,relPath,context);
+  QCString imap = getDotImageMapFromFile(fn,outDir,relPath,context);
   m_t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
 }
 
