@@ -294,7 +294,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
       tt=tt.upper();
       ecd =getClass(tt);
     }
-    else if (!ecd)
+    if (!ecd)
     {
       tt=tt.lower();
       ecd =getClass(tt);  

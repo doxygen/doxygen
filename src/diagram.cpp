@@ -349,7 +349,7 @@ bool TreeDiagram::layoutTree(DiagramItem *root,int r)
     DiagramItem *di=dil->first();
     while (di && !moved && !di->isInList())
     {
-      moved = moved || layoutTree(di,r+1);
+      moved = layoutTree(di,r+1);
       di=dil->next();
     }
   }

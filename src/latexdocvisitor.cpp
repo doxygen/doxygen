@@ -1006,7 +1006,17 @@ void LatexDocVisitor::visitPost(DocDotFile *df)
   if (m_hide) return;
   endDotFile(df->hasCaption());
 }
+void LatexDocVisitor::visitPre(DocMscFile *df)
+{
+  if (m_hide) return;
+  startMscFile(df->file(),df->width(),df->height(),df->hasCaption());
+}
 
+void LatexDocVisitor::visitPost(DocMscFile *df) 
+{
+  if (m_hide) return;
+  endMscFile(df->hasCaption());
+}
 void LatexDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -1082,10 +1092,15 @@ void LatexDocVisitor::visitPost(DocSecRefList *)
 void LatexDocVisitor::visitPre(DocParamSect *s)
 {
   if (m_hide) return;
+  bool hasInOutSpecs = s->hasInOutSpecifier();
+  bool hasTypeSpecs  = s->hasTypeSpecifier();
   switch(s->type())
   {
     case DocParamSect::Param:
-      m_t << "\n\\begin{DoxyParams}{";
+      m_t << "\n\\begin{DoxyParams}";
+      if      (hasInOutSpecs && hasTypeSpecs) m_t << "[2]"; // 2 extra cols
+      else if (hasInOutSpecs || hasTypeSpecs) m_t << "[1]"; // 1 extra col
+      m_t << "{";
       filter(theTranslator->trParameters());
       break;
     case DocParamSect::RetVal:
@@ -1134,23 +1149,60 @@ void LatexDocVisitor::visitPost(DocParamSect *s)
 void LatexDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "\\item[";
-  if (pl->direction()!=DocParamSect::Unspecified)
+  DocParamSect::Type parentType = DocParamSect::Unknown;
+  DocParamSect *sect = 0;
+  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    m_t << "\\mbox{\\tt[";
-    if (pl->direction()==DocParamSect::In)
+    parentType = ((DocParamSect*)pl->parent())->type();
+    sect=(DocParamSect*)pl->parent();
+  }
+  bool useTable = parentType==DocParamSect::Param ||
+                  parentType==DocParamSect::RetVal ||
+                  parentType==DocParamSect::Exception ||
+                  parentType==DocParamSect::TemplateParam;
+  if (!useTable)
+  {
+    m_t << "\\item[";
+  }
+  if (sect && sect->hasInOutSpecifier())
+  {
+    if (pl->direction()!=DocParamSect::Unspecified)
     {
-      m_t << "in";
+      m_t << "\\mbox{\\tt ";
+      if (pl->direction()==DocParamSect::In)
+      {
+        m_t << "in";
+      }
+      else if (pl->direction()==DocParamSect::Out)
+      {
+        m_t << "out";
+      }
+      else if (pl->direction()==DocParamSect::InOut)
+      {
+        m_t << "in,out";
+      }
+      m_t << "} ";
     }
-    else if (pl->direction()==DocParamSect::Out)
+    if (useTable) m_t << " & ";
+  }
+  if (sect && sect->hasTypeSpecifier())
+  {
+    QListIterator<DocNode> li(pl->paramTypes());
+    DocNode *type;
+    bool first=TRUE;
+    for (li.toFirst();(type=li.current());++li)
     {
-      m_t << "out";
+      if (!first) m_t << " | "; else first=FALSE;
+      if (type->kind()==DocNode::Kind_Word)
+      {
+        visit((DocWord*)type); 
+      }
+      else if (type->kind()==DocNode::Kind_LinkedWord)
+      {
+        visit((DocLinkedWord*)type); 
+      }
     }
-    else if (pl->direction()==DocParamSect::InOut)
-    {
-      m_t << "in,out";
-    }
-    m_t << "]} ";
+    if (useTable) m_t << " & ";
   }
   m_t << "{\\em ";
   //QStrListIterator li(pl->parameters());
@@ -1172,11 +1224,34 @@ void LatexDocVisitor::visitPre(DocParamList *pl)
     }
     m_insideItem=FALSE;
   }
-  m_t << "}]";
+  m_t << "}";
+  if (useTable)
+  {
+    m_t << " & ";
+  }
+  else
+  {
+    m_t << "]";
+  }
 }
 
-void LatexDocVisitor::visitPost(DocParamList *)
+void LatexDocVisitor::visitPost(DocParamList *pl)
 {
+  if (m_hide) return;
+  DocParamSect::Type parentType = DocParamSect::Unknown;
+  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  {
+    parentType = ((DocParamSect*)pl->parent())->type();
+  }
+  bool useTable = parentType==DocParamSect::Param ||
+                  parentType==DocParamSect::RetVal ||
+                  parentType==DocParamSect::Exception ||
+                  parentType==DocParamSect::TemplateParam;
+  if (useTable)
+  {
+    m_t << "\\\\" << endl
+        << "\\hline" << endl;
+  }
 }
 
 void LatexDocVisitor::visitPre(DocXRefItem *x)
@@ -1357,6 +1432,70 @@ void LatexDocVisitor::endDotFile(bool hasCaption)
     m_t << "\\end{DoxyImageNoCaption}\n";
   }
 }
+
+void LatexDocVisitor::startMscFile(const QCString &fileName,
+                                   const QCString &width,
+                                   const QCString &height,
+                                   bool hasCaption
+                                  )
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1)
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  } 
+  if (baseName.right(4)==".eps" || baseName.right(4)==".pdf")
+  {
+    baseName=baseName.left(baseName.length()-4);
+  }
+  if (baseName.right(4)==".dot")
+  {
+    baseName=baseName.left(baseName.length()-4);
+  }
+  QCString outDir = Config_getString("LATEX_OUTPUT");
+  QCString name = fileName;
+  writeMscGraphFromFile(name,outDir,baseName,MSC_EPS); 
+  if (hasCaption)
+  {
+    m_t << "\n\\begin{DoxyImage}\n";
+  }
+  else
+  {
+    m_t << "\n\\begin{DoxyImageNoCaption}\n"
+           "  \\mbox{";
+  }
+  m_t << "\\includegraphics";
+  if (!width.isEmpty())
+  {
+    m_t << "[width=" << width << "]";
+  }
+  else if (!height.isEmpty())
+  {
+    m_t << "[height=" << height << "]";
+  }
+  m_t << "{" << baseName << "}";
+
+  if (hasCaption)
+  {
+    m_t << "\n\\caption{";
+  }
+}
+
+void LatexDocVisitor::endMscFile(bool hasCaption)
+{
+  if (m_hide) return;
+  m_t << "}\n"; // end caption or mbox
+  if (hasCaption)
+  {
+    m_t << "\\end{DoxyImage}\n";
+  }
+  else
+  {
+    m_t << "\\end{DoxyImageNoCaption}\n";
+  }
+}
+
 
 void LatexDocVisitor::writeMscFile(const QCString &baseName)
 {

@@ -46,7 +46,7 @@ Then by default doxygen will feed the following to its parser:
 
 You can disable all preprocessing by setting 
 \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" to \c 
-NO in the configuation file. In the case above doxygen will then read
+NO in the configuration file. In the case above doxygen will then read
 both statements, i.e:
 
 \verbatim

@@ -131,7 +131,8 @@ class DocNode
                 Kind_ParamList      = 44,
                 Kind_InternalRef    = 45,
                 Kind_Copy           = 46,
-                Kind_Text           = 47
+                Kind_Text           = 47,
+                Kind_MscFile        = 48
               };
     /*! Creates a new node */
     DocNode() : m_parent(0), m_insidePre(FALSE) {}
@@ -350,12 +351,12 @@ class DocVerbatim : public DocNode
     DocVerbatim(DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile);
-    Kind kind() const           { return Kind_Verbatim; }
-    Type type() const           { return m_type; }
+    Kind kind() const            { return Kind_Verbatim; }
+    Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
     QCString context() const     { return m_context; }
-    void accept(DocVisitor *v)  { v->visit(this); }
-    bool isExample() const      { return m_isExample; }
+    void accept(DocVisitor *v)   { v->visit(this); }
+    bool isExample() const       { return m_isExample; }
     QCString exampleFile() const { return m_exampleFile; }
     QCString relPath() const     { return m_relPath; }
 
@@ -607,6 +608,31 @@ class DocDotFile : public CompAccept<DocDotFile>, public DocNode
     QCString  m_height;
     QCString  m_context;
 };
+
+/*! @brief Node representing a msc file */
+class DocMscFile : public CompAccept<DocMscFile>, public DocNode
+{
+  public:
+    DocMscFile(DocNode *parent,const QCString &name,const QCString &context);
+    void parse();
+    Kind kind() const          { return Kind_MscFile; }
+    QCString name() const      { return m_name; }
+    QCString file() const      { return m_file; }
+    QCString relPath() const   { return m_relPath; }
+    bool hasCaption() const    { return !m_children.isEmpty(); }
+    QCString width() const     { return m_width; }
+    QCString height() const    { return m_height; }
+    QCString context() const   { return m_context; }
+    void accept(DocVisitor *v) { CompAccept<DocMscFile>::accept(this,v); }
+  private:
+    QCString  m_name;
+    QCString  m_file;
+    QCString  m_relPath;
+    QCString  m_width;
+    QCString  m_height;
+    QCString  m_context;
+};
+
 
 /*! @brief Node representing a link to some item */
 class DocLink : public CompAccept<DocLink>, public DocNode
@@ -895,6 +921,7 @@ class DocSimpleSectSep : public DocNode
 /*! Node representing a parameter section */
 class DocParamSect : public CompAccept<DocParamSect>, public DocNode
 {
+    friend class DocParamList;
   public:
     enum Type 
     {  
@@ -905,15 +932,21 @@ class DocParamSect : public CompAccept<DocParamSect>, public DocNode
        In=1, Out=2, InOut=3, Unspecified=0
     };
     DocParamSect(DocNode *parent,Type t) 
-      : m_type(t) { m_parent = parent; }
+      : m_type(t), m_dir(Unspecified), 
+        m_hasInOutSpecifier(FALSE), m_hasTypeSpecifier(FALSE) 
+    { m_parent = parent; }
     int parse(const QCString &cmdName,bool xmlContext,Direction d);
     Kind kind() const          { return Kind_ParamSect; }
     Type type() const          { return m_type; }
     void accept(DocVisitor *v) { CompAccept<DocParamSect>::accept(this,v); }
+    bool hasInOutSpecifier() const { return m_hasInOutSpecifier; }
+    bool hasTypeSpecifier() const  { return m_hasTypeSpecifier; }
 
   private:
     Type            m_type;
     Direction       m_dir;
+    bool            m_hasInOutSpecifier;
+    bool            m_hasTypeSpecifier;
 };
 
 /*! Node representing a paragraph in the documentation tree */
@@ -944,6 +977,7 @@ class DocPara : public CompAccept<DocPara>, public DocNode
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     void handleImage(const QCString &cmdName);
     void handleDotFile(const QCString &cmdName);
+    void handleMscFile(const QCString &cmdName);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleRef(const QCString &cmdName);
@@ -965,10 +999,15 @@ class DocParamList : public DocNode
   public:
     DocParamList(DocNode *parent,DocParamSect::Type t,DocParamSect::Direction d) 
       : m_type(t), m_dir(d), m_isFirst(TRUE), m_isLast(TRUE)
-    { m_paragraphs.setAutoDelete(TRUE); m_parent = parent; }
+    { m_paragraphs.setAutoDelete(TRUE); 
+      m_params.setAutoDelete(TRUE); 
+      m_paramTypes.setAutoDelete(TRUE);
+      m_parent = parent; 
+    }
     virtual ~DocParamList()         { }
     Kind kind() const               { return Kind_ParamList; }
     const QList<DocNode> &parameters()    { return m_params; }
+    const QList<DocNode> &paramTypes()    { return m_paramTypes; }
     DocParamSect::Type type() const { return m_type; }
     DocParamSect::Direction direction() const { return m_dir; }
     void markFirst(bool b=TRUE)     { m_isFirst=b; }
@@ -989,6 +1028,7 @@ class DocParamList : public DocNode
   private:
     QList<DocPara>          m_paragraphs;
     QList<DocNode>          m_params;
+    QList<DocNode>          m_paramTypes;
     DocParamSect::Type      m_type;
     DocParamSect::Direction m_dir;
     bool                    m_isFirst;

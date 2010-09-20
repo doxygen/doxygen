@@ -44,7 +44,7 @@
   const int (a);
 \endverbatim
   is also seen as a function declaration with name 
-  <code>int</code>, because only the syntax is analysed,
+  <code>int</code>, because only the syntax is analyzed,
   not the semantics. If the redundant braces can be detected, as in
 \verbatim
   int *(a[20]);
@@ -107,7 +107,7 @@ always try to include the following information in your bug report:
   <code>doxygen --version</code> if you are not sure).
 - The name and version number of your operating system (for instance 
   SuSE Linux 6.4)
-- It is usually a good idea to send along the configuation file as well, 
+- It is usually a good idea to send along the configuration file as well, 
   but please use doxygen with the <code>-s</code> flag while generating it
   to keep it small (use <code>doxygen -s -u [configName]</code> to strip
   the comments from an existing config file). 

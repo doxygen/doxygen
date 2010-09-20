@@ -137,12 +137,12 @@ has its own advantages and disadvantages:
    first search for an keyword.
 
    To enable the help plugin set 
-   \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSE_HELP" to \c YES,
+   \ref cfg_generate_eclipsehelp "GENERATE_ECLIPSEHELP" to \c YES,
    and define a unique identifier for your project via
    \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID", i.e:
 \verbatim
-   GENERATE_ECLIPSE_HELP = YES
-   ECLIPSE_DOC_ID        = com.yourcompany.yourproject
+   GENERATE_ECLIPSEHELP = YES
+   ECLIPSE_DOC_ID       = com.yourcompany.yourproject
 \endverbatim
    then create the \c com.yourcompany.yourproject directory (so with
    the same name as the value of \c ECLIPSE_DOC_ID) in the 

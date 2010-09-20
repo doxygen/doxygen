@@ -40,6 +40,7 @@
 #include "pre.h"
 #include "tagreader.h"
 #include "dot.h"
+#include "msc.h"
 #include "docparser.h"
 #include "dirdef.h"
 #include "outputlist.h"
@@ -112,6 +113,7 @@ FileNameDict    *Doxygen::includeNameDict = 0;     // include names
 FileNameDict    *Doxygen::exampleNameDict = 0;     // examples
 FileNameDict    *Doxygen::imageNameDict = 0;       // images
 FileNameDict    *Doxygen::dotFileNameDict = 0;     // dot files
+FileNameDict    *Doxygen::mscFileNameDict = 0;     // dot files
 StringDict       Doxygen::namespaceAliasDict(257); // all namespace aliases
 StringDict       Doxygen::tagDestinationDict(257); // all tag locations
 QDict<void>      Doxygen::expandAsDefinedDict(257); // all macros that should be expanded
@@ -174,6 +176,7 @@ void clearAll()
   Doxygen::exampleNameDict->clear();  
   Doxygen::imageNameDict->clear();     
   Doxygen::dotFileNameDict->clear();     
+  Doxygen::mscFileNameDict->clear();     
   Doxygen::formulaDict.clear();      
   Doxygen::formulaNameDict.clear();  
   Doxygen::tagDestinationDict.clear();
@@ -192,6 +195,8 @@ void statistics()
   Doxygen::imageNameDict->statistics();
   fprintf(stderr,"--- dotFileNameDict stats ----\n");
   Doxygen::dotFileNameDict->statistics();
+  fprintf(stderr,"--- mscFileNameDict stats ----\n");
+  Doxygen::mscFileNameDict->statistics();
   //fprintf(stderr,"--- g_excludeNameDict stats ----\n");
   //g_excludeNameDict.statistics();
   fprintf(stderr,"--- aliasDict stats ----\n");
@@ -4243,6 +4248,17 @@ static bool findClassRelation(
           found = baseClass!=0 && baseClass!=cd;
 
         }
+        if (!found)
+        {
+          // for PHP the "use A\B as C" construct map class C to A::B, so we lookup
+          // the class name also in the alias mapping.
+          QCString *aliasName = Doxygen::namespaceAliasDict[baseClassName];
+          if (aliasName) // see if it is indeed a class.
+          {
+            baseClass=getClass(*aliasName);
+            found = baseClass!=0 && baseClass!=cd;
+          }
+        }
         bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
         // make templSpec canonical
         // warning: the following line doesn't work for Mixin classes (see bug 560623)
@@ -5881,7 +5897,7 @@ static void findMember(EntryNav *rootNav,
           {
             LockingPtr<ArgumentList> rmdAl = rmd->argumentList();
 
-            newMember=newMember && 
+            newMember=
               !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),rmdAl.pointer(),
                                cd,fd,root->argList,
                                TRUE);
@@ -9141,6 +9157,7 @@ void initDoxygen()
   Doxygen::exampleNameDict->setAutoDelete(TRUE);
   Doxygen::imageNameDict = new FileNameDict(257);
   Doxygen::dotFileNameDict = new FileNameDict(257);
+  Doxygen::mscFileNameDict = new FileNameDict(257);
   Doxygen::sectionDict.setAutoDelete(TRUE);
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
@@ -9155,6 +9172,7 @@ void cleanUpDoxygen()
   delete Doxygen::exampleNameDict;
   delete Doxygen::imageNameDict;
   delete Doxygen::dotFileNameDict;
+  delete Doxygen::mscFileNameDict;
   delete Doxygen::mainPage;
   delete Doxygen::pageSDict;  
   delete Doxygen::exampleSDict;
@@ -9737,6 +9755,18 @@ void searchInputFiles(StringList &inputFiles)
                         alwaysRecursive);
     s=dotFileList.next(); 
   }
+
+  msg("Searching for msc files...\n");
+  QStrList &mscFileList=Config_getList("MSCFILE_DIRS");
+  s=mscFileList.first();
+  while (s)
+  {
+    readFileOrDirectory(s,0,Doxygen::mscFileNameDict,0,0,
+                        0,0,0,
+                        alwaysRecursive);
+    s=dotFileList.next(); 
+  }
+
 
   msg("Searching for files to exclude\n");
   QStrList &excludeList = Config_getList("EXCLUDE");

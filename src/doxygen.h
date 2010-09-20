@@ -92,6 +92,7 @@ class Doxygen
     static FileNameList             *inputNameList;
     static FileNameDict             *imageNameDict;
     static FileNameDict             *dotFileNameDict;
+    static FileNameDict             *mscFileNameDict;
     static QStrList                  tagfileList;
     static MemberNameSDict          *memberNameSDict;
     static MemberNameSDict          *functionNameSDict;

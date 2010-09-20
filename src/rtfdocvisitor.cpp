@@ -22,6 +22,7 @@
 #include "doxygen.h"
 #include "outputgen.h"
 #include "dot.h"
+#include "msc.h"
 #include "util.h"
 #include "rtfstyle.h"
 #include "message.h"
@@ -1080,6 +1081,21 @@ void RTFDocVisitor::visitPost(DocDotFile *)
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocDotFile)}\n");
   popEnabled();
 }
+void RTFDocVisitor::visitPre(DocMscFile *df)
+{
+  DBG_RTF("{\\comment RTFDocVisitor::visitPre(MscDotFile)}\n");
+  writeMscFile(df->file());
+
+  // hide caption since it is not supported at the moment
+  pushEnabled();
+  m_hide=TRUE;
+}
+
+void RTFDocVisitor::visitPost(DocMscFile *) 
+{
+  DBG_RTF("{\\comment RTFDocVisitor::visitPost(MscDotFile)}\n");
+  popEnabled();
+}
 
 void RTFDocVisitor::visitPre(DocLink *lnk)
 {
@@ -1191,42 +1207,142 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
   m_t << ":";
   m_t << "\\par";
   m_t << "}" << endl;
-  incIndentLevel();
+  bool useTable = s->type()==DocParamSect::Param ||
+                  s->type()==DocParamSect::RetVal ||
+                  s->type()==DocParamSect::Exception ||
+                  s->type()==DocParamSect::TemplateParam;
+  if (!useTable)
+  {
+    incIndentLevel();
+  }
   m_t << rtf_Style_Reset << getStyle("DescContinue");
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPost(DocParamSect *)
+void RTFDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocParamSect)}\n");
   //m_t << "\\par" << endl;
-  decIndentLevel();
+  bool useTable = s->type()==DocParamSect::Param ||
+                  s->type()==DocParamSect::RetVal ||
+                  s->type()==DocParamSect::Exception ||
+                  s->type()==DocParamSect::TemplateParam;
+  if (!useTable)
+  {
+    decIndentLevel();
+  }
   m_t << "}" << endl;
 }
 
 void RTFDocVisitor::visitPre(DocParamList *pl)
 {
+  static int columnPos[4][5] = 
+  { { 2, 25, 100, 100, 100 }, // no inout, no type
+    { 3, 14,  35, 100, 100 }, // inout, no type
+    { 3, 25,  50, 100, 100 }, // no inout, type
+    { 4, 14,  35, 55,  100 }, // no inout, type
+  };
+  int config=0;
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocParamList)}\n");
 
-  // Put in the direction: in/out/in,out if specified.
-  if (pl->direction()!=DocParamSect::Unspecified)
+  DocParamSect::Type parentType = DocParamSect::Unknown;
+  DocParamSect *sect = 0;
+  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
   {
-    m_t << "[";
-    if (pl->direction()==DocParamSect::In)
+    parentType = ((DocParamSect*)pl->parent())->type();
+    sect=(DocParamSect*)pl->parent();
+  }
+  bool useTable = parentType==DocParamSect::Param ||
+                  parentType==DocParamSect::RetVal ||
+                  parentType==DocParamSect::Exception ||
+                  parentType==DocParamSect::TemplateParam;
+  if (sect && sect->hasInOutSpecifier()) config+=1;
+  if (sect && sect->hasTypeSpecifier())  config+=2;
+  if (useTable)
+  {
+    int i;
+    m_t << "\\trowd \\trgaph108\\trleft426\\tblind426"
+         "\\trbrdrt\\brdrs\\brdrw10\\brdrcf15 "
+         "\\trbrdrl\\brdrs\\brdrw10\\brdrcf15 "
+         "\\trbrdrb\\brdrs\\brdrw10\\brdrcf15 "
+         "\\trbrdrr\\brdrs\\brdrw10\\brdrcf15 "
+         "\\trbrdrh\\brdrs\\brdrw10\\brdrcf15 "
+         "\\trbrdrv\\brdrs\\brdrw10\\brdrcf15 "<< endl;
+    for (i=0;i<columnPos[config][0];i++)
     {
-      m_t << "in";
+      m_t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10\\brdrcf15 "
+           "\\clbrdrl\\brdrs\\brdrw10\\brdrcf15 "
+           "\\clbrdrb\\brdrs\\brdrw10\\brdrcf15 "
+           "\\clbrdrr \\brdrs\\brdrw10\\brdrcf15 "
+           "\\cltxlrtb "
+           "\\cellx" << (rtf_pageWidth*columnPos[config][i+1]/100) << endl;
     }
-    else if (pl->direction()==DocParamSect::Out)
+    m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
+  }
+
+  if (sect && sect->hasInOutSpecifier())
+  {
+    if (useTable)
     {
-      m_t << "out";
+      m_t << "{";
     }
-    else if (pl->direction()==DocParamSect::InOut)
+
+    // Put in the direction: in/out/in,out if specified.
+    if (pl->direction()!=DocParamSect::Unspecified)
     {
-      m_t << "in,out";
+      if (pl->direction()==DocParamSect::In)
+      {
+        m_t << "in";
+      }
+      else if (pl->direction()==DocParamSect::Out)
+      {
+        m_t << "out";
+      }
+      else if (pl->direction()==DocParamSect::InOut)
+      {
+        m_t << "in,out";
+      }
     }
-    m_t << "] ";
+
+    if (useTable)
+    {
+      m_t << "\\cell }";
+    }
+  }
+
+  if (sect && sect->hasTypeSpecifier())
+  {
+    if (useTable)
+    {
+      m_t << "{";
+    }
+    QListIterator<DocNode> li(pl->paramTypes());
+    DocNode *type;
+    bool first=TRUE;
+    for (li.toFirst();(type=li.current());++li)
+    {
+      if (!first) m_t << " | "; else first=FALSE;
+      if (type->kind()==DocNode::Kind_Word)
+      {
+        visit((DocWord*)type); 
+      }
+      else if (type->kind()==DocNode::Kind_LinkedWord)
+      {
+        visit((DocLinkedWord*)type); 
+      }
+    }
+    if (useTable)
+    {
+      m_t << "\\cell }";
+    }
+  }
+  
+
+  if (useTable)
+  {
+    m_t << "{";
   }
 
   m_t << "{\\i ";
@@ -1248,14 +1364,41 @@ void RTFDocVisitor::visitPre(DocParamList *pl)
     }
   }
   m_t << "} ";
+
+  if (useTable)
+  {
+    m_t << "\\cell }{";
+  }
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPost(DocParamList *)
+void RTFDocVisitor::visitPost(DocParamList *pl)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocParamList)}\n");
-  m_t << "\\par" << endl;
+
+  DocParamSect::Type parentType = DocParamSect::Unknown;
+  DocParamSect *sect = 0;
+  if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
+  {
+    parentType = ((DocParamSect*)pl->parent())->type();
+    sect=(DocParamSect*)pl->parent();
+  }
+  bool useTable = parentType==DocParamSect::Param ||
+                  parentType==DocParamSect::RetVal ||
+                  parentType==DocParamSect::Exception ||
+                  parentType==DocParamSect::TemplateParam;
+  if (useTable)
+  {
+    m_t << "\\cell }" << endl;
+    //m_t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
+    m_t << "{\\row }" << endl;
+  }
+  else
+  {
+    m_t << "\\par" << endl;
+  }
+
   m_lastIsPara=TRUE;
 }
 

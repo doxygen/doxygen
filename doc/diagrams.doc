@@ -77,7 +77,7 @@
        dashed pattern the inheritance relation is virtual.
   <li> A \b white box indicates that the documentation of the class
        is currently shown.
-  <li> A \b grey box indicates an undocumented class.
+  <li> A \b gray box indicates an undocumented class.
   <li> A <b>solid dark blue</b> arrow indicates public inheritance.
   <li> A <b>dashed dark green</b> arrow indicates protected inheritance.
   <li> A <b>dotted dark green</b> arrow indicates private inheritance.
@@ -112,7 +112,7 @@
   <li> A <b>dark green</b> arrow indicates protected inheritance.
   <li> A <b>dark red</b> arrow indicates private inheritance.
   <li> A <b>purple dashed</b> arrow indicated a "usage" relation, the 
-       edge of the arrow is labled with the variable(s) responsible for the
+       edge of the arrow is labeled with the variable(s) responsible for the
        relation.
        Class \c A uses class \c B, if class \c A has a member variable \c m 
        of type C, where B is a subtype of C (e.g. C could be \c B, \c B*, <code>T\<B\>*</code> ). 

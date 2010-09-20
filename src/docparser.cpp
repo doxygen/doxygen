@@ -70,15 +70,15 @@ static const char *sectionLevelToName[] =
 
 // Parser state: global variables during a call to validatingParseDoc
 static Definition *           g_scope;
-static QCString                g_context;
+static QCString               g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_insideHtmlLink;
 static QStack<DocNode>        g_nodeStack;
 static QStack<DocStyleChange> g_styleStack;
 static QStack<DocStyleChange> g_initialStyleStack;
 static QList<Definition>      g_copyStack;
-static QCString                g_fileName;
-static QCString                g_relPath;
+static QCString               g_fileName;
+static QCString               g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
@@ -89,7 +89,7 @@ static QCString               g_exampleName;
 static SectionDict *          g_sectionDict;
 static QCString               g_searchUrl;
 
-static QCString                g_includeFileText;
+static QCString               g_includeFileText;
 static uint                   g_includeFileOffset;
 static uint                   g_includeFileLength;
 
@@ -999,7 +999,6 @@ static void handleUnclosedStyleCommands()
   }
 }
 
-
 static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
 {
   Definition *compound=0;
@@ -1112,6 +1111,23 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children)
     children.append(new DocWord(parent,name));
   }
 }
+
+static void handleParameterType(DocNode *parent,QList<DocNode> &children,const QCString &paramTypes)
+{
+  QCString name = g_token->name;
+  int p=0,i;
+  QCString type;
+  while ((i=paramTypes.find('|',p))!=-1)
+  {
+    g_token->name = paramTypes.mid(p,i-p);
+    handleLinkedWord(parent,children);
+    p=i+1;
+  }
+  g_token->name = paramTypes.mid(p);
+  handleLinkedWord(parent,children);
+  g_token->name = name;
+}
+
 
 /* Helper function that deals with the most common tokens allowed in
  * title like sections. 
@@ -1562,6 +1578,21 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 static void readTextFileByName(const QCString &file,QCString &text)
 {
+  QStrList &examplePathList = Config_getList("EXAMPLE_PATH");
+  char *s=examplePathList.first();
+  while (s)
+  {
+    QCString absFileName = QCString(s)+portable_pathSeparator()+file;
+    QFileInfo fi(absFileName);
+    if (fi.exists())
+    {
+      text = fileToString(absFileName,Config_getBool("FILTER_SOURCE_FILES"));
+      return;
+    }
+    s=examplePathList.next(); 
+  }
+
+  // as a fallback we also look in the exampleNameDict
   bool ambig;
   FileDef *fd;
   if ((fd=findFileDef(Doxygen::exampleNameDict,file,ambig)))
@@ -1826,9 +1857,12 @@ void DocCopy::parse()
       g_scope = def;
       if (def->definitionType()==Definition::TypeMember && def->getOuterScope())
       {
-        g_context=def->getOuterScope()->name();
+        if (def->getOuterScope()!=Doxygen::globalScope)
+        {
+          g_context=def->getOuterScope()->name();
+        }
       }
-      else
+      else if (def!=Doxygen::globalScope)
       {
         g_context=def->name();
       }
@@ -2525,6 +2559,87 @@ void DocDotFile::parse()
   DocNode *n=g_nodeStack.pop();
   ASSERT(n==this);
 }
+
+DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context) : 
+      m_name(name), m_relPath(g_relPath), m_context(context)
+{
+  m_parent = parent; 
+}
+
+void DocMscFile::parse()
+{
+  g_nodeStack.push(this);
+  DBG(("DocMscFile::parse() start\n"));
+
+  doctokenizerYYsetStateTitle();
+  int tok;
+  while ((tok=doctokenizerYYlex()))
+  {
+    if (!defaultHandleToken(this,tok,m_children))
+    {
+      switch (tok)
+      {
+        case TK_COMMAND: 
+          warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Illegal command %s as part of a \\mscfile",
+	       qPrint(g_token->name));
+          break;
+        case TK_SYMBOL: 
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unsupported symbol %s found",
+               qPrint(g_token->name));
+          break;
+        default:
+	  warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unexpected token %s",
+		tokToString(tok));
+          break;
+      }
+    }
+  }
+  tok=doctokenizerYYlex();
+  while (tok==TK_WORD) // there are values following the title
+  {
+    if (g_token->name=="width") 
+    {
+      m_width=g_token->chars;
+    }
+    else if (g_token->name=="height") 
+    {
+      m_height=g_token->chars;
+    }
+    else 
+    {
+      warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: Unknown option %s after image title",
+            qPrint(g_token->name));
+    }
+    tok=doctokenizerYYlex();
+  }
+  ASSERT(tok==0);
+  doctokenizerYYsetStatePara();
+  handlePendingStyleCommands(this,m_children);
+
+  bool ambig;
+  FileDef *fd = findFileDef(Doxygen::mscFileNameDict,m_name,ambig);
+  if (fd)
+  {
+    m_file = fd->absFilePath();
+  }
+  else if (ambig)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: included msc file name %s is ambiguous.\n"
+           "Possible candidates:\n%s",qPrint(m_name),
+           qPrint(showFileDefMatches(Doxygen::exampleNameDict,m_name))
+          );
+  }
+  else
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: included dot file %s is not found "
+           "in any of the paths specified via MSCFILE_DIRS!",qPrint(m_name));
+  }
+
+  DBG(("DocMscFile::parse() end\n"));
+  DocNode *n=g_nodeStack.pop();
+  ASSERT(n==this);
+}
+
 
 
 //---------------------------------------------------------------------------
@@ -4052,8 +4167,20 @@ int DocParamList::parse(const QCString &cmdName)
   {
     if (m_type==DocParamSect::Param)
     {
-      g_hasParamCommand=TRUE;
-      checkArgumentName(g_token->name,TRUE);
+      int typeSeparator = g_token->name.find('#'); // explicit type position
+      if (typeSeparator!=-1)
+      {
+        handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
+        g_token->name = g_token->name.mid(typeSeparator+1);
+        g_hasParamCommand=TRUE;
+        checkArgumentName(g_token->name,TRUE);
+        ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
+      }
+      else
+      {
+        g_hasParamCommand=TRUE;
+        checkArgumentName(g_token->name,TRUE);
+      }
     }
     else if (m_type==DocParamSect::RetVal)
     {
@@ -4162,6 +4289,11 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
   g_nodeStack.push(this);
+
+  if (d!=Unspecified)
+  {
+    m_hasInOutSpecifier=TRUE;
+  }
 
   DocParamList *pl = new DocParamList(this,m_type,d);
   if (m_children.isEmpty())
@@ -4392,6 +4524,30 @@ void DocPara::handleDotFile(const QCString &cmdName)
   df->parse();
 }
 
+void DocPara::handleMscFile(const QCString &cmdName)
+{
+  int tok=doctokenizerYYlex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: expected whitespace after %s command",
+        qPrint(cmdName));
+    return;
+  }
+  doctokenizerYYsetStateFile();
+  tok=doctokenizerYYlex();
+  doctokenizerYYsetStatePara();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(g_fileName,doctokenizerYYlineno,"warning: unexpected token %s as the argument of %s",
+        tokToString(tok),qPrint(cmdName));
+    return;
+  }
+  QCString name = g_token->name;
+  DocMscFile *df = new DocMscFile(this,name,g_context);
+  m_children.append(df);
+  df->parse();
+}
+
 void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
 {
   int tok=doctokenizerYYlex();
@@ -4549,7 +4705,10 @@ void DocPara::handleInheritDoc()
       //printf("{InheritDocs:%s=>%s}\n",g_memberDef->qualifiedName().data(),reMd->qualifiedName().data());
       docParserPushContext();
       g_scope=reMd->getOuterScope();
-      g_context=g_scope->name();
+      if (g_scope!=Doxygen::globalScope)
+      {
+        g_context=g_scope->name();
+      }
       g_memberDef=reMd;
       g_styleStack.clear();
       g_nodeStack.clear();
@@ -4903,6 +5062,9 @@ int DocPara::handleCommand(const QCString &cmdName)
     case CMD_DOTFILE:
       handleDotFile(cmdName);
       break;
+    case CMD_MSCFILE:
+      handleMscFile(cmdName);
+      break;
     case CMD_LINK:
       handleLink(cmdName,FALSE);
       break;
@@ -5131,7 +5293,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           {
             // copy attributes
             HtmlAttribList attrList = tagHtmlAttribs;
-            // and remove the href attribute
+            // and remove the src attribute
             bool result = attrList.remove(index);
             ASSERT(result);
             DocImage *img = new DocImage(this,attrList,opt->value,DocImage::Html);
@@ -6159,10 +6321,10 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   bool fortranOpt = Config_getBool("OPTIMIZE_FOR_FORTRAN");
   docParserPushContext();
 
-  if (ctx &&
+  if (ctx && ctx!=Doxygen::globalScope &&
       (ctx->definitionType()==Definition::TypeClass || 
        ctx->definitionType()==Definition::TypeNamespace
-      )
+      ) 
      ) 
   {
     g_context = ctx->name();
@@ -6170,19 +6332,18 @@ DocNode *validatingParseDoc(const char *fileName,int startLine,
   else if (ctx && ctx->definitionType()==Definition::TypePage)
   {
     Definition *scope = ((PageDef*)ctx)->getPageScope();
-    if (scope) g_context = scope->name();
+    if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else if (ctx && ctx->definitionType()==Definition::TypeGroup)
   {
     Definition *scope = ((GroupDef*)ctx)->getGroupScope();
-    if (scope) g_context = scope->name();
+    if (scope && scope!=Doxygen::globalScope) g_context = scope->name();
   }
   else
   {
     g_context = "";
   }
   g_scope = ctx;
-  //printf("g_context=%s\n",g_context.data());
 
   if (indexWords && md && Doxygen::searchIndex)
   {

@@ -252,7 +252,6 @@ void Definition::removeFromMap(Definition *d)
     DefinitionIntf *di=Doxygen::symbolMap->find(symbolName);
     if (di)
     {
-      ASSERT(di!=0);
       if (di!=d) // symbolName not unique
       {
         //printf("  removing from list: %p!\n",di);
@@ -435,6 +434,18 @@ void Definition::setDocumentation(const char *d,const char *docFile,int docLine,
 
 #define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
 
+// do a UTF-8 aware search for the last real character and return TRUE 
+// if that is a multibyte one.
+static bool lastCharIsMultibyte(const QCString &s)
+{
+  int l = s.length();
+  int p = 0;
+  int pp = -1;
+  while ((p=nextUtf8CharPosition(s,l,p))<l) pp=p;
+  if (pp==-1 || ((uchar)s[pp])<0x80) return FALSE;
+  return TRUE;
+}
+
 void Definition::_setBriefDescription(const char *b,const char *briefFile,int briefLine)
 {
   static QCString outputLanguage = Config_getEnum("OUTPUT_LANGUAGE");
@@ -447,11 +458,12 @@ void Definition::_setBriefDescription(const char *b,const char *briefFile,int br
   int bl = brief.length();
   if (bl>0 && needsDot) // add punctuation if needed
   {
-    switch(brief.at(bl-1))
+    int c = brief.at(bl-1);
+    switch(c)
     {
-      case '.': case '!': case '?': case '>': case ':': break;
+      case '.': case '!': case '?': case '>': case ':': case ')': break;
       default: 
-        if (uni_isupper(brief.at(0))) brief+='.'; 
+        if (uni_isupper(brief.at(0)) && !lastCharIsMultibyte(brief)) brief+='.'; 
         break;
     }
   }

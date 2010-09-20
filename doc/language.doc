@@ -60,8 +60,8 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Arabic</td>
-    <td>Moaz Reyad</td>
-    <td>moazreyad at yahoo dot com</td>
+    <td>Moaz Reyad<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
+    <td><span style="color: brown">[resigned]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -73,7 +73,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Catalan</td>
     <td>Maximiliano Pin<br/>Albert Mora</td>
-    <td>max dot pin at bitroit dot com<br/><span style="color: red; background-color: yellow">[unreachable]</span></td>
+    <td>max dot pin at bitroit dot com<br/><span style="color: brown">[unreachable]</span></td>
     <td>1.6.3</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -151,7 +151,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Hungarian</td>
     <td>Ákos Kiss<br/>Földvári György</td>
-    <td>akiss at users dot sourceforge dot net<br/><span style="color: red; background-color: yellow">[unreachable]</span></td>
+    <td>akiss at users dot sourceforge dot net<br/><span style="color: brown">[unreachable]</span></td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -169,7 +169,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Japanese</td>
     <td>Hiroki Iseri<br/>Ryunosuke Satoh<br/>Kenji Nagamatsu<br/>Iwasa Kazmi</td>
-    <td>goyoki at gmail dot com<br/>sun594 at hotmail dot com<br/>naga at joyful dot club dot ne dot jp<br/><span style="color: red; background-color: yellow">[unreachable]</span></td>
+    <td>goyoki at gmail dot com<br/>sun594 at hotmail dot com<br/>naga at joyful dot club dot ne dot jp<br/><span style="color: brown">[unreachable]</span></td>
     <td>1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -181,7 +181,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Korean</td>
     <td>Kim Taedong<br/>SooYoung Jung<br/>Richard Kim</td>
-    <td>fly1004 at gmail dot com<br/>jung5000 at gmail dot com<br/><span style="color: red; background-color: yellow">[unreachable]</span></td>
+    <td>fly1004 at gmail dot com<br/>jung5000 at gmail dot com<br/><span style="color: brown">[unreachable]</span></td>
     <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -192,8 +192,8 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Lithuanian</td>
-    <td>Tomas Simonaitis<br/>Mindaugas Radzius<br/>Aidas Berukstis<br/>-- contact lost --</td>
-    <td><span style="color: red; background-color: yellow">[unreachable]</span><br/><span style="color: red; background-color: yellow">[unreachable]</span><br/><span style="color: red; background-color: yellow">[unreachable]</span><br/><span style="color: red; background-color: yellow">[Please, try to help to find someone.]</span></td>
+    <td>Tomas Simonaitis<br/>Mindaugas Radzius<br/>Aidas Berukstis<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
+    <td><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
     <td>1.4.6</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -217,13 +217,13 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Polish</td>
     <td>Piotr Kaminski<br/>Grzegorz Kowal<br/>Krzysztof Kral</td>
-    <td><span style="color: red; background-color: yellow">[unreachable]</span><br/><span style="color: red; background-color: yellow">[unreachable]</span><br/>krzysztof dot kral at gmail dot com</td>
+    <td><span style="color: brown">[unreachable]</span><br/><span style="color: brown">[unreachable]</span><br/>krzysztof dot kral at gmail dot com</td>
     <td>1.6.3</td>
   </tr>
   <tr bgcolor="#ffffff">
     <td>Portuguese</td>
     <td>Rui Godinho Lopes</td>
-    <td><span style="color: red; background-color: yellow">[resigned]</span></td>
+    <td><span style="color: brown">[resigned]</span></td>
     <td>1.3.3</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -241,7 +241,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Serbian</td>
     <td>Dejan Milosavljevic</td>
-    <td><span style="color: red; background-color: yellow">[unreachable]</span></td>
+    <td><span style="color: brown">[unreachable]</span></td>
     <td>1.6.0</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -265,7 +265,7 @@ when the translator was updated.
   <tr bgcolor="#ffffff">
     <td>Spanish</td>
     <td>Bartomeu<br/>Francisco Oltra Thennet<br/>David Vaquero</td>
-    <td>bartomeu at loteria3cornella dot com<br/><span style="color: red; background-color: yellow">[unreachable]</span><br/>david at grupoikusnet dot com</td>
+    <td>bartomeu at loteria3cornella dot com<br/><span style="color: brown">[unreachable]</span><br/>david at grupoikusnet dot com</td>
     <td>up-to-date</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -282,8 +282,8 @@ when the translator was updated.
   </tr>
   <tr bgcolor="#ffffff">
     <td>Ukrainian</td>
-    <td>Olexij Tkatchenko<br/>-- searching for the maintainer --</td>
-    <td><span style="color: red; background-color: yellow">[resigned]</span><br/><span style="color: red; background-color: yellow">[Please, try to help to find someone.]</span></td>
+    <td>Olexij Tkatchenko<br/><span style="color: red; background-color: yellow">-- searching for the maintainer --</span></td>
+    <td><span style="color: brown">[resigned]</span><br/><span style="color: brown">[Please, try to help to find someone.]</span></td>
     <td>1.4.1</td>
   </tr>
   <tr bgcolor="#ffffff">
@@ -310,7 +310,8 @@ when the translator was updated.
   \hline
   Afrikaans & Johan Prinsloo & {\tt\tiny johan at zippysnoek dot com} & 1.6.0 \\
   \hline
-  Arabic & Moaz Reyad & {\tt\tiny moazreyad at yahoo dot com} & 1.4.6 \\
+  Arabic & Moaz Reyad & {\tt\tiny [resigned] moazreyad at yahoo dot com} & 1.4.6 \\
+  ~ & -- searching for the maintainer -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
   \hline
   Brazilian Portuguese & Fabio "FJTC" Jun Takada Chino & {\tt\tiny jun-chino at uol dot com dot br} & up-to-date \\
   \hline
@@ -367,7 +368,7 @@ when the translator was updated.
   Lithuanian & Tomas Simonaitis & {\tt\tiny [unreachable] haden at homelan dot lt} & 1.4.6 \\
   ~ & Mindaugas Radzius & {\tt\tiny [unreachable] mindaugasradzius at takas dot lt} & ~ \\
   ~ & Aidas Berukstis & {\tt\tiny [unreachable] aidasber at takas dot lt} & ~ \\
-  ~ & -- contact lost -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
+  ~ & -- searching for the maintainer -- & {\tt\tiny [Please, try to help to find someone.]} & ~ \\
   \hline
   Macedonian & Slave Jovanovski & {\tt\tiny slavejovanovski at yahoo dot com} & 1.6.0 \\
   \hline
@@ -641,7 +642,7 @@ Looking at the base class of the language translator, the script
 guesses also the status of the translator -- see the last column of
 the table with languages above.  The \c translator.py is called
 automatically when the doxygen documentation is generated.  You can
-also run the script manualy whenever you feel that it can help you.
+also run the script manually whenever you feel that it can help you.
 Of course, you are not forced to use the results of the script.  You
 can find the same information by looking at the adapter class and
 its base classes.
@@ -677,7 +678,7 @@ end with <code>=0;</code>).
 If everything compiles fine, try to run \c translator.py, and have a
 look at the translator report (ASCII file) at the \c doxygen/doc
 directory. Even if your translator is marked as up-to-date, there
-still may be some remarks related to your souce code. Namely, the
+still may be some remarks related to your source code. Namely, the
 obsolete methods--that are not used at all--may be listed in the
 section for your language. Simply, remove their code (and run the \c
 translator.py again). Also, you will be informed when you forgot to
@@ -700,7 +701,7 @@ TranslatorAdapter_1_2_4, if it does not implement the methods below
 the comment <code>new since 1.2.4</code>. When you implement them,
 your class should use newer translator adapter.
 
-Run the \c translator.py script occasionaly and give it your \c xx
+Run the \c translator.py script occasionally and give it your \c xx
 identification (from \c translator_xx.h) to create the translator
 report shorter (also produced faster) -- it will contain only the
 information related to your translator. Once you reach the state when

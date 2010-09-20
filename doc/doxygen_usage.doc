@@ -49,7 +49,7 @@ with the -u option.
 \verbatim
 doxygen -u <config_file>
 \endverbatim
-All configuration settings in the orginal configuration file will be copied
+All configuration settings in the original configuration file will be copied
 to the new configuration file. Any new options will have their default value.
 Note that comments that you may have added in the original configuration file 
 will be lost.

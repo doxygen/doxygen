@@ -112,7 +112,8 @@ CommandMap cmdMap[] =
   { "endmanonly",    CMD_ENDMANONLY },
   { "includelineno", CMD_INCWITHLINES },
   { "inheritdoc",    CMD_INHERITDOC },
-  { 0,               0 }
+  { "mscfile",       CMD_MSCFILE },
+  { 0,               0 },
 };
 
 //----------------------------------------------------------------------------

@@ -161,7 +161,12 @@ void LatexGenerator::init()
 
   t << endl
     << "clean:" << endl
-    << "\trm -f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
+#if defined(_MSC_VER)
+    << "\tdel "  
+#else
+    << "\trm -f " 
+#endif
+    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out refman.pdf" << endl;
 
   createSubDirs(d);
 }
@@ -190,6 +195,8 @@ static void writeDefaultHeaderPart1(FTextStream &t)
     "\\usepackage{float}\n"
     "\\usepackage{listings}\n"
     "\\usepackage{color}\n"
+    "\\usepackage{ifthen}\n"
+    "\\usepackage[table]{xcolor}\n"
     "\\usepackage{textcomp}\n"
     "\\usepackage{alltt}\n"
     //"\\usepackage{ae,aecompl,aeguill}\n"
@@ -311,7 +318,10 @@ static void writeDefaultStyleSheetPart1(FTextStream &t)
        "\\RequirePackage{calc}\n"
        "\\RequirePackage{color}\n"
        "\\RequirePackage{fancyhdr}\n"
-       "\\RequirePackage{verbatim}\n\n";
+       "\\RequirePackage{longtable}\n"
+       "\\RequirePackage{verbatim}\n"
+       "\\RequirePackage{ifthen}\n"
+       "\\RequirePackage{xcolor}\n\n";
 
   t << "% Use helvetica font instead of times roman\n"
        "\\RequirePackage{helvet}\n"
@@ -601,10 +611,28 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "  \\end{list}%\n"
        "}\n\n";
   t << "% Used by parameter lists\n"
-       "\\newenvironment{DoxyParams}[1]{%\n"
-       "  \\begin{DoxyDesc}{#1}%\n"
+       "\\newenvironment{DoxyParams}[2][]{%\n"
+       "  \\begin{DoxyDesc}{#2}%\n"
        "    \\begin{description}%\n"
+       "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
+       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       "      \\rowcolors{1}{white}{tableShade}%\n"
+       "      \\arrayrulecolor{gray}%\n"
+       "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "      \\ifthenelse{\\equal{#1}{}}\n" // default: name, docs columns
+       "      {\\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                          p{0.87\\textwidth}|}}%\n"
+       "      {\\ifthenelse{\\equal{#1}{1}}%\n" // inout, name, docs columns, or type, name, docs columns
+       "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n"
+       "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                          p{0.75\\textwidth}|}}%\n"
+       "       {\\begin{longtable}{|>{\\centering}p{0.10\\textwidth}|%\n" // inout, type, name, docs columns
+       "                          >{\\centering\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                          >{\\raggedleft\\hspace{0pt}}p{0.15\\textwidth}|%\n"
+       "                          p{0.58\\textwidth}|}}%\n"
+       "       }\\hline%\n"
        "}{%\n"
+       "      \\end{longtable}%\n"
        "    \\end{description}%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";
@@ -617,7 +645,16 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "\\newenvironment{DoxyRetVals}[1]{%\n"
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
+       "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
+       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       "      \\rowcolors{1}{white}{tableShade}%\n"
+       "      \\arrayrulecolor{gray}%\n"
+       "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
+       "                          p{0.77\\textwidth}|}%\n"
+       "      \\hline%\n"
        "}{%\n"
+       "      \\end{longtable}%\n"
        "    \\end{description}%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";
@@ -625,7 +662,16 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "\\newenvironment{DoxyExceptions}[1]{%\n"
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
+       "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
+       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       "      \\rowcolors{1}{white}{tableShade}%\n"
+       "      \\arrayrulecolor{gray}%\n"
+       "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
+       "                          p{0.77\\textwidth}|}%\n"
+       "      \\hline%\n"
        "}{%\n"
+       "      \\end{longtable}%\n"
        "    \\end{description}%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";
@@ -633,7 +679,16 @@ static void writeDefaultStyleSheetPart3(FTextStream &t)
        "\\newenvironment{DoxyTemplParams}[1]{%\n"
        "  \\begin{DoxyDesc}{#1}%\n"
        "    \\begin{description}%\n"
+       "      \\item[] \\hspace{\\fill} \\vspace{-25pt}%\n"
+       "      \\definecolor{tableShade}{HTML}{F8F8F8}%\n"
+       "      \\rowcolors{1}{white}{tableShade}%\n"
+       "      \\arrayrulecolor{gray}%\n"
+       "      \\setlength{\\tabcolsep}{0.01\\textwidth}%\n"
+       "      \\begin{longtable}{|>{\\raggedleft\\hspace{0pt}}p{0.25\\textwidth}|%\n"
+       "                          p{0.77\\textwidth}|}%\n"
+       "      \\hline%\n"
        "}{%\n"
+       "      \\end{longtable}%\n"
        "    \\end{description}%\n"
        "  \\end{DoxyDesc}%\n"
        "}\n\n";

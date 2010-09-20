@@ -155,7 +155,7 @@ The option has the same effect for multi-line special C++ comments:
 or
 
 \verbatim
-//! Brief descripion.
+//! Brief description.
 
 //! Detailed description 
 //! starts here.
@@ -205,7 +205,7 @@ for the Qt style.
 By default a JavaDoc style documentation block behaves the same way as a
 Qt style documentation block. This is not according the JavaDoc specification
 however, where the first sentence of the documentation block is automatically
-treated as a brief description. To enable this behaviour you should set
+treated as a brief description. To enable this behavior you should set
 \ref cfg_javadoc_autobrief "JAVADOC_AUTOBRIEF" to YES in the configuration
 file. If you enable this option and want to put a dot in the middle of a
 sentence without ending it, you should put a backslash and a space after it.
@@ -426,7 +426,7 @@ Go to the <a href="lists.html">next</a> section or return to the
 
 For VHDL a comment normally start with "--". Doxygen will extract comments
 starting with "--!". There are only two types of comment blocks in VHDL;
-a one line --! comment representing a brief description, and a multiline
+a one line --! comment representing a brief description, and a multi-line
 --! comment (where the --! prefix is repeated for each line) representing
 a detailed description.
 
@@ -453,7 +453,7 @@ settings where overruled.
 When using doxygen for Fortran code you should
 set \ref cfg_optimize_for_fortran "OPTIMIZE_FOR_FORTRAN" to \c YES.
 
-For fortran "!>" or "!<" starts a comment and "!!" or "!>" can be used to 
+For Fortran "!>" or "!<" starts a comment and "!!" or "!>" can be used to 
 continuate a one line comment into a multi-line comment.
 
 Here is an example of a documented Fortran subroutine:

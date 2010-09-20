@@ -127,7 +127,7 @@ Please note that as a consequence warnings about undocumented members
 will not be generated as long as \ref cfg_extract_all "EXTRACT_ALL" is 
 set to \c YES.
 
-To analyse an existing piece of software it is useful to cross-reference 
+To analyze an existing piece of software it is useful to cross-reference 
 a (documented) entity with its definition in the source files. Doxygen will
 generate such cross-references if you set 
 the \ref cfg_source_browser "SOURCE_BROWSER" tag to \c YES.  
@@ -250,7 +250,7 @@ basically two options:
 <ol>
 <li>Place a \e special documentation block in front of the declaration or
     definition of the member, class or namespace. For file, class and namespace
-    members it is also allowed to place the documention directly after the 
+    members it is also allowed to place the documentation directly after the 
     member. See section \ref specialblock to learn more about special 
     documentation blocks.
 <li>Place a special documentation block somewhere else (another file or 

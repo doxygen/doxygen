@@ -744,7 +744,7 @@ void addConfigOptions(Config *cfg)
   //----
   cb = cfg->addBool(
                  "WARN_NO_PARAMDOC",
-                 "The WARN_NO_PARAMDOC option can be abled to get warnings for\n"
+                 "The WARN_NO_PARAMDOC option can be enabled to get warnings for\n"
                  "functions that are documented, but have no documentation for their parameters\n"
                  "or return value. If set to NO (the default) doxygen will only warn about\n"
                  "wrong or incomplete parameter documentation, but not about the absence of\n"
@@ -1541,9 +1541,9 @@ void addConfigOptions(Config *cfg)
   ce = cfg->addEnum(
                  "PAPER_TYPE",
                  "The PAPER_TYPE tag can be used to set the paper type that is used\n"
-                 "by the printer. Possible values are: a4, a4wide, letter, legal and\n"
+                 "by the printer. Possible values are: a4, letter, legal and\n"
                  "executive. If left blank a4wide will be used.",
-                 "a4wide"
+                 "a4"
                 );
   ce->addValue("a4");
   ce->addValue("a4wide");
@@ -1978,9 +1978,8 @@ void addConfigOptions(Config *cfg)
                  "If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will\n"
                  "generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base\n"
                  "or super classes. Setting the tag to NO turns the diagrams off. Note that\n"
-                 "this option is superseded by the HAVE_DOT option below. This is only a\n"
-                 "fallback. It is recommended to install and use dot, since it yields more\n"
-                 "powerful graphs.",
+                 "this option also works with HAVE_DOT disabled, but it is recommended to\n"
+                 "install and use dot, since it yields more powerful graphs.",
                  TRUE
                 );
   //----
@@ -2184,6 +2183,14 @@ void addConfigOptions(Config *cfg)
                  "\\dotfile command)."
                 );
   cl->addDependency("HAVE_DOT");
+  cl->setWidgetType(ConfigList::Dir);
+  //----
+  cl = cfg->addList(
+                 "MSCFILE_DIRS",
+                 "The MSCFILE_DIRS tag can be used to specify one or more directories that\n"
+                 "contain msc files that are included in the documentation (see the\n"
+                 "\\mscfile command)."
+                );
   cl->setWidgetType(ConfigList::Dir);
   //----
   ci = cfg->addInt(

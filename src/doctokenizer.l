@@ -789,6 +789,15 @@ REFWORD   {LABELID}|{REFWORD2}
 			 g_token->name = g_token->name.left(yyleng-2);
 			 return TK_WORD;
                        }
+<St_Param>({LABELID}"|")*{LABELID}{WS}+("&")?"$"{LABELID} {
+  			 QCString params = yytext;
+			 int j = params.find('&');
+			 int i = params.find('$');
+			 if (j<i && j!=-1) i=j;
+			 QCString types = params.left(i).stripWhiteSpace();
+			 g_token->name = types+"#"+params.mid(i);
+			 return TK_WORD;
+  		       }
 <St_Param>[^ \t\n,]+   {
   			 g_token->name = yytext;
 			 return TK_WORD;

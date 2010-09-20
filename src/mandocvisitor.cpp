@@ -718,6 +718,14 @@ void ManDocVisitor::visitPre(DocDotFile *)
 void ManDocVisitor::visitPost(DocDotFile *) 
 {
 }
+void ManDocVisitor::visitPre(DocMscFile *)
+{
+}
+
+void ManDocVisitor::visitPost(DocMscFile *) 
+{
+}
+
 
 void ManDocVisitor::visitPre(DocLink *)
 {

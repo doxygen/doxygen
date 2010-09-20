@@ -7,6 +7,9 @@
 % The following one or more lines contain information about 
 % the maintainer(s) for the language (one line, one maintainer)
 % in the form: <readable name><colon><e-mail>
+% If the readable name name starts with '--' it will be displayed in HTML
+% output as a highlighted text notice related to the langluage (usually
+% '-- searching for the maintainer --').
 % If the <e-mail> is prefixed [some_text] it is not displayed in the table
 % of maintainers in the Doxygen documentation, nor it is used when building
 % the mailto.txt by translator.py. The mark is displayed in the documentation
@@ -16,7 +19,8 @@ TranslatorAfrikaans
 Johan Prinsloo: johan at zippysnoek dot com
 
 TranslatorArabic
-Moaz Reyad: moazreyad at yahoo dot com
+Moaz Reyad: [resigned] moazreyad at yahoo dot com
+-- searching for the maintainer --: [Please, try to help to find someone.]
 
 TranslatorBrazilian
 Fabio "FJTC" Jun Takada Chino: jun-chino at uol dot com dot br
@@ -89,7 +93,7 @@ TranslatorLithuanian
 Tomas Simonaitis: [unreachable] haden at homelan dot lt
 Mindaugas Radzius: [unreachable] mindaugasradzius at takas dot lt
 Aidas Berukstis: [unreachable] aidasber at takas dot lt
--- contact lost --: [Please, try to help to find someone.]
+-- searching for the maintainer --: [Please, try to help to find someone.]
 
 TranslatorNorwegian
 Lars Erik Jordet: lejordet at gmail dot com

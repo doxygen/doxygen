@@ -232,7 +232,7 @@ void DocSets::addContentsItem(bool isDir,
 
 void DocSets::addIndexItem(Definition *context,MemberDef *md,const char *)
 {
-  if (md==0 || context==0) return; // TODO: also index non members...
+  if (md==0 && context==0) return;
 
   FileDef *fd      = 0;
   ClassDef *cd     = 0;

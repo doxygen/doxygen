@@ -567,6 +567,7 @@ FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]+
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
+PHPSCOPENAME ({ID}"\\")+{ID}
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,]*">")?
 CSSCOPENAME (({ID}?{BN}*"."{BN}*)*)((~{BN}*)?{ID})
 PRE       [pP][rR][eE]
@@ -635,6 +636,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x	Comment
 %x	PackageName
 %x	JavaImport
+%x	PHPUse
+%x	PHPUseAs
 %x	CSAccessorDecl
 %x	CSGeneric
 %x	PreLineCtrl
@@ -1205,10 +1208,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <ObjCSkipStatement>";"			{
   					  BEGIN(FindMembers);
   					}
-<PackageName>{ID}("."{ID})*		{
+<PackageName>{ID}(("."|"\\"){ID})*	{
   					  isTypedef=FALSE;
 					  current->name = yytext;
 					  current->name = substitute(current->name,".","::");
+					  current->name = substitute(current->name,"\\","::");
 					  current->section = Entry::NAMESPACE_SEC;
 					  current->type = "namespace" ;
 					  current->fileName  = yyFileName;
@@ -1286,7 +1290,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->startLine = yyLineNr;
 					  current->bodyLine  = yyLineNr;
 					  lineCount();
-  					  BEGIN( CompoundName ); 
+					  if (insidePHP)
+					  {
+					    BEGIN( PackageName );
+					  }
+					  else
+					  {
+  					    BEGIN( CompoundName ); 
+					  }
 					}
 <FindMembers>{B}*"module"{BN}+		{ 
 					  lineCount();
@@ -1649,14 +1660,57 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <NSAliasArg>";"				{
   					  BEGIN( FindMembers );
   					}
+<PHPUse>({ID}{BN}*"\\"{BN}*)+{ID}	{
+  					  lineCount();
+					  aliasName=yytext;
+                                          //current->fileName = yyFileName; 
+  					  //current->section=Entry::USINGDIR_SEC;
+					  //current_root->addSubEntry(current);
+					  //current = new Entry;
+					  //initEntry();
+					  BEGIN(PHPUseAs);
+					}
+<PHPUseAs>{BN}+"as"{BN}+		{
+  					  lineCount();
+  					}
+<PHPUseAs>{ID}				{
+                                          Doxygen::namespaceAliasDict.insert(yytext,
+					       new QCString(removeRedundantWhiteSpace(
+						   substitute(aliasName,"\\","::"))));
+					  aliasName.resize(0);
+  					}
+<PHPUseAs>[,;]				{
+                                          if (!aliasName.isEmpty())
+					  {
+					    int i=aliasName.findRev('\\');
+					    QCString an = removeRedundantWhiteSpace(
+						    substitute(aliasName,"\\","::"));
+					    Doxygen::namespaceAliasDict.insert(aliasName.mid(i+1),
+						                        new QCString(an));
+					    current->name     = an;
+					    current->fileName = yyFileName; 
+					    current->section=Entry::USINGDECL_SEC;
+					    current_root->addSubEntry(current);
+					    current = new Entry ;
+					    initEntry();
+					  }
+					  if (*yytext==',')
+					  {
+					    BEGIN(PHPUse);
+					  }
+					  else
+					  {
+  					    BEGIN(FindMembers);
+					  }
+  					}
 <JavaImport>({ID}{BN}*"."{BN}*)+"*"	{ // package import => add as a using directive
   					  lineCount();
   					  QCString scope=yytext;
-					  current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-2),".","::"));
+					  current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
                                           current->fileName = yyFileName; 
   					  current->section=Entry::USINGDIR_SEC;
 					  current_root->addSubEntry(current);
-					  current = new Entry ;
+					  current = new Entry;
 					  initEntry();
 					  BEGIN(Using);
   					}
@@ -1891,6 +1945,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      BEGIN(NextSemi);
 					    else // insideJava or insideD
 					      BEGIN(JavaImport);
+					  }
+					  else if (insidePHP && strcmp(yytext,"use")==0)
+					  {
+					    BEGIN(PHPUse);
 					  }
 					  else if (insideJava && strcmp(yytext,"package")==0)
 					  {
@@ -4783,7 +4841,23 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <BasesProt>"private"{BN}+               { lineCount(); baseProt = Private; }
 <BasesProt>{BN}				{ lineCount(); }
 <BasesProt>.				{ unput(*yytext); BEGIN(Bases); }
+<Bases>("\\")?{BN}*({ID}{BN}*"\\"{BN}*)*{ID}	{ 
+                                          if (!insidePHP)
+					  {
+					    REJECT;
+					  }
+					  else // PHP base class of the form \Ns\Cl or Ns\Cl
+					  {
+  					    lineCount();
+					    QCString bn=yytext;
+					    bn = substitute(bn,"\\","::");
+					    baseName += bn;
+					    current->args += ' ';
+					    current->args += yytext;
+					  }
+                                        }
 <Bases>("::")?{BN}*({ID}{BN}*"::"{BN}*)*{ID}	{ 
+  					  lineCount();
                                           QCString baseScope = yytext;
                                           if (insideCS && baseScope.stripWhiteSpace()=="where")
 					  { 

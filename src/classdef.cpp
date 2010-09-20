@@ -1065,7 +1065,8 @@ void ClassDef::writeInheritanceGraph(OutputList &ol)
 
   
   bool renderDiagram = FALSE;
-  if (Config_getBool("HAVE_DOT") && Config_getBool("CLASS_DIAGRAMS"))
+  if (Config_getBool("HAVE_DOT") && 
+      (Config_getBool("CLASS_DIAGRAMS") || Config_getBool("CLASS_GRAPH")))
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,DotNode::Inheritance);

@@ -39,7 +39,7 @@ bool ArgumentList::hasDocumentation() const
   Argument *a;
   for (ali.toFirst();!hasDocs && (a=ali.current());++ali)
   {
-    hasDocs = hasDocs || a->hasDocumentation(); 
+    hasDocs = a->hasDocumentation(); 
   }
   return hasDocs;
 }
