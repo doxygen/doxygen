@@ -1084,7 +1084,7 @@ void Config::check()
   paperType=paperType.lower().stripWhiteSpace(); 
   if (paperType.isEmpty())
   {
-    paperType = "a4wide";
+    paperType = "a4";
   }
   if (paperType!="a4" && paperType!="a4wide" && paperType!="letter" && 
       paperType!="legal" && paperType!="executive")

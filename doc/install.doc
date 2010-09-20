@@ -24,15 +24,15 @@ to get the latest distribution, if you did not have it already.
 
 This section is divided into the following sections:
 <ul>
-<li>\ref install_src_unix  "Compiling from source on Unix"
-<li>\ref install_bin_unix  "Installing the binaries on Unix"
-<li>\ref unix_problems "Known compilation problems for Unix"
+<li>\ref install_src_unix  "Compiling from source on UNIX"
+<li>\ref install_bin_unix  "Installing the binaries on UNIX"
+<li>\ref unix_problems "Known compilation problems for UNIX"
 <li>\ref install_src_windows "Compiling from source on Windows"
 <li>\ref install_bin_windows "Installing the binaries on Windows"
 <li>\ref build_tools "Tools used to develop doxygen"
 </ul>
 
-\section install_src_unix    Compiling from source on Unix
+\section install_src_unix    Compiling from source on UNIX
 
 If you downloaded the source distribution, you need at least the 
 following to build the executable:
@@ -47,7 +47,7 @@ following to build the executable:
     <a href="http://www.perl.com/">perl</a>
     \latexonly(see {\tt http://www.perl.com/})\endlatexonly.
     \addindex perl
-<li>The configure script assume the availibility of standard Unix tools such 
+<li>The configure script assume the availability of standard UNIX tools such 
     as sed, date, find, uname, mv, cp, cat, echo, tr, cd, and rm.
 </ul>
 
@@ -162,10 +162,10 @@ Compilation is now done by performing the following steps:
 
 </ol>
 
-\section install_bin_unix    Installing the binaries on Unix
+\section install_bin_unix    Installing the binaries on UNIX
 
     After the compilation of the source code do a <code>make install</code>
-    to install doxygen. If you downloaded the binary distribution for Unix,
+    to install doxygen. If you downloaded the binary distribution for UNIX,
     type:
 
 \verbatim
@@ -194,7 +194,7 @@ Compilation is now done by performing the following steps:
     If you have a RPM or DEP package, then please follow the 
     standard installation procedure that is required for these packages. 
 
-\section unix_problems Known compilation problems for Unix
+\section unix_problems Known compilation problems for UNIX
 
 <b>Qt problems</b>
 
@@ -236,7 +236,7 @@ your distribution does not have it please select another paper type
 in the config file (see the \ref cfg_paper_type "PAPER_TYPE" tag in the 
 config file).
 
-<b>HP-UX \& Digital Unix problems</b>
+<b>HP-UX \& Digital UNIX problems</b>
 
 If you are compiling for HP-UX with aCC and you get this error:
 \verbatim
@@ -258,7 +258,7 @@ If you are compiling for HP-UX with aCC and you get this error:
   If that does not help, try removing <code>ce_parse.cpp</code> and let 
   bison rebuild it (this worked for me).
 
-If you are compiling for Digital Unix, the same problem can be solved
+If you are compiling for Digital UNIX, the same problem can be solved
 (according to Barnard Schmallhof) by replacing the following in 
 ce_parse.cpp:
    
@@ -370,7 +370,7 @@ before running make.
 From version 1.7.0 onwards, build files are provided for Visual Studio 2008.
 Also the free (as in beer) "Express" version of Developer Studio can be used to 
 compile doxygen. Alternatively, you can compile doxygen 
-\ref install_src_unix "the Unix way" using 
+\ref install_src_unix "the UNIX way" using 
 <a href="http://en.wikipedia.org/wiki/Cygwin">Cygwin</a>
 or <a href="http://www.mingw.org/">MinGW</a>.
 
@@ -430,7 +430,7 @@ it and use the INPUT_FILTER, you will run to risk of crashing Windows!
 The problem is reported to and confirmed by Microsoft so maybe it will 
 fixed in the next service pack.
 
-Since Windows comes without all the nice tools that Unix users are
+Since Windows comes without all the nice tools that UNIX users are
 used to, you'll need to install a number of these tools before you can compile 
 doxygen for Windows from the command-line.
 
@@ -579,7 +579,7 @@ In order to generate PDF output or use scientific formulas you will also need to
 install <a href="http://en.wikipedia.org/wiki/LaTeX">LaTeX</a> and 
 <a href="http://en.wikipedia.org/wiki/Ghostscript">Ghostscript</a>. 
 
-For LaTeX a number of distributions exists. Popular onces that should work with
+For LaTeX a number of distributions exists. Popular ones that should work with
 doxygen are <a href="http://www.miktex.org">MikTex</a> 
 and <a href="http://www.xemtex.org">XemTex</a>.
 

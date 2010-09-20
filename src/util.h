@@ -380,6 +380,7 @@ void writeSummaryLink(OutputList &ol,const char *label,const char *title,
 
 QCString externalLinkTarget();
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
+int nextUtf8CharPosition(const QCString &utf8Str,int len,int startPos);
 
 #endif
 

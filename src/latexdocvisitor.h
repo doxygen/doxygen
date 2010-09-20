@@ -106,6 +106,8 @@ class LatexDocVisitor : public DocVisitor
     void visitPost(DocImage *);
     void visitPre(DocDotFile *);
     void visitPost(DocDotFile *);
+    void visitPre(DocMscFile *);
+    void visitPost(DocMscFile *);
     void visitPre(DocLink *lnk);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);
@@ -144,6 +146,10 @@ class LatexDocVisitor : public DocVisitor
     void startDotFile(const QCString &fileName,const QCString &width,
                       const QCString &height, bool hasCaption);
     void endDotFile(bool hasCaption);
+
+    void startMscFile(const QCString &fileName,const QCString &width,
+                      const QCString &height, bool hasCaption);
+    void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName);
 
     void pushEnabled();

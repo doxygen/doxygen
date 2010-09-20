@@ -15,7 +15,7 @@ Where
 
 <ul>
 
-<li>The "key =&gt;" part only appears if the parent node is a hash.
+<li>The "key =>" part only appears if the parent node is a hash.
 "key" is the key for this node.
 
 <li><b>"Name"</b> is a unique name for the node, defined in

@@ -103,6 +103,8 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocImage *);
     void visitPre(DocDotFile *);
     void visitPost(DocDotFile *);
+    void visitPre(DocMscFile *);
+    void visitPost(DocMscFile *);
     void visitPre(DocLink *);
     void visitPost(DocLink *);
     void visitPre(DocRef *);

@@ -6445,7 +6445,7 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
 
   // found the language
   SrcLangExt parserId = p->parserId;
-  QCString extName = extension;
+  QCString extName = extension.lower();
   if (extName.isEmpty()) return FALSE;
   if (extName.at(0)!='.') extName.prepend(".");
   if (g_extLookup.find(extension)!=0) // language was already register for this ext
@@ -6499,7 +6499,7 @@ SrcLangExt getLanguageFromFileName(const QCString fileName)
   int i = fileName.findRev('.');
   if (i!=-1) // name has an extension
   {
-    QCString extStr=fileName.right(fileName.length()-i);
+    QCString extStr=fileName.right(fileName.length()-i).lower();
     if (!extStr.isEmpty()) // non-empty extension
     {
       int *pVal=g_extLookup.find(extStr);

@@ -18,7 +18,7 @@
 
 Doxygen provides various levels of customization. 
 The \ref minor_tweaks "first section" discusses what to 
-do if you want to do minor tweaker to the look and feel of the output. 
+do if you want to do minor tweaking to the look and feel of the output. 
 The \ref layout "next" section show how to reorder and hide certain 
 information on a page. 
 The \ref xmlgenerator "last" section show how to generate whatever output
@@ -27,7 +27,7 @@ you want based on the XML output produced by doxygen.
 \section minor_tweaks Minor Tweaks
 
 To simply tweak things like fonts or colors, margins, or other look \& feel
-espects of the HTML output you can create a different 
+expects of the HTML output you can create a different 
 <a href="http://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
 You can also let doxygen use a custom header and footer for each HTML 
 page it generates, for instance to include a logo or to make the 
@@ -231,7 +231,7 @@ The file page has the following specific tags:
 The group page has a specific \c groupgraph tag which represents the
 graph showing the dependencies between groups.
 
-Similarily, the directory page has a specific \c directorygraph tag 
+Similarly, the directory page has a specific \c directorygraph tag 
 which represents the graph showing the dependencies between the directories 
 based on the \#include relations of the files inside the directories.
 

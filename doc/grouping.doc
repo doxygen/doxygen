@@ -20,7 +20,7 @@ Doxygen has three mechanisms to group things together.
 One mechanism works at a global level, creating a new page
 for each group. These groups are called \ref modules "'modules'" in the documentation.
 The second mechanism works within a member list of some compound entity,
-and is refered to as a \ref memgroup "'member groups'". 
+and is referred to as a \ref memgroup "'member groups'". 
 For \ref cmdpage "pages" there is a third grouping mechanism referred to 
 as \ref subpaging "subpaging".
 
@@ -163,7 +163,7 @@ block or a
 \endverbatim 
 block if you prefer C style 
 comments. Note that the members of the group should be 
-physcially inside the member group's body.
+physically inside the member group's body.
 
 Before the opening marker of a block a separate comment block may be 
 placed. This block should contain the \ref cmdname "@@name" 
@@ -207,8 +207,8 @@ Information can be grouped into pages using the \ref cmdpage "\\page" and
 \ref cmdsubpage "\\mainpage" commands. Normally, this results in a
 flat list of pages, where the "main" page is the first in the list. 
 
-Instead of adding structure using the approach decribed in section
-\ref modules "modules" it is often more natural and convienent to add 
+Instead of adding structure using the approach described in section
+\ref modules "modules" it is often more natural and convenient to add 
 additional structure to the pages using the \ref cmdsubpage "\\subpage" 
 command. 
 

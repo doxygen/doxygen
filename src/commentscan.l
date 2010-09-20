@@ -1038,7 +1038,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>^{B}*"."{B}*/\n                { // explicit end autolist: e.g "  ."
   				          addOutput(yytext); 
 					}
-<Comment>("."+)[a-z_A-Z0-9]		{ // . at start or in the middle of a word, or ellipsis
+<Comment>("."+)[a-z_A-Z0-9\)]		{ // . at start or in the middle of a word, or ellipsis
   					  addOutput(yytext);
   					}
 <Comment>".\\"[ \t]			{ // . with escaped space.

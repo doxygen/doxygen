@@ -59,6 +59,7 @@
   2010/08/20 - maintainers.txt to UTF-8, related processin of unicode strings
              - [any mark] introduced instead of [unreachable] only
              - marks hihglighted in HTML
+  2010/09/30 - Highlighting in what will be the table in langhowto.html modified.
   """                               
 
 from __future__ import generators
@@ -535,7 +536,6 @@ class Transl:
                 self.langReadable = 'Chinese Traditional'
             else:
                 self.langReadable = self.lang
-                
                 
 
     def __unexpectedToken(self, status, tokenId, tokenLineNo):
@@ -1871,18 +1871,26 @@ class TrManager:
             # and the list of their mangled e-mails. For English-based
             # translators that are coupled with the non-English based, 
             # insert the 'see' note.
-            mm = None  # init
-            ee = None  # init
+            mm = None  # init -- maintainer
+            ee = None  # init -- e-mail address
             if obj.status == 'En':
                 # Check whether there is the coupled non-English.
                 classId = obj.classId[:-2]
-                if self.__translDic.has_key(classId):
+                if classId in self.__translDic:
                     lang = self.__translDic[classId].langReadable
                     mm = u'see the %s language' % lang
                     ee = u'&nbsp;'
             
-            if not mm and self.__maintainersDic.has_key(obj.classId):
-                lm = [ m[0] for m in self.__maintainersDic[obj.classId] ]  
+            if not mm and obj.classId in self.__maintainersDic:
+                # Build a string of names separated by the HTML break element.
+                # Special notes used instead of names are highlighted.
+                lm = []  
+                for maintainer in self.__maintainersDic[obj.classId]:
+                    name = maintainer[0]
+                    if name.startswith(u'--'):
+                        name = u'<span style="color: red; background-color: yellow">'\
+                               + name + u'</span>'
+                    lm.append(name)
                 mm = u'<br/>'.join(lm)
                 
                 # The marked adresses (they start with the mark '[unreachable]', 
@@ -1894,7 +1902,7 @@ class TrManager:
                     address = maintainer[1]
                     m = rexMark.search(address)
                     if m is not None:
-                        address = u'<span style="color: red; background-color: yellow">'\
+                        address = u'<span style="color: brown">'\
                                   + m.group(u'mark') + u'</span>'
                     le.append(address)    
                 ee = u'<br/>'.join(le)

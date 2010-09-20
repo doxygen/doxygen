@@ -265,7 +265,7 @@ Looking at the base class of the language translator, the script
 guesses also the status of the translator -- see the last column of
 the table with languages above.  The \c translator.py is called
 automatically when the doxygen documentation is generated.  You can
-also run the script manualy whenever you feel that it can help you.
+also run the script manually whenever you feel that it can help you.
 Of course, you are not forced to use the results of the script.  You
 can find the same information by looking at the adapter class and
 its base classes.
@@ -301,7 +301,7 @@ end with <code>=0;</code>).
 If everything compiles fine, try to run \c translator.py, and have a
 look at the translator report (ASCII file) at the \c doxygen/doc
 directory. Even if your translator is marked as up-to-date, there
-still may be some remarks related to your souce code. Namely, the
+still may be some remarks related to your source code. Namely, the
 obsolete methods--that are not used at all--may be listed in the
 section for your language. Simply, remove their code (and run the \c
 translator.py again). Also, you will be informed when you forgot to
@@ -324,7 +324,7 @@ TranslatorAdapter_1_2_4, if it does not implement the methods below
 the comment <code>new since 1.2.4</code>. When you implement them,
 your class should use newer translator adapter.
 
-Run the \c translator.py script occasionaly and give it your \c xx
+Run the \c translator.py script occasionally and give it your \c xx
 identification (from \c translator_xx.h) to create the translator
 report shorter (also produced faster) -- it will contain only the
 information related to your translator. Once you reach the state when

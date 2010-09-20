@@ -101,7 +101,7 @@ Here is the above example with HTML commands:
 
 \note In this case the indentation is not important.
 
-<b>Using \\arg or \@li</b>
+<b>Using \\arg or \\li</b>
 
 For compatibility with the Qt Software's internal documentation tool qdoc and
 with KDoc, doxygen has two commands that can be used to create simple

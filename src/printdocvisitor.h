@@ -503,6 +503,16 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       printf("</dotfile>\n");
     }
+    void visitPre(DocMscFile *df)
+    {
+      indent_pre();
+      printf("<mscfile src=\"%s\">\n",df->name().data());
+    }
+    void visitPost(DocMscFile *) 
+    {
+      indent_post();
+      printf("</mscfile>\n");
+    }
     void visitPre(DocLink *lnk)
     {
       indent_pre();

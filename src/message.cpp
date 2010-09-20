@@ -116,8 +116,9 @@ void msg(const char *fmt, ...)
 static void do_warn(const char *tag, const char *file, int line, const char *fmt, va_list args)
 {
   if (!Config_getBool(tag)) return; // warning type disabled
-  char text[40960];
-  vsprintf(text, fmt, args);
+  char text[4096];
+  vsnprintf(text, 4096, fmt, args);
+  text[4095]='\0';
   QCString fileSubst = file==0 ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;

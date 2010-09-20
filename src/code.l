@@ -2851,13 +2851,15 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 					    if (cd)
 					    {
 					      setClassScope(cd->name());
+  					      g_scopeStack.push(SCOPEBLOCK);
+                                              DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
 					    }
-					    else
+					    else 
 					    {
-					      setClassScope(g_realScope);
+					      //setClassScope(g_realScope);
+  					      g_scopeStack.push(INNERBLOCK);
+                                              DBG_CTX((stderr,"** scope stack push INNERBLOCK\n"));
 					    }
-                                            DBG_CTX((stderr,"** scope stack push SCOPEBLOCK\n"));
-  					    g_scopeStack.push(SCOPEBLOCK);
 					  }
 					  else
 					  {
@@ -3356,7 +3358,8 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
 		  int startLine,int endLine,bool inlineFragment,
 		  MemberDef *memberDef,bool showLineNumbers)
 {
-  //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
+  //printf("***parseCode() exBlock=%d exName=%s fd=%p className=%s\n",
+  //    exBlock,exName,fd,className);
   if (s.isEmpty()) return;
   if (g_codeClassSDict==0)
   {
@@ -3386,6 +3389,7 @@ void parseCCode(CodeOutputInterface &od,const char *className,const QCString &s,
   g_theCallContext.clear();
   g_scopeStack.clear();
   g_classScope    = className;
+  //printf("parseCCode %s\n",className);
   g_exampleBlock  = exBlock; 
   g_exampleName   = exName;
   g_sourceFileDef = fd;

@@ -104,7 +104,9 @@ class RTFDocVisitor : public DocVisitor
     void visitPost(DocImage *);
     void visitPre(DocDotFile *);
     void visitPost(DocDotFile *);
-    void visitPre(DocLink *lnk);
+    void visitPre(DocMscFile *);
+    void visitPost(DocMscFile *);
+    void visitPre(DocLink *);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);
     void visitPost(DocRef *);

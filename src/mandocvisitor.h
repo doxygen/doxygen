@@ -104,6 +104,8 @@ class ManDocVisitor : public DocVisitor
     void visitPost(DocImage *);
     void visitPre(DocDotFile *);
     void visitPost(DocDotFile *);
+    void visitPre(DocMscFile *);
+    void visitPost(DocMscFile *);
     void visitPre(DocLink *lnk);
     void visitPost(DocLink *);
     void visitPre(DocRef *ref);

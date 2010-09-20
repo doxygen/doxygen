@@ -290,7 +290,7 @@ doxygen to be busy swapping symbols to and from disk most of the time
 causing a significant performance penality. 
 If the system has enough physical memory increasing the cache will improve the 
 performance by keeping more symbols in memory. Note that the value works on 
-a logarithmic scale so increasing the size by one will rougly double the 
+a logarithmic scale so increasing the size by one will roughly double the 
 memory usage. The cache size is given by this formula: 
 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0, 
 corresponding to a cache size of 2^16 = 65536 symbols 
@@ -514,7 +514,7 @@ parameters in a documented function, or documenting parameters that
 don&apos;t exist or using markup commands wrongly. 
 ' defval='1'/>
     <option type='bool' id='WARN_NO_PARAMDOC' docs='
-The WARN_NO_PARAMDOC option can be abled to get warnings for 
+The WARN_NO_PARAMDOC option can be enabled to get warnings for 
 functions that are documented, but have no documentation for their parameters 
 or return value. If set to NO (the default) doxygen will only warn about 
 wrong or incomplete parameter documentation, but not about the absence of 
@@ -999,7 +999,7 @@ implemented using a PHP enabled web server instead of at the web client
 using Javascript. Doxygen will generate the search PHP script and index 
 file to put on the web server. The advantage of the server 
 based approach is that it scales better to large projects and allows 
-full text search. The disadvances is that it is more difficult to setup 
+full text search. The disadvantages are that it is more difficult to setup 
 and does not have live searching capabilities. 
 ' defval='0' depends='SEARCHENGINE'/>
   </group>
@@ -1030,9 +1030,9 @@ If the COMPACT_LATEX tag is set to YES Doxygen generates more compact
 LaTeX documents. This may be useful for small projects and may help to 
 save some trees in general. 
 ' defval='0' depends='GENERATE_LATEX'/>
-    <option type='enum' id='PAPER_TYPE' defval='a4wide' docs='
+    <option type='enum' id='PAPER_TYPE' defval='a4' docs='
 The PAPER_TYPE tag can be used to set the paper type that is used 
-by the printer. Possible values are: a4, a4wide, letter, legal and 
+by the printer. Possible values are: a4, letter, legal and 
 executive. If left blank a4wide will be used. 
 ' depends='GENERATE_LATEX'>
       <value name='a4'/>
@@ -1301,9 +1301,8 @@ interpreter (i.e. the result of `which perl&apos;).
 If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will 
 generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base 
 or super classes. Setting the tag to NO turns the diagrams off. Note that 
-this option is superseded by the HAVE_DOT option below. This is only a 
-fallback. It is recommended to install and use dot, since it yields more 
-powerful graphs. 
+this option also works with HAVE_DOT disabled, but it is recommended to 
+install and use dot, since it yields more powerful graphs. 
 ' defval='1'/>
     <option type='string' id='MSCGEN_PATH' format='string' docs='
 You can define message sequence charts within doxygen comments using the \msc 
@@ -1430,6 +1429,12 @@ The DOTFILE_DIRS tag can be used to specify one or more directories that
 contain dot files that are included in the documentation (see the 
 \dotfile command). 
 ' depends='HAVE_DOT'>
+    </option>
+    <option type='list' id='MSCFILE_DIRS' format='dir' docs='
+The MSCFILE_DIRS tag can be used to specify one or more directories that 
+contain msc files that are included in the documentation (see the 
+\mscfile command). 
+' >
     </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' docs='
 The DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of 

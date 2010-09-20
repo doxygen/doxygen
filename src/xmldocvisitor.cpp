@@ -711,6 +711,17 @@ void XmlDocVisitor::visitPost(DocDotFile *)
   m_t << "</dotfile>" << endl;
 }
 
+void XmlDocVisitor::visitPre(DocMscFile *df)
+{
+  if (m_hide) return;
+  m_t << "<mscfile name=\"" << df->file() << "\">";
+}
+
+void XmlDocVisitor::visitPost(DocMscFile *) 
+{
+  if (m_hide) return;
+  m_t << "</dotfile>" << endl;
+}
 void XmlDocVisitor::visitPre(DocLink *lnk)
 {
   if (m_hide) return;
@@ -810,6 +821,24 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
   DocNode *param;
   for (li.toFirst();(param=li.current());++li)
   {
+    if (pl->paramTypes().count()>0)
+    {
+      QListIterator<DocNode> li(pl->paramTypes());
+      DocNode *type;
+      for (li.toFirst();(type=li.current());++li)
+      {
+        m_t << "<parametertype>";
+        if (type->kind()==DocNode::Kind_Word)
+        {
+          visit((DocWord*)type); 
+        }
+        else if (type->kind()==DocNode::Kind_LinkedWord)
+        {
+          visit((DocLinkedWord*)type); 
+        }
+        m_t << "</parametertype>" << endl;
+      }
+    }
     m_t << "<parametername";
     if (pl->direction()!=DocParamSect::Unspecified)
     {
