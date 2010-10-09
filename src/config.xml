@@ -555,8 +555,9 @@ If the value of the INPUT tag contains directories, you can use the
 FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
 and *.h) to filter out the source-files in the directories. If left 
 blank the following patterns are tested: 
-*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx 
-*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90 
+*.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh 
+*.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py 
+*.f90 *.f *.vhd *.vhdl
 '>
       <value name='*.c'/>
       <value name='*.cc'/>
@@ -984,6 +985,24 @@ not supported properly for IE 6.0, but are supported on all modern browsers.
 Note that when changing this option you need to delete any form_*.png files 
 in the HTML output before the changes have effect. 
 ' defval='1' depends='GENERATE_HTML'/>
+    <option type='bool' id='USE_MATHJAX' docs='
+Enable the USE_MATHJAX option to render LaTeX formulas using MathJax 
+(see http://www.mathjax.org) which uses client side Javascript for the 
+rendering instead of using prerendered bitmaps. Use this if you do not 
+have LaTeX installed or if you want to formulas look prettier in the HTML 
+output. When enabled you also need to install MathJax separately and 
+configure the path to it using the MATHJAX_RELPATH option.
+' defval='0'/> 
+    <option type='string' id='MATHJAX_RELPATH' docs=' 
+When MathJax is enabled you need to specify the location relative to the 
+HTML output directory using the MATHJAX_RELPATH option. The destination 
+directory should contain the MathJax.js script. For instance, if the mathjax 
+directory is located at the same level as the HTML output directory, then 
+MATHJAX_RELPATH should be ../mathjax. The default value points to the
+mathjax.org site, so you can quickly see the result without installing 
+MathJax, but it is strongly recommended to install a local copy of MathJax 
+before deployment.
+' defval='http://www.mathjax.org/mathjax'/>
     <option type='bool' id='SEARCHENGINE' docs='
 When the SEARCHENGINE tag is enabled doxygen will generate a search box 
 for the HTML output. The underlying search engine uses javascript 

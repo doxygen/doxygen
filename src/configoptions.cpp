@@ -402,7 +402,7 @@ void addConfigOptions(Config *cfg)
                  "causing a significant performance penality.\n"
                  "If the system has enough physical memory increasing the cache will improve the\n"
                  "performance by keeping more symbols in memory. Note that the value works on\n"
-                 "a logarithmic scale so increasing the size by one will rougly double the\n"
+                 "a logarithmic scale so increasing the size by one will roughly double the\n"
                  "memory usage. The cache size is given by this formula:\n"
                  "2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0,\n"
                  "corresponding to a cache size of 2^16 = 65536 symbols",
@@ -801,8 +801,9 @@ void addConfigOptions(Config *cfg)
                  "FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp\n"
                  "and *.h) to filter out the source-files in the directories. If left\n"
                  "blank the following patterns are tested:\n"
-                 "*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx\n"
-                 "*.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90"
+                 "*.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh\n"
+                 "*.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py\n"
+                 "*.f90 *.f *.vhd *.vhdl"
                 );
   cl->addValue("*.c");
   cl->addValue("*.cc");
@@ -1461,6 +1462,29 @@ void addConfigOptions(Config *cfg)
   cb->addDependency("GENERATE_HTML");
   //----
   cb = cfg->addBool(
+                 "USE_MATHJAX",
+                 "Enable the USE_MATHJAX option to render LaTeX formulas using MathJax\n"
+                 "(see http://www.mathjax.org) which uses client side Javascript for the\n"
+                 "rendering instead of using prerendered bitmaps. Use this if you do not\n"
+                 "have LaTeX installed or if you want to formulas look prettier in the HTML\n"
+                 "output. When enabled you also need to install MathJax separately and\n"
+                 "configure the path to it using the MATHJAX_RELPATH option.",
+                 FALSE
+                );
+  //----
+  cs = cfg->addString(
+                 "MATHJAX_RELPATH",
+                 "When MathJax is enabled you need to specify the location relative to the\n"
+                 "HTML output directory using the MATHJAX_RELPATH option. The destination\n"
+                 "directory should contain the MathJax.js script. For instance, if the mathjax\n"
+                 "directory is located at the same level as the HTML output directory, then\n"
+                 "MATHJAX_RELPATH should be ../mathjax. The default value points to the mathjax.org site, so you can quickly see the result without installing\n"
+                 "MathJax, but it is strongly recommended to install a local copy of MathJax\n"
+                 "before deployment."
+                );
+  cs->setDefaultValue("http://www.mathjax.org/mathjax");
+  //----
+  cb = cfg->addBool(
                  "SEARCHENGINE",
                  "When the SEARCHENGINE tag is enabled doxygen will generate a search box\n"
                  "for the HTML output. The underlying search engine uses javascript\n"
@@ -1480,7 +1504,7 @@ void addConfigOptions(Config *cfg)
                  "using Javascript. Doxygen will generate the search PHP script and index\n"
                  "file to put on the web server. The advantage of the server\n"
                  "based approach is that it scales better to large projects and allows\n"
-                 "full text search. The disadvances is that it is more difficult to setup\n"
+                 "full text search. The disadvantages are that it is more difficult to setup\n"
                  "and does not have live searching capabilities.",
                  FALSE
                 );

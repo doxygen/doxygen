@@ -1411,6 +1411,10 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   {
     m_t << "[height=" << height << "]";
   }
+  else
+  {
+    m_t << "[width=\\textwidth]";
+  }
   m_t << "{" << baseName << "}";
 
   if (hasCaption)
@@ -1473,6 +1477,10 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   else if (!height.isEmpty())
   {
     m_t << "[height=" << height << "]";
+  }
+  else
+  {
+    m_t << "[width=\\textwidth]";
   }
   m_t << "{" << baseName << "}";
 

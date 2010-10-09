@@ -111,6 +111,7 @@ Krzysztof Kral: krzysztof dot kral at gmail dot com
 
 TranslatorPortuguese
 Rui Godinho Lopes: [resigned] rgl at ruilopes dot com
+-- searching for the maintainer --: [Please, try to help to find someone.]
 
 TranslatorRomanian
 Ionut Dumitrascu: reddumy at yahoo dot com

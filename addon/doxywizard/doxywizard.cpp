@@ -191,7 +191,7 @@ void MainWindow::about()
   t << QString::fromAscii("<qt><center>A tool to configure and run doxygen version ")+
        QString::fromAscii(versionString)+
        QString::fromAscii(" on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2009</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2010</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }

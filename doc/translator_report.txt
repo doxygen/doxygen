@@ -10,7 +10,7 @@ Persian, Polish, Portuguese, Romanian, Russian, Serbian,
 SerbianCyrilic, Slovak, Slovene, Spanish, Swedish, Turkish, Ukrainian,
 and Vietnamese.
 
-Of them, 11 translators are up-to-date, 27 translators are based on
+Of them, 12 translators are up-to-date, 26 translators are based on
 some adapter class, and 2 are English based.
 
 ----------------------------------------------------------------------
@@ -24,6 +24,7 @@ still may be some details listed even for them:
   TranslatorCzech
   TranslatorDutch
   TranslatorEnglish
+  TranslatorEsperanto
   TranslatorGreek
   TranslatorKorean -- Change the base class to Translator.
   TranslatorPersian -- The MAX_DOT_GRAPH_HEIGHT found in trLegendDocs()
@@ -42,7 +43,6 @@ must be implemented to become up-to-date:
   TranslatorFrench                1.6.3 	 4 methods to implement (1 %)
 	Note: Reimplementation using UTF-8 suggested.
 
-  TranslatorEsperanto             1.6.3 	 4 methods to implement (1 %)
   TranslatorCatalan               1.6.3 	 4 methods to implement (1 %)
   TranslatorVietnamese            1.6.0 	 9 methods to implement (4 %)
   TranslatorSwedish               1.6.0 	 9 methods to implement (4 %)
@@ -286,19 +286,6 @@ TranslatorDanish   (TranslatorAdapter_1_5_4)  31 methods to implement (13 %)
     virtual QCString trModule(bool first_capital, bool singular)
     virtual QCString trCompoundMembersFortran()
     virtual QCString trSubprogramDocumentation()
-
-
-TranslatorEsperanto   (TranslatorAdapter_1_6_3)  4 methods to implement (1 %)
--------------------
-
-  Implements 221 of the required methods (98 %).
-
-  Missing methods (should be implemented):
-
-    virtual QCString trDateTime(int year, int month, int day, int dayOfWeek, int hour, int minutes, int seconds, bool includeTime)
-    virtual QCString trFileIn(const char * name)
-    virtual QCString trDirDependency(const char * name)
-    virtual QCString trIncludesFileIn(const char * name)
 
 
 TranslatorFinnish   (TranslatorAdapter_1_6_0)  9 methods to implement (4 %)

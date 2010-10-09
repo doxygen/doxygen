@@ -14,6 +14,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
+ 
+ /* Tradukita kaj ĝisdatigata de Ander Martinez. */
 
 #ifndef TRANSLATOR_EO_H
 #define TRANSLATOR_EO_H
@@ -40,7 +42,7 @@
  Translator class (by the local maintainer) when the localized
  translator is made up-to-date again.
 */
-class TranslatorEsperanto : public TranslatorAdapter_1_6_3
+class TranslatorEsperanto : public Translator
 {
   public:
 
@@ -1808,6 +1810,70 @@ class TranslatorEsperanto : public TranslatorAdapter_1_6_3
     {
       return "Nenia kongruo";
     }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.6.3 (missing items for the directory pages)
+//////////////////////////////////////////////////////////////////////////
+
+    /*! introduction text for the directory dependency graph */
+    virtual QCString trDirDependency(const char *name)
+    {
+      return (QCString)"Diagramo de dependecoj dosierujaj por "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the first column mentions the
+     *  source file that has a relation to another file.
+     */
+    virtual QCString trFileIn(const char *name)
+    {
+      return (QCString)"Dosiero en "+name;
+    }
+
+    /*! when clicking a directory dependency label, a page with a
+     *  table is shown. The heading for the second column mentions the
+     *  destination file that is included.
+     */
+    virtual QCString trIncludesFileIn(const char *name)
+    {
+      return (QCString)"Inkluzivas dosieron en "+name;
+    }
+
+    /** Compiles a date string. 
+     *  @param year Year in 4 digits
+     *  @param month Month of the year: 1=January
+     *  @param day Day of the Month: 1..31
+     *  @param dayOfWeek Day of the week: 1=Monday..7=Sunday
+     *  @param hour Hour of the day: 0..23
+     *  @param minutes Minutes in the hour: 0..59
+     *  @param seconds Seconds within the minute: 0..59
+     *  @param includeTime Include time in the result string?
+     */
+    virtual QCString trDateTime(int year,int month,int day,int dayOfWeek,
+                                int hour,int minutes,int seconds,
+                                bool includeTime)
+    {
+      static const char *days[]   = { "lundo","mardo","merkredo",
+                                        "ĵaŭdo","vendredo","sabato",
+                                        "dimanĉo" };
+      
+      static const char *months[] = { "Januaro", "Februaro", "Marto",
+                                        "Aprilo", "Majo", "Junio",
+                                        "Julio", "Aŭgusto", "Septembro",
+                                        "Oktobro", "Novembro",
+                                        "Decembro"
+                                    };
+      QCString sdate;
+      sdate.sprintf("%s, %d-a de %s %d",days[dayOfWeek-1],day,months[month-1],year);
+      if (includeTime)
+      {
+        QCString stime;
+        stime.sprintf(" %.2d:%.2d:%.2d",hour,minutes,seconds);
+        sdate+=stime;
+      }
+      return sdate;
+    }
+
 
 };
 

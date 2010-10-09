@@ -29,6 +29,11 @@ have the following tools installed
 <li>\c gs: the GhostScript interpreter for converting PostScript files 
     to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
 </ul>
+For the HTML output there is also an alternative solution using
+<a href="http://www.mathjax.org">MathJax</a> which does not
+require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
+the config then the latex formulas will be copied to the HTML "as is" and a
+client side javascript will parse them and turn them into (interactive) images.
 
 There are three ways to include formulas in the documentation.
 <ol>

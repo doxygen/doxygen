@@ -1863,6 +1863,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  }
 					}
 <SkipCommand>"endif"			{ 
+					  g_expectGuard = FALSE;
   					  decrLevel();
   				          if (--g_ifcount<0)
   					  {
@@ -2629,7 +2630,7 @@ void preprocessFile(const char *fileName,BufStr &input,BufStr &output)
 
   BEGIN( Start );
   
-  g_expectGuard = TRUE;
+  g_expectGuard = guessSection(fileName)==Entry::HEADER_SEC;
   g_lastGuardName.resize(0);
   g_guardExpr.resize(0);
   

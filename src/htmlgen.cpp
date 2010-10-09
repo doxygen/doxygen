@@ -902,6 +902,24 @@ static void writeDefaultHeaderFile(FTextStream &t, const char *title,
     t << "<link href=\"" << relPathStr << "search/search.css\" rel=\"stylesheet\" type=\"text/css\"/>\n";
     t << "<script type=\"text/javaScript\" src=\"" << relPathStr << "search/search.js\"></script>\n";
   }
+  if (Config_getBool("USE_MATHJAX"))
+  {
+    QCString path = Config_getString("MATHJAX_RELPATH");
+    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    {
+      path+="/";
+    }
+    if (path.isEmpty() || path.left(2)=="..") // relative path
+    {
+      path.prepend(relPathStr);
+    }
+    t << "<script src=\"" << path << "MathJax.js\">\n";
+    t << "  MathJax.Hub.Config({\n";
+    t << "    extensions: [\"tex2jax.js\"],\n";
+    t << "    jax: [\"input/TeX\",\"output/HTML-CSS\"],\n";
+    t << "});\n";
+    t << "</script>\n";
+  }
   t << "<link ";
   t << "href=\"";
   if (Config_getString("HTML_STYLESHEET").isEmpty())
